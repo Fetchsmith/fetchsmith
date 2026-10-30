@@ -1,0 +1,4358 @@
+[
+ {
+  "handle": "accountable_eel/steam-review-monitor",
+  "title": "Steam Review Monitor: New Reviews Since Last Run",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-new",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.001275,
+   "SILVER": 0.000975,
+   "GOLD": 0.00075,
+   "PLATINUM": 0.00075,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-new",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "review-new": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.001275,
+     "SILVER": 0.000975,
+     "GOLD": 0.00075,
+     "PLATINUM": 0.00075,
+     "DIAMOND": 0.00075
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review returned"
+   }
+  },
+  "desc": "Steam review alerts by app ID: new reviews since your last run with recommendation, playtime, language and helpful votes. One row per review, no login, no key, no reviewer names. $1.50 per 1,000 reviews; a quiet run or a miss is free."
+ },
+ {
+  "handle": "adaptive_nightmare/steam-game-radar",
+  "title": "Steam Games, Player Counts, and Discounts Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0009
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Steam top sellers, real-time concurrent player counts, special sales, new releases, and keyword search results with zero proxies."
+ },
+ {
+  "handle": "agent_muse/steam-discount-tracker",
+  "title": "Steam Discount Tracker \u2014 biggest Steam game discounts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "anyxsolutions/steam-scraper",
+  "title": "Steam Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045,
+   "BRONZE": 0.00383,
+   "SILVER": 0.00317,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0045,
+     "BRONZE": 0.00383,
+     "SILVER": 0.00317,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape games from the Steam store by keyword or URL: prices and discounts in any country, review scores and totals, genres, developers, publishers, release dates, platforms, languages, Metacritic scores, screenshots, and optional user reviews. No login, no API key, no proxy."
+ },
+ {
+  "handle": "apt_marble/steam-game-reviews-scraper",
+  "title": "Steam Game Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.0008,
+   "SILVER": 0.0007,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0009,
+     "BRONZE": 0.0008,
+     "SILVER": 0.0007,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result scraped"
+   }
+  },
+  "desc": "Collect real player reviews for any Steam game: text, verdict, hours played, votes and Steam purchaser flag, newest first. No account, no login."
+ },
+ {
+  "handle": "apt_marble/steam-store-search-scraper",
+  "title": "Steam Store Search Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result scraped"
+   }
+  },
+  "desc": "Search the Steam store by keyword and get priced game rows: title, app ID, current price, discount, currency and capsule image. No account, no login."
+ },
+ {
+  "handle": "arman-bd/steam-store-scraper",
+  "title": "Steam Store Scraper: Games, Prices & Regional Pricing",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-scraped",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.001,
+   "GOLD": 0.00074,
+   "PLATINUM": 0.00064,
+   "DIAMOND": 0.00036
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "DIAMOND"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "game-scraped": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.001,
+     "GOLD": 0.00074,
+     "PLATINUM": 0.00064,
+     "DIAMOND": 0.00036
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game scraped"
+   }
+  },
+  "desc": "Scrape the Steam store: game details, pricing across regions, discounts, genres, developers, publishers, release dates and Metacritic scores. No key, no login, no browser."
+ },
+ {
+  "handle": "atesen-software/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper: Game Reviews, Playtime & Review Score",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review"
+   }
+  },
+  "desc": "Scrape Steam game reviews from the official Steam store endpoint: recommended or not, text, date, helpful/funny votes, playtime at review, Steam Deck, developer responses, plus a free review-score summary per game. Game URL, ID or name. $0.30 per 1,000 reviews."
+ },
+ {
+  "handle": "automation-lab/steam-game-statistics-export",
+  "title": "Steam Game Statistics Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.002392,
+   "BRONZE": 0.00208,
+   "SILVER": 0.0016224,
+   "GOLD": 0.001248,
+   "PLATINUM": 0.001248,
+   "DIAMOND": 0.001248
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run started"
+   },
+   "item": {
+    "tiers": {
+     "FREE": 0.002392,
+     "BRONZE": 0.00208,
+     "SILVER": 0.0016224,
+     "GOLD": 0.001248,
+     "PLATINUM": 0.001248,
+     "DIAMOND": 0.001248
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game statistics record"
+   }
+  },
+  "desc": "Export normalized Steam game metadata, platforms, genres, and aggregate review statistics for supplied app IDs or URLs."
+ },
+ {
+  "handle": "axiomworks/steam-store-scraper",
+  "title": "Steam Store Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): enriched-result,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.00045,
+     "SILVER": 0.0004,
+     "GOLD": 0.00035,
+     "PLATINUM": 0.00035,
+     "DIAMOND": 0.00035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "enriched-result": {
+    "tiers": {
+     "FREE": 0.00125,
+     "BRONZE": 0.0011249,
+     "SILVER": 0.001,
+     "GOLD": 0.0008749,
+     "PLATINUM": 0.0008749,
+     "DIAMOND": 0.0008749
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Enriched result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Get structured data for Steam games and other apps from charts, keyword searches, or a list of app IDs. Each record can include descriptions, genres, tags, regional price details, review totals, and optional recent reviews. Chart and search results can include rank."
+ },
+ {
+  "handle": "badboxx_newlife/steam-reviews-export-sentiment",
+  "title": "Steam Reviews Export with Sentiment (CSV/JSON)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Review exported"
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "chrisp1211/steam-scraper-max",
+  "title": "Steam Game Data Scraper \u2014 Prices, Genres, Reviews, Metacritic",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-record",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game-record": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game record"
+   }
+  },
+  "desc": "Scrape Steam Game Data and get app id, name, kind, is free, short description, developers for every result. Export to JSON, CSV, Excel or Google Sheets, or call it from the API. No API key or login needed. Pay per result - failed and empty runs are free."
+ },
+ {
+  "handle": "cliqtomedia/steam-reviews",
+  "title": "Steam Reviews & Game Details Scraper \u2014 No login",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0004,
+   "BRONZE": 0.00036,
+   "SILVER": 0.00032,
+   "GOLD": 0.00028,
+   "PLATINUM": 0.00028,
+   "DIAMOND": 0.00028
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-details,game-processed,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "game-processed": {
+    "tiers": {
+     "FREE": 0.0002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Game processed"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0004,
+     "BRONZE": 0.00036,
+     "SILVER": 0.00032,
+     "GOLD": 0.00028,
+     "PLATINUM": 0.00028,
+     "DIAMOND": 0.00028
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Review"
+   },
+   "game-details": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Game details row"
+   }
+  },
+  "desc": "Export Steam game reviews with verdict, text, playtime, votes and date, plus price, genres, release date and review score per game. Filter by language, verdict and date. No login."
+ },
+ {
+  "handle": "constant_quadruped/steam-review-monitor",
+  "title": "Steam Review Monitor - Game Review, Score & Player Tracker",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game record returned"
+   }
+  },
+  "desc": "Monitor Steam games for recent reviews (positive/negative split, text, author playtime), review-score deltas, live concurrent-player counts + recent peak, and a 'what changed since last run' digest. Track your game and competitors side by side. Pure HTTP on Steam's official zero-auth public APIs."
+ },
+ {
+  "handle": "coolinbex/steam-reviews-scraper",
+  "title": "Steam Game Reviews & Ratings Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Steam game reviews in bulk via Steam's official public reviews API. Extract ratings, sentiment (positive/negative), review text, playtime, helpful votes, reviewer language and purchase type."
+ },
+ {
+  "handle": "corent1robert/steam-utm-traffic-sender",
+  "title": "Steam \u00b7 UTM Visits for Store Pages",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Steam UTM visit sent"
+   }
+  },
+  "desc": "Send one visit per Steam store URL with your UTM tags. Status and page check \u2014 one row per visit. Spread over a time window. Residential proxy billed to your usage."
+ },
+ {
+  "handle": "cynix_dev/steam-store-scraper",
+  "title": "Steam Store App & Review Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.000891,
+   "BRONZE": 0.00073953,
+   "SILVER": 0.00059697,
+   "GOLD": 0.0004455,
+   "PLATINUM": 0.0004455,
+   "DIAMOND": 0.0004455
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.000891,
+     "BRONZE": 0.00073953,
+     "SILVER": 0.00059697,
+     "GOLD": 0.0004455,
+     "PLATINUM": 0.0004455,
+     "DIAMOND": 0.0004455
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Fetch Steam app details (price, genres, rating, description) and review summaries via the public Steamworks API. No API key."
+ },
+ {
+  "handle": "darknezz/steam-reviews-monitor",
+  "title": "Steam Reviews Monitor \u2014 New Game Reviews as JSON",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-emitted",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,review-emitted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   },
+   "review-emitted": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "New review"
+   }
+  },
+  "desc": "Track new Steam reviews per game: rating, playtime, votes, language. Diffs against the last run so you only get what changed."
+ },
+ {
+  "handle": "dataio/steam-regional-pricing-intelligence",
+  "title": "Steam Price Scraper - Regional Game Prices",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-country-row",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-country-row",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game-country-row": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game row"
+   }
+  },
+  "desc": "Scrape Steam game prices across up to 52 markets at once, converted to USD with the gap to the US price, discount status, review counts behind the rating, and the markets where a game is not sold at all. Regional pricing intelligence for publishers. No API key."
+ },
+ {
+  "handle": "dataio/steam-reviews-playtime-scraper",
+  "title": "Steam Reviews Scraper - With Playtime Data",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-extracted",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.00133,
+   "PLATINUM": 0.00133,
+   "DIAMOND": 0.00133
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review-extracted": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.00133,
+     "PLATINUM": 0.00133,
+     "DIAMOND": 0.00133
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Review"
+   }
+  },
+  "desc": "Scrape Steam reviews with the hours the player had when writing them, how long they kept playing afterwards, the early access flag, and whether they bought the game on Steam or received it. Filter by language and minimum playtime. No API key needed."
+ },
+ {
+  "handle": "datalayer/steam-review-intelligence",
+  "title": "Steam Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): analysis,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Review"
+   },
+   "analysis": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.045,
+     "SILVER": 0.04,
+     "GOLD": 0.035,
+     "PLATINUM": 0.035,
+     "DIAMOND": 0.035
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Sentiment analysis"
+   }
+  },
+  "desc": "Steam reviews with the hours the reviewer had actually played. Some scrapers return that field; none compute with it. This weights sentiment by playtime and bands reviewers from drive-by to veteran, so a 12-minute opinion cannot outvote a 500-hour one."
+ },
+ {
+  "handle": "deriverge/steam-games-scraper",
+  "title": "Steam Games Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0016,
+   "SILVER": 0.0013,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0016,
+     "SILVER": 0.0013,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   }
+  },
+  "desc": "Steam store data for the games you list or search for: price and discount in any country's store, genres, platforms, developers, release date, Metacritic score and the review summary with positive and negative counts. Daily runs can track price and review changes."
+ },
+ {
+  "handle": "donjuan_mime/steam-scraper",
+  "title": "Steam Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Item"
+   }
+  },
+  "desc": "Scrape Steam games and reviews: prices and discounts in any country, ratings, genres, developers, release dates, and full review text. No login or API key."
+ },
+ {
+  "handle": "eliai/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper - Playtime, Votes & Sentiment",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00186,
+   "SILVER": 0.00174,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review-scraped": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.00186,
+     "SILVER": 0.00174,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Scraped reviews"
+   }
+  },
+  "desc": "Scrape Steam game reviews: recommended or not, full text, helpful and funny votes, and the author's playtime AT THE TIME OF REVIEW in hours. Filter by language, sentiment and sort. Bulk apps, no API key. $0.002 per review."
+ },
+ {
+  "handle": "fabrikit/steam-store-scraper",
+  "title": "Steam Store Scraper - Games, Prices, Tags, Reviews",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-result",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "game-result": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   }
+  },
+  "desc": "Scrape the Steam store: top sellers, new releases, specials, searches by keyword or tag, or any app ID. Price and discount, release date, developers, genres, tags, Metacritic, review totals, platforms. From US$1 per 1,000 games."
+ },
+ {
+  "handle": "fanndev/steam-community-market-scraper",
+  "title": "Steam Community Market Scraper - Prices, History & Order Books",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0023,
+   "SILVER": 0.0021,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.0023,
+     "SILVER": 0.0021,
+     "GOLD": 0.0018,
+     "PLATINUM": 0.0018,
+     "DIAMOND": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track the Steam Community Market economy for CS2, Dota 2, TF2, Rust and any Steam game: full price history back as far as 2014, live buy/sell order books, individual listings with float and pattern seed, catalogue search and a live feed of completed sales. No login needed."
+ },
+ {
+  "handle": "fanndev/steam-concurrent-players-monitor",
+  "title": "Steam Concurrent Players Monitor - Live Counts & History",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0028,
+   "SILVER": 0.0026,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track Steam player counts: live top 100, daily peak chart, live count for any game, monthly and hourly history, a 12,700-game long-tail ranking and total Steam users online. Built-in change detection for scheduled monitoring."
+ },
+ {
+  "handle": "fanndev/steam-review-sentiment-analyzer",
+  "title": "Steam Review & Sentiment Analyzer",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0028,
+   "SILVER": 0.0026,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Steam game reviews and get a ready-made sentiment report: Steam score, recent vs lifetime trend, review-bomb detection, per-language sentiment, positivity by playtime and top complaint keywords. Also exports full reviews, monthly review history and user reviews. No login."
+ },
+ {
+  "handle": "feedforge/steam-games-scraper",
+  "title": "Steam Games Scraper - Top Sellers, Prices, Discounts & Genres",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0024
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape Steam top sellers, new releases and specials. Prices, discounts, genres, developers and Metacritic scores as JSON or CSV."
+ },
+ {
+  "handle": "firehazard/steam-review-monitor",
+  "title": "Steam Reviews Scraper & Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0004,
+   "BRONZE": 0.00036,
+   "SILVER": 0.00032,
+   "GOLD": 0.00028,
+   "PLATINUM": 0.00028,
+   "DIAMOND": 0.00028
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-processed,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review": {
+    "tiers": {
+     "FREE": 0.0004,
+     "BRONZE": 0.00036,
+     "SILVER": 0.00032,
+     "GOLD": 0.00028,
+     "PLATINUM": 0.00028,
+     "DIAMOND": 0.00028
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review"
+   },
+   "game-processed": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Game processed"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Get Steam game reviews from Valve's official API. Filter by language, positive/negative and playtime, and schedule it to get only new reviews since your last run."
+ },
+ {
+  "handle": "fortuitous_pirate/rawg-game-scraper",
+  "title": "Rawg Game Scraper \u2014 No Login, $10/1k",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result scraped"
+   }
+  },
+  "desc": "Scrapes Steam Store game data including prices, ratings, genres, Metacritic scores, developer info, platform support, and discount percentages. No API key required. No login or cookies. MCP-ready for AI agents. $10 per 1,000 records."
+ },
+ {
+  "handle": "get_anything/steam-scraper",
+  "title": "Steam Scraper - Steam Games, Prices, Reviews & Store Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape the Steam store: search games, get full details (price, genres, developers, Metacritic, platforms) and extract user reviews with playtime. Official public Steam endpoints, no API key or browser. Export JSON, CSV or Excel for game market research and review sentiment."
+ },
+ {
+  "handle": "gio21/steam-games-scraper",
+  "title": "Steam Games Scraper - Search, Prices, Reviews & Tags",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "steam-game-result",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): steam-game-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "steam-game-result": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game result"
+   }
+  },
+  "desc": "Scrape Steam Store for games by keyword. Extract titles, prices, discounts, release dates, review scores, platforms, tags, and more. Fast CheerioCrawler, no browser needed."
+ },
+ {
+  "handle": "gio21/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper - Playtime, Votes & Language, No Key",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "item-scraped": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Review scraped"
+   }
+  },
+  "desc": "Get Steam game reviews with text, vote up/down, votes, playtime and language for any app id. No Steam API key or login needed. $0.002 per review."
+ },
+ {
+  "handle": "glitchbound/steam-scraper",
+  "title": "Steam Games Scraper: Prices, Discounts & Top Sellers",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0024,
+   "SILVER": 0.0019,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0024,
+     "SILVER": 0.0019,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Steam scraper for the Steam store: search games, then pull Steam game prices, discounts and deals, genres, developers, Metacritic score and recommendation counts, plus current Top Sellers. Schedule it daily as a Steam sales and discounts tracker. Any country."
+ },
+ {
+  "handle": "goat255/steam-scraper",
+  "title": "Steam Player Count & Game Data Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.004,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.0008,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.004,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0014,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0012,
+     "GOLD": 0.001,
+     "PLATINUM": 0.0009,
+     "DIAMOND": 0.0008
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape Steam without a login. Search games by name or pass app IDs and get one enriched row per game: price and discount, release date, developers, genres, Metacritic score, review sentiment, live player count, and estimated ownership with community tags. Any country storefront."
+ },
+ {
+  "handle": "gochujang/steam-game-tracker",
+  "title": "Steam Game Tracker \u2014 Players, Reviews, Price & Metadata",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item-tracked",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item-tracked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "item-tracked": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Item Tracked"
+   }
+  },
+  "desc": "Track Steam game metrics: concurrent players, all-time peak, review score, price, discount, release date, developer, publisher, genres, and tags. Fetch by game ID or search keyword using Steam's public API and store page. Monitor player trends and pricing for gaming market research."
+ },
+ {
+  "handle": "great_pistachio/steam-scraper",
+  "title": "Steam Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape the Steam store with no login. Three modes: search apps by name, pull full app details (developer, publisher, genres, price, release date, Metacritic, platforms), and fetch customer reviews with cursor pagination. For game market research, competitor tracking, and review mining."
+ },
+ {
+  "handle": "gubidonius/steam-reviews",
+  "title": "Steam Game Reviews Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-returned",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Run started"
+   },
+   "review-returned": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Review returned"
+   }
+  },
+  "desc": "Reads Steam game reviews with playtime, votes and author history. Steam has two defaults that each narrow what you get, language and purchase type, and its own total shrinks to match. Apex Legends reports 1,044 reviews that way and has 1,066,930. This asks for all of both. No key, no login."
+ },
+ {
+  "handle": "haketa/steam-game-scraper",
+  "title": "Steam Game & Review Scraper \u2014 Prices, Details & Reviews",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0035,
+   "BRONZE": 0.0033,
+   "SILVER": 0.003,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0035,
+     "BRONZE": 0.0033,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Steam games: title, price & discount, genres, developer, publisher, release date, Metacritic, platforms, achievements, screenshots plus review score and reviews. Search or by app ID, any country. For price tracking, market and review research. Not affiliated with Steam or Valve."
+ },
+ {
+  "handle": "hichemdev/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper \u2014 Game Reviews & Playtime",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "review"
+   }
+  },
+  "desc": "Scrape Steam game reviews: full review text, recommended or not, votes up and funny, comment count, date, language, and the reviewer's playtime at review, total playtime, games owned and review count, plus each game's overall positive percentage. No API key."
+ },
+ {
+  "handle": "hichemdev/steam-scraper",
+  "title": "Steam Scraper \u2014 Games, Prices, Discounts & Reviews",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "game"
+   }
+  },
+  "desc": "Scrape Steam store data: game name, price, discount, genres, developer, publisher, Metacritic score, release date, platforms and player reviews. No API key."
+ },
+ {
+  "handle": "hipersoft/steam-games-scraper",
+  "title": "Steam Games Scraper \u2014 Prices, Genres, Metacritic",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-scraped",
+  "unit_tiers": {
+   "FREE": 0.0024,
+   "BRONZE": 0.00192,
+   "SILVER": 0.00156,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request,game-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game-scraped": {
+    "tiers": {
+     "FREE": 0.0024,
+     "BRONZE": 0.00192,
+     "SILVER": 0.00156,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Game scraped"
+   },
+   "api-request": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "API request"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search the Steam store and scrape full game data: name, price & discount, developers, publishers, genres, categories, platforms, Metacritic score, release date, description and store link. Fast clean HTTP via the Steam store API, no setup."
+ },
+ {
+  "handle": "hipersoft/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper \u2014 Game Reviews & Ratings",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.00064,
+   "SILVER": 0.00052,
+   "GOLD": 0.0004,
+   "PLATINUM": 0.0004,
+   "DIAMOND": 0.0004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review-scraped": {
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.00064,
+     "SILVER": 0.00052,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Review scraped"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape user reviews and ratings for any game on Steam. Get the review text, recommended/not-recommended, helpful & funny votes, author playtime, purchase type, language, early-access flag and dates. One clean row per review as JSON, CSV or Excel."
+ },
+ {
+  "handle": "invaluable_rondeau/steam-reviews-games-scraper",
+  "title": "Steam Scraper \u2014 Steam Reviews Scraper, Playtime & Games",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "strategy-allocated",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): strategy-allocated",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "strategy-allocated": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Extracted Steam record"
+   }
+  },
+  "desc": "Extract player reviews from Steam Store by AppID. Captures review text, votedUp recommendation, playtime at review (hours), total playtime, helpfulness score, Steam purchase flag & language."
+ },
+ {
+  "handle": "istmobot/steam-game-intelligence",
+  "title": "Steam Game Intelligence \u2014 players, reviews, prices & owners",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "app-result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Game result"
+   }
+  },
+  "desc": "Scrape Steam game data with no API key: live player counts, review scores and review texts, prices, discounts, SteamSpy owner estimates, tags, genres and store details for any game, plus top sellers, specials and search. Steam API alternative. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "jeffev/steam-scraper",
+  "title": "Steam Scraper \u2014 Games, Prices, Discounts, Ratings & Reviews",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0003,
+     "BRONZE": 0.00027,
+     "SILVER": 0.00024,
+     "GOLD": 0.00021,
+     "PLATINUM": 0.00021,
+     "DIAMOND": 0.00021
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Review"
+   }
+  },
+  "desc": "Scrape Steam games by URL, app ID or store search (sort by reviews, release or price; only discounted; max price): price and discount, release date, developer, publisher, genres, Metacritic, user review score and counts, plus user reviews with playtime. No API key."
+ },
+ {
+  "handle": "johnatan029/steam-game-data-monitor",
+  "title": "Steam Game Price, Discount & Review Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "change-event",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-result,change-event",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "change-event": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Change event"
+   },
+   "app-result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "App result"
+   }
+  },
+  "desc": "Monitor Steam game prices, discounts, release status, and review changes across up to 200 app IDs. Get change-only events or full game details with regional pricing, developers, publishers, genres, platforms, Metacritic, recommendations, and review totals."
+ },
+ {
+  "handle": "johnatan029/steam-review-monitor",
+  "title": "Steam Review Monitor & Player Feedback Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-review",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "new-review": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "New review"
+   }
+  },
+  "desc": "Monitor Steam player reviews without paying for the same reviews every run. Get only genuinely new reviews, persistent deduplication, native Steam review-score changes, review velocity, language dimensions, playtime and purchase/refund flags. First run creates a free baseline."
+ },
+ {
+  "handle": "jpmarketdata/steam-japan-game-price-watchlist",
+  "title": "Steam Japan Game Price Watchlist",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-price-delivered",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-price-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "app-price-delivered": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "App price facts delivered"
+   }
+  },
+  "desc": "Watch current Japanese Steam game and DLC price facts by app ID. Preserve source JPY price integers and formatted labels, discounts, free-license flags, release labels and platforms. Up to20 apps; no reviews, accounts, search or personalized checkout quotes."
+ },
+ {
+  "handle": "keiwy/steam-store-page-auditor",
+  "title": "Steam Page Auditor - Bulk & API Steam store page audits",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "page-audit",
+  "unit_tiers": {
+   "FREE": 0.99
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): page-audit",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "page-audit": {
+    "tiers": {
+     "FREE": 0.99
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Page audited"
+   }
+  },
+  "desc": "Paste Steam store URLs, get an automated 12-point wishlist-conversion audit for indie devs: score/100, top fixes, rewritten descriptions and hooks, tag suggestions, 5 comps. Works on Coming Soon pages. Public data only, no login. Bulk/API users: $0.99 per Steam page audited."
+ },
+ {
+  "handle": "kestrel/steam-player-reviews",
+  "title": "Steam Reviews - Text, Ratings, Playtime & \u4e2d\u6587\u8bc4\u8bba",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Review snapshot"
+   }
+  },
+  "desc": "Collect Steam reviews by App ID, language and positive/negative rating. One row per review: text, dates, recommendation, helpful votes and playtime. Free date/text filters and ID/hash exclusions. \u4e2d\u6587\u8bc4\u8bba\u3002 Cursor pagination; no profile enrichment or comment replies."
+ },
+ {
+  "handle": "khadinakbar/scrape-steam-store",
+  "title": "Steam Store Scraper \u2014 App IDs & Regional Prices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-scraped",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "game-scraped": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Steam game record"
+   }
+  },
+  "desc": "Scrape Steam Store games by keyword or App ID for catalog enrichment, price monitoring and market research. Each game record has prices, developers, release date, platforms, genres and review counts."
+ },
+ {
+  "handle": "launchgulf/steam-store-scraper",
+  "title": "Steam Store Scraper: Games, Prices & Reviews",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   }
+  },
+  "desc": "Search Steam or scrape game pages: price, discount, release date, developers, publishers, genres, platforms, review score, player recommendations and recent reviews."
+ },
+ {
+  "handle": "lepidata/steam-game-reviews",
+  "title": "Steam Game Reviews Scraper: Review Text, Votes & Playtime",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 0.0001,
+   "SILVER": 0.0001,
+   "GOLD": 0.0001,
+   "PLATINUM": 0.0001,
+   "DIAMOND": 0.0001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review": {
+    "tiers": {
+     "FREE": 0.0001,
+     "BRONZE": 0.0001,
+     "SILVER": 0.0001,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Steam review"
+   }
+  },
+  "desc": "Export Steam user reviews by app ID: review text, recommended or not, helpful and funny votes, playtime at review and dates, filtered by language and positive or negative. No reviewer IDs or profiles. Unofficial."
+ },
+ {
+  "handle": "logiover/steam-store-scraper",
+  "title": "Steam Store Scraper - Games, Prices & Discounts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.004,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape the Steam store catalogue in bulk. Extract game title, app ID, price, discount percentage, original price, release date, platforms, review summary and tags to CSV/JSON. No API key, no login."
+ },
+ {
+  "handle": "lulzasaur/isthereanydeal-scraper",
+  "title": "IsThereAnyDeal Scraper - Game Price Tracker",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape IsThereAnyDeal.com for video game prices across 50+ stores. Extract deals, Steam reviews, tags, player counts, HLTB times, and metadata. Search by game name or scrape trending deals."
+ },
+ {
+  "handle": "maged120/steam-store-scraper",
+  "title": "Steam Games & Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.017,
+   "BRONZE": 0.008,
+   "SILVER": 0.007,
+   "GOLD": 0.006,
+   "PLATINUM": 0.006,
+   "DIAMOND": 0.006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.017,
+     "BRONZE": 0.008,
+     "SILVER": 0.007,
+     "GOLD": 0.006,
+     "PLATINUM": 0.006,
+     "DIAMOND": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Steam store games by keyword, top sellers or app links: prices, discounts, release dates, genres, developers, review scores, developer website and support email, plus individual reviews."
+ },
+ {
+  "handle": "mina_safwat/steam-scraper",
+  "title": "Steam Games & Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes Steam game data \u2014 prices, discounts, genres, Metacritic scores, live player counts, and user reviews"
+ },
+ {
+  "handle": "moving_beacon-owner1/my-actor-79",
+  "title": "Steam Store Game Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape game data from the Steam Store \u2014 the world's largest PC gaming platform with 50,000+ games. Extract prices, discounts, descriptions, reviews, genres, platforms, screenshots, system requirements, and more."
+ },
+ {
+  "handle": "muddy_snowshoe/steam-review-miner",
+  "title": "Steam Review Miner \u2014 Reputation Drop Diagnostic",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Analyzes a Steam game's review history to detect an active reputation drop and classify what's actually driving it (bugs, pricing, balance, servers) \u2014 for developers and publishers checking their own or a competitor's title."
+ },
+ {
+  "handle": "muzafferkadir/steam-mcp",
+  "title": "Steam Store Scraper MCP | Games, Reviews & Deals",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.01,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "A MCP tool to Search Steam games, fetch game details, user reviews, and featured/discounted games."
+ },
+ {
+  "handle": "neuro-scraper/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.00299,
+   "BRONZE": 0.00289,
+   "SILVER": 0.00269,
+   "GOLD": 0.00249,
+   "PLATINUM": 0.00249,
+   "DIAMOND": 0.00249
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.00299,
+     "BRONZE": 0.00289,
+     "SILVER": 0.00269,
+     "GOLD": 0.00249,
+     "PLATINUM": 0.00249,
+     "DIAMOND": 0.00249
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Steam Reviews Scraper SD - Steam Reviews Scraper is a game data tool that extracts Steam user reviews of any game via Valve's official keyless API: text, recommendation, votes, playtime, language, dates, developer replies and app details, with filters."
+ },
+ {
+  "handle": "neuton/steam-game-reviews-scraper",
+  "title": "Steam Game Reviews Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract public Steam game reviews, review scores, language, votes, playtime, purchase flags, and author summary fields for gaming research."
+ },
+ {
+  "handle": "newbs/gamescout-steam-scraper",
+  "title": "Steam Games Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game result"
+   }
+  },
+  "desc": "Scrape Steam games, new releases, discounts, demos, coming soon titles, and app updates with normalized prices, genres, tags, release dates, and URLs."
+ },
+ {
+  "handle": "northbell/steam-scraper",
+  "title": "Steam Scraper \u2014 Game Details, Prices & Reviews",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012000000000000001,
+   "PLATINUM": 0.0012000000000000001,
+   "DIAMOND": 0.0012000000000000001
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Run started"
+   },
+   "game": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00135,
+     "GOLD": 0.0012000000000000001,
+     "PLATINUM": 0.0012000000000000001,
+     "DIAMOND": 0.0012000000000000001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0002,
+     "BRONZE": 0.0002,
+     "SILVER": 0.00018,
+     "GOLD": 0.00016,
+     "PLATINUM": 0.00016,
+     "DIAMOND": 0.00016
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Review"
+   }
+  },
+  "desc": "Scrape Steam games and reviews: price and discount, developer, publisher, release date, genres, platforms, Metacritic, review score with positive and negative counts, and the newest reviews with playtime and helpful votes. Search by name or paste store URLs. Only new reviews since your last run."
+ },
+ {
+  "handle": "omkar-cloud/steam-reviews-scraper",
+  "title": "\ud83d\ude80 Steam Reviews Scraper \u00b7 10,000 Free Reviews/Month",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review"
+   }
+  },
+  "desc": "Steam Reviews Scraper gets you Steam reviews \u26a1 fast, \ud83c\udfaf 100% accurate and \ud83d\udd0d ridiculously detailed \u2014 every review of any game with verdict, playtime and votes. \ud83d\udcb0 $0.50 per 1,000 reviews, no start fee. Scrape your first 10,000 reviews free every month \ud83d\ude80"
+ },
+ {
+  "handle": "oneary/steam-scraper",
+  "title": "Steam Scraper \u2014 Game Prices, Reviews & Store Data",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0014
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrapes Steam store for games, reviews, prices, and metadata. Extract game details, user reviews, pricing, discount info, system requirements, and release dates."
+ },
+ {
+  "handle": "openharvest/steam-scraper",
+  "title": "Steam Reviews & Games Scraper \u2013 Prices, Players & Top Sellers",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0003
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Review"
+   }
+  },
+  "desc": "Steam reviews and games scraper without login: user reviews via the new GetAppReviews API, review scores, prices and discounts by country, developers, genres, Metacritic, current player counts, top sellers, specials, new releases and store search. Pay per result."
+ },
+ {
+  "handle": "panda_studio/steam-reviews-monitor",
+  "title": "Steam Reviews Scraper & Monitor (by language)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,game-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review"
+   },
+   "game-checked": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Game checked"
+   }
+  },
+  "desc": "Scrape Steam reviews for any game in 30 languages. Per-language score breakdown and a monitor mode that returns only new reviews. No login, no API key, no proxies."
+ },
+ {
+  "handle": "parselab/steam-games-data-scraper",
+  "title": "Steam Games Data Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.016,
+   "BRONZE": 0.01467,
+   "SILVER": 0.01333,
+   "GOLD": 0.012,
+   "PLATINUM": 0.012,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "tiers": {
+     "FREE": 0.016,
+     "BRONZE": 0.01467,
+     "SILVER": 0.01333,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape Steam games by keyword, tag, price and discount, or look them up by name. Get prices in any country, deals, review scores, tags, languages, Steam Deck status and players online. Also download player reviews, the most played chart and game news. Export to CSV or Excel."
+ },
+ {
+  "handle": "pepeschuster/steam-game-details",
+  "title": "Steam Game Details Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-scraped",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game-scraped": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game record"
+   }
+  },
+  "desc": "Details for Steam games by app ID \u2014 price, genres, release, description, metacritic."
+ },
+ {
+  "handle": "pinkish_gallop/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper - Official API, No Key",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Review"
+   }
+  },
+  "desc": "Export Steam user reviews for any game via Valve's official IUserReviewsService API (the replacement for the retired appreviews endpoint) plus store app details. Filter by language, sentiment, purchase type, playtime and date. No login, no proxy, no browser."
+ },
+ {
+  "handle": "ponderable_hydrometer/steam-scraper",
+  "title": "Steam Scraper \u2014 Games, Prices & Reviews",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Steam game metadata, prices, genres, Metacritic scores and player reviews via Valve's public store APIs. Look up by app id or store URL, or search by keyword. No proxies, no login."
+ },
+ {
+  "handle": "powerai/steampowered-search-scraper",
+  "title": "Steam Powered Search Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00499
+  },
+  "start_fee": 0.09,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00499
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.09
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape games and software from Steam store search results with automatic pagination and comprehensive product information extraction."
+ },
+ {
+  "handle": "prodiger/steam-scraper",
+  "title": "Steam Scraper (Pay-Per-Event)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-scraped",
+  "unit_tiers": {
+   "FREE": 0.0023
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,game-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "game-scraped": {
+    "tiers": {
+     "FREE": 0.0023
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game scraped"
+   }
+  },
+  "desc": "Scrape Steam Store search results for prices, discounts, review summaries, positive percentages, review counts, platforms, and release dates. Pay-per-event pricing \u2014 only pay for the games you actually scrape."
+ },
+ {
+  "handle": "real-estate-api/Steam-Reviews-Scraper",
+  "title": "Steam Reviews Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Steam Reviews Scraper is a Python tool designed to extract user reviews, playtimes, ratings, and reviewer details for any game on Steam. It exports structured review datasets into CSV or JSON formats for sentiment analysis, market research, and game analytics."
+ },
+ {
+  "handle": "recordsdata/steam-games-player-stats",
+  "title": "Steam Scraper: Reviews, Achievements, News & Players",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-record",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): achievement-schema-record,achievement-stats-record,game-record,news-record,player-count-record,review-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game-record": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.0114,
+     "SILVER": 0.0108,
+     "GOLD": 0.0102,
+     "PLATINUM": 0.0102,
+     "DIAMOND": 0.0102
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game record"
+   },
+   "review-record": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Review record"
+   },
+   "achievement-stats-record": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Achievement stats record"
+   },
+   "player-count-record": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Player count record"
+   },
+   "news-record": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "News record"
+   },
+   "achievement-schema-record": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Achievement schema record"
+   }
+  },
+  "desc": "Scrape Steam game details (price, genres, platforms, Metacritic), up to 100 recent reviews per game, achievement unlock rates, live player counts and news from an App ID or game name. Export CSV, Excel, JSON. No login or API key. Failed or empty rows are never billed."
+ },
+ {
+  "handle": "retrainmap/steam-games",
+  "title": "Steam store games - search, details, prices (public store APIs)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "run-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor run"
+   },
+   "record": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record"
+   }
+  },
+  "desc": "Search the Steam store by term or appid; one row per app from Steam's public store endpoints: appid, name, type, price (list, final, discount, currency for your country), release date, developers, publishers, genres, categories, platforms, Metacritic, recommendations, description, image, store URL."
+ },
+ {
+  "handle": "rowfeed/steam-game-data",
+  "title": "Steam API \u2013 Game Prices, Sales, Player Count & Top Sellers",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "game": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game"
+   }
+  },
+  "desc": "Steam game data API: top sellers, games on sale, most wishlisted and most played, or any game by name, id or URL. Price and discount per country, players now, release date, developer, genres and Metacritic. $2 per 1,000 games."
+ },
+ {
+  "handle": "rupom888/steam-reviews-scraper",
+  "title": "Steam Game Reviews Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape Steam game reviews, ratings, and game details using the Steam public API and store pages. Extract review text, rating (recommended/not recommended), hours played, helpful votes, and reviewer info. Also get game metadata: price, description, developer, genres, and overall review score."
+ },
+ {
+  "handle": "sashaebashu/steam-monitor",
+  "title": "Steam Price & Market Monitor",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track Steam game prices and discounts \u2014 including exactly when each sale ends \u2014 plus live player counts, and Community Market item prices with listing counts and 24h volume. Monitor mode alerts you to price drops and sales starting or ending between runs."
+ },
+ {
+  "handle": "scrapemint/steam-game-review-intelligence",
+  "title": "Steam Game and Review Intelligence Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review_extracted",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review_extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review_extracted": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Steam review extracted"
+   }
+  },
+  "desc": "Pulls the full review stream and store metadata for any Steam game: review text, thumbs direction, playtime at review, purchase and early access flags, votes, developer, publisher, genres, price, release date. Track launch sentiment and benchmark competitors."
+ },
+ {
+  "handle": "scrapemint/steam-game-studio-leads",
+  "title": "Steam Game Studio Lead Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "listing",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): lead,listing,qualified_lead",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "listing": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Listing"
+   },
+   "lead": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Studio lead"
+   },
+   "qualified_lead": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Qualified studio lead"
+   }
+  },
+  "desc": "Search Steam by keyword and turn games into B2B leads: studio, publisher, website, scraped contact email, genres, release date, price, and review count. One lead per game. Keyless."
+ },
+ {
+  "handle": "scrapepilot/steam-scraper----game-data-reviews-store-intelligence",
+  "title": "Steam Scraper \u2014 Game Data, Reviews & Store Intelligence",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-scrape",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-scrape",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-scrape": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Scraped Game Result"
+   }
+  },
+  "desc": "Scrape Steam game data and reviews from any game, keyword search, or trending list. Get price, discount, genres, Metacritic score, system requirements, screenshots, and paginated player reviews. No login, no API key. $7.99/month. 2-hour free trial."
+ },
+ {
+  "handle": "scraper0917/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper \u2014 reviews, playtime, tags, histogram",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Every Steam review with playtime at review, helpful/funny votes, purchase type, free-copy, refund, early-access and Steam Deck flags, edits, developer replies, author stats, plus a full game record: price, genres, community tags, review score, monthly histogram. No key, no login."
+ },
+ {
+  "handle": "scrapers_lat/steam-games-scraper",
+  "title": "Steam Games Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.0076,
+     "SILVER": 0.0072,
+     "GOLD": 0.0068,
+     "PLATINUM": 0.0068,
+     "DIAMOND": 0.0068
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape Steam store game data: price, discount, release date, developers, publishers, genres, categories, platforms, Metacritic score, review count, description and artwork. Search by keyword or app ID and pick a pricing region. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrape-smith/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper: Game Reviews, Playtime & Votes",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review": {
+    "tiers": {
+     "FREE": 0.0003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Review returned"
+   }
+  },
+  "desc": "Steam reviews scraper for any game via Valve's public appreviews endpoint: review text, recommended or not, playtime at review, helpful/funny votes, language, Steam Deck and early access flags, and developer responses. Export to CSV or JSON for player sentiment analysis and game market research."
+ },
+ {
+  "handle": "seemuapps/steam-game-reviews-scraper",
+  "title": "Steam Game & Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract Steam game details, pricing, player ratings, and full user reviews for any title by app ID or store URL. No login required."
+ },
+ {
+  "handle": "shawndunn/steam-game-store-details",
+  "title": "Steam Store Game Details, Prices & Review Scores (Bulk)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game"
+   }
+  },
+  "desc": "Bulk Steam game data: price and discount per country, developers, publishers, release date, genres, categories, platforms, Metacritic, total reviews and % positive. Search by name or pass app IDs/URLs. Extracts fields: appId, name, type, url, isFree, currency, price, initialPrice, discountPercent."
+ },
+ {
+  "handle": "signalcrawl/steam-review-alert-api",
+  "title": "Steam Review Alert API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review alert"
+   }
+  },
+  "desc": "Monitor public Steam app reviews by app ID. Export review alerts with ratings, sentiment, urgency, helpful votes, playtime, CRM notes, action notes, source URLs, and dedupe-ready keys."
+ },
+ {
+  "handle": "somepineapple/steam-review-insights",
+  "title": "Steam Reviews Analyzer: Player Insights",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-analysed",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-analysed",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game-analysed": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game analysed"
+   }
+  },
+  "desc": "Find out why people play a game, what they praise and what they complain about, straight from its Steam reviews, with a rough share for each. Compare several games to see what they all get right and what none of them do yet. Made for game developers and marketers."
+ },
+ {
+  "handle": "steadydata/steam-app-details",
+  "title": "Steam Game Details Scraper: price, reviews score, genres, bulk",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-detailed",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-detailed",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "app-detailed": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0013,
+     "PLATINUM": 0.0013,
+     "DIAMOND": 0.0013
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "App detailed"
+   }
+  },
+  "desc": "Details of Steam games and apps by id or URL, up to 500 per run: name, type, price and discount per country, release date, developers, publishers, genres, platforms, Metacritic score, review score with positive and negative counts, DLC count and description, from Steam's store API. Pay per app."
+ },
+ {
+  "handle": "straightforward_hydra/steam-game-stats",
+  "title": "Steam Game Stats",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "game": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   }
+  },
+  "desc": "Owners, ratings, playtime, price and live concurrent players for any Steam game, by app ID, name or top-games list. Official SteamSpy + Steam APIs, no key needed."
+ },
+ {
+  "handle": "straightforward_hydra/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Review"
+   }
+  },
+  "desc": "Scrape reviews for any Steam game: recommendation (thumbs up/down), text, playtime, helpfulness, author and dates, by app ID or game name. Official Steam API, no key needed."
+ },
+ {
+  "handle": "sysco32/steam-scraper",
+  "title": "Steam Scraper: Games, Prices, Top Sellers & Reviews",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-result",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-result,review-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game-result": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Game result"
+   },
+   "review-result": {
+    "tiers": {
+     "FREE": 0.0003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Review result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape the Steam store: top sellers, new releases, specials and upcoming charts, keyword search, and full game details (price, discount, genres, developers, platforms, Metacritic, review score). Optional user reviews with playtime and votes. No login."
+ },
+ {
+  "handle": "technicaldost/steam-scraper-games-prices-reviews",
+  "title": "Steam Scraper \u2014 Games, Prices, Discounts & Reviews",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "game": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0003
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Review"
+   }
+  },
+  "desc": "Scrape Steam games and user reviews without an API key: prices, discounts, tags, genres, review scores, developers, release dates, plus full review text, playtime and votes. Search, top sellers, specials, or app URLs."
+ },
+ {
+  "handle": "thriftykiwi/steam-deals-scraper",
+  "title": "Steam Deals Scraper \u2014 Game Deals, Prices & Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "push-data",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): push-data",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "push-data": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result item"
+   }
+  },
+  "desc": "Scrape Steam Store game deals, pricing, and specials. Get featured sales, top sellers, new releases or search for specific games. No Steam API key required \u2014 uses public store API."
+ },
+ {
+  "handle": "unfenced-group/steam-store-scraper",
+  "title": "Steam Store Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00099,
+   "BRONZE": 0.00099,
+   "SILVER": 0.00089,
+   "GOLD": 0.00079,
+   "PLATINUM": 0.00069,
+   "DIAMOND": 0.00069
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-07T06:46:13.468Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00099,
+     "BRONZE": 0.00099,
+     "SILVER": 0.00089,
+     "GOLD": 0.00079,
+     "PLATINUM": 0.00069,
+     "DIAMOND": 0.00069
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game"
+   }
+  },
+  "desc": "Scrape Steam games: metadata, multi-country prices, reviews and more."
+ },
+ {
+  "handle": "v0iddo/steam-game-reviews",
+  "title": "Steam Game Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Dataset item"
+   }
+  },
+  "desc": "Scrape Steam player reviews by App ID. Returns review text, recommendation, playtime, helpful votes, language, purchase type and timestamps for sentiment analysis and competitor research on PC game titles."
+ },
+ {
+  "handle": "vdb997/steam-review-change-watch",
+  "title": "Steam Review Scraper - Edits, Flips & Replies",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-language-checked",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-language-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "game-language-checked": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Game-language check"
+   }
+  },
+  "desc": "Monitor Steam player feedback with the current GetAppReviews API. Detect new reviews, recommendation flips, edited text and developer replies. Export playtime and review context; persistent history and flat pricing per game-language check."
+ },
+ {
+  "handle": "wearefluent/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "review-scraped": {
+    "tiers": {
+     "FREE": 0.0003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Steam review scraped"
+   }
+  },
+  "desc": "Scrape Steam game reviews as JSON: review text, playtime, votes, language, and dates for any Steam app ID. Uses Steam's public review endpoint. Pay per review."
+ },
+ {
+  "handle": "xqfech/steam-scraper",
+  "title": "Steam Scraper \u2014 Game Prices, Discounts, Reviews & Deal Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "change-event",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-event,watched-game-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "change-event": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Change event"
+   },
+   "baseline-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Baseline item"
+   },
+   "watched-game-check": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Watched item check"
+   }
+  },
+  "desc": "Scrape the Steam store: specials, top sellers, new releases and specific games with prices, discounts, review scores and tags. Also diffs every run against the last one and emits field-level change events \u2014 new discounts, price drops and review-score movements."
+ },
+ {
+  "handle": "xtracto/steam-store-scraper",
+  "title": "Steam Games, Prices & Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.000887,
+   "SILVER": 0.00078,
+   "GOLD": 0.000667,
+   "PLATINUM": 0.000667,
+   "DIAMOND": 0.000667
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.000887,
+     "SILVER": 0.00078,
+     "GOLD": 0.000667,
+     "PLATINUM": 0.000667,
+     "DIAMOND": 0.000667
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape the Steam store: search 277k+ products, full game metadata with price and discount, and cursor-paged user reviews with playtime. Regional pricing via country code. No key, no login."
+ },
+ {
+  "handle": "zerahdata/steam-reviews-scraper",
+  "title": "Steam Game Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Fetch user reviews for any Steam game from Steam's public official store review API, with filtering, sorting, and date range support."
+ }
+]

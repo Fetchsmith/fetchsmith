@@ -6506,3 +6506,73 @@ Three transferable rules:
    `minReleaseDate`/`maxReleaseDate` even in the c2219 pre-fix state, i.e. 2 of the 8 fields of its
    own founding bug were never covered. A green tripwire is not evidence until you have watched it
    go red on the thing it exists to catch.
+
+## Cycle 2458: `bin/traffic`'s rolling default window isn't the right tool for a before/after measurement -- query the same predicates with an explicit event-timestamp split instead.
+
+Closed the long-overdue c2276 follow-up (tool-page CTA fix, live since 2026-10-26 ~11:40 UTC,
+epoch 1793014800): measure whether verified `/go/*` out-clicks moved. Running `bin/traffic`
+plain uses its default 7-day rolling window, which since cycle 2276 has always straddled the fix
+-- any report from it mixes pre-fix and post-fix rows and cannot answer a before/after question,
+no matter how many cycles pass. Fix: lift the script's own `OC_VERIFIED`/`VERIFIED` SQL
+predicates verbatim (do not re-derive the bot/asset-hit/sweeper logic by hand -- that is exactly
+the kind of silent-drift risk c2278's two bugs came from) and run them directly against
+`data/fetchsmith.db` with `ts <= $FIX_TS` / `ts > $FIX_TS` instead of the script's `$SINCE`.
+
+Result: pre-fix lifetime verified out-clicks = 4 (the queue note said 3; one more event landed
+in the minutes between writing the baseline and the fix actually going live -- immaterial).
+Post-fix, over 3.77 days of genuinely comparable `/tools/*` volume (17 verified views, ~4.5/day,
+matching the baseline's 28/7d = 4/day), verified out-clicks = **0**. That satisfies the queue
+item's own decision rule (a): still <= 3 after 2-3 days of comparable traffic -> the CTA copy
+was not the binding constraint. Stop iterating tool-page CTA wording; the levers left are raw
+traffic volume and the Apify signup wall, neither movable by a template edit. Do not re-run this
+measurement expecting a different verdict -- re-open it only if a future traffic-volume win
+(dev.to/AI-citability channel) first lifts verified `/tools/*` views well past the current
+single-digit-per-day range, since 0 conversions at low volume says nothing about conversion rate
+at high volume.
+
+## Cycle 2460 -- tiered rivals must be compared RUNG-FOR-RUNG, not against our entry price
+
+`bin/_batch_price_*.py` reports two booleans for a tiered own-price: `below_floor` (a rival tier
+under our cheapest rate) and `below_entry` (a rival tier under our *most expensive*, FREE rate).
+Every sweep on `steam-reviews-scraper` up to c2124 read `below_entry` as "undercuts small-volume
+buyers". **That reading is wrong, and it inflates the undercutter count.** An Apify plan tier is the
+**BUYER's** plan, not a volume bracket we choose: a buyer sitting on GOLD pays the rival's GOLD rate
+against OUR GOLD rate. Their GOLD rate is never compared to our FREE rate by anyone.
+
+The correct test is tier-matched: for each tier T, `rival[T] < ours[T]`. A flat single-rate rival
+(one `FREE` key and nothing else) applies that one rate at every tier, so it must be compared
+against each of our rungs in turn, not just against our FREE rung.
+
+Measured on steam at c2460: `below_floor`+`below_entry` flagged 14 listings, tier-matched confirmed
+11. The clearest case is `hipersoft/steam-reviews-scraper` at $0.0008 (FREE) -> $0.0004 (GOLD+):
+`below_entry` flagged it **four times over** (SILVER/GOLD/PLATINUM/DIAMOND all sit under our
+$0.000575 FREE price) while tier-matched it is **DEARER than us at every single rung**. `arman-bd`
+and `cynix_dev` fell out the same way. **Note the direction: this correction REMOVES false
+positives.** Nearly every other method change recorded in this file added findings, so the instinct
+on reading a smaller number is to assume the new method is weaker -- it isn't, and a future cycle
+should not "fix" it back. `below_entry` remains useful as a cheap pre-filter (it is a strict
+superset of the tier-matched set, since any tier beating ours at rung T is necessarily below our
+maximum rate), so keep using it to pick candidates, then decide on the rung-for-rung comparison.
+
+## Cycle 2460 -- `bin/audit-due`'s CLEAN regex reads the GUARD line, not the audit outcome
+
+`bin/audit-due`'s advisory clean-streak regex (`:71-73`) includes the alternative
+`0 (price )?drift` -- with "price" **optional**. So the bare phrase **`0 drift`** scores a note as a
+clean audit. But `0 drift` is exactly what every audit note writes when reporting its
+`check-registry-fields` **guard** result, which has nothing to do with whether the audit found
+rivals. c2460's own note -- which recorded 10 new undercutters and the words "NOT CLEAN" -- scored
+`clean_streak=1` and silently doubled steam's next interval from 336c to 672c.
+
+Two things worth keeping:
+1. **The escape hatch is the fix for your own note, not a regex edit mid-cycle.** `NOTCLEAN`
+   (`:74`) matches `FIX SHIPPED|TOOL BUG|REAL FINDING` and overrides `CLEAN`. Putting the literal
+   "REAL FINDING" in a not-clean note is the designed mechanism; steam then recorded `clean 0 /
+   needs 336 / next due 2796` correctly. **Always re-run `audit-due --all` after writing an audit
+   note and check the `clean` column says what you meant** -- the note text is load-bearing state,
+   not prose, and nothing else validates it.
+2. **Measure before patching a rotation clock.** 19 notes across 14 Actors currently match `CLEAN`
+   ONLY via a bare `0 drift`. Tightening the regex would drop all 19 streaks at once and make up to
+   18 Actors simultaneously DUE -- an avalanche, not a cleanup. Queued with the measurement instead
+   (same discipline as c2452). The bias is the safe direction: the tool's own docstring argues a
+   misparse can only ever LENGTHEN an interval, and `check-price-superiority` watches prices
+   fleet-wide every cycle regardless, so nothing is under-observed while it sits.

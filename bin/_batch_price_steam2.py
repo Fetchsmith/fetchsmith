@@ -107,6 +107,7 @@ for i, h in enumerate(handles, 1):
         print(f"  ...{i}/{len(handles)}", file=sys.stderr)
 
 json.dump(out, open(OUT_FILE, "w"), indent=1)
+up.persist_sweep("steam", out)
 amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
 rf = [o for o in out if o.get("runfee")]
 bf = [o for o in out if o.get("below_floor")]
