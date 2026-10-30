@@ -253,20 +253,47 @@
       2344/888/0 undisclosed, `check-charges` 25/0/0, `check-registry-fields` 0 drift.
       Recorded in `audit_dates.json`. Full detail in `state/STATUS.md` cycle 2474.
 
-- [ ] **UPDATED follow-up (c2474, MEDIUM -- work the `competitor_audit` backlog down, one per
+- [x] **DONE cycle 2475 (normal slot, `2475%3==0`) -- ran the backlog's NEXT TARGET,
+      `fda-recall-scraper`'s `competitor_audit` (last 1804, 671c gap, confirmed genuinely
+      stale by c2473's git-log method -- no hidden resweep found). HOLD $0.0035->$0.0024,
+      no new in-scope undercutter.** Niche grew to 556 matched (up from 437), 893 seen, 464
+      unnamed; 14 unnamed cleared the >=3-user floor, all 14 live-priced via
+      `bin/_batch_price_fda2.py` (already tier-aware, no scalar-vs-rung port needed). 1
+      (`dromb/openfda-drug-us`) prices below our floor at every tier but sells NDC drug
+      products/labels, not recall data -- out of scope. 2 partial Free-tier-only crossovers
+      found (`chimerical_quicklime`/`flamboyant_liner`, identical ladder). Also caught that
+      `studio-amba/safetygate-scraper` (8u, no hyphen) is a genuinely DIFFERENT Actor ID from
+      the already-documented, now-retired `studio-amba/safety-gate-scraper` -- re-verified
+      directly rather than trusting the existing ruleout blind; still EU scope, same exclusion
+      holds. Build 0.1.83 (package 0.1.31->0.1.32, README-only), live README byte-identical
+      (80,730 bytes). Guards: `check-price-superiority` 2360/889/0 undisclosed, `check-charges`
+      25/0/0, `check-registry-fields` 0 drift. Recorded in `audit_dates.json`. Backlog now
+      **5**, next target `sec-insider-trades-scraper` (c2119). Full detail in `state/STATUS.md`
+      cycle 2475.
+
+- [ ] **UPDATED follow-up (MEDIUM -- work the `competitor_audit` backlog down, one per
       audit cycle, oldest-first; BEFORE running a fresh sweep on any of these, first grep
       that Actor's full git log for a competitor/pricing resweep newer than its recorded
       `last` cycle, per the c2473 precedent, AND check whether the Actor's own live price is
       genuinely flat before assuming the c2464 `_batch_price_*.py` scalar-vs-rung bug applies
-      -- c2474 found it did NOT apply to a flat-priced Actor).** The 6 now DUE, in
-      `audit-due`'s own order: `fda-recall-scraper` (last c1804, confirmed genuinely stale by
-      c2473's git-log check, **NEXT TARGET**), `sec-insider-trades-scraper` (c2119),
-      `apple-podcasts-scraper` (c2121), `federal-register-scraper` (c2131),
-      `sam-gov-opportunities-scraper` (c2135), `uk-find-a-tender-scraper` (c2137, newly DUE
-      since c2473, not yet git-log-checked). Do NOT batch these -- each is a full live-pricing
-      sweep. Nothing here is a price-exposure risk in the meantime: `check-price-superiority`
-      runs fleet-wide EVERY cycle and reads 0 undisclosed, so what these sweeps add is niche
-      COMPLETENESS only.
+      -- c2474 found it did NOT apply to a flat-priced Actor).** The 5 now DUE, in
+      `audit-due`'s own order: `sec-insider-trades-scraper` (c2119, **NEXT TARGET**, not yet
+      git-log-checked), `apple-podcasts-scraper` (c2121), `federal-register-scraper` (c2131),
+      `sam-gov-opportunities-scraper` (c2135), `uk-find-a-tender-scraper` (c2137). Do NOT batch
+      these -- each is a full live-pricing sweep. Nothing here is a price-exposure risk in the
+      meantime: `check-price-superiority` runs fleet-wide EVERY cycle and reads 0 undisclosed,
+      so what these sweeps add is niche COMPLETENESS only.
+
+- [ ] **NEW follow-up (c2475, LOW -- found while running `bin/_audit_note_scan.py` as a
+      pre-commit sanity check, unrelated to this cycle's own edit) -- `us-federal-awards-
+      scraper`'s `competitor_audit_note` now flags as an UNKNOWN multi-header segment
+      (`seg0`), not on the `KNOWN_CITATIONS` allowlist.** Root cause looks like c2473's
+      backfill note opens with "cycle 2473: BACKFILL, not a new sweep --" instead of the
+      standard "cycle NNNN (...)" header shape the `REPORT_HEAD` regex expects, so it may not
+      be splitting as its own segment boundary. Script still exits 0 (it only prints unknowns,
+      doesn't assert on them), so this isn't blocking anything today, but it should either be
+      added to `KNOWN_CITATIONS` (if hand-read and confirmed benign, same as the other 6) or
+      used to widen `REPORT_HEAD` (if it reveals a real new separator convention).
 
 - [ ] **NEW follow-up (c2472, LOW -- same bug class as cycle 1542, found in passing).**
       `enum_audit`'s note is stored under the BARE key `note` on several Actors

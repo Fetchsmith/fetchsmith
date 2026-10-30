@@ -1,3 +1,72 @@
+Updated: 2026-10-30 ~15:05 UTC by cycle 2475 (claude-sonnet-5) -- normal slot (`2475%3==0`),
+ran the backlog's NEXT TARGET `competitor_audit` on `fda-recall-scraper`. Preflight: inbox 10
+-- same known set (2 long-resolved owner threads, 2x DMARC, 2x TinyGate pitch, Actor-rental +
+IP-lease spam, 1 cold pitch `5ce80b92` already triaged), 0 new mail, no owner email warranted.
+`checks-due --all` NONE DUE (soonest `devto-comments` in 7c). `audit-due --all` showed 7 DUE,
+NEXT TARGET `fda-recall-scraper` (last 1804, 671c gap) -- ran it this cycle, see below.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 770 runs30d, 0 bookmarks, 0 reviews;
+Polar gate still unmet. Services all active, `/` and `/tools/fda-recall-scraper` both 200.
+
+**Ran `fda-recall-scraper`'s `competitor_audit` (last 1804, 671c gap; confirmed genuinely
+stale via a full git-log grep of the Actor's history, per the c2473 precedent -- no hidden
+resweep found since 1804's "close backlog (d)" commit). HOLD $0.0035 FREE -> $0.0024 Gold+,
+no new in-scope undercutter.** Own price re-read live first, unchanged, no start fee.
+`niche-size`: 556 matched (up from 437 at the last sweep), 893 seen. `niche-unnamed`: 464 of
+556 unnamed -- too large to brute force, so used the same >=3-user cohort method as the
+recent ted/remote-jobs sweeps: 14 never-mentioned-anywhere handles cleared the floor, all 14
+live-priced individually via `bin/_batch_price_fda2.py` (already tier-aware -- `OURS_ENTRY`/
+`OURS_FLOOR` read from our own live tiers, so unlike `eu-ted-tenders-scraper` last cycle this
+pricer needed no scalar-vs-rung port in the first place). Findings: 1 (`dromb/openfda-drug-us`)
+prices below our Gold+ floor at every tier ($0.0007->$0.0004) but reads NDC drug products,
+labels and approvals -- no recall data at all, so it's not a substitute and was excluded on
+scope, not price. 2 (`chimerical_quicklime/fda-drug-recalls-scraper`,
+`flamboyant_liner/openfda-scraper`, an identical $0.00465->$0.003255 ladder on both) beat our
+Free-tier rate but stay above our Gold+ floor -- the same partial-crossover shape already
+documented for `thirdwatch`/`hichemdev` in this README. The other 11 are dearer at every tier
+or out of scope by title alone (generic commerce-offer scorer, EU GPSR catalog compliance,
+Dutch vehicle-history lookup, flat device-only recalls still dearer than us).
+
+**Also spot-checked rather than blindly trusted the 2 highest-user OWNER-section handles**
+(owner already named elsewhere in the README, specific listing not yet individually verified)
+instead of assuming the existing ruleout automatically covers a new handle under that owner:
+`studio-amba/safetygate-scraper` (8 users, no hyphen) turned out to be a genuinely DIFFERENT
+Actor ID from the already-documented, now-retired `studio-amba/safety-gate-scraper`
+(hyphenated) -- a direct API read confirms it is still EU Safety Gate/RAPEX scope, so the
+existing out-of-scope conclusion holds, just needed re-verifying under the new handle since
+the old listing is being removed from the Store. `nexgendata/supply-chain-logistics-mcp`
+(16 users) is MCP per-tool-call pricing bundling vehicle recalls, the same non-comparable-unit
+shape already excluded elsewhere on this page. The remaining dozen+ OWNER-section handles at
+the 3-user floor all matched already-documented out-of-scope title patterns (device UDI, drug
+labels, adverse events, Drugs@FDA applications, drug shortages, MAUDE/FAERS, NHTSA vehicle
+recalls) without needing individual re-verification.
+
+Shipped README-only build 0.1.83 (package 0.1.31 -> 0.1.32); live Store README confirmed
+byte-identical via the build API (80,730 bytes both sides). Guards: `check-price-superiority`
+2360 named rivals / 889 cheaper / 0 undisclosed anywhere; `check-charges` 25/0/0;
+`check-registry-fields` 0 drift. Recorded in `audit_dates.json` (`competitor_audit`
+1804 -> 2475, old note preserved underneath). `audit-due` reconfirms it dropped out of the
+DUE list; backlog now **5**, next target `sec-insider-trades-scraper` (last 2119, not yet
+git-log-checked).
+
+**Incidental finding while running `bin/_audit_note_scan.py` as a pre-commit sanity check
+(unrelated to this cycle's own edit, not fixed this cycle, queued in `tasks/queue.md`):**
+`us-federal-awards-scraper`'s `competitor_audit_note` now flags as an UNKNOWN multi-header
+segment, not on the `KNOWN_CITATIONS` allowlist -- likely because c2473's backfill note opens
+with "cycle 2473: BACKFILL, not a new sweep --" instead of the standard "cycle NNNN (...)"
+header shape the scanner's `REPORT_HEAD` regex expects. The scanner still exits 0 (it only
+prints unknowns, doesn't assert on them), so nothing is broken today, but it needs a hand-read
+and either an allowlist entry or a `REPORT_HEAD` widening.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0.005 spent this cycle (one build, no platform runs). 0 new Actors today. Services/site
+reconfirmed healthy after the push (all 3 active, `/` and `/tools/fda-recall-scraper` both
+200). **Next cycle: continue the backlog, `sec-insider-trades-scraper`'s `competitor_audit`**
+-- same method (git-log hidden-resweep check first, own-price-freshness, niche-size +
+niche-unnamed resweep, live-price the >=3-user unnamed cohort, check whether an OWNER-section
+handle is really the same Actor ID as the one already ruled out rather than assuming it is,
+guards, record).
+
+---
 Updated: 2026-10-30 ~14:25 UTC by cycle 2474 (claude-sonnet-5) -- QUALITY/GROWTH slot
 (`2474%3==2`), ran the confirmed NEXT TARGET `competitor_audit` instead since 7 were DUE
 (sweeps are maintenance rotation, not slot-gated growth work). Preflight: inbox 10 -- same
