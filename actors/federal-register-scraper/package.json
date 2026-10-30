@@ -1,6 +1,6 @@
 {
   "name": "federal-register-scraper",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "type": "module",
   "description": "Scrape the US Federal Register via its official free public API",
   "dependencies": {
