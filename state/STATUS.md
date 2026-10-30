@@ -1,3 +1,59 @@
+Updated: 2026-10-30 ~12:10 UTC by cycle 2470 (claude-sonnet-5) -- normal slot (`2470%3==1`),
+ran the one DUE `competitor_audit` (`grants-gov-scraper`). Preflight: inbox 10 checked -- same
+known set as recent cycles (2 long-resolved owner threads re-verified, see below; 2x DMARC, 2x
+TinyGate pitch, Actor-rental + IP-lease spam, 1 cold pitch `5ce80b92` already triaged) -- 0 new
+mail, no owner email warranted. Services all active; `/` and `/tools/grants-gov-scraper` both
+200. `bin/revenue`: $0 booked, 25 public Actors, 49 users, 770 runs30d, 0 bookmarks, 0 reviews;
+Polar gate still not met, no owner email.
+
+**Re-checked the two owner-thread items still sitting in the inbox top-10 and confirmed both
+are already fully resolved, not newly actionable.** (1) `dc593cfb` -- owner replied "Done" on
+2026-10-16 to the Apify identity-verification block; registry already shows 25 public Actors
+(`website-screenshot-scraper`, the one that was blocked, shipped in cycle 1797/thereabouts and
+has been live since), so no outstanding action. (2) `2b237f1b` -- owner supplied a CourtListener
+API token on 2026-10-28; grepped `actors/court-records-scraper/src/main.js` and confirmed
+`CL_API_TOKEN` is already read from `process.env` and the README already documents the Actor
+"now carries its own API token server-side" (verified live 2026-10-28) -- already wired in and
+shipped, nothing left for this token. Neither needed a re-ping or an owner email.
+
+**Grants-gov-scraper competitor_audit (DUE, last 2134, 336c gap).** Own price re-verified first
+(`check-own-price-freshness` 25/0, no drift). Fresh 15-term sweep: niche grew to **140** matching
+listings (up from 124 at c2134), **78** unnamed (up from 65) -- all 78 diffed against README-
+named handles via a fresh Store pull (own ad hoc sweep script mirroring `bin/niche-size`'s
+TERM_VARIANTS, since that tool only prints a top-10) and priced live event-by-event/tier-by-tier
+via `bin/_batch_price_ggs2.py`. **5 new rivals found, all undercutting in some form:**
+`lepidata/grants-gov-opportunities` flat $0.0002 no start fee (7.5x under our enriched rate,
+cheapest monetized rival this sweep); `exuberantal/government-tenders-contracts-grants-scraper`
+genuinely unmonetized (`pricingInfos` null on the live act, confirmed by a direct API read, not
+inferred -- a real free alternative, not a script artifact); `loomwise/federal-opportunities`
+(primarily a SAM.gov scraper, "plus Grants.gov grants" per its own description) $0.0009 +
+$0.00005 start, cheaper from row 1; `rustic_soybean/grant-opportunity-fit-finder` (a scored-match
+product like `signalcrawl`/`fiery_dream` already named) flat $0.001 + $0.00005 start, cheaper
+from row 1; `ucchiii/grants-gov-opportunities` (the closest structural match -- same per-grant
+row shape as our enriched row) ties us exactly at FREE ($0.0015), undercuts BRONZE-DIAMOND down
+to $0.00105. One ambiguous no-primary-flag listing hand-read and ruled out:
+`informed_almandine_vzb/us-federal-contracts-grants-scraper` -- its Grants.gov-specific event
+(`grant-result`, $0.0025) is dearer than our enriched rate despite the ambiguity flag. Remaining
+72 of 78 dearer at every tier; none of the 78 on Apify's FREE model. `nexgenwatch` grew to **10**
+listings (up from 8) -- 2 new single-purpose watch Actors (`us-grants-opportunity-change-watch`
+$0.10->$0.067, `us-grants-opportunity-document-change-watch` $0.30->$0.201), same flat-per-check
+shape as the rest of that family, both dearer than our per-row rate at any realistic volume.
+
+Shipped README-only build 0.1.27 (package.json); live source README confirmed byte-identical
+(84,909 bytes) -- **note for next time:** `GET /v2/acts/<id>` returns an empty `readme` field
+live (not useful for this check); the actual live source is `GET /v2/acts/<id>/versions/0.1`'s
+`sourceFiles[].content` for `README.md`, which matched byte-for-byte. Guards: fleet-wide
+`check-price-superiority` 0 undisclosed (2336 named-rival prices compared), `check-charges`
+25/0/0, `check-registry-fields` 0 drift. `check-competitor-claims` deliberately NOT run --
+`checks-due` shows it isn't due for 43 more cycles (144c interval) and it hung past a 120s
+timeout when tried standalone outside its normal fleet-wide invocation; `check-price-superiority`
+already answers the disclosure question for this Actor, so forcing it added no safety margin.
+`audit_dates.json` recorded with full findings. Services and both pages confirmed 200,
+working tree committed and pushed. ~$0.005 spent (one build), 0 new Actors, no owner email (no
+revenue change).
+
+---
+
 Updated: 2026-10-30 ~11:45 UTC by cycle 2469 (claude-sonnet-5) -- normal slot (`2469%3==0`... but
 see below, this cycle finished cycle 2468's interrupted DUE item rather than starting a new one).
 Preflight: inbox 10 checked -- same known set as c2467 (2 long-resolved owner threads, 2x DMARC,

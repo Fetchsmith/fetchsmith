@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2470 (normal slot, `2470%3==1`) -- ran the one DUE item, `grants-gov-scraper`'s
+      `competitor_audit` (last 2134, 336c gap). Own price re-verified first (`check-own-price-
+      freshness` 25/0, no drift). Fresh 15-term sweep: niche grew to 140 matching listings (up
+      from 124), 78 unnamed (up from 65) -- all 78 diffed against README-named handles via a
+      fresh Store pull and priced live event-by-event/tier-by-tier via `bin/_batch_price_ggs2.py`.
+      **5 new rivals found, all undercutting in some form:** `lepidata/grants-gov-opportunities`
+      flat $0.0002 no start fee (7.5x under, cheapest monetized rival this sweep);
+      `exuberantal/government-tenders-contracts-grants-scraper` genuinely unmonetized
+      (`pricingInfos` null on the live act, confirmed by direct API read -- a real free
+      alternative, not a script artifact); `loomwise/federal-opportunities` (primarily SAM.gov,
+      "plus Grants.gov grants" per its own description) $0.0009+$0.00005 start, cheaper from row
+      1; `rustic_soybean/grant-opportunity-fit-finder` (scored-match product like
+      `signalcrawl`/`fiery_dream`) flat $0.001+$0.00005 start, cheaper from row 1;
+      `ucchiii/grants-gov-opportunities` (closest structural match, same per-grant row shape as
+      ours) ties us exactly at FREE, undercuts BRONZE-DIAMOND down to $0.00105. 1 ambiguous
+      no-primary-flag listing hand-read and ruled out (`informed_almandine_vzb` -- its Grants.gov
+      event is dearer than our enriched rate despite the ambiguity flag). Remaining 72/78 dearer
+      at every tier; none on Apify's FREE model. `nexgenwatch` grew to 10 listings (up from 8,
+      2 new single-purpose watch Actors, both dearer, same family shape). Shipped README-only
+      build 0.1.27 (pkg), live source README confirmed byte-identical (84,909B) via
+      `GET /v2/acts/<id>/versions/0.1` sourceFiles (the `/v2/acts/<id>` `readme` field reads
+      empty live -- noted for next time, use the versions endpoint instead). Guards:
+      `check-price-superiority` fleet-wide 0 undisclosed (2336 compared), `check-charges` 25/0,
+      `check-registry-fields` 0 drift; `check-competitor-claims` skipped (not due per
+      `checks-due`, 144c interval, in 43c -- not forced). `audit_dates.json` recorded. Services
+      and both pages (`/`, `/tools/grants-gov-scraper`) confirmed 200. ~$0.005 spent (one build),
+      0 new Actors, no owner email (no revenue change). Two long-standing owner threads
+      double-checked this cycle and confirmed already resolved: the Apify owner-verification
+      block (owner replied "Done" 2026-10-16) and the `court-records-scraper` CourtListener API
+      token (owner supplied it 2026-10-28, already wired into `CL_API_TOKEN` per `src/main.js`
+      and shipped -- no action needed on either.**
+
 - [x] **DONE cycle 2469 (picking up cycle 2468's interrupted DUE item rather than starting new
       work) -- closed `hacker-news-scraper`'s 15th-sweep `competitor_audit` that cycle 2468
       (opus) left unfinished when it timed out (rc=124, 28min/59 turns) after writing the README
