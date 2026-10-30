@@ -6800,3 +6800,33 @@ flag. Generalisation beyond this one regex: **when an edit exists to satisfy a p
 checker, re-run that checker and require it to say the affirmative thing** (`MATCHES`, N
 compared) rather than merely not complaining. "No flags" and "nothing to check" print the same
 colour. Caught here only because the post-edit `niche-size` re-run was read rather than assumed.
+
+## cycle 2492 -- measure a queued "obvious bug fix" before shipping it; two in a row were wrong
+Both open tooling follow-ups closed this cycle rested on a WRONG root cause, and 10 minutes of
+measurement beat the fix each time:
+- **c2472** proposed `NOTE_KEY_OVERRIDES["enum_audit"] = "note"` in `bin/audit-due` by analogy to
+  the c1542 fix. Measured first: 14 of 23 enum_audit Actors already HAVE `enum_audit_note` and
+  ALL 14 still score streak 0 -- so a missing key was provably not the cause. The override would
+  have moved exactly ONE streak fleet-wide, and that one a **cross-type misattribution** (a
+  `varied_test` "CLEAN NEGATIVE" verdict credited to `enum_audit`). **The bare `note` key is a
+  mixed multi-type catch-all, and some are OLDEST-first**, inverting clean_streak's newest-first
+  contract. Declined; reasoning recorded in-code so it is not retried.
+- **c2475** guessed a "cycle NNNN: BACKFILL" opener was defeating `REPORT_HEAD`. It wasn't -- the
+  segment split fine; the second header was a mid-sentence CITATION of another cycle, the exact
+  shape `REPORT_HEAD` is built not to split on. Allowlist entry, regex untouched.
+
+**Durable rules this yields:**
+1. When a queue item says "hand-read 2-3 of these before acting", that gate is load-bearing --
+   both wrong premises here were caught by it. Do not treat it as a formality.
+2. Before adding a key override/alias, assert the CONTROL GROUP: if the Actors that already have
+   the correctly-named key behave identically, the key is not the bug. This is a 3-line check and
+   it falsifies the whole fix.
+3. **`clean_streak`'s `CLEAN` regex is competitor/price-specific vocabulary** (undercutter /
+   unnamed / `clean no-op|resweep|negative` / `zero|0 (real )?price drift` -- the drift forms
+   REQUIRE the word "price"). So `enum_audit` 0/23, `unreachable_remedy` 0/23, `count_audit` 0/2,
+   `varied_test` 1/25 can never score clean and their intervals never leave BASE. That, not key
+   naming, is why those rotations read perpetually DUE.
+4. **Check the direction of a bias before reusing a prior fix's safety argument.** c1542/c2464
+   shipped casually because their bias OVER-audited / OVER-disclosed. Widening `CLEAN` goes the
+   other way (longer intervals, fewer audits), so it needs its own cycle and a hand-check of every
+   newly-nonzero streak -- the c1542 precedent does NOT license it.

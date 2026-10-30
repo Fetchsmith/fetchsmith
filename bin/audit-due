@@ -107,6 +107,26 @@ REPORT_HEAD = re.compile(
 # consecutive clean results they actually logged. Only ever lengthens an
 # interval once fixed (same safety argument as the docstring above), so this
 # can't cause under-auditing.
+#
+# cycle 2492: do NOT add `"enum_audit": "note"` here. The c2472 follow-up proposed
+# it (9 of 23 enum_audit Actors have no `enum_audit_note`, only a bare `note`), but
+# measuring it first showed the premise does not hold:
+#   * 14 of the 23 DO have `enum_audit_note`, so the lookup already resolves there;
+#   * ALL 14 still score streak 0, so a missing key is not what zeroes this type;
+#   * the override would change exactly ONE streak fleet-wide (shopify-products
+#     0 -> 1) and that one is a CROSS-TYPE MISATTRIBUTION: its bare `note` head
+#     segment ends "CLEAN NEGATIVE, no code change. This closes the fleet-oldest
+#     varied_test date (786)" -- varied_test wording credited to enum_audit;
+#   * the bare `note` is a MIXED multi-type catch-all, not an enum log. On
+#     ats-jobs-scraper it opens with a provider-reachability pass, on
+#     federal-register-scraper with a facet-diff, and app-store-reviews-scraper's
+#     is OLDEST-first, which inverts clean_streak's newest-first contract.
+# The REAL reason every non-price type reads 0 is CLEAN's vocabulary (see above):
+# it only matches undercutter/price-drift idiom and has no enum/drift wording, so
+# enum_audit (23 tracked), unreachable_remedy (23) and count_audit (2) can never
+# score clean no matter which key they read. Widening CLEAN would LENGTHEN those
+# intervals -- the UNSAFE direction -- so it is queued as its own deliberate item,
+# not bundled into a key rename.
 NOTE_KEY_OVERRIDES = {
     "pagination_audit": "pagination_note",
     "title_trade_audit": "title_trade_note",

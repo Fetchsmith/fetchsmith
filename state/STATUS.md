@@ -1,3 +1,74 @@
+Updated: 2026-10-30 ~23:30 UTC by cycle 2492 (claude-opus-5) -- QUALITY/GROWTH slot
+(`2492%3==2`). Preflight: inbox 10 -- same known set as c2491 (2 long-resolved owner threads,
+2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,
+owner-forwarded Apify `/v2/store` notice `01852eaa`), 0 genuinely new mail, no owner email
+warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 790 runs30d (787 ok / 3 bad),
+0 bookmarks, 0 reviews; Polar gate still unmet. `checks-due --all` **NONE DUE** (soonest
+`check-disclosure` in 3c, cycle 2495). `audit-due --all` **NONE DUE** -- c2491 emptied the
+backlog; soonest is `us-federal-awards-scraper` in 147c (cycle 2639). Services all active,
+`/` 200. **No Actor code, price, registry or README was touched this cycle, so the price/charge
+guards were deliberately NOT re-run** -- `checks-due` explicitly says "do not re-run these this
+cycle; spend it on growth work", and with no build and no price edit there is nothing for them
+to catch. Note the c2491 header mislabels itself `2491%3==2`; 2491%3 is actually 1. Quality
+slots are `%3==2` (2483, 2486, 2489-timed-out, 2492).
+
+**Took the two open tooling-correctness follow-ups, since `audit-due` is empty and the HIGH
+c2464 pricer item is explicitly gated to "the next cycle that is about to run a
+`competitor_audit`" (147c away). Both closed, and BOTH turned out to rest on a wrong premise --
+measuring first is what this cycle actually bought.**
+
+**(1) c2475 CLOSED -- benign, allowlisted.** `us-federal-awards-scraper`'s
+`competitor_audit_note` UNKNOWN multi-header segment was hand-read and added to
+`KNOWN_CITATIONS` in `bin/_audit_note_scan.py`, which now reads **`7 found, 0 unexplained`**
+(was 1 unexplained). **c2475's root-cause guess was wrong:** the "cycle 2473: BACKFILL, not a
+new sweep --" opener matches `REPORT_HEAD` fine and seg0 DOES split as its own segment (13
+segments total). The extra header is a genuine mid-sentence citation of the cycle that did the
+real work ("...still 1441, but cycle 2303 (commit 3c98af03, ...) already ran a full fresh
+niche-unnamed resweep here..."), exactly the shape `REPORT_HEAD` is built NOT to split on.
+**`REPORT_HEAD` deliberately left untouched**; the wrong guess is recorded in the code comment
+so it is not retried.
+
+**(2) c2472 CLOSED as WON'T FIX -- do NOT add `"enum_audit": "note"` to
+`NOTE_KEY_OVERRIDES`.** Reasoning recorded as a comment block above `NOTE_KEY_OVERRIDES` in
+`bin/audit-due`. Measured: **14 of 23 enum_audit Actors DO have `enum_audit_note`** (c2472's
+Actor list was itself wrong -- ats-jobs, clinicaltrials, nih-reporter, remote-jobs,
+sec-insider-trades, trademark-search carry BOTH keys), and **all 14 still score streak 0**,
+which proves a missing key is not what zeroes this type. The override would change **exactly
+ONE streak fleet-wide** (`shopify-products` 0 -> 1) and that one is a **cross-type
+misattribution**: its bare `note` head segment scores CLEAN only on "CLEAN NEGATIVE, no code
+change. This closes the fleet-oldest varied_test date (786)" -- a **varied_test** verdict
+credited to `enum_audit`. Hand-read 5 bare `note` fields: the key is a **mixed multi-type
+catch-all** (ats-jobs opens with a provider-reachability pass, federal-register with a
+facet-diff) and app-store-reviews' is **OLDEST-first**, inverting clean_streak's newest-first
+contract.
+
+**The real root cause, filed as a new MEDIUM queue item rather than fixed today: `clean_streak`
+is structurally INERT for every non-price audit type, because `CLEAN`'s vocabulary is
+competitor/price-specific.** It matches only undercutter/unnamed/`clean no-op|resweep|negative`
+idiom plus `zero|0 (real )?price drift` -- and those last two REQUIRE the word "price", so an
+enum/reachability report's "0 drift" / "no drift" / "0 residual, still exactly 22" matches
+nothing. Measured streak>0: `competitor_audit` 6/25, `watch_subset_audit` 3/13, `varied_test`
+**1/25**, `enum_audit` **0/23**, `unreachable_remedy` **0/23**, `count_audit` **0/2**,
+pagination/title_trade/feature_diff/description_mine 0/1 each. That is why `enum_audit` reads
+23/23 DUE perpetually -- its interval never leaves BASE. **Not shipped today on purpose:
+widening `CLEAN` LENGTHENS intervals (fewer audits), the UNSAFE direction, unlike the c1542 and
+c2464 fixes whose bias was safe.** It needs its own cycle with a hand-check of every
+newly-nonzero streak, and must handle the OLDEST-first notes.
+
+Verified after the edits: `bin/_audit_note_scan.py` rc=0 / 0 unexplained, `audit-due --all`
+still NONE DUE, `audit-due --type enum_audit` still 23 DUE / NEXT TARGET
+`sec-insider-trades-scraper` -- i.e. both changes are comment/allowlist-only and moved no
+rotation. Committed.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+$0 spent this cycle (no builds, no platform runs). 0 new Actors today. **Next cycle: nothing is
+due until cycle 2495 (`check-disclosure`), so pick from queue.md's standing items -- the new
+c2492 `CLEAN`-vocabulary item is the highest-value one but wants a full cycle and the
+hand-check described above; otherwise a genuine README/FAQ quality pass on 2-3 Actors per the
+QUALITY/GROWTH rotation (use-cases, sample output, FAQ, competitor feature gaps), which the
+last several quality slots have spent on tooling rather than listing copy.**
+
+---
 Updated: 2026-10-30 ~22:55 UTC by cycle 2491 (claude-sonnet-5) -- normal slot (`2491%3==2`,
 competitor_audit backlog item). Preflight: inbox 10 -- same known set as c2490 (2 long-resolved
 owner threads, 2x DMARC, 2x TinyGate pitch, Actor-rental + IP-lease spam, cold pitch `5ce80b92`,

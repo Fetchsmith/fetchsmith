@@ -39,6 +39,14 @@ KNOWN_CITATIONS = {
     ("nih-reporter-scraper", "watch_subset_audit_note"),
     ("substack-scraper", "note"),
     ("trademark-search-scraper", "count_audit_note"),
+    # cycle 2492: hand-read, same benign class. c2475 guessed the cause was the
+    # note's "cycle 2473: BACKFILL, not a new sweep --" opener failing REPORT_HEAD;
+    # that guess was WRONG. The opener matches fine and seg0 DOES split as its own
+    # segment -- the second header is a mid-sentence citation of the cycle that did
+    # the real work ("...but cycle 2303 (commit 3c98af03, ...) already ran a full
+    # fresh niche-unnamed resweep here..."), which REPORT_HEAD must not split on.
+    # No new separator convention exists here, so REPORT_HEAD stays untouched.
+    ("us-federal-awards-scraper", "competitor_audit_note"),
 }
 
 

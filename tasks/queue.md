@@ -173,18 +173,70 @@
       `check-price-superiority` runs fleet-wide every cycle and reads 0 undisclosed, so what
       these sweeps add is niche COMPLETENESS, not safety.
 
-- [ ] **NEW follow-up (c2475, LOW -- found while running `bin/_audit_note_scan.py` as a
-      pre-commit sanity check, unrelated to this cycle's own edit) -- `us-federal-awards-
-      scraper`'s `competitor_audit_note` now flags as an UNKNOWN multi-header segment
-      (`seg0`), not on the `KNOWN_CITATIONS` allowlist.** Root cause looks like c2473's
-      backfill note opens with "cycle 2473: BACKFILL, not a new sweep --" instead of the
-      standard "cycle NNNN (...)" header shape the `REPORT_HEAD` regex expects, so it may not
-      be splitting as its own segment boundary. Script still exits 0 (it only prints unknowns,
-      doesn't assert on them), so this isn't blocking anything today, but it should either be
-      added to `KNOWN_CITATIONS` (if hand-read and confirmed benign, same as the other 6) or
-      used to widen `REPORT_HEAD` (if it reveals a real new separator convention).
+- [x] **DONE/CLOSED (c2492) -- `us-federal-awards-scraper`'s `competitor_audit_note` UNKNOWN
+      multi-header segment (c2475) was hand-read, confirmed BENIGN, and added to
+      `KNOWN_CITATIONS`. `bin/_audit_note_scan.py` now reads `7 found, 0 unexplained`.**
+      **c2475's root-cause guess was WRONG and the note in `bin/_audit_note_scan.py` says so
+      explicitly:** the "cycle 2473: BACKFILL, not a new sweep --" opener matches `REPORT_HEAD`
+      fine, and seg0 DOES split as its own segment (the note splits into 13 segments total).
+      The second header inside seg0 is a genuine mid-sentence CITATION of the cycle that did
+      the real work -- "...audit-due's `competitor_audit.last` for this Actor was still 1441,
+      but cycle 2303 (commit 3c98af03, "close README-competitor lever fleet-wide") already ran
+      a full fresh niche-unnamed resweep here..." -- exactly the shape `REPORT_HEAD` is
+      deliberately built NOT to split on (notes cite other cycles mid-sentence constantly).
+      So this is the same class as the other 6 allowlisted pairs, NOT a new separator
+      convention, and **`REPORT_HEAD` was deliberately left untouched.**
 
-- [ ] **NEW follow-up (c2472, LOW -- same bug class as cycle 1542, found in passing).**
+- [x] **WON'T FIX / CLOSED (c2492) -- do NOT add `"enum_audit": "note"` to
+      `NOTE_KEY_OVERRIDES`. c2472's premise was measured before acting and does not hold.**
+      The reasoning is now recorded as a comment block above `NOTE_KEY_OVERRIDES` in
+      `bin/audit-due` so no future cycle re-derives it. Measured: **14 of the 23 enum_audit
+      Actors DO have an `enum_audit_note`**, so the `f"{typ}_note"` lookup already resolves
+      for them -- and **all 14 still score clean_streak 0**, which proves a missing key is not
+      what zeroes this type. The override would change **exactly ONE streak fleet-wide**
+      (`shopify-products-scraper` 0 -> 1) and that one is a **CROSS-TYPE MISATTRIBUTION**: its
+      bare `note` head segment scores CLEAN only on the words "CLEAN NEGATIVE, no code change.
+      This closes the fleet-oldest varied_test date (786)" -- i.e. a **varied_test** verdict
+      credited to `enum_audit`. Hand-read 5 bare `note` fields (shopify, app-store-reviews,
+      eu-ted, ats-jobs, federal-register) and the key is a **MIXED multi-type catch-all, not an
+      enum log**: ats-jobs opens with a provider-reachability pass, federal-register with a
+      facet-diff, and app-store-reviews' is **OLDEST-first**, which inverts clean_streak's
+      newest-first contract. So the c2472 worry ("the bare `note` key is ambiguous -- it may
+      not be enum's note on every Actor") was correct and is the reason to decline.
+
+- [ ] **NEW follow-up (c2492, MEDIUM -- the real root cause behind c2472, and the one worth a
+      deliberate cycle because it moves in the UNSAFE direction) -- `clean_streak` is
+      structurally INERT for every non-price audit type, because `CLEAN`'s vocabulary in
+      `bin/audit-due` is competitor/price-specific.** `CLEAN` matches only `clean
+      (no-op|resweep|negative)`, `0 unnamed`, `0 new undercutter(s)`, `0 undercutters`,
+      `no undercutter`, `zero|0 (real )?price drift` -- note the last two REQUIRE the word
+      "price". An enum/reachability report's clean idiom ("0 drift", "no drift", "0 residual,
+      still exactly 22", "exact match, single gate, 0 drift") matches NONE of it. Measured
+      streak>0 counts this cycle: `competitor_audit` 6/25, `watch_subset_audit` 3/13,
+      `varied_test` **1/25**, `enum_audit` **0/23**, `unreachable_remedy` **0/23**,
+      `count_audit` **0/2**, `pagination_audit` 0/1, `title_trade_audit` 0/1,
+      `feature_diff_audit` 0/1, `description_mine` 0/1. So the three highest-volume rotations
+      never accrue streak and their intervals sit at BASE forever, which is why `enum_audit`
+      reads 23/23 DUE perpetually. **Why this was NOT done today:** widening `CLEAN` LENGTHENS
+      intervals (fewer audits) -- the under-auditing direction, the opposite of the c1542/c2464
+      "safe direction" argument that let those fixes ship casually. Do it as its own cycle:
+      add drift/residual idiom to `CLEAN`, then re-run `bin/_audit_note_scan.py` (whose check
+      (1) exists precisely to catch a bare `0 drift` scoring CLEAN on its own) and hand-check
+      the newly-nonzero streaks before trusting the new intervals. **Beware the OLDEST-first
+      notes** (app-store-reviews' bare `note`, and audit any other note whose first segment
+      cites the lowest cycle number) -- widening CLEAN there would read a years-old verdict as
+      the current one.
+
+- [x] **CLOSED as WON'T FIX (c2492) -- see the full closure above ("do NOT add
+      `"enum_audit": "note"` to `NOTE_KEY_OVERRIDES`"). Hand-reading the notes, as this item
+      itself required before acting, showed the bare `note` key is a mixed multi-type
+      catch-all and the override would create a cross-type misattribution.** Also note this
+      item's Actor list was itself inaccurate: ats-jobs, clinicaltrials, nih-reporter,
+      remote-jobs, sec-insider-trades and trademark-search are listed as bare-`note` Actors
+      but in fact carry BOTH `note` AND `enum_audit_note`, so the lookup was never missing on
+      them. The genuine bare-`note`-only set is 9 Actors (app-store-reviews, eu-ted,
+      fec-campaign-finance, federal-register, google-play-reviews, shopify-products,
+      steam-reviews, substack, uk-find-a-tender). Original text kept below for the record.
       `enum_audit`'s note is stored under the BARE key `note` on several Actors
       (app-store-reviews, ats-jobs, clinicaltrials, federal-register, google-play-reviews,
       nih-reporter, remote-jobs, sec-insider-trades, substack, trademark-search, uk-find-a-tender)
