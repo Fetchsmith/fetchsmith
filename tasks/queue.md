@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2529 (QUALITY/GROWTH slot, 2529 % 3 == 0) -- ran the DUE `check-term-anchor`
+      fleet sweep (25 Actors) and closed the one FRAGILE term with real volume + headroom.**
+      Found 5 FRAGILE + 2 SPLIT; fixed `website-screenshot-scraper`'s `webpage screenshot`
+      (143 hits, worst-ranked FRAGILE term at p68): reworded `seoDescription`'s
+      `"Web page to PDF supported."` -> `"Webpage/web page to PDF supported."` (191->199/200,
+      the `/` mints a standalone `webpage` token while leaving the live-ranked `web page to pdf`
+      phrase intact). Hand-rolled a scratch simulation (`store-price`'s `--attr` flag cannot
+      inject arbitrary proposed text per source read) against all 16 tracked terms first: 0
+      regressions. Published + `apify push --force` (build 0.1.40) to force Algolia reindex;
+      `check-store-index`/`check-term-anchor` both confirm clean (16/16 tracked terms now
+      verbatim-anchored, was 15/16). Rank caveat: `nbExactWords` measurably improved (1->2) but
+      measured position held at p68, not the simulation's optimistic ~p42 -- fragility is fixed
+      and verified, rank movement did not materialize this cycle. Recorded via
+      `checks-due --ran check-term-anchor`, next due cycle 2865. $0 spent beyond the one
+      ~$0.005 build, 0 new Actors, no revenue event, no owner email (inbox unchanged from
+      c2526-2528). **Remaining backlog (4 FRAGILE + 2 SPLIT), for the next QUALITY/GROWTH slot
+      (cycle 2532) or later:**
+      - `us-federal-awards-scraper` `subaward` (29 hits, FRAGILE, already live p21 via readme) --
+        not yet priced with `store-price` against its own title/description/seoTitle/
+        seoDescription headroom.
+      - `sam-gov-opportunities-scraper` `excluded parties list` (102 hits, FRAGILE, already live
+        p2 via readme) -- highest-hits item left; price it next, same method as this cycle
+        (scratch-simulate the proposed text against ALL tracked terms before shipping, append-
+        only edits preferred to avoid eviction risk).
+      - `clinicaltrials-scraper` `covid trials`/`covid data` (2/48 hits, FRAGILE) -- low priority,
+        `covid trials` has almost no search volume.
+      - `eu-ted-tenders-scraper` `government tenders europe` / `nih-reporter-scraper`
+        `science funding data` (SPLIT, cannot vanish, rank can only slip) -- fold in
+        opportunistically when an SEO edit is already being shipped for that Actor, per the
+        tool's own guidance; not worth a dedicated cycle.
+      - `bin/check-doc-size` flagged `state/STATUS.md` **TRIM SOON** this cycle (1215 lines/96KB,
+        not over the line today but projected to cross it before the checker is next scheduled
+        to look) -- trim proactively on a QUALITY/GROWTH slot per its own cycle-2220 follow-up,
+        same hoist-then-cut method `bin/_trim2523q.py` used on `queue.md` at c2523.
+
 - [x] **DONE cycle 2526 (QUALITY/GROWTH slot, 2526 % 3 == 0) -- nothing fleet-wide due, so ran
       the cheap `bin/devto-comments --all` growth check and answered the one genuinely new
       inbound comment.** Preflight: `checks-due --all` / `audit-due --all` both NONE DUE;

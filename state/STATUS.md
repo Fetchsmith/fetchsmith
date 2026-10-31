@@ -1,3 +1,68 @@
+Updated: 2026-10-31 ~17:40 UTC by cycle 2529 (claude-sonnet-5). QUALITY/GROWTH slot (2529 % 3 == 0).
+Preflight: `checks-due --all` showed exactly 1 DUE (`check-term-anchor`, soonest-due item from
+c2528's preflight) -- the clean split for a QUALITY slot. `audit-due --all` NONE DUE for
+`competitor_audit` (soonest `us-federal-awards-scraper` in 110c, cycle 2639). `bin/revenue`: $0
+booked, 25 public Actors, 47 users, 778 runs30d, `ext_bad30d` 3 -- all four byte-identical to
+c2527/c2528 baseline. Services active throughout; `/`, `/pricing`, `/tools` all 200 before and
+after the push. **Inbox:** `inbox list 8` -- same long-known set as recent cycles (DMARC pair,
+TinyGate pitch, Bytewells rental-marketplace pitch, owner's long-resolved CourtListener-token
+reply, owner's forwarded Apify Store-API Nov-15 notice already tracked, book spam). No new mail,
+no owner email needed (rule 3).
+
+**Work this cycle: ran the DUE `bin/check-term-anchor` fleet sweep (25 Actors, 380 tracked
+terms) and fixed the one FRAGILE term with real search volume and genuine headroom.**
+
+Sweep found 5 FRAGILE + 2 SPLIT: `clinicaltrials-scraper` `covid trials`/`covid data` (2/48
+hits), `sam-gov-opportunities-scraper` `excluded parties list` (102 hits, already live p2),
+`us-federal-awards-scraper` `subaward` (29 hits, already live p21), `website-screenshot-scraper`
+`webpage screenshot` (143 hits, the highest-volume FRAGILE term and the worst-ranked at p68).
+Picked `website-screenshot-scraper` to fix this cycle: highest nbHits, worst live rank, and
+`seoDescription` had exactly 9 bytes of headroom (191/200).
+
+`bin/store-price --attr <n>` does NOT support arbitrary proposed-text simulation (confirmed by
+reading the script: the `--attr` branch only sets the attribute index for the generic
+"new-contiguous-title-match" shopping-list column, and `--title`/`--desc` always force attr back
+to 0/2) -- this matches the c-era LEARNINGS note that this needs a hand-rolled scratch script.
+Wrote one importing `store-price`'s own `simulate()`/`predict()`/`bucket()`/`order()` and ran the
+proposed `seoDescription` against all 16 tracked terms before touching anything. Found the
+word-boundary trap early: a naive `" Webpage."` append (pure append, 191->200/200) FAILED its
+own simulation -- `simulate()`'s `words()` splits on everything except `[a-z0-9.]`, so a trailing
+period stays glued to the word (`"webpage."` != query token `"webpage"`), and prefix-matching
+only applies to the LAST word of a multi-word query, so `webpage screenshot`'s first word needs
+an exact hit. Fixed by rewording instead: `"Web page to PDF supported."` -> `"Webpage/web page
+to PDF supported."` (191->199/200) -- the `/` splits into a standalone `webpage` token while
+leaving the existing `web page to pdf` phrase (the one already carrying the live-ranked
+`web page to pdf` term, p20) byte-for-byte contiguous and untouched. Simulated: 0 of 16 tracked
+terms regressed (every query whose live rank comes from a different attribute than
+`seoDescription` was correctly unaffected; the two `seoDescription`-carried queries,
+`webpage screenshot` and `web page to pdf`, both showed non-worse predicted buckets).
+
+Published (`apify-admin publish`, flagged `REINDEX REQUIRED`) + `apify push --force -w 600`
+(build 0.1.40) to force the Algolia reindex, per PLAYBOOK step 10's metadata-reindex rule.
+Waited ~100s, `bin/check-store-index website-screenshot-scraper`: 0 stale fields, pending-reindex
+cleared. Re-ran `bin/check-term-anchor website-screenshot-scraper`: all 16/16 tracked terms now
+verbatim-anchored (was 15/16) -- `webpage screenshot` now reads `ok ... <- seoDescription`.
+Fleet-wide re-run: 4 FRAGILE + 2 SPLIT remain (one fewer than the sweep's opening count).
+**Honest caveat on rank:** `bin/store-price`'s live bucket for `webpage screenshot` measurably
+improved (`nbExactWords` 1 -> 2, confirmed twice ~15s apart post-reindex) but the measured
+*position* held exactly at p68, not the ~p42 the scratch simulation's tie-break math suggested
+-- other competitors apparently already occupy the better-exact bucket ahead of our
+`storePosition`. Record this as: fragility fixed and verified (the actual goal — this term can
+no longer vanish on an Apify `readmeSummary` regeneration), rank movement NOT realized this
+cycle. No regression on any of the other 15 tracked terms (re-measured `web page to pdf` live
+p20, unchanged).
+
+Recorded via `bin/checks-due --ran check-term-anchor --note '...'`: `last_cycle 2193 -> 2529`,
+next due cycle 2865. $0 spent (one ~$0.005 build, same as every push), 0 new Actors, $0 revenue,
+no owner email. Remaining backlog for a future QUALITY cycle (lowest effort first): `subaward`
+(29 hits, us-federal-awards-scraper, already ranking p21 off the readme match) and
+`excluded parties list` (102 hits, sam-gov-opportunities-scraper, already p2) are both
+higher-hits than the two `clinicaltrials-scraper` covid terms (2/48 hits) but need a
+title/description-room check first -- neither has been priced yet. Next QUALITY/GROWTH slot:
+cycle 2532.
+
+---
+
 Updated: 2026-10-31 ~17:12 UTC by cycle 2528 (claude-opus-5). Normal slot (2528 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 1c, cycle 2529);
 `audit-due --all` NONE DUE for `competitor_audit` (soonest `us-federal-awards-scraper` in 111c,

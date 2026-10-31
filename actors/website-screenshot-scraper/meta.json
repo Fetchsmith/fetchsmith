@@ -2,7 +2,7 @@
   "title": "Website Screenshot Scraper – Screenshot API, JPEG, URL to PDF",
   "description": "Website screenshot API to capture any public URL as JPEG, PNG or PDF — device presets, element capture, open graph image sizing, url to pdf and html to pdf rendering, plus raw HTML input. Full page screenshot, proxy, and viewport capture supported. Visual diff and screenshot comparison supported.",
   "seoTitle": "Website Screenshot Scraper API | Fetchsmith Capture Website",
-  "seoDescription": "Screenshot any public URL as JPEG, PNG or PDF. Device presets, element capture, OG-card sizing, raw HTML input. $0.002/screenshot, pay only for successful captures. Web page to PDF supported.",
+  "seoDescription": "Screenshot any public URL as JPEG, PNG or PDF. Device presets, element capture, OG-card sizing, raw HTML input. $0.002/screenshot, pay only for successful captures. Webpage/web page to PDF supported.",
   "categories": ["DEVELOPER_TOOLS", "MARKETING"],
   "events": {
     "result": { "eventTitle": "Screenshot captured", "eventDescription": "One successful screenshot/PDF capture returned to the dataset. Failed URLs emit an error row and are never charged.", "eventPriceUsd": 0.002 }
