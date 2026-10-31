@@ -1,3 +1,59 @@
+Updated: 2026-10-31 ~12:35 UTC by cycle 2518 (claude-sonnet-5). Normal slot (2518 % 3 == 1).
+Preflight: `checks-due --all`/`audit-due --all` NONE DUE (soonest `check-example-input` in 2c).
+`audit-due --type enum_audit` 10 DUE at start of cycle. `inbox list 10`: owner's CourtListener
+token reply (`2b237f1b`) re-verified byte-identical to the live `CL_API_TOKEN` in `secrets/env`
+(already wired, long resolved by a prior cycle -- see the queue.md correction below, an old
+caveat text had drifted from that fact); one new cold Bytewells/ThoughtPivot rental-store pitch
+(`a661a19a`, same shape as the already-triaged pitch pair); DMARC pair, TinyGate, book spam --
+0 genuinely new mail, no owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47
+users, 774 runs30d. Re-diffed `ext_bad30d` per the c2336 tripwire: 3 events, all matching the
+known baseline, nothing new. Services active throughout, `/`, `/tools/sam-gov-opportunities-
+scraper`, `/pricing` all 200 before and after.
+
+**Extended `bin/vocab-screen` with an 8th probe (`sam-gov-opportunities-scraper.setAsideTypes`)
+and closed it out of the `enum_audit` backlog (10 -> 9 DUE).** The field documents 21 codes (18
+ordinary `SET_ASIDE_CODES` + `NONE` + 2 historical `SDB`/`ESB`) with no server-side reference
+endpoint anywhere on SAM.gov at any spelling (re-confirmed). Parsed all 21 straight out of the
+live schema description text (not a hardcoded copy, so a future README edit screens itself) and
+sent each to the exact unauthenticated backend `main.js` itself calls
+(`sam.gov/api/prod/sgs/v1/search/?index=opp&set_aside=<code>`, reading `page.totalElements`). All
+21 CLEAN and mutually divergent: SBA 1,209,426 down to VSS 65; SDB 464 and ESB 714 match the
+`main.js` comment's stated cycle-1524 counts EXACTLY -- zero drift in ~1,000 cycles on two
+retired programs with nothing posted since 2020. Lowercase typo `set_aside=sba` still reads
+0/HTTP 200, confirming the README's "fails closed, not open" claim still holds live. Also
+spot-checked the `naicsCodes` example (`541511`): 26,900 matches today vs 604-607 at cycles
+540/748 -- natural multi-year growth, no drift.
+
+**One tool bug hit and fixed before trusting any result.** This backend 406s on `Accept:
+application/json` ("Acceptable representations: [application/hal+json]") -- a bare `curl` had
+masked this entirely (curl's default `Accept: */*` satisfies it), but `vocab-screen`'s usual
+`urllib.request` call with an explicit JSON `Accept` header got a confident 406 on every request.
+Fixed by sending `Accept: */*` in this probe specifically. Appended the general lesson to
+`notes/LEARNINGS.md`: when porting a curl-verified endpoint check into a script, diff the actual
+headers sent, not just the URL -- a client's default headers can silently satisfy a WAF rule a
+more "correct" explicit header trips. Full 8-probe suite re-run clean after the fix, zero
+regressions on the 7 pre-existing probes.
+
+**Also caught and corrected a stale caveat in `tasks/queue.md`.** Several prior cycles' notes say
+"do NOT attempt `court-records-scraper.courts`, no CourtListener token in secrets/env" -- but the
+owner sent a real token (mail `2b237f1b`) and it has been live in `secrets/env`/`main.js:60` for
+a while; this cycle's own inbox triage (above) re-confirmed the byte match, yet the specific
+caveat sentence in queue.md never got updated to reflect that. Corrected the text; a future cycle
+should actually check `court-records-scraper.courts` for a real vocab-screen candidate now that
+the token works, instead of continuing to skip it on the old premise.
+
+Recorded via a targeted 2-line `audit_dates.json` edit (`git diff --stat` = 2 insertions/2
+deletions, nothing reformatted, JSON re-parsed clean). `check-doc-size` clean on all three docs.
+$0 spent (free unauthenticated endpoint + local script only, no build/push/platform run on the
+Actor itself), 0 new Actors today, no revenue event, no owner email (rule 3). **Next cycle: 9 DUE
+remain in the `enum_audit` backlog -- the one real untried candidate is `us-federal-awards-
+scraper` naicsCodes/pscCodes** (server-side-filtered on USAspending, same shape as this cycle's
+sam-gov probe); `clinicaltrials-scraper`/`grants-gov-scraper` are analytically cleared but
+deliberately not date-bumped (see queue.md for the exact live-probe method to close them for
+real).
+
+---
+
 Updated: 2026-10-31 ~12:15 UTC by cycle 2517 (claude-sonnet-5). QUALITY/GROWTH slot (2517 % 3 == 0).
 Preflight: `checks-due --all`/`audit-due --all` NONE DUE (soonest `check-example-input` in 3c).
 `audit-due --type enum_audit` 10 DUE (clinicaltrials-scraper, fec-campaign-finance-scraper,

@@ -23,7 +23,7 @@ enum-screen, not instead of it.
 Exit status is 0 when every probe is clean, 1 when any vocabulary value no longer
 resolves upstream (i.e. a buyer-facing filter value has gone stale).
 """
-import datetime as dt, json, re, sys, urllib.request, urllib.error
+import datetime as dt, json, re, sys, urllib.request, urllib.error, urllib.parse
 
 R = "/root/agent"
 UA = "FetchSmith-vocab-screen/1.0 (+https://fetchsmith.com)"
@@ -470,6 +470,67 @@ def p_uk_find_a_tender_cpv_codes():
     return ok, out
 
 
+def p_samgov_set_aside_types():
+    """SAM.gov's `set_aside` is the opp-index-shape (c2516's class 2: entirely CLIENT-matched by
+    the Actor's own canonSetAsides(), no server-side reference endpoint -- SAM.gov publishes no
+    facet/aggregations endpoint for this vocabulary at any spelling, re-confirmed main.js:120-122).
+    Unlike the free-text fields above, there IS a real upstream authority to ask: the same keyless
+    search backend the Actor itself calls (api `set_aside=<code>`, fails CLOSED -- 0 rows, HTTP 200
+    -- on an unrecognised value per main.js:107). So every documented code must be sent to that
+    exact endpoint and assert a non-zero, DIVERGENT total (the c2512 PROBE INVALID rule), and a
+    deliberately-wrong spelling must still read 0, matching the README's "fails closed, not open"
+    claim. Last live-verified main.js-side at cycle 1524 (SET_ASIDE_CODES comment) -- never run as
+    a repeatable vocab-screen probe before this cycle, so "verified" was one-off and undated in
+    `audit_dates.json` terms."""
+    out = []
+    codes = field("sam-gov-opportunities-scraper", "setAsideTypes")
+    desc = codes.get("description", "")
+    # Pull the three groups named in the schema's own prose: the 18 ordinary codes, the
+    # unrestricted marker NONE, and the 2 retired-but-real historical codes (SDB/ESB) -- same
+    # "parse from the live schema text, not a hardcoded copy" shape as the USAspending probe.
+    m = re.search(r"Valid codes:\s*([A-Za-z0-9, ]+?)\.", desc)
+    ordinary = [c.strip() for c in m.group(1).split(",")] if m else []
+    historical = re.findall(r"\b(SDB|ESB)\b", desc)
+    codes_to_probe = list(dict.fromkeys(ordinary + ["NONE"] + historical))
+    out.append(f"  schema documents {len(codes_to_probe)} codes: {codes_to_probe}")
+    if not codes_to_probe:
+        out.append("  PROBE INVALID: could not parse any documented code out of the description")
+        return False, out
+
+    # The sgs/v1/search backend 406s on `Accept: application/json` -- it only serves
+    # `application/hal+json`, so send `*/*` like the Actor's got-scraping client effectively does
+    # (curl's default) rather than the explicit application/json this tool's http() always sends.
+    def sgs_total(params_tail):
+        req = urllib.request.Request(
+            f"https://sam.gov/api/prod/sgs/v1/search/?index=opp&responseType=json&page=0&size=1&{params_tail}",
+            headers={"User-Agent": UA, "Accept": "*/*"},
+        )
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+            return json.loads(r.read().decode()).get("page", {}).get("totalElements")
+
+    totals = {}
+    for c in codes_to_probe:
+        totals[c] = sgs_total(f"set_aside={urllib.parse.quote(c)}")
+        out.append(f"    {c:10s} total={totals[c]}")
+    dead = [c for c, n in totals.items() if not n]
+    if len(set(totals.values())) == 1:
+        out.append("  PROBE INVALID: every code returned the same total, so the filter was "
+                   "ignored rather than applied -- this proves nothing about the vocabulary.")
+        return False, out
+    if dead:
+        out.append(f"  DEAD CODES (documented as live but return nothing): {dead}")
+
+    # README's "fails closed, not open" claim: a buyer-natural lowercase typo must still read 0,
+    # not silently widen to the unfiltered index (main.js:107's whole reason for canonSetAsides()).
+    bogus_total = sgs_total("set_aside=sba")
+    out.append(f"  lowercase-typo sanity check: set_aside=sba total={bogus_total} "
+               f"({'matches README fails-closed claim' if bogus_total == 0 else 'CONTRADICTS README claim'})")
+    if bogus_total != 0:
+        return False, out
+
+    return not dead, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -478,6 +539,7 @@ PROBES = {
     "substack-scraper": ("discoverCategories", p_substack_discover_categories),
     "eu-ted-tenders-scraper": ("cpvCodes", p_eu_ted_cpv_codes),
     "uk-find-a-tender-scraper": ("cpvCodes", p_uk_find_a_tender_cpv_codes),
+    "sam-gov-opportunities-scraper": ("setAsideTypes", p_samgov_set_aside_types),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

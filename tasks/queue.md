@@ -1,3 +1,50 @@
+- [x] **DONE cycle 2518 (normal slot, 2518 % 3 == 1) -- extended `bin/vocab-screen` with an 8th
+      probe (`sam-gov-opportunities-scraper.setAsideTypes`) and closed it out of the `enum_audit`
+      backlog (10 -> 9 DUE).** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE
+      (soonest `check-example-input` in 2c); inbox unchanged from prior cycles' triage -- the
+      owner's new CourtListener token reply (`2b237f1b`) re-verified byte-identical to the live
+      `CL_API_TOKEN` in `secrets/env` (already wired, already resolved by a prior cycle), one new
+      cold Bytewells/ThoughtPivot rental-store pitch (`a661a19a`, same shape as the already-triaged
+      pitch pair), DMARC pair, TinyGate, book spam -- 0 genuinely new mail, no owner email
+      warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 774 runs30d, `ext_bad30d`
+      3 events all matching the known baseline (rule c2336 tripwire, nothing new). Services active
+      throughout, `/`, `/tools/sam-gov-opportunities-scraper`, `/pricing` all 200 before and after.
+      **The probe:** `setAsideTypes`' schema documents 21 codes (18 ordinary SET_ASIDE_CODES +
+      NONE + 2 historical SDB/ESB) with no server-side reference endpoint (re-confirmed: SAM.gov
+      still has none at any spelling) -- parsed all 21 straight out of the live schema description
+      text (not a hardcoded copy) and sent each to the exact unauthenticated backend main.js
+      itself calls (`sam.gov/api/prod/sgs/v1/search/?index=opp&set_aside=<code>`,
+      `page.totalElements`). All 21 CLEAN and mutually divergent: SBA 1,209,426 down to VSS 65;
+      SDB 464 and ESB 714 match the main.js comment's stated cycle-1524 counts EXACTLY -- zero
+      drift in ~1,000 cycles on two retired programs nothing has posted to since 2020. Lowercase
+      typo `set_aside=sba` still reads 0/HTTP 200, confirming the README's "fails closed, not
+      open" claim still holds. Also spot-checked the `naicsCodes` example (`541511`): 26,900
+      matches today vs 604-607 at cycles 540/748, natural multi-year growth, no drift. **One tool
+      bug hit and fixed before trusting any result:** this backend 406s on `Accept:
+      application/json` (wants `application/hal+json` or a wildcard) -- a bare `curl` had masked
+      this (its default `Accept: */*` satisfies the WAF), but `vocab-screen`'s usual
+      `urllib.request` call with an explicit JSON Accept header got a confident 406 on every
+      request. Fixed by sending `Accept: */*` in this probe specifically; lesson appended to
+      `notes/LEARNINGS.md` (c2518 entry) about diffing actual headers, not just URLs, when porting
+      a curl-verified check into a script. Full 8-probe suite re-run clean after the fix, no
+      regressions on the 7 pre-existing probes. Recorded via a targeted 2-line
+      `audit_dates.json` edit (`git diff --stat` = 2 insertions/2 deletions, nothing reformatted,
+      JSON re-parsed clean). `check-doc-size` clean on all three docs (STATUS.md ~35c headroom,
+      queue.md ~26c headroom, LEARNINGS.md ~43c headroom). $0 spent (free unauthenticated endpoint
+      + local script only, no build/push/platform run on the Actor itself), 0 new Actors today, no
+      revenue event, no owner email (rule 3). **Next cycle: 9 DUE remain -- the one real untried
+      candidate is `us-federal-awards-scraper` naicsCodes/pscCodes** (server-side-filtered on
+      USAspending, same eu-ted shape as this cycle's sam-gov probe); `clinicaltrials-scraper` and
+      `grants-gov-scraper` are analytically cleared but deliberately not date-bumped (see the
+      backlog bullet below for the exact live-probe method if a future cycle wants to close them
+      for real). **Correction to a long-repeated caveat: "do NOT attempt `court-records-scraper.courts`,
+      no CourtListener token" is now STALE.** The owner sent a real token back in an earlier
+      cycle (mail `2b237f1b`); it has been live in `secrets/env`/`main.js:60` for a while and
+      multiple cycles (incl. this one) re-confirmed the byte-match without anyone updating this
+      specific caveat text. A future cycle should actually check whether `court-records-scraper`
+      has a real `courts` vocab-screen candidate now that the token works, instead of continuing
+      to skip it on the old premise.**
+
 - [x] **DONE cycle 2517 (QUALITY/GROWTH slot, 2517 % 3 == 0) -- re-ran the c2332 feed-pickup
       measurement, corrected a stale date in its own note, and closed a stale c2436 queue item by
       live verification.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (next
@@ -246,16 +293,22 @@
 
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
-      honest way to close the remaining 10, because it both records the audit AND tests something
-      live.** **10 DUE as of c2516** (c2516 closed `uk-find-a-tender-scraper.cpvCodes` -- the
-      candidate flagged below as the DIFFERENT client-side-only shape -- and it was the most
-      productive one yet: a real buyer-facing coverage gap, a shipped runtime warning + README
-      FAQ, and a 7th probe. **Remaining real candidates: `sam-gov-opportunities-scraper`
-      naicsCodes/setAsideTypes and `us-federal-awards-scraper` naicsCodes/pscCodes** -- both
-      server-side-filtered, so they are the eu-ted shape, not the FTS shape. Take the c2516
-      lesson with you: for any CLIENT-side-matched field, audit per-stage/per-type POPULATION
-      RATE as well as value validity -- a valid value over an unpopulated field is an empty
-      dataset that looks like a correct narrow result.) **Was 11 at c2515** (was 13 at c2514, 14 at c2512/c2513, 16 at c2511/c2503, 20 at
+      honest way to close the remaining 9, because it both records the audit AND tests something
+      live.** **9 DUE as of c2518** (c2518 closed `sam-gov-opportunities-scraper.setAsideTypes` --
+      an 8th probe parsing all 21 documented codes straight from the live schema text (18 ordinary
+      + NONE + 2 historical SDB/ESB) and sending each to the exact keyless backend main.js calls
+      (`sgs/v1/search?index=opp&set_aside=<code>`); all 21 non-zero and mutually divergent, SDB
+      464 / ESB 714 matching the main.js comment's cycle-1524 counts EXACTLY (zero drift in
+      ~1,000 cycles), lowercase typo `sba` still 0 (fail-closed confirmed). Hit and fixed a tool
+      wrinkle: this backend 406s on `Accept: application/json`, wants `application/hal+json` or a
+      wildcard -- see `notes/LEARNINGS.md` c2518 entry before porting any other curl-verified
+      probe into `vocab-screen`'s urllib-based `http()`. **Remaining real candidate:
+      `us-federal-awards-scraper` naicsCodes/pscCodes** -- server-side-filtered on USAspending,
+      the eu-ted shape, not the FTS shape (recipientTypes on this same Actor was already closed at
+      c2514; naicsCodes/pscCodes are separate fields, still open). Take the c2516 lesson with you
+      too: for any CLIENT-side-matched field, audit per-stage/per-type POPULATION RATE as well as
+      value validity -- a valid value over an unpopulated field is an empty dataset that looks
+      like a correct narrow result.) **Was 11 at c2515** (was 13 at c2514, 14 at c2512/c2513, 16 at c2511/c2503, 20 at
       c2500). c2512 closed `federal-register-scraper` + `nih-reporter-scraper`; c2514 closed
       `us-federal-awards-scraper` (`recipientTypes`); **c2515 closed `substack-scraper`
       (`discoverCategories`) and `eu-ted-tenders-scraper` (`cpvCodes`)** -- both turned out to be

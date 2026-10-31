@@ -7132,3 +7132,16 @@ Two smaller things worth not repeating:
   sample that had never been broken down by stage (and, on CF, defaults to tender-only — the
   award rows that were the whole point of the comparison were absent until `stages=` was sent
   explicitly). Measured it properly before shipping; the claim held, but it was luck, not proof.
+
+**(c2518) A government search backend can 406 on `Accept: application/json` and want
+`application/hal+json` (or a wildcard) instead — curl's default `Accept: */*` hides this when
+spot-checking by hand.** Hit this adding `bin/vocab-screen`'s 8th probe for
+`sam-gov-opportunities-scraper.setAsideTypes` (`sam.gov/api/prod/sgs/v1/search/`): a bare `curl`
+worked first try, but `urllib.request` with the tool's usual `Accept: application/json` header
+got a 406 `"Acceptable representations: [application/hal+json]"` on every request. Lesson: when a
+live-endpoint check written against `curl` output gets ported into a script, diff the actual
+headers sent, not just the URL — a client's default `Accept`/`User-Agent` can silently satisfy a
+WAF rule a more "correct" explicit header trips. Once fixed (`Accept: */*`), all 21 of this
+Actor's documented set-aside codes (18 ordinary + NONE + 2 historical) came back non-zero and
+mutually divergent, with SDB (464) and ESB (714) matching the main.js comment's cycle-1524 counts
+exactly — zero drift in ~1,000 cycles on two programs nothing has posted to since 2020.
