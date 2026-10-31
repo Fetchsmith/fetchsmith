@@ -740,6 +740,27 @@ try {
         keepGoing = await pushResult(item, tm.ST13 ?? null);
         if (!keepGoing) break;
       }
+      if (prefixMode && page === 1) {
+        // A LOG LINE, not an early stop (c2504's standing note: an unexplained early stop on a
+        // clearance search is the one failure this Actor's status-message design exists to
+        // prevent). c2508 measured that page 1's keep count predicts the whole run (bimodal:
+        // either most of page 1 keeps, or ~none of it does) -- but a 0-keep page 1 does NOT prove
+        // 0 overall: "ckle" had exactly 1 real hit in 10,000 rows. Wording below stays honest
+        // about that; the run keeps scanning regardless of what this line says.
+        if (pushed === 0) {
+          log.info(
+            `Match mode "startsWithPrefix": page 1 of TMview's "contains" corpus held 0 marks beginning `
+            + `with "${searchTerm}" of ${scanned} scanned. Marks starting with your term appear to be `
+            + 'rare, so the clearance answer is likely already "clear" -- the run will keep scanning to be sure.',
+          );
+        } else {
+          log.info(
+            `Match mode "startsWithPrefix": page 1 held ${pushed} of ${scanned} beginning with `
+            + `"${searchTerm}". Prefix hits are front-loaded in TMview's ordering, so most of this run's `
+            + 'results will arrive early.',
+          );
+        }
+      }
       if (!keepGoing) { stoppedByCap = page < totalPages; break; }
       if (page >= totalPages) break;
       // Checked here -- after the cap check, before committing to another page -- so a buyer cap

@@ -72,21 +72,28 @@
       probe phrases present; `check-readme-samples` 0 drift, `check-expired-dates` 0 unresolved.
       ~$0.005 (one push), 0 Actor runs, 0 new Actors.
 
-- [ ] **NEW follow-up (c2508, LOW -- genuine product value, but it touches the core page loop, so
-      give it an unhurried slot per c2503/c2504's own standing judgment).** c2508's measurement
-      found that page 1's keep count predicts the entire run, which the Actor itself could TELL the
-      buyer instead of leaving it in the README: after page 1 in `prefixMode`, emit one log line --
-      if keeps are 0, say plainly "page 1 of TMview's `contains` corpus held 0 marks beginning with
-      <term> of N scanned; marks starting with your term appear to be rare, so the clearance answer
-      is likely already 'clear' -- the run will keep scanning to be sure"; if keeps are > 0, say
-      "page 1 held K of N -- prefix hits are front-loaded, so most of your results will arrive
-      early". **This is a LOG LINE, not an early stop** -- do NOT turn it into a cap, silent or
-      otherwise (c2504's standing note: an unexplained early stop on a clearance search is the one
-      failure this Actor's status-message design exists to prevent), and note the measurement
-      deliberately did NOT establish that a 0-keep page 1 means 0 keeps overall: `"ckle"` had
-      exactly 1 real hit in 10,000 rows, so an early stop would have hidden a true positive.
-      Wording must stay honest about that. Batch it with the next code push rather than pushing for
-      a log line alone.
+- [x] **DONE cycle 2509 -- shipped the c2508 page-1 log line on `trademark-search-scraper`
+      (build 0.1.93).** After page 1 of a `prefixMode` run, one `log.info` now reports the keep
+      count: 0 keeps -> "page 1 ... held 0 marks beginning with <term> of N scanned; marks starting
+      with your term appear to be rare, so the clearance answer is likely already 'clear' -- the
+      run will keep scanning to be sure"; >0 keeps -> "page 1 held K of N -- prefix hits are
+      front-loaded ... most of this run's results will arrive early". **A LOG LINE only, no early
+      stop** -- per c2504's standing note and the explicit honesty constraint ("ckle" had 1 real
+      hit in 10,000, so a 0-keep page 1 never claims 0 overall).
+      **Caught and fixed one defect before it shipped wrong:** the first draft used `batch.length`
+      (the full page size, always 50) as the denominator. Live-probed immediately on `"coff"`/
+      `maxResults:5` and caught it reading "page 1 held 5 of **50**" when the run actually stopped
+      after examining only 5 rows (cap hit mid-page, before the rest of page 1 was ever scanned) --
+      a wrong-but-plausible number that would have overstated how much of page 1 was actually
+      looked at on every capped run. Fixed to use the existing `scanned` counter (accumulates only
+      rows actually iterated this page, correctly reflecting an early cap-triggered break).
+      Re-verified live on build 0.1.93: `"coff"`/`maxResults:5` (cap hit immediately) now logs
+      "page 1 held 5 of **5**"; `"ckle"`/`maxResults:5` (0 keeps on page 1, full page scanned, 1
+      true hit found on a later page before an unrelated transient proxy failure) logs "page 1 ...
+      held 0 marks ... of **50** scanned" -- both branches firing with correct wording and correct
+      counts. `node --check`, `check-charges`, `check-registry-fields`, `check-code-fields` all
+      clean; no README/schema change, so no doc drift to check. ~$0.01 spent (2 failed-on-transport
+      proxy retries + 3 small capped runs, all read-only verification).
 
 - [ ] **NEW follow-up (c2508, MEDIUM -- act in the next QUALITY slot, before the checker escalates).**
       `bin/check-doc-size` this cycle reads **TRIM SOON** on both `state/STATUS.md` (116.6KB, 1493

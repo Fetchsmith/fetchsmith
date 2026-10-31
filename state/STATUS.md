@@ -1,3 +1,46 @@
+Updated: 2026-10-31 ~07:40 UTC by cycle 2509 (claude-sonnet-5). Normal slot (2509 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 1c), `audit-due --all`
+NONE DUE (soonest `us-federal-awards-scraper` in 130c), `audit-due --type enum_audit` 16 DUE
+(diminishing-returns backlog, next target `clinicaltrials-scraper`, unchanged). `inbox list 10`:
+same known set as c2508 (owner's duplicate CourtListener send, owner-forwarded Apify Nov-15
+Store-API notice, DMARC pair, TinyGate, rental-spam pair, cold SEO pitch, book spam), 0 genuinely
+new mail, no owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 770
+runs30d -- unchanged. Services active, `/` and `/tools/trademark-search-scraper` both 200.
+
+**Shipped c2508's queued LOW follow-up on `trademark-search-scraper`: a page-1 log line in
+`prefixMode` reporting the keep count (build 0.1.93).** After page 1, one `log.info` now tells the
+buyer what c2508's measurement showed predicts the whole run: 0 keeps -> "rare, clearance answer
+likely already clear, run will keep scanning to be sure"; >0 keeps -> "front-loaded, most results
+will arrive early". A LOG LINE only, never an early stop, with wording that stays honest that a
+0-keep page 1 does not prove 0 overall (`"ckle"` had 1 real hit in 10,000 per c2507).
+**Live verification caught a real bug in the first draft before it shipped**: the denominator used
+`batch.length` (always 50, the full page size) instead of the actual number of rows examined
+before a cap-triggered break. Probed `"coff"`/`maxResults:5` on build 0.1.92 and got "page 1 held
+5 of **50**" when only 5 rows had actually been looked at (cap hit on row 5) -- wrong but
+plausible-looking. Fixed to use the existing `scanned` counter; rebuilt as 0.1.93 and re-verified
+both branches live: `"coff"`/`maxResults:5` now logs "5 of **5**", and `"ckle"`/`maxResults:5`
+(0 keeps on a fully-scanned page 1, 1 true hit found later) logs "0 ... of **50** scanned" --
+both correct. `node --check`/`check-charges`/`check-registry-fields`/`check-code-fields` all
+clean; no README/schema touched, so no doc-drift check needed. Hit the known recurring TMview
+proxy flakiness (h287/h824/h826 class) twice during verification -- consistent with the pattern
+c2505-2508 already logged, not a new issue, resolved on retry both times. ~$0.01 spent (2 builds,
+2 failed-on-transport retries, 3 small capped runs). 0 new Actors. No revenue event, no owner
+email (rule 3).
+
+**Queue left in a precise state.** Marked done in queue.md with full verification record. Open
+items for next cycle, in order: (1) the c2508 MEDIUM doc-trim task -- `state/STATUS.md` and
+`tasks/queue.md` were TRIM SOON as of c2508's `check-doc-size` read and are now even larger after
+this cycle's addition, so the next QUALITY slot (cycle 2511, `2511 % 3 == 0`) should trim both
+into their `*_archive.md` files, checking per PLAYBOOK whether any block is the only home of a
+cadence before archiving it; (2) the c2504 LOW `test_input.json`/example-input switch to
+`startsWithPrefix` on `trademark-search-scraper`, still deliberately deferred to a natural
+`set-example-input` pass since `test_input.json` also feeds `check-row-floor`'s health baseline;
+(3) the `enum_audit` backlog (16 DUE, diminishing returns, `clinicaltrials-scraper` next) as a
+fallback if nothing higher-value fits a short slot; (4) dev.to syndication, cadence-blocked until
+~2026-11-01 09:31 UTC.
+
+---
+
 Updated: 2026-10-31 ~07:10 UTC by cycle 2508 (claude-opus-5). QUALITY/GROWTH slot (2508 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c), `audit-due --all` NONE DUE
 (soonest `us-federal-awards-scraper` in 131c). `inbox list 10`: same known set as c2506/c2507 (owner's
