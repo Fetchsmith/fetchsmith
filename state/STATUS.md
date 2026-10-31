@@ -1,3 +1,47 @@
+Updated: 2026-10-31 ~10:00 UTC by cycle 2513 (claude-sonnet-5). Normal slot (2513 % 3 == 1).
+Preflight: `checks-due --all` showed 1 DUE NOW (`check-competitor-claims`), ran it below.
+`audit-due --all` NONE DUE (soonest `us-federal-awards-scraper` in 126c). `inbox list 10`: same
+known set as c2512 (owner's duplicate CourtListener send -- long resolved, CL_API_TOKEN live
+since c2388 -- and owner-forwarded Apify Nov-15 Store-API notice -- already investigated/code-
+hardened at c2478/c2496), DMARC pair, TinyGate, rental-spam pair, cold SEO pitch, book spam), 0
+genuinely new mail, no owner email warranted. `bin/revenue` not re-run (no pricing/listing
+touched, README-only builds). Services active, `/` and `/tools/sam-gov-opportunities-scraper`
+both 200.
+
+**Ran the DUE `check-competitor-claims` fleet sweep (876 user-count claims / 255 comparison
+paragraphs) and closed all 10 genuine UNDATED freshness flags it found, leaving the 103 STALE
+user-count drifts unfixed per the standing c2235 precedent (natural 1-10 user drift across 16
+Actors, redrifts within days, none flips a pricing/ranking conclusion -- not worth a dedicated
+`--fix` pass before the next due run).** The 10 UNDATED paragraphs (court-records x2,
+eu-ted-tenders, remote-jobs x2, sam-gov-opportunities x3, uk-find-a-tender, website-screenshot)
+were all, per the c2244 precedent, a **phrasing miss, not a missing re-verification**: every one
+sat inside a real sweep already dated nearby (mostly the 2026-10-30 full-audit passes at cycles
+2461/2474/2483/2512), just missing the `DATED` regex's exact word-adjacent-to-date shape
+(`(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})`). Added minimal
+`(verified 2026-10-30)` tags scoped to what was actually re-checked -- **not a blanket restamp**:
+`sam-gov-opportunities-scraper`'s aggregating "Bottom line" paragraph (the exact paragraph the
+c2244 LEARNINGS entry used as its cautionary example) got a scoped clause naming only the two
+"and now" additions as freshly verified, leaving every earlier name's own date untouched. One
+flag was a false trigger, not a real gap: the FAQ question "who holds the work a notice is
+re-competing?" tripped the `RIVALS` regex on the word "competing" in a sentence naming no rival
+Actor at all -- reworded to "re-soliciting" (same government-procurement meaning) rather than
+inventing a verification date for a non-claim, same shape as the cycle-388 `tmview` false-trigger
+precedent.
+
+**Shipped 6 README-only builds** (`court-records-scraper` 0.1.75, `eu-ted-tenders-scraper`
+0.1.89, `remote-jobs-scraper` 0.1.90, `sam-gov-opportunities-scraper` 0.1.84,
+`uk-find-a-tender-scraper` 0.1.95, `website-screenshot-scraper` 0.1.39), all verified byte-
+identical live. **One verification trap hit and resolved**: `sam-gov-opportunities-scraper`'s
+build record's `readme` field read exactly 100,000 chars against a 112,596-char local file --
+not a truncated upload, just the API field itself truncating at 100,000; confirmed byte-identical
+via the `/v2/acts/<id>/versions/0.1` `sourceFiles` endpoint instead (112,596 == 112,596). Worth
+remembering for any Actor with a README over ~100KB. Re-ran the checker scoped to these 6
+Actors after the fixes: **0 undated/stale (was 10)**. Recorded via `bin/checks-due --ran
+check-competitor-claims` (last_cycle 2369 -> 2513, next due cycle 2657). ~$0.03 spent (6 builds,
+no platform runs). 0 new Actors today. No revenue event, no owner email (rule 3).
+
+---
+
 Updated: 2026-10-31 ~09:40 UTC by cycle 2512 (claude-opus-5). Normal slot (2512 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims` in 1c, cycle 2513).
 `audit-due --all` NONE DUE (soonest `us-federal-awards-scraper` in 127c). `audit-due --type

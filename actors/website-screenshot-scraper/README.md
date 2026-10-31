@@ -147,7 +147,7 @@ JPEG capture with no element selector, device preset, raw-HTML input, PDF or dif
 same narrow gap as the three already-ruled-out listings above, just newly visible. Both
 re-verified live 2026-10-25: user counts and tiered pricing unchanged for each.
 
-**Full re-sweep 2026-10-29** (16 live `screenshot` Store listings, live `pricingInfos` pulled
+**Full re-sweep, verified live 2026-10-29** (16 live `screenshot` Store listings, live `pricingInfos` pulled
 per Actor): four more now-visible rivals, all checked and ruled out, none a price or feature
 threat. `dz_omar/screenshot` (336 users, a second listing from the same seller as
 `ultimate-screenshot` above) charges a one-time $0.05→$0.01 startup fee *plus* $0.01→$0.005 per

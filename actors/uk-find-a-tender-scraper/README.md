@@ -123,7 +123,7 @@ GET /v2/actor-runs/<runId>/key-value-store/records/DIGEST
 
 `RUN_SUMMARY.digestWritten` is `true` only when the digest was actually produced (digestMode on **and** at least one notice delivered). A run with `digestMode` on that matches nothing writes no digest and is not charged for it — same "no data, no charge" rule as every other event here.
 
-**Pricing note (introductory period):** the one-off `digest` charge event was registered with Apify on 2026-10-29 and, under Apify's mandatory 2-week advance-pricing-notice rule for a brand-new event, does not actually start charging until **2026-11-13**. Until then every digest is delivered **free**. After that date it is a flat **$0.05 per run** (Free/Bronze/Silver), **$0.04** on Gold and above — never per row, never charged twice in the same run, and matching the $0.05 one-time digest fee `fetchwerk/uk-tenders-scraper` already charges (see Pricing below) — the rival that proved buyers will pay for this shape as a distinct charge.
+**Pricing note (introductory period):** the one-off `digest` charge event was registered with Apify on 2026-10-29 and, under Apify's mandatory 2-week advance-pricing-notice rule for a brand-new event, does not actually start charging until **2026-11-13**. Until then every digest is delivered **free**. After that date it is a flat **$0.05 per run** (Free/Bronze/Silver), **$0.04** on Gold and above — never per row, never charged twice in the same run, and matching the $0.05 one-time digest fee `fetchwerk/uk-tenders-scraper` already charges (see Pricing below) — the rival that proved buyers will pay for this shape as a distinct charge (verified 2026-10-30, see Pricing below).
 
 ## Pricing
 

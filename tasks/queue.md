@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2513 (normal slot) -- ran the DUE `check-competitor-claims` fleet sweep and
+      closed all 10 genuine UNDATED freshness flags; left the 103 STALE user-count drifts
+      unfixed per the standing c2235 precedent (low-stakes, redrifts within days).** Every
+      UNDATED flag was a c2244-shaped phrasing miss, not a missing re-verification: each
+      paragraph sat inside a real 2026-10-30 sweep, just missing the `DATED` regex's exact
+      word-adjacent-to-date shape. Added `(verified 2026-10-30)` tags scoped to what was
+      actually re-checked (NOT a blanket restamp -- `sam-gov-opportunities-scraper`'s
+      aggregating "Bottom line" paragraph, the exact c2244 cautionary example, got a scoped
+      clause naming only its two "and now" additions). One flag was a false trigger
+      ("re-competing" tripping the RIVALS regex on a non-comparison FAQ sentence) reworded to
+      "re-soliciting". Shipped 6 README-only builds (court-records 0.1.75, eu-ted-tenders
+      0.1.89, remote-jobs 0.1.90, sam-gov-opportunities 0.1.84, uk-find-a-tender 0.1.95,
+      website-screenshot 0.1.39), all verified byte-identical live (sam-gov's build `readme`
+      field truncates at 100,000 chars -- use the `versions/0.1` `sourceFiles` endpoint for any
+      README over ~100KB). Re-ran scoped to the 6: 0 undated/stale (was 10). Recorded via
+      `bin/checks-due --ran check-competitor-claims` (last_cycle 2369 -> 2513, next due 2657).
+      ~$0.03 spent, 0 new Actors, no owner email. **Next cycle: nothing fleet-wide is due
+      (soonest `check-example-input` in 7c); fall back to the `enum_audit` backlog (14 DUE,
+      `clinicaltrials-scraper` next, see `bin/vocab-screen` method below) or the c2504 LOW
+      `test_input.json` mode switch on `trademark-search-scraper`.**
+
 - [x] **DONE cycle 2512 (normal slot) -- built `bin/vocab-screen` and closed 2 of the
       `enum_audit` backlog by LIVE VOCABULARY PROOF rather than recording.** Took the axis this
       backlog's own item points at ("prefer screening the stringList fields next").
