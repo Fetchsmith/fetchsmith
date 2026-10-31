@@ -630,7 +630,23 @@ async function fetchPage(page) {
       continue;
     }
     if (res.statusCode !== 200) {
-      throw new Error(`TMview returned HTTP ${res.statusCode}: ${JSON.stringify(res.body).slice(0, 300)}`);
+      const bodyStr = JSON.stringify(res.body).slice(0, 300);
+      // Page number logged on every non-200, not just this one tagged shape: cycle 2505 had to
+      // re-run the same failing search twice to tell which failure mode it was hitting, purely
+      // because the page being fetched when it broke was nowhere in the logs.
+      log.warning(`TMview returned a non-200 status fetching page ${page}: HTTP ${res.statusCode} ${bodyStr}`);
+      const err = new Error(`TMview returned HTTP ${res.statusCode}: ${bodyStr}`);
+      // TMview enforces its own hard ceiling on how many pages a single search can page through --
+      // deterministic for this exact search (retrying will fail identically every time), and
+      // unrelated to both our own clock and proxy flakiness, so it needs its own tag rather than
+      // falling into the generic runError branch below (cycle 2505 repro: searchTerm "ckle",
+      // offices ["US"], 206 declared pages -> this exact HTTP 400 ~4.5 minutes into the walk; a
+      // smaller 36-page GB corpus of the same term completed cleanly, so the ceiling is a
+      // deep-page phenomenon, not a general timeout/proxy issue).
+      if (res.statusCode === 400 && /max page number/i.test(bodyStr)) {
+        err.pageDepthLimit = true;
+      }
+      throw err;
     }
     return res.body ?? {};
   }
@@ -675,6 +691,13 @@ let stoppedByCap = false;
 // `stoppedByCap` because the advice differs (raise the run timeout vs raise maxResults/cost limit)
 // and distinct from `runError` because every row already pushed is still valid and paid for.
 let timeBudgetStopped = false;
+// True when TMview's OWN page-depth ceiling -- not our clock, not TMview being generally down --
+// stopped the walk (cycle 2505/2506, HTTP 400 "Max page number reached"). Kept distinct from
+// timeBudgetStopped because the advice differs: raising the run timeout does nothing here (the
+// ceiling is on page count, not elapsed time), and unlike a flaky-proxy error, re-running will
+// fail identically every time for this exact search. Every row already pushed is still valid and
+// paid for, same as the other two non-error stops.
+let pageDepthLimitStopped = false;
 
 try {
   if (!searchTerm) {
@@ -742,24 +765,46 @@ try {
     // exception is applied just below) and the cause is reported through timeBudgetStopped.
     timeBudgetStopped = true;
     log.warning(err.message);
+  } else if (err.pageDepthLimit) {
+    // Same non-failure shape as the timeBudget branch above (runError stays null, every row
+    // already pushed is still valid and paid for) but a different, deterministic cause -- see
+    // the pageDepthLimitStopped declaration above for why it needs its own status message rather
+    // than reusing either the time-budget or flaky-proxy wording.
+    pageDepthLimitStopped = true;
+    log.warning(
+      `TMview refused to page any deeper into this search (its own hard ceiling on page depth, not `
+      + `this run's clock or a transient proxy issue): ${err.message}. This is deterministic for this `
+      + 'exact search term/office/mode combination -- re-running will hit the same wall at the same '
+      + `page. ${pushed.toLocaleString('en-US')} row(s) already pushed are valid and charged for; `
+      + 'narrow the search (tighter term, fewer offices) to bring it under TMview\'s own page limit. '
+      + 'See RUN_SUMMARY.',
+    );
   } else {
     log.exception(err, 'Run failed');
     runError = err.message;
   }
 }
 
-// The one case where a clock stop must still FAIL: a baseline (seeding) run. Saving a baseline the
-// walk never finished is the expensive outcome -- every mark it never reached looks already-seen
-// to the next run and the whole current match set gets delivered and CHARGED as "new" (same reason
-// the transport-failure path above refuses to save). Failing re-seeds for free instead. Converges
-// both ways in: the clean loop-top break and the fetchPage throw.
-if (watchMode && seeding && timeBudgetStopped && runError === null) {
-  runError = `This run's own time limit ran out while seeding the baseline for watch label "${watchLabel}", `
-    + `after recording ${watchSeen.size} mark(s). No baseline was saved -- a partial one would make the next `
-    + 'run treat every mark it never reached as new and charge you for the whole match set. Raise the run '
-    + 'timeout (Input > Run options; 300s+ is a safe default, more for a broad search) or narrow the search '
-    + '(tighter term, fewer offices, specific Nice classes or statuses), then run again -- a baseline run '
-    + 'charges nothing, so re-seeding is free.';
+// The one case where a clock stop (or TMview's own page-depth ceiling) must still FAIL: a
+// baseline (seeding) run. Saving a baseline the walk never finished is the expensive outcome --
+// every mark it never reached looks already-seen to the next run and the whole current match set
+// gets delivered and CHARGED as "new" (same reason the transport-failure path above refuses to
+// save). Failing re-seeds for free instead. Converges both ways in: the clean loop-top break and
+// the fetchPage throw.
+if (watchMode && seeding && (timeBudgetStopped || pageDepthLimitStopped) && runError === null) {
+  runError = pageDepthLimitStopped
+    ? `TMview's own page-depth ceiling was hit while seeding the baseline for watch label "${watchLabel}", `
+      + `after recording ${watchSeen.size} mark(s). No baseline was saved -- a partial one would make the next `
+      + 'run treat every mark it never reached as new and charge you for the whole match set. Raising the run '
+      + "timeout will NOT help (TMview's ceiling is on page count, not elapsed time) -- narrow the search "
+      + '(tighter term, fewer offices, specific Nice classes or statuses) so the walk finishes within TMview\'s '
+      + 'own page limit, then run again -- a baseline run charges nothing, so re-seeding is free.'
+    : `This run's own time limit ran out while seeding the baseline for watch label "${watchLabel}", `
+      + `after recording ${watchSeen.size} mark(s). No baseline was saved -- a partial one would make the next `
+      + 'run treat every mark it never reached as new and charge you for the whole match set. Raise the run '
+      + 'timeout (Input > Run options; 300s+ is a safe default, more for a broad search) or narrow the search '
+      + '(tighter term, fewer offices, specific Nice classes or statuses), then run again -- a baseline run '
+      + 'charges nothing, so re-seeding is free.';
 }
 
 // WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
@@ -780,10 +825,14 @@ if (skipBaselineSave) {
     timeBudgetStopped
       ? `The baseline run for "${watchLabel}" ran out of time before it finished, so NO baseline was saved `
         + '-- see the failure message for how much time to give it. Re-seeding charges nothing.'
-      : `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
-        + 'Re-run on the same label and search to seed again (a baseline run charges nothing). Saving '
-        + 'a partial baseline would have made the next run treat the un-reached mark(s) as freshly '
-        + 'baselined and charge for the entire current match set.',
+      : pageDepthLimitStopped
+        ? `The baseline run for "${watchLabel}" hit TMview's own page-depth ceiling before it finished, so `
+          + 'NO baseline was saved -- see the failure message for how to narrow the search. Re-seeding '
+          + 'charges nothing.'
+        : `The baseline run for "${watchLabel}" failed before it finished, so NO baseline was saved. `
+          + 'Re-run on the same label and search to seed again (a baseline run charges nothing). Saving '
+          + 'a partial baseline would have made the next run treat the un-reached mark(s) as freshly '
+          + 'baselined and charge for the entire current match set.',
   );
 }
 
@@ -792,7 +841,7 @@ if (watchMode && !skipBaselineSave) {
   // them out of the baseline would re-deliver and re-charge them next run (h287 class).
   await saveWatchRecord(runError
     ? 'failed-incremental'
-    : (seeding ? 'seeded' : (timeBudgetStopped ? 'incomplete-time-budget' : 'incremental')));
+    : (seeding ? 'seeded' : (timeBudgetStopped ? 'incomplete-time-budget' : (pageDepthLimitStopped ? 'incomplete-page-depth-limit' : 'incremental'))));
   evictionSuffix = baselineTruncated > 0
     ? ` WARNING: the watch baseline hit its ${WATCH_KEEP}-entry cap and ${baselineTruncated} oldest mark `
       + `id(s) were dropped (${baselineTruncatedTotal} dropped over the life of this label) -- they will be `
@@ -826,6 +875,18 @@ if (watchMode && !skipBaselineSave) {
         + 'again. Raise the run timeout (Input > Run options; 300s+ is a safe default) or narrow the search, then '
         + `run again to cover the rest.${evictionSuffix}`,
       );
+    } else if (pageDepthLimitStopped) {
+      // Same first-cause-wins reasoning as the timeBudgetStopped branch above, but TMview's own
+      // page-depth ceiling -- not our clock -- is why the walk stopped, so the advice differs:
+      // raising the run timeout does nothing here, and re-running will hit the identical wall.
+      await Actor.setStatusMessage(
+        `Incomplete (TMview page-depth limit): watch label "${watchLabel}" delivered ${pushed} new mark(s) but `
+        + `TMview refused to page any deeper after ${pagesFetched} page(s) (its own hard ceiling, not this run's `
+        + 'clock), so it did NOT finish checking for new marks -- do not read this as "nothing new". The marks it '
+        + 'did deliver are saved to the baseline and will not be charged again. Narrow the search (tighter term, '
+        + `fewer offices) so the walk finishes within TMview's own page limit, then run again to cover the `
+        + `rest.${evictionSuffix}`,
+      );
     } else if (pushed === 0) {
       await Actor.setStatusMessage(
         `Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`
@@ -850,17 +911,19 @@ await releaseWatchLock(watchStore);
 // RUN_SUMMARY: this run's completeness against TMview's own declared total, in a form a
 // pipeline can read without parsing log lines. Fetch with
 //   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
-// Unlike court-records-scraper's exhausted/failed pair, there is no "TMview refused depth" state
-// here to report (h824/h826 finding above) -- `complete` is false only for a buyer-imposed stop
-// (maxResults/cost limit, `stoppedByCap`) or a transport failure (`error`), never a silent
-// upstream cutoff.
-const complete = runError === null && !stoppedByCap && !timeBudgetStopped;
-// One field a pipeline can branch on instead of inferring the cause from three booleans. Ordered
-// most-actionable-first: a buyer cap is the buyer's own knob, the clock is a run-options knob, an
-// upstream failure is neither.
+// `complete` is false for a buyer-imposed stop (maxResults/cost limit, `stoppedByCap`), this run's
+// own clock (`timeBudgetStopped`), TMview's own page-depth ceiling (`pageDepthLimitStopped` --
+// h824/h826's original finding of "no observed TMview refused-depth case" held until
+// startsWithPrefix made genuinely deep walks common enough to hit it, cycle 2505), or a transport
+// failure (`error`).
+const complete = runError === null && !stoppedByCap && !timeBudgetStopped && !pageDepthLimitStopped;
+// One field a pipeline can branch on instead of inferring the cause from four booleans. Ordered
+// most-actionable-first: a buyer cap is the buyer's own knob, the clock is a run-options knob,
+// TMview's page-depth ceiling is neither but is at least a known, nameable wall, and a generic
+// upstream failure is the least specific.
 const incompleteReason = complete
   ? null
-  : (stoppedByCap ? 'cap' : (timeBudgetStopped ? 'time-budget' : 'upstream-error'));
+  : (stoppedByCap ? 'cap' : (timeBudgetStopped ? 'time-budget' : (pageDepthLimitStopped ? 'page-depth-limit' : 'upstream-error')));
 await Actor.setValue('RUN_SUMMARY', {
   searchTerm: searchTerm || null,
   matchMode,
@@ -880,6 +943,7 @@ await Actor.setValue('RUN_SUMMARY', {
   incompleteReason,
   stoppedByCap,
   timeBudgetStopped,
+  pageDepthLimitStopped,
   error: runError,
   unknownStatuses,
   unknownNiceClasses,
@@ -950,14 +1014,37 @@ if (timeBudgetStopped && !watchMode) {
       ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`
       : ''),
   );
-} else if (pushed === 0 && !timeBudgetStopped && zeroRowFilterCauses.length > 0) {
-  // `!timeBudgetStopped` matters only for watchMode: the non-watch timeBudget case is already
-  // caught by the branch above (gated on `!watchMode`), so this guard is a no-op there. In
-  // watchMode, though, an incremental run's own timeBudgetStopped branch (above, inside the
-  // `if (watchMode && !skipBaselineSave)` block) already set the "do not read this as nothing
-  // new" message for exactly this reason (a monitor the buyer schedules and stops watching must
-  // not be told a wrong, more-reassuring cause) -- without this guard, an incremental run that
-  // BOTH times out AND has an invalid filter value would silently overwrite that message with
+} else if (pageDepthLimitStopped && !watchMode) {
+  // Same first-cause-wins position as the timeBudgetStopped branch above and for the same
+  // reason -- every branch below would misname the cause, most dangerously the "genuinely empty
+  // search" one, which would tell a buyer who hit TMview's page ceiling that TMview has no such
+  // trademark. Distinct wording from the time-budget branch because the advice is different and
+  // mutually exclusive: raising the run timeout does nothing here (the ceiling is on page count,
+  // not elapsed time), and unlike the generic proxy-flakiness error this same fetchPage function
+  // can throw, re-running will fail identically every time for this exact search (cycle 2505/2506).
+  await Actor.setStatusMessage(
+    `Incomplete (TMview page-depth limit): delivered ${pushed.toLocaleString('en-US')} of `
+    + `${declaredMatches?.toLocaleString('en-US') ?? 'an unknown number of'} match(es) TMview declared, from `
+    + `${pagesFetched} page(s), then stopped because TMview itself refused to page any deeper -- its own hard `
+    + "ceiling on page depth, not this run's clock and not a transient proxy issue. Everything delivered is "
+    + 'complete and correct as far as it goes. This is deterministic for this exact search term/office/mode '
+    + 'combination, so raising the run timeout will NOT help and re-running will hit the same wall at the same '
+    + 'page -- narrow the search (tighter term, fewer offices) to bring it under TMview\'s own page limit. '
+    + 'See RUN_SUMMARY.'
+    + preFilterNote
+    + (zeroRowFilterCauses.length > 0
+      ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`
+      : ''),
+  );
+} else if (pushed === 0 && !timeBudgetStopped && !pageDepthLimitStopped && zeroRowFilterCauses.length > 0) {
+  // `!timeBudgetStopped`/`!pageDepthLimitStopped` matter only for watchMode: the non-watch cases
+  // are already caught by the two branches above (both gated on `!watchMode`), so this guard is a
+  // no-op there. In watchMode, though, an incremental run's own timeBudgetStopped/
+  // pageDepthLimitStopped branches (above, inside the `if (watchMode && !skipBaselineSave)` block)
+  // already set the "do not read this as nothing new" message for exactly this reason (a monitor
+  // the buyer schedules and stops watching must not be told a wrong, more-reassuring cause) --
+  // without this guard, an incremental run that BOTH stops early AND has an invalid filter value
+  // would silently overwrite that message with
   // "0 results because of invalid filter", hiding the far more actionable fact that the run
   // never finished checking for new marks at all.
   await Actor.setStatusMessage(
