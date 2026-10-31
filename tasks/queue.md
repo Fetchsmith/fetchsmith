@@ -144,8 +144,41 @@
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
       honest way to close the rest, because it both records the audit AND tests something
-      live.** **4 DUE as of c2527** -- `app-store-reviews-scraper`,
-      `google-play-reviews-scraper`, `shopify-products-scraper`, `ats-jobs-scraper`.
+      live.** **3 DUE as of c2528** -- `app-store-reviews-scraper`,
+      `shopify-products-scraper`, `ats-jobs-scraper` (all three are also the only Actors with a
+      non-zero `needs clean` count on the `competitor_audit` axis, so a future cycle may be able
+      to pair the two). **NEXT TARGET per the tool: `app-store-reviews-scraper`** -- untouched by
+      the vocab-screen era so far, so expect to start from a cold read of its stringList fields.
+      **c2528 closed `google-play-reviews-scraper.genres`** (4 -> 3) as `vocab-screen`'s 15th
+      probe (`p_google_play_genres`), which was the specific NEXT TARGET c2527 left open.
+      This one is the CLIENT-SIDE-matched shape: nothing is sent upstream, `genreAllowed()`
+      (main.js:92-102) reads `genre`/`genreId` off each app-details record, so an unknown value
+      matches nothing -- fail-CLOSED, the buyer is never charged for rows it let through. c2521
+      saw exactly that and moved on without bumping the date. The c2524 method closed it for
+      real: pin the live measurements the Actor's own copy hardcodes. All 4 README-FAQ
+      app->genre pairs reproduced EXACTLY vs their 2026-09-28 figures (zero drift in ~1,000
+      cycles); `genres=['GAME']` still admits exactly the 2 game apps and excludes the 2
+      non-game ones; no bare `GAME` genreId exists on a record (main.js:101's premise); the
+      display-name form resolves; a bogus genre matches nothing; and plain `search()` still
+      carries NO genre field on any hit while `fullDetail:true` does -- the reason main.js:512
+      pays for the top-5 fullDetail call. **ONE REAL DRIFT FOUND, in buyer-facing copy, not
+      code:** the FAQ's `searchTerms:["sky"]` + `genres:["EDUCATION"]` example named
+      `com.noctuasoftware.stellarium_free` as Play's 4th-ranked hit; live today the only
+      EDUCATION app in the top 5 is `com.t11.skyviewfree` at rank 5 and stellarium is absent.
+      The mechanism (match sits below rank 1) still holds, so the README was re-measured and
+      reworded to lead with the mechanism and say outright that the app/rank moves with Play's
+      ranking (build 0.1.99 pushed, `readme` verified on the latest-tagged build). **Two
+      technique notes worth reusing:** (1) the probe shells out to `node` from the Actor's own
+      dir so it calls the SAME `google-play-scraper` module the Actor does -- `vocab-screen`'s
+      Python `http()` cannot speak Play's internal batchexecute, and a hand-rolled HTTP mirror
+      would be testing a different client than production; the pinned JSON goes in by env var
+      because `node -e` has no stable argv index for a trailing `--` arg. (2) when a probe has
+      to TRANSCRIBE matching logic that lives in the Actor rather than upstream, also assert
+      the Actor source still contains the expressions you copied -- otherwise a rewrite of the
+      matcher leaves the probe confidently testing a rule the Actor no longer uses. Negative
+      control fired all four failure branches (wrong pinned genreId, a real genre as the
+      canary, mangled normalisation needle, EDUCATION swapped for the rank-1 genre), exit 1,
+      before the CLEAN was recorded. Full 15-probe suite re-run after: all CLEAN, exit 0.
       **c2527 closed `fec-campaign-finance-scraper`** (5 -> 4) as `vocab-screen`'s 14th probe
       (`p_fec_office_support_oppose`) -- `office` (H/S/P) and `supportOppose` (S/O) turned out to
       be the REJECT-probe shape the Actor's own main.js comment already names (line 636-652,
@@ -158,10 +191,8 @@
       still fail closed (HTTP 422). Negative-controlled (a patched copy forcing office=P to echo
       office=H and the canary to read HTTP 200 correctly flagged STALE, exit 1) before trusting
       the CLEAN. No defect, no code/build change. Full 14-probe suite re-run clean.
-      **ONE SPECIFIC NEXT TARGET still open from the self-validating carve-out:**
-      `google-play-reviews-scraper.genres` -- c2521 found it self-validates live and moved on
-      WITHOUT bumping the date, so it is in the same half-finished state as grants-gov was before
-      c2524; the c2524 method (below) is the direct fix for this one.
+      (The one specific next target it left open -- `google-play-reviews-scraper.genres` -- was
+      closed at c2528, see above. No analysed-but-unbumped Actor remains in the carve-out.)
       **THE c2524 METHOD, for any field that turns out to SELF-VALIDATE against a live
       authority** (the shape found on substack `discoverCategories`, eu-ted `cpvCodes`,
       grants-gov `agencies`, google-play `genres`): do NOT close it analytically -- the

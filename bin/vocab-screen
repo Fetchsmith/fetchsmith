@@ -1079,6 +1079,148 @@ def p_fec_office_support_oppose():
     return not mismatches, out
 
 
+GP_NODE_SRC = r"""
+import gplay from 'google-play-scraper';
+// Passed through the environment, not argv: `node -e` does not forward a trailing `--` arg
+// at a stable argv index.
+const PINNED = JSON.parse(process.env.VOCAB_SCREEN_PINNED);
+const out = { details: {}, search: {} };
+for (const id of Object.keys(PINNED)) {
+  const a = await gplay.app({ appId: id, country: 'us', lang: 'en' });
+  out.details[id] = { genre: a.genre, genreId: a.genreId };
+}
+// fullDetail:true is what main.js:526 pays for on the genres path; the plain call is what
+// it uses without a genres filter.  Both are fetched so the probe can prove the asymmetry.
+const full = await gplay.search({ term: 'sky', num: 5, country: 'us', lang: 'en', fullDetail: true });
+const plain = await gplay.search({ term: 'sky', num: 5, country: 'us', lang: 'en' });
+out.search.full = full.map((x) => ({ appId: x.appId, genre: x.genre, genreId: x.genreId }));
+out.search.plain_genre_fields = plain.map((x) => ({
+  appId: x.appId, hasGenre: x.genre !== undefined, hasGenreId: x.genreId !== undefined }));
+console.log(JSON.stringify(out));
+"""
+
+
+def p_google_play_genres():
+    """google-play-reviews-scraper's `genres` is the CLIENT-SIDE-matched shape (main.js:92-102
+    `genreAllowed()`): nothing is sent upstream, the Actor reads `genre`/`genreId` off each
+    app-details record and keeps the app only if it matches.  c2521 looked at it, saw it
+    cannot go stale in the eu-ted/grants-gov sense (an unknown value matches nothing =
+    fail-CLOSED, the buyer is never charged for rows it let through), and moved on WITHOUT
+    bumping the audit date -- the same half-finished state grants-gov was in before c2524.
+
+    The c2524 method is the fix: the vocabulary genuinely cannot rot, but the LIVE
+    MEASUREMENTS the Actor's own copy hardcodes as load-bearing can, and when they do the
+    code keeps working while its prose goes confidently wrong.  Four of them are pinned here,
+    all measured 2026-09-28 and named in README FAQ "Can I restrict a run to games":
+      1. the four app -> (genre, genreId) pairs that FAQ promises, EXACT match -- these are
+         what makes "`GAME` keeps every game genre" a checkable claim rather than a slogan;
+      2. the GAME-family mechanism (main.js:101): every game id is `GAME_*` and Play puts no
+         bare `GAME` id on an app record, so the shorthand must admit candycrush+clash and
+         exclude spotify+duolingo;
+      3. main.js:512's "a plain search() result carries no genre field (undefined on every
+         hit) -- only fullDetail:true does", which is the entire reason the genres path pays
+         for the more expensive top-5 fullDetail call;
+      4. FAQ "does a searchTerms lookup still use just the top hit": term "sky" with
+         genres:["EDUCATION"] must find a match BELOW rank 1, i.e. #1 is not EDUCATION and
+         some hit in the top 5 is.  Asserted as the MECHANISM, not as a pinned app id --
+         Play's search ranking genuinely moves (c2528 measured a different 4th/5th hit than
+         c2528's README text named), and a probe pinned to a rank would cry wolf monthly.
+
+    Because the matcher lives in the Actor, not upstream, the probe also asserts main.js
+    still contains the two expressions this transcription copies (the `[\\s&]+`->`_`
+    normalisation and the `GAME_`-prefix family clause): if someone rewrites `genreAllowed`,
+    this probe must be re-read rather than silently keep testing a stale copy of the rule."""
+    out = []
+    slug = "google-play-reviews-scraper"
+    mismatches = []
+    # README FAQ line "Verified 2026-09-28: with genres: ["GAME"] ..." -- exact pairs.
+    PINNED = {
+        "com.king.candycrushsaga": ("Casual", "GAME_CASUAL"),
+        "com.supercell.clashofclans": ("Strategy", "GAME_STRATEGY"),
+        "com.spotify.music": ("Music & Audio", "MUSIC_AND_AUDIO"),
+        "com.duolingo": ("Education", "EDUCATION"),
+    }
+
+    src = open(f"{R}/actors/{slug}/src/main.js").read()
+    for name, needle in (("normalisation", r"replace(/[\s&]+/g, '_')"),
+                         ("GAME-family clause", "startsWith(`${fam}_`)")):
+        present = needle in src
+        out.append(f"  main.js {name} still present: {present}")
+        if not present:
+            mismatches.append(f"main.js {name} changed -- re-read genreAllowed() before trusting this probe")
+
+    def norm(s):
+        return re.sub(r"[\s&]+", "_", str(s or "").upper())
+
+    def allowed(rec, wanted):
+        """Transcription of main.js:95-102 genreAllowed()."""
+        w = {norm(x) for x in wanted}
+        if not w:
+            return True
+        gid, gname = str(rec.get("genreId") or "").upper(), norm(rec.get("genre"))
+        if gid in w or gname in w:
+            return True
+        return any(gid.startswith(f"{fam}_") for fam in w if "_" not in fam)
+
+    raw = subprocess.run(["node", "--input-type=module", "-e", GP_NODE_SRC],
+                         cwd=f"{R}/actors/{slug}", capture_output=True, text=True, timeout=240,
+                         env={**os.environ, "VOCAB_SCREEN_PINNED": json.dumps(PINNED)})
+    if raw.returncode != 0:
+        return False, out + [f"  node probe failed rc={raw.returncode}: {raw.stderr.strip()[-400:]}"]
+    live = json.loads(raw.stdout.strip().splitlines()[-1])
+
+    for appId, (genre, genreId) in PINNED.items():
+        got = live["details"].get(appId, {})
+        ok = (got.get("genre"), got.get("genreId")) == (genre, genreId)
+        out.append(f"  {appId}: live ({got.get('genre')!r}, {got.get('genreId')!r}) "
+                   f"vs pinned ({genre!r}, {genreId!r}) -> {'exact' if ok else 'DRIFTED'}")
+        if not ok:
+            mismatches.append(f"{appId} genre pair drifted from the 2026-09-28 README figures")
+
+    recs = [dict(appId=a, **v) for a, v in live["details"].items()]
+    game_in = sorted(r["appId"] for r in recs if allowed(r, ["GAME"]))
+    game_out = sorted(r["appId"] for r in recs if not allowed(r, ["GAME"]))
+    out.append(f"  genres=['GAME'] admits {game_in}, excludes {game_out}")
+    if game_in != ["com.king.candycrushsaga", "com.supercell.clashofclans"]:
+        mismatches.append(f"GAME family no longer matches exactly the two FAQ game apps: {game_in}")
+    if game_out != ["com.duolingo", "com.spotify.music"]:
+        mismatches.append(f"GAME family no longer excludes exactly the two FAQ non-game apps: {game_out}")
+    bare = [r["appId"] for r in recs if str(r.get("genreId") or "").upper() == "GAME"]
+    out.append(f"  bare 'GAME' genreId on an app record: {bare or 'none (as main.js:101 assumes)'}")
+    # Display-name and canary forms, both documented in the schema description.
+    dn = [r["appId"] for r in recs if allowed(r, ["Music & Audio"])]
+    out.append(f"  display-name form 'Music & Audio' matches: {dn}")
+    if dn != ["com.spotify.music"]:
+        mismatches.append(f"display-name form no longer resolves to spotify alone: {dn}")
+    canary = [r["appId"] for r in recs if allowed(r, ["GAME_NOT_A_REAL_GENRE"])]
+    out.append(f"  canary genres=['GAME_NOT_A_REAL_GENRE'] matches: "
+               f"{canary or 'nothing (fails CLOSED as documented)'}")
+    if canary:
+        mismatches.append(f"canary bogus genre matched {canary} -- fail-closed claim broken")
+
+    plain = live["search"]["plain_genre_fields"]
+    leaked = [p["appId"] for p in plain if p["hasGenre"] or p["hasGenreId"]]
+    out.append(f"  plain search('sky') hits carrying a genre field: "
+               f"{leaked or 'none on any of ' + str(len(plain)) + ' hits (main.js:512 holds)'}")
+    if leaked:
+        mismatches.append(f"plain search() now carries genre on {leaked} -- main.js:512's "
+                          "premise (and the cost of the fullDetail top-5 call) is obsolete")
+    full = live["search"]["full"]
+    missing_genre = [h["appId"] for h in full if not h.get("genreId")]
+    if missing_genre:
+        mismatches.append(f"fullDetail search() hits with no genreId: {missing_genre}")
+    edu_ranks = [i + 1 for i, h in enumerate(full) if allowed(h, ["EDUCATION"])]
+    out.append(f"  search('sky') top-5 genreIds: {[h.get('genreId') for h in full]}; "
+               f"EDUCATION at rank(s) {edu_ranks or 'NONE'}")
+    if 1 in edu_ranks or not edu_ranks:
+        mismatches.append("search('sky')+genres=['EDUCATION'] no longer demonstrates the "
+                          f"below-rank-1 case the FAQ is built on (EDUCATION ranks {edu_ranks})")
+
+    if mismatches:
+        out.append(f"  MISMATCHES: {mismatches}")
+    return not mismatches, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -1097,6 +1239,7 @@ PROBES = {
     "clinicaltrials-scraper": ("overallStatus+studyTypes+phases+ageGroups+documentTypes+funderTypes",
                                 p_clinicaltrials_enums),
     "fec-campaign-finance-scraper": ("office+supportOppose", p_fec_office_support_oppose),
+    "google-play-reviews-scraper": ("genres", p_google_play_genres),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)
