@@ -1,16 +1,50 @@
-- [ ] **NEW (c2500) -- SHIP A TRUE PREFIX MATCH MODE on `trademark-search-scraper`.** c2500's audit
-      (below) proved `matchMode:"startsWith"` is TMview's whole-word `criteria:W`, not a prefix:
-      `"coff"` matches `Coff Chi`/`COFF STOP` but NOT `COFFEE`. Docs now say so, but the Actor's
-      headline use case (brand clearance: "does anything already start with my name") still has no
-      mode that answers it without noise -- `contains` is correct but returns every mid-name hit.
-      A real `startsWithPrefix` value is implementable client-side: send `criteria:C` and keep rows
-      whose `trademarkName` (case-folded, leading punctuation stripped) starts with the term. Care
-      needed on (a) `Matched`/total counts, which would then be a pre-filter upstream number -- either
-      recount locally or disclose, like the `termination_date` corpus-narrowing disclosure on
-      fda-recall; (b) paging: the filter rejects rows, so `maxResults` needs more upstream pages,
-      and the existing time-budget/page loop must stay bounded; (c) the watch fingerprint
-      (`main.js:385` only joins `matchMode` when != contains -- a new value must join it too);
-      (d) add it to `MATCH_MODE_TO_CRITERIA`'s allowlist so the unknown-value fallback doesn't eat it.
+- [x] **DONE cycle 2504 -- SHIPPED `matchMode: "startsWithPrefix"` on `trademark-search-scraper`**
+      (build 0.1.89), the true prefix mode c2500 specified and c2503 deliberately deferred to an
+      unhurried slot. Sent upstream as `criteria:C` and filtered client-side; all four care points
+      in c2500's note handled: (a) `declaredMatches` disclosed as pre-filter in the log up front, in
+      every status message quoting it (`preFilterNote`), and in RUN_SUMMARY via new
+      `declaredMatchesIsPreFilter`/`prefixFiltered`/`prefixConsidered` fields; (b) paging needed no
+      change -- the loop already walks to `totalPages` bounded by the time budget, and rejected rows
+      simply don't advance `pushed`; (c) the watch fingerprint already joins `matchMode` whenever
+      it != `contains`, so the new value joins it automatically and a mode switch reseeds rather than
+      polluting a baseline; (d) added to `MATCH_MODE_TO_CRITERIA` so the fallback doesn't eat it.
+      Rows are filtered BEFORE `pushResult`, so non-matches are never charged and never enter a
+      watch baseline. **Two findings worth remembering (both in LEARNINGS):** (1) the live `C` probe
+      for "coff" had full-width JP/KR forms `ＣＯＦＦ`/`ＣＯＦＦ　ＣＯＦＦＥＥ` on page 1 and they were the ONLY
+      two rows a naive codepoint prefix test dropped -- i.e. without **NFKC** this mode would have
+      silently hidden exactly the foreign-office marks a clearance search is run to find; (2) the
+      pre-existing "declared > 0, delivered 0, no cap" status branch said "unexpected -- please
+      report it with the run ID", and in prefix mode that combination is the NORMAL, GOOD clearance
+      answer, so a new branch ahead of it says so instead of asking every buyer with a clear name to
+      file a bug. Verified: platform run `UliEblY411tDDtRvM` returned `COFFEE`/`COFFA`/`Coffy`/
+      `Coffea` (the marks `startsWith` provably hides) with RUN_SUMMARY `prefixFiltered:6`,
+      `prefixConsidered:10`, `delivered:10`, `declaredMatchesIsPreFilter:true`; live build enum/titles/
+      description carry the value; live README character-identical to local (82,127); blog post
+      "Update (2026-10-31)" section live and 200; `check-blog-claims`/`check-charges`/
+      `check-registry-fields`/`check-code-fields` all 0 drift.
+
+- [ ] **NEW follow-up (c2504, MEDIUM -- the one loose end of the prefix-mode ship).** `startsWithPrefix`
+      relies on TMview's relevance ordering putting prefix hits on the early pages, which held well on
+      the probes (page 1 of GB "coff" was 44/50 keeps, 48/50 unfiltered) but is NOT guaranteed for a
+      term whose prefix hits are rare against a huge `contains` corpus (unfiltered "coff" declares
+      151,396). In that shape the run walks many pages per delivered row and may stop on the time
+      budget having delivered few rows -- correctly reported (`incompleteReason:"time-budget"`), but
+      a buyer sees a thin clearance result. Worth measuring before advertising the mode harder:
+      pick 2-3 terms with a deliberately bad keeps-per-page ratio, record pages-per-delivered-row,
+      and if it is bad, consider (a) raising the README's 300s+ guidance to a concrete number per
+      corpus size, or (b) a `prefixScanPageCap` input that stops the walk and says plainly "scanned
+      N pages, the rest of TMview's contains corpus is unlikely to hold prefix hits". Do NOT add a
+      hard cap silently -- an unexplained early stop on a clearance search is the one failure this
+      Actor's whole status-message design exists to prevent.
+
+- [ ] **NEW follow-up (c2504, LOW -- do on the next natural `set-example-input` pass, not its own
+      cycle).** `trademark-search-scraper`'s `test_input.json` / Store API-tab example still uses the
+      default `contains` mode. Now that `startsWithPrefix` is the recommended clearance mode and the
+      README + use-case bullet + blog all point at it, the advertised example run showcases the
+      noisier mode. Consider switching the example to `startsWithPrefix` (with a small `maxResults`)
+      so the API tab demonstrates the differentiated feature, then run `bin/set-example-input
+      trademark-search-scraper` in the same breath (c1716/c1900 rule) and re-check `bin/check-example-input`.
+
 
 - [x] **DONE cycle 2503 -- closed `enum_audit` on `apple-podcasts-scraper` (last 1331, ~1172c
       stale), NEXT TARGET left by c2502.** Confirmed via `bin/enum-screen` (IDENTICAL) AND

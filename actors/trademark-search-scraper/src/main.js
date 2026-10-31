@@ -163,13 +163,37 @@ if (unknownTmTypes.length) {
 // existed), `W` (starts with a COMPLETE word) and `E` (ends with a COMPLETE word). Every other
 // value, including lowercase `c`/`e`/`s`, is a 400 PARAMETER_INCORRECT_FORMAT, so an unrecognised
 // matchMode falls back to `contains` rather than being sent through and breaking the whole run.
-const MATCH_MODE_TO_CRITERIA = { contains: 'C', startsWith: 'W', endsWith: 'E' };
+// `startsWithPrefix` (added cycle 2504) is the one mode TMview has no `criteria` code for, and the
+// one the headline brand-clearance use case actually needs: "is there already a mark whose NAME
+// BEGINS with my term", including inside a longer word ("coff" -> "COFFEE"), which `W` hides and
+// `C` buries under mid-name noise. It is therefore sent upstream as `C` (the widest superset of a
+// prefix match) and filtered client-side in the page loop below -- so it costs no extra PPE events
+// (rejected rows are never pushed or charged) but does walk more upstream pages per delivered row.
+const MATCH_MODE_TO_CRITERIA = { contains: 'C', startsWith: 'W', endsWith: 'E', startsWithPrefix: 'C' };
 const matchModeRaw = String(input.matchMode ?? 'contains').trim();
 const matchMode = MATCH_MODE_TO_CRITERIA[matchModeRaw] ? matchModeRaw : 'contains';
 if (input.matchMode && matchMode !== matchModeRaw) {
-  log.warning(`Match mode "${matchModeRaw}" is not one of contains/startsWith/endsWith — using "contains" instead.`);
+  log.warning(`Match mode "${matchModeRaw}" is not one of ${Object.keys(MATCH_MODE_TO_CRITERIA).join('/')} — using "contains" instead.`);
 }
 const criteriaCode = MATCH_MODE_TO_CRITERIA[matchMode];
+// Client-side prefix filtering is on ONLY for startsWithPrefix; every other mode is pure upstream.
+const prefixMode = matchMode === 'startsWithPrefix';
+// Leading punctuation/whitespace is stripped from BOTH sides so that a buyer searching "acme" also
+// catches marks TMview stores as `"ACME"`, `'Acme`, `-ACME GROUP` etc. -- the mark a clearance
+// search most needs to see is exactly the one whose name is decorated. Case-folded with
+// toLowerCase() (not localeCompare) because the comparison is a prefix test, not a collation.
+// NFKC first, and that is NOT cosmetic: cycle 2504's live probe of `criteria:C` for "coff" had the
+// JP/KR-style FULL-WIDTH forms `ＣＯＦＦ` and `ＣＯＦＦ　ＣＯＦＦＥＥ` (U+FF23...) on page 1, and they were
+// the ONLY two rows a naive codepoint prefix test dropped -- i.e. without NFKC this mode would
+// silently hide exactly the foreign-office marks a clearance search is run to find. NFKC folds
+// full-width Latin, ligatures and U+3000 to their ASCII equivalents; it is applied to the buyer's
+// term too, so a pasted full-width term works as well.
+const stripLead = (s) => String(s ?? '').normalize('NFKC').replace(/^[\s\p{P}\p{S}]+/u, '').toLowerCase();
+const prefixNeedle = prefixMode ? stripLead(searchTerm) : '';
+function matchesPrefix(item) {
+  if (!prefixNeedle) return true; // empty/punctuation-only term: filter nothing rather than everything
+  return stripLead(item.trademarkName).startsWith(prefixNeedle);
+}
 const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
@@ -286,6 +310,9 @@ let pushed = 0;
 // Marks read off TMview this run (including ones dropped by watch mode) -- the webhook's
 // "how much did we look at" number, distinct from `pushed` ("how much did you pay for").
 let scanned = 0;
+// startsWithPrefix only: upstream `C` rows rejected because the name does not BEGIN with the term.
+// Never charged, never pushed. `scanned - prefixFiltered` is what the mode actually considered.
+let prefixFiltered = 0;
 
 // Watch mode: "only what's new since my last run on this label+search" -- distinct from a
 // plain search, which returns the same matching marks every time. Baseline (ST13 ids already
@@ -657,6 +684,19 @@ try {
     declaredMatches = Number(first.totalResults ?? 0);
     totalPages = Number(first.totalPages ?? 0);
     log.info(`TMview: ${declaredMatches} matches for "${searchTerm}"${offices.length ? ` in ${offices.join(', ')}` : ''} (${totalPages} pages).`);
+    if (prefixMode) {
+      // Said up front, before any row is delivered, because the number just logged is NOT this
+      // mode's match count: TMview has no prefix criteria, so that total is the wider `contains`
+      // total and every row still has to be read to find the ones that begin with the term. Same
+      // disclose-the-corpus-narrowing rule as fda-recall-scraper's termination_date note.
+      log.info(
+        `Match mode "startsWithPrefix": the ${declaredMatches} above is TMview's "contains" total (it has no `
+        + 'prefix search), and is a PRE-FILTER number -- only the marks whose name BEGINS with '
+        + `"${searchTerm}" are delivered and charged. Expect delivered << ${declaredMatches}, and expect this run `
+        + 'to read more pages per delivered row than the other modes; RUN_SUMMARY reports the exact '
+        + 'scanned/filtered/delivered split. Give the run 300s+ (Input > Run options) on a broad term.',
+      );
+    }
 
     let keepGoing = true;
     let batch = first.tradeMarks ?? [];
@@ -666,7 +706,15 @@ try {
     while (keepGoing && batch.length) {
       for (const tm of batch) {
         scanned += 1;
-        keepGoing = await pushResult(normalize(tm), tm.ST13 ?? null);
+        const item = normalize(tm);
+        // Rejected BEFORE pushResult, which is what makes this mode free: a filtered row is never
+        // charged, and -- in watch mode -- never enters the baseline either, so the baseline stays
+        // exactly the set of marks this label's own criteria would have delivered. (Switching an
+        // existing label's matchMode is safe for the same reason it always was: matchMode joins the
+        // watch fingerprint whenever it is not `contains`, so a mode change means a new key and a
+        // fresh seed rather than a baseline polluted with another mode's marks.)
+        if (prefixMode && !matchesPrefix(item)) { prefixFiltered += 1; continue; }
+        keepGoing = await pushResult(item, tm.ST13 ?? null);
         if (!keepGoing) break;
       }
       if (!keepGoing) { stoppedByCap = page < totalPages; break; }
@@ -817,6 +865,12 @@ await Actor.setValue('RUN_SUMMARY', {
   searchTerm: searchTerm || null,
   matchMode,
   declaredMatches,
+  // In startsWithPrefix, `declaredMatches` is TMview's wider `contains` total, not this mode's
+  // match count -- flagged explicitly so a pipeline computing coverage as delivered/declared
+  // does not read a correct prefix run as 97% incomplete.
+  declaredMatchesIsPreFilter: prefixMode,
+  prefixFiltered: prefixMode ? prefixFiltered : null,
+  prefixConsidered: prefixMode ? scanned - prefixFiltered : null,
   totalPages,
   pagesFetched,
   scanned,
@@ -846,6 +900,14 @@ await Actor.setValue('RUN_SUMMARY', {
 // together, which produced 0 results while only the status cause got reported. An if/else-if
 // cascade here would silently drop the other two, so the buyer "fixes" one, reruns, and pays
 // again to discover the next -- collect every applicable cause into one message instead.
+// In startsWithPrefix, every "of N match(es) TMview declared" number below is TMview's wider
+// `contains` total, not this mode's own match count -- appended wherever one is quoted so a run
+// that walked to completion and simply filtered the rest out can never read as 2% finished.
+const preFilterNote = prefixMode
+  ? ' NOTE: that TMview total is its wider "contains" total (TMview has no prefix search), so it is a '
+    + `PRE-FILTER number -- match mode "startsWithPrefix" dropped ${prefixFiltered.toLocaleString('en-US')} `
+    + `mark(s) whose name does not BEGIN with "${searchTerm}", and you were not charged for any of them.`
+  : '';
 const zeroRowFilterCauses = [];
 if (statuses.length > 0 && unknownStatuses.length === statuses.length) {
   zeroRowFilterCauses.push(
@@ -883,6 +945,7 @@ if (timeBudgetStopped && !watchMode) {
     + 'ran out of results or failed. Everything delivered is complete and correct as far as it goes, and it '
     + 'stopped itself cleanly instead of being killed part-way. Raise the run timeout (Input > Run options; '
     + '300s+ is a safe default, more for a broad search) or narrow the search to finish the rest. See RUN_SUMMARY.'
+    + preFilterNote
     + (zeroRowFilterCauses.length > 0
       ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`
       : ''),
@@ -905,7 +968,7 @@ if (timeBudgetStopped && !watchMode) {
   await Actor.setStatusMessage(
     `Pushed ${pushed.toLocaleString('en-US')} of ${declaredMatches?.toLocaleString('en-US') ?? '?'} matches TMview declared for this search — `
     + 'stopped early because of this run\'s own maxResults or Apify cost limit, not because TMview ran out of results. '
-    + 'Raise maxResults (or the run\'s cost limit) to get more. See RUN_SUMMARY.',
+    + 'Raise maxResults (or the run\'s cost limit) to get more. See RUN_SUMMARY.' + preFilterNote,
   );
 } else if (pushed === 0 && !watchMode && runError === null && searchTerm) {
   // The THIRD way this Actor can return 0 rows, and until cycle 1752 the only one that said
@@ -931,7 +994,20 @@ if (timeBudgetStopped && !watchMode) {
   if (validOffices.length) appliedFilters.push(`offices ${validOffices.join(', ')}`);
   if (validNice.length) appliedFilters.push(`Nice class${validNice.length > 1 ? 'es' : ''} ${validNice.join(', ')}`);
   if (validStatuses.length) appliedFilters.push(`status ${validStatuses.join(', ')}`);
-  if (declaredMatches !== null && declaredMatches > 0) {
+  if (prefixMode && declaredMatches !== null && declaredMatches > 0) {
+    // FIRST, because this is the one branch where "declared > 0, delivered 0, no cap" is the
+    // NORMAL, correct, and most valuable answer this Actor can give -- a clean brand-clearance
+    // result. Without this branch it falls into the "unexpected, please report it with the run ID"
+    // message below, which would tell every buyer whose name IS clear to file a bug report.
+    await Actor.setStatusMessage(
+      `0 results, and for a clearance search that is the GOOD answer: TMview has ${declaredMatches.toLocaleString('en-US')} `
+      + `mark(s) containing "${searchTerm}" somewhere in the name, but NONE of the `
+      + `${(scanned - prefixFiltered).toLocaleString('en-US')} examined BEGINS with it`
+      + `${appliedFilters.length ? ` once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied` : ''}`
+      + ' -- that is what match mode "startsWithPrefix" asks. This is not an error and not an empty '
+      + 'search: switch to "Contains" to see the mid-name hits it filtered out. You were charged nothing.',
+    );
+  } else if (declaredMatches !== null && declaredMatches > 0) {
     // Not reachable by any filter combination we can construct (a declared match with no cap
     // should always deliver), so report the numbers instead of inventing a cause for it.
     await Actor.setStatusMessage(

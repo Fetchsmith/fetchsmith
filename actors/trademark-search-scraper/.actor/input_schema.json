@@ -13,15 +13,17 @@
     "matchMode": {
       "title": "Match mode",
       "type": "string",
-      "description": "How 'Trademark term' is matched against each trademark's name. 'Contains' (default) matches the term anywhere, as a plain substring -- no word boundary, so \"solar\" also matches \"SOLARWINDS\". 'Whole word anywhere' (value startsWith) requires the term to be a COMPLETE word in the name, but NOT the first one -- verified live cycle 2500: \"syrup\" returns \"SYRUP\", \"HAIR SYRUP\" and \"Coff Syrup\" alike, while \"coff\" returns \"Coff Chi\"/\"COFF STOP\" and NOT \"COFFEE\" (a prefix of a longer word is not a word). 'Ends with these letters' (value endsWith) is the opposite: a plain suffix substring, no word boundary at all -- \"offee\" returns \"toffee\", \"woffee\" and \"COFFEE\". NOTE the two value NAMES are historical and describe neither behaviour exactly: use 'Whole word anywhere' to find the term as its own word, and 'Contains' (not startsWith) for clearance screening, because a mark that BEGINS with your term inside a longer word (\"COFFEE\" for \"coff\") is invisible to the whole-word mode.",
+      "description": "How 'Trademark term' is matched against each trademark's name. 'Contains' (default) matches the term anywhere, as a plain substring -- no word boundary, so \"solar\" also matches \"SOLARWINDS\". 'Starts with these letters' (value startsWithPrefix) is the TRUE prefix mode and the right one for brand clearance: it keeps only marks whose name BEGINS with your term, including inside a longer word -- \"coff\" returns \"COFFEE\" and \"Coff Chi\" but not \"HAIR SYRUP coff\". TMview itself has no prefix search, so this mode asks it for 'contains' and filters the rest out here: rejected marks are never charged, but the run reads more pages per delivered row, so allow 300s+ (Input > Run options) on a broad term, and note that the match total in the log/RUN_SUMMARY is then TMview's wider pre-filter 'contains' total. 'Whole word anywhere' (value startsWith) requires the term to be a COMPLETE word in the name, at any position -- verified live cycle 2500: \"syrup\" returns \"SYRUP\", \"HAIR SYRUP\" and \"Coff Syrup\" alike, while \"coff\" returns \"Coff Chi\"/\"COFF STOP\" and NOT \"COFFEE\" (a prefix of a longer word is not a word). 'Ends with these letters' (value endsWith) is a plain suffix substring, no word boundary at all -- \"offee\" returns \"toffee\", \"woffee\" and \"COFFEE\". NOTE the names startsWith/endsWith are historical and describe neither behaviour exactly; use startsWithPrefix (not startsWith) when you mean \"begins with\".",
       "editor": "select",
       "enum": [
         "contains",
+        "startsWithPrefix",
         "startsWith",
         "endsWith"
       ],
       "enumTitles": [
         "Contains (default)",
+        "Starts with these letters (startsWithPrefix)",
         "Whole word anywhere (startsWith)",
         "Ends with these letters (endsWith)"
       ],

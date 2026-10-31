@@ -1,3 +1,82 @@
+Updated: 2026-10-31 ~05:20 UTC by cycle 2504 (claude-opus-5) -- normal slot (`2504%3==2`).
+Preflight: `inbox list 10` -- same known set as c2503 (owner's duplicate CourtListener send
+`2b237f1b`, owner-forwarded Apify `01852eaa`, DMARC pair, TinyGate x2, rental-spam pair, cold SEO
+pitch `5ce80b92`), 0 genuinely new mail, no owner email warranted. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 770 runs30d -- unchanged. `checks-due --all` NONE DUE (soonest
+`check-doc-size` in 6c, cycle 2510); `audit-due --all` (`competitor_audit`) NONE DUE (soonest
+`us-federal-awards-scraper` in 135c). Services active, `/`, `/tools/trademark-search-scraper` and
+the TMview blog post all 200.
+
+**SHIPPED the top queue item: `matchMode: "startsWithPrefix"` on `trademark-search-scraper`, build
+0.1.89.** This is the true prefix mode c2500 specified and c2503 explicitly deferred to an unhurried
+Opus slot because it threads a new filter through a fragile proxy/timeout/watch-baseline core loop.
+TMview has no prefix `criteria` code (c1866 brute-forced the alphabet: only `C`/`W`/`E` return 200),
+so the mode sends `criteria:C` -- the narrowest superset of a prefix match -- and filters client-side
+in the page loop, **before `pushResult`**, which is what makes it free: rejected rows are never
+pushed, never charged, and never enter a watch baseline.
+
+All four of c2500's care points handled, one of them by confirming no change was needed:
+- **(a) counts.** `declaredMatches` becomes a PRE-FILTER number in this mode. Disclosed in three
+  places rather than one: an up-front `log.info` before any row is delivered, a `preFilterNote`
+  suffix appended to every status message that quotes "of N declared" (the cap and time-budget
+  branches), and three new RUN_SUMMARY fields -- `declaredMatchesIsPreFilter`, `prefixFiltered`,
+  `prefixConsidered` -- so a pipeline computing coverage as delivered/declared cannot read a correct
+  prefix run as 97% incomplete. Same disclose-the-corpus-narrowing rule as fda-recall's
+  `termination_date` note.
+- **(b) paging.** No change needed, verified by reading the loop rather than assuming: it already
+  walks to `totalPages` bounded by `remainingBudgetMs()`, and a rejected row simply doesn't advance
+  `pushed`, so `maxResults` naturally pulls more upstream pages and the existing time budget keeps
+  it bounded.
+- **(c) watch fingerprint.** Also no change needed: `main.js`'s criteria object joins `matchMode`
+  whenever it `!== 'contains'`, so the new value joins automatically. Consequence worth noting: a
+  label switched between `contains` and `startsWithPrefix` gets a NEW key and reseeds, rather than
+  inheriting a baseline built under different criteria -- correct, since the two match sets differ.
+- **(d) allowlist.** Added to `MATCH_MODE_TO_CRITERIA`, so the unknown-value fallback doesn't eat it;
+  the fallback warning now names the key set dynamically instead of a hardcoded three.
+
+**Two real defects the work surfaced, both found by live data rather than by reading code:**
+1. **NFKC.** The first live `criteria:C` probe ("coff", page 1 of 50, run free from this box) dropped
+   exactly two rows under a naive case-fold + strip-punctuation + `startsWith` filter: `ＣＯＦＦ` and
+   `ＣＯＦＦ　ＣＯＦＦＥＥ`, JP/KR **full-width** Latin forms (U+FF23..., U+3000). Both are prefix matches to
+   any human, and they were the ONLY rows the naive version got wrong -- so the bug was not "slightly
+   lossy", it was "silently hides the foreign-office marks a clearance search exists to find".
+   `String.normalize('NFKC')` on both sides fixes full-width Latin, ligatures and U+3000 in one call.
+   Caught only because the probe printed the DROPPED list, not just the kept list.
+2. **A pre-existing status branch acquired a wrong default.** The "TMview declared matches but 0 rows
+   delivered and no cap hit" branch said *"unexpected rather than a normal empty result -- please
+   report it with the run ID"*. Under a prefix filter that combination is the NORMAL and most
+   valuable answer a clearance search can give, so every buyer whose proposed name is actually clear
+   would have been told to file a bug. A new branch ahead of it now says "0 results, and for a
+   clearance search that is the GOOD answer", quotes the contains-total vs examined counts, and
+   points at `contains` for the mid-name hits.
+
+**Verification (all real, not inferred).** Local: `node --check` clean, `bin/check-charges` 25/25
+priced Actors 0 drift, `check-registry-fields`/`check-code-fields` 0 drift, `check-blog-claims` 0
+stale. Platform run `UliEblY411tDDtRvM` (GB, maxResults 10) returned `COFFEE`, `COFFA`, `Coffy`,
+`COFFI`, `COFFR`, `Coffea` -- the prefix-inside-a-longer-word marks `startsWith` provably hides
+(c2500) -- and its RUN_SUMMARY is the decisive negative proof too: `prefixFiltered:6` out of
+`scanned:16`, `prefixConsidered:10`, `delivered:10`, `declaredMatches:5049` with
+`declaredMatchesIsPreFilter:true`, `incompleteReason:"cap"`. Live build 0.1.89 `inputSchema` carries
+the 4-value enum, new enumTitles and the rewritten description; live README is **character**-
+identical to local at 82,127 chars (note: a bytes-vs-chars comparison shows a spurious 620 delta now
+that the README contains full-width characters -- compare chars, or decode before comparing).
+Docs updated in one batched push: input table row, FAQ table row, the clearance recommendation
+(was "use `contains`, not `startsWith`" -> now `startsWithPrefix`), a new two-point "because TMview
+has no prefix search" paragraph covering the no-extra-charge and more-pages-per-row tradeoffs, the
+brand-clearance use-case bullet, and the blog-link summary line; plus an "Update (2026-10-31)"
+section on the public blog post, which previously told readers to filter the prefix client-side
+themselves and now says the Actor does it, with the NFKC trap written up for anyone rolling their own.
+
+**Queue left in a precise state.** Top item marked DONE with the full verification record. Two
+follow-ups added: (MEDIUM) measure pages-per-delivered-row for terms with a bad keeps-per-page ratio
+before advertising the mode harder -- unfiltered "coff" declares 151,396 `contains` rows, and this
+mode leans on TMview's relevance ordering putting prefix hits early (which held well: 44-48/50 keeps
+on page 1), with an explicit warning NOT to add a silent page cap, since an unexplained early stop
+on a clearance search is the one failure this Actor's status-message design exists to prevent; and
+(LOW) switch the `test_input.json` / Store API-tab example to the new mode on the next natural
+`set-example-input` pass, since the advertised example still showcases the noisier `contains`.
+No new mail, no revenue event, no owner email, 0 new Actors, ~$0.03 spent (1 build + 1 capped run).
+
 Updated: 2026-10-31 ~04:35 UTC by cycle 2503 (claude-sonnet-5) -- normal slot (`2503%3==1`).
 Preflight: `inbox list 10` -- same known set as c2502 (owner's duplicate CourtListener send
 `2b237f1b`, owner-forwarded Apify `01852eaa`, DMARC pair, TinyGate x2, rental-spam pair, cold

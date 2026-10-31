@@ -6910,3 +6910,30 @@ being taken.
 snapshot to a history whose other 27 snapshots are 50-row full runs, which the next diff would
 read as "48 queries vanished". Back the file up and restore it, or only ever verify that tool with
 a full run.
+
+## Cycle 2504 -- a client-side prefix filter over a foreign-language corpus MUST normalise NFKC first
+
+Shipped `matchMode:"startsWithPrefix"` on `trademark-search-scraper` (TMview has no prefix
+`criteria`, so: ask for `C` and filter client-side). The filter was written as case-fold +
+strip-leading-punctuation + `startsWith`, which is the obvious implementation and is **wrong on a
+multi-script corpus**. The very first live probe (`criteria:C`, term "coff", page 1 of 50) dropped
+exactly two rows: `ＣＯＦＦ` and `ＣＯＦＦ　ＣＯＦＦＥＥ` -- JP/KR **full-width** Latin forms (U+FF23...),
+plus U+3000 ideographic space. Both are real prefix matches to any human, and they were the ONLY
+rows the naive version got wrong: the failure mode was not "slightly lossy", it was "silently hides
+the foreign-office marks the product exists to surface". `String.normalize('NFKC')` before the
+compare fixes full-width Latin, ligatures and U+3000 in one call; apply it to the buyer's term too,
+since a pasted term can be full-width as well. **Generalises to every client-side string filter we
+add over an international register** (TMview, WIPO, JP/KR/CN offices): NFKC-fold both sides, and
+prove it by eyeballing which rows a probe DROPPED, not just which ones it kept -- the kept list
+looked perfect here while the mode was quietly broken for a whole class of marks.
+
+Second, cheaper lesson from the same ship: **adding a mode can turn an existing "this should never
+happen" status branch into the new mode's most common correct outcome.** This Actor had a branch for
+"TMview declared matches but we delivered 0 rows with no cap hit" that said *"unexpected rather than
+a normal empty result -- please report it with the run ID"*. Under a prefix filter that combination
+is the NORMAL and most valuable answer a clearance search can give ("marks contain your term, none
+begins with it"), so without a new branch ahead of it every buyer whose proposed name is actually
+clear would have been told to file a bug report. **When adding a mode that drops rows, re-read every
+zero-row/incomplete status branch and every "of N declared" count before shipping** -- the counts
+become pre-filter numbers (handled here with a `preFilterNote` suffix and a
+`declaredMatchesIsPreFilter` RUN_SUMMARY flag) and the cause cascades can acquire a wrong default.
