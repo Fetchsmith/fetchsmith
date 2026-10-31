@@ -23,7 +23,7 @@ enum-screen, not instead of it.
 Exit status is 0 when every probe is clean, 1 when any vocabulary value no longer
 resolves upstream (i.e. a buyer-facing filter value has gone stale).
 """
-import datetime as dt, json, re, subprocess, sys, urllib.request, urllib.error, urllib.parse
+import datetime as dt, json, os, re, subprocess, sys, urllib.request, urllib.error, urllib.parse
 
 R = "/root/agent"
 UA = "FetchSmith-vocab-screen/1.0 (+https://fetchsmith.com)"
@@ -1002,6 +1002,83 @@ def p_clinicaltrials_enums():
     return not mismatches, out
 
 
+def p_fec_office_support_oppose():
+    """fec-campaign-finance-scraper's `office` (H/S/P, candidates mode) and `supportOppose`
+    (S/O, independentExpenditures mode) are the REJECT-probe shape the Actor's own main.js
+    comment already names (line 636-652, `guardedFilterNames`/`assertFilterNamesApplied`,
+    added cycle 748): both are format-validated server-side by api.open.fec.gov itself, which
+    returns HTTP 400/422 on an unrecognised value rather than silently dropping the filter.
+    That machinery proves the FILTER NAME is still honoured on every run; it says nothing
+    about whether the three documented office codes and two supportOppose codes are still
+    the right, live, mutually-divergent set -- the actual enum_audit question, last touched
+    one-off at cycle 1519 and never wired into a repeatable probe.
+
+    So: hit the exact endpoints/params main.js itself calls (`/candidates/` + `office=`,
+    `/schedules/schedule_e/` + `support_oppose_indicator=` + a `cycle`, since schedule_e
+    requires a two_year period) for every documented code, assert each returns HTTP 200
+    with a non-zero, mutually-divergent count (not the same number for every code, which
+    would prove the filter was ignored), then assert a canary bad value ("X") gets the
+    documented reject (HTTP 400/422) on both endpoints -- matching the README/comment's
+    fail-closed claim, the opposite of steam-reviews-scraper's fail-open `filterLanguage`
+    (c2522)."""
+    out = []
+    API_KEY = os.environ["FEC_API_KEY"]
+    BASE = "https://api.open.fec.gov/v1"
+    mismatches = []
+
+    def get(path, **params):
+        params["api_key"] = API_KEY
+        qs = urllib.parse.urlencode(params)
+        status, body = http_raw(f"{BASE}{path}?{qs}")
+        try:
+            data = json.loads(body)
+        except Exception:
+            data = {}
+        return status, data
+
+    office_field = field("fec-campaign-finance-scraper", "office")
+    office_codes = [c for c in office_field.get("enum", []) if c]
+    out.append(f"  schema office codes: {office_codes}")
+    office_counts = {}
+    for code in office_codes:
+        status, data = get("/candidates/", office=code, per_page=1)
+        office_counts[code] = (status, data.get("pagination", {}).get("count"))
+    out.append(f"  office live counts: {office_counts}")
+    dead = [c for c, (s, n) in office_counts.items() if s != 200 or not n]
+    if dead:
+        mismatches.append(f"office dead/failing codes: {dead}")
+    if len({n for _, n in office_counts.values()}) == 1:
+        mismatches.append("office: every code returned the same count (filter ignored)")
+    status, _ = get("/candidates/", office="X", per_page=1)
+    out.append(f"  office canary office=X -> HTTP {status} "
+               f"({'fails closed as documented' if status in (400, 422) else 'CONTRADICTS fail-closed claim'})")
+    if status not in (400, 422):
+        mismatches.append(f"office canary did not fail closed (got HTTP {status})")
+
+    so_field = field("fec-campaign-finance-scraper", "supportOppose")
+    so_codes = [c for c in so_field.get("enum", []) if c]
+    out.append(f"  schema supportOppose codes: {so_codes}")
+    so_counts = {}
+    for code in so_codes:
+        status, data = get("/schedules/schedule_e/", support_oppose_indicator=code, cycle=2024, per_page=1)
+        so_counts[code] = (status, data.get("pagination", {}).get("count"))
+    out.append(f"  supportOppose live counts: {so_counts}")
+    dead = [c for c, (s, n) in so_counts.items() if s != 200 or not n]
+    if dead:
+        mismatches.append(f"supportOppose dead/failing codes: {dead}")
+    if len({n for _, n in so_counts.values()}) == 1:
+        mismatches.append("supportOppose: every code returned the same count (filter ignored)")
+    status, _ = get("/schedules/schedule_e/", support_oppose_indicator="X", cycle=2024, per_page=1)
+    out.append(f"  supportOppose canary support_oppose_indicator=X -> HTTP {status} "
+               f"({'fails closed as documented' if status in (400, 422) else 'CONTRADICTS fail-closed claim'})")
+    if status not in (400, 422):
+        mismatches.append(f"supportOppose canary did not fail closed (got HTTP {status})")
+
+    if mismatches:
+        out.append(f"  MISMATCHES: {mismatches}")
+    return not mismatches, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -1019,6 +1096,7 @@ PROBES = {
     "grants-gov-scraper": ("agencies", p_grants_gov_agencies),
     "clinicaltrials-scraper": ("overallStatus+studyTypes+phases+ageGroups+documentTypes+funderTypes",
                                 p_clinicaltrials_enums),
+    "fec-campaign-finance-scraper": ("office+supportOppose", p_fec_office_support_oppose),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

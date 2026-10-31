@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2526 (QUALITY/GROWTH slot, 2526 % 3 == 0) -- nothing fleet-wide due, so ran
+      the cheap `bin/devto-comments --all` growth check and answered the one genuinely new
+      inbound comment.** Preflight: `checks-due --all` / `audit-due --all` both NONE DUE;
+      `check-doc-size` OK on all three docs; inbox had nothing new/actionable (owner's
+      CourtListener-token reply and Apify Nov-15 Store-API notice both already long-resolved/
+      tracked; a second Bytewells rental-marketplace pitch, DMARC pair, spam -- no reply, no
+      owner email). Services/site 200 throughout. **Work:** `@ontomato` commented on dev.to
+      article 4946406 with a real on-topic claim (treat a zero-amount field as a named object
+      with a definition, not a raw number) -- cleared the reply bar. Replied via
+      `PUT /api/articles/4946406` (the only channel; dev.to has no comment-reply API), tying
+      their point to the article's actual `flag` vocabulary (`ena`/`nsi`) and to why
+      `sam-gov-opportunities-scraper` ships the raw structure instead of a collapsed amount.
+      Hit dev.to's bot-WAF (403) with a bare `urllib` PUT until the known browser `User-Agent`
+      fix from `bin/devto-post` was applied; re-ran `bin/devto-comments --all` after, confirmed
+      0 unanswered. **Deliberately NOT attempted** (too large/risky for a ~25min cycle): the
+      c2492 `bin/audit-due` CLEAN-vocabulary widening (flagged UNSAFE direction, needs careful
+      hand-verification) -- still open below, do it on a cycle with more runway, not opportunistically.
+      Also re-checked for a fresh one-term-diff growth candidate (c2380 follow-up): none found
+      (`federal-register-scraper` is still the only README matching the growth-count pattern,
+      already closed at c2389). $0 spent, 0 new Actors, no revenue event, no owner email. Full
+      detail in `state/STATUS.md` cycle 2526. **Next QUALITY/GROWTH slot: cycle 2529.**
+
 - [x] **DONE cycle 2524 (normal slot, 2524 % 3 == 1) -- closed `grants-gov-scraper.agencies`
       out of the `enum_audit` backlog (7 -> 6 DUE) by running the live probe c2514 deliberately
       withheld.** Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 5c,
@@ -122,18 +144,20 @@
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
       honest way to close the rest, because it both records the audit AND tests something
-      live.** **5 DUE as of c2525** -- `fec-campaign-finance-scraper`, `app-store-reviews-scraper`,
+      live.** **4 DUE as of c2527** -- `app-store-reviews-scraper`,
       `google-play-reviews-scraper`, `shopify-products-scraper`, `ats-jobs-scraper`.
-      **c2525 closed `clinicaltrials-scraper`** (6 -> 5) as `vocab-screen`'s 13th probe --
-      CORRECTING c2524's premise along the way: this field does NOT self-validate live (it is a
-      plain hardcoded `Set` in main.js, never rebuilt at runtime, unlike grants-gov/substack/
-      eu-ted), so the c2524 method below did not apply. Instead found that 4 of its 6 fields use
-      `filter.advanced=AREA[Field](code)`, whose live 400 on a bad code ECHOES THE FULL ENUM
-      verbatim -- an exact-set-match check, stronger than nonzero-and-divergent. See
-      `state/STATUS.md` cycle 2525 and the matching LEARNINGS.md entry for the technique; reuse
-      it on `fec-campaign-finance-scraper` (new NEXT TARGET per `audit-due`, last 1519) by
-      checking whether its enum fields route through an AREA-style advanced filter on whatever
-      API it calls before assuming nonzero-and-divergent is the best available check.
+      **c2527 closed `fec-campaign-finance-scraper`** (5 -> 4) as `vocab-screen`'s 14th probe
+      (`p_fec_office_support_oppose`) -- `office` (H/S/P) and `supportOppose` (S/O) turned out to
+      be the REJECT-probe shape the Actor's own main.js comment already names (line 636-652,
+      added cycle 748: api.open.fec.gov format-validates both fields server-side and 400/422s an
+      unrecognised value). That existing machinery proves the FILTER NAME still works every run;
+      it said nothing about whether the documented CODES are still the live, divergent set, so it
+      had never closed the actual enum_audit question. Hit `/candidates/?office=` and
+      `/schedules/schedule_e/?support_oppose_indicator=&cycle=2024` for every documented code:
+      all live and mutually divergent (H=39610/S=8257/P=6952, S=118878/O=37764), both canaries
+      still fail closed (HTTP 422). Negative-controlled (a patched copy forcing office=P to echo
+      office=H and the canary to read HTTP 200 correctly flagged STALE, exit 1) before trusting
+      the CLEAN. No defect, no code/build change. Full 14-probe suite re-run clean.
       **ONE SPECIFIC NEXT TARGET still open from the self-validating carve-out:**
       `google-play-reviews-scraper.genres` -- c2521 found it self-validates live and moved on
       WITHOUT bumping the date, so it is in the same half-finished state as grants-gov was before

@@ -1,3 +1,99 @@
+Updated: 2026-10-31 ~16:36 UTC by cycle 2527 (claude-sonnet-5). Normal slot (2527 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 2c, cycle 2529);
+`audit-due --all` NONE DUE for `competitor_audit` (soonest `us-federal-awards-scraper` in 112c,
+cycle 2639). `bin/revenue`: $0 booked, 25 public Actors, 47 users, 778 runs30d, `ext_bad30d` 3
+matching baseline. `bin/apify-spend` $5.5439 used, projection $7.57, well under the $25 stop
+line. Services active throughout; `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Inbox triage:** `inbox list 10` -- same long-known set as c2526 (DMARC pair, TinyGate pitch,
+Bytewells/ThoughtPivot rental-marketplace pitch pair, owner's long-resolved CourtListener-token
+reply, owner's forwarded Apify Store-API Nov-15 notice already tracked, book spam). No new mail,
+no owner email needed (rule 3).
+
+**Work this cycle (normal slot): closed `fec-campaign-finance-scraper` out of the `enum_audit`
+backlog (5 -> 4 DUE), the NEXT TARGET c2525 left open.** Read the schema's two enum fields --
+`office` (H/S/P, candidates mode) and `supportOppose` (S/O, independentExpenditures mode) -- and
+found both are the REJECT-probe shape the Actor's own main.js comment already documents (line
+636-652, `guardedFilterNames`/`assertFilterNamesApplied`, added cycle 748): api.open.fec.gov
+format-validates both fields server-side and returns HTTP 400/422 on an unrecognised value
+rather than silently dropping the filter. That existing runtime machinery proves the FILTER
+NAME still works every single run; it proves nothing about whether the 3 office codes and 2
+supportOppose codes are still the right, live, divergent set -- the actual enum_audit question,
+last touched one-off at cycle 1519 and never wired into a repeatable probe.
+
+Added `p_fec_office_support_oppose` as `bin/vocab-screen`'s 14th probe: hit the exact
+live endpoints/params main.js itself calls (`/candidates/?office=<code>` and
+`/schedules/schedule_e/?support_oppose_indicator=<code>&cycle=2024`) for every documented code.
+RESULT CLEAN -- all live and mutually divergent (office H=39610/S=8257/P=6952, supportOppose
+S=118878/O=37764), and both canaries (`office=X`, `support_oppose_indicator=X`) still fail
+closed with HTTP 422, matching main.js's comment and the opposite of steam-reviews-scraper's
+fail-open `filterLanguage` (c2522). **Negative control run before trusting the CLEAN** (per the
+backlog's own rule): a sed-patched copy forcing `office=P` to echo `office=H`'s count AND
+forcing the office canary to read HTTP 200 (simulated fail-open) correctly flagged both the
+dead-filter and fail-closed-contradiction branches and exited 1. No Actor defect found on the
+real source, so no code/build change needed. Full 14-probe `vocab-screen` suite re-run clean,
+no regressions. Recorded in `state/audit_dates.json` (`enum_audit`: 1519 -> 2527,
+`enum_audit_note` updated with the method and numbers). $0 spent (free unauthenticated-by-us-key
+API calls against our own existing `FEC_API_KEY`, no Apify run), 0 new Actors, $0 revenue
+booked, no owner email warranted.
+
+**Next cycle:** 4 `enum_audit` items remain DUE -- `app-store-reviews-scraper`,
+`google-play-reviews-scraper`, `shopify-products-scraper`, `ats-jobs-scraper`. One of them,
+`google-play-reviews-scraper.genres`, is already half-analysed (c2521 found it self-validates
+live but never bumped the date) -- the c2524 self-validating method applies directly; see
+`tasks/queue.md`'s `enum_audit` block for the full writeup. Next QUALITY/GROWTH slot is cycle
+2529 (2529 % 3 == 0).
+
+---
+
+Updated: 2026-10-31 ~16:05 UTC by cycle 2526 (claude-sonnet-5). QUALITY/GROWTH slot (2526 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 3c, cycle 2529);
+`audit-due --all` NONE DUE for `competitor_audit` (soonest `us-federal-awards-scraper` in 113c,
+cycle 2639). `check-doc-size` OK on all three live docs (STATUS.md 77.4KB/974 lines, queue.md
+54.5KB/557 lines, LEARNINGS.md 7277/8000 lines; ~27-36 cycles headroom each). `bin/revenue`: $0
+booked, 25 public Actors, 47 users, 776 runs30d, `ext_bad30d` 3 matching baseline.
+`bin/apify-spend` $5.5434 used, projection $7.58, well under the $25 stop line. Services active
+throughout; `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Inbox triage:** `inbox list 10` showed the same long-known set (DMARC pair, TinyGate pitch,
+rental-marketplace pitch pair from Bytewells/ThoughtPivot -- a second unsolicited email,
+`a661a19a`, confirming their public launch Nov 2; not actionable, no reply, matches the
+already-declined c-prior pattern of unsolicited Actor-rental marketplace pitches), owner's
+long-resolved CourtListener-token reply (`2b237f1b` -- re-verified `CL_API_TOKEN` is live in
+`secrets/env`, this was fully wired in weeks ago, nothing to do), owner's forwarded Apify
+Store-API Nov-15 notice (`01852eaa` -- already tracked/hardened per c2478/c2496, deadline still
+15 days out, no action due yet), book spam, SEO/IP-lease pitches. No owner email needed (rule 3):
+nothing booked, nothing only the owner can fix.
+
+**Work this cycle (QUALITY/GROWTH slot, nothing fleet-wide due so spent on growth per PLAYBOOK):**
+ran `bin/devto-comments --all` (cheap, read-only, explicitly a QUALITY/GROWTH-cycle tool per
+PLAYBOOK even though its own fleet_checks.json cadence hadn't come due) and found one genuinely
+new, substantive inbound comment: `@ontomato` on article 4946406 ("A zero in federal program
+funding history doesn't mean zero dollars"), posted 2026-10-31, making a real on-topic claim
+(treat a zero-amount cell as a named object with a definition, not a raw number, before trusting
+it as money) rather than content-free praise -- clears the reply bar PLAYBOOK sets
+(raknaos/dododata/launchgatecheck precedent). Replied via the only channel dev.to's API exposes
+(`PUT /api/articles/4946406` appending a `## Reader note:` section naming the commenter, after
+fetching `body_markdown` and re-sending it in full) -- the plain `urllib` PUT 403'd on dev.to's
+bot-WAF until the known browser `User-Agent` fix from `bin/devto-post` was added. The reply ties
+their generic advice to the article's actual data: the catalog's real `flag` vocabulary (`ena`
+696 entries = "not funded," `nsi` 340 = "booked under a different program"), and confirms
+`sam-gov-opportunities-scraper` already ships `flag`/`explanation` alongside the raw numbers for
+exactly that reason. Re-ran `bin/devto-comments --all` after: 0 unanswered, confirmed live.
+
+**Considered but did NOT attempt this cycle (deliberately, time-boxed):** the c2492 `bin/audit-due`
+`CLEAN`-vocabulary-widening item (queue.md) is explicitly flagged as the UNSAFE direction
+(lengthens audit intervals) requiring careful hand-verification of every newly-nonzero streak
+against OLDEST-first notes -- too large to do justice to in a single ~25-minute cycle without
+rushing a correctness-sensitive change. Left untouched for a cycle with more runway. Also checked
+for a fresh "growing niche" one-term-diff candidate (the c2380 follow-up) via
+`grep -onE "[0-9]+ -> [0-9]+ ... listings"` across all READMEs -- only hit was
+`federal-register-scraper`, already closed at c2389 -- so no fresh candidate exists right now;
+do not re-grep for this again without a reason to think a README changed.
+
+$0 spent, 0 new Actors, no revenue event, no owner email. Next QUALITY/GROWTH slot: cycle 2529.
+
+---
 Updated: 2026-10-31 ~15:30 UTC by cycle 2525 (claude-sonnet-5). Normal slot (2525 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 4c, cycle 2529);
 `audit-due --all` NONE DUE for `competitor_audit` (soonest `us-federal-awards-scraper` in 114c,

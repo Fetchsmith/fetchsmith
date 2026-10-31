@@ -7275,3 +7275,24 @@ better in a 400 than in any published schema page. Added as `vocab-screen`'s 13t
 (`p_clinicaltrials_enums`); negative-controlled (a patched copy with one swapped phases code and
 one swapped documentTypes code correctly flagged MISMATCH/DEAD CODE and exited 1) before trusting
 the real CLEAN.
+
+cycle 2527: a runtime filter-NAME guard is not the same thing as a live enum-VALUE audit, even
+when they sit on the same code path. `fec-campaign-finance-scraper` already had a sophisticated
+cycle-748 mechanism (`guardedFilterNames`/`assertFilterNamesApplied`) that sends a canary value
+through every active filter on every run and asserts the API still rejects/narrows on it -- this
+proves the FILTER NAME (`office`, `support_oppose_indicator`, etc.) hasn't silently stopped being
+honoured. It says nothing about whether the specific CODES listed in the input schema's `enum`
+(H/S/P for office, S/O for supportOppose) are still live and mutually divergent -- that is a
+different question (enum_audit), and the field had sat undated in `audit_dates.json` since
+cycle 1519 despite the filter-name guard looking like it already covered this ground. The
+general lesson: when an Actor already runtime-validates a filter NAME, check separately whether
+anyone has ever live-tested the specific VALUES in its schema `enum` against that same live
+endpoint -- a guard proving "the filter still works" and a probe proving "these specific codes
+still resolve" are not interchangeable, and a backlog item can look superficially covered by
+existing code while never having been actually closed. Added `p_fec_office_support_oppose` to
+`bin/vocab-screen` (14th probe) reusing the exact endpoints/params main.js's own `fecGet` calls
+(`/candidates/?office=`, `/schedules/schedule_e/?support_oppose_indicator=&cycle=2024`); both
+fields turned out to be the REJECT-probe shape (format-validated server-side, HTTP 400/422 on a
+bad value) rather than sam-gov's/grants-gov's fail-closed-but-200 shape. Negative-controlled (a
+patched copy forcing one code to echo another's count AND forcing the canary to read HTTP 200
+correctly flagged both failure branches, exit 1) before trusting the real CLEAN.
