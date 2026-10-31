@@ -65,7 +65,10 @@ def search(query, token=None):
         req.add_header("Authorization", "Bearer " + token)
     d = json.load(urllib.request.urlopen(req, timeout=30))["data"]
     ours = [i["name"] for i in d["items"] if i.get("username") == "fetchsmith"]
-    return d["total"], len(d["items"]), ours
+    # `total` leaves the /v2/store payload on 2026-11-15 (c2478's notice; this caller
+    # was missed by that sweep and found c2496). It was indexed directly, so the change
+    # would have been a hard KeyError here, not a degraded reading.
+    return d.get("total"), len(d["items"]), ours
 
 
 def main():
@@ -84,10 +87,15 @@ def main():
             visible_anywhere = True
         flag = "  <-- PUBLICLY VISIBLE" if a_ours else ""
         note = ""
-        if a_total == t_total and len(t_ours) > len(a_ours):
+        # "same match set, fewer items visible" is the filtered signal. With `total`
+        # gone both sides read None and `a_total == t_total` would be vacuously true,
+        # so require a real number before claiming filtering (c2496).
+        if a_total is not None and a_total == t_total and len(t_ours) > len(a_ours):
             note = f"  [filtered: index counts {len(t_ours)}, public sees {len(a_ours)}]"
-        print(f"{q:18} {a_total:>6} {a_items:>10} {t_items:>10}  "
-              f"{len(a_ours)} / {len(t_ours)}{note}{flag}")
+        elif a_total is None and len(t_ours) > len(a_ours):
+            note = "  [auth sees more, but `total` is gone -- cannot confirm same match set]"
+        print(f"{q:18} {('n/a' if a_total is None else a_total):>6} {a_items:>10} "
+              f"{t_items:>10}  {len(a_ours)} / {len(t_ours)}{note}{flag}")
     print()
     if visible_anywhere:
         print("RESULT: the /v2/store REST filter has lifted (we now appear to anonymous")

@@ -16,6 +16,20 @@ NOT enough: cycle 2072 first read 5 Actors as "ABSENT from the first ~85" when p
 showed them at #108-#354. Absence from page 1 means "ranked deep", never "not matching" --
 do not re-make that misread.
 
+PAGING DIES 2026-11-15 (cycle 2478 found this in Apify's own notice, hardened c2496).
+From that date `/v2/store?search=` returns ONE page of up to 100 and `offset`/`total`
+stop working (`sortBy` is ignored too, and `bookmarkCount` leaves the payload -- this
+tool reads neither). Measured c2496 against the live pre-change API: offset 0/90/180 each
+returned a DIFFERENT first item, so paging still worked that day. `rank()` now detects
+the dead-paging state structurally -- it remembers each page's first (username, name)
+and stops the moment one repeats -- and reports **RANK UNKNOWN**, never "NOT FOUND".
+That distinction is the whole point: the old code would have re-scanned page 1 four
+times and printed a confident false negative for every Actor ranked deeper than ~96,
+which is MOST of them (the c2072 baseline is #29-#354). When you see UNKNOWN rows, do
+not read them as a ranking collapse and do not "fix" metadata in response; deep rank is
+simply no longer observable on this surface. Use `bin/store-rank` (Algolia -- the actual
+buyer-facing search box, and unaffected by this change) for deep ranks from then on.
+
 WHAT CYCLE 2072 FOUND (the baseline this tool exists to re-check):
   ours ranked #29-#354 on all 12 core terms; #1 for each term had 5-110 totalUsers, we
   have 1-2. The decisive evidence is the `grants.gov` natural experiment: SIXTEEN Actors
@@ -77,25 +91,41 @@ def users_of(item):
 
 
 def rank(query, slug, max_scan):
-    """1-based anonymous rank of USERNAME/slug, plus the #1 holder for context."""
+    """1-based anonymous rank of USERNAME/slug, plus the #1 holder for context.
+
+    Returns (pos, scanned, total, top, ours_users, paging_ok). `paging_ok` is False
+    when `offset` stopped advancing the window -- see PAGING note in the docstring.
+    """
     offset = 0
     scanned = 0
     top = None
     total = None
+    paging_ok = True
+    seen_firsts = set()
     while scanned < max_scan:
         data = fetch(query, offset)
-        total = data["total"]
+        # `total` is one of the fields the 2026-11-15 change drops; never index it.
+        if data.get("total") is not None:
+            total = data["total"]
         items = data["items"]
         if not items:
             break
-        if top is None and items:
+        if top is None:
             top = items[0]
+        first_key = (items[0].get("username"), items[0].get("name"))
+        if first_key in seen_firsts:
+            # `offset` was accepted but ignored: this page starts where an earlier one
+            # did, so we are re-scanning page 1 forever. Stop and report UNKNOWN rather
+            # than burn max_scan/|page| calls and then claim a false NOT FOUND.
+            paging_ok = False
+            break
+        seen_firsts.add(first_key)
         for i, item in enumerate(items):
             if item.get("username") == USERNAME and item.get("name") == slug:
-                return scanned + i + 1, scanned, total, top, users_of(item)
+                return scanned + i + 1, scanned, total, top, users_of(item), True
         scanned += len(items)
         offset += len(items)
-    return None, scanned, total, top, None
+    return None, scanned, total, top, None, paging_ok
 
 
 def main():
@@ -114,19 +144,25 @@ def main():
 
     worst = 0
     missing = 0
+    unknown = 0
     print("anonymous /v2/store rank (no auth, no runs) -- deep rank is users-gated, "
           "NOT a metadata bug; see this file's docstring")
     print()
     for query, slug in pairs:
         try:
-            pos, scanned, total, top, ours_users = rank(query, slug, max_scan)
+            pos, scanned, total, top, ours_users, paging_ok = rank(query, slug, max_scan)
         except Exception as exc:                      # network/API hiccup, not a finding
             print("%-19s ERROR %s" % (query, exc))
             continue
         top_desc = "-"
         if top is not None:
             top_desc = "#1=%s/%s users=%s" % (top.get("username"), top.get("name"), users_of(top))
-        if pos is None:
+        if pos is None and not paging_ok:
+            unknown += 1
+            print("%-19s total=%-5s RANK UNKNOWN: absent from page 1 (%d scanned) and "
+                  "/v2/store `offset` no longer advances -- NOT a 'not found'  | %s"
+                  % (query, total, scanned, top_desc))
+        elif pos is None:
             missing += 1
             print("%-19s total=%-5s NOT FOUND in first %d  | %s"
                   % (query, total, scanned, top_desc))
@@ -136,8 +172,12 @@ def main():
                   % (query, total, pos, ours_users, top_desc))
 
     print()
-    print("worst rank seen: #%d; queries where we fell outside the scan budget: %d"
-          % (worst, missing))
+    print("worst rank seen: #%d; queries where we fell outside the scan budget: %d; "
+          "queries unrankable because paging is gone: %d" % (worst, missing, unknown))
+    if unknown:
+        print("UNKNOWN != regression: after 2026-11-15 /v2/store serves one page of <=100 and")
+        print("ignores `offset`, so any rank deeper than page 1 is simply not measurable here.")
+        print("Use bin/store-rank (Algolia, the real buyer surface) for deep ranks instead.")
     print("Baseline cycle 2072: #29-#354 across all 12. A rank IMPROVING into the top ~20")
     print("without totalUsers rising would falsify the users-gating finding -- that would be")
     print("the news. Deep ranks are the expected state, not a regression to go fix.")

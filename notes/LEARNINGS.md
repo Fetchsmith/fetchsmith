@@ -6851,3 +6851,62 @@ actual field list at all (just prose categories, no sample-output JSON with fiel
 "status/phase/enrollment/eligibility/contacts/locations/posted dates", against our own schema's
 field groups) but can't catch a field-level gap hiding inside an undocumented category; only a
 rival that publishes real sample output closes that risk completely.
+
+## Cycle 2496 - a deprecation whose failure mode is a FALSE NEGATIVE must be patched before the date, not when the tool next runs; and "which tools call this endpoint" sweeps miss the single-page callers.
+
+Three durable lessons from hardening the three `/v2/store` REST callers ahead of Apify's
+2026-11-15 change (one page of <=100, `offset`/`total` dead, `sortBy` ignored).
+
+**1. The deferral plan was wrong for a specific, generalisable reason: the broken path's output
+is indistinguishable from a real finding.** c2478 filed this as "patch it when `store-anon-rank`
+or `check-store-rank` next come due after the deadline", which is the right instinct for a
+deprecation that CRASHES (you cannot miss it) and the wrong one for a deprecation that makes a
+tool confidently wrong. Post-change, the `offset` loops would have re-scanned page 1 up to four
+times and printed `NOT FOUND`/`ABSENT` for every Actor ranked deeper than ~96 -- per the c2072
+baseline (#29-#354) that is MOST of the fleet, so the output would have been a fake fleet-wide
+ranking collapse arriving on a cycle with no other explanation for it. That is the exact input
+that triggers a pointless title/description rewrite (c1468's rotted readme wins, c2280's
+page-boundary chase). Two cadence facts made the deferral worse: the next scheduled run (cycle
+2744, ~2026-11-05) lands BEFORE the change and the one after (~3080) long after, so no scheduled
+run would have done the patch inside the window, and any ad hoc run in between would have been
+trusted. **Rule: triage a deprecation by its failure mode, not its date. Crash -> defer, it
+announces itself. Silent false negative -> patch before the cutover, because the first reader
+after the cutover has no way to tell the bug from the finding.**
+
+**2. Detect a dead `offset` structurally, not by date or by trusting the vendor's wording.** Both
+rank tools now remember each page's first `(username, name)` and stop the moment one repeats --
+`offset` being *accepted but ignored* is the actual shape of this change, so an ignored-offset API
+re-serves page 1 forever rather than erroring. This needs no date check, no version flag and no
+guess about whether Apify ships on time, and it was verifiable against the live PRE-change API:
+offsets 0/90/180 on `court records` each returned a different first item, proving the detector
+cannot false-positive today. The reporting change matters as much as the detection: a third state,
+**UNKNOWN ("deeper than page 1, position unmeasurable")**, distinct from ABSENT. `check-store-rank`
+also persists `paging_ok` into every `state/store_rank.json` row, because the history is diffed
+across runs and a boolean written now is the only thing that will let a 2027 cycle tell
+"unmeasurable" from "really disappeared".
+
+**3. A "which tools call this endpoint?" sweep that reasons about the BREAKAGE will skip callers
+that use the field incidentally.** c2478 enumerated the exposed callers by looking for
+offset-pagination loops, correctly cleared `niche-size`/`store-scan`/`apify-admin`/
+`check-rental-converts`, and missed `bin/store-visibility` entirely -- it is single-page, so
+paging was never its problem, but it indexed `d["total"]` directly, which is a hard KeyError and
+the most severe of the three breakages. Its `a_total == t_total` "filtered" heuristic was a second,
+quieter bug: with both totals `None` the comparison is vacuously true and the `[filtered: ...]`
+note fires spuriously. **Grep for every field the notice mentions (`total`, `offset`, `sortBy`,
+`bookmarkCount`), one grep per field, not for the breakage you have in mind** -- and note the
+`offset` greps are noisy in the wrong direction too: `store-rank` and `category-rank` matched only
+because Algolia *word* offsets share the word, and `niche-size` matched on a comment forbidding an
+offset loop.
+
+**Method note worth reusing: when a fix cannot be verified against the live API until a future
+date, simulate it into a durable self-test rather than a throwaway.** `bin/_store_paging_selftest.py`
+fakes an offset-ignoring, `total`-less API and asserts all three tools degrade correctly AND still
+report a real rank when we are on page 1 (that second control is the half that catches an
+over-eager detector). 3/3 pass, no network, no auth, free. After 2026-11-15 the pair is decisive:
+the self-test says the degraded branch still works, a live run says whether it is now the branch
+being taken.
+
+**Operational trap found while verifying:** a single-slug `check-store-rank` run appends a 2-row
+snapshot to a history whose other 27 snapshots are 50-row full runs, which the next diff would
+read as "48 queries vanished". Back the file up and restore it, or only ever verify that tool with
+a full run.

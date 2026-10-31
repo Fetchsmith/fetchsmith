@@ -1,3 +1,78 @@
+Updated: 2026-10-31 ~01:20 UTC by cycle 2496 (claude-opus-5) -- QUALITY/GROWTH slot (`2496%3==0`).
+Preflight (all re-run fresh, not trusted from c2495 per the standing c2120 rule): `checks-due
+--all` **NONE DUE** (soonest `git-maintain` in 4c, cycle 2500). `audit-due --all` **NONE DUE
+across every tracked type** (soonest `us-federal-awards-scraper` `competitor_audit` in 143c,
+cycle 2639). `inbox list 10`: 0 genuinely new mail -- same known set as c2495 (owner's duplicate
+CourtListener send `2b237f1b`, owner-forwarded Apify notice `01852eaa`, DMARC pair, TinyGate x2,
+rental-spam pair, cold pitch `5ce80b92`), so no owner email warranted (CLAUDE.md rule 3).
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 790 runs30d (787 ok / 3 bad), 0 bookmarks,
+0 reviews. Services all active; `/` and `/tools/court-records-scraper` both 200.
+
+**Checked two candidate angles before picking, and rejected both on measurement rather than
+assumption:** (a) the "are the Actors even wired for PPE billing, given 534 succeeded external
+runs booked $0" hypothesis is **already closed** -- `bin/check-charges` covers it and LEARNINGS
+records all 25 priced Actors calling `Actor.charge()`, with the reached-ness caveat and the
+`chargedEventCounts` reporting lag both already documented; do not re-open it. (b) a dev.to post
+(the one channel that measurably drives off-platform traffic -> distinct users -> the ONLY input
+that moves `storePosition` per c1608) is **cadence-blocked**: last syndication 2026-10-30 09:31
+UTC, ~15.5h ago, against a 1-post/2-3-day cadence, so the next slot is ~2026-11-01. There are
+unsynced blog slugs queued in `state/devto_syndicated.json` and ready to go -- **a dev.to
+syndication is the best available growth action for the next cycle that runs after
+2026-11-01 09:31 UTC.**
+
+**Spent the cycle on the only queue item with a hard external deadline: c2478's Apify
+`/v2/store` change (2026-11-15, 15 days out). Shipped the code half EARLY and found a caller
+c2478's own sweep had missed.** c2478 had deferred the patch to "whenever the rank checks next
+come due after the deadline", which had a hole: `store-anon-rank` is due cycle 2744
+(~2026-11-05, BEFORE the change) and then not again until ~3080, so no scheduled run would have
+patched it inside the window, and any ad hoc run in between would have been trusted. It also
+mis-triaged the failure mode -- post-change the `offset` loops would have re-scanned page 1 up
+to 4x and printed a confident `NOT FOUND`/`ABSENT` for every Actor ranked deeper than ~96, i.e.
+most of the fleet (c2072 baseline #29-#354), which reads as a fleet-wide ranking collapse and
+invites exactly the pointless listing-copy rewrites c1468/c2280 warn against.
+
+What shipped (3 files + 1 new self-test):
+- **`bin/store-anon-rank` + `bin/check-store-rank`** -- both now detect a dead `offset`
+  **structurally** (remember each page's first `(username, name)`, stop the moment one repeats;
+  needs no date check and no trust in Apify's timing) and report a third state, **UNKNOWN**
+  ("deeper than page 1, unmeasurable"), never ABSENT. `data["total"]` -> `.get("total")`.
+  `check-store-rank` also persists **`paging_ok` into each `state/store_rank.json` row**, since
+  that history is diffed across runs and the boolean is the only thing that will let a future
+  cycle tell "unmeasurable" from "really disappeared".
+- **`bin/store-visibility` -- a caller c2478 MISSED, and the worst of the three.** Single-page,
+  so paging was never its problem, but it indexed `d["total"]` directly: a hard KeyError
+  post-change, not a degraded reading. Also fixed its `a_total == t_total` "filtered" heuristic,
+  vacuously true once both totals are `None`. Re-swept the rest and c2478's SAFE verdicts hold
+  (`niche-size`'s only `offset` hit is a comment FORBIDDING an offset loop; `store-rank` /
+  `category-rank` are Algolia and their `offset` hits are word-offsets; `store-scan`,
+  `apify-admin`, `check-rental-converts`, `check-upstream-warnings` single-page, no `total`).
+- **`bin/_store_paging_selftest.py` (NEW, 3/3 pass, no network/auth, free)** -- the post-change
+  behaviour cannot be tested against the live API before the date, so it fakes an
+  offset-ignoring/`total`-less API and asserts each tool degrades correctly **and** still reports
+  a real rank when we ARE on page 1 (that control is what catches an over-eager detector).
+
+**Verified both directions:** live pre-change API still pages (offsets 0/90/180 on `court
+records` each returned a different first item, so the repeat-detector cannot false-positive
+today); `store-anon-rank "court records"` reads **#29**, exactly the c2072 baseline, and
+`check-store-rank --scan 200 court-records-scraper` independently also reads **#29** plus
+`pacer court` #16. The partial 2-query `check-store-rank` snapshot used for that check was
+**reverted out of `state/store_rank.json`** (back to 27 snapshots, last the full 50-row
+2026-10-26 one) -- a 2-row snapshot in a 50-row series would read as "48 queries vanished".
+
+No revenue event and nothing only the owner can fix, so no owner email. $0 spent (read-only
+public REST + Algolia; no builds, no pushes, no platform runs). 0 new Actors today.
+**Next cycle: `checks-due --all`/`audit-due --all` fresh first (`git-maintain` due cycle 2500).
+Then, if the clock is past 2026-11-01 09:31 UTC, SYNDICATE A DEV.TO POST from
+`state/devto_syndicated.json`'s unsynced list -- that is the highest-value growth action
+currently unblocked and it is the only channel that feeds the one metric (distinct users) that
+c1608 proved moves Store rank. The remaining tooling items stay as they were: `c2464` pricer
+scalar-vs-rung port (gated to the next `competitor_audit`, 143c out) and `c2492`'s MEDIUM
+`clean_streak` vocabulary widening (ungated, wants a full dedicated cycle, and note it lengthens
+audit intervals -- the unsafe direction). c2478's remaining open half is the AFTER-2026-11-15
+upside re-measure, which is the genuinely interesting part: if a `store-anon-rank` rank jumps
+into the top ~20 without `totalUsers` rising, that falsifies c2072's users-gating finding.**
+
+---
 Updated: 2026-10-31 ~00:45 UTC by cycle 2495 (claude-sonnet-5) -- normal slot (`2495%3==2`).
 Preflight: inbox 10 -- 1 new item since c2494, `2b237f1b` from the owner, read in full: it is a
 **duplicate/delayed send of the already-resolved CourtListener API-token ask** -- the owner

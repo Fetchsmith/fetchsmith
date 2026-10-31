@@ -145,9 +145,18 @@ def rank_for(client, query, slug, scan):
         `len(items) < PAGE: break` fired on page 1 of essentially every query,
         which is why this tool reported "NOT IN TOP 1200" for Actors that a full
         scan finds at rank 88 and 109. Only an empty page ends the result set.
+
+    Third thing, from 2026-11-15 (Apify's own API notice, cycle 2478; hardened
+    c2496): `offset` and `total` stop working and search serves ONE page of <=100.
+    Returns a 4th value, `paging_ok`; when it is False a None rank means "deeper
+    than page 1, position unmeasurable", NOT "absent from search". Treating those
+    as absences would turn ~most of the fleet into fake regressions overnight (the
+    c2084 baseline has us at ranks well past 100 on many queries).
     """
     total = None
     seen = 0
+    paging_ok = True
+    seen_firsts = set()
     for offset in range(0, scan, PAGE):
         r = client.get(
             f"{API}/store",
@@ -156,14 +165,21 @@ def rank_for(client, query, slug, scan):
         )
         r.raise_for_status()
         data = r.json()["data"]
-        total = data["total"]
+        if data.get("total") is not None:          # dropped from the payload 2026-11-15
+            total = data["total"]
         if not data["items"]:
             break
+        first = data["items"][0]
+        first_key = (first.get("username"), first.get("name"))
+        if first_key in seen_firsts:
+            paging_ok = False                      # `offset` accepted but ignored
+            break
+        seen_firsts.add(first_key)
         for item in data["items"]:
             if item.get("username") == "fetchsmith" and item.get("name") == slug:
-                return seen, total, seen + 1
+                return seen, total, seen + 1, True
             seen += 1
-    return None, total, seen
+    return None, total, seen, paging_ok
 
 
 def main():
@@ -199,7 +215,7 @@ def main():
     with httpx.Client() as client:
         for slug in slugs:
             for query in QUERIES[slug]:
-                rank, total, scanned = rank_for(client, query, slug, scan)
+                rank, total, scanned, paging_ok = rank_for(client, query, slug, scan)
                 rows.append(
                     {
                         "slug": slug,
@@ -207,6 +223,9 @@ def main():
                         "rank": rank,
                         "total": total,
                         "scanned": scanned,
+                        # persisted so a later run diffing this history can tell an
+                        # unmeasurable rank from a real disappearance (c2496)
+                        "paging_ok": paging_ok,
                     }
                 )
                 # page 1 of the Store UI is ~24 tiles; that is the line that matters
@@ -215,6 +234,10 @@ def main():
                     # `total` is the API's own match count; it runs well above what
                     # search will actually hand out, so it is context, not a rank-of.
                     tail = f"(api claims {total} matches)"
+                elif not paging_ok:
+                    where = "UNKNOWN"
+                    tail = (f"(not on page 1 of {scanned}; `offset` no longer pages "
+                            f"-- deeper rank unmeasurable, NOT absent)")
                 else:
                     where = "ABSENT"
                     tail = f"(scanned all {scanned} returned; api claims {total})"
@@ -222,10 +245,18 @@ def main():
 
     found = [r for r in rows if r["rank"] is not None]
     page1 = [r for r in found if r["rank"] < 24]
+    unmeasurable = [r for r in rows if r["rank"] is None and not r["paging_ok"]]
     print(
         f"\n{len(found)}/{len(rows)} queries return us at all (scan depth {scan}); "
         f"{len(page1)} on store page 1 (top 24)."
     )
+    if unmeasurable:
+        print(
+            f"{len(unmeasurable)} query/queries UNKNOWN, not absent: /v2/store stopped "
+            "honouring `offset` (the 2026-11-15 change), so only page 1 is visible here.\n"
+            "Do NOT read these as lost rankings or edit listing copy over them -- the real\n"
+            "buyer-facing surface is Algolia; measure deep ranks with bin/store-rank."
+        )
     near = sorted(
         (r for r in found if 24 <= r["rank"] < 60), key=lambda r: r["rank"]
     )
