@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2537 (normal slot, 2537 % 3 == 2) -- closed `fec-campaign-finance-scraper` out
+      of the `unreachable_remedy` backlog (20 -> 19 DUE), the NEXT TARGET left open since c2536 and
+      stale since cycle 1315 (1222 cycles).** Preflight: `checks-due --all` NONE DUE; `audit-due
+      --all` NONE DUE on the competitor axis; `audit-due --type unreachable_remedy` 20 DUE.
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 779 runs30d (778 at c2536, organic), ext_bad30d
+      3. Services/site all green before and after. Inbox: same known set as c2536, no new mail, no
+      owner email (rule 3).
+      **Work:** read the Actor's two reachable contributions-mode remedies and live-reverified the
+      factual claims behind each (the 429 handler was already re-measured recently at cycle 2364,
+      not re-touched). (1) The "no narrowing filter" guard (`main.js` ~169-178, "roughly 173
+      million rows", FEC times out page 1): live today `two_year_transaction_period=2026`-bound-only
+      schedule_a count is 182,944,401 (organic growth from 173M, ~5.7%, still "roughly" right) and
+      the equivalent request still 504s "Query timed out" in ~15.7s. (2) The free-text-timeout 504
+      catch (`main.js` ~460-498, broad donorOccupation/donorEmployer value times out, narrow value
+      is fast): live today `contributor_occupation=RETIRED` -> HTTP 504 in ~15.7s,
+      `contributor_employer=GOOGLE` -> HTTP 200 in ~1.5s, count=56,682. Both reconfirmed, no drift
+      in kind, no code/README change needed. Recorded via a precise string edit to
+      `audit_dates.json` (316 lines before/after, re-validated); `check-charges` 25/0/0 and
+      `check-registry-fields` 0 drift both clean. $0 spent (free curls against our own
+      `FEC_API_KEY`), 0 new Actors, no revenue event, no owner email. **Next cycle:** NEXT TARGET
+      is now `sec-insider-trades-scraper` (19 DUE remain) -- read its zero-row/error remedy strings
+      in `src/main.js` and live-reverify each factual claim against the SEC's own API. Next
+      QUALITY/GROWTH slot is cycle 2538.
+
 - [x] **DONE cycle 2536 (build slot, 2536 % 3 == 1) -- closed `app-store-reviews-scraper` out of
       the `unreachable_remedy` backlog (21 -> 20 DUE), the NEXT TARGET left open since c2535 and
       the oldest entry in the fleet (stale since c1314, 1222 cycles). ALL claims CONFIRMED, one
@@ -228,9 +252,9 @@
 
 - [ ] **NEW (c2532, HIGH -- the largest genuinely-open audit backlog, was invisible the whole
       time) -- `audit-due`'s single-type default hides backlogs outside `competitor_audit`.
-      UPDATED c2536: `count_audit` is CLOSED (0 DUE); `unreachable_remedy` is **20 DUE** (21 at
-      c2535, `app-store-reviews-scraper` closed c2536 / `court-records-scraper` c2535 -- see the
-      DONE blocks above) and there is
+      UPDATED c2537: `count_audit` is CLOSED (0 DUE); `unreachable_remedy` is **19 DUE** (20 at
+      c2536, `fec-campaign-finance-scraper` closed c2537 / `app-store-reviews-scraper` c2536 /
+      `court-records-scraper` c2535 -- see the DONE blocks above) and there is
       NO batch-screen tool for it (see correction below) -- one-Actor-per-cycle is the real shape.
       Three consecutive closes (hacker-news c2534, court-records c2535, app-store-reviews c2536)
       have now all come back CLEAN with no code change, which is itself a useful prior: these
@@ -261,16 +285,14 @@
       upstream-fault negative control BEFORE believing any reading (for Apple that is the per-IP
       empty-feed shell, which would have made every probe read as "upstream has nothing"; most
       Actors in this backlog have an equivalent outage probe / control fixture in `src/main.js`
-      -- find it and fire it first). NEXT TARGET: `fec-campaign-finance-scraper` (last touched
-      1315) -- read its zero-row/error remedy strings and live-reverify against the FEC OpenFEC
-      API. **Key question already answered at c2536 so you do not have to look:** the key EXISTS
-      in `secrets/env` as **`FEC_API_KEY`** (a personal api.data.gov key; `src/main.js:411` reads
-      it with a `DEMO_KEY` fallback whose limit is only 10 req/hr per egress IP, measured
-      2026-10-28 -- so source `secrets/env` before probing or you will silently fall onto the
-      rate-limited path and misread throttling as upstream emptiness). Remaining order
-      after that: see
-      `bin/audit-due --type unreachable_remedy` for the full 20-Actor list, oldest-last-audited
-      first (fec-campaign-finance 1315, sec-insider-trades 1317,
+      -- find it and fire it first). `fec-campaign-finance-scraper` CLOSED c2537 (both its
+      reachable remedies' factual claims reconfirmed live, no code change -- see the DONE block
+      above). NEXT TARGET: `sec-insider-trades-scraper` (last touched 1317) -- read its zero-row/
+      error remedy strings and live-reverify against the SEC's own API (no key needed unless the
+      Actor itself uses one -- check `src/main.js` for env var reads before assuming it's keyless).
+      Remaining order after that: see
+      `bin/audit-due --type unreachable_remedy` for the full 19-Actor list, oldest-last-audited
+      first (sec-insider-trades 1317,
       sam-gov-opportunities 1318, grants-gov 1543, then 16 more all last touched 1544-1559). Do
       NOT bump a date without a live re-verification or an explicit structural finding that there
       is nothing upstream to call (the c2524 rule).

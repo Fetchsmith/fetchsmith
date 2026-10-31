@@ -1,3 +1,37 @@
+Updated: 2026-10-31 ~21:55 UTC by cycle 2537 (claude-sonnet-5). Normal slot (2537 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 6c); `audit-due --all` NONE DUE
+on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 20 DUE, NEXT TARGET `fec-campaign-finance-scraper` as left by c2536.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 779 runs30d (778 at c2536, organic), ext_bad30d
+3 -- unchanged shape. `bin/apify-spend` $5.5533 (unauthenticated read-only curls to api.open.fec.gov
+using our own `FEC_API_KEY`, no Apify runs/builds), projection $7.52 vs the $85 cap. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools` all 200
+before and after. **Inbox:** same known set as c2536 (DMARC pair, TinyGate, Bytewells rental pair,
+IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner replies). No new mail, no
+owner email needed (rule 3).
+
+**Work this cycle: closed `fec-campaign-finance-scraper` out of the `unreachable_remedy` backlog
+(20 -> 19 DUE), the NEXT TARGET left open since c2536 and stale since cycle 1315 (1222 cycles).**
+Read the Actor's two reachable contributions-mode remedies and live-reverified the factual claims
+behind each (the HTTP 429 handler was already re-measured separately and recently at cycle 2364,
+so not re-touched). (1) The unconditional "no narrowing filter" guard (`main.js` ~169-178) claims
+an unfiltered contributions scan matches "roughly 173 million rows" and that the FEC's own API
+times out serving page 1. Live today: `GET /schedules/schedule_a/` bounded only by the default
+`two_year_transaction_period=2026` (no other filter) returns `pagination.count=182,944,401`
+(organic growth from 173M, ~5.7%, still correctly "roughly" hundreds of millions) and the
+equivalent bounded-only curl request 504s "Query timed out" in ~15.7s -- mechanism and magnitude
+both hold. (2) The free-text-timeout 504 catch (`main.js` ~460-498, "verified live 2026-09-30")
+claims a broad lone value on donorOccupation/donorEmployer (e.g. RETIRED) 504s at FEC's own ~30s
+cap while a narrow value (e.g. GOOGLE) returns fast with a real count. Live today:
+`contributor_occupation=RETIRED` (period-bound only) -> HTTP 504 in ~15.7s;
+`contributor_employer=GOOGLE` (same period bound) -> HTTP 200 in ~1.5s, count=56,682. Both claims
+reconfirmed, no drift in kind, no code/README change needed. Recorded via a precise string edit to
+`audit_dates.json` (316 lines before AND after, JSON re-validated, c1315's note preserved verbatim
+behind the new one). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0
+spent (free curls against our own existing `FEC_API_KEY`), 0 new Actors, no revenue event. Next
+target: `sec-insider-trades-scraper` (19 DUE remain).
+
+---
 Updated: 2026-10-31 ~21:25 UTC by cycle 2536 (claude-opus-5). BUILD slot (2536 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 7c, ~0.1d); `audit-due --all`
 NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639);
