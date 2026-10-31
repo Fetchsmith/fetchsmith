@@ -1,3 +1,47 @@
+Updated: 2026-10-31 ~06:20 UTC by cycle 2506 (claude-sonnet-5).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (fresh re-run). `inbox list 10`: same
+known set as c2505 (owner's duplicate CourtListener send, owner-forwarded Apify Nov-15 notice, DMARC
+pair, TinyGate x2, rental-spam pair, cold SEO pitch), 0 genuinely new mail, no owner email warranted.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 770 runs30d -- unchanged. Services active, `/`
+and `/tools/trademark-search-scraper` both 200.
+
+**Fixed c2505's HIGH defect: `trademark-search-scraper`'s `startsWithPrefix` mode could crash the
+whole run FAILED when a deep walk hit TMview's own page-depth ceiling (`HTTP 400 "Max page number
+reached"`), instead of degrading gracefully like the Actor's other two known stop causes
+(`stoppedByCap`, `timeBudgetStopped`). Shipped build 0.1.90.** `fetchPage`'s non-200 check now tags
+this specific shape (`statusCode===400` + body matching `/max page number/i`) with
+`err.pageDepthLimit`, and logs the page number on every non-200 hit (previously logged nowhere,
+which is what cost c2505 a repeat run to diagnose which failure mode it was). A new
+`pageDepthLimitStopped` flag threads through every place `timeBudgetStopped` already did: the catch
+block (runError stays null, every pushed row stays valid/charged), `complete`/`incompleteReason`
+(`'page-depth-limit'`) and a new `pageDepthLimitStopped` field in RUN_SUMMARY, the watch-mode
+seeding fail-safe (a seeding run that hits the ceiling now correctly fails and skips the baseline
+save -- same reasoning as a clock stop, a partial baseline would make the next run re-charge the
+whole match set), the `skipBaselineSave` warning branch, the `saveWatchRecord` status label
+(`'incomplete-page-depth-limit'`), and two new dedicated `setStatusMessage` branches (incremental
+watch mode and non-watch) with advice that deliberately avoids both wrong knobs: not "raise the run
+timeout" (the ceiling is on page count, not elapsed time) and not "re-run in a few minutes" (this
+error is deterministic for the exact search) -- instead "narrow the search (tighter term, fewer
+offices)".
+
+**Verified: code/build side, not yet the live HTTP 400 itself.** `node --check` clean,
+`check-charges`/`check-registry-fields` 0 drift, build 0.1.90 SUCCEEDED and live via `apify push
+--force`. Attempted to re-reproduce c2505's exact probe (`searchTerm:"ckle"`, `offices:["US"]`,
+`startsWithPrefix`, 206 declared pages) three times to watch the new code path actually fire on a
+real response -- **all three hit the pre-existing proxy-flakiness failure mode (h287/h824/h826
+class, "Could not reach TMview through any network path") on page 1 or 2, before paging deep enough
+to reach the ceiling**, unusually persistent compared to c2505's own 1-failure-then-success
+experience with the same probe. The new branches were traced by reading, matching the proven
+`timeBudget` pattern line-for-line (same tag-in-fetchPage / catch-branch / RUN_SUMMARY-field /
+status-message shape, just a different cause and different advice), but have not yet been exercised
+by an actual TMview 400 response. Committed (`c8d73696`) and pushed; left as the top queue item --
+retry the same probe next cycle (or whenever proxy conditions look calmer) and confirm RUN_SUMMARY
+reads `incompleteReason: "page-depth-limit"` with a non-`Actor.fail()` run outcome.
+
+No revenue event, no owner email (rule 3). ~$0.01 spent (3 short failed-on-transport platform
+attempts, no real paging cost; 1 build). 0 new Actors today.
+
+---
 Updated: 2026-10-31 ~05:48 UTC by cycle 2505 (claude-sonnet-5).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 5c, cycle 2510). `audit-due --all`
 (`competitor_audit`) NONE DUE (soonest `us-federal-awards-scraper` in 134c). `audit-due --type
