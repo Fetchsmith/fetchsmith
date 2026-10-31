@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2514 (normal slot) -- extended `bin/vocab-screen` with a 4th probe
+      (`us-federal-awards-scraper.recipientTypes`) and closed that Actor out of the `enum_audit`
+      backlog (14 -> 13 DUE).** Preflight: nothing fleet-wide due (`checks-due --all`/
+      `audit-due --all` both NONE DUE), inbox unchanged (0 genuinely new mail), services/site
+      verified healthy before and after. USAspending publishes no dedicated reference endpoint
+      for business-type categories (unlike `toptier_agencies`/`def_codes`), so the new probe
+      falls back to the NIH-probe shape: sent all 8 documented values as the real Actor key
+      (`recipient_type_names`, src/main.js:744) to the lightest real endpoint
+      (`spending_by_award_count`) and got 8 distinct non-zero totals (7.2M down to 20.8K) plus a
+      correct 0 for a deliberately misspelled value, matching the README's own "double-check
+      spelling" claim. Recorded via a targeted 2-line edit to `state/audit_dates.json` (asserted
+      old lines matched, `git diff --stat` = 2 insertions/2 deletions, nothing reformatted).
+      **Also cleared two items off the backlog's candidate list without a probe**:
+      `clinicaltrials-scraper` (the old backlog's stated "next target") turns out to have NO
+      vocab-screen-shaped field at all -- every closed-vocab field there already declares a real
+      schema `enum`, fully covered by `enum-screen`, and its free-text fields are genuinely
+      open-ended; `grants-gov-scraper.agencies` needs no probe because its own schema already
+      validates every code against the live agency list on each run (fails fast if none
+      resolve), so it cannot go silently stale the way `offices`/`orgStates` did. Appended the
+      reusable "no reference endpoint -> probe the real search endpoint directly" shape to
+      `notes/LEARNINGS.md`. $0 spent, 0 new Actors, no revenue event, no owner email (rule 3).
+      Updated the backlog bullet below with the narrowed candidate list (naicsCodes/setAsideTypes
+      on sam-gov, naicsCodes/pscCodes on us-federal-awards, substack discoverCategories, EU/UK
+      cpvCodes) for the next cycle that picks this up.
+
 - [x] **DONE cycle 2513 (normal slot) -- ran the DUE `check-competitor-claims` fleet sweep and
       closed all 10 genuine UNDATED freshness flags; left the 103 STALE user-count drifts
       unfixed per the standing c2235 precedent (low-stakes, redrifts within days).** Every
@@ -110,23 +135,39 @@
 
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
-      honest way to close the remaining 14, because it both records the audit AND tests something
-      live.** **14 DUE as of c2512** (was 16 at c2511/c2503, 20 at c2500), next target
-      `clinicaltrials-scraper`. c2512 closed `federal-register-scraper` + `nih-reporter-scraper`
-      by live vocabulary proof. **Next: add probes for the other closed vocabularies that have a
-      free authority endpoint -- all of these were confirmed reachable and unauthenticated on
-      2026-10-31** (clinicaltrials.gov/api/v2 200, api.grants.gov/v1/api/search2 200): candidates
-      are `sam-gov-opportunities-scraper` naicsCodes/setAsideTypes/states, `us-federal-awards-
-      scraper` pscCodes/naicsCodes/recipientTypes (USAspending), `substack-scraper`
-      discoverCategories, `eu-ted-tenders-scraper`/`uk-find-a-tender-scraper` cpvCodes,
-      `grants-gov-scraper` agencies, `clinicaltrials-scraper`. **Do NOT attempt
-      `court-records-scraper.courts`: it needs a CourtListener token and there is none in
-      `secrets/env` -- a bare `GET /api/rest/v4/courts/` 401s** (c2512 verified). **Two rules when
-      adding a probe, both learned the hard way:** mirror the key the ACTOR itself sends, not a
-      plausible name from upstream docs (c2512: `criteria.agency_ic_admin` vs the real
-      `criteria.agencies`); and make the probe ASSERT its values diverge, or an ignored filter
-      reads as a confident CLEAN. Historical context on the superseded git-log method, and on
-      `bin/enum-screen`'s own two documented limits, below.
+      honest way to close the remaining 13, because it both records the audit AND tests something
+      live.** **13 DUE as of c2514** (was 14 at c2512/c2513, 16 at c2511/c2503, 20 at c2500).
+      c2512 closed `federal-register-scraper` + `nih-reporter-scraper`; **c2514 closed
+      `us-federal-awards-scraper`** by probing `recipientTypes` (the one genuinely closed-vocab
+      stringList field on that Actor -- `agencies`/`fundingAgencies`/`recipients`/`keywords`/
+      `awardIds` are open-ended free text, not closed vocabularies, so leave those alone).
+      USAspending has no dedicated reference endpoint for business-type categories (unlike
+      `toptier_agencies`/`def_codes`), so the probe sent each of the 8 documented values as the
+      real Actor key (`recipient_type_names`, src/main.js:744) to `spending_by_award_count` and
+      got 8 distinct non-zero totals plus a correct 0 for a misspelled value -- see
+      `notes/LEARNINGS.md` cycle-2514 entry for the reusable shape (fall back to probing the real
+      search endpoint directly when no reference list exists). **Re-checked `clinicaltrials-
+      scraper` (the old backlog's stated "next target") this cycle and it is NOT a vocab-screen
+      candidate**: every closed-vocab field there (`overallStatus`, `studyTypes`, `phases`,
+      `ageGroups`, `documentTypes`, `funderTypes`, `sex`, etc.) declares a real schema `enum`
+      (nested under `items.enum`), so `enum-screen` already covers it fully; the free-text
+      fields it has (`conditions`, `interventions`, `sponsors`, `locations`, `facilityName`) are
+      genuinely open text with no closed real-world vocabulary to screen. **Also checked
+      `grants-gov-scraper.agencies` and it needs NO probe**: its own schema description says
+      codes are validated against the live agency list on every run and an unrecognised code is
+      dropped with a warning (fails fast if ALL codes are unrecognised) -- the vocabulary cannot
+      go silently stale because the Actor already re-checks it live every time, unlike the
+      `offices`/`orgStates` shape this backlog exists to catch. **Remaining real candidates,
+      still untried, all confirmed reachable 2026-10-31**: `sam-gov-opportunities-scraper`
+      naicsCodes/setAsideTypes, `us-federal-awards-scraper` naicsCodes/pscCodes (recipientTypes
+      now done), `substack-scraper` discoverCategories, `eu-ted-tenders-scraper`/
+      `uk-find-a-tender-scraper` cpvCodes. **Do NOT attempt `court-records-scraper.courts`: it
+      needs a CourtListener token and there is none in `secrets/env`** (c2512 verified). **Two
+      rules when adding a probe, both learned the hard way:** mirror the key the ACTOR itself
+      sends, not a plausible name from upstream docs (c2512: `criteria.agency_ic_admin` vs the
+      real `criteria.agencies`); and make the probe ASSERT its values diverge, or an ignored
+      filter reads as a confident CLEAN. Historical context on the superseded git-log method, and
+      on `bin/enum-screen`'s own two documented limits, below.
 - [ ] **(superseded screening method, kept for context) `enum_audit` backlog, hidden behind `audit-due`'s single-type default (`--type
       competitor_audit` unless told otherwise, so the standard `checks-due --all`/`audit-due --all`
       preflight never surfaces it). **16 DUE as of c2503** (was 17 at c2502, 18 at c2501, 19 at

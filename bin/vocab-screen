@@ -151,10 +151,63 @@ def p_nih_agency_ic_codes():
     return not dead, out
 
 
+def p_usaspending_recipient_types():
+    """USAspending publishes no standalone reference list for business-type categories
+    (checked: only toptier_agencies/def_codes have a dedicated /references/ endpoint), so
+    this probes the real search endpoint directly with each documented value -- same shape
+    as the NIH probe above. The values are pulled from the schema's own description text
+    (the `e.g. ...` clause), so a future README edit is screened automatically rather than
+    against a hardcoded copy that can drift from the live schema."""
+    out = []
+    desc = field("us-federal-awards-scraper", "recipientTypes").get("description", "")
+    m = re.search(r"e\.g\.\s*([a-z_, ]+?)\s*\(", desc)
+    values = [v.strip() for v in m.group(1).split(",")] if m else []
+    out.append(f"  schema documents: {values}")
+    if not values:
+        out.append("  PROBE INVALID: could not parse any documented value out of the description")
+        return False, out
+    # `recipient_type_names` is the key the Actor itself sends (src/main.js:744), against
+    # `spending_by_award_count` (src/main.js:29) -- the lightest endpoint that still applies
+    # the real filter, so this costs USAspending one small count query per value.
+    totals = {}
+    for v in values:
+        d = http(
+            "https://api.usaspending.gov/api/v2/search/spending_by_award_count/",
+            {"filters": {"award_type_codes": ["A", "B", "C", "D"],
+                         "time_period": [{"start_date": "2024-01-01", "end_date": "2026-10-31"}],
+                         "recipient_type_names": [v]}},
+        )
+        n = sum((d.get("results") or {}).values())
+        totals[v] = n
+        out.append(f"    {v:28s} total={n}")
+    dead = [v for v, n in totals.items() if not n]
+    if len(set(totals.values())) == 1:
+        out.append("  PROBE INVALID: every value returned the same total, so the filter was "
+                   "ignored rather than applied -- this proves nothing about the vocabulary.")
+        return False, out
+    if dead:
+        out.append(f"  DEAD VALUES (documented as live but return nothing): {dead}")
+    # Sanity check the README's own claim that a bad value fails open to zero, not an error
+    # or the unfiltered total -- confirms "double-check spelling" is honest advice.
+    bogus = http(
+        "https://api.usaspending.gov/api/v2/search/spending_by_award_count/",
+        {"filters": {"award_type_codes": ["A", "B", "C", "D"],
+                     "time_period": [{"start_date": "2024-01-01", "end_date": "2026-10-31"}],
+                     "recipient_type_names": ["bogus_nonexistent_type_xyz"]}},
+    )
+    bogus_total = sum((bogus.get("results") or {}).values())
+    out.append(f"  misspelled-value sanity check: bogus_nonexistent_type_xyz total={bogus_total} "
+               f"({'matches README claim' if bogus_total == 0 else 'CONTRADICTS README claim'})")
+    if bogus_total != 0:
+        return False, out
+    return not dead, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
     "nih-reporter-scraper": ("agencyIcCodes", p_nih_agency_ic_codes),
+    "us-federal-awards-scraper": ("recipientTypes", p_usaspending_recipient_types),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

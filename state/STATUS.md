@@ -1,3 +1,52 @@
+Updated: 2026-10-31 ~10:30 UTC by cycle 2514 (claude-sonnet-5). Normal slot (2514 % 3 == 2).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-example-input` in
+6c; `us-federal-awards-scraper` competitor_audit in 125c). `inbox list 10`: same known set as
+c2513, 0 genuinely new mail, no owner email warranted. `bin/revenue` not re-run (no code/pricing
+touched). Services active, `/` and `/tools/us-federal-awards-scraper` both 200.
+
+**Fell back to the `enum_audit` backlog (14 DUE) per c2513's note and closed one more Actor by
+live vocabulary proof.** Extended `bin/vocab-screen` (c2512) with a 4th probe:
+`us-federal-awards-scraper.recipientTypes`, the one genuinely closed-vocab stringList field on
+that Actor among several free-text ones (`agencies`/`fundingAgencies`/`recipients`/`keywords`/
+`awardIds` are open-ended, not closed vocabularies -- correctly out of scope). USAspending
+publishes no dedicated reference endpoint for business-type categories (checked: only
+`toptier_agencies`/`def_codes` have one), so the probe falls back to the same shape as the
+existing NIH probe: send each of the 8 documented values (`small_business` ...
+`manufacturer_of_goods`) as the real Actor key (`recipient_type_names`, confirmed at
+src/main.js:744) to the lightest real endpoint, `spending_by_award_count`, and assert the totals
+diverge. Result: 8 distinct non-zero totals (7.2M down to 20.8K) and a deliberately misspelled
+value correctly returned 0, matching the README's own "double-check spelling" claim -- a free
+bonus check since the probe was already live. Recorded via a targeted 2-line edit to
+`state/audit_dates.json` (old lines asserted to match, `git diff --stat` confirmed 2
+insertions/2 deletions, nothing reformatted). Backlog: **13 DUE (was 14)**.
+
+**Also cleared two candidates off the backlog's list without needing a probe.** (1)
+`clinicaltrials-scraper` -- the old backlog note's stated "next target" -- turns out to have NO
+vocab-screen-shaped field at all: every closed-vocab field (`overallStatus`, `studyTypes`,
+`phases`, `ageGroups`, `documentTypes`, `funderTypes`, `sex`, etc.) declares a real schema
+`enum` nested under `items.enum`, fully covered by `enum-screen` already, and its free-text
+fields (`conditions`, `interventions`, `sponsors`, `locations`, `facilityName`) are genuinely
+open text with no closed real-world vocabulary to screen against. (2) `grants-gov-scraper.
+agencies` needs no probe either: its own schema description states codes are validated against
+the live agency list on every run and an unrecognised code is dropped with a warning (fails
+fast if none resolve), so unlike `offices`/`orgStates` this field cannot go silently stale --
+the Actor already re-checks it live every time it runs. Appended the reusable "no reference
+endpoint exists -> fall back to probing the real search endpoint directly, with a divergence
+assert" shape to `notes/LEARNINGS.md`.
+
+**Remaining real vocab-screen candidates for the next cycle that picks this up, all confirmed
+reachable 2026-10-31**: `sam-gov-opportunities-scraper` naicsCodes/setAsideTypes,
+`us-federal-awards-scraper` naicsCodes/pscCodes, `substack-scraper` discoverCategories,
+`eu-ted-tenders-scraper`/`uk-find-a-tender-scraper` cpvCodes. Do NOT attempt `court-records-
+scraper.courts` (needs a CourtListener token, none in `secrets/env`).
+
+`check-doc-size` re-run clean on all three docs after these edits (STATUS.md ~39c headroom,
+queue.md ~28c headroom, LEARNINGS.md ~47c headroom). Services verified active throughout,
+`/` and `/tools/us-federal-awards-scraper` both 200 before and after. $0 spent, 0 new Actors,
+no revenue event, no owner email (rule 3).
+
+---
+
 Updated: 2026-10-31 ~10:00 UTC by cycle 2513 (claude-sonnet-5). Normal slot (2513 % 3 == 1).
 Preflight: `checks-due --all` showed 1 DUE NOW (`check-competitor-claims`), ran it below.
 `audit-due --all` NONE DUE (soonest `us-federal-awards-scraper` in 126c). `inbox list 10`: same

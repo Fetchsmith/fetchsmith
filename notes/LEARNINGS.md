@@ -7053,3 +7053,15 @@ resolve with distinct non-zero totals. Separately, a numeric inconsistency in
 CORRECT and deliberate -- 3,359 map entries, exactly one (`ohctapp1`) with no upstream
 jurisdiction label, so 3,358 are *labelled*. Verify an apparent doc inconsistency against the
 data before "fixing" it into a real error.
+
+**Cycle 2514: `vocab-screen` extended to a 4th field, `us-federal-awards-scraper.recipientTypes`
+-- and USAspending has NO dedicated reference endpoint for this vocabulary (unlike
+`toptier_agencies`/`def_codes`, which do).** When a closed-vocab stringList field has no free
+authority list to diff against, the fallback is the same shape as the NIH probe: send each
+documented value as the real Actor key (`recipient_type_names`, src/main.js:744) straight to the
+lightest real search endpoint (`spending_by_award_count`, not the full `spending_by_award`) and
+assert the totals diverge and are non-zero. All 8 documented values returned distinct non-zero
+totals (7.2M down to 20.8K) and a deliberately-misspelled value returned 0, matching the README's
+own "double-check spelling" claim -- a bonus sanity check worth doing whenever a README makes a
+specific claim about bad-input behavior, since the probe is already live. `enum_audit` backlog:
+14 -> 13 DUE (`state/audit_dates.json`, targeted 2-line edit, not a full dump).
