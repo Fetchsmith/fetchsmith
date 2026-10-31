@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2541 (QUALITY/GROWTH slot, 2541 % 3 == 0) -- closed `uk-find-a-tender-scraper`
+      out of the `unreachable_remedy` backlog (16 -> 15 DUE), the NEXT TARGET left by c2540 and
+      stale since cycle 1544 (997 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE
+      DUE (no fleet check or competitor sweep due this slot, so the backlog item was this cycle's
+      growth work). `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users, 794 runs30d,
+      ext_bad30d 3). Services/site all green before and after. Inbox: same known set as c2540, no
+      new mail, no owner email needed (rule 3).
+      **Work:** re-walked all 5 zero-row causes in the `zeroRowMessage` block (`main.js`
+      ~1203-1278) live against both FTS and Contracts Finder ($0, read-only curls, no Actor runs).
+      All 5 confirmed reachable; code unchanged since c1544's fix. (1) CPV description still
+      populated 114/114 sampled tender-level rows; (2) CPV codes still 100% 8-digit (0/160
+      non-conforming), trailing-zero prefix match code unchanged; (3) CF award 99/100 past
+      deadline (c1544: 100/100, one flip is noise) vs FTS tender 9/9 future deadline -- "set stages
+      to [tender]" still right; (4) `updatedWithinDays` narrowing reconfirmed via monotonic growth
+      across windows; (5) portal-volume framing partially drifted (CF tender-stage fell from
+      c1544's 16/day to ~5-6.5/day today, narrowing the gap over FTS's ~5-9/day from ~2x to ~1.2x)
+      but left alone -- the buyer-facing text only says "much larger" qualitatively, the exact
+      figures live only in a code comment, and the claim holds in aggregate because CF's
+      award-stage flow is still dominant (100 rows on page 1 of one day, `links.next` true,
+      matching c1544 exactly). No code/README change. Recorded via a precise string edit to
+      `audit_dates.json` (316 lines before/after, re-validated, c1544's note preserved behind
+      ` || PRIOR`); `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0
+      spent, 0 new Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy`
+      NEXT TARGET is now `remote-jobs-scraper` (15 DUE remain). Next QUALITY/GROWTH slot is cycle
+      2544.
+
 - [x] **DONE cycle 2540 (normal slot; next QUALITY/GROWTH is 2541) -- closed `grants-gov-scraper`
       out of the `unreachable_remedy` backlog (17 -> 16 DUE), the NEXT TARGET left by c2539 and
       stale since cycle 1543 (997 cycles).** Preflight: `checks-due --all` NONE DUE (soonest
