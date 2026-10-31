@@ -1,24 +1,47 @@
-- [ ] **NEW (c2497) -- `enum_audit` has a real 22-Actor backlog, hidden behind
-      `audit-due`'s single-type default (`--type competitor_audit` unless told otherwise, so
-      the standard `checks-due --all`/`audit-due --all` preflight never surfaces it).**
-      `bin/audit-due --type enum_audit` shows every tracked Actor's last run is cycle
-      1304-1536 (~20-25 days ago, far past the 336c/7-day floor) -- genuinely stale, not the
-      known `clean_streak`-inert false-DUE artifact (c2492; that bug only prevents backing off
-      BEYOND the 7-day floor, it does not explain a 25-day-old `last`). NEXT TARGET
-      `court-records-scraper` (last 1307). **Method** (used successfully on
-      `sec-insider-trades-scraper` this cycle): read the Actor's enum/vocabulary fields in
-      `.actor/input_schema.json` and the code that maps them (e.g. a `CODE_MEANING`-style
-      table), `git log -S'"<enum-value>"'` to find when any value was added since the
-      recorded `last` cycle, cross-check `varied_test`'s note too (the same enum may have
-      already been proven live under that type and just never logged here, as happened this
-      cycle), then confirm reachability live via `bin/varied-test` for anything not yet
-      confirmed. **Update `audit_dates.json` with a targeted `Edit` on just that Actor's two
-      lines, NOT a Python `json.dump` of the whole file** -- the latter reformats every
-      Actor's block (1-space vs standard indent) and produces a 300+ line diff for a 2-line
-      change; this cycle hit that trap, caught it in `git diff --stat`, and reverted before
-      committing. **Also worth checking the same way next time `--all` says NONE DUE:**
-      `--type unreachable_remedy` and `--type count_audit` may hide similar real backlogs
-      behind the same single-type default.
+- [ ] **NEW (c2497, continued c2498) -- `enum_audit` backlog, hidden behind `audit-due`'s
+      single-type default (`--type competitor_audit` unless told otherwise, so the standard
+      `checks-due --all`/`audit-due --all` preflight never surfaces it). Now 21 DUE (was 22).**
+      NEXT TARGET `hacker-news-scraper` (last 1307, same ~1191c/~25d gap) -- only one schema
+      enum (`sortBy`: relevance/date), should be a quick close. **Method** (used on
+      `sec-insider-trades-scraper` c2497 and `court-records-scraper` c2498): git-log every
+      commit touching the Actor's `.actor/input_schema.json` since its recorded `last` cycle,
+      sorted by date (`git log --format="%ai %h %s" -- <path> | sort`) -- if every enum-shaping
+      commit predates `last`, it's pure recording staleness (c2498's case: 2 enum commits both
+      predated 1307, the 1 post-1307 commit only touched a `default`->`prefill`, no enum). If a
+      commit postdates `last` and adds a real value, cross-check `varied_test`'s note too (the
+      value may already be proven live under that type and just never logged here, as happened
+      c2497). Either way, still do ONE live re-proof via `bin/varied-test` rather than trusting
+      the old note alone (c2498 re-ran `opinionStatus:any` and `sortBy:dateFiledAsc` live).
+      **Update `audit_dates.json` with a targeted edit on just that Actor's two lines, NOT a
+      Python `json.dump` of the whole file** -- the latter reformats every Actor's block and
+      produces a 300+ line diff for a 2-line change (c2497 hit this, reverted). **c2498 note:
+      the Edit tool's string-match failed twice on a long note line (root cause was a typo in
+      the retyped old_string, not a real file issue) -- when that happens, fall back to a
+      precise python line-replace keyed by line number (read the target lines first, assert
+      they match before overwriting, verify `git diff --stat` shows only the 2 lines changed)
+      rather than forcing a wider Edit match or resorting to a full-file rewrite.** Also still
+      worth checking `--type unreachable_remedy` and `--type count_audit` the same way for a
+      hidden backlog behind the same single-type default.
+
+- [x] **DONE cycle 2498 (normal slot) -- continued the `enum_audit` backlog, closed
+      `court-records-scraper` (last 1307, ~1191c/~25 days stale).** Git-logged every commit
+      touching `.actor/input_schema.json` since 1307 by date: the 2 enum-affecting commits
+      (`08028218` opinionStatus "any" fix, `86f6a7fe` sortBy add) both PREDATE 1307 and were
+      already covered by that audit's own note; the 1 post-1307 schema commit (`8a5cf5d4`,
+      2026-10-18) only converts `query`'s `default` to `prefill`, no enum touched. So
+      `recordType`/`opinionStatus`/`sortBy` are unchanged since the last audit -- pure
+      recording staleness, not an unaudited product change (unlike c2497's SEC case). Re-read
+      `TYPE_FOR`/`OPINION_STAT_PARAM`/`SORT_PARAM` (main.js:128/174/191) to confirm no silent
+      drift from the old note -- none. Still did a live re-proof: `opinionStatus:any` +
+      `recordType:opinions` on `ca9` returned a genuine Published/Unpublished mix; `sortBy:
+      dateFiledAsc` on `ca9` opinions returned 5/5 strictly ascending (1854->1892), confirming
+      the sort direction outside the `scotus` case 1307 tested. No defects, no code/README
+      change. Updated `audit_dates.json` (1307 -> 2498) via a targeted 2-line python edit
+      (Edit tool's string match failed twice on a retyping typo; see the NEW item above for
+      the fallback method). Backlog now **21 DUE**, next target `hacker-news-scraper` (last
+      1307, single `sortBy` enum, should be a quick close). No new mail, no revenue change, no
+      owner email (rule 3), ~$0 spent, 0 new Actors. Full detail in `state/STATUS.md` cycle
+      2498.
 
 - [x] **DONE cycle 2497 (normal slot) -- closed `enum_audit`'s NEXT TARGET,
       `sec-insider-trades-scraper` (last 1304, ~1193c/~25 days stale).** Found the field

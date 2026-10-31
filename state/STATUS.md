@@ -1,3 +1,46 @@
+Updated: 2026-10-31 ~02:15 UTC by cycle 2498 (claude-sonnet-5) -- normal slot (`2498%3==0`).
+Preflight: inbox 10 -- same known set as c2497 (owner's duplicate CourtListener send
+`2b237f1b`, owner-forwarded Apify notice `01852eaa`, DMARC pair, TinyGate x2, rental-spam
+pair, cold pitch `5ce80b92`), 0 genuinely new mail, no owner email warranted. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, unchanged. `checks-due --all` **NONE DUE** (soonest
+`git-maintain` in 2c, cycle 2500). `competitor_audit` (audit-due's default type) **NONE DUE**
+(soonest `us-federal-awards-scraper` in 141c). Services all active, `/` and
+`/tools/court-records-scraper` both 200.
+
+**Continued the `enum_audit` backlog c2497 opened (hidden behind `audit-due`'s single-type
+default).** Closed `court-records-scraper` (last 1307, 1191c/~25 days stale) using the same
+method as c2497's `sec-insider-trades-scraper` close: git-logged every commit touching
+`.actor/input_schema.json` since 1307 by date, found the two enum-affecting commits
+(`08028218` opinionStatus "any" fix, `86f6a7fe` sortBy add) both PREDATE 1307 and were
+already covered by that audit's own note; the one schema commit after 1307 (`8a5cf5d4`,
+2026-10-18) only converts `query`'s `default` to `prefill`, touches no enum. So all three
+enums (`recordType`, `opinionStatus`, `sortBy`) are unchanged since the last audit -- this
+is pure recording staleness, not an unaudited product change. Re-read the code
+(`TYPE_FOR`/`OPINION_STAT_PARAM`/`SORT_PARAM`, main.js:128/174/191) to confirm no silent
+drift from the 1307 note's description -- none. Still did a live re-proof rather than just
+trusting the old note: `opinionStatus:any` + `recordType:opinions` on `ca9` returned a
+genuine Published/Unpublished mix (10 rows: 8 Unpublished, 1 Published); `sortBy:dateFiledAsc`
+on `ca9` opinions returned 5/5 strictly ascending (`1854` -> `1892`), confirming the sort
+direction works outside the `scotus` case 1307 originally tested. No defects, no code/README
+change. Updated `audit_dates.json` (1307 -> 2498) via a targeted 2-line edit (Edit tool
+string-match failed on this file twice due to a literal mismatch in my own retyped text, not
+a file issue -- fell back to a precise python line-replace that only touched the 2 target
+lines, verified via `git diff --stat` = 2 insertions/2 deletions before committing).
+`enum_audit` backlog now **21 DUE**, next target `hacker-news-scraper` (last 1307, same gap).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0 spent (one capped `varied-test` read, no build/push). 0 new Actors today.
+**Next cycle: `checks-due --all` fresh first (`git-maintain` due cycle 2500, imminent). Then
+continue the `enum_audit` backlog -- `hacker-news-scraper` is NEXT TARGET (last 1307, same
+method: git-log every commit touching its `.actor/input_schema.json` since 1307 by date, check
+if any post-dates the last audit and adds/changes an enum value, verify reachability live via
+`bin/varied-test`, update `audit_dates.json` with a targeted 2-line Edit). Note
+`hacker-news-scraper` only has one schema enum (`sortBy`: relevance/date) so this should be a
+quick close. Also still worth checking `--type unreachable_remedy` and `--type count_audit`
+the same way for a hidden backlog, and if the clock is past 2026-11-01 09:31 UTC, the dev.to
+syndication c2496 queued is likely higher-value than continuing this backlog.**
+
+---
 Updated: 2026-10-31 ~01:55 UTC by cycle 2497 (claude-sonnet-5) -- normal slot (`2497%3==1`).
 Preflight: inbox 10 -- same known set as c2496 (owner's duplicate CourtListener send
 `2b237f1b`, owner-forwarded Apify notice `01852eaa`, DMARC pair, TinyGate x2, rental-spam
