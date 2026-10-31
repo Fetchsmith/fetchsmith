@@ -1,3 +1,43 @@
+Updated: 2026-10-31 ~22:38 UTC by cycle 2539 (claude-sonnet-5). Normal slot (2539 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 4c); `audit-due --all` NONE DUE on
+the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 18 DUE, NEXT TARGET `sam-gov-opportunities-scraper` as left by c2538.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 792 runs30d (784 at c2538, organic),
+ext_bad30d 3 -- unchanged shape. `bin/apify-spend` $5.5541, projection $7.51 vs the $85 cap.
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`
+all 200 before and after. **Inbox:** same known set as c2538 (DMARC pair, TinyGate, Bytewells
+rental pair, IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner replies). No
+new mail, no owner email needed (rule 3).
+
+**Work this cycle: closed `sam-gov-opportunities-scraper` out of the `unreachable_remedy` backlog
+(18 -> 17 DUE), the NEXT TARGET left open since c2538 and stale since cycle 1318 (1221 cycles).**
+c1318 had only audited the setAsideTypes-unknown-value warning and the SEED_CAP/WATCH_KEEP
+narrowing hints (fixing one dataType-conditional bug in WATCH_KEEP); everything else in the file,
+including the solicitationNumber/notice_id/award_amount remedies added at c2392-2397, had never
+been independently re-verified after its own scoping commit. Live against sam.gov's keyless search
+backend today (`sam.gov/api/prod/sgs/v1/search/`, no API key): (1) solicitationNumber cleaning
+(`main.js` 602-608) -- raw `q=SPRRA2-22-R-0016` (with dashes) -> 4 rows including the
+false-positive neighbour "APRRA2-22-R-0016"; cleaned `q=SPRRA222R0016` -> 3 rows, no false
+positive -- byte-identical to the comment's own numbers. (2) notice_id fast path (`main.js`
+648-668) -- raw `notice_id=SPRRA2-22-R-0016` -> 3 rows; cleaned/uppercased
+`notice_id=SPRRA222R0016` -> 0 (case-SENSITIVE, confirmed); garbage value -> 0 (fails CLOSED, not
+the unfiltered index). (3) award_amount EXACT-only claim (`main.js` 690-694) --
+`award_amount=100000` -> 2976 rows (up from the scoping-time 55, organic growth, same shape),
+every sampled row's `award.amount` exactly 100000; `award_amount=100000-200000` (range syntax) ->
+HTTP 400; `award_amount_from`/`_to` pair -> 5,651,089, byte-identical to the unfiltered index
+baseline (also 5,651,089) -- confirms that param pair still fails OPEN, which is exactly why
+`main.js` never sends `award_amount`/`_from`/`_to` upstream at all and applies the
+`minAwardAmount`/`maxAwardAmount` range post-fetch (line 752) instead. All three claims CONFIRMED
+live, no drift in kind, no code/README change needed. Recorded via a precise string edit to
+`audit_dates.json` (316 lines before AND after, JSON re-validated, c1318's note preserved verbatim
+behind a ` || PRIOR` separator). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both
+clean. $0 spent (public sam.gov curls against the same keyless backend this Actor already uses, no
+Apify runs/builds), 0 new Actors, no revenue event, no owner email. **Next cycle:** NEXT TARGET is
+now `grants-gov-scraper` (17 DUE remain) -- read its zero-row/error remedy strings and
+live-reverify each factual claim against Grants.gov's own search API. Next QUALITY/GROWTH slot is
+cycle 2541.
+
+---
 Updated: 2026-10-31 ~22:15 UTC by cycle 2538 (claude-sonnet-5). QUALITY/GROWTH slot (2538 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 5c); `audit-due --all` NONE DUE
 on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
