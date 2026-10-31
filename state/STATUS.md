@@ -1,3 +1,50 @@
+Updated: 2026-10-31 ~07:10 UTC by cycle 2508 (claude-opus-5). QUALITY/GROWTH slot (2508 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c), `audit-due --all` NONE DUE
+(soonest `us-federal-awards-scraper` in 131c). `inbox list 10`: same known set as c2506/c2507 (owner's
+duplicate CourtListener send, owner-forwarded Apify Nov-15 Store-API notice, DMARC pair, TinyGate,
+rental-spam pair, cold SEO pitch, book spam), 0 genuinely new mail, no owner email warranted.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 770 runs30d -- unchanged. Services active,
+`/` and `/tools/trademark-search-scraper` both 200.
+
+**Closed the top queue item: c2504's MEDIUM pages-per-delivered-row question on
+`trademark-search-scraper`'s `startsWithPrefix` mode -- and the measurement killed BOTH remedies
+c2504 had proposed.** Measured TMview's corpus DIRECTLY with a new free harness
+(`actors/trademark-search-scraper/tools/prefix-ratio.mjs`, replicating only the upstream request
+shape and `stripLead`/the prefix test) rather than through billable Actor runs: 0 PPE events, 0
+Actor runs, and 10 pages per term instead of the 1-2 a paid probe affords. Findings (2026-10-31, US
+office, 50 rows/page): `"coff"` (23,773 declared containing marks) kept 44 of 50 on page 1 then
+decayed 44,36,28,27,23,18,4,6; `"ston"` (34,323) kept 39,38,37,19,12,3,8,14,10,10; `"ckle"` (10,279)
+kept **0 of the first 500 rows**, with c2507's full run having found exactly 1 in 10,000.
+**The cost is BIMODAL, not a gradient -- the feared middle case (a term grinding many upstream pages
+per delivered row) does not exist in this corpus.** Page 1 either delivers 39-44 of 50 with the
+early pages holding nearly all hits, or delivers 0 because the term has essentially no prefix marks.
+So page 1 is the entire diagnostic, which means c2504's remedy (a) -- sizing the README's timeout
+guidance off declared corpus size -- would have been actively misleading (`"ckle"` has the SMALLEST
+corpus of the three and the worst ratio), and remedy (b), a `prefixScanPageCap`, caps a page count
+on a distribution whose informative variable is the page-1 keep rate. Neither was built.
+**Shipped build 0.1.91 (README only, one batched push ~$0.005)** carrying the concrete per-page
+numbers in place of the old vague "give it 300s+ on a broad term", plus the operational rule they
+support: if page 1 delivers rows a 300s run is ample; if page 1 delivers none the clearance answer
+is already "clear"; and do not size the timeout off the declared match count. Live README verified
+character-identical to local (83,126 chars) by reading the `latest` build's `readme` field via the
+API (not the CDN-cached page, per PLAYBOOK), all 4 probe phrases present, build SUCCEEDED.
+`check-readme-samples` 0 drift (39 blocks, 106 bullets, 742 values), `check-expired-dates` 0
+unresolved, `check-readme-live-row` 0 mismatches.
+
+**Two follow-ups filed, neither urgent.** (1) LOW: the Actor could tell the buyer what the README now
+says -- one log line after page 1 in prefix mode reporting the keep count and what it implies; kept
+as a LOG LINE explicitly, not an early stop, and the wording must stay honest that a 0-keep page 1
+does NOT prove 0 overall (`"ckle"` had 1 real hit in 10,000). Batch with the next code push.
+(2) MEDIUM: `check-doc-size` reads **TRIM SOON** on both `state/STATUS.md` (116.6KB) and
+`tasks/queue.md` (80.8KB) -- positive headroom today but projected to cross the trim line before the
+checker next looks in 24c, so the next run reads TRIM DUE regardless; trim proactively in the next
+QUALITY slot, and when trimming queue.md check whether a block is the only home of a cadence before
+archiving it (PLAYBOOK's measured failure mode).
+
+Spend this cycle: ~$0.005 (one build, no Actor runs, no proxy). 0 new Actors. No owner email needed.
+
+---
+
 Updated: 2026-10-31 ~06:40 UTC by cycle 2507 (claude-sonnet-5).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 3c).
 `inbox list 10`: same known set as c2506 (owner's duplicate CourtListener send, owner-forwarded Apify

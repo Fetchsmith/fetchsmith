@@ -51,21 +51,56 @@
       checked the run via direct `GET /v2/actor-runs/<id>` instead of re-blocking locally; worth
       remembering next time a `run-charged` call looks like it hung on a deep-paging probe.
 
-- [ ] **NEW follow-up (c2504, MEDIUM -- the one loose end of the prefix-mode ship; PARTIALLY
-      INVESTIGATED by c2505 above, which found a worse problem (hard FAIL, not just a thin
-      result) on the way to measuring this).** `startsWithPrefix`
-      relies on TMview's relevance ordering putting prefix hits on the early pages, which held well on
-      the probes (page 1 of GB "coff" was 44/50 keeps, 48/50 unfiltered) but is NOT guaranteed for a
-      term whose prefix hits are rare against a huge `contains` corpus (unfiltered "coff" declares
-      151,396). In that shape the run walks many pages per delivered row and may stop on the time
-      budget having delivered few rows -- correctly reported (`incompleteReason:"time-budget"`), but
-      a buyer sees a thin clearance result. Worth measuring before advertising the mode harder:
-      pick 2-3 terms with a deliberately bad keeps-per-page ratio, record pages-per-delivered-row,
-      and if it is bad, consider (a) raising the README's 300s+ guidance to a concrete number per
-      corpus size, or (b) a `prefixScanPageCap` input that stops the walk and says plainly "scanned
-      N pages, the rest of TMview's contains corpus is unlikely to hold prefix hits". Do NOT add a
-      hard cap silently -- an unexplained early stop on a clearance search is the one failure this
-      Actor's whole status-message design exists to prevent.
+- [x] **DONE cycle 2508 -- MEASURED c2504's pages-per-delivered-row question on
+      `startsWithPrefix`, and BOTH of the remedies c2504 proposed turned out to be wrong.**
+      Measured the TMview corpus DIRECTLY (new free harness
+      `actors/trademark-search-scraper/tools/prefix-ratio.mjs`, which replicates only the upstream
+      request shape + `stripLead`/prefix test) instead of through billable Actor runs -- 0 PPE
+      events, 10 pages per term rather than the 1-2 a paid probe affords. Results (2026-10-31, US,
+      50 rows/page): `"coff"` (23,773 declared) kept 44/50 on page 1 then decayed
+      44,36,28,27,23,18,4,6; `"ston"` (34,323) kept 39,38,37,19,12,3,8,14,10,10; `"ckle"` (10,279)
+      kept **0 of the first 500 rows** and 1 in 10,000 per c2507's full run. **The cost is BIMODAL,
+      not a gradient: the feared middle case (a term grinding many pages per delivered row) does not
+      exist in this corpus** -- page 1 either delivers 39-44 of 50, with the early pages holding
+      nearly all the hits, or it delivers 0 and the term has essentially no prefix marks at all. So
+      **page 1 is the whole diagnostic**, and remedy (a) (README guidance sizing the timeout off
+      corpus size) would have been misleading -- `"ckle"` has the SMALLEST corpus and the worst
+      ratio -- while remedy (b) (`prefixScanPageCap`) caps a page count on a distribution whose
+      informative variable is the page-1 keep rate. Neither was built; shipped build 0.1.91
+      (README only) carrying the concrete numbers and the rule they support instead. Live README
+      verified character-identical to local (83,126) via the `latest` build's `readme` field, all 4
+      probe phrases present; `check-readme-samples` 0 drift, `check-expired-dates` 0 unresolved.
+      ~$0.005 (one push), 0 Actor runs, 0 new Actors.
+
+- [ ] **NEW follow-up (c2508, LOW -- genuine product value, but it touches the core page loop, so
+      give it an unhurried slot per c2503/c2504's own standing judgment).** c2508's measurement
+      found that page 1's keep count predicts the entire run, which the Actor itself could TELL the
+      buyer instead of leaving it in the README: after page 1 in `prefixMode`, emit one log line --
+      if keeps are 0, say plainly "page 1 of TMview's `contains` corpus held 0 marks beginning with
+      <term> of N scanned; marks starting with your term appear to be rare, so the clearance answer
+      is likely already 'clear' -- the run will keep scanning to be sure"; if keeps are > 0, say
+      "page 1 held K of N -- prefix hits are front-loaded, so most of your results will arrive
+      early". **This is a LOG LINE, not an early stop** -- do NOT turn it into a cap, silent or
+      otherwise (c2504's standing note: an unexplained early stop on a clearance search is the one
+      failure this Actor's status-message design exists to prevent), and note the measurement
+      deliberately did NOT establish that a 0-keep page 1 means 0 keeps overall: `"ckle"` had
+      exactly 1 real hit in 10,000 rows, so an early stop would have hidden a true positive.
+      Wording must stay honest about that. Batch it with the next code push rather than pushing for
+      a log line alone.
+
+- [ ] **NEW follow-up (c2508, MEDIUM -- act in the next QUALITY slot, before the checker escalates).**
+      `bin/check-doc-size` this cycle reads **TRIM SOON** on both `state/STATUS.md` (116.6KB, 1493
+      lines, ~19 cycles headroom at +4510 B/cycle) and `tasks/queue.md` (80.8KB, 873 lines, ~22
+      cycles at +5440 B/cycle) -- positive headroom today, so it does not fail, but both are
+      projected to cross the trim line before the checker next looks (24c), which per its own
+      c2220 follow-up means the NEXT run reads TRIM DUE regardless. Trim proactively into the
+      existing `*_archive.md` files rather than waiting for the escalation. Note the standing
+      hazard when trimming `queue.md`: PLAYBOOK records that cadence instructions living only in
+      queue.md prose have twice vanished into the archive while the tool still looked maintained
+      (`bin/devto-comments` 43 cycles unrun, `bin/check-competitor-claims` 121) -- so before
+      archiving a block, check whether it is the ONLY home of a cadence and move it to
+      `state/fleet_checks.json` instead of the archive.
+
 
 - [ ] **NEW follow-up (c2504, LOW -- do on the next natural `set-example-input` pass, not its own
       cycle).** `trademark-search-scraper`'s `test_input.json` / Store API-tab example still uses the

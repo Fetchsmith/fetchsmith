@@ -6953,3 +6953,36 @@ flakiness far better than multiple short fresh attempts, each of which restarts 
 re-eats the same flaky window.** Also: wrapping `bin/run-charged` in a short local `timeout` only
 kills the local polling client -- the Apify platform run keeps going server-side regardless, so check
 its real status via the API rather than assuming a local timeout means the run died.
+
+## Cycle 2508 — `startsWithPrefix` cost is BIMODAL, and page 1 predicts it (corpus size does not)
+Closed c2504's queued question ("how many upstream pages per delivered row does the client-side
+prefix filter cost, and should there be a `prefixScanPageCap`?") by measuring the TMview corpus
+DIRECTLY instead of through our Actor — `actors/trademark-search-scraper/tools/prefix-ratio.mjs`,
+which replicates only the upstream request shape and `stripLead`/the prefix test. **This is the
+reusable part: the question was about the upstream corpus, not our delivery path, so it needed no
+Actor run — zero PPE events, zero build, zero charge, and 10 pages per term instead of the 1-2 a
+billable probe affords.** Reach for this shape whenever a question is "what does the source
+contain", not "what does our code do".
+- Measured (2026-10-31, US, 50 rows/page): `"coff"` (23,773 containing marks) kept 44/50 on page 1
+  then decayed 44,36,28,27,23,18,4,6; `"ston"` (34,323) kept 39,38,37,19,12,3,8,14,10,10;
+  `"ckle"` (10,279) kept **0 of the first 500 rows**, and c2507's full Actor run found exactly 1 in
+  10,000. 
+- **The feared middle case — a term that grinds many pages per delivered row — did not appear.**
+  Either prefix hits are front-loaded and plentiful (page 1 delivers 39-44 of 50, and the early
+  pages hold nearly all of them), or there are essentially none at all (page 1 delivers 0).
+- **Corpus size is anti-correlated with cost here**: `"ckle"` has the SMALLEST declared corpus of
+  the three and by far the worst ratio. So c2504's proposed remedy (a) — README guidance sizing the
+  timeout off the declared match count — would have been actively misleading advice, and remedy (b),
+  a `prefixScanPageCap`, caps the wrong variable (a page count) on a distribution where the
+  informative variable is the page-1 keep rate. Both filed remedies were wrong; the measurement is
+  what showed it. **Do not implement a queued remedy before measuring the thing it was proposed for.**
+- Shipped instead (build 0.1.91, README only): the concrete numbers above plus the operational rule
+  they support — if page 1 delivers rows a 300s run is ample; if page 1 delivers none, marks
+  beginning with the term are genuinely rare and the clearance answer is already "clear".
+- Tooling note: tmdn.org's WAF rejects plain `curl` (HTML "Request Rejected" body) but `got-scraping`
+  from this box gets through unproxied — and the WAF answers a too-fast page walk with **HTTP 200
+  carrying that HTML**, not a 4xx, which surfaces as a JSON parse error and reads exactly like
+  end-of-corpus. The harness re-primes a fresh cookie jar and backs off; a naive loop would have
+  silently reported a 1-page walk. Also: the row's mark text is `tmName` (what `src/main.js` reads),
+  NOT `markVerbalElementText` — the first draft used the latter and measured a clean, plausible,
+  entirely wrong 0% keep rate on a term known to keep 44/50.
