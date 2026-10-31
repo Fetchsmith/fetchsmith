@@ -23,7 +23,7 @@ enum-screen, not instead of it.
 Exit status is 0 when every probe is clean, 1 when any vocabulary value no longer
 resolves upstream (i.e. a buyer-facing filter value has gone stale).
 """
-import datetime as dt, json, re, sys, urllib.request, urllib.error, urllib.parse
+import datetime as dt, json, re, subprocess, sys, urllib.request, urllib.error, urllib.parse
 
 R = "/root/agent"
 UA = "FetchSmith-vocab-screen/1.0 (+https://fetchsmith.com)"
@@ -668,6 +668,99 @@ def p_google_news_topics():
     return not dead, out
 
 
+def p_steam_reviews_language():
+    """steam-reviews-scraper.language (c2521/c2522 candidate) is a THIRD backlog shape, not a
+    dead-value question: every documented Steam language code still resolves (confirmed live
+    2026-10-31 across all 29), but Steam's `filterLanguage` param FAILS OPEN on an unrecognized
+    one -- it silently serves the SAME top review as a plain `english` request, HTTP 200, no
+    error. c2522 added a `VALID_LANGUAGES` warning to main.js for exactly this trap (the natural
+    wrong guess "chinese"/"korean" instead of Steam's own "schinese"/"tchinese"/"koreana"). This
+    probe re-proves BOTH halves live so neither can rot silently: (a) every code the warning
+    treats as valid still gets its OWN top review, not the English fallback -- if Steam ever
+    retires one, the warning would wrongly go silent on a now-broken value; (b) a sample of
+    realistic wrong guesses still falls into the trap -- if Steam ever starts rejecting bad
+    codes outright (or stops defaulting to English), the warning's own prose would be wrong and
+    need rewriting, not just re-confirming.
+
+    Reads `VALID_LANGUAGES` out of the ACTOR'S OWN SOURCE (regex on main.js), not a duplicated
+    copy here -- the lesson from every other probe in this file: mirror what the Actor does, not
+    what you remember it doing, or a later source edit silently desyncs from the test.
+
+    Parsing HTML needs the Actor's own `parseReviewsPage` (cheerio-based), not a hand-rolled
+    regex -- reusing the real code path matters more here than in any other probe, since the
+    discriminator IS the parser's output. Shells out to `node` rather than reimplementing cheerio
+    in Python.
+    """
+    out = []
+    main_js = open(f"{R}/actors/steam-reviews-scraper/src/main.js").read()
+    m = re.search(r"VALID_LANGUAGES = new Set\(\[([^\]]+)\]\)", main_js)
+    if not m:
+        out.append("  PROBE INVALID: could not find VALID_LANGUAGES in main.js -- source shape changed")
+        return False, out
+    valid = [c.strip().strip("'\"") for c in m.group(1).split(",") if c.strip()]
+    out.append(f"  main.js declares {len(valid)} valid codes: {valid}")
+
+    app_id = 1145360  # Hades -- the Actor's own example game, high review volume in many languages
+    sample_valid = ["schinese", "tchinese", "koreana", "brazilian", "latam", "russian",
+                     "german", "french", "spanish", "japanese"]
+    sample_valid = [c for c in sample_valid if c in valid]
+    sample_bad = ["chinese", "korean", "xyzzy123bogus"]
+
+    def top_review(lang):
+        url = (f"https://steamcommunity.com/app/{app_id}/reviews/"
+               f"?browsefilter=mostrecent&filterLanguage={urllib.parse.quote(lang)}&l=english")
+        status, html = http_raw(url)
+        if status != 200:
+            return status, None
+        tmp = f"/tmp/_vocab_screen_steam_{lang}.html"
+        open(tmp, "w").write(html)
+        js = (f"import('{R}/actors/steam-reviews-scraper/src/reviews_html.js').then("
+              f"async ({{parseReviewsPage}}) => {{"
+              f"const fs = await import('fs');"
+              f"const html = fs.readFileSync('{tmp}','utf8');"
+              f"const p = parseReviewsPage(html, {app_id});"
+              f"console.log(JSON.stringify((p.reviews[0]?.review || '').slice(0,80)));"
+              f"}});")
+        result = subprocess.run(["node", "-e", js], capture_output=True, text=True, timeout=TIMEOUT)
+        if result.returncode != 0:
+            raise RuntimeError(f"node parse failed for {lang}: {result.stderr[:300]}")
+        return status, json.loads(result.stdout.strip())
+
+    _, baseline = top_review("english")
+    out.append(f"  baseline (english) top review: {baseline!r}")
+    if not baseline:
+        out.append("  PROBE INVALID: english baseline itself returned no review to compare against")
+        return False, out
+
+    fellback_valid = []
+    for c in sample_valid:
+        _, first = top_review(c)
+        matches_english = first == baseline
+        out.append(f"    valid   {c:10s} top review: {first!r}  {'<- FELL BACK TO ENGLISH' if matches_english else ''}")
+        if matches_english:
+            fellback_valid.append(c)
+
+    stayed_closed = []
+    for c in sample_bad:
+        _, first = top_review(c)
+        matches_english = first == baseline
+        out.append(f"    bad     {c:14s} top review: {first!r}  {'(fail-open confirmed)' if matches_english else '(!) NO LONGER falls back'}")
+        if not matches_english:
+            stayed_closed.append(c)
+
+    if fellback_valid:
+        out.append(f"  REGRESSION: documented-valid code(s) now fall back to English like a typo "
+                   f"would: {fellback_valid} -- main.js's VALID_LANGUAGES is stale, drop them or the "
+                   "warning will wrongly stay silent on a now-broken value.")
+        return False, out
+    if stayed_closed:
+        out.append(f"  UPSTREAM CHANGED: {stayed_closed} no longer fail open the way the warning's "
+                   "prose claims -- re-check main.js's warning text, it may now be wrong.")
+        return False, out
+
+    return True, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -681,6 +774,7 @@ PROBES = {
     "uk-find-a-tender-scraper": ("cpvCodes", p_uk_find_a_tender_cpv_codes),
     "sam-gov-opportunities-scraper": ("setAsideTypes", p_samgov_set_aside_types),
     "google-news-scraper": ("topics", p_google_news_topics),
+    "steam-reviews-scraper": ("language", p_steam_reviews_language),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

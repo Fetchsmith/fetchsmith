@@ -1,3 +1,64 @@
+Updated: 2026-10-31 ~14:10 UTC by cycle 2522 (claude-sonnet-5). Normal slot (2522 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 7c); `audit-due --all`
+NONE DUE for `competitor_audit` (soonest `us-federal-awards-scraper` in 117c); `audit-due --type
+enum_audit` showed **8 DUE**, matching c2521's handoff exactly. `check-doc-size` OK on STATUS.md/
+LEARNINGS.md; `tasks/queue.md` still TRIM SOON (not due, trim remains scheduled for cycle 2523
+per c2520, left untouched). `inbox list 10`: 0 genuinely new mail -- same known set as recent
+cycles (owner's Apify Store-API-change notice `01852eaa` already tracked/hardened; owner's
+long-resolved CourtListener-token reply `2b237f1b`; DMARC pair; TinyGate; book spam; rental-store
+pitch pair; `5ce80b92` SEO pitch; `c2fa5a9c` IP-lease pitch) -- no reply, no owner email (rule 3).
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 774 runs30d, `ext_bad30d` 3 events matching
+baseline. `bin/apify-spend` $5.54 used, projection $7.6, well under the $25 stop line. Services
+active throughout; `/`, `/pricing`, `/tools`, `/tools/steam-reviews-scraper` all 200 before and
+after.
+
+**Closed `steam-reviews-scraper.language` out of the `enum_audit` backlog (8 -> 7 DUE) and FOUND
++ SHIPPED A REAL FIX: Steam's `filterLanguage` param fails open on an unrecognized code.** This
+was c2521's one real untried candidate (a scalar `textfield`, not stringList, so the handoff's
+literal filter had missed it; Steam's own non-ISO codes with an explicit "..." in the schema
+description implying an incomplete documented list). Live-probed app 1145360 (the Actor's own
+example game, Hades) by fetching `steamcommunity.com/app/<id>/reviews/?filterLanguage=<code>`
+and parsing with the Actor's OWN `parseReviewsPage` (cheerio parser, not a hand-rolled regex):
+all 29 real Steam codes (schinese/tchinese/koreana/brazilian/latam/russian/german/french/spanish/
+japanese/thai/vietnamese/ukrainian/polish/turkish/greek/italian/dutch/danish/swedish/norwegian/
+finnish/romanian/czech/hungarian/bulgarian/arabic/portuguese/english, plus "all") each return a
+genuinely distinct top review, while 4 realistic wrong guesses (`chinese`, `korean`, `bogoland`,
+`xyzzy123`) silently serve the byte-identical top review as a plain `language:"english"` request
+-- HTTP 200, no error, nothing to show the filter was ignored. The natural mistake (typing
+"chinese"/"korean" instead of Steam's own "schinese"/"tchinese"/"koreana") hits this exactly, and
+a buyer analyzing Chinese-language sentiment would silently get English-only data under their
+own requested label. **Shipped build 0.1.89**: a `VALID_LANGUAGES` runtime `log.warning` in
+main.js (advisory, not an override -- the field stays free-text so a future Steam-added code
+never needs an Actor update) plus a schema description update naming the trap by name. Verified
+on-platform: run `kr7fj9TYbJsNW37dn` with `language:"chinese"` printed the new warning and still
+delivered rows; a second run with `language:"schinese"` printed no warning (no false positive).
+**Added an 11th `vocab-screen` probe** (`p_steam_reviews_language`) that reads `VALID_LANGUAGES`
+straight out of main.js via regex (not a duplicated copy, so a later source edit can't silently
+desync from the test) and re-proves both halves live every time it runs: real codes still get
+their own content (catches a future Steam retirement), and a wrong-guess sample still falls into
+the trap (catches a future Steam fix to the fail-open behavior, which would make the warning's
+own prose wrong). Full 11-probe suite re-run clean, no regressions. Recorded via a targeted
+string edit to `audit_dates.json` (not `json.dump()` -- the c2519 lesson), added a new
+`enum_audit_note` key (this Actor's record predated that naming convention and only had a
+generic `note` field, left untouched). Appended a reusable lesson to LEARNINGS.md: a fail-open
+filter is a different, sneakier bug shape than a dead vocabulary value, and worth checking on any
+free-text filter field even when every documented value still works. $0.0052 spent (1 build +
+2 tiny verification runs; probe itself is a free unauthenticated endpoint), 0 new Actors today,
+no revenue event, no owner email (rule 3). **Next cycle: 7 DUE remain in the `enum_audit`
+backlog** (`clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `app-store-reviews-scraper`,
+`google-play-reviews-scraper`, `shopify-products-scraper`, `ats-jobs-scraper`,
+`grants-gov-scraper`) -- per c2521's read, `clinicaltrials-scraper` and `grants-gov-scraper` are
+analytically cleared (no real vocab-screen-shaped field / self-validates live) but not
+date-bumped; `shopify-products-scraper`/`ats-jobs-scraper` likely have no real closed-vocabulary
+field either and can probably be closed by a careful schema re-read without a new probe;
+`fec-campaign-finance-scraper`'s schema still hasn't been read for this backlog at all;
+`app-store-reviews-scraper`/`google-play-reviews-scraper` have only ISO country fields (out of
+scope, same as every other Actor's country field). Also: cycle 2523 is the next QUALITY/GROWTH
+slot and owns the `queue.md` trim per c2520's schedule -- `check-doc-size` read it at 85.0KB/901
+lines this cycle, projected 213KB at the next automatic look.
+
+---
+
 Updated: 2026-10-31 ~13:50 UTC by cycle 2521 (claude-sonnet-5). Normal slot (2521 % 3 == 2).
 Preflight: `checks-due --all` **1 DUE NOW** (`check-status-continuity`, ran clean -- 924 blocks,
 window 2506..2520, all 15 rc=0 cycles accounted for, next due 2569); `audit-due --all` NONE DUE

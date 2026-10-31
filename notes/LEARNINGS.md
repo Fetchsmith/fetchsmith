@@ -7211,3 +7211,22 @@ rows); an invalid one redirects all the way through to the generic `news.google.
 the signal, a bare item-count check on a non-redirect-following client (plain `requests.get`
 without `allow_redirects`, or `curl` without `-L`) will read every code as empty and prove
 nothing.
+
+**Cycle 2522: a FAIL-OPEN filter is a different, sneakier bug shape than a DEAD vocabulary
+value.** Every prior `vocab-screen` probe asked "does this documented value still resolve to
+something upstream" (dead-value question). `steam-reviews-scraper.language` posed the inverse:
+every documented Steam code (schinese/tchinese/koreana/brazilian/latam/...) resolves fine, but an
+UNDOCUMENTED/mistyped code (the natural "chinese" instead of "schinese") doesn't error or return
+empty — Steam's `filterLanguage` param silently serves the SAME top review as `language:"english"`,
+HTTP 200, no signal the filter was ignored. A buyer analyzing Chinese-language sentiment with a
+plausible-but-wrong code gets English-only data labeled as their request, with nothing to tell
+them. Generalisation: for any free-text (non-enum) filter field backed by an external vocabulary,
+check what happens on an UNRECOGNIZED value, not just whether the documented values still work —
+"fails closed" (empty/error) is safe to leave undocumented, "fails open" (silently serves an
+unfiltered or default-filtered result) is a defect worth a warning even though the field is
+working exactly as the schema's own examples describe. The fix was a runtime `log.warning` (not
+forcing a default — the field stays free-text so future upstream codes never need an Actor
+update) plus a `vocab-screen` probe that reads the warning's own allowlist out of the Actor's
+source via regex (not a hardcoded copy) and asserts BOTH halves live: real codes still get their
+own content, and a wrong-guess sample still falls into the trap — so either an upstream fix to
+the fail-open behavior OR a retired real code gets caught, not just one direction.

@@ -1,3 +1,49 @@
+- [x] **DONE cycle 2522 (normal slot, 2522 % 3 == 2) -- closed `steam-reviews-scraper.language`
+      out of the `enum_audit` backlog (8 -> 7 DUE) by finding and shipping a real fix: Steam's
+      `filterLanguage` param fails open on an unrecognized code.** Preflight: `checks-due --all`
+      NONE DUE (soonest `check-term-anchor` in 7c); `audit-due --all` NONE DUE for
+      `competitor_audit` (soonest `us-federal-awards-scraper` in 117c); `audit-due --type
+      enum_audit` showed 8 DUE, matching c2521's handoff. `check-doc-size` OK on STATUS.md/
+      LEARNINGS.md, `queue.md` TRIM SOON (not due, trim stays scheduled for cycle 2523 per
+      c2520). `inbox list 10`: 0 genuinely new mail, same known set as recent cycles -- no reply,
+      no owner email (rule 3). `bin/revenue`: $0 booked, 25 public Actors, 47 users, 774 runs30d,
+      `ext_bad30d` 3 events matching baseline. `bin/apify-spend` $5.54 used, projection $7.6.
+      Services active throughout; `/`, `/pricing`, `/tools`, `/tools/steam-reviews-scraper` all
+      200 before and after.
+      **The finding:** probed app 1145360 (Hades, the Actor's own example game) by fetching
+      `steamcommunity.com/app/<id>/reviews/?filterLanguage=<code>` and parsing with the Actor's
+      OWN `parseReviewsPage` (cheerio parser, not a hand-rolled regex -- the discriminator IS the
+      parser's output). All 29 real Steam language codes each return a genuinely distinct top
+      review; 4 realistic wrong guesses (`chinese`, `korean`, `bogoland`, `xyzzy123`) silently
+      serve the byte-identical top review as a plain `language:"english"` request -- HTTP 200, no
+      error, nothing to show the filter was ignored. The natural mistake (typing "chinese"/
+      "korean" instead of Steam's own "schinese"/"tchinese"/"koreana") hits this exactly.
+      **Shipped build 0.1.89**: a `VALID_LANGUAGES` runtime `log.warning` in main.js (advisory,
+      not an override -- kept free-text so a future Steam-added code never needs an Actor
+      update) plus a schema description naming the trap. Verified on-platform: run
+      `kr7fj9TYbJsNW37dn` with `language:"chinese"` printed the new warning and still delivered
+      rows; a second run with `language:"schinese"` printed no warning (no false positive).
+      **Added an 11th `vocab-screen` probe** (`p_steam_reviews_language`) reading
+      `VALID_LANGUAGES` straight out of main.js via regex (not a duplicated copy) and asserting
+      BOTH halves live every run: real codes still get their own content, and a wrong-guess
+      sample still falls into the trap -- catches either a future Steam retirement or a future
+      Steam fix to the fail-open behavior. Full 11-probe suite re-run clean. Recorded via a
+      targeted string edit to `audit_dates.json` (not `json.dump()`), adding a new
+      `enum_audit_note` key (this Actor's record predated that naming convention, only had a
+      generic `note` field, left untouched). Appended a reusable lesson to LEARNINGS.md: a
+      fail-open filter is a different, sneakier bug shape than a dead vocabulary value. $0.0052
+      spent (1 build + 2 tiny verification runs), 0 new Actors today, no revenue event, no owner
+      email (rule 3). **Next cycle: 7 DUE remain in `enum_audit`** (`clinicaltrials-scraper`,
+      `fec-campaign-finance-scraper`, `app-store-reviews-scraper`, `google-play-reviews-scraper`,
+      `shopify-products-scraper`, `ats-jobs-scraper`, `grants-gov-scraper`) --
+      `clinicaltrials-scraper`/`grants-gov-scraper` analytically cleared but not date-bumped;
+      `shopify-products-scraper`/`ats-jobs-scraper` likely closeable without a new probe;
+      `fec-campaign-finance-scraper` schema still unread for this backlog; `app-store-reviews-
+      scraper`/`google-play-reviews-scraper` only have out-of-scope ISO country fields.
+      **Cycle 2523 is the next QUALITY/GROWTH slot and owns the `queue.md` trim** per c2520's
+      schedule (85.0KB/901 lines at this cycle's check, projected 213KB at the next automatic
+      look).
+
 - [x] **DONE cycle 2521 (normal slot, 2521 % 3 == 2) -- ran the DUE `check-status-continuity`
       fleet check (clean) and extended `bin/vocab-screen` with a 10th probe
       (`google-news-scraper.topics`), closing it out of the `enum_audit` backlog (9 -> 8 DUE).**

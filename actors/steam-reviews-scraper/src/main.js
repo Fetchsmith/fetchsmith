@@ -37,6 +37,29 @@ if (input.apps === undefined && input.searchTerms === undefined) {
 const dataType = ['reviews', 'games'].includes(input.dataType) ? input.dataType : 'reviews';
 const country = String(input.country || 'us').toLowerCase().trim();
 const language = String(input.language || 'english').toLowerCase().trim();
+// Steam's filterLanguage param FAILS OPEN on an unrecognized code -- confirmed live 2026-10-31 on
+// app 1145360 across all 29 real Steam codes below (each returns genuinely different reviews, 0
+// fallback) plus 4 plausible wrong guesses (chinese, korean, bogoland, xyzzy123): every one of
+// those 4 silently served the exact same top English review as a real language="english" request,
+// HTTP 200, no error, nothing to show the filter was ignored. The natural wrong guess for
+// Chinese/Korean reviews -- "chinese"/"korean" instead of Steam's own "schinese"/"tchinese"/
+// "koreana" -- is exactly this trap. Warn, don't override: kept out of the input schema as an
+// enum (this field stays free-text) so a future Steam-added code never needs an Actor update, but
+// a buyer who mistypes should know their filter silently vanished rather than trust a clean run.
+const VALID_LANGUAGES = new Set([
+  'all', 'english', 'schinese', 'tchinese', 'japanese', 'koreana', 'thai', 'bulgarian', 'czech',
+  'danish', 'german', 'spanish', 'latam', 'greek', 'french', 'italian', 'hungarian', 'dutch',
+  'norwegian', 'polish', 'portuguese', 'brazilian', 'romanian', 'russian', 'finnish', 'swedish',
+  'turkish', 'vietnamese', 'ukrainian', 'arabic',
+]);
+if (!VALID_LANGUAGES.has(language)) {
+  log.warning(
+    `language "${language}" is not a Steam-recognized code — Steam serves English reviews instead `
+    + 'of erroring, so this run may look filtered but is not. Use Steam\'s own codes (e.g. '
+    + '"schinese"/"tchinese" for Chinese, "koreana" for Korean, "brazilian" for Brazilian '
+    + 'Portuguese, "latam" for Latin American Spanish), or "all" for every language.',
+  );
+}
 const reviewType = ['all', 'positive', 'negative'].includes(input.reviewType) ? input.reviewType : 'all';
 const purchaseType = ['all', 'steam', 'non_steam_purchase'].includes(input.purchaseType) ? input.purchaseType : 'all';
 const reviewsAfter = input.reviewsAfter ? new Date(input.reviewsAfter) : null;

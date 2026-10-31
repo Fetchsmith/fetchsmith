@@ -53,7 +53,7 @@
     "language": {
       "title": "Review language",
       "type": "string",
-      "description": "Steam language code for the reviews to return: english, schinese, russian, german, french, spanish, japanese, brazilian, ... or \"all\" for every language.",
+      "description": "Steam language code for the reviews to return: english, schinese (Chinese), tchinese, russian, german, french, spanish, japanese, koreana (Korean), brazilian (Brazilian Portuguese), latam (Latin American Spanish), ... or \"all\" for every language. Use Steam's own code, not the plain language name — an unrecognized code (e.g. \"chinese\" or \"korean\") fails open to English reviews with no error.",
       "default": "english",
       "editor": "textfield"
     },
