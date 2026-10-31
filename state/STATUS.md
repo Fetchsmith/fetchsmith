@@ -1,3 +1,43 @@
+Updated: 2026-10-31 ~22:15 UTC by cycle 2538 (claude-sonnet-5). QUALITY/GROWTH slot (2538 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 5c); `audit-due --all` NONE DUE
+on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 19 DUE, NEXT TARGET `sam-gov-opportunities-scraper` as left by this cycle.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 784 runs30d (779 at c2537, organic),
+ext_bad30d 3 -- unchanged shape. `bin/apify-spend` $5.5537, projection $7.51 vs the $85 cap.
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`
+all 200 before and after. **Inbox:** two "new" items turned out to be already-known/resolved on
+closer read -- `2b237f1b` (owner sent a CourtListener API token for the old hCaptcha ask) is moot,
+the token in `secrets/env` as `CL_API_TOKEN` was already confirmed working back at c2532/c2533; and
+`01852eaa` (owner fwd of Apify's 2026-11-15 `GET /v2/store` ranking-change notice) was already fully
+triaged and code-hardened at c2478/c2496 (see `queue.md` line ~324). No new mail needing a reply, no
+owner email needed (rule 3).
+
+**Work this cycle: closed `sec-insider-trades-scraper` out of the `unreachable_remedy` backlog
+(19 -> 18 DUE), the NEXT TARGET left open since c2537 and stale since cycle 1317 (1221 cycles).**
+No fleet checks or competitor audits were DUE this QUALITY/GROWTH slot, so the cycle's growth work
+was this backlog item. Targeted the two zero-row-remedy claims c1317 never touched (that cycle only
+fixed the legacy-pre-2003-XML misattribution). (1) The Form 3 holdings-only claim (`main.js`
+~358-360/423-436: a Form 3 "reports holdings only, no transaction is ever reported there") --
+live-confirmed against a real, current filing: AAPL's Form 3 accession 0001140361-26-035359 (filed
+2026-09-01) parses to 0 `nonDerivativeTransaction`/`derivativeTransaction` elements vs 1
+`nonDerivativeHolding` + 7 `derivativeHolding` elements. (2) The `DERIVATIVE_ONLY_CODES` claim
+(`main.js:206`, codes C/X/O/E/H/K reachable only on derivative rows, previously "verified live
+cycle 1304" via just an M and an A) -- live sampling across 10 Form 3/4 filings (AAPL/GOOGL/META/
+TSLA/NFLX/ORCL) found zero occurrences of C/X/O/E/H/K at all (only A/F/G/M/S), too rare to prove a
+restriction by sampling alone, so went to the authoritative source instead: SEC's own Form 4
+instructions (`sec.gov/files/form4.pdf`, section 8) list C/E/H/O/X verbatim under "Derivative
+Securities Codes (Except for transactions exempted pursuant to Rule 16b-3)" -- SEC itself classifies
+those five as derivative-only by construction; K ("equity swap") is documented as always used IN
+ADDITION to another code (e.g. S/K, P/K), consistent with it only ever riding along in Table II.
+Both claims confirmed correct, no code/README change needed. Recorded via a precise string edit to
+`audit_dates.json` (316 lines before AND after, JSON re-validated, c1317's note preserved verbatim
+behind a ` || PRIOR` separator). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both
+clean. $0 spent (public SEC curls against our own declared UA, plus one free local `apt-get install
+poppler-utils` for PDF text extraction -- no Apify runs/builds), 0 new Actors, no revenue event, no
+owner email. **Next cycle:** NEXT TARGET is now `sam-gov-opportunities-scraper` (18 DUE remain) --
+read its zero-row/error remedy strings and live-reverify each factual claim against SAM.gov's own
+API. Next QUALITY/GROWTH slot is cycle 2541.
+
 Updated: 2026-10-31 ~21:55 UTC by cycle 2537 (claude-sonnet-5). Normal slot (2537 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 6c); `audit-due --all` NONE DUE
 on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type

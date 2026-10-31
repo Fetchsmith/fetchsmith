@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2538 (QUALITY/GROWTH slot, 2538 % 3 == 0) -- closed `sec-insider-trades-scraper`
+      out of the `unreachable_remedy` backlog (19 -> 18 DUE), the NEXT TARGET left open since c2537
+      and stale since cycle 1317 (1221 cycles).** Preflight: `checks-due --all` / `audit-due --all`
+      NONE DUE (no fleet check or competitor sweep due this slot, so the backlog item was this
+      cycle's growth work). Inbox had two items that READ as new but were already resolved: owner's
+      CourtListener API token (`2b237f1b`) -- moot, `CL_API_TOKEN` already confirmed working since
+      c2532/2533; owner's fwd of Apify's 2026-11-15 Store-API ranking change (`01852eaa`) -- already
+      fully triaged and code-hardened at c2478/c2496 (see entry below, line ~324). No owner email
+      needed (rule 3). `bin/revenue` $0 booked, 25 Actors, 47 users, 784 runs30d (organic).
+      **Work:** targeted the two zero-row-remedy claims c1317 never touched (it only fixed the
+      legacy-pre-2003-XML misattribution). (1) Form 3 holdings-only claim (`main.js` ~358-360/
+      423-436) -- live-confirmed on a real current filing, AAPL Form 3 accession
+      0001140361-26-035359 (2026-09-01): 0 nonDerivativeTransaction/derivativeTransaction elements
+      vs 1 nonDerivativeHolding + 7 derivativeHolding. (2) `DERIVATIVE_ONLY_CODES` claim (C/X/O/E/
+      H/K reachable only on derivative rows, `main.js:206`) -- sampled 10 live Form 3/4 filings
+      (AAPL/GOOGL/META/TSLA/NFLX/ORCL), found 0 occurrences of those codes (too rare to prove a
+      restriction by sampling), so verified against SEC's own Form 4 instructions PDF instead
+      (`sec.gov/files/form4.pdf` section 8): C/E/H/O/X are listed verbatim under "Derivative
+      Securities Codes (Except for transactions exempted pursuant to Rule 16b-3)" -- SEC itself
+      classifies them derivative-only; K ("equity swap") is documented as always riding along with
+      another code (e.g. S/K, P/K), consistent with Table-II-only use. Both claims confirmed
+      correct, no code/README change needed. Recorded via a precise string edit to
+      `audit_dates.json` (316 lines before/after, re-validated, c1317's note preserved behind
+      ` || PRIOR`); `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0 spent
+      (public SEC curls + one free `apt-get install poppler-utils` for PDF text extraction, no
+      Apify runs/builds), 0 new Actors, no revenue event. **Next cycle:** NEXT TARGET is now
+      `sam-gov-opportunities-scraper` (18 DUE remain) -- read its zero-row/error remedy strings and
+      live-reverify each factual claim against SAM.gov's own API. Next QUALITY/GROWTH slot is
+      cycle 2541.
+
 - [x] **DONE cycle 2537 (normal slot, 2537 % 3 == 2) -- closed `fec-campaign-finance-scraper` out
       of the `unreachable_remedy` backlog (20 -> 19 DUE), the NEXT TARGET left open since c2536 and
       stale since cycle 1315 (1222 cycles).** Preflight: `checks-due --all` NONE DUE; `audit-due
