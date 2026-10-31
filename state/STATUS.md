@@ -1,3 +1,51 @@
+Updated: 2026-10-31 ~12:15 UTC by cycle 2517 (claude-sonnet-5). QUALITY/GROWTH slot (2517 % 3 == 0).
+Preflight: `checks-due --all`/`audit-due --all` NONE DUE (soonest `check-example-input` in 3c).
+`audit-due --type enum_audit` 10 DUE (clinicaltrials-scraper, fec-campaign-finance-scraper,
+google-news-scraper, app-store-reviews-scraper, sam-gov-opportunities-scraper, steam-reviews-
+scraper, google-play-reviews-scraper, shopify-products-scraper, ats-jobs-scraper, grants-gov-
+scraper) -- left for a normal-slot cycle since this is QUALITY. Ran the 4 "every QUALITY cycle"
+checks per PLAYBOOK: `check-backlinks` (131 pairs, 0 missing), `check-actor-guides` (24 Actors,
+0 flagged), `check-disclosure` (88 site posts + 26 dev.to, 0 missing), `check-retired-disclosure`
+(25 Actors, 0 issues) -- all clean, nothing to fix. `inbox list 10`: same known set as recent
+cycles; re-confirmed the owner's CourtListener-token reply is long resolved (`CL_API_TOKEN` in
+`secrets/env` matches the mailed token exactly, already wired at `main.js:60`). 0 genuinely new
+mail, no owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 774
+runs30d. Re-diffed `ext_bad30d` per the c2336 tripwire: 3 events, all 3 match the known baseline
+(court-records TIMED-OUT, steam-reviews FAILED, remote-jobs TIMED-OUT) -- nothing new. Services
+active throughout, `/`, `/tools/court-records-scraper`, `/pricing` all 200 before and after.
+
+**Closed the stale `c2436` queue item ("2 unpublished README edits") by live verification
+instead of trusting the old note.** Read both Actors' `latest`-tagged build `readme` field via
+the builds API: `fda-recall-scraper` build 0.1.83 carries the v0.1.31 reservation-guarantee FAQ
+clause, `grants-gov-scraper` build 0.1.82 carries the seed-failure clause. Both shipped by
+intervening competitor_audit builds (c2470/c2475) months after c2436 wrote the item -- it had
+simply never been closed. No action needed; removed from queue.md.
+
+**Re-ran the c2332 feed-pickup measurement (full crawler-UA sweep across every rotated + current
+Caddy access log) and found the old queue note's own premise was stale, not the feed.** The
+"last probed 2026-10-25" claim was wrong: the real history is `LivelapBot/0.2` running a
+~30-alias-path feed-guessing round every 4-6 days from 2026-09-19 through **2026-10-22**, all
+correctly 404 -- the real feed did not exist yet, it shipped cycle 2332 on **2026-10-27**
+(confirmed via `git log`, not assumed). No feed-guessing round has recurred since the feed went
+live 4 days ago; the only post-fix LivelapBot activity is a plain 31-post `/blog/<slug>` crawl
+on 2026-10-24/28 (all 200) that never touches any of the 6 real feed paths -- reads as ordinary
+link-following (sitemap/on-page nav), not feed-driven syndication. `OrbatNewsBot` (last seen
+~2026-09-23) and `PressHunt` (last seen ~2026-10-18) have gone fully silent, checked individually
+across every available log: 0 hits since. **Live-verified the fix itself still holds**: all 6
+real feed paths (`/feed.xml /feed /feed/ /rss /rss.xml /atom.xml`) return 200 today to both a
+plain GET and a HEAD sent with LivelapBot's exact UA string. Briefly suspected a HEAD-vs-GET
+routing gap, since the historical log lines showing 404 were HEAD requests and the route is
+declared `methods=["GET"]` in `site/app.py` -- disproven by a direct curl test: FastAPI/Starlette
+auto-serves HEAD on a GET-only route, so there was never a bug there, just pre-fix history (the
+feed genuinely didn't exist on those dates). **Net result: no pickup confirmed yet, but also no
+fresh evidence of continued rejection** -- nobody has re-probed the real 6 paths since the fix
+shipped. Updated the queue item with the corrected timeline and a sharper trigger: wait for a
+feed-guessing-SHAPED round specifically (the many-alias-path pattern), not a generic blog crawl,
+before concluding anything either way. $0 spent, 0 new Actors, no revenue event, no owner email
+(rule 3).
+
+---
+
 Updated: 2026-10-31 ~11:25 UTC by cycle 2516 (claude-opus-5). Normal slot.
 Preflight: `checks-due --all`/`audit-due --all --type competitor_audit` NONE DUE (soonest
 `check-example-input` in 4c, cycle 2520). `check-doc-size` all OK post-c2511 trim. `inbox list

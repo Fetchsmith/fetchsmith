@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2517 (QUALITY/GROWTH slot, 2517 % 3 == 0) -- re-ran the c2332 feed-pickup
+      measurement, corrected a stale date in its own note, and closed a stale c2436 queue item by
+      live verification.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (next
+      `check-example-input` in 3c); `audit-due --type enum_audit` showed 10 DUE
+      (clinicaltrials-scraper, fec-campaign-finance-scraper, google-news-scraper,
+      app-store-reviews-scraper, sam-gov-opportunities-scraper, steam-reviews-scraper,
+      google-play-reviews-scraper, shopify-products-scraper, ats-jobs-scraper,
+      grants-gov-scraper) but left for a future normal-slot cycle since this is a QUALITY slot;
+      `check-backlinks`/`check-actor-guides`/`check-disclosure`/`check-retired-disclosure` all run
+      per PLAYBOOK's "every QUALITY cycle" list -- all 4 clean (0 flagged). `inbox list 10`: same
+      known set as prior cycles including the owner's CourtListener token reply -- re-confirmed
+      already wired in (`CL_API_TOKEN` in `secrets/env` matches the token in the mail exactly,
+      already read at `main.js:60`), 0 genuinely new mail, no owner email warranted. `bin/revenue`:
+      $0 booked, 25 public Actors, 47 users, 774 runs30d. Re-diffed `ext_bad30d` per the standing
+      c2336 tripwire: 3 events, all 3 already-known baseline entries (court-records TIMED-OUT,
+      steam-reviews FAILED, remote-jobs TIMED-OUT), nothing new. Services active throughout, `/`,
+      `/tools/court-records-scraper`, `/pricing` all 200 before and after.
+      **Closed c2436 as stale**: live build API confirmed both README edits it flagged as
+      unpublished (`fda-recall-scraper` v0.1.31 clause, `grants-gov-scraper` seed-failure clause)
+      are actually live, shipped by intervening competitor_audit builds (0.1.83/0.1.82) months
+      after c2436 was written -- the queue item itself just never got closed.
+      **Re-ran c2332's feed-pickup measurement (full crawler-UA sweep across every rotated+current
+      Caddy access log, not just the current one) and found the old note's premise was stale,
+      not the feed.** The "last probed 2026-10-25" claim in the original item was wrong: the real
+      history is `LivelapBot/0.2` running a ~30-alias-path feed-guessing round every 4-6 days from
+      2026-09-19 through **2026-10-22**, all correctly 404 (the feed did not exist yet -- it
+      shipped cycle 2332 on 2026-10-27, confirmed via `git log`). No feed-guessing round has
+      recurred since the feed went live; the only post-fix LivelapBot activity is a plain
+      31-post `/blog/<slug>` crawl on 2026-10-24/28 that never touches any of the 6 real feed
+      paths, reading as ordinary link-following, not feed-driven syndication. `OrbatNewsBot`
+      (last seen ~2026-09-23) and `PressHunt` (last seen ~2026-10-18) have gone fully silent --
+      checked individually across every log, 0 hits since. **Also live-verified the fix itself
+      still holds**: all 6 real feed paths return 200 today to both a plain GET and a HEAD sent
+      with LivelapBot's exact UA string. (Briefly suspected a HEAD-vs-GET routing gap given the
+      historical HEAD-404 log lines, since the route is declared `methods=["GET"]` -- disproven by
+      a direct curl: FastAPI/Starlette auto-serves HEAD on a GET-only route, so there is no bug
+      there, just pre-fix history.) **Net: no pickup confirmed yet, but also no fresh evidence of
+      continued rejection** -- nobody has re-probed the real paths since the fix shipped 4 days
+      ago. Updated the queue item with the corrected timeline and a sharper trigger for next time
+      (wait for a feed-guessing-SHAPED round specifically, not a generic blog crawl). $0 spent, 0
+      new Actors, no revenue event, no owner email (rule 3).
+
 - [x] **DONE cycle 2516 (normal slot) -- audited `uk-find-a-tender-scraper.cpvCodes` (enum_audit
       backlog 11 -> 10) and FOUND + SHIPPED A FIX FOR A REAL BUYER-FACING DATA GAP: Find a Tender
       publishes no CPV classification at all on Procurement Act 2023 award notices.** Preflight:
@@ -369,16 +411,12 @@
       different sentence from the one the README now carries. NOT worth a paid run on its own; do it
       opportunistically if another cycle is already running competitor smoke tests in this niche.
 
-- [ ] **NEW follow-up (c2436, LOW but do it on the NEXT push of either Actor -- costs nothing if
-      batched, $0.01 if done on its own) -- 2 README edits are committed but NOT yet published.**
-      Process slip this cycle: the README FAQ additions for `fda-recall-scraper` (the v0.1.31
-      reservation guarantee) and `grants-gov-scraper` (the seed-failure clause) were written AFTER
-      `apify push`, and the README ships as part of the build payload, so the Store listings still
-      show the old copy while the described behaviour is live. Nothing is wrong or misleading on
-      the live listings -- they simply lack the new paragraph -- so this does NOT justify a
-      build of its own at ~$0.005 each. **Fold it into whatever next push touches either Actor,
-      and extend the existing c2288 ordering lesson: README and `meta.json` are both build
-      payload, so ALL copy edits go before the single push, not after.**
+- [x] **CLOSED (verified cycle 2517) -- the c2436 "2 unpublished README edits" item is stale.**
+      Checked the live build's `readme` field via the builds API rather than trusting the old
+      note: `fda-recall-scraper` build 0.1.83 carries the v0.1.31 reservation-guarantee clause,
+      `grants-gov-scraper` build 0.1.82 carries the seed-failure clause -- both shipped by the
+      intervening competitor_audit builds (c2470/c2475), which pushed a new build of each Actor
+      (and therefore its full README) after c2436 wrote the item. No action needed.
 
 - [ ] **NEW (c2396, LOW priority, build only if a buyer asks) -- single-notice-by-id mode needs
       its own normalizer and a 401 trap.** There is NO search-by-id path: `q=<32-hex id>` -> 0
@@ -513,19 +551,31 @@
       **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
       owner-fixable.
 
-- [ ] **NEW follow-up (c2332) -- MEASURE whether the feed got picked up, then consider pinging
-      directories. This is the rare growth item with a real success metric, so do not skip the
-      measurement step.** On any cycle from ~2026-10-30 on, re-run the log sweep filtered to the
-      6 feed paths and check whether **LivelapBot/0.2**, **OrbatNewsBot/1.0** or **PressHunt/1.0**
-      now fetch **200** instead of 404 (they last probed 2026-10-25, i.e. they re-probe on their
-      own schedule). One-liner shape that produced the original finding: aggregate
-      `status==404` + User-Agent over `/var/log/caddy/fetchsmith.access*` (gz included) in
-      python3, filter out the vuln-scanner URIs (`wp-`, `.env`, `.git`, `*.json` secrets probes),
-      and read what is left. If they now 200, record it in LEARNINGS as the first measured
-      third-party pickup of a FetchSmith file; if they still 404, the feed is live and correct
-      (verified this cycle), so the gap is discovery, not the file -- only then spend a cycle on
-      feed-directory submissions, and check PLAYBOOK's closed-channel list first (6/7 free
-      directories are already CLOSED; do not re-try those).
+- [ ] **UPDATED (c2517) follow-up (orig. c2332) -- MEASURE whether the feed got picked up, then
+      consider pinging directories. Still open; this cycle's re-sweep narrowed what "picked up"
+      actually means and corrected a stale premise in the old note.** Re-ran the full-history log
+      sweep (all `/var/log/caddy/fetchsmith.access*`, gz included) for the 3 named crawlers.
+      **Correction: the old note's "last probed 2026-10-25" is wrong/stale** -- the real history is
+      a feed-path-guessing round (30+ alias paths incl. the real 6) by `LivelapBot/0.2` every
+      ~4-6 days from 2026-09-19 through **2026-10-22**, all 404, which is EXPECTED: the feed did not
+      exist yet (it shipped cycle 2332, 2026-10-27, confirmed via `git log`). **No feed-guessing
+      round has happened since the feed went live** -- the only LivelapBot activity since is a
+      2026-10-24 + 2026-10-28 direct crawl of 31 individual `/blog/<slug>` pages (all 200), which
+      reads as ordinary link-following (sitemap or on-page nav), not feed-driven syndication, since
+      it never touched any of the 6 real feed paths. `OrbatNewsBot` (last seen ~2026-09-23) and
+      `PressHunt` (last seen ~2026-10-18) have gone fully quiet -- 0 hits in every log since,
+      checked individually. **Also directly verified the fix holds**: all 6 real feed paths
+      (`/feed.xml /feed /feed/ /rss /rss.xml /atom.xml`) return live 200 today to BOTH a plain GET
+      and a HEAD with LivelapBot's own UA string -- genuinely confirmed this is not a HEAD-vs-GET
+      routing gap (FastAPI/Starlette auto-serves HEAD on a GET-only route; initial suspicion of a
+      missing `methods=["HEAD"]` was wrong and worth not re-deriving). **So: nothing to fix, nothing
+      to submit yet** -- no crawler has re-probed the real paths since the fix shipped 4 days ago,
+      so there is no 200-vs-404 evidence either way yet, only an absence of fresh probes. **Next
+      cycle that revisits this: wait for LivelapBot's next feed-guessing-shaped round** (the
+      30+-alias-path pattern, not a plain blog-post crawl) and check whether it finally hits one of
+      the 6 real paths and returns 200 -- that is the actual pickup signal, not a generic page
+      crawl. Still do NOT spend a cycle on feed-directory submissions until a real probe is seen
+      404ing post-fix (6/7 free directories already CLOSED per PLAYBOOK, do not re-try).
 
 - [ ] **NEW follow-up (c2312) -- `scholarship-scraper` carries an UNPUSHED code fix.** c2312 found
       and fixed the same unvalidated-date-bound bug there (`Date.parse(...)` -> `NaN`, and
