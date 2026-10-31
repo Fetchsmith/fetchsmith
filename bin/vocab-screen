@@ -1,0 +1,188 @@
+#!/usr/bin/env python3
+"""bin/vocab-screen [actor-slug ...] -- live-proof the CLOSED real-world vocabularies that
+`bin/enum-screen` is structurally blind to (added cycle 2512).
+
+WHY THIS EXISTS.  `enum-screen` diffs DECLARED input-schema enums and prints
+IDENTICAL/CHANGED.  Its own docstring names two limits, and both have already bitten
+this backlog:
+
+  1. A free-text `stringList` field whose real-world vocabulary is closed (CourtListener
+     court ids, Federal Register agency slugs, NIH institute abbreviations, HN Algolia
+     tags) declares no `enum` at all, so enum-screen cannot see it.  The last two real
+     defects in the enum_audit backlog came from exactly here (`offices` c1530,
+     `orgStates` c1531).
+  2. IDENTICAL means the SURFACE is unchanged -- never that the values still WORK.
+     Upstream can retire a value silently, after which a buyer who filters on it gets an
+     empty dataset and no explanation.
+
+This tool closes limb 2 for the fields where the upstream authority publishes a free,
+unauthenticated endpoint we can ask.  Every probe below is free: no Apify Actor run, no
+PPE event, no proxy.  It is a VALUE-LIVENESS test, not a schema diff -- run it alongside
+enum-screen, not instead of it.
+
+Exit status is 0 when every probe is clean, 1 when any vocabulary value no longer
+resolves upstream (i.e. a buyer-facing filter value has gone stale).
+"""
+import json, re, sys, urllib.request, urllib.error
+
+R = "/root/agent"
+UA = "FetchSmith-vocab-screen/1.0 (+https://fetchsmith.com)"
+TIMEOUT = 30
+
+
+def http(url, data=None):
+    """One GET/POST returning parsed JSON.  Retries once on a transient 5xx or a
+    transport error -- same lesson as cycle 2510's check-source-endpoints fix: a retry
+    scoped to 'transient' must cover BOTH exception-based and HTTP-response-based
+    transients, or a 502 silently counts as a real failure."""
+    body = json.dumps(data).encode() if data is not None else None
+    hdrs = {"User-Agent": UA, "Accept": "application/json"}
+    if body:
+        hdrs["Content-Type"] = "application/json"
+    for attempt in (1, 2):
+        try:
+            req = urllib.request.Request(url, data=body, headers=hdrs)
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                return json.loads(r.read().decode())
+        except urllib.error.HTTPError as e:
+            if e.code >= 500 and attempt == 1:
+                continue
+            raise
+        except Exception:
+            if attempt == 1:
+                continue
+            raise
+
+
+def schema(slug):
+    return json.load(open(f"{R}/actors/{slug}/.actor/input_schema.json"))
+
+
+def field(slug, name):
+    return schema(slug)["properties"][name]
+
+
+# ---------------------------------------------------------------- probes
+# Each probe returns (ok: bool, list[str] of report lines).  A probe asserts the values
+# our buyer-facing copy NAMES are still accepted upstream -- it deliberately does not try
+# to enumerate every legal value, which for most of these is thousands long.
+
+def p_federal_register_agencies():
+    """Authority publishes the full list, so this is an exhaustive set check."""
+    out = []
+    live = http("https://www.federalregister.gov/api/v1/agencies")
+    slugs = {a.get("slug") for a in live if a.get("slug")}
+    out.append(f"  authority: /api/v1/agencies -> {len(live)} agencies, {len(slugs)} slugs")
+
+    desc = field("federal-register-scraper", "agencies").get("description", "")
+    # Regex, not .split(): the copy reads "473-agency list" (hyphenated, no space), so
+    # whitespace tokenising finds no number at all and the drift check silently never
+    # fires -- a false CLEAN, the same shape as the c2510 check-source-endpoints bug.
+    m = re.search(r"(\d[\d,]*)[\s-]*agenc", desc, re.I)
+    claimed = int(m.group(1).replace(",", "")) if m else None
+    if claimed is None:
+        out.append("  schema states no agency count -- nothing to falsify")
+    elif claimed == len(live):
+        out.append(f"  schema's stated {claimed}-agency list MATCHES live count")
+    else:
+        out.append(f"  DRIFT: schema states {claimed} agencies, live is {len(live)}")
+        return False, out
+
+    # every slug our own copy names to a buyer must still resolve
+    named = list(field("federal-register-scraper", "agencies").get("prefill") or [])
+    named += ["homeland-security-department", "environmental-protection-agency"]
+    bad = [s for s in dict.fromkeys(named) if s not in slugs]
+    out.append(f"  named slugs checked: {len(set(named))}, unresolved: {bad or 'none'}")
+    return not bad, out
+
+
+def p_hacker_news_tags():
+    """No list endpoint; Algolia accepts any tag string and silently returns 0 hits for
+    one it does not know, which is precisely the failure mode worth testing."""
+    out = []
+    desc = field("hacker-news-scraper", "tags").get("description", "")
+    tags = [t.strip() for t in desc.split(".")[0].split(",") if t.strip()]
+    out.append(f"  schema documents {len(tags)} tags: {tags}")
+    dead = []
+    for t in tags:
+        d = http(f"https://hn.algolia.com/api/v1/search?tags={t}&hitsPerPage=1")
+        n = d.get("nbHits", 0)
+        if not n:
+            dead.append(t)
+        out.append(f"    {t:12s} nbHits={n}")
+    if dead:
+        out.append(f"  DEAD TAGS (documented but return nothing): {dead}")
+    return not dead, out
+
+
+def p_nih_agency_ic_codes():
+    """Probes the codes most likely to have gone stale rather than all ~50: the two our
+    own copy flags as historical (NCRR defunct 2011, ADAMHA pre-1992) plus a spread of
+    live institutes and CDC sub-centers.  A 0-result code is NOT automatically a defect
+    for the historical ones -- the schema already tells the buyer they are historical --
+    so those are reported separately and do not fail the run."""
+    out = []
+    live_expected = ["NCI", "NIAID", "NHLBI", "NIGMS", "NIMH", "NLM", "NCATS", "FDA", "CDC"]
+    historical = ["NCRR", "ADAMHA"]
+    dead = []
+    totals = {}
+    # `criteria.agencies` is the key the Actor itself sends (main.js:627).  Using any other
+    # spelling (e.g. agency_ic_admin) is silently IGNORED by RePORTER and every code then
+    # returns the same unfiltered corpus total -- a probe whose values cannot diverge proves
+    # nothing (the c2500 matchMode trap).  The divergence assert below makes that unfakeable.
+    for code in live_expected + historical:
+        d = http(
+            "https://api.reporter.nih.gov/v2/projects/search",
+            {"criteria": {"agencies": [code]}, "limit": 1,
+             "offset": 0, "include_fields": ["ProjectNum"]},
+        )
+        n = (d.get("meta") or {}).get("total", 0)
+        totals[code] = n
+        tag = "historical" if code in historical else "expected-live"
+        out.append(f"    {code:8s} total={n:<10} ({tag})")
+        if not n and code in live_expected:
+            dead.append(code)
+    if len(set(totals.values())) == 1:
+        out.append("  PROBE INVALID: every code returned the same total, so the filter was "
+                   "ignored rather than applied -- this proves nothing about the vocabulary.")
+        return False, out
+    if dead:
+        out.append(f"  DEAD CODES (documented as live but return nothing): {dead}")
+    return not dead, out
+
+
+PROBES = {
+    "federal-register-scraper": ("agencies", p_federal_register_agencies),
+    "hacker-news-scraper": ("tags", p_hacker_news_tags),
+    "nih-reporter-scraper": ("agencyIcCodes", p_nih_agency_ic_codes),
+}
+
+targets = sys.argv[1:] or sorted(PROBES)
+unknown = [t for t in targets if t not in PROBES]
+if unknown:
+    print(f"no vocab probe for: {', '.join(unknown)}")
+    print(f"available: {', '.join(sorted(PROBES))}")
+    sys.exit(2)
+
+print(f"vocab-screen -- live liveness proof of closed stringList vocabularies "
+      f"({len(targets)} Actor(s))\n")
+failed = []
+for slug in targets:
+    fname, fn = PROBES[slug]
+    print(f"{slug}.{fname}")
+    try:
+        ok, lines = fn()
+    except Exception as e:
+        ok, lines = False, [f"  PROBE ERROR: {type(e).__name__}: {e}"]
+    for ln in lines:
+        print(ln)
+    print(f"  => {'CLEAN' if ok else 'STALE'}\n")
+    if not ok:
+        failed.append(slug)
+
+if failed:
+    print(f"STALE VOCABULARY in {len(failed)} Actor(s): {', '.join(failed)}")
+    print("A documented filter value that resolves to nothing upstream hands the buyer an")
+    print("empty dataset with no explanation -- fix the copy or drop the value.")
+    sys.exit(1)
+print("ALL CLEAN -- every documented vocabulary value still resolves upstream.")

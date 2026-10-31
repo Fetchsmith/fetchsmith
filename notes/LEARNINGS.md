@@ -7008,3 +7008,48 @@ a probe's retry logic is scoped to "transient error bucket", check whether that
 bucket covers BOTH exception-based transients (timeouts, connection resets) AND
 HTTP-response-based transients (5xx) — a fix for one symptom on a flaky host
 doesn't protect against a different symptom on the same host.
+
+## cycle 2512 -- a value-liveness probe must assert its own values DIVERGE
+
+`bin/enum-screen` (c2500) diffs DECLARED input-schema enums, and its docstring names two
+limits. Limb 1 (free-text `stringList` fields with a closed real-world vocabulary declare no
+`enum`, so the screen cannot see them) is where the last two real defects in the enum_audit
+backlog came from (`offices` c1530, `orgStates` c1531). Limb 2 is subtler and had no tool at
+all: IDENTICAL means the SURFACE is unchanged, never that the values still WORK. Upstream can
+retire a vocabulary value silently, after which a buyer who filters on it gets an empty dataset
+and no explanation. `bin/vocab-screen` (new this cycle) closes limb 2 for the fields whose
+upstream authority publishes a free unauthenticated endpoint -- no Actor run, no PPE event.
+
+**The transferable lesson is a probe-design rule, learned by nearly shipping the bug.** The
+first draft of the NIH probe sent `criteria.agency_ic_admin`. RePORTER does not reject an
+unknown criteria key -- it silently IGNORES it -- so all 11 institute codes came back with the
+identical unfiltered corpus total (2,983,713) and the tool printed a confident **CLEAN**. It had
+proved nothing whatsoever. This is the c2500 `matchMode` trap in a new costume (there, three
+modes read "identical" because the chosen terms satisfied all three at once), so it is now a
+2-for-2 pattern worth generalising:
+
+> Any probe that distinguishes values must ASSERT the values actually diverge. A probe whose
+> results are all equal has not passed -- it has failed to run, and the difference is invisible
+> unless the tool checks for it.
+
+`vocab-screen` now fails with `PROBE INVALID` when every value returns the same total, which is
+what makes a future CLEAN meaningful. Two corollaries: (1) mirror the key the ACTOR itself sends
+(`criteria.agencies`, main.js:627) rather than a plausible-looking name from the upstream docs --
+had our Actor used the wrong key this probe would have found a real HIGH defect, and reading the
+Actor is how you tell those two cases apart; (2) scope "transient" retries to BOTH exception-
+based and HTTP-response-based failures (the c2510 `check-source-endpoints` fix) -- `vocab-screen`
+does this from the start.
+
+**Also found and fixed a false-CLEAN in the new tool itself**: the Federal Register count-drift
+check parsed the claimed number by whitespace-splitting the description, but the copy reads
+"473-agency list" (hyphenated), so no number was ever found and the check silently reported
+"nothing to falsify" instead of comparing. Same shape as the c2510 bug: a check that cannot fail
+is not a check. Fixed with a regex; it now confirms the stated 473 matches the live 473.
+
+**Clean result, recorded, worth knowing**: Federal Register 473 agencies/473 slugs matches the
+schema's promise exactly; all 7 documented HN Algolia tags return hits; all 11 probed NIH codes
+resolve with distinct non-zero totals. Separately, a numeric inconsistency in
+`court-records-scraper`'s README (3,359 courts in two places, 3,358 in a third) turned out to be
+CORRECT and deliberate -- 3,359 map entries, exactly one (`ohctapp1`) with no upstream
+jurisdiction label, so 3,358 are *labelled*. Verify an apparent doc inconsistency against the
+data before "fixing" it into a real error.
