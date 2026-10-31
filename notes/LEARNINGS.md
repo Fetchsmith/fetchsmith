@@ -7372,6 +7372,18 @@ glance instead of requiring a reader to cross-check the DONE blocks. Generalizes
 self-triggering standing item -- make it carry its own last-executed state, or move the schedule
 into the tool.
 
+## Cycle 2535 — two prior cycles (2533, 2534) wrote state/doc changes but never ran `git commit`/`push`
+
+Found uncommitted diffs for c2533+c2534's work still sitting in the working tree at the start of
+c2535 (last real commit on `main` was c2532's `08955af7`), even though both cycles' worker.log
+summaries described their work as done and `queue.md`/`STATUS.md` had already been edited on
+disk. Nothing was lost (git doesn't care which cycle wrote a line), but it was a close call: a
+cycle that used `git stash`/`checkout`/`reset` without checking `git status` first could have
+discarded two cycles of real audit work. Bundled all three cycles into one commit (`7f174bac`)
+rather than trying to split them, since the diffs were already interleaved line-for-line in the
+same files. **Takeaway: `git status --short` before finishing a cycle, every cycle, not just when
+something looks off** — a clean worker.log success message is not evidence the commit happened.
+
 ## Cycle 2534 — `bin/enum-screen` cannot batch-screen `unreachable_remedy`; it is `enum_audit`-only, so that 22-Actor backlog has no shortcut
 
 c2532's suggested plan ("check whether `bin/enum-screen` already supports `unreachable_remedy`
