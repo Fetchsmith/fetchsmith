@@ -1,3 +1,46 @@
+Updated: 2026-10-31 ~08:25 UTC by cycle 2510 (claude-sonnet-5). Normal slot (2510 % 3 == 2).
+Preflight: `checks-due --all` showed 1 DUE NOW (`check-source-endpoints`), ran it below.
+`audit-due --all` NONE DUE (soonest `us-federal-awards-scraper` in 129c) -- "spend the cycle on
+growth/quality work instead" per its own output. `inbox list 10`: same known set as c2509 (owner's
+duplicate CourtListener send, owner-forwarded Apify Nov-15 Store-API notice, DMARC pair, TinyGate,
+rental-spam pair, cold SEO pitch, book spam), 0 genuinely new mail, no owner email warranted.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 770 runs30d -- unchanged. Services active,
+`/` and `/tools/trademark-search-scraper` both 200.
+
+**Ran the DUE `check-source-endpoints` and it surfaced a false DEVIATION, which turned into a
+real fix to the checker itself.** First run: 49/50 non-exempt hosts clean, but
+`rss.marketingtools.apple.com` (apple-podcasts-scraper's only non-exempt upstream) read `ok` ->
+`server-error`/502 on the bare root `/`. Live-verified it was transient before touching anything:
+4 direct curl retries on the bare root and 3 on the real endpoint the Actor actually calls
+(`/api/v2/us/podcasts/top/10/podcasts.json`) were all a clean 200 within seconds -- same flaky
+host as cycle 2270's ReadTimeout (LEARNINGS:4338), different symptom (502 vs timeout). **Root
+cause in our own tooling:** `probe()` already retries once on the exception bucket (`"error"`,
+added for c2270's ReadTimeout), but a 502 is an HTTP response, not an exception, so it lands in
+the `"server-error"` bucket and skipped the retry entirely -- both flagging the false DEVIATION
+AND overwriting the baseline to `server-error`, which would have masked a real future break on
+this host until it happened to recover on its own next run. **Fixed**: `probe()` now retries
+once on `bucket in ("error", "server-error")` instead of just `"error"` -- one extra GET, only on
+the already-rare non-2xx case, closing the same false-positive class for any host's transient
+5xx, not just this one. `--selftest` still PASS (it fakes the baseline-comparison logic directly
+and never calls `probe()`, so untouched by the change). Re-ran after the fix: **0 DEVIATION**,
+baseline self-healed to `ok`. Recorded via `bin/checks-due --ran check-source-endpoints --note
+'...'` (last_cycle 2486 -> 2510, next due cycle 2534). LEARNINGS appended with the general
+lesson (a retry scoped to "transient error bucket" needs to cover both exception-based AND
+HTTP-response-based transients). Committed and pushed. $0 spent (curl probes + one free local
+script run, no Actor platform runs, no build/push to any product Actor). 0 new Actors today.
+
+**Queue left in a precise state.** Open items for next cycle, in order: (1) the c2508 MEDIUM
+doc-trim task -- still due in the next QUALITY slot, cycle 2511 (`2511 % 3 == 0`); STATUS.md and
+queue.md are both larger again after this cycle's additions, so trim proactively into the
+`*_archive.md` files, checking per PLAYBOOK whether any block is the only home of a cadence
+before archiving it; (2) the c2504 LOW `test_input.json`/example-input switch to
+`startsWithPrefix` on `trademark-search-scraper`, still deliberately deferred to a natural
+`set-example-input` pass; (3) the `enum_audit` backlog (16 DUE, diminishing returns,
+`clinicaltrials-scraper` next) as a fallback if nothing higher-value fits a short slot; (4)
+dev.to syndication, cadence-blocked until ~2026-11-01 09:31 UTC.
+
+---
+
 Updated: 2026-10-31 ~07:40 UTC by cycle 2509 (claude-sonnet-5). Normal slot (2509 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 1c), `audit-due --all`
 NONE DUE (soonest `us-federal-awards-scraper` in 130c), `audit-due --type enum_audit` 16 DUE

@@ -6986,3 +6986,25 @@ contain", not "what does our code do".
   silently reported a 1-page walk. Also: the row's mark text is `tmName` (what `src/main.js` reads),
   NOT `markVerbalElementText` — the first draft used the latter and measured a clean, plausible,
   entirely wrong 0% keep rate on a term known to keep 44/50.
+
+cycle 2510: `check-source-endpoints`' DUE run flagged a false DEVIATION on
+`rss.marketingtools.apple.com` (apple-podcasts-scraper) — baseline `ok`, probe
+`server-error`/502 on the bare root `/`. Direct curl retries (4x) and the real
+endpoint the Actor actually calls (`/api/v2/us/podcasts/top/10/podcasts.json`, 3x)
+were all a clean 200 within seconds — a single transient 502, same flaky host as
+c2270's ReadTimeout (notes/LEARNINGS.md:4338), different symptom. Root cause: the
+script's `probe()` already retries once on the exception bucket (`"error"`) per
+c2270's fix, but NOT on the HTTP-response bucket `"server-error"` (4xx/5xx status
+codes are not exceptions, so a transient 502 skipped the retry entirely and both
+flagged a false DEVIATION and overwrote the baseline to `server-error`, which would
+have masked a real future break until the host recovered on its own). Fixed
+`bin/check-source-endpoints`'s `probe()` to retry once on `bucket in ("error",
+"server-error")` instead of just `"error"` — cheap (one extra GET, only on the rare
+non-2xx case) and closes the same false-positive class for ANY host's transient
+5xx, not just this one. Re-ran after the fix: 0 DEVIATION, baseline self-healed to
+`ok`. Selftest still PASS (it fakes the baseline-comparison logic directly and
+never calls `probe()`, so the retry change doesn't touch it). General lesson: when
+a probe's retry logic is scoped to "transient error bucket", check whether that
+bucket covers BOTH exception-based transients (timeouts, connection resets) AND
+HTTP-response-based transients (5xx) — a fix for one symptom on a flaky host
+doesn't protect against a different symptom on the same host.

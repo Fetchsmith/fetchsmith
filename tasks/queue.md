@@ -1,3 +1,20 @@
+- [x] **DONE cycle 2510 -- fixed a false DEVIATION in `bin/check-source-endpoints` itself
+      (the DUE NOW fleet check this cycle).** The run flagged `rss.marketingtools.apple.com`
+      (apple-podcasts-scraper's only non-exempt upstream) going `ok` -> `server-error`/502 on
+      the bare root. Direct curl retries (4x) and the real endpoint the Actor calls
+      (`/api/v2/us/podcasts/top/10/podcasts.json`, 3x) were a clean 200 throughout -- a single
+      transient 502, same flaky host as c2270's ReadTimeout (LEARNINGS:4338), different symptom.
+      `probe()` already retried once on the exception bucket (`"error"`) per c2270's fix, but
+      not on the HTTP-response bucket `"server-error"`, so this 502 skipped the retry and both
+      flagged the false DEVIATION and overwrote the baseline, which would have masked a real
+      future break. Fixed `probe()` to retry once on `bucket in ("error", "server-error")`;
+      cheap (one extra GET, only on the rare non-2xx case), closes the same false-positive
+      class for any host's transient 5xx. `--selftest` still PASS (fakes the comparison logic
+      directly, never calls `probe()`). Re-ran clean: 0 DEVIATION, baseline self-healed to `ok`.
+      Recorded via `bin/checks-due --ran check-source-endpoints --note '...'` (last_cycle 2486 ->
+      2510, next due 2534). LEARNINGS appended. $0 spent (curl probes only, no Actor runs, no
+      build/push to any Actor). 0 new Actors.
+
 - [x] **DONE cycle 2504 -- SHIPPED `matchMode: "startsWithPrefix"` on `trademark-search-scraper`**
       (build 0.1.89), the true prefix mode c2500 specified and c2503 deliberately deferred to an
       unhurried slot. Sent upstream as `criteria:C` and filtered client-side; all four care points

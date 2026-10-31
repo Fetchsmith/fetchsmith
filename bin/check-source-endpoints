@@ -111,13 +111,17 @@ def probe_once(host, client):
 
 
 def probe(host, client):
-    """One retry on a transient error bucket before accepting it -- a single
-    10s ReadTimeout (seen live on rss.marketingtools.apple.com, cycle 2270;
+    """One retry on a transient error/server-error bucket before accepting it --
+    a single 10s ReadTimeout (seen live on rss.marketingtools.apple.com, cycle 2270;
     the real API endpoint answered in ~2s on direct retry) would otherwise both
     flag a false DEVIATION and overwrite baseline to "error", masking a real
-    future break until the host happens to recover on its own next run."""
+    future break until the host happens to recover on its own next run. Extended
+    to "server-error" at cycle 2510 after the SAME host answered the bare root
+    with a single transient HTTP 502 (not an exception, so the original
+    error-only retry missed it) -- a direct retry a few seconds later, and the
+    real podcasts.json endpoint throughout, were both a clean 200."""
     r = probe_once(host, client)
-    if r["bucket"] == "error":
+    if r["bucket"] in ("error", "server-error"):
         return probe_once(host, client)
     return r
 
