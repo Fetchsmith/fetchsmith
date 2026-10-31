@@ -23,7 +23,7 @@ enum-screen, not instead of it.
 Exit status is 0 when every probe is clean, 1 when any vocabulary value no longer
 resolves upstream (i.e. a buyer-facing filter value has gone stale).
 """
-import json, re, sys, urllib.request, urllib.error
+import datetime as dt, json, re, sys, urllib.request, urllib.error
 
 R = "/root/agent"
 UA = "FetchSmith-vocab-screen/1.0 (+https://fetchsmith.com)"
@@ -294,6 +294,182 @@ def p_eu_ted_cpv_codes():
     return ok, out
 
 
+def p_uk_find_a_tender_cpv_codes():
+    """A FOURTH shape, and the dangerous one: uk-find-a-tender-scraper's cpvCodes is matched
+    ENTIRELY CLIENT-SIDE (main.js:533-534, `cpvPrefixes.some(p => row.cpvCodes.some(h =>
+    h.startsWith(p)))`) against whatever `allCpv()` (main.js:379) could dig out of the OCDS
+    release.  There is no upstream to ask "is this code valid" and no server-side CPV param on
+    either portal, so a stale/absent vocabulary cannot 400 and cannot warn -- it silently
+    returns an empty dataset.  Two distinct things can therefore rot invisibly, and this probe
+    tests both against live releases from BOTH portals:
+
+      (a) the `scheme === 'CPV'` literal `allCpv()` gates on.  If either portal renamed it
+          (OCDS permits e.g. 'CPV2008'), every row would come back with cpvCodes: [] and every
+          cpvCodes filter in the fleet would match nothing, fleet-wide, with no error.
+      (b) per-stage COVERAGE.  Measured live 2026-10-31, Find a Tender publishes no CPV
+          classification AT ALL on award/contract-stage releases filed under the Procurement
+          Act 2023 (legalBasis UKPGA 2023/54) -- 225 of 225 across four sampled windows, vs
+          52 of 52 legacy EU-directive awards (32014L0023/24/25) that do carry one.  Tender,
+          tenderUpdate, planning and planningUpdate stages are at 100%.  So a cpvCodes filter
+          over FTS awards drops every post-Act award silently, which is now ~81% of them.  The
+          README documents this (see its CPV coverage FAQ); the probe exists so the README is
+          falsified the moment either direction changes -- FTS starting to publish CPV on Act
+          notices makes our caveat wrong, FTS dropping it on tender stage makes the whole
+          filter useless."""
+    out = []
+    now = dt.datetime.now(dt.timezone.utc)
+
+    def window(days_ago, span=1):
+        frm = (now - dt.timedelta(days=days_ago)).strftime("%Y-%m-%dT%H:%M:%S")
+        to = (now - dt.timedelta(days=max(0, days_ago - span))).strftime("%Y-%m-%dT%H:%M:%S")
+        return frm, to
+
+    def all_cpv(tender):
+        """Mirrors actors/uk-find-a-tender-scraper/src/main.js allCpv() exactly, including the
+        scheme gate -- per the c2512 rule, a probe must send/read what the ACTOR does, not a
+        plausible shape from upstream docs."""
+        got, schemes = [], []
+        c = (tender or {}).get("classification") or {}
+        if c.get("scheme"):
+            schemes.append(c["scheme"])
+        if c.get("scheme") == "CPV" and c.get("id"):
+            got.append(str(c["id"]))
+        for item in (tender or {}).get("items") or []:
+            ic = item.get("classification") or {}
+            if ic.get("scheme"):
+                schemes.append(ic["scheme"])
+            if ic.get("scheme") == "CPV" and ic.get("id"):
+                got.append(str(ic["id"]))
+            for a in item.get("additionalClassifications") or []:
+                if a.get("scheme"):
+                    schemes.append(a["scheme"])
+                if a.get("scheme") == "CPV" and a.get("id"):
+                    got.append(str(a["id"]))
+        return list(dict.fromkeys(got)), schemes
+
+    # --- Find a Tender: sample several disjoint day-windows so one quiet day can't decide it
+    fts_stage = {}          # stage tag -> [releases, releases with >=1 CPV]
+    fts_award_basis = {}    # (legalBasis id, hasCPV) -> count
+    schemes_seen = set()
+    codes_fts = []
+    for days_ago in (3, 10, 20, 40):
+        frm, to = window(days_ago)
+        pkg = http("https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages"
+                   f"?limit=100&updatedFrom={frm}&updatedTo={to}")
+        for rel in pkg.get("releases") or []:
+            tender = rel.get("tender") or {}
+            cpv, schemes = all_cpv(tender)
+            schemes_seen.update(schemes)
+            codes_fts.extend(cpv)
+            tags = set(rel.get("tag") or [])
+            stage = ("award/contract"
+                     if tags & {"award", "contract", "awardUpdate", "contractUpdate"}
+                     else ",".join(sorted(tags)) or "untagged")
+            slot = fts_stage.setdefault(stage, [0, 0])
+            slot[0] += 1
+            slot[1] += 1 if cpv else 0
+            if stage == "award/contract":
+                basis = (tender.get("legalBasis") or {}).get("id") or "none"
+                key = (basis, bool(cpv))
+                fts_award_basis[key] = fts_award_basis.get(key, 0) + 1
+
+    out.append("  Find a Tender (4 x 1-day windows, 100/page):")
+    for stage, (n, w) in sorted(fts_stage.items(), key=lambda kv: -kv[1][0]):
+        out.append(f"    {stage:20s} {n:4d} releases, {w:4d} with >=1 CPV ({100 * w // max(1, n)}%)")
+
+    # --- Contracts Finder: the portal that DOES classify everything, sampled the same four
+    # windows so the README's side-by-side table stays reproducible from one command.  All
+    # stages requested explicitly: the default is tender-only, which would hide the award rows
+    # that are the whole point of the comparison.
+    cf_stage = {}
+    codes_cf = []
+    for days_ago in (3, 10, 20, 40):
+        frm, to = window(days_ago)
+        cf = http("https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search"
+                  f"?limit=100&publishedFrom={frm}&publishedTo={to}"
+                  "&stages=planning,tender,award,contract,implementation")
+        for rel in cf.get("releases") or []:
+            cpv, schemes = all_cpv(rel.get("tender") or {})
+            schemes_seen.update(schemes)
+            codes_cf.extend(cpv)
+            tags = set(rel.get("tag") or [])
+            stage = ("award/contract"
+                     if tags & {"award", "contract", "awardUpdate", "contractUpdate"}
+                     else ",".join(sorted(tags)) or "untagged")
+            slot = cf_stage.setdefault(stage, [0, 0])
+            slot[0] += 1
+            slot[1] += 1 if cpv else 0
+    cf_n = sum(n for n, _ in cf_stage.values())
+    cf_with = sum(w for _, w in cf_stage.values())
+    out.append(f"  Contracts Finder (4 x 1-day windows, all stages): {cf_with}/{cf_n} with >=1 CPV "
+               f"({100 * cf_with // max(1, cf_n)}%)")
+    for stage, (n, w) in sorted(cf_stage.items(), key=lambda kv: -kv[1][0]):
+        out.append(f"    {stage:20s} {n:4d} releases, {w:4d} with >=1 CPV ({100 * w // max(1, n)}%)")
+    out.append(f"  classification schemes seen across both portals: {sorted(schemes_seen)}")
+
+    ok = True
+
+    # (a) the scheme literal allCpv() gates on
+    if "CPV" not in schemes_seen:
+        out.append("  DRIFT (CRITICAL): no classification carried scheme=='CPV'. allCpv() "
+                   "(main.js:379) gates on that exact literal, so EVERY row would ship "
+                   "cpvCodes: [] and EVERY cpvCodes filter would silently match nothing.")
+        ok = False
+
+    # (b) the stages our copy tells buyers to filter must stay fully classified
+    for stage in ("tender", "planning"):
+        n, w = fts_stage.get(stage, [0, 0])
+        if n == 0:
+            out.append(f"  (no {stage}-stage releases in the sampled windows -- coverage not asserted)")
+            continue
+        pct = 100 * w / n
+        out.append(f"  {stage}-stage coverage {w}/{n} ({pct:.0f}%) -- README tells buyers to "
+                   f"filter cpvCodes on exactly this stage")
+        if pct < 90:
+            out.append(f"  DRIFT: {stage}-stage CPV coverage has collapsed; the README's "
+                       "'filter on cpvCodes to find IT opportunities' advice no longer holds.")
+            ok = False
+
+    # (b, cont.) the Procurement-Act award gap the README now documents, in BOTH directions
+    act_no = fts_award_basis.get(("2023/54", False), 0)
+    act_yes = fts_award_basis.get(("2023/54", True), 0)
+    legacy_yes = sum(v for (b, h), v in fts_award_basis.items() if b.startswith("32014L") and h)
+    legacy_no = sum(v for (b, h), v in fts_award_basis.items() if b.startswith("32014L") and not h)
+    out.append(f"  FTS award/contract by legal basis: Procurement Act 2023 (UKPGA 2023/54) "
+               f"{act_no} without CPV / {act_yes} with; legacy EU directives "
+               f"{legacy_no} without / {legacy_yes} with")
+    if act_no + act_yes == 0:
+        out.append("  (no Procurement Act award notices sampled -- gap not asserted this run)")
+    elif act_yes:
+        out.append(f"  DRIFT: {act_yes} Procurement Act award notice(s) now DO carry a CPV "
+                   "classification. Good news upstream, but the README's CPV-coverage FAQ "
+                   "states the gap is total -- re-measure and soften the copy.")
+        ok = False
+
+    # (b, cont.) the README sends award-side CPV work to Contracts Finder BECAUSE it classifies
+    # everything, so that recommendation has to be falsifiable too.
+    if cf_n and 100 * cf_with / cf_n < 99:
+        out.append(f"  DRIFT: Contracts Finder CPV coverage is {cf_with}/{cf_n}, no longer the "
+                   "100% the README leans on when it tells award-side buyers to use "
+                   'sources: ["cf"] -- re-measure and fix that recommendation.')
+        ok = False
+
+    # divergence, per the c2512 rule: a prefix filter that distinguishes values must be shown
+    # to actually partition, or an inert filter reads as a confident CLEAN
+    codes = codes_fts + codes_cf
+    it_hits = [c for c in codes if c.startswith("72")]
+    health_hits = [c for c in codes if c.startswith("85")]
+    out.append(f"  prefix partition over {len(codes)} live codes: '72' (README's own IT example) "
+               f"-> {len(it_hits)} codes, '85' -> {len(health_hits)} codes, overlap "
+               f"{len(set(it_hits) & set(health_hits))}")
+    if not it_hits or not health_hits or (set(it_hits) & set(health_hits)):
+        out.append("  DRIFT: the client-side subtree prefix match no longer partitions live "
+                   "codes as README's CPV FAQ describes -- re-check cpvPrefixes (main.js:197).")
+        ok = False
+
+    return ok, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -301,6 +477,7 @@ PROBES = {
     "us-federal-awards-scraper": ("recipientTypes", p_usaspending_recipient_types),
     "substack-scraper": ("discoverCategories", p_substack_discover_categories),
     "eu-ted-tenders-scraper": ("cpvCodes", p_eu_ted_cpv_codes),
+    "uk-find-a-tender-scraper": ("cpvCodes", p_uk_find_a_tender_cpv_codes),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

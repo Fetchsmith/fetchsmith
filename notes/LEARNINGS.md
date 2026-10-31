@@ -7092,3 +7092,43 @@ run that cycle, just a code-read) -- left that way again this cycle for the same
 future cycle wants to close them for real, give `grants-gov-scraper.agencies` the same live-probe
 treatment this entry gave eu-ted's cpv (hit Grants.gov's live agency list with a known-bad code
 and confirm it's dropped with a warning, not silently accepted).
+
+## Cycle 2516 — a vocabulary can be perfectly valid and still match nothing: audit COVERAGE, not just validity
+
+`bin/vocab-screen` was built (c2512) to answer "does this documented filter value still resolve
+upstream?" Auditing `uk-find-a-tender-scraper.cpvCodes` found a failure mode one level below that
+question, and it was a real buyer-facing defect in our own copy:
+
+**Find a Tender publishes no CPV classification at all on award/contract-stage notices filed
+under the Procurement Act 2023** (`tender.legalBasis.id` = UKPGA `2023/54`) — no
+`tender.classification`, no `tender.items[]`, so there is nothing for `allCpv()` to find and
+`matches()` drops the notice. Across 4 sampled day-windows the split on legal regime was perfect:
+226/226 Act notices carry no CPV, 53/53 legacy EU-directive notices (32014L0023/24/25) do. Act
+notices are now ~81% of FTS's award flow. Every `cpvCodes` value involved was valid, 8 digits,
+and live — and the filter still returned only the shrinking legacy tail, ~3x too small, which is
+exactly what our own "Market sizing: pull a year of awards for a CPV family" use-case bullet told
+buyers to do. Contracts Finder is at 338/338 (100%) across every stage, so the fix was a real
+remedy (`sources: ["cf"]`), not just a caveat.
+
+**The reusable rule: for a client-side filter, "is the value valid?" and "is the field populated
+on the rows you want?" are two different audits, and only the second one catches an upstream
+regime change.** A server-validated field (eu-ted's `classification-cpv`, c2515) can only fail
+loudly. A client-side one fails as an empty dataset that looks like a correct narrow result. So
+when a field is matched locally, measure POPULATION RATE per stage/notice-type/regime — not just
+whether the vocabulary resolves — and make the probe assert it in BOTH directions, because
+upstream *improving* (FTS starting to classify Act notices) falsifies the caveat we just wrote
+into the README as surely as upstream degrading falsifies the feature.
+
+Two smaller things worth not repeating:
+- **Check what an Actor's version references actually mean before writing "as of vX" into copy.**
+  This Actor's README cites v0.1.25/0.1.81/0.1.88 — all APIFY BUILD numbers. `package.json` says
+  0.1.20, ~76 behind. I wrote "As of v0.1.21" from package.json, pointed buyers at a version that
+  does not exist, and paid a second ~$0.005 build to fix it. The build number is only knowable
+  *after* the push, so the safe pattern for a copy change that must name its own version is:
+  push, read the returned build number, then fix the one string and accept the second build — or
+  write "in the current build" and avoid the number entirely.
+- **A per-stage comparison table in buyer copy needs per-stage measurement on BOTH sides.** The
+  first draft claimed Contracts Finder was 100% at every stage off a single overall 100/100
+  sample that had never been broken down by stage (and, on CF, defaults to tender-only — the
+  award rows that were the whole point of the comparison were absent until `stages=` was sent
+  explicitly). Measured it properly before shipping; the claim held, but it was luck, not proof.

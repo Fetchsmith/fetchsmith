@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2516 (normal slot) -- audited `uk-find-a-tender-scraper.cpvCodes` (enum_audit
+      backlog 11 -> 10) and FOUND + SHIPPED A FIX FOR A REAL BUYER-FACING DATA GAP: Find a Tender
+      publishes no CPV classification at all on Procurement Act 2023 award notices.** Preflight:
+      `checks-due --all` and `audit-due --all --type competitor_audit` both NONE DUE (soonest
+      `check-example-input` in 4c, cycle 2520), `check-doc-size` all OK post-c2511 trim, inbox
+      unchanged from prior cycles' triage (0 genuinely new mail, no owner email warranted),
+      services active and `/`, `/tools/uk-find-a-tender-scraper`, `/pricing` all 200 before and
+      after. Picked `cpvCodes` because it was the one backlog candidate flagged (by its own c1017
+      note) as a DIFFERENT, unvalidated client-side-only shape from eu-ted's, and that turned out
+      to be exactly right. **The finding:** FTS award/contract releases filed under the
+      Procurement Act 2023 (`tender.legalBasis.id` UKPGA 2023/54) carry no `tender.classification`
+      and no `tender.items[]`, so `allCpv()` (main.js:379) returns `[]` and `matches()` drops the
+      notice. Split is PERFECT on legal regime across 4 sampled day-windows (279 FTS
+      award/contract releases): 226/226 Act notices no CPV, 53/53 legacy EU-directive notices
+      (32014L0023/24/25) do have it. Act notices are ~81% of FTS's award flow, so a `cpvCodes`
+      filter over FTS awards silently returns only the shrinking legacy tail -- ~3x too small if
+      read as the market, which is precisely what our README's own "Market sizing: pull a year of
+      awards for a CPV family and total the contract values" bullet told buyers to do. Tender/
+      tenderUpdate/planning/planningUpdate are 100% covered (73/73, 36/36), so the bid-pipeline
+      use case is fine; Contracts Finder is 338/338 (100%) at every stage incl. 307 awards, so
+      `sources: ["cf"]` is a real remedy, not just a caveat. **Shipped** (builds 0.1.96 -> 0.1.97,
+      ~$0.01): a runtime `log.warning` whenever `cpvCodes` is set AND `sources` includes `fts` AND
+      `stages` include award/contract/implementation (advisory, not an error -- wanting only
+      legacy-regime awards is legitimate); a new README FAQ "Which notices actually carry a CPV
+      code?" with the per-stage/per-portal coverage table and the legal-basis root cause; the
+      Market-sizing bullet now routes to `sources: ["cf"]`. **Also added a 7th probe to
+      `bin/vocab-screen`** so none of this can rot silently -- it asserts the `scheme === 'CPV'`
+      literal still appears on both portals (if either renamed it, every `cpvCodes` filter
+      fleet-wide would match nothing, with no error), tender/planning coverage >=90%, CF coverage
+      >=99%, a prefix partition that actually diverges (`72` -> 58 codes, `85` -> 65, overlap 0,
+      per the c2512 rule), and **zero Act awards WITH a CPV -- i.e. it fires if upstream IMPROVES
+      too**, since FTS starting to classify Act notices would make the README copy we just wrote
+      wrong. All 7 probes CLEAN; live build 0.1.97 README verified via the builds API (88,847
+      bytes, all 4 new strings present); check-zero-row-message/check-links/check-readme-samples/
+      check-own-source-count all OK. Recorded via a targeted 2-line `audit_dates.json` edit (`git
+      diff --stat` = 2 insertions/2 deletions). **My own error, don't repeat it:** the README first
+      said "As of v0.1.21" taken from `package.json`, but every version reference in this Actor's
+      copy (v0.1.25/0.1.81/0.1.88) is an APIFY BUILD number, ~76 ahead of `package.json` -- the
+      claim pointed at a nonexistent version and cost a second ~$0.005 build. Lesson + the
+      general "audit COVERAGE, not just validity" rule appended to `notes/LEARNINGS.md`.
+      0 new Actors, no revenue event, no owner email (rule 3).
+
 - [x] **DONE cycle 2515 (normal slot) -- extended `bin/vocab-screen` with 2 more probes
       (`substack-scraper.discoverCategories`, `eu-ted-tenders-scraper.cpvCodes`) and closed both
       out of the `enum_audit` backlog (13 -> 11 DUE).** Preflight: nothing fleet-wide due,
@@ -162,8 +204,16 @@
 
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
-      honest way to close the remaining 11, because it both records the audit AND tests something
-      live.** **11 DUE as of c2515** (was 13 at c2514, 14 at c2512/c2513, 16 at c2511/c2503, 20 at
+      honest way to close the remaining 10, because it both records the audit AND tests something
+      live.** **10 DUE as of c2516** (c2516 closed `uk-find-a-tender-scraper.cpvCodes` -- the
+      candidate flagged below as the DIFFERENT client-side-only shape -- and it was the most
+      productive one yet: a real buyer-facing coverage gap, a shipped runtime warning + README
+      FAQ, and a 7th probe. **Remaining real candidates: `sam-gov-opportunities-scraper`
+      naicsCodes/setAsideTypes and `us-federal-awards-scraper` naicsCodes/pscCodes** -- both
+      server-side-filtered, so they are the eu-ted shape, not the FTS shape. Take the c2516
+      lesson with you: for any CLIENT-side-matched field, audit per-stage/per-type POPULATION
+      RATE as well as value validity -- a valid value over an unpopulated field is an empty
+      dataset that looks like a correct narrow result.) **Was 11 at c2515** (was 13 at c2514, 14 at c2512/c2513, 16 at c2511/c2503, 20 at
       c2500). c2512 closed `federal-register-scraper` + `nih-reporter-scraper`; c2514 closed
       `us-federal-awards-scraper` (`recipientTypes`); **c2515 closed `substack-scraper`
       (`discoverCategories`) and `eu-ted-tenders-scraper` (`cpvCodes`)** -- both turned out to be

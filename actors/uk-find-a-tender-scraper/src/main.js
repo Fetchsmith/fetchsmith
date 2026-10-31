@@ -189,6 +189,32 @@ if (malformedCpvCodes.length) {
         + 'what you intended. Fix the value(s) to exactly 8 digits.',
     );
 }
+// Coverage, not validity: a perfectly valid cpvCodes value still matches nothing on the Find a
+// Tender releases that carry NO CPV classification at all, and on the award side that is now
+// almost all of them. Measured live 2026-10-31 over four sampled day-windows (278 FTS
+// award/contract-stage releases): every one of the 226 filed under the Procurement Act 2023
+// (`tender.legalBasis.id` UKPGA 2023/54) has no `classification` and no `items[]`, so allCpv()
+// returns [] and `matches()` drops it; all 52 filed under the legacy EU directives
+// (32014L0023/24/25) do carry CPV codes. Tender/tenderUpdate/planning/planningUpdate stages are
+// at 100% coverage on both portals, and Contracts Finder is at 100% across every stage, so this
+// is specific to FTS awards. Nothing upstream errors and nothing in the row shape says "this
+// notice was never classified" rather than "this notice is not in your subtree", so without
+// this warning the buyer reads a 3x-too-small award set as the real market. Kept at warning
+// level, not an error: filtering FTS awards by CPV is still a legitimate thing to ask for if you
+// only want the legacy-regime ones.
+const cpvBlindStages = stages.filter((s) => ['award', 'contract', 'implementation'].includes(s));
+if (cpvCodes.length && sources.includes('fts') && cpvBlindStages.length) {
+    log.warning(
+        `cpvCodes is set and you asked for the ${cpvBlindStages.join('/')} stage(s) on Find a Tender. `
+        + 'Find a Tender publishes NO CPV classification on award/contract-stage notices filed under the '
+        + 'Procurement Act 2023 (measured 2026-10-31: 226 of 226 sampled, ~81% of its current award flow), '
+        + 'so those notices carry an empty cpvCodes list and a CPV filter can never match them -- you will see '
+        + 'only the older EU-directive-era awards, which do carry codes. This is an upstream data gap, not a '
+        + 'filter bug, and you are not charged for the dropped rows. Contracts Finder classifies 100% of its '
+        + 'notices at every stage, so for award-side CPV analysis use sources: ["cf"], or drop cpvCodes and '
+        + 'filter FTS awards with searchQuery/keywordsAny/buyerName instead.',
+    );
+}
 // CPV subtree prefix for a wanted code. Trailing zeros are padding, so stripping them
 // gives the subtree ("72267000" -> "72267" also matches 72267100/72267200). But a division
 // whose second digit is 0 must NOT collapse to one digit: "80000000" -> "8" would match all

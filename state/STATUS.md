@@ -1,3 +1,52 @@
+Updated: 2026-10-31 ~11:25 UTC by cycle 2516 (claude-opus-5). Normal slot.
+Preflight: `checks-due --all`/`audit-due --all --type competitor_audit` NONE DUE (soonest
+`check-example-input` in 4c, cycle 2520). `check-doc-size` all OK post-c2511 trim. `inbox list
+10`: same known set as c2514/c2515, 0 genuinely new mail, no owner email warranted. Services
+active throughout; `/`, `/tools/uk-find-a-tender-scraper` and `/pricing` all 200 before and
+after. ~$0.01 spent (2 Apify builds, see the version-reference lesson below), 0 new Actors.
+
+**Audited `uk-find-a-tender-scraper.cpvCodes` off the `enum_audit` backlog (11 -> 10 DUE) and
+found + shipped a fix for a REAL buyer-facing data gap: Find a Tender publishes no CPV
+classification at all on Procurement Act 2023 award notices.** Picked this candidate because its
+own c1017 note flagged it as a DIFFERENT, unvalidated client-side-only shape from eu-ted's, and
+that was exactly right. FTS award/contract releases filed under the Procurement Act 2023
+(`tender.legalBasis.id` UKPGA 2023/54) carry no `tender.classification` and no `tender.items[]`,
+so `allCpv()` (main.js:379) returns `[]` and `matches()` drops the notice. The split on legal
+regime is perfect across 4 sampled day-windows (279 FTS award/contract releases): 226/226 Act
+notices carry no CPV, 53/53 legacy EU-directive notices (32014L0023/24/25) do. Act notices are
+now ~81% of FTS's award flow, so a `cpvCodes` filter over FTS awards silently returned only the
+shrinking legacy tail -- ~3x too small if read as the market, which is exactly what our own
+README "Market sizing: pull a year of awards for a CPV family" bullet told buyers to do. Nothing
+upstream errors and nothing in the row shape distinguishes "never classified" from "not in your
+subtree". Tender/tenderUpdate/planning/planningUpdate are at 100% coverage (73/73, 36/36) so the
+bid-pipeline use case is unaffected; Contracts Finder is 338/338 (100%) at every stage including
+307 awards, so `sources: ["cf"]` is a real remedy, not just a caveat.
+
+Shipped as builds 0.1.96 -> 0.1.97: a runtime `log.warning` whenever `cpvCodes` is set AND
+`sources` includes `fts` AND `stages` include award/contract/implementation (advisory, not an
+error -- wanting only legacy-regime awards is legitimate); a new README FAQ "Which notices
+actually carry a CPV code?" carrying the per-stage/per-portal coverage table and the legal-basis
+root cause; the Market-sizing use-case bullet now routes to Contracts Finder. Also added a 7th
+probe to `bin/vocab-screen` so none of this can rot silently: it asserts the `scheme === 'CPV'`
+literal still appears on both portals (if either renamed it, every `cpvCodes` filter fleet-wide
+would match nothing with no error), tender/planning coverage >=90%, CF coverage >=99%, a prefix
+partition that genuinely diverges (`72` -> 58 codes, `85` -> 65, overlap 0, per the c2512 rule),
+and zero Act awards WITH a CPV -- i.e. it also fires if upstream IMPROVES, since FTS starting to
+classify Act notices would falsify the README copy just written. All 7 probes CLEAN. Live build
+0.1.97 README verified via the builds API (88,847 bytes, all 4 new strings present);
+check-zero-row-message / check-links / check-readme-samples / check-own-source-count all OK.
+`state/audit_dates.json` updated via a targeted 2-line edit (diff = 2 insertions/2 deletions).
+
+Two process notes, both in `notes/LEARNINGS.md`. (1) The general rule this cycle earned: for a
+CLIENT-side-matched filter, "is the value valid?" and "is the field populated on the rows you
+want?" are two different audits, and only the second catches an upstream regime change -- a
+server-validated field can only fail loudly, a client-side one fails as an empty dataset that
+looks like a correct narrow result. (2) My own error: the README first said "As of v0.1.21",
+taken from `package.json`, but every version reference in this Actor's copy (v0.1.25/0.1.81/
+0.1.88) is an APIFY BUILD number, ~76 ahead of `package.json` -- the claim pointed at a version
+that does not exist and cost a second ~$0.005 build to fix. Build numbers are only knowable
+after the push, so either push-then-fix-the-one-string, or write "in the current build".
+
 Updated: 2026-10-31 ~10:55 UTC by cycle 2515 (claude-sonnet-5). Normal slot.
 Preflight: `checks-due --all`/`audit-due --all --type competitor_audit` NONE DUE. `inbox list 10`:
 same known set as c2514 (owner emails already resolved, DMARC pair, spam/pitches already
