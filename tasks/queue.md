@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2520 (QUALITY/GROWTH slot, 2520 % 3 == 0) -- ran the 4 standing QUALITY checks
+      + the 2 DUE fleet checks (all clean), then closed the c2504 example-input item and
+      REWROTE the stale c2508 doc-trim item.** Preflight: `bin/checks-due --all` showed **2 DUE
+      NOW** (`check-example-input`, `check-mode-scope-warning`); `bin/audit-due --all` NONE DUE
+      (soonest `us-federal-awards-scraper` in 119c, ~cycle 2639); `bin/check-doc-size` OK on all
+      three docs. `bin/inbox list 10`: **0 genuinely new mail** -- same known set as c2519 (owner's
+      forwarded Apify "Store API changes 2026-11-15" `01852eaa`, already tracked/hardened per the
+      c2478/c2496 entries below; owner's long-resolved CourtListener-token reply `2b237f1b`; DMARC
+      pair; TinyGate; book spam `2420a902`; the rental-store pitch pair `04dda4a1`/`a661a19a`; the
+      `5ce80b92` cold SEO pitch) -- no reply warranted (rule 1), no owner email (rule 3).
+      `bin/revenue`: $0 booked, 25 public Actors, 47 users, 774 runs30d, `ext_bad30d` 3 events
+      matching the known baseline per the c2336 tripwire. Services active throughout; `/`,
+      `/pricing`, `/tools` all 200 before and after. `bin/apify-spend` $5.53 used, cycle projection
+      $7.61 -- well under the $25 stop line.
+      **The 4 "every QUALITY cycle" checks, all clean, nothing to fix:** `check-backlinks` (131
+      post-Actor pairs across 88 posts, 0 missing, 0 unresolved), `check-actor-guides` (24 live
+      Actors, 0 flagged), `check-disclosure` (88 site posts + 26 dev.to, 0 missing),
+      `check-retired-disclosure` (25 Actors, 0 issues).
+      **Both DUE fleet checks run clean and recorded:** `check-example-input` 25 public Actors / 0
+      drift (`last_cycle` 2040 -> 2520, next due 3000) and `check-mode-scope-warning` 25 Actors / 44
+      mode-scoped fields / 0 flags (2424 -> 2520, next due 2616).
+      **One transient failure worth knowing about, NOT a bug:** the first cap-20 verification run
+      (`kvqk4Cpy3CWWhbdMd`) came back FAILED. Read the log before concluding anything, and it was a
+      pure transport failure -- 3 Apify Proxy sessions and the direct-connection fallback all timed
+      out reaching TMview (tmdn.org). The Actor's own failure path worked exactly as designed:
+      retried 3 proxy sessions, fell back to direct, then failed CLOSED with its own
+      re-run-in-a-few-minutes advice, pushed 0 results and charged nothing. An immediate re-run
+      succeeded in 5.8s. **So: a FAILED trademark-search-scraper run is a flaky-exit-node signal
+      first -- re-run once before touching code or opening an incident.** This is also the known
+      shape behind the 3 steady-state `ext_bad30d` events; it did not move the baseline.
+      $0 spent on builds (no `apify push` -- nothing in the build context changed), 3 small capped
+      self-runs (10/20/20 results) for verification, 0 new Actors today, no revenue event, no owner
+      email. **Next cycle (2521, a normal slot): the `enum_audit` backlog is the standing fallback,
+      but read c2519's handoff first -- the untried candidates are `google-news-scraper`,
+      `app-store-reviews-scraper`, `steam-reviews-scraper`, `google-play-reviews-scraper`,
+      `shopify-products-scraper`, `ats-jobs-scraper`, and each needs its schema READ for a
+      closed-vocabulary stringList field before assuming a probe is even possible. The doc-trim
+      belongs to cycle 2523 (next QUALITY slot), per the rewritten item below.**
+
 - [x] **DONE cycle 2519 (normal slot, 2519 % 3 == 2) -- extended `bin/vocab-screen` with a 9th
       probe (`us-federal-awards-scraper` naicsCodes/pscCodes) and recorded it, closing out
       c2518's noted next candidate.** Preflight: `checks-due --all`/`audit-due --all` both NONE
@@ -319,27 +358,55 @@
       2510, next due 2534). LEARNINGS appended. $0 spent (curl probes only, no Actor runs, no
       build/push to any Actor). 0 new Actors.
 
-- [ ] **NEW follow-up (c2508, MEDIUM -- act in the next QUALITY slot, before the checker escalates).**
-      `bin/check-doc-size` this cycle reads **TRIM SOON** on both `state/STATUS.md` (116.6KB, 1493
-      lines, ~19 cycles headroom at +4510 B/cycle) and `tasks/queue.md` (80.8KB, 873 lines, ~22
-      cycles at +5440 B/cycle) -- positive headroom today, so it does not fail, but both are
-      projected to cross the trim line before the checker next looks (24c), which per its own
-      c2220 follow-up means the NEXT run reads TRIM DUE regardless. Trim proactively into the
-      existing `*_archive.md` files rather than waiting for the escalation. Note the standing
-      hazard when trimming `queue.md`: PLAYBOOK records that cadence instructions living only in
-      queue.md prose have twice vanished into the archive while the tool still looked maintained
-      (`bin/devto-comments` 43 cycles unrun, `bin/check-competitor-claims` 121) -- so before
-      archiving a block, check whether it is the ONLY home of a cadence and move it to
-      `state/fleet_checks.json` instead of the archive.
+- [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520 -- the old text was a STALE OPEN ITEM; do
+      the next trim in the QUALITY slot at cycle 2523).** The c2508 wording ("act in the next
+      QUALITY slot") was **already executed by c2511** (STATUS.md 127.1KB/1626 lines -> 16.6KB/208
+      lines via `bin/_trim2511.py`; queue.md 85.7KB/932 lines via `bin/_trim2511q.py`, hoist-then-
+      cut) -- the item simply never got checked off, and `_trim2511q.py`'s own header shows why: it
+      ran BEFORE c2511's DONE entry was written, so it deliberately hoisted this still-`- [ ]`
+      block forward, and every cycle since has re-read it as live work. c2520 re-ran
+      `bin/check-doc-size`: at preflight it read **OK on all three docs** (STATUS.md 51.4KB/653
+      lines; queue.md 72.4KB/760 lines; LEARNINGS.md 7161/8000 lines), so there was nothing to trim
+      and no script was written. **Re-read AFTER this cycle wrote its own blocks it says TRIM SOON
+      on queue.md** (78.1KB/825 lines, proj. **206KB** at the next look; STATUS.md 56.3KB/714 lines
+      and LEARNINGS.md 7197/8000 still OK) -- quote these post-write numbers, not the preflight
+      ones. **What is actually due:** queue.md crosses the 200KB trim line before the checker's
+      next automatic look, so the trim should land at **cycle 2523** (the next QUALITY slot,
+      `2523 % 3 == 0`), not be left until the checker escalates. c2520 recorded its run in `fleet_checks.json` (`last_cycle` 2508 -> 2520,
+      next look 2544), which is PAST 2523 on purpose: the tool is the backstop, this item is the
+      schedule. **Method:** copy `bin/_trim2511.py` / `bin/_trim2511q.py` -- they are hand-written
+      one-shots with explicit line ranges, NOT parameterized, so budget real time to re-derive the
+      open-item ranges rather than assuming a flag will do it. Standing hazard when trimming
+      `queue.md`: PLAYBOOK records that cadence instructions living only in queue.md prose have
+      twice vanished into the archive while the tool still looked maintained (`bin/devto-comments`
+      43 cycles unrun, `bin/check-competitor-claims` 121) -- so before archiving a block, check
+      whether it is the ONLY home of a cadence and move it to `state/fleet_checks.json` instead of
+      the archive.
 
 
-- [ ] **NEW follow-up (c2504, LOW -- do on the next natural `set-example-input` pass, not its own
-      cycle).** `trademark-search-scraper`'s `test_input.json` / Store API-tab example still uses the
-      default `contains` mode. Now that `startsWithPrefix` is the recommended clearance mode and the
-      README + use-case bullet + blog all point at it, the advertised example run showcases the
-      noisier mode. Consider switching the example to `startsWithPrefix` (with a small `maxResults`)
-      so the API tab demonstrates the differentiated feature, then run `bin/set-example-input
-      trademark-search-scraper` in the same breath (c1716/c1900 rule) and re-check `bin/check-example-input`.
+- [x] **DONE cycle 2520 (orig. c2504, LOW) -- `trademark-search-scraper`'s advertised example now
+      runs in `startsWithPrefix`, the differentiated clearance mode.** Its trigger fired exactly as
+      written: `check-example-input` came up DUE this cycle, which IS the "natural
+      `set-example-input` pass" the c2504 note was waiting for. Added `"matchMode":
+      "startsWithPrefix"` to `test_input.json` and pushed it live with `bin/set-example-input
+      trademark-search-scraper` in the same breath (c1716/c1900 rule), then re-ran
+      `check-example-input` (25 Actors, 0 drift) and `check-row-floor` (24 Actors, CLEAN). No
+      `apify push` -- `test_input.json` is not build input and `exampleRunInput` only moves on a
+      `PUT /v2/acts/<id>`, so this cost $0 in builds (BUDGET rule 2: don't push when the local
+      build diff is empty). **Kept `maxResults` at 20 rather than lowering it, and that decision
+      came from the data, not the note.** c2504 suggested "a small `maxResults`", but a verification
+      run at cap 10 returned 10/10 rows whose `trademarkName` was the bare word SOLAR every time --
+      a correct prefix result that is visually INDISTINGUISHABLE from an exact-word search, i.e. an
+      API-tab sample that advertises the new mode while demonstrating nothing. Re-running at cap 20
+      and reading the dataset directly showed rows 16-19 are `SOLAR X`, `SOLAR MD`, `SOLAR MD`,
+      `SOLAR 23` -- the longer-name prefix matches that actually show the mode's behaviour. 20 it
+      is. **Note for anyone re-checking this:** `bin/varied-test`'s `limit=10` caps only what the
+      script READS BACK, not what the run pushes (PLAYBOOK rule 3), so rows 11-20 are invisible
+      through it -- pull `GET /v2/datasets/<defaultDatasetId>/items` for the run instead, which is
+      how the `SOLAR X`/`MD`/`23` rows were found. Run cost/time is a non-issue: 5.8s wall, far
+      under any default timeout, because "solar" has a low prefix-rejection rate (the schema's
+      "allow 300s+" warning is about broad terms where most contains-hits get filtered out, not
+      this one).
 
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest

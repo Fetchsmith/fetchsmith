@@ -7159,3 +7159,39 @@ plain string edits (`Edit` tool, old_string/new_string) instead — 2 insertions
 exactly the targeted diff every prior `audit_dates.json` edit in this backlog has produced. Rule:
 never `json.load` + mutate + `json.dump` a file you want a minimal diff on; read the exact bytes
 around the target value and string-replace them.
+
+## Cycle 2520 — a "correct" sample run can demonstrate nothing, and `varied-test` hides the proof
+
+Two durable lessons from switching `trademark-search-scraper`'s advertised Store API-tab example
+to `matchMode: startsWithPrefix`.
+
+1. **When you design a buyer-facing EXAMPLE run, check that a pass is visibly DIFFERENT from the
+   thing you're not doing.** This is the `varied-test` rule (2) "design the input so a *pass* is
+   informative" applied to marketing copy rather than to a filter test. At `maxResults: 10` the
+   prefix-mode example returned 10/10 rows all named exactly `SOLAR` — a perfectly correct prefix
+   result that looks identical to an exact-word search, so the API tab would advertise the
+   differentiated mode while showing a sample that proves nothing about it. Only at cap 20 do
+   `SOLAR X` / `SOLAR MD` / `SOLAR 23` appear, i.e. the longer-name matches that actually
+   distinguish "begins with" from "equals". The queue note had suggested *lowering* `maxResults`;
+   the data said keep it. Verify the example, don't just set it.
+2. **`bin/varied-test`'s `limit=10` caps only what the script READS BACK, never what the run
+   pushed** (PLAYBOOK rule 3 says this about *charging*; it equally hides *evidence*). A cap-20
+   run printed "rows: 10" and I nearly concluded rows 11-20 looked like rows 1-10. To see a full
+   capped run, take the run's `defaultDatasetId` and read
+   `GET /v2/datasets/<id>/items?fields=...` directly.
+
+**Third, on triage discipline:** the first cap-20 run came back FAILED and the honest first move
+was reading the log, not suspecting the change just made. It was a transport failure — 3 Apify
+Proxy sessions + the direct fallback all timed out on tmdn.org — and the Actor's own fail-closed
+path handled it correctly (0 rows pushed, nothing charged, self-documenting "re-run in a few
+minutes" message). An immediate re-run succeeded in 5.8s. A FAILED run on a proxied upstream is a
+flaky-exit-node signal first; re-run once before touching code.
+
+**Fourth, the stale-open-item trap, now seen with a named mechanism.** The c2508 doc-trim item sat
+`- [ ]` for 9 cycles after c2511 had fully executed it. `bin/_trim2511q.py`'s own header explains
+how: the hoist-then-cut trim script runs BEFORE the cycle writes its own DONE entry, so it
+deliberately carries every still-unchecked item forward — including the one the same cycle is in
+the middle of completing. **So after any queue.md trim, re-check whether the item your cycle just
+finished got hoisted as "open".** The generalisation (c2517 hit the same class of bug from a
+different direction): before acting on a queue item, verify its PREMISE live rather than trusting
+the note — here `check-doc-size` read OK, which is what revealed the item was already done.

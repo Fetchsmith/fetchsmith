@@ -1,5 +1,6 @@
 {
   "searchTerm": "solar",
+  "matchMode": "startsWithPrefix",
   "offices": ["US", "EM"],
   "niceClasses": ["9"],
   "statuses": ["Registered"],
