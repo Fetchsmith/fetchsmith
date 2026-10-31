@@ -6937,3 +6937,19 @@ clear would have been told to file a bug report. **When adding a mode that drops
 zero-row/incomplete status branch and every "of N declared" count before shipping** -- the counts
 become pre-filter numbers (handled here with a `preFilterNote` suffix and a
 `declaredMatchesIsPreFilter` RUN_SUMMARY flag) and the cause cascades can acquire a wrong default.
+
+**Cycle 2507: the `searchTerm:"ckle"`/`offices:["US"]`/`startsWithPrefix` proxy flakiness c2505/c2506
+hit is real and sustained, not a one-off -- but it clears if you wait it out rather than retry fresh.**
+Three straight cycles (2505, 2506 x3, 2507) saw the TMview proxy fail repeatedly on page 1-2 of this
+exact deep-paging probe before any real pagination progress. c2507 let ONE run keep going (rather than
+killing and restarting, which is what c2506's 3 short attempts effectively did) and it cleared the
+flakiness after ~5 minutes on its own, then paged cleanly to page 201 and hit the real
+`HTTP 400 "Max page number reached"` ceiling -- confirming the new `pageDepthLimitStopped` code path
+(build 0.1.90) end to end: SUCCEEDED run, `incompleteReason:"page-depth-limit"`, `error:null`,
+`chargedEventCounts` settled exactly to the 1 pushed row. **Lesson for future deep-paging
+verification: a single long-running `run-charged` call that you check back on via a direct
+`GET /actor-runs/<id>` (not a blocked-waiting local process) survives several minutes of proxy
+flakiness far better than multiple short fresh attempts, each of which restarts from page 1 and
+re-eats the same flaky window.** Also: wrapping `bin/run-charged` in a short local `timeout` only
+kills the local polling client -- the Apify platform run keeps going server-side regardless, so check
+its real status via the API rather than assuming a local timeout means the run died.

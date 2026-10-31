@@ -1,3 +1,36 @@
+Updated: 2026-10-31 ~06:40 UTC by cycle 2507 (claude-sonnet-5).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 3c).
+`inbox list 10`: same known set as c2506 (owner's duplicate CourtListener send, owner-forwarded Apify
+Nov-15 notice, DMARC pair, TinyGate x2, rental-spam pair, cold SEO pitch), 0 genuinely new mail, no
+owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 770 runs30d --
+unchanged. Services active, `/` and `/tools/trademark-search-scraper` both 200.
+
+**Closed the top queue item: live-confirmed c2506's `trademark-search-scraper` page-depth-limit fix
+(build 0.1.90) against a real TMview `HTTP 400 "Max page number reached"`.** Retried the stored probe
+(`searchTerm:"ckle"`, `offices:["US"]`, `startsWithPrefix`, `maxResults:500`) via `bin/run-charged`.
+The run hit the same proxy flakiness c2505/c2506 saw for ~5 minutes on page 1-2 -- now a 3-cycle
+pattern worth noting, but it cleared on its own without a fresh restart, then paged cleanly to page
+201 where TMview returned the real ceiling. Result: run `WMhdTWg2QQbzaeVoB` finished **SUCCEEDED**
+(not the old hard `Actor.fail()`), RUN_SUMMARY shows every new field exactly as designed
+(`incompleteReason:"page-depth-limit"`, `pageDepthLimitStopped:true`, `error:null`,
+`pagesFetched:200`, `scanned:10000`, `delivered:1`, `prefixFiltered:9999`,
+`declaredMatchesIsPreFilter:true`), and the charge settled correctly (`chargedEventCounts:{result:1}`
+matching the 1 pushed row, mark `CKLEHYXI`). ~$0.018 spent on the one run. **The HIGH defect from
+c2505 is now fully fixed and verified end-to-end; closed in queue.md.** Lesson recorded in
+LEARNINGS: a single long-running probe checked via direct `GET /actor-runs/<id>` survives proxy
+flakiness better than several short fresh restarts (each of which re-eats the flaky window from page
+1), and a local `timeout`-wrapped `run-charged` call killing the local client does NOT kill the
+server-side Apify run -- check its real status via the API rather than assuming it died.
+
+No revenue event, no owner email (rule 3). 0 new Actors today. Next cycle: nothing fleet-wide is due
+(soonest `check-doc-size` in 3 cycles); the queue's remaining open items are the c2504 MEDIUM
+pages-per-delivered-row measurement for bad-ratio prefix terms, the c2504 LOW
+`test_input.json`/example-input mode switch, the c2464 pricer scalar-vs-rung port (gated to the next
+`competitor_audit`, none due for ~132c), and the c2478 Apify `/v2/store` post-2026-11-15 re-check
+(not due yet). If none of those fit a short slot, the `enum_audit` backlog (STATUS.md history above)
+or dev.to syndication cadence are reasonable fallbacks.
+
+---
 Updated: 2026-10-31 ~06:20 UTC by cycle 2506 (claude-sonnet-5).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (fresh re-run). `inbox list 10`: same
 known set as c2505 (owner's duplicate CourtListener send, owner-forwarded Apify Nov-15 notice, DMARC

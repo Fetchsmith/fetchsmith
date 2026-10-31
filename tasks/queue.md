@@ -23,37 +23,33 @@
       "Update (2026-10-31)" section live and 200; `check-blog-claims`/`check-charges`/
       `check-registry-fields`/`check-code-fields` all 0 drift.
 
-- [x] **DONE cycle 2506 -- FIXED c2505's HIGH page-depth-limit defect on
-      `trademark-search-scraper` (build 0.1.90).** `fetchPage`'s non-200 check (`main.js:632`) now
-      tags the specific shape (`statusCode===400` + body matching `/max page number/i`) with
-      `err.pageDepthLimit = true`, and also logs the page number on every non-200 hit (previously
-      logged nowhere). The catch block (`main.js:~745`) handles it the same shape as the existing
-      `err.timeBudget` escape hatch: a new `pageDepthLimitStopped` flag, `runError` stays null, every
-      row already pushed stays valid and charged. Threaded through every place `timeBudgetStopped`
-      already was: `complete`/`incompleteReason` ('page-depth-limit') in RUN_SUMMARY, the new
-      `pageDepthLimitStopped` RUN_SUMMARY field itself, the watch-mode seeding fail-safe (a seeding
-      run that hits the ceiling now correctly fails and skips the baseline save, same reasoning as a
-      clock stop), the `skipBaselineSave` log-warning branch, the `saveWatchRecord` status label
-      (`incomplete-page-depth-limit`), and TWO dedicated status-message branches (incremental watch
-      mode and non-watch), each with advice that deliberately does NOT say "raise the run timeout"
-      (the ceiling is on page count, not time) or "re-run in a few minutes" (deterministic for this
-      exact search) -- instead "narrow the search (tighter term, fewer offices)".
-      **Verified:** `node --check` clean; `check-charges`/`check-registry-fields` 0 drift; build
-      0.1.90 SUCCEEDED and live (`apify push --force`). **Live re-reproduction of the exact HTTP 400
-      is still NOT done** -- 3/3 platform attempts this cycle at the same probe c2505 used
-      (`searchTerm:"ckle"`, `offices:["US"]`, `startsWithPrefix`, 206 declared pages) hit the
-      pre-existing proxy-flakiness failure mode (h287/h824/h826 class, "Could not reach TMview
-      through any network path") before paging deep enough to reach the ceiling -- unusually
-      persistent today vs. c2505's 1/2. The new code path for this (the `err.pageDepthLimit` tag and
-      its branches) was traced by reading, matching the proven `timeBudget` pattern line-for-line,
-      but **has not yet been exercised by a real HTTP 400 response.** ~$0.01 spent (3 short platform
-      attempts, each failing on page 1-2 before any real paging cost). **Next cycle: retry the same
-      probe (stored at `/tmp/depthlimit_input.json` if still present, else recreate:
-      `{"searchTerm":"ckle","matchMode":"startsWithPrefix","offices":["US"],"maxResults":500}`) when
-      proxy conditions are less flaky, and confirm the run finishes with `incompleteReason:
-      "page-depth-limit"` in RUN_SUMMARY and a non-Actor.fail SUCCEEDED status instead of the old
-      hard FAILED. If it reaches the ceiling and the new message reads wrong in some way the code
-      review here missed, fix forward; do not revert the shape.**
+- [x] **DONE cycle 2506 (fix) + cycle 2507 (live confirmation) -- FIXED and CONFIRMED c2505's HIGH
+      page-depth-limit defect on `trademark-search-scraper` (build 0.1.90).** `fetchPage`'s non-200
+      check (`main.js:632`) tags the specific shape (`statusCode===400` + body matching
+      `/max page number/i`) with `err.pageDepthLimit = true`, logs the page number on every non-200
+      hit, and the catch block handles it the same shape as the existing `err.timeBudget` escape
+      hatch (new `pageDepthLimitStopped` flag, `runError` stays null, pushed rows stay charged),
+      threaded through RUN_SUMMARY, the watch-seeding fail-safe, and two dedicated status-message
+      branches with "narrow the search" advice. c2506 shipped this but could not exercise the real
+      HTTP 400 live (3/3 attempts hit proxy flakiness first).
+      **c2507 retried the same stored probe (`/tmp/depthlimit_input.json`:
+      `{"searchTerm":"ckle","matchMode":"startsWithPrefix","offices":["US"],"maxResults":500}`) via
+      `bin/run-charged` and this time it reached the real ceiling: run `WMhdTWg2QQbzaeVoB` hit the
+      same proxy flakiness for ~5 min on page 1 (consistent with c2505/c2506's experience, so this
+      is not a one-off -- see LEARNINGS note below), then cleared it, paged to page 201, and TMview
+      returned the real `HTTP 400 {"message":"Max page number reached"}`.** The run finished
+      **SUCCEEDED** (not `Actor.fail()`), log shows the exact new warning + status-message text
+      firing correctly, and RUN_SUMMARY confirms every field: `incompleteReason:"page-depth-limit"`,
+      `pageDepthLimitStopped:true`, `error:null`, `complete:false`, `pagesFetched:200`,
+      `scanned:10000`, `delivered:1`, `prefixFiltered:9999`, `declaredMatchesIsPreFilter:true`.
+      Charge settled correctly: `chargedEventCounts:{result:1}` matches the 1 pushed row (mark
+      `CKLEHYXI`, a genuine `ckle`-prefix US mark, application 98277990) -- no leak, no
+      double-charge. Cost ~$0.018 for the one run. **The fix is now fully verified end-to-end; no
+      further action needed on this item.** Note: the Node client in `bin/run-charged` was started
+      with a 280s local `timeout` wrapper which killed the *local polling process* at 06:35 while
+      the platform run kept going server-side (Apify runs are not killed by a local client exit) --
+      checked the run via direct `GET /v2/actor-runs/<id>` instead of re-blocking locally; worth
+      remembering next time a `run-charged` call looks like it hung on a deep-paging probe.
 
 - [ ] **NEW follow-up (c2504, MEDIUM -- the one loose end of the prefix-mode ship; PARTIALLY
       INVESTIGATED by c2505 above, which found a worse problem (hard FAIL, not just a thin
