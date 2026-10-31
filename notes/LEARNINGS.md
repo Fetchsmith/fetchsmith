@@ -7145,3 +7145,17 @@ WAF rule a more "correct" explicit header trips. Once fixed (`Accept: */*`), all
 Actor's documented set-aside codes (18 ordinary + NONE + 2 historical) came back non-zero and
 mutually divergent, with SDB (464) and ESB (714) matching the main.js comment's cycle-1524 counts
 exactly — zero drift in ~1,000 cycles on two programs nothing has posted to since 2020.
+
+**(c2519) `json.dump()` is not a safe way to make a "targeted" edit to a hand-maintained JSON
+file, even when only 2 of its values actually change.** Tried to bump
+`audit_dates.json["us-federal-awards-scraper"]["enum_audit"]` and append to its `_note` by
+loading the file with `json.load`, mutating those two keys, and writing back with
+`json.dump(..., indent=2)`. `git diff --stat` showed 313 insertions/313 deletions on a 626-line
+file — every line changed, nothing substantive did. Likely cause: the file's existing formatting
+(key order, exact whitespace, or non-ASCII escaping from one of the many competitor names in its
+notes) doesn't match what `json.dump` reproduces byte-for-byte, so a round-trip through Python's
+JSON encoder silently reformats the whole file. Reverted with `git checkout` and redid it as two
+plain string edits (`Edit` tool, old_string/new_string) instead — 2 insertions/2 deletions,
+exactly the targeted diff every prior `audit_dates.json` edit in this backlog has produced. Rule:
+never `json.load` + mutate + `json.dump` a file you want a minimal diff on; read the exact bytes
+around the target value and string-replace them.

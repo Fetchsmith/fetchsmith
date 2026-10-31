@@ -226,6 +226,79 @@ def p_usaspending_recipient_types():
     return not dead, out
 
 
+def p_usaspending_naics_psc_codes():
+    """naicsCodes/pscCodes are the other two USAspending `stringList` filters this Actor sends
+    server-side (src/main.js:753/758) that, like recipientTypes above, have no dedicated
+    reference endpoint on USAspending (only toptier_agencies/def_codes get one) -- so this
+    probes the real `spending_by_award_count` endpoint directly, same shape as the
+    recipientTypes probe. Two fields in one function (not two PROBES entries) because the
+    dict is keyed by slug; `us-federal-awards-scraper` already owns one entry for
+    recipientTypes.  Unlike recipientTypes' flat equality list, both fields are PREFIX
+    vocabularies (main.js:751/754: a 2/4/6-digit NAICS prefix or a 1-4 char PSC prefix matches
+    every leaf code under it), so the real thing worth proving live is that narrowing a prefix
+    narrows the count monotonically, not just that each value is independently non-zero."""
+    out = []
+    award_type_codes = ["A", "B", "C", "D"]  # contracts group (main.js:47) -- only contracts/
+    # IDVs carry NAICS/PSC, confirmed by main.js's own comments at 752/757.
+    time_period = [{"start_date": "2024-01-01", "end_date": "2026-10-31"}]
+
+    def count(filters):
+        d = http(
+            "https://api.usaspending.gov/api/v2/search/spending_by_award_count/",
+            {"filters": {"award_type_codes": award_type_codes, "time_period": time_period, **filters}},
+        )
+        return sum((d.get("results") or {}).values())
+
+    ok = True
+
+    # naicsCodes: README's own example is 541511; walk its 2/4/6-digit prefix chain, which
+    # main.js documents as all server-accepted and ORed via {require: [...]}.
+    naics_desc = field("us-federal-awards-scraper", "naicsCodes").get("description", "")
+    m = re.search(r"e\.g\.\s*(\d+)", naics_desc)
+    leaf = m.group(1) if m else "541511"
+    chain = [leaf[:2], leaf[:4], leaf]
+    totals = {c: count({"naics_codes": {"require": [c]}}) for c in dict.fromkeys(chain)}
+    out.append(f"  naicsCodes prefix chain (schema example {leaf}): {totals}")
+    if len(set(totals.values())) < len(totals):
+        out.append("  PROBE INVALID: prefix narrowing did not change the count -- filter may be ignored")
+        ok = False
+    vals = list(totals.values())
+    if not (vals[0] >= vals[1] >= vals[2] > 0):
+        out.append(f"  NAICS prefix chain not monotonically narrowing or hit zero: {vals}")
+        ok = False
+    naics_bad = count({"naics_codes": {"require": ["999999"]}})
+    out.append(f"  misspelled NAICS sanity check: 999999 total={naics_bad} "
+               f"({'fails closed as expected' if naics_bad == 0 else 'CONTRADICTS expected fail-closed behavior'})")
+    if naics_bad != 0:
+        ok = False
+
+    # pscCodes: README's own example is R425; walk R425 -> R4 -> R, plus the independently
+    # named "10" weapons-category example, confirming main.js's own cycle-measured
+    # R425+R499=88,874 pairing shape still holds (narrowing, not a coincidence of that pair).
+    psc_desc = field("us-federal-awards-scraper", "pscCodes").get("description", "")
+    m = re.search(r"`([A-Z0-9]{1,4})`", psc_desc)
+    psc_leaf = m.group(1) if m else "R425"
+    psc_chain = [psc_leaf, psc_leaf[:2], psc_leaf[:1]]
+    psc_totals = {c: count({"psc_codes": [c]}) for c in dict.fromkeys(psc_chain)}
+    out.append(f"  pscCodes prefix chain (schema example {psc_leaf}): {psc_totals}")
+    pv = list(psc_totals.values())
+    if not (pv[0] <= pv[1] <= pv[2] and pv[0] > 0):
+        out.append(f"  PSC prefix chain not monotonically widening or hit zero: {pv}")
+        ok = False
+    ten_total = count({"psc_codes": ["10"]})
+    out.append(f"  PSC '10' (weapons category, named separately in the schema) total={ten_total}")
+    if not ten_total:
+        out.append("  DEAD VALUE: documented PSC example '10' returns nothing")
+        ok = False
+    psc_bad = count({"psc_codes": ["ZZZZ"]})
+    out.append(f"  misspelled PSC sanity check: ZZZZ total={psc_bad} "
+               f"({'fails closed as expected' if psc_bad == 0 else 'CONTRADICTS expected fail-closed behavior'})")
+    if psc_bad != 0:
+        ok = False
+
+    return ok, out
+
+
 def p_substack_discover_categories():
     """No dedicated per-category filter to send -- discoverCategories resolves against this
     same live list at RUN TIME (resolveCategoryIds(), src/main.js:586), so the Actor already
@@ -536,6 +609,9 @@ PROBES = {
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
     "nih-reporter-scraper": ("agencyIcCodes", p_nih_agency_ic_codes),
     "us-federal-awards-scraper": ("recipientTypes", p_usaspending_recipient_types),
+    # colon suffix (not a real slug) because the dict is keyed by slug and this Actor already
+    # owns the plain "us-federal-awards-scraper" key for its recipientTypes probe above.
+    "us-federal-awards-scraper:naics-psc": ("naicsCodes+pscCodes", p_usaspending_naics_psc_codes),
     "substack-scraper": ("discoverCategories", p_substack_discover_categories),
     "eu-ted-tenders-scraper": ("cpvCodes", p_eu_ted_cpv_codes),
     "uk-find-a-tender-scraper": ("cpvCodes", p_uk_find_a_tender_cpv_codes),

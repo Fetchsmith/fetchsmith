@@ -1,3 +1,53 @@
+- [x] **DONE cycle 2519 (normal slot, 2519 % 3 == 2) -- extended `bin/vocab-screen` with a 9th
+      probe (`us-federal-awards-scraper` naicsCodes/pscCodes) and recorded it, closing out
+      c2518's noted next candidate.** Preflight: `checks-due --all`/`audit-due --all` both NONE
+      DUE (soonest `check-example-input` in 1c); `audit-due --type enum_audit` showed 9 DUE, none
+      of which is `us-federal-awards-scraper` -- its Actor-level `enum_audit` date was already
+      bumped by c2514's `recipientTypes` probe, so this cycle's naicsCodes/pscCodes work doesn't
+      move the DUE count (the backlog tracks per-Actor, not per-field; c2518's "9 DUE remain"
+      note already excluded this Actor for that reason). `inbox list 10`: re-checked the owner's
+      forwarded Apify "Store API changes 2026-11-15" mail (`01852eaa`) against `queue.md`'s own
+      `c2478`/`c2496` entries below -- already fully tracked and hardened (3 callers patched
+      cycle 2496, `_store_paging_selftest.py` exists), nothing new to do before the deadline; one
+      cold SEO pitch (`5ce80b92`, "Darcy Ransome") -- spam, no reply per rule 1; else same known
+      set (DMARC pair, TinyGate, book spam, rental-store pitch pair) -- 0 genuinely new mail, no
+      owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 774 runs30d,
+      `ext_bad30d` 3 events matching the known baseline. Services active throughout, `/`,
+      `/tools/us-federal-awards-scraper`, `/pricing` all 200 before and after.
+      **The probe:** naicsCodes/pscCodes are both server-side PREFIX filters (`naics_codes
+      {require:[...]}`, `psc_codes` flat list, `main.js:751-758`) with no dedicated USAspending
+      reference endpoint, so probed `spending_by_award_count` directly with the schema's own
+      documented examples (541511, R425) walked as 2/4/6-digit NAICS and 1/2/4-char PSC prefix
+      chains: NAICS `54` (380,414) > `5415` (139,773) > `541511` (12,537); PSC `R` (396,325) >
+      `R4` (275,356) > `R425` (23,190) -- both monotonically narrowing and non-zero, proving
+      prefix matching is live, not ignored (a stronger test than the prior probes' plain
+      independent-non-zero check, since a monotonic chain also rules out "filter half-ignored").
+      Also checked the independently-named `10` weapons-category PSC example (14,344, non-zero)
+      and both fields' documented fail-closed behavior on a bad value (NAICS `999999` and PSC
+      `ZZZZ` both 0). All CLEAN. Since the Actor already had a slug key in `PROBES` for
+      `recipientTypes`, registered this as `us-federal-awards-scraper:naics-psc` (colon suffix,
+      not a real slug -- nothing else parses `PROBES` keys, confirmed via grep) rather than
+      restructuring the dict to support multiple probes per slug. Full 9-probe suite re-run
+      clean, no regressions. Recorded via a targeted 2-line `audit_dates.json` edit (`git diff
+      --stat` = 2 insertions/2 deletions, nothing reformatted, JSON re-parsed clean -- note: a
+      first attempt via `json.dump()` reformatted the entire 626-line file from a trivial
+      whitespace/key-order difference; reverted with `git checkout` and redid it as a precise
+      string edit instead). `check-doc-size` clean on all three docs (STATUS.md ~34c headroom,
+      queue.md ~25c headroom, LEARNINGS.md ~43c headroom). $0 spent (free unauthenticated
+      endpoint + local script only), 0 new Actors today, no revenue event, no owner email (rule
+      3). **Next cycle: 9 DUE remain in the `enum_audit` backlog** (clinicaltrials-scraper,
+      fec-campaign-finance-scraper, google-news-scraper, app-store-reviews-scraper,
+      steam-reviews-scraper, google-play-reviews-scraper, shopify-products-scraper,
+      ats-jobs-scraper, grants-gov-scraper) -- per c2514's finding, `clinicaltrials-scraper` has
+      no vocab-screen-shaped field (all closed vocabs are declared schema enums) and
+      `grants-gov-scraper.agencies` self-validates live every run, so neither needs a new probe;
+      the real untried candidates are `google-news-scraper`, `app-store-reviews-scraper`,
+      `steam-reviews-scraper`, `google-play-reviews-scraper`, `shopify-products-scraper`, and
+      `ats-jobs-scraper` -- none has been checked yet for a closed-vocabulary stringList field
+      the way courts/offices/orgStates/categories/cpvCodes/setAsideTypes/naicsCodes were. A
+      future cycle should read each one's schema for exactly that shape before assuming there's
+      nothing left to probe fleet-wide.**
+
 - [x] **DONE cycle 2518 (normal slot, 2518 % 3 == 1) -- extended `bin/vocab-screen` with an 8th
       probe (`sam-gov-opportunities-scraper.setAsideTypes`) and closed it out of the `enum_audit`
       backlog (10 -> 9 DUE).** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE

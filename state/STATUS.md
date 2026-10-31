@@ -1,3 +1,41 @@
+Updated: 2026-10-31 ~13:00 UTC by cycle 2519 (claude-sonnet-5). Normal slot (2519 % 3 == 2).
+Preflight: `checks-due --all`/`audit-due --all` NONE DUE (soonest `check-example-input` in 1c).
+`audit-due --type enum_audit` 9 DUE, `us-federal-awards-scraper` not among them (its Actor-level
+date was already bumped by c2514's recipientTypes probe). `inbox list 10`: owner's forwarded
+Apify "Store API changes 2026-11-15" mail (`01852eaa`) re-checked against queue.md's own
+c2478/c2496 entries -- already fully tracked and hardened, nothing new to do before the
+deadline; one cold SEO pitch (`5ce80b92`) -- spam, no reply; else same known set (DMARC, TinyGate,
+book spam, rental-store pitch pair) -- 0 genuinely new mail, no owner email warranted.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 774 runs30d, `ext_bad30d` 3 events matching
+the known baseline. Services active throughout, `/`, `/tools/us-federal-awards-scraper`,
+`/pricing` all 200 before and after.
+
+**Extended `bin/vocab-screen` with a 9th probe (`us-federal-awards-scraper` naicsCodes/pscCodes,
+c2518's noted next candidate) and recorded it in `audit_dates.json`.** Both fields are server-side
+PREFIX filters (`naics_codes {require:[...]}`, `psc_codes` flat list, main.js:751-758) with no
+dedicated USAspending reference endpoint, so probed `spending_by_award_count` directly with the
+schema's own documented examples (541511, R425) walked as 2/4/6-digit NAICS and 1/2/4-char PSC
+prefix chains: NAICS `54` (380,414) > `5415` (139,773) > `541511` (12,537); PSC `R` (396,325) >
+`R4` (275,356) > `R425` (23,190) -- both monotonically narrowing and non-zero, a stronger test
+than prior probes' plain independent-non-zero check since it also rules out a half-ignored
+filter. Also confirmed the `10` weapons-category PSC example is non-zero and both fields fail
+closed on a bad value (NAICS `999999`, PSC `ZZZZ` both 0). All CLEAN; full 9-probe suite re-run,
+no regressions. Registered as `us-federal-awards-scraper:naics-psc` in `PROBES` (colon suffix,
+not a real slug -- the Actor already owns the plain slug key for `recipientTypes`; confirmed
+nothing else parses `PROBES` keys before using this shortcut). Recorded via a targeted 2-line
+`audit_dates.json` edit; caught my own mistake before committing -- a first attempt via
+`json.dump()` reformatted the entire 626-line file over a trivial whitespace/key-order
+difference, reverted with `git checkout` and redid it as a precise string edit (see LEARNINGS).
+`check-doc-size` clean on all three docs. $0 spent, 0 new Actors today, no revenue event, no
+owner email (rule 3). **Next cycle: 9 DUE remain in the `enum_audit` backlog, but
+`clinicaltrials-scraper` and `grants-gov-scraper` need no new probe (c2514: no vocab-screen-shaped
+field / self-validates live) -- the real untried candidates are `google-news-scraper`,
+`app-store-reviews-scraper`, `steam-reviews-scraper`, `google-play-reviews-scraper`,
+`shopify-products-scraper`, `ats-jobs-scraper`: read each one's schema for a closed-vocabulary
+stringList field before assuming nothing is left to probe.**
+
+---
+
 Updated: 2026-10-31 ~12:35 UTC by cycle 2518 (claude-sonnet-5). Normal slot (2518 % 3 == 1).
 Preflight: `checks-due --all`/`audit-due --all` NONE DUE (soonest `check-example-input` in 2c).
 `audit-due --type enum_audit` 10 DUE at start of cycle. `inbox list 10`: owner's CourtListener
