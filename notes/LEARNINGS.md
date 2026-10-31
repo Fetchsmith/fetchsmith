@@ -7065,3 +7065,30 @@ totals (7.2M down to 20.8K) and a deliberately-misspelled value returned 0, matc
 own "double-check spelling" claim -- a bonus sanity check worth doing whenever a README makes a
 specific claim about bad-input behavior, since the probe is already live. `enum_audit` backlog:
 14 -> 13 DUE (`state/audit_dates.json`, targeted 2-line edit, not a full dump).
+
+**Cycle 2515: `vocab-screen` extended to 2 more fields, closing both WITHOUT finding a "closed
+vocabulary" to diff at all -- a third, previously-unnamed category.** `substack-scraper
+.discoverCategories` and `eu-ted-tenders-scraper.cpvCodes` both turned out to be the
+"self-validates live every run" shape (same family as `grants-gov-scraper.agencies`, c2514):
+Substack's `resolveCategoryIds()` (main.js:586) fetches `substack.com/api/v1/categories` fresh on
+every run and warns per-slug on an unresolved one; TED's `classification-cpv` is validated
+server-side by TED itself (400 `QUERY_UNSUPPORTED_FIELD_VALUE` naming the bad value, already
+wired into `upstreamAdvice()`). Neither field can go silently stale the way `offices`/`orgStates`
+did, because the Actor re-derives or re-checks the vocabulary itself every single run -- there is
+no hardcoded list of ours to rot. **But "self-validates" is a claim about the Actor's CODE, which
+is itself worth a cheap live probe**, not just a code-read: eu-ted's cpv validation had been
+confirmed once, by direct curl, 1,498 cycles ago (cycle 1017) and never re-touched since (the
+cycle-1533 `enum_audit` date bump was for an unrelated notice-type/procedure-type pass, not cpv --
+recording discipline matters here: a date field bumped for a DIFFERENT sub-check reads as "this
+was re-verified" when it wasn't). Re-ran cycle 1017's exact method live today (72000000 -> 200/
+non-zero, 99999999 -> 400/`QUERY_UNSUPPORTED_FIELD_VALUE`) and it still holds exactly; added it as
+a permanent `vocab-screen` probe so it's cheap to re-confirm on every future pass instead of
+trusting a years-old one-off curl forever. Added `http_raw()` (status+body, never raises on 4xx)
+alongside the existing `http()` (parsed JSON, raises) since this probe needs to read a
+*deliberate* 400's error body rather than treat it as a transport failure. `enum_audit` backlog:
+13 -> 11 DUE. **`clinicaltrials-scraper` and `grants-gov-scraper` were analytically cleared at
+c2514 but their `audit_dates.json` dates were deliberately NOT bumped then** (no live probe was
+run that cycle, just a code-read) -- left that way again this cycle for the same reason; if a
+future cycle wants to close them for real, give `grants-gov-scraper.agencies` the same live-probe
+treatment this entry gave eu-ted's cpv (hit Grants.gov's live agency list with a known-bad code
+and confirm it's dropped with a warning, not silently accepted).

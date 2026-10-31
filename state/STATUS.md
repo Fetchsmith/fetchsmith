@@ -1,3 +1,55 @@
+Updated: 2026-10-31 ~10:55 UTC by cycle 2515 (claude-sonnet-5). Normal slot.
+Preflight: `checks-due --all`/`audit-due --all --type competitor_audit` NONE DUE. `inbox list 10`:
+same known set as c2514 (owner emails already resolved, DMARC pair, spam/pitches already
+triaged), 0 genuinely new mail, no owner email warranted. `bin/revenue` not re-run (no code/
+pricing/listing touched). Services active throughout, `/`, `/tools/substack-scraper` and
+`/tools/eu-ted-tenders-scraper` all 200 before and after.
+
+**Continued the `enum_audit` backlog per c2514's note: extended `bin/vocab-screen` with 2 more
+live probes and closed `substack-scraper.discoverCategories` and `eu-ted-tenders-scraper
+.cpvCodes` (backlog 13 -> 11 DUE).** Both fields turned out to be a third backlog shape neither
+prior probe-type covers: the Actor already self-validates the field against the live upstream
+authority on EVERY run, so unlike `offices`/`orgStates` the vocabulary cannot go silently stale
+regardless of what we record. Substack's `resolveCategoryIds()` (src/main.js:586) re-fetches
+`substack.com/api/v1/categories` fresh each run and warns per-slug on an unresolved one; TED
+server-validates `classification-cpv` itself and answers a bad value with a 400
+`QUERY_UNSUPPORTED_FIELD_VALUE` naming it, already wired into `upstreamAdvice()`
+(src/main.js:477-519). Built real probes for both rather than stopping at the code read, since
+"self-validates" is itself a claim about the Actor's own code that can rot silently -- eu-ted's
+cpv mechanism had last been live-confirmed by a one-off curl at cycle 1017 (1,498 cycles ago) and
+never re-wired into a repeatable check; the cycle-1533 `enum_audit` date bump on record was for an
+unrelated notice-type/procedure-type pass, not cpv, so the date field was quietly overstating
+freshness. Live-reran cycle 1017's exact method today: `classification-cpv=72000000` (our
+README's own example) -> HTTP 200, totalNoticeCount 5113; `classification-cpv=99999999`
+(well-formed, unused) -> HTTP 400, `error.type=QUERY_UNSUPPORTED_FIELD_VALUE` -- unchanged after
+1,498 cycles. Substack probe: all 6 README-named example categories (technology/business/
+finance/culture/us-politics/food) resolve against a live 246-slug `/api/v1/categories` list.
+Both CLEAN. Added `http_raw()` to `vocab-screen` (returns status+body, never raises on a 4xx --
+the eu-ted probe needs to read a *deliberate* 400's error body, unlike every prior probe which
+treats a non-2xx as a transient transport failure). Full suite re-run clean: 6/6 probes CLEAN, no
+regressions on the 4 pre-existing ones. Recorded via targeted paired edits to
+`state/audit_dates.json` (`git diff --stat` = 6 insertions/2 deletions, JSON re-parsed clean,
+nothing reformatted). **Deliberately left `clinicaltrials-scraper` and `grants-gov-scraper`
+un-bumped** -- c2514 cleared both by code-read only, no live probe was run, and a date bump
+should mean "re-verified this cycle," not "analyzed in a prior cycle." Appended the reusable
+"self-validates-live is still worth a cheap probe, because the validation CODE can rot even when
+the vocabulary itself cannot" shape to `notes/LEARNINGS.md`. `check-doc-size` clean on all three
+docs (STATUS.md 32.0KB/~38c headroom, queue.md 51.3KB/~28c headroom, LEARNINGS.md 7094
+lines/~45c headroom). $0 spent, 0 new Actors, no revenue event, no owner email (rule 3).
+
+**Next cycle: 11 DUE remain in the `enum_audit` backlog.** Untried real candidates, all confirmed
+reachable 2026-10-31: `sam-gov-opportunities-scraper` naicsCodes/setAsideTypes,
+`us-federal-awards-scraper` naicsCodes/pscCodes, `uk-find-a-tender-scraper` cpvCodes -- note the
+last one is NOT the same shape as eu-ted's: its own `enum_audit_note` (cycle 1017) already flags
+it as "a DIFFERENT, unvalidated client-side-only shape" with "a real bug" found there before --
+CPV filtering happens client-side after fetching a date-windowed notice batch (no server-side CPV
+param exists on FTS/Contracts Finder), so it needs an actual value-liveness probe against real
+notices, not a self-validation check. Do NOT attempt `court-records-scraper.courts` (no
+CourtListener token in secrets). Also still open: the c2504 LOW `test_input.json` mode switch on
+`trademark-search-scraper`, and dev.to syndication (unblocks ~2026-11-01 09:31 UTC).
+
+---
+
 Updated: 2026-10-31 ~10:30 UTC by cycle 2514 (claude-sonnet-5). Normal slot (2514 % 3 == 2).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-example-input` in
 6c; `us-federal-awards-scraper` competitor_audit in 125c). `inbox list 10`: same known set as

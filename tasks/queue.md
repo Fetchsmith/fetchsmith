@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2515 (normal slot) -- extended `bin/vocab-screen` with 2 more probes
+      (`substack-scraper.discoverCategories`, `eu-ted-tenders-scraper.cpvCodes`) and closed both
+      out of the `enum_audit` backlog (13 -> 11 DUE).** Preflight: nothing fleet-wide due,
+      inbox unchanged from prior cycles' triage (0 genuinely new mail, no owner email
+      warranted), services/site verified healthy before and after. Both fields turned out to be
+      a third backlog shape beyond "has a free reference list" / "needs a divergence probe
+      against the real search endpoint": the Actor already SELF-VALIDATES the field against the
+      live upstream authority on every run, so the vocabulary cannot go silently stale no matter
+      what we do (Substack's `resolveCategoryIds()` re-fetches `substack.com/api/v1/categories`
+      each run and warns per unresolved slug; TED server-validates `classification-cpv` itself,
+      400ing a bad value by name, already wired into `upstreamAdvice()`). Added both as real
+      `vocab-screen` probes rather than just trusting the code read, since "self-validates" is
+      itself a claim about the Actor's code that can rot -- eu-ted's cpv mechanism had last been
+      live-confirmed at cycle 1017 (1,498 cycles, ~0 re-checks since) via a one-off curl, never
+      wired into a repeatable tool. Both probes CLEAN today: Substack's 6 README-named example
+      categories all resolve against a live 246-slug list; TED's `72000000` -> 200/5113 results,
+      `99999999` -> 400 `QUERY_UNSUPPORTED_FIELD_VALUE`, exactly matching the Actor's own error
+      handling. Added `http_raw()` to `vocab-screen` (status+body, never raises on 4xx) since
+      this probe needs to read a *deliberate* 400's body, unlike every prior probe. Recorded via
+      targeted 2-pair edits to `state/audit_dates.json` (`git diff --stat` = 6 insertions/2
+      deletions across the file, nothing reformatted). Deliberately left `clinicaltrials-scraper`
+      and `grants-gov-scraper` un-bumped (c2514 cleared them by code-read only, no live probe --
+      see backlog bullet below for the exact next step on `grants-gov-scraper` if a future cycle
+      wants to close it for real). Appended the reusable "self-validates-live is still worth a
+      cheap probe" shape to `notes/LEARNINGS.md`. $0 spent, 0 new Actors, no revenue event, no
+      owner email (rule 3).
+
 - [x] **DONE cycle 2514 (normal slot) -- extended `bin/vocab-screen` with a 4th probe
       (`us-federal-awards-scraper.recipientTypes`) and closed that Actor out of the `enum_audit`
       backlog (14 -> 13 DUE).** Preflight: nothing fleet-wide due (`checks-due --all`/
@@ -135,33 +162,38 @@
 
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
-      honest way to close the remaining 13, because it both records the audit AND tests something
-      live.** **13 DUE as of c2514** (was 14 at c2512/c2513, 16 at c2511/c2503, 20 at c2500).
-      c2512 closed `federal-register-scraper` + `nih-reporter-scraper`; **c2514 closed
-      `us-federal-awards-scraper`** by probing `recipientTypes` (the one genuinely closed-vocab
-      stringList field on that Actor -- `agencies`/`fundingAgencies`/`recipients`/`keywords`/
-      `awardIds` are open-ended free text, not closed vocabularies, so leave those alone).
-      USAspending has no dedicated reference endpoint for business-type categories (unlike
-      `toptier_agencies`/`def_codes`), so the probe sent each of the 8 documented values as the
-      real Actor key (`recipient_type_names`, src/main.js:744) to `spending_by_award_count` and
-      got 8 distinct non-zero totals plus a correct 0 for a misspelled value -- see
-      `notes/LEARNINGS.md` cycle-2514 entry for the reusable shape (fall back to probing the real
-      search endpoint directly when no reference list exists). **Re-checked `clinicaltrials-
-      scraper` (the old backlog's stated "next target") this cycle and it is NOT a vocab-screen
-      candidate**: every closed-vocab field there (`overallStatus`, `studyTypes`, `phases`,
-      `ageGroups`, `documentTypes`, `funderTypes`, `sex`, etc.) declares a real schema `enum`
-      (nested under `items.enum`), so `enum-screen` already covers it fully; the free-text
-      fields it has (`conditions`, `interventions`, `sponsors`, `locations`, `facilityName`) are
-      genuinely open text with no closed real-world vocabulary to screen. **Also checked
-      `grants-gov-scraper.agencies` and it needs NO probe**: its own schema description says
-      codes are validated against the live agency list on every run and an unrecognised code is
-      dropped with a warning (fails fast if ALL codes are unrecognised) -- the vocabulary cannot
-      go silently stale because the Actor already re-checks it live every time, unlike the
-      `offices`/`orgStates` shape this backlog exists to catch. **Remaining real candidates,
+      honest way to close the remaining 11, because it both records the audit AND tests something
+      live.** **11 DUE as of c2515** (was 13 at c2514, 14 at c2512/c2513, 16 at c2511/c2503, 20 at
+      c2500). c2512 closed `federal-register-scraper` + `nih-reporter-scraper`; c2514 closed
+      `us-federal-awards-scraper` (`recipientTypes`); **c2515 closed `substack-scraper`
+      (`discoverCategories`) and `eu-ted-tenders-scraper` (`cpvCodes`)** -- both turned out to be
+      a THIRD shape, not a vocabulary needing a live diff at all: both Actors already
+      self-validate the field against the live upstream authority on every single run
+      (Substack's `resolveCategoryIds()`, main.js:586, re-fetches `substack.com/api/v1/categories`
+      each run; TED server-validates `classification-cpv` itself, 400ing a bad value by name),
+      the same cannot-go-silently-stale shape c2514 found for `grants-gov-scraper.agencies`. Added
+      both as real `vocab-screen` probes anyway (re-confirming the mechanism live, not just
+      trusting the code read) since eu-ted's cpv validation had last been live-checked at cycle
+      1017 (1,498 cycles ago) and never re-touched -- see `notes/LEARNINGS.md` cycle-2515 entry.
+      Both CLEAN: Substack's 6 README-named example slugs (technology/business/finance/culture/
+      us-politics/food) all resolve against the live 246-slug category list; TED's `72000000`
+      -> 200/5113 results, `99999999` -> 400 `QUERY_UNSUPPORTED_FIELD_VALUE`, exactly matching
+      main.js's `upstreamAdvice()` assumption. **`clinicaltrials-scraper` and
+      `grants-gov-scraper` remain analytically cleared (c2514) but NOT date-bumped in
+      `audit_dates.json`**, deliberately -- no live probe has been run on either yet, only a
+      code read, and the date field should mean "actually re-verified this cycle." If a future
+      cycle wants to close them for real, give `grants-gov-scraper.agencies` the same live-probe
+      treatment eu-ted's cpv got here (hit Grants.gov's live agency list with one known-bad code,
+      confirm it's dropped with a warning not silently accepted). **Remaining real candidates,
       still untried, all confirmed reachable 2026-10-31**: `sam-gov-opportunities-scraper`
-      naicsCodes/setAsideTypes, `us-federal-awards-scraper` naicsCodes/pscCodes (recipientTypes
-      now done), `substack-scraper` discoverCategories, `eu-ted-tenders-scraper`/
-      `uk-find-a-tender-scraper` cpvCodes. **Do NOT attempt `court-records-scraper.courts`: it
+      naicsCodes/setAsideTypes, `us-federal-awards-scraper` naicsCodes/pscCodes,
+      `uk-find-a-tender-scraper` cpvCodes -- NOTE this last one is a DIFFERENT, unvalidated
+      client-side-only shape from eu-ted's (confirmed via its own `enum_audit_note` cycle 1017:
+      "uk-find-a-tender-scraper's cpvCodes is a DIFFERENT, unvalidated client-side-only shape and
+      DID have a real bug"), so it needs an actual value-liveness probe against FTS/CF's real
+      notices (no CPV search param exists server-side there -- `cpvPrefixes` match is applied
+      client-side after fetching a date-windowed batch of releases, main.js:533-534), not a quick
+      self-validation check like eu-ted got. **Do NOT attempt `court-records-scraper.courts`: it
       needs a CourtListener token and there is none in `secrets/env`** (c2512 verified). **Two
       rules when adding a probe, both learned the hard way:** mirror the key the ACTOR itself
       sends, not a plausible name from upstream docs (c2512: `criteria.agency_ic_admin` vs the

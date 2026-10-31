@@ -54,6 +54,29 @@ def http(url, data=None):
             raise
 
 
+def http_raw(url, data=None):
+    """Like http(), but returns (status_code, body_text) instead of parsed JSON and never
+    raises on a 4xx -- needed for the eu-ted-tenders-scraper probe, which must read a
+    deliberate 400's error body rather than treat it as a transport failure."""
+    body = json.dumps(data).encode() if data is not None else None
+    hdrs = {"User-Agent": UA, "Accept": "application/json"}
+    if body:
+        hdrs["Content-Type"] = "application/json"
+    for attempt in (1, 2):
+        try:
+            req = urllib.request.Request(url, data=body, headers=hdrs)
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+                return r.status, r.read().decode()
+        except urllib.error.HTTPError as e:
+            if e.code >= 500 and attempt == 1:
+                continue
+            return e.code, e.read().decode()
+        except Exception:
+            if attempt == 1:
+                continue
+            raise
+
+
 def schema(slug):
     return json.load(open(f"{R}/actors/{slug}/.actor/input_schema.json"))
 
@@ -203,11 +226,81 @@ def p_usaspending_recipient_types():
     return not dead, out
 
 
+def p_substack_discover_categories():
+    """No dedicated per-category filter to send -- discoverCategories resolves against this
+    same live list at RUN TIME (resolveCategoryIds(), src/main.js:586), so the Actor already
+    re-checks every slug it is given on every run and warns on an unresolved one
+    (unknownCategorySlugs, main.js:614) rather than silently matching nothing. This probe is
+    therefore a liveness check on the named EXAMPLES in our own copy, same shape as the
+    Federal Register probe above, not a defect hunt on the Actor's own validation (which
+    cannot go stale the way a hardcoded list could)."""
+    out = []
+    live = http("https://substack.com/api/v1/categories")
+    flat = []
+    for c in live:
+        flat.append(c)
+        flat.extend(c.get("subcategories") or [])
+    slugs = {c.get("slug") for c in flat if c.get("slug")}
+    out.append(f"  authority: /api/v1/categories -> {len(live)} top-level, {len(flat)} incl. subcategories, {len(slugs)} slugs")
+
+    named = []
+    for key in ("discoverCategories",):
+        desc = field("substack-scraper", key).get("description", "")
+        named += re.findall(r"`?([a-z][a-z-]+)`?", desc.split(":", 1)[-1])
+    named = [n for n in dict.fromkeys(named) if n not in ("e", "g", "no")]
+    # keep only the slugs the description actually names as examples (technology, business,
+    # finance, culture, us-politics, food per the schema's own `e.g.` clause)
+    candidates = [n for n in named if n in slugs or n in
+                  {"technology", "business", "finance", "culture", "us-politics", "food"}]
+    bad = [c for c in candidates if c not in slugs]
+    out.append(f"  named example slugs checked: {candidates}, unresolved: {bad or 'none'}")
+    return not bad, out
+
+
+def p_eu_ted_cpv_codes():
+    """classification-cpv is server-validated by TED itself (api.ted.europa.eu/v3/notices/search
+    answers 400 QUERY_UNSUPPORTED_FIELD_VALUE naming the bad value, live-confirmed cycle 1017 and
+    wired into main.js's own error handling at ~line 477) -- so unlike the free-text stringList
+    fields above, a stale value here can never silently match nothing; TED tells the buyer
+    immediately. This probe re-confirms that mechanism still holds today, live, rather than
+    trusting a 2026-era finding to still be true 1,500+ cycles later: one documented-example
+    code must 200 with a non-zero count, and one unused-but-well-formed code must 400 with the
+    exact error shape main.js's INPUT_ERROR_STATUS/upstreamAdvice branch expects."""
+    out = []
+    good = http_raw(
+        "https://api.ted.europa.eu/v3/notices/search",
+        {"query": "classification-cpv=72000000 AND publication-date>=today(-30)",
+         "page": 1, "limit": 1, "fields": ["publication-number"]},
+    )
+    good_body = json.loads(good[1])
+    good_count = good_body.get("totalNoticeCount", 0)
+    out.append(f"  classification-cpv=72000000 (IT services, our README's own example) -> "
+               f"HTTP {good[0]}, totalNoticeCount={good_count}")
+
+    bad = http_raw(
+        "https://api.ted.europa.eu/v3/notices/search",
+        {"query": "classification-cpv=99999999 AND publication-date>=today(-30)",
+         "page": 1, "limit": 1, "fields": ["publication-number"]},
+    )
+    bad_body = json.loads(bad[1])
+    bad_type = (bad_body.get("error") or {}).get("type")
+    out.append(f"  classification-cpv=99999999 (well-formed, unused) -> HTTP {bad[0]}, "
+               f"error.type={bad_type}")
+
+    ok = good[0] == 200 and good_count > 0 and bad[0] == 400 and bad_type == "QUERY_UNSUPPORTED_FIELD_VALUE"
+    if not ok:
+        out.append("  DRIFT: TED's server-side validation no longer matches what main.js's "
+                   "upstreamAdvice()/INPUT_ERROR_STATUS branch assumes -- re-check main.js:477-519.")
+    return ok, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
     "nih-reporter-scraper": ("agencyIcCodes", p_nih_agency_ic_codes),
     "us-federal-awards-scraper": ("recipientTypes", p_usaspending_recipient_types),
+    "substack-scraper": ("discoverCategories", p_substack_discover_categories),
+    "eu-ted-tenders-scraper": ("cpvCodes", p_eu_ted_cpv_codes),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)
