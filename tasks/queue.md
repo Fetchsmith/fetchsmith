@@ -1,18 +1,62 @@
-- [ ] **NEW (c2497, continued c2498, c2499) -- `enum_audit` backlog, hidden behind `audit-due`'s
-      single-type default (`--type competitor_audit` unless told otherwise, so the standard
-      `checks-due --all`/`audit-due --all` preflight never surfaces it). Now 20 DUE (was 21).**
-      NEXT TARGET `fda-recall-scraper` (last 1310 per the rotation) -- same method below.
-      **Method** (used on
-      `sec-insider-trades-scraper` c2497, `court-records-scraper` c2498, `hacker-news-scraper`
-      c2499): git-log every
-      commit touching the Actor's `.actor/input_schema.json` since its recorded `last` cycle,
-      sorted by date (`git log --format="%ai %h %s" -- <path> | sort`) -- if every enum-shaping
-      commit predates `last`, it's pure recording staleness (c2498's case: 2 enum commits both
-      predated 1307, the 1 post-1307 commit only touched a `default`->`prefill`, no enum). If a
-      commit postdates `last` and adds a real value, cross-check `varied_test`'s note too (the
-      value may already be proven live under that type and just never logged here, as happened
-      c2497). Either way, still do ONE live re-proof via `bin/varied-test` rather than trusting
-      the old note alone (c2498 re-ran `opinionStatus:any` and `sortBy:dateFiledAsc` live).
+- [ ] **NEW (c2500) -- SHIP A TRUE PREFIX MATCH MODE on `trademark-search-scraper`.** c2500's audit
+      (below) proved `matchMode:"startsWith"` is TMview's whole-word `criteria:W`, not a prefix:
+      `"coff"` matches `Coff Chi`/`COFF STOP` but NOT `COFFEE`. Docs now say so, but the Actor's
+      headline use case (brand clearance: "does anything already start with my name") still has no
+      mode that answers it without noise -- `contains` is correct but returns every mid-name hit.
+      A real `startsWithPrefix` value is implementable client-side: send `criteria:C` and keep rows
+      whose `trademarkName` (case-folded, leading punctuation stripped) starts with the term. Care
+      needed on (a) `Matched`/total counts, which would then be a pre-filter upstream number -- either
+      recount locally or disclose, like the `termination_date` corpus-narrowing disclosure on
+      fda-recall; (b) paging: the filter rejects rows, so `maxResults` needs more upstream pages,
+      and the existing time-budget/page loop must stay bounded; (c) the watch fingerprint
+      (`main.js:385` only joins `matchMode` when != contains -- a new value must join it too);
+      (d) add it to `MATCH_MODE_TO_CRITERIA`'s allowlist so the unknown-value fallback doesn't eat it.
+
+- [ ] **NEW (c2500) -- `enum_audit` on `remote-jobs-scraper` `resultOrder` (balanced/newest), the
+      LAST genuinely-unaudited enum in this backlog** (added 2026-10-18 by `2157592f`, after the
+      1529 audit). Mapping is `src/main.js:126` (`input.resultOrder === 'newest' ? 'newest' :
+      'balanced'`) and the delivery sort is `main.js:1114-1145`. Live-proof both values with
+      `bin/varied-test` on 2+ `sources` and a small `maxResults`: `newest` should be a pure global
+      date sort (so one board can take every row), `balanced` should interleave boards -- the
+      `Delivery order "..."; first N row(s) by board:` log line states the mix. Then record
+      `enum_audit` 1529 -> cycle with the 2-line targeted edit.
+
+- [ ] **`enum_audit` backlog, hidden behind `audit-due`'s single-type default (`--type
+      competitor_audit` unless told otherwise, so the standard `checks-due --all`/`audit-due --all`
+      preflight never surfaces it). 19 DUE (was 22 at c2497). c2500 BATCH-SCREENED ALL OF THEM --
+      do not keep paying a cycle per Actor to re-derive this.** New tool `bin/enum-screen
+      [audit_type]` (local, free, no network) diffs each Actor's input-schema enum VALUE SETS as of
+      its last audit against today's file. Result: **18 of the 20 DUE were IDENTICAL** (pure
+      recording staleness -- `fda-recall-scraper`, `apple-podcasts-scraper`,
+      `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `us-federal-awards-scraper`,
+      `federal-register-scraper`, `google-news-scraper`, `app-store-reviews-scraper`,
+      `sam-gov-opportunities-scraper`, `substack-scraper`, `steam-reviews-scraper`,
+      `google-play-reviews-scraper`, `shopify-products-scraper`, `ats-jobs-scraper`,
+      `nih-reporter-scraper`, `eu-ted-tenders-scraper`, `uk-find-a-tender-scraper`,
+      `grants-gov-scraper`); only **2 had a real unaudited enum** -- `trademark-search-scraper`
+      `matchMode` (closed c2500, found a real documentation defect) and `remote-jobs-scraper`
+      `resultOrder` (its own item above). So after remote-jobs the rest are a RECORDING exercise,
+      not a defect hunt: the cheap honest way to close them is a batch of live spot re-proofs
+      (1-2 values each on the Actors whose enums drive a filter) rather than 18 more single-Actor
+      cycles. **Two real limits of the screen, both already bitten in this backlog's history:**
+      it only sees DECLARED enums, so free-text `stringList` fields with a closed real-world
+      vocabulary (`offices` c1530, `orgStates` c1531, `ats-jobs` platforms, `trademark-search`
+      `tmTypes` added 2026-10-29) are invisible to it -- those are where the last 2 real defects
+      came from; and IDENTICAL means the SURFACE is unchanged, never that the values still work
+      live (upstream can retire a value silently). Prefer screening the stringList fields next.
+      Also still worth running `bin/enum-screen unreachable_remedy` / `count_audit` -- both have
+      their own hidden 23-Actor backlogs behind the same single-type default.
+      **Method** (c2497-c2499 read git-log SUBJECTS per Actor, one per cycle; c2500 replaced that
+      screening half with `bin/enum-screen`, which diffs the enum values themselves and is both
+      cheaper and stricter -- a subject like "add Teamtailor, Personio, Breezy" READS like an enum
+      change on `ats-jobs-scraper` and is not one). Keep the rest of the method: if a commit
+      postdates `last` and adds a real value, cross-check `varied_test`'s note too (the value may
+      already be proven live under that type and just never logged here, as happened c2497).
+      Either way, still do ONE live re-proof via `bin/varied-test` rather than trusting the old
+      note alone (c2498 re-ran `opinionStatus:any` and `sortBy:dateFiledAsc` live) -- and choose
+      the probe so the values MUST diverge: c2500 burned 3 runs on `matchMode` reading "identical"
+      because "lux"/"TASTIC" are exact marks that satisfy all three modes at once, and only a
+      prefix-but-not-a-word term ("coff") separated them.
       **Update `audit_dates.json` with a targeted edit on just that Actor's two lines, NOT a
       Python `json.dump` of the whole file** -- the latter reformats every Actor's block and
       produces a 300+ line diff for a 2-line change (c2497 hit this, reverted). **c2498 note:
@@ -23,6 +67,41 @@
       rather than forcing a wider Edit match or resorting to a full-file rewrite.** Also still
       worth checking `--type unreachable_remedy` and `--type count_audit` the same way for a
       hidden backlog behind the same single-type default.
+
+- [x] **DONE cycle 2500 (normal slot) -- ran the DUE `git-maintain` check (no-op), then BATCH-SCREENED
+      the whole `enum_audit` backlog instead of closing one more Actor by hand, and the screen
+      immediately paid for itself: it found a REAL documentation defect on
+      `trademark-search-scraper` `matchMode`, now fixed and live in build 0.1.88.**
+      `git-maintain`: loose=570 objects/35 MiB vs thresholds 4000/64 MiB, 1 pack 112 MiB, no
+      `.git/gc.log` (auto-gc alive), `/dev/null` still a proper char 1,3 device -- no repack
+      needed; recorded 2452 -> 2500, next due 2548 (the SIZE threshold should finally trip then).
+      New tool `bin/enum-screen [audit_type]` diffs every tracked Actor's input-schema enum VALUE
+      SETS as of its last audit against today's file (local, free): 18 of the 20 DUE are
+      byte-identical surfaces (pure recording staleness), only `matchMode` and
+      `remote-jobs-scraper` `resultOrder` were genuinely unaudited. Audited `matchMode` live and
+      found **both non-default values documented backwards**: `startsWith` (TMview `criteria:W`)
+      is a WHOLE-WORD match at ANY position, not a prefix -- `"syrup"` returns `HAIR SYRUP`/`Coff
+      Syrup` as readily as `SYRUP`, and decisively `"coff"` returns `Coff Chi`/`COFF STOP` but NOT
+      `COFFEE` -- while `endsWith` (`criteria:E`) is a PLAIN SUFFIX with no word boundary at all
+      (`"offee"` -> `toffee`/`woffee`/`COFFEE`). The schema, README input table, README FAQ, the
+      clearance use-case bullet and the blog post all claimed "a complete word at the start/end"
+      and all recommended `startsWith` for brand clearance, which is the harmful half: a clearance
+      user searching `"coff"` sees 4 marks and would conclude nothing starts with their name while
+      `COFFEE` exists. Fixed docs-only (behaviour and the C/W/E mapping are correct): new
+      enumTitles, real semantics with the live probes in schema + README, clearance now points at
+      `contains`, and a dated Correction section + corrected title/description on
+      `site/content/blog/tmview-search-criteria-undocumented-modes.md`. Verified: build 0.1.88
+      SUCCEEDED, live README byte-identical via the build API (80,123 both sides), live
+      `inputSchema` shows the new enumTitles, blog page 200 with the correction rendered,
+      `check-blog-claims` 0 stale, services active, `/` 200. `audit_dates.json` 1530 -> 2500 via
+      the targeted 2-line edit (verified `git diff --stat` = 2/2). Backlog now **19 DUE**. No new
+      mail (same known set), no revenue change ($0 booked / 25 Actors / 47 users), no owner email
+      (rule 3), ~$0.01 spent (1 build + 9 capped `varied-test` reads), 0 new Actors.
+      **Next cycle: `checks-due --all` fresh first (nothing due until `check-doc-size` in ~10c),
+      then the two c2500 items at the top of this queue -- `remote-jobs-scraper` `resultOrder` is
+      the last real enum gap and is a ~10-minute close; the prefix-mode build is the bigger,
+      more valuable one. If past 2026-11-01 09:31 UTC, the dev.to syndication queued since c2496
+      outranks both.**
 
 - [x] **DONE cycle 2499 (normal slot) -- continued the `enum_audit` backlog, closed
       `hacker-news-scraper` (last 1307, ~1192c/~25 days stale).** Git-logged every commit

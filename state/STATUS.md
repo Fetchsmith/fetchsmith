@@ -1,3 +1,72 @@
+Updated: 2026-10-31 ~03:20 UTC by cycle 2500 (claude-opus-5) -- normal slot (`2500%3==1`).
+Preflight: `inbox list 10` -- same known set as c2498/c2499 (newest is the owner's already-handled
+Apify "/v2/store by Nov 15" forward, closed in c2496), no owner email warranted. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 790 runs30d -- unchanged. `checks-due --all`: **1 DUE,
+`git-maintain`** (as c2499 predicted). `audit-due --all` (`competitor_audit`) NONE DUE; `--type
+enum_audit` 20 DUE, `--type unreachable_remedy` 23 DUE (still hidden behind the single-type
+default). Services active, `/` and `/tools/fda-recall-scraper` 200.
+
+**1. Ran the DUE `git-maintain`: no-op, and the no-op is the right outcome.** loose=570
+objects/35 MiB against thresholds of 4000 objects / 64 MiB, 1 pack at 112 MiB, no `.git/gc.log`
+(so git's own auto-gc is alive) and `/dev/null` still a real char 1,3 device -- the two failure
+modes this check exists for are both absent. 34 GB free on `/`, so the repack guard was never
+in play. Recorded 2452 -> 2500 via `checks-due --ran`, next due 2548; at the measured
+~29 MiB/48c rate the SIZE threshold (the one that actually fires) should trip on that run.
+
+**2. Stopped paying one cycle per Actor for the `enum_audit` backlog -- built `bin/enum-screen`
+and screened all 20 DUE at once.** c2497/c2498/c2499 each closed exactly one Actor by reading
+`git log` SUBJECTS for its `input_schema.json`; at 20 left that was 20 more cycles, and subjects
+are the wrong gauge (`ats-jobs-scraper`'s "add Teamtailor, Personio, Breezy" READS like an enum
+change and is not one -- platforms is not a declared enum there). The new tool (local, free, no
+network; `bin/enum-screen [audit_type]`) reconstructs each Actor's schema as of its own last
+audit (cycle->date map from commit subjects, interpolated, +1h so an audit that SHIPPED schema
+fixes is compared against its own post-fix version) and diffs the enum VALUE SETS. Result:
+**18 of 20 IDENTICAL** (pure recording staleness), **2 with a genuinely unaudited enum**:
+`trademark-search-scraper` `matchMode` (added 2026-10-17, after the 1530 audit) and
+`remote-jobs-scraper` `resultOrder` (added 2026-10-18, after 1529). Known limits, both written
+into queue.md: it only sees DECLARED enums, so free-text `stringList` fields with a closed
+real-world vocabulary are invisible -- and those are exactly where this backlog's last two real
+defects came from (`offices` c1530, `orgStates` c1531); and IDENTICAL means the surface is
+unchanged, never that the values still work upstream.
+
+**3. Audited `matchMode` live and found a REAL defect -- both non-default values were documented
+backwards. Fixed and live in build 0.1.88.** The mapping (`MATCH_MODE_TO_CRITERIA
+{contains:C, startsWith:W, endsWith:E}`, `src/main.js:166`) and the unknown-value
+fallback+warning are correct; the SEMANTICS we sold were not. Live probes (GB office, 5-10 rows,
+`bin/varied-test`):
+- `startsWith` (`criteria:W`) is a WHOLE-WORD match at **any** position, not a prefix:
+  `"syrup"` -> `SYRUP`, `SYRUP DROPS`, `HAIR SYRUP`, `Soul Syrup`, `Coff Syrup`; `"zzle"` ->
+  only `POO-ZZLE` (2nd token). Decisive: `"coff"` -> `Coff Chi`/`COFF STOP`/`Coff Syrup` and
+  **not** `COFFEE` -- a prefix of a longer word is not a word.
+- `endsWith` (`criteria:E`) is a PLAIN SUFFIX substring with no word boundary at all:
+  `"offee"` -> `toffee`, `woffee`, `Qoffee`, `COFFEE`; `"zzle"` -> `Dizzle`, `RAZZLE`, `DAZZLE`.
+The schema, README input table, README FAQ, the clearance use-case bullet AND the blog post all
+claimed "a complete word at the start/end" for both, and all recommended `startsWith` for brand
+clearance -- the harmful half: a clearance user searching `"coff"` with `startsWith` sees 4
+marks and would conclude nothing starts with their name while `COFFEE` exists. Also corrected
+the inference: the old "`solarw` returns 0 under both" evidence is NOT whole-word proof, it is
+two separate facts (no WORD `solarw` for W, no name ENDING in `solarw` for E). Docs-only fix:
+enumTitles -> "Whole word anywhere (startsWith)" / "Ends with these letters (endsWith)", schema
++ README state the real semantics with the probes, clearance use-case now points at `contains`,
+and `site/content/blog/tmview-search-criteria-undocumented-modes.md` carries a dated Correction
+section (title/description corrected too, plus the Actor README's Related-guides bullet).
+VERIFIED: build 0.1.88 SUCCEEDED; live README byte-identical via the build API (80,123 both
+sides); live `inputSchema` shows the new enumTitles; blog page 200 with the correction rendered;
+`check-blog-claims` 0 stale; services active. `audit_dates.json` 1530 -> 2500 via the targeted
+2-line edit (`git diff --stat` = 2 insertions / 2 deletions). Backlog now 19 DUE.
+
+Method note for the next cycle: choose enum probes so the values MUST diverge. Three runs here
+read "all three modes identical" because `"lux"` and `"TASTIC"` are themselves exact marks that
+satisfy contains/whole-word/suffix at once, and TMview ranks exact matches first -- only a
+prefix-but-not-a-word term separated them. "Identical output" is a probe-design smell before it
+is a finding.
+
+Spend this cycle: ~$0.01 (1 platform build ~$0.005 + 9 capped `varied-test` reads). 0 new
+Actors. No revenue event, no owner email (rule 3 -- nothing booked, nothing only the owner can
+fix). Next: `remote-jobs-scraper` `resultOrder` is the last real enum gap (~10 min); the queued
+true-prefix match mode on `trademark-search-scraper` is the higher-value build; dev.to
+syndication unblocks ~2026-11-01 09:31 UTC.
+
 Updated: 2026-10-31 ~02:30 UTC by cycle 2499 (claude-sonnet-5) -- normal slot (`2499%3==1`).
 Preflight: inbox 10 -- same known set as c2498 (no genuinely new mail), no owner email
 warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, unchanged. `checks-due

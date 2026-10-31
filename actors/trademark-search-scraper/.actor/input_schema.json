@@ -6,17 +6,25 @@
     "searchTerm": {
       "title": "Trademark term",
       "type": "string",
-      "description": "Word or brand to search for. Matches trademarks whose name contains this term (see Match mode to require a whole word at the start/end instead).",
+      "description": "Word or brand to search for. Matches trademarks whose name contains this term (see Match mode for a whole-word match or an ends-with-these-letters match instead).",
       "editor": "textfield",
       "default": "coffee"
     },
     "matchMode": {
       "title": "Match mode",
       "type": "string",
-      "description": "How 'Trademark term' is matched against each trademark's name. 'Contains' (default) matches the term anywhere, as a plain substring -- no word boundary, so \"solar\" also matches \"SOLARWINDS\". 'Starts with a word' and 'Ends with a word' both require a COMPLETE word, not just a substring -- e.g. the fragment \"solarw\" matches under Contains but matches NOTHING under either whole-word mode, since neither \"solar\" nor \"solarw\" is a complete word in \"SOLARWINDS\". Useful for clearance screening: 'Starts with a word' answers \"does any mark begin with my proposed name\" without wading through every mark that merely contains it somewhere in a longer compound.",
+      "description": "How 'Trademark term' is matched against each trademark's name. 'Contains' (default) matches the term anywhere, as a plain substring -- no word boundary, so \"solar\" also matches \"SOLARWINDS\". 'Whole word anywhere' (value startsWith) requires the term to be a COMPLETE word in the name, but NOT the first one -- verified live cycle 2500: \"syrup\" returns \"SYRUP\", \"HAIR SYRUP\" and \"Coff Syrup\" alike, while \"coff\" returns \"Coff Chi\"/\"COFF STOP\" and NOT \"COFFEE\" (a prefix of a longer word is not a word). 'Ends with these letters' (value endsWith) is the opposite: a plain suffix substring, no word boundary at all -- \"offee\" returns \"toffee\", \"woffee\" and \"COFFEE\". NOTE the two value NAMES are historical and describe neither behaviour exactly: use 'Whole word anywhere' to find the term as its own word, and 'Contains' (not startsWith) for clearance screening, because a mark that BEGINS with your term inside a longer word (\"COFFEE\" for \"coff\") is invisible to the whole-word mode.",
       "editor": "select",
-      "enum": ["contains", "startsWith", "endsWith"],
-      "enumTitles": ["Contains (default)", "Starts with a word", "Ends with a word"],
+      "enum": [
+        "contains",
+        "startsWith",
+        "endsWith"
+      ],
+      "enumTitles": [
+        "Contains (default)",
+        "Whole word anywhere (startsWith)",
+        "Ends with these letters (endsWith)"
+      ],
       "default": "contains"
     },
     "offices": {
@@ -24,7 +32,10 @@
       "type": "array",
       "description": "Two-letter office codes to search, e.g. US (USPTO), EM (EUIPO), GB, DE, FR, JP, CN, WO (WIPO). Case-insensitive -- a lowercase or mixed-case code is corrected for you (TMview itself matches office codes case-sensitively). TMview covers exactly 81 offices; a code outside that set (e.g. \"UK\" instead of \"GB\", or \"EU\" instead of \"EM\") matches no trademark at all, so the run warns and tells you in its status message instead of just returning an empty dataset. Leave empty to search all 81 offices in TMview.",
       "editor": "stringList",
-      "default": ["US", "EM"]
+      "default": [
+        "US",
+        "EM"
+      ]
     },
     "niceClasses": {
       "title": "Nice classes",

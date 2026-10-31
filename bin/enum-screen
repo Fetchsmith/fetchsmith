@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+"""bin/enum-screen [audit_type] -- batch triage for the enum_audit backlog (added cycle 2500).
+
+For every Actor carrying the given audit date (default enum_audit), diff the SET of
+input-schema enum values as of that audit against the current file, and print
+CHANGED/IDENTICAL per Actor.  Local, free, no network.
+
+WHY: cycles 2497-2499 closed this backlog one Actor per cycle by reading git log
+SUBJECTS, which cannot tell a real enum change from an unrelated schema commit --
+c2500 screened all 20 DUE at once this way and found only 2 with a genuinely
+unaudited enum (trademark-search-scraper matchMode, remote-jobs-scraper
+resultOrder); matchMode turned out to be documented backwards.  IDENTICAL here
+means the enum SURFACE is unchanged since the last audit (pure recording
+staleness) -- it is NOT a substitute for a live re-proof of the values, and it
+says nothing about free-text stringList fields with no declared enum (the
+coverage gap cycles 1530/1531 both hit).
+
+Cycle numbers are mapped to dates from commit subjects ("cycle NNNN"/"cNNNN"),
+interpolating when a cycle left no commit; the base revision is the last commit
+touching that schema within 1h after the audit's own cycle, so an audit that
+SHIPPED schema changes is compared against its own post-fix version.
+"""
+import json, re, os, subprocess, sys
+R="/root/agent"
+def sh(*a):
+    return subprocess.run(list(a),capture_output=True,text=True,cwd=R).stdout
+
+def enums(txt):
+    try: s=json.loads(txt)
+    except Exception as e: return None
+    out={}
+    for k,v in (s.get("properties") or {}).items():
+        if not isinstance(v,dict): continue
+        for key in ("enum","items.enum"):
+            pass
+        e=v.get("enum")
+        if e is None and isinstance(v.get("items"),dict): e=v["items"].get("enum")
+        if e is not None: out[k]=sorted(map(str,e))
+    return out
+
+log = sh("git","log","--format=%at|%h|%s")
+cyc={}
+for line in log.splitlines():
+    try: at,h,s=line.split("|",2)
+    except ValueError: continue
+    for m in re.finditer(r'\b[Cc]ycle\s*(\d{3,4})\b|\bc(\d{3,4})\b',s):
+        n=int(m.group(1) or m.group(2))
+        if 100<=n<=3000:
+            at=int(at)
+            if n not in cyc or at<cyc[n]: cyc[n]=at
+keys=sorted(cyc)
+def anchor(c):
+    if c in cyc: return cyc[c]
+    lo=[k for k in keys if k<c]; hi=[k for k in keys if k>c]
+    if lo and hi:
+        a,b=lo[-1],hi[0]; return int(cyc[a]+(cyc[b]-cyc[a])*(c-a)/(b-a))
+    return cyc[lo[-1]] if lo else cyc[hi[0]]
+
+d=json.load(open(R+"/state/audit_dates.json")); actors=d.get("actors",d)
+AUDIT=(sys.argv[1] if len(sys.argv)>1 else "enum_audit")
+due=sorted(k for k,v in actors.items()
+           if isinstance(v,dict) and isinstance(v.get(AUDIT),int)
+           and os.path.exists("%s/actors/%s/.actor/input_schema.json"%(R,k)))
+for a in due:
+    last=actors[a][AUDIT]; t=anchor(last)+3600
+    path="actors/%s/.actor/input_schema.json"%a
+    rev=sh("git","rev-list","-1","--before=@%d"%t,"HEAD","--",path).strip()
+    if not rev:
+        print("%-32s NO BASE REV"%a); continue
+    old=enums(sh("git","show","%s:%s"%(rev,path)))
+    new=enums(open("%s/%s"%(R,path)).read())
+    rd=sh("git","log","-1","--format=%ai %s",rev).strip()[:90]
+    if old is None or new is None:
+        print("%-32s PARSE FAIL"%a); continue
+    chg=[]
+    for k in sorted(set(old)|set(new)):
+        if k not in old: chg.append("  + NEW ENUM FIELD %s = %s"%(k,new[k]))
+        elif k not in new: chg.append("  - REMOVED ENUM FIELD %s"%k)
+        elif old[k]!=new[k]:
+            add=[x for x in new[k] if x not in old[k]]; rem=[x for x in old[k] if x not in new[k]]
+            chg.append("  ~ %s added=%s removed=%s"%(k,add,rem))
+    print("== %-32s last=%-5d base=%s | enum fields %d->%d | %s"%(a,last,rd[:16],len(old),len(new),"CHANGED" if chg else "IDENTICAL"))
+    for c in chg: print(c[:220])
