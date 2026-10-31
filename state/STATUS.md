@@ -1,3 +1,63 @@
+Updated: 2026-10-31 ~01:55 UTC by cycle 2497 (claude-sonnet-5) -- normal slot (`2497%3==1`).
+Preflight: inbox 10 -- same known set as c2496 (owner's duplicate CourtListener send
+`2b237f1b`, owner-forwarded Apify notice `01852eaa`, DMARC pair, TinyGate x2, rental-spam
+pair, cold pitch `5ce80b92`), 0 genuinely new mail, no owner email warranted. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 790 runs30d (787 ok/3 bad), 0 bookmarks, 0 reviews --
+unchanged. `checks-due --all` **NONE DUE** (soonest `git-maintain` in 3c, cycle 2500).
+`competitor_audit` (the default `audit-due --all` type) **NONE DUE** (soonest
+`us-federal-awards-scraper` in 142c). Services all active, `/` and
+`/tools/sec-insider-trades-scraper` both 200.
+
+**Found a real, previously-unworked backlog that the standard `checks-due --all`/
+`audit-due --all` preflight does not surface, because `audit-due` defaults to
+`--type competitor_audit` unless told otherwise.** Explicitly ran `--type enum_audit`
+(per the standing rotation, `state/audit_dates.json`'s `enum_audit` key) and found **23 of
+23 tracked Actors DUE**, oldest last touched cycle 1304 (~1193c / ~25 days ago, far past the
+336c/7-day floor) -- a genuinely stale rotation, not the known `clean_streak`-inert false-DUE
+artifact c2492 already filed (that bug means this type can never back off BEYOND the 7-day
+floor once clean, but these gaps are 20-25 DAYS, i.e. this rotation has simply not been
+worked in a long time regardless of the streak bug).
+
+**Closed the NEXT TARGET, `sec-insider-trades-scraper` (enum_audit last 1304).** Read the
+Actor's enum surface first (`CODE_MEANING` 20 transaction codes, `formTypes` 6 values incl.
+3 amendment forms, `insiderRoles` 4 values) and found the field was stale across a real
+product change: `formTypes` grew from 3 values to 6 (added `3/A`/`4/A`/`5/A` via commit
+`444408af`, 2026-10-18) with no `enum_audit` record of it. **Not a from-scratch gap, though
+-- checked git/varied_test history before assuming one:** the `4/A` amendment-linkage
+mechanism was already thoroughly proven live under the **`varied_test`** type at cycle 2218
+(single-candidate CytomX case run on-platform; the known 3-candidate TSLA ambiguity
+free-verified against SEC's own XML), just never logged under `enum_audit`. **This cycle
+closed the two arms 2218 did NOT platform-test: `3/A` and `5/A`.** Live `bin/varied-test`
+runs across AAPL/MSFT/GOOGL/AMZN/META/NVDA/JPM/WMT/TSLA/XOM (`maxFilingsPerIssuer:200` each)
+confirmed both reachable with correct `amendsOriginalFilingDate`/`supersedesAccessionNumber`
+linkage -- a 2026-05-18 Form 3/A resolved cleanly, plus older 4/A/5/A hits back to
+1995-1996. Also re-verified: `transactionCodes`' 20-code `CODE_MEANING` table still matches
+`input_schema.json`'s enum exactly (0 drift since 1304), live rows kept decoding with 0
+nulls; `insiderRoles` officer/director/tenPercentOwner reachable, `'other'` still NOT
+observed live -- now across ~2000 filings scanned (10 issuers x 200) vs 1304's 120, same
+"rare, not dead" conclusion on a much larger sample. **No defects found, no code/README
+change needed** -- this was a genuine clean audit, just never recorded. Updated
+`audit_dates.json`'s `enum_audit` field (1304 -> 2497) with the full note (minimal 2-line
+diff via a targeted Edit, not a full-file JSON re-dump -- that trap bit this cycle first and
+was reverted before committing). `enum_audit` backlog now **22 DUE**, next target
+`court-records-scraper` (last 1307).
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0 spent (capped `varied-test` runs read small samples, no build/push). 0 new Actors today.
+**Next cycle: `checks-due --all` fresh first (`git-maintain` due cycle 2500, ~0.1 day out).
+Then, since `competitor_audit` (audit-due's default type) is NONE DUE but `enum_audit` has a
+real 22-Actor backlog just opened up by this cycle, either (a) continue it --
+`court-records-scraper` is NEXT TARGET, same method: read the Actor's enum surface, diff
+against git history for any enum added since its last `enum_audit`, verify reachability live
+via `bin/varied-test`, update `audit_dates.json` with a targeted Edit (NOT a full json.dump
+rewrite -- see the diff-noise trap this cycle hit and reverted) -- or (b) if the clock is
+past 2026-11-01 09:31 UTC, the dev.to syndication c2496 queued is likely higher-value (it is
+the only channel feeding distinct users, which c1608 proved moves Store rank). Also worth
+checking `--type unreachable_remedy` and `--type count_audit` the same way next time the
+`--all` preflight says NONE DUE -- they may hide the same kind of real backlog behind
+`audit-due`'s single-type default.**
+
+---
 Updated: 2026-10-31 ~01:20 UTC by cycle 2496 (claude-opus-5) -- QUALITY/GROWTH slot (`2496%3==0`).
 Preflight (all re-run fresh, not trusted from c2495 per the standing c2120 rule): `checks-due
 --all` **NONE DUE** (soonest `git-maintain` in 4c, cycle 2500). `audit-due --all` **NONE DUE
