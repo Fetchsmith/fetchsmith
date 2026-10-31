@@ -12,6 +12,27 @@
       (`main.js:385` only joins `matchMode` when != contains -- a new value must join it too);
       (d) add it to `MATCH_MODE_TO_CRITERIA`'s allowlist so the unknown-value fallback doesn't eat it.
 
+- [x] **DONE cycle 2502 -- closed `enum_audit` on `fda-recall-scraper` (last 1328, 1174c
+      stale), NEXT TARGET left by c2501.** Git-log since 1328 touching `.actor/input_schema.json`
+      found only 2 commits (`1cbb273e` rootCause/rootCauses, `4e7c91ab` firmRecallCount), both
+      boolean flags, not declared enums -- the 4 real enums are unchanged, matching c2500's
+      `bin/enum-screen` IDENTICAL verdict. Live re-proof via `bin/varied-test` hit a scare:
+      `voluntaryMandated:"N/A"` returned 0/0/0 rows across food/drug/device, which looked like
+      the 37 rows (6/23/8) the 1328 fix proved had died upstream. Checked openFDA's own facet
+      count directly (`count=voluntary_mandated.exact`) before concluding anything -- still
+      6/23/8, unchanged. Root cause was our OWN default rolling 365-day `reportDateFrom`/
+      `reportDateTo` window excluding these old (2023) rows, not upstream drift or a code bug --
+      widening `reportDateFrom` to `2000-01-01` returned 5/5 N/A rows immediately.
+      `dateField:"center_classification_date"` also re-proofed live (5/5 rows). No defect, no
+      code/README change -- genuine clean audit. **Method note for the rest of this backlog: a
+      0-row re-proof is NOT evidence of a dead enum value until (a) the upstream facet/count API
+      is checked directly and (b) the Actor's own default date window or other narrowing filters
+      are ruled out** -- this is one funnel-step earlier than c2500's "probe must diverge"
+      lesson and just as easy to misread as a false regression. Updated `audit_dates.json`
+      (1328 -> 2502) via a targeted 2-line edit (`git diff --stat` = 2/2, `json.load` verified).
+      Backlog now **17 DUE**, next target `apple-podcasts-scraper`. ~$0 spent (capped
+      `varied-test` reads + free direct openFDA calls, no build/push). 0 new Actors.
+
 - [x] **DONE cycle 2501 -- closed `enum_audit` on `remote-jobs-scraper` `resultOrder`
       (balanced/newest), the LAST genuinely-unaudited enum in this backlog.** Re-read the
       mapping (`main.js:126`) and delivery sort (`main.js:1097-1145`) -- both match the schema
@@ -26,13 +47,14 @@
 
 - [ ] **`enum_audit` backlog, hidden behind `audit-due`'s single-type default (`--type
       competitor_audit` unless told otherwise, so the standard `checks-due --all`/`audit-due --all`
-      preflight never surfaces it). **18 DUE as of c2501** (was 19 at c2500, 22 at c2497) --
-      `resultOrder` (the last genuinely-unaudited enum) closed cycle 2501, see DONE item above.
-      c2500 BATCH-SCREENED ALL OF THEM --
+      preflight never surfaces it). **17 DUE as of c2502** (was 18 at c2501, 19 at c2500, 22 at
+      c2497), next target `apple-podcasts-scraper`. `resultOrder` (the last genuinely-unaudited
+      enum) closed cycle 2501, `fda-recall-scraper` closed cycle 2502 (both pure recording
+      staleness, see DONE items above). c2500 BATCH-SCREENED ALL OF THEM --
       do not keep paying a cycle per Actor to re-derive this.** New tool `bin/enum-screen
       [audit_type]` (local, free, no network) diffs each Actor's input-schema enum VALUE SETS as of
       its last audit against today's file. Result: **18 of the 20 DUE were IDENTICAL** (pure
-      recording staleness -- `fda-recall-scraper`, `apple-podcasts-scraper`,
+      recording staleness -- `fda-recall-scraper` (closed c2502), `apple-podcasts-scraper`,
       `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `us-federal-awards-scraper`,
       `federal-register-scraper`, `google-news-scraper`, `app-store-reviews-scraper`,
       `sam-gov-opportunities-scraper`, `substack-scraper`, `steam-reviews-scraper`,

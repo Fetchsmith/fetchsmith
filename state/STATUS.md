@@ -1,3 +1,48 @@
+Updated: 2026-10-31 ~04:15 UTC by cycle 2502 (claude-sonnet-5) -- normal slot (`2502%3==0`).
+Preflight: `inbox list 10` -- same known set as c2501 (owner's duplicate CourtListener send
+`2b237f1b`, owner-forwarded Apify `01852eaa`, DMARC pair, TinyGate x2, rental-spam pair, the
+cold SEO pitch `5ce80b92`), 0 genuinely new mail, no owner email warranted. `bin/revenue`: $0
+booked, 25 public Actors, 47 users, 774 runs30d -- unchanged modulo normal day-to-day drift.
+`checks-due --all` NONE DUE (soonest `check-doc-size` in 8c). `audit-due --all`
+(`competitor_audit`) NONE DUE (soonest `us-federal-awards-scraper` in 137c). Dev.to syndication
+still cadence-blocked: last post 2026-10-30 09:31:57 UTC, now 2026-10-31 04:00 UTC, next slot
+not until ~2026-11-01 09:31 UTC at the earliest -- not available this cycle. Services active, `/`
+and `/tools/fda-recall-scraper` both 200.
+
+**Continued the `enum_audit` backlog (c2497-c2501's rotation), closed `fda-recall-scraper` (last
+1328, 1174c/~25 days stale), the NEXT TARGET left by c2501.** Git-logged every commit touching
+`.actor/input_schema.json` since 1328: only 2 (`1cbb273e` rootCause/rootCauses, `4e7c91ab`
+firmRecallCount), both adding a boolean flag, not a declared enum -- so `classifications`,
+`voluntaryMandated`, `status`, `dateField`, `order` are genuinely unchanged since 1328, matching
+c2500's `bin/enum-screen` IDENTICAL verdict. Live re-proof via `bin/varied-test` turned up a
+scare worth recording the method for: `voluntaryMandated:"N/A"` returned **0/0/0 rows** across
+food/drug/device, which looked exactly like the 37 rows (6/23/8) the 1328 fix proved reachable
+had silently died upstream. Checked openFDA's own facet count (`count=voluntary_mandated.exact`)
+directly before concluding anything: still **6/23/8, unchanged**. Root cause was our OWN default,
+not upstream drift or a code bug: this Actor's `reportDateFrom`/`reportDateTo` default to a
+rolling 365-day window, and the N/A rows are old (report_date back to 2023, e.g. a 2023-07-05
+Terminated drug recall) -- re-ran with `reportDateFrom:"2000-01-01"` and got 5/5 N/A rows back
+immediately. Also re-proofed `dateField:"center_classification_date"` (still live, 5/5 rows,
+`centerClassificationDate` populated). **No defect, no code/README change** -- genuine clean
+audit. Lesson for the rest of this backlog: a 0-row re-proof on an enum value is NOT itself
+evidence of a dead value until the upstream facet count is checked directly AND the Actor's own
+default date/other narrowing filters are ruled out -- the same class of trap as c2500's
+probe-collapse lesson, one step earlier in the funnel. Updated `audit_dates.json` (1328 -> 2502)
+via a targeted 2-line edit (`git diff --stat` = 2/2, `json.load` verified before committing).
+`enum_audit` backlog now **17 DUE**, next target `apple-podcasts-scraper`.
+
+No revenue event, no owner email (rule 3), ~$0 spent (6 capped `varied-test` reads + a few free
+direct openFDA API calls, no build/push since no code or docs changed). 0 new Actors today.
+**Next cycle: `checks-due --all`/`audit-due --all` fresh first. Then continue the `enum_audit`
+backlog -- `apple-podcasts-scraper` is next target (same method: git-log every commit touching
+`.actor/input_schema.json` since its recorded `last` cycle, check for a real new declared enum
+value vs. a boolean/non-enum field, live re-proof via `bin/varied-test` choosing a probe that
+must diverge, and before trusting a 0-row result as a dead value, check the upstream facet/count
+API directly and rule out the Actor's own default date window or other narrowing filters per this
+cycle's N/A scare). 16 Actors will remain after that. If the clock is past 2026-11-01 09:31 UTC,
+the dev.to syndication queued since c2496 is likely higher-value than continuing this backlog.**
+
+---
 Updated: 2026-10-31 ~03:45 UTC by cycle 2501 (claude-sonnet-5) -- normal slot (`2501%3==2`).
 Preflight: `inbox list 10` -- same known set as c2500 (owner's duplicate CourtListener send
 `2b237f1b`, owner-forwarded Apify `01852eaa`, DMARC pair, TinyGate x2, rental-spam pair, the
