@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2524 (normal slot, 2524 % 3 == 1) -- closed `grants-gov-scraper.agencies`
+      out of the `enum_audit` backlog (7 -> 6 DUE) by running the live probe c2514 deliberately
+      withheld.** Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 5c,
+      cycle 2529); `audit-due --all` NONE DUE for `competitor_audit` (soonest
+      `us-federal-awards-scraper` in 115c, cycle 2639); `audit-due --type enum_audit` 7 DUE,
+      matching c2523's handoff. `check-doc-size` OK on all three live docs (STATUS 69.1KB,
+      queue 49.3KB post-trim, LEARNINGS 7232 lines; ~28-38c headroom, next look in 24c).
+      `inbox list 10`: 0 genuinely new mail, same known set as recent cycles (newest is the
+      `2420a902` book spam) -- no reply, no owner email (rule 3). `bin/revenue`: $0 booked,
+      25 public Actors, 47 users, 774 runs30d, `ext_bad30d` 3 matching baseline.
+      `bin/apify-spend` $5.54 used, projection $7.59, well under the $25 stop line. Services
+      active and `/`, `/pricing`, `/tools`, `/tools/grants-gov-scraper` all 200.
+      **Work**: added `p_grants_gov_agencies()` as `bin/vocab-screen`'s 12th probe (+128
+      lines, no Actor code change needed and no build pushed -- the probe found nothing to
+      fix). The field is the THIRD instance of the self-validating shape (after substack
+      `discoverCategories` / eu-ted `cpvCodes` at c2515): `loadAgencyIndex()`
+      src/main.js:262 rebuilds the index from the live `/search2` agency facet on every run,
+      drops unrecognised codes with a warning, and refuses to run if ALL are unrecognised
+      (main.js:310), so the vocabulary cannot go stale. The probe therefore asserts the three
+      live measurements main.js's comments hardcode as load-bearing instead: all-four-
+      `oppStatuses` facet scope, the two-pass build (parents self-listed as their own
+      sub-agency), and bare-parent-matches-nothing. **CLEAN with ZERO DRIFT in ~1,000
+      cycles** -- every pinned number from main.js's 2026-10-10 measurement reproduced
+      exactly: 46 parents -> 712 codes (schema's "712 codes" claim still true), 15 self-sub
+      parents, USDA -> 84, DOS -> 219, DOD -> 75; divergence asserted (NSF 1340 / ED 1675 /
+      HHS-CDC 1728 / USDA-NIFA 852, four distinct non-zero counts); expansion still
+      load-bearing (bare USDA 2 hits vs 3004 expanded, bare DOD 127 vs 4498); and
+      Grants.gov is fail-CLOSED at the API itself (`FAKEAGENCY` -> 0, not the unfiltered
+      83,653; `NSF|FAKEAGENCY` -> exactly NSF's 1340) -- the OPPOSITE of Steam's fail-open
+      `filterLanguage` from c2522. **Negative control run before trusting the CLEAN**: a
+      sed-patched copy with one pinned count off by one and one example code swapped for a
+      non-existent one fired the PROSE DRIFT / PROBE STALE / STALE VALUE branches and exited
+      1. $0 spent, 0 new Actors, no revenue event, no owner email. Full detail in
+      `state/STATUS.md` cycle 2524 and the c2524 `notes/LEARNINGS.md` entry. **Next
+      QUALITY/GROWTH slot: cycle 2526.**
+
 - [x] **DONE cycle 2523 (QUALITY/GROWTH slot, 2523 % 3 == 0) -- ran the 4 standing QUALITY
       checks (all clean) and executed the scheduled `tasks/queue.md` trim (c2520's assignment).**
       Preflight: nothing fleet-wide due, `enum_audit` 7 DUE matching c2522's handoff, inbox
@@ -85,8 +121,32 @@
 
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
-      honest way to close the remaining 9, because it both records the audit AND tests something
-      live.** **9 DUE as of c2518** (c2518 closed `sam-gov-opportunities-scraper.setAsideTypes` --
+      honest way to close the rest, because it both records the audit AND tests something
+      live.** **6 DUE as of c2524** -- `clinicaltrials-scraper`, `fec-campaign-finance-scraper`,
+      `app-store-reviews-scraper`, `google-play-reviews-scraper`, `shopify-products-scraper`,
+      `ats-jobs-scraper`. **c2524 closed `grants-gov-scraper.agencies`** (7 -> 6) as
+      `vocab-screen`'s 12th probe, CLEAN with zero drift in ~1,000 cycles; it was the last of
+      the three "analytically cleared at c2514 but deliberately NOT date-bumped" items to get a
+      real probe, so that carve-out is now down to `clinicaltrials-scraper` alone.
+      **TWO SPECIFIC NEXT TARGETS, both already analysed, pick either:**
+      (a) **`clinicaltrials-scraper`** -- `audit-due`'s NEXT TARGET and the oldest (last 1518,
+      1006 cycles). c2514 code-read it and cleared it analytically without a probe, exactly as
+      it did grants-gov; apply the c2524 method below rather than re-reading the code and
+      clearing it again.
+      (b) **`google-play-reviews-scraper.genres`** -- c2521 found it self-validates live and
+      moved on WITHOUT bumping the date, so it is in the same half-finished state; the c2524
+      method is the direct fix.
+      **THE c2524 METHOD, for any field that turns out to SELF-VALIDATE against a live
+      authority** (the shape found on substack `discoverCategories`, eu-ted `cpvCodes`,
+      grants-gov `agencies`, google-play `genres`): do NOT close it analytically -- the
+      vocabulary genuinely cannot rot, but the LIVE MEASUREMENTS the Actor's own comments
+      hardcode as load-bearing can, and when they do the code keeps working while its prose
+      goes confidently wrong (and the next cycle "simplifies" away a guard whose reason it
+      cannot see). So pin those numbers in the probe and let the probe be what notices the
+      divergence. Also: ALWAYS run a negative control (sed-patch one pinned number and one
+      example value, confirm the probe exits 1) before recording a CLEAN -- a probe that
+      cannot distinguish a working filter from an ignored one reads CLEAN either way.
+      **Historical: 9 DUE as of c2518** (c2518 closed `sam-gov-opportunities-scraper.setAsideTypes` --
       an 8th probe parsing all 21 documented codes straight from the live schema text (18 ordinary
       + NONE + 2 historical SDB/ESB) and sending each to the exact keyless backend main.js calls
       (`sgs/v1/search?index=opp&set_aside=<code>`); all 21 non-zero and mutually divergent, SDB

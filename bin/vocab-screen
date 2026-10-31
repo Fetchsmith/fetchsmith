@@ -761,6 +761,133 @@ def p_steam_reviews_language():
     return True, out
 
 
+def p_grants_gov_agencies():
+    """grants-gov-scraper.agencies, added cycle 2524 to give this field the live-probe
+    treatment eu-ted's cpvCodes got at c2515 -- c2514 only CODE-READ it and deliberately
+    left the audit date unbumped.
+
+    Shape: self-validating like substack/eu-ted (the Actor rebuilds its whole index from
+    the live /search2 agency facet on EVERY run, loadAgencyIndex() src/main.js:262, and
+    drops an unrecognised code with a warning -- refusing to run if ALL are unrecognised,
+    main.js:310), so the vocabulary itself cannot go stale.  What CAN go stale is the
+    three live measurements main.js's own comments hardcode as load-bearing, each of which
+    silently un-filters a run if upstream changes:
+
+      1. the facet must be probed with all four oppStatuses (default is forecasted|posted,
+         which hid 549 of 712 codes incl. ED/HHS-CDC/USAID before c1532);
+      2. the two-pass index build exists because some parents are listed as a sub-agency OF
+         THEMSELVES -- in one pass {"agencies":["DOD"]} collapsed to a bare "DOD";
+      3. a BARE parent code matches almost nothing here, which is the only reason the
+         sub-agency expansion is worth its complexity.
+
+    So this probe asserts the facet shape AND that expansion still changes the answer --
+    per the backlog's own rule, a probe that cannot tell a working filter from an ignored
+    one reads CLEAN either way."""
+    out = []
+    ALL_STATUSES = "forecasted|posted|closed|archived"  # mirrors main.js ALL_OPP_STATUSES
+    API = "https://api.grants.gov/v1/api/search2"
+
+    def search(agencies=None):
+        body = {"rows": 1, "oppStatuses": ALL_STATUSES}
+        if agencies:
+            body["agencies"] = agencies
+        return http(API, body)
+
+    probe = search()
+    lst = (probe.get("data") or {}).get("agencies")
+    total_all = (probe.get("data") or {}).get("hitCount")
+    if not isinstance(lst, list) or not lst:
+        out.append("  FACET GONE: /search2 no longer returns data.agencies -- loadAgencyIndex() "
+                   "would return an empty Map, so EVERY supplied code becomes 'unrecognised' and "
+                   "main.js:310 fails every agency-filtered run. Fix the Actor before shipping.")
+        return False, out
+
+    # Rebuild the index exactly the way the Actor does: sub-agencies first, parents last.
+    index = {}
+    for parent in lst:
+        for sub in parent.get("subAgencyOptions") or []:
+            if sub.get("value"):
+                index[str(sub["value"]).upper()] = [sub["value"]]
+    for parent in lst:
+        subs = [s["value"] for s in (parent.get("subAgencyOptions") or []) if s.get("value")]
+        index[str(parent["value"]).upper()] = list(dict.fromkeys([parent["value"], *subs]))
+    self_subs = [p["value"] for p in lst
+                 if any(s.get("value") == p["value"] for s in (p.get("subAgencyOptions") or []))]
+    out.append(f"  facet (all 4 statuses): {len(lst)} parents -> {len(index)} resolvable codes, "
+               f"{total_all} opportunities; {len(self_subs)} parent(s) listed as a sub-agency of "
+               f"themselves (two-pass build still required)")
+    # main.js's comments pin these as measured live 2026-10-10; drift here means its prose lies.
+    PINNED = {"codes": 712, "self_subs": 15, "USDA": 84, "DOS": 219, "DOD": 75}
+    drift = []
+    if len(index) != PINNED["codes"]:
+        drift.append(f"code count {len(index)} != main.js's {PINNED['codes']}")
+    if len(self_subs) != PINNED["self_subs"]:
+        drift.append(f"self-sub parents {len(self_subs)} != main.js's {PINNED['self_subs']}")
+
+    # Documented examples from our own schema copy must each resolve AND actually filter.
+    named = ["NSF", "ED", "HHS-CDC", "USDA-NIFA"]  # schema description's own e.g. list
+    desc = field("grants-gov-scraper", "agencies").get("description", "")
+    missing_from_copy = [n for n in named if n not in desc]
+    unresolved = [n for n in named if n not in index]
+    counts = {}
+    for code in named:
+        if code in index:
+            counts[code] = search("|".join(index[code])).get("data", {}).get("hitCount", 0)
+    out.append(f"  schema-named examples {named}: unresolved {unresolved or 'none'}, "
+               f"hitCounts {counts}")
+    zero = [c for c, n in counts.items() if not n]
+    # Divergence: four different agencies must not all return the same number, or the
+    # filter is being ignored and every value would read CLEAN.
+    diverge = len(set(counts.values())) == len(counts) and counts
+
+    # Parent expansion must still be load-bearing: bare parent << expanded parent.
+    expansion = []
+    for parent in ("USDA", "DOD"):
+        bare = search(parent).get("data", {}).get("hitCount", 0)
+        full = search("|".join(index[parent])).get("data", {}).get("hitCount", 0)
+        out.append(f"  parent {parent}: bare -> {bare}, expanded to {len(index[parent])} "
+                   f"codes -> {full}")
+        if len(index[parent]) != PINNED[parent]:
+            drift.append(f"{parent} expands to {len(index[parent])} != main.js's {PINNED[parent]}")
+        if not (full > bare * 5):
+            expansion.append(parent)
+
+    # Fail-closed: an unknown code must contribute 0, not be ignored upstream. The Actor
+    # drops unknowns before sending, so this guards the case where it ever stopped doing so.
+    bogus = search("FAKEAGENCY").get("data", {}).get("hitCount", -1)
+    mixed = search("NSF|FAKEAGENCY").get("data", {}).get("hitCount", -1)
+    nsf_only = counts.get("NSF")
+    out.append(f"  fail-closed: agencies=FAKEAGENCY -> {bogus} (not {total_all}); "
+               f"NSF|FAKEAGENCY -> {mixed} vs NSF alone {nsf_only}")
+    fail_open = bogus != 0 or mixed != nsf_only
+
+    if drift:
+        out.append(f"  PROSE DRIFT (not buyer-facing breakage, but main.js's comments and the "
+                   f"schema's '712 codes' claim are now wrong): {'; '.join(drift)} -- update the "
+                   "comments at src/main.js:244-262 and the schema description.")
+    if missing_from_copy:
+        out.append(f"  PROBE STALE: {missing_from_copy} no longer appear in the schema description "
+                   "-- re-sync this probe's `named` list with our copy.")
+    if unresolved or zero:
+        out.append(f"  STALE VALUE: schema-named example(s) {unresolved + zero} no longer resolve "
+                   "or match nothing -- a buyer copying our own example gets an empty dataset.")
+    if not diverge:
+        out.append(f"  PROBE INVALID: the four named agencies no longer return distinct counts "
+                   f"({counts}) -- the agencies filter may be being ignored, in which case every "
+                   "value would read CLEAN regardless.")
+    if expansion:
+        out.append(f"  EXPANSION NO LONGER LOAD-BEARING for {expansion}: a bare parent code now "
+                   "matches about as much as the full sub-agency tree. Harmless to buyers, but "
+                   "main.js:244-249's justification for loadAgencyIndex()'s complexity is stale.")
+    if fail_open:
+        out.append(f"  FAIL-OPEN: /search2 now ignores an unknown agency code instead of matching "
+                   "0 -- if main.js ever stops dropping unknowns client-side, a typo would silently "
+                   "return EVERY agency's rows. Keep main.js:292-316 exactly as it is.")
+
+    ok = not (drift or missing_from_copy or unresolved or zero or expansion or fail_open) and bool(diverge)
+    return ok, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -775,6 +902,7 @@ PROBES = {
     "sam-gov-opportunities-scraper": ("setAsideTypes", p_samgov_set_aside_types),
     "google-news-scraper": ("topics", p_google_news_topics),
     "steam-reviews-scraper": ("language", p_steam_reviews_language),
+    "grants-gov-scraper": ("agencies", p_grants_gov_agencies),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

@@ -7230,3 +7230,28 @@ update) plus a `vocab-screen` probe that reads the warning's own allowlist out o
 source via regex (not a hardcoded copy) and asserts BOTH halves live: real codes still get their
 own content, and a wrong-guess sample still falls into the trap — so either an upstream fix to
 the fail-open behavior OR a retired real code gets caught, not just one direction.
+
+**Cycle 2524: when a field is SELF-VALIDATING, the thing that can still rot is the COMMENT
+that justifies the validator's complexity — so probe the justification, not the vocabulary.**
+`grants-gov-scraper.agencies` is the third instance of the cannot-go-silently-stale shape
+(after substack `discoverCategories` c2515 and eu-ted `cpvCodes` c2515): the Actor rebuilds its
+entire agency index from the live `/search2` facet on EVERY run, so no listed code can go dead
+without the Actor noticing. The tempting conclusion — "nothing to probe, close it analytically"
+— is what c2514 did, and it's why c2514 correctly refused to bump the audit date. The useful
+probe target turned out to be the three LIVE MEASUREMENTS the Actor's own comments hardcode as
+load-bearing: (1) the facet must be pulled with all four `oppStatuses` or 549 of 712 codes are
+invisible, (2) the two-pass index build only exists because 15 parents are listed as a
+sub-agency OF THEMSELVES, (3) the sub-agency expansion only earns its complexity because a BARE
+parent code matches almost nothing. Each is an upstream fact, not an invariant — if Grants.gov
+ever made bare parents roll up, or stopped self-listing parents, the code would keep working
+while its comments became confidently wrong, and the next cycle to touch it would "simplify"
+away a guard it couldn't see the reason for. Measured live 2026-10-31 against main.js's
+2026-10-10 numbers: 712 codes, 15 self-sub parents, USDA→84, DOS→219, DOD→75 — reproduced
+EXACTLY, zero drift in ~1,000 cycles, and bare USDA still returns 2 hits vs 3004 expanded.
+Generalisation for the rest of the `enum_audit` backlog: an Actor that validates its own input
+against a live authority does NOT get a free pass, it gets a DIFFERENT probe — pin the numbers
+its comments assert, and let the probe be the thing that notices when prose and reality diverge.
+Bonus finding worth reusing: Grants.gov `/search2` is fail-CLOSED on an unknown `agencies` value
+(`FAKEAGENCY` → 0 hits, and `NSF|FAKEAGENCY` → exactly NSF's 1340), the opposite of Steam's
+fail-open `filterLanguage` (c2522) — so the two bug shapes really do both occur in the fleet and
+neither can be assumed from the other.
