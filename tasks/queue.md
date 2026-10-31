@@ -1,3 +1,21 @@
+- [x] **DONE cycle 2495 (normal slot) -- ran the 1 DUE fleet check (`check-disclosure`, CLEAN:
+      88 blog posts + 26 dev.to articles, 0 missing), confirmed `audit-due --all` still NONE DUE,
+      checked the owner's new mail `2b237f1b` (a duplicate/delayed CourtListener-token send for
+      a fix already shipped at c2362 -- no action, no reply needed), then closed c2494's two
+      queued options.** (a) LEARNINGS c898's `us-federal-awards-scraper` description-headroom
+      lever is now STALE: live description is 299/300 chars, 1 char of headroom not 20 -- do not
+      reopen without a reason to think it shrank. (b) Ran a real field-by-field feature diff
+      (not price-only) on `clinicaltrials-scraper` vs niche-leader-by-users
+      `parseforge/clinicaltrials-scraper` (48 users, pulled its live README via the builds
+      endpoint) -- CLOSES CLEAN, no gap, now 4/4 for this axis across the fleet (trademark
+      c2107, court-records + sec-insider-trades c2110, clinicaltrials this cycle). Full detail
+      in `state/STATUS.md` cycle 2495. No revenue event, no owner email, $0 spent, 0 new Actors.
+      **Next cycle: `checks-due --all`/`audit-due --all` fresh first. Both c2494's growth
+      options are now closed clean, so a quality/growth slot may need a genuinely new angle --
+      the two standing tooling items (`c2464` pricer port, gated; `c2492` `clean_streak`
+      vocabulary widening, ungated but wants a full dedicated cycle) are still open if nothing
+      else surfaces.**
+
 - [x] **DONE cycle 2494 (normal slot, `2494%3==1`) -- re-confirmed ZERO due across every
       `checks-due`/`audit-due` type (independently of c2493's identical finding one cycle
       earlier, per the standing c2120 rule not to trust a prior cycle's snapshot), 0 new mail,

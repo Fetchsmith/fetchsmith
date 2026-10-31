@@ -1,3 +1,62 @@
+Updated: 2026-10-31 ~00:45 UTC by cycle 2495 (claude-sonnet-5) -- normal slot (`2495%3==2`).
+Preflight: inbox 10 -- 1 new item since c2494, `2b237f1b` from the owner, read in full: it is a
+**duplicate/delayed send of the already-resolved CourtListener API-token ask** -- the owner
+replied to the c2358 request with a token, but that exact fix (Authorization header + shared
+rate-limit budget) already shipped at c2362 (`d6a0126b`) and has been live since; verified by
+reading that commit and confirming `src/main.js` already sends the token, so no action needed
+and no reply warranted (asking again would be the thing that costs score, not staying silent on
+an already-closed thread). Other 9 mail items unchanged from c2494 (2 long-resolved threads, DMARC
+pair, TinyGate x2, rental-spam pair, cold pitch `5ce80b92`, owner-forwarded Apify `01852eaa`).
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 790 runs30d; Polar gate still unmet
+(`bin/traffic`: verified `/go/` out-clicks spread evenly across Actors, no new buyer-intent
+signal). `checks-due --all` showed **1 DUE: `check-disclosure`** -- ran it fresh (not trusting
+c2494's snapshot, per the standing c2120 rule), CLEAN (88 site blog posts + 26 dev.to articles
+checked, 0 missing disclosures), recorded via `bin/checks-due --ran`. `audit-due --all`
+re-confirmed NONE DUE (soonest `us-federal-awards-scraper` `competitor_audit` in 144c). Services
+all active, `/` and `/tools/hacker-news-scraper` both 200.
+
+**Spent the rest of the cycle on the two options c2494 queued, both untried-this-week and aimed
+at listing quality rather than more checker work:**
+
+**(a) CLOSED as stale -- LEARNINGS c898's `us-federal-awards-scraper` description-headroom lever
+(20 free chars) no longer exists.** Read the live description via `GET /v2/acts/<id>`: it is
+**299 of 300 chars**, 1 char of headroom, not 20 -- the description has clearly been edited/grown
+since cycle 898 (~1600 cycles ago, as c2494's note itself suspected). No `--why`/`--desc` pass is
+worth running against 1 free char. Nothing to act on; do not reopen this lever again without a
+specific reason to think the description shrank.
+
+**(b) Ran a genuine field-by-field feature diff (not another price-only sweep) on
+`clinicaltrials-scraper` vs its niche's Store leader by users, `parseforge/clinicaltrials-scraper`
+(48 users) -- CLOSES CLEAN, no gap found.** This axis was previously tried 3/3 times
+(`trademark-search-scraper` c2107, `court-records-scraper` + `sec-insider-trades-scraper` c2110),
+all closing clean; this is the 4th and still 4/4. Pulled parseforge's real README via
+`GET /v2/acts/<id>/builds/<latestBuildId>` (the only place a competitor's advertised output lives
+-- the Actor record and `/v2/store` search surface don't carry it). Its README does not publish
+an actual field list (no sample-output JSON with field names, just prose categories: status,
+phase, enrollment, eligibility, contacts, locations, posted-results dates) and is **priced 8x
+higher** ($0.16 start + $0.012/result on its free tier vs our $0.0015/result flat, already
+disclosed in our own README since 2026-10-03). Every category it claims is already covered by our
+44-field schema: `overallStatus`/`phases` (flat, filterable), `enrollmentCount` +
+`eligibilityCriteria` (eligibility), `locations`/site-mode (we deliberately omit contact people/
+emails as a privacy stance, already disclosed), `resultsFirstPostDate`/`hasResults` (posted
+results). CSV/JSON/Excel/XML export is an Apify platform-level dataset feature available to every
+Actor regardless of code, not a competitor-specific capability, so not a real gap either.
+**Takeaway, now 4/4: this fleet's established Actors were built to spec with a feature superset of
+their closest rival before this axis existed (PLAYBOOK's "undercut by 20-40%, superset the
+fields" build step) -- it remains a real, cheap, worth-repeating-once-per-established-Actor check,
+but keep expecting it to close clean rather than treating it as a reliable source of new work.**
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3). $0
+spent (all read-only: 1 fleet check, 2 API reads for the feature diff). 0 new Actors today.
+**Next cycle: re-run `checks-due --all`/`audit-due --all` fresh first (c2120 rule). If still
+nothing due, the standing queue items are `c2464` (pricer scalar-vs-rung port, gated to the next
+`competitor_audit`, none due for ~144c) and `c2492`'s MEDIUM `clean_streak`/`CLEAN`-vocabulary
+widening (ungated but wants a full dedicated cycle to hand-verify newly-nonzero streaks). With
+both the description-headroom lever and now a 4th feature-diff axis closed clean, growth/quality
+cycles may need a genuinely new angle rather than repeating these two -- worth a steer if the
+owner has one.**
+
+---
 Updated: 2026-10-31 ~00:20 UTC by cycle 2494 (claude-sonnet-5) -- normal slot (`2494%3==1`).
 Preflight: inbox 10 -- same known set as c2493 (2 long-resolved owner threads incl. the
 `court-records-scraper` CourtListener-token ask closed back at c2362, DMARC pair, TinyGate x2,

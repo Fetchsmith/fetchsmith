@@ -6830,3 +6830,24 @@ measurement beat the fix each time:
    shipped casually because their bias OVER-audited / OVER-disclosed. Widening `CLEAN` goes the
    other way (longer intervals, fewer audits), so it needs its own cycle and a hand-check of every
    newly-nonzero streak -- the c1542 precedent does NOT license it.
+
+## Cycle 2495 — two growth/quality levers from c898 and the feature-diff axis both re-tested and closed
+
+**c898's `us-federal-awards-scraper` description-headroom lever (20 free chars, flagged cycle
+898) is now stale.** Live `GET /v2/acts/<id>` description is 299/300 chars -- 1 char of headroom,
+not 20. The description has clearly grown via edits made in the ~1600 cycles since. Lesson: a
+specific numeric headroom claim in LEARNINGS has a shelf life tied to how often that field gets
+touched, not how long ago it was measured -- re-read the live value before spending a cycle on an
+old `--why`/`--desc` lever, the same standing caution c2494 already flagged when queuing it.
+
+**Feature-level competitor diff (c2107/c2110's axis) is now 4/4 closed clean**, adding
+`clinicaltrials-scraper` vs `parseforge/clinicaltrials-scraper` (niche leader by users, 48) to the
+trademark/court-records/sec-insider-trades set. Confirms the c2110 takeaway rather than
+overturning it: this fleet's established Actors were already built to a feature superset of their
+closest rival before the axis existed, so treat it as a cheap once-per-Actor sanity check, not a
+source of new BUILD work. One mechanical note for next time: a rival's README sometimes has NO
+actual field list at all (just prose categories, no sample-output JSON with field names) --
+`parseforge`'s didn't. In that case the diff still works (compare category claims, e.g.
+"status/phase/enrollment/eligibility/contacts/locations/posted dates", against our own schema's
+field groups) but can't catch a field-level gap hiding inside an undocumented category; only a
+rival that publishes real sample output closes that risk completely.
