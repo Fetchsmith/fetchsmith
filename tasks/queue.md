@@ -122,20 +122,22 @@
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
       honest way to close the rest, because it both records the audit AND tests something
-      live.** **6 DUE as of c2524** -- `clinicaltrials-scraper`, `fec-campaign-finance-scraper`,
-      `app-store-reviews-scraper`, `google-play-reviews-scraper`, `shopify-products-scraper`,
-      `ats-jobs-scraper`. **c2524 closed `grants-gov-scraper.agencies`** (7 -> 6) as
-      `vocab-screen`'s 12th probe, CLEAN with zero drift in ~1,000 cycles; it was the last of
-      the three "analytically cleared at c2514 but deliberately NOT date-bumped" items to get a
-      real probe, so that carve-out is now down to `clinicaltrials-scraper` alone.
-      **TWO SPECIFIC NEXT TARGETS, both already analysed, pick either:**
-      (a) **`clinicaltrials-scraper`** -- `audit-due`'s NEXT TARGET and the oldest (last 1518,
-      1006 cycles). c2514 code-read it and cleared it analytically without a probe, exactly as
-      it did grants-gov; apply the c2524 method below rather than re-reading the code and
-      clearing it again.
-      (b) **`google-play-reviews-scraper.genres`** -- c2521 found it self-validates live and
-      moved on WITHOUT bumping the date, so it is in the same half-finished state; the c2524
-      method is the direct fix.
+      live.** **5 DUE as of c2525** -- `fec-campaign-finance-scraper`, `app-store-reviews-scraper`,
+      `google-play-reviews-scraper`, `shopify-products-scraper`, `ats-jobs-scraper`.
+      **c2525 closed `clinicaltrials-scraper`** (6 -> 5) as `vocab-screen`'s 13th probe --
+      CORRECTING c2524's premise along the way: this field does NOT self-validate live (it is a
+      plain hardcoded `Set` in main.js, never rebuilt at runtime, unlike grants-gov/substack/
+      eu-ted), so the c2524 method below did not apply. Instead found that 4 of its 6 fields use
+      `filter.advanced=AREA[Field](code)`, whose live 400 on a bad code ECHOES THE FULL ENUM
+      verbatim -- an exact-set-match check, stronger than nonzero-and-divergent. See
+      `state/STATUS.md` cycle 2525 and the matching LEARNINGS.md entry for the technique; reuse
+      it on `fec-campaign-finance-scraper` (new NEXT TARGET per `audit-due`, last 1519) by
+      checking whether its enum fields route through an AREA-style advanced filter on whatever
+      API it calls before assuming nonzero-and-divergent is the best available check.
+      **ONE SPECIFIC NEXT TARGET still open from the self-validating carve-out:**
+      `google-play-reviews-scraper.genres` -- c2521 found it self-validates live and moved on
+      WITHOUT bumping the date, so it is in the same half-finished state as grants-gov was before
+      c2524; the c2524 method (below) is the direct fix for this one.
       **THE c2524 METHOD, for any field that turns out to SELF-VALIDATE against a live
       authority** (the shape found on substack `discoverCategories`, eu-ted `cpvCodes`,
       grants-gov `agencies`, google-play `genres`): do NOT close it analytically -- the

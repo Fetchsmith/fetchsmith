@@ -7255,3 +7255,23 @@ Bonus finding worth reusing: Grants.gov `/search2` is fail-CLOSED on an unknown 
 (`FAKEAGENCY` → 0 hits, and `NSF|FAKEAGENCY` → exactly NSF's 1340), the opposite of Steam's
 fail-open `filterLanguage` (c2522) — so the two bug shapes really do both occur in the fleet and
 neither can be assumed from the other.
+
+cycle 2525: a live API's own 400 error can BE the authoritative enum list, for free. While
+closing `clinicaltrials-scraper`'s `enum_audit` (1518 -> 2525, 1007-cycle gap), found that
+ClinicalTrials.gov's `filter.advanced=AREA[<Field>](<code>)` syntax rejects an unrecognised code
+with `Error parsing query in advanced filter: Allowed values for enum field X are A, B, C` --
+the 400 body echoes the FULL live enum verbatim. That beats every other shape in this backlog
+(nonzero+divergent for grants-gov/sam-gov/steam; self-rebuilding Set for substack/eu-ted) because
+it is an EXACT SET MATCH against the registry's own declaration, not an inference from counts.
+Four of clinicaltrials-scraper's six closed-vocab fields (studyTypes/phases/ageGroups/
+funderTypes) get this for free; the other two don't: `overallStatus` is a top-level
+`filter.overallStatus` param (no AREA wrapper, no echo, so it kept the nonzero+divergent+
+fail-closed shape) and `documentTypes` is an `aggFilters=docs:code` facet that fails OPEN to an
+empty page on a bad code (by design, main.js:389) rather than 400ing. Lesson for the next field
+in this backlog: before assuming a nonzero-and-divergent check is the best available, deliberately
+send ONE garbage value through every filter mechanism the field could use (top-level param, AREA
+advanced-filter, aggFilters facet) and read the error body -- some APIs document their own enums
+better in a 400 than in any published schema page. Added as `vocab-screen`'s 13th probe
+(`p_clinicaltrials_enums`); negative-controlled (a patched copy with one swapped phases code and
+one swapped documentTypes code correctly flagged MISMATCH/DEAD CODE and exited 1) before trusting
+the real CLEAN.

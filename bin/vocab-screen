@@ -888,6 +888,120 @@ def p_grants_gov_agencies():
     return ok, out
 
 
+def p_clinicaltrials_enums():
+    """clinicaltrials-scraper's 6 closed-vocabulary filters (`overallStatus`, `studyTypes`,
+    `phases`, `ageGroups`, `documentTypes`, `funderTypes`) were last live-verified ONE-OFF at
+    cycle 816 (main.js:61-73's comment) -- 1007+ cycles ago, never recorded in `audit_dates.json`,
+    and NOT the grants-gov/substack/eu-ted self-validating shape: main.js hardcodes each as a
+    plain `Set` (STATUSES/STUDY_TYPES/PHASES/AGE_GROUPS/FUNDER_TYPES/DOCUMENT_TYPES, main.js:
+    199-391) that is never rebuilt from a live authority at run time, so a registry change
+    between cycle 816 and now would sit undetected. Read straight from main.js, not a duplicated
+    copy, same reason as the steam-reviews-scraper probe.
+
+    Discovery this cycle: 4 of the 6 fields route through `filter.advanced=AREA[<Field>](<code>)`
+    (main.js:936-947), and the live API's own 400 on an unrecognised code ECHOES ITS FULL ENUM
+    ("Allowed values for enum field ... are `A`, `B`, ...") -- an authoritative, exhaustive,
+    machine-readable live vocabulary for free, no counting required. That makes studyTypes/
+    phases/ageGroups/funderTypes a STRONGER check than grants-gov's nonzero-and-divergent: an
+    exact set match against the registry's own declaration. `overallStatus` (a top-level
+    `filter.overallStatus`, not an AREA filter) gets no such echo, so it keeps the nonzero+
+    divergent+fail-closed shape. `documentTypes` (an `aggFilters=docs:<code>` facet, main.js:
+    388-397) fails OPEN to an empty page rather than a 400 -- expected per main.js:389's own
+    comment ("an unknown code is NOT [rejected]"), so its check is nonzero+divergent only.
+    """
+    out = []
+    src = open(f"{R}/actors/clinicaltrials-scraper/src/main.js").read()
+
+    def read_set(const_name):
+        m = re.search(rf"const {const_name} = new Set\(\[(.*?)\]\)", src, re.S)
+        if not m:
+            return []
+        return [v.strip().strip("'\"") for v in m.group(1).split(",") if v.strip().strip("'\"")]
+
+    statuses = read_set("STATUSES")
+    study_types = read_set("STUDY_TYPES")
+    phases = read_set("PHASES")
+    age_groups = read_set("AGE_GROUPS")
+    funder_types = read_set("FUNDER_TYPES")
+    doc_types = read_set("DOCUMENT_TYPES")
+    out.append(f"  read from main.js: overallStatus={len(statuses)} studyTypes={len(study_types)} "
+               f"phases={len(phases)} ageGroups={len(age_groups)} funderTypes={len(funder_types)} "
+               f"documentTypes={len(doc_types)}")
+
+    API = "https://clinicaltrials.gov/api/v2/studies"
+    mismatches = []
+
+    # --- AREA-filter fields: the API's 400 echoes its own full enum. Exact set match. ---
+    def area_authority(field_name):
+        _, body = http_raw(f"{API}?filter.advanced=AREA%5B{field_name}%5D(__PROBE_BOGUS__)"
+                           "&countTotal=true&pageSize=1")
+        m = re.search(r"Allowed values for enum field `[^`]+` are (.+)", body)
+        if not m:
+            return None
+        return [v.strip("` ") for v in m.group(1).split(",")]
+
+    for field_name, ours, label in [
+        ("StudyType", study_types, "studyTypes"),
+        ("Phase", phases, "phases"),
+        ("StdAge", age_groups, "ageGroups"),
+        ("LeadSponsorClass", funder_types, "funderTypes"),
+    ]:
+        live = area_authority(field_name)
+        if live is None:
+            mismatches.append(f"{label}: could not parse live enum from 400 body")
+            out.append(f"  {label}: PROBE ERROR -- 400 body did not echo an enum list")
+            continue
+        extra = sorted(set(ours) - set(live))
+        missing = sorted(set(live) - set(ours))
+        out.append(f"  {label}: live authority (AREA[{field_name}] 400 echo) = {sorted(live)}")
+        if extra or missing:
+            mismatches.append(f"{label}: ours-not-live={extra} live-not-ours={missing}")
+            out.append(f"    MISMATCH: ours-not-live={extra} live-not-ours={missing}")
+        else:
+            out.append(f"    exact match, {len(live)} codes")
+
+    # --- overallStatus: top-level filter, no enum echo. Nonzero + divergent + fail-closed. ---
+    def count(params_qs):
+        data = http(f"{API}?{params_qs}&countTotal=true&pageSize=1")
+        return data.get("totalCount")
+
+    status_counts = {}
+    for code in statuses:
+        status_counts[code] = count(f"filter.overallStatus={code}")
+    zero_status = [c for c, n in status_counts.items() if not n]
+    out.append(f"  overallStatus live counts: {status_counts}")
+    if zero_status:
+        mismatches.append(f"overallStatus dead codes: {zero_status}")
+        out.append(f"    DEAD CODES: {zero_status}")
+    if len(set(status_counts.values())) == 1:
+        mismatches.append("overallStatus: every code returned the same total (filter ignored)")
+    status, body = http_raw(f"{API}?filter.overallStatus=__PROBE_BOGUS__&countTotal=true&pageSize=1")
+    out.append(f"  overallStatus fail-closed check: bogus code -> HTTP {status} ({body.strip()[:80]})")
+    if status != 400:
+        mismatches.append(f"overallStatus no longer fails closed on a bad code (got HTTP {status})")
+
+    # --- documentTypes: aggFilters facet, fails open to an empty page (expected). ---
+    doc_counts = {}
+    for code in doc_types:
+        doc_counts[code] = count(f"aggFilters=docs:{code}")
+    zero_docs = [c for c, n in doc_counts.items() if not n]
+    out.append(f"  documentTypes live counts: {doc_counts}")
+    if zero_docs:
+        mismatches.append(f"documentTypes dead codes: {zero_docs}")
+        out.append(f"    DEAD CODES: {zero_docs}")
+    if len(set(doc_counts.values())) == 1:
+        mismatches.append("documentTypes: every code returned the same total (filter ignored)")
+    bogus_docs = count("aggFilters=docs:fake")
+    out.append(f"  documentTypes bogus-code check: aggFilters=docs:fake -> totalCount={bogus_docs} "
+               "(expected 0, fails open per main.js:389's own comment, not a defect)")
+    if bogus_docs != 0:
+        mismatches.append(f"documentTypes bogus code no longer reads 0 (got {bogus_docs})")
+
+    if mismatches:
+        out.append(f"  MISMATCHES: {mismatches}")
+    return not mismatches, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -903,6 +1017,8 @@ PROBES = {
     "google-news-scraper": ("topics", p_google_news_topics),
     "steam-reviews-scraper": ("language", p_steam_reviews_language),
     "grants-gov-scraper": ("agencies", p_grants_gov_agencies),
+    "clinicaltrials-scraper": ("overallStatus+studyTypes+phases+ageGroups+documentTypes+funderTypes",
+                                p_clinicaltrials_enums),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)
