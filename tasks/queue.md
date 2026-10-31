@@ -23,7 +23,70 @@
       "Update (2026-10-31)" section live and 200; `check-blog-claims`/`check-charges`/
       `check-registry-fields`/`check-code-fields` all 0 drift.
 
-- [ ] **NEW follow-up (c2504, MEDIUM -- the one loose end of the prefix-mode ship).** `startsWithPrefix`
+- [ ] **NEW (c2505, HIGH -- a real, reproducible defect found while starting c2504's MEDIUM
+      ratio-measurement follow-up below; NOT fixed this cycle, needs its own unhurried slot
+      touching the same fragile `fetchPage` core loop c2503/c2504 already flagged as
+      not-a-quick-fit.** Picking a deliberately bad-ratio probe (`searchTerm:"ckle"`,
+      `matchMode:"startsWithPrefix"`, `offices:["US"]`, declared 10,279 "contains" matches /
+      206 pages, only 1 genuine prefix match found on a GB re-run of the same term with a
+      smaller 1,784/36-page corpus) **crashed the whole run FAILED instead of degrading
+      gracefully**, twice, on two different underlying causes:
+      1. Platform run `c7DLtbX9TGsYW51Ww`: after ~4.5 minutes of walking deep into the 206-page
+         walk, TMview itself returned **`HTTP 400 {"message":"Max page number reached"}`** --
+         i.e. TMview enforces its own hard ceiling on how many pages a single search can page
+         through, independent of our run's time budget. `fetchPage`'s generic status check
+         (`src/main.js:633`, `if (res.statusCode !== 200) throw new Error(...)`) does not special-case
+         this; the throw propagates to the generic non-timeBudget branch (`main.js:747`,
+         `runError = err.message`), and because `runError !== null` the run ends with
+         **`Actor.fail()` at the very bottom (`main.js:1080`)** -- a hard FAILED run in the
+         Console, even though RUN_SUMMARY was already written and **1 row had already been
+         pushed and charged** (`log.info` confirmed "Pushed 1 results." right before the fail).
+         The buyer-facing message is just `Run failed: TMview returned HTTP 400: {"message":
+         "Max page number reached"}` -- no explanation, and critically **wrong framing**: this
+         error is DETERMINISTIC for this term/office/mode combo (the exact same page ceiling
+         will be hit on every retry), not transient, yet it is indistinguishable from the genuinely
+         transient proxy-flakiness errors this same code path handles (which legitimately say
+         "usually a flaky exit node -- re-run in a few minutes"). A buyer retrying per that advice
+         will burn the same cost again and fail again at the same wall.
+      2. A first attempt at the same US/"ckle" probe (run `ZvzMKTJMBnqsLkuDf`) failed a different
+         way first -- 5 minutes of proxy-session exhaustion (`Could not reach TMview ... through
+         any network path`), the known flaky-exit-node class (h287/h824/h826) -- confirming the
+         deep-paging scenario this mode creates is also just more exposed to that pre-existing
+         flakiness class simply by needing far more page fetches per run than any other mode ever
+         did before `startsWithPrefix` existed.
+      **Why this matters beyond one term:** `startsWithPrefix` is the one mode that can legitimately
+      need to walk TMview's full page depth for a term with a bad keeps-per-page ratio (c2504's
+      own design rationale) -- so this mode made a previously near-unreachable TMview limit
+      (page-depth ceiling) into one that a normal clearance search can now hit in practice, and
+      today the Actor's generic error handling turns that into a scary, misleadingly-"try again"
+      hard failure instead of the honest "scanned N of M declared pages, hit TMview's own paging
+      limit, found K match(es) so far" status message this Actor's whole design philosophy
+      (c2500/c2504's own words: "an unexplained early stop is the one failure this Actor's
+      status-message design exists to prevent") says it should give instead.
+      **Recommended fix shape for the next unhurried cycle (NOT attempted this cycle --
+      time-boxed slot, and this is exactly the "real feature work in a fragile core loop" class
+      c2503 declined to rush):** detect this specific shape (`statusCode === 400` and body message
+      matching `/max page number/i`) in `fetchPage`'s status check (`main.js:633`) and tag it like
+      the existing `err.timeBudget` escape hatch (`main.js:653`) -- e.g. `err.pageDepthLimit = true`
+      -- then handle it in the catch (`main.js:739-747`) the same way as `timeBudget`: set
+      `timeBudgetStopped`-style soft-stop state (or a new `pageDepthLimitStopped`), keep `runError`
+      null, and surface a new `incompleteReason: 'page-depth-limit'` plus a status message naming
+      TMview's own ceiling explicitly, distinct from the time-budget message's "raise the run
+      timeout" advice (raising the timeout will NOT help here -- the ceiling is on page count, not
+      time) and distinct from the flaky-proxy message's "re-run in a few minutes" advice (re-running
+      will NOT help here either -- the ceiling is deterministic for this exact query). Also log the
+      page number being fetched when any non-200 is hit (currently not logged at all, which cost
+      this investigation having to re-run the failure twice to see which failure mode it was) so a
+      future debugging pass can see exactly how deep the ceiling sits without re-running.
+      **Not reproduced on a small corpus:** GB/"ckle" (1,784 total, 36 pages) completed cleanly
+      (`complete:true`, `delivered:1`, all 36 pages walked, no error) -- the ceiling is a deep-page
+      phenomenon, consistent with TMview capping total page requests per search rather than per
+      session. Spend ~$0.03 this cycle on the three platform runs (2 FAILED exploratory + 1
+      SUCCEEDED baseline), all read-only verification, no code shipped.
+
+- [ ] **NEW follow-up (c2504, MEDIUM -- the one loose end of the prefix-mode ship; PARTIALLY
+      INVESTIGATED by c2505 above, which found a worse problem (hard FAIL, not just a thin
+      result) on the way to measuring this).** `startsWithPrefix`
       relies on TMview's relevance ordering putting prefix hits on the early pages, which held well on
       the probes (page 1 of GB "coff" was 44/50 keeps, 48/50 unfiltered) but is NOT guaranteed for a
       term whose prefix hits are rare against a huge `contains` corpus (unfiltered "coff" declares
