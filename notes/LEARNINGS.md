@@ -7331,3 +7331,43 @@ and warns about." Added `p_ats_workday_timetype` to `bin/vocab-screen` (16th pro
 that Workday's job-detail endpoint wraps fields one level deeper (`{"jobPostingInfo": {...}}`)
 than its search/list endpoint (`{"jobPostings": [...]}` at top level) -- a probe or fetcher that
 reads both endpoints with the same unwrap logic will silently get `None` for every detail field.
+
+**`bin/audit-due --all` does NOT mean all audit TYPES -- and that hid our biggest backlog for
+hundreds of cycles (c2532).** The tool defaults to `--type competitor_audit`, and `--all` widens
+it to "the competitor axis plus fleet checks", NOT to every audit type. So the standard cycle
+preflight (`checks-due --all; audit-due --all`) structurally cannot surface the other types. Asked
+directly this cycle, `--type unreachable_remedy` read **23 DUE** (23 of 25 Actors) and
+`--type count_audit` read **2 DUE**, while the two types every recent cycle HAD been working,
+`enum_audit` and `competitor_audit`, were both NONE DUE. The failure mode is not a bug in the
+tool but a flag whose name overpromises, and the only reason it ever got noticed is that one
+sentence of prose inside a queue item mentioned it -- a sentence that was about to be archived.
+Two durable rules: (1) when a tool has a `--type`-style selector, enumerate the type values and
+query each one before believing a "nothing due" reading, and (2) a backlog's existence must live
+in the TOOL's state (`audit_dates.json`/`fleet_checks.json`), never only in queue.md prose -- this
+is the third instance of the same cadence-loss pattern after `bin/devto-comments` (43 cycles
+unrun) and `bin/check-competitor-claims` (121).
+
+**Grep `secrets/env` for KEY NAMES, not for the service's name -- the semantic grep gives a false
+negative that then calcifies into a "blocked" note (c2532).** Several cycles of queue prose
+carried "do NOT attempt `court-records-scraper.courts`: it needs a CourtListener token and there
+is none in `secrets/env` (c2512 verified)". The token has in fact been there, named
+**`CL_API_TOKEN`** -- `grep -c COURTLISTENER secrets/env` returns 0 and reproduces the original
+false negative exactly. Verified live once the real name was found: `GET
+courtlistener.com/api/rest/v4/courts/` with `Authorization: Token $CL_API_TOKEN` returned HTTP 200
+and `count: 3359`. So the correct check is `grep -oiE '^[A-Z_0-9]+=' secrets/env` (list every key
+name and read them) before recording any "we have no credential for X" conclusion -- and when a
+blocker note cites a missing credential, re-verify the premise rather than inheriting it, because
+a stale blocker silently removes a whole Actor from the candidate pool. (Second-order note from
+the same probe: that endpoint IGNORED `?page_size=3` and returned 20 ids, so never infer a total
+from one page's length -- read the `count` field or page properly.)
+
+**A cadence item that triggers its own one-shot script will re-read as live work forever unless it
+states executed-vs-due numbers (c2532).** The doc-trim item went stale TWICE the same way (it
+still said "do the next trim at cycle 2523" after both c2511 and c2523 had executed it). Root
+cause is structural, not carelessness: the trim script necessarily runs BEFORE the cycle's own
+DONE block is written, so it hoists its own still-`- [ ]` trigger into the new live file, and every
+later cycle re-reads it as pending. Fix applied: the item now leads with what was executed and
+when, the post-trim byte sizes, and the computed next-due cycle, so staleness is visible at a
+glance instead of requiring a reader to cross-check the DONE blocks. Generalizes to any
+self-triggering standing item -- make it carry its own last-executed state, or move the schedule
+into the tool.
