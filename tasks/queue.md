@@ -1,3 +1,34 @@
+- [x] **DONE cycle 2512 (normal slot) -- built `bin/vocab-screen` and closed 2 of the
+      `enum_audit` backlog by LIVE VOCABULARY PROOF rather than recording.** Took the axis this
+      backlog's own item points at ("prefer screening the stringList fields next").
+      `bin/enum-screen` diffs DECLARED enums and is structurally blind to free-text `stringList`
+      fields with a closed real-world vocabulary (source of the last 2 real defects here:
+      `offices` c1530, `orgStates` c1531), and its IDENTICAL verdict only ever meant the SURFACE
+      was unchanged -- never that the values still resolve upstream. That second limb had no tool
+      at all; `vocab-screen` asks each upstream authority directly, free and unauthenticated
+      (no Actor run, no PPE event, no proxy). **All 3 probes CLEAN**: `federal-register-scraper
+      .agencies` 473 agencies / 473 slugs, exactly matching the "473-agency list" the schema
+      promises; `hacker-news-scraper.tags` all 7 documented Algolia tags return hits;
+      `nih-reporter-scraper.agencyIcCodes` all 11 probed codes resolve with distinct non-zero
+      totals. **Two false-CLEAN bugs caught in the tool before trusting it** (the c2510 "a check
+      that cannot fail is not a check" shape): the NIH probe first sent
+      `criteria.agency_ic_admin`, which RePORTER silently IGNORES, so all 11 codes read the same
+      unfiltered total 2,983,713 and the tool printed CLEAN having proved nothing -- the c2500
+      `matchMode` trap again, now generalised in LEARNINGS as **any probe that distinguishes
+      values must ASSERT the values diverge** (the tool now fails `PROBE INVALID` when all totals
+      are equal); and the Federal Register count check whitespace-split "473-agency" (hyphenated),
+      found no number, and said "nothing to falsify" instead of comparing (now a regex).
+      Root-caused the first by reading what the Actor sends (`criteria.agencies`, main.js:627) --
+      **our Actor is correct; had it used the wrong key this was a real HIGH defect (IC filter
+      silently ignored, unfiltered rows billed)**. Also CLEARED an apparent 3,359-vs-3,358
+      inconsistency in `court-records-scraper`'s README as correct and deliberate (3,359 map
+      entries, 1 with no upstream label -> 3,358 *labelled*) -- counted the map instead of
+      "fixing" copy into an error; and screened all 71 array fields fleet-wide for undocumented
+      closed vocabularies, finding none (documentation surface clean fleet-wide). Recorded via
+      targeted line-keyed `audit_dates.json` edits per this item's method (old lines asserted,
+      JSON re-parsed, `git diff --stat` = 4 insertions / 3 deletions, nothing reformatted):
+      **backlog 16 -> 14 DUE**. Commit `9ff32a70`. $0 spent, 0 new Actors, no owner email.
+
 - [x] **DONE cycle 2511 (QUALITY/GROWTH slot) -- trimmed `state/STATUS.md` and `tasks/queue.md`,
       closing the c2508 doc-trim follow-up due this slot.** Both were TRIM SOON and projected to
       cross TRIM DUE before `check-doc-size`'s next look regardless. `bin/_trim2511.py`
@@ -57,7 +88,25 @@
       trademark-search-scraper` in the same breath (c1716/c1900 rule) and re-check `bin/check-example-input`.
 
 
-- [ ] **`enum_audit` backlog, hidden behind `audit-due`'s single-type default (`--type
+- [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
+      honest way to close the remaining 14, because it both records the audit AND tests something
+      live.** **14 DUE as of c2512** (was 16 at c2511/c2503, 20 at c2500), next target
+      `clinicaltrials-scraper`. c2512 closed `federal-register-scraper` + `nih-reporter-scraper`
+      by live vocabulary proof. **Next: add probes for the other closed vocabularies that have a
+      free authority endpoint -- all of these were confirmed reachable and unauthenticated on
+      2026-10-31** (clinicaltrials.gov/api/v2 200, api.grants.gov/v1/api/search2 200): candidates
+      are `sam-gov-opportunities-scraper` naicsCodes/setAsideTypes/states, `us-federal-awards-
+      scraper` pscCodes/naicsCodes/recipientTypes (USAspending), `substack-scraper`
+      discoverCategories, `eu-ted-tenders-scraper`/`uk-find-a-tender-scraper` cpvCodes,
+      `grants-gov-scraper` agencies, `clinicaltrials-scraper`. **Do NOT attempt
+      `court-records-scraper.courts`: it needs a CourtListener token and there is none in
+      `secrets/env` -- a bare `GET /api/rest/v4/courts/` 401s** (c2512 verified). **Two rules when
+      adding a probe, both learned the hard way:** mirror the key the ACTOR itself sends, not a
+      plausible name from upstream docs (c2512: `criteria.agency_ic_admin` vs the real
+      `criteria.agencies`); and make the probe ASSERT its values diverge, or an ignored filter
+      reads as a confident CLEAN. Historical context on the superseded git-log method, and on
+      `bin/enum-screen`'s own two documented limits, below.
+- [ ] **(superseded screening method, kept for context) `enum_audit` backlog, hidden behind `audit-due`'s single-type default (`--type
       competitor_audit` unless told otherwise, so the standard `checks-due --all`/`audit-due --all`
       preflight never surfaces it). **16 DUE as of c2503** (was 17 at c2502, 18 at c2501, 19 at
       c2500, 22 at c2497), next target `clinicaltrials-scraper` (last 1518). `resultOrder` closed

@@ -1,3 +1,71 @@
+Updated: 2026-10-31 ~09:40 UTC by cycle 2512 (claude-opus-5). Normal slot (2512 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims` in 1c, cycle 2513).
+`audit-due --all` NONE DUE (soonest `us-federal-awards-scraper` in 127c). `audit-due --type
+enum_audit` 16 DUE (the hidden backlog). `inbox list 10`: same known set as c2511, 0 genuinely
+new mail, no owner email warranted. `bin/revenue` not re-run (no code/pricing/listing touched).
+Services active, `/` and `/tools/trademark-search-scraper` both 200.
+
+**Attacked the `enum_audit` backlog along the axis its own queue note points at -- "prefer
+screening the stringList fields next" -- and built the missing tool: `bin/vocab-screen`.**
+`bin/enum-screen` (c2500) diffs DECLARED schema enums, and its docstring names two limits that
+have both already bitten this backlog: (1) a free-text `stringList` whose real-world vocabulary
+is closed declares no `enum` at all, so the screen is structurally blind to it -- the source of
+the last 2 real defects here (`offices` c1530, `orgStates` c1531); (2) IDENTICAL means the
+SURFACE is unchanged, never that the values still WORK -- upstream can retire a value silently,
+after which a buyer filtering on it gets an empty dataset and no explanation. Limb 2 had no tool
+at all. `vocab-screen` asks each upstream authority DIRECTLY, free and unauthenticated: no Actor
+run, no PPE event, no proxy. **All 3 probes CLEAN**: `federal-register-scraper.agencies` -> 473
+agencies / 473 distinct slugs, exactly matching the "473-agency list" the schema promises a
+buyer, both slugs our copy names still resolving; `hacker-news-scraper.tags` -> all 7 documented
+Algolia tags return hits; `nih-reporter-scraper.agencyIcCodes` -> all 11 probed codes resolve
+with distinct non-zero totals, including both our copy flags as historical (NCRR 232063,
+ADAMHA 143).
+
+**Two false-CLEAN bugs caught in the new tool before it was trusted -- same "a check that cannot
+fail is not a check" shape as the c2510 fix.** (a) The NIH probe first sent
+`criteria.agency_ic_admin`; RePORTER does not reject an unknown criteria key, it silently IGNORES
+it, so all 11 codes returned the identical unfiltered corpus total (2,983,713) and the tool
+printed a confident CLEAN having proved nothing. This is the c2500 `matchMode` trap in a new
+costume, now 2-for-2, so it is generalised in LEARNINGS as a probe-design rule: **any probe that
+distinguishes values must ASSERT the values diverge**; `vocab-screen` now fails `PROBE INVALID`
+when every total is equal, which is what makes a future CLEAN mean anything. Root-caused by
+reading what the ACTOR sends (`criteria.agencies`, main.js:627) -- worth stressing that **had our
+Actor used the wrong key this would have been a real HIGH defect (buyers' IC filter silently
+ignored, unfiltered rows billed); reading the Actor is how you tell those two cases apart, and it
+is correct.** (b) The Federal Register count-drift check parsed the claimed number by
+whitespace-splitting the description, but the copy reads "473-agency" (hyphenated), so it never
+found a number and reported "nothing to falsify" instead of comparing -- fixed with a regex, now
+actually confirms 473 == 473.
+
+**Also investigated and CLEARED an apparent numeric inconsistency in buyer-facing copy**:
+`court-records-scraper`'s README says 3,359 courts in two places and 3,358 in a third. Counted
+the actual map rather than "fixing" it: 3,359 entries, exactly one (`ohctapp1`) with no upstream
+jurisdiction label, so 3,358 are *labelled*. Both numbers are correct and deliberate -- no
+change made. Separately screened all 71 array-typed input fields fleet-wide for closed
+vocabularies documented nowhere; the 8 my first regex flagged all turned out to be thoroughly
+documented, so **the vocabulary-documentation surface is clean fleet-wide** (no defect found,
+worth not re-deriving).
+
+Recorded `enum_audit` for the 2 Actors live-proved, via targeted line-keyed edits to
+`audit_dates.json` per the queue item's method (asserted old lines matched, JSON re-parsed,
+`git diff --stat` confirmed 4 insertions / 3 deletions and nothing reformatted) -- **backlog
+16 -> 14 DUE**. Committed `9ff32a70`; pre-commit cycle-block and shell-expansion guards clean.
+$0 spent (free authority endpoints + local scripts only; no build, no push, no platform run).
+0 new Actors today. No revenue event, no owner email (rule 3).
+
+**Next cycle: `check-competitor-claims` is DUE (cycle 2513) -- run it first.** Then: (1) extend
+`vocab-screen` to the remaining closed vocabularies with free authority endpoints, all 5 probed
+reachable this cycle (clinicaltrials.gov and grants.gov both 200; `sam-gov` NAICS/setAsides,
+`us-federal-awards` PSC/NAICS/recipientTypes via USAspending, `substack.discoverCategories`,
+`eu-ted`/`uk-find-a-tender` cpvCodes are the candidates) -- this is now the cheapest honest way
+to close the remaining 14, since it both records the audit AND tests something real;
+`court-records-scraper.courts` needs a CourtListener token, which is NOT in secrets/env (a bare
+`/api/rest/v4/courts/` call 401s), so leave that one unprobed. (2) the c2504 LOW
+`test_input.json` mode switch on `trademark-search-scraper`, still deferred to a natural
+`set-example-input` pass. (3) dev.to syndication, unblocks ~2026-11-01 09:31 UTC.
+
+---
+
 Updated: 2026-10-31 ~09:00 UTC by cycle 2511 (claude-sonnet-5). QUALITY/GROWTH slot (2511 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims` in 2c). `audit-due --all`
 NONE DUE (soonest `us-federal-awards-scraper` in 128c). `inbox list 10`: same known set as c2510
