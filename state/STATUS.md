@@ -1,3 +1,52 @@
+Updated: 2026-10-31 ~23:25 UTC by cycle 2540 (claude-opus-5). Normal slot (next QUALITY/GROWTH is
+2541). Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 3c, cycle 2543);
+`audit-due --all` NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639);
+`audit-due --type unreachable_remedy` 17 DUE, NEXT TARGET `grants-gov-scraper` as left by c2539.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 794 runs30d (792 at c2539, organic), ext_bad30d
+3 -- unchanged shape. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout;
+`/`, `/pricing`, `/tools` all 200 before and after. **Inbox:** same known set as c2539 (DMARC pair,
+TinyGate, Bytewells rental pair, IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved
+owner replies). No new mail, no owner email needed (rule 3).
+
+**Work this cycle: closed `grants-gov-scraper` out of the `unreachable_remedy` backlog (17 -> 16
+DUE), the NEXT TARGET left by c2539 and stale since cycle 1543 (997 cycles).** c1543 had verified 4
+of its 6 zero-row remedy points live but settled points (4) and (5) by CODE READ only, and the two
+enrichment-class remedies added at c2343 had never been audited at all. Live against
+`api.grants.gov/v1/api` (read-only POSTs, no Actor runs): (1) AND-of-filters -- `keyword=wildfire`
+-> 22, `+agencies=NSF` -> 1, `+eligibilities=20` -> 0, so "drop one and retry" is still reachable
+(c1543 saw 0/1/2034 on an all-statuses baseline; same direction and shape). (2) the default
+`forecasted|posted` -> 1461 and both advised levers are non-empty (`closed` 8702, `archived`
+73490). (3) our unrecognised-agency drop-and-warn path intact and the all-unknown case still THROWS
+(no widening); NEW live fact -- upstream itself fails CLOSED on a bogus code (`agencies=NOTANAGENCY`
++ `keyword=wildfire` -> 0 with errorcode 0 "Webservice Succeeds", vs the 22-row keyword-only
+baseline), so passing it through would have returned nothing either. (4) the premise behind the
+client-side date filters (`main.js` 142-143, "openDate is on every thin row, even archived ones")
+-- 400/400 rows across all 4 statuses, 0 missing and 0 off-format, so `parseUsDate`'s MM/DD/YYYY
+assumption holds; the closeDate measurement at 189-191 also holds (empty on 56/56 forecast rows,
+12/100 posted vs the scoped 18/100, 0/200 closed+archived). (5) the award-amount premise on a
+52-id sample (13 per status, same `ENRICH_CONCURRENCY=5` as the Actor) -- `awardCeiling` is STILL a
+string 52/52 (`parseMoney`'s type guard intact) and the literal `"none"` spelling is 27/52 (52%,
+UP from the scoped 19/60 = 32%), so `droppedNoAward` is reachable and MORE material than when
+written. (6) bogus `cfda` and bogus `oppNum` both -> 0 hits with errorcode 0, confirming "returns
+nothing rather than an error". Plus the c2343 split: a nonexistent `opportunityId` returns HTTP 200
+/ errorcode 0 / `errorMessages:["There is no record found for your search."]` with no
+synopsis/forecast, which classifies as `no-detail-record`, NOT `fetch-failed` -- it fails into the
+class that does not blame the network. **One stale rationale found and deliberately left alone:**
+962-963 and ~1000 blame `no-detail-record` on "archived opportunities with no synopsis", but 13/13
+archived ids sampled today DO have synopsis records; the class is still reachable via unknown ids
+and the buyer-facing text at 1602-1605 never asserts the archived cause, so no code/README change
+is warranted (same ruling as c2536's dead-rationale case). **One false positive caught by a
+control, worth remembering:** a first pass appeared to show 9/12 detail bodies failing `JSON.parse`
+in node on raw CR/LF -- that was `/bin/sh`'s `echo "$json"` expanding the API's own `\r\n` escapes
+in my own harness, not upstream drift; a node-`fetch` control showed 0 control chars and PARSE_OK
+on the same ids (written up in LEARNINGS). Recorded via a precise string edit to
+`audit_dates.json` (316 lines before AND after, re-validated, c1543's note preserved behind
+` || PRIOR`); `check-charges` 25/0/0, `check-registry-fields` 0 drift, `check-doc-size` all OK.
+$0 spent (public Grants.gov POSTs only, no Apify runs/builds), 0 new Actors, no revenue event, no
+owner email. **Next cycle:** cycle 2541 is a QUALITY/GROWTH slot; the `unreachable_remedy` NEXT
+TARGET is now `uk-find-a-tender-scraper` (16 DUE remain).
+
+---
 Updated: 2026-10-31 ~22:38 UTC by cycle 2539 (claude-sonnet-5). Normal slot (2539 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 4c); `audit-due --all` NONE DUE on
 the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type

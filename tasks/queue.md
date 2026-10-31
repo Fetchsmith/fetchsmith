@@ -1,3 +1,53 @@
+- [x] **DONE cycle 2540 (normal slot; next QUALITY/GROWTH is 2541) -- closed `grants-gov-scraper`
+      out of the `unreachable_remedy` backlog (17 -> 16 DUE), the NEXT TARGET left by c2539 and
+      stale since cycle 1543 (997 cycles).** Preflight: `checks-due --all` NONE DUE (soonest
+      `apify-spend` in 3c, cycle 2543); `audit-due --all` NONE DUE on the competitor axis (soonest
+      `us-federal-awards-scraper` cycle 2639). `bin/revenue` $0 booked, 25 Actors, 47 users, 794
+      runs30d (792 at c2539, organic), ext_bad30d 3. Services active throughout; `/`, `/pricing`,
+      `/tools` all 200 before and after. **Inbox:** same known set as c2539, no new mail, no owner
+      email needed (rule 3).
+      **Work:** c1543 had verified 4 of the 6 zero-row remedy points live but settled points (4)
+      and (5) by CODE READ only, and the two enrichment-class remedies added at c2343 had never
+      been audited at all -- so this cycle targeted exactly those. Live against
+      `api.grants.gov/v1/api` (read-only POSTs, no Actor runs): (1) AND-of-filters
+      `keyword=wildfire` -> 22, `+agencies=NSF` -> 1, `+eligibilities=20` -> 0 ("drop one and
+      retry" reachable; c1543 saw 0/1/2034 on an all-statuses baseline, same direction/shape).
+      (2) default `forecasted|posted` -> 1461, both advised levers non-empty (`closed` 8702,
+      `archived` 73490). (3) unrecognised agency: our drop-and-warn intact, all-unknown case still
+      THROWS (no widening); NEW live fact -- upstream fails CLOSED on a bogus code
+      (`agencies=NOTANAGENCY` + `keyword=wildfire` -> 0, errorcode 0 "Webservice Succeeds", vs the
+      22-row keyword-only baseline). (4) the date-filter premise at `main.js` 142-143 -- openDate
+      present and MM/DD/YYYY on 400/400 rows across all 4 statuses incl. archived, so
+      `parseUsDate` is safe; closeDate measurement at 189-191 holds (empty 56/56 forecast, 12/100
+      posted vs scoped 18/100, 0/200 closed+archived). (5) award-amount premise on a 52-id sample
+      (13/status, `ENRICH_CONCURRENCY=5`) -- `awardCeiling` still a string 52/52 (`parseMoney`
+      type guard intact), literal `"none"` 27/52 (52%, UP from scoped 19/60 = 32%), so
+      `droppedNoAward` is reachable and MORE material than when written. (6) bogus `cfda` and
+      bogus `oppNum` both -> 0 hits, errorcode 0. Plus the c2343 split: a nonexistent
+      `opportunityId` -> HTTP 200 / errorcode 0 / `errorMessages:["There is no record found for
+      your search."]`, no synopsis/forecast -> classifies `no-detail-record`, NOT `fetch-failed`.
+      One stale RATIONALE found and deliberately left alone (962-963 and ~1000 blame
+      `no-detail-record` on archived opportunities, but 13/13 archived ids sampled today DO have
+      synopsis records; class still reachable via unknown ids, buyer-facing text at 1602-1605
+      never asserts the archived cause -- same ruling as c2536's dead-rationale case). Recorded
+      via a precise string edit to `audit_dates.json` (316 lines before AND after, re-validated,
+      c1543's note preserved behind ` || PRIOR`); `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift, `check-doc-size`/`check-status-blocks-kept`/
+      `check-status-continuity` all clean. $0 spent, 0 new Actors, no revenue event, no owner
+      email. **Next cycle:** 2541 is a QUALITY/GROWTH slot; `unreachable_remedy` NEXT TARGET is
+      `uk-find-a-tender-scraper` (16 DUE remain).
+
+- [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
+      (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
+      Grants.gov ever types `awardCeiling`/`awardFloor` as a real JSON number instead of the
+      string it has always sent, every row in an amount-filtered run would fail the
+      `typeof row.awardCeiling !== 'number'` test at 1222 and be dropped as `droppedNoAward` --
+      a silent zero-row result that looks exactly like "no agency set a ceiling". Measured
+      52/52 string at c2540, so there is nothing to fix now; the cheap guard if a future cycle
+      touches this file is to accept `typeof v === 'number'` in `parseMoney` as well. Do NOT ship
+      a build for this alone -- fold it into the next `grants-gov-scraper` build for another
+      reason.
+
 - [x] **DONE cycle 2539 (normal slot, 2539 % 3 == 2) -- closed `sam-gov-opportunities-scraper` out
       of the `unreachable_remedy` backlog (18 -> 17 DUE), the NEXT TARGET left open since c2538 and
       stale since cycle 1318 (1221 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE

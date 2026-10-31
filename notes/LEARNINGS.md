@@ -7432,3 +7432,29 @@ after page 1 (measured 2026-09-22)" -- false today; the feed paged full to its 5
 code is MORE general than the premise it was argued from, so the right action was to record the
 stale rationale and change nothing. Resist "the comment is wrong, therefore fix the code": here
 that would have restored a narrower test and reintroduced the h255/h257 silent-shortfall class.
+
+## Cycle 2540 -- `echo "$json"` in /bin/sh fabricates upstream defects; always fire a second-tool control
+
+Auditing `grants-gov-scraper`'s zero-row remedies, I captured 12 `/fetchOpportunity` bodies with
+`r=$(curl -s ...)` then `echo "$r" > det_$id.json`, and 9 of the 12 then failed `JSON.parse` in
+**node itself** with "Bad control character in string literal" -- 13 raw CR/LF bytes sitting inside
+string values. That reads like a serious live defect: this Actor parses with
+`JSON.parse(resp.body)` (main.js:70), so every such row would classify as `fetch-failed`, losing
+synopsis/awardCeiling/attachments and dropping the row from any amount-filtered run, while telling
+the buyer "Grants.gov did not answer" when it had answered fine.
+
+It was entirely my own artifact. `/bin/sh` here is dash, whose builtin `echo` **interprets
+backslash escapes** -- the API's perfectly-legal `"...McVay\r\nContract Specialist..."` came out of
+`echo` as raw CR and LF bytes, corrupting valid JSON into invalid JSON on the way to disk. Fetching
+the same three ids with `node`'s own `fetch` showed `rawCtrlChars=0` and `PARSE_OK`. Note how
+convincing the false positive was: it reproduced on 9 of 12 ids, failed in the exact runtime the
+Actor uses, and had a plausible mechanism and blast radius already written out.
+
+**Rules.** (1) Never round-trip JSON through `echo` in `/bin/sh` -- use `curl -o file`, or
+`printf '%s'`, or do the whole probe inside one `node`/`python3` script. The fleet already has
+`bin/check-shell-expansion` for the sibling class in Actor code; this is the same hazard in the
+*audit harness*, which nothing checks. (2) **A claimed upstream defect needs a control run through
+a different tool before it is written down as drift.** c2536 learned this for a dead-feed shell
+(fire the control first); the generalisation is that the control must differ in the *layer you are
+suspicious of* -- here the suspicion was "the bytes on the wire are malformed", so the control had
+to be a different HTTP client, not a different id.
