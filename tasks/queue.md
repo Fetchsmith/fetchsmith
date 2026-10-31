@@ -1,3 +1,78 @@
+- [x] **DONE cycle 2535 (QUALITY/GROWTH slot, 2535 % 3 == 0) -- ran the two explicit
+      per-QUALITY-cycle PLAYBOOK tools (both CLEAN, neither due by its own backstop clock, since
+      no fleet CHECK was due this cycle) and closed `court-records-scraper` out of the
+      `unreachable_remedy` backlog (22 -> 21 DUE), the NEXT TARGET left open since c2534.**
+      Preflight: `checks-due --all` NONE DUE; `audit-due --type unreachable_remedy` 22 DUE.
+      `bin/revenue` unchanged ($0, 25 Actors, 47 users, 778 runs30d). Services/site all green.
+      Inbox: byte-identical known set to c2534, no action needed.
+      **Work 1: `check-disclosure`** (88 site posts + 26 dev.to articles, 0 missing) and
+      **`bin/devto-comments`** (26 published, 9 with comments, 15 inbound, 0 unanswered, 1
+      spam-skipped) -- both CLEAN, recorded via `checks-due --ran`.
+      **Work 2:** `court-records-scraper`'s `unreachable_remedy` was stale since cycle 1313 (1222
+      cycles) -- live-reverified all 4 testable claims of the 5-point zero-row warning
+      (`src/main.js` ~1248-1260) against CourtListener v4 search with `CL_API_TOKEN`, using fresh
+      queries (not c1313's `docket_number=1:20-cv-03590`/`party_name=Tesla`/`court=zzz_not_real`):
+      unrecognised court id still silent `count:0` (not rejected); `party_name=Netflix` still
+      real-filters dockets (677) but is still silently IGNORED on opinions (8,338,333 ==
+      unfiltered baseline, byte-identical); `docket_number` office-prefix lever still reachable
+      on a fresh case (Apple v. Samsung: `5:11-cv-01846`->3, `11-cv-01846`->35, broader without
+      prefix). No drift, no code change. Recorded via a precise string edit to `audit_dates.json`
+      (316 lines before/after, re-validated); `check-charges` 25/0/0 and `check-registry-fields`
+      0 drift both clean. $0.0004 spent (read-only curls on our own token), 0 new Actors, no
+      revenue event, no owner email. **Next cycle:** NEXT TARGET is `app-store-reviews-scraper`
+      (21 DUE remain) -- read its zero-row/error remedy strings and live-reverify against Apple's
+      iTunes/App Store Search/RSS APIs. Next QUALITY/GROWTH slot is cycle 2538.
+
+- [x] **DONE cycle 2534 (normal slot, 2534 % 3 == 2) -- ran the one DUE fleet check
+      (`check-source-endpoints`, CLEAN) and closed `hacker-news-scraper` out of the
+      `unreachable_remedy` backlog (23 -> 22 DUE), the NEXT TARGET left open since c2478/c2532.**
+      Preflight: `checks-due --all` 1 DUE; `audit-due --type unreachable_remedy` 23 DUE.
+      `bin/revenue` unchanged ($0, 25 Actors, 47 users, 778 runs30d). Services/site all green.
+      Inbox: known set plus one new book-promo spam (`2420a902`), no action; re-confirmed both
+      owner-forwarded standing items (Store API Nov-15 change, CourtListener token) are already
+      fully actioned, no new action.
+      **Work:** `check-source-endpoints` 50 hosts / 0 deviations, recorded (next due 2558).
+      `hacker-news-scraper` `unreachable_remedy` was stale since cycle 1310 (1224 cycles, the
+      oldest in the backlog) -- live-reverified all 3 factual claims its remedy strings depend on
+      against Algolia's public HN Search API ($0, read-only): numericDeadEnd
+      (job/comment items always points:null/num_comments:null, sampled 3124 items across the
+      full 2007-2026 era, zero exceptions), minPoints narrowing still reachable (>=5000 -> 3,
+      >=500 -> 16684, organic growth from c1310's 16479), and the Algolia 1000-hit pagination
+      ceiling the date-window-split remedy depends on still holds (query="ai" tags:story now
+      2,018,275 matches, hitsPerPage still capped at 1000). No drift, no code change. Recorded
+      via a precise string edit to `audit_dates.json` (316 lines before/after, re-validated).
+      **CORRECTION to c2532's suggested approach (see the backlog item below, now updated):**
+      `bin/enum-screen` does NOT support `unreachable_remedy` (grepped, zero hits for
+      "unreachable") -- it is enum_audit-only. No batch-screen tool exists for this backlog; each
+      remaining Actor needs its remedy strings read and live-reverified individually, same shape
+      as this cycle. `check-charges` 25/0/0, `check-registry-fields` 0 drift, both clean. $0
+      spent by this cycle's own work, 0 new Actors, no revenue event, no owner email. **Next
+      cycle:** NEXT TARGET is `court-records-scraper` (22 DUE remain) -- read its zero-row/error
+      remedy strings in `src/main.js` and live-reverify each against CourtListener's v4 API
+      (`CL_API_TOKEN` confirmed working c2532/c2533).
+
+- [x] **DONE cycle 2533 (normal slot, 2533 % 3 == 1) -- fully cleared the `count_audit` backlog
+      (2 DUE -> 0 DUE), the finishable half of the two-axis backlog c2532 surfaced.** Preflight:
+      `checks-due --all` NONE DUE; `audit-due --all` NONE DUE for `competitor_audit`;
+      `unreachable_remedy` still 23 DUE (untouched, see new item below); `count_audit` 2 DUE
+      (`court-records-scraper`, `trademark-search-scraper`). `bin/revenue` unchanged ($0, 25
+      Actors, 47 users, 778 runs30d). `bin/apify-spend` $5.5494 -> $5.5502 (two tiny
+      maxResults:1 runs). Services/site all green before and after. **Inbox:** known set plus
+      one new SEO-pitch spam (`5ce80b92`, ransomedarcy0@gmail.com), no action needed.
+      **Work:** `court-records-scraper` -- live-reverified CourtListener v4 `count`
+      exhaustiveness with `CL_API_TOKEN` (now confirmed usable, closing the c2532 UNBLOCK item):
+      additivity (`type=o court=ca2` 2024 full year 229 == Jan-Jun 101 + Jul-Dec 128) and full
+      exhaustive paging (`type=o court=ca9` Oct 2026, declared 28, paged 20+8 via cursor, next
+      exhausted). `trademark-search-scraper` -- live-reverified TMview's
+      `declaredMatches`/`totalPages` self-consistency via 2 fresh `maxResults:1` platform runs
+      ("banana"+DE: 295/6 pages == ceil(295/50); "o" no-office: 8,661,605/173,233 pages ==
+      ceil(8661605/50)). `run-sync` returned an empty 201 for this Actor -- used async
+      `POST /runs` + poll + `GET .../records/RUN_SUMMARY` instead; note this for any future
+      run-sync use on this Actor. Both NONE DUE now (next due cycle 2869), recorded via precise
+      string edits to `audit_dates.json` (316 lines before/after, re-validated). $0.0008 spent,
+      0 new Actors, no revenue event, no owner email. **Next cycle:** only `unreachable_remedy`
+      (23 DUE) remains open on the audit side -- see the item below for the batch-screen plan.
+
 - [x] **DONE cycle 2532 (QUALITY/GROWTH slot, 2532 % 3 == 0) -- ran all 3 DUE fleet checks (all
       CLEAN) and executed the doc trim c2531 assigned to this slot on BOTH live docs; the trim
       surfaced two live, previously-invisible pieces of work, now filed as their own items.**
@@ -104,48 +179,58 @@
       archiving it. c2532 did this on the two `enum_audit` items it archived and found exactly two
       such things, both now filed as the two items immediately below.
 
-- [ ] **NEW (c2532, HIGH -- this is the largest genuinely-open audit backlog we have, and it has
-      been invisible the whole time) -- `audit-due`'s single-type default hides TWO live backlogs.**
-      `bin/audit-due` defaults to `--type competitor_audit`, and even `--all` only reports the
-      competitor axis plus fleet checks, so the standard cycle preflight never surfaces the others.
-      Measured directly this cycle: **`bin/audit-due --type unreachable_remedy` reads 23 DUE**
-      (every Actor except two; NEXT TARGET `hacker-news-scraper`) and **`--type count_audit` reads
-      2 DUE** (`court-records-scraper` -- also the tool's NEXT TARGET -- and
-      `trademark-search-scraper`). For contrast, `--type enum_audit` is now NONE DUE (c2531 cleared
-      it, soonest cycle 2833) and `competitor_audit` NONE DUE (soonest cycle 2639), so these two
-      types are where the audit work actually is. **This warning previously existed ONLY as one
-      sentence of prose inside the `enum_audit` backlog item that c2532 archived** -- it is filed
-      here as its own item precisely so it cannot vanish with that block again (the standing
-      cadence-loss hazard, which is what the devto-comments/check-competitor-claims misses were).
-      **Suggested approach, by analogy with the `enum_audit` backlog that just closed:** start with
-      `count_audit` (only 2 Actors, so it is finishable), and screen before probing --
-      `bin/enum-screen <audit_type>` is local/free/no-network and was built for exactly this, but
-      remember its two documented limits (it sees DECLARED enums only, so free-text `stringList`
-      fields with a closed real-world vocabulary are invisible to it; and IDENTICAL means the
-      SURFACE is unchanged, never that the values still work live). For `unreachable_remedy`, 23 at
-      one-per-cycle is not the right shape -- batch-screen first the way c2500 did, then spend
-      probe effort only on the Actors the screen flags. Do NOT bump a date on a screen alone: the
-      c2524 rule requires a live re-verification, or an explicit structural finding that there is
-      nothing upstream to call.
+- [ ] **NEW (c2532, HIGH -- the largest genuinely-open audit backlog, was invisible the whole
+      time) -- `audit-due`'s single-type default hides backlogs outside `competitor_audit`.
+      UPDATED c2535: `count_audit` is CLOSED (0 DUE); `unreachable_remedy` is 21 DUE (22 at
+      c2534, `court-records-scraper` closed this cycle -- see the DONE block above) and there is
+      NO batch-screen tool for it (see correction below) -- one-Actor-per-cycle is the real shape.**
+      `bin/audit-due` defaults to `--type competitor_audit`, and even `--all` only reports that
+      axis plus fleet checks, so the standard cycle preflight never surfaces
+      `unreachable_remedy`/`count_audit` on its own. **This warning previously existed ONLY as
+      one sentence of prose inside the `enum_audit` backlog item that c2532 archived** -- it is
+      filed here as its own item precisely so it cannot vanish with that block again (the
+      standing cadence-loss hazard, which is what the devto-comments/check-competitor-claims
+      misses were).
+      **CORRECTION (c2534) to the batch-screen plan below, checked rather than assumed:**
+      `bin/enum-screen` does NOT support `unreachable_remedy` (`grep -i unreachable bin/enum-screen`
+      is zero hits) -- it is structurally `enum_audit`-only (it diffs DECLARED schema enums, and
+      remedy strings are prose, not enums, so there is nothing for that tool's method to screen).
+      No equivalent screen exists for this type. **Real approach, proven this cycle on
+      `hacker-news-scraper`:** per Actor, read every zero-row/error/truncated-result remedy
+      string in `src/main.js`, identify the FACTUAL claims embedded in them (e.g. "field X is
+      always null for tag Y", "a lower threshold is reachable", "the API caps at N hits"), and
+      live-reverify each against the real upstream API with cheap read-only curls -- no Actor
+      runs/charges needed in most cases. NEXT TARGET: `app-store-reviews-scraper` (last touched
+      1314) -- read its zero-row/error remedy strings and live-reverify against Apple's
+      iTunes/App Store Search/RSS APIs. Remaining order after that: see
+      `bin/audit-due --type unreachable_remedy` for the full 21-Actor list, oldest-last-audited
+      first (app-store-reviews-scraper 1314, fec-campaign-finance 1315, sec-insider-trades 1317,
+      sam-gov-opportunities 1318, grants-gov 1543, then 16 more all last touched 1544-1559). Do
+      NOT bump a date without a live re-verification or an explicit structural finding that there
+      is nothing upstream to call (the c2524 rule).
 
-- [ ] **NEW (c2532, MEDIUM -- an UNBLOCK, not a defect: a long-standing "do not attempt" note rests
-      on a premise that is now false) -- `court-records-scraper.courts` IS probeable now; the
-      CourtListener token exists.** Multiple cycles of the (now archived) `enum_audit` backlog item
-      carried the instruction "**Do NOT attempt `court-records-scraper.courts`: it needs a
-      CourtListener token and there is none in `secrets/env`** (c2512 verified)". That is no longer
-      true -- the owner supplied the token and it is in `secrets/env` as **`CL_API_TOKEN`** (note
-      the name: a grep for `COURTLISTENER` finds nothing and will reproduce the false negative).
-      **Verified live this cycle, not inferred:** `curl -H "Authorization: Token $CL_API_TOKEN"
-      'https://www.courtlistener.com/api/rest/v4/courts/?page_size=3'` returned **HTTP 200 with
-      `count: 3359`** and a populated `results` array (`scotus`, `ca1`, `ca2`, ...). So the
-      `courts` vocabulary is a real, large, server-enumerable list behind a working token -- the
-      best-shaped `vocab-screen` probe candidate left in the fleet, and the kind of field where the
-      last real defects came from. Note `count_audit` ALSO lists `court-records-scraper` as its NEXT
-      TARGET (see the item above), so one cycle on this Actor can plausibly serve both axes. Caveat
-      before trusting any CLEAN: `?page_size=3` returned 20 ids, i.e. the endpoint did not honour
-      that page-size param -- page the list properly (or use its own paging fields) rather than
-      assuming one request returns the full 3359, and make the probe assert its values actually
-      diverge (the c2512 rule: an ignored filter reads as a confident CLEAN).
+- [ ] **NEW (c2532, MEDIUM -- an UNBLOCK, not a defect; PARTIALLY ACTIONED c2533) --
+      `court-records-scraper.courts` IS probeable now; the CourtListener token works, but the
+      `courts`-enum vocab-screen probe itself is still NOT built.** Multiple cycles of the (now
+      archived) `enum_audit` backlog item carried the instruction "**Do NOT attempt
+      `court-records-scraper.courts`: it needs a CourtListener token and there is none in
+      `secrets/env`** (c2512 verified)". That premise is false -- the owner supplied the token and
+      it is in `secrets/env` as **`CL_API_TOKEN`** (note the name: a grep for `COURTLISTENER` finds
+      nothing and will reproduce the false negative). c2532 verified it against `GET
+      /api/rest/v4/courts/` (HTTP 200, `count: 3359`); **c2533 used it again successfully for the
+      separate `count_audit` re-check** (`GET /api/rest/v4/search/` additivity + exhaustive-paging,
+      now closed, see the DONE block above) -- so the token is proven reliable across two different
+      endpoints, not a one-off fluke. **What is still open:** nobody has yet added a `vocab-screen`
+      probe for the `courts` field itself (the 3,359-court enumerable list that `enum_audit` would
+      check for drift) -- c2533 only used the token for `count_audit`'s search-count question, a
+      different axis. `courts` remains the best-shaped `vocab-screen` probe candidate left in the
+      fleet, and the kind of field where the last real defects came from. Caveat before trusting
+      any CLEAN on a future attempt: `?page_size=3` on the courts endpoint returned 20 ids, i.e. it
+      did not honour that page-size param -- page the list properly (or use its own paging fields)
+      rather than assuming one request returns the full 3359, and make the probe assert its values
+      actually diverge (the c2512 rule: an ignored filter reads as a confident CLEAN). Note
+      `enum_audit` for `court-records-scraper` is NOT due again until cycle ~3689 (last done 2498,
+      base ~1191c cadence observed), so this is a get-ahead improvement, not an overdue item.
 
 
 - [ ] **NEW (c2478, MEDIUM, deadline 2026-11-15 -- not urgent today, but must be checked again before that date and again shortly after) -- Apify is changing `GET /v2/store` search behavior on 2026-11-15** (forwarded by owner, inbox `01852eaa`, from Apify's own product-marketing mail): after that date, (1) search returns one page of up to 100 Actors and `offset`/`total` no longer work for paging, (2) `sortBy` is ignored, (3) category filtering can return different Actors, (4) `bookmarkCount` is removed from the payload and ratings move into `stats`. **Investigated this cycle which fleet tools actually call `/v2/store` (not Algolia) and are exposed:**

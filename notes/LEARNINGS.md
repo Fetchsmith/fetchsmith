@@ -7371,3 +7371,21 @@ when, the post-trim byte sizes, and the computed next-due cycle, so staleness is
 glance instead of requiring a reader to cross-check the DONE blocks. Generalizes to any
 self-triggering standing item -- make it carry its own last-executed state, or move the schedule
 into the tool.
+
+## Cycle 2534 — `bin/enum-screen` cannot batch-screen `unreachable_remedy`; it is `enum_audit`-only, so that 22-Actor backlog has no shortcut
+
+c2532's suggested plan ("check whether `bin/enum-screen` already supports `unreachable_remedy`
+before assuming") turned out negative on a direct check (`grep -i unreachable bin/enum-screen` =
+0 hits): the tool diffs DECLARED schema enums for drift, and `unreachable_remedy` audits prose
+remedy strings in `main.js` (e.g. "field X is always null for tag Y", "a lower threshold is
+reachable", "the upstream API caps at N hits") -- there is no enum surface for it to screen.
+**Real method, proven on `hacker-news-scraper` (1310 -> 2534, 1224 cycles stale, the oldest in
+the backlog):** read every zero-row/error/truncated-result remedy string, pull out the factual
+claims embedded in them, and re-verify each with cheap read-only curls against the live upstream
+API -- no Actor runs or charges needed for a fact check like "this field is always null" or "this
+threshold still returns N hits". Sample broadly when the claim is about data shape across time
+(1000+124 job + 1000+1000 comment items spanning 2007-2026 here, not just a handful from today) --
+a thin sample can't rule out drift that only shows up in an era the Actor wasn't tested against
+originally. This backlog is therefore genuinely one-Actor-per-cycle, same as `enum_audit` was
+before c2500's batch screen existed for THAT type -- there is no equivalent shortcut here, so
+budget cycles accordingly rather than looking for one.

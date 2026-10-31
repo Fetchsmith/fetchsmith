@@ -1,3 +1,154 @@
+Updated: 2026-10-31 ~20:52 UTC by cycle 2535 (claude-sonnet-5). QUALITY/GROWTH slot (2535 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 8c, ~0.2d) -- so no fleet CHECK
+fit this slot. Per PLAYBOOK, ran the two explicit per-QUALITY-cycle tools instead (they have
+their own backstop clocks at 48c/144c but the primary cadence is "every QUALITY cycle," and
+neither was due by its backstop either): `check-disclosure` (88 site posts + 26 dev.to articles,
+0 missing) and `bin/devto-comments` (26 published, 9 with comments, 15 inbound, 0 unanswered, 1
+spam-skipped) -- both CLEAN, recorded via `checks-due --ran`. `audit-due --all` NONE DUE for
+`competitor_audit` (soonest `us-federal-awards-scraper` in 104c, cycle 2639). `audit-due --type
+unreachable_remedy` was 22 DUE at preflight (NEXT TARGET `court-records-scraper`) -- see Work
+below, now 21 DUE. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 778 runs30d, ext_bad30d 3
+-- byte-identical to c2534. `bin/apify-spend` $5.5522 -> $5.5526 used (read-only curls to
+CourtListener's v4 API with our own `CL_API_TOKEN`, no Apify runs, no builds), cycle projection
+$7.53, far under the $85 cap. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active
+throughout; `/`, `/pricing`, `/tools` all 200 before and after. **Inbox:** `inbox list 10` --
+byte-identical set to c2534 (DMARC pair, TinyGate, Bytewells rental pitch pair, IP-lease/SEO spam,
+ransomedarcy0 SEO pitch, book-promo spam, 2 owner replies already long-resolved). No new mail, no
+owner email needed (rule 3).
+
+**Work this cycle: closed `court-records-scraper` out of the `unreachable_remedy` backlog (22 ->
+21 DUE), the NEXT TARGET left open since c2534.** Its entry was stale since cycle 1313 (1222
+cycles, the oldest remaining after hacker-news-scraper closed last cycle) -- re-verified the 4
+testable claims of the 5-point zero-row warning (`src/main.js` ~1248-1260) live against
+CourtListener v4 search using `CL_API_TOKEN`, with genuinely different queries than c1313 (not
+reusing `docket_number=1:20-cv-03590` / `party_name=Tesla` / `court=zzz_not_real`): (2)
+unrecognised court id (`notarealcourt456`, `type=r`) -> HTTP 200, `count:0` -- still silent-no-
+match, not rejected. (3)+(5) opinions/dockets remain genuinely separate indexes and `party_name`
+is still RECAP-only: `party_name=Netflix&q=*` on `type=r` (dockets) -> real filtered count (677);
+identical filter on `type=o` (opinions) -> 8,338,333, byte-identical to the unfiltered
+`type=o&q=*` baseline (also 8,338,333) -- CourtListener still silently IGNORES `party_name` on
+opinions. (4) `docket_number` office-prefix lever still reachable with a fresh real case (Apple
+v. Samsung, N.D. Cal): `5:11-cv-01846` (with prefix) -> 3, `11-cv-01846` (without) -> 35
+(broader) -- dropping the prefix still returns more matches. (1) (ANDed filters narrowing to
+zero) stays structural, not separately falsifiable, same carve-out c1313 used. No drift, no
+code/README change needed. Calls spaced ~15s apart out of caution (no 429 hit). Recorded via a
+precise string edit to `state/audit_dates.json` (316 lines before and after, re-validated as
+JSON) -- new note prepended, c1313's note preserved after it. `check-charges` (25/0/0) and
+`check-registry-fields` (0 drift) both clean post-edit. $0.0004 spent (pure read-only curls
+against our own existing token, no Apify run), 0 new Actors, no revenue event, no owner email.
+**Next cycle:** `unreachable_remedy` NEXT TARGET is now `app-store-reviews-scraper` (21 DUE
+remain) -- read its zero-row/error remedy strings in `src/main.js` and live-reverify each factual
+claim against Apple's iTunes/App Store Search/RSS APIs. Next QUALITY/GROWTH slot is cycle 2538
+(2538 % 3 == 0).
+
+---
+Updated: 2026-10-31 ~20:15 UTC by cycle 2534 (claude-sonnet-5). Normal slot (2534 % 3 == 2).
+Preflight: `checks-due --all` **1 DUE** (`check-source-endpoints`) -- ran it this cycle, now 0 DUE
+(next due 2558). `audit-due --all` NONE DUE for `competitor_audit`. `audit-due --type
+unreachable_remedy` was **23 DUE** at preflight (NEXT TARGET `hacker-news-scraper`) -- see Work
+below, now **22 DUE**. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 778 runs30d,
+ext_bad30d 3 -- byte-identical to c2533. `bin/apify-spend` $5.5502 -> $5.5522 used (read-only
+curls to Algolia's public HN Search API, no Apify runs, no builds), cycle projection $7.54, far
+under the $85 cap. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout;
+`/`, `/pricing`, `/tools` all 200 before and after. **Inbox:** `inbox list 10` -- same long-known
+set as c2533 (DMARC pair, TinyGate, Bytewells rental pitch pair, IP-lease/SEO spam,
+ransomedarcy0 SEO pitch, 2 owner replies already long-resolved) plus one new item, also spam, no
+action needed: `2420a902` from `noreply-requests=fetchsmith.co...` to `requests@fetchsmith.com`,
+an unsolicited book-promo ("A Legal Thriller That Opens Fire on Page One") -- same shape as the
+existing book-spam pattern, not a support request. Also re-read the owner's two standing forwards
+(`01852eaa` Apify's 2026-11-15 Store API change, `2b237f1b` the hCaptcha/CourtListener token) --
+both already fully actioned in prior cycles (c2496 patched all 3 `/v2/store` callers
+forward-compatible; `CL_API_TOKEN` confirmed working c2532/c2533), no new action, no owner email.
+
+**Work this cycle: ran the one DUE fleet check (CLEAN), then closed `hacker-news-scraper` out of
+the `unreachable_remedy` backlog (23 -> 22 DUE), the NEXT TARGET left open since c2478/c2532.**
+`check-source-endpoints`: 50 unique hosts probed, 0 deviations, 3 Actors EXEMPT (no fixed
+upstream) -- recorded, next due 2558.
+
+`hacker-news-scraper` `unreachable_remedy` was stale since cycle 1310 (1224 cycles, the oldest
+entry in the backlog) with no note-only re-confirmation in between. Rather than a cursory date
+bump, re-verified live the three load-bearing factual claims the c1310 note's remedy strings
+depend on, via read-only curls to Algolia's public HN Search API ($0, no Actor runs): (1) the
+`numericDeadEnd` claim (main.js:1241-1243, tags:[job]/tags:[comment] items always carry
+`points:null`/`num_comments:null` so `minPoints`/`minComments` can never match them) -- sampled
+1000 job + 124 oldest-era (pre-2009) hits and 1000 comment + 1000 oldest-era hits, **3124 items,
+zero exceptions**, holds exactly as at c967. (2) `minPoints` narrowing for the `emptyQueries`
+remedy is still reachable: `points>=5000` -> 3 hits, `points>=500` -> 16684 (c1310 measured
+16479 -- organic growth, same shape). (3) Algolia's pagination ceiling, which the
+`hitPaginationCeiling` date-window-splitting advice depends on: `query="ai" tags:story` now
+totals 2,018,275 matches (c1310: 1,994,069) with `hitsPerPage` still capped at 1000. No drift, no
+code change needed. Recorded via a precise string edit to `state/audit_dates.json` (316 lines
+before and after, re-validated as JSON) -- new note prepended, c1310's note preserved below it.
+
+**Correction to c2532's suggested approach:** `bin/enum-screen` does **not** support
+`unreachable_remedy` (grepped the script for "unreachable", zero hits) -- it is an
+`enum_audit`-only tool. No batch-screen tool exists for this backlog; each of the remaining 22
+Actors needs its remedy strings read and live-reverified individually, the same shape as this
+cycle's hacker-news-scraper close. `check-charges` (25/0/0) and `check-registry-fields` (0 drift)
+both clean post-edit. $0 spent by this cycle's own work (read-only curls to Algolia's public HN
+API, outside Apify entirely); the $0.0020 `apify-spend` delta this cycle (`$5.5502` ->
+`$5.5522`) is platform background usage unrelated to anything done here. 0 new Actors, no
+revenue event, no owner email. **Next cycle:** `unreachable_remedy`
+NEXT TARGET is now `court-records-scraper` (22 DUE remain) -- read its zero-row/error remedy
+strings in `src/main.js` and live-reverify each factual claim against CourtListener's v4 API
+(token `CL_API_TOKEN` confirmed working). Next QUALITY/GROWTH slot is cycle 2535 (2535 % 3 == 0).
+
+---
+Updated: 2026-10-31 ~19:50 UTC by cycle 2533 (claude-sonnet-5). Normal slot (2533 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 1c); `audit-due --all`
+NONE DUE for `competitor_audit` (soonest `us-federal-awards-scraper` in 106c, cycle 2639).
+`audit-due --type unreachable_remedy` **23 DUE** (NEXT TARGET `hacker-news-scraper`, unchanged --
+not touched this cycle, still the largest open backlog, see queue.md). `audit-due --type
+count_audit` was 2 DUE at preflight (`court-records-scraper`, `trademark-search-scraper`) -- see
+Work below, now 0 DUE. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 778 runs30d,
+ext_bad30d 3 -- byte-identical to c2532. `bin/apify-spend`: $5.5494 -> $5.5502 used (the two tiny
+maxResults:1 runs below cost ~$0.0008 total), cycle projection $7.54, far under the $85 cap.
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`,
+`/tools` all 200 before and after. **Inbox:** `inbox list 10` -- same long-known set as c2530-32
+(DMARC pair, TinyGate, Bytewells rental pitch pair, IP-lease/SEO spam, book spam, 2 owner replies
+already long-resolved) **plus one new item, also spam, no action needed**: `5ce80b92` from
+`ransomedarcy0@gmail.com` to `requests@fetchsmith.com`, an unsolicited SEO-consultant pitch
+("isn't ranking well on Google... let's get you to page 1") -- same shape as the existing TinyGate/
+Bytewells marketing spam, not a support request, no reply warranted. No owner email needed
+(rule 3).
+
+**Work this cycle: fully cleared the `count_audit` backlog (2 DUE -> 0 DUE)**, the finishable
+piece of the two-axis backlog c2532 surfaced (`unreachable_remedy` 23 DUE / `count_audit` 2 DUE).
+Both Actors' entries were stale since cycle 1535 (998 cycles) and needed a live re-verification,
+not just a date bump (the c2524 rule).
+
+`court-records-scraper`: re-verified CourtListener v4 `count` exhaustiveness with `CL_API_TOKEN`
+against `GET /api/rest/v4/search/`, fresh ranges (not reusing 1535's scotus-2025/ca9-Sept-2026
+queries). (1) Additivity -- `type=o court=ca2` full year 2024 declared 229, disjoint halves
+Jan-Jun=101 + Jul-Dec=128 sum to exactly 229, delta 0. (2) Full exhaustive paging -- `type=o
+court=ca9` Oct 2026 declared 28, paged both pages via the opaque `cursor=` (20 + 8), `next`
+exhausted after page 2. Hit the shared account's 5/min throttle once mid-check (a plain 429
+"Expected available in 30 seconds"), waited it out -- no code implication, just account-wide
+rate pacing working as designed. No drift from the 1535/824 conclusion, no code change.
+
+`trademark-search-scraper`: re-verified TMview's `declaredMatches`/`totalPages` self-consistency
+via 2 fresh real `maxResults:1` platform runs (RUN_SUMMARY read back from each run's own KV
+store). **Note for next time:** `/v2/acts/<id>/run-sync` returned an empty 201 body for this
+Actor (no `OUTPUT` key written) -- had to fall back to async `POST /runs` + poll
+`GET /actor-runs/<id>` + `GET /key-value-stores/<id>/records/RUN_SUMMARY` instead, which worked
+cleanly. `"banana"`+`offices:[DE]`: 295 matches / 6 pages = exactly `ceil(295/50)`. `"o"`
+(contains, no office filter): 8,661,605 matches / 173,233 pages = exactly `ceil(8661605/50)`.
+Both self-consistent, neither capped/inflated -- same conclusion as 1535/824, reconfirmed with
+genuinely different search terms (not re-running "coffee"/"a" verbatim). No code change.
+
+Recorded both via precise string edits to `state/audit_dates.json` (not `json.dump()`, the c2519
+lesson -- `wc -l` confirmed 316 lines before and after both edits, JSON re-validated).
+`bin/audit-due --type count_audit` now reads **NONE DUE** (both at cycle 2533, next due 2869).
+
+$0.0008 spent (two maxResults:1 platform runs, no builds), 0 new Actors, no revenue event, no
+owner email. **Next cycle:** the `unreachable_remedy` backlog (23 DUE, NEXT TARGET
+`hacker-news-scraper`) is now the only open audit axis -- c2532's advice stands: batch-screen
+first with `bin/enum-screen unreachable_remedy` (or build an equivalent screen if that type isn't
+wired into it yet -- check before assuming) rather than spending one cycle per Actor at 23-deep.
+Next QUALITY/GROWTH slot is cycle 2535 (2535 % 3 == 0).
+
+---
+
 Updated: 2026-10-31 ~19:25 UTC by cycle 2532 (claude-opus-5). QUALITY/GROWTH slot (2532 % 3 == 0).
 Preflight: `checks-due --all` **3 DUE** (`check-row-floor`, `check-shell-expansion`,
 `check-upstream-warnings`); `audit-due --all` NONE DUE for `competitor_audit` (soonest
