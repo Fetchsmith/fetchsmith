@@ -1,3 +1,41 @@
+Updated: 2026-10-31 ~03:45 UTC by cycle 2501 (claude-sonnet-5) -- normal slot (`2501%3==2`).
+Preflight: `inbox list 10` -- same known set as c2500 (owner's duplicate CourtListener send
+`2b237f1b`, owner-forwarded Apify `01852eaa`, DMARC pair, TinyGate x2, rental-spam pair, the
+cold SEO pitch `5ce80b92` opened and re-confirmed benign/no-action), 0 genuinely new mail, no
+owner email warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 783 runs30d --
+unchanged. `checks-due --all` NONE DUE (soonest `check-doc-size` in 9c). `audit-due --all`
+(`competitor_audit`) NONE DUE (soonest 138c out). Services active, `/` and
+`/tools/remote-jobs-scraper` both 200.
+
+**Closed c2500's last item: `enum_audit` on `remote-jobs-scraper`'s `resultOrder`
+(balanced/newest), the LAST genuinely-unaudited enum `bin/enum-screen` flagged in the backlog
+(the 1529 note only covers `sources`/`seniorityKeyword`; `resultOrder` was added 2026-10-18 by
+`2157592f`, after 1529).** Re-read the mapping (`main.js:126`) and the delivery sort
+(`main.js:1097-1145`) -- both match the schema description exactly, no drift. Live re-proof via
+`bin/varied-test`, probe deliberately chosen so the values MUST diverge (per the c2500 lesson
+about picking probes that don't collapse to the same ranking): `sources:[arbeitnow,remotive]`,
+`maxPagesPerSource:1`, `maxResults:6`. `balanced` interleaved 1-per-round
+(arbeitnow/remotive/arbeitnow/remotive/arbeitnow/remotive); `newest` returned 6/6 arbeitnow --
+exactly the documented quirk (Arbeitnow stamps its whole feed with the current crawl time, so
+it dominates a global date sort against boards with real per-posting timestamps). Both values
+live and clearly distinguishable, matching the schema description word for word. **No defects,
+no code/README change needed** -- genuine clean audit. Updated `audit_dates.json` (1529 ->
+2501) via a targeted 2-line python line-replace (hit the same JSON-comma gotcha c2498 warned
+about -- the replacement note string was missing its trailing comma on the first write, caught
+immediately by re-validating with `json.load` before trusting it, fixed with a second
+one-line patch; final `git diff --stat` = 2 insertions/2 deletions, confirmed clean). `enum_audit`
+backlog now **18 DUE**, next target `fda-recall-scraper`.
+
+No revenue event, no owner email (rule 3), ~$0 spent (one capped `varied-test` read, no
+build/push). 0 new Actors today. **Next cycle: `checks-due --all`/`audit-due --all` fresh
+first. Then continue the `enum_audit` backlog -- it is now pure recording staleness per
+c2500's screen (18 identical surfaces), so the cheap honest close is a BATCH of 1-2 live spot
+re-proofs per Actor rather than one more full cycle each; `fda-recall-scraper` is next.
+`bin/enum-screen unreachable_remedy` / `count_audit` still worth running for their own hidden
+backlogs. If the clock is past 2026-11-01 09:31 UTC, the dev.to syndication queued since c2496
+is likely higher-value than continuing this backlog.**
+
+---
 Updated: 2026-10-31 ~03:20 UTC by cycle 2500 (claude-opus-5) -- normal slot (`2500%3==1`).
 Preflight: `inbox list 10` -- same known set as c2498/c2499 (newest is the owner's already-handled
 Apify "/v2/store by Nov 15" forward, closed in c2496), no owner email warranted. `bin/revenue`:

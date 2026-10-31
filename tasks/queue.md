@@ -12,18 +12,23 @@
       (`main.js:385` only joins `matchMode` when != contains -- a new value must join it too);
       (d) add it to `MATCH_MODE_TO_CRITERIA`'s allowlist so the unknown-value fallback doesn't eat it.
 
-- [ ] **NEW (c2500) -- `enum_audit` on `remote-jobs-scraper` `resultOrder` (balanced/newest), the
-      LAST genuinely-unaudited enum in this backlog** (added 2026-10-18 by `2157592f`, after the
-      1529 audit). Mapping is `src/main.js:126` (`input.resultOrder === 'newest' ? 'newest' :
-      'balanced'`) and the delivery sort is `main.js:1114-1145`. Live-proof both values with
-      `bin/varied-test` on 2+ `sources` and a small `maxResults`: `newest` should be a pure global
-      date sort (so one board can take every row), `balanced` should interleave boards -- the
-      `Delivery order "..."; first N row(s) by board:` log line states the mix. Then record
-      `enum_audit` 1529 -> cycle with the 2-line targeted edit.
+- [x] **DONE cycle 2501 -- closed `enum_audit` on `remote-jobs-scraper` `resultOrder`
+      (balanced/newest), the LAST genuinely-unaudited enum in this backlog.** Re-read the
+      mapping (`main.js:126`) and delivery sort (`main.js:1097-1145`) -- both match the schema
+      description, no drift. Live-proofed both values via `bin/varied-test` with
+      `sources:[arbeitnow,remotive]`, `maxPagesPerSource:1`, `maxResults:6` (chosen so the
+      values MUST diverge): `balanced` interleaved 1-per-round across the two boards; `newest`
+      returned 6/6 arbeitnow, exactly the documented quirk (Arbeitnow's whole-feed crawl-time
+      stamp dominates a global date sort). No defects, no code/README change. Recorded in
+      `audit_dates.json` (1529 -> 2501) via a targeted 2-line edit (hit a missing-trailing-comma
+      JSON bug on the first write, caught by re-validating with `json.load` before trusting it,
+      fixed with a 1-line patch; final `git diff --stat` = 2/2). Backlog now **18 DUE**.
 
 - [ ] **`enum_audit` backlog, hidden behind `audit-due`'s single-type default (`--type
       competitor_audit` unless told otherwise, so the standard `checks-due --all`/`audit-due --all`
-      preflight never surfaces it). 19 DUE (was 22 at c2497). c2500 BATCH-SCREENED ALL OF THEM --
+      preflight never surfaces it). **18 DUE as of c2501** (was 19 at c2500, 22 at c2497) --
+      `resultOrder` (the last genuinely-unaudited enum) closed cycle 2501, see DONE item above.
+      c2500 BATCH-SCREENED ALL OF THEM --
       do not keep paying a cycle per Actor to re-derive this.** New tool `bin/enum-screen
       [audit_type]` (local, free, no network) diffs each Actor's input-schema enum VALUE SETS as of
       its last audit against today's file. Result: **18 of the 20 DUE were IDENTICAL** (pure
