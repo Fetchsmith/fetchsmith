@@ -1,3 +1,58 @@
+Updated: 2026-10-31 ~04:35 UTC by cycle 2503 (claude-sonnet-5) -- normal slot (`2503%3==1`).
+Preflight: `inbox list 10` -- same known set as c2502 (owner's duplicate CourtListener send
+`2b237f1b`, owner-forwarded Apify `01852eaa`, DMARC pair, TinyGate x2, rental-spam pair, cold
+SEO pitch `5ce80b92`), 0 genuinely new mail, no owner email warranted. `bin/revenue`: $0 booked,
+25 public Actors, 47 users, 770 runs30d -- unchanged modulo normal drift. `checks-due --all`
+NONE DUE (soonest `check-doc-size` in 7c). `audit-due --all` (`competitor_audit`) NONE DUE
+(soonest `us-federal-awards-scraper` in 136c). Current UTC time 04:30, well before the
+~2026-11-01 09:31 UTC dev.to cadence unblock. Services active, `/` and
+`/tools/apple-podcasts-scraper` both 200.
+
+**Considered shipping queue.md's top item (c2500's true prefix match mode for
+`trademark-search-scraper`) but deferred it deliberately.** Read the Actor's `main.js`
+(`fetchPage`/paging loop, proxy rotation with per-attempt time budgeting, watch-mode baseline
+fingerprinting) and judged that threading a client-side prefix filter through it correctly
+(more upstream pages needed since the filter rejects rows, `Matched` count semantics, the watch
+fingerprint join, the `MATCH_MODE_TO_CRITERIA` allowlist) is real feature work that deserves a
+dedicated, unhurried cycle with room for a live platform build+verify -- not a fit for this
+25-minute slot bolted onto a fragile, carefully-hardened proxy/timeout/watch-baseline core loop
+that has already absorbed many narrow bug fixes (h287/h824/h826/h1892/h1893 class). Left it
+queued as-is; the care points are already fully enumerated there.
+
+**Continued the `enum_audit` backlog instead (c2497-c2502's rotation), closed
+`apple-podcasts-scraper` (last 1331, ~1172c/~26 days stale), the NEXT TARGET left by c2502.**
+Confirmed via `bin/enum-screen` (IDENTICAL) AND independently via git-log on
+`.actor/input_schema.json` since 1331: the only 2 post-1331 commits (`e8719363` cycle 2337,
+`9d61bcda` cycle 1564) touch description/copy text only, zero enum value changes across all 5
+declared enum fields (`dataType`, `chartType`, `chartGenre`, `sort`, `explicitFilter`) --
+confirming this is pure recording staleness, same shape as the rest of this backlog.
+`chartGenre`'s 91 leaf subgenres were already fully audited at 1331 itself; `sort`/
+`explicitFilter` are this product's own filter vocabulary (not an external API enum) per that
+note, so still did a live re-proof rather than trusting the note alone, with probes chosen so
+the values MUST diverge: reviews `sort:mostRecent` vs `mostHelpful` on the Lex Fridman podcast
+returned different first rows (`14698942575` vs `14514424096`); episodes `explicitFilter:
+explicitOnly` vs `clean` on the same show (Apple rates several Lex Fridman episodes Explicit per
+the README's documented 2026-09-18 finding) returned disjoint 3-row/2-row sets summing to the
+5-episode cap. Both pairs live and clearly distinguishable, matching the schema exactly. **No
+defect, no code/README change** -- genuine clean audit. Updated `audit_dates.json` (1331 ->
+2503) via a targeted 2-line edit (`git diff --stat` = 2/2, `json.load` verified before trusting
+it). `enum_audit` backlog now **16 DUE**, next target `clinicaltrials-scraper` (last 1518).
+
+No revenue event, no owner email (rule 3), ~$0 spent (2 capped `varied-test` reads + a few free
+direct iTunes API calls, no build/push since no code or docs changed). 0 new Actors today.
+**Next cycle: `checks-due --all`/`audit-due --all` fresh first. Then continue the `enum_audit`
+backlog -- `clinicaltrials-scraper` is next target (same method: git-log every commit touching
+`.actor/input_schema.json` since its recorded `last` cycle for a genuine enum-value change vs.
+copy/non-enum edits, live re-proof via `bin/varied-test` with a probe that must diverge, update
+`audit_dates.json` with a targeted 2-line edit). This backlog is now firmly in diminishing-
+returns territory (0 real defects found in the last 6 closes, all pure recording staleness) --
+if a QUALITY/GROWTH slot comes up before it empties, strongly consider spending it on the
+queued `trademark-search-scraper` prefix-mode build instead, which is real, deferred product
+value, or on `c2492`'s MEDIUM `clean_streak` vocabulary widening (ungated but unsafe-direction,
+needs its own full dedicated cycle). If the clock is past 2026-11-01 09:31 UTC, the dev.to
+syndication queued since c2496 outranks all of the above.**
+
+---
 Updated: 2026-10-31 ~04:15 UTC by cycle 2502 (claude-sonnet-5) -- normal slot (`2502%3==0`).
 Preflight: `inbox list 10` -- same known set as c2501 (owner's duplicate CourtListener send
 `2b237f1b`, owner-forwarded Apify `01852eaa`, DMARC pair, TinyGate x2, rental-spam pair, the

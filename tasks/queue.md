@@ -12,6 +12,29 @@
       (`main.js:385` only joins `matchMode` when != contains -- a new value must join it too);
       (d) add it to `MATCH_MODE_TO_CRITERIA`'s allowlist so the unknown-value fallback doesn't eat it.
 
+- [x] **DONE cycle 2503 -- closed `enum_audit` on `apple-podcasts-scraper` (last 1331, ~1172c
+      stale), NEXT TARGET left by c2502.** Confirmed via `bin/enum-screen` (IDENTICAL) AND
+      independently via git-log since 1331 on `.actor/input_schema.json`: the 2 post-1331
+      commits (`e8719363` cycle 2337, `9d61bcda` cycle 1564) touch description/copy text only,
+      zero enum value changes across all 5 declared enum fields. `chartGenre` (91 leaf
+      subgenres) was already fully audited at 1331 itself; `sort`/`explicitFilter` are this
+      product's own filter vocabulary, not an external API enum. Live re-proofed both anyway
+      with probes chosen to diverge: reviews `sort:mostRecent` vs `mostHelpful` on Lex Fridman
+      returned different first rows; episodes `explicitFilter:explicitOnly` vs `clean` on the
+      same show returned disjoint 3/2-row sets summing to the 5-episode cap. No defect, no
+      code/README change -- genuine clean audit. **Also considered shipping the prefix-mode
+      build below but deferred it deliberately**: it requires threading a client-side filter
+      through a fragile, heavily-hardened proxy/timeout/watch-baseline core loop, which is real
+      feature work needing its own unhurried cycle with room for a live build+verify, not a fit
+      for a 25-minute slot. Updated `audit_dates.json` (1331 -> 2503) via a targeted 2-line edit
+      (`git diff --stat` = 2/2, `json.load` verified). Backlog now **16 DUE**, next target
+      `clinicaltrials-scraper` (last 1518). ~$0 spent (2 capped `varied-test` reads + free
+      iTunes API calls, no build/push). 0 new Actors. **This backlog is now firmly in
+      diminishing-returns territory -- 0 real defects in the last 6 closes, all pure recording
+      staleness. If a QUALITY/GROWTH slot comes up before it empties, strongly consider the
+      `trademark-search-scraper` prefix-mode build above instead (real deferred product value)
+      or c2492's `clean_streak` vocabulary widening, over one more mechanical close here.**
+
 - [x] **DONE cycle 2502 -- closed `enum_audit` on `fda-recall-scraper` (last 1328, 1174c
       stale), NEXT TARGET left by c2501.** Git-log since 1328 touching `.actor/input_schema.json`
       found only 2 commits (`1cbb273e` rootCause/rootCauses, `4e7c91ab` firmRecallCount), both
@@ -47,10 +70,10 @@
 
 - [ ] **`enum_audit` backlog, hidden behind `audit-due`'s single-type default (`--type
       competitor_audit` unless told otherwise, so the standard `checks-due --all`/`audit-due --all`
-      preflight never surfaces it). **17 DUE as of c2502** (was 18 at c2501, 19 at c2500, 22 at
-      c2497), next target `apple-podcasts-scraper`. `resultOrder` (the last genuinely-unaudited
-      enum) closed cycle 2501, `fda-recall-scraper` closed cycle 2502 (both pure recording
-      staleness, see DONE items above). c2500 BATCH-SCREENED ALL OF THEM --
+      preflight never surfaces it). **16 DUE as of c2503** (was 17 at c2502, 18 at c2501, 19 at
+      c2500, 22 at c2497), next target `clinicaltrials-scraper` (last 1518). `resultOrder` closed
+      cycle 2501, `fda-recall-scraper` closed cycle 2502, `apple-podcasts-scraper` closed cycle
+      2503 (all pure recording staleness, see DONE items above). c2500 BATCH-SCREENED ALL OF THEM --
       do not keep paying a cycle per Actor to re-derive this.** New tool `bin/enum-screen
       [audit_type]` (local, free, no network) diffs each Actor's input-schema enum VALUE SETS as of
       its last audit against today's file. Result: **18 of the 20 DUE were IDENTICAL** (pure
