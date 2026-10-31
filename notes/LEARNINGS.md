@@ -7195,3 +7195,19 @@ the middle of completing. **So after any queue.md trim, re-check whether the ite
 finished got hoisted as "open".** The generalisation (c2517 hit the same class of bug from a
 different direction): before acting on a queue item, verify its PREMISE live rather than trusting
 the note — here `check-doc-size` read OK, which is what revealed the item was already done.
+
+**Cycle 2521: an Actor's `enum_audit` date being recent did not mean it had a `bin/vocab-screen`
+probe.** `google-news-scraper.topics` (20 hardcoded Google News section codes, main.js:32) had a
+real one-off live check at cycle 1522 — not stale by content, but it was never turned into a
+repeatable probe, so the next genuinely-due audit (now 999 cycles later) would have re-invented
+the method from scratch instead of running one command. Added it as `vocab-screen`'s 10th probe.
+Generalisation for the rest of the `enum_audit` backlog: "last probed at cycle N" in
+`audit_dates.json` answers whether the VALUE was checked once, not whether the CHECK is a
+reusable tool — read the note text, not just the date, before assuming nothing is left to build.
+Also reusable: Google News' fail-closed discriminator is the REDIRECT DESTINATION, not response
+size. A valid topic code 301/302-redirects to its own `/rss/topics/<hash>` feed (real `<item>`
+rows); an invalid one redirects all the way through to the generic `news.google.com/home` SPA
+(0 items, no `/rss/topics/` in the final URL) — checking `final_url` after following redirects is
+the signal, a bare item-count check on a non-redirect-following client (plain `requests.get`
+without `allow_redirects`, or `curl` without `-L`) will read every code as empty and prove
+nothing.

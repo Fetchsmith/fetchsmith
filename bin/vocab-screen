@@ -604,6 +604,70 @@ def p_samgov_set_aside_types():
     return not dead, out
 
 
+def p_google_news_topics():
+    """google-news-scraper.topics is the same shape as sam-gov's setAsideTypes: a hardcoded
+    client-side vocabulary (main.js:32-36 VALID_TOPICS, 20 codes) with no upstream reference
+    endpoint -- Google publishes no API listing its RSS topic sections. Last live-verified at
+    cycle 832 (main.js's own comment) and never run as a repeatable probe since, so "verified"
+    was one-off and undated in audit_dates.json terms, same gap c2518 found for sam-gov.
+
+    The real endpoint IS probeable though, and the fail-closed signature is distinctive: a
+    valid code 302-redirects to a real `/rss/topics/<hash>` feed with dozens of real <item>
+    entries; an invalid code 301/302-redirects all the way to the generic `news.google.com/home`
+    page (0 <item>s, no /rss/topics/ in the final URL) -- main.js:27's "a made-up code returns
+    an empty feed rather than falling back to Top Stories" holds in spirit (it falls back to
+    the homepage, not Top Stories specifically, but the net effect buyers care about -- empty,
+    not real content -- matches). Codes parsed from the schema's own description text (not a
+    hardcoded copy), same self-screening shape as the USAspending/SAM.gov probes above."""
+    out = []
+    desc = field("google-news-scraper", "topics").get("description", "")
+    # Two explicit comma-separated lists ("Main sections: ...." and "...nav: ...."), not a bare
+    # all-caps-word scan -- the surrounding prose itself contains all-caps words ("RSS", "URL")
+    # that are not topic codes and would otherwise false-positive as DEAD.
+    codes = []
+    for m in re.finditer(r"(?:sections|nav):\s*([A-Z_, ]+?)\.", desc):
+        codes += [c.strip() for c in m.group(1).split(",") if c.strip()]
+    out.append(f"  schema documents {len(codes)} codes: {codes}")
+    if not codes:
+        out.append("  PROBE INVALID: could not parse any documented code out of the description")
+        return False, out
+
+    def topic_items(code):
+        url = (f"https://news.google.com/rss/headlines/section/topic/{code}"
+               "?hl=en-US&gl=US&ceid=US:en")
+        req = urllib.request.Request(url, headers={"User-Agent": UA})
+        with urllib.request.urlopen(req, timeout=TIMEOUT) as r:
+            final_url = r.geturl()
+            body = r.read().decode("utf-8", "replace")
+        return body.count("<item>"), "/rss/topics/" in final_url
+
+    dead = []
+    for c in codes:
+        n, is_topic_hash = topic_items(c)
+        out.append(f"    {c:14s} items={n:3d} redirected-to-topic-hash={is_topic_hash}")
+        if not n or not is_topic_hash:
+            dead.append(c)
+    if dead:
+        out.append(f"  DEAD CODES (documented as live but return no real topic feed): {dead}")
+
+    # Fail-closed sanity check: a code main.js explicitly documents (comment lines 29-31) as
+    # probed-and-NOT-a-section must still fail the same way, confirming Google hasn't quietly
+    # added it (which would mean VALID_TOPICS is now incomplete, not wrong).
+    invalid_sample = ["TV", "NFL", "SPACE"]
+    false_positives = []
+    for c in invalid_sample:
+        n, is_topic_hash = topic_items(c)
+        out.append(f"    (known-invalid) {c:10s} items={n:3d} redirected-to-topic-hash={is_topic_hash}")
+        if n and is_topic_hash:
+            false_positives.append(c)
+    if false_positives:
+        out.append(f"  NEW SECTIONS: {false_positives} now resolve to real topic feeds -- "
+                   "main.js's VALID_TOPICS list is stale-by-omission, add them.")
+        return False, out
+
+    return not dead, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -616,6 +680,7 @@ PROBES = {
     "eu-ted-tenders-scraper": ("cpvCodes", p_eu_ted_cpv_codes),
     "uk-find-a-tender-scraper": ("cpvCodes", p_uk_find_a_tender_cpv_codes),
     "sam-gov-opportunities-scraper": ("setAsideTypes", p_samgov_set_aside_types),
+    "google-news-scraper": ("topics", p_google_news_topics),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

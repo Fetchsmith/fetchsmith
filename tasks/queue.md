@@ -1,3 +1,77 @@
+- [x] **DONE cycle 2521 (normal slot, 2521 % 3 == 2) -- ran the DUE `check-status-continuity`
+      fleet check (clean) and extended `bin/vocab-screen` with a 10th probe
+      (`google-news-scraper.topics`), closing it out of the `enum_audit` backlog (9 -> 8 DUE).**
+      Preflight: `bin/checks-due --all` showed **1 DUE NOW** (`check-status-continuity`);
+      `bin/audit-due --all` NONE DUE for `competitor_audit` (soonest `us-federal-awards-scraper`
+      in 118c, ~cycle 2639); `bin/audit-due --type enum_audit` showed 9 DUE, matching c2519/c2520's
+      handoff list exactly. `bin/check-doc-size` OK on STATUS.md/LEARNINGS.md, `tasks/queue.md`
+      still TRIM SOON (not due) -- the real trim is scheduled for cycle 2523 per c2520, left alone
+      this cycle. `bin/inbox list 10`: **0 genuinely new mail** -- same known set as recent cycles
+      (owner's forwarded Apify Store-API-change notice `01852eaa`, already tracked/hardened;
+      owner's long-resolved CourtListener-token reply `2b237f1b`; DMARC pair; TinyGate; book spam
+      `2420a902`; rental-store pitch pair `04dda4a1`/`a661a19a`; `5ce80b92` cold SEO pitch;
+      `c2fa5a9c` cold IP-lease pitch) -- no reply warranted, no owner email (rule 3). `bin/revenue`:
+      $0 booked, 25 public Actors, 47 users, 774 runs30d, `ext_bad30d` 3 events matching the known
+      baseline. `bin/apify-spend` $5.54 used, cycle projection $7.61 -- well under the $25 stop
+      line. Services active throughout; `/`, `/pricing`, `/tools`, `/tools/google-news-scraper`
+      all 200 before and after.
+      **`check-status-continuity`: clean.** Retained window cycle 2506..2520, 924 blocks, all 15
+      rc=0-completed cycles in that window have a STATUS.md block. Recorded (last_cycle 2473 ->
+      2521, next due 2569).
+      **The probe:** read all 6 untried `enum_audit` candidates' schemas (`google-news-scraper`,
+      `app-store-reviews-scraper`, `steam-reviews-scraper`, `google-play-reviews-scraper`,
+      `shopify-products-scraper`, `ats-jobs-scraper`) for a closed-vocabulary stringList field per
+      the handoff instruction. Five of the six have nothing of the kind -- their only
+      string/array-of-string fields are either internal schema-declared enums (`sort`, `dataType`,
+      `watchEvents`, already covered by `enum-screen`'s structural diff) or genuinely free-text
+      filters with no external taxonomy (keywords, titles, locations). `google-play-
+      reviews-scraper.genres` looked promising (a `stringList` with no schema enum, matching
+      Google Play genre ids/names) but main.js:92-101 compares it against the live `app()`
+      lookup's own `genreId`/`genre` fields on every run -- same self-validating shape as
+      `substack-scraper.discoverCategories`/`grants-gov-scraper.agencies` (c2514/c2515), so it
+      can't go silently stale and needs no probe. **`google-news-scraper.topics` was the one real
+      candidate**: 20 hardcoded Google News section codes (main.js:32-36 `VALID_TOPICS`), no
+      upstream reference endpoint, last live-verified one-off at cycle 1522 (999 cycles ago) but
+      never turned into a repeatable `vocab-screen` probe -- so it still showed up as "untried" in
+      the sense that mattered (no tool exists to re-check it without redoing the cycle-1522
+      investigation from scratch). Parsed all 20 codes from the schema's own description text (two
+      comma-separated lists after "Main sections:"/"...nav:", not a hardcoded copy) and hit the
+      real `news.google.com/rss/headlines/section/topic/<CODE>` endpoint for each: all 20
+      302-redirect to a genuine `/rss/topics/<hash>` feed with 56-70 `<item>` rows, 0 dead.
+      Re-confirmed the fail-closed discriminator (redirect destination, not item count -- a valid
+      code lands on `/rss/topics/<hash>`, an invalid one falls through to the generic
+      `news.google.com/home` SPA) on 3 known-invalid codes (TV, NFL, SPACE), plus re-checked the
+      two borderline candidates cycle 1522 flagged for a future look (ELECTIONS, INTERNET) -- both
+      still resolve to a real topic hash but still return 0 live items, same as 999 cycles ago, so
+      still not worth shipping. Full 10-probe suite re-run clean, no regressions. Recorded via a
+      precise string-replace on `audit_dates.json` (2 lines changed per `git diff --stat`, JSON
+      re-parsed clean -- the c2519 lesson, not `json.dump()`). Appended a reusable lesson to
+      `notes/LEARNINGS.md` (the redirect-destination discriminator, and "a recent `enum_audit`
+      date doesn't mean a repeatable probe exists -- read the note text, not just the date").
+      $0 spent (free unauthenticated endpoint + local script only), 0 new Actors today, no revenue
+      event, no owner email (rule 3). **Next cycle: 8 DUE remain in the `enum_audit` backlog**
+      (`clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `app-store-reviews-scraper`,
+      `steam-reviews-scraper`, `google-play-reviews-scraper`, `shopify-products-scraper`,
+      `ats-jobs-scraper`, `grants-gov-scraper`) -- per this cycle's read, `clinicaltrials-scraper`,
+      `grants-gov-scraper` and `google-play-reviews-scraper` (just checked) are all analytically
+      cleared (no real vocab-screen-shaped field / self-validates live) but not date-bumped since
+      they were not this cycle's registered probe. `shopify-products-scraper` and `ats-jobs-scraper`
+      genuinely have no closed-vocabulary field at all (their only array/string fields are free-text
+      store-defined values like `vendors`/`productTypes`, or internal `select` enums already covered
+      by `enum-screen`) -- a future cycle can likely close both out of the backlog without a new
+      probe, the same way c2514 cleared `clinicaltrials-scraper`. **`app-store-reviews-scraper` and
+      `steam-reviews-scraper` are NOT clear, though** -- correcting an overclaim from an earlier draft
+      of this note: both have a `countries`/`country` field, but those are ISO 3166 codes (generic,
+      multi-decade-stable, out of scope for this backlog the same way every other Actor's plain
+      country field has never been probed). `steam-reviews-scraper.language` is the real leftover
+      candidate: a scalar `textfield` (not stringList, so the handoff's literal filter missed it)
+      holding Steam's own non-ISO language codes (`english`, `schinese`, `brazilian`, ...) with an
+      explicit "..." in the schema description implying the documented list is incomplete by design
+      -- worth checking against Steam's actual accepted-language set next time before closing this
+      Actor out. `fec-campaign-finance-scraper` has not been checked yet for its schema shape at
+      all.** Also left the queue.md trim for cycle 2523 (next QUALITY slot) exactly as c2520
+      scheduled it -- untouched this cycle, still TRIM SOON not DUE.
+
 - [x] **DONE cycle 2520 (QUALITY/GROWTH slot, 2520 % 3 == 0) -- ran the 4 standing QUALITY checks
       + the 2 DUE fleet checks (all clean), then closed the c2504 example-input item and
       REWROTE the stale c2508 doc-trim item.** Preflight: `bin/checks-due --all` showed **2 DUE
