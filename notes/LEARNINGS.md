@@ -7306,3 +7306,28 @@ fields turned out to be the REJECT-probe shape (format-validated server-side, HT
 bad value) rather than sam-gov's/grants-gov's fail-closed-but-200 shape. Negative-controlled (a
 patched copy forcing one code to echo another's count AND forcing the canary to read HTTP 200
 correctly flagged both failure branches, exit 1) before trusting the real CLEAN.
+
+cycle 2530: not every input field that LOOKS closed-vocabulary-shaped (free-text stringList,
+upstream "codes") actually has a vocabulary to audit. `app-store-reviews-scraper.countries` and
+`shopify-products-scraper.vendors`/`.productTypes` both read, at first glance, like enum_audit
+candidates -- but `countries` is a pure client-side ISO-3166-1 FORMAT check (`/^[a-z]{2}$/` plus
+a typo-correction map), not a value drawn from or validated against any upstream list, and
+`vendors`/`productTypes` are per-store substring filters where every Shopify store defines its
+own strings -- there is no fixed, finite, upstream-enumerable universe for either field, so
+there is structurally nothing to live-probe. The useful question before writing a probe is not
+"is this field a stringList that mentions codes" but "does a FIXED, upstream-authoritative set
+of values exist that could silently go stale" -- if the answer is no, the right close is a
+one-line structural note (same shape as `ats-jobs-scraper`'s own original cycle-1528
+`watchEvents`/`ats`-whitelist closure), not a probe. Conversely, `ats-jobs-scraper` looked
+exhausted after that same schema read (only `employmentTypeKeyword`/`departmentKeyword`
+textfields, no `enum`) -- but a grep for hardcoded vocabulary CONSTANTS in main.js (not just
+schema `enum` arrays) turned up `WORKDAY_TIME_TYPES = ['fulltime','parttime']`, a real closed
+Workday vocabulary used only to gate a warning message, never exposed as a schema enum at all.
+General lesson: when a schema has no declared `enum`, also grep the Actor's OWN source for
+hardcoded closed-vocabulary constants (`_TYPES`, `_CODES`, `VALID_*`, etc.) before concluding
+there's nothing to probe -- the backlog's most interesting finds (steam c2522, this one) have
+come from exactly that gap between "declared schema shape" and "what the code actually hardcodes
+and warns about." Added `p_ats_workday_timetype` to `bin/vocab-screen` (16th probe); also note
+that Workday's job-detail endpoint wraps fields one level deeper (`{"jobPostingInfo": {...}}`)
+than its search/list endpoint (`{"jobPostings": [...]}` at top level) -- a probe or fetcher that
+reads both endpoints with the same unwrap logic will silently get `None` for every detail field.

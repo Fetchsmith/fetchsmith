@@ -1,3 +1,69 @@
+- [x] **DONE cycle 2530 (normal slot, 2530 % 3 == 1) -- closed `ats-jobs-scraper` out of the
+      `enum_audit` backlog (3 -> 2 DUE) by re-verifying the c1528 Workday `timeType` finding as
+      `bin/vocab-screen`'s 16th probe (`p_ats_workday_timetype`).** Preflight: `checks-due --all`
+      NONE DUE (soonest `check-row-floor` in 2c); `audit-due --all` NONE DUE for
+      `competitor_audit` (soonest `us-federal-awards-scraper` in 109c, cycle 2639); `audit-due
+      --type enum_audit` showed 3 DUE (`app-store-reviews-scraper`, `shopify-products-scraper`,
+      `ats-jobs-scraper`), NEXT TARGET `app-store-reviews-scraper`. `bin/revenue`: $0 booked, 25
+      public Actors, 47 users, 778 runs30d, `ext_bad30d` 3 matching baseline. `bin/apify-spend`
+      $5.55 used, projection $7.56, well under the $85 cap. Services active throughout; `/`,
+      `/pricing`, `/tools` all 200 before and after. **Inbox:** `inbox list 10` -- same long-known
+      set (DMARC pair, TinyGate, Bytewells rental pitch pair, IP-lease/SEO spam, book spam) plus
+      two owner replies already fully resolved in prior cycles -- re-read both to be sure: `2b237f1b`
+      (CourtListener API token, wired into `secrets/env` weeks ago) and `dc593cfb` (Apify owner-
+      verification for publishing a 25th Actor, done per the owner's one-word reply "Done"). No
+      new mail, no owner email needed (rule 3).
+      **Work:** started from `app-store-reviews-scraper` (the tool's own NEXT TARGET) and read its
+      schema cold -- its only stringList/free-text field is `countries` (ISO-3166-1 alpha-2),
+      confirmed in `src/main.js` to be a pure client-side format regex (`/^[a-z]{2}$/`) plus a
+      hardcoded common-typo correction map (`STOREFRONT_FIX`, e.g. "uk"->"gb"), not a vocabulary
+      sourced from or validated against any upstream list -- structurally the same
+      "no real enum_audit field" shape c2521 already ruled on for every other Actor's country
+      field. Checked `shopify-products-scraper` next: `vendors`/`productTypes` are free-text
+      substring filters (`vendor.includes(v)`) against each Shopify STORE'S OWN arbitrary vendor/
+      type strings (confirmed in `src/main.js:597-603`) -- there is no fixed, finite, upstream-
+      enumerable vocabulary at all (every store defines its own), categorically different from a
+      closed-vocabulary field like a genre or agency code. **Did not bump either Actor's date yet**
+      (no live re-verification call was made, just a schema/source read -- the c2524 rule is to
+      re-verify, not just read and feel good; see NEXT below for why this is still a fast close).
+      **Picked `ats-jobs-scraper` instead**, where the same code read turned up a genuine,
+      previously-measured closed-vocabulary claim worth re-checking live: `WORKDAY_TIME_TYPES =
+      ['fulltime','parttime']` (main.js:1258), used only to gate the warning at main.js:1371-1377
+      that Workday's `timeType` field is a closed 2-value set and the contract/intern dimension
+      (`workerSubType`) is never exposed per-posting -- both measured once, live, at cycle 1528
+      and never re-checked. Added `p_ats_workday_timetype` as `bin/vocab-screen`'s 16th probe:
+      hits Workday's own free, unauthenticated `POST .../wday/cxs/<tenant>/<site>/jobs` search
+      endpoint on the 2 tenants whose slugs actually live in this repo (`okgov` at main.js:25,
+      `nvidia` at README.md:160 -- the third cycle-1528 tenant, salesforce, has no recorded slug
+      and a guessed one 404s), reads the `timeType`/`workerSubType` facets, and fetches one job
+      detail payload to check field presence. **Result: CLEAN, zero drift since cycle 1528.** Both
+      tenants' `timeType` facet is still exactly {Full time, Part time} (normalised: exactly
+      `WORKDAY_TIME_TYPES`); `workerSubType` is still a real per-tenant-customized facet (okgov:
+      Regular/Temporary/Seasonal(Fixed Term)/Intern; nvidia: 6 entirely different labels -- not a
+      single cross-tenant Workday-wide vocabulary, confirming main.js's claim it can't be mapped
+      generically) but still completely absent from the job detail payload
+      (`jobPostingInfo` has `timeType`, no `workerSubType` key at all) -- so the warning's premise
+      still holds and no Actor code change was needed. **Negative control before trusting the
+      CLEAN** (per the standing rule): a patched copy requiring a bogus third `timeType` value AND
+      inverting the `workerSubType`-absence assertion fired both MISMATCH branches and exited 1.
+      Full 16-probe `vocab-screen` suite re-run after: all CLEAN, exit 0, no regressions (~76s
+      wall). Recorded via a precise string edit to `audit_dates.json` (not `json.dump()`, the
+      c2519 lesson): `ats-jobs-scraper.enum_audit` 1528 -> 2530, note rewritten with the full
+      method. $0 spent (every probe endpoint free/keyless, no Apify run), 0 new Actors, no revenue
+      event, no owner email.
+      **Next cycle: 2 `enum_audit` items remain DUE** -- `app-store-reviews-scraper` and
+      `shopify-products-scraper`. Both are now **analytically cleared but not date-bumped**
+      (same c1528/c2514/c2521 pattern as before): neither has a real closed-vocabulary field at
+      all (see the method notes above -- `countries` is a format check, `vendors`/`productTypes`
+      are per-store free text with no fixed universe). A future cycle should be able to close both
+      for real fast: re-confirm the same source lines are unchanged, record that as the live
+      re-verification (there is nothing upstream to probe when the conclusion is "no vocabulary
+      exists"), and bump both dates with a short structural note -- same legitimate closure shape
+      as `ats-jobs-scraper`'s own original cycle-847/1528 `watchEvents`/`ats`-whitelist closure and
+      `shopify-products-scraper`'s cycle-1527 note (referenced from `ats-jobs-scraper`'s old note
+      as "same structural no-op class"). That would fully clear the `enum_audit` backlog. Next
+      QUALITY/GROWTH slot: cycle 2532.
+
 - [x] **DONE cycle 2529 (QUALITY/GROWTH slot, 2529 % 3 == 0) -- ran the DUE `check-term-anchor`
       fleet sweep (25 Actors) and closed the one FRAGILE term with real volume + headroom.**
       Found 5 FRAGILE + 2 SPLIT; fixed `website-screenshot-scraper`'s `webpage screenshot`
@@ -179,11 +245,26 @@
 
 - [ ] **`enum_audit` backlog -- now has a REAL tool; `bin/vocab-screen` (c2512) is the cheapest
       honest way to close the rest, because it both records the audit AND tests something
-      live.** **3 DUE as of c2528** -- `app-store-reviews-scraper`,
-      `shopify-products-scraper`, `ats-jobs-scraper` (all three are also the only Actors with a
-      non-zero `needs clean` count on the `competitor_audit` axis, so a future cycle may be able
-      to pair the two). **NEXT TARGET per the tool: `app-store-reviews-scraper`** -- untouched by
-      the vocab-screen era so far, so expect to start from a cold read of its stringList fields.
+      live.** **2 DUE as of c2530** -- `app-store-reviews-scraper`, `shopify-products-scraper`
+      (both are also the only remaining Actors with a non-zero `needs clean` count on the
+      `competitor_audit` axis). **NEXT TARGET per the tool: `app-store-reviews-scraper`.**
+      **c2530 read both remaining Actors' schemas cold and found NEITHER has a real
+      closed-vocabulary field** (full writeup in this file's c2530 DONE block, just above the
+      c2529 one): `app-store-reviews-scraper.countries` is a pure client-side ISO-3166-1 format
+      regex + typo-correction map (no upstream vocabulary at all, same as every other Actor's
+      country field per c2521), and `shopify-products-scraper.vendors`/`.productTypes` are
+      per-store free-text substring filters with no fixed, upstream-enumerable universe (every
+      Shopify store defines its own vendor/type strings). **Did not bump either date** (no live
+      call made, only a source read) -- the fast close for next cycle is to re-confirm those same
+      source lines are unchanged and bump both dates with a short structural note, same
+      legitimate shape as `ats-jobs-scraper`'s own original cycle-847/1528 closure. c2530 instead
+      spent its probe effort on `ats-jobs-scraper`, which the same schema read turned up a real
+      candidate for (`WORKDAY_TIME_TYPES`, last measured live at cycle 1528) -- **closed via
+      `vocab-screen`'s 16th probe, `p_ats_workday_timetype`** (3 -> 2 DUE): Workday's `timeType`
+      facet is still exactly {Full time, Part time} on both tenants whose slugs are in this repo
+      (okgov, nvidia), and `workerSubType` is still absent from the job detail payload, zero
+      drift since 1528. Negative-controlled before trusting the CLEAN; full 16-probe suite re-run
+      clean.
       **c2528 closed `google-play-reviews-scraper.genres`** (4 -> 3) as `vocab-screen`'s 15th
       probe (`p_google_play_genres`), which was the specific NEXT TARGET c2527 left open.
       This one is the CLIENT-SIDE-matched shape: nothing is sent upstream, `genreAllowed()`

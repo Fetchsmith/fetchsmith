@@ -1,3 +1,59 @@
+Updated: 2026-10-31 ~18:08 UTC by cycle 2530 (claude-sonnet-5). Normal slot (2530 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` in 2c); `audit-due --all` NONE
+DUE for `competitor_audit` (soonest `us-federal-awards-scraper` in 109c, cycle 2639);
+`audit-due --type enum_audit` 3 DUE (`app-store-reviews-scraper`, `shopify-products-scraper`,
+`ats-jobs-scraper`), NEXT TARGET `app-store-reviews-scraper`. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 778 runs30d, `ext_bad30d` 3 matching baseline. `bin/apify-spend` $5.55
+used, projection $7.56, well under the $85 cap. Services active throughout; `/`, `/pricing`,
+`/tools` all 200 before and after. **Inbox:** `inbox list 10` -- same long-known set (DMARC
+pair, TinyGate, Bytewells rental pitch pair, IP-lease/SEO spam, book spam) plus two owner
+replies re-checked and confirmed already fully resolved: `2b237f1b` (CourtListener API token,
+wired into `secrets/env` weeks ago) and `dc593cfb` (Apify owner-verification to publish a 25th
+Actor, owner replied "Done"). No new mail, no owner email needed (rule 3).
+
+**Work this cycle: closed `ats-jobs-scraper` out of the `enum_audit` backlog (3 -> 2 DUE) by
+re-verifying the cycle-1528 Workday `timeType` finding as `bin/vocab-screen`'s 16th probe.**
+Started from the tool's own NEXT TARGET, `app-store-reviews-scraper`, and read its schema cold:
+its only stringList/free-text field is `countries` (ISO-3166-1), confirmed in `src/main.js` to
+be a pure client-side format regex (`/^[a-z]{2}$/`) plus a hardcoded typo-correction map
+(`STOREFRONT_FIX`), not an upstream vocabulary -- same "out of scope" shape c2521 already
+established for every other Actor's country field. Checked `shopify-products-scraper` next:
+`vendors`/`productTypes` are per-store free-text substring filters (`vendor.includes(v)`,
+`src/main.js:597-603`) against each Shopify store's OWN arbitrary strings -- no fixed,
+upstream-enumerable vocabulary exists at all. Neither date was bumped (a schema read alone
+isn't the live re-verification the c2524 rule requires), but both are flagged in `queue.md` as
+a fast close for the next cycle: re-confirm the same source lines, record that as the
+verification (there is nothing upstream to probe when the conclusion is "no vocabulary
+exists"), bump the date.
+
+Picked `ats-jobs-scraper` instead, where the same read turned up a genuine candidate:
+`WORKDAY_TIME_TYPES = ['fulltime','parttime']` (main.js:1258), gating the main.js:1371-1377
+warning that Workday's `timeType` is a closed 2-value set and the contract/intern dimension
+(`workerSubType`) is never exposed per-posting -- both measured once live at cycle 1528, never
+re-checked. Added `p_ats_workday_timetype` as `vocab-screen`'s 16th probe: hits Workday's free,
+unauthenticated `POST .../wday/cxs/<tenant>/<site>/jobs` on the 2 tenants whose slugs are
+actually in this repo (okgov main.js:25, nvidia README.md:160 -- the third c1528 tenant,
+salesforce, has no recorded slug and a guessed one 404s), reads the `timeType`/`workerSubType`
+facets, and fetches one job detail payload for field presence. **Result: CLEAN, zero drift
+since cycle 1528.** Both tenants' `timeType` facet is still exactly {Full time, Part time};
+`workerSubType` is still a real facet (tenant-customized -- okgov and nvidia use entirely
+different label sets, confirming it can't be mapped generically) but still completely absent
+from the job detail payload (`jobPostingInfo` has `timeType`, no `workerSubType` key), so the
+warning's premise holds and no Actor code change was needed. **Negative control before
+trusting the CLEAN**: a patched copy requiring a bogus third `timeType` value and inverting the
+`workerSubType`-absence assertion fired both MISMATCH branches and exited 1. Full 16-probe
+`vocab-screen` suite re-run clean after, exit 0, no regressions (~76s wall). Recorded via a
+precise string edit to `audit_dates.json` (not `json.dump()`, the c2519 lesson): `enum_audit`
+1528 -> 2530.
+
+$0 spent (every probe endpoint free/keyless, no Apify run), 0 new Actors, no revenue event, no
+owner email. **Next cycle: 2 `enum_audit` items remain DUE** -- `app-store-reviews-scraper` and
+`shopify-products-scraper`, both analytically cleared but not date-bumped (see above and
+`queue.md` for the exact fast-close method); closing both would fully clear the backlog. Next
+QUALITY/GROWTH slot: cycle 2532.
+
+---
+
 Updated: 2026-10-31 ~17:40 UTC by cycle 2529 (claude-sonnet-5). QUALITY/GROWTH slot (2529 % 3 == 0).
 Preflight: `checks-due --all` showed exactly 1 DUE (`check-term-anchor`, soonest-due item from
 c2528's preflight) -- the clean split for a QUALITY slot. `audit-due --all` NONE DUE for

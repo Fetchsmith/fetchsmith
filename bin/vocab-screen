@@ -1221,6 +1221,83 @@ def p_google_play_genres():
     return not mismatches, out
 
 
+def p_ats_workday_timetype():
+    """ats-jobs-scraper's `employmentTypeKeyword` filter is free text (no schema enum at
+    all), but on Workday boards it is matched against a hardcoded closed vocabulary,
+    `WORKDAY_TIME_TYPES = ['fulltime', 'parttime']` (main.js:1258), used only to decide
+    whether to print the warning at main.js:1371-1377 ("Workday only publishes employment
+    type as Full time or Part time ... contract/intern/temporary (workerSubType) is not
+    exposed per posting"). That claim was measured once, live, at cycle 1528 on three
+    tenants (okgov/nvidia/salesforce) and never re-checked -- the enum_audit question is
+    whether Workday's `timeType` facet is still exactly those two values and `workerSubType`
+    is still absent from the per-job detail payload (the two factual claims the warning text
+    rests on). Workday's facet/detail APIs are free and unauthenticated (`POST
+    .../wday/cxs/<tenant>/<site>/jobs`), so this hits them directly rather than running the
+    Actor -- same shape as the FEC/ClinicalTrials probes, a REST re-measurement, not an
+    Actor invocation.
+
+    Two live tenants (salesforce's site slug from the cycle-1528 measurement is not recorded
+    anywhere in this repo and a guessed slug 404s, so this probe uses the two tenants whose
+    slugs ARE in the codebase: `okgov.wd1.myworkdayjobs.com/okgovjobs`, cited at main.js:25,
+    and `nvidia.wd5.myworkdayjobs.com/NVIDIAExternalCareerSite`, cited in README.md:160)."""
+    out = []
+    mismatches = []
+    main_js = open(f"{R}/actors/ats-jobs-scraper/src/main.js").read()
+    m = re.search(r"WORKDAY_TIME_TYPES = \[([^\]]+)\]", main_js)
+    if not m:
+        out.append("  PROBE INVALID: could not find WORKDAY_TIME_TYPES in main.js -- source shape changed")
+        return False, out
+    workday_time_types = [c.strip().strip("'\"") for c in m.group(1).split(",") if c.strip()]
+    out.append(f"  main.js declares WORKDAY_TIME_TYPES = {workday_time_types}")
+    TENANTS = [
+        ("okgov.wd1.myworkdayjobs.com", "okgov", "okgovjobs"),
+        ("nvidia.wd5.myworkdayjobs.com", "nvidia", "NVIDIAExternalCareerSite"),
+    ]
+    norm = lambda s: re.sub(r"[\s\-_]", "", s.lower())  # mirrors main.js's own stripSep
+    seen_timetype = set()
+    detail_path = None
+    for host, tenant, site in TENANTS:
+        data = http(f"https://{host}/wday/cxs/{tenant}/{site}/jobs",
+                     {"appliedFacets": {}, "limit": 1, "offset": 0, "searchText": ""})
+        facets = {f["facetParameter"]: f for f in data.get("facets", [])}
+        tt_vals = [v["descriptor"] for v in facets.get("timeType", {}).get("values", [])]
+        out.append(f"  {tenant} timeType facet: {tt_vals}")
+        seen_timetype.update(norm(v) for v in tt_vals)
+        wst_vals = [v["descriptor"] for v in facets.get("workerSubType", {}).get("values", [])]
+        out.append(f"  {tenant} workerSubType facet (per-tenant, not compared to a fixed list): {wst_vals}")
+        if not wst_vals:
+            mismatches.append(f"{tenant}: workerSubType facet is empty -- claim of a separate "
+                               "per-tenant classification cannot be checked")
+        if tenant == "okgov":
+            detail_path = (data.get("jobPostings") or [{}])[0].get("externalPath")
+
+    if seen_timetype != set(workday_time_types):
+        mismatches.append(f"timeType vocabulary drifted: live {sorted(seen_timetype)} != "
+                           f"hardcoded {sorted(workday_time_types)}")
+    out.append(f"  union of normalised timeType values across tenants: {sorted(seen_timetype)} "
+               f"(hardcoded WORKDAY_TIME_TYPES: {sorted(workday_time_types)})")
+
+    if detail_path:
+        raw = http(f"https://okgov.wd1.myworkdayjobs.com/wday/cxs/okgov/okgovjobs{detail_path}")
+        detail = raw.get("jobPostingInfo", raw)  # the detail call wraps fields one level deeper than the search call
+        has_tt = "timeType" in detail
+        has_wst = detail.get("workerSubType") is not None
+        out.append(f"  okgov job detail payload: timeType present={has_tt} "
+                   f"(value={detail.get('timeType')!r}), workerSubType present={has_wst}")
+        if not has_tt:
+            mismatches.append("job detail payload no longer carries timeType -- the warning's "
+                               "premise that this is 'the only employment-type field' is now moot")
+        if has_wst:
+            mismatches.append("job detail payload NOW carries workerSubType -- the warning's "
+                               "claim that contract/intern is 'not exposed per posting' is stale")
+    else:
+        mismatches.append("could not fetch a job detail row to check -- no postings returned")
+
+    if mismatches:
+        out.append(f"  MISMATCHES: {mismatches}")
+    return not mismatches, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -1240,6 +1317,7 @@ PROBES = {
                                 p_clinicaltrials_enums),
     "fec-campaign-finance-scraper": ("office+supportOppose", p_fec_office_support_oppose),
     "google-play-reviews-scraper": ("genres", p_google_play_genres),
+    "ats-jobs-scraper": ("employmentTypeKeyword/WORKDAY_TIME_TYPES", p_ats_workday_timetype),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)
