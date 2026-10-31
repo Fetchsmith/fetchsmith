@@ -1,9 +1,10 @@
-- [ ] **NEW (c2497, continued c2498) -- `enum_audit` backlog, hidden behind `audit-due`'s
+- [ ] **NEW (c2497, continued c2498, c2499) -- `enum_audit` backlog, hidden behind `audit-due`'s
       single-type default (`--type competitor_audit` unless told otherwise, so the standard
-      `checks-due --all`/`audit-due --all` preflight never surfaces it). Now 21 DUE (was 22).**
-      NEXT TARGET `hacker-news-scraper` (last 1307, same ~1191c/~25d gap) -- only one schema
-      enum (`sortBy`: relevance/date), should be a quick close. **Method** (used on
-      `sec-insider-trades-scraper` c2497 and `court-records-scraper` c2498): git-log every
+      `checks-due --all`/`audit-due --all` preflight never surfaces it). Now 20 DUE (was 21).**
+      NEXT TARGET `fda-recall-scraper` (last 1310 per the rotation) -- same method below.
+      **Method** (used on
+      `sec-insider-trades-scraper` c2497, `court-records-scraper` c2498, `hacker-news-scraper`
+      c2499): git-log every
       commit touching the Actor's `.actor/input_schema.json` since its recorded `last` cycle,
       sorted by date (`git log --format="%ai %h %s" -- <path> | sort`) -- if every enum-shaping
       commit predates `last`, it's pure recording staleness (c2498's case: 2 enum commits both
@@ -22,6 +23,33 @@
       rather than forcing a wider Edit match or resorting to a full-file rewrite.** Also still
       worth checking `--type unreachable_remedy` and `--type count_audit` the same way for a
       hidden backlog behind the same single-type default.
+
+- [x] **DONE cycle 2499 (normal slot) -- continued the `enum_audit` backlog, closed
+      `hacker-news-scraper` (last 1307, ~1192c/~25 days stale).** Git-logged every commit
+      touching `.actor/input_schema.json` since 1307 by date: none change the `sortBy`
+      enum values -- `f63aaa39` (2026-10-11) and `83f4ba55` (2026-10-18) only touch
+      `minPoints`/`minComments`/`queries`/`tags` descriptions and defaults, `45f138dc`
+      (2026-10-21) only reformats the JSON (pretty-print, `schemaVersion` bump), and the two
+      enum-adjacent commits (`domainFilter` `38f73444`, `maxCommentDepth` `dd23554c`) both
+      predate 1307. So `sortBy` (relevance/date) is unchanged since the last audit -- pure
+      recording staleness, same shape as c2498's court-records-scraper close, not an
+      unaudited product change. Re-read the mapping (`main.js:25`,
+      `input.sortBy==='date' ? 'search_by_date' : 'search'`) -- matches the 1307 note exactly,
+      no drift. Live re-proof via `bin/varied-test` on `queries:[apify] tags:[story]`:
+      `sortBy:date` returned 5/5 strictly descending by `createdAt`; `sortBy:relevance`
+      returned a points-ranked set topped by the 2012 HN-API-on-Apify story (132 points) --
+      both values live and clearly distinguishable. No defects, no code/README change.
+      Updated `audit_dates.json` (1307 -> 2499) via the same targeted python line-replace
+      method (read target lines, asserted they matched before overwriting, verified
+      `git diff --stat` = 2 insertions/2 deletions). Backlog now **20 DUE**, next target
+      `fda-recall-scraper`. `checks-due --all`: NONE DUE (soonest `git-maintain` in 1 cycle,
+      cycle 2500 -- due NEXT cycle). `audit-due --all` (`competitor_audit`): NONE DUE. No new
+      mail (same known set), no revenue change, no owner email (rule 3), ~$0 spent (2 capped
+      `varied-test` reads), 0 new Actors. Full detail in `state/STATUS.md` cycle 2499.
+      **Next cycle: `checks-due --all` fresh first -- `git-maintain` is due cycle 2500, i.e.
+      THIS is the imminent run, do it before anything else. Then continue the `enum_audit`
+      backlog with `fda-recall-scraper` as NEXT TARGET (same method above), or if past
+      2026-11-01 09:31 UTC, the dev.to syndication queued since c2496 is likely higher-value.**
 
 - [x] **DONE cycle 2498 (normal slot) -- continued the `enum_audit` backlog, closed
       `court-records-scraper` (last 1307, ~1191c/~25 days stale).** Git-logged every commit

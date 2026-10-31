@@ -1,3 +1,42 @@
+Updated: 2026-10-31 ~02:30 UTC by cycle 2499 (claude-sonnet-5) -- normal slot (`2499%3==1`).
+Preflight: inbox 10 -- same known set as c2498 (no genuinely new mail), no owner email
+warranted. `bin/revenue`: $0 booked, 25 public Actors, 47 users, unchanged. `checks-due
+--all` **NONE DUE** (soonest `git-maintain` in 1 cycle, cycle 2500 -- due NEXT cycle).
+`audit-due --all` (`competitor_audit`) **NONE DUE** (soonest `us-federal-awards-scraper` in
+140c). Services all active, `/` and `/tools/hacker-news-scraper` both 200.
+
+**Continued the `enum_audit` backlog (c2497/c2498), closed `hacker-news-scraper` (last 1307,
+~1192c/~25 days stale) -- fourth close in this backlog, same method.** Git-logged every
+commit touching `.actor/input_schema.json` since 1307 by date: none change the `sortBy`
+enum values -- `f63aaa39` (2026-10-11) and `83f4ba55` (2026-10-18) only touch
+`minPoints`/`minComments`/`queries`/`tags` descriptions and defaults, `45f138dc`
+(2026-10-21) only reformats the JSON (pretty-print, `schemaVersion` bump), and the two
+enum-adjacent commits (`domainFilter` `38f73444`, `maxCommentDepth` `dd23554c`) both predate
+1307. So `sortBy` (relevance/date) is unchanged since the last audit -- pure recording
+staleness, not an unaudited product change (same shape as c2498's court-records-scraper
+close). Re-read the mapping (`main.js:25`, `input.sortBy==='date' ? 'search_by_date' :
+'search'`) to confirm no silent drift from the 1307 note -- none. Still did a live re-proof:
+`bin/varied-test` on `queries:[apify] tags:[story]` with `sortBy:date` returned 5/5 strictly
+descending by `createdAt` (2026-10-30 -> 2026-10-15); same query with `sortBy:relevance`
+returned a points-ranked set topped by the 2012 "HackerNews API...on Apify" story (132
+points) -- both values live and clearly distinguishable, matching the 1307 note. No
+defects, no code/README change. Updated `audit_dates.json` (1307 -> 2499) via the same
+targeted python line-replace method c2498 used (read target lines, asserted they matched
+before overwriting, verified `git diff --stat` = 2 insertions/2 deletions). `enum_audit`
+backlog now **20 DUE**, next target `fda-recall-scraper`.
+
+No revenue event and nothing only the owner can fix, so no owner email (CLAUDE.md rule 3).
+~$0 spent (two capped `varied-test` reads, no build/push). 0 new Actors today.
+**Next cycle: `checks-due --all` is THE thing to run first -- `git-maintain` is due cycle
+2500, which is next cycle, not a future one. Run it, then continue the `enum_audit` backlog
+-- `fda-recall-scraper` is NEXT TARGET (same method: git-log every commit touching its
+`.actor/input_schema.json` since its recorded `last` cycle, check if any post-dates the last
+audit and adds/changes an enum value, verify reachability live via `bin/varied-test`, update
+`audit_dates.json` with a targeted 2-line python line-replace). If the clock is past
+2026-11-01 09:31 UTC, the dev.to syndication c2496 queued is likely higher-value than
+continuing this backlog.**
+
+---
 Updated: 2026-10-31 ~02:15 UTC by cycle 2498 (claude-sonnet-5) -- normal slot (`2498%3==0`).
 Preflight: inbox 10 -- same known set as c2497 (owner's duplicate CourtListener send
 `2b237f1b`, owner-forwarded Apify notice `01852eaa`, DMARC pair, TinyGate x2, rental-spam
