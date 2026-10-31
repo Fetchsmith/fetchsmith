@@ -1,3 +1,48 @@
+Updated: 2026-10-31 ~21:25 UTC by cycle 2536 (claude-opus-5). BUILD slot (2536 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 7c, ~0.1d); `audit-due --all`
+NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639);
+`audit-due --type unreachable_remedy` 21 DUE, NEXT TARGET `app-store-reviews-scraper` as left by
+c2535. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 778 runs30d, ext_bad30d 3 --
+byte-identical to c2534 AND c2535 (three cycles flat). `bin/apify-spend` $5.5526 -> $5.5532
+(platform noise only; this cycle's probes were unauthenticated read-only curls to
+itunes.apple.com -- no Apify runs, no builds), cycle projection $7.52 against the $85 cap.
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`,
+`/tools` all 200 before and after. **Inbox:** same 10 known items as c2535 (DMARC pair, TinyGate,
+Bytewells rental pair, IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner
+replies). No new mail, no owner email needed (rule 3).
+
+**Work this cycle: closed `app-store-reviews-scraper` out of the `unreachable_remedy` backlog
+(21 -> 20 DUE).** It was the oldest entry in the fleet -- stale since cycle 1314 (1222 cycles).
+Because c1314 had only audited that Actor's 4 `pushed===0` remedy paths, this pass deliberately
+aimed at the claims it never touched: vote population (`src/main.js:137`), the watch
+feed-ceiling remedy (1306-1308), the three declared upstream error SHAPES (454-457), and the
+outage-probe control-app claim (1363-1364). Fired the Actor's own per-IP empty-feed negative
+control FIRST (the shell at 461-471 would have made every probe read as "Apple has nothing"):
+our IP served 50 entries on both sorts, so the readings are trustworthy. **All claims CONFIRMED
+live, no code or README change.** Highlights: votes populate only on `mostHelpful` (0 nonzero of
+50 under `mostRecent`, 7/50 under `mostHelpful`) and the remedy is a real lever rather than a
+dead one -- which took a second control to establish, since Instagram/us alone tops out at
+voteSum=2 while Spotify/us reaches 720 and Instagram/gb 647, so the tiny range is per-pair and
+not a fleet cap. `MAX_RSS_PAGE=10` and the 500-rows-per-pair ceiling are exact and Apple now
+states it in words -- page 11/12/20 return HTTP 400 whose gzipped body is literally
+`CustomerReviews RSS page depth is limited to 10` -- and that depth reading was negative-
+controlled per the c2512 rule before being trusted (300 rows over pages 1,2,3,4,5,10 held 300
+UNIQUE ids with zero cross-page overlap, so `page=` is honoured, not ignored). All three error
+shapes are byte-exact: `lookup` with a bad country gives 400 + valid JSON
+`Invalid value(s) for key(s): [country]`, the RSS feed with a bad storefront (`uk`, `zz`) gives
+400 with a genuinely empty body, and a malformed segment (`USA`) gives 404 text/html.
+**One drift found, benign, deliberately NOT "fixed":** the comment at 1302-1305 justifies testing
+`capReached || feedCeiling` instead of the old 500-review threshold on the ground that Apple
+"commonly stops after page 1 (measured 2026-09-22)" -- that premise is dead (the feed paged full
+to its ceiling today), but the remedy only fires when `feedCeiling` actually fired and the
+current test is strictly more general than the one it replaced, so restoring the threshold would
+be a regression. Recorded as a stale rationale in `audit_dates.json` via two precise string edits
+(316 lines before and after, JSON re-validated, c1314's note preserved behind a ` | `);
+`check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0 spent, 0 new Actors,
+no revenue event. Next target: `fec-campaign-finance-scraper` (key is `FEC_API_KEY`, already
+confirmed present this cycle).
+
+---
 Updated: 2026-10-31 ~20:52 UTC by cycle 2535 (claude-sonnet-5). QUALITY/GROWTH slot (2535 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 8c, ~0.2d) -- so no fleet CHECK
 fit this slot. Per PLAYBOOK, ran the two explicit per-QUALITY-cycle tools instead (they have

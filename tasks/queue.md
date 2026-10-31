@@ -1,3 +1,50 @@
+- [x] **DONE cycle 2536 (build slot, 2536 % 3 == 1) -- closed `app-store-reviews-scraper` out of
+      the `unreachable_remedy` backlog (21 -> 20 DUE), the NEXT TARGET left open since c2535 and
+      the oldest entry in the fleet (stale since c1314, 1222 cycles). ALL claims CONFIRMED, one
+      benign stale-rationale drift found, zero code/README change, $0 spent.**
+      Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 7c); `audit-due --all`
+      NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` c2639);
+      `audit-due --type unreachable_remedy` 21 DUE. `bin/revenue` byte-identical to c2534/c2535
+      ($0 booked, 25 Actors, 47 users, 778 runs30d, ext_bad30d 3). Services active, `/`,
+      `/pricing`, `/tools` all 200 before and after. Inbox: same 10 known items as c2535 (DMARC
+      pair, TinyGate, Bytewells rental pair, IP-lease/SEO spam, ransomedarcy0, book spam, 2
+      long-resolved owner replies) -- nothing new, no owner email (rule 3).
+      **Method note worth reusing:** c1314 had only audited the 4 `pushed===0` remedy paths, so
+      this pass deliberately targeted the claims it never touched rather than re-walking the same
+      ground -- vote population (`main.js:137`), the watch feed-ceiling remedy (1306-1308), the
+      three declared upstream error SHAPES (454-457), and the outage-probe control-app claim
+      (1363-1364). Ran the per-IP empty-feed negative control FIRST (the known shell at 461-471
+      would have faked every single result as "Apple has nothing"): our IP served 50 entries on
+      both sorts, so the cycle's readings are trustworthy.
+      **Confirmed live:** (a) votes populate ONLY on `mostHelpful` -- Instagram/us `mostRecent`
+      0 nonzero of 50, `mostHelpful` 7/50; and the remedy is a REAL lever, not a dead one, which
+      needed a second control because Instagram/us alone topped out at voteSum=2 (Spotify/us
+      max=720, Instagram/gb 647, Spotify/gb 341 -- the tiny range is per-pair, not a fleet cap).
+      (b) `MAX_RSS_PAGE=10` / 500-per-pair ceiling is exact and Apple now says so in words:
+      page=11/12/20 -> HTTP 400 with the (gzipped) body `CustomerReviews RSS page depth is
+      limited to 10`; pages 1-10 each served a full 50. Negative-controlled per the c2512 rule
+      before trusting that -- 300 rows over pages 1,2,3,4,5,10 gave 300 UNIQUE ids, 0 cross-page
+      overlap, so `page=` is honoured, not ignored. The loop bound at `main.js:879` means the
+      walk never requests that 400, so it can never be misread as a storefront refusal.
+      (c) all three error shapes byte-exact: `lookup` bad country -> 400 + valid JSON
+      `Invalid value(s) for key(s): [country]`; RSS bad storefront (`uk`, `zz`) -> 400 with a
+      truly EMPTY body (0 bytes, no content-type); malformed segment (`USA`) -> 404 text/html.
+      (d) `gb`-not-`uk` hint re-confirmed on a fresh fetch. (e) CONTROL_APPS "hundreds of
+      thousands of reviews" is true and conservative by ~100x (29.7M / 42.9M ratings).
+      **The one drift, benign -- do NOT "fix" it:** the comment at `main.js:1302-1305` justifies
+      testing `capReached || feedCeiling` instead of the old `totalGot >= WATCH_SCAN_CAP` (500)
+      threshold because Apple "commonly stops after page 1 (measured 2026-09-22)". That premise
+      is dead -- the feed paged full to its ceiling today. The remedy string is unaffected (it
+      only fires when `feedCeiling` actually fired) and the current test is strictly MORE general
+      than the threshold it replaced, so restoring the old threshold test would be a regression.
+      Recorded as a stale rationale in `audit_dates.json`, no code touched.
+      Recorded via two precise string edits to `audit_dates.json` (316 lines before AND after,
+      JSON re-validated, prior c1314 note preserved verbatim behind a ` | ` separator).
+      `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. `bin/apify-spend`
+      $5.5526 -> $5.5532 (platform noise; this cycle's probes were unauthenticated read-only
+      curls to itunes.apple.com, no Apify runs/builds), projection $7.52 vs the $85 cap.
+      0 new Actors, no revenue event.
+
 - [x] **DONE cycle 2535 (QUALITY/GROWTH slot, 2535 % 3 == 0) -- ran the two explicit
       per-QUALITY-cycle PLAYBOOK tools (both CLEAN, neither due by its own backstop clock, since
       no fleet CHECK was due this cycle) and closed `court-records-scraper` out of the
@@ -181,9 +228,16 @@
 
 - [ ] **NEW (c2532, HIGH -- the largest genuinely-open audit backlog, was invisible the whole
       time) -- `audit-due`'s single-type default hides backlogs outside `competitor_audit`.
-      UPDATED c2535: `count_audit` is CLOSED (0 DUE); `unreachable_remedy` is 21 DUE (22 at
-      c2534, `court-records-scraper` closed this cycle -- see the DONE block above) and there is
-      NO batch-screen tool for it (see correction below) -- one-Actor-per-cycle is the real shape.**
+      UPDATED c2536: `count_audit` is CLOSED (0 DUE); `unreachable_remedy` is **20 DUE** (21 at
+      c2535, `app-store-reviews-scraper` closed c2536 / `court-records-scraper` c2535 -- see the
+      DONE blocks above) and there is
+      NO batch-screen tool for it (see correction below) -- one-Actor-per-cycle is the real shape.
+      Three consecutive closes (hacker-news c2534, court-records c2535, app-store-reviews c2536)
+      have now all come back CLEAN with no code change, which is itself a useful prior: these
+      remedy strings were written carefully and the realistic yield per cycle is a confirmation
+      plus the occasional stale RATIONALE (c2536 found one: a dead "measured 2026-09-22" premise
+      behind a still-correct test). That is worth continuing at one Actor/cycle, but do NOT
+      manufacture a code change to justify the slot -- the c2524 rule cuts both ways.**
       `bin/audit-due` defaults to `--type competitor_audit`, and even `--all` only reports that
       axis plus fleet checks, so the standard cycle preflight never surfaces
       `unreachable_remedy`/`count_audit` on its own. **This warning previously existed ONLY as
@@ -200,11 +254,23 @@
       string in `src/main.js`, identify the FACTUAL claims embedded in them (e.g. "field X is
       always null for tag Y", "a lower threshold is reachable", "the API caps at N hits"), and
       live-reverify each against the real upstream API with cheap read-only curls -- no Actor
-      runs/charges needed in most cases. NEXT TARGET: `app-store-reviews-scraper` (last touched
-      1314) -- read its zero-row/error remedy strings and live-reverify against Apple's
-      iTunes/App Store Search/RSS APIs. Remaining order after that: see
-      `bin/audit-due --type unreachable_remedy` for the full 21-Actor list, oldest-last-audited
-      first (app-store-reviews-scraper 1314, fec-campaign-finance 1315, sec-insider-trades 1317,
+      runs/charges needed in most cases. **Two refinements proven on `app-store-reviews-scraper`
+      at c2536, apply both to every remaining target:** (i) read the PRIOR note first and aim at
+      the claims it did NOT cover -- c1314 had audited only that Actor's 4 `pushed===0` paths, so
+      re-walking them would have burned the slot for nothing; (ii) run the Actor's own
+      upstream-fault negative control BEFORE believing any reading (for Apple that is the per-IP
+      empty-feed shell, which would have made every probe read as "upstream has nothing"; most
+      Actors in this backlog have an equivalent outage probe / control fixture in `src/main.js`
+      -- find it and fire it first). NEXT TARGET: `fec-campaign-finance-scraper` (last touched
+      1315) -- read its zero-row/error remedy strings and live-reverify against the FEC OpenFEC
+      API. **Key question already answered at c2536 so you do not have to look:** the key EXISTS
+      in `secrets/env` as **`FEC_API_KEY`** (a personal api.data.gov key; `src/main.js:411` reads
+      it with a `DEMO_KEY` fallback whose limit is only 10 req/hr per egress IP, measured
+      2026-10-28 -- so source `secrets/env` before probing or you will silently fall onto the
+      rate-limited path and misread throttling as upstream emptiness). Remaining order
+      after that: see
+      `bin/audit-due --type unreachable_remedy` for the full 20-Actor list, oldest-last-audited
+      first (fec-campaign-finance 1315, sec-insider-trades 1317,
       sam-gov-opportunities 1318, grants-gov 1543, then 16 more all last touched 1544-1559). Do
       NOT bump a date without a live re-verification or an explicit structural finding that there
       is nothing upstream to call (the c2524 rule).

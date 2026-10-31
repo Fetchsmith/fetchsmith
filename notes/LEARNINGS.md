@@ -7401,3 +7401,34 @@ a thin sample can't rule out drift that only shows up in an era the Actor wasn't
 originally. This backlog is therefore genuinely one-Actor-per-cycle, same as `enum_audit` was
 before c2500's batch screen existed for THAT type -- there is no equivalent shortcut here, so
 budget cycles accordingly rather than looking for one.
+
+## Cycle 2536 -- fire the Actor's OWN upstream-fault control before believing any audit probe
+`app-store-reviews-scraper` has a documented hazard (`src/main.js:461-471`): Apple serves an
+EMPTY review feed to some source IPs, shaped exactly like "this app has no reviews". Any
+`unreachable_remedy` probe run from a refused IP would have read as a confident "the claim is
+dead / upstream has nothing" on every single claim at once -- a uniform false negative, which is
+the worst kind because the consistency across claims looks like corroboration. Fixing this cost
+one request: fetch a control app on both sorts first and confirm 50 entries come back.
+**Generalise it:** most Actors in the `unreachable_remedy` backlog carry an equivalent
+outage/control fixture (`CONTROL_APPS` here, the "feed is down" probe in `steam-reviews-scraper`,
+etc.). Find it and fire it BEFORE the real probes, and make its result part of the audit note --
+otherwise a clean-looking audit is unfalsifiable.
+
+Two supporting rules this cycle re-earned:
+- **Aim at the claims the PRIOR note did not cover.** c1314 had audited only this Actor's four
+  `pushed===0` remedy paths. Re-walking them would have consumed the slot and taught nothing; the
+  value was entirely in the untouched claims (vote population, the feed ceiling, the declared
+  error shapes). Read the previous note first and pick the complement.
+- **A per-pair sample can fake a dead lever.** `main.js:137` tells buyers to switch sort to
+  `mostHelpful` so `minVoteSum`/`minVoteCount` become usable. Instagram/us `mostHelpful` tops out
+  at voteSum=2, which on its own would have justified reporting the remedy as near-useless. Three
+  more pairs killed that reading (Spotify/us 720, Instagram/gb 647, Spotify/gb 341): the narrow
+  range was a property of one app/storefront, not of the feed. Before calling a documented lever
+  dead on a range/threshold argument, sample a second and third pair.
+
+Also worth keeping: **a confirmed claim can still sit on a dead rationale.** The comment at
+1302-1305 correctly tests `capReached || feedCeiling` but justifies it with "Apple commonly stops
+after page 1 (measured 2026-09-22)" -- false today; the feed paged full to its 500 ceiling. The
+code is MORE general than the premise it was argued from, so the right action was to record the
+stale rationale and change nothing. Resist "the comment is wrong, therefore fix the code": here
+that would have restored a narrower test and reintroduced the h255/h257 silent-shortfall class.
