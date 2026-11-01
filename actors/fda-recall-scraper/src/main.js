@@ -26,10 +26,14 @@ const ENDPOINTS = {
     device: 'https://api.fda.gov/device/enforcement.json',
 };
 
-// Hard API limits, both verified live (cycle 87):
-//   limit=1001 -> 400 "Limit cannot exceed 1000 results for search requests."
-//   skip=26000 -> 400 "Skip value must 25000 or less."
-// The skip cap is why wide queries are re-chunked into date windows instead of paged straight through.
+// Hard API limits, re-verified live cycle 2577 on food+drug+device (cycle 87 only recorded one
+// endpoint, untagged): limit=1001 -> 400 "Limit cannot exceed 1000 results for search requests."
+// skip=25000 -> 200 (skip is INCLUSIVE of 25000: a skip=25000 request with limit up to MAX_LIMIT
+// succeeds and returns rows [25000, 25999]); skip=25001 -> 400 "Skip value must 25000 or less."
+// regardless of limit. So the true reachable ceiling for an over-cap window is MAX_SKIP +
+// MAX_LIMIT (26000 rows), not MAX_SKIP (25000) -- the walk must be allowed to issue one request
+// AT skip==MAX_SKIP, not stop just short of it. The skip cap is why wide queries are re-chunked
+// into date windows instead of paged straight through.
 const MAX_LIMIT = 1000;
 const MAX_SKIP = 25000;
 const CHUNK_THRESHOLD = 24000; // stay under MAX_SKIP with a page of headroom
@@ -683,7 +687,7 @@ async function planWindows(productType, from, to) {
                 productType,
                 'skip-ceiling',
                 `${productType} window ${w.from}..${w.to} has ${r.total} rows and cannot be split further; `
-                + `only the first ${MAX_SKIP} are reachable (openFDA refuses skip>${MAX_SKIP}). Narrow `
+                + `only the first ${MAX_SKIP + MAX_LIMIT} are reachable (openFDA refuses skip>${MAX_SKIP}). Narrow `
                 + 'reportDateFrom/reportDateTo to see the rest.',
             );
         }
@@ -700,7 +704,7 @@ function recordPlan(productType, windows, planComplete) {
     const s = summaryFor(productType);
     s.windowsPlanned = windows.length;
     s.declaredMatches = windows.reduce((n, w) => n + w.total, 0);
-    s.reachableMatches = windows.reduce((n, w) => n + Math.min(w.total, MAX_SKIP), 0);
+    s.reachableMatches = windows.reduce((n, w) => n + Math.min(w.total, MAX_SKIP + MAX_LIMIT), 0);
     s.declaredMatchesIsFloor = !planComplete;
     return windows;
 }
@@ -1120,13 +1124,13 @@ async function refill(reader) {
     while (!reader.buffer.length && !reader.done) {
         const w = reader.windows[reader.windowIdx];
         if (!w) { reader.done = true; return; }
-        if (reader.skip >= Math.min(w.total, MAX_SKIP)) {
+        if (reader.skip >= w.total || reader.skip > MAX_SKIP) {
             reader.windowIdx += 1;
             reader.skip = 0;
             summaryFor(reader.productType).windowsScanned += 1;
             continue;
         }
-        const limit = Math.min(pageSize, MAX_SKIP - reader.skip);
+        const limit = Math.min(pageSize, w.total - reader.skip);
         const page = await fetchPage(reader.productType, buildSearch(w.from, w.to), limit, reader.skip);
         if (!page) {
             // Was: silently identical to "this product type is exhausted".
@@ -1161,8 +1165,8 @@ async function seedBaseline() {
         for (const w of windows) {
             let skip = 0;
             for (;;) {
-                if (skip >= Math.min(w.total, MAX_SKIP)) break;
-                const limit = Math.min(MAX_LIMIT, MAX_SKIP - skip);
+                if (skip >= w.total || skip > MAX_SKIP) break;
+                const limit = Math.min(MAX_LIMIT, w.total - skip);
                 const page = await fetchPage(productType, buildSearch(w.from, w.to), limit, skip);
                 // Split apart: a failed request is NOT a finished window. Collapsing the
                 // two under-seeds the baseline, and every recall past the failure point

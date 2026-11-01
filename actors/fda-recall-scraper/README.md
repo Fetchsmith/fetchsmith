@@ -194,8 +194,8 @@ Because FDA's real vocabulary for both fields is one value longer than the obvio
 
 `status` is the other direction and is unchanged: the same facet sweep confirms openFDA still only ever emits `Ongoing`, `Completed` and `Terminated`, so FDA's documented `Pending` remains a real-vocabulary-but-zero-data value (the Actor logs a warning if you pick it). The facet counts reconcile exactly to each endpoint's grand total, so no recall is missing a `status` or a `classification` either.
 
-**Can I get more than 25,000 rows from one filter?**
-Yes. openFDA refuses to page past row 25,000 (`skip` is hard-capped), so when a query matches more than that the Actor automatically splits it into narrower `reportDate` windows and pages each one — the year-boundary split was verified to sum exactly to the unsplit total, with no duplicated or dropped rows. If one single window still exceeds the cap, the run logs a warning telling you to narrow the date range.
+**Can I get more than 26,000 rows from one filter?**
+Yes. openFDA's `skip` parameter is hard-capped at 25,000 (confirmed live: `skip=25000` still succeeds and returns rows up to row 26,000; `skip=25001` is rejected regardless of page size), so when a query matches more than that the Actor automatically splits it into narrower `reportDate` windows and pages each one — the year-boundary split was verified to sum exactly to the unsplit total, with no duplicated or dropped rows. If one single window still exceeds 26,000 rows after splitting as far as the Actor will go, the run logs a warning telling you to narrow the date range.
 
 **Does `states` mean where the product was sold?**
 No — it is the recalling firm's own state. For distribution, read the `distributionPattern` field (e.g. "Nationwide within the United States", or a list of states).
@@ -327,7 +327,7 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 | `max-results` | Your `maxResults` stopped the walk before the match set ran out. |
 | `charge-limit` | The run's maximum-cost limit stopped it; raise the limit to get the rest. |
 | `seed-cap` | A `watchLabel` seed hit the 20,000-recall cap. Narrow the query and re-seed, or the first incremental run reports recalls past the cap as new. |
-| `skip-ceiling` | A single date window holds more rows than openFDA will page through (`skip` cannot exceed 25,000). Narrow `reportDateFrom`/`reportDateTo`. |
+| `skip-ceiling` | A single date window holds more than 26,000 rows, openFDA's real paging ceiling (`skip` cannot exceed 25,000, plus one page of up to 1,000 more rows at `skip=25000`). Narrow `reportDateFrom`/`reportDateTo`. |
 | `search-request-failed` | openFDA stopped answering mid-walk. Rows past that point were never scanned — this is **not** evidence they don't exist. |
 | `plan-request-failed` | openFDA never answered the initial count query for a product type, so nothing of that type was scanned. That type's `status` is `not-scanned` and its `declaredMatches` is `null`, never `0`. |
 

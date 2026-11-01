@@ -23,7 +23,7 @@ enum-screen, not instead of it.
 Exit status is 0 when every probe is clean, 1 when any vocabulary value no longer
 resolves upstream (i.e. a buyer-facing filter value has gone stale).
 """
-import datetime as dt, json, os, re, subprocess, sys, urllib.request, urllib.error, urllib.parse
+import datetime as dt, json, os, re, subprocess, sys, time, urllib.request, urllib.error, urllib.parse
 
 R = "/root/agent"
 UA = "FetchSmith-vocab-screen/1.0 (+https://fetchsmith.com)"
@@ -1298,6 +1298,119 @@ def p_ats_workday_timetype():
     return not mismatches, out
 
 
+def p_courtlistener_courts():
+    """court-records-scraper's `courts` field (free-text stringList, no schema enum) is
+    checked at runtime against a BAKED-IN snapshot, `src/court-jurisdictions.json`
+    (harvested 2026-09-19/2026-09-28, 3359 ids total -- 472 `in_use=true` + 2887
+    `in_use=false`), which is what makes `knownCourt()` an exhaustive existence test
+    instead of a guess (main.js:7-26). This is the courts probe the c2532 queue item
+    flagged as missing -- `enum_audit`/`enum-screen` are structurally blind to it (no
+    declared schema enum to diff) and `count_audit`/c2533 only exercised the token
+    against /search/, a different endpoint.
+
+    Full re-enumeration (168 pages, /courts/ hard-caps page_size at 20 regardless of the
+    query param -- confirmed live, and the c2532 note already flagged this) is what
+    `bin/harvest-courtlistener-courts` exists for and is NOT repeated here: at the
+    anonymous 5 req/min rate that script itself measured, a full walk is ~31 minutes,
+    far outside a liveness probe's budget. `/courts/` needs no `CL_API_TOKEN` at all
+    (confirmed live: page_size=1 returns 200 with no Authorization header), so none of
+    this touches the shared 125 req/day search quota the Actor's own runs depend on --
+    deliberately kept that way so this probe can never starve a buyer run.
+
+    Instead, same shape as every other huge-vocabulary probe in this file (NAICS/PSC,
+    CPV): (1) the live TOTAL count is the cheap, strong drift signal -- one request,
+    and if it moves at all the baked 3359 snapshot is stale and the real
+    `harvest-courtlistener-courts` re-run is overdue, full stop; (2) the handful of
+    court ids this Actor's own README/tests NAME are checked individually against
+    their single-resource endpoint (`/courts/<id>/`, no pagination, one request each);
+    (3) a bogus id is checked too, per the c2512 rule that an absence-test which never
+    actually triggers reads as a confident CLEAN for the wrong reason.
+
+    Paced at the same 13s/request gap `bin/harvest-courtlistener-courts` measured for
+    anonymous CourtListener traffic, with a 429 backoff -- confirmed necessary live: an
+    unpaced first attempt at this probe hit 429 on request 4 of 9 and every request
+    after it, which would have silently reported four README-named courts and the
+    negative control as all 'not resolving', a false STALE verdict caused by our own
+    request rate, not a real upstream change."""
+    out = []
+    mismatches = []
+    _last_cl = [0.0]
+
+    def cl_get(url):
+        for attempt in (1, 2, 3):
+            wait = 13.0 - (time.time() - _last_cl[0])
+            if wait > 0:
+                time.sleep(wait)
+            _last_cl[0] = time.time()
+            try:
+                return http(url)
+            except urllib.error.HTTPError as e:
+                if e.code == 429 and attempt < 3:
+                    time.sleep(40)
+                    continue
+                raise
+        raise RuntimeError("unreachable")
+
+    path = f"{R}/actors/court-records-scraper/src/court-jurisdictions.json"
+    baked = json.load(open(path))
+    baked_courts = baked["courts"]
+    baked_total = len(baked_courts)
+    out.append(f"  baked snapshot: {baked_total} court ids ({baked['_source'][:90]}...)")
+
+    live_total = cl_get("https://www.courtlistener.com/api/rest/v4/courts/?page_size=1").get("count")
+    out.append(f"  live /courts/ count: {live_total}")
+    if live_total != baked_total:
+        mismatches.append(f"live total court count {live_total} != baked snapshot {baked_total} "
+                           "-- re-run bin/harvest-courtlistener-courts and rebuild court-jurisdictions.json")
+
+    m = re.search(r"in_use=true\s*\((\d+)\s*courts", baked["_source"])
+    baked_in_use = int(m.group(1)) if m else None
+    live_in_use = cl_get("https://www.courtlistener.com/api/rest/v4/courts/?in_use=true&page_size=1").get("count")
+    out.append(f"  live in_use=true count: {live_in_use} (baked snapshot claims {baked_in_use})")
+    if baked_in_use is not None and live_in_use != baked_in_use:
+        mismatches.append(f"live in_use=true count {live_in_use} != baked snapshot {baked_in_use} "
+                           "-- a court was added/retired/toggled since the harvest")
+
+    # README's own named examples (README.md's `courts` row) plus the one documented edge
+    # case, ohctapp1, whose blank upstream jurisdiction is why it is mapped to null rather
+    # than omitted (c1702-ish fix, see the file's own comment).
+    NAMED = ["scotus", "ca9", "cand", "nysd", "cacb", "ohctapp1"]
+    for cid in NAMED:
+        in_baked = cid in baked_courts
+        try:
+            live = cl_get(f"https://www.courtlistener.com/api/rest/v4/courts/{cid}/")
+            live_ok = True
+        except urllib.error.HTTPError as e:
+            live_ok, live = (e.code == 200), {}
+        out.append(f"  {cid}: in baked snapshot={in_baked}, live resolves={live_ok}"
+                   + (f", live in_use={live.get('in_use')}, live jurisdiction={live.get('jurisdiction')!r}"
+                      if live_ok else ""))
+        if not in_baked:
+            mismatches.append(f"{cid} is named in README but missing from the baked snapshot")
+        if not live_ok:
+            mismatches.append(f"{cid} is named in README but no longer resolves live -- README/test fixture stale")
+        elif cid == "ohctapp1" and live.get("jurisdiction"):
+            mismatches.append(f"ohctapp1 now has a live jurisdiction value {live.get('jurisdiction')!r} "
+                               "(was blank at harvest) -- the null-mapping special case may be obsolete")
+
+    bogus = "zzyzxqplonknonexistentcourtfetchsmithtest"
+    bogus_in_baked = bogus in baked_courts
+    try:
+        cl_get(f"https://www.courtlistener.com/api/rest/v4/courts/{bogus}/")
+        bogus_live_404 = False
+    except urllib.error.HTTPError as e:
+        bogus_live_404 = (e.code == 404)
+    out.append(f"  negative control {bogus!r}: in baked snapshot={bogus_in_baked}, live 404={bogus_live_404}")
+    if bogus_in_baked:
+        mismatches.append("negative control unexpectedly present in baked snapshot -- pick a different id")
+    if not bogus_live_404:
+        mismatches.append("negative control did not 404 live -- the absence test cannot be trusted as a probe")
+
+    if mismatches:
+        out.append(f"  MISMATCHES: {mismatches}")
+    return not mismatches, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -1318,6 +1431,7 @@ PROBES = {
     "fec-campaign-finance-scraper": ("office+supportOppose", p_fec_office_support_oppose),
     "google-play-reviews-scraper": ("genres", p_google_play_genres),
     "ats-jobs-scraper": ("employmentTypeKeyword/WORKDAY_TIME_TYPES", p_ats_workday_timetype),
+    "court-records-scraper": ("courts", p_courtlistener_courts),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

@@ -136,16 +136,31 @@
       (new paragraph under the `publicationCount` section) rather than letting the number look
       exact. ~$0.005 spent (1 build + 1 cheap run). See LEARNINGS c2576 for the reusable lessons.
 
-- [ ] **NEW follow-up (c2576, LOW -- a cheap fleet-wide sweep, NOT a known defect) -- probe every
-      multi-endpoint Actor for per-endpoint pagination limits.** c2576's root cause was one
-      `OFFSET_WALL` const shared by two endpoints of the SAME API that actually wall 5000 rows
-      apart. Fleet-wide question worth one pass: which other Actors page more than one endpoint of
-      one API against a single shared limit const? Candidates to check first are the Actors with a
-      sibling/detail endpoint (`fda-recall-scraper` food/drug/device `enforcement.json`,
-      `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `sec-insider-trades-scraper`,
-      `court-records-scraper`). Cheap test per endpoint: 3 curls -- `offset=WALL-1&limit=max`,
-      `offset=WALL-1&limit=1`, `offset=WALL&limit=1` -- and compare. Do NOT ship a build unless a
-      probe actually disagrees with the const in use.
+- [x] **DONE cycle 2577 -- ran the c2576 fleet sweep. 4 of 5 candidates not applicable (single
+      endpoint or cursor-paginated, no numeric wall const to misapply); the 5th (`fda-recall-scraper`,
+      3 `enforcement.json` endpoints sharing one `MAX_SKIP`) DID disagree with the probe: `skip=25000`
+      (not 25001) is the true boundary and it's INCLUSIVE -- `skip=25000&limit=1000` returns a full
+      200 page (confirmed live on food + device), `skip=25001` is 400 regardless of limit. Code
+      treated `MAX_SKIP` as an exclusive stop (`skip >= MAX_SKIP`) and clamped the final page's
+      limit to land exactly at 25000, so it never issued the one legal request at `skip==25000` --
+      silently dropping up to 1000 reachable rows (the baseline/seed walk's full page) off any window
+      that hits the cap. Fixed both walk loops (`refill()`/`seedBaseline()`): stop condition is now
+      `skip >= w.total || skip > MAX_SKIP` and the limit clamp uses `w.total - skip` instead of
+      `MAX_SKIP - skip`; `reachableMatches`/the `skip-ceiling` warning now say `MAX_SKIP + MAX_LIMIT`
+      (26000) instead of `MAX_SKIP` (25000). README's "25,000 rows" FAQ + error-code table corrected
+      to 26,000. Shipped build 0.1.85, verified live (`apify call` SUCCEEDED, `actor-health` green,
+      2500-row regression pull unregressed on the common under-cap path). See LEARNINGS c2577 for
+      the probe-recipe sharpening (test the wall value ITSELF with limit=1 and limit=max, not just
+      wall±1 -- NIH's wall was exclusive, openFDA's is inclusive, same recipe tells you which).
+      **Not fixed/not touched:** the published blog post `fda-openfda-recall-json-api.md` still says
+      "cannot page past row 25,000" (technically imprecise by 1000 rows, not false -- the `skip`
+      param itself is still capped at 25000) -- left alone this cycle since editing live blog SEO
+      content is a bigger/riskier action than the code fix and the core documented fact (`skip>25000`
+      -> 400) is correct; flag for whoever next touches that post. Also not forced live: the
+      pathological branch that actually needs the extra 1000 rows (a single half-year window with
+      >24000 matches for one product type) -- no live query currently reaches it, so the fix is
+      verified against measured API boundary behavior + unregressed common-case, not against a live
+      trigger of the edge case itself.
 
 - [x] **SUPERSEDED by c2576 (kept only for its projects-endpoint measurement) -- the original,
       narrower c2548 reading of the same bug; its "up to 399 reachable papers go unfetched,
@@ -283,28 +298,28 @@
       audit date without either a live re-verification or an explicit structural finding that
       there is nothing upstream to call.
 
-- [ ] **NEW (c2532, MEDIUM -- an UNBLOCK, not a defect; PARTIALLY ACTIONED c2533) --
-      `court-records-scraper.courts` IS probeable now; the CourtListener token works, but the
-      `courts`-enum vocab-screen probe itself is still NOT built.** Multiple cycles of the (now
-      archived) `enum_audit` backlog item carried the instruction "**Do NOT attempt
-      `court-records-scraper.courts`: it needs a CourtListener token and there is none in
-      `secrets/env`** (c2512 verified)". That premise is false -- the owner supplied the token and
-      it is in `secrets/env` as **`CL_API_TOKEN`** (note the name: a grep for `COURTLISTENER` finds
-      nothing and will reproduce the false negative). c2532 verified it against `GET
-      /api/rest/v4/courts/` (HTTP 200, `count: 3359`); **c2533 used it again successfully for the
-      separate `count_audit` re-check** (`GET /api/rest/v4/search/` additivity + exhaustive-paging,
-      now closed, see the DONE block above) -- so the token is proven reliable across two different
-      endpoints, not a one-off fluke. **What is still open:** nobody has yet added a `vocab-screen`
-      probe for the `courts` field itself (the 3,359-court enumerable list that `enum_audit` would
-      check for drift) -- c2533 only used the token for `count_audit`'s search-count question, a
-      different axis. `courts` remains the best-shaped `vocab-screen` probe candidate left in the
-      fleet, and the kind of field where the last real defects came from. Caveat before trusting
-      any CLEAN on a future attempt: `?page_size=3` on the courts endpoint returned 20 ids, i.e. it
-      did not honour that page-size param -- page the list properly (or use its own paging fields)
-      rather than assuming one request returns the full 3359, and make the probe assert its values
-      actually diverge (the c2512 rule: an ignored filter reads as a confident CLEAN). Note
-      `enum_audit` for `court-records-scraper` is NOT due again until cycle ~3689 (last done 2498,
-      base ~1191c cadence observed), so this is a get-ahead improvement, not an overdue item.
+- [x] **DONE cycle 2578 -- built the `courts` vocab-screen probe this item was waiting on.**
+      `p_courtlistener_courts()` added to `bin/vocab-screen` (registered in `PROBES` under
+      `court-records-scraper`): live total count + `in_use=true` count vs. the baked
+      `court-jurisdictions.json` snapshot (3359/472, both matched live), the 5 README-named
+      court ids (`scotus`/`ca9`/`cand`/`nysd`/`cacb`) plus the documented `ohctapp1` blank-
+      jurisdiction edge case each checked individually against `/courts/<id>/`, and a bogus-id
+      negative control -- same "named values + negative control" shape as the fleet's other
+      huge-vocabulary probes (NAICS/PSC, CPV), not a full 168-page re-enumeration (that stays
+      `bin/harvest-courtlistener-courts`'s job). Uses no `CL_API_TOKEN` (`/courts/` needs none),
+      so it can never eat into the Actor's shared 125 req/day search quota. **Caught a real bug
+      before shipping:** an unpaced first attempt hit anonymous CourtListener's rate limit
+      mid-run (429 from request 4 of 9 onward) and would have silently reported 4 live-valid
+      courts and the negative control as "not resolving" -- a false STALE verdict from our own
+      request rate. Fixed with the same 13s/request pacing + 429 backoff
+      `harvest-courtlistener-courts` already uses; re-ran CLEAN. Full fleet `vocab-screen`
+      (16 probes) ALL CLEAN. See `state/STATUS.md` cycle 2578 for the full verification detail.
+      Prior context (orig. c2532/c2533): the `enum_audit` backlog had carried a false premise
+      for multiple cycles ("courts needs a token and there is none in `secrets/env`" -- the
+      token was there all along as `CL_API_TOKEN`, not `COURTLISTENER*`); c2532/c2533 proved the
+      token works against two different endpoints but left this specific probe unbuilt. Note
+      `enum_audit` for `court-records-scraper` is NOT due again until cycle ~3689 (last done
+      2498), so this was a get-ahead improvement, not an overdue item -- now closed either way.
 
 
 - [ ] **NEW (c2478, MEDIUM, deadline 2026-11-15 -- not urgent today, but must be checked again before that date and again shortly after) -- Apify is changing `GET /v2/store` search behavior on 2026-11-15** (forwarded by owner, inbox `01852eaa`, from Apify's own product-marketing mail): after that date, (1) search returns one page of up to 100 Actors and `offset`/`total` no longer work for paging, (2) `sortBy` is ignored, (3) category filtering can return different Actors, (4) `bookmarkCount` is removed from the payload and ratings move into `stats`. **Investigated this cycle which fleet tools actually call `/v2/store` (not Algolia) and are exposed:**

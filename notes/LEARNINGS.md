@@ -6224,3 +6224,51 @@ all 25 projects in the batch. A single real input reproduced it (`projectNums:["
   by a few percent *independently of the wall*, and `pubmedIds` is a sample, not a census. Said so
   in the README rather than letting the number look exact. **Check for this before trusting any
   offset-paged total from an API that does not document a sort order.**
+
+### c2577 — the 3-curl fleet sweep c2576 asked for found exactly one real disagreement: openFDA's `skip` cap is INCLUSIVE, not exclusive (fda-recall-scraper)
+
+Ran the c2576 follow-up: probed every multi-endpoint Actor on the candidate list
+(`fda-recall-scraper` food/drug/device, `clinicaltrials-scraper`, `fec-campaign-finance-scraper`,
+`sec-insider-trades-scraper`, `court-records-scraper`) for a shared numeric pagination wall used
+across structurally different endpoints. Three of the five were not even applicable:
+`clinicaltrials-scraper` has one endpoint, and `fec-campaign-finance-scraper`/
+`court-records-scraper` both page by opaque cursor (`last_indexes` / `cursor=`) rather than a
+numeric offset const, so there is no shared-wall-const to misapply in the first place.
+`sec-insider-trades-scraper` fetches a single submissions JSON index plus direct archive paths,
+not offset pagination either.
+
+`fda-recall-scraper` WAS applicable (three `enforcement.json` endpoints, one shared `MAX_SKIP`
+across all three) and the probe disagreed with the code: curling `skip=25000&limit=1000` on both
+food and device returned **200 with a full 1000-row page** (confirmed both endpoints, confirmed
+`skip=25001` is 400 regardless of limit). So openFDA's real rule is **`skip` itself is capped at
+25000 INCLUSIVE — the cap is on the parameter value, not on `skip + limit`.** The code treated
+`MAX_SKIP` as an exclusive stopping bound (`skip >= MAX_SKIP` stops the walk, `limit = MAX_SKIP -
+skip` shrinks the last page to land exactly at 25000) and so never issued the one legal request
+AT `skip==25000` — silently leaving up to 1000 reachable rows (and in the baseline/seed walk,
+which uses the full 1000-row page, exactly 1000 rows) off the end of any window that hit the cap.
+True reachable ceiling is `MAX_SKIP + MAX_LIMIT` (26000), not `MAX_SKIP` (25000).
+
+Fixed in both walk loops (the real push walk's `refill()` and the watch-mode `seedBaseline()`):
+replaced `skip >= Math.min(w.total, MAX_SKIP)` with `skip >= w.total || skip > MAX_SKIP` (lets the
+walk use `skip==MAX_SKIP` once, unchanged behavior for the common case where `w.total <=
+MAX_SKIP`), and dropped the `MAX_SKIP - skip` limit clamp (the real constraint is on `skip` alone,
+not `skip+limit`) in favor of `w.total - skip`. Updated the `skip-ceiling` warning and
+`reachableMatches` metric from `MAX_SKIP` to `MAX_SKIP + MAX_LIMIT`. Shipped build 0.1.85,
+verified live (`apify call`, run succeeded, `actor-health` green).
+
+**Caveat on severity:** this only fires when a date window survives the Actor's own two levels of
+year/half-year splitting and STILL exceeds `CHUNK_THRESHOLD` (24000) — i.e. a single half-year
+range with >24000 matches for one product type. Could not construct a live trigger for it this
+cycle (current openFDA volumes don't appear to have one); the fix is verified correct against the
+API's measured boundary behavior and against the unaffected common-case regression test
+(2500-row paginated pull, unregressed), not against the pathological branch itself live.
+
+**Reusable lesson, sharpens the c2576 one:** when a "wall" const is measured by testing where a
+400 starts, also test the EXACT boundary value itself (`wall` with `limit=1` AND `limit=max`), not
+just `wall-1` and `wall+1`. c2576's NIH wall genuinely was an exclusive boundary (10000 itself
+400'd). openFDA's is inclusive (25000 itself succeeds, with a full page beyond it) — same probe
+recipe, opposite answer, and only the 3-point test catches which one you're looking at.
+
+Also ruled out (per the same probe): cursor-paginated APIs (`last_indexes`, `cursor=`) cannot have
+this defect shape at all, since there's no numeric wall to misread — don't spend probe time on
+them in a future sweep of this kind.
