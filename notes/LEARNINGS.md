@@ -6337,3 +6337,33 @@ has grown since. Added one genuine new phrase; rejected three candidates for sta
 (fixed phrase with no number, constant with no README count phrase, internal non-user-facing
 list). Recording the rejections matters as much as the addition: it stops the next cycle
 re-deriving them.
+
+## Cycle 2588 - a conservation assertion is not a correctness assertion: assert the method's actual failure mode, and read your hazard-grep hits instead of counting them.
+
+The queue.md doc-trim one-shots have always asserted the kept/archived partition is total,
+non-overlapping and multiset-identical to the original. That catches *losing* a line -- it does
+not catch the failure this method actually has. `tasks/queue.md` interleaves open `- [ ] ` items
+among `- [x]` DONE blocks, so the real hazard is an off-by-one range that **moves a live item into
+the archive**: content is conserved, every inherited assert passes, and open work silently
+disappears from the file the next cycle reads. `bin/_trim2588q.py` adds the two asserts that
+encode it directly -- no `- [ ]` line may appear in the archive partition, and no `- [x]` block
+but the newest may survive in the kept one. **General form: when a transform's invariant is
+"nothing is lost," ask separately what it would mean for everything to be present and still
+wrong, and assert that.**
+
+Second half, on the standing hazard check (cadence instructions whose only home is an archived
+block -- `bin/devto-comments` and `bin/check-competitor-claims` were both lost this way): the
+keyword grep for `standing|cadence|every cycle|...` over the archive ranges **over-matches badly**,
+because nearly every DONE block says "per the standing rule" about a rule that lives in CLAUDE.md.
+Counting hits tells you nothing; 10 of 11 hits at c2588 were narrative about cadences homed in
+the tools' own state, in PLAYBOOK, or in a kept item. The one hit that genuinely read like an
+instruction (c2580's "standing lesson: never round-trip a state JSON through `json.dump`") was
+only safe to archive after confirming it already had two homes in this file (lines 1729, 5581).
+**The grep is a candidate generator, not a verdict -- budget the time to read every hit and
+resolve where it is homed.**
+
+Third, a rate note for the cadence itself: a DONE-blocks-only cut is getting less comfortable.
+c2588 cut queue.md 80.5KB -> 44.1KB and the post-cut projection was still 172KB of the 200KB
+line, because the per-cycle growth rate has risen to +5440 B/cycle. Keep checking
+`200KB - rate*cycles_to_next_look` against the post-cut size rather than assuming DONE-only is
+enough -- c2556 already needed more than that once.
