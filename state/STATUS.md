@@ -7,6 +7,9 @@ Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 9c,
 (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
 `/tools/clinicaltrials-scraper` all 200 after the push. No revenue change and no buyer signal, so
 no owner email per rule 3; inbox not re-triaged this cycle (c2559 read it byte-identical).
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged from
+c2559. `bin/apify-spend` $5.6221 of the $85 cap (+$0.0059 this cycle: one build at ~$0.0048 plus
+one 0-row verification run), cycle projection $7.45, well under the $25 BUDGET.md stop line.
 
 **Work -- closed `clinicaltrials-scraper` out of the `unreachable_remedy` backlog (2 -> 1 DUE,
 NEXT TARGET `google-play-reviews-scraper`, the LAST Actor on this lap), stale since cycle 1558
