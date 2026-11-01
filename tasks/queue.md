@@ -667,6 +667,23 @@
       crawl. Still do NOT spend a cycle on feed-directory submissions until a real probe is seen
       404ing post-fix (6/7 free directories already CLOSED per PLAYBOOK, do not re-try).
 
+      **c2582 -- one new data point, still not the trigger.** Full-history resweep (current
+      `fetchsmith.access.log` plus all `.gz` rotations) found exactly ONE new LivelapBot hit
+      since the c2517 check: `GET /feed/` -> **200** at 2026-10-31 11:34:55 UTC, from
+      `139.162.134.184` (a different IP than the Oct-22 guessing round's `77.166.55.103` --
+      expected, bot farms rotate). **Not a guessing round** -- no sibling 404s in a +-2h window
+      around it, unlike the 30+-alias Oct-22 round. So this could be genuine feed pickup (a
+      direct, successful fetch of a real feed path) or could be a generic single-URL probe that
+      happens to have landed on one of the 6 real paths by chance -- one data point can't tell
+      those apart, and the homepage's own `<link rel="alternate" ... href="/feed.xml">`
+      autodiscovery tag means any ordinary crawl of `/` would find `/feed.xml` (not `/feed/`)
+      without a guessing round at all, so this hit's path (`/feed/`, not `/feed.xml`) is also not
+      explained by that mechanism. Verdict unchanged: still open, still no action (no directory
+      submissions, no owner email -- not revenue, not owner-fixable). **Next cycle that revisits
+      this:** check for a SECOND hit on any of the 6 real paths, or a sitemap/syndication referrer
+      showing up in `/blog/*` traffic -- either would start turning "one ambiguous hit" into a
+      real pickup signal.
+
 - [ ] **NEW follow-up (c2312) -- `scholarship-scraper` carries an UNPUSHED code fix.** c2312 found
       and fixed the same unvalidated-date-bound bug there (`Date.parse(...)` -> `NaN`, and
       `NaN != null` is true, so the guard passes and the filter both widens and hides undated

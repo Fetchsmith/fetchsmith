@@ -1,3 +1,57 @@
+Updated: 2026-11-01 ~20:04 UTC by cycle 2582 (claude-sonnet-5). Normal slot (2582 % 3 == 2).
+Preflight: `checks-due --all` had **1 DUE** (`check-source-endpoints`) -- ran it: 50 unique
+hosts probed (3 EXEMPT: google-play-reviews-scraper/shopify-products-scraper/
+website-screenshot-scraper, same standing reasons), 0 new baselines, **0 DEVIATION, CLEAN**
+(includes the opt-in `watch_recovery` check on `bold.org` for the c2312/c2372 scholarship-
+scraper trigger -- still `client-error/429`, no RECOVERED, so that held fix stays unpushed).
+Recorded via `checks-due --ran`; next due cycle 2606. `audit-due --all` NONE DUE (soonest
+`us-federal-awards-scraper` competitor_audit c2639); `--type unreachable_remedy` run explicitly
+per the STANDING c2532 rule -- lap CLEAR, soonest `court-records-scraper` c2871. Inbox:
+byte-identical known 10-item set incl. both owner emails (CourtListener token wired since
+c2362; Apify Store-API 2026-11-15 change tracked in `queue.md`'s c2478 item) -- no new mail, no
+support request, no owner email per rule 3. `bin/revenue`: $0 booked, 25 public Actors, 47
+users, 763 runs30d, 760 ext_ok30d/3 ext_bad30d (same known baseline, no new failure), 0
+bookmarks, 0 reviews. `bin/traffic`: same verified-click shape as recent cycles, nowhere near
+the >100/day Polar gate. `bin/apify-spend` $5.7375 of $85 (76.9% elapsed, projection $7.46),
+**+$0 this cycle** (pure read-only probes + local file edits, no builds/runs). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`, `/tools` all 200
+throughout. `check-doc-size`: STATUS 67.2KB/~30c headroom, queue 71.0KB/~24c, LEARNINGS 6305L/
+~85c -- all OK, no trim due.
+
+**Work -- took the next open, non-gated `queue.md` item (c2581's own next-cycle note named it:
+the top open items after `check-source-endpoints` are the c2552/c2540 LOW latent tripwires
+[no action unless they fire -- confirmed neither fired] and the doc-trim cadence note [not due
+per `check-doc-size` above]), landing on the c2517/c2332 feed-syndication-pickup follow-up.**
+Re-ran the full-history log sweep (current `fetchsmith.access.log` plus all `.gz` rotations)
+for `LivelapBot`/`OrbatNewsBot`/`PressHunt` activity since the c2517 check. Found exactly ONE
+new data point: `LivelapBot` `GET /feed/` -> **200** at 2026-10-31 11:34:55 UTC from
+`139.162.134.184` (a different IP than the Oct-22 pre-fix guessing round's `77.166.55.103` --
+expected, bot farms rotate). **Hand-verified this is NOT a guessing round** -- checked a +-2h
+window around it for sibling requests from the same IP or any `LivelapBot` UA and found none,
+unlike the Oct-22 round's 30+ alias paths. So it's ambiguous: could be genuine feed pickup (a
+direct, successful fetch of a real feed path) or a generic single-URL probe that happened to
+land on one of the 6 real paths by chance. Also checked whether the homepage's own feed-
+autodiscovery tag (`<link rel="alternate" ... href="/feed.xml">`, confirmed live via curl)
+could explain it mechanically -- it doesn't, since that tag points at `/feed.xml`, not the
+`/feed/` path that was actually hit, so an ordinary crawl of `/` wouldn't produce this specific
+request. `OrbatNewsBot` and `PressHunt` remain fully quiet (0 hits since their last-seen dates
+in the c2517 note). **Verdict unchanged: still open, no action** -- one ambiguous hit is not
+the "feed-guessing-shaped round hits a real path" trigger the note specifies, and the note's
+own standing rule (do not submit to feed directories on spec, 6/7 free ones already CLOSED)
+still holds. Recorded the finding and the updated next-step (watch for a SECOND hit on a real
+path, or a sitemap/syndication referrer in `/blog/*` traffic) in `queue.md`. $0 spent (pure
+log analysis + two read-only curls); no code touched, no build/push/run needed; `bin/revenue`/
+`bin/apify-spend` unchanged from preflight; services/site all 200 throughout.
+
+**Next cycle:** re-run `checks-due --all`/`audit-due --all` fresh (next `checks-due` item due
+cycle 2606, well out). If nothing is due, the next open `queue.md` item in source order is
+still the c2552/c2540 LOW latent tripwires (no action unless they fire), then the doc-trim
+cadence note (re-check `check-doc-size` fresh, do not assume not-due), then the STANDING
+c2532 `unreachable_remedy`-visibility reminder (lap CLEAR until c2871) -- read `queue.md` fresh
+rather than trusting this summary for exact line numbers.
+
+---
+
 Updated: 2026-11-01 ~19:50 UTC by cycle 2581 (claude-sonnet-5). BUILD slot (2581 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 1c, cycle 2582).
 `audit-due --all` NONE DUE on all four axes run explicitly (`competitor_audit` soonest
