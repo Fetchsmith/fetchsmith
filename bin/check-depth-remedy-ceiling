@@ -1,0 +1,171 @@
+#!/usr/bin/env python3
+"""Static tripwire for the UNREACHABLE "RAISE THE CAP" REMEDY bug class, found on
+google-play-reviews-scraper at cycle 2561 and closed fleet-wide at cycle 2568.
+
+The defect shape: a shortfall message tells the buyer to **raise/increase/widen a numeric
+input field** so the run reaches deeper -- but nothing checks whether that field is ALREADY
+sitting at its own declared schema `maximum`. A buyer who did the obvious thing (set the cap
+to the highest value the schema allows) and still got a short result is handed advice that
+cannot be followed: there is no higher value to set. They re-run at the same cap, pay again,
+and get the same shortfall and the same message.
+
+Measured at cycle 2568: 5 of 26 Actors carried it (app-store-reviews, apple-podcasts,
+steam-reviews, substack, sec-insider-trades) on top of the original google-play finding. Worst
+case was apple-podcasts-scraper, whose `feedCeiling` branch requires `!capReached` -- so at the
+500 ceiling the honest "Apple does not expose reviews deeper than this" message was SUPPRESSED
+and the dead "raise maxReviewsPerPodcast" line was the only thing the buyer was told.
+
+`bin/check-zero-row-message` structurally cannot see this: it checks that a `pushed === 0`
+branch sets *a* message, never whether that message's claim still holds at the boundary. Hence
+a check of its own, registered in state/fleet_checks.json like the other no-argument sweeps.
+
+Method, per Actor:
+
+  1. Read `.actor/input_schema.json` and collect every property that declares a numeric
+     `maximum` -- the only fields where "already at the ceiling" is even a definable state.
+  2. Scan `src/main.js` for string literals (template or quoted) that name such a field AND
+     carry a raise-verb (raise/increase/widen/bump/higher/larger). Comment lines are skipped:
+     prose explaining the guard is not a buyer-facing message.
+  3. A site PASSES if a ceiling guard is referenced in its immediate neighbourhood (+-250
+     chars, which is where a `${atCeiling ? HINT : ' -- raise X'}` ternary puts it): an
+     identifier matching *AtCeiling, or the fleet's standard phrasings ("already at ... maximum",
+     "no higher value", "cannot help", "cannot reach").
+  4. Otherwise it is a MISS: a raise-X remedy with no boundary guard.
+
+Known blind spots -- a clean run is NOT proof the class is closed. (1) Proximity is not
+control flow: a guard 200 chars away that is never actually evaluated on this branch still
+counts as a pass. (2) It only sees fields whose ceiling is declared in the input schema, so a
+cap clamped in code to a tighter value than the schema's `maximum` reads as having room left.
+(3) It only sees the raise-verbs listed; a remedy phrased "set maxResults to something bigger"
+is invisible. (4) PRONOUN remedies escape it: shopify-products-scraper:894 says "maxProductsPerStore
+= N ... raise IT to cover the whole catalog", and with the verb 60 chars from the field name it
+falls outside NEAR -- deliberately not loosened, because NEAR is what keeps sec-insider's
+"Raise the run timeout, or ... lower maxFilingsPerIssuer" from flagging. Known live MISS, queued.
+(5) It says nothing about whether the remedy is *useful* below the ceiling -- only whether it is
+reachable AT it.
+
+Exit 0 = no unguarded sites, 1 = at least one MISS, 2 = a scan error.
+"""
+import json
+import os
+import re
+import sys
+
+ACTORS = '/root/agent/actors'
+RAISE_VERB = re.compile(r'\b(rais|raise|increas|widen|bump|higher|larger)', re.I)
+GUARD = re.compile(
+    r'\w*AtCeiling\b'
+    r'|already at (?:this Actor\'s |its own |its )?maximum'
+    r'|no higher value'
+    r'|cannot help'
+    r'|(?:will not|won\'t|cannot|can not) help'
+    r'|cannot reach',
+    re.I,
+)
+# A raise-verb and a capped field name in one literal do not make a raise-X remedy: sec-insider's
+# "Raise the run timeout, or narrow the request (fewer issuers, lower maxFilingsPerIssuer)" raises
+# one thing and LOWERS the capped field. Require the verb to sit near the field mention, and not be
+# a lower/reduce instruction about it.
+NEAR = 50
+LOWER_VERB = re.compile(r'\b(lower|reduce|drop|decreas|fewer)\w*\s+\S{0,20}$', re.I)
+# Template and quoted string literals, single-line (every real remedy string in the fleet is
+# built by concatenating single-line pieces, so this does not need to span newlines).
+LITERAL = re.compile(r'[`\'"]([^`\'"\n]{10,400})[`\'"]')
+WINDOW = 250
+
+
+def comment_line(src, pos):
+    """True when `pos` sits on a line whose code part is a // or * comment."""
+    start = src.rfind('\n', 0, pos) + 1
+    line = src[start:pos].lstrip()
+    return line.startswith('//') or line.startswith('*') or line.startswith('/*')
+
+
+def scan_actor(slug):
+    schema_path = os.path.join(ACTORS, slug, '.actor', 'input_schema.json')
+    main_path = os.path.join(ACTORS, slug, 'src', 'main.js')
+    if not (os.path.exists(schema_path) and os.path.exists(main_path)):
+        return None, []
+    with open(schema_path) as fh:
+        schema = json.load(fh)
+    capped = {
+        name: prop['maximum']
+        for name, prop in (schema.get('properties') or {}).items()
+        if isinstance(prop, dict) and isinstance(prop.get('maximum'), (int, float))
+    }
+    if not capped:
+        return capped, []
+    with open(main_path) as fh:
+        src = fh.read()
+    misses = []
+    for match in LITERAL.finditer(src):
+        text = match.group(1)
+        if not RAISE_VERB.search(text):
+            continue
+        if comment_line(src, match.start()):
+            continue
+        for field, maximum in capped.items():
+            # EVERY mention, not just the first: one literal commonly interpolates the field's
+            # value early ("(${maxResults}) was already reached...") and only names the remedy
+            # later ("...raise maxResults"), and testing the first mention alone misses it.
+            if not any(
+                (RAISE_VERB.search(text[max(0, at - NEAR):at])
+                 or RAISE_VERB.search(text[at + len(field):at + len(field) + NEAR]))
+                and not LOWER_VERB.search(text[max(0, at - NEAR):at])
+                for at in (m.start() for m in re.finditer(re.escape(field), text))
+            ):
+                continue
+            window = src[max(0, match.start() - WINDOW):match.end() + WINDOW]
+            if GUARD.search(window):
+                continue
+            misses.append({
+                'field': field,
+                'maximum': maximum,
+                'line': src.count('\n', 0, match.start()) + 1,
+                'text': text.strip()[:160],
+            })
+    return capped, misses
+
+
+def main():
+    slugs = sorted(
+        d for d in os.listdir(ACTORS)
+        if os.path.isdir(os.path.join(ACTORS, d)) and not d.startswith('_')
+    )
+    total_misses = 0
+    scanned = 0
+    fields = 0
+    for slug in slugs:
+        try:
+            capped, misses = scan_actor(slug)
+        except Exception as exc:  # a malformed schema is a real problem, not a silent skip
+            print(f'ERROR {slug}: {exc}')
+            return 2
+        if capped is None:
+            continue
+        scanned += 1
+        fields += len(capped)
+        if not misses:
+            continue
+        total_misses += len(misses)
+        print(f'MISS {slug} ({len(misses)} unguarded raise-remedy site(s))')
+        for m in misses:
+            print(f'  src/main.js:{m["line"]}  {m["field"]} (schema maximum {m["maximum"]})')
+            print(f'    {m["text"]}')
+    print(
+        f'\n{scanned} Actor(s) scanned, {fields} capped field(s) considered, '
+        f'{total_misses} unguarded raise-remedy site(s).'
+    )
+    if total_misses:
+        print(
+            'Each MISS tells a buyer to raise a field that may already be at its schema maximum. '
+            'Fix by guarding the remedy on an `xAtCeiling` flag and saying what to do instead '
+            '(see google-play-reviews-scraper MAX_DEPTH_HINT, cycle 2561).'
+        )
+        return 1
+    print('OK -- every raise-the-cap remedy on a schema-capped field is boundary-guarded.')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

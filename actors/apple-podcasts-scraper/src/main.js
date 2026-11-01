@@ -159,6 +159,18 @@ const searchLimit = Math.min(Number(input.searchLimit ?? 10), 200);
 const rssFullArchive = input.useRssForFullArchive === true;
 const perPodcastEpisodes = Math.min(Number(input.maxEpisodesPerPodcast ?? 100), rssFullArchive ? 20000 : 200);
 const perPodcastReviews = Math.min(Number(input.maxReviewsPerPodcast ?? 200), 500);
+// "raise maxReviewsPerPodcast to search deeper" is only reachable advice while the field has room
+// left to move. It is clamped to 500 above (the schema's own "maximum"), which is ALSO as deep as
+// Apple's public review RSS goes (10 pages x 50), so a run already scanning at 500 has two
+// independent reasons the remedy cannot work. It matters more here than on the sibling app-store
+// Actor: `feedCeiling` below requires `!capReached`, so at 500 the "Apple does not expose them
+// here" message is suppressed and the unreachable "raise it" line is the ONLY thing the buyer is
+// told. Same defect shape as google-play-reviews-scraper (cycle 2561).
+const depthAtCeiling = perPodcastReviews === 500;
+const MAX_DEPTH_HINT = ' — maxReviewsPerPodcast is already at this Actor\'s maximum of 500, which is '
+  + 'also as deep as Apple\'s public review feed goes (10 pages x 50), so there is no higher value to '
+  + 'raise it to and matching reviews sitting deeper cannot be reached at all. Try another "country", '
+  + 'or loosen the minRating/maxRating/keyword filter';
 const maxPodcastsPerPublisher = Math.min(Number(input.maxPodcastsPerPublisher ?? 200), 200);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const sort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
@@ -1327,8 +1339,8 @@ if (dataType === 'charts') {
       if (r.capReached && r.filteredOut > 0) {
         log.warning(
           `Podcast ${id}: scanned the maxReviewsPerPodcast limit of ${perPodcastReviews} review(s) and ${r.filteredOut} of them `
-          + `were excluded by the minRating/maxRating/keyword filter. The cap counts reviews scanned, before filtering `
-          + `— raise maxReviewsPerPodcast to search deeper.`,
+          + `were excluded by the minRating/maxRating/keyword filter. The cap counts reviews scanned, before filtering`
+          + `${depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerPodcast to search deeper'}.`,
         );
         depthCapped.push(id);
       }
@@ -1518,7 +1530,7 @@ if (watchMode && seeding) {
   if (failedIds.length) causes.push(`the request to Apple failed for: ${failedIds.join(', ')} — that is a fetch failure, not proof there is no data. Re-run it`);
   if (emptyIds.length) causes.push(emptySourceLabel(emptyIds));
   if (emptySearches.length) causes.push(`your search terms matched no podcasts in storefront "${country}": ${emptySearches.join(', ')}`);
-  if (depthCapped.length) causes.push(`maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')} — raise maxReviewsPerPodcast to search deeper`);
+  if (depthCapped.length) causes.push(`maxReviewsPerPodcast (${perPodcastReviews}) was hit before any review passed your minRating/maxRating/keyword filter for: ${depthCapped.join(', ')}${depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerPodcast to search deeper'}`);
   if (windowFilteredIds.length) causes.push(`Apple's lookup API only returned each show's recent episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed all of them — turn on "useRssForFullArchive" to search the full archive instead`);
   // The full RSS archive WAS walked and the filters emptied it. Without this branch the chain
   // fell through to "no valid podcast IDs could be parsed from your input", which is flatly wrong
@@ -1546,7 +1558,7 @@ if (watchMode && seeding) {
   // depthCapped/windowFilteredIds/emptyIds/failedIds are each populated per-id in the same shared
   // loop, so more than one can be true on a single multi-id run.
   const pushCauses = [];
-  if (depthCapped.length) pushCauses.push(`maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerPodcast to search further`);
+  if (depthCapped.length) pushCauses.push(`maxReviewsPerPodcast (${perPodcastReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed${depthAtCeiling ? MAX_DEPTH_HINT : '; raise maxReviewsPerPodcast to search further'}`);
   if (windowFilteredIds.length) pushCauses.push(`Apple's lookup API returned only its recent-episode window for: ${windowFilteredIds.join(', ')}, and your ${episodeFiltersSet.join(' / ')} filter(s) removed everything in it for those show(s) — turn on "useRssForFullArchive" to search their full archive`);
   if (emptyIds.length) pushCauses.push(emptySourceLabel(emptyIds));
   if (failedIds.length) pushCauses.push(`the request to Apple failed for: ${failedIds.join(', ')} — re-run to get those`);

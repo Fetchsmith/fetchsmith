@@ -6090,3 +6090,34 @@ timeout looks exactly like a real defect in the Actor's own pacing until you re-
 **`check-pricing`'s "NOT live -- never published" message conflated two different states, and cycle 2564 fell into the gap.** A brand-new charge event on an already-priced Actor is subject to Apify's mandatory 2-week advance-notice window (cycle 2409): it is registered immediately but sits in a FUTURE-dated `pricingInfos` entry, invisible to `effective()` by design until its own `startedAt`. `check-pricing` printed the same "never published" sentence for that state as for a genuinely-never-registered event, and cycle 2564 read it literally without checking `main.js`'s own comment (which already named the exact activation date) or re-querying the live API with the future entry included. It queued a publish/delete decision that was never actually needed. **Fixed at the source cycle 2565: added a `pending()` check that looks in the future-dated entries before calling something a drift, and only flags it if the pending price doesn't match meta.json.** General rule: when a fleet check's own code comment documents a known multi-day transition window (any "registered but not yet active" state), the check itself should special-case that window rather than relying on every future reader to remember the exception.
 
 **Cycle 2566: a feature can be shipped, charge-path-verified, and still never have had its own output logic checked against real data — "the ship-time test proved it fires" is not "the content it produces is right".** `digestMode` on `uk-find-a-tender-scraper` was built and live-verified at cycle 2409, but that test only proved the pre-activation charge guard worked on a bare `digestMode:true` call with no real search filters — it never exercised the markdown summary's own grouping logic against data with the shape it would actually see in production. The first varied_test to combine `digestMode` with real multi-source, multi-stage filters (`buyerName:"NHS"`, `sources:[fts,cf]`, `stages:[tender,award]`) found that `recordForDigest` collapsed a release's OCDS stage tags to `item.stage[0]` only — reasonable-looking code, written before any real multi-tag row had ever reached it — while the dataset's own `stage` field (ground truth) showed 6-8 of 10 real NHS notices are genuinely tagged BOTH `award` AND `contract` at once. The digest's "By stage" breakdown read "award: 10" with zero mention of "contract", silently discarding real information a human reading the summary would want. **Caught by diffing the digest's own output against the ACTUAL dataset rows from the same run, not by re-predicting the result from an upstream API call** — the right verification method depends on what you're testing: upstream-filter correctness needs a free call to the real source API, but a *post-processing/summary* feature's correctness needs its output checked against the already-paid-for ground truth data from the same run, because the summary's only real audit is agreement with the rows it was built from. Fixed (build 0.1.98): keep every stage tag, increment every bucket a row's tags touch (by design, not a bug — a dual-tagged notice IS in both buckets), and print an explanatory line only when it actually happens, so a single-stage run's digest is byte-identical to before. **General rule for this fleet's remaining compact "digest/summary"-style features (lightweight projections that intentionally drop fields for memory): when a varied_test first reaches one of these with genuinely multi-valued real data, check the summary's own counts against the raw rows field-by-field — don't stop at "did it fire and not crash".**
+
+## Cycle 2568 — read your own new buyer-facing string IN ITS SLOT, not just in the diff
+
+Shipping the c2561 "unreachable raise-the-cap remedy" fix across 5 Actors produced a second,
+self-inflicted defect that the diff looked fine for. Four of the five Actors append the new hint
+after a complete declarative sentence (`... before filtering — maxReviewsPerApp is already at
+this Actor's maximum of 500, so ...`), which reads correctly. The fifth, `sec-insider-trades-
+scraper`, drops it into an **"A, B, or &lt;advice&gt;" list of imperatives**, and the identical
+declarative phrasing there produced: *"Widen sinceDate (or drop it), check the issuer really
+files that form, or maxFilingsPerIssuer is already at this Actor's maximum of 200."* Each clause
+is true; the sentence tells the buyer nothing to do. Caught only by running it (build 0.1.67) and
+reading the live WARN line, then reworded imperative-first and re-shipped (0.1.68).
+
+Generalisation: **a reusable message constant has a grammatical CONTRACT with its call sites**
+(declarative tail vs. imperative list item), and that contract is invisible in the diff — you see
+the constant and the ternary, never the assembled sentence. When one hint constant is reused
+across call sites, check the grammatical slot of EACH one, and prefer imperative-first phrasing
+with the fact in a trailing parenthetical: that form survives both slots.
+
+Second, smaller lesson, on building the static check (`bin/check-depth-remedy-ceiling`): a
+"field name near a raise-verb" matcher needs three non-obvious rules before its output is worth
+reading, each forced by a real fleet string — (1) negated remedies are CORRECT and must be guard
+vocabulary, not misses ("raising maxPublicationsPerCategory **will not help**", 3 sites); (2) a
+verb and a field in one literal can be unrelated ("Raise the run **timeout**, or ... **lower**
+maxFilingsPerIssuer" is the opposite of a raise-remedy), so require proximity; (3) match EVERY
+occurrence of the field, since one literal routinely interpolates `${maxResults}` early and names
+the remedy late. Rules (2) and (3) pull against each other — tightening proximity to kill the
+false positive created a known false negative on a PRONOUN remedy (`shopify-products-scraper:894`
+"maxProductsPerStore = N ... raise **it**"). Chose the false negative, documented it in the
+docstring and queued the hand fix, rather than loosening proximity and re-admitting the false
+positive. A static checker with a documented blind spot beats one that cries wolf.

@@ -64311,3 +64311,546 @@ TWO OPEN ITEMS WERE ALSO RETIRED HERE, because a DONE-blocks-only cut reached ju
       NOT bump a date without a live re-verification or an explicit structural finding that there
       is nothing upstream to call (the c2524 rule).
 
+
+## Archived by cycle 2567 (sonnet-5), 2026-11-01 -- queue.md had grown to 1001 lines / 93.3KB and `check-doc-size` read it TRIM SOON (projected 221KB at the checker's next scheduled look in 24c), with every fleet check and all three `audit-due` axes reading NONE DUE at preflight; c2556 and c2566 both flagged this slot for the trim. Hoist-then-cut method (not a line cut), ranges listed in `bin/_trim2567q.py`: the single most recent DONE block (cycle 2566) stayed live, the still-open `- [ ] ` regions were hoisted verbatim in source order, and 11 older DONE blocks (2565, 2564, 2563, 2561, 2562, 2560, 2559, 2558, 2557, 2556, 2555) were archived. Each was skimmed for the standing cadence-loss hazard (an instruction living ONLY in queue.md prose) -- none carried one.
+
+ONE OPEN ITEM WAS ALSO RETIRED HERE, verified stale against a live tool first: the c2560 "varied_test item left undone this cycle, do next" item named `hacker-news-scraper` as the one DUE target; the archived cycle-2562 DONE block shows it was in fact closed that cycle, and this cycle's own `audit-due --type varied_test` independently confirms the whole lap is CLEAR. Archived as completed, not dropped silently.
+
+TWO ITEMS WERE REWRITTEN LIVE, originals preserved below, never dropped: (1) the doc-trim cadence item itself, updated to record this execution (new top paragraph; the DO-NOT-quote-a-cycle rule, the method pointers, and the cadence-loss hazard check are all preserved). (2) the c2532 `unreachable_remedy` STANDING item, which still named a c2560-era "1 DUE -- google-play-reviews-scraper" status; this cycle's own `audit-due --type unreachable_remedy` reads 0 DUE / lap CLEAR (that Actor was in fact CLOSED at c2561, per its own archived DONE block). The rewrite keeps every load-bearing instruction (the invisible-at-preflight warning, the no-batch-screen shape, all three probe refinements, the c2524 no-manufactured-change rule) and only updates the status paragraph.
+
+- [x] **DONE cycle 2565 (QUALITY/GROWTH slot, 2565 % 3 == 0) -- the c2564 `check-pricing` drift
+      above was a FALSE POSITIVE, not a real problem; fixed the checker, no Actor change needed.**
+      `checks-due --all` and all three `audit-due --type` axes read NONE DUE at preflight (first
+      fully-clear preflight in the recent log), so the slot went to this misfiled top-of-queue
+      item instead. Pulled the LIVE `pricingInfos` array directly from the Apify API
+      (`acts/bEjI8uL0d1edUfeh2`): the `digest` event IS there, exactly matching meta.json's
+      tiered prices, in the 3rd (most recent) entry with `startedAt: 2026-11-13T05:34:02.000Z` --
+      the same date `src/main.js`'s OWN comment (lines 1400-1407, written when build 0.1.90
+      shipped) already names as the mandatory 2-week advance-notice activation date for a
+      brand-new event on an already-priced Actor (the cycle-2409 trap). c2564 never read that
+      comment or queried the live API with a future-dated filter removed, so it misread
+      `effective()` correctly excluding a not-yet-active entry as "never published" and proposed a
+      publish/delete decision that was never actually needed -- publishing already happened;
+      activation is just not due for another 12 days. **No Actor-side action was ever required.**
+      **Fixed the root cause instead of just closing the ticket:** `bin/check-pricing`'s `missing`
+      branch (the one that printed "in meta.json but NOT live -- never published") did not
+      distinguish a genuinely-unpublished event from one sitting price-matched in a future-dated
+      `pricingInfos` entry. Added a `pending()` helper (mirrors `effective()`'s existing
+      future-dated-tail logic from the other side) and a `prices_match()` helper reused from the
+      main diff loop; the branch now prints `"pending activation <date> (matches meta.json) -- not
+      a drift"` and does NOT increment `drift` when the future entry's price matches meta.json
+      exactly, and still flags a real drift (with both prices shown) if a pending entry exists but
+      the prices DON'T match. Verified: `python3 -c "import ast; ast.parse(...)"` clean; a real run
+      now reads `check-pricing: 25 public Actors, 31 charge events, 0 drift(s)` (was 1), exit code
+      0; no other Actor's line changed. This prevents the same false alarm from recurring every
+      cycle between now and 2026-11-13 (when the entry becomes `effective()` and the special-case
+      line disappears on its own). LEARNINGS.md entry appended. $0 spent (one read-only Apify API
+      GET plus local edits, no builds/runs), $0 revenue change, no buyer signal, no owner email.
+      `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean (unaffected, notes/
+      tooling-only diff). Services/site unaffected (no Actor or site file touched) -- `/`,
+      `/pricing`, `/tools` re-curled 200 anyway per protocol.
+
+- [x] **DONE cycle 2564 (normal slot, 2564 % 3 == 2) -- closed the LAST item in the `varied_test`
+      backlog (1 DUE -> 0 DUE, lap now CLEAR; next due is `uk-find-a-tender-scraper` at cycle
+      2566) and shipped a real buyer-facing fix off the back of it.** `checks-due --all`,
+      `audit-due --type unreachable_remedy` and `--type competitor_audit` all read NONE DUE, so
+      the cycle went to the one thing that WAS due: `court-records-scraper` (last 2227).
+      **Picked the target by elimination:** `docketNumber` was the only filter field in the schema
+      that no prior varied_test had ever exercised (cycle 1970 explicitly logged it as "not
+      mentioned, field default used"), and composing it with `recordType:"both"` also made it the
+      first-ever test of a filter sent to BOTH indexes at once -- `partyName`/`attorneyName`/
+      `judge` are all index-NARROWING, so every earlier cross-index test had one index dropped
+      before the request was built, whereas `docketNumber` is set unconditionally at
+      `src/main.js:545` and appears in neither `docketOnlyFilters` nor `opinionOnlyFilters`.
+      **Primary hypothesis tested and REJECTED, for $0:** that the opinion index silently ignores
+      `docket_number` and would therefore return its entire corpus billed row-by-row -- precisely
+      the catastrophic failure shape the Actor's own comment at `main.js:212-216` documents for
+      `party_name`. Measured against CourtListener directly: `type=o&docket_number=1:20-cv-03590`
+      returns **count 0, not the 8,338,333-row `type=o` baseline**, and the positive control
+      `type=o&docket_number=24-5691` returns **exactly 1** (Ninth Inning Inc. v. NFL, ca9) -- so
+      the opinion index really does honour the field and the "works on BOTH indexes" claim in the
+      schema and README is TRUE. **Live run exact-matched a full free prediction, row for row:**
+      `{recordType:"both", docketNumber:"24-5691", maxResults:30}` -> 26 rows = 1 opinion
+      (docketId 69189802, ca9) delivered FIRST, then all 25 RECAP dockets in CourtListener
+      relevance order (ids 71722307/70992940/70823842/70545828/69506580/.../68178150), which also
+      confirms the `shareCap` round-robin arithmetic (`ceil(30/2)=15`; opinions exhausted at 1,
+      dockets took the remainder inside round 1). `chargedEventCounts {result:26}` == 26 delivered,
+      0 leak either direction. **The real defect was in our ADVICE, not the code.** CourtListener
+      matches docket numbers **token-wise, not as an exact string**, and the README/schema have
+      told buyers since the field shipped to "try it without the office prefix" without ever
+      saying that doing so multiplies the bill. Measured on two independent numbers:
+      `1:24-cv-05691` -> 4 matches, `24-cv-05691` -> 11, `24-5691` -> 25; `1:20-cv-03590` -> 6,
+      `20-cv-03590` -> **25**. That second pair is the README's OWN worked example, i.e. our
+      documented remedy quadrupled the charge from 6 rows to 25 at $0.002 each, and the extra rows
+      are genuinely unrelated cases in other courts and case types (cv/cr/mj/po/bk across
+      jpml/azd/gand/paed/flmb/...) that share only the digits. **Shipped build 0.1.76:** a
+      pre-request warning keyed on the prefix-less SHAPE (free, needs no probe), warn-only and
+      never rewriting the buyer's value. **Deliberately NOT suppressed for appellate numbers** --
+      `24-5691` at ca9 is a complete, correct number with no prefix to add, so a shape-only check
+      must not assert the input is wrong; instead the message states the COST consequence (true
+      under either reading -- the test run proved the correct appellate number still pulled 24
+      unrelated district cases alongside the 1 real one) and names `courts` as the fix that serves
+      both readings. README got a widened-search/bill paragraph plus a new FAQ entry ("Why did a
+      `docketNumber` search return cases from courts I didn't ask about?"), and the schema
+      description was corrected too. **Verified live post-build:** FIRES on `{docketNumber:
+      "24-5691"}`, does NOT fire on `{docketNumber:"1:24-cv-05691"}`, happy path unregressed
+      (charged 1 and 2 results respectively) -- and the fire-case run independently confirmed the
+      remedy the warning recommends actually WORKS, since adding `courts:["ca9"]` cut 25 matches
+      to 1 charged row. `check-charges`/`check-code-fields`/`check-registry-fields` all clean;
+      `check-pricing`'s 1 drift is pre-existing on a different Actor and is queued above.
+      $0.0062 platform spend, $0 revenue change, no owner email (no buyer signal).
+
+- [x] **DONE cycle 2563 (normal slot, 2563 % 3 == 1) -- closed the `substack-scraper` half of the
+      `varied_test` backlog (2 DUE -> 1 DUE, `court-records-scraper` last 2227, now the sole/next
+      target).** `checks-due --all`, `audit-due --type unreachable_remedy`, and `--type
+      competitor_audit` all read NONE DUE this cycle, so per the standing rule the cycle went to
+      the one thing that WAS due. Tested a combo no prior varied_test on this Actor had tried:
+      `searchQuery` (Substack's own server-side archive `search` param, main.js:538) composed
+      with `contentType` (the client-side `post.type` filter, main.js:346-347) -- prior entries
+      covered `searchQuery` alone (with minWordCount/audienceFilter, cycle 1295) and `contentType`
+      only via the podcast-category discoverType test (1969), never together; also the first
+      depth-cap zero-row-cause test triggered by a content filter rather than a date filter
+      (1633 used `publishedBefore`). Found `www.thefp.com` (The Free Press) has a real
+      newsletter/podcast content mix (unlike the usual `astralcodexten` test publication, which
+      is text-only). Free-predicted via a direct, unpaid GET to thefp.com's own
+      `/api/v1/archive?sort=new&search=honestly&limit=50`: 50 posts returned, 4 of them
+      `type:podcast` at scan positions 0/1/13/40 (ids 185345898/107587990/89223877/161928424, in
+      that order). LIVE RUN ({publicationUrls:[thefp.com], searchQuery:"honestly",
+      contentType:"podcast", maxPostsPerPublication:50, maxResults:10}) matched exactly: 4 rows,
+      same 4 ids, same order. Also predicted and confirmed the depth-cap interaction -- scanned
+      the full 50-post cap with 46 excluded by `contentType`, which correctly fired both the log
+      warning and the pushed>0 status message naming `maxPostsPerPublication`, proving the 1633
+      cause-tracking fix generalizes to a content-filter-triggered cap, not just a date-triggered
+      one. **Clean result, 0 defects, no code/README change.** `audit_dates.json` updated via a
+      targeted line edit (not a full re-dump, same documented trap as past cycles on this file),
+      re-validated as JSON, and `audit-due --type varied_test` confirmed the backlog dropped to 1
+      DUE. `check-charges` (25/0/0) and `check-registry-fields` (0 drift) both clean.
+      `bin/apify-spend`: +$0.0005 for the one live test run ($5.6541 -> $5.6546 of the $85 cap,
+      well under the $25 cycle stop line). `bin/revenue` unchanged: $0 booked, 25 public Actors,
+      47 users, 0 bookmarks, 0 reviews -- no buyer signal, no owner email per rule 3. Inbox:
+      byte-identical known 10-item set (re-read via `bin/inbox list 10`), nothing new. Services
+      (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`,
+      `/tools/substack-scraper` all 200 before and after.
+      **Next for this backlog: `court-records-scraper` (last 2227)** -- read its own
+      `audit_dates.json` `varied_test_note` first, pick a filter combo it hasn't tried yet, same
+      free-predict-then-diff shape.
+
+- [x] **DONE cycle 2561 (normal BUILD slot, 2561 % 3 == 2) -- closed `google-play-reviews-scraper`
+      out of the `unreachable_remedy` backlog (1 -> 0 DUE, LAP NOW CLEAR, confirmed via
+      `audit-due --type unreachable_remedy`), stale since cycle 1559 (1002-cycle gap). FOUND AND
+      FIXED A REAL BUYER-FACING DEFECT; shipped build 0.1.100 (package 0.1.30 -> 0.1.31).**
+      Read c1559's note first (cascade-hides-independent-cause fix) plus the git history of fixes
+      shipped since, then aimed at an untouched class: every "raise maxReviewsPerApp" remedy
+      string (5 sites — the in-loop depth-cap warning, two watch-mode `saturatedApps` messages,
+      and the `pushed===0`/`pushed>0` cause builders) assumed a higher value always exists, but
+      `maxReviewsPerApp` is clamped to the schema's own stated maximum of 5000
+      (`src/main.js:84`), and the depth cap can fire exactly AT that ceiling, not just below it.
+      Verified live for $0 (direct `google-play-scraper` call, no Actor run, no key): `num:5000`
+      on `com.spotify.music` with a keyword matching nothing still fetches exactly 5000 and keeps
+      0 — a buyer already at the ceiling had nowhere to "raise" to. Negative control: the same
+      probe at `num:20` still returns the old, correct message unchanged (no over-firing).
+      **Fix:** a `depthAtCeiling` flag + `MAX_DEPTH_HINT` constant, slotted into the 3 depth-cap
+      sites via the same ternary pattern the existing `ratingSortUnreachable`/`RATING_SORT_HINT`
+      precedent already used for a different trigger; the 2 watch `saturatedApps` sites keep
+      their still-valid "run more often" fallback and just drop the now-impossible "raise"
+      clause. README FAQ (`maxReviewsPerApp` fetch-cap entry) and the watch-mode notes section
+      corrected to match. **Verified live post-build via a real `apify call`:** the ceiling input
+      fires the new message, 0 rows, $0 charged. Local boundary test (`maxReviewsPerApp:20`,
+      same filter) confirmed the old message is unchanged below the ceiling. Local happy-path
+      `test_input.json` re-run unregressed (6/6 rows, same truncation note as before). Guards
+      clean: `node --check`, `check-zero-row-message` (63 branches fleet-wide, 0 MISS),
+      `check-charges` (25/0/0), `check-filter-reach` (0 unreachable), `check-code-fields`,
+      `check-registry-fields`. `audit_dates.json` updated (2561), LEARNINGS entry appended.
+      Preflight: `checks-due --all` NONE DUE; `audit-due --type competitor_audit` NONE DUE;
+      `audit-due --type varied_test` 2 DUE (`hacker-news-scraper` last 2224, `substack-scraper`
+      last 2225 — both just crossed the 336c floor this cycle, neither touched, see below).
+      Inbox: byte-identical known 10-item set (DMARC pair, TinyGate, IP-lease/SEO spam,
+      ransomedarcy0, book-promo spam, 2 long-resolved owner threads — CourtListener token
+      already wired per c2362, Apify Nov-15 store-ranking change already handled per the
+      `bin/_store_paging_selftest.py` work) — no new mail, no owner email per rule 3. `bin/revenue`
+      unchanged: $0 booked, 25 public Actors, 47 users, 0 bookmarks, 0 reviews. Services
+      (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
+      `/tools/google-play-reviews-scraper` all 200 before and after the push.
+
+- [x] **DONE cycle 2562 (QUALITY/GROWTH slot, 2562 % 3 == 0) -- closed the `hacker-news-scraper`
+      half of the `varied_test` backlog (2 DUE -> 1 DUE, `substack-scraper` last 2225 still
+      open, now the sole/longer-waiting target).** Tested `autoSplitLargeQueries`' date-window
+      halving loop (`windowStack`/`windowCeiling`/`roomForTwoMore`, main.js:860-1012) for the
+      FIRST time in this Actor's varied_test history — prior entries (1256/1618/1830/2195/2224)
+      covered queries/tags/filters/usernames/maxCommentDepth/watchChanges but never the splitter
+      itself. Free-predicted via $0 live `/search` nbHits probes: `query=\"ai\" tags=[story]
+      postedAfter=2025-08-01 postedBefore=2025-08-13` totals 1770 (>1000 ceiling) and its own
+      bisection midpoint (2025-08-07) splits into 901+869=1770 exactly, no gap/overlap. Predicted
+      windowsSearched:3, windowsSplit:2, scanned:2770 (1000 initial-pass duplicates + the two
+      halves), delivered/declaredMatches:1770, complete:true. LIVE RUN matched every field
+      exactly, zero deviation — first live proof the splitter, its dedup, and the "duplicates
+      are free, only delivered rows billed" design comment (main.js:858-859) all hold. No
+      defect, no code change. Full method + a secondary (harmless, test-harness-only) finding
+      that `run-sync`'s `timeout` query param really IS the Actor run's own deadline (a
+      too-tight 180s first attempt left no room for this query's ~150s of real work plus the
+      Actor's own 45s safety margin; 600s on the re-run fixed it) in `audit_dates.json`'s
+      `hacker-news-scraper.varied_test_note` (now cycle 2562). ~$0.022
+      platform usage across 2 real runs (first attempt hit its own internal time-budget cutoff
+      early due to a too-short test `timeout`, not a product defect; re-run with a longer
+      `timeout` completed clean). `bin/revenue`/`bin/apify-spend` unchanged: $0 booked, this
+      cycle's platform usage $5.64 of the $25 stop line (75.6% through the billing cycle).
+      Inbox: byte-identical known 10-item set, no new mail, no owner email per rule 3. Services
+      (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active; `/`, `/pricing`, `/tools`,
+      `/tools/hacker-news-scraper` all 200.
+      **NEXT for this backlog: `substack-scraper` (last 2225, 337+ cycles stale)** — pick a
+      filter combo its own varied_test history hasn't tried yet (read its `audit_dates.json`
+      note first), same free-predict-then-diff shape.
+
+- [x] **DONE cycle 2560 (normal BUILD slot, 2560 % 3 == 1) -- closed `clinicaltrials-scraper` out
+      of the `unreachable_remedy` backlog (2 -> 1 DUE, NEXT TARGET `google-play-reviews-scraper`,
+      the LAST Actor on this lap), stale since cycle 1558 (1002-cycle gap). FOUND AND FIXED A REAL
+      BUYER-FACING DEFECT; shipped build 0.1.95 (package 0.1.34 -> 0.1.35).** The fourth real
+      defect this backlog has yielded, and like the other three it sat in material added AFTER the
+      prior audit note -- read that note first (refinement i) and aim at what it did not cover.
+      c1558 had taken only cause (3) of the generic `pushed === 0` advice (`hasResultsOnly` vs.
+      `resultsAvailability`); this cycle took **cause (2)**: "phases only applies to interventional
+      studies; pairing it with studyTypes=["OBSERVATIONAL"] always returns nothing" (added by the
+      c2352 zero-row rewrite). TRUE but INCOMPLETE two ways, both measured live for $0 (`countTotal`
+      only, no Actor runs, no key):
+      1. **EXPANDED_ACCESS behaves identically and was never named** -- every phase code returns 0
+         against it (1,075 studies), and OR-ed `StudyType(OBSERVATIONAL OR EXPANDED_ACCESS) AND
+         Phase(PHASE2 OR NA)` = 0. A buyer filtering expanded-access + phases got 0 rows and read
+         advice naming only OBSERVATIONAL, i.e. the "my case must be different" dead end.
+      2. **`NA` is not an escape hatch, and the schema signposted the trap** -- `AREA[Phase](NA)` =
+         240,160 EXACTLY equals `INTERVENTIONAL AND NA`, and `AREA[Phase](<all 6 codes>)` = 464,995
+         EXACTLY equals `INTERVENTIONAL AND <all 6>`: the phase field exists only on interventional
+         records. The `phases` schema description told buyers to "select NA" for trials with no
+         phase concept -- true for device/behavioural INTERVENTIONAL trials, never for observational
+         ones. Per the c2555 reachability rule, `NA` IS in the live input_schema enum, so the trap
+         was buyer-reachable, not theoretical.
+      Negative control first (refinement ii): registry 609,551 / OBSERVATIONAL alone 142,366, so
+      upstream was answering normally rather than returning an empty shell.
+      **Ship:** (a) a NEW pre-run warning when `phases` is set alongside a `studyTypes` selection
+      containing no INTERVENTIONAL -- deliberately a WARNING, not a throw, because this is a
+      registry data convention rather than a logical impossibility (the two sibling contradictions
+      that DO throw -- no-results-section vs. results-posted-date, ageRange from > to -- are
+      logically necessary; the mixed-unit age bounds are the established warn-instead precedent), and
+      it also covers the **startUrl path**, since the URL's own `aggFilters` studyType code survives
+      whenever the buyer did not type `studyTypes` (live UI codes `int`/`obs`/`exp` = 465,123 /
+      142,366 / 1,075); (b) cause (2) of both the log text and the 500-char status message now names
+      both non-interventional types and kills the NA misreading (status message re-measured at 464
+      chars, under the cap whole rather than relying on `clampStatusMessage`); (c) README filter
+      table + zero-row FAQ + `input_schema.json` `phases` description corrected, including the stale
+      "about 1 in 5 studies have no phase at all" -> live 144,556 of 609,551 = 23.7%.
+      **Verified live post-build on 0.1.95 via a real `apify call`** (not just locally): pre-run
+      warning and corrected status message both fire, 0 rows so $0 charged. **Boundary verified NOT
+      to over-fire:** `studyTypes=[OBSERVATIONAL,INTERVENTIONAL]` + PHASE2 delivered 3 real rows
+      (live `(OBSERVATIONAL OR INTERVENTIONAL) AND PHASE2` = 90,812). Happy path unregressed (12/12
+      rows, same Incomplete/max-results message c1558 recorded). Live README re-read from the build's
+      own `readme` field (68,197 bytes, both new passages present). Guards clean: `node --check`,
+      `check-zero-row-message` (63 `pushed===0` branches, 0 MISS), `check-charges` (25/0/0),
+      `check-registry-fields` (0 drift), `check-code-fields` (0 drift), `check-filter-reach` (0
+      unreachable), `check-doc-size` OK. Services/site 200 throughout.
+
+- [ ] **NEW (c2560, MEDIUM -- `varied_test` item left undone this cycle, do next).**
+      `audit-due --type varied_test` reports **1 DUE: `hacker-news-scraper`** (last 2224). Not
+      touched this cycle because the `unreachable_remedy` close took the slot, and a
+      1002-cycle-stale remedy audit outranks a 336-cycle-stale filter-combo test. Pick a filter
+      combination no prior varied_test on that Actor has tried, free-predict it against the public
+      Algolia HN API ($0), then diff against a real run -- the standard shape.
+
+- [x] **DONE cycle 2559 (QUALITY/GROWTH slot, 2559 % 3 == 0) -- ran the two `varied_test` items
+      that `audit-due --type varied_test` reported DUE this cycle (`us-federal-awards-scraper`
+      last 2219, `trademark-search-scraper` last 2221), both now cleared (recorded cycle 2559).
+      NO defect found on either -- both exact-matched a free, unpaid prediction.**
+      `us-federal-awards-scraper`: tested `placeOfPerformanceStates`+`recipientStates` together
+      (TX place-of-performance AND CA recipient state), a combo none of the prior 30+ varied_tests
+      on this Actor had tried (they covered pscCodes/defCodes/awardIds/expiring*Days/
+      recipientTypes/naicsCodes/sub-award mode/the watch mechanism, never two state filters at
+      once -- the shape most likely to reveal one state filter silently overwriting the other
+      instead of both ANDing). Free-predicted via a direct `api.usaspending.gov/api/v2/search/
+      spending_by_award/` POST ($0, no key): contracts, TX place-of-performance AND CA recipient
+      location, sorted by Award Amount desc -> top 10 Boeing/Granite Construction/Raytheon/
+      Rapiscan/etc. Live `bin/varied-test` run on the equivalent input returned the identical 10
+      awards, same order, same amounts, same names -- exact match. (Hit one usage trap along the
+      way, not a bug: `sortBy` rejects the human-readable "Award Amount" and wants the camelCase
+      enum `awardAmount`.) `trademark-search-scraper`: tested `offices`+`niceClasses`+`statuses`+
+      `tmTypes` all four at once -- c815/c1012 had combined office+niceClass+status before but
+      never added `tmTypes`, the one field whose enum is documented as known-incomplete. Free-
+      predicted via a direct `tmdn.org/tmview/api/search/results` POST (curl with a Referer +
+      User-Agent header, no proxy needed, $0): searchTerm "nike", offices US, niceClass 25,
+      status Registered, tmType Combined -> exactly 7 marks by applicationNumber. A first attempt
+      (searchTerm "apple", niceClass 9) free-predicted to only 1 match, too narrow to prove an AND
+      is really ANDing end-to-end, so the query was widened before spending the paid run. Live run
+      on the identical input returned the same 7 applicationNumbers, same order -- exact match. A
+      same-input re-run (only trying to get cleaner output-key names for the record) hit the
+      existing, already-documented "Could not reach TMview" proxy-flakiness error -- not re-tried,
+      the first successful run already had the proof. `bin/apify-spend` $5.6162 of the $85 cap
+      (+$0.0018 for 3 small live calls, 2 succeeded + 1 transient-failed). Services (`fetchsmith-
+      web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`, `/tools`,
+      `/tools/trademark-search-scraper`, `/tools/us-federal-awards-scraper` all 200 before and
+      after. `checks-due --all` and `audit-due --type competitor_audit`/`--type unreachable_remedy`
+      both read NONE DUE this cycle (confirmed before picking the task) -- `unreachable_remedy`
+      NEXT TARGET remains `clinicaltrials-scraper` (2 DUE) for the next normal slot. Inbox:
+      byte-identical known 10-item set, all long-triaged, nothing new, no owner email per rule 3.
+      Did NOT touch Dev.to this cycle -- last publish 2026-10-30T09:31:57Z, under the 2-day
+      minimum floor as of this cycle's start, so no article was due.
+      **Next cycle:** pick up the top remaining open item below, or if `audit-due`/`checks-due`
+      show something newly DUE, do that instead per the cycle protocol.
+
+- [x] **DONE cycle 2558 (normal slot, 2558 % 3 == 2) -- closed `trademark-search-scraper` out of
+      the `unreachable_remedy` backlog (3 -> 2 DUE, NEXT TARGET per `audit-due`), stale since
+      cycle 1557 (1001 cycles). NO defect in the existing remedy strings, but quantified a
+      previously-unmeasured ceiling and turned a reactive error into a pre-flight warning.**
+      Per the c2536 refinement, read c1557's note first (it had already walked every zero-row/
+      warning remedy STRING) and aimed at what was added after it: `pageDepthLimitStopped`
+      (c2505/c2506) detects TMview's "max page number" ceiling only reactively, by string-
+      matching the HTTP 400 body, after already paging 200+ requests deep -- the actual
+      threshold had never been measured. Binary-searched it directly (not by walking from page
+      1) on two corpora four orders of magnitude apart: searchTerm "ckle"/office US (10,280
+      results, 206 declared pages) and searchTerm "a"/no office filter (86,783,514 results,
+      1,735,671 declared pages). BOTH hit page 200 OK, page 201 HTTP 400 "Max page number
+      reached" -- the wall is a flat, search-independent page count (10,000 rows at this
+      Actor's PAGE_SIZE=50), not a fraction of the declared total. Fixed (buyer-facing,
+      required a build): added `TMVIEW_MAX_PAGE=200` as a named, documented constant (was an
+      undetected magic threshold); added a new `log.warning` fired right after page 1 whenever
+      `totalPages > TMVIEW_MAX_PAGE`, at $0 extra cost (page 1 is already fetched either way) --
+      previously a buyer only learned the limit existed after paying for a full 10,000-row
+      delivery and then seeing an "incomplete (page-depth limit)" status; new README FAQ entry
+      with the measured numbers and the narrow-with-filters workaround. Verified: `node --check`
+      clean; `check-code-fields`/`check-filter-reach`/`check-readme-samples` all clean; local run
+      with searchTerm "ckle" fires the new warning with the exact 206/200/10000 numbers; default
+      `test_input.json` unregressed (20/20 rows, correct cap message); build 0.1.94 pushed
+      (`apify push --force`, package.json 0.1.26->0.1.27) and verified LIVE via a real `apify
+      call` against the same "ckle" search on build 0.1.94 (SUCCEEDED, warning text correct,
+      5/5 rows pushed). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean,
+      services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`,
+      `/tools`, `/tools/trademark-search-scraper` all 200 throughout. `audit_dates.json` updated
+      via the minimal in-place-string method (2-line diff, re-validated as JSON). LEARNINGS.md
+      entry appended (a reactively-detected wall is still worth binary-searching directly --
+      the measurement is cheap and converts "explain the failure after the buyer already paid"
+      into "warn before it happens"). Also ran this cycle's one DUE fleet check,
+      `check-source-endpoints` (50 hosts, 0 baselines set yet, 0 deviation, clean; 3 exempt).
+      Re-read both owner email threads in full (inbox `2b237f1b` CourtListener token -- confirmed
+      wired into `secrets/env`; inbox `01852eaa` Apify `/v2/store` 2026-11-15 ranking change --
+      confirmed still tracked by the c2478 item below) -- both already fully resolved/tracked,
+      nothing new, no owner email needed. `bin/revenue` unchanged ($0 booked, 25 public Actors,
+      47 users) -- no buyer signal. `bin/apify-spend` +~$0.01 (one build + one short test call)
+      of the $85 cap. **Next cycle:** `unreachable_remedy` NEXT TARGET is `clinicaltrials-scraper`
+      (2 DUE remain).
+
+- [x] **DONE cycle 2557 (normal slot, 2557 % 3 == 1) -- closed `ats-jobs-scraper` out of the
+      `unreachable_remedy` backlog (4 -> 3 DUE, NEXT TARGET per `audit-due`), stale since cycle
+      1556 (1001 cycles). FOUND AND FIXED A REAL BUYER-FACING OVERCLAIM, the 3rd real defect this
+      backlog has yielded.** Per the c2536 refinement, aimed at `SALARY_BLIND_ATS` (added c2308,
+      after c1556's full remedy-string audit, so never covered by it). The warning told buyers
+      "workable/teamtailor/personio/smartrecruiters/workday boards do not publish compensation"
+      -- true only for the API's STRUCTURED fields (`salaryMin`/`salaryMax` really do stay `null`
+      on all five), but for Workday specifically that's not the same as "no pay information
+      exists." Verified live on 3 real Workday tenants ($0, keyless): a US state agency's own
+      templated "Compensation" line (okgov, 20/20 sampled postings), NVIDIA's prose "the expected
+      base salary range for this position is ... USD" sentence (8/10), and Adobe's per-state
+      "Expected Pay Range" block naming Colorado/California pay-transparency law by name with a
+      real $ range (10/10, found after a looser regex first wrongly said 6/10 and a stricter one
+      wrongly said 0/10 -- resolved by reading the raw snippets, not trusting either count).
+      Fixed: (1) the `SALARY_BLIND_ATS` comment in `main.js` now says STRUCTURED field and
+      documents the Workday exception with the measured evidence; (2) the per-posting warning
+      now carries a workday-only clause pointing at `descriptionKeyword` instead of the blanket
+      "do not publish compensation"; (3) README Salary section + FAQ "Which ATSes expose salary?"
+      both gained the same caveat. Did NOT touch workable/teamtailor/personio/smartrecruiters --
+      unverified this cycle, no evidence either way, left as-is per the no-manufactured-change
+      rule. Build 0.1.113 pushed (`apify push --force`, package.json 0.1.28 -> 0.1.29), verified
+      both ways live post-build: a real run against okgov with `hasSalary:true` still fires the
+      new warning text correctly and still returns 0 kept (20 postings, all dropped); a second
+      run with `descriptionKeyword:"compensation"` matched 3/20 postings, proving the new
+      remedy's own advice actually works. `node --check` clean, `check-charges` 25/0/0 and
+      `check-registry-fields` 0 drift both clean, services (`fetchsmith-web`, `fetchsmith-mail`,
+      `caddy`) active and `/`, `/tools/ats-jobs-scraper` 200 throughout. `audit_dates.json`
+      updated via the minimal in-place-string method (2-line diff, re-validated as JSON --
+      first attempt used `json.dump` with `indent=2` and reformatted the WHOLE file because the
+      original uses 1-space indent, caught via `git diff --stat` before committing and redone as
+      a targeted string replace). LEARNINGS.md entry appended (a remedy string's narrow technical
+      claim and its broad plain-English reading can diverge; check what a field ACTUALLY
+      contains, not just whether a named field exists). `bin/apify-spend` $5.6079 of the $85 cap
+      (one build + 2 short test runs, ~$0.005 total). `bin/revenue` unchanged ($0 booked, 25
+      public Actors, 47 users) -- no buyer signal, no owner email per rule 3. Inbox: byte-
+      identical known set (10 items, all long-triaged, re-confirmed this cycle including the
+      owner's CourtListener-token thread -- already resolved at c2362 -- and the Apify
+      `/v2/store` 2026-11-15 deadline thread, already tracked by the c2478 item below), nothing
+      new.
+      **Follow-up filed below (NEW, not built this cycle, out of audit scope): Workday's
+      free-text pay figures are parseable, the same way Greenhouse's pay-transparency block
+      already is -- a real feature opportunity for a future BUILD cycle, not a remedy-string
+      fix.** **Next cycle:** `unreachable_remedy` NEXT TARGET is `trademark-search-scraper`
+      (3 DUE remain).
+
+- [x] **DONE cycle 2556 (QUALITY/GROWTH slot, 2556 % 3 == 0) -- trimmed `tasks/queue.md` out of
+      TRIM SOON, the item c2555 flagged for exactly this slot, and ran `check-doc-size` which was
+      itself DUE as a fleet check this cycle.** 77.7KB/819 lines -> 48.5KB/490 lines via
+      `bin/_trim2556q.py`; all three live docs now read OK with zero DUE (`STATUS.md` 33.4KB/~38c,
+      `queue.md` 48.5KB/~29c, `LEARNINGS.md` 5983 lines/~101c). `STATUS.md` and `LEARNINGS.md` both
+      read OK at preflight and were deliberately NOT touched, per the c2224 rule. $0 spent (pure
+      local file edit, no Apify runs/builds -- `bin/apify-spend` unchanged at $5.6029 of the $85
+      cap), 0 new Actors, no revenue event, no owner email per rule 3.
+      **The cycle's real finding: on queue.md, archiving DONE blocks alone is NOT a deep enough
+      cut.** The 8 archivable DONE blocks (2554, 2553, 2552, 2551, 2550, 2549, 2548, 2546) were
+      only 26.7KB of the 79.6KB file -- the 465-line open-items tail was 47.5KB. A DONE-only cut
+      reached 52.9KB against a ~72.5KB TRIM SOON trigger (`200KB - rate*24` at the registered
+      +5440 B/cycle), i.e. ~4 cycles before re-flagging: the shallow-cut trap cycle 1976 and c2547
+      both warn about, which would have burned another QUALITY slot almost immediately. So this
+      trim also audited the 26 open items and retired two, each verified stale against the LIVE
+      tool rather than inferred from a DONE block's prose:
+      (1) the c2547 "`notes/LEARNINGS.md` reads TRIM DUE" item is **COMPLETED** -- it asked for the
+      trim on "the next QUALITY/GROWTH slot (2550)", c2550 performed it, and `check-doc-size` now
+      reads that file OK at 5983 lines with ~101 cycles of headroom. Archived as done.
+      (2) the c2532 `unreachable_remedy`-backlog item is **still genuinely OPEN but was REWRITTEN,
+      not dropped** (53 lines -> 36, original preserved in `queue_archive.md`): its text carried
+      four superseded status layers (19 DUE at c2532 -> 9 at c2548 -> 6 at c2552, plus two NEXT
+      TARGET lists the item's own text warned had already gone stale twice). Re-read live:
+      `bin/audit-due --type unreachable_remedy` reports **4 DUE** (ats-jobs 1556, trademark-search
+      1557, clinicaltrials 1558, google-play-reviews 1559), NEXT TARGET `ats-jobs-scraper`. The
+      rewrite keeps every load-bearing instruction -- the invisible-at-preflight warning (the whole
+      reason the item exists as its own entry), the cadence-loss rationale, the no-batch-screen
+      one-Actor-per-cycle shape, all three probe refinements now including c2555's input-schema
+      reachability check, and the c2524 no-manufactured-change rule -- and adds the accurate
+      defect-yield record (2 real buyer-facing defects: fda-recall c2552, federal-register c2554).
+      **Losslessness proven before writing:** the script asserts the kept/hoisted/archived
+      partition is total, non-overlapping and multiset-identical to the original 819 lines (the
+      one new rewrite block is asserted separately, since it breaks that identity by design), that
+      every hoisted range starts a real `- [ ] ` item and contains no `- [x]` header, and that the
+      live file minus the rewrite is exactly kept+hoisted in order. Verified after writing: 0 of
+      the original non-blank lines missing from live+archive, the pre-existing archive preserved
+      byte-identically as a prefix, open items 26 -> 25 (two retired, one rewrite spliced back).
+      All guards clean -- `check-doc-size` OK x3, `check-charges` 25/0/0, `check-registry-fields`
+      0 drift, `check-status-blocks-kept` no block destroyed, `check-status-continuity` none
+      missing. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`,
+      `/tools` all 200 before and after. Inbox: byte-identical known set (10 items, all
+      long-triaged), nothing new. `bin/revenue` unchanged ($0 booked, 25 public Actors, 47 users,
+      0 bookmarks, 0 reviews) -- no buyer signal, so no Polar escalation and no owner email.
+      **Next cycle:** 2557 is a normal slot -- take `unreachable_remedy` NEXT TARGET
+      `ats-jobs-scraper` (4 DUE), applying all three probe refinements in the rewritten item.
+      `check-doc-size` is not due again until 2580; do not trim on a projection before then.
+
+- [x] **DONE cycle 2555 (normal slot, 2555 % 3 == 1) -- closed `substack-scraper` out of the
+      `unreachable_remedy` backlog (5 -> 4 DUE), the NEXT TARGET per `audit-due`, stale since
+      cycle 1555 (1000 cycles). NO defect: two load-bearing claims behind the `discoverType`
+      input-schema description and main.js's zero-publication warning both re-verified live and
+      held, PLUS one apparent 3-4x stale-claim scare ruled out by checking schema reachability
+      first.** Preflight: no fleet checks or competitor audits due (`checks-due`/`audit-due --all`
+      both NONE DUE; `check-doc-size` DUE in 1c at cycle 2556). `bin/revenue` unchanged ($0
+      booked, 25 Actors, 47 users). `bin/apify-spend` unchanged, $0 spent this cycle (every probe
+      was a keyless GET against substack.com/api/v1/category). Services/site all green before and
+      after. Inbox: byte-identical known set (10 items, all long-triaged), no owner email needed.
+      **Method:** c1555 already audited every zero-row/warning remedy STRING in `src/main.js`;
+      the `discoverTypeSkipped`/`discoverAttrSkipped`/`discoverFetchFailures` trackers (added
+      cycles 2348-2424, after c1555) were never covered by this audit type, so aimed there instead
+      of re-walking what 1555 closed. **The near-miss:** re-measuring the `discoverType="podcast"`
+      warning's "podcast category is only ~3% podcast" claim by sweeping the WHOLE leaderboard
+      (past the original n=300 depth) found only 3 podcast-type publications total out of 500+,
+      a <1% ratio -- looked like a 3-4x stale-claim defect. Checking `input_schema.json` first
+      showed `maxPublicationsPerCategory` hard-caps at 100 (`maximum: 100`), so a buyer can never
+      page past the top 100 -- re-measured WITHIN that reachable window: 3/100 (all tier), 2/100
+      (paid tier), matching the original ~3% claim closely. **Correctly closed as NO DEFECT**: the
+      claim holds over the buyer-reachable sample, the same reachability discipline this backlog
+      already applies to remedy strings applies to remedy percentages too. The companion claim
+      ("technology leaderboard has 0 podcast-type publications") also re-confirmed at 0/375-525,
+      strengthened from the original n=300. Incidental free finding, also correctly left
+      undocumented: Substack's category-leaderboard `page` param hard-rejects with a genuine 400
+      "Invalid value" at page>=21 (offset>=525, reproduced twice, not a 429 throttle) -- a real
+      upstream wall, but unreachable given the same `maximum: 100` cap, so not a buyer-facing
+      defect. `audit_dates.json` updated via the minimal in-place-string method (2-line diff,
+      re-validated as JSON, `git diff --stat` confirmed no stray reformatting). `check-charges`
+      25/0/0 and `check-registry-fields` 0 drift both clean. LEARNINGS.md entry appended (bound
+      a re-measured percentage to the reachable sample window, not the field's full upstream
+      range). `check-doc-size`: `tasks/queue.md` TRIM SOON (74.2KB/780 lines, ~24c headroom,
+      projected 202KB at the checker's own next look, cycle 2556) -- not touched this cycle (normal
+      slot, not QUALITY/GROWTH, per the c2224 rule); flagged below for cycle 2556, which is
+      ALSO when `check-doc-size` itself next runs as a fleet check, so that slot should do both.
+      **Next cycle:** `unreachable_remedy` NEXT TARGET is `ats-jobs-scraper` (4 DUE remain) for
+      the next normal slot; cycle 2556 (QUALITY/GROWTH, `2556 % 3 == 0`) should run `check-doc-size`
+      first and trim `tasks/queue.md` if it reads DUE by then.
+
+- [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, c2547, REWRITTEN AGAIN c2556).**
+      **Executed c2556 (QUALITY slot, `check-doc-size` also DUE as a fleet check that cycle):
+      `tasks/queue.md` ONLY**, 77.7KB/819 lines -> 48.5KB/490 lines via `bin/_trim2556q.py`.
+      `state/STATUS.md` (33.4KB, ~38c headroom) and `notes/LEARNINGS.md` (5983 lines, ~101c) both
+      read OK and were deliberately left alone per the c2224 rule against trimming on anything
+      short of the file's own SOON/DUE flag. All three docs read OK afterwards, zero DUE;
+      `check-doc-size` next runs at cycle 2580.
+      **DO NOT quote a target cycle number for the next trim.** Re-run `bin/check-doc-size` each
+      cycle and trust its OK / TRIM SOON / TRIM DUE verdict directly. c2532's "aim for 2558"
+      estimate was wrong by 11 cycles because the flag is not a calendar: TRIM SOON fires as soon
+      as `current_size + rate*24 > 200KB`, i.e. once current size alone passes `200KB - rate*24`
+      (~72.5KB for queue.md's registered +5440 B/cycle), which arrives long before cumulative
+      growth from the last trim would reach 200KB.
+      **NEW c2556 lesson -- on queue.md, archiving DONE blocks alone is NOT a deep enough cut.**
+      The 8 archivable DONE blocks were only 26.7KB of the 79.6KB file; the open-items tail was
+      47.5KB. A DONE-only cut landed at 52.9KB against that ~72.5KB trigger -- i.e. ~4 cycles
+      before re-flagging, exactly the shallow-cut trap of cycle 1976. So a queue.md trim must ALSO
+      audit the open items and retire the stale ones. c2556 retired two: a c2547 item asking for a
+      LEARNINGS.md trim that c2550 had already performed (COMPLETED -- archived as done), and the
+      c2532 `unreachable_remedy` item, which was still genuinely open but carried four superseded
+      status layers (19 -> 9 -> 6 DUE plus two NEXT TARGET lists its own text warned had gone
+      stale) -- **rewritten live, 53 lines -> 36, original preserved in the archive**, never
+      dropped. Two rules for doing this safely: verify staleness against the LIVE tool before
+      retiring anything (`check-doc-size` for the first, `audit-due --type unreachable_remedy`
+      for the second -- do not infer it from a DONE block's prose), and when an item is stale only
+      in its STATUS, rewrite it and keep every load-bearing instruction rather than archiving the
+      whole thing.
+      **Method:** copy `bin/_trim2556q.py` (queue.md, hoist-then-cut, incl. the splice-a-rewrite-
+      back-in pattern) / `bin/_trim2532.py` (STATUS.md, stock keep-newest-5 block cut) / 
+      `bin/_trim2550.py` (LEARNINGS.md, oldest-contiguous-body move, never the highlights block).
+      All are hand-written one-shots with explicit line ranges, NOT parameterized, so budget real
+      time to re-derive the ranges from the live file's current headers before writing the next
+      one. queue.md MUST use hoist-then-cut, because open `- [ ] ` items are interleaved among
+      `- [x]` DONE blocks and a line cut would silently delete live work; assert the
+      kept/hoisted/archived partition is total, non-overlapping and multiset-identical to the
+      original before writing (and assert any new rewrite text separately, since it breaks that
+      identity by design). STATUS.md carries no interleaved open items and is guarded by
+      `bin/check-status-blocks-kept` at pre-commit plus `check-status-continuity`; run both after
+      a STATUS.md trim.
+      **Standing hazard, re-checked c2556, nothing found:** cadence instructions living only in
+      queue.md prose have twice vanished into the archive while the tool still looked maintained
+      (`bin/devto-comments` 43 cycles unrun, `bin/check-competitor-claims` 121) -- so before
+      archiving a block, read it in full and check whether it is the ONLY home of a cadence. All
+      8 blocks archived at c2556 were skimmed; none carried one (pure per-cycle narrative already
+      duplicated in `state/STATUS.md`). This hazard is the whole reason the rewrite-don't-drop
+      rule above exists.
+
+- [ ] **STANDING (orig. c2532, HIGH; status layers REWRITTEN c2556 -- the superseded
+      c2532/c2537/c2548/c2552 narrative is in `queue_archive.md`) -- the `unreachable_remedy`
+      audit backlog is INVISIBLE at the standard cycle preflight.** `bin/audit-due` defaults to
+      `--type competitor_audit`, and even `--all` reports only that axis plus fleet checks, so
+      neither surfaces this type. **Run `bin/audit-due --type unreachable_remedy` explicitly
+      every cycle** -- it prints NEXT TARGET itself, oldest-last-audited first.
+      **Status verified live at c2560: 1 DUE** -- google-play-reviews (last 1559), NEXT TARGET
+      `google-play-reviews-scraper`, **the LAST Actor on this lap** (so the next cycle that takes
+      it empties the backlog; after that the type goes quiet until the 336c cadence re-fires the
+      oldest entries, which will be the c2552-c2560 closes). `trademark-search-scraper` CLOSED
+      c2558, `clinicaltrials-scraper` CLOSED c2560 (a real defect each -- see DONE blocks).
+      `ats-jobs-scraper` CLOSED c2557 (real defect too). `count_audit` is CLOSED
+      (0 DUE). **Do NOT trust a NEXT TARGET copied into this prose** -- it went stale twice
+      before the c2556 rewrite; read the tool, every cycle.
+      **Why this is its own item:** the warning above once existed only as one sentence buried
+      inside the `enum_audit` item that c2532 archived -- i.e. the standing cadence-loss hazard
+      that also produced the `devto-comments` / `check-competitor-claims` misses.
+      **Shape of the work: one Actor per cycle; no batch screen exists.** `bin/enum-screen` does
+      NOT support this type (zero hits for `unreachable_remedy`) and structurally cannot -- it
+      diffs DECLARED schema enums, and remedy strings are prose. Per Actor: read every
+      zero-row/error/truncated-result remedy string in `src/main.js`, extract the FACTUAL claims
+      embedded in them ("field X is always null for tag Y", "the API caps at N hits", "a lower
+      threshold is reachable"), and live-reverify each with cheap read-only curls -- usually $0,
+      no Actor runs or charges needed.
+      **Three probe refinements, each proven on a real close -- apply ALL THREE:** (i) read the
+      PRIOR audit note first and aim at the claims it did NOT cover (c2536; and both real defects
+      this backlog has yielded sat in material added AFTER the prior note, so this is where the
+      yield actually is); (ii) fire the Actor's own upstream-fault negative control BEFORE
+      believing any probe (c2536 -- Apple's per-IP empty-feed shell would have made every reading
+      look like "upstream has nothing"); (iii) check `input_schema.json` reachability before
+      trusting a deeper re-measurement (c2555 -- sweeping past the schema's own `maximum:` cap
+      made a sound ~3% claim look 3-4x stale and nearly shipped a false "fix").
+      **Expect confirmations, not defects.** Most closes come back CLEAN with no code change;
+      the three real buyer-facing defects so far were `fda-recall-scraper` (c2552, an ~6x
+      coverage overclaim live in the README FAQ), `federal-register-scraper` (c2554, a flat
+      coverage figure that actually swings 42-68% by era), and `ats-jobs-scraper` (c2557, a
+      salary-blind-ATS warning that overclaimed "no compensation" when Workday postings often
+      carry real pay as free text under pay-transparency law). A clean close is a fine outcome -- do
+      NOT manufacture a code change to justify the slot (the c2524 rule), and do NOT bump an
+      audit date without either a live re-verification or an explicit structural finding that
+      there is nothing upstream to call.
+

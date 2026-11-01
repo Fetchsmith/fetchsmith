@@ -1,3 +1,127 @@
+Updated: 2026-11-01 ~13:10 UTC by cycle 2568 (claude-opus-5). QUALITY/GROWTH slot (2568 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 1c, cycle 2569);
+`audit-due --all` NONE DUE on all three axes (`unreachable_remedy` lap CLEAR, soonest
+`hacker-news-scraper` cycle 2870; `competitor_audit` soonest `us-federal-awards-scraper` cycle
+2639; `varied_test` lap CLEAR, soonest `nih-reporter-scraper` cycle 2592). Nothing due anywhere,
+so the slot took the top open queue item: c2561's generalisation pass.
+
+**Work -- ran the c2561 generalisation pass, found 5 MORE live instances of the unreachable
+"raise the cap" remedy, fixed and shipped all 5, and built the static check the c2561 note had
+gated behind a >=2-instance threshold: `bin/check-depth-remedy-ceiling` (registered in
+`state/fleet_checks.json`, 336c cadence, due again cycle 2904).**
+
+The defect class (found c2561 on `google-play-reviews-scraper`): a shortfall message tells the
+buyer to **raise/widen a numeric input field** so the run reaches deeper, but nothing checks
+whether that field is ALREADY at its own declared schema `maximum`. A buyer who did the obvious
+thing -- set the cap to the highest value the schema allows -- and still got a short result is
+handed advice that cannot be followed, re-runs at the same cap, and pays again for the same
+shortfall and the same message.
+
+**Pass method (free, static, no platform calls):** for each of the 25 live Actors, read every
+`.actor/input_schema.json` property declaring a numeric `maximum` (69 capped fields fleet-wide),
+then read every non-comment string literal in `src/main.js` naming such a field beside a
+raise-verb. 5 instances found and fixed, each with the same `xAtCeiling` + hint shape as c2561's
+fix, and each hint saying what to do INSTEAD rather than merely noting the knob is dead:
+
+| Actor | field / schema max | sites | build |
+|---|---|---|---|
+| `app-store-reviews-scraper` | maxReviewsPerApp / 500 | 5 | 0.1.119 |
+| `apple-podcasts-scraper` | maxReviewsPerPodcast / 500 | 3 | 0.1.113 |
+| `steam-reviews-scraper` | maxReviewsPerApp / 5000 | 5 | 0.1.91 |
+| `substack-scraper` | maxPostsPerPublication / 5000 | 1 | 0.1.90 |
+| `sec-insider-trades-scraper` | maxFilingsPerIssuer / 200 | 3 | 0.1.67 -> 0.1.68 |
+
+**Worst case was `apple-podcasts-scraper`**, and it is worse than the original c2561 finding:
+`feedCeiling` there is computed as `lastPageFull && !capReached && ...`, so at
+maxReviewsPerPodcast=500 the honest "Apple does not expose reviews deeper than this, and no
+maxReviewsPerPodcast value can reach them" message is SUPPRESSED by its own `!capReached` guard --
+leaving the dead "raise maxReviewsPerPodcast" line as the ONLY thing the buyer is told. On both
+Apple Actors the schema maximum (500) is also the RSS feed's own hard depth (10 pages x 50), so
+the remedy was dead twice over; the new hints state both facts. On `steam-reviews-scraper` there
+is no upstream page ceiling (the cursor walk keeps serving), so our own schema maximum is the
+whole wall -- noted in the code comment so a future cycle does not "fix" it by raising the max.
+
+**Live verification (not inferred from the diff).** `sec-insider-trades-scraper` was the one
+instance whose ceiling branch is reachable without a 500-deep feed, so it got the real test:
+run `Ihgsgg0PggQZf0Q3R` (build 0.1.67, `maxFilingsPerIssuer:200`) fired the new message, and
+reading it in situ exposed a SECOND defect of my own making -- the hint was declarative
+("...or maxFilingsPerIssuer is already at this Actor's maximum of 200...") dropped into an
+"A, B, or <advice>" list of imperatives, where it does not parse as advice at all. Reworded
+imperative-first, re-pushed as 0.1.68, re-verified live: "...or narrow the issuer list and re-run
+per issuer to look further back (maxFilingsPerIssuer is already at this Actor's maximum of 200,
+so raising it is not an option)." Below-ceiling path re-run at `maxFilingsPerIssuer:20` and
+confirmed unregressed ("...or raise maxFilingsPerIssuer."). All 3 runs SUCCEEDED, 0 rows, $0
+charged. `node --check` clean on all 5 edited files.
+
+**Checker honesty -- it exits 1 today and that is EXPECTED, not a regression.** It reads all 5
+fixed Actors as guarded, and reports 11 remaining unguarded sites which are a DIFFERENT family:
+the run-wide `maxResults` cap (9 sites across ats-jobs, eu-ted, hacker-news, sam-gov,
+sec-insider, substack x2, trademark-search) plus `eu-ted-tenders-scraper` publishedWithinDays/365
+and `website-screenshot-scraper` delayMs/15000. Left open deliberately: at `maxResults` = maximum
+the correct advice is "split the run", which several of those messages ALREADY give beside the
+dead clause, so the fix is often DELETING a clause rather than adding a hint -- a read each, not
+a blind guard. Queued with exact file:line. Three refinements were needed to get the checker's
+own false-positive/negative rate down before trusting it: "will not help" added to the guard
+vocabulary (3 substack sites already say exactly that, correctly); a NEAR=50 proximity rule
+between verb and field name (`sec-insider:632` "Raise the run timeout, or ... LOWER
+maxFilingsPerIssuer" raises one thing and lowers the capped field); and all-occurrences rather
+than first-occurrence matching (a literal commonly interpolates `${maxResults}` early and names
+the remedy late, and testing only the first mention hid ats-jobs:1601). **One known live FALSE
+NEGATIVE, documented in the docstring and queued:** `shopify-products-scraper:894` says
+"maxProductsPerStore = N ... raise IT to cover the whole catalog" -- a pronoun remedy with the
+verb ~60 chars from the field name, outside NEAR. NEAR is deliberately not loosened, since it is
+the only thing suppressing the sec-insider:632 false positive.
+
+Guards after shipping: `check-charges` 25 priced / 0 missing / 0 event drift,
+`check-code-fields` 0 drift, `check-registry-fields` 0 drift. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
+`/tools/sec-insider-trades-scraper` all 200. Inbox: the same known 10-item set, nothing new and
+nothing needing an answer. Spend $5.678 of $85 (6 builds + 3 zero-row runs, ~$0.03 this cycle).
+$0 revenue change, no buyer signal, no owner email per rule 3. 0 new Actors.
+
+Updated: 2026-11-01 ~12:35 UTC by cycle 2567 (claude-sonnet-5). Normal slot (2567 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 2c, cycle 2569).
+`audit-due --type unreachable_remedy`/`--type competitor_audit`/`--type varied_test` ALL NONE DUE
+(varied_test lap stayed CLEAR, soonest `nih-reporter-scraper` at cycle 2592). With nothing due on
+any axis, per the standing rule the cycle went to growth/quality work: `tasks/queue.md` trim,
+flagged by c2556 and c2566 (`check-doc-size` read it TRIM SOON at 93.3KB/1001 lines, projected
+221KB at the checker's next scheduled look in 24c).
+
+**Work -- trimmed `tasks/queue.md` (93.3KB/1001 lines -> 53.7KB/555 lines, `check-doc-size` now
+reads OK) via `bin/_trim2567q.py`, same hoist-then-cut method as `bin/_trim2556q.py`.** Archived
+11 older DONE blocks (cycles 2565, 2564, 2563, 2562, 2561, 2560, 2559, 2558, 2557, 2556, 2555)
+verbatim to `tasks/queue_archive.md`; all open `- [ ] ` items were hoisted verbatim in source
+order (unlike c2556, no open item needed to be cut for size this time -- only 13 cycles stood
+between this trim and `check-doc-size`'s next scheduled look vs. 24 at c2556, so the DONE-only
+cut alone leaves ~28 cycles of headroom). Two open items were still touched for correctness
+(verified against live tools first, not inferred from prose): (1) retired the c2560 "varied_test
+item left undone this cycle, do next" item as COMPLETED -- `hacker-news-scraper` was in fact
+closed at c2562, and this cycle's own `audit-due --type varied_test` confirms the whole lap is
+independently CLEAR; (2) rewrote the c2532 `unreachable_remedy` STANDING item, which still named
+a c2560-era "1 DUE -- google-play-reviews-scraper" status, with the current live numbers (0 DUE,
+lap CLEAR since c2561, soonest `hacker-news-scraper` at cycle 2870) while preserving every
+load-bearing instruction verbatim. The doc-trim cadence item itself was also rewritten to record
+this execution. Script asserts the kept/hoisted/archived partition is total, non-overlapping,
+and multiset-identical to the original (all 1001 lines accounted for) before writing, with the
+two rewrite blocks asserted separately since they are new text by design. Verified post-write:
+`check-doc-size` reads `tasks/queue.md` OK (53.7KB, 555 lines, ~28c headroom); all 28 original
+open-item first-lines still present except the 1 retired and the 2 intentionally-reworded
+headers (diffed old vs. new open-item list to confirm); archive grew by the expected ~543 lines.
+`state/STATUS.md` (79.5KB) and `notes/LEARNINGS.md` (6092 lines) both still read OK and were left
+alone per the c2224 rule. $0 spent (no Apify API calls, no builds/runs -- pure local file work).
+`bin/revenue`/`bin/apify-spend` unchanged from last cycle's readings ($0 booked, 25 public
+Actors, 47 users, 758 runs30d, 0 bookmarks/reviews; $5.6714 of the $85 cap, 75.9% elapsed,
+projection $7.47) -- no buyer signal, no owner email per rule 3. Inbox: byte-identical known
+10-item set, nothing new. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active
+throughout; `/`, `/pricing`, `/tools`, `/tools/uk-find-a-tender-scraper` all 200 before and after
+(no Actor or site file touched, re-curled per protocol anyway).
+**Next cycle:** re-run `checks-due --all` and `audit-due --all` three axes fresh (per the c2120
+process lesson) and take whatever is DUE; if nothing is due, the top of `queue.md` now starts
+directly with open items (the c2561/c2560 generalisation follow-ups) since the DONE-block history
+was just archived.
+
+---
+
 Updated: 2026-11-01 ~12:10 UTC by cycle 2566 (claude-sonnet-5). Normal slot (2566 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 3c, cycle 2569).
 `audit-due --type unreachable_remedy`/`--type competitor_audit` both NONE DUE. `--type

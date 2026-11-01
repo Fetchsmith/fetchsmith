@@ -27,6 +27,17 @@ function haveTime() {
 
 const maxResults = Math.min(Number(input.maxResults ?? 100), 5000);
 const maxFilingsPerIssuer = Math.min(Number(input.maxFilingsPerIssuer ?? 20), 200);
+// "raise maxFilingsPerIssuer" is only reachable advice while the field has room left to move; it is
+// clamped to 200 above (the schema's own "maximum"), so a run already selecting 200 filings per
+// issuer has no higher value to set. Same defect shape as google-play-reviews-scraper (cycle 2561).
+const filingsAtCeiling = maxFilingsPerIssuer === 200;
+// Phrased as a replacement for the dead knob, not an addition: every call site below already offers
+// `sinceDate` as the other half of the remedy, and that one still works at the ceiling. IMPERATIVE
+// first, parenthetical second -- every call site drops this into an "A, B, or <hint>" list of
+// instructions, and a declarative "maxFilingsPerIssuer is already at its maximum" in that slot does
+// not parse as advice (verified live on build 0.1.67 before rewording).
+const MAX_FILINGS_HINT = 'narrow the issuer list and re-run per issuer to look further back '
+  + '(maxFilingsPerIssuer is already at this Actor\'s maximum of 200, so raising it is not an option)';
 // EDGAR inlines only a WINDOW of filings under `filings.recent` -- the larger of ~1000 entries
 // or the trailing 12 months -- and pushes everything older into paginated `filings.files` pages.
 // For a prolific filer that window can be very shallow in time: JPMorgan has 26k filings in
@@ -536,7 +547,9 @@ if (filtersActive) {
     + `roles=${insiderRoles.join('/') || 'any'}).`);
   if (!pushed && dropped && !derivativeCodesBlocked) {
     log.warning('Every parsed row was filtered out. The filters apply to the filings that '
-      + 'maxFilingsPerIssuer already selected -- raise it (or widen sinceDate) to look further back.');
+      + `maxFilingsPerIssuer already selected -- ${filingsAtCeiling
+        ? `widen sinceDate, or ${MAX_FILINGS_HINT}`
+        : 'raise it (or widen sinceDate) to look further back'}.`);
   }
 }
 
@@ -626,7 +639,8 @@ if (!pushed) {
   } else if (!filingsSelected) {
     zeroRowMessage = `0 rows: no ${forms} filings for ${who} exist in the window searched`
       + (sinceDate ? ` (sinceDate ${sinceDate} or later)` : '')
-      + '. Widen sinceDate (or drop it), check the issuer really files that form, or raise maxFilingsPerIssuer.';
+      + `. Widen sinceDate (or drop it), check the issuer really files that form, or ${filingsAtCeiling
+        ? MAX_FILINGS_HINT : 'raise maxFilingsPerIssuer'}.`;
   } else if (dropped && filtersActive) {
     const active = [
       transactionCodes.length ? `transactionCodes=${transactionCodes.join('/')}` : null,
@@ -650,7 +664,7 @@ if (!pushed) {
       + (holdingsOnlyFilings && !includeHoldings ? ' Enable includeHoldings to return those positions.' : '');
   } else {
     zeroRowMessage = `0 rows: the ${filingsSelected} ${forms} filing(s) searched for ${who} reported no transactions. `
-      + 'Widen sinceDate, raise maxFilingsPerIssuer, or add form 5 / enable includeHoldings.';
+      + `Widen sinceDate, ${filingsAtCeiling ? MAX_FILINGS_HINT : 'raise maxFilingsPerIssuer'}, or add form 5 / enable includeHoldings.`;
   }
   log.warning(zeroRowMessage + sinceDateNote());
   await Actor.setStatusMessage(clampStatusMessage(zeroRowMessage, sinceDateNote()));

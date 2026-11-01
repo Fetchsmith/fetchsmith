@@ -248,6 +248,12 @@
    "interval_cycles": 672,
    "last_cycle": 2386,
    "note": "cycle 2386: NEW checker (c2376 follow-up). Scans actors/*/README.md + site/content/blog/*.md for a forward-looking verb (starts/scheduled/effective/pending/begins/switches on/lands on/due .. on/moving to .. on) sitting within 60 chars before a now-past date, then requires a resolution phrase (re-verified/now in effect/confirmed/landed/resolved/has since/...) somewhere later in the same paragraph. First run: 10 forward-dated claims past their date, all 10 already resolved in prose (app-store-reviews x3, eu-ted-tenders x2, grants-gov, hacker-news, remote-jobs x2, substack) -- matches the seed population exactly (the known forecast-landed fixes already in this fleet), 0 flagged. 672c is fine since the population only grows when a cycle writes a new forward-looking date -- same cadence reasoning as check-own-source-count."
+  },
+  "check-depth-remedy-ceiling": {
+   "kind": "cadence",
+   "interval_cycles": 336,
+   "last_cycle": 2568,
+   "note": "cycle 2568: cycle 2568: built this cycle; 25 Actors / 69 capped fields scanned; 5 instances fixed+shipped, 11 unguarded maxResults-family sites left open and queued (exit 1 is expected until then) [prior note preserved] cycle 2568: BUILT this cycle as the c2561 follow-up's >=2-instance trigger. The generalisation pass found 5 more live instances of the unreachable 'raise the cap' remedy beyond c2561's google-play finding (app-store-reviews maxReviewsPerApp/500, apple-podcasts maxReviewsPerPodcast/500, steam-reviews maxReviewsPerApp/5000, substack maxPostsPerPublication/5000, sec-insider-trades maxFilingsPerIssuer/200) -- all fixed and shipped this cycle, all now read guarded. Check reads 11 remaining unguarded sites, 10 of them the DIFFERENT run-wide maxResults family (ats-jobs, eu-ted x2, hacker-news x2, sam-gov, sec-insider, substack x2, trademark-search) plus website-screenshot delayMs/15000 -- left open deliberately, queued: at maxResults=maximum the right advice is 'split the run', which several of those messages already give, so each needs a read not a blind guard. 336c cadence: this is a static check over code that only changes when an Actor's remedy strings do."
   }
  },
  "not_cadence": {

@@ -35,6 +35,15 @@ const input = (await Actor.getInput()) ?? {};
 
 const maxResults = Math.min(Number(input.maxResults ?? 200), 10000);
 const maxPostsPerPublication = Math.min(Number(input.maxPostsPerPublication ?? 50), 5000);
+// "raise maxPostsPerPublication to search deeper" is only reachable advice while the field has room
+// left to move; it is clamped to 5000 above (the schema's own "maximum"), so a run already scanning
+// 5000 posts per publication has no higher value to set. Same defect shape as
+// google-play-reviews-scraper (cycle 2561); this Actor already gets the sibling case right for
+// maxPublicationsPerCategory ("raising it cannot help: the leaderboard was already read").
+const postsAtCeiling = maxPostsPerPublication === 5000;
+const MAX_POSTS_HINT = ' — maxPostsPerPublication is already at this Actor\'s maximum of 5000, so there '
+  + 'is no higher value to raise it to; narrow the date window (publishedAfter/publishedBefore) and '
+  + 'run the publication in several passes instead';
 const searchQuery = (input.searchQuery ?? '').toString().trim();
 const includeBodyText = input.includeBodyText !== false;
 const includeBodyHtml = input.includeBodyHtml === true;
@@ -574,7 +583,7 @@ async function scrapePublication(origin) {
     log.warning(
       `${origin}: scanned the maxPostsPerPublication limit of ${maxPostsPerPublication} post(s) and `
       + `${dropped} of them were excluded by audienceFilter/contentType/publishedAfter/publishedBefore/min-max filters. `
-      + `The cap counts posts scanned, before filtering — raise maxPostsPerPublication to search deeper.`,
+      + `The cap counts posts scanned, before filtering${postsAtCeiling ? MAX_POSTS_HINT : ' — raise maxPostsPerPublication to search deeper'}.`,
     );
     depthCapped.push(origin);
   }

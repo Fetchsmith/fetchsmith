@@ -61,6 +61,16 @@ const RATING_SORTS = new Set(['favorable', 'critical']);
 const ratingSort = RATING_SORTS.has(input.sort) ? input.sort : null;
 const requestedSort = input.sort === 'mostHelpful' ? 'mostHelpful' : 'mostRecent';
 const perApp = Math.min(Number(input.maxReviewsPerApp ?? 200), 500);
+// "raise maxReviewsPerApp to search deeper" is only reachable advice while maxReviewsPerApp has
+// room left to move. It is clamped to 500 above (the schema's own "maximum"), which is ALSO the
+// deepest Apple's public RSS can go (MAX_RSS_PAGE 10 x 50 reviews), so a run already scanning at
+// 500 has two independent reasons the remedy cannot work: no higher value exists to set, and the
+// feed would not serve it either. Same defect shape as google-play-reviews-scraper (cycle 2561).
+const depthAtCeiling = perApp === 500;
+const MAX_DEPTH_HINT = ' — maxReviewsPerApp is already at this Actor\'s maximum of 500, which is also '
+  + 'as deep as Apple\'s public review feed goes (10 pages x 50), so there is no higher value to raise '
+  + 'it to and matching reviews sitting deeper cannot be reached at all. Add more storefronts to '
+  + '"countries" for wider coverage, or run in watchMode to collect new reviews over time';
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeInfo = input.includeAppInfo !== false;
 const countryFallback = input.countryFallback === true;
@@ -1238,7 +1248,7 @@ for (const app of apps) {
       log.warning(
         `${appId}/${country}: scanned the maxReviewsPerApp limit of ${perApp} review(s) and ${filteredOut} of them `
         + `were excluded by the review filters (rating/keyword/length/votes/date). The cap counts reviews scanned, before `
-        + `filtering — raise maxReviewsPerApp to search deeper.`,
+        + `filtering${depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerApp to search deeper'}.`,
       );
     }
     let totalNewForPair = newForPair;
@@ -1272,7 +1282,7 @@ for (const app of apps) {
           depthCappedPairs.push(`${appId}/${fb}`);
           log.warning(
             `${appId}/${fb} (fallback): scanned the maxReviewsPerApp limit of ${perApp} review(s) and ${fb2.filteredOut} `
-            + `of them were excluded by the review filters (rating/keyword/length/votes/date) — raise maxReviewsPerApp to search deeper.`,
+            + `of them were excluded by the review filters (rating/keyword/length/votes/date)${depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerApp to search deeper'}.`,
           );
         }
         if (fb2.got > 0) {
@@ -1305,7 +1315,7 @@ for (const app of apps) {
     // ceiling made it most likely to be true — same class as the h255/h257 silent shortfall.
     if (watchMode && !pairSeeding && (capReached || feedCeiling) && totalNewForPair > 0 && totalNewForPair === totalGot) {
       saturatedPairs.push(pairKey);
-      log.warning(`${pairKey}: every matching review in the scanned window was new, so reviews posted since the last run may have been missed further back — ${feedCeiling ? "Apple's feed stopped serving mid-walk, so run the watch more often (raising maxReviewsPerApp cannot reach deeper)" : 'run the watch more often, or raise maxReviewsPerApp'}.`);
+      log.warning(`${pairKey}: every matching review in the scanned window was new, so reviews posted since the last run may have been missed further back — ${feedCeiling ? "Apple's feed stopped serving mid-walk, so run the watch more often (raising maxReviewsPerApp cannot reach deeper)" : depthAtCeiling ? 'maxReviewsPerApp is already at its maximum of 500 (Apple\'s own feed depth), so run the watch more often instead' : 'run the watch more often, or raise maxReviewsPerApp'}.`);
     }
     const delivered = pushed - pushedBefore;
     // "empty" and "filteredOut" are kept apart for the same reason the status message keeps them
@@ -1483,13 +1493,13 @@ if (watchMode && storefrontErrorPairs.length) {
   const why = storefrontErrorPairs.length && !emptyPairs.length
     ? `Apple refused these app/storefront pairs: ${storefrontErrorPairs.join(', ')} — ${storefrontErrorMessages.join(' ')}`
     : depthCappedPairs.length && !emptyPairs.length
-    ? `maxReviewsPerApp (${perApp}) was hit before any review passed your review filters (rating/keyword/length/votes/date) for: ${depthCappedPairs.join(', ')} — raise maxReviewsPerApp to search deeper`
+    ? `maxReviewsPerApp (${perApp}) was hit before any review passed your review filters (rating/keyword/length/votes/date) for: ${depthCappedPairs.join(', ')}${depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerApp to search deeper'}`
     : filteredOutPairs.length && !emptyPairs.length
     ? 'reviews were found but every one was removed by your review filters (rating/keyword/length/votes/date)'
     : `Apple's review feed returned nothing for: ${emptyPairs.join(', ')} (try another storefront in "countries")`;
   statusMsg = (`No reviews returned — ${why}. See the log for details.`);
 } else if (depthCappedPairs.length) {
-  statusMsg = (`Pushed ${pushed} reviews. maxReviewsPerApp (${perApp}) was hit while filtering: ${depthCappedPairs.join(', ')} — some matching reviews may sit deeper in the feed; raise maxReviewsPerApp to search further.`);
+  statusMsg = (`Pushed ${pushed} reviews. maxReviewsPerApp (${perApp}) was hit while filtering: ${depthCappedPairs.join(', ')} — some matching reviews may sit deeper in the feed${depthAtCeiling ? MAX_DEPTH_HINT : '; raise maxReviewsPerApp to search further'}.`);
 } else if (emptyPairs.length || storefrontErrorPairs.length) {
   statusMsg = (
     `Pushed ${pushed} reviews.${emptyPairs.length ? ` Empty Apple feed for: ${emptyPairs.join(', ')}.` : ''}`

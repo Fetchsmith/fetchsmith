@@ -91,6 +91,15 @@ if (dataType === 'reviews' && hasDateWindow && sortBy !== 'recent') {
 }
 const dayRange = input.dayRange != null ? Math.min(Math.max(Number(input.dayRange), 1), 365) : null;
 const perAppReviews = Math.min(Number(input.maxReviewsPerApp ?? 200), 5000);
+// "raise maxReviewsPerApp to search deeper" is only reachable advice while the field has room left
+// to move; it is clamped to 5000 above (the schema's own "maximum"), so a run already scanning at
+// 5000 has no higher value to set and the remedy is dead. Unlike the Apple feeds there is no
+// separate upstream page ceiling here (Steam's cursor walk keeps serving), so the Actor's own
+// maximum is the whole wall. Same defect shape as google-play-reviews-scraper (cycle 2561).
+const depthAtCeiling = perAppReviews === 5000;
+const MAX_DEPTH_HINT = ' — maxReviewsPerApp is already at this Actor\'s maximum of 5000, so there is '
+  + 'no higher value to raise it to; loosen the filters instead, or split the app across several runs '
+  + 'with a narrower date range';
 const searchLimit = Math.min(Number(input.searchLimit ?? 10), 50);
 const maxResults = Math.min(Number(input.maxResults ?? 2000), 50000);
 const includeGameInfo = input.includeGameInfo !== false;
@@ -977,13 +986,13 @@ if (dataType === 'games') {
     // the last run may sit deeper in the feed and were never looked at.
     if (watchMode && !appSeeding && capReached && newForApp > 0 && newForApp === considered - filteredOut) {
       saturatedApps.push(id);
-      log.warning(`App ${id}: every matching review in the ${perAppReviews} scanned was new, so reviews posted since the last run may have been missed further back — raise maxReviewsPerApp or run the watch more often.`);
+      log.warning(`App ${id}: every matching review in the ${perAppReviews} scanned was new, so reviews posted since the last run may have been missed further back — ${depthAtCeiling ? 'maxReviewsPerApp is already at its maximum of 5000, so run the watch more often instead' : 'raise maxReviewsPerApp or run the watch more often'}.`);
     }
     if (capReached && filteredOut > 0) {
       log.warning(
         `App ${id}: scanned the maxReviewsPerApp limit of ${perAppReviews} review(s) and ${filteredOut} of them `
-        + `were excluded by your ${filterLabel}. The cap counts reviews scanned, before filtering `
-        + `— raise maxReviewsPerApp to search deeper.`,
+        + `were excluded by your ${filterLabel}. The cap counts reviews scanned, before filtering`
+        + `${depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerApp to search deeper'}.`,
       );
       depthCapped.push(id);
     }
@@ -1049,7 +1058,7 @@ if (emptySearches.length) {
   zeroCauses.push(`your search terms matched no Steam games: ${emptySearches.join(', ')}`);
 }
 if (depthCapped.length) {
-  zeroCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit before any review passed your ${filterLabel} for: ${depthCapped.join(', ')} — raise maxReviewsPerApp to search deeper`);
+  zeroCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit before any review passed your ${filterLabel} for: ${depthCapped.join(', ')}${depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerApp to search deeper'}`);
 }
 // Deduped against depthCapped, which is the more specific statement of the same shortfall for an
 // app that hit the cap (raise the cap) versus one whose whole feed was scanned and rejected
@@ -1187,7 +1196,7 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
 } else if (watchMode && pushed === 0) {
   await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (watchMode && saturatedApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run the watch more often.${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; ${depthAtCeiling ? 'maxReviewsPerApp is already at its maximum of 5000, so run the watch more often instead' : 'raise maxReviewsPerApp or run the watch more often'}.${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (watchMode) {
   await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
 } else if (pushed === 0) {
@@ -1228,7 +1237,7 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
     partialCauses.push(`Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input, so re-run those later`);
   }
   if (depthCapped.length) {
-    partialCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed, so raise maxReviewsPerApp to search further`);
+    partialCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed${depthAtCeiling ? MAX_DEPTH_HINT : ', so raise maxReviewsPerApp to search further'}`);
   }
   // Same depthCapped dedupe as zeroCauses: raise-the-cap and loosen-the-filter are different advice.
   const partialFilteredOnly = allFilteredIds.filter((id) => !depthCapped.includes(id));
