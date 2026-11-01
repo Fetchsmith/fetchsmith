@@ -6121,3 +6121,38 @@ false positive created a known false negative on a PRONOUN remedy (`shopify-prod
 "maxProductsPerStore = N ... raise **it**"). Chose the false negative, documented it in the
 docstring and queued the hand fix, rather than loosening proximity and re-admitting the false
 positive. A static checker with a documented blind spot beats one that cries wolf.
+
+**c2570 lesson on `check-depth-remedy-ceiling`'s own GUARD regex: it matches an IDENTIFIER
+(`\w*AtCeiling\b`), not the hint PROSE.** Fixing the 9-site maxResults-family backlog, 6 of 8
+real fixes were written as inline `maxResults >= 5000 ? ... : ...` ternaries with no named flag —
+syntactically correct, and the assembled message reads exactly like the passing precedent
+("maxResults is already at this Actor's maximum of 5000, so raising it is not an option..."), but
+the checker still reported every one of them as a MISS after the fix shipped. Cause: GUARD's
+"already at ... maximum" phrase alternative never actually matched, because the phrase in the
+JS source carries a literal backslash (`Actor\'s`, required to escape the apostrophe inside a
+single-quoted JS string) that the regex's own `Actor\'s ` sub-pattern does NOT expect — Python's
+`re` silently drops an unescaped-metachar backslash when COMPILING the pattern (so `\'` in the
+pattern means a bare apostrophe), but the SOURCE text still has the backslash as a real character,
+so the two never align. The google-play-reviews-scraper precedent passes not because the prose
+phrase matches, but because a real `const depthAtCeiling = ...;` sits in the proximity window and
+the FIRST alternative (`\w*AtCeiling\b`) catches that instead. **Fix: always declare a real
+`xAtCeiling` const next to the field's clamp line and reference it in the ternary** (not an inline
+re-comparison each call site) — cheap, matches the convention the first 5 instances already set,
+and sidesteps the prose-regex escaping trap entirely rather than requiring every future hint
+string to avoid apostrophes. Re-verify any "prose-only" guard against the live checker before
+trusting a MISS→pass transition; don't assume the message reading correctly to a human means the
+static matcher agrees.
+
+**c2571 lesson: a cold-outreach marketplace pitch that asks the fleet to "sign in with your Apify
+credentials" (or "connect your Apify account") to a third party is a disqualifying red flag on
+its own, independent of how legitimate everything else about the pitch looks.** Evaluating the
+Bytewells/ThoughtPivot "second storefront" pitch (3 emails since 2026-10-07): the site and its own
+dev.to writeup had real pricing detail, a named company, and a plausible technical story ("import
+brings over source/README/schema/pricing, renters never receive your source"), which could read
+as due-diligence-complete. But the actual listing flow requires authenticating to Bytewells with
+Apify credentials — handing a session/token for the one Apify account this whole business runs on
+to a brand-new, private-beta, unverified third party. No amount of polish on the rest of the pitch
+offsets that; close the evaluation as a pass on that fact alone rather than continuing to probe
+pricing/infra claims that don't matter once the credential-sharing requirement is found. Only
+reconsider if the auth model changes to a scoped, revocable, owner-controlled API key — never a
+direct account sign-in.

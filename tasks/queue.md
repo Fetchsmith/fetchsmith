@@ -113,41 +113,93 @@
       long-resolved owner threads). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
       active throughout; `/`, `/pricing`, `/tools`, `/tools/eu-ted-tenders-scraper` all 200.
 
-- [ ] **NEW (c2568/2569, MEDIUM -- 9 known-live unguarded sites remain after 2569 closed the
-      eu-ted pair; left open DELIBERATELY, not missed; `bin/check-depth-remedy-ceiling` exits
-      nonzero until they are settled).** The run-wide **`maxResults` family** plus two
-      singletons, each needing a read, not a blind guard, because at `maxResults` = maximum the
-      correct advice is "split the run / narrow the window", which several of these messages
-      ALREADY give alongside the dead "raise maxResults" clause -- so the fix is often deleting a
-      clause, not adding a hint. Exact sites from the check's own output:
-      `ats-jobs-scraper:1601` (maxResults/100000 -- note this one already offers "split it into
-      separate runs", so only the "raise maxResults" clause is dead),
-      `hacker-news-scraper:1128` (maxSplitWindows/200 -- a real c2561-shape instance) and
-      `:1147` (maxResults/5000), `sam-gov-opportunities-scraper:276` (maxResults/10000 -- read
-      this one carefully, the phrasing is "raise maxResults LESS", which may be a false
-      positive), `sec-insider-trades-scraper:701` (maxResults/5000),
-      `substack-scraper:869` and `:966` (maxResults/10000),
-      `trademark-search-scraper:1107` (maxResults/5000), `website-screenshot-scraper:488`
-      (delayMs/15000 -- the only non-cap instance: "raise delayMs" when delayMs is already at
-      15000). **Plus one KNOWN FALSE NEGATIVE the checker cannot see and must not be trusted
-      about:** `shopify-products-scraper:894` says "maxProductsPerStore = N ... raise IT to cover
-      the whole catalog" -- a PRONOUN remedy, with the verb ~60 chars from the field name, which
-      falls outside the checker's `NEAR = 50` proximity window. That window is deliberately NOT
-      loosened: it is the only thing stopping `sec-insider-trades-scraper:632` ("Raise the run
-      timeout, or ... lower maxFilingsPerIssuer") from flagging as a raise-remedy when it says
-      the opposite. Fix shopify by hand; the blind spot is documented in the checker's docstring.
+- [x] **DONE cycle 2570 (normal slot) -- closed the maxResults-family backlog (9 sites -> 0
+      MISS; checker now exits 0 except for 1 confirmed false positive, see below).** All three
+      `audit-due` axes and `checks-due --all` read NONE DUE at preflight, so per the standing
+      rule the cycle took this queued item. Fixed all 8 real instances: `ats-jobs-scraper:1601`
+      (maxResults/100000, kept "reorder the list, or split it into separate runs" as the real
+      remedy once maxResults is capped), `hacker-news-scraper:1128` (maxSplitWindows/200, kept
+      "narrow the date range") and `:1147` (maxResults/5000, kept "raise the charge limit... or
+      run them separately"), `sec-insider-trades-scraper:704` (maxResults/5000, named "narrow the
+      request (fewer issuers, lower maxFilingsPerIssuer) and re-run per issuer"),
+      `substack-scraper:869` (maxResults/10000, named "narrow discoverCategories or lower
+      maxPublicationsPerCategory") and `:966` (maxResults/10000, named "narrow the
+      publication/post list and run the rest separately"), `trademark-search-scraper:1107`
+      (maxResults/5000, kept "raise the run's cost limit"), `website-screenshot-scraper:488`
+      (delayMs/15000, kept "use waitUntil: networkidle"). Each guarded by a real named
+      `xAtCeiling` const next to the field's own clamp line (`maxResultsAtCeiling`,
+      `maxSplitWindowsAtCeiling`, `delayMsAtCeiling`), not an inline re-comparison -- see the
+      LEARNINGS.md entry below for WHY that distinction turned out to matter mechanically, not
+      just stylistically. **`sam-gov-opportunities-scraper:276` read carefully and confirmed a
+      TRUE FALSE POSITIVE, left unguarded on purpose:** that clause is the run's TIME-BUDGET
+      warning, not a depth-ceiling remedy -- "Narrow the query or raise maxResults less, or give
+      the run a longer timeout" is advising moderation (raise it BY LESS, to avoid timing out
+      again), not claiming raising will always help, so there is no dead-remedy defect to fix.
+      `shopify-products-scraper:894`'s documented PRONOUN false negative is untouched (still
+      queued, still a real hand-fix candidate, not touched this cycle -- see the checker's own
+      docstring).
+      **Verification:** `node --check` clean on all 6 touched files
+      (`ats-jobs-scraper`/`hacker-news-scraper`/`sec-insider-trades-scraper`/
+      `substack-scraper`/`trademark-search-scraper`/`website-screenshot-scraper`); `check-charges`
+      25/0/0, `check-code-fields`/`check-registry-fields` both 0 drift; `check-depth-remedy-
+      ceiling` now reports exactly 1 MISS (the confirmed sam-gov false positive) down from 9;
+      builds pushed for all 6 (ats-jobs 0.1.114, hacker-news 0.1.99, sec-insider-trades 0.1.69,
+      substack 0.1.91, trademark-search 0.1.95, website-screenshot 0.1.41), all SUCCEEDED;
+      `bin/actor-health --only <slug>` green (0 fail_rows) on all 6 post-push, confirming the
+      happy path is unregressed. **Not done this cycle, honestly:** no live run was set up to
+      actually TRIGGER any of the 6 new ceiling branches (several need either a very broad/costly
+      real query or a tricky local-storage setup to reach) -- the happy-path regression + the
+      checker's structural confirmation + hand-verification that each inline comparison copies
+      the correct schema `maximum` is the verification bar this cycle actually cleared. If a
+      future cycle is already live-testing one of these 6 Actors for another reason, triggering
+      its new ceiling branch and confirming the message reads right is worth the extra 2 minutes.
+      **LEARNINGS.md entry appended**: the checker's `GUARD` regex matches the IDENTIFIER
+      `\w*AtCeiling\b`, not the hint prose -- the first attempt at 6 of these 8 fixes used inline
+      `maxResults >= 5000 ? ... : ...` ternaries with no named flag, which still read as a MISS to
+      the checker even though the assembled message is correct, because the prose-phrase
+      alternative in GUARD never actually matches JS's escaped-apostrophe source text (a
+      Python-regex/JS-string escaping mismatch, not a logic bug). Always declare a real
+      `xAtCeiling` const beside the field's clamp line going forward.
+      `checks-due --all`: ran `check-status-continuity`-adjacent tripwire (`ext_bad30d`
+      re-diffed against `revenue_history.json` -- 3 known baseline entries, unchanged, no new
+      failure). `bin/apify-spend` $5.7117 of $85 (76.1% elapsed, projection $7.51, +~$0.03 this
+      cycle for 6 builds + 6 cheap actor-health smoke runs). `bin/revenue`: $0 booked, 25 public
+      Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged, no buyer signal, no owner email per
+      rule 3. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`,
+      `/pricing`, `/tools`, and all 6 touched Actors' `/tools/<slug>` pages all 200. Inbox:
+      byte-identical known set (the ThoughtPivot/Bytewells pair already logged as a LOW
+      evaluate-later item below, nothing else new).
 
-- [ ] **NEW (c2569, LOW -- evaluate, do not act yet).** Two cold-outreach emails arrived from
-      ThoughtPivot pitching "Bytewells", a second storefront for renting out Apify Actors (10%
-      commission, 0% on self-referred renters, opens 2026-11-02, dev.to writeup at
-      `dev.to/ispyhumanfly/one-actor-two-stores-...`). Sent to the email on our public Apify
-      profile, not a direct support request. Per the BUDGET/owner-email rules, no spend and no
-      owner email on a cold pitch alone. Worth a cheap look on a future QUALITY slot: confirm it
-      is a real, legitimate marketplace (not a scraper-bait/typosquat), check whether "import
-      brings over your source/README/schema/pricing unchanged" is actually true and free, and
-      only act (join the waitlist) if it costs nothing and clearly doesn't risk the Apify listing
-      (rule 5 territory if it touches anything shared). Do NOT join or email anyone about it
-      without that check first.
+- [x] **DONE cycle 2571 (QUALITY/GROWTH slot, 2571 % 3 == 0) -- evaluated the Bytewells/
+      ThoughtPivot pitch (c2569) and DECIDED NOT TO JOIN; closing the item rather than leaving it
+      pending.** Preflight: `checks-due --all` and all three `audit-due` axes NONE DUE, inbox
+      byte-identical to the known set (confirmed it's actually **3** ThoughtPivot/Bytewells
+      emails, not 2 as c2569's note said -- `14fb0a04` from 2026-10-07 (`peter@bytewells.com`,
+      "monthly rentals for ats jobs scraper") predates the `04dda4a1`/`a661a19a` pair; all cold
+      outreach, no support request, no owner email needed per rule 3). Read both outreach emails
+      plus the site (`bytewells.com`) and the linked dev.to writeup directly (WebFetch, $0).
+      **Finding that settles it: joining requires "sign in with Apify credentials" through
+      Bytewells' own console import flow** (the dev.to article's own words), i.e. handing an
+      Apify account token/session to a brand-new, not-yet-publicly-launched (private beta,
+      opens 2026-11-02) third party whose site shows no company registration, physical address,
+      or leadership info beyond a footer company name -- the email footer names "ThoughtPivot,
+      Inc., 2937 East Grand Boulevard, Detroit, MI 48202" but that is unverified against the site
+      itself. That is a real credential-exposure risk to the one Apify account this whole business
+      depends on, not a "costs nothing and doesn't risk the Apify listing" action -- it fails the
+      c2569 gating test on its own terms, so no further evaluation is needed to close it as a
+      pass. (CLI-only import via `bw import apify you/your-actor` might avoid a direct credential
+      share, but the article doesn't document what that command authenticates with either, and
+      the console path alone is enough to decide.) Also noted, not load-bearing to the decision:
+      the compute pricing claim ("$0.15/unit, 25% cheaper than Apify Starter") and the "renters
+      never receive your source" infra claim are unverifiable without actually importing, which
+      we are not doing. **Action: none taken** -- did not join the waitlist, did not reply to
+      either email, did not change any Actor or site file. $0 spent. **Standing guidance for any
+      future similar pitch:** "sign in with your Apify credentials" (or "connect your Apify
+      account") to a third-party site is disqualifying on its own under rule 1/rule 5 without
+      owner sign-off, regardless of how legitimate the rest of the pitch looks -- do not re-open
+      this unless the owner asks, or the pitch changes its auth model to something that doesn't
+      involve sharing Apify credentials (e.g. a scoped read-only API key we control and can
+      revoke).
 
 - [x] **DONE c2568 (was: NEW c2561, MEDIUM — a cheap generalisation of this cycle's finding, do on a QUALITY
       slot).** The defect shape was: **a "raise/widen/increase X" remedy string is only reachable

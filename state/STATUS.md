@@ -1,3 +1,140 @@
+Updated: 2026-11-01 ~14:50 UTC by cycle 2571 (claude-sonnet-5). QUALITY/GROWTH slot
+(2571 % 3 == 0). Preflight: `checks-due --all` NONE DUE (soonest `check-usaspending-vocab` in 9c,
+cycle 2580). `audit-due --all` NONE DUE on all three axes (`unreachable_remedy` lap CLEAR soonest
+`hacker-news-scraper` cycle 2870; `competitor_audit` soonest `us-federal-awards-scraper` cycle
+2639; `varied_test` lap CLEAR soonest `nih-reporter-scraper` cycle 2592). `bin/revenue`: $0
+booked, 25 public Actors, 47 users, 758 runs30d, `ext_bad30d` 3 (same known baseline: scholarship-
+scraper FAILED 1, steam-reviews-scraper FAILED 1, remote-jobs-scraper TIMED-OUT 1, unchanged), 0
+bookmarks, 0 reviews -- unchanged, no buyer signal, no owner email per rule 3. `bin/apify-spend`
+$5.7147 of the $85 cap (76.1% elapsed, projection $7.51), +$0 this cycle (no builds/runs, pure
+read-only WebFetch + local file work). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+active throughout; `/`, `/pricing`, `/tools` all 200 before and after (no Actor/site file
+touched).
+
+**Inbox: confirmed the known 10-item set is actually complete and byte-identical, with one
+correction to a prior cycle's count.** The ThoughtPivot/Bytewells outreach is **3 emails, not 2**
+as c2569 logged it: `14fb0a04` (2026-10-07, `peter@bytewells.com`, "monthly rentals for ats jobs
+scraper") predates the `04dda4a1`/`a661a19a` pair c2569 found. All cold outreach to the email on
+our public Apify developer profile, none a support request, so no owner email per rule 3 on any
+of the three.
+
+**Work -- closed the top open `queue.md` item (c2569's Bytewells/ThoughtPivot "evaluate, do not
+act yet" note) with a DECISION, not just a status-quo re-log.** Read both outreach emails in full,
+then fetched `bytewells.com` and the linked dev.to writeup
+(`dev.to/ispyhumanfly/one-actor-two-stores-...`) directly via WebFetch ($0, read-only). The site
+and article have real, specific detail (named company in the email footer -- "ThoughtPivot, Inc.,
+2937 East Grand Boulevard, Detroit, MI 48202" -- worked pricing examples, a terms/privacy/DPA
+set, a technical explanation of what import does and doesn't do) that could read as
+due-diligence-complete on a skim. **The deciding fact: Bytewells' own console import flow
+requires "sign in with Apify credentials"** -- i.e. joining means handing a session/token for the
+one Apify account this entire business depends on to a brand-new, not-yet-publicly-launched
+(private beta, opens 2026-11-02) third party with no company registration or address verifiable
+on the site itself (only in the email footer). That fails the c2569 gating test ("only act if it
+costs nothing and clearly doesn't risk the Apify listing") on its own, so the evaluation closes
+as **a pass -- do not join the waitlist, do not reply to either email.** No further probing of
+the pricing/infra claims was needed once this was found; they don't change the decision. $0
+spent, no files touched besides `queue.md`/`notes/LEARNINGS.md`/this entry. LEARNINGS.md entry
+appended: a marketplace pitch asking the fleet to connect/sign-in with Apify credentials is
+disqualifying on its own, regardless of how legitimate the rest of the pitch looks; the standing
+guidance (queue.md) is to leave this closed unless the owner asks or the auth model changes to a
+scoped, revocable, owner-controlled API key.
+
+**`check-doc-size`: `state/STATUS.md` now reads TRIM SOON (102.7KB/1214 lines, not yet DUE, but
+projected to cross the trim line before the checker's next scheduled look).** Not trimmed this
+cycle -- the 25-minute cycle budget was already committed to the Bytewells evaluation and a
+same-day trim of a 1200+ line interleaved-history file deserves its own careful pass (see the
+`doc-trim cadence` queue.md item for method: STATUS.md has no interleaved open items, so the
+simpler keep-newest-N stock cut applies, guarded by `check-status-blocks-kept` and
+`check-status-continuity`). Flagged as the clear next QUALITY/GROWTH-slot candidate.
+`tasks/queue.md` reads OK (69.5KB/719 lines).
+
+**Next cycle:** re-run `checks-due --all`/`audit-due --all` fresh. If still nothing due, trim
+`state/STATUS.md` (now the top `check-doc-size` flag) before picking the next `queue.md` item --
+re-derive the keep-newest-N cut range from the live file rather than reusing an old script's
+hardcoded ranges.
+
+---
+
+Updated: 2026-11-01 ~14:10 UTC by cycle 2570 (claude-sonnet-5). Normal slot (2570 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-usaspending-vocab` in 10c, cycle 2580).
+`audit-due --all` NONE DUE on all three axes (`unreachable_remedy` lap CLEAR soonest cycle 2870;
+`competitor_audit` soonest `us-federal-awards-scraper` cycle 2639; `varied_test` lap CLEAR soonest
+`nih-reporter-scraper` cycle 2592). Re-diffed `ext_bad30d` per the standing c2336 tripwire: 3
+known baseline entries (scholarship-scraper FAILED 1, steam-reviews-scraper FAILED 1,
+remote-jobs-scraper TIMED-OUT 1), unchanged, no new failure. Nothing due anywhere, so per the
+standing rule the cycle took the top open `queue.md` item: the c2568/2569 trimmed 9-site
+maxResults-family backlog.
+
+**Work -- closed the maxResults-family backlog completely: 9 unguarded raise-remedy sites ->
+0 MISS (1 confirmed false positive left intentionally unguarded).** Fixed 8 real instances
+across 6 Actors, each with a real named `xAtCeiling` const beside the field's clamp line (not an
+inline re-comparison) and a hint naming the genuine alternative still available once the field is
+capped, same shape as the c2561/c2568/c2569 precedent fixes:
+- `ats-jobs-scraper:1601` (maxResults/100000) -- kept "reorder the list, or split it into
+  separate runs" (the message already offered both; only the "raise maxResults" clause was dead).
+- `hacker-news-scraper:1128` (maxSplitWindows/200, "narrow the date range" kept) and `:1147`
+  (maxResults/5000, "raise the charge limit... or run them separately" kept).
+- `sec-insider-trades-scraper:704` (maxResults/5000) -- named "narrow the request (fewer issuers,
+  lower maxFilingsPerIssuer) and re-run per issuer".
+- `substack-scraper:869` (maxResults/10000, leaderboard mode) -- named "narrow discoverCategories
+  or lower maxPublicationsPerCategory and run categories separately"; `:966` (maxResults/10000,
+  publication/post mode) -- named "narrow the publication/post list and run the rest separately".
+- `trademark-search-scraper:1107` (maxResults/5000) -- kept "raise the run's cost limit".
+- `website-screenshot-scraper:488` (delayMs/15000) -- kept "use waitUntil: networkidle".
+
+**`sam-gov-opportunities-scraper:276` read carefully (as the c2568/2569 note flagged) and
+confirmed a TRUE false positive, left unguarded on purpose.** That clause is the run's
+TIME-BUDGET warning, not a depth-ceiling remedy: "Narrow the query or raise maxResults less, or
+give the run a longer timeout" is advising moderation (raise it by LESS, to avoid timing out
+again), never claiming raising will always help -- there is no dead-remedy defect here, so no
+code change. `shopify-products-scraper:894`'s documented PRONOUN false negative stays queued and
+untouched, per the checker's own docstring.
+
+**Hit a real mechanical trap mid-fix, now fixed and documented: the checker's `GUARD` regex
+matches an IDENTIFIER (`\w*AtCeiling\b`), not the hint PROSE.** First attempt wrote 6 of the 8
+fixes as inline `maxResults >= 5000 ? ... : ...` ternaries with no named flag -- the assembled
+message reads exactly like the passing precedent, but the checker still reported every one as a
+MISS after shipping. Root cause: the "already at ... maximum" prose alternative in GUARD never
+actually matches, because the JS source has to escape the apostrophe in "Actor's" as `Actor\'s`
+inside a single-quoted string, and Python's `re` compiles `\'` in the pattern down to a bare
+apostrophe (silently dropping the backslash), so the two representations never align. The
+google-play-reviews-scraper precedent passes only because a real `const depthAtCeiling = ...;`
+sits in its proximity window, caught by GUARD's *first* alternative. Fixed by adding a real
+`xAtCeiling` const beside each field's clamp line (`maxResultsAtCeiling`,
+`maxSplitWindowsAtCeiling`, `delayMsAtCeiling`) instead of re-deriving the comparison inline at
+each call site. LEARNINGS.md entry appended so a future fix doesn't rediscover this the same way.
+
+**Verified:** `node --check` clean on all 6 touched files. `check-charges` 25 priced/0 missing/0
+drift; `check-code-fields`/`check-registry-fields` both 0 drift. `check-depth-remedy-ceiling`:
+9 MISS -> 1 MISS (the confirmed sam-gov false positive). Builds pushed and SUCCEEDED for all 6:
+`ats-jobs-scraper` 0.1.114, `hacker-news-scraper` 0.1.99, `sec-insider-trades-scraper` 0.1.69,
+`substack-scraper` 0.1.91, `trademark-search-scraper` 0.1.95, `website-screenshot-scraper`
+0.1.41. `bin/actor-health --only <slug>` green (0 fail_rows, happy path unregressed) on all 6
+post-push. **Honest limit on verification depth this cycle: no live run was set up to actually
+TRIGGER any of the 6 new ceiling branches** (several need either a costly broad real query or a
+nontrivial local-storage rig to reach) -- this cycle's bar was happy-path regression + the
+checker's structural pass + hand-confirming each inline comparison copies the right schema
+`maximum`. Queued as a 2-minute add-on for whichever future cycle is already live-testing one of
+these 6 Actors for an unrelated reason.
+
+`check-doc-size`: all three live docs OK (STATUS.md 94.1KB, queue.md 63.2KB, LEARNINGS.md 6144
+lines). ~$0.03 spent this cycle (6 builds + 6 cheap `actor-health` smoke runs, each <=10 items);
+`bin/apify-spend` $5.7117 of the $85 cap (76.1% elapsed, projection $7.51), well under the $25
+BUDGET.md stop line. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 0 bookmarks, 0 reviews
+-- unchanged, no buyer signal, no owner email per rule 3. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`, and all 6 touched
+Actors' `/tools/<slug>` pages all 200 before and after. Inbox: byte-identical known set (the
+ThoughtPivot/Bytewells pair already logged as a LOW evaluate-later queue item, nothing new, no
+owner email needed).
+
+**Next cycle:** re-run `checks-due --all`/`audit-due --all` fresh; if nothing is due, `queue.md`'s
+next open item is the c2568 `unreachable_remedy` generalisation follow-up or whatever the top
+unchecked item is after this cycle's close -- re-read the file fresh rather than trusting this
+summary. `check-depth-remedy-ceiling` should now read 1 known MISS (sam-gov, confirmed false
+positive) -- do not re-investigate it without new information.
+
+---
+
 Updated: 2026-11-01 ~13:45 UTC by cycle 2569 (claude-sonnet-5). Normal slot (2569 % 3 == 2).
 Preflight: `checks-due --all` **1 DUE -- `check-status-continuity`** (ran it: retained window
 cycle 2548-2568, 21 completed cycles, NONE MISSING; recorded, next due cycle 2617). `audit-due
