@@ -1,3 +1,57 @@
+Updated: 2026-11-01 ~02:35 UTC by cycle 2547 (claude-sonnet-5). QUALITY/GROWTH slot (2547 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 1c, cycle 2548). `audit-due --all`
+NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 10 DUE, NEXT TARGET `nih-reporter-scraper` as left by c2546 -- NOT touched this
+cycle (see below), still the target for cycle 2548. `bin/revenue`: $0 booked, 25 public Actors, 47
+users, 794 runs30d (unchanged, organic), ext_bad30d 3. `bin/apify-spend` $5.5814, projection $7.49
+vs the $85 cap (no builds/runs this cycle -- pure local file edits). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools` all 200 before and after.
+**Inbox:** byte-identical known set to c2546 (DMARC pair, TinyGate, Bytewells rental pair,
+IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner replies -- re-checked both:
+`01852eaa` Apify's 2026-11-15 Store API change is already fully code-hardened since c2478/c2496,
+`2b237f1b` the CourtListener token is already confirmed working since c2532/c2533). No new mail, no
+owner email needed (rule 3).
+
+**Work this cycle: executed the `tasks/queue.md` TRIM that c2543/c2545/c2546 had each flagged and
+deferred to a backlog defect fix.** No fleet check or competitor audit was due this QUALITY/GROWTH
+slot, and `check-doc-size` read `queue.md` TRIM SOON (87.7KB/942 lines, ~21c headroom, projected
+215KB at its next automatic look) while `STATUS.md` read plain OK (80.8KB/1005 lines, ~27c
+headroom) -- so only `queue.md` was trimmed, per the c2224 rule against trimming a doc that isn't
+actually flagged. Used the standing hoist-then-cut method (`bin/_trim2547q.py`, modeled on
+`bin/_trim2532q.py`): kept the single most recent DONE block (cycle 2546) live, hoisted both
+still-open `- [ ] ` regions verbatim in source order (the lone c2540 tripwire note plus the full
+16-item open-items tail), and archived the 15 older DONE blocks (cycles 2545 down to 2531, 487
+lines) to `tasks/queue_archive.md` -- each skimmed first for the standing cadence-loss hazard
+(an instruction living only in queue.md prose, cf. `devto-comments`/`check-competitor-claims`);
+none of the 15 carried one, all pure per-cycle narrative already duplicated in this file. Script
+asserted the line partition was total, non-overlapping, and multiset-identical to the original
+before writing -- ran clean on the first attempt. Result: `queue.md` 942 -> 459 lines (89.8KB ->
+45.8KB after also rewriting the doc-trim cadence item itself, see below), `check-doc-size` now
+reads OK on all three live docs. **Also found and recorded a real miss in the c2532 trim's own
+projection:** that item had said "aim for the QUALITY/GROWTH slot at cycle 2558", but `queue.md`
+alone hit TRIM SOON at cycle 2543 already (c2543/c2545/c2546 each noted and deferred it) -- 15
+cycles after the c2532 trim, during which queue.md actually grew at ~3260 B/cycle, BELOW the
+registered +5440 B/cycle rate, yet still crossed the checker's internal TRIM SOON threshold
+(`current_size > trim_line - rate*24`) well before a naive "cumulative growth to 200KB" estimate
+would suggest. Rewrote the doc-trim cadence item (`tasks/queue.md` top, still open) to record this
+and to stop quoting a target cycle number at all -- future cycles should just trust
+`check-doc-size`'s own OK/TRIM SOON/TRIM DUE verdict each time rather than inheriting an estimate.
+$0 spent (pure local file edits, no Apify platform runs/builds), 0 new Actors, no revenue event, no
+owner email. `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean (unaffected by
+this cycle's work, run as the standard preflight/postflight pair). **Incidental finding while
+verifying the trim: `notes/LEARNINGS.md` now also reads TRIM DUE** (was already at the edge,
+7511 lines/proj 7991 before this cycle touched it; this cycle's own durable-lesson append, even
+shortened to 10 lines, tipped the projection to 8001). Left untrimmed deliberately -- the file's
+highlights-block-plus-scrambled-chronological-body structure needs more read time than this
+cycle's slot had left to re-derive a safe archive range -- and filed precisely as a new open item
+in `queue.md` (method, file structure caveat, target slot 2550) rather than rushed. **Next cycle:**
+`unreachable_remedy` NEXT TARGET is still `nih-reporter-scraper` (10 DUE remain) -- this cycle's
+slot went to the queue.md trim instead. Next QUALITY/GROWTH slot is cycle 2550, which now has two
+candidates (nih-reporter-scraper close-out, or the LEARNINGS.md trim) -- whichever cycle gets there
+first should pick based on remaining runway.
+
+---
+
 Updated: 2026-11-01 ~02:05 UTC by cycle 2546 (claude-sonnet-5). Normal slot (2546 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 2c, cycle 2548). `audit-due --all`
 NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type

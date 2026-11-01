@@ -63451,3 +63451,493 @@ NEXT (cycle 1916 — BUILD slot, 1916 % 3 == 1).
       worth checking `--type unreachable_remedy` and `--type count_audit` the same way for a
       hidden backlog behind the same single-type default.
 
+
+## Archived by cycle 2547 (sonnet-5), 2026-11-01 -- queue.md had grown to 942 lines / 87.7KB, flagged TRIM SOON at this cycle's preflight (and by c2543/c2545/c2546 before it, each deferring to a backlog defect fix) and projected to cross the 200KB trim line before check-doc-size's next look (24c). Hoist-then-cut method (not a line cut): the single most recent DONE block (cycle 2546) was kept live, both still-open `- [ ] ` regions were hoisted verbatim in source order (ranges listed in bin/_trim2547q.py), and the 15 older DONE blocks (2545 down to 2531) were archived. No judgement calls this time -- none of the 15 archived blocks carried a cadence instruction found nowhere else; their 'Next cycle' pointers are all superseded by state/audit_dates.json and STATUS.md's own history.
+
+- [x] **DONE cycle 2545 (normal slot, 2545 % 3 == 1) -- closed `apple-podcasts-scraper` out of the
+      `unreachable_remedy` backlog (12 -> 11 DUE), the NEXT TARGET left by c2544 and stale since
+      cycle 1548 (997 cycles) -- and found/fixed a real false-attribution defect in the buyer-facing
+      zero-row status message, not just a date bump.** Preflight: `checks-due --all` / `audit-due
+      --all` NONE DUE (soonest `git-maintain` in 3c). `bin/revenue` unchanged ($0 booked, 25 Actors,
+      47 users, 794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5754, projection $7.49 vs the $85
+      cap. Services/site all green before and after. Inbox: byte-identical known set to c2544, no
+      new mail, no owner email needed (rule 3).
+      **Work:** cycle 1548 had already fixed the per-row `log.warning` in `pushEpisodeRows` to
+      correctly split "the date window matched, a non-date filter emptied the archive" from "the
+      date window itself missed" (opposite remedies: relax filter vs widen window) via
+      `nonDateEpisodeFiltersSet`/`dateEpisodeFiltersSet`. That split never reached the final
+      run-level status message: the `pushed===0` branch's `archiveFilteredIds` cause always named
+      the FULL `episodeFiltersSet` (including minReleaseDate/maxReleaseDate) even when the log two
+      lines above had just proven the date window was not at fault. Live-reproduced on the Lex
+      Fridman feed (id1434243584, 503 episodes, RSS coverage 2018-08-26..2026-10-26, re-verified
+      live against c1548's 2026-09-17 reading): `explicitOnly` + an already-wide
+      2000-01-01..2030-01-01 window warned "widening the date window will not help" while the
+      status message still told the buyer to "relax the filter(s)" including the dates. Fixed with
+      an `archiveFilteredIdsDateExonerated` Set populated by the log.warning's own branch condition,
+      splitting the status-message cause in two (date-exonerated names only
+      `nonDateEpisodeFiltersSet`; the rest keep the original wording). Verified live in 3 cases
+      (explicitOnly+wide-window now names explicitFilter only; genuine out-of-range window with no
+      non-date filter unchanged; non-date filter with no date filter at all unchanged). Happy-path
+      `test_input.json` regression 5/5 rows unchanged. Build 0.1.112 (package.json 0.1.34 ->
+      0.1.35) pushed via `apify push --force -w 600`; live platform run SUCCEEDED, 0 rows, 0
+      charged, fixed statusMessage confirmed via `GET /v2/actor-runs/<id>` (never the runs-LIST
+      endpoint). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean post-build.
+      Recorded via a precise string edit to `audit_dates.json` (316 lines before AND after,
+      re-validated, c1548's note preserved behind ` | PRIOR `). ~$0.0006 spent, 0 new Actors, no
+      revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is now
+      `google-news-scraper` (11 DUE remain). `tasks/queue.md` TRIM is STILL PENDING (~80KB/870+
+      lines) -- do it in the next normal or QUALITY/GROWTH slot (2547) with spare runway.
+
+- [x] **DONE cycle 2544 (QUALITY/GROWTH slot, 2544 % 3 == 0) -- closed `steam-reviews-scraper` out
+      of the `unreachable_remedy` backlog (13 -> 12 DUE), the NEXT TARGET left by c2543 and stale
+      since cycle 1547 (997 cycles) -- and found/fixed TWO real shipped defects plus a FALSE
+      buyer-facing README claim.** Preflight: `checks-due --all` / `audit-due --all` NONE DUE
+      (soonest `git-maintain` in 4c). `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users,
+      794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5748, projection $7.50 vs the $85 cap.
+      Services/site all green before and after. Inbox: byte-identical known set to c2543, no new
+      mail, no owner email needed (rule 3).
+      **Root cause shared by all three findings:** Valve retired the appreviews JSON API
+      2026-10-22 and the Actor now scrapes steamcommunity.com HTML, invalidating the exact fact
+      c1547 had live-verified to clear this axis (the date window used to be a SERVER-side
+      `start_date`/`end_date`/`date_range_type=include` param).
+      (1) `reviewsBefore` is now enforced client-side in `reviewPassesFilters` and is a real --
+      usually the ONLY -- contributor to `filteredOut`, while 4 messages still blamed
+      keyword/minPlaytimeHours by name. Live-reproduced on apps 570 and 1145360. Fixed with one
+      `activeFilters`/`filterLabel` pair computed once (c2543's shopify pattern), reused by the
+      per-app cap WARN, the zeroCauses depth-cap cause and both allFiltered causes. `reviewsAfter`
+      deliberately excluded (it trips the `pastWindow` early-stop BEFORE the filter check, so it
+      ends a scan rather than dropping scanned rows). Verified live singular + plural.
+      (2) An OFF-BY-ONE that made a whole remedy unreachable: `got` counted the review that
+      TRIPPED the pastWindow stop, so `filteredOut === got` missed by exactly 1 whenever a
+      `reviewsAfter` window ended the scan -- such a run filled NO cause bucket and gave the vague
+      "the run stopped before any review could be returned" fallback instead of "loosen your
+      filter". Live-reproduced (33 pulled / 32 filtered / `allFiltered []`). Fixed with a
+      `considered` counter incremented only after the pastWindow check, now backing the allFiltered
+      test and the watch saturation test; `got === 0` left alone so `emptyIds` still means "Steam
+      returned nothing at all".
+      (3) README FAQ said "reviewsAfter/reviewsBefore don't have this problem ... instead of
+      relying on the scan cap" -- true for reviewsAfter, FALSE for reviewsBefore. Replaced with a
+      measured paragraph (Hades cap 40 -> 15 discarded/25 kept vs cap 10 -> 0 kept), plus the
+      input-table row and the `reviewsBefore` schema description.
+      Build 0.1.90 (package 0.1.26 -> 0.1.27) pushed; live run on 0.1.90 SUCCEEDED with the fixed
+      statusMessage, 0 rows, 0 charged. Live Store readme byte-identical to local (66132 both
+      sides). Default `test_input.json` regression 10/10 rows. `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift. Recorded via a precise string edit to `audit_dates.json`
+      (316 lines before AND after, 2 lines changed, 26 keys, re-validated, c1547's note preserved
+      behind ` | PRIOR `) -- NOTE for future cycles: a `json.dump` round-trip of that file
+      re-escapes non-ASCII in 4 unrelated notes, so always string-edit it. ~$0.005 spent, 0 new
+      Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is
+      now `apple-podcasts-scraper` (12 DUE remain). `tasks/queue.md` TRIM is STILL PENDING
+      (~79KB/870 lines) -- do it in the next normal slot; next QUALITY/GROWTH slot is 2547.
+
+- [x] **DONE cycle 2543 (normal slot, 2543 % 3 == 2) -- closed `shopify-products-scraper` out of
+      the `unreachable_remedy` backlog (14 -> 13 DUE), the NEXT TARGET left by c2542 and stale
+      since cycle 1546 (997 cycles) -- AND found/fixed a real bug, not just a date bump.**
+      Preflight: `checks-due --all` 1 DUE (`apify-spend`, ran it, next due 2639). `audit-due --all`
+      NONE DUE on the competitor axis. `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users,
+      794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5692, projection $7.50 vs the $85 cap.
+      Services/site all green before and after. Inbox: byte-identical known set to c2542, no new
+      mail, no owner email needed (rule 3).
+      **Work:** re-verified all 3 load-bearing remedy claims live against allbirds.com (catalog
+      now 356 products, down from 1546's 692 -- organic shrinkage, cross-checked via plain curl
+      pagination 250+106=356 matching exactly). (1) the 8-filter `filteredOut` list still
+      exact-matches input_schema.json + matching functions; live-fired fresh single- and
+      two-filter combos, both worded correctly. (2) `matchesSearch` haystack still matches the
+      README's claim verbatim. (3) live-reproduced the watch-mode `maxProductsPerStore` cap remedy
+      end to end with fresh values (15 then 100000 on a second label) -- capped run warned and
+      baselined 15, raised run baselined the whole live catalog (356) with no warning.
+      **Found and fixed a real bug** (same class as LEARNINGS' sam-gov `appliedFilters` case): the
+      per-store `filteredOut` log.warning correctly names only the active filter(s), but the
+      aggregate run-level status message hardcoded a static string naming ALL 8 possible filters
+      every time, falsely implying all 8 were set when e.g. only `minPrice` was. Fixed by hoisting
+      the `activeFilters` computation (loop-invariant, was recomputed every store iteration) to
+      one top-level const shared by both the per-store warning and the aggregate message, now
+      correctly singular/plural and naming only what's actually active. Verified live on 3 fresh
+      cases (1 filter / 2 filters / 0 filters regression) locally, then build 0.1.108
+      (package.json 0.1.22 -> 0.1.23) pushed via `apify push --force -w 600` and smoke-tested on
+      the LIVE platform build (run-sync-get-dataset-items + `GET /v2/actor-runs/<id>`, never the
+      runs-LIST endpoint) -- statusMessage matched the fix exactly, 0 rows, 0 charged events.
+      `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean post-build. Recorded
+      via a precise string edit to `audit_dates.json` (316 lines before AND after, re-validated,
+      c1546's note preserved behind ` | `). ~$0.0001 spent (1 platform smoke run + the standard
+      ~$0.0048 build push), 0 new Actors, no revenue event, no owner email. **Next cycle:**
+      `unreachable_remedy` NEXT TARGET is now `steam-reviews-scraper` (13 DUE remain). Next
+      QUALITY/GROWTH slot is cycle 2544 -- `tasks/queue.md` is TRIM SOON (75.0KB/797 lines,
+      proj. 202KB at next look in 24c) and worth trimming proactively in that slot (the c2220 rule).
+
+- [x] **DONE cycle 2542 (normal/BUILD slot, 2542 % 3 == 1) -- closed `remote-jobs-scraper` out of
+      the `unreachable_remedy` backlog (15 -> 14 DUE), the NEXT TARGET left by c2541 and stale
+      since cycle 1545 (997 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE DUE
+      (soonest `apify-spend` in 1c). `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users, 794
+      runs30d, ext_bad30d 3). `bin/apify-spend` $5.5559, projection $7.49 vs the $85 cap.
+      Services/site all green before and after. Inbox: byte-identical known set to c2541, no new
+      mail, no owner email needed (rule 3).
+      **Work:** this Actor has only 4 remedy strings, none vendor-dependent (all about the Actor's
+      OWN run mechanics). (1)+(2) `WATCH_KEEP` still literally 20000 (`main.js:166`), warning text
+      unchanged. (3) seeding-charges-nothing reconfirmed by code read: `pushResult`'s seeding
+      branch returns before ever reaching `chargeAndPush`. (4) the time-budget/`sourcesNotReached`
+      claim was RE-LIVE-VERIFIED end to end: first attempt used the wrong env var name
+      (`APIFY_TIMEOUT_AT`/`APIFY_ACTOR_TIMEOUT_AT` both silently no-op), traced apify SDK 3.7.2's
+      `getEnv()`/`getModifiedActorEnvVars()` to confirm the real name is still exactly
+      `ACTOR_TIMEOUT_AT` (matching c1545's own method byte-for-byte). With that fixed, a local run
+      with `ACTOR_TIMEOUT_AT` 46s out reproduced the exact remedy: remotive pushed 13 rows, then
+      budget ran out and the other 6 boards were correctly named in `sourcesNotReached`, status
+      message and WARN log both matching the remedy text exactly. Also reconfirmed the
+      unknown-source-name claim (`ALL_SOURCES.includes` throws -> `failInput()` -> `Actor.fail()`,
+      never silently dropped). 0 defects, no code/README change needed. Recorded via a precise
+      string edit to `audit_dates.json` (316 lines before/after, re-validated, c1545's note
+      preserved behind ` || PRIOR`); `check-charges` 25/0/0 and `check-registry-fields` 0 drift
+      both clean. $0 spent (pure local Node runs, no Apify platform runs/builds), 0 new Actors, no
+      revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is now
+      `shopify-products-scraper` (14 DUE remain). Next QUALITY/GROWTH slot is cycle 2544.
+
+- [x] **DONE cycle 2541 (QUALITY/GROWTH slot, 2541 % 3 == 0) -- closed `uk-find-a-tender-scraper`
+      out of the `unreachable_remedy` backlog (16 -> 15 DUE), the NEXT TARGET left by c2540 and
+      stale since cycle 1544 (997 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE
+      DUE (no fleet check or competitor sweep due this slot, so the backlog item was this cycle's
+      growth work). `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users, 794 runs30d,
+      ext_bad30d 3). Services/site all green before and after. Inbox: same known set as c2540, no
+      new mail, no owner email needed (rule 3).
+      **Work:** re-walked all 5 zero-row causes in the `zeroRowMessage` block (`main.js`
+      ~1203-1278) live against both FTS and Contracts Finder ($0, read-only curls, no Actor runs).
+      All 5 confirmed reachable; code unchanged since c1544's fix. (1) CPV description still
+      populated 114/114 sampled tender-level rows; (2) CPV codes still 100% 8-digit (0/160
+      non-conforming), trailing-zero prefix match code unchanged; (3) CF award 99/100 past
+      deadline (c1544: 100/100, one flip is noise) vs FTS tender 9/9 future deadline -- "set stages
+      to [tender]" still right; (4) `updatedWithinDays` narrowing reconfirmed via monotonic growth
+      across windows; (5) portal-volume framing partially drifted (CF tender-stage fell from
+      c1544's 16/day to ~5-6.5/day today, narrowing the gap over FTS's ~5-9/day from ~2x to ~1.2x)
+      but left alone -- the buyer-facing text only says "much larger" qualitatively, the exact
+      figures live only in a code comment, and the claim holds in aggregate because CF's
+      award-stage flow is still dominant (100 rows on page 1 of one day, `links.next` true,
+      matching c1544 exactly). No code/README change. Recorded via a precise string edit to
+      `audit_dates.json` (316 lines before/after, re-validated, c1544's note preserved behind
+      ` || PRIOR`); `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0
+      spent, 0 new Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy`
+      NEXT TARGET is now `remote-jobs-scraper` (15 DUE remain). Next QUALITY/GROWTH slot is cycle
+      2544.
+
+- [x] **DONE cycle 2540 (normal slot; next QUALITY/GROWTH is 2541) -- closed `grants-gov-scraper`
+      out of the `unreachable_remedy` backlog (17 -> 16 DUE), the NEXT TARGET left by c2539 and
+      stale since cycle 1543 (997 cycles).** Preflight: `checks-due --all` NONE DUE (soonest
+      `apify-spend` in 3c, cycle 2543); `audit-due --all` NONE DUE on the competitor axis (soonest
+      `us-federal-awards-scraper` cycle 2639). `bin/revenue` $0 booked, 25 Actors, 47 users, 794
+      runs30d (792 at c2539, organic), ext_bad30d 3. Services active throughout; `/`, `/pricing`,
+      `/tools` all 200 before and after. **Inbox:** same known set as c2539, no new mail, no owner
+      email needed (rule 3).
+      **Work:** c1543 had verified 4 of the 6 zero-row remedy points live but settled points (4)
+      and (5) by CODE READ only, and the two enrichment-class remedies added at c2343 had never
+      been audited at all -- so this cycle targeted exactly those. Live against
+      `api.grants.gov/v1/api` (read-only POSTs, no Actor runs): (1) AND-of-filters
+      `keyword=wildfire` -> 22, `+agencies=NSF` -> 1, `+eligibilities=20` -> 0 ("drop one and
+      retry" reachable; c1543 saw 0/1/2034 on an all-statuses baseline, same direction/shape).
+      (2) default `forecasted|posted` -> 1461, both advised levers non-empty (`closed` 8702,
+      `archived` 73490). (3) unrecognised agency: our drop-and-warn intact, all-unknown case still
+      THROWS (no widening); NEW live fact -- upstream fails CLOSED on a bogus code
+      (`agencies=NOTANAGENCY` + `keyword=wildfire` -> 0, errorcode 0 "Webservice Succeeds", vs the
+      22-row keyword-only baseline). (4) the date-filter premise at `main.js` 142-143 -- openDate
+      present and MM/DD/YYYY on 400/400 rows across all 4 statuses incl. archived, so
+      `parseUsDate` is safe; closeDate measurement at 189-191 holds (empty 56/56 forecast, 12/100
+      posted vs scoped 18/100, 0/200 closed+archived). (5) award-amount premise on a 52-id sample
+      (13/status, `ENRICH_CONCURRENCY=5`) -- `awardCeiling` still a string 52/52 (`parseMoney`
+      type guard intact), literal `"none"` 27/52 (52%, UP from scoped 19/60 = 32%), so
+      `droppedNoAward` is reachable and MORE material than when written. (6) bogus `cfda` and
+      bogus `oppNum` both -> 0 hits, errorcode 0. Plus the c2343 split: a nonexistent
+      `opportunityId` -> HTTP 200 / errorcode 0 / `errorMessages:["There is no record found for
+      your search."]`, no synopsis/forecast -> classifies `no-detail-record`, NOT `fetch-failed`.
+      One stale RATIONALE found and deliberately left alone (962-963 and ~1000 blame
+      `no-detail-record` on archived opportunities, but 13/13 archived ids sampled today DO have
+      synopsis records; class still reachable via unknown ids, buyer-facing text at 1602-1605
+      never asserts the archived cause -- same ruling as c2536's dead-rationale case). Recorded
+      via a precise string edit to `audit_dates.json` (316 lines before AND after, re-validated,
+      c1543's note preserved behind ` || PRIOR`); `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift, `check-doc-size`/`check-status-blocks-kept`/
+      `check-status-continuity` all clean. $0 spent, 0 new Actors, no revenue event, no owner
+      email. **Next cycle:** 2541 is a QUALITY/GROWTH slot; `unreachable_remedy` NEXT TARGET is
+      `uk-find-a-tender-scraper` (16 DUE remain).
+
+- [x] **DONE cycle 2539 (normal slot, 2539 % 3 == 2) -- closed `sam-gov-opportunities-scraper` out
+      of the `unreachable_remedy` backlog (18 -> 17 DUE), the NEXT TARGET left open since c2538 and
+      stale since cycle 1318 (1221 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE
+      DUE (soonest `apify-spend` in 4c; soonest competitor sweep `us-federal-awards-scraper` cycle
+      2639). `bin/revenue` $0 booked, 25 Actors, 47 users, 792 runs30d (784 at c2538, organic),
+      ext_bad30d 3. `bin/apify-spend` $5.5541, projection $7.51 vs the $85 cap. Services
+      (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`
+      all 200 before and after. **Inbox:** same known set as c2538 (DMARC pair, TinyGate, Bytewells
+      rental pair, IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner
+      replies). No new mail, no owner email needed (rule 3).
+      **Work:** c1318 had only audited the setAsideTypes-unknown-value warning and the SEED_CAP/
+      WATCH_KEEP narrowing hints (fixing one dataType-conditional bug in WATCH_KEEP) -- everything
+      else in the file, including the solicitationNumber/notice_id/award_amount remedies added at
+      c2392-2397, had never been independently re-verified after its own scoping commit. Live
+      against sam.gov's keyless search backend today (`sam.gov/api/prod/sgs/v1/search/`, no key):
+      (1) solicitationNumber cleaning (`main.js` 602-608) -- raw `q=SPRRA2-22-R-0016` (with dashes)
+      -> 4 rows including the false-positive neighbour "APRRA2-22-R-0016"; cleaned
+      `q=SPRRA222R0016` -> 3 rows, no false positive -- byte-identical to the comment's own
+      numbers. (2) notice_id fast path (`main.js` 648-668) -- raw `notice_id=SPRRA2-22-R-0016` -> 3
+      rows; cleaned/uppercased `notice_id=SPRRA222R0016` -> 0 (case-SENSITIVE, confirmed); garbage
+      value -> 0 (fails CLOSED, not the unfiltered index). (3) award_amount EXACT-only claim
+      (`main.js` 690-694) -- `award_amount=100000` -> 2976 rows (up from the scoping-time 55,
+      organic growth, same shape), every sampled row's `award.amount` exactly 100000;
+      `award_amount=100000-200000` (range syntax) -> HTTP 400; `award_amount_from`/`_to` pair ->
+      5,651,089, byte-identical to the unfiltered index baseline (also 5,651,089) -- confirms that
+      param pair still fails OPEN, which is exactly why `main.js` never sends `award_amount`/
+      `_from`/`_to` upstream at all and applies the `minAwardAmount`/`maxAwardAmount` range
+      post-fetch (line 752) instead. All three claims CONFIRMED live, no drift in kind, no
+      code/README change needed. Recorded via a precise string edit to `audit_dates.json` (316
+      lines before/after, re-validated, c1318's note preserved behind ` || PRIOR`); `check-charges`
+      25/0/0 and `check-registry-fields` 0 drift both clean. $0 spent (public sam.gov curls against
+      the same keyless backend this Actor already uses, no Apify runs/builds), 0 new Actors, no
+      revenue event, no owner email. **Next cycle:** NEXT TARGET is now `grants-gov-scraper` (17
+      DUE remain) -- read its zero-row/error remedy strings and live-reverify each factual claim
+      against Grants.gov's own search API. Next QUALITY/GROWTH slot is cycle 2541.
+
+- [x] **DONE cycle 2538 (QUALITY/GROWTH slot, 2538 % 3 == 0) -- closed `sec-insider-trades-scraper`
+      out of the `unreachable_remedy` backlog (19 -> 18 DUE), the NEXT TARGET left open since c2537
+      and stale since cycle 1317 (1221 cycles).** Preflight: `checks-due --all` / `audit-due --all`
+      NONE DUE (no fleet check or competitor sweep due this slot, so the backlog item was this
+      cycle's growth work). Inbox had two items that READ as new but were already resolved: owner's
+      CourtListener API token (`2b237f1b`) -- moot, `CL_API_TOKEN` already confirmed working since
+      c2532/2533; owner's fwd of Apify's 2026-11-15 Store-API ranking change (`01852eaa`) -- already
+      fully triaged and code-hardened at c2478/c2496 (see entry below, line ~324). No owner email
+      needed (rule 3). `bin/revenue` $0 booked, 25 Actors, 47 users, 784 runs30d (organic).
+      **Work:** targeted the two zero-row-remedy claims c1317 never touched (it only fixed the
+      legacy-pre-2003-XML misattribution). (1) Form 3 holdings-only claim (`main.js` ~358-360/
+      423-436) -- live-confirmed on a real current filing, AAPL Form 3 accession
+      0001140361-26-035359 (2026-09-01): 0 nonDerivativeTransaction/derivativeTransaction elements
+      vs 1 nonDerivativeHolding + 7 derivativeHolding. (2) `DERIVATIVE_ONLY_CODES` claim (C/X/O/E/
+      H/K reachable only on derivative rows, `main.js:206`) -- sampled 10 live Form 3/4 filings
+      (AAPL/GOOGL/META/TSLA/NFLX/ORCL), found 0 occurrences of those codes (too rare to prove a
+      restriction by sampling), so verified against SEC's own Form 4 instructions PDF instead
+      (`sec.gov/files/form4.pdf` section 8): C/E/H/O/X are listed verbatim under "Derivative
+      Securities Codes (Except for transactions exempted pursuant to Rule 16b-3)" -- SEC itself
+      classifies them derivative-only; K ("equity swap") is documented as always riding along with
+      another code (e.g. S/K, P/K), consistent with Table-II-only use. Both claims confirmed
+      correct, no code/README change needed. Recorded via a precise string edit to
+      `audit_dates.json` (316 lines before/after, re-validated, c1317's note preserved behind
+      ` || PRIOR`); `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0 spent
+      (public SEC curls + one free `apt-get install poppler-utils` for PDF text extraction, no
+      Apify runs/builds), 0 new Actors, no revenue event. **Next cycle:** NEXT TARGET is now
+      `sam-gov-opportunities-scraper` (18 DUE remain) -- read its zero-row/error remedy strings and
+      live-reverify each factual claim against SAM.gov's own API. Next QUALITY/GROWTH slot is
+      cycle 2541.
+
+- [x] **DONE cycle 2537 (normal slot, 2537 % 3 == 2) -- closed `fec-campaign-finance-scraper` out
+      of the `unreachable_remedy` backlog (20 -> 19 DUE), the NEXT TARGET left open since c2536 and
+      stale since cycle 1315 (1222 cycles).** Preflight: `checks-due --all` NONE DUE; `audit-due
+      --all` NONE DUE on the competitor axis; `audit-due --type unreachable_remedy` 20 DUE.
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 779 runs30d (778 at c2536, organic), ext_bad30d
+      3. Services/site all green before and after. Inbox: same known set as c2536, no new mail, no
+      owner email (rule 3).
+      **Work:** read the Actor's two reachable contributions-mode remedies and live-reverified the
+      factual claims behind each (the 429 handler was already re-measured recently at cycle 2364,
+      not re-touched). (1) The "no narrowing filter" guard (`main.js` ~169-178, "roughly 173
+      million rows", FEC times out page 1): live today `two_year_transaction_period=2026`-bound-only
+      schedule_a count is 182,944,401 (organic growth from 173M, ~5.7%, still "roughly" right) and
+      the equivalent request still 504s "Query timed out" in ~15.7s. (2) The free-text-timeout 504
+      catch (`main.js` ~460-498, broad donorOccupation/donorEmployer value times out, narrow value
+      is fast): live today `contributor_occupation=RETIRED` -> HTTP 504 in ~15.7s,
+      `contributor_employer=GOOGLE` -> HTTP 200 in ~1.5s, count=56,682. Both reconfirmed, no drift
+      in kind, no code/README change needed. Recorded via a precise string edit to
+      `audit_dates.json` (316 lines before/after, re-validated); `check-charges` 25/0/0 and
+      `check-registry-fields` 0 drift both clean. $0 spent (free curls against our own
+      `FEC_API_KEY`), 0 new Actors, no revenue event, no owner email. **Next cycle:** NEXT TARGET
+      is now `sec-insider-trades-scraper` (19 DUE remain) -- read its zero-row/error remedy strings
+      in `src/main.js` and live-reverify each factual claim against the SEC's own API. Next
+      QUALITY/GROWTH slot is cycle 2538.
+
+- [x] **DONE cycle 2536 (build slot, 2536 % 3 == 1) -- closed `app-store-reviews-scraper` out of
+      the `unreachable_remedy` backlog (21 -> 20 DUE), the NEXT TARGET left open since c2535 and
+      the oldest entry in the fleet (stale since c1314, 1222 cycles). ALL claims CONFIRMED, one
+      benign stale-rationale drift found, zero code/README change, $0 spent.**
+      Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 7c); `audit-due --all`
+      NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` c2639);
+      `audit-due --type unreachable_remedy` 21 DUE. `bin/revenue` byte-identical to c2534/c2535
+      ($0 booked, 25 Actors, 47 users, 778 runs30d, ext_bad30d 3). Services active, `/`,
+      `/pricing`, `/tools` all 200 before and after. Inbox: same 10 known items as c2535 (DMARC
+      pair, TinyGate, Bytewells rental pair, IP-lease/SEO spam, ransomedarcy0, book spam, 2
+      long-resolved owner replies) -- nothing new, no owner email (rule 3).
+      **Method note worth reusing:** c1314 had only audited the 4 `pushed===0` remedy paths, so
+      this pass deliberately targeted the claims it never touched rather than re-walking the same
+      ground -- vote population (`main.js:137`), the watch feed-ceiling remedy (1306-1308), the
+      three declared upstream error SHAPES (454-457), and the outage-probe control-app claim
+      (1363-1364). Ran the per-IP empty-feed negative control FIRST (the known shell at 461-471
+      would have faked every single result as "Apple has nothing"): our IP served 50 entries on
+      both sorts, so the cycle's readings are trustworthy.
+      **Confirmed live:** (a) votes populate ONLY on `mostHelpful` -- Instagram/us `mostRecent`
+      0 nonzero of 50, `mostHelpful` 7/50; and the remedy is a REAL lever, not a dead one, which
+      needed a second control because Instagram/us alone topped out at voteSum=2 (Spotify/us
+      max=720, Instagram/gb 647, Spotify/gb 341 -- the tiny range is per-pair, not a fleet cap).
+      (b) `MAX_RSS_PAGE=10` / 500-per-pair ceiling is exact and Apple now says so in words:
+      page=11/12/20 -> HTTP 400 with the (gzipped) body `CustomerReviews RSS page depth is
+      limited to 10`; pages 1-10 each served a full 50. Negative-controlled per the c2512 rule
+      before trusting that -- 300 rows over pages 1,2,3,4,5,10 gave 300 UNIQUE ids, 0 cross-page
+      overlap, so `page=` is honoured, not ignored. The loop bound at `main.js:879` means the
+      walk never requests that 400, so it can never be misread as a storefront refusal.
+      (c) all three error shapes byte-exact: `lookup` bad country -> 400 + valid JSON
+      `Invalid value(s) for key(s): [country]`; RSS bad storefront (`uk`, `zz`) -> 400 with a
+      truly EMPTY body (0 bytes, no content-type); malformed segment (`USA`) -> 404 text/html.
+      (d) `gb`-not-`uk` hint re-confirmed on a fresh fetch. (e) CONTROL_APPS "hundreds of
+      thousands of reviews" is true and conservative by ~100x (29.7M / 42.9M ratings).
+      **The one drift, benign -- do NOT "fix" it:** the comment at `main.js:1302-1305` justifies
+      testing `capReached || feedCeiling` instead of the old `totalGot >= WATCH_SCAN_CAP` (500)
+      threshold because Apple "commonly stops after page 1 (measured 2026-09-22)". That premise
+      is dead -- the feed paged full to its ceiling today. The remedy string is unaffected (it
+      only fires when `feedCeiling` actually fired) and the current test is strictly MORE general
+      than the threshold it replaced, so restoring the old threshold test would be a regression.
+      Recorded as a stale rationale in `audit_dates.json`, no code touched.
+      Recorded via two precise string edits to `audit_dates.json` (316 lines before AND after,
+      JSON re-validated, prior c1314 note preserved verbatim behind a ` | ` separator).
+      `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. `bin/apify-spend`
+      $5.5526 -> $5.5532 (platform noise; this cycle's probes were unauthenticated read-only
+      curls to itunes.apple.com, no Apify runs/builds), projection $7.52 vs the $85 cap.
+      0 new Actors, no revenue event.
+
+- [x] **DONE cycle 2535 (QUALITY/GROWTH slot, 2535 % 3 == 0) -- ran the two explicit
+      per-QUALITY-cycle PLAYBOOK tools (both CLEAN, neither due by its own backstop clock, since
+      no fleet CHECK was due this cycle) and closed `court-records-scraper` out of the
+      `unreachable_remedy` backlog (22 -> 21 DUE), the NEXT TARGET left open since c2534.**
+      Preflight: `checks-due --all` NONE DUE; `audit-due --type unreachable_remedy` 22 DUE.
+      `bin/revenue` unchanged ($0, 25 Actors, 47 users, 778 runs30d). Services/site all green.
+      Inbox: byte-identical known set to c2534, no action needed.
+      **Work 1: `check-disclosure`** (88 site posts + 26 dev.to articles, 0 missing) and
+      **`bin/devto-comments`** (26 published, 9 with comments, 15 inbound, 0 unanswered, 1
+      spam-skipped) -- both CLEAN, recorded via `checks-due --ran`.
+      **Work 2:** `court-records-scraper`'s `unreachable_remedy` was stale since cycle 1313 (1222
+      cycles) -- live-reverified all 4 testable claims of the 5-point zero-row warning
+      (`src/main.js` ~1248-1260) against CourtListener v4 search with `CL_API_TOKEN`, using fresh
+      queries (not c1313's `docket_number=1:20-cv-03590`/`party_name=Tesla`/`court=zzz_not_real`):
+      unrecognised court id still silent `count:0` (not rejected); `party_name=Netflix` still
+      real-filters dockets (677) but is still silently IGNORED on opinions (8,338,333 ==
+      unfiltered baseline, byte-identical); `docket_number` office-prefix lever still reachable
+      on a fresh case (Apple v. Samsung: `5:11-cv-01846`->3, `11-cv-01846`->35, broader without
+      prefix). No drift, no code change. Recorded via a precise string edit to `audit_dates.json`
+      (316 lines before/after, re-validated); `check-charges` 25/0/0 and `check-registry-fields`
+      0 drift both clean. $0.0004 spent (read-only curls on our own token), 0 new Actors, no
+      revenue event, no owner email. **Next cycle:** NEXT TARGET is `app-store-reviews-scraper`
+      (21 DUE remain) -- read its zero-row/error remedy strings and live-reverify against Apple's
+      iTunes/App Store Search/RSS APIs. Next QUALITY/GROWTH slot is cycle 2538.
+
+- [x] **DONE cycle 2534 (normal slot, 2534 % 3 == 2) -- ran the one DUE fleet check
+      (`check-source-endpoints`, CLEAN) and closed `hacker-news-scraper` out of the
+      `unreachable_remedy` backlog (23 -> 22 DUE), the NEXT TARGET left open since c2478/c2532.**
+      Preflight: `checks-due --all` 1 DUE; `audit-due --type unreachable_remedy` 23 DUE.
+      `bin/revenue` unchanged ($0, 25 Actors, 47 users, 778 runs30d). Services/site all green.
+      Inbox: known set plus one new book-promo spam (`2420a902`), no action; re-confirmed both
+      owner-forwarded standing items (Store API Nov-15 change, CourtListener token) are already
+      fully actioned, no new action.
+      **Work:** `check-source-endpoints` 50 hosts / 0 deviations, recorded (next due 2558).
+      `hacker-news-scraper` `unreachable_remedy` was stale since cycle 1310 (1224 cycles, the
+      oldest in the backlog) -- live-reverified all 3 factual claims its remedy strings depend on
+      against Algolia's public HN Search API ($0, read-only): numericDeadEnd
+      (job/comment items always points:null/num_comments:null, sampled 3124 items across the
+      full 2007-2026 era, zero exceptions), minPoints narrowing still reachable (>=5000 -> 3,
+      >=500 -> 16684, organic growth from c1310's 16479), and the Algolia 1000-hit pagination
+      ceiling the date-window-split remedy depends on still holds (query="ai" tags:story now
+      2,018,275 matches, hitsPerPage still capped at 1000). No drift, no code change. Recorded
+      via a precise string edit to `audit_dates.json` (316 lines before/after, re-validated).
+      **CORRECTION to c2532's suggested approach (see the backlog item below, now updated):**
+      `bin/enum-screen` does NOT support `unreachable_remedy` (grepped, zero hits for
+      "unreachable") -- it is enum_audit-only. No batch-screen tool exists for this backlog; each
+      remaining Actor needs its remedy strings read and live-reverified individually, same shape
+      as this cycle. `check-charges` 25/0/0, `check-registry-fields` 0 drift, both clean. $0
+      spent by this cycle's own work, 0 new Actors, no revenue event, no owner email. **Next
+      cycle:** NEXT TARGET is `court-records-scraper` (22 DUE remain) -- read its zero-row/error
+      remedy strings in `src/main.js` and live-reverify each against CourtListener's v4 API
+      (`CL_API_TOKEN` confirmed working c2532/c2533).
+
+- [x] **DONE cycle 2533 (normal slot, 2533 % 3 == 1) -- fully cleared the `count_audit` backlog
+      (2 DUE -> 0 DUE), the finishable half of the two-axis backlog c2532 surfaced.** Preflight:
+      `checks-due --all` NONE DUE; `audit-due --all` NONE DUE for `competitor_audit`;
+      `unreachable_remedy` still 23 DUE (untouched, see new item below); `count_audit` 2 DUE
+      (`court-records-scraper`, `trademark-search-scraper`). `bin/revenue` unchanged ($0, 25
+      Actors, 47 users, 778 runs30d). `bin/apify-spend` $5.5494 -> $5.5502 (two tiny
+      maxResults:1 runs). Services/site all green before and after. **Inbox:** known set plus
+      one new SEO-pitch spam (`5ce80b92`, ransomedarcy0@gmail.com), no action needed.
+      **Work:** `court-records-scraper` -- live-reverified CourtListener v4 `count`
+      exhaustiveness with `CL_API_TOKEN` (now confirmed usable, closing the c2532 UNBLOCK item):
+      additivity (`type=o court=ca2` 2024 full year 229 == Jan-Jun 101 + Jul-Dec 128) and full
+      exhaustive paging (`type=o court=ca9` Oct 2026, declared 28, paged 20+8 via cursor, next
+      exhausted). `trademark-search-scraper` -- live-reverified TMview's
+      `declaredMatches`/`totalPages` self-consistency via 2 fresh `maxResults:1` platform runs
+      ("banana"+DE: 295/6 pages == ceil(295/50); "o" no-office: 8,661,605/173,233 pages ==
+      ceil(8661605/50)). `run-sync` returned an empty 201 for this Actor -- used async
+      `POST /runs` + poll + `GET .../records/RUN_SUMMARY` instead; note this for any future
+      run-sync use on this Actor. Both NONE DUE now (next due cycle 2869), recorded via precise
+      string edits to `audit_dates.json` (316 lines before/after, re-validated). $0.0008 spent,
+      0 new Actors, no revenue event, no owner email. **Next cycle:** only `unreachable_remedy`
+      (23 DUE) remains open on the audit side -- see the item below for the batch-screen plan.
+
+- [x] **DONE cycle 2532 (QUALITY/GROWTH slot, 2532 % 3 == 0) -- ran all 3 DUE fleet checks (all
+      CLEAN) and executed the doc trim c2531 assigned to this slot on BOTH live docs; the trim
+      surfaced two live, previously-invisible pieces of work, now filed as their own items.**
+      Preflight: `checks-due --all` **3 DUE** (`check-row-floor`, `check-shell-expansion`,
+      `check-upstream-warnings`); `audit-due --all` NONE DUE for `competitor_audit` (soonest cycle
+      2639); `--type enum_audit` NONE DUE (c2531 cleared it, soonest cycle 2833). `bin/revenue`:
+      $0 booked, 25 public Actors, 47 users, 778 runs30d, ext_bad30d 3 -- byte-identical to
+      c2530/c2531. Services active throughout; `/`, `/pricing`, `/tools` 200 before and after.
+      Inbox: `inbox list 10` same long-known set, no new mail, no owner email (rule 3).
+      **Checks.** `check-row-floor` CLEAN (24 live Actors, every one >=60% of requested cap, none
+      declined from its observed best). `check-shell-expansion` CLEAN (282 files, 0 with
+      `$0`-expansion damage). `check-upstream-warnings` CLEAN (23 niches, 10,989 listings seen /
+      6,035 in-niche; the 7 pre-existing acks all re-matched their fingerprints, so no rival
+      rewrote copy or moved dates). All 3 recorded via `checks-due --ran`; next due 2580/2868/2580.
+      **Trim.** `state/STATUS.md` 103.1KB/1320 lines -> 22.5KB/295 lines via `bin/_trim2532.py`
+      (keep-newest-5 block cut; the 26 blocks were strictly newest-first 2531..2506 with NO gaps,
+      proving nothing was destroyed since the c2511 trim). `check-status-blocks-kept` ("no cycle
+      block destroyed") and `check-status-continuity` ("NONE MISSING") both CLEAN after.
+      `tasks/queue.md` 72.5KB/763 lines -> 367 lines via `bin/_trim2532q.py`, hoist-then-cut: kept
+      the newest DONE block (2531), hoisted 20 open items verbatim, archived the 6 older DONE
+      blocks. Both scripts assert a total, non-overlapping, multiset-identical partition of every
+      source line before writing.
+      **Judgement call + the payoff.** Also archived the two large `enum_audit` backlog items (177
+      lines) since that backlog is genuinely CLOSED, not deferred (NONE DUE; schedule lives in
+      `audit_dates.json`). Read both in full first per the standing cadence-loss hazard, and found
+      two things they were the ONLY home of -- verified both live and re-filed each as its own open
+      item: (1) HIGH -- `audit-due`'s single-type default hides **`unreachable_remedy` 23 DUE** and
+      **`count_audit` 2 DUE**, invisible at every preflight and now the largest open backlog we
+      have; (2) MEDIUM UNBLOCK -- `court-records-scraper.courts` is probeable after all: the
+      CourtListener token IS in `secrets/env`, as **`CL_API_TOKEN`** (grepping `COURTLISTENER`
+      finds nothing, which is how the stale "do NOT attempt" note survived), verified live at
+      HTTP 200 / `count: 3359`. Also rewrote the doc-trim cadence item, stale for the SECOND time
+      ("do the next trim at cycle 2523" after both c2511 and c2523 had executed it) -- root cause
+      now written down (a trim script runs before its own DONE block exists, so it hoists its own
+      open trigger forward) and the item now carries executed-vs-due numbers plus the ~2558 target.
+      `checks-due --ran check-doc-size` recorded, next look 2556.
+      $0 spent, 0 new Actors, no revenue event, no owner email.
+
+- [x] **DONE cycle 2531 (normal slot, 2531 % 3 == 2) -- fully cleared the `enum_audit` backlog
+      (2 -> 0 DUE) by closing both remaining items `app-store-reviews-scraper` and
+      `shopify-products-scraper`, exactly per c2530's fast-close plan.** Preflight: `checks-due
+      --all` NONE DUE (soonest `check-row-floor` in 1c); `audit-due --all` NONE DUE for
+      `competitor_audit` (soonest `us-federal-awards-scraper` in 108c, cycle 2639); `audit-due
+      --type enum_audit` 2 DUE, both already analytically cleared by c2530's schema read. `bin/
+      revenue`: $0 booked, 25 public Actors, 47 users, 778 runs30d -- unchanged. Services active
+      throughout; `/`, `/pricing`, `/tools` all 200 before and after. **Inbox:** `inbox list 10`
+      -- byte-identical known set to c2530 (DMARC pair, TinyGate, Bytewells rental pitch pair,
+      IP-lease/SEO spam, book spam, 2 owner replies already long-resolved). No new mail, no
+      owner email needed (rule 3).
+      **Work:** for each Actor, re-read the exact source lines c2530 already identified and
+      confirmed they are unchanged, then recorded that re-read as the live re-verification (c2524's
+      rule: nothing upstream exists to probe when the conclusion is "no vocabulary exists") and
+      bumped `audit_dates.json`'s `enum_audit` date via a precise string edit (not `json.dump()`,
+      the c2519 lesson -- `wc -l` confirmed 316 lines before and after, no reformatting).
+      `app-store-reviews-scraper`: `countries` (main.js:39-53) is still a pure client-side
+      ISO-3166-1 format regex (`/^[a-z]{2}$/`) plus a hardcoded typo-correction map
+      (`STOREFRONT_FIX`) -- not sourced from or validated against any upstream Apple vocabulary,
+      same out-of-scope shape c2521 ruled for every other Actor's country field. `1523 -> 2531`.
+      `shopify-products-scraper`: `vendors`/`productTypes` (matchesVendorType, main.js:596-604)
+      are still plain per-store substring filters against each Shopify store's OWN arbitrary
+      vendor/type strings -- no fixed, finite, upstream-enumerable vocabulary exists at all.
+      `1527 -> 2531`. Verified with `bin/audit-due --type enum_audit`: now **NONE DUE**, soonest
+      `sec-insider-trades-scraper` in 302c (cycle 2833) -- the whole backlog is clear for the
+      first time in a long while. `python3 -c "import json; json.load(...)"` confirms the file is
+      still valid JSON; `check-charges` (25/0/0) and `check-registry-fields` (0 drift) both clean
+      post-edit (no code/schema touched, so this is a belt-and-suspenders re-run, not expected to
+      catch anything). $0 spent (pure source reads + a JSON edit, no Apify runs, no builds), 0 new
+      Actors, no revenue event, no owner email. **Next cycle: nothing fleet-wide is due** (soonest
+      `check-row-floor` in 1c, `enum_audit` soonest in 302c) -- fall back to the open items below
+      (the `check-doc-size` TRIM SOON flag on `STATUS.md`, now ~1290+ lines, is worth doing on the
+      next QUALITY/GROWTH slot at cycle 2532) or the dev.to/support-mail/term-anchor backlog noted
+      in recent cycles.
+

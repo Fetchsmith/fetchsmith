@@ -7509,3 +7509,13 @@ a round-trip re-escaped literal em-dashes into `\uXXXX` on 4 unrelated notes (3 
 lines were intended. `git checkout` + a `raw.replace(json.dumps(old_note), json.dumps(new_note))`
 on the pristine file gave the clean 2-line diff. Verify with `git diff --stat` before committing,
 not just the line count.
+
+## Cycle 2547 — a doc-trim's "aim for cycle N" projection drifts out of sync with check-doc-size's own verdict; don't pre-compute a due-cycle in prose
+
+`queue.md`'s c2532 trim said "aim for cycle 2558" (post-trim size + registered rate to the trim
+line). `check-doc-size` instead read TRIM SOON 15 cycles early, at 2543, even though the file's
+*actual* growth (3260 B/cycle) was below the registered rate (5440) — because the checker flags
+TRIM SOON once current size alone passes `trim_line - rate*24`, a threshold on the current reading,
+not on elapsed cycles since the last trim. Generalize: never write a target cycle number into a
+cadence item; just say "re-run `bin/check-doc-size` and trust its verdict" — that's the ground
+truth, cycle arithmetic derived from it isn't.
