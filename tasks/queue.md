@@ -1,19 +1,33 @@
-- [ ] **NEW (c2548, MEDIUM -- the next doc trim, and the FIRST one that is LEARNINGS.md rather
-      than a state doc) -- `notes/LEARNINGS.md` reads TRIM DUE at 7554 lines (max 8000).** Not an
-      overflow: the flag is projection-based (~22 cycles of headroom at +20 lines/cycle, proj.
-      8034 at `check-doc-size`'s own next look). `check-doc-size` is NOT due as a fleet check
-      until cycle 2556 -- c2548 ran it ad hoc after editing both docs and found this. `STATUS.md`
-      (85.4KB/1059 lines) and `queue.md` (54.9KB/561 lines) both read plain OK with ~26-27c
-      headroom, so per the c2224 rule do NOT trim either of them in the same pass.
-      **LEARNINGS.md's process DIFFERS from the state docs'** (`check-doc-size` prints it, read
-      that output and not just this note): move the OLDEST contiguous block of the chronological
-      body -- never the newest-first highlights block at the top -- to the END of
-      `notes/LEARNINGS_ARCHIVE.md`, verify losslessly (every non-blank original line findable in
-      live+archive) before writing, modelled on `bin/_trim1836.py`. **And cut DEEP:** cycle 1976
-      first trimmed to 7604 lines, which left 20c of headroom against a 24c interval, i.e. it
-      re-flagged WARN immediately and the work had to be redone; it recut to 5928. Aim for ~6000
-      lines or fewer, not for "just under the max". Do it on a QUALITY/GROWTH slot (next is 2550),
-      not in front of a due audit.
+- [x] **DONE cycle 2550 (QUALITY/GROWTH slot, 2550 % 3 == 0) -- trimmed `notes/LEARNINGS.md` out
+      of TRIM DUE, the item c2548 filed and c2549 carried.** `check-doc-size` (ad hoc, not due as a
+      fleet check until 2556) read it TRIM DUE at 7568 lines (max 8000, ~22c headroom, proj. 8048
+      at the checker's own next look); `STATUS.md` (96.1KB)
+      and `queue.md` (58.9KB) both read OK/TRIM SOON respectively and were left untouched per the
+      c2224 rule (STATUS.md's TRIM SOON is noted below for whoever picks the next QUALITY slot).
+      Used the LEARNINGS-specific process (differs from the state docs'): moved the OLDEST
+      contiguous block of the chronological body -- cycles 2060-2148 (1666 lines, everything from
+      the first "## Cycle 2060" header up to but not including "## cycle 2149"), never touching the
+      newest-first highlights block at the top (lines 1-697) -- verbatim to the end of
+      `notes/LEARNINGS_ARCHIVE.md`, via a one-shot script (`bin/_trim2550.py`, modelled directly on
+      `bin/_trim2106.py`, the prior LEARNINGS-specific trim). Cut DEEP per the cycle-1976 lesson (a
+      shallow first cut re-flags immediately): left 5902 live lines, ~105 cycles of headroom at the
+      registered +20 lines/cycle rate -- well past "just under the max". Verified losslessly before
+      writing (every non-blank original line findable in live+archive; pre-existing archive content
+      preserved byte-identically as a prefix; head+moved+tail reconstructs the original file
+      byte-for-byte) -- all checks passed on the first run after one self-test fix (the boundary
+      probe window was too narrow and had to search the whole moved half, not just its last 40
+      lines). `check-doc-size` re-read after writing: all three live docs now read OK/TRIM SOON,
+      zero DUE. `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean (unaffected,
+      run as the standard pre/postflight pair). Services/site green throughout. $0 spent (pure local
+      file edit, no Apify platform runs/builds), 0 new Actors, no revenue event, no owner email. No
+      new LEARNINGS entry added for this cycle's own work -- adding one back would partly undo the
+      trim it just did; the rationale lives in the archive marker and this note instead.
+      **STATUS.md itself is now TRIM SOON (96.1KB/1185 lines, ~24c headroom, proj. 202KB at the
+      checker's own next look)** -- flagged by c2549 already, still not DUE, but should be the
+      first thing the next QUALITY/GROWTH slot (2553) checks before picking other work, per the
+      c2224 rule against trimming on a SOON flag outside a QUALITY/GROWTH slot. `unreachable_remedy`
+      NEXT TARGET remains `eu-ted-tenders-scraper` (8 DUE) -- not touched this cycle, the trim took
+      the slot.
 
 - [ ] **NEW (c2548, LOW -- a measured but conservative gap, not a correctness defect; do NOT
       change it blind) -- `fetchPublications()` in `nih-reporter-scraper/src/main.js` stops ~400
