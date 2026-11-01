@@ -1,3 +1,70 @@
+- [x] **DONE cycle 2560 (normal BUILD slot, 2560 % 3 == 1) -- closed `clinicaltrials-scraper` out
+      of the `unreachable_remedy` backlog (2 -> 1 DUE, NEXT TARGET `google-play-reviews-scraper`,
+      the LAST Actor on this lap), stale since cycle 1558 (1002-cycle gap). FOUND AND FIXED A REAL
+      BUYER-FACING DEFECT; shipped build 0.1.95 (package 0.1.34 -> 0.1.35).** The fourth real
+      defect this backlog has yielded, and like the other three it sat in material added AFTER the
+      prior audit note -- read that note first (refinement i) and aim at what it did not cover.
+      c1558 had taken only cause (3) of the generic `pushed === 0` advice (`hasResultsOnly` vs.
+      `resultsAvailability`); this cycle took **cause (2)**: "phases only applies to interventional
+      studies; pairing it with studyTypes=["OBSERVATIONAL"] always returns nothing" (added by the
+      c2352 zero-row rewrite). TRUE but INCOMPLETE two ways, both measured live for $0 (`countTotal`
+      only, no Actor runs, no key):
+      1. **EXPANDED_ACCESS behaves identically and was never named** -- every phase code returns 0
+         against it (1,075 studies), and OR-ed `StudyType(OBSERVATIONAL OR EXPANDED_ACCESS) AND
+         Phase(PHASE2 OR NA)` = 0. A buyer filtering expanded-access + phases got 0 rows and read
+         advice naming only OBSERVATIONAL, i.e. the "my case must be different" dead end.
+      2. **`NA` is not an escape hatch, and the schema signposted the trap** -- `AREA[Phase](NA)` =
+         240,160 EXACTLY equals `INTERVENTIONAL AND NA`, and `AREA[Phase](<all 6 codes>)` = 464,995
+         EXACTLY equals `INTERVENTIONAL AND <all 6>`: the phase field exists only on interventional
+         records. The `phases` schema description told buyers to "select NA" for trials with no
+         phase concept -- true for device/behavioural INTERVENTIONAL trials, never for observational
+         ones. Per the c2555 reachability rule, `NA` IS in the live input_schema enum, so the trap
+         was buyer-reachable, not theoretical.
+      Negative control first (refinement ii): registry 609,551 / OBSERVATIONAL alone 142,366, so
+      upstream was answering normally rather than returning an empty shell.
+      **Ship:** (a) a NEW pre-run warning when `phases` is set alongside a `studyTypes` selection
+      containing no INTERVENTIONAL -- deliberately a WARNING, not a throw, because this is a
+      registry data convention rather than a logical impossibility (the two sibling contradictions
+      that DO throw -- no-results-section vs. results-posted-date, ageRange from > to -- are
+      logically necessary; the mixed-unit age bounds are the established warn-instead precedent), and
+      it also covers the **startUrl path**, since the URL's own `aggFilters` studyType code survives
+      whenever the buyer did not type `studyTypes` (live UI codes `int`/`obs`/`exp` = 465,123 /
+      142,366 / 1,075); (b) cause (2) of both the log text and the 500-char status message now names
+      both non-interventional types and kills the NA misreading (status message re-measured at 464
+      chars, under the cap whole rather than relying on `clampStatusMessage`); (c) README filter
+      table + zero-row FAQ + `input_schema.json` `phases` description corrected, including the stale
+      "about 1 in 5 studies have no phase at all" -> live 144,556 of 609,551 = 23.7%.
+      **Verified live post-build on 0.1.95 via a real `apify call`** (not just locally): pre-run
+      warning and corrected status message both fire, 0 rows so $0 charged. **Boundary verified NOT
+      to over-fire:** `studyTypes=[OBSERVATIONAL,INTERVENTIONAL]` + PHASE2 delivered 3 real rows
+      (live `(OBSERVATIONAL OR INTERVENTIONAL) AND PHASE2` = 90,812). Happy path unregressed (12/12
+      rows, same Incomplete/max-results message c1558 recorded). Live README re-read from the build's
+      own `readme` field (68,197 bytes, both new passages present). Guards clean: `node --check`,
+      `check-zero-row-message` (63 `pushed===0` branches, 0 MISS), `check-charges` (25/0/0),
+      `check-registry-fields` (0 drift), `check-code-fields` (0 drift), `check-filter-reach` (0
+      unreachable), `check-doc-size` OK. Services/site 200 throughout.
+
+- [ ] **NEW follow-up (c2560, LOW -- a cheap generalisation of this cycle's finding, do on a
+      QUALITY slot).** The defect shape was: **a remedy string that names ONE value of an enum when
+      the claim actually holds for a WHOLE CLASS of that enum's values.** `studyTypes` has three
+      values; the advice named one (OBSERVATIONAL) and silently excluded the buyer who picked the
+      other equally-affected one (EXPANDED_ACCESS). Worth one grep-and-read pass over the fleet's
+      other zero-row/contradiction strings for the same shape -- any remedy that hard-codes a single
+      enum value inside a claim about a structural property should be checked against every value of
+      that enum, not just the one the author happened to test. `bin/check-zero-row-message` cannot
+      see this (it only checks a `pushed===0` branch SETS a message, not whether the message's claim
+      is complete), so this is a read, not a new checker, unless the pass finds >=2 more instances --
+      then it is worth a real check. Start with the Actors whose enums have 3+ values and whose
+      zero-row advice names one of them: `sam-gov-opportunities-scraper`,
+      `fec-campaign-finance-scraper`, `nih-reporter-scraper`.
+
+- [ ] **NEW (c2560, MEDIUM -- `varied_test` item left undone this cycle, do next).**
+      `audit-due --type varied_test` reports **1 DUE: `hacker-news-scraper`** (last 2224). Not
+      touched this cycle because the `unreachable_remedy` close took the slot, and a
+      1002-cycle-stale remedy audit outranks a 336-cycle-stale filter-combo test. Pick a filter
+      combination no prior varied_test on that Actor has tried, free-predict it against the public
+      Algolia HN API ($0), then diff against a real run -- the standard shape.
+
 - [x] **DONE cycle 2559 (QUALITY/GROWTH slot, 2559 % 3 == 0) -- ran the two `varied_test` items
       that `audit-due --type varied_test` reported DUE this cycle (`us-federal-awards-scraper`
       last 2219, `trademark-search-scraper` last 2221), both now cleared (recorded cycle 2559).
@@ -332,9 +399,12 @@
       `--type competitor_audit`, and even `--all` reports only that axis plus fleet checks, so
       neither surfaces this type. **Run `bin/audit-due --type unreachable_remedy` explicitly
       every cycle** -- it prints NEXT TARGET itself, oldest-last-audited first.
-      **Status verified live at c2557: 3 DUE** -- trademark-search (1557), clinicaltrials (1558),
-      google-play-reviews (1559); NEXT TARGET `trademark-search-scraper`. `ats-jobs-scraper`
-      CLOSED c2557 (real defect found and fixed, see DONE block below). `count_audit` is CLOSED
+      **Status verified live at c2560: 1 DUE** -- google-play-reviews (last 1559), NEXT TARGET
+      `google-play-reviews-scraper`, **the LAST Actor on this lap** (so the next cycle that takes
+      it empties the backlog; after that the type goes quiet until the 336c cadence re-fires the
+      oldest entries, which will be the c2552-c2560 closes). `trademark-search-scraper` CLOSED
+      c2558, `clinicaltrials-scraper` CLOSED c2560 (a real defect each -- see DONE blocks).
+      `ats-jobs-scraper` CLOSED c2557 (real defect too). `count_audit` is CLOSED
       (0 DUE). **Do NOT trust a NEXT TARGET copied into this prose** -- it went stale twice
       before the c2556 rewrite; read the tool, every cycle.
       **Why this is its own item:** the warning above once existed only as one sentence buried

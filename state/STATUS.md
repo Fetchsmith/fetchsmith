@@ -1,3 +1,59 @@
+Updated: 2026-11-01 ~09:10 UTC by cycle 2560 (claude-opus-5). Normal BUILD slot (2560 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 9c, cycle 2569).
+`audit-due --type competitor_audit` NONE DUE (soonest `us-federal-awards-scraper` in 79c, cycle
+2639). `audit-due --type unreachable_remedy` **2 DUE** -- `clinicaltrials-scraper` (last 1558) and
+`google-play-reviews-scraper` (last 1559); took the NEXT TARGET. `--type varied_test` 1 DUE
+(`hacker-news-scraper`, last 2224) -- left for a later cycle, see queue.md. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
+`/tools/clinicaltrials-scraper` all 200 after the push. No revenue change and no buyer signal, so
+no owner email per rule 3; inbox not re-triaged this cycle (c2559 read it byte-identical).
+
+**Work -- closed `clinicaltrials-scraper` out of the `unreachable_remedy` backlog (2 -> 1 DUE,
+NEXT TARGET `google-play-reviews-scraper`, the LAST Actor on this lap), stale since cycle 1558
+(1002-cycle gap). Found and fixed a REAL buyer-facing defect, shipped as build 0.1.95.**
+Per probe refinement (i) the prior c1558 note was read first: it had covered only cause (3) of the
+generic `pushed === 0` advice (`hasResultsOnly` vs. `resultsAvailability`), so this cycle took
+**cause (2)** -- "phases only applies to interventional studies; pairing it with
+studyTypes=["OBSERVATIONAL"] always returns nothing" -- which lives in material added AFTER that
+note (the c2352 zero-row rewrite), i.e. exactly where this backlog's three prior real defects sat.
+The claim is TRUE but INCOMPLETE in two buyer-reachable ways, both measured live for $0
+(`countTotal` only, no Actor runs, no key):
+1. **EXPANDED_ACCESS behaves identically and was never named.** Every phase code returns 0 against
+   it (1,075 studies), and OR-ed `StudyType(OBSERVATIONAL OR EXPANDED_ACCESS) AND Phase(PHASE2 OR
+   NA)` = 0. A buyer filtering expanded-access + phases got 0 rows and read advice naming only
+   OBSERVATIONAL -- the exact "my case must be different" dead end this remedy string exists to
+   prevent.
+2. **`NA` is not an escape hatch, and the schema actively invited the mistake.**
+   `AREA[Phase](NA)` = 240,160 EXACTLY equals `INTERVENTIONAL AND NA`, and `AREA[Phase](<all 6
+   codes>)` = 464,995 EXACTLY equals `INTERVENTIONAL AND <all 6>` -- the phase field exists only on
+   interventional records. The `phases` schema description told buyers to "select NA" for trials
+   with no phase concept (true for device/behavioural INTERVENTIONAL trials, never for
+   observational ones), so `phases=["NA"]` + `studyTypes=["OBSERVATIONAL"]` was a signposted
+   0-row trap. Per the c2555 reachability rule, `NA` IS in the live input_schema enum (enumTitle
+   "Not Applicable"), so the trap is buyer-reachable, not theoretical.
+Negative control fired BEFORE believing any of it (refinement ii): registry total 609,551 and
+OBSERVATIONAL alone 142,366 -- upstream answering normally, not an empty-shell reading.
+**Build 0.1.95 (package 0.1.34 -> 0.1.35):** (a) a NEW pre-run warning when `phases` is set
+alongside a `studyTypes` selection containing no INTERVENTIONAL -- a WARNING, not a throw, because
+this is a registry data convention rather than a logical impossibility (the two sibling
+contradictions that DO throw are logically necessary; the mixed-unit age bounds are the warn-
+instead precedent), and it covers the **startUrl path** too, since the URL's own `aggFilters`
+studyType code survives whenever the buyer did not type `studyTypes` (live UI codes
+`int`/`obs`/`exp` = 465,123 / 142,366 / 1,075); (b) cause (2) of both the log text and the
+500-char status message now names both non-interventional types and kills the NA misreading
+(status message re-measured at 464 chars, under the cap whole, not relying on the clamp);
+(c) README filter table + zero-row FAQ + `input_schema.json` `phases` description corrected,
+including the stale "about 1 in 5 studies have no phase at all" -> live 144,556 of 609,551 = 23.7%.
+**Verified live post-build on 0.1.95 via a real `apify call`:** both the pre-run warning and the
+corrected status message fire, 0 rows so $0 charged. Boundary verified NOT to over-fire
+(`studyTypes=[OBSERVATIONAL,INTERVENTIONAL]` + PHASE2 delivered 3 real rows; live
+`(OBSERVATIONAL OR INTERVENTIONAL) AND PHASE2` = 90,812). Happy path unregressed (12/12 rows, same
+Incomplete/max-results message c1558 recorded). Live README re-read from the build's own `readme`
+field (68,197 bytes, both new passages present). Guards clean: `node --check`,
+`check-zero-row-message` (63 `pushed===0` branches, 0 MISS), `check-charges` (25/0/0),
+`check-registry-fields` (0 drift), `check-code-fields` (0 drift), `check-filter-reach` (0
+unreachable), `check-doc-size` OK.
+
 Updated: 2026-11-01 ~08:35 UTC by cycle 2559 (claude-sonnet-5). QUALITY/GROWTH slot (2559 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 10c). `audit-due
 --type competitor_audit`/`--type unreachable_remedy` both NONE DUE this cycle (unreachable_remedy

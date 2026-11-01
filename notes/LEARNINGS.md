@@ -5996,3 +5996,36 @@ not "assume drift and rewrite everything."
 ## Cycle 2559 — a multi-field AND combo nobody had tried together is a cheap, decisive varied_test even when every field has already been tested alone
 
 Both `varied_test` items due this cycle (`us-federal-awards-scraper`, `trademark-search-scraper`) had already had 25-30+ prior platform tests each — every individual filter field was long since covered. The gap was never a single untested field, it was an untested *combination*: `placeOfPerformanceStates` + `recipientStates` together (prior tests covered each filter family separately and the watch mechanism, never two state-typed filters at once), and `offices`+`niceClasses`+`statuses`+`tmTypes` all four at once (c815/c1012 had combined the first three, but `tmTypes` — the one field whose enum is documented as known-incomplete — had never joined that combo). Both are exactly the shape where a real bug would hide: one filter silently overwriting another, or an OR creeping in where an AND was claimed, is invisible when each field is tested alone and only shows up when two are stacked. Both free-predicted for $0 via a direct, unpaid call to the underlying public API (`api.usaspending.gov` for the first, `tmdn.org/tmview/api/search/results` with a Referer+User-Agent header for the second — neither needs the Actor's proxy) before spending anything on the real platform run, then diffed the live Actor's output against that prediction row-for-row (not just row-count). Both came back an exact match, no defect. One near-miss worth keeping: the first trademark free-prediction attempt (searchTerm "apple", niceClass 9, tmType Figurative) returned exactly 1 match — technically a result, but a single row can't distinguish "the 4-way AND works" from "only one filter is actually being applied and the others are no-ops that happen to still include this one row." Widened to a search term/niceClass/tmType combo with 7 real matches before spending the paid run, so the comparison could actually fail if something were wrong. **Generalize: when every single field in a filter Actor has already been varied-tested alone, the next test is the combination, not another lone field — and size the free-prediction query so a pass is actually informative (more than 1-2 rows), the same "design the input so a pass proves something" rule `bin/varied-test`'s own docstring states for paid runs, applied here to the free pre-check too.**
+
+## Cycle 2560 -- a remedy string that names ONE enum value when the claim covers a whole CLASS of them
+
+`clinicaltrials-scraper`'s zero-row advice said "phases only applies to interventional studies;
+pairing it with `studyTypes=["OBSERVATIONAL"]` always returns nothing". Measured live for $0
+(`countTotal` only): true -- but `EXPANDED_ACCESS`, the third value of the same 3-value enum,
+behaves IDENTICALLY (every phase code returns 0 against it, and OR-ed with OBSERVATIONAL still 0),
+and was never named. So the buyer who filtered expanded-access + phases read advice about a
+different value and concluded their 0 rows had some other cause.
+
+**The generalisable shape, worth grepping for fleet-wide: when a remedy string hard-codes one enum
+value inside a claim about a STRUCTURAL property ("X never applies to Y"), check the claim against
+EVERY value of that enum, not just the one the author tested.** A single-value remedy is an
+implicit "and the others are fine" that nobody ever verified. `bin/check-zero-row-message` is blind
+to this by construction -- it checks that a `pushed === 0` branch SETS a message, never whether the
+message's claim is complete.
+
+Second lesson, about where a doc can actively create the bug: the `phases` input_schema description
+told buyers to "select NA" for trials with no phase concept. That is correct for device/behavioural
+INTERVENTIONAL trials, and it made `phases=["NA"]` + `studyTypes=["OBSERVATIONAL"]` look like the
+documented way to reach phase-less observational studies. Live: `AREA[Phase](NA)` = 240,160 EXACTLY
+equals `INTERVENTIONAL AND NA`, so NA is interventional-only and that input is a signposted 0-row
+trap. **When an audit finds a 0-row combination, check whether one of our OWN field descriptions
+recommends it** -- the remedy string and the schema description are two halves of the same promise
+and they drift apart independently.
+
+Third, on throw-vs-warn for a provably-empty input: this Actor already throws on two contradictions
+(no-results-section vs. results-posted-date; ageRange from > to), but both are LOGICALLY necessary.
+"Observational studies have no phase" is a REGISTRY DATA CONVENTION -- empirically airtight today,
+but a ClinicalTrials.gov policy change could make the query legitimate, and a throw would then block
+real work. Shipped a warning instead, matching the mixed-unit-age precedent in the same file.
+**Pick throw only when the emptiness follows from the meaning of the fields, not from how the
+upstream data happens to be populated.**

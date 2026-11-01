@@ -385,6 +385,36 @@ if (sex) urlAggFilters.delete('sex');
 if (acceptsHealthyVolunteers) urlAggFilters.delete('healthy');
 if (ageGroups.length) urlAggFilters.delete('ages');
 if (funderTypes.length) urlAggFilters.delete('funderType');
+// `phases` + a study-type selection that excludes INTERVENTIONAL is provably empty, so say so
+// BEFORE the run instead of only in the post-run zero-row advice. Re-measured live registry-wide
+// (cycle 2560, $0, countTotal only): every phase code returns 0 against OBSERVATIONAL *and*
+// against EXPANDED_ACCESS, singly and OR-ed (`StudyType(OBSERVATIONAL OR EXPANDED_ACCESS) AND
+// Phase(PHASE2 OR NA)` = 0), while `AREA[Phase](<all 6>)` = 464,995 is EXACTLY equal to
+// `INTERVENTIONAL AND <all 6>` -- i.e. the phase field exists only on interventional records.
+// NA is NOT an escape hatch: `AREA[Phase](NA)` = 240,160 = `INTERVENTIONAL AND NA` to the row,
+// which matters because the `phases` schema description tells buyers to "select NA" for trials
+// with no phase concept -- true for device/behavioral INTERVENTIONAL trials, never for
+// observational ones. A set that still contains INTERVENTIONAL is fine and must not fire
+// (`(OBSERVATIONAL OR INTERVENTIONAL) AND PHASE2` = 90,812).
+// WARNING, not a throw: unlike the two sibling contradictions above (no-results-section vs.
+// results-posted-date; ageRange from > to) this is a registry data convention, not a logical
+// impossibility, so a future ClinicalTrials.gov change could make it legitimate -- same reason
+// the mixed-unit age bounds warn rather than fail. Covers the startUrl path too: the URL's own
+// `studyType` code survives whenever the buyer did not type `studyTypes`, and `int`/`obs`/`exp`
+// are the live UI codes (465,123 / 142,366 / 1,075 this cycle).
+const urlStudyTypeCodes = String(urlAggFilters.get('studyType') ?? '').trim().split(/\s+/).filter(Boolean);
+const phaseStudyTypeSource = studyTypes.length ? studyTypes : urlStudyTypeCodes;
+const phaseStudyTypeHasInterventional = studyTypes.length
+    ? studyTypes.includes('INTERVENTIONAL')
+    : urlStudyTypeCodes.includes('int');
+if (phases.length && phaseStudyTypeSource.length && !phaseStudyTypeHasInterventional) {
+    log.warning(
+        `"phases" (${phases.join(', ')}) is set together with a study type that excludes interventional studies `
+        + `(${phaseStudyTypeSource.join(', ')}) — only interventional records carry a phase at all, so this `
+        + 'combination returns 0 rows registry-wide, including phases=["NA"]. Clear "phases" to list those '
+        + 'studies, or add INTERVENTIONAL to "studyTypes" to use the phase filter.',
+    );
+}
 // Study-document filter. Values are the UI's lowercase codes, OR-ed by SPACE inside one
 // aggFilters pair (`docs:sap prot`); a comma there is a 400, and an unknown code is NOT an
 // error — it silently returns 0 rows — so this list must stay a strict whitelist.
@@ -1545,15 +1575,18 @@ if (pushed === 0 && watchMode && !seeding) {
         // cause (3) silently, exactly as it did live before this fix.
         zeroRowMessage = `No studies matched (scanned ${scanned}). Common causes: (1) conditions/interventions/sponsors/`
             + 'locations/searchQuery are ANDed, so several narrow filters together often match nothing -- drop '
-            + 'one and retry. (2) phases only applies to interventional studies; pairing it with '
-            + 'studyTypes=["OBSERVATIONAL"] always returns nothing. (3) resultsAvailability="with" matches a '
+            + 'one and retry. (2) only interventional studies carry a phase, so phases with '
+            + 'studyTypes=["OBSERVATIONAL"] or ["EXPANDED_ACCESS"] returns nothing -- even phases=["NA"]. '
+            + '(3) resultsAvailability="with" matches a '
             + 'small minority of studies -- combine with a broader condition first.';
         log.warning(
             `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
             + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
             + 'narrow filters often genuinely matches nothing; drop one and retry. '
-            + '(2) phases only applies to interventional studies with a phase assigned; pairing it with '
-            + 'studyTypes=["OBSERVATIONAL"] always returns nothing. '
+            + '(2) only interventional records carry a phase at all, so pairing phases with '
+            + 'studyTypes=["OBSERVATIONAL"] or ["EXPANDED_ACCESS"] always returns nothing — including '
+            + 'phases=["NA"], which is interventional-only too (240,160 studies, all interventional, '
+            + 'measured live 2026-11-01). Clear phases, or add INTERVENTIONAL to studyTypes. '
             + '(3) resultsAvailability is "with" (or the deprecated hasResultsOnly, which sets the same '
             + 'thing) on a small minority of studies — combine with a broad condition first.',
         );
