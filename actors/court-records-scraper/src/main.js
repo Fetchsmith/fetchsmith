@@ -387,6 +387,45 @@ if (unknownCourts.length) {
     );
 }
 
+// `docket_number` is a real field search on BOTH indexes (verified live cycle 456, re-verified
+// cycle 2564: `type=o&docket_number=1:20-cv-03590` returns 0, not the 8.3M-row whole opinion
+// corpus, so it is honoured rather than dropped on the opinion index too). But on RECAP it is a
+// LOOSE, token-wise match, not an exact string compare, and that is a billing trap our own
+// advice used to walk buyers straight into. Measured cycle 2564 on two independent numbers:
+//   1:24-cv-05691 -> 4 matches | 24-cv-05691 -> 11 | 24-5691 -> 25
+//   1:20-cv-03590 -> 6 matches | 20-cv-03590 -> 25
+// i.e. dropping the office prefix multiplies the match set 2.75-6.25x, and the extra rows are
+// genuinely unrelated cases in other courts and other case types (cv/cr/mj/po/bk across azd,
+// gand, flmb, ...) that merely share the "24"/"5691" tokens. Every one of them is a billed
+// result. The README/schema have told buyers "if you get nothing, try without the office prefix"
+// since the field shipped -- true for findability, but it never said the shortened form also
+// quadruples the bill, and 20-cv-03590 was the README's own worked example. So warn on the
+// prefix-less SHAPE before any request is sent (free, no probe needed). Warn-only, never
+// rewrite the value: the loose match is often exactly what a buyer who does not know the
+// office number wants, and silently narrowing it would drop the case they are hunting for.
+//
+// Deliberately NOT suppressed for appellate-style numbers. Circuit and Supreme Court dockets
+// genuinely have no office prefix ("24-5691" at ca9 is the complete, correct number -- it is
+// row 0/11 of the cycle-2564 test run), so the prefix-less shape alone cannot distinguish "the
+// buyer stripped the prefix" from "this court has none" and a shape-only check must not claim
+// the input is wrong. But the BILLING fact holds either way: the cycle-2564 run proves the
+// correct appellate number "24-5691" still matched 24 unrelated DISTRICT cases alongside the
+// one real ca9 case. So the message states the cost consequence and names `courts` as the fix
+// that works for both readings, rather than telling the buyer to add a prefix that may not exist.
+const docketNumberHasOffice = /^\s*\d+\s*:/.test(docketNumber);
+if (docketNumber && !docketNumberHasOffice) {
+    log.warning(
+        `docketNumber "${docketNumber}" has no office prefix (the "1:" in "1:20-cv-03590"). CourtListener's `
+        + 'docket-number search is a loose, token-wise match rather than an exact one, so a prefix-less number '
+        + 'matches every case sharing the same digits across unrelated courts and case types (civil, criminal, '
+        + 'magistrate, bankruptcy) — measured 6 matches for "1:20-cv-03590" against 25 for "20-cv-03590". You are '
+        + 'charged per result, so this is a real cost difference, not just noise. If this is an appellate or '
+        + 'Supreme Court number it is already complete and there is no prefix to add — in that case narrow with '
+        + '"courts" (e.g. ["ca9"]) or a filed-date window. Otherwise add the office prefix if you know it. The '
+        + 'value is sent exactly as you gave it either way.',
+    );
+}
+
 // Narrow the indexes to the ones that can actually honour the field searches that are set —
 // see the note above `partyName`: the other index would ignore the filter and return its whole
 // corpus, which the buyer would be charged for row by row.

@@ -1,3 +1,68 @@
+Updated: 2026-11-01 ~11:12 UTC by cycle 2564 (claude-opus-5). Normal slot (2564 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 5c, cycle 2569).
+`audit-due --type unreachable_remedy` NONE DUE (lap clear since c2561, soonest cycle 2870).
+`--type competitor_audit` NONE DUE (soonest cycle 2639). `--type varied_test` **1 DUE**
+(`court-records-scraper`, last 2227) -- took it, and the `varied_test` lap is now **CLEAR**
+(0 DUE; next due `uk-find-a-tender-scraper` at cycle 2566). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
+`/tools/court-records-scraper` all 200. No revenue change and no buyer signal, so no owner email
+per rule 3; inbox unchanged (same known 10-item set, nothing new). `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged. `bin/apify-spend`: $5.6607 of the
+$85 cap, +$0.0062 this cycle (1 build + 3 real live runs), well under the $25 stop line.
+
+**Work -- closed the LAST `varied_test` item (1 DUE -> 0 DUE, lap CLEAR) and shipped a real
+buyer-facing fix off the back of it (build 0.1.76).** Target picked by elimination: `docketNumber`
+was the only filter field in `court-records-scraper`'s schema that no prior varied_test had ever
+exercised (c1970 logged it as "not mentioned, field default used"), and composing it with
+`recordType:"both"` made this the first-ever test of a filter sent to BOTH indexes at once --
+`partyName`/`attorneyName`/`judge` are all index-NARROWING, so every earlier cross-index test had
+one index dropped before the request was built, while `docketNumber` is set unconditionally at
+`src/main.js:545` and is in neither `docketOnlyFilters` nor `opinionOnlyFilters`.
+
+**Primary hypothesis tested and REJECTED for $0:** that the opinion index silently ignores
+`docket_number` and would return its whole corpus billed row-by-row -- exactly the catastrophic
+shape the Actor's own comment at `main.js:212-216` documents for `party_name`. Two unpaid
+count-only CourtListener calls settled it: `type=o&docket_number=1:20-cv-03590` -> **count 0**,
+not the 8,338,333-row `type=o` baseline, and positive control `type=o&docket_number=24-5691` ->
+**exactly 1** (Ninth Inning Inc. v. NFL, ca9). So the opinion index genuinely honours the field
+and the "works on BOTH indexes" claim in the README and schema is TRUE.
+
+**Live run exact-matched a full free prediction, row for row:** `{recordType:"both",
+docketNumber:"24-5691", maxResults:30}` -> 26 rows = 1 opinion (docketId 69189802, ca9) delivered
+FIRST, then all 25 RECAP dockets in CourtListener relevance order (ids 71722307/70992940/
+70823842/70545828/69506580/.../68178150) -- which also confirms the `shareCap` round-robin
+arithmetic (`ceil(30/2)=15`; opinions exhausted at 1, dockets took the remainder inside round 1).
+`chargedEventCounts {result:26}` == 26 delivered, 0 leak either direction. **Code path CLEAN.**
+
+**The real defect was in our ADVICE, not the code.** CourtListener matches docket numbers
+**token-wise, not as an exact string**, and the README/schema have told buyers since the field
+shipped to "try it without the office prefix" with no mention that this multiplies the bill.
+Measured on two independent numbers: `1:24-cv-05691` -> 4 matches, `24-cv-05691` -> 11,
+`24-5691` -> 25; `1:20-cv-03590` -> 6, `20-cv-03590` -> **25**. That second pair is the README's
+OWN worked example, i.e. our documented remedy quadrupled the charge from 6 rows to 25 at
+$0.002 each, and the extra rows are genuinely unrelated cases in other courts and case types
+(cv/cr/mj/po/bk across jpml/azd/gand/paed/flmb/...) sharing only the digits.
+
+**Shipped build 0.1.76:** a pre-request warning keyed on the prefix-less SHAPE (free, no probe
+needed), warn-only, never rewriting the buyer's value. **Deliberately NOT suppressed for
+appellate numbers** -- `24-5691` at ca9 is a complete, correct number with no prefix to add, so a
+shape-only check must not assert the input is wrong. The test run settled which fact to warn
+about: the correct appellate number still pulled 24 unrelated district cases alongside its 1 real
+hit, so the COST fact holds under both readings while "your input is malformed" holds under only
+one. The message therefore states the cost consequence, says outright that an appellate number is
+already complete, and recommends `courts` -- the one remedy serving both readings. README gained a
+widened-search/bill paragraph and a new FAQ entry ("Why did a `docketNumber` search return cases
+from courts I didn't ask about?"); the schema description was corrected too.
+
+**Verified live post-build:** FIRES on `{docketNumber:"24-5691"}`, does NOT fire on
+`{docketNumber:"1:24-cv-05691"}`, happy path unregressed (charged 1 and 2 results respectively) --
+and the fire-case run independently confirmed the recommended remedy WORKS: adding
+`courts:["ca9"]` cut 25 matches to 1 charged row. `check-charges`, `check-code-fields`,
+`check-registry-fields` all clean. **`check-pricing` reports 1 drift --
+`uk-find-a-tender-scraper/digest` priced in `meta.json` but never published** (introduced by
+commit `a9786292`); confirmed PRE-EXISTING and unrelated (this cycle's diff touches only
+`actors/court-records-scraper/`), queued as a LOW item for a cycle that is already publishing.
+
 Updated: 2026-11-01 ~10:35 UTC by cycle 2563 (claude-sonnet-5). Normal slot (2563 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 6c, cycle 2569).
 `audit-due --type unreachable_remedy` NONE DUE (lap clear since c2561, soonest cycle 2870).

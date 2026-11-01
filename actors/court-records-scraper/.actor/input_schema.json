@@ -52,7 +52,7 @@
     "docketNumber": {
       "title": "Docket number",
       "type": "string",
-      "description": "Case/docket number lookup, e.g. \"1:20-cv-03590\". Works on BOTH indexes and is a real field search, not full-text — much more precise than putting the number in the search query. Formats vary by court; if you get nothing, try without the office prefix (\"20-cv-03590\").",
+      "description": "Case/docket number lookup, e.g. \"1:20-cv-03590\". Works on BOTH indexes and is a real field search, not full-text \u2014 much more precise than putting the number in the search query. Formats vary by court; if you get nothing, try without the office prefix (\"20-cv-03590\"). Note the match is token-wise, not exact, so a prefix-less number matches every case sharing those digits in other courts and case types \u2014 measured 6 matches for \"1:20-cv-03590\" vs 25 for \"20-cv-03590\", and you are charged per result. Appellate numbers (\"24-5691\") have no office prefix and match loosely too. Pair a prefix-less number with \"courts\" or a filed-date window.",
       "editor": "textfield"
     },
     "judge": {

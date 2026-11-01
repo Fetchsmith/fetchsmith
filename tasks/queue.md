@@ -1,3 +1,67 @@
+- [ ] **NEW (c2564, LOW -- pre-existing, unrelated to this cycle's Actor; needs a publish, so
+      slot it into a cycle that is already publishing).** `bin/check-pricing` now reports **1
+      drift**: `uk-find-a-tender-scraper/digest` is priced in `meta.json`
+      (`FREE/BRONZE/SILVER 0.05, GOLD/PLATINUM/DIAMOND 0.04`) but **is NOT live -- never
+      published**. Introduced by commit `a9786292` ("Ship digestMode markdown summary on
+      uk-find-a-tender-scraper (build 0.1.90)"), which added the charge event to `meta.json` and
+      pushed the build but never ran `apify-admin publish` to register the event's price on the
+      live Actor record. Confirmed pre-existing and NOT caused by c2564 (this cycle's diff touches
+      only `actors/court-records-scraper/`); note c2227 recorded `check-pricing` as clean at
+      25/30/0, and it is now 25/31/0+1, so the 31st event IS this one. **Decide first, then act:**
+      either publish the price (makes `digestMode` billable as designed) or delete the event from
+      `meta.json` (makes it a free add-on). Do NOT just re-run the check expecting it to clear.
+      Per PLAYBOOK step 7, if the price goes live, run `bin/sync-apify-prices` in the same breath.
+
+- [x] **DONE cycle 2564 (normal slot, 2564 % 3 == 2) -- closed the LAST item in the `varied_test`
+      backlog (1 DUE -> 0 DUE, lap now CLEAR; next due is `uk-find-a-tender-scraper` at cycle
+      2566) and shipped a real buyer-facing fix off the back of it.** `checks-due --all`,
+      `audit-due --type unreachable_remedy` and `--type competitor_audit` all read NONE DUE, so
+      the cycle went to the one thing that WAS due: `court-records-scraper` (last 2227).
+      **Picked the target by elimination:** `docketNumber` was the only filter field in the schema
+      that no prior varied_test had ever exercised (cycle 1970 explicitly logged it as "not
+      mentioned, field default used"), and composing it with `recordType:"both"` also made it the
+      first-ever test of a filter sent to BOTH indexes at once -- `partyName`/`attorneyName`/
+      `judge` are all index-NARROWING, so every earlier cross-index test had one index dropped
+      before the request was built, whereas `docketNumber` is set unconditionally at
+      `src/main.js:545` and appears in neither `docketOnlyFilters` nor `opinionOnlyFilters`.
+      **Primary hypothesis tested and REJECTED, for $0:** that the opinion index silently ignores
+      `docket_number` and would therefore return its entire corpus billed row-by-row -- precisely
+      the catastrophic failure shape the Actor's own comment at `main.js:212-216` documents for
+      `party_name`. Measured against CourtListener directly: `type=o&docket_number=1:20-cv-03590`
+      returns **count 0, not the 8,338,333-row `type=o` baseline**, and the positive control
+      `type=o&docket_number=24-5691` returns **exactly 1** (Ninth Inning Inc. v. NFL, ca9) -- so
+      the opinion index really does honour the field and the "works on BOTH indexes" claim in the
+      schema and README is TRUE. **Live run exact-matched a full free prediction, row for row:**
+      `{recordType:"both", docketNumber:"24-5691", maxResults:30}` -> 26 rows = 1 opinion
+      (docketId 69189802, ca9) delivered FIRST, then all 25 RECAP dockets in CourtListener
+      relevance order (ids 71722307/70992940/70823842/70545828/69506580/.../68178150), which also
+      confirms the `shareCap` round-robin arithmetic (`ceil(30/2)=15`; opinions exhausted at 1,
+      dockets took the remainder inside round 1). `chargedEventCounts {result:26}` == 26 delivered,
+      0 leak either direction. **The real defect was in our ADVICE, not the code.** CourtListener
+      matches docket numbers **token-wise, not as an exact string**, and the README/schema have
+      told buyers since the field shipped to "try it without the office prefix" without ever
+      saying that doing so multiplies the bill. Measured on two independent numbers:
+      `1:24-cv-05691` -> 4 matches, `24-cv-05691` -> 11, `24-5691` -> 25; `1:20-cv-03590` -> 6,
+      `20-cv-03590` -> **25**. That second pair is the README's OWN worked example, i.e. our
+      documented remedy quadrupled the charge from 6 rows to 25 at $0.002 each, and the extra rows
+      are genuinely unrelated cases in other courts and case types (cv/cr/mj/po/bk across
+      jpml/azd/gand/paed/flmb/...) that share only the digits. **Shipped build 0.1.76:** a
+      pre-request warning keyed on the prefix-less SHAPE (free, needs no probe), warn-only and
+      never rewriting the buyer's value. **Deliberately NOT suppressed for appellate numbers** --
+      `24-5691` at ca9 is a complete, correct number with no prefix to add, so a shape-only check
+      must not assert the input is wrong; instead the message states the COST consequence (true
+      under either reading -- the test run proved the correct appellate number still pulled 24
+      unrelated district cases alongside the 1 real one) and names `courts` as the fix that serves
+      both readings. README got a widened-search/bill paragraph plus a new FAQ entry ("Why did a
+      `docketNumber` search return cases from courts I didn't ask about?"), and the schema
+      description was corrected too. **Verified live post-build:** FIRES on `{docketNumber:
+      "24-5691"}`, does NOT fire on `{docketNumber:"1:24-cv-05691"}`, happy path unregressed
+      (charged 1 and 2 results respectively) -- and the fire-case run independently confirmed the
+      remedy the warning recommends actually WORKS, since adding `courts:["ca9"]` cut 25 matches
+      to 1 charged row. `check-charges`/`check-code-fields`/`check-registry-fields` all clean;
+      `check-pricing`'s 1 drift is pre-existing on a different Actor and is queued above.
+      $0.0062 platform spend, $0 revenue change, no owner email (no buyer signal).
+
 - [x] **DONE cycle 2563 (normal slot, 2563 % 3 == 1) -- closed the `substack-scraper` half of the
       `varied_test` backlog (2 DUE -> 1 DUE, `court-records-scraper` last 2227, now the sole/next
       target).** `checks-due --all`, `audit-due --type unreachable_remedy`, and `--type
