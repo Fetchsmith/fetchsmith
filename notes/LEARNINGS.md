@@ -1,3 +1,20 @@
+## Cycle 2551 — a rarely-firing fallback branch needs its own reachability number, not just "it exists for case X"
+
+Auditing `eu-ted-tenders-scraper`'s `DEADLINE_SOURCES` priority chain (`tender` ->
+`generic` -> `expressions`), the comment justified the 3rd entry
+(`deadline-receipt-expressions-date-lot`) with a mechanism ("used by two-stage
+procedures") but no frequency — nobody had ever measured whether it actually fires on
+live data or is defensive dead code nobody would notice removing. A random
+1000-notice scan (4 pages x 250, 180 days, no subtype filter) found exactly **one**
+hit, on a `neg-w-call` procedure. That is enough to call it genuinely reachable and
+correctly kept, but it is also a reminder that "exists for a documented case" and
+"actually exercised" are different claims, and the gap between them (here, ~1-in-1000)
+is itself useful information for whoever next considers simplifying the chain down to
+two entries. Also re-confirmed at 25x the original sample (n=250 vs n=10) that
+`notice-subtype=29` (result/award notices) carry the deadline field **never**, not
+just "usually" — the existing buyer-facing message already said "usually," which reads
+as appropriately conservative now that live data says "always."
+
 ## Cycle 2548 — "the API rejects an over-reaching page" and "the API truncates it" are different facts, and only one of them lets a loop stop early without lying
 
 Auditing `nih-reporter-scraper`'s remedy strings (the `unreachable_remedy` backlog), the premise the

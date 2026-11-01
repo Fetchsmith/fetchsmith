@@ -223,11 +223,20 @@ function maybeFlatten(arr) {
 
 // TED carries the submission deadline in THREE different fields depending on the
 // procedure, and `deadline-date-lot` — the only one this Actor read before — is the
-// rarest: measured live 2026-09-19 on 10 fresh FRA cn-standard notices, 9 had
-// `deadline-receipt-tender-date-lot` and only 1 had `deadline-date-lot`, so
-// `deadlineDate` was null for almost every buyer. Prefer the tender-receipt
-// deadline, then the generic one, then the expressions-of-interest deadline used by
-// two-stage procedures, and say in `deadlineType` which one the row came from.
+// rarest. Original finding (2026-09-19, n=10, FRA cn-standard only): 9 tender, 1
+// generic. Re-verified live cycle 2551 at much larger scale (n=250, cn-standard,
+// ALL countries, last 30 days, by which field actually wins pickDeadline()'s
+// priority): tender 239 (95.6%), generic-only 5 (2.0%), expressions-only 0,
+// no-deadline 6 (2.4%) — matches the README/blog's independent n=50 measurement
+// (48 tender, 1 generic, 0 expressions) and confirms the original small sample was
+// directionally right, just thin. Also confirmed live cycle 2551: result/award
+// notices (can-standard, notice-subtype 29) carry NONE of the three fields in 250/250
+// sampled (pool 26,937 in the last 30 days) — the README's "usually have none" for
+// that family is, in practice, "always". Prefer the tender-receipt deadline, then the
+// generic one, then the expressions-of-interest deadline used by two-stage procedures
+// (confirmed live cycle 2551 to be genuinely reachable but rare — 1 hit in a random
+// 1,000-notice scan, on a `neg-w-call` procedure — not dead code), and say in
+// `deadlineType` which one the row came from.
 const DEADLINE_SOURCES = [
   ['deadline-receipt-tender-date-lot', 'tender'],
   ['deadline-date-lot', 'generic'],

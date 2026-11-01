@@ -1,3 +1,40 @@
+Updated: 2026-11-01 ~04:35 UTC by cycle 2551 (claude-sonnet-5). Normal slot (2551 % 3 == 1).
+Preflight: `checks-due --all` / `audit-due --all` NONE DUE (soonest `check-doc-size` in 5c, cycle
+2556). `audit-due --type unreachable_remedy` 8 DUE, NEXT TARGET `eu-ted-tenders-scraper` as left by
+c2549/c2550 -- CLOSED this cycle, backlog now **7 DUE**, next target `fda-recall-scraper`.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 758 runs30d, ext_bad30d 3 -- no buyer signal,
+no owner email per rule 3. `bin/apify-spend` $5.5987, projection $7.48 vs the $85 cap (no
+builds/runs this cycle -- the whole audit ran on keyless read-only POSTs against
+api.ted.europa.eu). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`,
+`/pricing`, `/tools` all 200 before and after. **Inbox:** byte-identical known set (10 items, all
+long-triaged) -- re-checked the owner-forwarded Apify Store-ranking-change notice (`01852eaa`,
+deadline 2026-11-15) is still fully handled by c2478/c2496 with its "after the deadline" action
+item intact in queue.md; nothing new, no owner email needed.
+
+**Work -- closed `eu-ted-tenders-scraper` out of the `unreachable_remedy` backlog (8 -> 7 DUE), NO
+reachability defect found, one thin comment re-verified at 25x scale, one fact quantified for the
+first time.** c1552's audit explicitly scoped itself to zero-row/warning remedy STRINGS and never
+touched the `DEADLINE_SOURCES`/`pickDeadline()` field-preference logic
+(`src/main.js:224-237`), which rests on a thin 2026-09-19 premise (n=10, FRA cn-standard only).
+Re-verified live, $0: (1) notice-subtype=16, n=250, all countries, 30 days: tender wins 95.6% of
+the time, generic-only 2.0%, expressions-only 0%, no-deadline 2.4% -- matches the README/blog's
+independent n=50 figure almost exactly, confirms no defect at 25x the sample. (2) notice-subtype=29
+(result/award notices), n=250 (pool 26,937/30d): 100% carry none of the three deadline fields --
+the existing buyer-facing message's "usually have none" wording is confirmed conservative, no
+change needed. (3) NEW: is the rarely-used 3rd fallback (`deadline-receipt-expressions-date-lot`)
+real or dead code? A random 1000-notice scan found exactly ONE hit (on a `neg-w-call` procedure) --
+genuinely reachable, correctly kept. Updated the main.js comment in place with all three findings
+(doc-only, `git diff` confirmed zero non-comment lines touched, no build/push needed). `node
+--check` clean; `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean.
+`audit_dates.json` updated via a targeted in-place string edit after a `json.dump` round-trip
+attempt silently reformatted the entire 630-line file (caught by `git diff --stat`, reverted) --
+**lesson recorded in queue.md: never round-trip this file through `json.dump`, it has 1-space
+indent and literal em-dashes that trip `ensure_ascii` escaping.** LEARNINGS.md entry appended (the
+rare-fallback-branch-needs-its-own-frequency-number lesson). `unreachable_remedy` NEXT TARGET is
+now `fda-recall-scraper` (7 DUE) for the next normal slot.
+
+---
+
 Updated: 2026-11-01 ~04:08 UTC by cycle 2550 (claude-sonnet-5). QUALITY/GROWTH slot (2550 % 3 ==
 0). Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 6c, cycle 2556, but it was
 run ad hoc -- see below). `audit-due --all` NONE DUE on the competitor axis (soonest

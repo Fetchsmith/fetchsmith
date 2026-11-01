@@ -1,3 +1,48 @@
+- [x] **DONE cycle 2551 (normal slot, 2551 % 3 == 1) -- closed `eu-ted-tenders-scraper` out of the
+      `unreachable_remedy` backlog (8 -> 7 DUE), the NEXT TARGET left by c2549/c2550. NO
+      reachability defect; a load-bearing small-sample comment re-verified at 25x scale and one
+      previously-unquantified fact measured for the first time.** Preflight: `checks-due --all` /
+      `audit-due --all` NONE DUE (soonest `check-doc-size` in 5c, cycle 2556). `bin/revenue`: $0
+      booked, 25 public Actors, 47 users, 758 runs30d, ext_bad30d 3 -- unchanged (no buyer signal,
+      no owner email per rule 3). `bin/apify-spend` $5.5987, projection $7.48 vs the $85 cap (no
+      builds/runs this cycle -- the audit ran entirely on keyless read-only POSTs against
+      api.ted.europa.eu). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout;
+      `/`, `/pricing`, `/tools` all 200. **Inbox:** byte-identical known set (10 items, all
+      long-triaged) -- re-read `01852eaa` (owner-forwarded Apify "Store search ranking changes
+      2026-11-15" notice) to make sure it wasn't newly actionable; it is already fully triaged by
+      c2478/c2496 (code hardened early, next action logged as "after 2026-11-15" in the open item
+      below) -- nothing to add, no owner email needed.
+      **Work:** c1552's note explicitly scoped itself to every zero-row/warning remedy STRING
+      (webhookUrl, minValue/maxValue, publicationDateFrom/To, normalizeDate, SEED_CAP/WATCH_KEEP
+      eviction advice, TED HTTP/error upstreamAdvice, filteredOutValue/filteredOutDeadline info
+      lines, both pushed===0 arms) -- it never touched the `DEADLINE_SOURCES`/`pickDeadline()`
+      field-preference logic (`src/main.js:224-237`), a separate factual-claim surface feeding the
+      `onlyOpenDeadlines`/`minDaysUntilDeadline` filter, resting on a thin premise (2026-09-19,
+      n=10, FRA cn-standard only: 9 tender, 1 generic). Re-verified live, $0: (1) notice-subtype=16
+      (cn-standard), n=250, all countries, last 30 days, classified by which field actually wins
+      the priority order: tender 239 (95.6%), generic-only 5 (2.0%), expressions-only 0,
+      no-deadline 6 (2.4%) -- matches the README/blog's independent n=50 figure (48/1/0) almost
+      exactly; original claim holds at 25x the sample, no defect. (2) notice-subtype=29
+      (can-standard, result/award notices), n=250 (pool 26,937/30d): ALL 250 had none of the three
+      deadline fields -- the README's "usually have none" is, in practice, "always" at this scale;
+      the existing `filteredOutDeadline` message already says this honestly, so no message change
+      needed. (3) NEW measurement, previously unquantified by anyone: is the 3rd fallback
+      (`deadline-receipt-expressions-date-lot`, "two-stage procedures") real or dead code? A random
+      1000-notice scan (4x250 pages, 180 days, no subtype filter) found exactly ONE hit, on a
+      `neg-w-call` procedure -- genuinely reachable, correctly rare, not dead code. Updated the
+      comment in place with all three findings + today's numbers (doc-only, every changed line
+      starts with `//`, `git diff` confirms zero non-comment lines touched); no logic change, no
+      build/push needed. `node --check` clean. `check-charges` 25/0/0 and `check-registry-fields` 0
+      drift both clean. `audit_dates.json` updated via a targeted string replace (the first attempt
+      used `json.dump` and silently reformatted/re-escaped the WHOLE file -- 630 lines of diff for
+      a 2-field change, caught by `git diff --stat` before anything was left committed-looking;
+      reverted and redid it as a minimal in-place edit, 4-line diff). **Lesson for future
+      `audit_dates.json` edits: never round-trip this file through `json.dump` -- it uses 1-space
+      indent and the repo's em-dashes trip `ensure_ascii`'s default escaping; edit the raw text in
+      place instead, and always check `git diff --stat` after any script-driven edit to a hand-
+      formatted file, even a JSON one that validates.** `audit-due --type unreachable_remedy`
+      re-read after writing: 8 -> 7 DUE, **NEXT TARGET `fda-recall-scraper`**.
+
 - [x] **DONE cycle 2550 (QUALITY/GROWTH slot, 2550 % 3 == 0) -- trimmed `notes/LEARNINGS.md` out
       of TRIM DUE, the item c2548 filed and c2549 carried.** `check-doc-size` (ad hoc, not due as a
       fleet check until 2556) read it TRIM DUE at 7568 lines (max 8000, ~22c headroom, proj. 8048
