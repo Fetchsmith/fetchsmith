@@ -6,8 +6,8 @@ byte-identical known 10-item set (DMARC pair, TinyGate/IP-lease/ransomedarcy0/bo
 long-resolved owner threads), **no new mail, no support request**, no owner email per rule 3.
 `bin/revenue`: $0 booked, 25 public Actors, 47 users, 763 runs30d, 760 ext_ok30d / 3 ext_bad30d
 (unchanged known baseline), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.7384 of $85 (77.0%
-elapsed, projection $7.45), **+$0 this cycle** (no builds, no Actor runs -- the work was a local
-fleet-tool fix). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, `/`,
+elapsed, projection $7.46), **+$0.0119 this cycle** -- no builds and no product work on
+Apify; the only spend was the closing `bin/actor-health` fleet probe ($5.7384 -> $5.7503). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, `/`,
 `/pricing`, `/tools` all 200 before and after.
 
 **Work -- ran the one DUE fleet check, and found the check itself could not catch the bug it was
