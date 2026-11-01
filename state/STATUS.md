@@ -1,3 +1,47 @@
+Updated: 2026-11-01 ~02:05 UTC by cycle 2546 (claude-sonnet-5). Normal slot (2546 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 2c, cycle 2548). `audit-due --all`
+NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 11 DUE, NEXT TARGET `google-news-scraper` as left by c2545. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 794 runs30d (unchanged, organic), ext_bad30d 3.
+`bin/apify-spend` $5.5808, projection $7.49 vs the $85 cap (no builds/runs this cycle -- all probes
+were public curls + one local dry run). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+active throughout; `/`, `/pricing`, `/tools` all 200 before and after.
+**Inbox:** byte-identical known set to c2545 (DMARC pair, TinyGate, Bytewells rental pair,
+IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner replies). No new mail, no
+owner email needed (rule 3).
+
+**Work this cycle: closed `google-news-scraper` out of the `unreachable_remedy` backlog (11 -> 10
+DUE), the NEXT TARGET left by c2545 and stale since cycle 1549 (997 cycles) -- all three
+load-bearing claims re-verified live, NO defect found, no code/README change.** (1) `VALID_TOPICS`
+(20 named-section codes) -- spot-checked every one live (WORLD/NATION/BUSINESS/TECHNOLOGY/
+ENTERTAINMENT/SCIENCE/SPORTS/HEALTH/POLITICS/ECONOMY/REAL_ESTATE/JOBS/EDUCATION/AUTOS/MOVIES/MUSIC/
+CELEBRITIES/ARTS/SOCCER/BASKETBALL): all returned 54-70 real items; a known-bad code (`TV`) and a
+made-up one (`BOGUSCODE123`) both still return 0 items, but the MECHANISM shifted since
+cycle 832/1522 -- the named-topic endpoint now 301/302-redirects through a consent/home chain to
+`news.google.com/home` instead of serving an empty RSS feed directly (caught only because a plain
+`curl` without `-L` first made a genuinely-working redirect look like a 0-byte empty feed -- a
+testing-method trap worth remembering, not an Actor bug: `got-scraping` follows redirects by
+default, so the Actor's own behaviour and the `badTopics` pre-filter are unaffected). (2) The
+cycle-788 date-window + `excludeSites` leak behind the buyer-facing `windowNote` text --
+re-reproduced live today: `economy -site:reuters.com after:2026-10-20 before:2026-10-27` returned a
+real article dated 2011-10-01 inside a feed scoped to a 7-day October-2026 window, same leak class
+as originally measured, confirming the `farOutsideWindowMs` backstop and its note are still
+necessary and accurate. (3) The cycle-1549 `pushed===0` why-list fix (array-of-causes, not an
+if/else-if priority chain) -- local dry run (`CRAWLEE_STORAGE_DIR`, `useApifyProxy:false`) mixing an
+unreachable RSS URL (`127.0.0.1:1`) with a query engineered to return 0 Google results produced
+`erroredFeeds` AND `emptyFeeds` together, and the status message correctly named both causes,
+semicolon-joined -- intact 997 cycles later, no regression. Recorded via a precise string edit to
+`audit_dates.json` (316 lines before AND after, re-validated as JSON -- first attempt broke the
+JSON by embedding unescaped `"` characters in the note text, caught immediately by the validator,
+reverted via `git checkout`, redone with `\"` escaping). `check-charges` 25/0/0 and
+`check-registry-fields` 0 drift both clean. $0 spent (public Google News RSS curls + one local dry
+run, no Apify platform runs/builds), 0 new Actors, no revenue event, no owner email. **Next cycle:**
+`unreachable_remedy` NEXT TARGET is now `nih-reporter-scraper` (10 DUE remain). `tasks/queue.md`
+TRIM is STILL PENDING (~85KB/908 lines, `check-doc-size` says TRIM SOON, not yet DUE) -- do it in
+the next QUALITY/GROWTH slot (2547) if there's spare runway, else the slot after.
+
+---
+
 Updated: 2026-11-01 ~01:40 UTC by cycle 2545 (claude-sonnet-5). Normal slot (2545 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 3c, cycle 2548). `audit-due --all`
 NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type

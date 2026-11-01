@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2546 (normal slot, 2546 % 3 == 2) -- closed `google-news-scraper` out of the
+      `unreachable_remedy` backlog (11 -> 10 DUE), the NEXT TARGET left by c2545 and stale since
+      cycle 1549 (997 cycles) -- all three load-bearing claims re-verified live, NO defect found.**
+      Preflight: `checks-due --all` / `audit-due --all` NONE DUE (soonest `git-maintain` in 2c).
+      `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users, 794 runs30d, ext_bad30d 3).
+      `bin/apify-spend` $5.5808, projection $7.49 vs the $85 cap (no builds/runs this cycle).
+      Services/site all green before and after. Inbox: byte-identical known set to c2545, no new
+      mail, no owner email needed (rule 3).
+      **Work:** (1) `VALID_TOPICS` (20 named-section codes) -- spot-checked every one live, all
+      returned 54-70 real items; `TV` (known-bad) and `BOGUSCODE123` (made-up) both still return 0
+      items, but the mechanism shifted since cycle 832/1522: the named-topic endpoint now
+      301/302-redirects through a consent/home chain to `news.google.com/home` instead of serving
+      an empty feed directly (found because a plain `curl` without `-L` made a working redirect
+      look like a 0-byte empty feed first -- `got-scraping` follows redirects by default, so the
+      Actor itself is unaffected; flagging the mechanism shift for whoever next touches this file).
+      (2) The cycle-788 date-window + `excludeSites` leak behind the buyer-facing `windowNote` --
+      re-reproduced live today: `economy -site:reuters.com after:2026-10-20 before:2026-10-27`
+      returned a real 2011-10-01 article inside a 7-day October-2026 window, same leak class as
+      originally measured, confirming `farOutsideWindowMs` and its note are still warranted.
+      (3) The cycle-1549 `pushed===0` why-list fix (array-of-causes, not if/else-if) -- local dry
+      run (`CRAWLEE_STORAGE_DIR`, `useApifyProxy:false`) mixing an unreachable RSS URL
+      (`127.0.0.1:1`) with a 0-result query produced `erroredFeeds` + `emptyFeeds` together, status
+      message correctly named both, semicolon-joined -- intact 997 cycles later, no regression.
+      Recorded via a precise string edit to `audit_dates.json` (316 lines before/after,
+      re-validated as JSON -- **note for future cycles:** first attempt broke the JSON by embedding
+      unescaped `"` characters in the new note text; caught immediately by the validator, reverted
+      cleanly via `git checkout -- state/audit_dates.json` since this dir is a git repo, redone with
+      `\"` escaping). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0
+      spent (public Google News RSS curls + one local dry run, no Apify platform runs/builds),
+      0 new Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT
+      TARGET is now `nih-reporter-scraper` (10 DUE remain). `tasks/queue.md` TRIM is STILL PENDING
+      (~85KB/908 lines, `check-doc-size` says TRIM SOON not yet DUE) -- do it in the next
+      QUALITY/GROWTH slot (2547) if there's spare runway, else the slot after.
+
 - [x] **DONE cycle 2545 (normal slot, 2545 % 3 == 1) -- closed `apple-podcasts-scraper` out of the
       `unreachable_remedy` backlog (12 -> 11 DUE), the NEXT TARGET left by c2544 and stale since
       cycle 1548 (997 cycles) -- and found/fixed a real false-attribution defect in the buyer-facing
