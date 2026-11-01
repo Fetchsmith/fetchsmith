@@ -26,6 +26,11 @@ const noticeTypes = (input.noticeTypes ?? []).map((c) => String(c).trim()).filte
 const procedureType = (input.procedureType ?? []).map((c) => String(c).trim()).filter(Boolean);
 const publishedWithinDays = Math.min(Math.max(Number(input.publishedWithinDays ?? 7), 1), 365);
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 5000);
+// This Actor's own schema maximums for the two fields the remedies below tell a buyer to
+// "widen"/"raise" -- a buyer already at either ceiling cannot follow that advice, the shape
+// the c2561/c2568 fleet pass fixed on 6 other Actors (see their STATUS.md notes).
+const publishedWithinDaysAtCeiling = publishedWithinDays === 365;
+const maxResultsAtCeiling = maxResults === 5000;
 const expertQueryInput = input.expertQuery ? String(input.expertQuery).trim() : null;
 const keywords = input.keywords ? String(input.keywords).trim() : null;
 const outputLanguage = String(input.outputLanguage ?? 'eng').toLowerCase();
@@ -124,7 +129,10 @@ function emptyResultAdvice() {
     publicationDateFrom || publicationDateTo
       ? 'Widen publicationDateFrom/publicationDateTo (an explicit window overrides publishedWithinDays, '
         + 'which this run ignored)'
-      : 'Widen publishedWithinDays',
+      : publishedWithinDaysAtCeiling
+        ? 'publishedWithinDays is already at this Actor\'s maximum of 365, so widening it further is not '
+          + 'an option -- try publicationDateFrom/publicationDateTo instead, which accept any date range'
+        : 'Widen publishedWithinDays',
     'drop a filter',
   ];
   if (cpvCodes.length) parts.push('or check your CPV codes');
@@ -838,11 +846,14 @@ if (timeBudgetStopped) {
   const cause = chargeLimitReached
     ? "the run's PPE charge limit was reached"
     : `the maxResults cap (${maxResults}) was reached`;
+  const watchTail = watchMode ? ', or let a future incremental run on this watch label pick up the rest' : '';
   const advice = chargeLimitReached
-    ? "Raise the run's max charge limit"
-    : 'Raise maxResults';
-  const msg = `Pushed ${pushed} notice(s) and stopped because ${cause}${moreAvailable} -- more may still match your query. `
-    + `${advice}${watchMode ? ', or let a future incremental run on this watch label pick up the rest' : ''} to get them.`;
+    ? `Raise the run's max charge limit${watchTail} to get them.`
+    : maxResultsAtCeiling
+      ? `maxResults is already at this Actor's maximum of 5000, so raising it is not an option -- narrow `
+        + `the query instead (fewer countries/CPV codes, or a shorter publication-date window)${watchTail}.`
+      : `Raise maxResults${watchTail} to get them.`;
+  const msg = `Pushed ${pushed} notice(s) and stopped because ${cause}${moreAvailable} -- more may still match your query. ${advice}`;
   log.warning(msg);
   await Actor.setStatusMessage(msg);
 } else if (pushed === 0 && watchMode && !seeding) {

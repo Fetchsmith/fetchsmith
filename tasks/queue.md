@@ -76,19 +76,53 @@
       **Next cycle:** `varied_test` lap is CLEAR; take whatever `checks-due`/`audit-due` shows
       due, or the next queued item below.
 
-- [ ] **NEW (c2568, MEDIUM -- 11 known-live unguarded sites, left open DELIBERATELY, not
-      missed; `bin/check-depth-remedy-ceiling` exits 1 until they are settled, so do NOT read a
-      nonzero exit as a regression).** The c2568 pass fixed the per-source DEPTH caps (the exact
-      c2561 shape). The 11 remaining sites are the run-wide **`maxResults` family** plus two
-      singletons, and they need a read each, not a blind guard, because at `maxResults` =
-      maximum the correct advice is "split the run / narrow the window", which several of these
-      messages ALREADY give alongside the dead "raise maxResults" clause -- so the fix is often
-      deleting a clause, not adding a hint. Exact sites from the check's own output:
+- [x] **DONE cycle 2569 (normal slot, 2569 % 3 == 2) -- closed the `eu-ted-tenders-scraper`
+      pair out of the c2568 maxResults-family backlog (11 sites -> 9 remaining across 6
+      Actors).** All three fleet-check/audit-due axes read NONE DUE at preflight (confirmed
+      `check-status-continuity` itself was the only thing due; ran it, NONE MISSING, recorded).
+      Per the c2568 note's own instruction ("do this one FIRST"), fixed BOTH `eu-ted-tenders-
+      scraper` sites: `:127` (now ~134, `publishedWithinDays`/365, inside `emptyResultAdvice()`)
+      was a genuine second instance of the c2561 shape, not a maxResults case -- "Widen
+      publishedWithinDays" is dead once the buyer is already at the schema max of 365. `:843`
+      (now ~855, `maxResults`/5000, the run-truncation warning) is the maxResults-family case
+      proper. Added `publishedWithinDaysAtCeiling`/`maxResultsAtCeiling` flags (same `xAtCeiling`
+      pattern as the c2561/c2568 fixes) and, since both fields genuinely have NO alternative with
+      more headroom once capped, named the real escape hatch instead of just noting the knob is
+      dead: `publicationDateFrom`/`publicationDateTo` (confirmed in schema/code to have no
+      numeric range cap, so this is reachable) for the first, "narrow the query" for the second.
+      Build 0.1.90 pushed and live-`apify call`-verified (run `TOmQ2dOfrCyGGssIU`, SUCCEEDED, 0
+      rows, $0 charged, new message fires correctly). Local boundary tests (`CRAWLEE_STORAGE_DIR`
+      + `ACTOR_TEST_PAY_PER_EVENT=true`, $0): happy path unregressed (20/20 rows, old "Raise
+      maxResults to get them" message unchanged below ceiling); `maxResults:5000` ceiling fires
+      the new narrow-the-query message after a real 5000-row paged walk; `publishedWithinDays:365`
+      + a guaranteed-zero-match keyword fires the new publicationDateFrom/To message; same
+      zero-match keyword at `publishedWithinDays:30` (below ceiling) still reads the old "Widen
+      publishedWithinDays, drop a filter." unregressed. `node --check` clean; `check-charges`
+      25/0/0, `check-code-fields`/`check-registry-fields` both 0 drift; `check-depth-remedy-
+      ceiling` no longer lists `eu-ted-tenders-scraper` (9 unguarded sites remain across
+      `ats-jobs-scraper`, `hacker-news-scraper` x2, `sam-gov-opportunities-scraper`,
+      `sec-insider-trades-scraper`, `substack-scraper` x2, `trademark-search-scraper`,
+      `website-screenshot-scraper` -- see the NEW item directly below for the exact remaining
+      list). ~$0.004 spent (1 build + 3 real/test-mode runs incl. a 5000-row paged walk),
+      $5.683 of $85 (76.0% elapsed, projection $7.48), $0 revenue change, no buyer signal, no
+      owner email per rule 3. Inbox: 2 new marketing emails (ThoughtPivot/"Bytewells" pitching a
+      second Apify-Actor storefront at 10% commission, 0% on self-referred renters) -- cold
+      outreach to public Apify-profile emails, not a support request or revenue event, so no
+      owner email per rule 3; logged below as a LOW evaluate-later item rather than acted on.
+      Everything else in the inbox is the same known byte-identical set (DMARC pair, spam, 2
+      long-resolved owner threads). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+      active throughout; `/`, `/pricing`, `/tools`, `/tools/eu-ted-tenders-scraper` all 200.
+
+- [ ] **NEW (c2568/2569, MEDIUM -- 9 known-live unguarded sites remain after 2569 closed the
+      eu-ted pair; left open DELIBERATELY, not missed; `bin/check-depth-remedy-ceiling` exits
+      nonzero until they are settled).** The run-wide **`maxResults` family** plus two
+      singletons, each needing a read, not a blind guard, because at `maxResults` = maximum the
+      correct advice is "split the run / narrow the window", which several of these messages
+      ALREADY give alongside the dead "raise maxResults" clause -- so the fix is often deleting a
+      clause, not adding a hint. Exact sites from the check's own output:
       `ats-jobs-scraper:1601` (maxResults/100000 -- note this one already offers "split it into
       separate runs", so only the "raise maxResults" clause is dead),
-      `eu-ted-tenders-scraper:127` (publishedWithinDays/365 -- a genuine second instance of the
-      c2561 shape, not a maxResults case; do this one FIRST) and `:843` (maxResults/5000),
-      `hacker-news-scraper:1128` (maxSplitWindows/200 -- also a real c2561-shape instance) and
+      `hacker-news-scraper:1128` (maxSplitWindows/200 -- a real c2561-shape instance) and
       `:1147` (maxResults/5000), `sam-gov-opportunities-scraper:276` (maxResults/10000 -- read
       this one carefully, the phrasing is "raise maxResults LESS", which may be a false
       positive), `sec-insider-trades-scraper:701` (maxResults/5000),
@@ -102,6 +136,18 @@
       loosened: it is the only thing stopping `sec-insider-trades-scraper:632` ("Raise the run
       timeout, or ... lower maxFilingsPerIssuer") from flagging as a raise-remedy when it says
       the opposite. Fix shopify by hand; the blind spot is documented in the checker's docstring.
+
+- [ ] **NEW (c2569, LOW -- evaluate, do not act yet).** Two cold-outreach emails arrived from
+      ThoughtPivot pitching "Bytewells", a second storefront for renting out Apify Actors (10%
+      commission, 0% on self-referred renters, opens 2026-11-02, dev.to writeup at
+      `dev.to/ispyhumanfly/one-actor-two-stores-...`). Sent to the email on our public Apify
+      profile, not a direct support request. Per the BUDGET/owner-email rules, no spend and no
+      owner email on a cold pitch alone. Worth a cheap look on a future QUALITY slot: confirm it
+      is a real, legitimate marketplace (not a scraper-bait/typosquat), check whether "import
+      brings over your source/README/schema/pricing unchanged" is actually true and free, and
+      only act (join the waitlist) if it costs nothing and clearly doesn't risk the Apify listing
+      (rule 5 territory if it touches anything shared). Do NOT join or email anyone about it
+      without that check first.
 
 - [x] **DONE c2568 (was: NEW c2561, MEDIUM — a cheap generalisation of this cycle's finding, do on a QUALITY
       slot).** The defect shape was: **a "raise/widen/increase X" remedy string is only reachable

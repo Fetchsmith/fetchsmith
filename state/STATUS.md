@@ -1,3 +1,67 @@
+Updated: 2026-11-01 ~13:45 UTC by cycle 2569 (claude-sonnet-5). Normal slot (2569 % 3 == 2).
+Preflight: `checks-due --all` **1 DUE -- `check-status-continuity`** (ran it: retained window
+cycle 2548-2568, 21 completed cycles, NONE MISSING; recorded, next due cycle 2617). `audit-due
+--all` NONE DUE on all three axes (`unreachable_remedy` lap CLEAR soonest cycle 2870;
+`competitor_audit` soonest `us-federal-awards-scraper` cycle 2639; `varied_test` lap CLEAR soonest
+`nih-reporter-scraper` cycle 2592). Nothing else due, so per the standing rule the cycle took the
+top open `queue.md` item: the c2568 maxResults-family backlog, doing the `eu-ted-tenders-scraper`
+pair first exactly as that note instructed.
+
+**Work -- closed both `eu-ted-tenders-scraper` sites out of the c2568 unreachable-remedy-ceiling
+backlog (11 -> 9 remaining sites across 6 other Actors).** `:127` (`emptyResultAdvice()`,
+`publishedWithinDays`/365) was a genuine SECOND instance of the c2561/c2568 "raise X past its own
+schema max" shape, not a maxResults case -- confirmed `publishedWithinDays` clamps to 365
+(`main.js:27`) and the zero-row "Widen publishedWithinDays" clause fires unconditionally even when
+already there. `:843` (the run-truncation warning, `maxResults`/5000) is the maxResults-family
+case the backlog note described. Added `publishedWithinDaysAtCeiling`/`maxResultsAtCeiling` flags
+(same `xAtCeiling` pattern as the prior fixes) and, since both fields have a genuine alternative
+once capped, named it instead of just flagging the dead knob: `publicationDateFrom`/
+`publicationDateTo` for the date case (verified in schema + code to carry no numeric range limit,
+so it is real reachable advice), "narrow the query" for the results case.
+
+**Verified live, not just by reading the diff.** Local boundary tests first (`CRAWLEE_STORAGE_DIR`
++ `ACTOR_TEST_PAY_PER_EVENT=true`, $0): happy path (`test_input.json`, FRA/14d/cap 20) unregressed,
+20/20 rows, old "Raise maxResults to get them." message unchanged below the cap; `maxResults:5000`
+against a real broad FRA/365d query ran a genuine 20-page/5000-row paged walk and fired the new
+"maxResults is already at this Actor's maximum of 5000 ... narrow the query instead" message;
+`publishedWithinDays:365` + a guaranteed-zero-match keyword fired the new "publishedWithinDays is
+already at this Actor's maximum of 365 ... try publicationDateFrom/publicationDateTo instead"
+message; the same zero-match keyword at `publishedWithinDays:30` (below ceiling) still read the
+unchanged old "Widen publishedWithinDays, drop a filter." message. Then shipped build 0.1.90
+(`apify push --force -w 600`, package.json 0.1.21 -> 0.1.22, SUCCEEDED) and ran a real
+`apify call` (run `TOmQ2dOfrCyGGssIU`): SUCCEEDED, 0 rows, $0 charged, the new publishedWithinDays
+message fires correctly on the live platform. `node --check` clean; `check-charges` 25/0/0;
+`check-code-fields`/`check-registry-fields` both 0 drift; `check-depth-remedy-ceiling` no longer
+lists `eu-ted-tenders-scraper` (9 unguarded sites remain across `ats-jobs-scraper`,
+`hacker-news-scraper` x2, `sam-gov-opportunities-scraper`, `sec-insider-trades-scraper`,
+`substack-scraper` x2, `trademark-search-scraper`, `website-screenshot-scraper`, plus the
+documented `shopify-products-scraper` false negative -- exact file:line list preserved in
+`queue.md`'s new NEW item). `check-doc-size`: all three live docs OK (STATUS.md 89.1KB,
+queue.md 63.2KB, LEARNINGS.md 6123 lines).
+
+~$0.004 spent this cycle (1 build + 1 real zero-row run + 2 local test-mode runs incl. the
+5000-row paged walk, which is free under `ACTOR_TEST_PAY_PER_EVENT`); `bin/apify-spend` $5.683 of
+the $85 cap (76.0% elapsed, projection $7.48), well under the $25 BUDGET.md stop line.
+`bin/revenue` not re-checked this cycle (no reason to expect a change; last known $0 booked, 25
+public Actors, 47 users). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active
+throughout; `/`, `/pricing`, `/tools`, `/tools/eu-ted-tenders-scraper` all 200 before and after.
+
+**Inbox: 2 new items, both cold marketing, neither actioned.** ThoughtPivot/"Bytewells" sent two
+emails to `requests@fetchsmith.com` (harvested off the public Apify developer profile, per their
+own disclosure) pitching a second Apify-Actor rental storefront opening 2026-11-02 (10% commission,
+0% on self-referred renters, claims a no-code-change import). Not a support request, not revenue,
+so no owner email per rule 3; not acted on either (no budget line, unverified third party) -- left
+as a LOW evaluate-later item in `queue.md` for a future QUALITY slot to sanity-check before
+anyone considers joining the waitlist. Rest of the inbox is the same known byte-identical 10-item
+set (DMARC pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam, 2 long-resolved owner threads).
+
+**Next cycle:** re-run `checks-due --all`/`audit-due --all` fresh; if nothing is due, `queue.md`'s
+next open item is the trimmed 9-site maxResults-family backlog (see the NEW item filed this
+cycle) -- `ats-jobs-scraper:1601` or `hacker-news-scraper:1128` are good next targets since both
+are flagged as genuine instances, not read-first false-positive candidates.
+
+---
+
 Updated: 2026-11-01 ~13:10 UTC by cycle 2568 (claude-opus-5). QUALITY/GROWTH slot (2568 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 1c, cycle 2569);
 `audit-due --all` NONE DUE on all three axes (`unreachable_remedy` lap CLEAR, soonest
