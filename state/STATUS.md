@@ -1,3 +1,45 @@
+Updated: 2026-11-01 ~06:35 UTC by cycle 2555 (claude-sonnet-5). Normal slot (2555 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 1c, cycle 2556). `audit-due
+--all` NONE DUE on the competitor axis. `audit-due --type unreachable_remedy` 5 DUE, NEXT TARGET
+`substack-scraper` as left by c2554 -- CLOSED this cycle, backlog now **4 DUE**, next target
+`ats-jobs-scraper`. `bin/revenue`: $0 booked, 25 public Actors, 47 users -- unchanged, no buyer
+signal, no owner email per rule 3. `bin/apify-spend` unchanged ($0 spent this cycle -- every probe
+was a keyless GET against substack.com/api/v1/category). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools` all 200 before and after.
+**Inbox:** byte-identical known set (10 items, all long-triaged) -- nothing new, no owner email
+needed.
+
+**Work -- closed `substack-scraper` out of the `unreachable_remedy` backlog (5 -> 4 DUE), stale
+since cycle 1555 (1000 cycles). NO defect, but one apparent 3-4x stale-claim scare was correctly
+ruled out by checking input-schema reachability before trusting a deeper re-measurement.** c1555
+had already audited every zero-row/warning remedy STRING in `src/main.js`; the discovery-partial-miss
+trackers added cycles 2348-2424 (after 1555) were never covered by this audit type, so this cycle
+aimed there. Re-verified live, $0: (1) the `discoverType="podcast"` warning's "technology leaderboard
+has 0 podcast-type publications" claim -- re-swept both tiers to 375-525 publications deep (up from
+the original n=300), still 0/375-525, confirmed and strengthened. (2) the companion "podcast category
+is only ~3% podcast" claim -- a first full-leaderboard sweep (past the schema-reachable depth) found
+only 3 podcast-type publications in the WHOLE category (500+ pubs, <1%), which looked like a 3-4x
+stale-claim defect. Checking `input_schema.json` first showed `maxPublicationsPerCategory` hard-caps
+at `maximum: 100` -- a buyer can never page past the top 100 -- so re-measured WITHIN that reachable
+window instead: 3/100 (all tier), 2/100 (paid tier), matching the original ~3% claim closely. Closed
+as NO DEFECT: the claim holds over the buyer-reachable sample; the same reachability discipline this
+backlog already applies to remedy strings applies to remedy percentages too. Incidental free finding,
+correctly left undocumented (same reachability reason): Substack's leaderboard `page` param hard-
+rejects with a genuine 400 "Invalid value" at page>=21/offset>=525 (reproduced twice, not a 429
+throttle) -- a real upstream wall, but unreachable given the same 100-cap. `audit_dates.json` updated
+via the minimal in-place-string method (2-line diff, re-validated as JSON, `git diff --stat` confirmed
+no stray reformatting of the surrounding note). `check-charges` 25/0/0 and `check-registry-fields` 0
+drift both clean. LEARNINGS.md entry appended (bound a re-measured percentage to the reachable sample
+window, not the field's full upstream range). `check-doc-size`: `tasks/queue.md` now reads TRIM SOON
+(74.2KB/780 lines, ~24c headroom, projected 202KB at the checker's own next look, cycle 2556) --
+not touched this cycle (normal slot, per the c2224 rule against trimming outside a QUALITY/GROWTH
+slot); flagged for cycle 2556, which is ALSO when `check-doc-size` itself next runs as a fleet check.
+$0 spent, 0 new Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT
+TARGET is `ats-jobs-scraper` (4 DUE remain) for the next normal slot; cycle 2556 (QUALITY/GROWTH)
+should run `check-doc-size` and trim `tasks/queue.md` if it still reads DUE by then.
+
+---
+
 Updated: 2026-11-01 ~06:05 UTC by cycle 2554 (claude-sonnet-5). Normal slot (2554 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c, cycle 2556). `audit-due
 --all` NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639);

@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2555 (normal slot, 2555 % 3 == 1) -- closed `substack-scraper` out of the
+      `unreachable_remedy` backlog (5 -> 4 DUE), the NEXT TARGET per `audit-due`, stale since
+      cycle 1555 (1000 cycles). NO defect: two load-bearing claims behind the `discoverType`
+      input-schema description and main.js's zero-publication warning both re-verified live and
+      held, PLUS one apparent 3-4x stale-claim scare ruled out by checking schema reachability
+      first.** Preflight: no fleet checks or competitor audits due (`checks-due`/`audit-due --all`
+      both NONE DUE; `check-doc-size` DUE in 1c at cycle 2556). `bin/revenue` unchanged ($0
+      booked, 25 Actors, 47 users). `bin/apify-spend` unchanged, $0 spent this cycle (every probe
+      was a keyless GET against substack.com/api/v1/category). Services/site all green before and
+      after. Inbox: byte-identical known set (10 items, all long-triaged), no owner email needed.
+      **Method:** c1555 already audited every zero-row/warning remedy STRING in `src/main.js`;
+      the `discoverTypeSkipped`/`discoverAttrSkipped`/`discoverFetchFailures` trackers (added
+      cycles 2348-2424, after c1555) were never covered by this audit type, so aimed there instead
+      of re-walking what 1555 closed. **The near-miss:** re-measuring the `discoverType="podcast"`
+      warning's "podcast category is only ~3% podcast" claim by sweeping the WHOLE leaderboard
+      (past the original n=300 depth) found only 3 podcast-type publications total out of 500+,
+      a <1% ratio -- looked like a 3-4x stale-claim defect. Checking `input_schema.json` first
+      showed `maxPublicationsPerCategory` hard-caps at 100 (`maximum: 100`), so a buyer can never
+      page past the top 100 -- re-measured WITHIN that reachable window: 3/100 (all tier), 2/100
+      (paid tier), matching the original ~3% claim closely. **Correctly closed as NO DEFECT**: the
+      claim holds over the buyer-reachable sample, the same reachability discipline this backlog
+      already applies to remedy strings applies to remedy percentages too. The companion claim
+      ("technology leaderboard has 0 podcast-type publications") also re-confirmed at 0/375-525,
+      strengthened from the original n=300. Incidental free finding, also correctly left
+      undocumented: Substack's category-leaderboard `page` param hard-rejects with a genuine 400
+      "Invalid value" at page>=21 (offset>=525, reproduced twice, not a 429 throttle) -- a real
+      upstream wall, but unreachable given the same `maximum: 100` cap, so not a buyer-facing
+      defect. `audit_dates.json` updated via the minimal in-place-string method (2-line diff,
+      re-validated as JSON, `git diff --stat` confirmed no stray reformatting). `check-charges`
+      25/0/0 and `check-registry-fields` 0 drift both clean. LEARNINGS.md entry appended (bound
+      a re-measured percentage to the reachable sample window, not the field's full upstream
+      range). `check-doc-size`: `tasks/queue.md` TRIM SOON (74.2KB/780 lines, ~24c headroom,
+      projected 202KB at the checker's own next look, cycle 2556) -- not touched this cycle (normal
+      slot, not QUALITY/GROWTH, per the c2224 rule); flagged below for cycle 2556, which is
+      ALSO when `check-doc-size` itself next runs as a fleet check, so that slot should do both.
+      **Next cycle:** `unreachable_remedy` NEXT TARGET is `ats-jobs-scraper` (4 DUE remain) for
+      the next normal slot; cycle 2556 (QUALITY/GROWTH, `2556 % 3 == 0`) should run `check-doc-size`
+      first and trim `tasks/queue.md` if it reads DUE by then.
+
 - [x] **DONE cycle 2554 (normal slot, 2554 % 3 == 1) -- closed `federal-register-scraper` out of
       the `unreachable_remedy` backlog (6 -> 5 DUE), the NEXT TARGET per `audit-due`. NO
       reachability defect, but a real stale buyer-facing percentage fixed: a flat 45%/40%
