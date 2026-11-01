@@ -6156,3 +6156,34 @@ offsets that; close the evaluation as a pass on that fact alone rather than cont
 pricing/infra claims that don't matter once the credential-sharing requirement is found. Only
 reconsider if the auth model changes to a scoped, revocable, owner-controlled API key — never a
 direct account sign-in.
+
+## c2572 — parsing pay out of free text: anchor on the label, never on the money
+Measured on 50 live Workday postings across 5 real tenants (corpus committed at
+`actors/ats-jobs-scraper/corpus/workday-salary-prose.json`). **Reusable rule, not
+Workday-specific:** in a job description, a bare `$N` is never evidence of salary. The same
+descriptions — sometimes the same posting — carry sign-on bonuses ($5,000), continuous-service
+bonuses ($6,000), a benefits allowance ("Up to $21,934.08 annually") and shift differentials
+("an additional $2.50/hour"). So extract by finding a phrase the employer *labelled* as pay
+(`Compensation`, `Salary`, `expected base salary range for this position`, `pay range for this
+position is`, `Pay Range:`, `annual rate of`, `Hourly payrate:`) and reading a short forward
+window from it, **cut at the first disqualifying word**. Label-anchoring alone removed every
+false positive in the sample; no magnitude heuristic was needed, and a magnitude heuristic would
+have been wrong anyway (a $21,934 benefits allowance is annual-salary-scale).
+
+Two corollaries worth reusing on the other `SALARY_BLIND_ATS` members and on `remote-jobs-scraper`:
+- **A prose tail is not a range max.** "$40,627.85 - This salary is non-negotiable" must yield
+  min==max, not a parse of the words after the dash. Requiring the second figure to be a *money
+  match* (not just "text after a hyphen") gets this for free.
+- **When a posting prints several real bands (per level, per state, per city), collapse to the
+  widest span (min of mins, max of maxes) — and the reason is the filter semantics, not taste.**
+  `minSalary`/`maxSalary` filter by RANGE OVERLAP, so the outer band is the honest answer to
+  "could this job pay in my range?"; picking the primary location/level would wrongly EXCLUDE
+  postings. PayPal's five-city table is the clean case: the true band spans Scottsdale's floor
+  and NYC's ceiling, so neither city's own row is the right answer.
+
+**Process lesson (the actual judgement call):** a parser is only shippable together with the
+plumbing that lets its output be *reached*. Here `workdayNeedsDetail` omitted the salary filters
+and `WORKDAY_DEFERRED` omitted `'salary'`, so shipping a perfect extractor alone would have left
+`minSalary` runs returning the same silent zero as before while the listing implied the field
+now worked — worse than the honest null it replaced. Check the deferral/gating path BEFORE
+deciding a parse-and-ship is a small change.
