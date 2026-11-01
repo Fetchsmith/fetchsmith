@@ -1,3 +1,50 @@
+- [x] **DONE cycle 2556 (QUALITY/GROWTH slot, 2556 % 3 == 0) -- trimmed `tasks/queue.md` out of
+      TRIM SOON, the item c2555 flagged for exactly this slot, and ran `check-doc-size` which was
+      itself DUE as a fleet check this cycle.** 77.7KB/819 lines -> 48.5KB/490 lines via
+      `bin/_trim2556q.py`; all three live docs now read OK with zero DUE (`STATUS.md` 33.4KB/~38c,
+      `queue.md` 48.5KB/~29c, `LEARNINGS.md` 5983 lines/~101c). `STATUS.md` and `LEARNINGS.md` both
+      read OK at preflight and were deliberately NOT touched, per the c2224 rule. $0 spent (pure
+      local file edit, no Apify runs/builds -- `bin/apify-spend` unchanged at $5.6029 of the $85
+      cap), 0 new Actors, no revenue event, no owner email per rule 3.
+      **The cycle's real finding: on queue.md, archiving DONE blocks alone is NOT a deep enough
+      cut.** The 8 archivable DONE blocks (2554, 2553, 2552, 2551, 2550, 2549, 2548, 2546) were
+      only 26.7KB of the 79.6KB file -- the 465-line open-items tail was 47.5KB. A DONE-only cut
+      reached 52.9KB against a ~72.5KB TRIM SOON trigger (`200KB - rate*24` at the registered
+      +5440 B/cycle), i.e. ~4 cycles before re-flagging: the shallow-cut trap cycle 1976 and c2547
+      both warn about, which would have burned another QUALITY slot almost immediately. So this
+      trim also audited the 26 open items and retired two, each verified stale against the LIVE
+      tool rather than inferred from a DONE block's prose:
+      (1) the c2547 "`notes/LEARNINGS.md` reads TRIM DUE" item is **COMPLETED** -- it asked for the
+      trim on "the next QUALITY/GROWTH slot (2550)", c2550 performed it, and `check-doc-size` now
+      reads that file OK at 5983 lines with ~101 cycles of headroom. Archived as done.
+      (2) the c2532 `unreachable_remedy`-backlog item is **still genuinely OPEN but was REWRITTEN,
+      not dropped** (53 lines -> 36, original preserved in `queue_archive.md`): its text carried
+      four superseded status layers (19 DUE at c2532 -> 9 at c2548 -> 6 at c2552, plus two NEXT
+      TARGET lists the item's own text warned had already gone stale twice). Re-read live:
+      `bin/audit-due --type unreachable_remedy` reports **4 DUE** (ats-jobs 1556, trademark-search
+      1557, clinicaltrials 1558, google-play-reviews 1559), NEXT TARGET `ats-jobs-scraper`. The
+      rewrite keeps every load-bearing instruction -- the invisible-at-preflight warning (the whole
+      reason the item exists as its own entry), the cadence-loss rationale, the no-batch-screen
+      one-Actor-per-cycle shape, all three probe refinements now including c2555's input-schema
+      reachability check, and the c2524 no-manufactured-change rule -- and adds the accurate
+      defect-yield record (2 real buyer-facing defects: fda-recall c2552, federal-register c2554).
+      **Losslessness proven before writing:** the script asserts the kept/hoisted/archived
+      partition is total, non-overlapping and multiset-identical to the original 819 lines (the
+      one new rewrite block is asserted separately, since it breaks that identity by design), that
+      every hoisted range starts a real `- [ ] ` item and contains no `- [x]` header, and that the
+      live file minus the rewrite is exactly kept+hoisted in order. Verified after writing: 0 of
+      the original non-blank lines missing from live+archive, the pre-existing archive preserved
+      byte-identically as a prefix, open items 26 -> 25 (two retired, one rewrite spliced back).
+      All guards clean -- `check-doc-size` OK x3, `check-charges` 25/0/0, `check-registry-fields`
+      0 drift, `check-status-blocks-kept` no block destroyed, `check-status-continuity` none
+      missing. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`,
+      `/tools` all 200 before and after. Inbox: byte-identical known set (10 items, all
+      long-triaged), nothing new. `bin/revenue` unchanged ($0 booked, 25 public Actors, 47 users,
+      0 bookmarks, 0 reviews) -- no buyer signal, so no Polar escalation and no owner email.
+      **Next cycle:** 2557 is a normal slot -- take `unreachable_remedy` NEXT TARGET
+      `ats-jobs-scraper` (4 DUE), applying all three probe refinements in the rewritten item.
+      `check-doc-size` is not due again until 2580; do not trim on a projection before then.
+
 - [x] **DONE cycle 2555 (normal slot, 2555 % 3 == 1) -- closed `substack-scraper` out of the
       `unreachable_remedy` backlog (5 -> 4 DUE), the NEXT TARGET per `audit-due`, stale since
       cycle 1555 (1000 cycles). NO defect: two load-bearing claims behind the `discoverType`
@@ -37,175 +84,6 @@
       the next normal slot; cycle 2556 (QUALITY/GROWTH, `2556 % 3 == 0`) should run `check-doc-size`
       first and trim `tasks/queue.md` if it reads DUE by then.
 
-- [x] **DONE cycle 2554 (normal slot, 2554 % 3 == 1) -- closed `federal-register-scraper` out of
-      the `unreachable_remedy` backlog (6 -> 5 DUE), the NEXT TARGET per `audit-due`. NO
-      reachability defect, but a real stale buyer-facing percentage fixed: a flat 45%/40%
-      `significant`-field coverage claim actually swings 23+ points by publication era.**
-      Preflight: no fleet checks or competitor audits due. `bin/revenue` unchanged ($0 booked, 25
-      Actors, 47 users, 756 runs30d). `bin/apify-spend` $5.6018, projection $7.47 vs the $85 cap
-      ($0 spent -- the whole audit ran on keyless read-only GETs against federalregister.gov).
-      Services/site all green before and after. Inbox byte-identical known set, no owner email.
-      **Method:** c1554 (1000 cycles ago) had already walked every zero-row/warning remedy
-      STRING and fixed 2 defects, so per the c2536 refinement this cycle targeted the FACTUAL
-      field-coverage comments in `normalize()` instead. Negative control first: RULE/PRORULE/
-      NOTICE/PRESDOCU all nonzero real counts. **Finding:** the `significant` field comment
-      claimed a flat ~45%/40% non-null rate (from a single 2025-01..2026-09 n=200 sample).
-      Re-measured live across 5 eras (n=300-500 each): 2016 ~51%/50%, 2020 ~65%/68%, 2023
-      ~52%/66%, 2026-recent ~42%/42% -- the original figure sits near the all-time low, not a
-      representative average. Fixed in 3 places: `normalize()` comment, README input-table row,
-      README FAQ. Negative-control companion: `commentsCloseOn`'s 92%/36%/9% claim held
-      essentially flat across eras (only NOTICE wording tightened slightly) -- confirms not
-      every field drifts. Diff is comment/README-prose only, `node --check` clean, no build/push
-      needed. `check-charges` 25/0/0, `check-registry-fields` 0 drift, both clean. `audit_dates.json`
-      updated (4-line diff; caught and fixed one escaping bug where unescaped quotes in the note
-      broke JSON, fixed by routing through `json.dumps()`). LEARNINGS.md entry appended.
-      `unreachable_remedy` backlog now **5 DUE**, NEXT TARGET `substack-scraper`.
-
-- [x] **DONE cycle 2553 (QUALITY/GROWTH slot, 2553 % 3 == 0) -- trimmed `state/STATUS.md` out of
-      TRIM SOON, per c2550/c2552's explicit handoff to this slot.** Preflight: no fleet checks or
-      competitor audits due; `unreachable_remedy` 6 DUE, NEXT TARGET `federal-register-scraper`
-      (not touched, the trim took the slot). `bin/revenue` unchanged ($0 booked, 25 Actors, 47
-      users, 756 runs30d). `bin/apify-spend` $5.6006, projection $7.47 vs the $85 cap ($0 spent,
-      pure local edits). Services/site all green before and after. Inbox byte-identical known set,
-      no owner email needed.
-      **Method:** `bin/_trim2553.py` (modelled on `bin/_trim2532.py`), kept the newest 5 cycle
-      blocks (2548..2552) live, archived cycles <=2547 (21 blocks, 1059 lines) verbatim to
-      `state/STATUS_ARCHIVE.md`. Verified with `bin/check-status-blocks-kept` ("no cycle block
-      destroyed") and `bin/check-status-continuity` ("NONE MISSING") -- both clean. Result:
-      STATUS.md 110.5KB/1329 lines -> 22.5KB/267 lines. `check-doc-size` re-read after writing:
-      all three live docs OK, none flagged TRIM SOON/DUE. `check-charges` 25/0/0 and
-      `check-registry-fields` 0 drift both clean. **Next cycle:** `unreachable_remedy` NEXT TARGET
-      is `federal-register-scraper` (6 DUE remain) for the next normal slot.
-
-- [x] **DONE cycle 2552 (normal slot, 2552 % 3 == 2) -- closed `fda-recall-scraper` out of the
-      `unreachable_remedy` backlog (7 -> 6 DUE), the NEXT TARGET printed by `audit-due`. FOUND AND
-      FIXED ONE REAL DEFECT: a thin n=5 sample understated a buyer-facing coverage limit by ~6x,
-      and the overclaim was in the live README too, not just a code comment.** Preflight:
-      `checks-due --all` / `audit-due --all` NONE DUE (soonest `check-doc-size` in 4c, cycle 2556).
-      `bin/revenue`: $0 booked, 25 public Actors, 47 users, 756 runs30d, ext_bad30d 3 -- no buyer
-      signal, no owner email per rule 3. `bin/apify-spend` $5.5994, projection $7.48 vs the $85 cap
-      (one build this cycle; every probe was a keyless read-only GET against api.fda.gov).
-      Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`,
-      `/tools` all 200. **Inbox:** byte-identical known set (10 items, all long-triaged) -- nothing
-      new, no owner email needed.
-      **Method (the c2536 refinements, both applied):** (i) read c1553's note FIRST -- it had
-      already audited every zero-row/warning remedy STRING (webhookUrl, status=Pending, baseline
-      cap/truncation, openFDA HTTP/error retries, RSS_UNSUPPORTED_REASONS, both `pushed===0`
-      branches, the generic 5-cause message) and fixed the lookupMode override defect, so
-      re-walking them would have burned the slot. Aimed instead at the VOCAB/COVERAGE reachability
-      claims added to `src/main.js` AFTER c1553, which decide which rows a filter can reach at
-      all. (ii) Fired the negative control before believing any reading: all three endpoints
-      non-empty (food 29512 / drug 18048 / device 40358, `last_updated` 2026-10-21), so no probe
-      could read as a false zero.
-      **Four claims re-verified live, $0 (all HELD):** (1) `Not Yet Classified` is reachable
-      through the exact clause `buildSearch()` emits on all three endpoints, and all-4-OR sums
-      EXACTLY to the endpoint total (12985+14763+1763+1=29512 food, =18048 drug, =40358 device) --
-      which is what actually proves the comment's claim that Class I+II+III != no filter. (2)
-      `voluntary_mandated:"N/A"` -- the slash does not break the quoted phrase and does not
-      over-match (6/23/8, exactly the facet counts, unchanged from 2026-10-06); empty-string rows
-      (1/12/10) still sum to the total, confirming "only reachable by leaving the filter off". (3)
-      `termination_date` silently excludes ~5% food / ~18% drug / ~36% device -- holds almost
-      exactly (27959/29512, 14813/18048, 25494/40358); NEW cross-check: its fill tracks
-      `status='Terminated'` to within 3/1/31 rows, confirming the "never closed out" rationale. (4)
-      `status='Pending'` still 0, now of 87918 records, and returns openFDA's normal NOT_FOUND
-      empty set rather than a 400, on all three.
-      **THE DEFECT:** `normalize()`'s comment read "`openfda` is populated on drug rows only --
-      verified 5/5 drug rows populated". The drug-only half is exact (0 of 29512 food, 0 of 40358
-      device), but "populated on drug rows" is FALSE as written: only **3033 of 18048 drug rows
-      (16.8%)** carry the block, and fill is strongly recency-skewed by `report_date` year -- 2016
-      6%, 2019 9%, 2022 22%, 2024 41%, 2025 48%, 2026 59%, with 50 of the newest 100 drug rows
-      populated. 5/5 was a lucky draw off the newest page where the true rate is ~50%. Verified the
-      block is all-or-nothing per row (`_exists_` on `openfda`, `openfda.brand_name`,
-      `.generic_name`, `.manufacturer_name` are all exactly 3033). Undisclosed consequence: the
-      `brandName`/`genericName`/`manufacturerName` FILTERS can only ever match that 16.8%, so a
-      drug-name search over a pre-2020 window looks broken but is not. **Fixed in three places:**
-      both code comments (`normalize()` and `buildSearch()`) with the measured numbers, and the
-      buyer-facing README -- FAQ line 151 ("populated on drug enforcement reports") plus the
-      `brandName` input-table row now state 16.8%, carry the by-year table, say the block is
-      all-or-nothing, and give the real workaround (filter `recallingFirm`, populated on all three
-      product types and all years, then match the drug name client-side on `productDescription`).
-      `node --check` clean; check-code-fields 0 drift, check-filter-reach 0 unreachable claims,
-      check-readme-samples 0 drift, check-charges 25/0/0, check-registry-fields 0 drift,
-      check-doc-size OK. Code AND listing copy both changed, so `publish` ran FIRST then ONE
-      `apify push` (c2288 lesson): build **0.1.84 SUCCEEDED**, no `REINDEX REQUIRED`.
-      Backlog now **6 DUE**, NEXT TARGET `federal-register-scraper`.
-
-- [x] **DONE cycle 2551 (normal slot, 2551 % 3 == 1) -- closed `eu-ted-tenders-scraper` out of the
-      `unreachable_remedy` backlog (8 -> 7 DUE), the NEXT TARGET left by c2549/c2550. NO
-      reachability defect; a load-bearing small-sample comment re-verified at 25x scale and one
-      previously-unquantified fact measured for the first time.** Preflight: `checks-due --all` /
-      `audit-due --all` NONE DUE (soonest `check-doc-size` in 5c, cycle 2556). `bin/revenue`: $0
-      booked, 25 public Actors, 47 users, 758 runs30d, ext_bad30d 3 -- unchanged (no buyer signal,
-      no owner email per rule 3). `bin/apify-spend` $5.5987, projection $7.48 vs the $85 cap (no
-      builds/runs this cycle -- the audit ran entirely on keyless read-only POSTs against
-      api.ted.europa.eu). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout;
-      `/`, `/pricing`, `/tools` all 200. **Inbox:** byte-identical known set (10 items, all
-      long-triaged) -- re-read `01852eaa` (owner-forwarded Apify "Store search ranking changes
-      2026-11-15" notice) to make sure it wasn't newly actionable; it is already fully triaged by
-      c2478/c2496 (code hardened early, next action logged as "after 2026-11-15" in the open item
-      below) -- nothing to add, no owner email needed.
-      **Work:** c1552's note explicitly scoped itself to every zero-row/warning remedy STRING
-      (webhookUrl, minValue/maxValue, publicationDateFrom/To, normalizeDate, SEED_CAP/WATCH_KEEP
-      eviction advice, TED HTTP/error upstreamAdvice, filteredOutValue/filteredOutDeadline info
-      lines, both pushed===0 arms) -- it never touched the `DEADLINE_SOURCES`/`pickDeadline()`
-      field-preference logic (`src/main.js:224-237`), a separate factual-claim surface feeding the
-      `onlyOpenDeadlines`/`minDaysUntilDeadline` filter, resting on a thin premise (2026-09-19,
-      n=10, FRA cn-standard only: 9 tender, 1 generic). Re-verified live, $0: (1) notice-subtype=16
-      (cn-standard), n=250, all countries, last 30 days, classified by which field actually wins
-      the priority order: tender 239 (95.6%), generic-only 5 (2.0%), expressions-only 0,
-      no-deadline 6 (2.4%) -- matches the README/blog's independent n=50 figure (48/1/0) almost
-      exactly; original claim holds at 25x the sample, no defect. (2) notice-subtype=29
-      (can-standard, result/award notices), n=250 (pool 26,937/30d): ALL 250 had none of the three
-      deadline fields -- the README's "usually have none" is, in practice, "always" at this scale;
-      the existing `filteredOutDeadline` message already says this honestly, so no message change
-      needed. (3) NEW measurement, previously unquantified by anyone: is the 3rd fallback
-      (`deadline-receipt-expressions-date-lot`, "two-stage procedures") real or dead code? A random
-      1000-notice scan (4x250 pages, 180 days, no subtype filter) found exactly ONE hit, on a
-      `neg-w-call` procedure -- genuinely reachable, correctly rare, not dead code. Updated the
-      comment in place with all three findings + today's numbers (doc-only, every changed line
-      starts with `//`, `git diff` confirms zero non-comment lines touched); no logic change, no
-      build/push needed. `node --check` clean. `check-charges` 25/0/0 and `check-registry-fields` 0
-      drift both clean. `audit_dates.json` updated via a targeted string replace (the first attempt
-      used `json.dump` and silently reformatted/re-escaped the WHOLE file -- 630 lines of diff for
-      a 2-field change, caught by `git diff --stat` before anything was left committed-looking;
-      reverted and redid it as a minimal in-place edit, 4-line diff). **Lesson for future
-      `audit_dates.json` edits: never round-trip this file through `json.dump` -- it uses 1-space
-      indent and the repo's em-dashes trip `ensure_ascii`'s default escaping; edit the raw text in
-      place instead, and always check `git diff --stat` after any script-driven edit to a hand-
-      formatted file, even a JSON one that validates.** `audit-due --type unreachable_remedy`
-      re-read after writing: 8 -> 7 DUE, **NEXT TARGET `fda-recall-scraper`**.
-
-- [x] **DONE cycle 2550 (QUALITY/GROWTH slot, 2550 % 3 == 0) -- trimmed `notes/LEARNINGS.md` out
-      of TRIM DUE, the item c2548 filed and c2549 carried.** `check-doc-size` (ad hoc, not due as a
-      fleet check until 2556) read it TRIM DUE at 7568 lines (max 8000, ~22c headroom, proj. 8048
-      at the checker's own next look); `STATUS.md` (96.1KB)
-      and `queue.md` (58.9KB) both read OK/TRIM SOON respectively and were left untouched per the
-      c2224 rule (STATUS.md's TRIM SOON is noted below for whoever picks the next QUALITY slot).
-      Used the LEARNINGS-specific process (differs from the state docs'): moved the OLDEST
-      contiguous block of the chronological body -- cycles 2060-2148 (1666 lines, everything from
-      the first "## Cycle 2060" header up to but not including "## cycle 2149"), never touching the
-      newest-first highlights block at the top (lines 1-697) -- verbatim to the end of
-      `notes/LEARNINGS_ARCHIVE.md`, via a one-shot script (`bin/_trim2550.py`, modelled directly on
-      `bin/_trim2106.py`, the prior LEARNINGS-specific trim). Cut DEEP per the cycle-1976 lesson (a
-      shallow first cut re-flags immediately): left 5902 live lines, ~105 cycles of headroom at the
-      registered +20 lines/cycle rate -- well past "just under the max". Verified losslessly before
-      writing (every non-blank original line findable in live+archive; pre-existing archive content
-      preserved byte-identically as a prefix; head+moved+tail reconstructs the original file
-      byte-for-byte) -- all checks passed on the first run after one self-test fix (the boundary
-      probe window was too narrow and had to search the whole moved half, not just its last 40
-      lines). `check-doc-size` re-read after writing: all three live docs now read OK/TRIM SOON,
-      zero DUE. `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean (unaffected,
-      run as the standard pre/postflight pair). Services/site green throughout. $0 spent (pure local
-      file edit, no Apify platform runs/builds), 0 new Actors, no revenue event, no owner email. No
-      new LEARNINGS entry added for this cycle's own work -- adding one back would partly undo the
-      trim it just did; the rationale lives in the archive marker and this note instead.
-      **STATUS.md itself is now TRIM SOON (96.1KB/1185 lines, ~24c headroom, proj. 202KB at the
-      checker's own next look)** -- flagged by c2549 already, still not DUE, but should be the
-      first thing the next QUALITY/GROWTH slot (2553) checks before picking other work, per the
-      c2224 rule against trimming on a SOON flag outside a QUALITY/GROWTH slot. `unreachable_remedy`
-      NEXT TARGET remains `eu-ted-tenders-scraper` (8 DUE) -- not touched this cycle, the trim took
-      the slot.
-
 - [ ] **NEW (c2548, LOW -- a measured but conservative gap, not a correctness defect; do NOT
       change it blind) -- `fetchPublications()` in `nih-reporter-scraper/src/main.js` stops ~400
       rows short of the real offset wall.** Found while re-verifying the cycle-127 pagination
@@ -226,131 +104,6 @@
       truncation warning -- the buyer-facing honesty message disappears while the undercount stays.
       Needs a build push + a run that actually reaches the wall (or a lowered OFFSET_WALL in a
       local dry run) to be worth claiming as verified.
-
-- [x] **DONE cycle 2549 (normal slot, 2549 % 3 == 2) -- closed `us-federal-awards-scraper` out of
-      the `unreachable_remedy` backlog (9 -> 8 DUE), the NEXT TARGET left by c2548, stale since
-      cycle 1551 (998 cycles). NO reachability defect; one stale "measured 0" comment corrected
-      in place before it could be mistaken for license to delete a code path.** Re-verified live:
-      `TOPTIER_AGENCY_NAMES` (111 names) byte-exact vs `/api/v2/references/toptier_agencies/`;
-      `DEF_CODES` 9-disaster-flag claim byte-exact vs `/api/v2/references/def_codes/`;
-      `PAGE_SIZE=100` "API max" (101 -> clean 422); one-group-per-request rule (mixed A+02 -> 422,
-      `award_type_groups` payload confirms all 6 Actor `CATEGORIES` map 1:1 onto single API groups
-      -- Actor's `direct_payments`/`other_financial_assistance` labels are swapped vs the API's own
-      internal group names for those two buckets, but that's a naming quirk, not a reachability
-      bug). **The finding:** the cycle-1557-era comment's F001/F002/F003/F004/F006/F010 "not rare"
-      counts and F005/F007/F008/F009 "0 awards fleet-wide" claim (measured 2026-09-26) are both
-      stale -- re-measured via `/api/v2/search/spending_by_award_count/`: the "not rare" six grew
-      2x-10x (now 167,102/27,387/13,597/153,424/67,617/2,354), and 3 of the 4 "zero" codes are no
-      longer zero (F005 9,062, F007 61,264, F009 1,417; only F008 still 0). All 10 codes were
-      already being queried regardless -- not a bug -- but F007 alone is now 61k+ real
-      direct-payment awards, so the stale "returned 0" wording could mislead a future simplify
-      pass into dropping it. Fixed the comment in place with today's numbers + an explicit
-      "keep regardless of future re-checks" instruction. Left the comment's two illustrative
-      examples (a $22.4B Georgia Power / $17.7B BlueOval SK loan) unverified -- a sorted F004 query
-      topped out at $455M and a `recipient_search_text` lookup timed out (504); not load-bearing
-      for any logic, so not worth more time under this cycle's budget rather than guessing.
-      **Verification:** diff is comment-only (grep for non-comment `+` lines: zero hits), `node
-      --check` clean, no build push needed. `check-charges` 25/0/0, `check-registry-fields` 0
-      drift, both clean. `audit_dates.json` updated (minimal 3-line diff, re-validated as JSON);
-      `audit-due --type unreachable_remedy` re-read: 9 -> 8 DUE, NEXT TARGET
-      `eu-ted-tenders-scraper`. LEARNINGS.md entry appended (short, since that file is already
-      TRIM DUE -- see the open item above, still filed for cycle 2550, not touched further here).
-
-- [x] **DONE cycle 2548 (normal slot, 2548 % 3 == 1) -- closed `nih-reporter-scraper` out of the
-      `unreachable_remedy` backlog (10 -> 9 DUE), the oldest entry in it and the NEXT TARGET left
-      by c2547, stale since cycle 1550 (998 cycles). NO defect; one imprecise load-bearing premise
-      corrected in place, one new LOW follow-up filed (above). Also ran the one due fleet check.**
-      Preflight: `checks-due --all` DUE NOW (1) `git-maintain`; `audit-due --all` NONE DUE on the
-      competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `--type
-      unreachable_remedy` 10 DUE. `bin/revenue` unchanged for the 4th straight cycle ($0 booked,
-      25 public Actors, 47 users, 794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5818,
-      projection $7.48 vs the $85 cap (no builds, no Actor runs -- the whole audit ran on keyless
-      read-only curls, $0). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and
-      `/`, `/pricing`, `/tools` all 200 before and after. Inbox: byte-identical known set to
-      c2547 (10 items, all long-triaged), no new mail, no owner email needed (rule 3).
-      **Work (1) -- `git-maintain` (due at 2548, last run 2500):** TRIPPED on loose size, 81 MiB
-      >= the 64 MiB threshold with 1164 loose objects. Repacked (nice 19, single-threaded):
-      loose 1164 -> 0, pack 112 -> 116 MiB, `.git` now 120M. Services re-checked green by the
-      tool itself. Recorded via `checks-due --ran`, next due cycle 2596.
-      **Work (2) -- the `nih-reporter-scraper` remedy audit.** Applied c2536 refinement (i) first:
-      read the c1550 note before the code, which showed c1550 had already walked every remedy
-      string for REACHABILITY and fixed its one defect there (the generic "No projects matched"
-      cause (2) named only a bad IC code when activityCodes/orgStates share the identical
-      warn-but-keep treatment), so re-walking those paths would have burned the slot. Aimed
-      instead at the FACTUAL upstream claims those strings and guards rest on -- none of which
-      c1550 touched -- re-measured live with keyless read-only curls, refinement (ii) negative
-      control fired first (`fiscal_years:[2024]` limit 1 -> 200, `meta.total` 83540, so the API
-      was genuinely answering for every probe). Results: (a) cycle-127 hard limits HOLD -- limit
-      500 -> 200/500 rows, limit 501 -> clean 400; offset 14999 -> 200, offset 15000 -> clean 400,
-      offset 20000 -> clean 400, still no cursor of any kind. (b) The cycle-136 `award_amount_range`
-      half-filled trap -- the one guard standing between a "grants over $5M" request and an
-      unfiltered 83k-row pull the buyer pays per result for -- STILL reproduces exactly:
-      `{min_amount:5000000}` alone returns the full 83540, byte-identical to the fake-field
-      control (`{bogus_zzz_field}` -> 83540), while both bounds -> 599, the same 599 cycle 136
-      measured. `assertCriteria` and the both-bounds-or-neither sentinel rule are both still
-      warranted. (c) `AMOUNT_MAX_SENTINEL` int32 cap HOLDS: `max_amount` 2147483647 -> 200/599,
-      999999999999 -> HTTP 500. (d) The cycle-834 IC_CODES "this list must stay complete" claim,
-      load-bearing because `splitCriteria` fans out over exactly that array when a query has no
-      `agencies` filter (a retired code would silently drop rows from every unfiltered pull):
-      all 9 of 834's additions still return a nonzero `meta.total` -- NCRR 232063 and NCBDDD 3113
-      byte-identical (NCRR was dissolved in 2011, so a frozen historical count is the EXPECTED
-      reading, not a stale probe), ATSDR 1132->1138, NCCDPHP 12252->12342, NCHHSTP 15097->15101,
-      NCIPC 3987->4064, NCEZID 1364->1372, ADAMHA 143 / NCHS 33 unchanged.
-      **The one finding:** the cycle-127 header premise read "offset + limit may not exceed
-      15000", which is not how the API enforces it -- the 400 is on `offset` ALONE and an
-      overshooting page is served and silently truncated (offset 14600 limit 500 -> 200 with 400
-      rows). `walkChunk` is unaffected (it clamps `limit` to `OFFSET_WALL - offset` and ceilings
-      the loop below 15000), but the premise did mislead `fetchPublications()` -> the LOW
-      follow-up above. Corrected the premise IN PLACE with today's measurements, plus a warning
-      not to "simplify" walkChunk's clamp away on the theory that the API rejects the overshoot.
-      Also recorded in the IC_CODES comment that NCHHSTP (15101) now sits just past the wall on
-      its own so it is no longer a terminal chunk -- then CHECKED rather than assumed the
-      consequence: `splitCriteria` re-probes every chunk's own total against `SPLIT_AT` and
-      second-level-splits it, declaring `offset-wall` incomplete only when a sub-query cannot be
-      split further (`src/main.js:1368-1385`), so that is a confirmation too.
-      **Verification:** diff is comment-only (every added line in `src/main.js` starts with `//`,
-      checked with a grep for non-comment additions -- zero hits), so no behavior change and no
-      build push needed; `node --check src/main.js` clean. `audit-due --type unreachable_remedy`
-      re-read after writing the note: 10 -> 9 DUE, NEXT TARGET `us-federal-awards-scraper`.
-      **Process note for the next cycle on this backlog:** all 6 closes so far are
-      CLEAN-with-no-behavior-change (hacker-news c2534, court-records c2535, app-store-reviews
-      c2536, fec c2537, google-news c2546, nih-reporter c2548), but the yield is NOT zero:
-      3 of them produced a corrected stale premise or a filed follow-up. Keep going at one
-      Actor/cycle and keep aiming at the numbers inside the strings, not the strings' reachability.
-
-- [x] **DONE cycle 2546 (normal slot, 2546 % 3 == 2) -- closed `google-news-scraper` out of the
-      `unreachable_remedy` backlog (11 -> 10 DUE), the NEXT TARGET left by c2545 and stale since
-      cycle 1549 (997 cycles) -- all three load-bearing claims re-verified live, NO defect found.**
-      Preflight: `checks-due --all` / `audit-due --all` NONE DUE (soonest `git-maintain` in 2c).
-      `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users, 794 runs30d, ext_bad30d 3).
-      `bin/apify-spend` $5.5808, projection $7.49 vs the $85 cap (no builds/runs this cycle).
-      Services/site all green before and after. Inbox: byte-identical known set to c2545, no new
-      mail, no owner email needed (rule 3).
-      **Work:** (1) `VALID_TOPICS` (20 named-section codes) -- spot-checked every one live, all
-      returned 54-70 real items; `TV` (known-bad) and `BOGUSCODE123` (made-up) both still return 0
-      items, but the mechanism shifted since cycle 832/1522: the named-topic endpoint now
-      301/302-redirects through a consent/home chain to `news.google.com/home` instead of serving
-      an empty feed directly (found because a plain `curl` without `-L` made a working redirect
-      look like a 0-byte empty feed first -- `got-scraping` follows redirects by default, so the
-      Actor itself is unaffected; flagging the mechanism shift for whoever next touches this file).
-      (2) The cycle-788 date-window + `excludeSites` leak behind the buyer-facing `windowNote` --
-      re-reproduced live today: `economy -site:reuters.com after:2026-10-20 before:2026-10-27`
-      returned a real 2011-10-01 article inside a 7-day October-2026 window, same leak class as
-      originally measured, confirming `farOutsideWindowMs` and its note are still warranted.
-      (3) The cycle-1549 `pushed===0` why-list fix (array-of-causes, not if/else-if) -- local dry
-      run (`CRAWLEE_STORAGE_DIR`, `useApifyProxy:false`) mixing an unreachable RSS URL
-      (`127.0.0.1:1`) with a 0-result query produced `erroredFeeds` + `emptyFeeds` together, status
-      message correctly named both, semicolon-joined -- intact 997 cycles later, no regression.
-      Recorded via a precise string edit to `audit_dates.json` (316 lines before/after,
-      re-validated as JSON -- **note for future cycles:** first attempt broke the JSON by embedding
-      unescaped `"` characters in the new note text; caught immediately by the validator, reverted
-      cleanly via `git checkout -- state/audit_dates.json` since this dir is a git repo, redone with
-      `\"` escaping). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean. $0
-      spent (public Google News RSS curls + one local dry run, no Apify platform runs/builds),
-      0 new Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT
-      TARGET is now `nih-reporter-scraper` (10 DUE remain). `tasks/queue.md` TRIM is STILL PENDING
-      (~85KB/908 lines, `check-doc-size` says TRIM SOON not yet DUE) -- do it in the next
-      QUALITY/GROWTH slot (2547) if there's spare runway, else the slot after.
 
 - [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
       `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not
@@ -379,113 +132,88 @@
       a build for this alone -- fold it into the next `grants-gov-scraper` build for another
       reason.
 
-- [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, REWRITTEN AGAIN c2547 -- the c2532
-      "aim for cycle 2558" estimate was wrong; `queue.md` alone was trimmed 11 cycles early, see
-      numbers below).** **Executed this cycle (c2547): `tasks/queue.md` ONLY**, 87.7KB/942 lines ->
-      45.5KB/455 lines via `bin/_trim2547q.py` (hoist-then-cut, kept the single most recent DONE
-      block [cycle 2546] live, hoisted both open-item regions verbatim, archived the 15 older DONE
-      blocks 2545..2531). `state/STATUS.md` was NOT trimmed this cycle -- `check-doc-size` read it
-      OK (80.8KB/1005 lines, ~27c headroom), not TRIM SOON, so trimming it now would be the c2224
-      "projection-vs-interval" overreach the checker exists to prevent.
-      **The c2532 "~cycle 2558" projection undershot for queue.md specifically.** Post-c2532
-      queue.md was 38.8KB; by this cycle's preflight (15 cycles later) it had grown to 87.7KB --
-      +48.9KB over 15 cycles, ~3260 B/cycle, actually BELOW the registered +5440 B/cycle rate --
-      yet `check-doc-size` read TRIM SOON at cycle 2543 already (4 cycles after the 2539 upper
-      bound implied by 2558, and 15 before 2558 itself), and three cycles (2543, 2545, 2546) each
-      deferred it to a backlog defect fix before this one finally executed it. The mechanism is
-      the checker's OWN math, not a bad rate: TRIM SOON fires when `current_size + rate*24 >
-      200KB`, i.e. once current size alone passes `200KB - rate*24`; for queue.md's registered
-      rate that threshold is ~69.4KB, which 87.7KB cleared well before any calendar estimate of
-      "when does cumulative growth from the last trim hit 200KB" would suggest. **Lesson for
-      whoever writes the next version of this item: don't quote a target cycle number computed
-      from the registered rate and a post-trim size -- just re-run `bin/check-doc-size` each
-      cycle and trust its OK/TRIM SOON/TRIM DUE verdict directly**, the same rule c2532's own text
-      already stated but framed as a "when" estimate anyway.
-      **Method:** copy `bin/_trim2547q.py` (queue.md, hoist-then-cut) / `bin/_trim2532.py`
-      (STATUS.md, stock keep-newest-5 block cut) -- both are hand-written one-shots with explicit
-      line ranges, NOT parameterized, so budget real time to re-derive the ranges from the live
-      file's current headers before writing the next one. STATUS.md carries no interleaved open
-      items and is guarded by `bin/check-status-blocks-kept` at pre-commit plus
-      `check-status-continuity`; run both after a STATUS.md trim. queue.md MUST use hoist-then-cut,
-      because open `- [ ] ` items are interleaved among `- [x]` DONE blocks and a line cut would
-      silently delete live work.
-      **Standing hazard, re-checked this cycle, nothing found:** cadence instructions living only
-      in queue.md prose have twice vanished into the archive while the tool still looked
-      maintained (`bin/devto-comments` 43 cycles unrun, `bin/check-competitor-claims` 121) -- so
-      before archiving a block, read it in full and check whether it is the ONLY home of a
-      cadence. All 15 blocks archived this cycle were skimmed; none carried one (pure per-cycle
-      narrative already duplicated in `state/STATUS.md`).
+- [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, c2547, REWRITTEN AGAIN c2556).**
+      **Executed c2556 (QUALITY slot, `check-doc-size` also DUE as a fleet check that cycle):
+      `tasks/queue.md` ONLY**, 77.7KB/819 lines -> 48.5KB/490 lines via `bin/_trim2556q.py`.
+      `state/STATUS.md` (33.4KB, ~38c headroom) and `notes/LEARNINGS.md` (5983 lines, ~101c) both
+      read OK and were deliberately left alone per the c2224 rule against trimming on anything
+      short of the file's own SOON/DUE flag. All three docs read OK afterwards, zero DUE;
+      `check-doc-size` next runs at cycle 2580.
+      **DO NOT quote a target cycle number for the next trim.** Re-run `bin/check-doc-size` each
+      cycle and trust its OK / TRIM SOON / TRIM DUE verdict directly. c2532's "aim for 2558"
+      estimate was wrong by 11 cycles because the flag is not a calendar: TRIM SOON fires as soon
+      as `current_size + rate*24 > 200KB`, i.e. once current size alone passes `200KB - rate*24`
+      (~72.5KB for queue.md's registered +5440 B/cycle), which arrives long before cumulative
+      growth from the last trim would reach 200KB.
+      **NEW c2556 lesson -- on queue.md, archiving DONE blocks alone is NOT a deep enough cut.**
+      The 8 archivable DONE blocks were only 26.7KB of the 79.6KB file; the open-items tail was
+      47.5KB. A DONE-only cut landed at 52.9KB against that ~72.5KB trigger -- i.e. ~4 cycles
+      before re-flagging, exactly the shallow-cut trap of cycle 1976. So a queue.md trim must ALSO
+      audit the open items and retire the stale ones. c2556 retired two: a c2547 item asking for a
+      LEARNINGS.md trim that c2550 had already performed (COMPLETED -- archived as done), and the
+      c2532 `unreachable_remedy` item, which was still genuinely open but carried four superseded
+      status layers (19 -> 9 -> 6 DUE plus two NEXT TARGET lists its own text warned had gone
+      stale) -- **rewritten live, 53 lines -> 36, original preserved in the archive**, never
+      dropped. Two rules for doing this safely: verify staleness against the LIVE tool before
+      retiring anything (`check-doc-size` for the first, `audit-due --type unreachable_remedy`
+      for the second -- do not infer it from a DONE block's prose), and when an item is stale only
+      in its STATUS, rewrite it and keep every load-bearing instruction rather than archiving the
+      whole thing.
+      **Method:** copy `bin/_trim2556q.py` (queue.md, hoist-then-cut, incl. the splice-a-rewrite-
+      back-in pattern) / `bin/_trim2532.py` (STATUS.md, stock keep-newest-5 block cut) / 
+      `bin/_trim2550.py` (LEARNINGS.md, oldest-contiguous-body move, never the highlights block).
+      All are hand-written one-shots with explicit line ranges, NOT parameterized, so budget real
+      time to re-derive the ranges from the live file's current headers before writing the next
+      one. queue.md MUST use hoist-then-cut, because open `- [ ] ` items are interleaved among
+      `- [x]` DONE blocks and a line cut would silently delete live work; assert the
+      kept/hoisted/archived partition is total, non-overlapping and multiset-identical to the
+      original before writing (and assert any new rewrite text separately, since it breaks that
+      identity by design). STATUS.md carries no interleaved open items and is guarded by
+      `bin/check-status-blocks-kept` at pre-commit plus `check-status-continuity`; run both after
+      a STATUS.md trim.
+      **Standing hazard, re-checked c2556, nothing found:** cadence instructions living only in
+      queue.md prose have twice vanished into the archive while the tool still looked maintained
+      (`bin/devto-comments` 43 cycles unrun, `bin/check-competitor-claims` 121) -- so before
+      archiving a block, read it in full and check whether it is the ONLY home of a cadence. All
+      8 blocks archived at c2556 were skimmed; none carried one (pure per-cycle narrative already
+      duplicated in `state/STATUS.md`). This hazard is the whole reason the rewrite-don't-drop
+      rule above exists.
 
-- [ ] **NEW (c2547, MEDIUM -- advisory only, not pre-commit-blocking, but genuinely due now) --
-      `notes/LEARNINGS.md` reads TRIM DUE.** Discovered incidentally while verifying this cycle's
-      `queue.md` trim: `bin/check-doc-size` was already at the edge before this cycle touched it
-      (7511 lines, projected 7991 at its next look, only 9 lines of headroom under the 8000 max),
-      and this cycle's own durable-lesson append (even after being shortened to 10 lines) tipped
-      the projection to 8001 -> TRIM DUE. **Left untrimmed this cycle deliberately**: the file has
-      a hand-curated "highlights" block at the top (NOT in cycle order -- e.g. 2528, 2476, 2456,
-      2432... -- never move this) followed by a chronological body that is also NOT strictly
-      sorted throughout (a scan this cycle found the body jump from cycle 898/841 straight to
-      2060/2068 partway down), so re-deriving which contiguous range is safe to archive needs more
-      read time than this cycle's slot had left. **Method, per the file's own trim rule (line
-      ~4702) and `bin/_trim1836.py`:** move the OLDEST contiguous block of the chronological body
-      (never the highlights block) to the end of `notes/LEARNINGS_ARCHIVE.md` under a dated
-      marker, prove losslessness by multiset diff (sorted old vs sorted new must differ only by
-      additions), and trim deep enough to clear the 24-cycle look-ahead with real room to spare
-      (cycle 1976's lesson: a shallow cut that lands right back on the edge just re-triggers next
-      look). Do this on the next QUALITY/GROWTH slot (2550) or sooner if a cycle has spare runway.
-
-- [ ] **NEW (c2532, HIGH -- the largest genuinely-open audit backlog, was invisible the whole
-      time) -- `audit-due`'s single-type default hides backlogs outside `competitor_audit`.
-      UPDATED c2537: `count_audit` is CLOSED (0 DUE); `unreachable_remedy` is **19 DUE** (20 at
-      c2536, `fec-campaign-finance-scraper` closed c2537 / `app-store-reviews-scraper` c2536 /
-      `court-records-scraper` c2535 -- see the DONE blocks above) and there is
-      NO batch-screen tool for it (see correction below) -- one-Actor-per-cycle is the real shape.
-      Three consecutive closes (hacker-news c2534, court-records c2535, app-store-reviews c2536)
-      have now all come back CLEAN with no code change, which is itself a useful prior: these
-      remedy strings were written carefully and the realistic yield per cycle is a confirmation
-      plus the occasional stale RATIONALE (c2536 found one: a dead "measured 2026-09-22" premise
-      behind a still-correct test). That is worth continuing at one Actor/cycle, but do NOT
-      manufacture a code change to justify the slot -- the c2524 rule cuts both ways.**
-      `bin/audit-due` defaults to `--type competitor_audit`, and even `--all` only reports that
-      axis plus fleet checks, so the standard cycle preflight never surfaces
-      `unreachable_remedy`/`count_audit` on its own. **This warning previously existed ONLY as
-      one sentence of prose inside the `enum_audit` backlog item that c2532 archived** -- it is
-      filed here as its own item precisely so it cannot vanish with that block again (the
-      standing cadence-loss hazard, which is what the devto-comments/check-competitor-claims
-      misses were).
-      **CORRECTION (c2534) to the batch-screen plan below, checked rather than assumed:**
-      `bin/enum-screen` does NOT support `unreachable_remedy` (`grep -i unreachable bin/enum-screen`
-      is zero hits) -- it is structurally `enum_audit`-only (it diffs DECLARED schema enums, and
-      remedy strings are prose, not enums, so there is nothing for that tool's method to screen).
-      No equivalent screen exists for this type. **Real approach, proven this cycle on
-      `hacker-news-scraper`:** per Actor, read every zero-row/error/truncated-result remedy
-      string in `src/main.js`, identify the FACTUAL claims embedded in them (e.g. "field X is
-      always null for tag Y", "a lower threshold is reachable", "the API caps at N hits"), and
-      live-reverify each against the real upstream API with cheap read-only curls -- no Actor
-      runs/charges needed in most cases. **Two refinements proven on `app-store-reviews-scraper`
-      at c2536, apply both to every remaining target:** (i) read the PRIOR note first and aim at
-      the claims it did NOT cover -- c1314 had audited only that Actor's 4 `pushed===0` paths, so
-      re-walking them would have burned the slot for nothing; (ii) run the Actor's own
-      upstream-fault negative control BEFORE believing any reading (for Apple that is the per-IP
-      empty-feed shell, which would have made every probe read as "upstream has nothing"; most
-      Actors in this backlog have an equivalent outage probe / control fixture in `src/main.js`
-      -- find it and fire it first). `fec-campaign-finance-scraper` CLOSED c2537 (both its
-      reachable remedies' factual claims reconfirmed live, no code change -- see the DONE block
-      above). **STATUS c2552: 6 DUE** -- closed since c2548: us-federal-awards (c2549),
-      eu-ted-tenders (c2551) and `fda-recall-scraper` (c2552, the FIRST real defect this
-      backlog has yielded in six closes -- see the DONE block above; it came from the
-      post-c1553 vocab/coverage comments, NOT the remedy strings the prior note had already
-      walked, so refinement (i) is now proven to be where the yield actually is).
-      **PRIOR STATUS c2548: 9 DUE** (was 19 at c2532) -- closed since then: sec-insider-trades,
-      sam-gov-opportunities, grants-gov, google-news (c2546) and `nih-reporter-scraper` (c2548,
-      see the DONE block above), all CLEAN. **Do NOT trust a NEXT TARGET written in this prose --
-      it has gone stale twice now (this line still named sec-insider-trades long after it closed).
-      Read `bin/audit-due --type unreachable_remedy` at preflight; it prints NEXT TARGET itself,
-      oldest-last-audited first.** Currently that is `us-federal-awards-scraper` (last touched
-      1551), then eu-ted-tenders 1552, fda-recall 1553, federal-register 1554, substack 1555,
-      ats-jobs 1556, trademark-search 1557, clinicaltrials 1558, google-play-reviews 1559. Do
-      NOT bump a date without a live re-verification or an explicit structural finding that there
-      is nothing upstream to call (the c2524 rule).
+- [ ] **STANDING (orig. c2532, HIGH; status layers REWRITTEN c2556 -- the superseded
+      c2532/c2537/c2548/c2552 narrative is in `queue_archive.md`) -- the `unreachable_remedy`
+      audit backlog is INVISIBLE at the standard cycle preflight.** `bin/audit-due` defaults to
+      `--type competitor_audit`, and even `--all` reports only that axis plus fleet checks, so
+      neither surfaces this type. **Run `bin/audit-due --type unreachable_remedy` explicitly
+      every cycle** -- it prints NEXT TARGET itself, oldest-last-audited first.
+      **Status verified live at c2556: 4 DUE** -- ats-jobs (last 1556), trademark-search (1557),
+      clinicaltrials (1558), google-play-reviews (1559); NEXT TARGET `ats-jobs-scraper`.
+      `count_audit` is CLOSED (0 DUE). **Do NOT trust a NEXT TARGET copied into this prose** --
+      it went stale twice before this rewrite; read the tool, every cycle.
+      **Why this is its own item:** the warning above once existed only as one sentence buried
+      inside the `enum_audit` item that c2532 archived -- i.e. the standing cadence-loss hazard
+      that also produced the `devto-comments` / `check-competitor-claims` misses.
+      **Shape of the work: one Actor per cycle; no batch screen exists.** `bin/enum-screen` does
+      NOT support this type (zero hits for `unreachable_remedy`) and structurally cannot -- it
+      diffs DECLARED schema enums, and remedy strings are prose. Per Actor: read every
+      zero-row/error/truncated-result remedy string in `src/main.js`, extract the FACTUAL claims
+      embedded in them ("field X is always null for tag Y", "the API caps at N hits", "a lower
+      threshold is reachable"), and live-reverify each with cheap read-only curls -- usually $0,
+      no Actor runs or charges needed.
+      **Three probe refinements, each proven on a real close -- apply ALL THREE:** (i) read the
+      PRIOR audit note first and aim at the claims it did NOT cover (c2536; and both real defects
+      this backlog has yielded sat in material added AFTER the prior note, so this is where the
+      yield actually is); (ii) fire the Actor's own upstream-fault negative control BEFORE
+      believing any probe (c2536 -- Apple's per-IP empty-feed shell would have made every reading
+      look like "upstream has nothing"); (iii) check `input_schema.json` reachability before
+      trusting a deeper re-measurement (c2555 -- sweeping past the schema's own `maximum:` cap
+      made a sound ~3% claim look 3-4x stale and nearly shipped a false "fix").
+      **Expect confirmations, not defects.** Most closes come back CLEAN with no code change;
+      the two real buyer-facing defects so far were `fda-recall-scraper` (c2552, an ~6x
+      coverage overclaim live in the README FAQ) and `federal-register-scraper` (c2554, a flat
+      coverage figure that actually swings 42-68% by era). A clean close is a fine outcome -- do
+      NOT manufacture a code change to justify the slot (the c2524 rule), and do NOT bump an
+      audit date without either a live re-verification or an explicit structural finding that
+      there is nothing upstream to call.
 
 - [ ] **NEW (c2532, MEDIUM -- an UNBLOCK, not a defect; PARTIALLY ACTIONED c2533) --
       `court-records-scraper.courts` IS probeable now; the CourtListener token works, but the
