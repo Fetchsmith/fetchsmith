@@ -220,6 +220,16 @@ if (ratingSortUnreachable) {
   );
 }
 
+// maxReviewsPerApp is clamped to 5000 above (the schema's own "maximum"), so once a run is
+// already fetching at that ceiling, "raise maxReviewsPerApp" is unreachable advice -- there is no
+// higher value to set. Verified live 2026-11-01 on com.spotify.music: num=5000 + a keyword that
+// matches nothing still returns exactly 5000 fetched / 0 passed, i.e. the depth cap fires AT the
+// ceiling, not just below it, so every "raise maxReviewsPerApp" remedy string needs this guard.
+const depthAtCeiling = maxReviewsPerApp === 5000;
+const MAX_DEPTH_HINT = ' — maxReviewsPerApp is already at this Actor\'s maximum of 5000, so there '
+  + 'is no higher value to raise it to; any matching reviews that sit deeper than that in the feed '
+  + 'cannot be reached in a single run';
+
 function passesFilters(r) {
   if (minScore != null && r.score < minScore) return false;
   if (maxScore != null && r.score > maxScore) return false;
@@ -710,7 +720,7 @@ for (const appId of resolvedAppIds) {
       log.warning(
         `${appId}: maxReviewsPerApp (${fetchNum}) was reached and ${data.length - passCount} of the `
         + `fetched reviews were removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters. The cap counts reviews `
-        + `fetched, before filtering${ratingSortUnreachable ? RATING_SORT_HINT : ' -- raise maxReviewsPerApp to search deeper in the feed'}.`,
+        + `fetched, before filtering${ratingSortUnreachable ? RATING_SORT_HINT : depthAtCeiling ? MAX_DEPTH_HINT : ' -- raise maxReviewsPerApp to search deeper in the feed'}.`,
       );
     }
     for (const r of data) {
@@ -792,7 +802,7 @@ for (const appId of resolvedAppIds) {
       saturatedApps.push(appId);
       log.warning(
         `${appId}: all ${passCount} matching reviews in the fetched window of ${fetchNum} were new, so reviews `
-        + 'posted before that window may have been missed. Raise maxReviewsPerApp or run the watch more often.',
+        + `posted before that window may have been missed. ${depthAtCeiling ? 'maxReviewsPerApp is already at its maximum of 5000; run the watch more often instead' : 'Raise maxReviewsPerApp or run the watch more often'}.`,
       );
     }
     if (data.length === 0 && !appIdInvalid) {
@@ -885,7 +895,7 @@ if (watchMode && seeding) {
 } else if (watchMode && pushed === 0) {
   statusMsg = (`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change but the event was excluded by your watchEvents list.)` : ''}${inputCauses.length ? ` ${inputCauses.join('; ')}.` : ''}`);
 } else if (watchMode && saturatedApps.length) {
-  statusMsg = (`Pushed ${pushed} item(s) (${watchChanged} of them changed re-deliveries) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; raise maxReviewsPerApp or run more often.${inputCauses.length ? ` ${inputCauses.join('; ')}.` : ''}`);
+  statusMsg = (`Pushed ${pushed} item(s) (${watchChanged} of them changed re-deliveries) for watch label "${watchLabel}". Every matching review inside the fetched window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; ${depthAtCeiling ? 'maxReviewsPerApp is already at its maximum of 5000, so run more often instead' : 'raise maxReviewsPerApp or run more often'}.${inputCauses.length ? ` ${inputCauses.join('; ')}.` : ''}`);
 } else if (pushed === 0) {
   // Without this branch, timing out before any app was even queried fell into the final default
   // below with an empty emptyApps list, asserting "Google Play returned zero reviews for: " (blank)
@@ -915,7 +925,7 @@ if (watchMode && seeding) {
     const causes = [...inputCauses];
     if (invalidApps.length) causes.push(`these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`);
     if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
-    if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')}${ratingSortUnreachable ? RATING_SORT_HINT : ' — raise maxReviewsPerApp to search deeper'}`);
+    if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')}${ratingSortUnreachable ? RATING_SORT_HINT : depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerApp to search deeper'}`);
     if (filteredOutOnlyApps.length) causes.push(`reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${filteredOutOnlyApps.join(', ')}`);
     if (emptyApps.length) causes.push(`Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`);
     why = causes.length ? causes.join('; ') : 'no "appIds" or "searchTerms" resolved to anything (check the log for details)';
@@ -934,7 +944,7 @@ if (watchMode && seeding) {
   const causes = [...inputCauses];
   if (invalidApps.length) causes.push(`these appIds don't exist on Google Play: ${invalidApps.join(', ')} (check the package name in the Play Store URL's "?id=" param)`);
   if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
-  if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : '; raise maxReviewsPerApp to search further'}`);
+  if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : depthAtCeiling ? MAX_DEPTH_HINT : '; raise maxReviewsPerApp to search further'}`);
   if (filteredOutOnlyApps.length) causes.push(`reviews were found but every one was removed by your filters for: ${filteredOutOnlyApps.join(', ')}`);
   if (emptyApps.length) causes.push(`zero reviews for: ${emptyApps.join(', ')}`);
   if (genreSkippedApps.length || genreUnknownApps.length) causes.push(`your "genres" filter skipped ${genreSkippedApps.length + genreUnknownApps.length} app(s)${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}`);

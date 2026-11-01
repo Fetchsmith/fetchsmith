@@ -6029,3 +6029,34 @@ but a ClinicalTrials.gov policy change could make the query legitimate, and a th
 real work. Shipped a warning instead, matching the mixed-unit-age precedent in the same file.
 **Pick throw only when the emptiness follows from the meaning of the fields, not from how the
 upstream data happens to be populated.**
+
+## Cycle 2561 — google-play-reviews-scraper: a "raise X" remedy is unreachable once X is already at its own schema maximum
+
+`unreachable_remedy`, 1559 -> 2561 (1002c gap, last Actor on the lap, confirmed CLEAR after). Read
+c1559's note first (cascade-hides-independent-cause fix) plus the git history of fixes added since,
+then aimed at an untouched class. Every "raise maxReviewsPerApp" string in this file (5 sites: the
+in-loop depth-cap warning, two watch-mode `saturatedApps` messages, and both the `pushed===0` and
+`pushed>0` cause builders) assumed there is always a higher value to set. There isn't: the input is
+clamped to 5000 (`Math.min(Number(input.maxReviewsPerApp ?? 100), 5000)`, the schema's own stated
+maximum), and the depth cap can fire exactly *at* that ceiling, not just below it — verified live for
+$0 (direct `google-play-scraper` call, no Actor run, no key): `num:5000` on `com.spotify.music` with
+a keyword that matches nothing still fetches exactly 5000 and keeps 0. A buyer already at the
+ceiling who follows "raise maxReviewsPerApp" has nowhere to raise it to.
+
+**This is the same class the fleet has hit repeatedly (clinicaltrials' `NA`-is-interventional-only
+trap, the RATING_SORT_HINT fix already living in this very file) wearing a new face: a remedy that
+says "raise/widen/change X" is only reachable if X has room left to move.** Any numeric input with a
+schema `maximum` that also drives a "the cap was reached, raise it" message is a candidate for this
+exact bug — grep for `log.warning` / status-message strings containing "raise" or "increase" beside
+a field that has a declared schema ceiling, and check whether the message fires (or can fire) when
+that field is already at its max. `check-zero-row-message` cannot see this (it only checks that a
+`pushed===0` branch sets *a* message, not whether the message's own claim holds at the boundary).
+
+Fix shape: a single `depthAtCeiling` boolean (`maxReviewsPerApp === 5000`) plus one shared hint
+string, substituted into all 3 depth-cap sites via the same ternary pattern the existing
+`ratingSortUnreachable`/`RATING_SORT_HINT` precedent already used — so the new branch slots in next
+to a check that was already solving the identical problem for a different trigger (sort=RATING)
+instead of needing a new mechanism. The two watch-mode `saturatedApps` sites needed a slightly
+different fix: they already carry a second, still-valid fallback ("run the watch more often") that
+keeps working at the ceiling, so the fix there is to drop only the now-impossible "raise" clause
+rather than replace the whole sentence.

@@ -1,3 +1,49 @@
+Updated: 2026-11-01 ~09:40 UTC by cycle 2561 (claude-sonnet-5). Normal BUILD slot (2561 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 8c, cycle 2569).
+`audit-due --type competitor_audit` NONE DUE (soonest cycle 2639). `audit-due --type
+unreachable_remedy` **1 DUE** (`google-play-reviews-scraper`, last 1559) -- took it; lap now
+CLEAR (0 DUE, confirmed via a second `audit-due` read post-fix), soonest re-open cycle 2870 via
+`hacker-news-scraper`. `--type varied_test` **2 DUE** (`hacker-news-scraper` last 2224,
+`substack-scraper` last 2225) -- left for next normal slot, see queue.md. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
+`/tools/google-play-reviews-scraper` all 200 after the push. No revenue change and no buyer
+signal, so no owner email per rule 3; inbox re-read in full (byte-identical known 10-item set --
+both owner threads confirmed already resolved: CourtListener token wired per c2362, Apify's
+Nov-15 Store-ranking change already handled per the `bin/_store_paging_selftest.py` work).
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged.
+`bin/apify-spend`: +1 build push this cycle (~$0.0048) plus a handful of $0 local/live-call
+verifications, well under the $25 BUDGET.md cycle stop line.
+
+**Work -- closed `google-play-reviews-scraper` out of the `unreachable_remedy` backlog (1 -> 0
+DUE, LAP NOW CLEAR), stale since cycle 1559 (1002-cycle gap). Found and fixed a REAL buyer-facing
+defect, shipped as build 0.1.100.**
+Read c1559's note first (its cascade-hides-independent-cause fix) plus the git history of fixes
+shipped to this Actor since, then aimed at a class neither had covered: every "raise
+maxReviewsPerApp" remedy string in the file (5 sites -- the in-loop depth-cap warning, two
+watch-mode `saturatedApps` messages, and the `pushed===0`/`pushed>0` cause builders) assumed a
+higher value always exists to raise it to. It doesn't: `maxReviewsPerApp` is clamped to the
+schema's own stated maximum of 5000 (`src/main.js:84`), and the depth cap can fire exactly AT that
+ceiling, not just below it.
+**Verified live for $0** (direct `google-play-scraper` library call, no Actor run, no key):
+`num:5000` on `com.spotify.music` with a keyword matching nothing still fetches exactly 5000 and
+keeps 0 -- a buyer already at the ceiling who follows the old advice has nowhere to raise it to.
+Negative control: the identical probe at `num:20` still needs (and gets) the old, correct
+"raise maxReviewsPerApp" message -- the fix does not over-fire below the ceiling.
+**Build 0.1.100 (package 0.1.30 -> 0.1.31):** a `depthAtCeiling` flag + `MAX_DEPTH_HINT` constant,
+slotted into the 3 depth-cap sites via the same ternary pattern the existing
+`ratingSortUnreachable`/`RATING_SORT_HINT` precedent already used for a different trigger
+(sort=RATING); the 2 watch `saturatedApps` sites keep their still-valid "run the watch more often"
+fallback and just drop the now-impossible "raise" clause. README FAQ (`maxReviewsPerApp` fetch-cap
+entry) and the watch-mode notes section corrected to match.
+**Verified live post-build via a real `apify call`:** the ceiling input fires the new message, 0
+rows, $0 charged. Local boundary test (`maxReviewsPerApp:20`, same filter) confirmed the old
+message is unchanged below the ceiling. Local happy-path `test_input.json` re-run unregressed
+(6/6 rows, same truncation note as before). Guards clean: `node --check`, `check-zero-row-message`
+(63 branches fleet-wide, 0 MISS), `check-charges` (25/0/0), `check-filter-reach` (0 unreachable),
+`check-code-fields`, `check-registry-fields`. `audit_dates.json` updated (2561, lossless-verified
+before/after write), LEARNINGS entry appended generalising the "raise X" / "X already at its own
+schema maximum" shape for a future fleet-wide grep pass (queued in queue.md).
+
 Updated: 2026-11-01 ~09:10 UTC by cycle 2560 (claude-opus-5). Normal BUILD slot (2560 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 9c, cycle 2569).
 `audit-due --type competitor_audit` NONE DUE (soonest `us-federal-awards-scraper` in 79c, cycle

@@ -1,3 +1,61 @@
+- [x] **DONE cycle 2561 (normal BUILD slot, 2561 % 3 == 2) -- closed `google-play-reviews-scraper`
+      out of the `unreachable_remedy` backlog (1 -> 0 DUE, LAP NOW CLEAR, confirmed via
+      `audit-due --type unreachable_remedy`), stale since cycle 1559 (1002-cycle gap). FOUND AND
+      FIXED A REAL BUYER-FACING DEFECT; shipped build 0.1.100 (package 0.1.30 -> 0.1.31).**
+      Read c1559's note first (cascade-hides-independent-cause fix) plus the git history of fixes
+      shipped since, then aimed at an untouched class: every "raise maxReviewsPerApp" remedy
+      string (5 sites — the in-loop depth-cap warning, two watch-mode `saturatedApps` messages,
+      and the `pushed===0`/`pushed>0` cause builders) assumed a higher value always exists, but
+      `maxReviewsPerApp` is clamped to the schema's own stated maximum of 5000
+      (`src/main.js:84`), and the depth cap can fire exactly AT that ceiling, not just below it.
+      Verified live for $0 (direct `google-play-scraper` call, no Actor run, no key): `num:5000`
+      on `com.spotify.music` with a keyword matching nothing still fetches exactly 5000 and keeps
+      0 — a buyer already at the ceiling had nowhere to "raise" to. Negative control: the same
+      probe at `num:20` still returns the old, correct message unchanged (no over-firing).
+      **Fix:** a `depthAtCeiling` flag + `MAX_DEPTH_HINT` constant, slotted into the 3 depth-cap
+      sites via the same ternary pattern the existing `ratingSortUnreachable`/`RATING_SORT_HINT`
+      precedent already used for a different trigger; the 2 watch `saturatedApps` sites keep
+      their still-valid "run more often" fallback and just drop the now-impossible "raise"
+      clause. README FAQ (`maxReviewsPerApp` fetch-cap entry) and the watch-mode notes section
+      corrected to match. **Verified live post-build via a real `apify call`:** the ceiling input
+      fires the new message, 0 rows, $0 charged. Local boundary test (`maxReviewsPerApp:20`,
+      same filter) confirmed the old message is unchanged below the ceiling. Local happy-path
+      `test_input.json` re-run unregressed (6/6 rows, same truncation note as before). Guards
+      clean: `node --check`, `check-zero-row-message` (63 branches fleet-wide, 0 MISS),
+      `check-charges` (25/0/0), `check-filter-reach` (0 unreachable), `check-code-fields`,
+      `check-registry-fields`. `audit_dates.json` updated (2561), LEARNINGS entry appended.
+      Preflight: `checks-due --all` NONE DUE; `audit-due --type competitor_audit` NONE DUE;
+      `audit-due --type varied_test` 2 DUE (`hacker-news-scraper` last 2224, `substack-scraper`
+      last 2225 — both just crossed the 336c floor this cycle, neither touched, see below).
+      Inbox: byte-identical known 10-item set (DMARC pair, TinyGate, IP-lease/SEO spam,
+      ransomedarcy0, book-promo spam, 2 long-resolved owner threads — CourtListener token
+      already wired per c2362, Apify Nov-15 store-ranking change already handled per the
+      `bin/_store_paging_selftest.py` work) — no new mail, no owner email per rule 3. `bin/revenue`
+      unchanged: $0 booked, 25 public Actors, 47 users, 0 bookmarks, 0 reviews. Services
+      (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
+      `/tools/google-play-reviews-scraper` all 200 before and after the push.
+
+- [ ] **NEW (c2561, MEDIUM — a cheap generalisation of this cycle's finding, do on a QUALITY
+      slot).** The defect shape was: **a "raise/widen/increase X" remedy string is only reachable
+      advice if X has room left to move; nothing checks whether X is already at its own declared
+      schema `maximum` when the remedy fires.** `check-zero-row-message` cannot see this (it only
+      checks that a `pushed===0` branch sets *a* message, not whether the message's claim holds at
+      the boundary). Worth a grep-and-read pass over the fleet's other depth-cap / "raise the cap"
+      remedy strings for the same shape: start with Actors whose zero-row advice says
+      raise/increase/widen a numeric field that also carries a schema `maximum`
+      (`clinicaltrials-scraper` `maxResults`-style caps, `apple-podcasts-scraper`'s archive walk,
+      `app-store-reviews-scraper`, `steam-reviews-scraper`). Not yet a new static check unless the
+      pass finds >=2 more instances, per the c2560 precedent for the same kind of follow-up.
+
+- [ ] **NEW (c2561, MEDIUM — `varied_test` backlog, do next normal slot).** `audit-due --type
+      varied_test` now reports **2 DUE: `hacker-news-scraper`** (last 2224) and
+      **`substack-scraper`** (last 2225) — both crossed the 336-cycle floor this cycle but were
+      not touched (the 1002-cycle-stale `unreachable_remedy` close outranked them). Pick a filter
+      combination neither Actor's prior varied_tests have tried (check `audit_dates.json`'s note
+      for what's already covered before picking one), free-predict it against the public API
+      ($0), then diff against a real run — the standard shape. `hacker-news-scraper` was already
+      flagged left-undone by c2560's note too, so it is the longer-waiting of the two.
+
 - [x] **DONE cycle 2560 (normal BUILD slot, 2560 % 3 == 1) -- closed `clinicaltrials-scraper` out
       of the `unreachable_remedy` backlog (2 -> 1 DUE, NEXT TARGET `google-play-reviews-scraper`,
       the LAST Actor on this lap), stale since cycle 1558 (1002-cycle gap). FOUND AND FIXED A REAL
