@@ -875,6 +875,7 @@ async function pushEpisodeRows(rows, floorKey, wholeFeed = false) {
       + `to ${new Date(newestScanned).toISOString().slice(0, 10)}`;
     archiveFilteredIds.push(String(floorKey));
     if (nonDateEpisodeFiltersSet.length && (inWindow > 0 || !dateEpisodeFiltersSet.length)) {
+      archiveFilteredIdsDateExonerated.add(String(floorKey));
       log.warning(
         `Walked all ${got} episode(s) in this show's RSS archive and your `
         + `${nonDateEpisodeFiltersSet.join(' / ')} filter(s) removed every one of them`
@@ -1147,6 +1148,10 @@ const depthCapped = [];
 const feedCeilingIds = []; // Apple's review feed quit mid-walk after a FULL page (see scrapeReviews)
 const windowFilteredIds = []; // episodes: Apple's own lookup API window (not RSS) fetched rows but the filters removed all of them
 const archiveFilteredIds = []; // episodes: the WHOLE RSS archive was walked and the filters removed all of it
+// Subset of archiveFilteredIds where the date window was proven NOT at fault (it matched rows,
+// or wasn't even set) — mirrors the log.warning split at pushEpisodeRows so the buyer-facing
+// status message doesn't re-introduce the false date-window attribution h1548 fixed in the log.
+const archiveFilteredIdsDateExonerated = new Set();
 // Per-source completeness record for dataType "episodes", the machine-readable counterpart to
 // warnIfTruncated()'s log line (raised by a dev.to reader, cycle 1980: a log line is not readable
 // by a program consuming the dataset). One entry per requested id/feed; written to RUN_SUMMARY below.
@@ -1520,7 +1525,14 @@ if (watchMode && seeding) {
   // (a valid id was parsed and the show's entire archive was fetched under it) — the same class
   // of wrong answer the lookup-path branch above fixed, which never covered the RSS path.
   // Reproduced live 2026-10-11 before the fix.
-  if (archiveFilteredIds.length) causes.push(`your ${episodeFiltersSet.join(' / ')} filter(s) removed every episode in the full RSS archive of: ${archiveFilteredIds.join(', ')} — the log names each feed's real date coverage; relax the filter(s) to match it`);
+  // Split by the same date-exoneration test as the per-podcast log.warning above: a podcast
+  // where the date window was proven not at fault must not have minReleaseDate/maxReleaseDate
+  // named here too, since that falsely tells the buyer widening the window could help (h2545,
+  // live-reproduced: explicitOnly + an already-wide window named the window anyway).
+  const archiveFilteredExonerated = archiveFilteredIds.filter((id) => archiveFilteredIdsDateExonerated.has(id));
+  const archiveFilteredNotExonerated = archiveFilteredIds.filter((id) => !archiveFilteredIdsDateExonerated.has(id));
+  if (archiveFilteredExonerated.length) causes.push(`your ${nonDateEpisodeFiltersSet.join(' / ')} filter(s) removed every episode in the full RSS archive of: ${archiveFilteredExonerated.join(', ')} — the log confirms the date window matched and names each feed's real date coverage; relax the non-date filter(s) instead`);
+  if (archiveFilteredNotExonerated.length) causes.push(`your ${episodeFiltersSet.join(' / ')} filter(s) removed every episode in the full RSS archive of: ${archiveFilteredNotExonerated.join(', ')} — the log names each feed's real date coverage; relax the filter(s) to match it`);
   if (dataType === 'reviews' && (keyword || minRating != null || maxRating != null)) causes.push('every review Apple returned was removed by your minRating/maxRating/keyword filters');
   if (dataType === 'charts' && chartType === 'episodes' && episodeFiltersSet.length) causes.push(`every entry on the Trending Episodes chart for storefront "${country}" was removed by your ${episodeFiltersSet.join(' / ')} filter(s)`);
   // Only added when another source existed (ids/rawFeeds/searchTerms) — an ALL-unparseable
