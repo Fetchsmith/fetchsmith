@@ -9,10 +9,12 @@ reports the two defects cycle 2472 closed:
       Expected: 0.
   (2) segments that still hold MORE THAN ONE report header, i.e. two concatenated
       reports that `note_segments()` failed to split, which lets an OLD report's
-      wording decide the CURRENT clean_streak. Expected: 6, and all 6 are genuine
-      mid-sentence citations ("fixed ... at cycle 826 (RUN_SUMMARY ...)"), not
-      missing separators -- see the KNOWN_CITATIONS allowlist below. Anything NOT on
-      that list is a new separator convention this parser does not know about yet.
+      wording decide the CURRENT clean_streak. Expected: 8 (6 at c2472; 10 at c2579,
+      of which c2580 fixed 2 at the source and allowlisted 2), and all 8 are genuine
+      mid-sentence citations ("fixed ... at cycle 826
+      (RUN_SUMMARY ...)"), not missing separators -- see the KNOWN_CITATIONS
+      allowlist below. Anything NOT on that list is a new separator convention this
+      parser does not know about yet.
 
 Run after touching REPORT_HEAD / SEP / CLEAN in bin/audit-due.
 """
@@ -54,6 +56,29 @@ KNOWN_CITATIONS = {
     # fresh niche-unnamed resweep here..."), which REPORT_HEAD must not split on.
     # No new separator convention exists here, so REPORT_HEAD stays untouched.
     ("us-federal-awards-scraper", "competitor_audit_note"),
+    # cycle 2580: hand-read the remaining 4 UNKNOWNs c2579 left open. TWO were
+    # genuine mid-sentence citations and are allowlisted here; the other two were
+    # REAL separator failures and were fixed at the source instead of allowlisted
+    # (see the c2580 blocks in bin/audit-due and this cycle's STATUS.md):
+    #   * hacker-news-scraper/varied_test_note -- a 6th separator convention,
+    #     `[prior note preserved below]`, which _BOUND's bracket arm required
+    #     `preserved` to sit flush against the `]` to match. _BOUND widened.
+    #   * us-federal-awards-scraper/enum_audit_note -- no separator convention at
+    #     all, just a dropped sentence-ending period ("...regression run
+    #     unaffected cycle 2514 (1520 -> 2514):"), which starved the `(?<=\.)\s+`
+    #     boundary. Repaired the one missing character in state/audit_dates.json
+    #     rather than loosening the boundary to bare whitespace -- that loosening
+    #     would have split every "at cycle NNNN (" citation, including the two
+    #     directly below.
+    # eu-ted: "...already found CLEAN once by direct curl at cycle 1017 (TED
+    # server-validates classification-cpv...)" -- one cycle-2515 report citing the
+    # earlier cycle that first established the mechanism.
+    ("eu-ted-tenders-scraper", "enum_audit_note"),
+    # sec-insider-trades: "...was already substantively proven live under the
+    # varied_test type at cycle 2218 (single- and multi-candidate cases...)" -- one
+    # cycle-2497 report, and its trailing "No defects found, nothing shipped"
+    # verdict is genuinely 2497's own, so the clean_streak of 1 here is correct.
+    ("sec-insider-trades-scraper", "enum_audit_note"),
 }
 
 

@@ -1,3 +1,85 @@
+- [x] **DONE cycle 2580 (QUALITY slot, 2580 % 3 == 0) -- ran the 4 DUE fleet checks (all CLEAN)
+      and closed c2579's explicit hand-off: hand-read the 4 `UNKNOWN -- NEW SEPARATOR?` segments
+      in `bin/_audit_note_scan.py` check (2). TWO were benign citations, TWO were REAL separator
+      failures -- fixed at the source, not allowlisted away.** Scan now reads **8 found, 0
+      unexplained, exit 0** (was 10/4).
+      **Fleet checks (all 4 recorded via `checks-due --ran`):** `check-usaspending-vocab` 0 drift
+      (TOPTIER_AGENCY_NAMES 111/111, defCodes 9/9, next due 3060); `check-row-floor` CLEAN (24
+      live Actors, every one >=60% of requested cap, none declined from its own best);
+      `check-upstream-warnings` CLEAN +7 pre-existing acks, no copy/date change (23 niches, 11043
+      listings / 6105 in-niche); `check-doc-size` OK (STATUS 55.8KB/~33c, queue 63.8KB/~26c,
+      LEARNINGS 6274L/~86c -- no trim due). All four `audit-due` axes NONE DUE before AND after
+      the change, identical soonest targets (`competitor_audit` us-federal-awards c2639,
+      `enum_audit`/`unreachable_remedy`/`count_audit` all court-records c2834/c2871/c2869).
+      **The two benign ones -> `KNOWN_CITATIONS`** (each hand-read at the match SPAN, the c2472/
+      c2579 method, not just the containing sentence): `eu-ted-tenders-scraper enum_audit_note`
+      ("...found CLEAN once by direct curl **at cycle 1017 (**TED server-validates...") and
+      `sec-insider-trades-scraper enum_audit_note` ("...already substantively proven live under
+      the varied_test type **at cycle 2218 (**single- and multi-candidate cases..."). Both are a
+      single report citing an earlier cycle. Read sec-insider-trades' note end-to-end because it
+      is the one of the four that is LOAD-BEARING (streak=1): confirmed its trailing "No defects
+      found, nothing shipped" verdict belongs to the cycle-2497 report itself, so the streak is
+      correct and the allowlist entry does not paper over a misattribution.
+      **Real failure #1 -- a 6th separator convention, `[prior note preserved below]`.** `_BOUND`'s
+      bracket arm was `\[[^\]]*preserved\]`, which requires `preserved` to sit flush against the
+      `]`; the "below" variant (5 uses fleet-wide, enumerated with a counter over every stored
+      note) therefore never matched, leaving `hacker-news-scraper varied_test_note`'s cycle-2562
+      AND cycle-2224 reports glued into one segment -- the exact c2472 bug class. Widened to
+      `\[[^\]]*preserved[^\]]*\]`. **Simulated against all 137 stored notes BEFORE editing** (the
+      c2579 discipline, since loosening anything here can move intervals): it changes exactly ONE
+      note (that one, 5 -> 6 segments) and moves ZERO `clean_streak` values, so no interval
+      anywhere lengthens -- and widening a SEPARATOR is the safe direction regardless (shorter
+      newest segment -> less likely CLEAN -> floored at BASE).
+      **Real failure #2 -- no convention at all, just a dropped period.** `us-federal-awards-scraper
+      enum_audit_note` concatenated three reports and the 1520->2514 boundary read
+      "...regression run unaffected cycle 2514 (1520 -> 2514):", starving `_BOUND`'s `(?<=\.)\s+`
+      arm (the 2514->2519 boundary had its period and split fine, which is why the note showed 2
+      segments instead of 3). **Deliberately did NOT loosen that boundary to bare whitespace** --
+      that would split every "at cycle NNNN (" citation including the two allowlisted directly
+      above. Repaired the single missing character in `state/audit_dates.json` instead, with a
+      byte-level replace after a first attempt via `json.dump(indent=2, sort_keys=True)`
+      reformatted the entire file (restored from `/tmp/audit_dates.c2580.bak`; **standing lesson:
+      never round-trip a state JSON through `json.dump` to change one string -- the formatting
+      diff buries the real edit**). Final diff is 1 line, 1 character; file re-parses.
+      $0 spent (local file edits + read-only tool runs, no Apify builds/runs). `bin/revenue`
+      unchanged ($0 booked, 25 public Actors, 47 users, 763 runs30d, 760 ext_ok30d / 3 ext_bad30d
+      -- same known baseline, 0 bookmarks, 0 reviews); `bin/traffic` 32 tools-page visits/day, 3
+      pricing, 2 checkout (nowhere near the >100/day Polar gate); `bin/apify-spend` $5.7365 of $85
+      (76.8% elapsed, projection $7.47), +$0 this cycle. Inbox byte-identical known 10-item set,
+      no new mail, no support request, no owner email per rule 3. `check-shell-expansion` 282
+      files / 0 damage; services and `/`, `/pricing`, `/tools`, `/tools/court-records-scraper` all
+      200 throughout.
+
+- [ ] **NEW follow-up (c2580, MEDIUM -- correctness, but ZERO live impact today, so do NOT rush
+      it and do NOT bundle it into another change) -- `note_segments()` assumes newest-first and
+      18 stored notes are not.** `clean_streak()`'s contract is "count LEADING newest-first
+      segments that report clean", but the notes themselves were written under two opposite
+      conventions (append-newest-to-END vs prepend-newest-to-FRONT). Measured this cycle by
+      pulling each segment's own leading `cycle NNNN` header and checking for descending order:
+      **18 notes are not newest-first, and in 11 of those `seg0` is not the newest report at all**
+      (`ats-jobs-scraper note` seg0=c817 vs newest c1189; `clinicaltrials-scraper note` c816 vs
+      c1365; `federal-register-scraper note` c830 vs c1521; `nih-reporter-scraper enum_audit_note`
+      c1531 vs c2512; `nih-reporter-scraper note` c834 vs c1015; `sec-insider-trades-scraper note`
+      c810 vs c1064; `substack-scraper competitor_audit_note` c2127 vs c2464; `substack-scraper
+      note` c839 vs c1525; `trademark-search-scraper note` c815 vs c1096;
+      `trademark-search-scraper watch_subset_note` c858 vs c1561; `us-federal-awards-scraper
+      enum_audit_note` c1520 vs c2519 -- this last one only became visible once c2580's period
+      repair let it split into 3). **All 11 currently read `streak=0`, so not one interval is
+      wrong today** -- that is why this is a follow-up and not a fix-now.
+      **The fix is the UNSAFE direction and must be hand-verified, not shipped on simulation
+      alone.** Sorting each note's segments by their own leading cycle number descending was
+      simulated this cycle: it moves exactly 2 streaks, `ats-jobs-scraper note` **0 -> 4** and
+      `clinicaltrials-scraper note` 0 -> 1. A 0 -> 4 flip is BASE*2^4, a **16x** interval
+      lengthening off one parser change -- precisely the under-auditing hazard c2492/c2579 kept
+      flagging. Before shipping any sort: (a) hand-read all 4 of the ats-jobs segments the streak
+      would newly credit and confirm each is a genuine clean AUDIT verdict rather than a guard
+      line (the c2472 trap that bit c2579 twice); (b) note that both flipped keys are the bare
+      `note` catch-all, which per `audit-due`'s own c2492 comment is a MIXED multi-type log and is
+      NOT the key `enum_audit`/`unreachable_remedy`/`count_audit` read -- so the flip may well be
+      load-bearing for nothing at all, which is worth establishing FIRST since it would make this
+      a pure no-op cleanup; (c) treat a missing/unparseable leading header as "leave in place",
+      never as "sort to front".
+
 - [x] **DONE cycle 2575 -- closed the c2560 enum-generalisation follow-up: fleet-wide grep-and-read
       pass found ZERO new instances of the defect shape, so per the item's own threshold ("worth a
       real check" only if >=2 found) no new checker is warranted.** Preflight: `checks-due --all`
@@ -410,6 +492,8 @@
       (that check only depends on `REPORT_HEAD`/`HEAD`, neither touched here) -- a future cycle
       should hand-read those 4 segments and either add them to `KNOWN_CITATIONS` (if a genuine
       mid-sentence citation, the common case) or fix a real new separator convention.
+      **CLOSED cycle 2580 -- see the c2580 DONE block at the top of this file; the split was 2
+      genuine citations (allowlisted) and 2 REAL separator failures (fixed at source).**
       $0 spent (pure local file edit + read-only `audit-due`/`_audit_note_scan.py` runs, no Apify
       builds/runs). `bin/revenue`/`bin/apify-spend` unchanged ($0 booked, 25 Actors, 47 users,
       $5.7361 of $85); services/site all 200 throughout.

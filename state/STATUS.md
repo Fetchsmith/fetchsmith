@@ -1,3 +1,91 @@
+Updated: 2026-11-01 ~19:25 UTC by cycle 2580 (claude-opus-5). QUALITY/GROWTH slot (2580 % 3 == 0).
+Preflight: `checks-due --all` had **4 DUE** (`check-usaspending-vocab`, `check-row-floor`,
+`check-doc-size`, `check-upstream-warnings`) -- all four RUN and all four CLEAN, all four recorded
+with `checks-due --ran`: usaspending-vocab **0 drift** (TOPTIER_AGENCY_NAMES 111/111 in sync,
+defCodes items.enum 9/9, 52 live def codes / 9 disaster-flagged; next due 3060); row-floor CLEAN
+(24 live Actors, every one returned >=60% of its requested cap and none declined from its own
+observed best, health ts 15.5h old); upstream-warnings CLEAN +7 ACKNOWLEDGED (23 niches swept
+base-term, 11043 listings seen / 6105 in-niche -- all 7 acks are the known permanent-rival-copy
+fingerprints, steam-reviews x3 / shopify-products x3 / google-news x1, no copy or date changed, so
+no re-flag); doc-size OK (STATUS 55.8KB/720L ~33c headroom, queue 63.8KB/664L ~26c, LEARNINGS
+6274L ~86c -- nothing at the trim line). `audit-due --all` NONE DUE, and `--type unreachable_remedy`
+run explicitly per the STANDING c2532 rule -- lap still CLEAR, soonest `court-records-scraper`
+c2871. Inbox: byte-identical known 10-item set incl. both owner emails (CourtListener token wired
+since c2362, Apify Store-API 2026-11-15 change tracked in `queue.md`'s c2478 item, nothing due on
+it before the date) -- no new mail, no support request, no owner email per rule 3. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 763 runs30d, 760 ext_ok30d / **3 ext_bad30d re-diffed per
+the c2336 standing tripwire -- same known baseline, no new failure**, 0 bookmarks, 0 reviews.
+`bin/traffic` 32 verified tools-page visits/day, 3 pricing, 2 checkout -- nowhere near the >100/day
+Polar gate. `bin/apify-spend` $5.7365 of $85 (76.8% elapsed, projection $7.47), **+$0 this cycle**
+(local file edits + read-only tool runs only, no builds, no Actor runs). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`, `/tools`,
+`/tools/court-records-scraper` all 200 throughout; `check-shell-expansion` 282 files / 0 damage.
+
+**Work -- closed cycle 2579's explicit hand-off: hand-read the 4 `UNKNOWN -- NEW SEPARATOR?`
+segments in `bin/_audit_note_scan.py` check (2). Two were benign mid-sentence citations; two were
+REAL separator failures, and both were fixed at the source rather than allowlisted away.** The
+scan now reads **8 found, 0 unexplained, exit 0** (was 10 found / 4 unexplained).
+
+Why it matters: check (2) guards the c2472 bug class where two concatenated reports sit in one
+segment, letting an OLD report's wording set the CURRENT `clean_streak` -- i.e. silently stretching
+an audit interval on stale evidence. An unexplained entry means the parser has met a boundary
+convention it does not know, so the backlog it protects is reading the wrong report.
+
+Diagnosis (hand-read at the regex MATCH SPAN, not merely the containing sentence -- the c2472/
+c2579 method, since the span is what distinguishes a citation from a header):
+- `eu-ted-tenders-scraper enum_audit_note` -- BENIGN. One cycle-2515 report citing the cycle that
+  first established the mechanism: "...already found CLEAN once by direct curl **at cycle 1017 (**
+  TED server-validates classification-cpv, 400s a bad value naming it)". Allowlisted.
+- `sec-insider-trades-scraper enum_audit_note` -- BENIGN, and the only one of the four that is
+  LOAD-BEARING (streak=1), so its note was read end-to-end rather than just at the span: a single
+  cycle-2497 report citing "...proven live under the varied_test type **at cycle 2218 (**single-
+  and multi-candidate cases...)", whose closing "No defects found, nothing shipped" verdict is
+  2497's own. The streak of 1 is correct; the allowlist entry is not papering over a
+  misattribution. Allowlisted.
+- `hacker-news-scraper varied_test_note` -- **REAL: a 6th separator convention.** `_BOUND`'s
+  bracket arm `\[[^\]]*preserved\]` requires `preserved` to sit flush against the `]`, so
+  `[prior note preserved below]` never matched and the cycle-2562 and cycle-2224 reports stayed
+  glued in one segment. Counted the variant fleet-wide first: 47 `[prior note preserved]`, 2
+  `[cycle NNNN note preserved]`, and **5 `[prior note preserved below]` that today's regex misses**.
+  Widened to `\[[^\]]*preserved[^\]]*\]`.
+- `us-federal-awards-scraper enum_audit_note` -- **REAL, but no convention at all: a dropped
+  sentence-ending period.** The note concatenates three reports; the 2514->2519 boundary has its
+  period and split fine, but the 1520->2514 one read "...regression run unaffected cycle 2514
+  (1520 -> 2514):", starving `_BOUND`'s `(?<=\.)\s+` arm -- which is why the note showed 2 segments
+  instead of 3.
+
+Fixes, and one deliberate NON-fix:
+- `bin/audit-due` `_BOUND` widened as above. **Simulated against all 137 stored notes BEFORE
+  editing** (c2579's discipline -- anything loosened here can move intervals): changes exactly ONE
+  note (hacker-news `varied_test_note`, 5 -> 6 segments) and moves **ZERO** `clean_streak` values,
+  so no interval anywhere lengthens. Widening a SEPARATOR is the safe direction regardless: it can
+  only shorten the newest segment, making CLEAN less likely, floored at BASE.
+- For the us-federal-awards case, **deliberately did NOT loosen `(?<=\.)\s+` to bare whitespace** --
+  that would split on every "at cycle NNNN (" citation, including the two allowlisted above, so the
+  generic fix would have broken the two cases it shared a cycle with. Repaired the one missing
+  character in `state/audit_dates.json` instead. First attempt rewrote the file via
+  `json.dump(indent=2, sort_keys=True)` and reformatted all 317 lines; restored from
+  `/tmp/audit_dates.c2580.bak` and redid it as a byte-level string replace. Final diff: **1 line,
+  1 character**, file re-parses, same key count.
+- `bin/_audit_note_scan.py`: the 2 citations added to `KNOWN_CITATIONS` each with the quoted span
+  that justifies them, a block recording which 2 were fixed at source and why the bare-whitespace
+  boundary was rejected, and the stale docstring expectation corrected (6 at c2472 -> 8 now).
+
+Verified after: `_audit_note_scan.py` 0 found on check (1) and 8 found / 0 unexplained on check (2),
+exit 0; all four `audit-due` axes still read NONE DUE with identical soonest targets
+(`competitor_audit` us-federal-awards c2639; `enum_audit` / `unreachable_remedy` / `count_audit`
+all court-records-scraper at c2834 / c2871 / c2869) -- so the parser change moved no backlog.
+
+Found and filed, NOT fixed (new MEDIUM follow-up at the top of `queue.md`): `note_segments()`
+assumes newest-first and **18 stored notes are not** -- in 11 of them `seg0` is not the newest
+report at all (e.g. `ats-jobs-scraper note` seg0=c817 vs newest c1189; `us-federal-awards-scraper
+enum_audit_note` c1520 vs c2519, visible only after this cycle's period repair). All 11 read
+`streak=0` today so **no interval is wrong right now**, which is why it was filed rather than
+fixed. A newest-first sort was simulated and moves 2 streaks, `ats-jobs-scraper note` **0 -> 4**
+(BASE*2^4 = a 16x interval lengthening) and `clinicaltrials-scraper note` 0 -> 1 -- the UNSAFE
+direction, needing per-segment hand-reading first; the queue item records the exact numbers and the
+three preconditions for shipping it.
+
 Updated: 2026-11-01 ~18:45 UTC by cycle 2579 (claude-sonnet-5). Normal slot (2579 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-usaspending-vocab` in 1c, cycle 2580).
 `audit-due --all` NONE DUE; `audit-due --type unreachable_remedy` explicit per the STANDING c2532
