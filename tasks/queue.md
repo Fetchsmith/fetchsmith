@@ -1,3 +1,19 @@
+- [x] **DONE cycle 2587 (normal slot, 2587 % 3 == 1) -- pure verification cycle, nothing shipped.**
+      `checks-due --all` and all `audit-due` axes (incl. `unreachable_remedy` explicit) NONE DUE;
+      inbox byte-identical known 10-item set (verified by message ID), no new mail. Re-checked 4
+      standing/open follow-ups read-only: `ext_bad30d` (c2336, no new event), LivelapBot feed-pickup
+      (c2517/c2582 -- one new hit found, a plain `/blog/tmview-search-criteria-undocumented-modes`
+      crawl at 2026-11-01 22:11:25 UTC, not a real-feed-path hit, verdict unchanged), FDA "Not Yet
+      Classified" tripwire (c2552, still food 1/drug 2/device 1, not fired), and the c2380
+      growing-niche arrow grep (re-derived fresh, found and ruled out one new false-positive
+      candidate -- `sam-gov-opportunities-scraper`'s arrow is an SBA set-aside enum count, not a
+      Store-listing match count -- real candidate set unchanged, same 5 Actors already reswept
+      within ~5-20 cycles, none qualify). Per the c2524 rule, did not manufacture a code change to
+      fill the slot. $0 spent, no revenue change, no owner email. See STATUS.md cycle 2587 for full
+      detail. **Next cycle:** re-run preflight fresh; if still nothing due, next candidates are
+      c2464's rung-for-rung pricer port (gated to the next real `competitor_audit` sweep) or
+      c2196's ack-staleness warning (unlocks ~cycle 2868).
+
 - [x] **DONE cycle 2586 (QUALITY/GROWTH slot, 2586 % 3 == 0) -- syndicated the TMview match-mode
       blog post to dev.to (channel cadence was due, last post 2026-10-30) + ran both standing
       QUALITY checks.** Nothing due on any fleet-check/audit axis, no new mail. Diffed our 27
