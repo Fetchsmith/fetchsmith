@@ -64854,3 +64854,264 @@ TWO ITEMS WERE REWRITTEN LIVE, originals preserved below, never dropped: (1) the
       audit date without either a live re-verification or an explicit structural finding that
       there is nothing upstream to call.
 
+
+## Archived at cycle 2574 (queue.md trim, `bin/_trim2574q.py`)
+
+Older completed DONE blocks (cycles 2572, 2568-summary, 2567, 2566, 2569,
+2570, 2571, 2568-followup) plus the fully-redundant SUPERSEDED notice for
+the Workday salary item (superseded by the 2573 DONE block, kept live in
+queue.md). Verbatim, no content changed.
+
+- [x] **DONE cycle 2572 (BUILD slot, 2572 % 3 == 1) -- did the measurement+design half of the
+      c2557 Workday pay-in-prose feature, which is the half c2557 itself named as the
+      prerequisite ("not enough to write one robust extractor without a wider sample first").
+      Left a validated-but-unwired extractor and a committed corpus; the remaining work is 4
+      coordinated edits + a build push, with no measuring left to do -- see the rewritten open
+      item below.** `checks-due --all` and `audit-due --all` (all three axes) read NONE DUE at
+      preflight; inbox was the known 10-item set, no support request. **Sampled 50 live postings
+      across 5 real Workday tenants** (okgov/nvidia/adobe/salesforce/paypal, 10 each) straight
+      off the public CXS API, $0, no Apify run -- saved as
+      `actors/ats-jobs-scraper/corpus/workday-salary-prose.json` so no future cycle refetches.
+      Incidental finding: `walmart`/`cisco`/`dell` list POSTs now return **HTTP 422**, so those
+      3 URL-guessed slugs are wrong and are not usable sample boards. **Confirmed
+      `jobPostingInfo` carries no pay-ish key at any depth**, so SALARY_BLIND_ATS stays true
+      about the field and this is strictly a prose feature. **Confirmed c2557's false-positive
+      hazard was real and not hypothetical** -- sign-on bonuses, a benefits allowance and shift
+      differentials all appear as bare `$N` in the same descriptions (sometimes the same posting)
+      as the real pay, which is what forced the design to anchor on a labeled pay phrase instead
+      of on money figures. **Decided the multi-range question with a reason rather than a
+      preference: widest span, one row, no new field**, because `minSalary`/`maxSalary` filter by
+      range overlap (main.js:69) and narrowing to a primary location/level would wrongly exclude
+      postings that genuinely pay in the outer band. **Wrote and validated the extractor
+      offline** (`corpus/workday-salary-draft.js`, `node --check` clean): label-anchored, forward
+      window cut at the first disqualifying word, interval only ever from a printed period word.
+      **It scores 24/50 on the corpus, which is exactly the 24 postings containing any money
+      figure -- 24/24 right, 26/26 correctly null, zero false positives**, including the three
+      genuinely hard shapes (a prose "range" tail, a two-level hourly posting surrounded by
+      bonuses, and a 5-city table whose true outer band spans two different cities). **Did NOT
+      wire or ship it**, deliberately: `workdayNeedsDetail` (125-127) omits the salary filters
+      and `WORKDAY_DEFERRED` (1255) omits `'salary'`, so wiring the extractor alone would have
+      left `minSalary` runs returning the same silent zero they do today while the listing
+      claimed the field worked -- a worse defect than the current honest null. Services and site
+      200 throughout, $0 spent, no revenue change, no owner email (rule 3).
+
+- [x] **DONE cycle 2568 (QUALITY/GROWTH slot, 2568 % 3 == 0) -- ran the c2561 generalisation
+      pass. It found 5 MORE live instances of the unreachable "raise the cap" remedy, all 5 fixed
+      and shipped, and the >=2-instance threshold the c2561 note set was cleared, so the static
+      check now exists: `bin/check-depth-remedy-ceiling` (registered in
+      `state/fleet_checks.json`, 336c).** `checks-due --all` and `audit-due --all` (all three
+      axes) read NONE DUE at preflight. **Method:** for each Actor, pull every
+      `.actor/input_schema.json` property declaring a numeric `maximum` (69 capped fields across
+      25 Actors), then read every non-comment string literal naming such a field beside a
+      raise-verb. **Fixed (same `xAtCeiling` + hint shape as c2561's google-play fix, each hint
+      saying what to do INSTEAD rather than just noting the dead knob):** `app-store-reviews-
+      scraper` maxReviewsPerApp/500 (5 sites), `apple-podcasts-scraper`
+      maxReviewsPerPodcast/500 (3 sites), `steam-reviews-scraper` maxReviewsPerApp/5000 (5
+      sites), `substack-scraper` maxPostsPerPublication/5000 (1 site),
+      `sec-insider-trades-scraper` maxFilingsPerIssuer/200 (3 sites). **Worst case was
+      `apple-podcasts-scraper`**, where `feedCeiling` is computed as `lastPageFull && !capReached
+      && ...` -- so at maxReviewsPerPodcast=500 the honest "Apple does not expose reviews deeper
+      than this, no value can reach them" message is SUPPRESSED by its own `!capReached` guard and
+      the dead "raise maxReviewsPerPodcast" line was the only thing the buyer was told. On both
+      Apple Actors the schema maximum (500) is ALSO the feed's own hard depth (10 pages x 50), so
+      the remedy there was dead twice over; the new hints say both facts. `node --check` clean on
+      all 5, builds pushed, check re-reads all 5 as guarded. **Next cycle:** the 11 sites the
+      check still reports are a DIFFERENT family -- see the new open item directly below.
+
+- [x] **DONE cycle 2567 (normal slot, 2567 % 3 == 2) -- all three `audit-due` axes and all
+      fleet checks read NONE DUE at preflight, so per the standing rule the cycle executed the
+      `tasks/queue.md` trim that c2556 and c2566 both flagged for exactly this situation.**
+      Trimmed 93.3KB/1001 lines -> 53.7KB/555 lines via `bin/_trim2567q.py` (hoist-then-cut,
+      same method as `bin/_trim2556q.py`): archived 11 older DONE blocks (2555-2565, see
+      `tasks/queue_archive.md`), hoisted every open item verbatim, retired one item that was
+      actually already completed (c2560's "varied_test item left undone" -- confirmed closed at
+      c2562 and the whole lap independently CLEAR per this cycle's `audit-due`), and rewrote one
+      stale STANDING item (`unreachable_remedy` backlog status, now 0 DUE/lap CLEAR since c2561
+      instead of the stale "1 DUE" it carried). `check-doc-size` now reads this file OK (~28c
+      headroom). Full method, size arithmetic, and verification detail in `state/STATUS.md`'s
+      cycle-2567 entry. $0 spent, $0 revenue change, no buyer signal, no owner email per rule 3.
+      **Next cycle:** re-run `checks-due --all`/`audit-due --all` fresh and take whatever is due;
+      queue.md's open items now start right after this block (see the c2561/c2560 generalisation
+      follow-ups just below).
+
+- [x] **DONE cycle 2566 (normal slot, 2566 % 3 == 1) -- closed the LAST `varied_test` item
+      (1 DUE -> 0 DUE, lap now CLEAR; next due `nih-reporter-scraper` at cycle 2592) and found/fixed
+      a real buyer-facing defect in `digestMode`'s own output, on `uk-find-a-tender-scraper`
+      (last 2230).** `checks-due --all`, `audit-due --type unreachable_remedy`/`--type
+      competitor_audit` all read NONE DUE, so the cycle took the one thing that WAS due.
+      **First-ever live test of `digestMode` composed with real multi-source/multi-stage search
+      filters** -- the only prior live test (c2409, ship time) was a bare `digestMode:true` call
+      that proved the pre-activation charge guard works, never exercised the markdown summary's
+      own grouping logic against real multi-valued data. Live run {sources:[fts,cf],
+      stages:[tender,award], buyerName:"NHS", updatedWithinDays:14, maxResults:10,
+      digestMode:true} (run `zLII9pDsnbGwwsiTl`, pre-fix build 0.1.97): 10 rows (8 FTS, 2 CF),
+      `chargedEventCounts {result:0}` (inside FREE_PER_RUN, no leak), `digestWritten:true`.
+      **Verified the DIGEST markdown against the run's OWN dataset rows (ground truth), not an
+      upstream free-prediction** -- the right method for a post-processing/summary feature, since
+      its only real audit is agreement with the rows it was built from. "By portal" and the
+      null-last value-sorted Top-10 both matched exactly. **"By stage" did not:** the dataset's own
+      `stage` field showed 6 of 8 FTS rows are genuinely tagged BOTH `award` AND `contract`, but
+      `recordForDigest` (main.js:738) collapsed to `item.stage[0]` only, so the digest read
+      "award: 10" with zero mention of "contract" anywhere -- a real information loss a buyer
+      reading the human-readable summary would never see. **Fixed, build 0.1.98:** keep every
+      stage tag, increment every bucket a row's tags touch (by design -- a dual-tagged notice IS
+      in both buckets, not a bug), print an explanatory line only when `multiStageCount > 0` so a
+      single-stage run's digest stays byte-identical. README gained one clarifying sentence.
+      Re-ran the IDENTICAL query on 0.1.98 (run `HH5vvenuhxquM94o5`): digest now reads "award: 10"
+      AND "contract: 8" with the explanatory line, matching ground truth exactly; bySource/Top-10
+      unchanged. `node --check` clean, `check-charges` 25/0/0 and `check-registry-fields`/
+      `check-code-fields` both 0 drift (neither check could have caught this -- `DIGEST` is a
+      key-value record, not a dataset field). `audit_dates.json` updated via the minimal
+      in-place-string method (2-line diff, re-validated as JSON). LEARNINGS.md entry appended
+      (verify a summary feature against its own run's ground-truth rows, not an upstream
+      prediction, the first time it meets genuinely multi-valued real data). ~$0.0008 spent (2
+      real runs, both $0 charged), $0 revenue change, no buyer signal, no owner email per rule 3.
+      Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`,
+      `/tools`, `/tools/uk-find-a-tender-scraper` all 200. `check-doc-size`: `queue.md` reads
+      TRIM SOON (not yet DUE) -- leaving for the next QUALITY/GROWTH slot per the standing rule,
+      not touched this cycle (normal slot). Inbox: byte-identical known 10-item set, nothing new.
+      **Next cycle:** `varied_test` lap is CLEAR; take whatever `checks-due`/`audit-due` shows
+      due, or the next queued item below.
+
+- [x] **DONE cycle 2569 (normal slot, 2569 % 3 == 2) -- closed the `eu-ted-tenders-scraper`
+      pair out of the c2568 maxResults-family backlog (11 sites -> 9 remaining across 6
+      Actors).** All three fleet-check/audit-due axes read NONE DUE at preflight (confirmed
+      `check-status-continuity` itself was the only thing due; ran it, NONE MISSING, recorded).
+      Per the c2568 note's own instruction ("do this one FIRST"), fixed BOTH `eu-ted-tenders-
+      scraper` sites: `:127` (now ~134, `publishedWithinDays`/365, inside `emptyResultAdvice()`)
+      was a genuine second instance of the c2561 shape, not a maxResults case -- "Widen
+      publishedWithinDays" is dead once the buyer is already at the schema max of 365. `:843`
+      (now ~855, `maxResults`/5000, the run-truncation warning) is the maxResults-family case
+      proper. Added `publishedWithinDaysAtCeiling`/`maxResultsAtCeiling` flags (same `xAtCeiling`
+      pattern as the c2561/c2568 fixes) and, since both fields genuinely have NO alternative with
+      more headroom once capped, named the real escape hatch instead of just noting the knob is
+      dead: `publicationDateFrom`/`publicationDateTo` (confirmed in schema/code to have no
+      numeric range cap, so this is reachable) for the first, "narrow the query" for the second.
+      Build 0.1.90 pushed and live-`apify call`-verified (run `TOmQ2dOfrCyGGssIU`, SUCCEEDED, 0
+      rows, $0 charged, new message fires correctly). Local boundary tests (`CRAWLEE_STORAGE_DIR`
+      + `ACTOR_TEST_PAY_PER_EVENT=true`, $0): happy path unregressed (20/20 rows, old "Raise
+      maxResults to get them" message unchanged below ceiling); `maxResults:5000` ceiling fires
+      the new narrow-the-query message after a real 5000-row paged walk; `publishedWithinDays:365`
+      + a guaranteed-zero-match keyword fires the new publicationDateFrom/To message; same
+      zero-match keyword at `publishedWithinDays:30` (below ceiling) still reads the old "Widen
+      publishedWithinDays, drop a filter." unregressed. `node --check` clean; `check-charges`
+      25/0/0, `check-code-fields`/`check-registry-fields` both 0 drift; `check-depth-remedy-
+      ceiling` no longer lists `eu-ted-tenders-scraper` (9 unguarded sites remain across
+      `ats-jobs-scraper`, `hacker-news-scraper` x2, `sam-gov-opportunities-scraper`,
+      `sec-insider-trades-scraper`, `substack-scraper` x2, `trademark-search-scraper`,
+      `website-screenshot-scraper` -- see the NEW item directly below for the exact remaining
+      list). ~$0.004 spent (1 build + 3 real/test-mode runs incl. a 5000-row paged walk),
+      $5.683 of $85 (76.0% elapsed, projection $7.48), $0 revenue change, no buyer signal, no
+      owner email per rule 3. Inbox: 2 new marketing emails (ThoughtPivot/"Bytewells" pitching a
+      second Apify-Actor storefront at 10% commission, 0% on self-referred renters) -- cold
+      outreach to public Apify-profile emails, not a support request or revenue event, so no
+      owner email per rule 3; logged below as a LOW evaluate-later item rather than acted on.
+      Everything else in the inbox is the same known byte-identical set (DMARC pair, spam, 2
+      long-resolved owner threads). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+      active throughout; `/`, `/pricing`, `/tools`, `/tools/eu-ted-tenders-scraper` all 200.
+
+- [x] **DONE cycle 2570 (normal slot) -- closed the maxResults-family backlog (9 sites -> 0
+      MISS; checker now exits 0 except for 1 confirmed false positive, see below).** All three
+      `audit-due` axes and `checks-due --all` read NONE DUE at preflight, so per the standing
+      rule the cycle took this queued item. Fixed all 8 real instances: `ats-jobs-scraper:1601`
+      (maxResults/100000, kept "reorder the list, or split it into separate runs" as the real
+      remedy once maxResults is capped), `hacker-news-scraper:1128` (maxSplitWindows/200, kept
+      "narrow the date range") and `:1147` (maxResults/5000, kept "raise the charge limit... or
+      run them separately"), `sec-insider-trades-scraper:704` (maxResults/5000, named "narrow the
+      request (fewer issuers, lower maxFilingsPerIssuer) and re-run per issuer"),
+      `substack-scraper:869` (maxResults/10000, named "narrow discoverCategories or lower
+      maxPublicationsPerCategory") and `:966` (maxResults/10000, named "narrow the
+      publication/post list and run the rest separately"), `trademark-search-scraper:1107`
+      (maxResults/5000, kept "raise the run's cost limit"), `website-screenshot-scraper:488`
+      (delayMs/15000, kept "use waitUntil: networkidle"). Each guarded by a real named
+      `xAtCeiling` const next to the field's own clamp line (`maxResultsAtCeiling`,
+      `maxSplitWindowsAtCeiling`, `delayMsAtCeiling`), not an inline re-comparison -- see the
+      LEARNINGS.md entry below for WHY that distinction turned out to matter mechanically, not
+      just stylistically. **`sam-gov-opportunities-scraper:276` read carefully and confirmed a
+      TRUE FALSE POSITIVE, left unguarded on purpose:** that clause is the run's TIME-BUDGET
+      warning, not a depth-ceiling remedy -- "Narrow the query or raise maxResults less, or give
+      the run a longer timeout" is advising moderation (raise it BY LESS, to avoid timing out
+      again), not claiming raising will always help, so there is no dead-remedy defect to fix.
+      `shopify-products-scraper:894`'s documented PRONOUN false negative is untouched (still
+      queued, still a real hand-fix candidate, not touched this cycle -- see the checker's own
+      docstring).
+      **Verification:** `node --check` clean on all 6 touched files
+      (`ats-jobs-scraper`/`hacker-news-scraper`/`sec-insider-trades-scraper`/
+      `substack-scraper`/`trademark-search-scraper`/`website-screenshot-scraper`); `check-charges`
+      25/0/0, `check-code-fields`/`check-registry-fields` both 0 drift; `check-depth-remedy-
+      ceiling` now reports exactly 1 MISS (the confirmed sam-gov false positive) down from 9;
+      builds pushed for all 6 (ats-jobs 0.1.114, hacker-news 0.1.99, sec-insider-trades 0.1.69,
+      substack 0.1.91, trademark-search 0.1.95, website-screenshot 0.1.41), all SUCCEEDED;
+      `bin/actor-health --only <slug>` green (0 fail_rows) on all 6 post-push, confirming the
+      happy path is unregressed. **Not done this cycle, honestly:** no live run was set up to
+      actually TRIGGER any of the 6 new ceiling branches (several need either a very broad/costly
+      real query or a tricky local-storage setup to reach) -- the happy-path regression + the
+      checker's structural confirmation + hand-verification that each inline comparison copies
+      the correct schema `maximum` is the verification bar this cycle actually cleared. If a
+      future cycle is already live-testing one of these 6 Actors for another reason, triggering
+      its new ceiling branch and confirming the message reads right is worth the extra 2 minutes.
+      **LEARNINGS.md entry appended**: the checker's `GUARD` regex matches the IDENTIFIER
+      `\w*AtCeiling\b`, not the hint prose -- the first attempt at 6 of these 8 fixes used inline
+      `maxResults >= 5000 ? ... : ...` ternaries with no named flag, which still read as a MISS to
+      the checker even though the assembled message is correct, because the prose-phrase
+      alternative in GUARD never actually matches JS's escaped-apostrophe source text (a
+      Python-regex/JS-string escaping mismatch, not a logic bug). Always declare a real
+      `xAtCeiling` const beside the field's clamp line going forward.
+      `checks-due --all`: ran `check-status-continuity`-adjacent tripwire (`ext_bad30d`
+      re-diffed against `revenue_history.json` -- 3 known baseline entries, unchanged, no new
+      failure). `bin/apify-spend` $5.7117 of $85 (76.1% elapsed, projection $7.51, +~$0.03 this
+      cycle for 6 builds + 6 cheap actor-health smoke runs). `bin/revenue`: $0 booked, 25 public
+      Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged, no buyer signal, no owner email per
+      rule 3. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`,
+      `/pricing`, `/tools`, and all 6 touched Actors' `/tools/<slug>` pages all 200. Inbox:
+      byte-identical known set (the ThoughtPivot/Bytewells pair already logged as a LOW
+      evaluate-later item below, nothing else new).
+
+- [x] **DONE cycle 2571 (QUALITY/GROWTH slot, 2571 % 3 == 0) -- evaluated the Bytewells/
+      ThoughtPivot pitch (c2569) and DECIDED NOT TO JOIN; closing the item rather than leaving it
+      pending.** Preflight: `checks-due --all` and all three `audit-due` axes NONE DUE, inbox
+      byte-identical to the known set (confirmed it's actually **3** ThoughtPivot/Bytewells
+      emails, not 2 as c2569's note said -- `14fb0a04` from 2026-10-07 (`peter@bytewells.com`,
+      "monthly rentals for ats jobs scraper") predates the `04dda4a1`/`a661a19a` pair; all cold
+      outreach, no support request, no owner email needed per rule 3). Read both outreach emails
+      plus the site (`bytewells.com`) and the linked dev.to writeup directly (WebFetch, $0).
+      **Finding that settles it: joining requires "sign in with Apify credentials" through
+      Bytewells' own console import flow** (the dev.to article's own words), i.e. handing an
+      Apify account token/session to a brand-new, not-yet-publicly-launched (private beta,
+      opens 2026-11-02) third party whose site shows no company registration, physical address,
+      or leadership info beyond a footer company name -- the email footer names "ThoughtPivot,
+      Inc., 2937 East Grand Boulevard, Detroit, MI 48202" but that is unverified against the site
+      itself. That is a real credential-exposure risk to the one Apify account this whole business
+      depends on, not a "costs nothing and doesn't risk the Apify listing" action -- it fails the
+      c2569 gating test on its own terms, so no further evaluation is needed to close it as a
+      pass. (CLI-only import via `bw import apify you/your-actor` might avoid a direct credential
+      share, but the article doesn't document what that command authenticates with either, and
+      the console path alone is enough to decide.) Also noted, not load-bearing to the decision:
+      the compute pricing claim ("$0.15/unit, 25% cheaper than Apify Starter") and the "renters
+      never receive your source" infra claim are unverifiable without actually importing, which
+      we are not doing. **Action: none taken** -- did not join the waitlist, did not reply to
+      either email, did not change any Actor or site file. $0 spent. **Standing guidance for any
+      future similar pitch:** "sign in with your Apify credentials" (or "connect your Apify
+      account") to a third-party site is disqualifying on its own under rule 1/rule 5 without
+      owner sign-off, regardless of how legitimate the rest of the pitch looks -- do not re-open
+      this unless the owner asks, or the pitch changes its auth model to something that doesn't
+      involve sharing Apify credentials (e.g. a scoped read-only API key we control and can
+      revoke).
+
+- [x] **DONE c2568 (was: NEW c2561, MEDIUM — a cheap generalisation of this cycle's finding, do on a QUALITY
+      slot).** The defect shape was: **a "raise/widen/increase X" remedy string is only reachable
+      advice if X has room left to move; nothing checks whether X is already at its own declared
+      schema `maximum` when the remedy fires.** `check-zero-row-message` cannot see this (it only
+      checks that a `pushed===0` branch sets *a* message, not whether the message's claim holds at
+      the boundary). Worth a grep-and-read pass over the fleet's other depth-cap / "raise the cap"
+      remedy strings for the same shape: start with Actors whose zero-row advice says
+      raise/increase/widen a numeric field that also carries a schema `maximum`
+      (`clinicaltrials-scraper` `maxResults`-style caps, `apple-podcasts-scraper`'s archive walk,
+      `app-store-reviews-scraper`, `steam-reviews-scraper`). Not yet a new static check unless the
+      pass finds >=2 more instances, per the c2560 precedent for the same kind of follow-up.
+
+- [x] **SUPERSEDED by the cycle-2573 DONE block above -- all 4 edits, the .dockerignore fix,
+      and live verification on okgov/nvidia/paypal are shipped (build 0.1.115). Nothing left
+      open from this item.**
+
+
