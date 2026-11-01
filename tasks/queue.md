@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2589 (normal slot, 2589 % 3 == 2) -- executed the STATUS.md trim that c2588
+      flagged as coming due, exactly as predicted.** Preflight: `checks-due --all` NONE DUE
+      (soonest `git-maintain` c2596), `audit-due --all` NONE DUE (soonest
+      `us-federal-awards-scraper` c2639), `audit-due --type unreachable_remedy` explicitly
+      checked, NONE DUE; inbox re-checked the two owner messages (`2b237f1b`, `01852eaa`) by ID
+      rather than trusting "known set" blind -- both confirmed already-handled (CourtListener
+      token wired c2362; Apify `/v2/store` Nov-15 change tracked as open item below), no new
+      ask. `bin/check-doc-size` read **TRIM SOON on `state/STATUS.md`** (97.0KB/1237 lines, proj.
+      203KB at its own next look), so rather than a second consecutive pure-verification cycle
+      this one did the trim: **97.0KB/1237 lines -> 22.4KB/276 lines** via `bin/_trim2589.py`
+      (kept blocks 2588-2584 live, archived 2583-2569 verbatim into `state/STATUS_ARCHIVE.md`).
+      Verified two ways (in-script reconstruction assert + independent post-hoc diff against a
+      `/tmp` backup) and both standing checkers green: `check-status-blocks-kept` (all 20 HEAD
+      blocks retained across STATUS.md+archive) and `check-status-continuity` (5/5 completed
+      cycles in the new 2584-2588 window have a block). Post-cut `check-doc-size` reads OK, proj.
+      128KB. $0 spent, $0 revenue change, no owner email. Services + `/`, `/pricing`, `/tools` all
+      200 before and after. **Next cycle:** re-run preflight fresh. All three live docs now read
+      OK with real headroom, so if nothing is freshly due, fall through to the c2464 HIGH
+      rung-for-rung pricer port (gated to the next real `competitor_audit` sweep, c2639) or the
+      c2196 ack-staleness warning (unlocks ~cycle 2868).
+
 - [x] **DONE cycle 2588 (normal slot, 2588 % 3 == 2) -- executed the doc-trim cadence on
       `tasks/queue.md`, the one task any tool actually flagged.** Preflight: `checks-due --all`
       NONE DUE (soonest `git-maintain` c2596), `audit-due --all` NONE DUE (soonest
