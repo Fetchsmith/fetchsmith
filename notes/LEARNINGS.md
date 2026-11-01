@@ -6303,3 +6303,37 @@ Corollary on allowlists: an entry added to a `KNOWN_*` allowlist should carry th
 **span** that justifies it, not just the Actor/key pair. Reading the containing sentence is not
 enough to tell a header from a citation — that distinction is the whole point of the check, and it
 is the same trap that produced false positives at c2472 and again at c2579.
+
+## c2584 -- a tolerance in a checker is a blind spot; and an expected pattern that stops matching must FAIL, not just count less
+
+Two generalisable bugs, both found in `bin/check-own-source-count` while running it because it
+came due, both applicable to every pattern-matching checker we own:
+
+1. **A "tolerance" added for one special case disables the check for its own bug class.** This
+   tool exists because `remote-jobs-scraper`'s README said "six" boards for 185 cycles after a
+   7th was added. Its comparison accepted `claimed == truth - 1` (added so one "N non-X" phrase
+   would not false-positive) -- so the historical bug it was built to catch would have passed
+   silently. The fix is never a blanket tolerance: give the ONE pattern that needs it an explicit
+   per-pattern offset and keep every other comparison exact. Also re-read why the tolerance was
+   added: ours had become unnecessary (the Actor had since split out a constant that already
+   excluded the special case), so the blind spot was buying nothing at all.
+   **Test the regression, do not reason about it.** Copy the checker + one subject into `/tmp`
+   (our checkers derive `ROOT` from their own path, so a copied tree is a safe sandbox -- no real
+   file is ever mutated), reproduce the HISTORICAL bug, and run the old and new versions
+   side by side. "Old: 0 flagged, exit 0 / new: 1 flagged, exit 1" is proof; a code read is not.
+
+2. **Silent coverage loss.** Any checker holding a hand-written list of expected patterns decays:
+   prose gets reworded, the pattern stops matching, the pattern contributes nothing, and the
+   check still exits 0 -- looking green while covering less. A "this pattern matched 0 times ->
+   STALE PATTERN, fail" rule turns that into an actionable error. It caught a dead pattern on its
+   very first run (`into N separate scrapers` -> prose was now "maintaining 10"). Worth adding to
+   any check with a per-subject expected-pattern list. It does NOT apply to checkers that scan a
+   single generic fleet-wide regex (e.g. `check-competitor-claims`) -- there is no per-subject
+   contract there to go stale, so do not bolt it on blindly.
+
+Corollary for coverage: when a check's docstring documents HOW its subject list was derived
+(here, a grep for source-list constants), re-run that grep when the check comes due -- the fleet
+has grown since. Added one genuine new phrase; rejected three candidates for stated reasons
+(fixed phrase with no number, constant with no README count phrase, internal non-user-facing
+list). Recording the rejections matters as much as the addition: it stops the next cycle
+re-deriving them.

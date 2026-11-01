@@ -21,10 +21,30 @@ if a future niche needs this and has no such constant, add the constant to the
 Actor's own code first (it's useful for the Actor itself, not just this check).
 
 Each entry gives one or more (constant name, number-word regex) pairs -- the regex
-matches the way the count is actually phrased in that Actor's own README, including
-"N non-X" phrasing (e.g. ats-jobs-scraper's "6 non-Workday platforms" against a
-7-item list, which is correct, not a mismatch -- so the expected count is whatever
-the regex's own capture implies, not always len(list)).
+matches the way the count is actually phrased in that Actor's own README.
+
+Cycle 2584 fixed two holes that between them made this check unable to catch the
+very bug it was written for:
+
+(1) OFF-BY-ONE BLINDNESS. The comparison used to accept `claimed == truth - 1` as
+    well as `claimed == truth`, to tolerate "N non-X" phrasing (the comment here
+    cited ats-jobs-scraper's "6 non-Workday platforms" against a 7-item list).
+    That rationale was already stale -- ats-jobs-scraper now has a separate
+    AUTO_DETECT_ATS constant that EXCLUDES Workday, so its non-Workday phrase is
+    an exact match against its own list, offset 0. Meanwhile the blanket -1
+    tolerance silently permitted exactly the drift this tool exists to catch:
+    remote-jobs-scraper's motivating bug was "six" boards against a 7-item
+    ALL_SOURCES, i.e. truth - 1, which the old code would NOT have flagged.
+    Patterns now carry an explicit per-pattern offset (default 0) and the expected
+    count is `truth + offset`, compared exactly. Use an offset only when the prose
+    legitimately describes a subset/superset of the constant, and say why.
+
+(2) SILENT COVERAGE LOSS. A pattern that stops matching (README reworded, section
+    deleted) used to just quietly stop contributing to the checked count -- the
+    check still exited 0 while covering less. Every pattern below is expected to
+    match at least once; a pattern with 0 matches is now reported as STALE PATTERN
+    and fails the check, so the coverage has to be repaired (or the pattern
+    deliberately retired) rather than decaying unnoticed.
 """
 import os
 import re
@@ -87,21 +107,33 @@ def const_len(path, const_name):
     return keys
 
 
-# slug -> (js_file_relative_to_actor_dir, const_name, [README regexes])
-# Each README regex must have exactly one capture group: the number/word claiming the count.
+# slug -> (js_file_relative_to_actor_dir, const_name, [README patterns])
+# Each README regex must have exactly one capture group: the number/word claiming
+# the count. A pattern is either a bare regex (expected count == len(constant)) or
+# a (regex, offset) pair where the prose legitimately describes a subset/superset
+# of the constant -- expected count == len(constant) + offset. Every pattern must
+# match its README at least once or the check reports STALE PATTERN and fails.
 SOURCES = {
     "remote-jobs-scraper": [
         ("src/main.js", "ALL_SOURCES", [
             r"\b(\w+)\s+public remote-job boards\b",
             r"\bfrom\s+(\w+)\s+documented, public, no-login job-board\b",
         ]),
+        ("src/main.js", "PAGINATED_SOURCES", [
+            # feed-reach warning section: "on the two paginated boards ..." (c2584)
+            r"\bthe\s+(\w+)\s+paginated boards\b",
+        ]),
     ],
     "ats-jobs-scraper": [
         ("src/main.js", "SUPPORTED_ATS", [
             r"\bacross\s+(\w+)\s+different ATSes\b",
-            r"\binto\s+(\w+)\s+separate scrapers\b",
+            # prose was reworded "into N" -> "maintaining N" at some point before
+            # c2584; the old pattern had gone dead silently (first catch of the
+            # new STALE PATTERN rule). Kept loose on the leading verb for that reason.
+            r"\b(\w+)\s+separate scrapers\b",
         ]),
         ("src/main.js", "AUTO_DETECT_ATS", [
+            # AUTO_DETECT_ATS already excludes Workday, so offset 0, not -1 (c2584)
             r"\ball\s+(\w+)\s+non-Workday platforms\b",
         ]),
     ],
@@ -115,6 +147,7 @@ SOURCES = {
 
 flagged = 0
 checked = 0
+stale = 0
 for slug, entries in SOURCES.items():
     actor_dir = os.path.join(ROOT, "actors", slug)
     readme_path = os.path.join(actor_dir, "README.md")
@@ -132,16 +165,28 @@ for slug, entries in SOURCES.items():
             print(f"COULD NOT PARSE: {slug}/{js_rel} const {const_name}")
             continue
         for pat in patterns:
-            for m in re.finditer(pat, readme):
+            regex, offset = (pat, 0) if isinstance(pat, str) else pat
+            expected = truth + offset
+            matches = 0
+            for m in re.finditer(regex, readme):
+                matches += 1
                 checked += 1
                 claimed = num(m.group(1)) if m.groups() else None
                 if claimed is None:
                     continue  # pattern matched but captured non-numeric text (fixed phrasing, not a count)
-                if claimed != truth and claimed != truth - 1:
+                if claimed != expected:
                     flagged += 1
                     lineno = readme.count("\n", 0, m.start()) + 1
-                    print(f"{slug}: README.md:{lineno} claims {claimed!r} but {const_name} has {truth} entries")
+                    via = f"{const_name} has {truth} entries"
+                    if offset:
+                        via += f", pattern offset {offset:+d} -> expected {expected}"
+                    print(f"{slug}: README.md:{lineno} claims {claimed!r} but {via}")
                     print(f"  context: {m.group(0)!r}")
+            if matches == 0:
+                stale += 1
+                print(f"STALE PATTERN: {slug} README.md no longer matches {regex!r} "
+                      f"(was covering {const_name}) -- repair the prose or retire the pattern")
 
-print(f"\nchecked {checked} count phrase(s) across {len(SOURCES)} Actor(s) with structured source lists, {flagged} flagged")
-sys.exit(1 if flagged else 0)
+print(f"\nchecked {checked} count phrase(s) across {len(SOURCES)} Actor(s) with structured "
+      f"source lists, {flagged} flagged, {stale} stale pattern(s)")
+sys.exit(1 if (flagged or stale) else 0)

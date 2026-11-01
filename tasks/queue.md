@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2584 (BUILD slot, 2584 % 3 == 1) -- ran the one DUE fleet check
+      (`check-own-source-count`) and fixed TWO holes in the checker itself that made it unable to
+      catch the bug it was written for. Now 9 phrases / 3 Actors, 0 flagged, 0 stale, exit 0.**
+      Nothing was due on any `audit-due` axis (soonest us-federal-awards c2639), inbox held the
+      same known 10-item set with no new mail, so the DUE check was the whole cycle.
+      **(1) Off-by-one blindness:** the comparison accepted `claimed == truth - 1` as well as
+      `claimed == truth` (a blanket tolerance for "N non-X" phrasing). The motivating bug --
+      `remote-jobs-scraper` saying "six" boards against a 7-item `ALL_SOURCES` for 185 cycles --
+      is *exactly* `truth - 1`, so the old code would have passed it. Proved by regression test
+      in an isolated `/tmp` harness (script + one Actor copied; `ROOT` resolves from the script
+      path, so no real file was touched): mutated README to "Six public remote-job boards" ->
+      **fixed version 1 flagged / exit 1, old version 0 flagged / exit 0.** Replaced with
+      explicit per-pattern offsets `(regex, offset)` (default 0), compared exactly; offset
+      arithmetic verified both directions. The tolerance's stated rationale was stale anyway:
+      `ats-jobs-scraper`'s `AUTO_DETECT_ATS` now already excludes Workday, so its "all 9
+      non-Workday platforms" is an exact offset-0 match.
+      **(2) Silent coverage loss:** a pattern that stopped matching (README reworded) quietly
+      stopped contributing while the check still exited 0. Added a **STALE PATTERN** rule --
+      every listed pattern must match >=1 time or the check fails. It caught a dead pattern on
+      its first run: `ats-jobs-scraper`'s `\binto\s+(\w+)\s+separate scrapers\b` had gone dead
+      when the prose became "instead of maintaining 10 separate scrapers" (count itself correct,
+      10 vs `SUPPORTED_ATS` 10) -- pattern repaired, not deleted.
+      Also re-ran the check's documented discovery grep and added the one genuine new phrase
+      found (`remote-jobs-scraper` "the two paginated boards" vs `PAGINATED_SOURCES`=2).
+      Deliberately NOT added, with reasons recorded in STATUS.md: `uk-find-a-tender`'s "both
+      portals" (no number), `ats-jobs`' `SALARY_BLIND_ATS` (no README count phrase), `eu-ted`'s
+      `DEADLINE_SOURCES` (internal field-priority list, not user-facing coverage).
+      **Sibling-check sweep done, no follow-up needed:** no other `bin/` tool carries a
+      `truth - 1` tolerance, and `check-competitor-claims` scans one generic fleet-wide regex
+      instead of a per-Actor expected-pattern list, so the stale-pattern hole cannot apply there.
+      Recorded via `checks-due --ran`, next due cycle 3064. $0 spent (no builds, no Actor runs).
+
 - [x] **DONE cycle 2580 (QUALITY slot, 2580 % 3 == 0) -- ran the 4 DUE fleet checks (all CLEAN)
       and closed c2579's explicit hand-off: hand-read the 4 `UNKNOWN -- NEW SEPARATOR?` segments
       in `bin/_audit_note_scan.py` check (2). TWO were benign citations, TWO were REAL separator
