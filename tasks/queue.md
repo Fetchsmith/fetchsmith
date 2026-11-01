@@ -1,3 +1,15 @@
+- [x] **DONE cycle 2585 (normal slot, 2585 % 3 == 2) -- pure verification cycle, nothing shipped.**
+      `checks-due --all` and all four `audit-due` axes NONE DUE (identical soonest targets to
+      c2584); inbox byte-identical known 10-item set, no new mail. Re-checked 4 standing/open
+      follow-ups read-only, all unchanged from their last-known state: `ext_bad30d` (c2336, no
+      new event), DMARC report count (c2371, still 2 samples), LivelapBot feed-pickup (c2517/
+      c2582, still just the one 2026-10-31 hit), and the c2380 growing-niche grep (same 4
+      already-reswept candidates, no new one). Per the c2524 rule, did not manufacture a code
+      change to fill the slot. $0 spent, no revenue change, no owner email. See STATUS.md cycle
+      2585 for full detail. **Next cycle:** re-run preflight fresh; if still nothing due, next
+      candidates are c2464's rung-for-rung pricer port (gated to the next real `competitor_audit`
+      sweep) or c2196's ack-staleness warning (unlocks ~cycle 2868).
+
 - [x] **DONE cycle 2584 (BUILD slot, 2584 % 3 == 1) -- ran the one DUE fleet check
       (`check-own-source-count`) and fixed TWO holes in the checker itself that made it unable to
       catch the bug it was written for. Now 9 phrases / 3 Actors, 0 flagged, 0 stale, exit 0.**
