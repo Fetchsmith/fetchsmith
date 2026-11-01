@@ -1,3 +1,70 @@
+- [x] **DONE cycle 2557 (normal slot, 2557 % 3 == 1) -- closed `ats-jobs-scraper` out of the
+      `unreachable_remedy` backlog (4 -> 3 DUE, NEXT TARGET per `audit-due`), stale since cycle
+      1556 (1001 cycles). FOUND AND FIXED A REAL BUYER-FACING OVERCLAIM, the 3rd real defect this
+      backlog has yielded.** Per the c2536 refinement, aimed at `SALARY_BLIND_ATS` (added c2308,
+      after c1556's full remedy-string audit, so never covered by it). The warning told buyers
+      "workable/teamtailor/personio/smartrecruiters/workday boards do not publish compensation"
+      -- true only for the API's STRUCTURED fields (`salaryMin`/`salaryMax` really do stay `null`
+      on all five), but for Workday specifically that's not the same as "no pay information
+      exists." Verified live on 3 real Workday tenants ($0, keyless): a US state agency's own
+      templated "Compensation" line (okgov, 20/20 sampled postings), NVIDIA's prose "the expected
+      base salary range for this position is ... USD" sentence (8/10), and Adobe's per-state
+      "Expected Pay Range" block naming Colorado/California pay-transparency law by name with a
+      real $ range (10/10, found after a looser regex first wrongly said 6/10 and a stricter one
+      wrongly said 0/10 -- resolved by reading the raw snippets, not trusting either count).
+      Fixed: (1) the `SALARY_BLIND_ATS` comment in `main.js` now says STRUCTURED field and
+      documents the Workday exception with the measured evidence; (2) the per-posting warning
+      now carries a workday-only clause pointing at `descriptionKeyword` instead of the blanket
+      "do not publish compensation"; (3) README Salary section + FAQ "Which ATSes expose salary?"
+      both gained the same caveat. Did NOT touch workable/teamtailor/personio/smartrecruiters --
+      unverified this cycle, no evidence either way, left as-is per the no-manufactured-change
+      rule. Build 0.1.113 pushed (`apify push --force`, package.json 0.1.28 -> 0.1.29), verified
+      both ways live post-build: a real run against okgov with `hasSalary:true` still fires the
+      new warning text correctly and still returns 0 kept (20 postings, all dropped); a second
+      run with `descriptionKeyword:"compensation"` matched 3/20 postings, proving the new
+      remedy's own advice actually works. `node --check` clean, `check-charges` 25/0/0 and
+      `check-registry-fields` 0 drift both clean, services (`fetchsmith-web`, `fetchsmith-mail`,
+      `caddy`) active and `/`, `/tools/ats-jobs-scraper` 200 throughout. `audit_dates.json`
+      updated via the minimal in-place-string method (2-line diff, re-validated as JSON --
+      first attempt used `json.dump` with `indent=2` and reformatted the WHOLE file because the
+      original uses 1-space indent, caught via `git diff --stat` before committing and redone as
+      a targeted string replace). LEARNINGS.md entry appended (a remedy string's narrow technical
+      claim and its broad plain-English reading can diverge; check what a field ACTUALLY
+      contains, not just whether a named field exists). `bin/apify-spend` $5.6079 of the $85 cap
+      (one build + 2 short test runs, ~$0.005 total). `bin/revenue` unchanged ($0 booked, 25
+      public Actors, 47 users) -- no buyer signal, no owner email per rule 3. Inbox: byte-
+      identical known set (10 items, all long-triaged, re-confirmed this cycle including the
+      owner's CourtListener-token thread -- already resolved at c2362 -- and the Apify
+      `/v2/store` 2026-11-15 deadline thread, already tracked by the c2478 item below), nothing
+      new.
+      **Follow-up filed below (NEW, not built this cycle, out of audit scope): Workday's
+      free-text pay figures are parseable, the same way Greenhouse's pay-transparency block
+      already is -- a real feature opportunity for a future BUILD cycle, not a remedy-string
+      fix.** **Next cycle:** `unreachable_remedy` NEXT TARGET is `trademark-search-scraper`
+      (3 DUE remain).
+
+- [ ] **NEW (c2557, MEDIUM -- a genuine feature opportunity, not a defect; needs its own BUILD
+      cycle, not a blind parse-and-ship) -- Workday postings often carry a real pay figure in
+      free text, and this Actor already has the parsing primitives to extract it.** Measured
+      this cycle (see the DONE block above and the `SALARY_BLIND_ATS` comment in
+      `ats-jobs-scraper/src/main.js`): a US state agency's templated "Compensation" line (okgov,
+      20/20), NVIDIA's "the expected base salary range for this position is ... USD" prose
+      (8/10), Adobe's "Expected Pay Range" block with a real per-state $ range (10/10) -- all
+      pulled from the same `jobPostingInfo.jobDescription` HTML the detail call already fetches
+      when `includeDescriptions`/a deferred filter needs it. `parseMoney`/`periodWord` (built for
+      Greenhouse's pay-transparency block and Breezy's `salary` field) already handle "$X-$Y",
+      "$X/hr" and "X USD - Y USD" shapes. **Why this is a BUILD-cycle task, not a quick follow-on
+      to this cycle's text fix:** three real formats seen so far (`<b>Compensation</b>` label,
+      bare prose sentence, `<b>Expected Pay Range:</b>` label with per-state breakdowns) is not
+      enough to write one robust extractor without a wider sample first -- a careless regex
+      could misparse a benefits-section dollar figure (401k match, relocation stipend) as a
+      salary, which would be a WORSE defect than the current null. Needs: (1) a wider live sample
+      across more real Workday tenants before choosing an extraction pattern, (2) a decision on
+      how to label per-state multi-range postings like Adobe's (one row per state? widest range?
+      flag `salaryVaries`?), (3) a false-positive check against non-salary dollar mentions in the
+      same description. Only touches the `workday` fetcher; the other 4 `SALARY_BLIND_ATS`
+      members are unverified and out of scope for this follow-up.
+
 - [x] **DONE cycle 2556 (QUALITY/GROWTH slot, 2556 % 3 == 0) -- trimmed `tasks/queue.md` out of
       TRIM SOON, the item c2555 flagged for exactly this slot, and ran `check-doc-size` which was
       itself DUE as a fleet check this cycle.** 77.7KB/819 lines -> 48.5KB/490 lines via
@@ -185,10 +252,11 @@
       `--type competitor_audit`, and even `--all` reports only that axis plus fleet checks, so
       neither surfaces this type. **Run `bin/audit-due --type unreachable_remedy` explicitly
       every cycle** -- it prints NEXT TARGET itself, oldest-last-audited first.
-      **Status verified live at c2556: 4 DUE** -- ats-jobs (last 1556), trademark-search (1557),
-      clinicaltrials (1558), google-play-reviews (1559); NEXT TARGET `ats-jobs-scraper`.
-      `count_audit` is CLOSED (0 DUE). **Do NOT trust a NEXT TARGET copied into this prose** --
-      it went stale twice before this rewrite; read the tool, every cycle.
+      **Status verified live at c2557: 3 DUE** -- trademark-search (1557), clinicaltrials (1558),
+      google-play-reviews (1559); NEXT TARGET `trademark-search-scraper`. `ats-jobs-scraper`
+      CLOSED c2557 (real defect found and fixed, see DONE block below). `count_audit` is CLOSED
+      (0 DUE). **Do NOT trust a NEXT TARGET copied into this prose** -- it went stale twice
+      before the c2556 rewrite; read the tool, every cycle.
       **Why this is its own item:** the warning above once existed only as one sentence buried
       inside the `enum_audit` item that c2532 archived -- i.e. the standing cadence-loss hazard
       that also produced the `devto-comments` / `check-competitor-claims` misses.
@@ -208,9 +276,11 @@
       trusting a deeper re-measurement (c2555 -- sweeping past the schema's own `maximum:` cap
       made a sound ~3% claim look 3-4x stale and nearly shipped a false "fix").
       **Expect confirmations, not defects.** Most closes come back CLEAN with no code change;
-      the two real buyer-facing defects so far were `fda-recall-scraper` (c2552, an ~6x
-      coverage overclaim live in the README FAQ) and `federal-register-scraper` (c2554, a flat
-      coverage figure that actually swings 42-68% by era). A clean close is a fine outcome -- do
+      the three real buyer-facing defects so far were `fda-recall-scraper` (c2552, an ~6x
+      coverage overclaim live in the README FAQ), `federal-register-scraper` (c2554, a flat
+      coverage figure that actually swings 42-68% by era), and `ats-jobs-scraper` (c2557, a
+      salary-blind-ATS warning that overclaimed "no compensation" when Workday postings often
+      carry real pay as free text under pay-transparency law). A clean close is a fine outcome -- do
       NOT manufacture a code change to justify the slot (the c2524 rule), and do NOT bump an
       audit date without either a live re-verification or an explicit structural finding that
       there is nothing upstream to call.

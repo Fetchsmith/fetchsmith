@@ -1257,12 +1257,22 @@ const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'publis
 // employmentTypeKeyword directly — see the warning at the company loop for the live evidence.
 const WORKDAY_TIME_TYPES = ['fulltime', 'parttime'];
 // The ATSes whose fetchers hard-code salaryMin/salaryMax to null on EVERY posting because the
-// upstream payload carries no compensation field at all (verified at each fetcher's own
+// upstream payload carries no STRUCTURED compensation field (verified at each fetcher's own
 // "leave null, don't guess" comment: workable has no compensation key anywhere in the widget
 // payload, teamtailor/personio/smartrecruiters none observed on any real posting, workday none in
-// either the list rows or the job detail). Derived here instead of in the warning so this list and
-// the fetchers can be diffed against each other; the complement (greenhouse/ashby/lever/recruitee/
-// breezy) is what the warning text offers as the working alternative.
+// either the list rows or the job detail). Workday is the one member of this list worth separating
+// from the others: its API has no salary FIELD either, but its free-text job description routinely
+// carries a real pay figure anyway, pushed there by pay-transparency law rather than by the API
+// contract. Verified live cycle 2557 on 3 real Workday tenants: a US state agency's own templated
+// "Compensation" line (okgov, 20/20 postings sampled), NVIDIA's prose "the expected base salary
+// range for this position is ... USD" sentence (8/10), and Adobe's per-state "Expected Pay Range"
+// block naming Colorado/California pay-transparency law by name and quoting a real $ range for
+// each (10/10). salaryMin/salaryMax still can't see that text (nothing here parses prose pay), but
+// descriptionKeyword can match it directly, so the per-board warning below says so for Workday
+// specifically instead of implying there is no pay information to find at all. Derived here
+// instead of in the warning so this list and the fetchers can be diffed against each other; the
+// complement (greenhouse/ashby/lever/recruitee/breezy) is what the warning text offers as the
+// working alternative.
 const SALARY_BLIND_ATS = ['workable', 'teamtailor', 'personio', 'smartrecruiters', 'workday'];
 // Named the same way activeFilterNames() derives its list — from what this run actually SET — so
 // the warning can never name a filter the run did not use, or miss one it did.
@@ -1385,10 +1395,21 @@ try {
     // matched NOTHING AT ALL — on a mixed list (e.g. greenhouse + workday) the salary-capable
     // boards return rows, totalMatched > 0, and the blind boards contribute 0 completely silently.
     if (salaryFilterNames.length && SALARY_BLIND_ATS.includes(result.detectedAts ?? ats)) {
-      log.warning(`${result.detectedAts ?? ats}:${slug} — ${result.detectedAts ?? ats} boards do not`
-        + ` publish compensation, so ${salaryFilterNames.join('/')} drops every posting on this`
-        + ' board. Salary filters only work on greenhouse/ashby/lever/recruitee/breezy boards;'
-        + ' drop the salary filter for this company, or filter its pay text with descriptionKeyword.');
+      const board = result.detectedAts ?? ats;
+      // Workday gets its own clause rather than the shared one below: unlike the other 4 members
+      // of SALARY_BLIND_ATS, its postings often DO carry a real pay figure (pay-transparency law,
+      // not the API), just as free text this Actor doesn't parse — see the SALARY_BLIND_ATS
+      // comment above for the live measurement. Saying "do not publish compensation" without that
+      // caveat would tell a buyer there is nothing to find, when descriptionKeyword usually can.
+      const workdayNote = board === 'workday'
+        ? ' Workday itself has no compensation field, but many employers write a real pay figure'
+          + ' into the free-text job description anyway (increasingly common under pay-transparency'
+          + ' law) — descriptionKeyword can match that text even though salaryMin/salaryMax cannot.'
+        : '';
+      log.warning(`${board}:${slug} — ${board} boards do not publish compensation as a structured`
+        + ` field, so ${salaryFilterNames.join('/')} drops every posting on this board.${workdayNote}`
+        + ' Salary filters only work on greenhouse/ashby/lever/recruitee/breezy boards; drop the'
+        + ' salary filter for this company, or filter its pay text with descriptionKeyword.');
     }
     let scannedForCompany = 0;
     let deliveredForCompany = 0;

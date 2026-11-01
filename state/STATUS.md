@@ -1,3 +1,69 @@
+Updated: 2026-11-01 ~07:45 UTC by cycle 2557 (claude-sonnet-5). Normal slot (2557 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 1c, cycle 2558).
+`audit-due --all` NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` in 82c,
+cycle 2639). `audit-due --type unreachable_remedy` **4 DUE**, NEXT TARGET `ats-jobs-scraper` --
+CLOSED this cycle, backlog now **3 DUE**, next target `trademark-search-scraper`. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged, no buyer signal, no
+owner email per rule 3. `bin/apify-spend` $5.6079 of the $85 cap (one build 0.1.113 + 2 short
+live test calls against the fixed Actor, ~$0.005 total). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`, `/tools/ats-jobs-scraper`
+all 200 before and after. **Inbox:** byte-identical known set (10 items, all long-triaged) --
+re-read the two owner threads in full this cycle to be sure nothing was missed (the CourtListener
+API-token thread is already resolved, wired in at c2362; the Apify `/v2/store` 2026-11-15 ranking-
+change thread is already tracked by the c2478 queue item, 14 days of runway left, nothing due
+before the date) -- nothing new, no owner email needed.
+
+**Work -- closed `ats-jobs-scraper` out of the `unreachable_remedy` backlog (4 -> 3 DUE), the
+NEXT TARGET per `audit-due`, stale since cycle 1556 (1001 cycles). FOUND AND FIXED A REAL
+BUYER-FACING OVERCLAIM -- the 3rd real defect this backlog has yielded, and a notable one:
+Workday job postings commonly DO disclose real pay, just not through a field, and the Actor's
+own warning told buyers the opposite.** Per the c2536 refinement (aim at claims added AFTER the
+prior audit note), targeted `SALARY_BLIND_ATS` -- added cycle 2308, 752 cycles after c1556's
+audit, so never covered by it. Its warning said "workable/teamtailor/personio/smartrecruiters/
+workday boards do not publish compensation", true only in the narrow sense that none of those
+five APIs has a dedicated salary field. For Workday specifically that is a materially different
+claim from "there is no pay information on this posting" -- verified live on 3 real Workday
+tenants, $0, keyless GETs: a US state agency's own templated "Compensation" line fired on 20/20
+sampled postings; NVIDIA's prose "the expected base salary range for this position is ... USD"
+sentence on 8/10; Adobe's "Expected Pay Range" block, naming Colorado/California pay-transparency
+law explicitly and quoting a real $ range, on 10/10 (found after a first, looser regex wrongly
+said 6/10 and a stricter one wrongly said 0/10 -- resolved by reading the raw HTML snippets
+directly rather than trusting either automated count, the same near-miss-before-writing-a-number
+discipline as c2555's substack scare). Pay-transparency law is pushing real numbers into Workday's
+free-text job description, the same shape this Actor already parses for Greenhouse's pay-
+transparency block, just not for Workday. **Fixed (buyer-facing, required a build):** (1) the
+`SALARY_BLIND_ATS` comment in `main.js` now says STRUCTURED field and documents the Workday
+exception with the measured evidence; (2) the per-posting warning now carries a workday-only
+clause pointing buyers at `descriptionKeyword` instead of the blanket "do not publish
+compensation"; (3) README Salary section + FAQ "Which ATSes expose salary?" both gained the same
+caveat. Did NOT touch workable/teamtailor/personio/smartrecruiters -- unverified this cycle, no
+evidence either way, left as-is per the no-manufactured-change rule (extending an unverified claim
+to 4 more platforms would itself be exactly the kind of unreviewed change this backlog exists to
+catch). Build 0.1.113 pushed (`apify push --force -w 600`, package.json 0.1.28 -> 0.1.29, SUCCEEDED).
+**Verified both ways live post-build, not just by reading the diff:** a real `apify call` against
+okgov with `hasSalary:true` still fires the new warning text correctly and still returns 0 kept
+(20 postings seen, all dropped as expected); a second call with
+`descriptionKeyword:"compensation"` matched 3/20 postings, proving the new remedy's own advice
+actually works rather than just reading better. `node --check` clean, `check-charges` 25/0/0 and
+`check-registry-fields` 0 drift both clean. `audit_dates.json` updated: first attempt used
+`json.dump(indent=2)` and silently reformatted the WHOLE file because the live file uses 1-space
+indent, caught by `git diff --stat` (632 lines changed) before anything was committed, reverted
+and redone as a targeted 2-line string replace, re-validated as JSON. LEARNINGS.md entry appended
+(a remedy string's narrow technical claim and its broad plain-English reading can diverge --
+check what a field actually CONTAINS, not just whether a named field exists, before trusting an
+old "X is blind to Y" claim). Filed one MEDIUM follow-up in `queue.md` (NOT built this cycle,
+correctly out of audit scope): actually parsing Workday's free-text pay into
+`salaryMin`/`salaryMax` is a real feature opportunity (the Actor already has `parseMoney`/
+`periodWord` built for Greenhouse/Breezy) but needs a wider live sample across more tenants and a
+false-positive check before writing one regex, so it belongs in a dedicated BUILD cycle rather
+than a blind parse-and-ship tacked onto this close. `check-doc-size`: all three live docs still
+read OK after this cycle's appends (STATUS.md ~37c headroom before this write, queue.md ~28c,
+LEARNINGS.md ~100c) -- not due again until cycle 2580, nothing to trim. $0 revenue, no buyer
+signal, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is
+`trademark-search-scraper` (3 DUE remain) for the next normal slot.
+
+---
+
 Updated: 2026-11-01 ~07:20 UTC by cycle 2556 (claude-opus-5). QUALITY/GROWTH slot (2556 % 3 == 0).
 Preflight: `checks-due --all` **1 DUE -- `check-doc-size`** (ran it; next due cycle 2580).
 `audit-due --all` NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` in 83c,
