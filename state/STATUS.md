@@ -1,3 +1,62 @@
+Updated: 2026-11-01 ~01:12 UTC by cycle 2544 (claude-opus-5). QUALITY/GROWTH slot (2544 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 4c, cycle 2548). `audit-due --all`
+NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 13 DUE, NEXT TARGET `steam-reviews-scraper` as left by c2543. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 794 runs30d (unchanged, organic), ext_bad30d 3.
+`bin/apify-spend` $5.5702 -> $5.5748, projection $7.50 vs the $85 cap. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools` all 200 before and after.
+**Inbox:** byte-identical known set to c2543 (DMARC pair, TinyGate, Bytewells rental pair,
+IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner replies). No new mail, no
+owner email needed (rule 3).
+
+**Work this cycle: closed `steam-reviews-scraper` out of the `unreachable_remedy` backlog
+(13 -> 12 DUE), the NEXT TARGET left by c2543 and stale since cycle 1547 (997 cycles) -- and found
+and FIXED TWO REAL SHIPPED DEFECTS plus a FALSE buyer-facing README claim.** Root cause of all
+three is the same: Valve retired the appreviews JSON API on 2026-10-22 and this Actor now scrapes
+steamcommunity.com HTML, which invalidated the exact fact c1547 had live-verified to clear this
+axis. **(1) Wrong cause attribution.** The date window used to be a SERVER-side param
+(`start_date`/`end_date`/`date_range_type=include`) -- that is precisely why c1547 was right to
+clear the "excluded by the keyword/minPlaytimeHours filter" field list. The HTML source has no date
+param, so `reviewsBefore` moved into `reviewPassesFilters` and is now a real -- usually the ONLY --
+contributor to `filteredOut`, while 4 messages still named keyword/minPlaytimeHours. Live-reproduced
+on apps 570 and 1145360 (reviewsBefore alone, 10-20 scanned, ALL dropped, WARN and statusMessage
+both citing filters the run never set). Fixed with one `activeFilters`/`filterLabel` pair computed
+once (same pattern as c2543's shopify fix) reused by the per-app cap WARN, the zeroCauses depth-cap
+cause and both allFiltered causes (the last two carried a static 3-name list, the first two omitted
+the date window entirely). `reviewsAfter` deliberately EXCLUDED: under the forced sortBy="recent" it
+trips the `pastWindow` early-stop BEFORE the filter check, so it ends a scan and never increments
+`filteredOut`. Verified live singular and plural (keyword/minPlaytimeHours/reviewsBefore).
+**(2) An off-by-one that made a whole remedy UNREACHABLE.** `got` counted the one review that
+TRIPPED the pastWindow stop -- which never reaches the filter check -- so the allFiltered test
+`filteredOut === got` missed by exactly 1 whenever a `reviewsAfter` window ended the scan: a run
+where reviewsAfter stopped paging AND another filter rejected every review it did look at filled NO
+cause bucket and reported the vague "the run stopped before any review could be returned; see the
+log" fallback instead of "loosen your filter". Live-reproduced on 1145360 (reviewsAfter 2026-10-30 +
+a non-matching keyword: 33 pulled, 32 filtered, `RUN_SUMMARY.allFiltered` came back `[]`). Fixed
+with a `considered` counter incremented only after the pastWindow check, now backing both the
+allFiltered test and the watch saturation test; `got === 0` left alone so `emptyIds` still means
+"Steam returned nothing at all". Post-fix the same input reports "every review Steam returned was
+removed by your keyword filter for: 1145360" with `allFiltered ['1145360']`, correctly not naming
+reviewsAfter. **(3) README FAQ claim that was flatly FALSE post-migration:** "reviewsAfter/
+reviewsBefore don't have this problem: newest-first paging stops cleanly at the date boundary
+instead of relying on the scan cap" -- true for reviewsAfter, FALSE for reviewsBefore, which
+consumes the scan cap exactly like a keyword does. Replaced with a measured paragraph (Hades: cap 40
+-> 15 discarded / 25 kept, same input at cap 10 -> 0 kept), plus the input-table row and the
+`reviewsBefore` schema description. Build 0.1.90 (package 0.1.26 -> 0.1.27) pushed via
+`apify push --force -w 600`; live platform run on 0.1.90 SUCCEEDED with the fixed statusMessage,
+0 rows, 0 charged events (`GET /v2/acts/.../runs/last`, never the runs-LIST endpoint). Live Store
+readme byte-identical to local (66132 bytes both sides, via the build's own
+`actorDefinition.readme`). Default `test_input.json` regression unchanged at 10/10 rows.
+`check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean post-build. Recorded via a
+PRECISE STRING EDIT to `audit_dates.json` (first attempt used a json round-trip and silently
+re-escaped 4 unrelated non-ASCII note lines -- reverted and redone; 316 lines before AND after,
+2 lines changed, 26 keys, re-validated, c1547's note preserved behind ` | PRIOR `). ~$0.005 spent
+(1 build push + 1 tiny platform run), 0 new Actors, no revenue event, no owner email.
+**Next cycle:** `unreachable_remedy` NEXT TARGET is now `apple-podcasts-scraper` (12 DUE remain).
+`tasks/queue.md` is still TRIM SOON (~79KB/870 lines) -- NOT done this cycle, the two defect fixes
+took the slot; trim it in the next normal slot. Next QUALITY/GROWTH slot is cycle 2547.
+
+---
 Updated: 2026-11-01 ~00:40 UTC by cycle 2543 (claude-sonnet-5). Normal slot (2543 % 3 == 2).
 Preflight: `checks-due --all` 1 DUE (`apify-spend`) -- ran it, now 0 DUE (next due 2639). `audit-due
 --all` NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due

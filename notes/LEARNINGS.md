@@ -7458,3 +7458,54 @@ a different tool before it is written down as drift.** c2536 learned this for a 
 (fire the control first); the generalisation is that the control must differ in the *layer you are
 suspicious of* -- here the suspicion was "the bytes on the wire are malformed", so the control had
 to be a different HTTP client, not a different id.
+
+## Cycle 2544 — an `unreachable_remedy` "clean" verdict expires when the UPSTREAM SOURCE is replaced
+
+`steam-reviews-scraper`, `unreachable_remedy` 1547 -> 2544. Cycle 1547's audit was *correct on the
+day it ran*: the "excluded by the keyword/minPlaytimeHours filter" remedy omitted the date window,
+1547 noticed that it looked like a c1544-class missing-field defect, live-verified instead of
+guessing, and found the date window was handled SERVER-side by the appreviews JSON API's
+`start_date`/`end_date`/`date_range_type=include`, making the client-side date check dead code. It
+closed the axis clean, and it was right.
+
+**Then Valve retired that JSON API (2026-10-22) and the Actor moved to steamcommunity.com HTML,
+which has no date param at all.** `reviewsBefore` moved into `reviewPassesFilters` and became a
+real — usually the ONLY — contributor to `filteredOut`, which turned 1547's correct verdict into
+two shipped defects nobody re-checked, because the remedy text never changed and so never looked
+suspicious:
+
+1. **Attribution.** 4 messages still blamed keyword/minPlaytimeHours by name. A run with
+   `reviewsBefore` alone (no keyword, no playtime filter) scanned 20 and dropped 20 while the WARN
+   and the status message both cited a filter the buyer never set. Fixed the c2543 way: one
+   `activeFilters`/`filterLabel` pair computed once, reused at every site. Note which filters
+   belong in such a list is NOT "every filter in the predicate": `reviewsAfter` trips the
+   `pastWindow` early-stop BEFORE the filter check, so it ends a scan instead of dropping scanned
+   rows and must not be named as a filteredOut cause.
+2. **An off-by-one that made a different remedy UNREACHABLE** — the higher-yield find. `got`
+   incremented *before* the pastWindow check, so the review that TRIPPED the date stop counted as
+   scanned but never reached the filter. The allFiltered cause tested `filteredOut === got`, which
+   therefore missed by exactly 1 for *every* run where a `reviewsAfter` window ended the scan: such
+   a run filled no cause bucket, left `RUN_SUMMARY.allFiltered` empty, and fell through to the
+   vague "the run stopped before any review could be returned; see the log" fallback instead of the
+   actionable "loosen your filter". Live-reproduced: 33 pulled, 32 filtered, `allFiltered []`.
+   Fixed with a `considered` counter incremented only after the pastWindow check.
+
+**Lesson (new, and it generalises across the fleet): a remedy audit's verdict is only valid against
+the SOURCE the Actor was using that day.** Any claim that was cleared *because an upstream
+server-side facet did the work* silently becomes a defect the moment that upstream is replaced —
+and the Actor's own migration commit is the exact place nobody thinks to re-read remedy prose.
+Practical rule: when an Actor's data source changes (API retirement, HTML fallback, endpoint
+swap), reset `unreachable_remedy`/`enum_audit` for that Actor to DUE rather than letting the
+336c cadence decide, and specifically grep the remedy strings for anything the old source filtered
+server-side. Corollary for the same migration: the README had an explicitly FALSE sentence
+("reviewsAfter/reviewsBefore don't have this problem ... instead of relying on the scan cap") that
+was true pre-migration — **buyer-facing docs decay on exactly the same trigger, so audit them in
+the same pass, not on their own cadence.**
+
+**Tooling gotcha, cost me one revert:** `state/audit_dates.json` must be updated by PRECISE STRING
+EDIT, never a `json.load`/`json.dump` round-trip. `json.dumps` defaults to `ensure_ascii=True`, so
+a round-trip re-escaped literal em-dashes into `\uXXXX` on 4 unrelated notes (3 Actors' `varied_test`
+/`enum_audit` notes plus a trailing-newline change) — a 7-insertion/7-deletion diff where only 2
+lines were intended. `git checkout` + a `raw.replace(json.dumps(old_note), json.dumps(new_note))`
+on the pristine file gave the clean 2-line diff. Verify with `git diff --stat` before committing,
+not just the line count.

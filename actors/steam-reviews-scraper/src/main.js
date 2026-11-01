@@ -163,6 +163,30 @@ if (!apps.length && !searchTerms.length) {
   await Actor.fail('Provide at least one game in "apps" (Steam store URL or numeric App ID), or at least one query in "searchTerms".');
 }
 
+// Which of THIS run's filters can actually drop a scanned review (i.e. increment `filteredOut`),
+// named with the buyer's own field names. Computed once here instead of hardcoded at each message
+// site: while this Actor still called the appreviews JSON API, the date window was a SERVER-side
+// param (start_date/end_date/date_range_type=include), so "keyword/minPlaytimeHours" genuinely was
+// the whole client-side list -- cycle 1547 live-verified exactly that and found no defect. Valve
+// retired that API 2026-10-22 and the steamcommunity.com HTML replacement has no date param at
+// all, so `reviewsBefore` moved into reviewPassesFilters and is now a real -- very often the ONLY
+// -- contributor to filteredOut, while every filteredOut message kept blaming the other two by
+// name (live-reproduced cycle 2544 on app 570: reviewsBefore alone, 20 scanned / 20 dropped, and
+// both the WARN and the status message cited a keyword/minPlaytimeHours filter the run never set).
+// `reviewsAfter` is deliberately NOT in this list: under the sortBy="recent" ordering it forces,
+// it trips the `pastWindow` early-stop BEFORE the filter check, so it ends the scan rather than
+// dropping scanned rows and never shows up in filteredOut.
+const activeFilters = [
+  keyword && 'keyword',
+  minPlaytimeHours != null && 'minPlaytimeHours',
+  reviewsBefore && !isNaN(reviewsBefore) && 'reviewsBefore',
+].filter(Boolean);
+// Fallback wording is unreachable in practice (filteredOut can only be nonzero if one of the three
+// above is set) but keeps every message grammatical if a fourth filter is ever added here late.
+const filterLabel = activeFilters.length
+  ? `${activeFilters.join('/')} filter${activeFilters.length > 1 ? 's' : ''}`
+  : 'filters';
+
 // ---- watch mode ------------------------------------------------------------
 // A stateful "only reviews posted since my last run" filter. A Steam review is an event with a
 // stable id (recommendationid), so "new" is well defined for dataType:"reviews". dataType:"games"
@@ -722,6 +746,7 @@ async function scrapeReviews(appId) {
     log.info(`App ${appId}: not in the baseline for "${watchLabel}" yet — baselining it this run instead of delivering its existing reviews.`);
   }
   let got = 0;
+  let considered = 0;
   let filteredOut = 0;
   let newForApp = 0;
   const seen = new Set();
@@ -762,6 +787,16 @@ async function scrapeReviews(appId) {
       // sort=recent is strictly newest-created-first, so once we're older than "reviewsAfter"
       // every review from here on (this page and all later pages) is also too old — stop paging.
       if (reviewsAfter && !isNaN(reviewsAfter) && new Date(item.createdAt) < reviewsAfter) { pastWindow = true; break; }
+      // Reviews that actually reached the filter check, as opposed to `got` (every review pulled
+      // off a page, which also counts the one review that TRIPPED the pastWindow stop above and so
+      // was never filtered at all). The two diverge by exactly 1 whenever a reviewsAfter window
+      // ends the scan, which silently disabled the whole `allFiltered` cause below: its test used
+      // `filteredOut === got`, so a run where reviewsAfter stopped the scan AND another filter
+      // rejected every single review it did look at failed that equality by one, filled no bucket,
+      // and reported the vague "the run stopped before any review could be returned" fallback
+      // instead of "loosen your filter" (live-reproduced cycle 2544 on app 1145360: reviewsAfter
+      // + a non-matching keyword, 33 pulled / 32 filtered, allFiltered came back []).
+      considered += 1;
       if (!reviewPassesFilters(item)) { filteredOut += 1; continue; }
       if (watchMode && !item.reviewId) {
         // No stable id means it can be neither recorded in the baseline nor recognised next run,
@@ -822,7 +857,7 @@ async function scrapeReviews(appId) {
   // was hit and some scanned reviews were dropped by a filter, matching reviews may still sit
   // deeper in the feed and were never looked at.
   const capReached = got >= perAppReviews;
-  return { got, filteredOut, capReached, degenerate, newForApp, appSeeding };
+  return { got, considered, filteredOut, capReached, degenerate, newForApp, appSeeding };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -926,7 +961,7 @@ if (dataType === 'games') {
     if (!timeBudgetOk()) { keepGoing = false; log.warning(TIME_BUDGET_WARNING); break; }
     idsAttempted.add(String(id));
     const before = pushed;
-    const { got, filteredOut, capReached, degenerate, newForApp, appSeeding } = await scrapeReviews(id);
+    const { got, considered, filteredOut, capReached, degenerate, newForApp, appSeeding } = await scrapeReviews(id);
     log.info(appSeeding
       ? `${id}: ${got} reviews fetched, ${newForApp} recorded in the watch baseline (0 delivered, 0 charged).`
       : watchMode
@@ -940,14 +975,14 @@ if (dataType === 'games') {
     }
     // Watch mode: every matching review inside the scanned window was new, so reviews posted since
     // the last run may sit deeper in the feed and were never looked at.
-    if (watchMode && !appSeeding && capReached && newForApp > 0 && newForApp === got - filteredOut) {
+    if (watchMode && !appSeeding && capReached && newForApp > 0 && newForApp === considered - filteredOut) {
       saturatedApps.push(id);
       log.warning(`App ${id}: every matching review in the ${perAppReviews} scanned was new, so reviews posted since the last run may have been missed further back — raise maxReviewsPerApp or run the watch more often.`);
     }
     if (capReached && filteredOut > 0) {
       log.warning(
         `App ${id}: scanned the maxReviewsPerApp limit of ${perAppReviews} review(s) and ${filteredOut} of them `
-        + `were excluded by the keyword/minPlaytimeHours filter. The cap counts reviews scanned, before filtering `
+        + `were excluded by your ${filterLabel}. The cap counts reviews scanned, before filtering `
         + `— raise maxReviewsPerApp to search deeper.`,
       );
       depthCapped.push(id);
@@ -955,7 +990,7 @@ if (dataType === 'games') {
     // Every review this app returned was rejected by the filters (filteredOut counts only filter
     // rejects). Watch mode is excluded because there "nothing delivered" is normally the
     // already-seen baseline, not the filters, and watch runs use their own status branches.
-    if (!watchMode && got > 0 && filteredOut === got) allFilteredIds.push(id);
+    if (!watchMode && considered > 0 && filteredOut === considered) allFilteredIds.push(id);
     if (degenerate) {
       upstreamDegraded.push(id);
       log.warning(
@@ -1014,14 +1049,14 @@ if (emptySearches.length) {
   zeroCauses.push(`your search terms matched no Steam games: ${emptySearches.join(', ')}`);
 }
 if (depthCapped.length) {
-  zeroCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit before any review passed your keyword/minPlaytimeHours filter for: ${depthCapped.join(', ')} — raise maxReviewsPerApp to search deeper`);
+  zeroCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit before any review passed your ${filterLabel} for: ${depthCapped.join(', ')} — raise maxReviewsPerApp to search deeper`);
 }
 // Deduped against depthCapped, which is the more specific statement of the same shortfall for an
 // app that hit the cap (raise the cap) versus one whose whole feed was scanned and rejected
 // (loosen the filter) — naming an app under both causes would give contradictory advice.
 const filteredOutOnly = allFilteredIds.filter((id) => !depthCapped.includes(id));
 if (filteredOutOnly.length) {
-  zeroCauses.push(`every review Steam returned was removed by your keyword / minimum-playtime / date-window filters for: ${filteredOutOnly.join(', ')}`);
+  zeroCauses.push(`every review Steam returned was removed by your ${filterLabel} for: ${filteredOutOnly.join(', ')}`);
 }
 
 let runError = null;
@@ -1198,7 +1233,7 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   // Same depthCapped dedupe as zeroCauses: raise-the-cap and loosen-the-filter are different advice.
   const partialFilteredOnly = allFilteredIds.filter((id) => !depthCapped.includes(id));
   if (partialFilteredOnly.length) {
-    partialCauses.push(`every review Steam returned was removed by your keyword / minimum-playtime / date-window filters for: ${partialFilteredOnly.join(', ')}`);
+    partialCauses.push(`every review Steam returned was removed by your ${filterLabel} for: ${partialFilteredOnly.join(', ')}`);
   }
   if (emptyIds.length) {
     partialCauses.push(`Steam returned nothing for: ${emptyIds.join(', ')}`);

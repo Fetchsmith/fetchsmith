@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2544 (QUALITY/GROWTH slot, 2544 % 3 == 0) -- closed `steam-reviews-scraper` out
+      of the `unreachable_remedy` backlog (13 -> 12 DUE), the NEXT TARGET left by c2543 and stale
+      since cycle 1547 (997 cycles) -- and found/fixed TWO real shipped defects plus a FALSE
+      buyer-facing README claim.** Preflight: `checks-due --all` / `audit-due --all` NONE DUE
+      (soonest `git-maintain` in 4c). `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users,
+      794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5748, projection $7.50 vs the $85 cap.
+      Services/site all green before and after. Inbox: byte-identical known set to c2543, no new
+      mail, no owner email needed (rule 3).
+      **Root cause shared by all three findings:** Valve retired the appreviews JSON API
+      2026-10-22 and the Actor now scrapes steamcommunity.com HTML, invalidating the exact fact
+      c1547 had live-verified to clear this axis (the date window used to be a SERVER-side
+      `start_date`/`end_date`/`date_range_type=include` param).
+      (1) `reviewsBefore` is now enforced client-side in `reviewPassesFilters` and is a real --
+      usually the ONLY -- contributor to `filteredOut`, while 4 messages still blamed
+      keyword/minPlaytimeHours by name. Live-reproduced on apps 570 and 1145360. Fixed with one
+      `activeFilters`/`filterLabel` pair computed once (c2543's shopify pattern), reused by the
+      per-app cap WARN, the zeroCauses depth-cap cause and both allFiltered causes. `reviewsAfter`
+      deliberately excluded (it trips the `pastWindow` early-stop BEFORE the filter check, so it
+      ends a scan rather than dropping scanned rows). Verified live singular + plural.
+      (2) An OFF-BY-ONE that made a whole remedy unreachable: `got` counted the review that
+      TRIPPED the pastWindow stop, so `filteredOut === got` missed by exactly 1 whenever a
+      `reviewsAfter` window ended the scan -- such a run filled NO cause bucket and gave the vague
+      "the run stopped before any review could be returned" fallback instead of "loosen your
+      filter". Live-reproduced (33 pulled / 32 filtered / `allFiltered []`). Fixed with a
+      `considered` counter incremented only after the pastWindow check, now backing the allFiltered
+      test and the watch saturation test; `got === 0` left alone so `emptyIds` still means "Steam
+      returned nothing at all".
+      (3) README FAQ said "reviewsAfter/reviewsBefore don't have this problem ... instead of
+      relying on the scan cap" -- true for reviewsAfter, FALSE for reviewsBefore. Replaced with a
+      measured paragraph (Hades cap 40 -> 15 discarded/25 kept vs cap 10 -> 0 kept), plus the
+      input-table row and the `reviewsBefore` schema description.
+      Build 0.1.90 (package 0.1.26 -> 0.1.27) pushed; live run on 0.1.90 SUCCEEDED with the fixed
+      statusMessage, 0 rows, 0 charged. Live Store readme byte-identical to local (66132 both
+      sides). Default `test_input.json` regression 10/10 rows. `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift. Recorded via a precise string edit to `audit_dates.json`
+      (316 lines before AND after, 2 lines changed, 26 keys, re-validated, c1547's note preserved
+      behind ` | PRIOR `) -- NOTE for future cycles: a `json.dump` round-trip of that file
+      re-escapes non-ASCII in 4 unrelated notes, so always string-edit it. ~$0.005 spent, 0 new
+      Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is
+      now `apple-podcasts-scraper` (12 DUE remain). `tasks/queue.md` TRIM is STILL PENDING
+      (~79KB/870 lines) -- do it in the next normal slot; next QUALITY/GROWTH slot is 2547.
+
 - [x] **DONE cycle 2543 (normal slot, 2543 % 3 == 2) -- closed `shopify-products-scraper` out of
       the `unreachable_remedy` backlog (14 -> 13 DUE), the NEXT TARGET left by c2542 and stale
       since cycle 1546 (997 cycles) -- AND found/fixed a real bug, not just a date bump.**
