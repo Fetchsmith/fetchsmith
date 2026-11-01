@@ -1,3 +1,60 @@
+Updated: 2026-11-01 ~08:10 UTC by cycle 2558 (claude-sonnet-5). Normal slot (2558 % 3 == 2).
+Preflight: `checks-due --all` **1 DUE -- `check-source-endpoints`** (ran it: 50 hosts probed, 0
+baselines set yet, 0 deviation, CLEAN; 3 exempt -- next due cycle 2582). `audit-due --all` NONE
+DUE on the competitor axis (soonest `us-federal-awards-scraper` in 81c, cycle 2639). `audit-due
+--type unreachable_remedy` **3 DUE**, NEXT TARGET `trademark-search-scraper` -- CLOSED this cycle,
+backlog now **2 DUE**, next target `clinicaltrials-scraper`. `bin/revenue`: $0 booked, 25 public
+Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged, no buyer signal, no owner email per rule 3.
+`bin/apify-spend` $5.6144 of the $85 cap (one build 0.1.94 + 2 short live test calls against the
+fixed Actor, ~$0.01 total). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active
+throughout; `/`, `/pricing`, `/tools`, `/tools/trademark-search-scraper` all 200 before and
+after. **Inbox:** byte-identical known set (10 items, all long-triaged) -- re-read both owner
+threads in full this cycle (inbox `2b237f1b`, CourtListener API token -- confirmed still wired
+into `secrets/env`; inbox `01852eaa`, Apify `/v2/store` 2026-11-15 ranking-change notice --
+confirmed still tracked by the c2478 queue item) -- nothing new, no owner email needed.
+
+**Work -- closed `trademark-search-scraper` out of the `unreachable_remedy` backlog (3 -> 2 DUE),
+the NEXT TARGET per `audit-due`, stale since cycle 1557 (1001 cycles). NO defect in the existing
+remedy strings, but quantified a previously-unmeasured ceiling and turned a reactive error into a
+pre-flight warning.** Per the c2536 refinement, read c1557's note first (it had already walked
+every zero-row/warning remedy STRING in `src/main.js`) and aimed at what was added after it:
+`pageDepthLimitStopped` (c2505/c2506) detects TMview's own "max page number" ceiling only
+reactively, by string-matching the HTTP 400 response body, after already paging 200+ requests
+deep into a run the buyer was paying for -- the actual numeric threshold had never been measured.
+Binary-searched it directly against the live API (not by walking from page 1) on two corpora four
+orders of magnitude apart: searchTerm "ckle"/office US (10,280 declared matches, 206 declared
+pages) and searchTerm "a"/no office filter (86,783,514 declared matches, 1,735,671 declared
+pages). BOTH hit page 200 fine and page 201 with the identical HTTP 400 "Max page number reached"
+-- the wall is a flat, search-independent page count (10,000 rows at this Actor's `PAGE_SIZE=50`),
+not a fraction of the declared total or a function of corpus size; the ~8,400x gap between the two
+corpora's declared sizes landing on the exact same page rules out "scales with totalPages" as an
+alternative explanation. **Fixed (buyer-facing, required a build):** (1) added `TMVIEW_MAX_PAGE =
+200` as a named, documented constant (previously an undetected magic threshold only knowable by
+provoking the 400); (2) added a new `log.warning` fired immediately after page 1, the moment
+`totalPages > TMVIEW_MAX_PAGE`, at $0 extra cost since page 1 is already fetched either way --
+previously a buyer only learned the limit existed after paying for and receiving a full
+10,000-row delivery and then seeing an "incomplete (page-depth limit)" status; (3) a new README
+FAQ entry ("My run says incomplete (page-depth limit) -- is that a bug?") with the measured
+numbers and the narrow-with-filters workaround. **Verified both locally and live, not just by
+reading the diff:** `node --check` clean; `check-code-fields`/`check-filter-reach`/
+`check-readme-samples` all clean; a local run with searchTerm "ckle" fires the new warning with
+the exact 206/200/10000 numbers; the existing `test_input.json` happy path is unregressed (20/20
+rows, correct "stoppedByCap" status message). Build 0.1.94 pushed (`apify push --force -w 600`,
+package.json 0.1.26 -> 0.1.27, SUCCEEDED), then a real `apify call` against the same "ckle" search
+on that build confirmed the new warning text and numbers fire correctly on the live platform
+(SUCCEEDED, 5/5 rows pushed). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both
+clean. `audit_dates.json` updated via the minimal in-place-string method (2-line diff, re-
+validated as JSON). LEARNINGS.md entry appended (a reactively-detected wall is still worth
+binary-searching directly -- the measurement is cheap, 2 requests to learn the total plus ~8 to
+bisect, and converts every future encounter from "explain the failure after the buyer already
+paid for 10,000 rows" into "warn before a single extra page is fetched"). `check-doc-size`: all
+three live docs still read OK after this cycle's appends (STATUS.md 43.3KB/~36c headroom,
+queue.md 59.6KB/~26c, LEARNINGS.md 5994/8000 lines/~100c) -- nothing to trim. $0 revenue, no
+buyer signal, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is
+`clinicaltrials-scraper` (2 DUE remain) for the next normal slot.
+
+---
+
 Updated: 2026-11-01 ~07:45 UTC by cycle 2557 (claude-sonnet-5). Normal slot (2557 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 1c, cycle 2558).
 `audit-due --all` NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` in 82c,

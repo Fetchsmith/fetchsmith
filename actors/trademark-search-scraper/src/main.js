@@ -33,6 +33,15 @@ const API = 'https://www.tmdn.org/tmview/api/search/results';
 // browser -- no JS is executed, the page's own script tags are never run.
 const SEARCH_PAGE = 'https://www.tmdn.org/tmview/';
 const PAGE_SIZE = 50; // verified server-side: pageSize 50 returns 50 rows
+// Quantified cycle 2558 (the "max page number" ceiling was previously only detected reactively,
+// never measured): binary-searched the wall directly via the API, not by walking from page 1, on
+// two corpora four orders of magnitude apart -- searchTerm "ckle"/office US (totalResults 10,280,
+// 206 declared pages) and searchTerm "a"/no office filter (totalResults 86,783,514, 1,735,671
+// declared pages). BOTH hit page 200 OK, page 201 HTTP 400 "Max page number reached", so the wall
+// is a flat, search-independent page count, not a fraction of the declared total or of pageSize*
+// totalPages. At PAGE_SIZE=50 that is exactly 10,000 rows -- the most any single search, however
+// narrow or broad, can ever deliver through pagination alone.
+const TMVIEW_MAX_PAGE = 200;
 
 const searchTerm = String(input.searchTerm ?? '').trim();
 // TMview's `fOffices` param is case-sensitive (live-verified: "us"/"de"/"Em" each return 0 rows
@@ -642,7 +651,8 @@ async function fetchPage(page) {
       // falling into the generic runError branch below (cycle 2505 repro: searchTerm "ckle",
       // offices ["US"], 206 declared pages -> this exact HTTP 400 ~4.5 minutes into the walk; a
       // smaller 36-page GB corpus of the same term completed cleanly, so the ceiling is a
-      // deep-page phenomenon, not a general timeout/proxy issue).
+      // deep-page phenomenon, not a general timeout/proxy issue). Quantified cycle 2558: the wall
+      // sits at page TMVIEW_MAX_PAGE (200) regardless of corpus size -- see that constant's comment.
       if (res.statusCode === 400 && /max page number/i.test(bodyStr)) {
         err.pageDepthLimit = true;
       }
@@ -707,6 +717,24 @@ try {
     declaredMatches = Number(first.totalResults ?? 0);
     totalPages = Number(first.totalPages ?? 0);
     log.info(`TMview: ${declaredMatches} matches for "${searchTerm}"${offices.length ? ` in ${offices.join(', ')}` : ''} (${totalPages} pages).`);
+    if (totalPages > TMVIEW_MAX_PAGE) {
+      // Said up front, at $0 extra cost (page 1 is already fetched either way): TMview's page-depth
+      // ceiling (see TMVIEW_MAX_PAGE above) is flat and search-independent, so a search this wide WILL
+      // deterministically stop at ${TMVIEW_MAX_PAGE * PAGE_SIZE} rows every time, not just on a bad run.
+      // Without this, a buyer only learns the limit exists after paying for and receiving a full
+      // 10,000-row delivery and then seeing an "incomplete" status -- which can read as a bug rather
+      // than an upstream wall. Narrowing (fOffices/fNiceClass/fTMStatus) before running is the only way
+      // to get full coverage of a corpus this size.
+      log.warning(
+        `This search has ${totalPages} pages, past TMview's own hard ceiling of ${TMVIEW_MAX_PAGE} pages `
+        + `(${TMVIEW_MAX_PAGE * PAGE_SIZE} rows) -- TMview will refuse to serve page ${TMVIEW_MAX_PAGE + 1} no `
+        + `matter how this run is configured. This run WILL deliver up to ${TMVIEW_MAX_PAGE * PAGE_SIZE} rows `
+        + '(every one valid and charged normally) and then stop with an "incomplete (page-depth limit)" '
+        + 'status -- that is TMview, not an error in this Actor. To get FULL coverage of a search this '
+        + 'wide, narrow it first with office, Nice-class, or status filters so the declared page count '
+        + `drops under ${TMVIEW_MAX_PAGE}, then run once per narrower slice.`,
+      );
+    }
     if (prefixMode) {
       // Said up front, before any row is delivered, because the number just logged is NOT this
       // mode's match count: TMview has no prefix criteria, so that total is the wider `contains`

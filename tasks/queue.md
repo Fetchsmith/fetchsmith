@@ -1,3 +1,44 @@
+- [x] **DONE cycle 2558 (normal slot, 2558 % 3 == 2) -- closed `trademark-search-scraper` out of
+      the `unreachable_remedy` backlog (3 -> 2 DUE, NEXT TARGET per `audit-due`), stale since
+      cycle 1557 (1001 cycles). NO defect in the existing remedy strings, but quantified a
+      previously-unmeasured ceiling and turned a reactive error into a pre-flight warning.**
+      Per the c2536 refinement, read c1557's note first (it had already walked every zero-row/
+      warning remedy STRING) and aimed at what was added after it: `pageDepthLimitStopped`
+      (c2505/c2506) detects TMview's "max page number" ceiling only reactively, by string-
+      matching the HTTP 400 body, after already paging 200+ requests deep -- the actual
+      threshold had never been measured. Binary-searched it directly (not by walking from page
+      1) on two corpora four orders of magnitude apart: searchTerm "ckle"/office US (10,280
+      results, 206 declared pages) and searchTerm "a"/no office filter (86,783,514 results,
+      1,735,671 declared pages). BOTH hit page 200 OK, page 201 HTTP 400 "Max page number
+      reached" -- the wall is a flat, search-independent page count (10,000 rows at this
+      Actor's PAGE_SIZE=50), not a fraction of the declared total. Fixed (buyer-facing,
+      required a build): added `TMVIEW_MAX_PAGE=200` as a named, documented constant (was an
+      undetected magic threshold); added a new `log.warning` fired right after page 1 whenever
+      `totalPages > TMVIEW_MAX_PAGE`, at $0 extra cost (page 1 is already fetched either way) --
+      previously a buyer only learned the limit existed after paying for a full 10,000-row
+      delivery and then seeing an "incomplete (page-depth limit)" status; new README FAQ entry
+      with the measured numbers and the narrow-with-filters workaround. Verified: `node --check`
+      clean; `check-code-fields`/`check-filter-reach`/`check-readme-samples` all clean; local run
+      with searchTerm "ckle" fires the new warning with the exact 206/200/10000 numbers; default
+      `test_input.json` unregressed (20/20 rows, correct cap message); build 0.1.94 pushed
+      (`apify push --force`, package.json 0.1.26->0.1.27) and verified LIVE via a real `apify
+      call` against the same "ckle" search on build 0.1.94 (SUCCEEDED, warning text correct,
+      5/5 rows pushed). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean,
+      services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`,
+      `/tools`, `/tools/trademark-search-scraper` all 200 throughout. `audit_dates.json` updated
+      via the minimal in-place-string method (2-line diff, re-validated as JSON). LEARNINGS.md
+      entry appended (a reactively-detected wall is still worth binary-searching directly --
+      the measurement is cheap and converts "explain the failure after the buyer already paid"
+      into "warn before it happens"). Also ran this cycle's one DUE fleet check,
+      `check-source-endpoints` (50 hosts, 0 baselines set yet, 0 deviation, clean; 3 exempt).
+      Re-read both owner email threads in full (inbox `2b237f1b` CourtListener token -- confirmed
+      wired into `secrets/env`; inbox `01852eaa` Apify `/v2/store` 2026-11-15 ranking change --
+      confirmed still tracked by the c2478 item below) -- both already fully resolved/tracked,
+      nothing new, no owner email needed. `bin/revenue` unchanged ($0 booked, 25 public Actors,
+      47 users) -- no buyer signal. `bin/apify-spend` +~$0.01 (one build + one short test call)
+      of the $85 cap. **Next cycle:** `unreachable_remedy` NEXT TARGET is `clinicaltrials-scraper`
+      (2 DUE remain).
+
 - [x] **DONE cycle 2557 (normal slot, 2557 % 3 == 1) -- closed `ats-jobs-scraper` out of the
       `unreachable_remedy` backlog (4 -> 3 DUE, NEXT TARGET per `audit-due`), stale since cycle
       1556 (1001 cycles). FOUND AND FIXED A REAL BUYER-FACING OVERCLAIM, the 3rd real defect this
