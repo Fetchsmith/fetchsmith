@@ -58,6 +58,21 @@ const hasShapedFilters = minPrice != null || maxPrice != null || onSaleOnly || m
 // are already on every row) so they run alongside matchesSearch, before shape()/charging.
 const vendorsFilter = (input.vendors ?? []).map((v) => String(v).normalize('NFC').toLowerCase().trim()).filter(Boolean);
 const productTypesFilter = (input.productTypes ?? []).map((t) => String(t).normalize('NFC').toLowerCase().trim()).filter(Boolean);
+// Computed once, not per store/URL — every input above is a module-level const, so the list of
+// which filters are actually active cannot change across the run. Shared by the per-store
+// "filtered out" warning and the aggregate status message below, so neither can name a filter
+// the buyer didn't set (the c5748-class bug: a hardcoded field list in a buyer-facing message
+// claims every possible filter fired, even when only one was set).
+const activeFilters = [
+  ...(onlyAvailable ? ['"onlyAvailable"'] : []),
+  ...(searchWords.length ? ['"searchQuery"'] : []),
+  ...(vendorsFilter.length ? [`"vendors" (${vendorsFilter.join(', ')})`] : []),
+  ...(productTypesFilter.length ? [`"productTypes" (${productTypesFilter.join(', ')})`] : []),
+  ...(minPrice != null ? [`"minPrice" (${minPrice})`] : []),
+  ...(maxPrice != null ? [`"maxPrice" (${maxPrice})`] : []),
+  ...(onSaleOnly ? ['"onSaleOnly"'] : []),
+  ...(minDiscountPercent != null ? [`"minDiscountPercent" (${minDiscountPercent})`] : []),
+];
 if (!storeUrls.length) await Actor.fail('Provide at least one store URL.');
 if (duplicateStoreUrls) log.info(`Skipped ${duplicateStoreUrls} duplicate storeUrls entr${duplicateStoreUrls === 1 ? 'y' : 'ies'} (same endpoint already queued).`);
 
@@ -904,16 +919,6 @@ for (const raw of storeUrls) {
       outcome = 'filteredOut';
       // Name every filter that was actually set, so a zero-row run says which input to relax
       // instead of blaming whichever one this message happened to hardcode.
-      const activeFilters = [
-        ...(onlyAvailable ? ['"onlyAvailable"'] : []),
-        ...(searchWords.length ? ['"searchQuery"'] : []),
-        ...(vendorsFilter.length ? [`"vendors" (${vendorsFilter.join(', ')})`] : []),
-        ...(productTypesFilter.length ? [`"productTypes" (${productTypesFilter.join(', ')})`] : []),
-        ...(minPrice != null ? [`"minPrice" (${minPrice})`] : []),
-        ...(maxPrice != null ? [`"maxPrice" (${maxPrice})`] : []),
-        ...(onSaleOnly ? ['"onSaleOnly"'] : []),
-        ...(minDiscountPercent != null ? [`"minDiscountPercent" (${minDiscountPercent})`] : []),
-      ];
       const reason = activeFilters.length === 1
         ? `${activeFilters[0]} removed all of them`
         : `${activeFilters.join(' / ')} removed all of them between them`;
@@ -1073,7 +1078,7 @@ if (watchMode && pushed === 0 && !erroredStores.length && !badUrls.length && !ti
     // '. See the log for details.' — trim one so the buyer doesn't read "deleted.. See the log".
     ? `fetching products failed for: ${erroredStores.map((s) => (erroredStoreReasons.has(s) ? `${s} — ${erroredStoreReasons.get(s).replace(/\.\s*$/, '')}` : `${s} (store may not be Shopify, or products.json is disabled)`)).join('; ')}`
     : filteredOutStores.length && !emptyStores.length
-      ? 'products were found but the filters you set ("onlyAvailable"/"searchQuery"/"vendors"/"productTypes"/"minPrice"/"maxPrice"/"onSaleOnly"/"minDiscountPercent") removed all of them'
+      ? `products were found but the filter${activeFilters.length === 1 ? '' : 's'} you set (${activeFilters.join(' / ')}) removed all of them`
       : emptyStores.length
         ? `Shopify returned zero products for: ${emptyStores.join(', ')}`
         // Reached only when badUrls is the SOLE outcome (every other storeUrls entry would have

@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2543 (normal slot, 2543 % 3 == 2) -- closed `shopify-products-scraper` out of
+      the `unreachable_remedy` backlog (14 -> 13 DUE), the NEXT TARGET left by c2542 and stale
+      since cycle 1546 (997 cycles) -- AND found/fixed a real bug, not just a date bump.**
+      Preflight: `checks-due --all` 1 DUE (`apify-spend`, ran it, next due 2639). `audit-due --all`
+      NONE DUE on the competitor axis. `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users,
+      794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5692, projection $7.50 vs the $85 cap.
+      Services/site all green before and after. Inbox: byte-identical known set to c2542, no new
+      mail, no owner email needed (rule 3).
+      **Work:** re-verified all 3 load-bearing remedy claims live against allbirds.com (catalog
+      now 356 products, down from 1546's 692 -- organic shrinkage, cross-checked via plain curl
+      pagination 250+106=356 matching exactly). (1) the 8-filter `filteredOut` list still
+      exact-matches input_schema.json + matching functions; live-fired fresh single- and
+      two-filter combos, both worded correctly. (2) `matchesSearch` haystack still matches the
+      README's claim verbatim. (3) live-reproduced the watch-mode `maxProductsPerStore` cap remedy
+      end to end with fresh values (15 then 100000 on a second label) -- capped run warned and
+      baselined 15, raised run baselined the whole live catalog (356) with no warning.
+      **Found and fixed a real bug** (same class as LEARNINGS' sam-gov `appliedFilters` case): the
+      per-store `filteredOut` log.warning correctly names only the active filter(s), but the
+      aggregate run-level status message hardcoded a static string naming ALL 8 possible filters
+      every time, falsely implying all 8 were set when e.g. only `minPrice` was. Fixed by hoisting
+      the `activeFilters` computation (loop-invariant, was recomputed every store iteration) to
+      one top-level const shared by both the per-store warning and the aggregate message, now
+      correctly singular/plural and naming only what's actually active. Verified live on 3 fresh
+      cases (1 filter / 2 filters / 0 filters regression) locally, then build 0.1.108
+      (package.json 0.1.22 -> 0.1.23) pushed via `apify push --force -w 600` and smoke-tested on
+      the LIVE platform build (run-sync-get-dataset-items + `GET /v2/actor-runs/<id>`, never the
+      runs-LIST endpoint) -- statusMessage matched the fix exactly, 0 rows, 0 charged events.
+      `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean post-build. Recorded
+      via a precise string edit to `audit_dates.json` (316 lines before AND after, re-validated,
+      c1546's note preserved behind ` | `). ~$0.0001 spent (1 platform smoke run + the standard
+      ~$0.0048 build push), 0 new Actors, no revenue event, no owner email. **Next cycle:**
+      `unreachable_remedy` NEXT TARGET is now `steam-reviews-scraper` (13 DUE remain). Next
+      QUALITY/GROWTH slot is cycle 2544 -- `tasks/queue.md` is TRIM SOON (75.0KB/797 lines,
+      proj. 202KB at next look in 24c) and worth trimming proactively in that slot (the c2220 rule).
+
 - [x] **DONE cycle 2542 (normal/BUILD slot, 2542 % 3 == 1) -- closed `remote-jobs-scraper` out of
       the `unreachable_remedy` backlog (15 -> 14 DUE), the NEXT TARGET left by c2541 and stale
       since cycle 1545 (997 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE DUE
