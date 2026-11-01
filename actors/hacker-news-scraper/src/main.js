@@ -28,10 +28,12 @@ const sortBy = input.sortBy === 'date' ? 'search_by_date' : 'search';
 // asking for 100 rows of a hot keyword neither needs nor wants that.
 const autoSplitLargeQueries = input.autoSplitLargeQueries === true;
 const maxSplitWindows = Math.max(3, Math.min(Number(input.maxSplitWindows ?? 24), 200));
+const maxSplitWindowsAtCeiling = maxSplitWindows >= 200;
 // The ceiling is a hard per-query limit ONLY when the query is searched once. With auto-split on,
 // the query is searched once per date window, so the reachable total is the window budget's worth.
 const maxItemsPerQuery = Math.min(Number(input.maxItemsPerQuery ?? 100), autoSplitLargeQueries ? 50000 : 1000);
 const maxResults = Math.min(Number(input.maxResults ?? 200), 5000);
+const maxResultsAtCeiling = maxResults >= 5000;
 const includeComments = input.includeComments !== false;
 // `new Date(junk)` is an *Invalid Date*, whose `.getTime()` is NaN. Unvalidated, that NaN flows
 // into `created_at_i>NaN` in the Algolia numericFilters string -- Algolia 400s on that syntax, but
@@ -1125,7 +1127,9 @@ for (const s of truncatedSummaries) {
       ? ` Algolia's HN index never serves more than ${ALGOLIA_MAX_HITS} hits for one query, whatever maxItemsPerQuery says`
         + (s.splitExhausted === 'max-split-windows'
           ? ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and ran out at maxSplitWindows=${maxSplitWindows};`
-            + ' raise maxSplitWindows (or narrow the date range) to finish it.'
+            + (maxSplitWindowsAtCeiling
+              ? ' maxSplitWindows is already at this Actor\'s maximum of 200, so raising it is not an option; narrow the date range to finish it.'
+              : ' raise maxSplitWindows (or narrow the date range) to finish it.')
           : s.splitExhausted === 'min-window-width'
             ? ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and still truncated at the`
               + ` ${MIN_SPLIT_WINDOW_SEC / 3600}-hour floor, so this query is too broad to enumerate by date alone; narrow the`
@@ -1144,7 +1148,11 @@ if (notReachedSummaries.length || notReachedUsers.length) {
     `The run stopped before ${notReachedSummaries.length} query/queries${notReachedUsers.length ? ` and ${notReachedUsers.length} username(s)` : ''} `
     + `were searched at all (${timeBudgetExceeded ? 'approaching the run timeout' : pushed >= maxResults ? `maxResults ${maxResults} reached` : 'charge limit reached'}): `
     + `${[...notReachedSummaries.map((s) => `"${s.query ?? '<empty>'}"`), ...notReachedUsers].join(', ')}. `
-    + (timeBudgetExceeded ? 'Narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) so the run finishes within the platform timeout, or run them separately.' : 'Raise maxResults (or the charge limit) to cover them, or run them separately.'),
+    + (timeBudgetExceeded
+      ? 'Narrow the input (fewer queries, lower maxItemsPerQuery, or enrichGithubLinks:false) so the run finishes within the platform timeout, or run them separately.'
+      : maxResultsAtCeiling
+        ? 'maxResults is already at this Actor\'s maximum of 5000, so raising it is not an option; raise the charge limit to cover them, or run them separately.'
+        : 'Raise maxResults (or the charge limit) to cover them, or run them separately.'),
   );
 }
 

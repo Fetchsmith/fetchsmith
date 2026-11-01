@@ -43,6 +43,7 @@ const selector = typeof input.selector === 'string' && input.selector.trim() ? i
 const ogCard = input.ogCard === true;
 const waitUntil = ['load', 'domcontentloaded', 'networkidle'].includes(input.waitUntil) ? input.waitUntil : 'load';
 const delayMs = Math.min(Math.max(Number(input.delayMs ?? 0), 0), 15000);
+const delayMsAtCeiling = delayMs >= 15000;
 const waitForSelector = typeof input.waitForSelector === 'string' && input.waitForSelector.trim() ? input.waitForSelector.trim() : null;
 const diffThreshold = Math.min(Math.max(Number(input.diffThreshold ?? 0.1), 0), 1);
 // How big a blob of changed pixels has to be before it counts as a changed REGION (see
@@ -485,7 +486,9 @@ if (failedCaptures) {
   causes.push(`${failedCaptures} of the ${attempted} target(s) could not be captured and came back as free `
     + 'rows with `success: false` and the reason in `error` (you are charged only for successful captures). '
     + 'Check those rows for a bad URL, a site that blocks datacenter IPs (try proxyConfiguration), or a '
-    + 'page that needed longer than the timeout (raise delayMs or use waitUntil: networkidle)');
+    + `page that needed longer than the timeout (${delayMsAtCeiling
+      ? 'delayMs is already at this Actor\'s maximum of 15000, so raising it is not an option -- use waitUntil: networkidle'
+      : 'raise delayMs or use waitUntil: networkidle'})`);
 }
 if (chargeLimitStopped) {
   causes.push(`the run stopped at its pay-per-event charge limit after ${pushed} capture(s), so later URLs in `

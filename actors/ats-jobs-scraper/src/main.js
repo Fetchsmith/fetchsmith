@@ -1598,7 +1598,11 @@ function pushedCauses() {
   }
   if (partialCompanies.length) causes.push(partialCause());
   if (skippedCompanies.length) {
-    causes.push(`${skippedCompanies.length} of the ${companies.length} compan(ies) you listed (${skippedCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) were never checked at all, because "maxResults" (${maxResults}) was already reached by companies earlier in your list — raise maxResults, reorder the list, or split it into separate runs to get their postings`);
+    const maxResultsAtCeiling = maxResults >= 100000;
+    const remedy = maxResultsAtCeiling
+      ? 'maxResults is already at this Actor\'s maximum of 100000, so raising it is not an option — reorder the list, or split it into separate runs to get their postings'
+      : 'raise maxResults, reorder the list, or split it into separate runs to get their postings';
+    causes.push(`${skippedCompanies.length} of the ${companies.length} compan(ies) you listed (${skippedCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) were never checked at all, because "maxResults" (${maxResults}) was already reached by companies earlier in your list — ${remedy}`);
   }
   if (chargeBlocked) {
     causes.push("this run's pay-per-event budget ran out partway through, so delivery stopped early and the postings you got are only the ones that fit the budget — raise the run's maximum cost in the Actor's billing settings to get the rest");

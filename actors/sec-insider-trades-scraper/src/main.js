@@ -26,6 +26,7 @@ function haveTime() {
 }
 
 const maxResults = Math.min(Number(input.maxResults ?? 100), 5000);
+const maxResultsAtCeiling = maxResults >= 5000;
 const maxFilingsPerIssuer = Math.min(Number(input.maxFilingsPerIssuer ?? 20), 200);
 // "raise maxFilingsPerIssuer" is only reachable advice while the field has room left to move; it is
 // clamped to 200 above (the schema's own "maximum"), so a run already selecting 200 filings per
@@ -701,7 +702,9 @@ if (!pushed) {
       + 'truncated. Raise the charge limit for the run to get the rest.');
   }
   if (pushed >= maxResults) {
-    causes.push(`the run reached maxResults (${maxResults}), so these results are truncated. Raise maxResults for more.`);
+    causes.push(`the run reached maxResults (${maxResults}), so these results are truncated. ${maxResultsAtCeiling
+      ? 'maxResults is already at this Actor\'s maximum of 5000, so raising it is not an option -- narrow the request (fewer issuers, lower maxFilingsPerIssuer) and re-run per issuer instead.'
+      : 'Raise maxResults for more.'}`);
   }
   if (timeBudgetExceeded) {
     causes.push(`the run hit its time budget after ${pushed} row(s), so later issuers or filings may be missing. Raise `

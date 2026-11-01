@@ -34,6 +34,7 @@ function timeBudgetOk() {
 const input = (await Actor.getInput()) ?? {};
 
 const maxResults = Math.min(Number(input.maxResults ?? 200), 10000);
+const maxResultsAtCeiling = maxResults >= 10000;
 const maxPostsPerPublication = Math.min(Number(input.maxPostsPerPublication ?? 50), 5000);
 // "raise maxPostsPerPublication to search deeper" is only reachable advice while the field has room
 // left to move; it is clamped to 5000 above (the schema's own "maximum"), so a run already scanning
@@ -866,7 +867,9 @@ if (leaderboardOnly) {
     if (rowsLeft) {
       notes.push(
         pushed >= maxResults
-          ? `stopped at your maxResults cap (${maxResults}) — ${leaderboardEntries.length - pushed} more leaderboard row(s) were discovered but not returned; raise maxResults to get them`
+          ? `stopped at your maxResults cap (${maxResults}) — ${leaderboardEntries.length - pushed} more leaderboard row(s) were discovered but not returned; ${maxResultsAtCeiling
+            ? 'maxResults is already at this Actor\'s maximum of 10000, so raising it is not an option — narrow discoverCategories or lower maxPublicationsPerCategory and run categories separately to get them'
+            : 'raise maxResults to get them'}`
           : `stopped early: the run could not charge for further rows (pay-per-event budget reached) — ${leaderboardEntries.length - pushed} discovered row(s) were not returned`,
       );
     }
@@ -963,7 +966,9 @@ if (!publicationTargets.length && !postTargets.length) {
   const truncationNote = (keepGoing || timeBudgetExceeded)
     ? null
     : pushed >= maxResults
-      ? `stopped at your maxResults cap (${maxResults})${unreachedTargets ? `, leaving ${unreachedTargets} of the publication(s)/post(s) you asked for completely unscraped` : ''} — raise maxResults for a complete result`
+      ? `stopped at your maxResults cap (${maxResults})${unreachedTargets ? `, leaving ${unreachedTargets} of the publication(s)/post(s) you asked for completely unscraped` : ''} — ${maxResultsAtCeiling
+        ? 'maxResults is already at this Actor\'s maximum of 10000, so raising it is not an option — narrow the publication/post list and run the rest separately for a complete result'
+        : 'raise maxResults for a complete result'}`
       : `stopped early: the run could not charge for further results (pay-per-event budget reached)${unreachedTargets ? `, leaving ${unreachedTargets} of the publication(s)/post(s) you asked for completely unscraped` : ''} — raise the Actor's spend limit for a complete result`;
   // Discovery problems that left the run still delivering rows (partial, not total, failures).
   const discoveryNotes = partialDiscoveryNotes();

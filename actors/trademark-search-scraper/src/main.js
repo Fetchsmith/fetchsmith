@@ -204,6 +204,7 @@ function matchesPrefix(item) {
   return stripLead(item.trademarkName).startsWith(prefixNeedle);
 }
 const maxResults = Math.min(Number(input.maxResults ?? 50), 5000);
+const maxResultsAtCeiling = maxResults >= 5000;
 const watchLabel = String(input.watchLabel ?? '').trim();
 const watchChanges = Boolean(input.watchChanges);
 const webhookUrlRaw = String(input.webhookUrl ?? '').trim();
@@ -1104,7 +1105,9 @@ if (timeBudgetStopped && !watchMode) {
   await Actor.setStatusMessage(
     `Pushed ${pushed.toLocaleString('en-US')} of ${declaredMatches?.toLocaleString('en-US') ?? '?'} matches TMview declared for this search — `
     + 'stopped early because of this run\'s own maxResults or Apify cost limit, not because TMview ran out of results. '
-    + 'Raise maxResults (or the run\'s cost limit) to get more. See RUN_SUMMARY.' + preFilterNote,
+    + (maxResultsAtCeiling
+      ? 'maxResults is already at this Actor\'s maximum of 5000, so raising it is not an option -- raise the run\'s cost limit to get more.'
+      : 'Raise maxResults (or the run\'s cost limit) to get more.') + ' See RUN_SUMMARY.' + preFilterNote,
   );
 } else if (pushed === 0 && !watchMode && runError === null && searchTerm) {
   // The THIRD way this Actor can return 0 rows, and until cycle 1752 the only one that said
