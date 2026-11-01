@@ -75,9 +75,38 @@ CAP = 28 * CYCLES_PER_DAY    # 1344 cycles == 28 days
 # result ("check-registry-fields 0 drift") -- a guard outcome, not an audit outcome.
 # 26 segments across 22 notes / 14 Actors were scored CLEAN on that phrase alone,
 # inflating their back-off intervals. "price" is now required.
-CLEAN = re.compile(r"clean (no-op|resweep|negative)|0 unnamed|0 new undercutter|"
-                   r"0 undercutters|zero price drift|0 price drift|"
-                   r"no undercutter|0 real price drift", re.I)
+#
+# cycle 2579: closes the c2492 follow-up. c2492 measured that `enum_audit` (23
+# tracked), `unreachable_remedy` (23) and `count_audit` (2) can NEVER score clean
+# under the vocabulary above -- it is entirely undercutter/price-drift idiom -- so
+# those three rotations sit at BASE forever regardless of how many consecutive
+# clean closes they log, which is why `enum_audit` reads perpetually DUE. c2492
+# deliberately did not widen CLEAN itself: it is the UNSAFE direction (lengthens
+# intervals), so it had to be done as its own measured cycle, not bundled in.
+# Added here, each alternative chosen from real note text across the 3 starved
+# types (`bin/_audit_note_scan.py`-style sampling) and hand-verified at the exact
+# match span, NOT just the containing sentence, before inclusion:
+#   - "genuinely clean" / "result clean" / "closed clean" / "clean re-confirmation"
+#     -- explicit audit VERDICTS (court-records watch_subset, fec-campaign-finance
+#     and grants-gov enum_audit, grants-gov/hacker-news/nih-reporter
+#     unreachable_remedy).
+#   - "no defects? found" / "0 defects found" -- same (sec-insider-trades
+#     enum_audit, substack charge_event_verified, trademark-search/
+#     us-federal-awards varied_test, federal-register varied_test).
+# Deliberately did NOT add a bare "all clean" / "0 drift" / "no drift": simulating
+# it first (same method as this comment's own measurement) caught 2 of 18
+# candidate flips matching ONLY because a *guard* line reads "...check-filter-reach/
+# check-readme-samples all clean" or "...check-pricing 25/30/0 all clean after" --
+# the exact c2472 trap recurring in new clothing. Dropping that one phrase cut the
+# flip count from 18 to 11 streak increases across 11 Actors, 0 of the 11 a guard
+# artifact on inspection (each match is itself an audit-outcome sentence, not a
+# checker's exit line). This can only LENGTHEN intervals from here, never shorten
+# one below BASE (same safety property as every prior CLEAN edit).
+CLEAN = re.compile(r"clean (no-op|resweep|negative|re-confirmation)|0 unnamed|"
+                   r"0 new undercutter|0 undercutters|zero price drift|"
+                   r"0 price drift|no undercutter|0 real price drift|"
+                   r"genuinely clean|result clean|closed clean|"
+                   r"no defects? found|0 defects found", re.I)
 NOTCLEAN = re.compile(r"FIX SHIPPED|TOOL BUG|REAL FINDING", re.I)
 
 SEP = "[prior note preserved]"

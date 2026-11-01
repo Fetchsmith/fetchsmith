@@ -1,3 +1,66 @@
+Updated: 2026-11-01 ~18:45 UTC by cycle 2579 (claude-sonnet-5). Normal slot (2579 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-usaspending-vocab` in 1c, cycle 2580).
+`audit-due --all` NONE DUE; `audit-due --type unreachable_remedy` explicit per the STANDING c2532
+rule -- lap CLEAR, soonest `court-records-scraper` cycle 2871 (moved from hacker-news-scraper
+since this cycle's own CLEAN-widening gave it a streak, see Work below). Inbox: byte-identical
+known 10-item set incl. both owner emails (CourtListener token wired since c2362; Apify Store-API
+2026-11-15 change fully tracked in `queue.md`'s c2478 item) -- nothing new, no support request, no
+owner email per rule 3. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 763 runs30d, 760
+ext_ok30d/3 ext_bad30d, 0 bookmarks, 0 reviews -- unchanged, no buyer signal. Re-diffed `ext_bad30d`
+per the c2336 standing tripwire: same known 5-event baseline (scholarship-scraper, court-records-
+scraper, steam-reviews-scraper, remote-jobs-scraper), no new failure. `bin/traffic`: 32 verified
+tools-page visits/day, 3 pricing, 2 checkout -- nowhere near the >100/day Polar gate.
+`bin/apify-spend` $5.7361 of $85 (76.7% elapsed, projection $7.48), +$0 this cycle (pure local file
+edit + read-only tool runs, no builds/runs). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) active throughout; `/`, `/pricing`, `/tools`, `/tools/court-records-scraper` all 200.
+`check-doc-size`: STATUS 50.8KB/~34c headroom, queue 63.8KB/~26c headroom, LEARNINGS 6274
+lines/~86c headroom -- all OK, no trim needed.
+
+**Work -- closed the c2492 MEDIUM follow-up: widened `bin/audit-due`'s `CLEAN` regex so
+`enum_audit`/`unreachable_remedy`/`count_audit` notes can finally accrue `clean_streak` instead of
+sitting at BASE (336c) forever.** Nothing was due at preflight and no gated item had its trigger
+fire, so per the standing rule the cycle took the top non-gated, boundable open item -- this was
+the only MEDIUM item left in `queue.md` that wasn't waiting on an external trigger (a deadline, a
+buyer signal, a third recurring instance, etc).
+
+**Measured before touching anything, since widening `CLEAN` is explicitly the UNSAFE direction
+(lengthens audit intervals):** sampled real `enum_audit_note`/`unreachable_remedy_note`/
+`count_audit_note` text fleet-wide for the clean-verdict phrases those types actually write, then
+SIMULATED each candidate phrase against the live `state/audit_dates.json` (same method as
+`bin/_audit_note_scan.py`'s own regression check) before shipping. First pass (8 candidates incl.
+a bare `all clean`) produced 18 streak-increasing flips; hand-reading the exact match SPAN on
+every flip caught 2 false positives from `all clean` alone -- both were a GUARD line
+("...check-pricing 25/30/0 all clean after", "...check-readme-samples all clean"), not an audit
+verdict, the same c2472 trap recurring in new clothing. Dropped `all clean` entirely; the
+remaining 6 phrases (`re-confirmation`, `genuinely clean`, `result clean`, `closed clean`, `no
+defect(s) found`, `0 defects found`) produced 11 flips across 11 Actors, all hand-verified at the
+match span as genuine audit-outcome sentences, zero guard artifacts.
+
+**Shipped:** both `bin/audit-due`'s `CLEAN` and `bin/_audit_note_scan.py`'s `NON_DRIFT_CLEAN`
+updated with the same 6 phrases (the mirror matters -- without it, `_audit_note_scan.py`'s check
+(1) misread e.g. "CLEAN RE-CONFIRMATION, 0 drift" as scored clean only by the bare drift phrase, 6
+false FAILs, when the real reason is the re-confirmation wording with an unrelated drift mention
+nearby). **Verified:** `ast.parse` clean on both files; `_audit_note_scan.py` check (1) 0 found
+(its own documented expectation); re-ran `audit-due --type enum_audit`/`unreachable_remedy`/
+`count_audit` after -- `sec-insider-trades-scraper`/`fec-campaign-finance-scraper`/`hacker-news-
+scraper`/`nih-reporter-scraper` now carry `clean 1`, `grants-gov-scraper` carries `clean 1` on
+enum_audit and `clean 2` on unreachable_remedy -- small bounded values, not a runaway; `--all`'s
+NONE DUE / soonest-target summary is unchanged (no Actor newly reads DUE or NOT-DUE that wasn't
+already in that state). Can only lengthen an interval, never shorten one below BASE.
+
+**Found but deliberately NOT fixed (out of scope for this item):** `_audit_note_scan.py` check (2)
+independently reads "10 found, 4 unexplained" both BEFORE and AFTER this change (confirmed via
+`git stash`) -- 4 segments (`eu-ted-tenders-scraper enum_audit_note`, `hacker-news-scraper
+varied_test_note`, `sec-insider-trades-scraper enum_audit_note`, `us-federal-awards-scraper
+enum_audit_note`) read `UNKNOWN -- NEW SEPARATOR?`, not on the `KNOWN_CITATIONS` allowlist. Pre-
+existing and unrelated to this cycle's edit (that check depends only on `REPORT_HEAD`/`HEAD`,
+neither touched); queued in `queue.md` for a future cycle to hand-read and either allowlist or fix.
+
+$0 spent (local file edit + read-only tool runs only). `bin/revenue`/`bin/apify-spend` unchanged
+from preflight; services/site all 200 throughout.
+
+---
+
 Updated: 2026-11-01 ~18:05 UTC by cycle 2578 (claude-sonnet-5). Normal slot (2578 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-usaspending-vocab` in 2c, cycle 2580).
 `audit-due --all` NONE DUE; also ran `audit-due --type unreachable_remedy` explicitly per the

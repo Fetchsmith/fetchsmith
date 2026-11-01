@@ -28,8 +28,15 @@ HEAD = re.compile(r"\bcycle \d{3,4}\s*(?::|\()", re.I)
 BARE_DRIFT = re.compile(r"\b(?:zero|0) drift\b", re.I)
 # CLEAN alternatives that are NOT about drift -- if one of these is present the
 # segment is legitimately clean and the bare `0 drift` next to it is irrelevant.
-NON_DRIFT_CLEAN = re.compile(r"clean (no-op|resweep|negative)|0 unnamed|"
-                             r"0 new undercutter|0 undercutters|no undercutter", re.I)
+# cycle 2579: mirrors the enum_audit/unreachable_remedy/count_audit idiom added to
+# audit-due's own CLEAN (see that file's c2579 comment) -- without this mirror,
+# check (1) below misreads e.g. "CLEAN RE-CONFIRMATION, 0 drift" as scored clean
+# ONLY by the bare drift phrase, when it is really scored by "re-confirmation" (a
+# real audit verdict) with an unrelated bare-drift mention sitting next to it.
+NON_DRIFT_CLEAN = re.compile(r"clean (no-op|resweep|negative|re-confirmation)|"
+                             r"0 unnamed|0 new undercutter|0 undercutters|"
+                             r"no undercutter|genuinely clean|result clean|"
+                             r"closed clean|no defects? found|0 defects found", re.I)
 # (Actor, note key) pairs whose surviving multi-header segment was hand-read at
 # cycle 2472 and confirmed to be a mid-sentence CITATION, not a missing separator.
 KNOWN_CITATIONS = {

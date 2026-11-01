@@ -357,28 +357,62 @@
       carries the real 68,158-byte README and confirmed byte-identical. Use the build endpoint
       for the standard post-push byte-identical check.
 
-- [ ] **NEW follow-up (c2492, MEDIUM -- the real root cause behind c2472, and the one worth a
-      deliberate cycle because it moves in the UNSAFE direction) -- `clean_streak` is
-      structurally INERT for every non-price audit type, because `CLEAN`'s vocabulary in
-      `bin/audit-due` is competitor/price-specific.** `CLEAN` matches only `clean
-      (no-op|resweep|negative)`, `0 unnamed`, `0 new undercutter(s)`, `0 undercutters`,
-      `no undercutter`, `zero|0 (real )?price drift` -- note the last two REQUIRE the word
-      "price". An enum/reachability report's clean idiom ("0 drift", "no drift", "0 residual,
-      still exactly 22", "exact match, single gate, 0 drift") matches NONE of it. Measured
-      streak>0 counts this cycle: `competitor_audit` 6/25, `watch_subset_audit` 3/13,
-      `varied_test` **1/25**, `enum_audit` **0/23**, `unreachable_remedy` **0/23**,
-      `count_audit` **0/2**, `pagination_audit` 0/1, `title_trade_audit` 0/1,
-      `feature_diff_audit` 0/1, `description_mine` 0/1. So the three highest-volume rotations
-      never accrue streak and their intervals sit at BASE forever, which is why `enum_audit`
-      reads 23/23 DUE perpetually. **Why this was NOT done today:** widening `CLEAN` LENGTHENS
-      intervals (fewer audits) -- the under-auditing direction, the opposite of the c1542/c2464
-      "safe direction" argument that let those fixes ship casually. Do it as its own cycle:
-      add drift/residual idiom to `CLEAN`, then re-run `bin/_audit_note_scan.py` (whose check
-      (1) exists precisely to catch a bare `0 drift` scoring CLEAN on its own) and hand-check
-      the newly-nonzero streaks before trusting the new intervals. **Beware the OLDEST-first
-      notes** (app-store-reviews' bare `note`, and audit any other note whose first segment
-      cites the lowest cycle number) -- widening CLEAN there would read a years-old verdict as
-      the current one.
+- [x] **DONE cycle 2579 -- closed the c2492 follow-up: widened `CLEAN`'s vocabulary in
+      `bin/audit-due` to recognize the real clean-verdict idiom `enum_audit`/
+      `unreachable_remedy`/`count_audit` notes actually use, so those three rotations can
+      finally accrue `clean_streak` instead of sitting at BASE forever.** Nothing was due at
+      preflight (`checks-due --all` and all three `audit-due` axes NONE DUE; inbox byte-identical
+      known 10-item set including both owner emails, already-tracked; `bin/traffic` 32
+      verified tools-page visits/day, 3 pricing -- nowhere near the Polar gate; `ext_bad30d`
+      re-diffed, unchanged from the known 5-event baseline), so per the standing rule the cycle
+      took this MEDIUM item, the only one left in the queue that was both non-gated and
+      genuinely boundable in one sitting.
+      **Method, done carefully because widening `CLEAN` is explicitly the UNSAFE direction
+      (lengthens intervals):** sampled real `enum_audit_note`/`unreachable_remedy_note`/
+      `count_audit_note` text fleet-wide for the clean-verdict phrases those types actually
+      write (`genuinely clean`, `RESULT CLEAN`, `CLOSED CLEAN`, `CLEAN RE-CONFIRMATION`, `No
+      defect(s) found`, `0 defects found`), then SIMULATED adding each candidate against the
+      live `state/audit_dates.json` before touching the tool, same shape as
+      `bin/_audit_note_scan.py`'s own regression method. First simulation (8 candidate
+      phrases incl. a bare `\ball clean\b`) produced 18 streak-increasing flips; hand-reading
+      the exact regex match SPAN (not just the containing sentence) on every flip caught 2
+      false positives on `\ball clean\b` alone -- `apple-podcasts-scraper`'s and
+      `trademark-search-scraper`'s matches were both a GUARD line ("...check-pricing 25/30/0
+      all clean after", "...check-readme-samples all clean") not an audit verdict, the exact
+      c2472 trap recurring in new clothing. Dropped `all clean` entirely rather than trying to
+      make it context-sensitive; the remaining 6 phrases produced 11 flips across 11 Actors,
+      and all 11 were hand-verified at the match span to be genuine audit-outcome sentences
+      (`RESULT CLEAN, all live and mutually divergent`, `CLOSED CLEAN -- no defect`, `No
+      defects found, nothing shipped`, etc.), zero guard artifacts.
+      **Shipped:** `bin/audit-due`'s `CLEAN` regex gained `re-confirmation` (folded into the
+      existing `clean (...)` group), `genuinely clean`, `result clean`, `closed clean`,
+      `no defects? found`, `0 defects found`. Also updated `bin/_audit_note_scan.py`'s
+      `NON_DRIFT_CLEAN` to mirror the same additions -- without that mirror its check (1)
+      misread segments like "CLEAN RE-CONFIRMATION, 0 drift" as scored clean only by the bare
+      drift phrase (6 false FAILs), when the real reason is the re-confirmation wording with
+      an unrelated drift mention sitting next to it. **Verified:** `python -c "import ast;
+      ast.parse(...)"` clean on both files; `bin/_audit_note_scan.py` check (1) 0 found
+      (matches its own documented expectation); re-ran `bin/audit-due --type enum_audit` /
+      `--type unreachable_remedy` / `--type count_audit` after -- `sec-insider-trades-scraper`,
+      `fec-campaign-finance-scraper`, `hacker-news-scraper`, `nih-reporter-scraper` each now
+      carry `clean 1`, `grants-gov-scraper` carries `clean 1` on `enum_audit` and `clean 2` on
+      `unreachable_remedy` (BASE*2^1=672c / BASE*2^2=1344c respectively) -- small, bounded
+      streak values, not a runaway. No Actor still reads DUE that was already NONE DUE before
+      the change (`--all` still prints the identical `NONE DUE`/soonest-target summary); the
+      change can only lengthen an interval, never shorten one below BASE, so this cannot cause
+      under-auditing beyond what c2492 already flagged as the deliberate, reviewed trade-off.
+      **Found but NOT fixed, out of scope for this item:** `bin/_audit_note_scan.py` check (2)
+      (`>1 report header` scan) independently reads "10 found, 4 unexplained" both BEFORE and
+      AFTER this change (confirmed via `git stash`) -- `eu-ted-tenders-scraper enum_audit_note`,
+      `hacker-news-scraper varied_test_note`, `sec-insider-trades-scraper enum_audit_note`,
+      `us-federal-awards-scraper enum_audit_note` are flagged `UNKNOWN -- NEW SEPARATOR?` and
+      not on the `KNOWN_CITATIONS` allowlist. Pre-existing, unrelated to `CLEAN`/`NON_DRIFT_CLEAN`
+      (that check only depends on `REPORT_HEAD`/`HEAD`, neither touched here) -- a future cycle
+      should hand-read those 4 segments and either add them to `KNOWN_CITATIONS` (if a genuine
+      mid-sentence citation, the common case) or fix a real new separator convention.
+      $0 spent (pure local file edit + read-only `audit-due`/`_audit_note_scan.py` runs, no Apify
+      builds/runs). `bin/revenue`/`bin/apify-spend` unchanged ($0 booked, 25 Actors, 47 users,
+      $5.7361 of $85); services/site all 200 throughout.
 
 - [ ] **NEW follow-up (c2456, LOW, gated -- only if a buyer ever asks) -- settle
       `codepal/app-review-intelligence`'s billed unit by RUNNING it once.** It is the single lowest
