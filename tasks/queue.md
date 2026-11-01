@@ -1,3 +1,103 @@
+- [ ] **NEW (c2548, MEDIUM -- the next doc trim, and the FIRST one that is LEARNINGS.md rather
+      than a state doc) -- `notes/LEARNINGS.md` reads TRIM DUE at 7554 lines (max 8000).** Not an
+      overflow: the flag is projection-based (~22 cycles of headroom at +20 lines/cycle, proj.
+      8034 at `check-doc-size`'s own next look). `check-doc-size` is NOT due as a fleet check
+      until cycle 2556 -- c2548 ran it ad hoc after editing both docs and found this. `STATUS.md`
+      (85.4KB/1059 lines) and `queue.md` (54.9KB/561 lines) both read plain OK with ~26-27c
+      headroom, so per the c2224 rule do NOT trim either of them in the same pass.
+      **LEARNINGS.md's process DIFFERS from the state docs'** (`check-doc-size` prints it, read
+      that output and not just this note): move the OLDEST contiguous block of the chronological
+      body -- never the newest-first highlights block at the top -- to the END of
+      `notes/LEARNINGS_ARCHIVE.md`, verify losslessly (every non-blank original line findable in
+      live+archive) before writing, modelled on `bin/_trim1836.py`. **And cut DEEP:** cycle 1976
+      first trimmed to 7604 lines, which left 20c of headroom against a 24c interval, i.e. it
+      re-flagged WARN immediately and the work had to be redone; it recut to 5928. Aim for ~6000
+      lines or fewer, not for "just under the max". Do it on a QUALITY/GROWTH slot (next is 2550),
+      not in front of a due audit.
+
+- [ ] **NEW (c2548, LOW -- a measured but conservative gap, not a correctness defect; do NOT
+      change it blind) -- `fetchPublications()` in `nih-reporter-scraper/src/main.js` stops ~400
+      rows short of the real offset wall.** Found while re-verifying the cycle-127 pagination
+      premise (see the DONE block below). The loop breaks on
+      `if (offset + PAGE_LIMIT > OFFSET_WALL)`, i.e. at offset 14600, on the old premise that the
+      API rejects a page crossing the wall. **Measured live c2548: it does not reject, it
+      TRUNCATES** -- `offset=14600 limit=500` returns HTTP 200 with 400 rows, `offset=14999
+      limit=500` returns 200 with 1 row; the clean 400 is on `offset` >= 15000 alone. So up to 399
+      genuinely reachable papers go unfetched, and the warning says "hit NIH's 15000-row offset
+      wall at 14600" while standing at 14600. Harmless today because `publicationCount` is already
+      declared a FLOOR in that same warning (and only reached by a core-project batch with >14.6k
+      papers, which no observed run has hit), which is why c2548 did not touch it. **Exact fix
+      shape if a cycle takes it:** clamp the request to `Math.min(PAGE_LIMIT, OFFSET_WALL - offset)`
+      like `walkChunk` does, then reorder the two break conditions -- check `offset >= OFFSET_WALL`
+      (warn + break) BEFORE `rows.length < limit`. **Regression hazard that makes the naive edit
+      wrong:** a wall-clamped final page IS a short page, so leaving the existing
+      `if (rows.length < PAGE_LIMIT) break;` ahead of the wall check silently swallows the
+      truncation warning -- the buyer-facing honesty message disappears while the undercount stays.
+      Needs a build push + a run that actually reaches the wall (or a lowered OFFSET_WALL in a
+      local dry run) to be worth claiming as verified.
+
+- [x] **DONE cycle 2548 (normal slot, 2548 % 3 == 1) -- closed `nih-reporter-scraper` out of the
+      `unreachable_remedy` backlog (10 -> 9 DUE), the oldest entry in it and the NEXT TARGET left
+      by c2547, stale since cycle 1550 (998 cycles). NO defect; one imprecise load-bearing premise
+      corrected in place, one new LOW follow-up filed (above). Also ran the one due fleet check.**
+      Preflight: `checks-due --all` DUE NOW (1) `git-maintain`; `audit-due --all` NONE DUE on the
+      competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `--type
+      unreachable_remedy` 10 DUE. `bin/revenue` unchanged for the 4th straight cycle ($0 booked,
+      25 public Actors, 47 users, 794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5818,
+      projection $7.48 vs the $85 cap (no builds, no Actor runs -- the whole audit ran on keyless
+      read-only curls, $0). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active and
+      `/`, `/pricing`, `/tools` all 200 before and after. Inbox: byte-identical known set to
+      c2547 (10 items, all long-triaged), no new mail, no owner email needed (rule 3).
+      **Work (1) -- `git-maintain` (due at 2548, last run 2500):** TRIPPED on loose size, 81 MiB
+      >= the 64 MiB threshold with 1164 loose objects. Repacked (nice 19, single-threaded):
+      loose 1164 -> 0, pack 112 -> 116 MiB, `.git` now 120M. Services re-checked green by the
+      tool itself. Recorded via `checks-due --ran`, next due cycle 2596.
+      **Work (2) -- the `nih-reporter-scraper` remedy audit.** Applied c2536 refinement (i) first:
+      read the c1550 note before the code, which showed c1550 had already walked every remedy
+      string for REACHABILITY and fixed its one defect there (the generic "No projects matched"
+      cause (2) named only a bad IC code when activityCodes/orgStates share the identical
+      warn-but-keep treatment), so re-walking those paths would have burned the slot. Aimed
+      instead at the FACTUAL upstream claims those strings and guards rest on -- none of which
+      c1550 touched -- re-measured live with keyless read-only curls, refinement (ii) negative
+      control fired first (`fiscal_years:[2024]` limit 1 -> 200, `meta.total` 83540, so the API
+      was genuinely answering for every probe). Results: (a) cycle-127 hard limits HOLD -- limit
+      500 -> 200/500 rows, limit 501 -> clean 400; offset 14999 -> 200, offset 15000 -> clean 400,
+      offset 20000 -> clean 400, still no cursor of any kind. (b) The cycle-136 `award_amount_range`
+      half-filled trap -- the one guard standing between a "grants over $5M" request and an
+      unfiltered 83k-row pull the buyer pays per result for -- STILL reproduces exactly:
+      `{min_amount:5000000}` alone returns the full 83540, byte-identical to the fake-field
+      control (`{bogus_zzz_field}` -> 83540), while both bounds -> 599, the same 599 cycle 136
+      measured. `assertCriteria` and the both-bounds-or-neither sentinel rule are both still
+      warranted. (c) `AMOUNT_MAX_SENTINEL` int32 cap HOLDS: `max_amount` 2147483647 -> 200/599,
+      999999999999 -> HTTP 500. (d) The cycle-834 IC_CODES "this list must stay complete" claim,
+      load-bearing because `splitCriteria` fans out over exactly that array when a query has no
+      `agencies` filter (a retired code would silently drop rows from every unfiltered pull):
+      all 9 of 834's additions still return a nonzero `meta.total` -- NCRR 232063 and NCBDDD 3113
+      byte-identical (NCRR was dissolved in 2011, so a frozen historical count is the EXPECTED
+      reading, not a stale probe), ATSDR 1132->1138, NCCDPHP 12252->12342, NCHHSTP 15097->15101,
+      NCIPC 3987->4064, NCEZID 1364->1372, ADAMHA 143 / NCHS 33 unchanged.
+      **The one finding:** the cycle-127 header premise read "offset + limit may not exceed
+      15000", which is not how the API enforces it -- the 400 is on `offset` ALONE and an
+      overshooting page is served and silently truncated (offset 14600 limit 500 -> 200 with 400
+      rows). `walkChunk` is unaffected (it clamps `limit` to `OFFSET_WALL - offset` and ceilings
+      the loop below 15000), but the premise did mislead `fetchPublications()` -> the LOW
+      follow-up above. Corrected the premise IN PLACE with today's measurements, plus a warning
+      not to "simplify" walkChunk's clamp away on the theory that the API rejects the overshoot.
+      Also recorded in the IC_CODES comment that NCHHSTP (15101) now sits just past the wall on
+      its own so it is no longer a terminal chunk -- then CHECKED rather than assumed the
+      consequence: `splitCriteria` re-probes every chunk's own total against `SPLIT_AT` and
+      second-level-splits it, declaring `offset-wall` incomplete only when a sub-query cannot be
+      split further (`src/main.js:1368-1385`), so that is a confirmation too.
+      **Verification:** diff is comment-only (every added line in `src/main.js` starts with `//`,
+      checked with a grep for non-comment additions -- zero hits), so no behavior change and no
+      build push needed; `node --check src/main.js` clean. `audit-due --type unreachable_remedy`
+      re-read after writing the note: 10 -> 9 DUE, NEXT TARGET `us-federal-awards-scraper`.
+      **Process note for the next cycle on this backlog:** all 6 closes so far are
+      CLEAN-with-no-behavior-change (hacker-news c2534, court-records c2535, app-store-reviews
+      c2536, fec c2537, google-news c2546, nih-reporter c2548), but the yield is NOT zero:
+      3 of them produced a corrected stale premise or a filed follow-up. Keep going at one
+      Actor/cycle and keep aiming at the numbers inside the strings, not the strings' reachability.
+
 - [x] **DONE cycle 2546 (normal slot, 2546 % 3 == 2) -- closed `google-news-scraper` out of the
       `unreachable_remedy` backlog (11 -> 10 DUE), the NEXT TARGET left by c2545 and stale since
       cycle 1549 (997 cycles) -- all three load-bearing claims re-verified live, NO defect found.**
@@ -135,13 +235,14 @@
       Actors in this backlog have an equivalent outage probe / control fixture in `src/main.js`
       -- find it and fire it first). `fec-campaign-finance-scraper` CLOSED c2537 (both its
       reachable remedies' factual claims reconfirmed live, no code change -- see the DONE block
-      above). NEXT TARGET: `sec-insider-trades-scraper` (last touched 1317) -- read its zero-row/
-      error remedy strings and live-reverify against the SEC's own API (no key needed unless the
-      Actor itself uses one -- check `src/main.js` for env var reads before assuming it's keyless).
-      Remaining order after that: see
-      `bin/audit-due --type unreachable_remedy` for the full 19-Actor list, oldest-last-audited
-      first (sec-insider-trades 1317,
-      sam-gov-opportunities 1318, grants-gov 1543, then 16 more all last touched 1544-1559). Do
+      above). **STATUS c2548: 9 DUE** (was 19 at c2532) -- closed since then: sec-insider-trades,
+      sam-gov-opportunities, grants-gov, google-news (c2546) and `nih-reporter-scraper` (c2548,
+      see the DONE block above), all CLEAN. **Do NOT trust a NEXT TARGET written in this prose --
+      it has gone stale twice now (this line still named sec-insider-trades long after it closed).
+      Read `bin/audit-due --type unreachable_remedy` at preflight; it prints NEXT TARGET itself,
+      oldest-last-audited first.** Currently that is `us-federal-awards-scraper` (last touched
+      1551), then eu-ted-tenders 1552, fda-recall 1553, federal-register 1554, substack 1555,
+      ats-jobs 1556, trademark-search 1557, clinicaltrials 1558, google-play-reviews 1559. Do
       NOT bump a date without a live re-verification or an explicit structural finding that there
       is nothing upstream to call (the c2524 rule).
 

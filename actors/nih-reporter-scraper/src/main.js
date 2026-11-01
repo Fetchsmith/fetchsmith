@@ -44,10 +44,23 @@ const input = (await Actor.getInput()) ?? {};
 // and unlike Federal Register / ClinicalTrials.gov -- do not reuse a GET helper here.
 const API = 'https://api.reporter.nih.gov/v2';
 
-// Hard limits measured live (cycle 127): limit caps at 500/request (501 -> clean 400), and
-// offset + limit may not exceed 15000 with NO cursor of any kind. A single fiscal year already
-// holds >83k projects, so anything broad has to be chunked on a categorical dimension and merged
-// -- see splitCriteria() below. These are the two numbers the whole pagination design hangs on.
+// Hard limits measured live (cycle 127, every number re-verified live cycle 2548): limit caps at
+// 500/request (501 -> clean 400), and no row past offset 15000 is reachable by any means -- there
+// is NO cursor of any kind. A single fiscal year already holds >83k projects (83540 for FY2024 as
+// of cycle 2548, vs the 83531 cycle 136 measured), so anything broad has to be chunked on a
+// categorical dimension and merged -- see splitCriteria() below. These are the two numbers the
+// whole pagination design hangs on.
+// PRECISION FIX (cycle 2548): the old wording here said "offset + limit may not exceed 15000",
+// which is not how the API actually enforces it, and the difference is load-bearing for anyone
+// editing the page loops. Measured today: the 400 is on `offset` ALONE (offset 15000 limit 1 ->
+// clean 400, offset 20000 -> clean 400), while a page whose offset+limit CROSSES the wall is
+// served 200 and silently truncated to the wall instead of rejected (offset 14600 limit 500 ->
+// 200 with 400 rows; offset 14999 limit 500 -> 200 with 1 row). So clamping `limit` to
+// OFFSET_WALL - offset (what walkChunk does) is not what keeps us out of a 400 -- staying below
+// offset 15000 is -- and a loop that instead STOPS when offset + PAGE_LIMIT would cross the wall
+// leaves up to 499 genuinely reachable rows unfetched. fetchPublications() below does exactly
+// that; see queue.md (c2548) for that follow-up. Do not "simplify" walkChunk's clamp away on the
+// theory that the API rejects the overshoot: it does not, it truncates.
 const PAGE_LIMIT = 500;
 const OFFSET_WALL = 15000;
 const SPLIT_AT = 14500; // leave headroom: `total` drifts slightly between the probe and the walk
@@ -218,6 +231,15 @@ function assertCriteria(criteria) {
 // `NCEZID` 1364, `NCHS` 33. Closes ~269k of the ~294k-row gap between the pre-834 list's union
 // and the unfiltered total (2687442 vs 2981466); the remaining ~48k is presumed to be further
 // CDC/PHS sub-centers not yet identified -- see queue.md for the follow-up.
+// Re-verified live cycle 2548: all 9 of those cycle-834 additions still return a nonzero
+// `meta.total` on an `agencies:[CODE]`-only query, so none has been retired out from under the
+// fan-out -- NCRR 232063 and NCBDDD 3113 byte-identical to 834 (NCRR was dissolved in 2011, so a
+// frozen historical count is the expected reading, not a stale probe), ATSDR 1132->1138,
+// NCCDPHP 12252->12342, NCHHSTP 15097->15101, NCIPC 3987->4064, NCEZID 1364->1372, ADAMHA 143 and
+// NCHS 33 unchanged. Note NCHHSTP (15101) is now just past the 15000 offset wall on its own, so it
+// is no longer a terminal chunk: a fully unfiltered pull fanned out over this array needs the
+// second-level split for that code. splitCriteria() already re-probes each chunk's total against
+// SPLIT_AT rather than assuming one agency fits, so this is a confirmation, not a defect.
 const IC_CODES = [
     'NCI', 'NIAID', 'NHLBI', 'NIGMS', 'NIDDK', 'NINDS', 'NIMH', 'NIA', 'NICHD', 'NIDA',
     'NIAMS', 'NEI', 'NIEHS', 'NIDCD', 'NIDCR', 'NIAAA', 'NIBIB', 'NHGRI', 'NIMHD', 'NINR',

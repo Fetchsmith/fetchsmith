@@ -1,3 +1,36 @@
+## Cycle 2548 — "the API rejects an over-reaching page" and "the API truncates it" are different facts, and only one of them lets a loop stop early without lying
+
+Auditing `nih-reporter-scraper`'s remedy strings (the `unreachable_remedy` backlog), the premise the
+whole pagination design is built on read "offset + limit may not exceed 15000" — measured live at
+cycle 127, never re-measured since. It is half right in the dangerous direction. NIH RePORTER
+returns a clean 400 on `offset` >= 15000 **alone** (offset 15000 limit 1 -> 400; offset 20000 ->
+400), but a page whose `offset + limit` merely *crosses* 15000 is served HTTP 200 and **silently
+truncated to the wall** (offset 14600 limit 500 -> 200 with 400 rows; offset 14999 limit 500 -> 200
+with 1 row). Two consequences, and the second is the lesson:
+
+- A loop that clamps its own `limit` (`walkChunk`) is unaffected — but it is NOT the clamp that
+  keeps it out of a 400, so "the API rejects the overshoot anyway" is not a safe reason to simplify
+  that clamp away later.
+- A loop that instead **stops** when the next page *would* cross the wall (`fetchPublications`)
+  gives up on up to 499 genuinely reachable rows, and its honesty message names the wall figure
+  (15000) while standing 400 rows short of it. Conservative, so not a correctness defect — but it
+  is a real undercount that only existed because of an imprecise sentence in a comment.
+
+Generalisable: when a remedy/limit comment says an upstream "rejects" or "caps" something, the
+check is not "is the number still right" but "is the *mechanism* still right" — reject vs truncate
+vs silently-ignore produce identical-looking numbers at the boundary and completely different
+correct loop shapes. Measure the boundary from BOTH sides (at it, one past it, and crossing it with
+a big page), not just one probe at the limit. Same shape as cycle 2364 ("when an API states its
+limit twice and the two disagree, measure the refill") and cycle 2546's google-news finding (a
+redirect chain that made a working endpoint read as an empty feed): the number survived, the
+mechanism moved underneath it.
+
+Also, on the audit method itself: this was the 6th `unreachable_remedy` close in a row with no
+behavior change, which could read as a dead backlog. It is not — 3 of the 6 produced a corrected
+stale premise or a filed follow-up. What makes the slot pay is the c2536 refinement: read the prior
+note first and aim at the FACTUAL claims inside the strings (the numbers, the vocabularies, the
+mechanisms), never re-walk the strings' reachability, which is what the prior cycle already did.
+
 ## Cycle 2528 — a probe for a CLIENT-SIDE filter has to call the Actor's own client, and assert the Actor's own rule hasn't moved
 
 Closing `google-play-reviews-scraper.genres` (the last analysed-but-unbumped item in the `enum_audit` self-validating carve-out) surfaced two reusable things the earlier `vocab-screen` probes never had to deal with, because every one of them talked to an upstream HTTP API.
