@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2572 (BUILD slot, 2572 % 3 == 1) -- did the measurement+design half of the
+      c2557 Workday pay-in-prose feature, which is the half c2557 itself named as the
+      prerequisite ("not enough to write one robust extractor without a wider sample first").
+      Left a validated-but-unwired extractor and a committed corpus; the remaining work is 4
+      coordinated edits + a build push, with no measuring left to do -- see the rewritten open
+      item below.** `checks-due --all` and `audit-due --all` (all three axes) read NONE DUE at
+      preflight; inbox was the known 10-item set, no support request. **Sampled 50 live postings
+      across 5 real Workday tenants** (okgov/nvidia/adobe/salesforce/paypal, 10 each) straight
+      off the public CXS API, $0, no Apify run -- saved as
+      `actors/ats-jobs-scraper/corpus/workday-salary-prose.json` so no future cycle refetches.
+      Incidental finding: `walmart`/`cisco`/`dell` list POSTs now return **HTTP 422**, so those
+      3 URL-guessed slugs are wrong and are not usable sample boards. **Confirmed
+      `jobPostingInfo` carries no pay-ish key at any depth**, so SALARY_BLIND_ATS stays true
+      about the field and this is strictly a prose feature. **Confirmed c2557's false-positive
+      hazard was real and not hypothetical** -- sign-on bonuses, a benefits allowance and shift
+      differentials all appear as bare `$N` in the same descriptions (sometimes the same posting)
+      as the real pay, which is what forced the design to anchor on a labeled pay phrase instead
+      of on money figures. **Decided the multi-range question with a reason rather than a
+      preference: widest span, one row, no new field**, because `minSalary`/`maxSalary` filter by
+      range overlap (main.js:69) and narrowing to a primary location/level would wrongly exclude
+      postings that genuinely pay in the outer band. **Wrote and validated the extractor
+      offline** (`corpus/workday-salary-draft.js`, `node --check` clean): label-anchored, forward
+      window cut at the first disqualifying word, interval only ever from a printed period word.
+      **It scores 24/50 on the corpus, which is exactly the 24 postings containing any money
+      figure -- 24/24 right, 26/26 correctly null, zero false positives**, including the three
+      genuinely hard shapes (a prose "range" tail, a two-level hourly posting surrounded by
+      bonuses, and a 5-city table whose true outer band spans two different cities). **Did NOT
+      wire or ship it**, deliberately: `workdayNeedsDetail` (125-127) omits the salary filters
+      and `WORKDAY_DEFERRED` (1255) omits `'salary'`, so wiring the extractor alone would have
+      left `minSalary` runs returning the same silent zero they do today while the listing
+      claimed the field worked -- a worse defect than the current honest null. Services and site
+      200 throughout, $0 spent, no revenue change, no owner email (rule 3).
+
 - [x] **DONE cycle 2568 (QUALITY/GROWTH slot, 2568 % 3 == 0) -- ran the c2561 generalisation
       pass. It found 5 MORE live instances of the unreachable "raise the cap" remedy, all 5 fixed
       and shipped, and the >=2-instance threshold the c2561 note set was cleared, so the static
@@ -227,27 +260,93 @@
       zero-row advice names one of them: `sam-gov-opportunities-scraper`,
       `fec-campaign-finance-scraper`, `nih-reporter-scraper`.
 
-- [ ] **NEW (c2557, MEDIUM -- a genuine feature opportunity, not a defect; needs its own BUILD
-      cycle, not a blind parse-and-ship) -- Workday postings often carry a real pay figure in
-      free text, and this Actor already has the parsing primitives to extract it.** Measured
-      this cycle (see the DONE block above and the `SALARY_BLIND_ATS` comment in
-      `ats-jobs-scraper/src/main.js`): a US state agency's templated "Compensation" line (okgov,
-      20/20), NVIDIA's "the expected base salary range for this position is ... USD" prose
-      (8/10), Adobe's "Expected Pay Range" block with a real per-state $ range (10/10) -- all
-      pulled from the same `jobPostingInfo.jobDescription` HTML the detail call already fetches
-      when `includeDescriptions`/a deferred filter needs it. `parseMoney`/`periodWord` (built for
-      Greenhouse's pay-transparency block and Breezy's `salary` field) already handle "$X-$Y",
-      "$X/hr" and "X USD - Y USD" shapes. **Why this is a BUILD-cycle task, not a quick follow-on
-      to this cycle's text fix:** three real formats seen so far (`<b>Compensation</b>` label,
-      bare prose sentence, `<b>Expected Pay Range:</b>` label with per-state breakdowns) is not
-      enough to write one robust extractor without a wider sample first -- a careless regex
-      could misparse a benefits-section dollar figure (401k match, relocation stipend) as a
-      salary, which would be a WORSE defect than the current null. Needs: (1) a wider live sample
-      across more real Workday tenants before choosing an extraction pattern, (2) a decision on
-      how to label per-state multi-range postings like Adobe's (one row per state? widest range?
-      flag `salaryVaries`?), (3) a false-positive check against non-salary dollar mentions in the
-      same description. Only touches the `workday` fetcher; the other 4 `SALARY_BLIND_ATS`
-      members are unverified and out of scope for this follow-up.
+- [ ] **PARTIALLY ACTIONED c2572 (was: NEW c2557, MEDIUM) -- Workday pay-in-prose extraction.
+      c2572 did the whole MEASUREMENT + DESIGN half that c2557 named as the prerequisite, and
+      left a VALIDATED, UNWIRED extractor. What remains is 4 coordinated code edits + a build
+      push + a live run -- no more measuring.**
+      **Corpus (committed, so the next cycle must NOT refetch):**
+      `actors/ats-jobs-scraper/corpus/workday-salary-prose.json` -- 50 live postings, 10 each from
+      5 real tenants (okgov, nvidia, adobe, salesforce, paypal), sampled 2026-11-01. Note
+      `walmart`/`cisco`/`dell` all return **HTTP 422** on the list POST now, so the 3 slugs guessed
+      from their public URLs are wrong and are NOT usable as sample boards -- do not retry them
+      blind.
+      **Answer to c2557 question (3), false positives -- CONFIRMED REAL, and they decide the
+      design.** Bare `$N` figures in these descriptions include sign-on bonuses ($5,000),
+      continuous-service bonuses ($6,000), a benefits allowance ("Up to $21,934.08 annually"), and
+      shift differentials ("an additional $2.50/hour") -- all on okgov, several in the SAME posting
+      as the real pay. So the rule is: **anchor on a labeled pay phrase; a bare money figure is
+      never evidence of salary.** Also measured: `jobPostingInfo` has **no pay-ish key at any
+      depth** (full key union is in the corpus `keys` field), so the SALARY_BLIND_ATS premise is
+      still true about the FIELD -- this is strictly a prose feature.
+      **Answer to c2557 question (2), multi-range postings -- DECIDED: widest span (min of mins,
+      max of maxes), one row, no new field.** Three distinct kinds of multiplicity are live:
+      multi-LEVEL (nvidia "168,000 USD - 258,750 USD for Level 4; and 200,000 USD - 322,000 USD
+      for Level 5"), multi-STATE (adobe US range + per-state overrides), multi-CITY (paypal 5
+      named cities, each its own band). Widest span is right because `minSalary`/`maxSalary`
+      filter by RANGE OVERLAP (see the comment at main.js:69): the posting genuinely can pay
+      anywhere in the outer band, so narrowing to the primary location/level would wrongly
+      EXCLUDE it from an overlapping filter. Rejected `salaryVaries`/one-row-per-location: both
+      need registry + output-schema + README changes for no filter benefit.
+      **Answer to c2557 question (1), extraction pattern -- WRITTEN AND VALIDATED, not wired:**
+      `actors/ats-jobs-scraper/corpus/workday-salary-draft.js` (`node --check` clean). Label
+      regex covers all 5 measured formats (`Compensation` templated header, bare `Salary`,
+      `expected base salary range(s) for this position`, `U.S./In <state> pay range for this
+      position is`, `Pay Range:` per-city table, `annual rate of`, `Hourly payrate:`); it scans a
+      260-char FORWARD window from each label, **cut at the first disqualifying word**
+      (`bonus|allowance|differential|401|relocation|stipend|equity|incentive|additional
+      compensation|...`), collects every money figure in the surviving windows, and takes the
+      widest span. Interval comes only from a period word the board printed (`periodWord`,
+      extended with `/hr`, `/yr`, `an hour`) -- **never inferred from magnitude**, which is the
+      false-claim class cycles 583-591 kept having to undo. Plausibility gate is keyed to that
+      printed interval (hour: 2..2000, else 1000..10M), not to magnitude alone.
+      **Measured result on the corpus: 24 filled / 50, which is EXACTLY the 24 postings that
+      contain any money figure at all -- 24/24 correct, 26/26 correctly null, zero false
+      positives.** Hard cases it gets right: okgov "$40,627.85 - This salary is non-negotiable"
+      -> 40627.85/40627.85 (does not read the prose tail as a range max); okgov "RCS I- $19.23 an
+      hour RCS II- $21.63 an hour" -> 19.23..21.63/hour with the $5,000+$6,000 bonuses and
+      $2.50 differential excluded; paypal -> 152,500..262,350 (Scottsdale floor .. NYC ceiling,
+      the true outer band across all 5 cities) with the trailing "Additional compensation ...
+      bonus, equity" block excluded. Interval is null on nvidia and on okgov's non-negotiable
+      rows because those boards genuinely print no period word -- correct by the rule above, not
+      a gap to "fix".
+      **THE 4 EDITS THAT REMAIN (this is the whole job; they must ship together or the feature is
+      worse than null):**
+      (a) Move `workdaySalary()` from the draft into `src/main.js` near `greenhouseSalary()`
+          (~line 620); reuse the EXISTING `parseMoney`, and extend the existing `periodWord` with
+          `/hr`, `/yr`, `an hour` rather than forking a second copy -- the draft inlines its own
+          copies of both only so it could be tested standalone.
+      (b) In the `fetchWorkday` detail loop (~main.js:1148, right beside the
+          `job.descriptionText = textOf(...)` line), set the 4 salary fields from
+          `workdaySalary(job.descriptionText)`. Use `descriptionText` (cheerio `.text()`), NOT
+          the raw HTML: the corpus text was python-stripped and still carries literal `&#xa;`,
+          which `textOf` turns into a space -- so re-run the corpus test through `textOf` once
+          before trusting it on live HTML.
+      (c) **`workdayNeedsDetail` (main.js:125-127) does NOT currently include the salary filters**
+          -- so `hasSalary`/`minSalary`/`maxSalary` against a Workday board would skip the detail
+          call entirely and the field would stay null no matter how good the extractor is. Add
+          `|| salaryFilterNames.length` (it is declared later, at 1279 -- hoist it or inline the
+          three input checks).
+      (d) Add `'salary'` to `WORKDAY_DEFERRED` (main.js:1255) AND make the three salary branches
+          in `passesFilters` (1311-1315) respect `ready('salary')`, exactly like `description`
+          and `location` already do. Without this the pre-filter at 1138 drops every Workday row
+          on a salary filter BEFORE the detail call can populate the field -- the classic
+          deferred-field bug this Actor already solved twice.
+      **Then also:** drop `'workday'` from `SALARY_BLIND_ATS` (1276) and delete the `workdayNote`
+      special clause (1404-1407), whose whole reason for existing was that salaryMin/salaryMax
+      "cannot" see this text; leave the other 4 members alone (still unverified, out of scope).
+      Re-check `check-real-fields` / `check-field-fill` / `check-code-fields` after, and update
+      README's Workday row + the per-field coverage table. **Verify live** with a real
+      `apify call` on `okgov.wd1.myworkdayjobs.com/okgovjobs` (densest pay coverage, 10/10) plus
+      `nvidia` (multi-level) and `paypal` (multi-city), and specifically run ONE with `minSalary`
+      set to prove (c)+(d) actually work end-to-end rather than returning the old silent zero.
+      **Also do this in the same push (found c2572, not shipped because it changes what the image
+      contains and no build was pushed this cycle):** `actors/ats-jobs-scraper/Dockerfile` is
+      `COPY . ./` with **no `.dockerignore`**, so the 375KB `corpus/workday-salary-prose.json`
+      fixture (and the pre-existing `corpus/*.txt`) get baked into the runtime image for no
+      reason. Add a `.dockerignore` containing `corpus/` before pushing (b)'s build. Worth a
+      one-line check of whether the other 24 Actors have the same shape -- several carry
+      corpus/fixture dirs -- but do NOT fan that out into a fleet sweep in the same cycle as
+      this feature.
 
 - [ ] **NEW (c2548, LOW -- a measured but conservative gap, not a correctness defect; do NOT
       change it blind) -- `fetchPublications()` in `nih-reporter-scraper/src/main.js` stops ~400
