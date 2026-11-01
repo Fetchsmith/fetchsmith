@@ -171,12 +171,57 @@ NOTE_KEY_OVERRIDES = {
 }
 
 
+_LEADING_CYCLE = re.compile(r"^\s*(?:cycle|at cycle)\s+(\d{3,4})", re.I)
+
+# cycle 2581: note_segments()'s docstring contract ("newest first") assumed every
+# note was written append-to-front, but 8 stored notes are instead append-to-END
+# (oldest-first, strictly ascending cycle numbers), which inverts clean_streak()'s
+# leading-segment contract for them. Measured fleet-wide across all 137 stored
+# notes before touching anything (same discipline as every prior CLEAN/_BOUND
+# edit): 54 notes are already descending (fine, untouched), 8 are STRICTLY
+# ascending (oldest-first -- these alone are reversed below), 10 are
+# non-monotonic (edited out of chronological order by hand at some point -- left
+# AS-IS, order genuinely ambiguous), and 7 have at least one segment with no
+# parseable leading `cycle NNNN` header at all (left AS-IS, per the rule that a
+# missing/unparseable header must never be sorted to the front). Reversing only
+# the unambiguous strictly-ascending case is deliberately conservative: it is a
+# whole-note decision (reverse everything or touch nothing), never a per-segment
+# sort, so an unparseable or out-of-order segment can't jump position on its own.
+# Simulated against all 137 notes before shipping: of the 8 reversed, only 2
+# change any `clean_streak()` value (ats-jobs-scraper `note` 0->4,
+# clinicaltrials-scraper `note` 0->1) -- and both are the bare `note` catch-all
+# key, which no `--type` value audit-due is ever invoked with actually reads
+# (confirmed: `NOTE_KEY_OVERRIDES` is a closed dict with no `"note"` entry, and
+# every Actor with a bare `note` field also carries its own separate
+# `<type>_note` key for whichever types it's tracked under -- e.g. ats-jobs-
+# scraper has both `note` AND `competitor_audit_note`). The other 6 reversed
+# notes, including 3 genuinely-read typed keys (nih-reporter-scraper
+# `enum_audit_note`, trademark-search-scraper `watch_subset_note`,
+# us-federal-awards-scraper `enum_audit_note`), move 0->0: their newest segment
+# already reads the same clean/not-clean either way today. Hand-verified the 4
+# segments ats-jobs-scraper's flip newly credits (cycle 1189/1163/1138/1102,
+# all competitor_audit re-runs) end-to-end at the match span -- all 4 are
+# genuine "all checks clean, $0 spent" verdicts, not guard-line artifacts (the
+# c2472 trap). Can only ever move a streak UP from a wrongly-stuck 0, never down
+# -- the same safe-direction property as every prior change to this file.
+def _reorder_newest_first(segs):
+    nums = []
+    for s in segs:
+        m = _LEADING_CYCLE.match(s.strip())
+        if not m:
+            return segs  # unparseable header -- leave in place, never reorder
+        nums.append(int(m.group(1)))
+    if len(nums) >= 2 and all(nums[i] < nums[i + 1] for i in range(len(nums) - 1)):
+        return list(reversed(segs))  # strictly oldest-first -- flip to newest-first
+    return segs  # already newest-first, or order is non-monotonic/ambiguous
+
+
 def note_segments(note):
     """One segment per report, newest first (see SEP / REPORT_HEAD above)."""
     out = []
     for chunk in str(note).split(SEP):
         out.extend(s for s in REPORT_HEAD.split(chunk) if s.strip())
-    return out
+    return _reorder_newest_first(out)
 
 
 def clean_streak(note):

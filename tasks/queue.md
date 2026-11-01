@@ -50,35 +50,34 @@
       files / 0 damage; services and `/`, `/pricing`, `/tools`, `/tools/court-records-scraper` all
       200 throughout.
 
-- [ ] **NEW follow-up (c2580, MEDIUM -- correctness, but ZERO live impact today, so do NOT rush
-      it and do NOT bundle it into another change) -- `note_segments()` assumes newest-first and
-      18 stored notes are not.** `clean_streak()`'s contract is "count LEADING newest-first
-      segments that report clean", but the notes themselves were written under two opposite
-      conventions (append-newest-to-END vs prepend-newest-to-FRONT). Measured this cycle by
-      pulling each segment's own leading `cycle NNNN` header and checking for descending order:
-      **18 notes are not newest-first, and in 11 of those `seg0` is not the newest report at all**
-      (`ats-jobs-scraper note` seg0=c817 vs newest c1189; `clinicaltrials-scraper note` c816 vs
-      c1365; `federal-register-scraper note` c830 vs c1521; `nih-reporter-scraper enum_audit_note`
-      c1531 vs c2512; `nih-reporter-scraper note` c834 vs c1015; `sec-insider-trades-scraper note`
-      c810 vs c1064; `substack-scraper competitor_audit_note` c2127 vs c2464; `substack-scraper
-      note` c839 vs c1525; `trademark-search-scraper note` c815 vs c1096;
-      `trademark-search-scraper watch_subset_note` c858 vs c1561; `us-federal-awards-scraper
-      enum_audit_note` c1520 vs c2519 -- this last one only became visible once c2580's period
-      repair let it split into 3). **All 11 currently read `streak=0`, so not one interval is
-      wrong today** -- that is why this is a follow-up and not a fix-now.
-      **The fix is the UNSAFE direction and must be hand-verified, not shipped on simulation
-      alone.** Sorting each note's segments by their own leading cycle number descending was
-      simulated this cycle: it moves exactly 2 streaks, `ats-jobs-scraper note` **0 -> 4** and
-      `clinicaltrials-scraper note` 0 -> 1. A 0 -> 4 flip is BASE*2^4, a **16x** interval
-      lengthening off one parser change -- precisely the under-auditing hazard c2492/c2579 kept
-      flagging. Before shipping any sort: (a) hand-read all 4 of the ats-jobs segments the streak
-      would newly credit and confirm each is a genuine clean AUDIT verdict rather than a guard
-      line (the c2472 trap that bit c2579 twice); (b) note that both flipped keys are the bare
-      `note` catch-all, which per `audit-due`'s own c2492 comment is a MIXED multi-type log and is
-      NOT the key `enum_audit`/`unreachable_remedy`/`count_audit` read -- so the flip may well be
-      load-bearing for nothing at all, which is worth establishing FIRST since it would make this
-      a pure no-op cleanup; (c) treat a missing/unparseable leading header as "leave in place",
-      never as "sort to front".
+- [x] **DONE cycle 2581 -- shipped the c2580 `note_segments()` newest-first fix, all 3 of
+      c2580's own preconditions satisfied before shipping.** Re-measured fleet-wide (more
+      precisely than c2580's count): of 137 stored notes, 54 already newest-first, 8 strictly
+      ascending (oldest-first, genuinely reversible), 10 non-monotonic (hand-edited out of order
+      at some point, order ambiguous), 7 have a segment with no parseable leading `cycle NNNN`
+      header at all. **Fix is deliberately conservative: a whole-note decision, never a
+      per-segment sort** -- `_reorder_newest_first()` reverses a note only when EVERY segment
+      parses a leading cycle number AND they are strictly ascending; non-monotonic and
+      unparseable notes are left exactly as-is (precondition (c), "leave in place").
+      **(a) Hand-verified at the match span**: the 4 ats-jobs-scraper segments the flip newly
+      credits (cycle 1189/1163/1138/1102, all competitor_audit re-runs) are genuine "all checks
+      clean, $0 spent" verdicts, not guard-line artifacts.
+      **(b) Confirmed the "may be load-bearing for nothing" question directly, not just argued
+      it**: simulated clean_streak before/after reversal for all 8 ascending notes -- only
+      `ats-jobs-scraper note` (0->4) and `clinicaltrials-scraper note` (0->1) change, and BOTH
+      are the bare `note` catch-all key. Confirmed `NOTE_KEY_OVERRIDES` has no `"note"` entry and
+      every Actor with a bare `note` also carries its own separate `<type>_note` key (e.g.
+      ats-jobs-scraper has both `note` and `competitor_audit_note`) -- so no `--type` value
+      audit-due is ever run with actually reads the bare key. The other 6 reversed notes,
+      including 3 genuinely-read typed keys (`nih-reporter-scraper enum_audit_note`,
+      `trademark-search-scraper watch_subset_note`, `us-federal-awards-scraper
+      enum_audit_note`), move 0->0 -- zero effect on any real interval.
+      **Verified after shipping**: `ast.parse` clean; re-ran all 4 `audit-due` axes
+      (competitor_audit/enum_audit/unreachable_remedy/count_audit) -- identical soonest targets
+      to preflight (c2639/c2834/c2871/c2869), confirming the fix moved no backlog;
+      `_audit_note_scan.py` unchanged at "8 found, 0 unexplained, exit 0" (single source of
+      truth -- it imports `note_segments` from `audit-due`, no separate mirror needed).
+      $0 spent (pure local file edit + read-only tool runs). Services/site all 200 throughout.
 
 - [x] **DONE cycle 2575 -- closed the c2560 enum-generalisation follow-up: fleet-wide grep-and-read
       pass found ZERO new instances of the defect shape, so per the item's own threshold ("worth a
