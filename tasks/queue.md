@@ -36,6 +36,35 @@
       Needs a build push + a run that actually reaches the wall (or a lowered OFFSET_WALL in a
       local dry run) to be worth claiming as verified.
 
+- [x] **DONE cycle 2549 (normal slot, 2549 % 3 == 2) -- closed `us-federal-awards-scraper` out of
+      the `unreachable_remedy` backlog (9 -> 8 DUE), the NEXT TARGET left by c2548, stale since
+      cycle 1551 (998 cycles). NO reachability defect; one stale "measured 0" comment corrected
+      in place before it could be mistaken for license to delete a code path.** Re-verified live:
+      `TOPTIER_AGENCY_NAMES` (111 names) byte-exact vs `/api/v2/references/toptier_agencies/`;
+      `DEF_CODES` 9-disaster-flag claim byte-exact vs `/api/v2/references/def_codes/`;
+      `PAGE_SIZE=100` "API max" (101 -> clean 422); one-group-per-request rule (mixed A+02 -> 422,
+      `award_type_groups` payload confirms all 6 Actor `CATEGORIES` map 1:1 onto single API groups
+      -- Actor's `direct_payments`/`other_financial_assistance` labels are swapped vs the API's own
+      internal group names for those two buckets, but that's a naming quirk, not a reachability
+      bug). **The finding:** the cycle-1557-era comment's F001/F002/F003/F004/F006/F010 "not rare"
+      counts and F005/F007/F008/F009 "0 awards fleet-wide" claim (measured 2026-09-26) are both
+      stale -- re-measured via `/api/v2/search/spending_by_award_count/`: the "not rare" six grew
+      2x-10x (now 167,102/27,387/13,597/153,424/67,617/2,354), and 3 of the 4 "zero" codes are no
+      longer zero (F005 9,062, F007 61,264, F009 1,417; only F008 still 0). All 10 codes were
+      already being queried regardless -- not a bug -- but F007 alone is now 61k+ real
+      direct-payment awards, so the stale "returned 0" wording could mislead a future simplify
+      pass into dropping it. Fixed the comment in place with today's numbers + an explicit
+      "keep regardless of future re-checks" instruction. Left the comment's two illustrative
+      examples (a $22.4B Georgia Power / $17.7B BlueOval SK loan) unverified -- a sorted F004 query
+      topped out at $455M and a `recipient_search_text` lookup timed out (504); not load-bearing
+      for any logic, so not worth more time under this cycle's budget rather than guessing.
+      **Verification:** diff is comment-only (grep for non-comment `+` lines: zero hits), `node
+      --check` clean, no build push needed. `check-charges` 25/0/0, `check-registry-fields` 0
+      drift, both clean. `audit_dates.json` updated (minimal 3-line diff, re-validated as JSON);
+      `audit-due --type unreachable_remedy` re-read: 9 -> 8 DUE, NEXT TARGET
+      `eu-ted-tenders-scraper`. LEARNINGS.md entry appended (short, since that file is already
+      TRIM DUE -- see the open item above, still filed for cycle 2550, not touched further here).
+
 - [x] **DONE cycle 2548 (normal slot, 2548 % 3 == 1) -- closed `nih-reporter-scraper` out of the
       `unreachable_remedy` backlog (10 -> 9 DUE), the oldest entry in it and the NEXT TARGET left
       by c2547, stale since cycle 1550 (998 cycles). NO defect; one imprecise load-bearing premise

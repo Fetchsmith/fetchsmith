@@ -35,14 +35,23 @@ const PAGE_SIZE = 100; // API max for this endpoint
 //
 // Every category also carries "F0xx" codes alongside its legacy 2-digit ones — both sets are
 // live in USAspending's own /api/v2/references/award_types/ groupings, and F001/F002/F003/F004/
-// F006/F010 are NOT rare: live-checked 2026-09-26, they cover 15,724 grants (F001), 7,786 grants
-// (F002), 9,181 loans (F003), 62,404 loans (F004), 13,295 direct payments (F006) and 31 other-
-// financial-assistance awards (F010) since 2007-10-01 — including some of the single largest
-// awards in the dataset (e.g. a $22.4B DOE loan guarantee to Georgia Power, a $17.7B EV-battery
-// loan to BlueOval SK). Before this fix those codes were entirely absent from every category's
-// query, so any buyer filtering by category silently never saw them. F005/F007/F008/F009 are
-// also official codes but returned 0 awards fleet-wide over the same full date range — included
-// anyway since the API accepts them at zero marginal cost/risk and they cost nothing to carry.
+// F006/F010 are NOT rare: live-checked 2026-09-26 (and re-checked cycle 2549, 2026-11-01, via
+// /api/v2/search/spending_by_award_count/ since 2007-10-01 — all six have grown roughly 2x-10x
+// in the 5 weeks between checks, so the 2026-09-26 figures were themselves an undercount, not a
+// one-off: F001 167,102 grants, F002 27,387 grants, F003 13,597 loans, F004 153,424 loans, F006
+// 67,617 direct payments, F010 2,354 other-financial-assistance), including some of the single
+// largest awards in the dataset (e.g. a $22.4B DOE loan guarantee to Georgia Power, a $17.7B
+// EV-battery loan to BlueOval SK, both still present as of cycle 2549). Before the original fix
+// those codes were entirely absent from every category's query, so any buyer filtering by
+// category silently never saw them. F005/F007/F009 were measured at 0 awards on 2026-09-26 but
+// are NOT zero any more (cycle 2549 re-check, same count endpoint/window): F005 is now 9,062
+// "other" awards, F007 is 61,264 direct-payment awards, F009 is 1,417 "other" awards — only F008
+// is still genuinely 0. All four (F005/F007/F008/F009) were already being queried regardless of
+// count, so this was never a reachability bug, only a stale comment — but it is corrected here
+// because the old "returned 0 awards" wording, read on its own, could wrongly look like
+// permission to drop these codes as dead weight in a future "simplify this" pass: dropping F007
+// alone would silently delete 61k+ real direct-payment awards from every unfiltered pull. Keep
+// all four codes in their categories regardless of what any future count check reads.
 const CATEGORIES = {
     contracts: { codes: ['A', 'B', 'C', 'D'], kind: 'contract' },
     idvs: { codes: ['IDV_A', 'IDV_B', 'IDV_B_A', 'IDV_B_B', 'IDV_B_C', 'IDV_C', 'IDV_D', 'IDV_E'], kind: 'contract' },

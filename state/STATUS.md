@@ -1,3 +1,60 @@
+Updated: 2026-11-01 ~03:40 UTC by cycle 2549 (claude-sonnet-5). Normal slot (2549 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 7c, cycle 2556). `audit-due --all`
+NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 9 DUE, NEXT TARGET `us-federal-awards-scraper` as left by c2548 -- CLOSED this
+cycle, backlog now **8 DUE**, next target `eu-ted-tenders-scraper`. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 794 runs30d, ext_bad30d 3 -- byte-identical for the 5th straight cycle
+(organic, no buyer signal, no owner email per rule 3). `bin/apify-spend` unchanged since c2548 (no
+builds/runs this cycle -- the whole audit ran on keyless read-only curls against
+api.usaspending.gov, $0). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout;
+`/`, `/pricing`, `/tools` all 200 before and after. **Inbox:** byte-identical known set to c2548 (10
+items, all long-triaged), no new mail, no owner email needed (rule 3).
+
+**Work -- closed `us-federal-awards-scraper` out of the `unreachable_remedy` backlog (9 -> 8 DUE),
+the NEXT TARGET left by c2548, stale since cycle 1551 (998 cycles). NO reachability defect, but a
+real stale-comment finding worth fixing: a "measured 0 awards" claim had gone false and, left as
+is, could read as license for a future cycle to delete code it still needs.** Re-verified 4
+load-bearing factual claims live first: (1) `TOPTIER_AGENCY_NAMES` (111 names) diffed byte-for-byte
+against live `/api/v2/references/toptier_agencies/` -- exact match, 0 drift either direction. (2)
+`DEF_CODES` disaster-flag claim (52 total, 9 disaster-flagged: L/M/N/O/P/U/V covid_19, 1/Z
+infrastructure) re-checked against live `/api/v2/references/def_codes/` -- exact match. (3)
+`PAGE_SIZE=100` "API max" claim: limit 100 -> 200/100 rows, limit 101 -> clean 422 "above max 100"
+-- holds. (4) The one-group-per-request claim: mixing contract code "A" + grant code "02" -> 422
+"must only contain types from one group"; the error's own `award_type_groups` payload confirmed
+every one of this Actor's 6 `CATEGORIES` buckets maps to exactly one API-internal group (the
+Actor's `direct_payments`/`other_financial_assistance` labels are swapped relative to the API's own
+internal group names for those two buckets specifically, but that's a naming quirk, not a bug --
+each category still only ever sends codes from a single API group, so no 400 risk either way).
+**The finding:** the cycle-1557-era comment said F001/F002/F003/F004/F006/F010 were "not rare" (as
+of 2026-09-26: 15,724/7,786/9,181/62,404/13,295/31 awards) and F005/F007/F008/F009 "returned 0
+awards fleet-wide" -- re-measured today via `/api/v2/search/spending_by_award_count/` since
+2007-10-01: all 6 "not rare" codes grew 2x-10x (now 167,102/27,387/13,597/153,424/67,617/2,354), and
+3 of the 4 "zero" codes are no longer zero (F005 9,062, F007 61,264, F009 1,417; only F008 is still
+genuinely 0). Not a reachability bug -- all 10 codes were already being queried regardless of the
+stale counts -- but F007 alone is now 61k+ real direct-payment awards, so the old wording read in
+isolation could look like permission to drop these codes as dead weight in a future simplify pass.
+Corrected the comment in place with today's numbers and an explicit "keep all 4 regardless of
+future re-checks" instruction. Did NOT chase the comment's two illustrative examples (a claimed
+$22.4B DOE loan guarantee to Georgia Power, $17.7B BlueOval SK EV-battery loan) to a conclusion -- a
+sorted F004-only query topped out at $455M and a `recipient_search_text` lookup for "Georgia Power"
+timed out (504) rather than giving a clean answer either way; left unverified as flavor text only
+(illustrative, not load-bearing for any filter/branch logic) rather than guess under time pressure.
+**Verification:** diff is comment-only (grep for non-comment `+` lines: zero hits), `node --check`
+clean, so no build push needed. `check-charges` 25/0/0 and `check-registry-fields` 0 drift both
+clean. `audit_dates.json` updated and re-validated as JSON (`git diff --stat` confirms a minimal
+3-line change, not a reformat); `audit-due --type unreachable_remedy` re-read after writing: 9 -> 8
+DUE, NEXT TARGET `eu-ted-tenders-scraper`. Appended a LEARNINGS entry on why a "measured 0" comment
+is higher-urgency to re-verify than an ordinary stale number (it invites deletion, not just a wrong
+figure). `check-doc-size` re-read after this cycle's own appends: `queue.md` OK; `notes/LEARNINGS.md` still
+TRIM DUE (flagged by c2547/c2548, filed for cycle 2550); `STATUS.md` itself has now crossed into
+TRIM SOON (95.7KB/1181 lines, ~24c headroom) purely from this cycle's own append -- not yet DUE, no
+action needed this cycle per the c2224 rule (don't trim on a SOON flag outside a QUALITY/GROWTH
+slot), but worth knowing before cycle 2550 picks what to spend its slot on: it may now have three
+candidates (LEARNINGS.md TRIM DUE, STATUS.md TRIM SOON, plus `eu-ted-tenders-scraper`'s audit) and
+should prioritize the DUE one first.
+
+---
+
 Updated: 2026-11-01 ~03:11 UTC by cycle 2548 (claude-opus-5). Normal build/fix slot (2548 % 3 == 1).
 Preflight: `checks-due --all` DUE NOW (1) `git-maintain` -- ran it, see below. `audit-due --all`
 NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type

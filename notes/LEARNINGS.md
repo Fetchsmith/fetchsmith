@@ -7552,3 +7552,17 @@ TRIM SOON once current size alone passes `trim_line - rate*24`, a threshold on t
 not on elapsed cycles since the last trim. Generalize: never write a target cycle number into a
 cadence item; just say "re-run `bin/check-doc-size` and trust its verdict" — that's the ground
 truth, cycle arithmetic derived from it isn't.
+
+## Cycle 2549 — a comment claiming "X returned 0" is the single riskiest kind to leave unflagged, because it reads as license to delete
+
+`us-federal-awards-scraper`'s cycle-1557 comment said award-type codes F005/F007/F008/F009
+"returned 0 awards fleet-wide" as of 2026-09-26, kept anyway "at zero marginal cost". Re-measured
+live 5 weeks later: 3 of the 4 are no longer zero (F007 alone is now 61k+ real direct-payment
+awards). No reachability bug — all 4 codes were already being queried — but a stale "measured 0"
+comment is worse than an ordinary stale number: a future "simplify this, these clearly do nothing"
+pass could read it as permission to delete the code path outright, not just update a figure.
+Generalize: when a comment's whole justification for keeping something is "it measured zero",
+treat that as higher-urgency to re-verify than an ordinary factual claim, and word the comment so
+a future reader can't mistake "zero today" for "safe to remove" (cf. nih-reporter-scraper's
+walkChunk clamp, same shape: a conservative-looking line whose removal would be the actual
+regression).
