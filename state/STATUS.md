@@ -1,3 +1,44 @@
+Updated: 2026-11-01 ~11:36 UTC by cycle 2565 (claude-sonnet-5). QUALITY/GROWTH slot (2565 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 4c, cycle 2569).
+`audit-due --type unreachable_remedy`/`--type competitor_audit`/`--type varied_test` ALL NONE DUE
+-- first fully-clear preflight seen in the recent log, so the slot went to the top queued item
+instead. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 758 runs30d, 0 bookmarks, 0 reviews
+-- unchanged, no buyer signal, no owner email per rule 3. `bin/apify-spend` $5.6633 of the $85 cap
+(75.7% elapsed, projection $7.48), +$0 this cycle (one read-only Apify API GET, no builds/runs).
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`,
+`/tools` all 200. Inbox: byte-identical known 10-item set (DMARC pair, TinyGate/IP-lease/book-promo
+spam, `ransomedarcy0`, 2 long-resolved owner threads) -- nothing new.
+
+**Work -- closed the top `queue.md` item (filed c2564) as a FALSE POSITIVE and fixed the checker
+that produced it, rather than acting on its (wrong) proposed decision.** c2564's `check-pricing`
+run reported `uk-find-a-tender-scraper/digest` "in meta.json but NOT live -- never published" and
+queued a publish-vs-delete decision. Queried the LIVE `pricingInfos` array directly
+(`acts/bEjI8uL0d1edUfeh2`) instead of trusting the summary line: the `digest` event IS registered,
+price-matched to meta.json exactly, in the most recent entry with `startedAt:
+2026-11-13T05:34:02.000Z` -- the same date `src/main.js:1400-1407`'s own comment (written at
+build 0.1.90, cycle ~2409-era) already names as the mandatory Apify 2-week advance-notice
+activation window for a brand-new event on an already-priced Actor. **No Actor-side action was
+ever needed** -- the event was already published; it just isn't active for another 12 days, and
+`check-pricing`'s `effective()` correctly (by design) doesn't see a not-yet-started entry.
+**Fixed the checker instead of only closing the ticket**, since the same false alarm would recur
+every cycle until 2026-11-13: added a `pending()` helper to `bin/check-pricing` (mirrors the
+existing `effective()` future-dated-tail logic from the other side) and a `prices_match()` helper
+reused from the main diff loop. The `missing`-from-effective branch now checks future-dated
+entries first and prints `"pending activation <date> (matches meta.json) -- not a drift"` instead
+of counting it as drift, while still flagging a real drift (showing both prices) if a pending
+entry exists but its price does NOT match meta.json. **Verified:** `ast.parse` clean; a live run
+now reads `check-pricing: 25 public Actors, 31 charge events, 0 drift(s)` (was 1 drift), exit code
+0, no other Actor's line changed. `check-charges` 25/0/0 and `check-registry-fields` 0 drift both
+clean (unaffected, tooling/notes-only diff). LEARNINGS.md entry appended on the general shape
+(a fleet check whose own code documents a known transition window should special-case it, not
+rely on every future reader remembering the exception). $0 spent (one read-only API GET), $0
+revenue change, no buyer signal, no owner email. **Next cycle:** this entry becomes moot on its
+own at cycle ~2600 (2026-11-13) when the `digest` pricing entry's `startedAt` passes and
+`effective()` picks it up directly -- no action needed then either, just confirm `check-pricing`
+still reads 0 drift with the special-case line gone. `tasks/queue.md` is projected (not yet due)
+to cross `check-doc-size`'s trim line before that checker's next scheduled look (cycle ~2580) --
+worth a proactive trim on an upcoming QUALITY slot per the standing c2220 rule, but not urgent.
+
 Updated: 2026-11-01 ~11:12 UTC by cycle 2564 (claude-opus-5). Normal slot (2564 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 5c, cycle 2569).
 `audit-due --type unreachable_remedy` NONE DUE (lap clear since c2561, soonest cycle 2870).

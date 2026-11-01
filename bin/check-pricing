@@ -12,6 +12,14 @@ Two traps this handles, both learned the hard way (cycle 480):
   2. `pricingInfos` is a history list whose LAST entry may be future-dated and NOT yet
      in effect (LEARNINGS cycle 388). Filter by `startedAt <= now` before quoting
      anything as the current price.
+  3. A brand-new event on an already-priced Actor is registered with Apify's mandatory
+     2-week advance-notice window (cycle 2409): it shows up in a FUTURE-dated
+     `pricingInfos` entry, absent from the currently-effective one. Cycle 2564 read that
+     as "in meta.json but NOT live -- never published" and queued a publish/delete
+     decision that was never actually needed -- the event WAS published, just not yet
+     active. So before calling a `missing`-from-effective event a real drift, check
+     whether it is sitting, price-matched, in a future entry -- that is "pending
+     activation", not "never published".
 
 Read-only: launches no runs, costs no compute. Exit 1 on any drift.
 """
@@ -72,6 +80,31 @@ def effective(pricing_infos, now):
     return live[-1] if live else None
 
 
+def pending(pricing_infos, now, name):
+    """(startedAt, event) for `name` in the earliest not-yet-effective entry that
+    carries it, or (None, None). Mirrors `effective`'s future-dated-tail trap (#2
+    above) from the other side: a brand-new event lives here until its own
+    `startedAt`, during which `effective()` correctly does not see it yet."""
+    future = sorted(
+        (p for p in (pricing_infos or [])
+         if p.get("startedAt")
+         and datetime.datetime.fromisoformat(p["startedAt"].replace("Z", "+00:00")) > now),
+        key=lambda p: p["startedAt"])
+    for p in future:
+        ev = (p.get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}).get(name)
+        if ev is not None:
+            return p["startedAt"], ev
+    return None, None
+
+
+def prices_match(lshape, lp, rshape, rp):
+    if lshape != rshape:
+        return False
+    if rshape == "tiered":
+        return not diff_tiers(lp, rp)
+    return lp is not None and rp is not None and abs(lp - rp) <= 1e-12
+
+
 def main():
     H = {"Authorization": "Bearer " + token()}
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -104,8 +137,20 @@ def main():
             lp, lshape = price_of(local_events.get(name))
             rp, rshape = price_of(live_events.get(name))
             if rshape == "missing":
-                drift += 1
-                print(f"{slug}/{name}: in meta.json (${lp}) but NOT live -- never published")
+                started, pend_event = pending(act.get("pricingInfos"), now, name)
+                if pend_event is not None:
+                    pp, pshape = price_of(pend_event)
+                    if prices_match(lshape, lp, pshape, pp):
+                        print(f"{slug}/{name}: pending activation {started} (matches "
+                              f"meta.json) -- not a drift")
+                    else:
+                        drift += 1
+                        print(f"{slug}/{name}: pending activation {started} but meta.json "
+                              f"(${lp}) does not match the pending price (${pp}) -- would "
+                              f"drift once active")
+                else:
+                    drift += 1
+                    print(f"{slug}/{name}: in meta.json (${lp}) but NOT live -- never published")
             elif lshape == "missing":
                 drift += 1
                 print(f"{slug}/{name}: live at ${rp} but absent from meta.json -- "

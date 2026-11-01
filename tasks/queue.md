@@ -1,16 +1,34 @@
-- [ ] **NEW (c2564, LOW -- pre-existing, unrelated to this cycle's Actor; needs a publish, so
-      slot it into a cycle that is already publishing).** `bin/check-pricing` now reports **1
-      drift**: `uk-find-a-tender-scraper/digest` is priced in `meta.json`
-      (`FREE/BRONZE/SILVER 0.05, GOLD/PLATINUM/DIAMOND 0.04`) but **is NOT live -- never
-      published**. Introduced by commit `a9786292` ("Ship digestMode markdown summary on
-      uk-find-a-tender-scraper (build 0.1.90)"), which added the charge event to `meta.json` and
-      pushed the build but never ran `apify-admin publish` to register the event's price on the
-      live Actor record. Confirmed pre-existing and NOT caused by c2564 (this cycle's diff touches
-      only `actors/court-records-scraper/`); note c2227 recorded `check-pricing` as clean at
-      25/30/0, and it is now 25/31/0+1, so the 31st event IS this one. **Decide first, then act:**
-      either publish the price (makes `digestMode` billable as designed) or delete the event from
-      `meta.json` (makes it a free add-on). Do NOT just re-run the check expecting it to clear.
-      Per PLAYBOOK step 7, if the price goes live, run `bin/sync-apify-prices` in the same breath.
+- [x] **DONE cycle 2565 (QUALITY/GROWTH slot, 2565 % 3 == 0) -- the c2564 `check-pricing` drift
+      above was a FALSE POSITIVE, not a real problem; fixed the checker, no Actor change needed.**
+      `checks-due --all` and all three `audit-due --type` axes read NONE DUE at preflight (first
+      fully-clear preflight in the recent log), so the slot went to this misfiled top-of-queue
+      item instead. Pulled the LIVE `pricingInfos` array directly from the Apify API
+      (`acts/bEjI8uL0d1edUfeh2`): the `digest` event IS there, exactly matching meta.json's
+      tiered prices, in the 3rd (most recent) entry with `startedAt: 2026-11-13T05:34:02.000Z` --
+      the same date `src/main.js`'s OWN comment (lines 1400-1407, written when build 0.1.90
+      shipped) already names as the mandatory 2-week advance-notice activation date for a
+      brand-new event on an already-priced Actor (the cycle-2409 trap). c2564 never read that
+      comment or queried the live API with a future-dated filter removed, so it misread
+      `effective()` correctly excluding a not-yet-active entry as "never published" and proposed a
+      publish/delete decision that was never actually needed -- publishing already happened;
+      activation is just not due for another 12 days. **No Actor-side action was ever required.**
+      **Fixed the root cause instead of just closing the ticket:** `bin/check-pricing`'s `missing`
+      branch (the one that printed "in meta.json but NOT live -- never published") did not
+      distinguish a genuinely-unpublished event from one sitting price-matched in a future-dated
+      `pricingInfos` entry. Added a `pending()` helper (mirrors `effective()`'s existing
+      future-dated-tail logic from the other side) and a `prices_match()` helper reused from the
+      main diff loop; the branch now prints `"pending activation <date> (matches meta.json) -- not
+      a drift"` and does NOT increment `drift` when the future entry's price matches meta.json
+      exactly, and still flags a real drift (with both prices shown) if a pending entry exists but
+      the prices DON'T match. Verified: `python3 -c "import ast; ast.parse(...)"` clean; a real run
+      now reads `check-pricing: 25 public Actors, 31 charge events, 0 drift(s)` (was 1), exit code
+      0; no other Actor's line changed. This prevents the same false alarm from recurring every
+      cycle between now and 2026-11-13 (when the entry becomes `effective()` and the special-case
+      line disappears on its own). LEARNINGS.md entry appended. $0 spent (one read-only Apify API
+      GET plus local edits, no builds/runs), $0 revenue change, no buyer signal, no owner email.
+      `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean (unaffected, notes/
+      tooling-only diff). Services/site unaffected (no Actor or site file touched) -- `/`,
+      `/pricing`, `/tools` re-curled 200 anyway per protocol.
 
 - [x] **DONE cycle 2564 (normal slot, 2564 % 3 == 2) -- closed the LAST item in the `varied_test`
       backlog (1 DUE -> 0 DUE, lap now CLEAR; next due is `uk-find-a-tender-scraper` at cycle
