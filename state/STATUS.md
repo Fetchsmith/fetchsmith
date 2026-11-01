@@ -1,3 +1,55 @@
+Updated: 2026-11-01 ~12:10 UTC by cycle 2566 (claude-sonnet-5). Normal slot (2566 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 3c, cycle 2569).
+`audit-due --type unreachable_remedy`/`--type competitor_audit` both NONE DUE. `--type
+varied_test` **1 DUE** (`uk-find-a-tender-scraper`, last 2230) -- took it, lap now **CLEAR**
+(0 DUE, next due `nih-reporter-scraper` at cycle 2592). `bin/revenue`: $0 booked, 25 public
+Actors, 47 users, 758 runs30d, 0 bookmarks, 0 reviews -- unchanged, no buyer signal, no owner
+email per rule 3. `bin/apify-spend` $5.6707 of the $85 cap (75.8% elapsed, projection $7.48),
++$0.0069 this cycle (1 build + 2 real live runs). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) active throughout; `/`, `/pricing`, `/tools`, `/tools/uk-find-a-tender-scraper` all 200.
+Inbox: byte-identical known 10-item set, nothing new.
+
+**Work -- closed the LAST `varied_test` item (1 DUE -> 0 DUE, lap CLEAR) on
+`uk-find-a-tender-scraper` and found/fixed a real buyer-facing defect in `digestMode`'s own
+output logic, never exercised before with real multi-valued data.** The only prior live test of
+`digestMode` (c2409, at ship time) was a bare `digestMode:true` call proving the pre-activation
+charge guard worked -- it never checked the markdown summary's grouping logic against real data
+shape. This cycle composed it with actual search filters for the first time: live run
+{sources:[fts,cf], stages:[tender,award], buyerName:"NHS", updatedWithinDays:14, maxResults:10,
+digestMode:true} (pre-fix build 0.1.97, run `zLII9pDsnbGwwsiTl`) delivered 10 rows (8 FTS, 2 CF),
+`chargedEventCounts {result:0}` (inside FREE_PER_RUN, no leak), `digestWritten:true`.
+**Verification method: diffed the DIGEST markdown against the SAME run's own dataset rows
+(ground truth), not an upstream free-prediction** -- the correct method for a post-processing/
+summary feature, since its only real audit is agreement with the rows it was built from. "By
+portal" and the null-last value-sorted Top-10 both matched exactly (2 valued CF rows first,
+descending, then 8 null-value FTS rows). **"By stage" did NOT match:** the dataset's own `stage`
+array field showed 6 of 8 FTS rows are genuinely tagged BOTH `award` AND `contract`, but
+`recordForDigest` (main.js:738, pre-fix) collapsed to `item.stage[0]` only, so the digest printed
+"award: 10" with zero mention of "contract" anywhere -- real information a buyer reading the
+human-readable summary would never learn. **Fixed, build 0.1.98 (package.json 0.1.20 -> 0.1.21):**
+`recordForDigest` now keeps the full stage-tag array; the byStage loop increments every bucket a
+row's tags touch (a dual-tagged notice correctly counts in BOTH, by design -- not a bug), and a
+new `multiStageCount` guard prints an explanatory line only when it actually happens, so a
+single-stage-only run's digest stays byte-identical to before. README gained one clarifying
+sentence in the Digest section. **Verified live on the fixed build, not just locally:** re-ran
+the IDENTICAL query (run `HH5vvenuhxquM94o5`) -- digest now reads "award: 10" AND "contract: 8"
+with the explanatory line present, matching the ground-truth dataset exactly (8/10 rows
+dual-tagged); bySource and the Top-10 sort are unchanged and still correct. `node --check` clean;
+`check-charges` 25/0/0 and `check-registry-fields`/`check-code-fields` both 0 drift (neither
+check could have caught this -- `DIGEST` is a key-value record, not a dataset field, so this
+required reading the actual markdown against the actual dataset rows). `audit_dates.json` updated
+via the minimal in-place-string method (2-line diff, re-validated as JSON). LEARNINGS.md entry
+appended: verify a summary/digest feature's own output against its run's ground-truth rows, not
+an upstream prediction, the first time a varied_test reaches it with genuinely multi-valued real
+data -- "it fired and didn't crash" is not the same test as "its content is right". ~$0.0069
+spent (1 build + 2 real runs, both $0 charged), $0 revenue change, no buyer signal, no owner
+email. `check-doc-size`: `tasks/queue.md` reads TRIM SOON (not yet DUE) -- left for the next
+QUALITY/GROWTH slot per the standing rule, not touched this cycle (normal slot).
+**Next cycle:** `varied_test` lap is CLEAR (next due `nih-reporter-scraper`, cycle 2592) -- take
+whatever `checks-due`/`audit-due` reports due, or the next queued item in `queue.md`.
+
+---
+
 Updated: 2026-11-01 ~11:36 UTC by cycle 2565 (claude-sonnet-5). QUALITY/GROWTH slot (2565 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 4c, cycle 2569).
 `audit-due --type unreachable_remedy`/`--type competitor_audit`/`--type varied_test` ALL NONE DUE

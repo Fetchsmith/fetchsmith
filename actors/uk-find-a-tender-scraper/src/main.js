@@ -735,7 +735,11 @@ function recordForDigest(item) {
     if (!digestMode) return;
     digestRows.push({
         source: item.sourceName ?? item.source ?? null,
-        stage: Array.isArray(item.stage) ? item.stage[0] ?? null : item.stage ?? null,
+        // Keep every stage tag, not just the first — a release is routinely tagged BOTH
+        // "award" and "contract" at once (verified live, cycle 2566: 6/8 FTS award-stage rows
+        // in one real run carried both tags), so collapsing to stage[0] would silently drop
+        // the "contract" count from the By-stage breakdown below for every such row.
+        stage: Array.isArray(item.stage) ? item.stage : (item.stage ? [item.stage] : []),
         title: item.title ?? null,
         buyerName: item.buyerName ?? null,
         valueAmount: item.valueAmount ?? null,
@@ -1367,11 +1371,16 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 if (digestMode && pushed > 0) {
     const bySource = {};
     const byStage = {};
+    // A dual-tagged release (e.g. award+contract) increments BOTH buckets below, so the
+    // By-stage total can exceed the delivered count — that's accurate, not a bug: see the
+    // heading note below and the recordForDigest comment above.
+    let multiStageCount = 0;
     for (const r of digestRows) {
         const s = r.source ?? 'unknown';
-        const g = r.stage ?? 'unknown';
+        const stages = r.stage?.length ? r.stage : ['unknown'];
+        if (stages.length > 1) multiStageCount += 1;
         bySource[s] = (bySource[s] ?? 0) + 1;
-        byStage[g] = (byStage[g] ?? 0) + 1;
+        for (const g of stages) byStage[g] = (byStage[g] ?? 0) + 1;
     }
     const fmtValue = (r) => (r.valueAmount != null
         ? `${r.valueCurrency ?? 'GBP'} ${Number(r.valueAmount).toLocaleString('en-GB')}`
@@ -1390,6 +1399,9 @@ if (digestMode && pushed > 0) {
         ...Object.entries(bySource).map(([k, v]) => `- ${k}: ${v}`),
         '',
         '## By stage',
+        ...(multiStageCount > 0
+            ? [`(${multiStageCount} notice(s) carry more than one stage tag, e.g. award+contract, and are counted in each — totals below can exceed ${pushed})`]
+            : []),
         ...Object.entries(byStage).map(([k, v]) => `- ${k}: ${v}`),
         '',
         `## Top ${topNotices.length} notice(s) by published contract value`,

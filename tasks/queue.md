@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2566 (normal slot, 2566 % 3 == 1) -- closed the LAST `varied_test` item
+      (1 DUE -> 0 DUE, lap now CLEAR; next due `nih-reporter-scraper` at cycle 2592) and found/fixed
+      a real buyer-facing defect in `digestMode`'s own output, on `uk-find-a-tender-scraper`
+      (last 2230).** `checks-due --all`, `audit-due --type unreachable_remedy`/`--type
+      competitor_audit` all read NONE DUE, so the cycle took the one thing that WAS due.
+      **First-ever live test of `digestMode` composed with real multi-source/multi-stage search
+      filters** -- the only prior live test (c2409, ship time) was a bare `digestMode:true` call
+      that proved the pre-activation charge guard works, never exercised the markdown summary's
+      own grouping logic against real multi-valued data. Live run {sources:[fts,cf],
+      stages:[tender,award], buyerName:"NHS", updatedWithinDays:14, maxResults:10,
+      digestMode:true} (run `zLII9pDsnbGwwsiTl`, pre-fix build 0.1.97): 10 rows (8 FTS, 2 CF),
+      `chargedEventCounts {result:0}` (inside FREE_PER_RUN, no leak), `digestWritten:true`.
+      **Verified the DIGEST markdown against the run's OWN dataset rows (ground truth), not an
+      upstream free-prediction** -- the right method for a post-processing/summary feature, since
+      its only real audit is agreement with the rows it was built from. "By portal" and the
+      null-last value-sorted Top-10 both matched exactly. **"By stage" did not:** the dataset's own
+      `stage` field showed 6 of 8 FTS rows are genuinely tagged BOTH `award` AND `contract`, but
+      `recordForDigest` (main.js:738) collapsed to `item.stage[0]` only, so the digest read
+      "award: 10" with zero mention of "contract" anywhere -- a real information loss a buyer
+      reading the human-readable summary would never see. **Fixed, build 0.1.98:** keep every
+      stage tag, increment every bucket a row's tags touch (by design -- a dual-tagged notice IS
+      in both buckets, not a bug), print an explanatory line only when `multiStageCount > 0` so a
+      single-stage run's digest stays byte-identical. README gained one clarifying sentence.
+      Re-ran the IDENTICAL query on 0.1.98 (run `HH5vvenuhxquM94o5`): digest now reads "award: 10"
+      AND "contract: 8" with the explanatory line, matching ground truth exactly; bySource/Top-10
+      unchanged. `node --check` clean, `check-charges` 25/0/0 and `check-registry-fields`/
+      `check-code-fields` both 0 drift (neither check could have caught this -- `DIGEST` is a
+      key-value record, not a dataset field). `audit_dates.json` updated via the minimal
+      in-place-string method (2-line diff, re-validated as JSON). LEARNINGS.md entry appended
+      (verify a summary feature against its own run's ground-truth rows, not an upstream
+      prediction, the first time it meets genuinely multi-valued real data). ~$0.0008 spent (2
+      real runs, both $0 charged), $0 revenue change, no buyer signal, no owner email per rule 3.
+      Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`,
+      `/tools`, `/tools/uk-find-a-tender-scraper` all 200. `check-doc-size`: `queue.md` reads
+      TRIM SOON (not yet DUE) -- leaving for the next QUALITY/GROWTH slot per the standing rule,
+      not touched this cycle (normal slot). Inbox: byte-identical known 10-item set, nothing new.
+      **Next cycle:** `varied_test` lap is CLEAR; take whatever `checks-due`/`audit-due` shows
+      due, or the next queued item below.
+
 - [x] **DONE cycle 2565 (QUALITY/GROWTH slot, 2565 % 3 == 0) -- the c2564 `check-pricing` drift
       above was a FALSE POSITIVE, not a real problem; fixed the checker, no Actor change needed.**
       `checks-due --all` and all three `audit-due --type` axes read NONE DUE at preflight (first
