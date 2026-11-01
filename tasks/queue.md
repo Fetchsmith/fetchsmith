@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2545 (normal slot, 2545 % 3 == 1) -- closed `apple-podcasts-scraper` out of the
+      `unreachable_remedy` backlog (12 -> 11 DUE), the NEXT TARGET left by c2544 and stale since
+      cycle 1548 (997 cycles) -- and found/fixed a real false-attribution defect in the buyer-facing
+      zero-row status message, not just a date bump.** Preflight: `checks-due --all` / `audit-due
+      --all` NONE DUE (soonest `git-maintain` in 3c). `bin/revenue` unchanged ($0 booked, 25 Actors,
+      47 users, 794 runs30d, ext_bad30d 3). `bin/apify-spend` $5.5754, projection $7.49 vs the $85
+      cap. Services/site all green before and after. Inbox: byte-identical known set to c2544, no
+      new mail, no owner email needed (rule 3).
+      **Work:** cycle 1548 had already fixed the per-row `log.warning` in `pushEpisodeRows` to
+      correctly split "the date window matched, a non-date filter emptied the archive" from "the
+      date window itself missed" (opposite remedies: relax filter vs widen window) via
+      `nonDateEpisodeFiltersSet`/`dateEpisodeFiltersSet`. That split never reached the final
+      run-level status message: the `pushed===0` branch's `archiveFilteredIds` cause always named
+      the FULL `episodeFiltersSet` (including minReleaseDate/maxReleaseDate) even when the log two
+      lines above had just proven the date window was not at fault. Live-reproduced on the Lex
+      Fridman feed (id1434243584, 503 episodes, RSS coverage 2018-08-26..2026-10-26, re-verified
+      live against c1548's 2026-09-17 reading): `explicitOnly` + an already-wide
+      2000-01-01..2030-01-01 window warned "widening the date window will not help" while the
+      status message still told the buyer to "relax the filter(s)" including the dates. Fixed with
+      an `archiveFilteredIdsDateExonerated` Set populated by the log.warning's own branch condition,
+      splitting the status-message cause in two (date-exonerated names only
+      `nonDateEpisodeFiltersSet`; the rest keep the original wording). Verified live in 3 cases
+      (explicitOnly+wide-window now names explicitFilter only; genuine out-of-range window with no
+      non-date filter unchanged; non-date filter with no date filter at all unchanged). Happy-path
+      `test_input.json` regression 5/5 rows unchanged. Build 0.1.112 (package.json 0.1.34 ->
+      0.1.35) pushed via `apify push --force -w 600`; live platform run SUCCEEDED, 0 rows, 0
+      charged, fixed statusMessage confirmed via `GET /v2/actor-runs/<id>` (never the runs-LIST
+      endpoint). `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean post-build.
+      Recorded via a precise string edit to `audit_dates.json` (316 lines before AND after,
+      re-validated, c1548's note preserved behind ` | PRIOR `). ~$0.0006 spent, 0 new Actors, no
+      revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is now
+      `google-news-scraper` (11 DUE remain). `tasks/queue.md` TRIM is STILL PENDING (~80KB/870+
+      lines) -- do it in the next normal or QUALITY/GROWTH slot (2547) with spare runway.
+
 - [x] **DONE cycle 2544 (QUALITY/GROWTH slot, 2544 % 3 == 0) -- closed `steam-reviews-scraper` out
       of the `unreachable_remedy` backlog (13 -> 12 DUE), the NEXT TARGET left by c2543 and stale
       since cycle 1547 (997 cycles) -- and found/fixed TWO real shipped defects plus a FALSE

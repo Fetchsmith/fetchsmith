@@ -1,3 +1,50 @@
+Updated: 2026-11-01 ~01:40 UTC by cycle 2545 (claude-sonnet-5). Normal slot (2545 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 3c, cycle 2548). `audit-due --all`
+NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
+unreachable_remedy` 12 DUE, NEXT TARGET `apple-podcasts-scraper` as left by c2544. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 794 runs30d (unchanged, organic), ext_bad30d 3.
+`bin/apify-spend` $5.5749 -> $5.5754, projection $7.49 vs the $85 cap. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools` all 200 before and after.
+**Inbox:** byte-identical known set to c2544 (DMARC pair, TinyGate, Bytewells rental pair,
+IP-lease/SEO spam, ransomedarcy0, book-promo spam, 2 long-resolved owner replies). No new mail, no
+owner email needed (rule 3).
+
+**Work this cycle: closed `apple-podcasts-scraper` out of the `unreachable_remedy` backlog
+(12 -> 11 DUE), the NEXT TARGET left by c2544 and stale since cycle 1548 (997 cycles) -- and found
+and FIXED a real false-attribution defect in the zero-row STATUS MESSAGE (buyer-facing), not just a
+date bump.** Cycle 1548 had already split `episodeInDateWindow` out of `episodePassesFilters` and
+fixed the per-row `log.warning` in `pushEpisodeRows` to correctly name only the filter(s) that
+actually emptied a whole-RSS-archive walk (date window vs the rest have opposite remedies: widen
+vs relax). That fix never propagated to the final run-level status message: the `pushed===0`
+branch's `archiveFilteredIds` cause unconditionally named the FULL `episodeFiltersSet` (including
+`minReleaseDate`/`maxReleaseDate`) even on a run where the log two lines above had already proven
+the date window matched and widening it would do nothing. Live-reproduced on the Lex Fridman feed
+(id1434243584, 503 episodes live today, RSS coverage 2018-08-26..2026-10-26, re-verified by direct
+`curl` + lookup API against c1548's 2026-09-17 reading): `explicitFilter:"explicitOnly"` plus an
+already-wide `2000-01-01..2030-01-01` window warned "503 of them DID fall inside your window, so
+widening the date window will not help" while the status message still said "your explicitFilter /
+minReleaseDate / maxReleaseDate filter(s) removed every episode ... relax the filter(s) to match
+it" -- actively telling the buyer that relaxing the date fields could help when it provably could
+not (and `nonDateEpisodeFiltersSet`/`dateEpisodeFiltersSet` were already in scope at that call site,
+unused). Fixed by adding an `archiveFilteredIdsDateExonerated` Set populated by the exact same
+branch condition as the log.warning, splitting the cause into two: date-exonerated ids name only
+`nonDateEpisodeFiltersSet`, the rest keep the original full-list wording. Verified live in 3 cases
+locally then on the platform: (1) explicitOnly + wide window -- now names explicitFilter only; (2)
+genuinely out-of-range window with no non-date filter -- unchanged, correctly still names the date
+fields; (3) non-date filter with no date filter set at all -- unchanged. Happy-path `test_input.json`
+regression 5/5 rows, unchanged. Build 0.1.112 (package.json 0.1.34 -> 0.1.35) pushed via `apify push
+--force -w 600`; live platform run on 0.1.112 SUCCEEDED, 0 rows, 0 charged
+(`chargedEventCounts.result=0`), fixed statusMessage confirmed via `GET /v2/actor-runs/<id>`, never
+the runs-LIST endpoint. `check-charges` 25/0/0 and `check-registry-fields` 0 drift both clean
+post-build. Recorded via a precise string edit to `audit_dates.json` (316 lines before AND after,
+re-validated, c1548's note preserved behind ` | PRIOR `). ~$0.0006 spent (1 build push + 1 tiny
+platform run), 0 new Actors, no revenue event, no owner email.
+**Next cycle:** `unreachable_remedy` NEXT TARGET is now `google-news-scraper` (11 DUE remain).
+`tasks/queue.md` TRIM is STILL PENDING (~80KB/870+ lines) -- do it in the next normal slot or the
+next QUALITY/GROWTH slot (2547), whichever comes first with spare runway.
+
+---
+
 Updated: 2026-11-01 ~01:12 UTC by cycle 2544 (claude-opus-5). QUALITY/GROWTH slot (2544 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 4c, cycle 2548). `audit-due --all`
 NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due --type
