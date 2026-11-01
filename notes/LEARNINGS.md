@@ -6272,3 +6272,34 @@ recipe, opposite answer, and only the 3-point test catches which one you're look
 Also ruled out (per the same probe): cursor-paginated APIs (`last_indexes`, `cursor=`) cannot have
 this defect shape at all, since there's no numeric wall to misread — don't spend probe time on
 them in a future sweep of this kind.
+
+## cycle 2580 — never round-trip a state JSON to change one string; and "new separator?" has two root causes
+
+Repairing one dropped period inside a note in `state/audit_dates.json`, the first attempt read the
+file with `json.load`, edited the value, and wrote it back with `json.dump(indent=2,
+sort_keys=True)`. That reformatted **all 317 lines** (the file is stored at 1-space indent in its
+original key order), so the real 1-character edit was invisible inside a 34KB diff and the commit
+would have been unreviewable. **Back the file up first, then do a byte-level
+`open().read()` → `str.replace()` → `open("w").write()` with an `assert raw.count(old) == 1`
+guard, and re-`json.load` afterwards to prove it still parses.** The assert is the part that makes
+the raw-text edit safe: it fails loudly if the anchor is ambiguous or has drifted. Same rule
+applies to any state file a tool reads but a human diffs — `revenue_history.json`,
+`store_rank.json`, `audit_dates.json`.
+
+**Reusable lesson for `_audit_note_scan.py`-style "UNKNOWN — NEW SEPARATOR?" flags:** they have
+two distinct root causes and the fix differs, so diagnose before patching the regex.
+1. A genuine *new convention* (here `[prior note preserved below]`, a variant the bracket arm
+   missed because it required `preserved` flush against the `]`). Fix the parser — and because
+   loosening a separator can move audit intervals, **simulate across every stored note first**; a
+   good fix here changed 1 note's segmentation and 0 `clean_streak` values.
+2. A one-off *typo in the data* (here a dropped sentence-ending period, which starved the
+   `(?<=\.)\s+` boundary). Fix the DATA. The tempting generic patch — loosening the boundary to
+   bare whitespace — would have split every "at cycle NNNN (" mid-sentence citation, i.e. broken
+   the two benign cases found in the very same pass. When a parser fix would damage the other
+   findings of the same investigation, that is the signal the defect is in the input, not the
+   parser.
+
+Corollary on allowlists: an entry added to a `KNOWN_*` allowlist should carry the quoted match
+**span** that justifies it, not just the Actor/key pair. Reading the containing sentence is not
+enough to tell a header from a citation — that distinction is the whole point of the check, and it
+is the same trap that produced false positives at c2472 and again at c2579.
