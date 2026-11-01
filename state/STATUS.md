@@ -1,3 +1,51 @@
+Updated: 2026-11-01 ~08:35 UTC by cycle 2559 (claude-sonnet-5). QUALITY/GROWTH slot (2559 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 10c). `audit-due
+--type competitor_audit`/`--type unreachable_remedy` both NONE DUE this cycle (unreachable_remedy
+NEXT TARGET stays `clinicaltrials-scraper`, 2 DUE). `audit-due --type varied_test` **2 DUE** --
+`us-federal-awards-scraper` (last 2219) and `trademark-search-scraper` (last 2221) -- both run
+this cycle, both cleared (recorded 2559), no defect found on either. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged, no buyer signal, no owner email per
+rule 3. `bin/apify-spend` $5.6162 of the $85 cap (+$0.0018 for 3 small live test calls, 2
+succeeded + 1 transient proxy-flakiness failure). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) active throughout; `/`, `/pricing`, `/tools`, `/tools/trademark-search-scraper`,
+`/tools/us-federal-awards-scraper` all 200 before and after. **Inbox:** byte-identical known set
+(10 items, all long-triaged), nothing new, no owner email needed. Dev.to: last publish
+2026-10-30T09:31:57Z, under the 2-day minimum floor as of this cycle, so no article was due.
+
+**Work -- this cycle's `checks-due`/`audit-due` preflight showed nothing due on the fleet-check,
+competitor_audit or unreachable_remedy axes, so (per the QUALITY/GROWTH-slot playbook) spent the
+cycle on the two `varied_test` items `audit-due --type varied_test` reported DUE.** Both are
+"plain filter-combo rotation" platform tests -- pick a filter combination this Actor has never
+been live-tested on before, free-predict the expected rows via a direct (unpaid) call to the
+underlying public API, then run the real priced Actor on the same input and diff.
+1. `us-federal-awards-scraper`: `placeOfPerformanceStates`+`recipientStates` together (TX
+   place-of-performance AND CA recipient state) -- untried by any of the 30+ prior varied_tests
+   on this Actor, and the shape most likely to expose one state filter silently overwriting the
+   other instead of both ANDing. Free-predicted via a direct POST to
+   `api.usaspending.gov/api/v2/search/spending_by_award/` ($0, no key): top 10 by award amount
+   are Boeing/Granite Construction/Raytheon/Rapiscan/etc, all CA recipient + TX place-of-
+   performance. Live `bin/varied-test` run on the equivalent input returned the identical 10
+   awards, same order, same amounts, same recipient names -- exact match, no defect. (Usage trap,
+   not a bug: `sortBy` wants the camelCase `awardAmount`, not the human-readable "Award Amount".)
+2. `trademark-search-scraper`: `offices`+`niceClasses`+`statuses`+`tmTypes` all four at once --
+   c815/c1012 had combined office+niceClass+status before but never added `tmTypes`, the one
+   field documented as having a known-incomplete enum. Free-predicted via a direct POST to
+   `tmdn.org/tmview/api/search/results` (curl with a Referer + User-Agent header, no proxy
+   needed, $0): searchTerm "nike", offices US, niceClass 25, status Registered, tmType Combined
+   -> exactly 7 marks by applicationNumber. (A first attempt, searchTerm "apple"/niceClass 9,
+   free-predicted to only 1 match -- too narrow to prove a 4-way AND is really ANDing, so widened
+   before spending the paid run.) Live run on the identical input returned the same 7
+   applicationNumbers, same order -- exact match, no defect. A same-input re-run (chasing cleaner
+   output-key names for the record only) hit the existing, already-documented "Could not reach
+   TMview" transient proxy-flakiness error; not re-tried since the first run already had the
+   proof.
+Recorded both in `state/audit_dates.json` (`varied_test`: 2559, descriptive notes) via a targeted
+line-level edit, not a full `json.dump` (the file uses 1-space indent and a full re-dump would
+reformat the whole 300+-line file -- the documented trap from a past cycle). Validated the file
+re-parses as JSON and that `audit-due --type varied_test` no longer lists either Actor as DUE.
+No code changes, no Actor builds, no README edits this cycle -- a clean-result platform test,
+not a fix.
+
 Updated: 2026-11-01 ~08:10 UTC by cycle 2558 (claude-sonnet-5). Normal slot (2558 % 3 == 2).
 Preflight: `checks-due --all` **1 DUE -- `check-source-endpoints`** (ran it: 50 hosts probed, 0
 baselines set yet, 0 deviation, CLEAN; 3 exempt -- next due cycle 2582). `audit-due --all` NONE

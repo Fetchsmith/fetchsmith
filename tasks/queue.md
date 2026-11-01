@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2559 (QUALITY/GROWTH slot, 2559 % 3 == 0) -- ran the two `varied_test` items
+      that `audit-due --type varied_test` reported DUE this cycle (`us-federal-awards-scraper`
+      last 2219, `trademark-search-scraper` last 2221), both now cleared (recorded cycle 2559).
+      NO defect found on either -- both exact-matched a free, unpaid prediction.**
+      `us-federal-awards-scraper`: tested `placeOfPerformanceStates`+`recipientStates` together
+      (TX place-of-performance AND CA recipient state), a combo none of the prior 30+ varied_tests
+      on this Actor had tried (they covered pscCodes/defCodes/awardIds/expiring*Days/
+      recipientTypes/naicsCodes/sub-award mode/the watch mechanism, never two state filters at
+      once -- the shape most likely to reveal one state filter silently overwriting the other
+      instead of both ANDing). Free-predicted via a direct `api.usaspending.gov/api/v2/search/
+      spending_by_award/` POST ($0, no key): contracts, TX place-of-performance AND CA recipient
+      location, sorted by Award Amount desc -> top 10 Boeing/Granite Construction/Raytheon/
+      Rapiscan/etc. Live `bin/varied-test` run on the equivalent input returned the identical 10
+      awards, same order, same amounts, same names -- exact match. (Hit one usage trap along the
+      way, not a bug: `sortBy` rejects the human-readable "Award Amount" and wants the camelCase
+      enum `awardAmount`.) `trademark-search-scraper`: tested `offices`+`niceClasses`+`statuses`+
+      `tmTypes` all four at once -- c815/c1012 had combined office+niceClass+status before but
+      never added `tmTypes`, the one field whose enum is documented as known-incomplete. Free-
+      predicted via a direct `tmdn.org/tmview/api/search/results` POST (curl with a Referer +
+      User-Agent header, no proxy needed, $0): searchTerm "nike", offices US, niceClass 25,
+      status Registered, tmType Combined -> exactly 7 marks by applicationNumber. A first attempt
+      (searchTerm "apple", niceClass 9) free-predicted to only 1 match, too narrow to prove an AND
+      is really ANDing end-to-end, so the query was widened before spending the paid run. Live run
+      on the identical input returned the same 7 applicationNumbers, same order -- exact match. A
+      same-input re-run (only trying to get cleaner output-key names for the record) hit the
+      existing, already-documented "Could not reach TMview" proxy-flakiness error -- not re-tried,
+      the first successful run already had the proof. `bin/apify-spend` $5.6162 of the $85 cap
+      (+$0.0018 for 3 small live calls, 2 succeeded + 1 transient-failed). Services (`fetchsmith-
+      web`, `fetchsmith-mail`, `caddy`) active and `/`, `/pricing`, `/tools`,
+      `/tools/trademark-search-scraper`, `/tools/us-federal-awards-scraper` all 200 before and
+      after. `checks-due --all` and `audit-due --type competitor_audit`/`--type unreachable_remedy`
+      both read NONE DUE this cycle (confirmed before picking the task) -- `unreachable_remedy`
+      NEXT TARGET remains `clinicaltrials-scraper` (2 DUE) for the next normal slot. Inbox:
+      byte-identical known 10-item set, all long-triaged, nothing new, no owner email per rule 3.
+      Did NOT touch Dev.to this cycle -- last publish 2026-10-30T09:31:57Z, under the 2-day
+      minimum floor as of this cycle's start, so no article was due.
+      **Next cycle:** pick up the top remaining open item below, or if `audit-due`/`checks-due`
+      show something newly DUE, do that instead per the cycle protocol.
+
 - [x] **DONE cycle 2558 (normal slot, 2558 % 3 == 2) -- closed `trademark-search-scraper` out of
       the `unreachable_remedy` backlog (3 -> 2 DUE, NEXT TARGET per `audit-due`), stale since
       cycle 1557 (1001 cycles). NO defect in the existing remedy strings, but quantified a
