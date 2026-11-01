@@ -35,7 +35,7 @@ All fields are optional; with an empty input you get the last year of food, drug
 | `status` | string | `Ongoing`, `Completed`, `Terminated`, `Pending`. Empty = all. `Pending` is in FDA's own vocabulary but has never appeared in openFDA's enforcement data (verified 2026-09-25) — expect zero rows if you select it. |
 | `recallingFirm` | string | Filter to one firm, e.g. `Tyson Foods`. Narrower than `searchQuery`, which also matches product description and recall reason. |
 | `city` | string | Filter to recalls whose recalling firm is in this city, e.g. `Chicago`. |
-| `brandName` | string | **Drug recalls only.** Filter by drug brand name, e.g. `Nurtec`. openFDA only cross-references brand/generic/manufacturer name for drug recalls — food and device recalls never match these three filters. |
+| `brandName` | string | **Drug recalls only.** Filter by drug brand name, e.g. `Nurtec`. openFDA only cross-references brand/generic/manufacturer name for drug recalls — food and device recalls never match these three filters, and only 16.8% of drug rows carry the cross-reference at all (see the FAQ for the by-year breakdown). |
 | `genericName` | string | **Drug recalls only.** Filter by generic/active-ingredient name, e.g. `ibuprofen`. |
 | `manufacturerName` | string | **Drug recalls only.** Filter by manufacturer name, e.g. `Pfizer`. Not the same as `recallingFirm` (the firm that issued the recall, any product type) — a drug's manufacturer and the firm recalling it can differ. |
 | `voluntaryMandated` | string | `Voluntary: Firm initiated`, `FDA Mandated` (rare, under 2% of recalls), or `N/A` (FDA's own value when the initiating party was never captured — 37 rows as of 2026-10-06). Empty = no filter, the only way to also see the 23 rows that carry an empty value for this field. |
@@ -148,7 +148,18 @@ Pay per result: **$0.0035 per recall on the free plan, dropping to $0.0024 on Go
 ## FAQ
 
 **Why are the NDC/UPC/brand-name fields empty on my food and device rows?**
-Because FDA only publishes them for drugs. The `openfda` block that carries those identifiers is populated on drug enforcement reports and empty on food and device ones — verified on live samples, not an assumption. The fields are always present in the schema so your CSV columns stay stable; they are simply `null` or `[]` outside drug rows.
+Because FDA only publishes them for drugs, and even then only for part of the archive. The `openfda` block that carries those identifiers is empty on **every** food and device recall (0 of 29,512 food and 0 of 40,358 device rows) and present on **3,033 of 18,048 drug rows — 16.8%** (measured live 2026-11-01). Coverage is much better on recent recalls than old ones, because it depends on FDA having cross-referenced the recalled product to a registered NDC listing:
+
+| `report_date` year | drug rows with `openfda` |
+| --- | --- |
+| 2016 | 6% |
+| 2019 | 9% |
+| 2022 | 22% |
+| 2024 | 41% |
+| 2025 | 48% |
+| 2026 | 59% |
+
+The fields are always present in the schema so your CSV columns stay stable; they are simply `null` or `[]` when FDA has no cross-reference. The block is all-or-nothing per row — if `brandName` is null, so are `genericName`, `productNdc` and the rest. Practical consequence: the `brandName` / `genericName` / `manufacturerName` **filters** can only ever match that same 16.8% of drug rows, so a drug-name search over a pre-2020 window will look sparse. If you need every recall for a company regardless of year, filter on `recallingFirm` (populated on all three product types, all years) and match the drug name client-side against `productDescription`.
 
 **Even within drug rows, `upc` is much sparser than its sibling identifiers — why?** Measured live against openFDA (two independent 100-row drug samples, 2026-10-12): `brandName`, `productNdc`, `packageNdc`, `splSetId` and `unii` all filled on **~30% and ~73%** of rows in the respective samples (moving together, since they come from the same manufacturer submission), while `upc` filled on only **15%** and **34%** in the same two samples — roughly half the rate of everything else in the `openfda` block. Barcodes are the one identifier FDA leaves to the manufacturer to submit separately from the rest of the NDC/SPL paperwork, so plenty of drug rows carry a full set of drug identifiers with no `upc` at all. Don't treat a missing `upc` next to a filled `brandName`/`productNdc` as a parsing bug — it is real upstream sparsity, worse than the rest of the drug-only block.
 

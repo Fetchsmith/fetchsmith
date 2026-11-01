@@ -473,7 +473,14 @@ function buildSearch(from, to) {
         if (city) clauses.push(`city:${quote(city)}`);
         // Valid on all three endpoints' index mappings but only ever populated on drug rows --
         // food/device rows simply never match, same as any other filter with no data behind it,
-        // verified live (not a 400, a normal empty match set).
+        // verified live (not a 400, a normal empty match set): `_exists_:openfda.brand_name`
+        // is 0 of 29512 food and 0 of 40358 device rows (re-measured 2026-11-01).
+        // These three filters also reach only a MINORITY of drug rows: openFDA's NDC
+        // cross-reference exists on just 3033 of 18048 drug rows (16.8%), and the fill rate is
+        // strongly recency-skewed (by report_date year: 2016 6%, 2019 9%, 2022 22%, 2024 41%,
+        // 2025 48%, 2026 59%; 50 of the newest 100 drug rows). So a drug-name filter over an
+        // older window is expected to return far fewer rows than the same window unfiltered --
+        // that is upstream coverage, not a filter bug. Disclosed in the README FAQ.
         if (brandName) clauses.push(`openfda.brand_name:${quote(brandName)}`);
         if (genericName) clauses.push(`openfda.generic_name:${quote(genericName)}`);
         if (manufacturerName) clauses.push(`openfda.manufacturer_name:${quote(manufacturerName)}`);
@@ -849,9 +856,17 @@ async function firmRecallCount(productType, firm) {
 }
 
 async function normalize(r, productType) {
-    // `openfda` is populated on drug rows only — verified 5/5 drug rows populated and 5/5
-    // food and device rows empty on a live sample. These flattened fields are therefore
-    // advertised for drug recalls only; they come back null elsewhere.
+    // `openfda` appears on drug rows ONLY -- 0 of 29512 food and 0 of 40358 device rows carry
+    // it (`_exists_:openfda`, re-measured live 2026-11-01), so these flattened fields are
+    // advertised for drug recalls only and come back null for the other two product types.
+    // But it is NOT on all drug rows: only 3033 of 18048 (16.8%) have an `openfda` block at
+    // all, and every subfield we flatten (brand_name/generic_name/manufacturer_name) is
+    // present on exactly those same 3033 rows -- the block is all-or-nothing per row. An
+    // earlier version of this comment read "verified 5/5 drug rows populated", which was a
+    // lucky n=5 draw off the newest page (fill there is ~50%, not 100%) and badly overstated
+    // coverage. Fill is strongly recency-skewed by report_date year: 2016 6%, 2019 9%,
+    // 2022 22%, 2024 41%, 2025 48%, 2026 59%. Null openfda fields on a drug row are therefore
+    // normal and expected, especially pre-2020 -- do NOT treat them as a parse/mapping bug.
     const o = r.openfda ?? {};
     const first = (v) => (Array.isArray(v) ? (v[0] ?? null) : (v ?? null));
     const list = (v) => (Array.isArray(v) ? Array.from(new Set(v.filter(Boolean))) : []);

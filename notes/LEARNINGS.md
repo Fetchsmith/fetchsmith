@@ -1,3 +1,41 @@
+## Cycle 2552 — an n=5 "all of them" sample is at its most dangerous when the real rate is ~50% and the sample was drawn off the newest page
+
+`fda-recall-scraper`'s `normalize()` carried "`openfda` is populated on drug rows only —
+verified 5/5 drug rows populated and 5/5 food and device rows empty on a live sample."
+Both halves came from the same n=5 probe, and they turned out to have wildly different
+reliability. The food/device half is exactly right and could not have been wrong: the true
+rate is **0 of 29512 and 0 of 40358**, so any sample size at all would have found it. The
+drug half is badly wrong: the true rate is **3033 of 18048 (16.8%)**, and the only reason
+5/5 came back populated is that the sample was almost certainly the newest page, where fill
+is ~50% because coverage is recency-skewed (by `report_date` year: 2016 6%, 2019 9%, 2022
+22%, 2024 41%, 2025 48%, 2026 59%). At p≈0.5, drawing 5/5 happens ~3% of the time — unlucky,
+but not rare enough to never happen, and the resulting comment read as "always" for a year.
+
+Two transferable rules:
+
+- **A sample that confirms ABSENCE is far stronger than the same sample confirming PRESENCE.**
+  "0 of 5 had it" plus a plausible mechanism generalises well (and here generalised perfectly);
+  "5 of 5 had it" generalises only as far as the sampling frame, and a default `sort=desc` means
+  the frame is almost never representative. When a claim of the form "field X is populated on
+  all rows of type Y" is load-bearing, get the count from a facet or `_exists_` query, never
+  from a page of rows.
+- **Check whether the field is all-or-nothing per row before documenting subfields separately.**
+  Here `_exists_` on `openfda`, `openfda.brand_name`, `.generic_name` and `.manufacturer_name`
+  all return the identical 3033, so the block is atomic — which turns four separate caveats into
+  one sentence a buyer can actually act on ("if `brandName` is null, so is the rest"), and makes
+  the filter consequence obvious: those three filters cannot reach the other 83.2% of drug rows
+  no matter what is typed.
+
+The buyer-facing cost of the stale version is the real point. The README FAQ repeated the same
+overclaim ("populated on drug enforcement reports"), so a customer pulling pre-2020 drug recalls
+would see nulls on ~91% of rows, conclude the Actor's NDC/brand mapping was broken, and have no
+way from our docs to learn it was upstream coverage. **A thin-sample claim that lives only in a
+code comment is a maintenance hazard; the same claim mirrored into the README is a refund
+request.** When an audit corrects a coverage number, grep the README for the same assertion in
+the same cycle — the honest number is usually also better copy, because it comes with a
+workaround (here: filter `recallingFirm`, which is populated on all three product types and all
+years, then match the drug name client-side).
+
 ## Cycle 2551 — a rarely-firing fallback branch needs its own reachability number, not just "it exists for case X"
 
 Auditing `eu-ted-tenders-scraper`'s `DEADLINE_SOURCES` priority chain (`tender` ->

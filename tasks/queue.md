@@ -1,3 +1,56 @@
+- [x] **DONE cycle 2552 (normal slot, 2552 % 3 == 2) -- closed `fda-recall-scraper` out of the
+      `unreachable_remedy` backlog (7 -> 6 DUE), the NEXT TARGET printed by `audit-due`. FOUND AND
+      FIXED ONE REAL DEFECT: a thin n=5 sample understated a buyer-facing coverage limit by ~6x,
+      and the overclaim was in the live README too, not just a code comment.** Preflight:
+      `checks-due --all` / `audit-due --all` NONE DUE (soonest `check-doc-size` in 4c, cycle 2556).
+      `bin/revenue`: $0 booked, 25 public Actors, 47 users, 756 runs30d, ext_bad30d 3 -- no buyer
+      signal, no owner email per rule 3. `bin/apify-spend` $5.5994, projection $7.48 vs the $85 cap
+      (one build this cycle; every probe was a keyless read-only GET against api.fda.gov).
+      Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`,
+      `/tools` all 200. **Inbox:** byte-identical known set (10 items, all long-triaged) -- nothing
+      new, no owner email needed.
+      **Method (the c2536 refinements, both applied):** (i) read c1553's note FIRST -- it had
+      already audited every zero-row/warning remedy STRING (webhookUrl, status=Pending, baseline
+      cap/truncation, openFDA HTTP/error retries, RSS_UNSUPPORTED_REASONS, both `pushed===0`
+      branches, the generic 5-cause message) and fixed the lookupMode override defect, so
+      re-walking them would have burned the slot. Aimed instead at the VOCAB/COVERAGE reachability
+      claims added to `src/main.js` AFTER c1553, which decide which rows a filter can reach at
+      all. (ii) Fired the negative control before believing any reading: all three endpoints
+      non-empty (food 29512 / drug 18048 / device 40358, `last_updated` 2026-10-21), so no probe
+      could read as a false zero.
+      **Four claims re-verified live, $0 (all HELD):** (1) `Not Yet Classified` is reachable
+      through the exact clause `buildSearch()` emits on all three endpoints, and all-4-OR sums
+      EXACTLY to the endpoint total (12985+14763+1763+1=29512 food, =18048 drug, =40358 device) --
+      which is what actually proves the comment's claim that Class I+II+III != no filter. (2)
+      `voluntary_mandated:"N/A"` -- the slash does not break the quoted phrase and does not
+      over-match (6/23/8, exactly the facet counts, unchanged from 2026-10-06); empty-string rows
+      (1/12/10) still sum to the total, confirming "only reachable by leaving the filter off". (3)
+      `termination_date` silently excludes ~5% food / ~18% drug / ~36% device -- holds almost
+      exactly (27959/29512, 14813/18048, 25494/40358); NEW cross-check: its fill tracks
+      `status='Terminated'` to within 3/1/31 rows, confirming the "never closed out" rationale. (4)
+      `status='Pending'` still 0, now of 87918 records, and returns openFDA's normal NOT_FOUND
+      empty set rather than a 400, on all three.
+      **THE DEFECT:** `normalize()`'s comment read "`openfda` is populated on drug rows only --
+      verified 5/5 drug rows populated". The drug-only half is exact (0 of 29512 food, 0 of 40358
+      device), but "populated on drug rows" is FALSE as written: only **3033 of 18048 drug rows
+      (16.8%)** carry the block, and fill is strongly recency-skewed by `report_date` year -- 2016
+      6%, 2019 9%, 2022 22%, 2024 41%, 2025 48%, 2026 59%, with 50 of the newest 100 drug rows
+      populated. 5/5 was a lucky draw off the newest page where the true rate is ~50%. Verified the
+      block is all-or-nothing per row (`_exists_` on `openfda`, `openfda.brand_name`,
+      `.generic_name`, `.manufacturer_name` are all exactly 3033). Undisclosed consequence: the
+      `brandName`/`genericName`/`manufacturerName` FILTERS can only ever match that 16.8%, so a
+      drug-name search over a pre-2020 window looks broken but is not. **Fixed in three places:**
+      both code comments (`normalize()` and `buildSearch()`) with the measured numbers, and the
+      buyer-facing README -- FAQ line 151 ("populated on drug enforcement reports") plus the
+      `brandName` input-table row now state 16.8%, carry the by-year table, say the block is
+      all-or-nothing, and give the real workaround (filter `recallingFirm`, populated on all three
+      product types and all years, then match the drug name client-side on `productDescription`).
+      `node --check` clean; check-code-fields 0 drift, check-filter-reach 0 unreachable claims,
+      check-readme-samples 0 drift, check-charges 25/0/0, check-registry-fields 0 drift,
+      check-doc-size OK. Code AND listing copy both changed, so `publish` ran FIRST then ONE
+      `apify push` (c2288 lesson): build **0.1.84 SUCCEEDED**, no `REINDEX REQUIRED`.
+      Backlog now **6 DUE**, NEXT TARGET `federal-register-scraper`.
+
 - [x] **DONE cycle 2551 (normal slot, 2551 % 3 == 1) -- closed `eu-ted-tenders-scraper` out of the
       `unreachable_remedy` backlog (8 -> 7 DUE), the NEXT TARGET left by c2549/c2550. NO
       reachability defect; a load-bearing small-sample comment re-verified at 25x scale and one
@@ -220,6 +273,22 @@
       (~85KB/908 lines, `check-doc-size` says TRIM SOON not yet DUE) -- do it in the next
       QUALITY/GROWTH slot (2547) if there's spare runway, else the slot after.
 
+- [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
+      `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not
+      Yet Classified`, whose entire justification is the in-code claim that it is "rare but present
+      on all three endpoints". c2552 re-verified it IS present and reachable -- but measured the
+      counts at **food 1, drug 2, device 1** (down from food 2, drug 2, device 1 at 2026-10-06, so
+      it demonstrably moves as FDA assigns severity). At n=1 on two of three endpoints, a single
+      reclassification makes the option genuinely dead on that endpoint and turns the comment's
+      reachability rationale false. **Do NOT pre-emptively remove the value** -- it is correct
+      today and removing it would re-create the exact unreachability the comment warns about.
+      Cheap check when any future cycle touches this Actor:
+      `curl -sS 'https://api.fda.gov/<ep>/enforcement.json?count=classification.exact'` for
+      ep in food/drug/device. If a count reaches 0, update the comment to name which endpoints
+      still have it rather than deleting the enum value (the value stays valid API vocabulary and
+      new rows can appear at any time). Same shape as the `voluntary_mandated` N/A note, which by
+      contrast measured EXACTLY unchanged (6/23/8) across the same 26 days and needs no tripwire.
+
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
       Grants.gov ever types `awardCeiling`/`awardFloor` as a real JSON number instead of the
@@ -323,7 +392,12 @@
       Actors in this backlog have an equivalent outage probe / control fixture in `src/main.js`
       -- find it and fire it first). `fec-campaign-finance-scraper` CLOSED c2537 (both its
       reachable remedies' factual claims reconfirmed live, no code change -- see the DONE block
-      above). **STATUS c2548: 9 DUE** (was 19 at c2532) -- closed since then: sec-insider-trades,
+      above). **STATUS c2552: 6 DUE** -- closed since c2548: us-federal-awards (c2549),
+      eu-ted-tenders (c2551) and `fda-recall-scraper` (c2552, the FIRST real defect this
+      backlog has yielded in six closes -- see the DONE block above; it came from the
+      post-c1553 vocab/coverage comments, NOT the remedy strings the prior note had already
+      walked, so refinement (i) is now proven to be where the yield actually is).
+      **PRIOR STATUS c2548: 9 DUE** (was 19 at c2532) -- closed since then: sec-insider-trades,
       sam-gov-opportunities, grants-gov, google-news (c2546) and `nih-reporter-scraper` (c2548,
       see the DONE block above), all CLEAN. **Do NOT trust a NEXT TARGET written in this prose --
       it has gone stale twice now (this line still named sec-insider-trades long after it closed).

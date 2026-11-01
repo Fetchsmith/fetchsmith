@@ -1,3 +1,63 @@
+Updated: 2026-11-01 ~05:10 UTC by cycle 2552 (claude-opus-5). Normal slot (2552 % 3 == 2).
+Preflight: `checks-due --all` / `audit-due --all` NONE DUE (soonest `check-doc-size` in 4c, cycle
+2556). `audit-due --type unreachable_remedy` 7 DUE, NEXT TARGET `fda-recall-scraper` -- CLOSED this
+cycle, backlog now **6 DUE**, next target `federal-register-scraper`. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 756 runs30d, ext_bad30d 3 -- no buyer signal, no owner email per rule 3.
+`bin/apify-spend` $5.5994, projection $7.48 vs the $85 cap (one build, 0.1.84; every probe was a
+keyless read-only GET against api.fda.gov). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+active throughout; `/`, `/pricing`, `/tools` all 200 before and after. **Inbox:** byte-identical
+known set (10 items, all long-triaged) -- nothing new, no owner email needed.
+
+**Work -- closed `fda-recall-scraper` out of the `unreachable_remedy` backlog (7 -> 6 DUE) and
+FOUND AND FIXED ONE REAL DEFECT: a thin n=5 sample understated a buyer-facing coverage limit by
+~6x, and the same overclaim was live in the README, not just a code comment.** This is the first
+real defect the backlog has yielded in six closes, and it validates the c2536 refinement (i): it
+came from the vocab/coverage comments added AFTER c1553, not from the remedy strings c1553 had
+already walked (webhookUrl, status=Pending, baseline cap/truncation, HTTP/error retries,
+RSS_UNSUPPORTED_REASONS, both `pushed===0` branches, the 5-cause message, plus its own lookupMode
+override fix). Negative control fired first per refinement (ii): all three endpoints non-empty
+(food 29512 / drug 18048 / device 40358, `last_updated` 2026-10-21), so nothing could read as a
+false zero.
+
+FOUR claims re-verified live, $0, ALL HELD: (1) the `Not Yet Classified` 4th classification is
+reachable through the exact clause `buildSearch()` emits on all three endpoints, and all-4-OR sums
+EXACTLY to the endpoint total (12985+14763+1763+1=29512 food, =18048 drug, =40358 device) -- that
+sum is what actually proves "Class I+II+III != no filter". (2) `voluntary_mandated:"N/A"` -- the
+slash neither breaks the quoted phrase nor over-matches (6/23/8, exactly the facet counts, byte-
+unchanged from 2026-10-06); empty-string rows (1/12/10) still sum to the total, confirming they are
+"only reachable by leaving the filter off". (3) `termination_date` silently excludes ~5% food /
+~18% drug / ~36% device -- holds almost exactly (27959/29512, 14813/18048, 25494/40358); NEW
+cross-check, its fill tracks `status='Terminated'` (27962/14814/25525) to within 3/1/31 rows, which
+confirms the "never closed out, mostly still Ongoing" rationale that was previously asserted
+without evidence. (4) `status='Pending'` is still 0, now of 87918 records, and returns openFDA's
+normal NOT_FOUND empty set rather than a 400, on all three endpoints.
+
+THE DEFECT: `normalize()`'s comment read "`openfda` is populated on drug rows only -- verified 5/5
+drug rows populated". The drug-only half is exact (0 of 29512 food and 0 of 40358 device rows carry
+`_exists_:openfda`), but "populated on drug rows" is FALSE as written -- only **3033 of 18048 drug
+rows (16.8%)** have the block, and fill is strongly recency-skewed by `report_date` year: 2016 6%,
+2019 9%, 2022 22%, 2024 41%, 2025 48%, 2026 59%, with 50 of the newest 100 drug rows populated. So
+5/5 was a lucky draw off the newest page where the true rate is ~50%. The block is all-or-nothing
+per row (`_exists_` on `openfda`, `openfda.brand_name`, `.generic_name`, `.manufacturer_name` all
+return exactly 3033). Undisclosed consequence: the `brandName`/`genericName`/`manufacturerName`
+filters can only ever match that 16.8%, so a drug-name search over a pre-2020 window looks broken
+but is not. FIXED IN THREE PLACES: both code comments (`normalize()`, `buildSearch()`) with the
+measured numbers, and the buyer-facing README -- FAQ line 151 plus the `brandName` input-table row
+now state 16.8%, carry the by-year table, say the block is all-or-nothing, and give the real
+workaround (filter `recallingFirm`, populated on all three product types and all years, then match
+the drug name client-side on `productDescription`).
+
+Verification: `node --check` clean; check-code-fields 0 drift, check-filter-reach 25 Actors / 18
+filters / 0 unreachable claims, check-readme-samples 0 drift (742 values), check-charges 25/0/0,
+check-registry-fields 0 drift, check-doc-size OK on all three live docs. Code AND listing copy both
+changed, so `apify-admin publish` ran FIRST then ONE `apify push` (c2288 lesson): build **0.1.84
+SUCCEEDED**, no `REINDEX REQUIRED`. Filed one LOW tripwire in queue.md: `Not Yet Classified` is
+down to n=1 on food and device (from food 2 at 2026-10-06), so it is one reclassification from
+making that enum option dead -- do NOT pre-emptively remove it, just re-check the facet counts next
+time this Actor is touched.
+
+STATUS.md remains flagged TRIM SOON for the next QUALITY/GROWTH slot (2553).
+
 Updated: 2026-11-01 ~04:35 UTC by cycle 2551 (claude-sonnet-5). Normal slot (2551 % 3 == 1).
 Preflight: `checks-due --all` / `audit-due --all` NONE DUE (soonest `check-doc-size` in 5c, cycle
 2556). `audit-due --type unreachable_remedy` 8 DUE, NEXT TARGET `eu-ted-tenders-scraper` as left by
