@@ -102,7 +102,7 @@
     "hasSalary": {
       "title": "Only postings with salary",
       "type": "boolean",
-      "description": "Only keep postings that come back with a salaryMin or salaryMax — either a compensation field the ATS exposes (Ashby, Lever, Recruitee) or a pay-transparency range printed inside the posting body (Greenhouse). The Actor reads no pay from Workable, SmartRecruiters or Workday, so their postings are always dropped when this is on; so are Greenhouse boards that never turned pay transparency on.",
+      "description": "Only keep postings that come back with a salaryMin or salaryMax — either a compensation field the ATS exposes (Ashby, Lever, Recruitee), a pay-transparency range printed inside the posting body (Greenhouse), or a labeled pay phrase parsed out of the free-text description (Workday). The Actor reads no pay from Workable or SmartRecruiters, so their postings are always dropped when this is on; so are Greenhouse boards that never turned pay transparency on and Workday postings whose description names no pay figure.",
       "default": false
     },
     "minSalary": {
@@ -178,7 +178,7 @@
           "Salary appeared (posting already delivered, now shows a salary)"
         ]
       },
-      "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Salary appeared\" alone to be alerted only when an already-delivered posting later gains a salary (a pay-transparency add-on or a plain edit), and never pay for anything else. Leave empty for both. Greenhouse, Ashby, Lever, and Recruitee postings commonly publish without a salary and add one later under the same posting id — without this event that already-delivered posting looks identical to a watch forever. Postings on SmartRecruiters/Workable/Workday never carry a salary at all, so salaryAdded never fires for those. The change event compares against the salary state recorded the last time the posting was delivered, so it only starts firing on the second run after a baseline created before this feature existed. Ignored when \"Watch label\" is empty.",
+      "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Salary appeared\" alone to be alerted only when an already-delivered posting later gains a salary (a pay-transparency add-on or a plain edit), and never pay for anything else. Leave empty for both. Greenhouse, Ashby, Lever, Recruitee and Workday postings commonly publish without a salary and add one later under the same posting id — without this event that already-delivered posting looks identical to a watch forever. Postings on SmartRecruiters/Workable never carry a salary at all, so salaryAdded never fires for those. The change event compares against the salary state recorded the last time the posting was delivered, so it only starts firing on the second run after a baseline created before this feature existed. Ignored when \"Watch label\" is empty.",
       "default": []
     },
     "webhookUrl": {

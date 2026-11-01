@@ -122,9 +122,13 @@ const needDescriptions = includeDescriptions || !!descriptionKeyword || !!descri
 // nobody asked for descriptions — without it the main-loop filter would match against nulls and
 // return zero rows for every Workday board. SmartRecruiters' detail call only adds the description
 // and the referral-tagged apply URL, so `needDescriptions` is the right gate there.
+// hasSalary/minSalary/maxSalary added cycle 2573: the detail call is also the only place Workday's
+// pay-in-prose text (workdaySalary, see greenhouseSalary's neighbor above) can be read from, so a
+// salary filter needs it exactly like employmentType/department/postedAfter/postedBefore/location.
 const workdayNeedsDetail = needDescriptions
   || !!employmentTypeKeyword || !!departmentKeyword || !!postedAfter || !!postedBefore
-  || !!locationKeyword || !!locationExcludeKeyword;
+  || !!locationKeyword || !!locationExcludeKeyword
+  || hasSalary || minSalary != null || maxSalary != null;
 const maxJobsPerCompany = Math.min(Number(input.maxJobsPerCompany ?? 50), 5000);
 const maxResults = Math.min(Number(input.maxResults ?? 300), 100000);
 const watchLabel = String(input.watchLabel ?? '').trim();
@@ -580,11 +584,15 @@ function parseMoney(raw) {
 // A pay period is only ever read from a word the board itself printed — never inferred from the
 // magnitude of the numbers, which is the false-claim class cycles 583-591 kept having to undo.
 function periodWord(text) {
-  const m = String(text ?? '').match(/annualiz\w*|annual|yearly|per\s+year|hourly|per\s+hour|monthly|per\s+month|weekly|per\s+week|daily|per\s+day/i);
+  // /yr, /hr and "an hour" added cycle 2573 for Workday's prose pay windows (workdaySalary below),
+  // which print those forms where the five structured-field ATSes never do.
+  const m = String(text ?? '').match(/annualiz\w*|annual|yearly|per\s+year|\/\s?yr|hourly|per\s+hour|an\s+hour|\/\s?hr|monthly|per\s+month|weekly|per\s+week|daily|per\s+day/i);
   if (!m) return null;
   const w = m[0].toLowerCase();
   if (w.startsWith('annual')) return 'year';
   if (w.startsWith('daily')) return 'day';
+  if (/^\/\s?yr$/.test(w)) return 'year';
+  if (/^\/\s?hr$/.test(w)) return 'hour';
   return normalizeInterval(w);
 }
 
@@ -621,6 +629,68 @@ function greenhouseSalary(html) {
   const interval = periodWord(block.find('.title').first().text())
     || periodWord(block.find('.description').first().text());
   return { min, max, currency, interval };
+}
+
+// Workday carries no structured compensation field at any depth (measured cycle 2557 on 3 tenants,
+// re-confirmed cycle 2572 on 5 more — `jobPostingInfo` has no pay-ish key at any depth), but many
+// employers write a real pay figure into the free-text job description anyway, driven by
+// pay-transparency law rather than by the API. Validated offline against 50 live postings across 5
+// tenants (`corpus/workday-salary-prose.json`, cycle 2572): 24/24 correct, 26/26 correctly null,
+// zero false positives — see that corpus and the superseded `corpus/workday-salary-draft.js` for
+// the measurement this function was promoted from unchanged.
+// A labeled pay anchor. Only text the employer itself marked as pay for THIS job counts; a bare
+// "$N" anywhere in a description is never evidence of salary — sign-on bonuses, benefits
+// allowances and shift differentials all appear as bare figures on the same boards, sometimes in
+// the same posting as the real pay (measured live, okgov).
+const WD_PAY_LABEL = /(?:\bcompensation\b(?!\s+for\s+this\s+role)|\bsalary\b|\bpay\s+range\b|\brange\s+of\s+pay\b|\bpayrate\b|\bpay\s+rate\b|\bannual\s+rate\s+of\b|\bhourly\s+rate\b)/gi;
+// Words that mean the money nearby is NOT base pay. A forward window is cut at the first of these.
+const WD_NOT_PAY = /\b(?:bonus|benefits?\s+allowance|allowance|differential|401|relocation|stipend|reimburs\w*|incentive|equity|overtime|per\s+diem|tuition|additional\s+compensation)\b/i;
+const WD_MONEY = /(?:USD|CAD|\$)\s?\d[\d,.]*|\d[\d,.]*\s?(?:USD|CAD)\b/gi;
+const WD_WINDOW = 260;
+
+function workdaySalary(text) {
+  const none = { min: null, max: null, currency: null, interval: null };
+  if (!text) return none;
+  const t = String(text);
+  const figures = [];
+  let intervalText = '';
+  let sawUsd = false;
+  let sawCad = false;
+  WD_PAY_LABEL.lastIndex = 0;
+  let lab;
+  while ((lab = WD_PAY_LABEL.exec(t)) !== null) {
+    let win = t.slice(lab.index, lab.index + WD_WINDOW);
+    const bad = win.search(WD_NOT_PAY);
+    if (bad >= 0) win = win.slice(0, bad);
+    WD_MONEY.lastIndex = 0;
+    let m;
+    while ((m = WD_MONEY.exec(win)) !== null) {
+      const v = parseMoney(m[0]);
+      if (v == null) continue;
+      if (/USD/i.test(m[0]) || m[0].includes('$')) sawUsd = true;
+      if (/CAD/i.test(m[0])) sawCad = true;
+      figures.push(v);
+    }
+    if (win.length) intervalText += ` ${win}`;
+  }
+  if (!figures.length) return none;
+  const interval = periodWord(intervalText);
+  // Plausibility gate, keyed to the interval the board itself printed — never to magnitude alone,
+  // which is the false-claim class cycles 583-591 kept having to undo.
+  const lo = interval === 'hour' ? 2 : 1000;
+  const hi = interval === 'hour' ? 2000 : 10000000;
+  const ok = figures.filter((v) => v >= lo && v <= hi);
+  if (!ok.length) return none;
+  // Widest span across every labeled pay figure found, because minSalary/maxSalary filter by RANGE
+  // OVERLAP (passesFilters below): a posting paying 168k at Level 4 and 322k at Level 5, or 160k in
+  // Chicago and 262k in NYC, genuinely can pay anywhere in the outer band, and narrowing to one
+  // level/city would wrongly exclude it from an overlapping filter.
+  return {
+    min: Math.min(...ok),
+    max: Math.max(...ok),
+    currency: sawCad && !sawUsd ? 'CAD' : (sawUsd ? 'USD' : null),
+    interval,
+  };
 }
 
 // Ashby publishes structured pay when a board turns compensation on: `compensation.summaryComponents[]`
@@ -1148,6 +1218,14 @@ async function fetchWorkday(slug) {
       if (info) {
         job.descriptionHtml = info.jobDescription ?? null;
         job.descriptionText = textOf(info.jobDescription);
+        // Read from the cheerio-stripped text, not the raw HTML — the corpus this was validated
+        // against (cycle 2572) was itself textOf'd, and the raw HTML still carries literal `&#xa;`
+        // that textOf turns into a space, which the label/window regexes assume.
+        const pay = workdaySalary(job.descriptionText);
+        job.salaryMin = pay.min;
+        job.salaryMax = pay.max;
+        job.salaryCurrency = pay.currency;
+        job.salaryInterval = pay.interval;
         job.employmentType = info.timeType ?? null;
         // `info.location` is Workday's own resolved single place for this requisition (it already
         // turns a list-level "2 Locations" into a real single value, e.g. okgov's
@@ -1252,7 +1330,12 @@ const SMARTRECRUITERS_DEFERRED = ['description'];
 // employmentType/department precedent), just never extended to location when 609 added Workday
 // geography. Reproduced live: okgov (bare county names) went from 10/10 rows with
 // `country: "United States"` unfiltered to 0 rows with `locationKeyword: "United States"` set.
-const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'published', 'location'];
+// 'salary' added cycle 2573: workdaySalary() only runs inside the same per-job detail call that
+// fills description/employmentType/department/published/location, so salaryMin/salaryMax/hasSalary
+// are exactly as late-populated as those fields, and the pre-filter at the kept-jobs loop above
+// would otherwise drop every Workday row on a salary filter before the detail call ever ran — the
+// same deferred-field bug class this Actor has already hit (and fixed) on each of the other 5.
+const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'published', 'location', 'salary'];
 // Workday's closed `timeType` vocabulary, already stripSep'd/lowercased to compare against
 // employmentTypeKeyword directly — see the warning at the company loop for the live evidence.
 const WORKDAY_TIME_TYPES = ['fulltime', 'parttime'];
@@ -1273,7 +1356,11 @@ const WORKDAY_TIME_TYPES = ['fulltime', 'parttime'];
 // instead of in the warning so this list and the fetchers can be diffed against each other; the
 // complement (greenhouse/ashby/lever/recruitee/breezy) is what the warning text offers as the
 // working alternative.
-const SALARY_BLIND_ATS = ['workable', 'teamtailor', 'personio', 'smartrecruiters', 'workday'];
+// 'workday' removed cycle 2573: workdaySalary() now actually fills salaryMin/salaryMax from its
+// pay-transparency prose, so it is no longer true that Workday's salary fields are always null —
+// see the per-board warning below, which now only fires for the 4 members that remain genuinely
+// blind at every stage.
+const SALARY_BLIND_ATS = ['workable', 'teamtailor', 'personio', 'smartrecruiters'];
 // Named the same way activeFilterNames() derives its list — from what this run actually SET — so
 // the warning can never name a filter the run did not use, or miss one it did.
 const salaryFilterNames = [
@@ -1308,8 +1395,13 @@ function passesFilters(job, deferred = []) {
     if (descriptionKeyword && !body.includes(descriptionKeyword)) return false;
     if (descriptionExcludeKeyword && body.includes(descriptionExcludeKeyword)) return false;
   }
-  if (hasSalary && job.salaryMin == null && job.salaryMax == null) return false;
-  if ((minSalary != null || maxSalary != null)) {
+  // ready('salary') added cycle 2573: on Workday, salaryMin/salaryMax only exist after the per-job
+  // detail call runs (workdaySalary() parses them from the description), so the pre-filter call at
+  // the kept-jobs loop (deferred=WORKDAY_DEFERRED, no job has been enriched yet) must not reject a
+  // posting for a still-null field it hasn't had the chance to fill — the exact deferred-field bug
+  // class this Actor already fixed for description/employmentType/department/published/location.
+  if (ready('salary') && hasSalary && job.salaryMin == null && job.salaryMax == null) return false;
+  if (ready('salary') && (minSalary != null || maxSalary != null)) {
     if (job.salaryMin == null && job.salaryMax == null) return false;
     const jobMin = job.salaryMin ?? job.salaryMax;
     const jobMax = job.salaryMax ?? job.salaryMin;
@@ -1386,30 +1478,23 @@ try {
         + ' exposed per posting. Use titleKeyword/descriptionKeyword for Workday companies instead.');
     }
     // Same upstream-caused silent-zero-row shape as the two employmentType cases above, on a
-    // different axis: five of the ten ATSes emit salaryMin/salaryMax as a hard-coded null for
+    // different axis: four of the ten ATSes emit salaryMin/salaryMax as a hard-coded null for
     // every posting (SALARY_BLIND_ATS — see the per-fetcher "leave null, don't guess" calls), so
     // ANY salary filter drops those whole boards. passesFilters cannot defer this the way it
     // defers description/location: the field is never populated at ANY stage, not merely late, so
     // there is nothing to fix in the filter and the only honest answer is to say so per board.
     // Warned here rather than left to zeroRowCauses because that message only fires when the run
-    // matched NOTHING AT ALL — on a mixed list (e.g. greenhouse + workday) the salary-capable
+    // matched NOTHING AT ALL — on a mixed list (e.g. greenhouse + workable) the salary-capable
     // boards return rows, totalMatched > 0, and the blind boards contribute 0 completely silently.
+    // Workday is NOT in SALARY_BLIND_ATS (removed cycle 2573): workdaySalary() now fills
+    // salaryMin/salaryMax from its pay-transparency prose, so this clause no longer fires for it.
     if (salaryFilterNames.length && SALARY_BLIND_ATS.includes(result.detectedAts ?? ats)) {
       const board = result.detectedAts ?? ats;
-      // Workday gets its own clause rather than the shared one below: unlike the other 4 members
-      // of SALARY_BLIND_ATS, its postings often DO carry a real pay figure (pay-transparency law,
-      // not the API), just as free text this Actor doesn't parse — see the SALARY_BLIND_ATS
-      // comment above for the live measurement. Saying "do not publish compensation" without that
-      // caveat would tell a buyer there is nothing to find, when descriptionKeyword usually can.
-      const workdayNote = board === 'workday'
-        ? ' Workday itself has no compensation field, but many employers write a real pay figure'
-          + ' into the free-text job description anyway (increasingly common under pay-transparency'
-          + ' law) — descriptionKeyword can match that text even though salaryMin/salaryMax cannot.'
-        : '';
       log.warning(`${board}:${slug} — ${board} boards do not publish compensation as a structured`
-        + ` field, so ${salaryFilterNames.join('/')} drops every posting on this board.${workdayNote}`
-        + ' Salary filters only work on greenhouse/ashby/lever/recruitee/breezy boards; drop the'
-        + ' salary filter for this company, or filter its pay text with descriptionKeyword.');
+        + ` field, so ${salaryFilterNames.join('/')} drops every posting on this board.`
+        + ' Salary filters only work on greenhouse/ashby/lever/recruitee/breezy/workday boards;'
+        + ' drop the salary filter for this company, or filter its pay text with'
+        + ' descriptionKeyword.');
     }
     let scannedForCompany = 0;
     let deliveredForCompany = 0;
