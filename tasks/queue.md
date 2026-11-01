@@ -280,6 +280,8 @@
       still have it rather than deleting the enum value (the value stays valid API vocabulary and
       new rows can appear at any time). Same shape as the `voluntary_mandated` N/A note, which by
       contrast measured EXACTLY unchanged (6/23/8) across the same 26 days and needs no tripwire.
+      **Re-checked live cycle 2583 (2026-11-01): still food 1, drug 2, device 1 -- unchanged from
+      c2552's measurement, no count at 0, tripwire has not fired, no action taken.**
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
@@ -569,6 +571,17 @@
 - [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
       not just this one. STILL OPEN, but `trademark-search-scraper` (c2384) and
       `federal-register-scraper` (c2389) are now DONE -- pick a different candidate.**
+      **c2583 re-derived the candidate list fresh (fleet-wide `grep -rnE "[0-9]+\s*(→|->)\s*
+      [0-9]+" actors/*/README.md`) and found no new qualifying candidate: the only Actors whose
+      README carries ANY N->M arrow near "listing"/"match" text are `ats-jobs-scraper`,
+      `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `remote-jobs-scraper` and
+      `us-federal-awards-scraper`, and all five show "no new undercutter" narratives from spot-
+      resweeps within the last ~5-20 cycles (remote-jobs-scraper cycle 2376, fec cycle 2375,
+      clinicaltrials/us-federal-awards/ats-jobs all re-verified within October) rather than the
+      specific "stated README count is stale behind a RISING live total" gap this method targets.
+      None had a parseable stale count worth a fresh six-step pass today. Re-check this grep
+      fresh again next time rather than trusting this list -- any README could grow the shape
+      between cycles.
       c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
       unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
       sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
