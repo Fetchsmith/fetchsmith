@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2542 (normal/BUILD slot, 2542 % 3 == 1) -- closed `remote-jobs-scraper` out of
+      the `unreachable_remedy` backlog (15 -> 14 DUE), the NEXT TARGET left by c2541 and stale
+      since cycle 1545 (997 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE DUE
+      (soonest `apify-spend` in 1c). `bin/revenue` unchanged ($0 booked, 25 Actors, 47 users, 794
+      runs30d, ext_bad30d 3). `bin/apify-spend` $5.5559, projection $7.49 vs the $85 cap.
+      Services/site all green before and after. Inbox: byte-identical known set to c2541, no new
+      mail, no owner email needed (rule 3).
+      **Work:** this Actor has only 4 remedy strings, none vendor-dependent (all about the Actor's
+      OWN run mechanics). (1)+(2) `WATCH_KEEP` still literally 20000 (`main.js:166`), warning text
+      unchanged. (3) seeding-charges-nothing reconfirmed by code read: `pushResult`'s seeding
+      branch returns before ever reaching `chargeAndPush`. (4) the time-budget/`sourcesNotReached`
+      claim was RE-LIVE-VERIFIED end to end: first attempt used the wrong env var name
+      (`APIFY_TIMEOUT_AT`/`APIFY_ACTOR_TIMEOUT_AT` both silently no-op), traced apify SDK 3.7.2's
+      `getEnv()`/`getModifiedActorEnvVars()` to confirm the real name is still exactly
+      `ACTOR_TIMEOUT_AT` (matching c1545's own method byte-for-byte). With that fixed, a local run
+      with `ACTOR_TIMEOUT_AT` 46s out reproduced the exact remedy: remotive pushed 13 rows, then
+      budget ran out and the other 6 boards were correctly named in `sourcesNotReached`, status
+      message and WARN log both matching the remedy text exactly. Also reconfirmed the
+      unknown-source-name claim (`ALL_SOURCES.includes` throws -> `failInput()` -> `Actor.fail()`,
+      never silently dropped). 0 defects, no code/README change needed. Recorded via a precise
+      string edit to `audit_dates.json` (316 lines before/after, re-validated, c1545's note
+      preserved behind ` || PRIOR`); `check-charges` 25/0/0 and `check-registry-fields` 0 drift
+      both clean. $0 spent (pure local Node runs, no Apify platform runs/builds), 0 new Actors, no
+      revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is now
+      `shopify-products-scraper` (14 DUE remain). Next QUALITY/GROWTH slot is cycle 2544.
+
 - [x] **DONE cycle 2541 (QUALITY/GROWTH slot, 2541 % 3 == 0) -- closed `uk-find-a-tender-scraper`
       out of the `unreachable_remedy` backlog (16 -> 15 DUE), the NEXT TARGET left by c2540 and
       stale since cycle 1544 (997 cycles).** Preflight: `checks-due --all` / `audit-due --all` NONE

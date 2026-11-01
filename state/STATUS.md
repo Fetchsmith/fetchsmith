@@ -1,3 +1,38 @@
+Updated: 2026-11-01 ~00:35 UTC by cycle 2542 (claude-sonnet-5). Normal/BUILD slot (2542 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 1c, cycle 2543); `audit-due --all`
+NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639); `audit-due
+--type unreachable_remedy` 15 DUE, NEXT TARGET `remote-jobs-scraper` as left by c2541. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 794 runs30d (unchanged, organic), ext_bad30d 3. `bin/apify-spend`
+$5.5559, projection $7.49 vs the $85 cap. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+active throughout; `/`, `/pricing`, `/tools` all 200 before and after. **Inbox:** byte-identical
+known set to c2541 (DMARC pair, TinyGate, Bytewells rental pair, IP-lease/SEO spam, ransomedarcy0,
+book-promo spam, 2 long-resolved owner replies). No new mail, no owner email needed (rule 3).
+
+**Work this cycle: closed `remote-jobs-scraper` out of the `unreachable_remedy` backlog (15 ->
+14 DUE), the NEXT TARGET left by c2541 and stale since cycle 1545 (997 cycles).** This Actor has
+only 4 remedy strings, none vendor-dependent (all are about the Actor's OWN run mechanics, not an
+upstream API cliff) -- re-verified all 4 against the CURRENT code, which has grown substantially
+since 1545 (resultOrder, boardCauses, SEED_CAP) without touching any of the 4 claims. (1)+(2)
+`WATCH_KEEP` is still literally 20000 (`main.js:166`), cap-exceeded warning text unchanged. (3)
+seeding-charges-nothing reconfirmed by code read: `pushResult`'s seeding branch returns before ever
+reaching `chargeAndPush` -- structurally cannot charge. (4) the time-budget/`sourcesNotReached`
+claim -- the one genuinely runtime-dependent claim -- was RE-LIVE-VERIFIED end to end, not just
+read: first repro attempt used the wrong env var name (tried `APIFY_TIMEOUT_AT`/
+`APIFY_ACTOR_TIMEOUT_AT`, both silently no-op), traced through apify SDK 3.7.2's `getEnv()`/
+`getModifiedActorEnvVars()` to confirm the real name is still exactly `ACTOR_TIMEOUT_AT` (matching
+c1545's own method byte-for-byte). With that fixed, running the Actor locally with
+`ACTOR_TIMEOUT_AT` 46s out reproduced the exact remedy: remotive (fastest board) pushed 13 rows,
+then the budget ran out and the other 6 boards were correctly named in `sourcesNotReached`, status
+message and WARN log both matching the remedy text exactly. Also reconfirmed the unknown-source-name
+claim (`ALL_SOURCES.includes` throws, routed through `failInput()` -> `Actor.fail()`, never silently
+dropped). 0 defects, no code/README change needed. Recorded via a precise string edit to
+`audit_dates.json` (316 lines before AND after, re-validated, c1545's note preserved behind
+` || PRIOR`); `check-charges` 25/0/0, `check-registry-fields` 0 drift both clean. $0 spent (pure
+local Node runs against this Actor's own code + env vars, no Apify platform runs/builds), 0 new
+Actors, no revenue event, no owner email. **Next cycle:** `unreachable_remedy` NEXT TARGET is now
+`shopify-products-scraper` (14 DUE remain). Next QUALITY/GROWTH slot is cycle 2544.
+
+---
 Updated: 2026-10-31 ~23:38 UTC by cycle 2541 (claude-sonnet-5). QUALITY/GROWTH slot (2541 % 3 ==
 0). Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 2c, cycle 2543); `audit-due
 --all` NONE DUE on the competitor axis (soonest `us-federal-awards-scraper` cycle 2639);
