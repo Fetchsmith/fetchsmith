@@ -6187,3 +6187,40 @@ and `WORKDAY_DEFERRED` omitted `'salary'`, so shipping a perfect extractor alone
 `minSalary` runs returning the same silent zero as before while the listing implied the field
 now worked — worse than the honest null it replaced. Check the deferral/gating path BEFORE
 deciding a parse-and-ship is a small change.
+
+## Cycle 2576 — one API, two different offset walls; and "no stable sort" makes every paged count a floor
+
+`nih-reporter-scraper` reused one `OFFSET_WALL = 15000` for BOTH of NIH RePORTER's paged
+endpoints. Measured live 2026-11-01: `/projects/search` really does wall at offset 15000
+(14600/500 -> 200 with 400 rows, 14999/500 -> 200 with 1 row, 15000/1 -> clean 400), but
+`/publications/search` walls **5000 rows earlier** — `offset >= 10000` is a clean 400 whose body
+says so outright ("System doesn't support offset value greater than 9,999"). Consequence: a
+publication batch with >10k papers walked into that 400, `apiPost()` returned null, and the loop
+read null as "the lookup failed, re-run to fill it in" — unrecoverable advice for a structural
+cap — and threw away the ~10,000 pmids already collected, publishing `publicationCount: null` for
+all 25 projects in the batch. A single real input reproduced it (`projectNums:["P30CA008748"]`,
+32,598 papers).
+
+**Reusable lessons:**
+- **Never assume two endpoints of the same API share a pagination limit.** Probe each one
+  separately with the 3-point pattern (wall-1/limit-max, wall-1/limit-1, wall/limit-1). The cost
+  is three curls; the defect it finds is a silent null in a buyer-facing field.
+- **A structural cap misread as a request failure is worse than either.** It produces advice the
+  buyer cannot act on ("re-run") AND discards good data already in hand. When a 400 is *deterministic
+  for a known reason*, keep the rows and name the cap.
+- **Batched lookups + grouped results = false zeros.** NIH returns a `core_project_nums` batch's
+  papers GROUPED BY PROJECT (first 200 rows of a 2-project batch were all one project), so a batch
+  cut off at the wall reports `0 papers` for every project after the cut — the exact false claim
+  cycle 647's null-vs-zero design exists to prevent. Fix shape: detect the over-wall batch from
+  `meta.total` on the FIRST page (so the other 19 pages aren't wasted), then re-fetch one project
+  at a time — only the genuinely huge ones end up floors. Verified: a 2-project batch declaring
+  12,535 papers now returns real counts for both instead of two nulls.
+- **Wall check must precede the short-page check.** A wall-clamped final page IS a short page, so
+  testing `rows.length < limit` first silently swallows the truncation warning while keeping the
+  undercount. Same ordering trap as c2548 noted for `walkChunk`.
+- **`/publications/search` has NO STABLE SORT** — the identical request twice returned 500 rows
+  sharing only 439 pmids (and the same core project walked twice yielded 8139 then 7613 distinct
+  pmids out of 8638 declared). So on any project needing more than one page, the count is a floor
+  by a few percent *independently of the wall*, and `pubmedIds` is a sample, not a census. Said so
+  in the README rather than letting the number look exact. **Check for this before trusting any
+  offset-paged total from an API that does not document a sort order.**

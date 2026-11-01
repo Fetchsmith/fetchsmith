@@ -58,11 +58,26 @@ const API = 'https://api.reporter.nih.gov/v2';
 // 200 with 400 rows; offset 14999 limit 500 -> 200 with 1 row). So clamping `limit` to
 // OFFSET_WALL - offset (what walkChunk does) is not what keeps us out of a 400 -- staying below
 // offset 15000 is -- and a loop that instead STOPS when offset + PAGE_LIMIT would cross the wall
-// leaves up to 499 genuinely reachable rows unfetched. fetchPublications() below does exactly
-// that; see queue.md (c2548) for that follow-up. Do not "simplify" walkChunk's clamp away on the
-// theory that the API rejects the overshoot: it does not, it truncates.
+// leaves up to 499 genuinely reachable rows unfetched. Do not "simplify" walkChunk's clamp away on
+// the theory that the API rejects the overshoot: it does not, it truncates.
+// CYCLE 2576: fetchPublications() used to do both things wrong -- it broke on
+// `offset + PAGE_LIMIT > OFFSET_WALL` AND it reused the projects wall for the publications
+// endpoint, which actually walls 5000 rows earlier (see PUB_OFFSET_WALL). So a batch with >10000
+// papers walked straight into a hard 400 at offset 10000, which apiPost() reports as a null page
+// and the loop misread as "the lookup failed, re-run to fill it in" -- unrecoverable advice for a
+// structural cap, and it threw away the ~10000 pmids already in hand. Both are fixed below.
 const PAGE_LIMIT = 500;
 const OFFSET_WALL = 15000;
+// SEPARATE, LOWER WALL ON /publications/search (measured live cycle 2576 -- this is NOT the same
+// number as OFFSET_WALL and the difference is a real defect if you reuse one for the other). The
+// publications endpoint rejects `offset` >= 10000 with a clean HTTP 400 whose own body says so
+// ("System doesn't support offset value greater than 9,999"), while offset 9999 limit 500 is
+// served 200 and truncated to 1 row. Measured on core_project_nums=[P30CA008748] (32598 papers):
+// offset 9500/500 -> 200 with 500 rows; 9999/500 -> 200 with 1 row; 9999/1 -> 200; 10000/1 -> 400;
+// 10000/500 -> 400. The projects endpoint re-measured the same cycle still walls at 15000
+// (14600/500 -> 200 with 400 rows, 14999/500 -> 200 with 1 row, 15000/1 -> 400), so the two
+// endpoints genuinely differ by 5000.
+const PUB_OFFSET_WALL = 10000;
 const SPLIT_AT = 14500; // leave headroom: `total` drifts slightly between the probe and the walk
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -791,25 +806,31 @@ async function fetchPublications(coreNums) {
     // page silently became "this project produced no papers", which is a claim about PubMed that a
     // timeout cannot support (and the exact number a research-funding buyer filters on).
     const unknown = new Set();
-    for (let i = 0; i < coreNums.length; i += PUB_BATCH) {
-        const batch = coreNums.slice(i, i + PUB_BATCH);
+
+    // Walk one core_project_nums batch to the publications wall, filling `map`. Returns WHY it
+    // stopped so the caller can tell the three outcomes apart -- they need different handling and
+    // the old single loop conflated all of them into "failed":
+    //   'ok'        -- NIH answered every page and the last one was genuinely short.
+    //   'failed'    -- a page never answered (timeout/5xx); the batch's counts are UNKNOWN.
+    //   'split'     -- meta.total says this batch cannot fit under the wall. Only ever returned
+    //                  for a multi-project batch, and returned on the FIRST page so the other 19
+    //                  pages are not wasted before re-fetching per project.
+    //   'truncated' -- a single project really does have more papers than the wall can reach;
+    //                  its count is a floor and nothing else can be done about it.
+    async function walkPubBatch(batch, allowSplit) {
         let offset = 0;
         let batchTotal = null;
         for (;;) {
+            // Clamp the page to the wall rather than stopping short of it: a page that CROSSES
+            // the wall is served 200-and-truncated, so the clamp is what makes the last ~499
+            // reachable rows reachable. offset < PUB_OFFSET_WALL is guaranteed here, so limit >= 1.
+            const limit = Math.min(PAGE_LIMIT, PUB_OFFSET_WALL - offset);
             const page = await apiPost('/publications/search', {
                 criteria: { core_project_nums: batch },
-                limit: PAGE_LIMIT,
+                limit,
                 offset,
             });
-            if (page === null) {
-                pubBatchesFailed += 1;
-                for (const c of batch) unknown.add(c);
-                log.warning(
-                    `Publication lookup failed for ${batch.length} project(s) (${lastApiError}); their publicationCount `
-                    + 'is reported as null, not 0 -- the papers may well exist. Re-run to fill them in.',
-                );
-                break;
-            }
+            if (page === null) return { status: 'failed', total: batchTotal };
             if (typeof page?.meta?.total === 'number') batchTotal = page.meta.total;
             const rows = listOf(page?.results);
             for (const r of rows) {
@@ -818,19 +839,58 @@ async function fetchPublications(coreNums) {
                 map.get(r.coreproject).add(r.pmid);
             }
             offset += rows.length;
-            if (rows.length < PAGE_LIMIT) break;
-            if (offset + PAGE_LIMIT > OFFSET_WALL) {
-                // The same 15000-row offset wall as the project search. Reaching it here means the
-                // batch's papers are undercounted, so say so instead of returning a short count.
-                if (batchTotal === null || offset < batchTotal) {
-                    pubBatchesTruncated += 1;
-                    log.warning(
-                        `Publication lookup for ${batch.length} project(s) hit NIH's ${OFFSET_WALL}-row offset wall at `
-                        + `${offset} of ${batchTotal ?? 'an unknown number of'} paper(s); their publicationCount is a floor, not a total.`,
-                    );
-                }
-                break;
+            if (allowSplit && batchTotal !== null && batchTotal > PUB_OFFSET_WALL) {
+                return { status: 'split', total: batchTotal };
             }
+            // WALL CHECK BEFORE THE SHORT-PAGE CHECK: a wall-clamped final page IS a short page,
+            // so testing `rows.length < limit` first would swallow the truncation signal and
+            // report a floor count as a total.
+            if (offset >= PUB_OFFSET_WALL) {
+                const hitWall = batchTotal === null || offset < batchTotal;
+                return { status: hitWall ? 'truncated' : 'ok', total: batchTotal };
+            }
+            if (rows.length < limit) return { status: 'ok', total: batchTotal };
+        }
+    }
+
+    function reportFailed(batch) {
+        pubBatchesFailed += 1;
+        for (const c of batch) unknown.add(c);
+        log.warning(
+            `Publication lookup failed for ${batch.length} project(s) (${lastApiError}); their publicationCount `
+            + 'is reported as null, not 0 -- the papers may well exist. Re-run to fill them in.',
+        );
+    }
+
+    function reportTruncated(core, total) {
+        pubBatchesTruncated += 1;
+        log.warning(
+            `Publication lookup for ${core} hit NIH's ${PUB_OFFSET_WALL}-row publications offset wall at `
+            + `${PUB_OFFSET_WALL} of ${total ?? 'an unknown number of'} paper(s); its publicationCount is a floor, `
+            + 'not a total. There is no cursor on this endpoint, so the rest cannot be reached.',
+        );
+    }
+
+    for (let i = 0; i < coreNums.length; i += PUB_BATCH) {
+        const batch = coreNums.slice(i, i + PUB_BATCH);
+        const res = await walkPubBatch(batch, batch.length > 1);
+        if (res.status === 'failed') { reportFailed(batch); continue; }
+        if (res.status === 'truncated') { reportTruncated(batch[0], res.total); continue; }
+        if (res.status !== 'split') continue;
+        // NIH returns a batch's papers GROUPED BY PROJECT (verified live c2576: the first 200 rows
+        // of a 2-project batch were all one project), so a batch cut off at the wall is NOT a
+        // uniform undercount -- every project after the cut gets ZERO rows and would be published
+        // as `publicationCount: 0`, i.e. a false "this project produced no papers" claim. Re-fetch
+        // each project on its own: all but the genuinely huge ones then come back complete.
+        log.info(
+            `Publication lookup for ${batch.length} project(s) declares ${res.total} paper(s), past the `
+            + `${PUB_OFFSET_WALL}-row wall; re-fetching them one project at a time so only the projects that `
+            + 'really are over the wall report a floor.',
+        );
+        for (const core of batch) {
+            const one = await walkPubBatch([core], false);
+            if (one.status === 'failed') reportFailed([core]);
+            else if (one.status === 'truncated') reportTruncated(core, one.total);
         }
     }
     return { map, unknown };

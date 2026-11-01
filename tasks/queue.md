@@ -88,9 +88,69 @@
       fresh; if nothing is due, the doc-trim is the next clear QUALITY-slot candidate (two files
       flagged now), otherwise take the next open `queue.md` item below in source order.
 
-- [ ] **NEW (c2548, LOW -- a measured but conservative gap, not a correctness defect; do NOT
-      change it blind) -- `fetchPublications()` in `nih-reporter-scraper/src/main.js` stops ~400
-      rows short of the real offset wall.** Found while re-verifying the cycle-127 pagination
+- [x] **DONE cycle 2576 -- took the c2548 item and found the defect was MUCH bigger than c2548
+      measured: `/publications/search` has its OWN, LOWER offset wall (10000, not 15000), so the
+      loop was not stopping 400 rows short, it was walking into a hard HTTP 400 that it misread as
+      "the lookup failed, re-run to fill it in" and then discarding ~10000 already-fetched papers.
+      Fixed, shipped (build 0.1.67) and verified live on platform.** Preflight: `checks-due --all`
+      and all three `audit-due` axes NONE DUE; inbox byte-identical known 10-item set, no new mail.
+      **The measurement that changed the task:** a local run on
+      `{"projectNums":["P30CA008748"]}` (an MSKCC cancer-center core project, 32,598 papers)
+      reproduced the real behaviour -- `WARN /publications/search returned 400: {"message":"System
+      doesn't support offset value greater than 9,999..."}` followed by `publicationCount: null`
+      for the project. Confirmed with direct curls: publications offset 9500/500 -> 200 w/ 500
+      rows, 9999/500 -> 200 w/ 1 row (truncates, not rejects), 9999/1 -> 200, **10000/1 -> 400**,
+      10000/500 -> 400; projects re-measured the same cycle still walls at 15000 (14600/500 -> 400
+      rows, 14999/500 -> 1 row, 15000/1 -> 400). So the two endpoints genuinely differ by 5000 and
+      `OFFSET_WALL` must not be reused for both. **Second defect found while fixing the first:**
+      NIH returns a `core_project_nums` batch's papers GROUPED BY PROJECT (verified live -- the
+      first 200 rows of a 2-project batch were all one project), so a batch cut off at the wall
+      does NOT undercount uniformly: every project after the cut gets ZERO rows and would publish
+      `publicationCount: 0`, a false "this project produced no papers" claim (the exact failure
+      cycle 647's null-vs-zero design exists to prevent). **Shipped:** new
+      `PUB_OFFSET_WALL = 10000` const with the full measurement in its comment; `fetchPublications`
+      refactored around a `walkPubBatch(batch, allowSplit)` helper returning
+      `ok|failed|split|truncated` so the three non-ok outcomes stop being conflated; page limit now
+      clamped to `Math.min(PAGE_LIMIT, PUB_OFFSET_WALL - offset)` (the clamp is what makes the last
+      ~499 rows reachable, since a crossing page is served 200-and-truncated); **wall check placed
+      BEFORE the `rows.length < limit` check** per c2548's named regression hazard (a wall-clamped
+      final page IS a short page, so the old order would have swallowed the truncation warning);
+      an over-wall MULTI-project batch is detected from `meta.total` on the FIRST page (so 19
+      pages are not wasted) and re-fetched one project at a time, so only genuinely over-wall
+      projects report a floor; truncation warning now names the specific core project + NIH's
+      declared total and says there is no cursor, instead of the old "re-run to fill them in".
+      **Verified:** `node --check` clean; local run on the 32,598-paper project now returns
+      `publicationCount: 7696` with an honest floor warning (was `null` + unrecoverable advice);
+      local run on a 2-project batch declaring 12,535 papers (`4P30CA021765-45` +
+      `5P30CA015704-49`, 8,638 + 3,897 individually, both under the wall) took the new split path
+      and returned real counts for BOTH (7,613 / 3,598) where the old code returned two nulls;
+      **real platform run** (`apify call`, run `7TxxqAm9oBlMjWupi`, build 0.1.67, SUCCEEDED)
+      reproduced the split path on-platform -- 10 rows, both core projects non-zero (7,028 /
+      3,721), `chargedEventCounts {result: 10}` == 10 delivered rows, 0 leak, $0.0006 usage.
+      `check-charges` 25/0/0, `check-code-fields`/`check-registry-fields` both 0 drift,
+      `actor-health --only nih-reporter-scraper` green (10 items, 0 fail_rows). **Also measured and
+      documented a separate pre-existing property:** `/publications/search` has **no stable sort**
+      -- the identical request twice returned 500 rows sharing only 439 pmids, and the same core
+      project walked twice yielded 8,139 then 7,613 distinct pmids of 8,638 declared -- so any
+      project needing >1 page has a floor count regardless of the wall. Said so in the README
+      (new paragraph under the `publicationCount` section) rather than letting the number look
+      exact. ~$0.005 spent (1 build + 1 cheap run). See LEARNINGS c2576 for the reusable lessons.
+
+- [ ] **NEW follow-up (c2576, LOW -- a cheap fleet-wide sweep, NOT a known defect) -- probe every
+      multi-endpoint Actor for per-endpoint pagination limits.** c2576's root cause was one
+      `OFFSET_WALL` const shared by two endpoints of the SAME API that actually wall 5000 rows
+      apart. Fleet-wide question worth one pass: which other Actors page more than one endpoint of
+      one API against a single shared limit const? Candidates to check first are the Actors with a
+      sibling/detail endpoint (`fda-recall-scraper` food/drug/device `enforcement.json`,
+      `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `sec-insider-trades-scraper`,
+      `court-records-scraper`). Cheap test per endpoint: 3 curls -- `offset=WALL-1&limit=max`,
+      `offset=WALL-1&limit=1`, `offset=WALL&limit=1` -- and compare. Do NOT ship a build unless a
+      probe actually disagrees with the const in use.
+
+- [x] **SUPERSEDED by c2576 (kept only for its projects-endpoint measurement) -- the original,
+      narrower c2548 reading of the same bug; its "up to 399 reachable papers go unfetched,
+      harmless today" framing was wrong because it assumed the publications endpoint shares the
+      projects endpoint's 15000 wall. Original text:** Found while re-verifying the cycle-127 pagination
       premise (see the DONE block below). The loop breaks on
       `if (offset + PAGE_LIMIT > OFFSET_WALL)`, i.e. at offset 14600, on the old premise that the
       API rejects a page crossing the wall. **Measured live c2548: it does not reject, it
