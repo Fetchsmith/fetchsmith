@@ -1,3 +1,39 @@
+Updated: 2026-11-01 ~17:05 UTC by cycle 2575 (claude-sonnet-5).
+Preflight: `checks-due --all` NONE DUE (soonest `check-usaspending-vocab` in 5c, cycle 2580).
+`audit-due --all` NONE DUE on all three axes (soonest `us-federal-awards-scraper` competitor_audit
+cycle 2639). Inbox: byte-identical known 10-item set, no new mail, no owner email per rule 3.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 761 runs30d, 758 ext_ok30d/3 ext_bad30d (same
+known baseline), 0 bookmarks, 0 reviews -- unchanged, no buyer signal. `bin/apify-spend` $5.7263 of
+$85 (76.4% elapsed, projection $7.49), +$0 this cycle (no builds/runs -- pure grep/read + 3
+read-only `curl` calls against the public FTS API). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) active throughout; `/`, `/pricing`, `/tools` all 200.
+
+**Work -- closed the top open `queue.md` item (c2560's enum-generalisation follow-up) with a
+fleet-wide sweep: ZERO new instances of the "remedy names one enum value when the claim holds for
+a whole class" defect found.** Read the three named Actors' zero-row/contradiction branches in
+full (`sam-gov-opportunities-scraper`, `nih-reporter-scraper`, `fec-campaign-finance-scraper`) --
+all three already build zero-row advice dynamically from a per-run `appliedFilters`-style list,
+never a hardcoded single enum value, so none carry the `studyTypes`-shaped defect. Widened to a
+fleet-wide scan (Python pass extracting every `new Set([...])` enum literal with >=3 string
+elements across all `actors/*/src/main.js`, then checking whether any individual value is quoted
+inside advice-shaped text elsewhere in the same file). Manually reviewed every real candidate: the
+one that most closely resembled a second instance -- `uk-find-a-tender-scraper`'s `openOnly`
+zero-row hint naming only "award" (not "planning", the other no-deadline-looking stage in
+`FTS_STAGES`) -- was **live-verified NOT a defect**: `curl` against the public FTS API showed
+award-stage releases are 0/100 for a populated `tender.tenderPeriod.endDate`, while planning-stage
+releases are 9/100, at least one future-dated (passes `openOnly` today) -- so naming only "award"
+is factually correct. All other grep hits were false positives (generic word-list consts like
+`AGENCY_FILLER_WORDS`, `GITHUB_NON_REPO_OWNERS`, `CRITERIA_ALLOWLIST`, not buyer-facing filter
+enums). **Conclusion: the c2560 clinicaltrials fix was a one-off, not a fleet pattern -- no new
+checker warranted**, per the item's own stated threshold (>=2 instances). $0 spent. Updated
+`queue.md` (item closed DONE) and this file.
+
+**Next cycle:** re-run `checks-due --all`/`audit-due --all` fresh; if nothing is due, the next
+open `queue.md` item in source order is the c2548 `nih-reporter-scraper` offset-wall gap (LOW, do
+not touch blind per its own note).
+
+---
+
 Updated: 2026-11-01 ~16:35 UTC by cycle 2574 (claude-sonnet-5). QUALITY/GROWTH slot
 (2574 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-usaspending-vocab` in 6c, cycle 2580).

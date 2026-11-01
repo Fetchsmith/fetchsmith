@@ -1,16 +1,42 @@
-- [ ] **NEW follow-up (c2560, LOW -- a cheap generalisation of this cycle's finding, do on a
-      QUALITY slot).** The defect shape was: **a remedy string that names ONE value of an enum when
-      the claim actually holds for a WHOLE CLASS of that enum's values.** `studyTypes` has three
-      values; the advice named one (OBSERVATIONAL) and silently excluded the buyer who picked the
-      other equally-affected one (EXPANDED_ACCESS). Worth one grep-and-read pass over the fleet's
-      other zero-row/contradiction strings for the same shape -- any remedy that hard-codes a single
-      enum value inside a claim about a structural property should be checked against every value of
-      that enum, not just the one the author happened to test. `bin/check-zero-row-message` cannot
-      see this (it only checks a `pushed===0` branch SETS a message, not whether the message's claim
-      is complete), so this is a read, not a new checker, unless the pass finds >=2 more instances --
-      then it is worth a real check. Start with the Actors whose enums have 3+ values and whose
-      zero-row advice names one of them: `sam-gov-opportunities-scraper`,
-      `fec-campaign-finance-scraper`, `nih-reporter-scraper`.
+- [x] **DONE cycle 2575 -- closed the c2560 enum-generalisation follow-up: fleet-wide grep-and-read
+      pass found ZERO new instances of the defect shape, so per the item's own threshold ("worth a
+      real check" only if >=2 found) no new checker is warranted.** Preflight: `checks-due --all`
+      and all three `audit-due` axes read NONE DUE; inbox byte-identical known 10-item set, no new
+      mail. Read the three named Actors' zero-row/contradiction branches end-to-end
+      (`sam-gov-opportunities-scraper:2273-2487`, `nih-reporter-scraper:1462-1506`,
+      `fec-campaign-finance-scraper:1220-1346`) -- all three build their zero-row advice dynamically
+      from an `appliedFilters`-style list assembled per-run from whichever filters actually apply to
+      the resolved `dataType`/`searchMode`, never a hardcoded single enum value, so none carry the
+      studyTypes-shaped defect. Widened to a fleet-wide scan (a Python pass over every
+      `actors/*/src/main.js` extracting `new Set([...])` enum literals with >=3 string elements, then
+      checking whether any individual value is quoted inside advice-shaped text elsewhere in the same
+      file) to catch cases outside the three named Actors; manually reviewed every real candidate it
+      surfaced (`clinicaltrials-scraper` STATUSES/STUDY_TYPES -- only the already-fixed c2560 comment,
+      no second live defect; `federal-register-scraper` PRESIDENTIAL_DOCUMENT_TYPES -- the PRESDOCU
+      zero-row logic already checks "every other type", not one value; `sec-insider-trades-scraper`
+      OWNERSHIP_FORMS -- the Form-3-holdings warning already handles the `form3Mixed` multi-value
+      case explicitly; `uk-find-a-tender-scraper` FTS_STAGES -- the openOnly zero-row hint names only
+      "award" as structurally deadline-less, which LOOKED like the same shape since FTS_STAGES also
+      has `planning`, so **live-verified it is NOT a defect**: `curl
+      'https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages?stages=award&limit=100'`
+      -> 0/100 releases have `tender.tenderPeriod.endDate` (award stage genuinely never carries a
+      deadline), while the same query with `stages=planning` -> 9/100 DO have a populated
+      `endDate`, at least one of them future-dated (`2026-11-09`, i.e. passes `openOnly` today) --
+      so naming only "award" in the hint is factually correct, not an omission; all other grep hits
+      were false positives from generic word lists (`AGENCY_FILLER_WORDS`, `LOWER_WORDS`,
+      `GITHUB_NON_REPO_OWNERS`, `NON_TICKER_ACRONYMS`, `CRITERIA_ALLOWLIST`, `INLINE_TAGS`,
+      `SEED_FATAL_SHORTFALLS`) whose "enum values" are common English words or internal state
+      tags, not buyer-facing filter enums. **Conclusion: the fleet's zero-row/contradiction advice
+      is already either dynamically assembled per-run or correctly scoped to the actual affected
+      subset -- the c2560 clinicaltrials fix was evidently a one-off, not a pattern, so no new
+      checker is written.** $0 spent (pure grep/read + 3 read-only `curl` calls against the public
+      FTS API). `bin/revenue`: $0 booked, 25 public Actors, 47 users, 761 runs30d, 758
+      ext_ok30d/3 ext_bad30d (same known baseline), 0 bookmarks, 0 reviews -- unchanged, no buyer
+      signal, no owner email per rule 3. `bin/apify-spend` $5.7263 of $85 (76.4% elapsed, projection
+      $7.49), +$0 this cycle. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active
+      throughout; `/`, `/pricing`, `/tools` all 200. **Next cycle:** re-run `checks-due --all`/
+      `audit-due --all` fresh; if nothing is due, the next open `queue.md` item in source order is
+      the c2548 `nih-reporter-scraper` offset-wall gap (LOW, do not touch blind per its own note).
 
 - [x] **DONE cycle 2573 (continuation of c2557/c2572) -- shipped the 4 coordinated edits that
       wire Workday pay-in-prose extraction end-to-end; build 0.1.115 live, verified on all 3
