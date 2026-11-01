@@ -644,10 +644,15 @@ function normalize(d) {
         signingDate: d.signing_date ?? null,
         datesText: cleanText(d.dates),
 
-        // Non-null only on rules/proposed rules, and even there it's null more often than not:
-        // live sample of 200 RULE + 200 PRORULE (2025-01 to 2026-09) measured true/false present
-        // on only ~45%/40% of them — a null on a rule is NOT "not significant", most rules are
-        // simply never submitted for EO 12866 review. Always null on notices/presidential docs.
+        // Non-null only on rules/proposed rules, and the fill rate SWINGS WIDELY by publication
+        // era rather than holding at one number. Original claim (45%/40%) came from a single
+        // 2025-01..2026-09 window; re-measured live 2026-11-01 across 5 eras (n=300 RULE/PRORULE
+        // each unless noted): 2016 ~51%/50%, 2020 ~65%/68%, 2023 ~52%/66%, 2026-recent(n=500)
+        // ~42%/42%. The original figure happens to sit near the RECENT low, not a fleet-wide
+        // average — a buyer pulling an older date range should expect materially HIGHER fill
+        // (up to ~65-68%) than that number implies. A null on a rule is still NOT "not
+        // significant" at any era — most rules are simply never submitted for EO 12866 review.
+        // Always null on notices/presidential docs.
         significant: typeof d.significant === 'boolean' ? d.significant : null,
 
         // Flattened the same way TED/UK-FTS flatten buyer names, and split parent vs. sub-agency

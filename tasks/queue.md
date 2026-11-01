@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2554 (normal slot, 2554 % 3 == 1) -- closed `federal-register-scraper` out of
+      the `unreachable_remedy` backlog (6 -> 5 DUE), the NEXT TARGET per `audit-due`. NO
+      reachability defect, but a real stale buyer-facing percentage fixed: a flat 45%/40%
+      `significant`-field coverage claim actually swings 23+ points by publication era.**
+      Preflight: no fleet checks or competitor audits due. `bin/revenue` unchanged ($0 booked, 25
+      Actors, 47 users, 756 runs30d). `bin/apify-spend` $5.6018, projection $7.47 vs the $85 cap
+      ($0 spent -- the whole audit ran on keyless read-only GETs against federalregister.gov).
+      Services/site all green before and after. Inbox byte-identical known set, no owner email.
+      **Method:** c1554 (1000 cycles ago) had already walked every zero-row/warning remedy
+      STRING and fixed 2 defects, so per the c2536 refinement this cycle targeted the FACTUAL
+      field-coverage comments in `normalize()` instead. Negative control first: RULE/PRORULE/
+      NOTICE/PRESDOCU all nonzero real counts. **Finding:** the `significant` field comment
+      claimed a flat ~45%/40% non-null rate (from a single 2025-01..2026-09 n=200 sample).
+      Re-measured live across 5 eras (n=300-500 each): 2016 ~51%/50%, 2020 ~65%/68%, 2023
+      ~52%/66%, 2026-recent ~42%/42% -- the original figure sits near the all-time low, not a
+      representative average. Fixed in 3 places: `normalize()` comment, README input-table row,
+      README FAQ. Negative-control companion: `commentsCloseOn`'s 92%/36%/9% claim held
+      essentially flat across eras (only NOTICE wording tightened slightly) -- confirms not
+      every field drifts. Diff is comment/README-prose only, `node --check` clean, no build/push
+      needed. `check-charges` 25/0/0, `check-registry-fields` 0 drift, both clean. `audit_dates.json`
+      updated (4-line diff; caught and fixed one escaping bug where unescaped quotes in the note
+      broke JSON, fixed by routing through `json.dumps()`). LEARNINGS.md entry appended.
+      `unreachable_remedy` backlog now **5 DUE**, NEXT TARGET `substack-scraper`.
+
+- [x] **DONE cycle 2553 (QUALITY/GROWTH slot, 2553 % 3 == 0) -- trimmed `state/STATUS.md` out of
+      TRIM SOON, per c2550/c2552's explicit handoff to this slot.** Preflight: no fleet checks or
+      competitor audits due; `unreachable_remedy` 6 DUE, NEXT TARGET `federal-register-scraper`
+      (not touched, the trim took the slot). `bin/revenue` unchanged ($0 booked, 25 Actors, 47
+      users, 756 runs30d). `bin/apify-spend` $5.6006, projection $7.47 vs the $85 cap ($0 spent,
+      pure local edits). Services/site all green before and after. Inbox byte-identical known set,
+      no owner email needed.
+      **Method:** `bin/_trim2553.py` (modelled on `bin/_trim2532.py`), kept the newest 5 cycle
+      blocks (2548..2552) live, archived cycles <=2547 (21 blocks, 1059 lines) verbatim to
+      `state/STATUS_ARCHIVE.md`. Verified with `bin/check-status-blocks-kept` ("no cycle block
+      destroyed") and `bin/check-status-continuity` ("NONE MISSING") -- both clean. Result:
+      STATUS.md 110.5KB/1329 lines -> 22.5KB/267 lines. `check-doc-size` re-read after writing:
+      all three live docs OK, none flagged TRIM SOON/DUE. `check-charges` 25/0/0 and
+      `check-registry-fields` 0 drift both clean. **Next cycle:** `unreachable_remedy` NEXT TARGET
+      is `federal-register-scraper` (6 DUE remain) for the next normal slot.
+
 - [x] **DONE cycle 2552 (normal slot, 2552 % 3 == 2) -- closed `fda-recall-scraper` out of the
       `unreachable_remedy` backlog (7 -> 6 DUE), the NEXT TARGET printed by `audit-due`. FOUND AND
       FIXED ONE REAL DEFECT: a thin n=5 sample understated a buyer-facing coverage limit by ~6x,

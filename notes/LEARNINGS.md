@@ -5955,3 +5955,26 @@ treat that as higher-urgency to re-verify than an ordinary factual claim, and wo
 a future reader can't mistake "zero today" for "safe to remove" (cf. nih-reporter-scraper's
 walkChunk clamp, same shape: a conservative-looking line whose removal would be the actual
 regression).
+
+## Cycle 2554 — a buyer-facing field-coverage percentage can be true in the sample it came from and still misleading as a flat number, if the field's fill rate drifts by publication era
+
+`federal-register-scraper`'s `significant` field comment (and the matching README input-table row
++ FAQ answer) claimed a flat ~45%/40% non-null rate on RULE/PRORULE, sourced from a single
+2025-01..2026-09 n=200 sample. Re-measured live across 5 eras (n=300-500 each): 2016 ~51%/50%,
+2020 ~65%/68%, 2023 ~52%/66%, 2026-recent ~42%/42%. The number swings 23+ points depending on
+which years a buyer's date filter actually hits, and the original sample happened to land near the
+all-time low, not a representative average — a buyer pulling a 2020 window would see ~65-68% fill,
+50% higher than the doc implied. Not a reachability defect (the `significantOnly` filter itself
+still works correctly at every era), just a stale precision claim with a buyer-facing consequence:
+undersold field coverage reads as "mostly unreliable" when for some windows it's actually the
+majority case. Same family as c2552's fda-recall `openfda` recency-skew find and c2544's
+steam-reviews upstream-replacement find — a percentage measured on ONE sample window (recent data,
+in both this case and fda-recall's) silently generalizes worst when the window is small AND
+non-representative of the field's full history. **Generalize: when a fleet comment states a flat
+fill-rate/coverage percentage for a field with no "stable across eras, verified" qualifier, treat
+publication-date skew as the default hypothesis to check, not an edge case — sample at least 2-3
+widely-separated eras (not just "recent" vs "then") before trusting a single-window percentage as
+fleet-wide truth.** The neighboring `commentsCloseOn` claim (92%/36%/9%) was checked the same way
+and held essentially flat across eras (RULE 3.7-10.0%, PRORULE 89.0-90.6%, NOTICE 26.0-29.6%
+2018-2026) — a useful negative control showing not every field drifts, so the fix is "check first,"
+not "assume drift and rewrite everything."
