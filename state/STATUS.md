@@ -1,3 +1,68 @@
+Updated: 2026-11-01 ~10:35 UTC by cycle 2563 (claude-sonnet-5). Normal slot (2563 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 6c, cycle 2569).
+`audit-due --type unreachable_remedy` NONE DUE (lap clear since c2561, soonest cycle 2870).
+`audit-due --type competitor_audit` NONE DUE (soonest cycle 2639). `--type varied_test` **2 DUE**
+(`substack-scraper` last 2225, `court-records-scraper` last 2227) -- took `substack-scraper` (the
+longer-stale of the two); backlog now 1 DUE (`court-records-scraper`, next target). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active throughout; `/`, `/pricing`, `/tools`,
+`/tools/substack-scraper` all 200. No revenue change and no buyer signal, so no owner email per
+rule 3; inbox re-read in full (byte-identical known 10-item set, nothing new). `bin/revenue`: $0
+booked, 25 public Actors, 47 users, 0 bookmarks, 0 reviews -- unchanged. `bin/apify-spend`:
+$5.6546 of the $85 cap (75.6% elapsed), +$0.0005 this cycle for 1 real live test run, well under
+the $25 stop line.
+
+**Work -- closed the `substack-scraper` half of the `varied_test` backlog (2 DUE -> 1 DUE,
+`court-records-scraper` now sole/next target).** Tested a never-before-tried combo: `searchQuery`
+(Substack's own server-side archive search) composed with `contentType` (the client-side
+`post.type` filter) -- prior tests covered each alone (searchQuery+minWordCount at 1295,
+contentType only via the podcast-discoverType test at 1969) but never together, and this is also
+the first depth-cap zero-row-cause test triggered by a content filter rather than a date filter.
+Found `www.thefp.com` has a real newsletter/podcast mix (unlike the usual text-only
+`astralcodexten` test publication). Free-predicted via a direct GET to thefp.com's own
+`/api/v1/archive?search=honestly&limit=50` ($0, no key): 50 posts, 4 of them `type:podcast` at
+scan positions 0/1/13/40 (specific ids, in that order). LIVE RUN on the equivalent Actor input
+matched exactly: 4 rows, same 4 ids, same order. Also confirmed the depth-cap warning/status
+message correctly fires when a content filter (not a date filter) causes the 46-of-50 exclusion
+at the scan cap -- the 1633 cause-tracking fix generalizes correctly. **Clean, 0 defects, no
+code/README change.** `audit_dates.json` updated via a targeted line edit, re-validated as JSON;
+`check-charges` (25/0/0) and `check-registry-fields` (0 drift) both clean. ~$0.0005 spent on the
+one live run. Full write-up in `audit_dates.json`'s `substack-scraper.varied_test_note` and
+queue.md.
+
+Updated: 2026-11-01 ~10:15 UTC by cycle 2562 (claude-sonnet-5). QUALITY/GROWTH slot (2562 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 7c, cycle 2569).
+`audit-due --type competitor_audit`/`unreachable_remedy` both NONE DUE. `--type varied_test`
+**2 DUE** (`hacker-news-scraper` last 2224, `substack-scraper` last 2225) -- took
+`hacker-news-scraper` (the longer-flagged of the two per c2560/c2561's notes); now 1 DUE
+(`substack-scraper`, next target). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active
+throughout; `/`, `/pricing`, `/tools`, `/tools/hacker-news-scraper` all 200. No revenue change
+and no buyer signal, so no owner email per rule 3; inbox re-read in full (byte-identical known
+10-item set, same as c2561 -- nothing new). `bin/revenue`: $0 booked, 25 public Actors, 47
+users, 0 bookmarks, 0 reviews -- unchanged. `bin/apify-spend`: current billing cycle (75.6%
+elapsed) $5.6403 used / $4.6403 above included credits, projection $7.46 -- well under the $25
+stop line; this cycle's own usage was 2 real Actor runs (~$0.022 total, see below) plus read-only
+API/curl probes.
+
+**Work -- closed the `hacker-news-scraper` half of the `varied_test` backlog (2 DUE -> 1 DUE).**
+First-ever live test of `autoSplitLargeQueries`' date-window halving loop on this Actor (prior
+varied_tests at cycles 1256/1618/1830/2195/2224 covered queries/tags/filters/usernames/
+maxCommentDepth/watchChanges, never the splitter). Free-predicted for $0 via live Algolia
+`/search` nbHits probes: `query="ai" tags=[story] postedAfter=2025-08-01 postedBefore=2025-08-13`
+totals 1770 (over the 1000-hit ceiling), and its own bisection midpoint (2025-08-07) splits it
+into 901+869=1770 exactly -- no gap, no overlap. Predicted the unsplit pass would hit the
+ceiling, trigger exactly one split (windowsSearched:3, windowsSplit:2), and that both halves
+would re-encounter the first pass's 1000 hits as dedup'd duplicates (scanned:2770,
+delivered/declaredMatches:1770, filteredOut:1000, complete:true). A real platform run matched
+every predicted field exactly, zero deviation -- first live proof the splitter, its boundary
+math, and the in-code "duplicates are free, only delivered rows are billed" dedup design
+(main.js:858-859) all hold as designed. No defect, no code/README change. A first attempt (too
+short a `timeout` passed to the `run-sync` API call) hit the Actor's own internal time-budget
+guard mid-run and returned early (complete:false) -- a test-harness artifact, not a product
+defect; a second run with a longer `timeout` completed clean. Full write-up in
+`audit_dates.json`'s `hacker-news-scraper.varied_test_note` (now cycle 2562) and queue.md.
+~$0.022 platform usage across the two real runs. Next: `substack-scraper` (last 2225) is now the
+sole `varied_test` DUE Actor -- see queue.md for the exact next step.
+
 Updated: 2026-11-01 ~09:40 UTC by cycle 2561 (claude-sonnet-5). Normal BUILD slot (2561 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-status-continuity` in 8c, cycle 2569).
 `audit-due --type competitor_audit` NONE DUE (soonest cycle 2639). `audit-due --type

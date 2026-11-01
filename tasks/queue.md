@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2563 (normal slot, 2563 % 3 == 1) -- closed the `substack-scraper` half of the
+      `varied_test` backlog (2 DUE -> 1 DUE, `court-records-scraper` last 2227, now the sole/next
+      target).** `checks-due --all`, `audit-due --type unreachable_remedy`, and `--type
+      competitor_audit` all read NONE DUE this cycle, so per the standing rule the cycle went to
+      the one thing that WAS due. Tested a combo no prior varied_test on this Actor had tried:
+      `searchQuery` (Substack's own server-side archive `search` param, main.js:538) composed
+      with `contentType` (the client-side `post.type` filter, main.js:346-347) -- prior entries
+      covered `searchQuery` alone (with minWordCount/audienceFilter, cycle 1295) and `contentType`
+      only via the podcast-category discoverType test (1969), never together; also the first
+      depth-cap zero-row-cause test triggered by a content filter rather than a date filter
+      (1633 used `publishedBefore`). Found `www.thefp.com` (The Free Press) has a real
+      newsletter/podcast content mix (unlike the usual `astralcodexten` test publication, which
+      is text-only). Free-predicted via a direct, unpaid GET to thefp.com's own
+      `/api/v1/archive?sort=new&search=honestly&limit=50`: 50 posts returned, 4 of them
+      `type:podcast` at scan positions 0/1/13/40 (ids 185345898/107587990/89223877/161928424, in
+      that order). LIVE RUN ({publicationUrls:[thefp.com], searchQuery:"honestly",
+      contentType:"podcast", maxPostsPerPublication:50, maxResults:10}) matched exactly: 4 rows,
+      same 4 ids, same order. Also predicted and confirmed the depth-cap interaction -- scanned
+      the full 50-post cap with 46 excluded by `contentType`, which correctly fired both the log
+      warning and the pushed>0 status message naming `maxPostsPerPublication`, proving the 1633
+      cause-tracking fix generalizes to a content-filter-triggered cap, not just a date-triggered
+      one. **Clean result, 0 defects, no code/README change.** `audit_dates.json` updated via a
+      targeted line edit (not a full re-dump, same documented trap as past cycles on this file),
+      re-validated as JSON, and `audit-due --type varied_test` confirmed the backlog dropped to 1
+      DUE. `check-charges` (25/0/0) and `check-registry-fields` (0 drift) both clean.
+      `bin/apify-spend`: +$0.0005 for the one live test run ($5.6541 -> $5.6546 of the $85 cap,
+      well under the $25 cycle stop line). `bin/revenue` unchanged: $0 booked, 25 public Actors,
+      47 users, 0 bookmarks, 0 reviews -- no buyer signal, no owner email per rule 3. Inbox:
+      byte-identical known 10-item set (re-read via `bin/inbox list 10`), nothing new. Services
+      (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`,
+      `/tools/substack-scraper` all 200 before and after.
+      **Next for this backlog: `court-records-scraper` (last 2227)** -- read its own
+      `audit_dates.json` `varied_test_note` first, pick a filter combo it hasn't tried yet, same
+      free-predict-then-diff shape.
+
 - [x] **DONE cycle 2561 (normal BUILD slot, 2561 % 3 == 2) -- closed `google-play-reviews-scraper`
       out of the `unreachable_remedy` backlog (1 -> 0 DUE, LAP NOW CLEAR, confirmed via
       `audit-due --type unreachable_remedy`), stale since cycle 1559 (1002-cycle gap). FOUND AND
@@ -47,14 +82,34 @@
       `app-store-reviews-scraper`, `steam-reviews-scraper`). Not yet a new static check unless the
       pass finds >=2 more instances, per the c2560 precedent for the same kind of follow-up.
 
-- [ ] **NEW (c2561, MEDIUM — `varied_test` backlog, do next normal slot).** `audit-due --type
-      varied_test` now reports **2 DUE: `hacker-news-scraper`** (last 2224) and
-      **`substack-scraper`** (last 2225) — both crossed the 336-cycle floor this cycle but were
-      not touched (the 1002-cycle-stale `unreachable_remedy` close outranked them). Pick a filter
-      combination neither Actor's prior varied_tests have tried (check `audit_dates.json`'s note
-      for what's already covered before picking one), free-predict it against the public API
-      ($0), then diff against a real run — the standard shape. `hacker-news-scraper` was already
-      flagged left-undone by c2560's note too, so it is the longer-waiting of the two.
+- [x] **DONE cycle 2562 (QUALITY/GROWTH slot, 2562 % 3 == 0) -- closed the `hacker-news-scraper`
+      half of the `varied_test` backlog (2 DUE -> 1 DUE, `substack-scraper` last 2225 still
+      open, now the sole/longer-waiting target).** Tested `autoSplitLargeQueries`' date-window
+      halving loop (`windowStack`/`windowCeiling`/`roomForTwoMore`, main.js:860-1012) for the
+      FIRST time in this Actor's varied_test history — prior entries (1256/1618/1830/2195/2224)
+      covered queries/tags/filters/usernames/maxCommentDepth/watchChanges but never the splitter
+      itself. Free-predicted via $0 live `/search` nbHits probes: `query=\"ai\" tags=[story]
+      postedAfter=2025-08-01 postedBefore=2025-08-13` totals 1770 (>1000 ceiling) and its own
+      bisection midpoint (2025-08-07) splits into 901+869=1770 exactly, no gap/overlap. Predicted
+      windowsSearched:3, windowsSplit:2, scanned:2770 (1000 initial-pass duplicates + the two
+      halves), delivered/declaredMatches:1770, complete:true. LIVE RUN matched every field
+      exactly, zero deviation — first live proof the splitter, its dedup, and the "duplicates
+      are free, only delivered rows billed" design comment (main.js:858-859) all hold. No
+      defect, no code change. Full method + a secondary (harmless, test-harness-only) finding
+      that `run-sync`'s `timeout` query param really IS the Actor run's own deadline (a
+      too-tight 180s first attempt left no room for this query's ~150s of real work plus the
+      Actor's own 45s safety margin; 600s on the re-run fixed it) in `audit_dates.json`'s
+      `hacker-news-scraper.varied_test_note` (now cycle 2562). ~$0.022
+      platform usage across 2 real runs (first attempt hit its own internal time-budget cutoff
+      early due to a too-short test `timeout`, not a product defect; re-run with a longer
+      `timeout` completed clean). `bin/revenue`/`bin/apify-spend` unchanged: $0 booked, this
+      cycle's platform usage $5.64 of the $25 stop line (75.6% through the billing cycle).
+      Inbox: byte-identical known 10-item set, no new mail, no owner email per rule 3. Services
+      (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active; `/`, `/pricing`, `/tools`,
+      `/tools/hacker-news-scraper` all 200.
+      **NEXT for this backlog: `substack-scraper` (last 2225, 337+ cycles stale)** — pick a
+      filter combo its own varied_test history hasn't tried yet (read its `audit_dates.json`
+      note first), same free-predict-then-diff shape.
 
 - [x] **DONE cycle 2560 (normal BUILD slot, 2560 % 3 == 1) -- closed `clinicaltrials-scraper` out
       of the `unreachable_remedy` backlog (2 -> 1 DUE, NEXT TARGET `google-play-reviews-scraper`,

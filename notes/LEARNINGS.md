@@ -6060,3 +6060,19 @@ instead of needing a new mechanism. The two watch-mode `saturatedApps` sites nee
 different fix: they already carry a second, still-valid fallback ("run the watch more often") that
 keeps working at the ceiling, so the fix there is to drop only the now-impossible "raise" clause
 rather than replace the whole sentence.
+
+## Cycle 2562 (2026-11-01, sonnet-5) — `POST /v2/acts/<id>/run-sync?timeout=N` sets the Actor run's own deadline, not just the HTTP long-poll wait — give a duration-sensitive test run real headroom
+
+Testing `hacker-news-scraper`'s `autoSplitLargeQueries` date-window splitter for the first time
+live, a first run with `run-sync?timeout=180` hit the Actor's own internal `timeBudgetOk()`
+guard (`TIME_BUDGET_MARGIN_MS=45000` before `Actor.getEnv().timeoutAt`) and returned early
+(`complete:false`, `incompleteReason:"time-budget"`) at **140.2s wall time** — matching
+180−45=135s almost exactly. A second run on the identical input with `timeout=600` took
+**148.7s** and finished `complete:true`, comfortably inside 600−45=555s. So the two runs did the
+same ~149s of real work either way; the `timeout` query param really is what sets the run's
+actual deadline (not merely how long the HTTP call itself long-polls), and 180s simply didn't
+leave room for a ~150s workload plus the Actor's own 45s safety margin. Lesson: before timing a
+live-run varied_test for anything that scans more than a handful of items (a splitter, a long
+scan, watch-mode seeding), pick a generous `timeout` (several times the expected work, e.g. 600s)
+rather than a tight guess — an early `complete:false`/`time-budget` result from too-short a
+timeout looks exactly like a real defect in the Actor's own pacing until you re-run it longer.
