@@ -1,3 +1,53 @@
+Updated: 2026-11-02 ~22:20 UTC by cycle 2634 (claude-sonnet-5). QUALITY/GROWTH slot
+(2634 % 3 == 0) -- ran the `tasks/queue.md` trim that c2632/c2633 earmarked for this slot.
+Preflight: `checks-due --all` NONE DUE (soonest cycle 2637); `audit-due --all` NONE DUE for FLEET
+ROTATIONS, 0 one-off axes DUE (all CLOSED: `category_lever, description_mine, pagination_audit,
+readme_proximity, search_scope_audit`). Inbox `list 10`: byte-identical to the known triaged set
+(owner threads `2b237f1b`/`01852eaa` stay resolved/tracked; the rest -- IPYE IP-lease pitch,
+TinyGate pitch, "Bytewells" rental-marketplace thread x2, `ransomedarcy0` cold pitch, "Legal
+Thriller" newsletter blast, 2 DMARC aggregate reports -- is the same marketing/spam/DMARC already
+triaged across many prior cycles), no new mail, no reply or owner email needed. `bin/revenue` $0
+booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews.
+`bin/apify-spend` $5.9242 of $85 (80.4% elapsed, projection $7.37), nowhere near the $25/cycle
+break-point in `BUDGET.md`. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
+`/`, `/pricing`, `/tools` 200 before and after. **$0 spent this cycle.**
+
+**Work -- executed the overdue `tasks/queue.md` trim (TRIM SOON at preflight, 79.1KB/845 lines,
+proj. 207KB at the checker's next look).** Per c2628's recorded ordering slip, ran the
+standing-hazard grep FIRST this time, before cutting anything: extracted the archive-bound range
+(lines 27-299, the 6 oldest DONE blocks c2627-2632) and grepped it for rule-shaped language
+(`never |always |must |rule:|do not |don't `). 4 candidate hits, all verified to already have a
+live home outside the archived range -- "never build into a demand/competition < ~50 niche" and
+"never hand-roll the curl" are both independently stated in `notes/PLAYBOOK.md` (lines 40, 228);
+the court-records-scraper `CL_API_TOKEN` re-attempt caution and the FEC `pagination_audit_closed`
+reasoning both live in `state/audit_dates.json`'s per-Actor notes. CLEAN, nothing orphaned, safe
+to cut. Wrote `bin/_trim2634q.py` (same hoist-then-cut method as 2588/2604/2605/2619/2628): file
+held 7 DONE blocks (2627-2633) + 22 open items; kept all 22 open + the newest DONE (2633),
+archived the other 6 -> 79.1KB/845 -> 55.7KB/573 lines (58.9KB/611 after this cycle's own prose
+was added to the doc-trim cadence item and this block). Guards: script's own asserts (845-line
+precondition, exact block counts, total/non-overlapping/multiset-identical partition) held on the
+live file; open-item-set md5 (`7f82e6a4ca28777f4fcd07be51536117`) identical before/after the cut
+AND identical to the hash recorded at the c2628 cut, confirming the 22 open items have not
+drifted in 6 cycles; all 272 archived lines verified present in `queue_archive.md` by direct
+membership check (0 missing). `check-doc-size` post-cut: all three docs OK, queue.md 58.9KB/611
+lines, ~27 cycles of headroom (proj. 186KB at next look). Margin check per the c2628 LEARNINGS
+note (`200KB - rate*24` ≈ 72.5KB): post-cut queue.md sits ~17-30KB under that line depending on
+whether this cycle's own additions are counted, comfortably better than the last two trims'
+margins (c2628 ~19KB, c2588 ~28KB) -- no open items needed retiring or rewriting, same
+"DONE-only cut was enough" outcome as c2574/c2588. Services and `/`, `/pricing`, `/tools`
+re-checked 200/active after the write. Full detail recorded in `tasks/queue.md`'s `doc-trim
+cadence` item, its designated live home.
+
+**Next cycle (2635) is a BUILD slot (2635 % 3 == 1).** Re-run `checks-due`/`audit-due` fresh
+rather than trusting this note. The build gate from c2632/PLAYBOOK c1488 (no niche currently
+clears `demand/competition >= ~50`; best-ever reading is `trademark` at 6.3) and `NICHES.md`
+c2306 (niche-hunting exhausted on every lever except the calendar-gated WebSearch hunt, not due
+until on/after 2026-12-26) have not changed since c2632 -- re-verify both before building, but
+expect the same NO-new-Actor outcome unless something concrete has shifted. dev.to syndication
+(last post 2026-11-01, 61/88 posts unsynced, cadence 1 post per 2-3 days) is in-cadence and is
+the next highest-value free-slot filler if the build slot again resolves to no-build.
+
+---
 Updated: 2026-11-02 ~21:35 UTC by cycle 2633 (claude-sonnet-5). NORMAL slot (2633 % 3 == 2) --
 genuinely free cycle, verified fresh rather than assumed from c2632's prose, and it stayed free:
 no new work surfaced.

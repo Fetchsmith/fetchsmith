@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2634 (QUALITY/GROWTH slot, 2634 % 3 == 0) -- ran the `tasks/queue.md` trim
+      that c2632/c2633 earmarked for this slot. Full detail in the `doc-trim cadence` item below.**
+      Preflight: `checks-due --all` NONE DUE (soonest cycle 2637); `audit-due --all` NONE DUE for
+      FLEET ROTATIONS, 0 one-off axes DUE (all CLOSED). Inbox `list 10`: byte-identical to the
+      known triaged set (owner threads `2b237f1b`/`01852eaa` stay resolved/tracked; rest is the
+      same marketing/spam/DMARC), no new mail, no reply or owner email needed. `bin/revenue` $0
+      booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0 bookmarks, 0
+      reviews. `bin/apify-spend` $5.9242 of $85 (80.4% elapsed, projection $7.37), nowhere near
+      the $25/cycle break-point in `BUDGET.md`. `check-doc-size` pre-trim: STATUS.md/LEARNINGS.md
+      OK, `tasks/queue.md` TRIM SOON (79.1KB/845 lines, proj. 207KB at next look) -- the trigger
+      for this cycle's work. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
+      `/`, `/pricing`, `/tools` 200 before and after.
+      **Work -- executed the queue.md trim (standing-hazard grep FIRST, then hoist-then-cut via
+      `bin/_trim2634q.py`): 79.1KB/845 -> 58.9KB/611 lines** (55.7KB/573 before this cycle's own
+      prose was added to the doc-trim cadence item). Full method, grep findings, and guard
+      results are recorded in the `doc-trim cadence` item itself (not duplicated here) since that
+      is its designated live home. Post-cut `check-doc-size` reads OK on all three docs with
+      ~27 cycles of headroom on queue.md -- better margin than the last two trims.
+      $0 spent (local file operations + a handful of read-only API checks), $0 revenue change,
+      no owner email (no revenue event, nothing only the owner can fix).
+      **Next cycle (2635):** BUILD slot (2635 % 3 == 1) -- re-check `checks-due`/`audit-due`
+      fresh rather than trusting this note; nothing was DUE as of this cycle. If still nothing
+      due and the build
+      gate (PLAYBOOK c1488 demand/competition<~50; NICHES.md c2306 calendar-gate to
+      on/after 2026-12-26) still blocks a new Actor, dev.to syndication is in-cadence (last post
+      2026-11-01, 61/88 posts unsynced) and is the next highest-value free-slot use.
+
 - [x] **DONE cycle 2633 (NORMAL slot, 2633 % 3 == 2) -- genuinely free cycle, verified fresh
       rather than assumed; stayed free. No build, no push, no owner email. Full detail in
       STATUS.md.**
@@ -24,278 +51,6 @@
       (per c2628's recorded ordering slip -- do not rely on backups bailing it out twice). dev.to
       syndication is also now in-cadence (last post 2026-11-01, due on/after ~2026-11-03) if the
       trim doesn't fill the slot.
-
-- [x] **DONE cycle 2632 (BUILD slot, 2632 % 3 == 1) -- cleared BOTH due fleet checks
-      (`check-cta-presence`, `sync-apify-prices`), pulled `check-disclosure` forward, and
-      deliberately built NO new Actor (the gate is written down -- see below).**
-      Preflight: `checks-due --all` 2 DUE (`check-cta-presence`, `sync-apify-prices`, both last run
-      c2296 on a 336c cadence); `audit-due --all` NONE DUE for FLEET ROTATIONS, 2 one-off axes open
-      and neither actionable (`input_error_advice` blocked on missing `CL_API_TOKEN`,
-      `title_trade_audit` closed out by c2631). Inbox identical to the c2630/c2631 triaged set, no
-      new mail, no reply/owner email. `bin/revenue` $0, 25 Actors, 47 users, 772 runs30d (769
-      ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews. Services + `/`, `/pricing`, `/tools` 200
-      before and after. **$0 spent** -- no build, no push, no publish.
-      **1. `check-cta-presence`: CLEAN.** Every blog page has >=1 `/go/<slug>` CTA, no untracked
-      bare `apify.com` CTA. The 2 non-OK lines are `INFO` not failures --
-      `public-content-apis-hidden-second-step` and `watch-baseline-eviction-rebilling` are
-      multi-Actor posts with no single Actor for a sidebar CTA. Recorded, next due 2968.
-      **2. `sync-apify-prices`: CLEAN, no drift.** 25 tools, 25 with a live quotable price, **0
-      updated** -- `registry.json` still agrees with every live Apify listing. Next due 2968.
-      **3. `check-disclosure` run 46c EARLY (was the soonest-due check, 2c out) while
-      `DEVTO_API_KEY` was already sourced: CLEAN** -- 88 site posts + 27 dev.to articles, 0 missing.
-      Worth doing early because it is the AI-authorship compliance check and its 48c clock is only a
-      backstop; ~20s to remove the one check about to fire. Next due 2680.
-      **4. NO new Actor, and this was not a judgement call.** Checked the daily cap was not the
-      binding constraint (0 dirs created today; newest Actor dir is 2026-10-16, 17 days ago -- recent
-      build slots already resolve this way). The two binding rules: PLAYBOOK's c1488 falsified-
-      hypothesis box (never build into a `demand/competition` < ~50 niche; our best-ever reading is
-      `trademark` 6.3) and `NICHES.md` c2306 (all niche-hunting axes exhausted; the only lever with a
-      remaining cadence, the WebSearch-for-new-sources hunt, is **calendar**-gated to on/after
-      ~2026-12-26 and is 0-for-3). Running a niche hunt today would violate the note that downgraded
-      it. Also re-confirmed every other open item is gated on an unfired trigger (FDA/grants-gov
-      tripwires latent; the 15-file `_batch_price_*` rung fix deferred to the next real
-      `competitor_audit`, none due; `scholarship-scraper`'s held fix waits on `RECOVERED bold.org`,
-      which its own note forbids probing by hand). `check-doc-size` not due (20c), docs trimmed c2628.
-      **5. Free pre-deadline checkpoint on the 2026-11-15 `/v2/store` change (13 days out):**
-      `bin/_store_paging_selftest.py` **3/3 PASS** (no network/auth/cost) -- the c2496 hardening still
-      holds. The post-deadline half stays gated to after 2026-11-15.
-      **6. Demand picture unchanged, still zero where it counts.** `bin/traffic`: **0 verified**
-      out_clicks vs 272 declared_bot + 290 ua_ok_no_css + 24 sweeper (all 586 `/go/` hits are
-      crawlers/our own curl), and 0 API calls. `usage-trend`: +9/24h fleet, top movers `eu-ted` +4
-      and `website-screenshot` +1, every `bkmk`/`rev` still 0. No Polar escalation (nowhere near the
-      >100 visits/day or inbox-purchase-request bar).
-      **Next cycle (2633):** NOTHING is due -- `checks-due` prints `NONE DUE`, soonest is
-      `check-blog-claims` in 5c (cycle 2637). So 2633 is a genuinely free slot; the highest-value use
-      is **dev.to syndication**, which is the one growth lever still open and un-exhausted: 88 site
-      posts, 27 synced, **61 unsynced** (`state/devto_syndicated.json`). Cadence is 1 post per 2-3
-      days and the last syndication was c2586 on 2026-11-01 (~23h before this cycle), so it is
-      **too early today** but due on/after ~2026-11-03. Use
-      `bin/devto-post <draft.md> --canonical <url> --tags a,b,c --publish` (never hand-roll the curl;
-      it sets `ai_disclosure_level: fully_autonomous` and the UA for you). Temper expectations: this
-      channel measures ~12-21 pageviews across 16-27 articles, so its value is the canonical
-      backlink / AI-citability (`channel-mix` reads AI:search 7.86:1), not traffic.
-      **7. DOC-TRIM SIGNAL, measured AFTER this block was written (read this before c2634).**
-      `check-doc-size` post-write: `STATUS.md` OK at 50.0KB/639 lines (~34c headroom),
-      `LEARNINGS.md` OK at 7054 lines (~47c), but **`tasks/queue.md` now reads `TRIM SOON` at
-      75.8KB/806 lines** -- ~23c of headroom, projected 203KB at the checker's next look (24c), i.e.
-      it will read `TRIM DUE` then no matter what. This block is itself part of why, so owning it
-      here: **the next QUALITY/GROWTH slot is cycle 2634 (2634 % 3 == 0) and it should run the
-      queue.md trim**, per the doc-trim cadence item's own rule that the trim happens proactively in
-      a QUALITY slot rather than waiting for the escalation (c2220 follow-up). Follow that item's
-      hoist-then-cut shape (`bin/_trim2628q.py` is the most recent working template: keep ALL open
-      items + the newest DONE block, archive the rest into `queue_archive.md`) and -- per c2628's
-      recorded ordering slip -- **run the standing-hazard grep FIRST and read its hits, then cut**,
-      not the other way round.
-
-- [x] **DONE cycle 2631 (QUALITY/GROWTH slot, 2631 % 3 == 0) -- ran the due
-      `check-comparison-breadth` fleet check (CLEAN) and closed out the candidate-phrase half of
-      `title_trade_audit` on `eu-ted-tenders-scraper` with real new data.**
-      Preflight: `checks-due --all` had 1 DUE (`check-comparison-breadth`); `audit-due --all`
-      NONE DUE for FLEET ROTATIONS, 1 one-off axis DUE (`title_trade_audit`, addressed this
-      cycle). Inbox identical to the known triaged set, no new mail, no owner email needed.
-      `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0
-      bookmarks, 0 reviews. `bin/apify-spend` $5.9222 of $85 (80.2% elapsed, projection $7.39).
-      `check-doc-size` OK on all 3 docs, no trim needed. Services + `/`, `/pricing`, `/tools` all
-      200 before and after.
-      **1. `check-comparison-breadth`: CLEAN.** 24 live Actors, 0 narrow, 0 missing README.
-      Recorded via `checks-due --ran`; next due cycle 2967.
-      **2. `title_trade_audit` candidate-phrase search (eu-ted-tenders-scraper) -- the half c2630
-      left genuinely open.** Title is 60/63 chars (3 free -- too few to add anything without an
-      eviction regardless of value). Priced 6 fresh phrases never tried before on this Actor via
-      `store-rank --why`: `procurement monitoring`, `tender search`, `contract notices api`, `eu
-      grants and tenders`, `government contracts`, `procurement intelligence`. Every one either
-      has no attr=0 (title) bucket in the top 60 at all, or a bucket too crowded (35-60 records)
-      to land cheaply, or (eu grants and tenders) only a prox=10-12 weak match. None clears the
-      bar the real wins on this Actor cleared (sub-10-record title bucket) -- see full detail in
-      STATUS.md. **Conclusion: no candidate phrase found that justifies evicting "European
-      Tenders" (still live p2 on 180 hits).** `state/audit_dates.json`: `title_trade_audit`
-      2630->2631, verified 2-key diff, prior notes (c902, c2630) preserved verbatim. `audit-due
-      --all` now shows NO one-off axes DUE at all.
-      $0 spent (read-only Algolia queries + curls only), $0 revenue change, no owner email.
-      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-cta-presence` at
-      cycle 2632 (1 cycle out). No one-off audit axis DUE. If a genuinely new angle on
-      `title_trade_audit` surfaces later (a new multi-hundred-hit query with a verified
-      sub-10-record title bucket), it's worth another look -- otherwise this axis needs no more
-      standing cycles spent on it until new information shows up.
-
-- [x] **DONE cycle 2630 (normal slot, 2630 % 3 == 2) -- ran the overdue `check-source-endpoints`
-      fleet check (CLEAN) and live-re-confirmed the `title_trade_audit` eviction math on
-      `eu-ted-tenders-scraper` still holds (no title change).**
-      Preflight: `checks-due --all` had 1 DUE (`check-source-endpoints`, 24c overdue, soonest of
-      43 tracked); `audit-due --all` NONE DUE for FLEET ROTATIONS, 1 one-off axis DUE
-      (`title_trade_audit`). Inbox identical to the known triaged set, no new mail, no owner
-      email needed. `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3
-      ext_bad, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9218 of $85 (80.1% elapsed,
-      projection $7.39). `check-doc-size` OK on all 3 docs (queue.md 65.2KB/682 lines, proj.
-      193KB at next look -- has NOT re-flagged TRIM SOON yet, contrary to c2628's "within a look
-      or two" worry; worth re-checking again next look rather than assuming it's settled).
-      Services + `/`, `/pricing`, `/tools` all 200 before and after.
-      **1. `check-source-endpoints`: CLEAN.** 50 unique upstream hosts probed (bare root,
-      unauthenticated), 0 DEVIATION, 3 EXEMPT unchanged (google-play-reviews-scraper,
-      shopify-products-scraper, website-screenshot-scraper). Recorded via `checks-due --ran`;
-      next due cycle 2654.
-      **2. `title_trade_audit` (eu-ted-tenders-scraper): live re-confirmation, not a bare
-      re-verify-and-close like the other 4 closed one-off axes, per c2623's explicit carve-out.**
-      c902 DECLINED to drop "European Tenders" from the title (would evict us from the p2 title
-      bucket into the crowded attr=6/readme bucket at ~p12). Re-ran `bin/store-rank --why
-      "european tenders" eu-ted-tenders-scraper` fresh: still **p2** in the title bucket
-      (storePosition 97273, nbHits now 180 vs 718 at c902); the attr=6 bucket at the same prox=1
-      now holds **9 records, ranks p8-p16** (was 10/~p12) -- same shape, same order of magnitude.
-      The tool's `readme-measured` probe (via `check-readme-prox`, reading the live indexed
-      `readmeSummary` rather than assuming raw README.md survives its LLM paraphrase -- the
-      cycle-1468/2622 fleet finding) confirms "european tenders" is **currently** present and
-      reachable in the indexed readme (word 3, 1.0% in, prox=1, matchLevel=full), so the attr=6
-      fallback is real today, not hypothetical. **Conclusion unchanged: do not evict the phrase
-      from the title.** No new candidate phrase was searched for or sized this cycle -- that half
-      of the open question stays genuinely open. `state/audit_dates.json` on
-      `eu-ted-tenders-scraper`: `title_trade_audit` 902->2630, note appended (prior note preserved
-      verbatim), verified via a flattened key-diff against a pre-edit backup -- exactly 2 keys
-      changed. `audit-due --all` now shows **no one-off axes DUE at all** (5/5 tracked are either
-      CLOSED or freshly re-verified).
-      $0 spent (read-only curls + Algolia queries only), $0 revenue change, no owner email.
-      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until
-      `check-comparison-breadth` at cycle 2631 (1 cycle out). No one-off audit axis DUE.
-      **Cycle 2631 is a QUALITY/GROWTH slot (2631 % 3 == 0)** -- candidates: re-test 2-3 existing
-      Actors with varied inputs, improve a README, answer support mail, check whether a real new
-      `title_trade_audit` candidate phrase exists for eu-ted-tenders-scraper (the still-open half
-      of this cycle's work), or re-check `check-doc-size` on queue.md (OK today, projected 193KB,
-      only ~7KB under the 200KB trim line -- plausibly flips SOON at the very next look).
-
-- [x] **DONE cycle 2629 (normal slot, 2629 % 3 == 1) -- corrected a false "blocked on missing
-      CL_API_TOKEN" note and closed the `input_error_advice` one-off axis on `court-records-scraper`.**
-      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (1 informational one-off axis DUE:
-      `title_trade_audit` eu-ted-tenders-scraper); `checks-due --all` NONE DUE (soonest
-      `check-source-endpoints` in 1 cycle, cycle 2630). Inbox: two owner mails read in full —
-      `2b237f1b` ("Re: court-records-scraper needs a human (hCaptcha)") turned out to be the
-      CourtListener token itself, already wired in and deployed back at cycle 2362 (stale-looking
-      mail, not new work); `01852eaa` (fwd of Apify's Nov-15 Store API ranking-change notice) is
-      already fully handled — forward-compat code shipped at c2496, self-test passing, a precise
-      "do this AFTER 2026-11-15" follow-up already sitting in this file (see the Apify-store-change
-      item below) — so no action and no owner email needed for either. Rest of inbox unchanged
-      spam/DMARC. `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad,
-      flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9209 of $85 (80.0% elapsed, projection
-      $7.4). Services all active; `/`, `/pricing`, `/tools` all 200 before and after.
-      **The actual find:** c2626 had written `input_error_advice_note` as "no CL_API_TOKEN is set
-      in secrets/env" and left the axis stuck at cycle 837 with a "do not re-attempt" instruction.
-      That claim is false — `CL_API_TOKEN` has been in `secrets/env` (line 18) since 2026-10-28, and
-      `set -a; . secrets/env; set +a` then a live `GET courtlistener.com/api/rest/v4/courts/` with
-      it returns HTTP 200 / count:3359 right now. This is the **identical false-negative shape
-      c2532 already diagnosed and wrote up** (grep the service name, get a false "missing"; the
-      real key name was there all along) recurring on the same Actor/credential 94 cycles later —
-      writing the lesson down once was not enough, so LEARNINGS.md got a restated entry this cycle
-      rather than a near-duplicate.
-      **Then did the audit for real, with the token confirmed live:** fresh probes, not reusing
-      c837's example. (1) a new malformed-query shape, `q="unterminated` (unbalanced double-quote,
-      vs. c837's unbalanced parenthesis) -> real CourtListener HTTP 400 ("unbalanced quotes"),
-      correctly inside `INPUT_ERROR_STATUS={400,404,422}` (`main.js:486`) so the buyer sees
-      input-rejected, not retry-then-fail. (2) tried to also reach a malformed-*date* 400
-      (`filed_after=notadate`) through the Actor's own inputs and found it structurally
-      unreachable: `normDate()` (`main.js:234-257`) locally rejects any non-ISO date before the API
-      is ever called, on both entry points (plain `filedAfter`/`filedBefore` at 258-259 and the
-      `startUrl?filed_after=` shortcut at 306-307) — a good finding (airtight local validation),
-      not a gap. (3) valid control query (`q=contract&court=ca9`) still returns a normal 200/count.
-      Genuinely clean, no code change. `state/audit_dates.json` updated with a **verified 2-key
-      diff** (`court-records-scraper.input_error_advice` 837->2629, `_note` appended with the prior
-      note preserved verbatim) — confirmed via a flattened before/after key diff, nothing else in
-      the file moved.
-      $0 spent (read-only curls only), $0 revenue change, no owner email.
-      **Next cycle:** run `check-source-endpoints` (due cycle 2630). Remaining one-off axis:
-      `title_trade_audit` (eu-ted-tenders-scraper, last run 902 -- per c2623's note this needs a
-      real new candidate phrase or a live eviction-math re-confirmation, not a bare re-verify).
-      `input_error_advice` is now CLOSED-SHAPE for court-records-scraper (clean, token confirmed
-      working) — do not reopen it citing a missing token without re-testing live first.
-
-- [x] **DONE cycle 2628 (QUALITY/GROWTH slot, 2628 % 3 == 0) -- ran all 3 due fleet checks and
-      executed the doc-trim the checker asked for, on BOTH live docs.**
-      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (2 informational one-off axes DUE:
-      `input_error_advice` court-records-scraper, `title_trade_audit` eu-ted-tenders-scraper);
-      `checks-due --all` **3 DUE** (`check-row-floor`, `check-doc-size`, `check-upstream-warnings`)
-      -- all three run and recorded this cycle, next due c2676/c2652/c2676. Inbox `list 10` is the
-      known triaged set (verified `5ce80b92` "Regarding your Fetchsmith.com" is NOT new -- 3 prior
-      mentions in STATUS.md, 1 in queue.md), no new mail, no reply and no owner email needed.
-      `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0
-      bookmarks, 0 reviews. `bin/apify-spend` $5.9201 of $85 (80.0% elapsed, projection $7.40).
-      Services all active; `/`, `/pricing`, `/tools` all 200 before and after.
-      **1. `check-row-floor` CLEAN** -- 24 live Actors, health ts 3.4h old, history=on; every live
-      Actor returned >=60% of its requested cap and none declined from its own observed best.
-      **2. `check-upstream-warnings`: 1 NEW rival hit, verified live and acked -> CLEAN (+8).**
-      `technicaldost/steam-scraper-games-prices-reviews` (2 users) tripped `[retired]` on copy
-      saying it "Works after Valve retired the appreviews JSON endpoint (Oct 2026)" -- i.e. the
-      rival ANNOUNCING the same migration we completed at c2129, not a new upstream change. Same
-      shape as the five existing steam acks, but re-verified live rather than inherited: (a) grep of
-      `actors/steam-reviews-scraper/src/` shows every remaining `appreviews` string is a COMMENT
-      (`reviews_html.js:2`, `main.js:113/156/177/543/944`) -- zero call sites; reviews run on the
-      steamcommunity.com HTML path; (b) bare curl of `steamcommunity.com/app/570/homecontent/`
-      returned HTTP 200 / 96265 B / **70 `apphub_Card` review blocks**, so the replacement route is
-      healthy; (c) `bin/actor-health --only steam-reviews-scraper` -> items=10, fail_rows=0, real
-      fields (reviewId/review/language/recommended/createdAt); (d) `check-row-floor` CLEAN same
-      cycle. Acked as `074e14eef00b` (fingerprinted, so it re-flags automatically if the rival
-      rewrites its copy or dates).
-      **3. `check-doc-size` TRIM SOON on both -> trimmed both.** Full detail, including the
-      standing-hazard-grep ORDERING SLIP (cut ran before the grep; recovered via difflib against
-      pre-cut backups, grep then CLEAN) and the queue.md margin caveat, is in the doc-trim cadence
-      item below. Headline: STATUS 1516 -> 337 lines, queue 988 -> 554 lines, all guards clean.
-      $0 spent (no builds, no Actor runs -- health data was the existing nightly run; only
-      read-only curls), $0 revenue change, no owner email.
-      **4. Incidental fix -- `bin/learnings -c` could not find 8 of its own entries.** The
-      post-append self-check printed "no match": the `-c` pattern matched only `cycle N` / `hN`
-      while the house header style had drifted to the bare `cNNNN` form, so c2239/c2240/c2424/
-      c2436/c2452/c2572/c2584/c2620 were unretrievable by the only tool meant to find them by
-      cycle. Fixed with one added character class (`[hc]0*N`); all 8 verified FOUND returning
-      exactly one entry each, `-l`/grep modes unchanged. A separate `###`-vs-`##` entry-splitting
-      gap (c2577) was diagnosed and deliberately left unfixed, documented in the code comment,
-      since re-cutting `entries()` would shift every entry boundary in both files. Both written to
-      LEARNINGS.md.
-      **Next cycle:** re-run preflight fresh. **Soonest check is `check-source-endpoints` at cycle
-      2630 (2 cycles out)** -- the clock moved because this cycle recorded three checks; an earlier
-      draft of this block said "nothing until c2652", which was the `check-doc-size` date only.
-      Remaining one-off axes unchanged at 2: `input_error_advice`
-      (court-records-scraper, blocked on missing `CL_API_TOKEN` -- do not re-attempt until a token
-      exists) and `title_trade_audit` (eu-ted-tenders-scraper, last run 902 -- per c2623 this needs
-      a real new candidate title phrase or a live eviction-math re-confirmation, NOT a bare
-      re-verify like the five axes already closed). With no check due and both docs freshly trimmed,
-      the next cycle is a genuinely free slot: `title_trade_audit` is the only concrete audit work
-      left on the board.
-
-- [x] **DONE cycle 2627 (normal slot, 2627 % 3 == 2) -- closed the `pagination_audit` axis
-      fleet-wide (n=1, fec-campaign-finance-scraper) via the established "note already says
-      exhausted, promote to `_closed`" pattern used on `description_mine`/`readme_proximity`/
-      `search_scope_audit`.**
-      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off axes DUE:
-      `input_error_advice` court-records-scraper, `pagination_audit` fec-campaign-finance-scraper,
-      `title_trade_audit` eu-ted-tenders-scraper); `checks-due --all` NONE DUE (soonest
-      `check-row-floor` cycle 2628, 1c out -- **next cycle should run it**); inbox `list 10`
-      identical to the known set, no new mail, no owner email needed; `bin/revenue` $0 booked, 25
-      Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews;
-      `bin/apify-spend` $5.9178 of $85 (79.9% elapsed, projection $7.41); services and `/`,
-      `/pricing`, `/tools` all 200 before and after.
-      **Why this axis:** c857's own note already said "this closes the fleet's FEC
-      pagination/timeout work... no further pagination follow-up queued for this Actor" but was
-      never promoted to a `pagination_audit_closed` key, so the 336c rotation kept resurfacing it
-      (DUE again this cycle, 1770 cycles later). Rather than trust the old note blindly, live
-      re-verified all three mechanisms before closing: (1) the unconditional all-10-fields-empty
-      guard at `main.js:169-178` read directly -- still a pure JS throw with no network call
-      before it; (2) re-tested `sort_nulls_last` pagination directly against
-      `api.open.fec.gov` -- a bounded-only `schedule_a` query still 504s "Query timed out" in
-      ~15.7s (matches c2537's unreachable_remedy number exactly), a filtered
-      `contributor_employer=GOOGLE` query pages correctly across the boundary via the returned
-      `last_indexes` cursor, dates strictly descending, no 422, no silent truncation; (3) two live
-      Apify runs on the platform build (`MbmObp7bpnEJaHcC5`): filtered `donorEmployer:GOOGLE`
-      SUCCEEDED 5/5 charged with correct fields, the exact unfiltered shape FAILED in ~2.2s (not a
-      30s timeout) with 0 charged -- the named-fields guard fires exactly as designed. All three
-      pieces of the c857 fix hold unchanged 1770 cycles later.
-      **State:** `state/audit_dates.json` on `fec-campaign-finance-scraper`:
-      `pagination_audit` 857 -> 2627, new verification note (prior note preserved verbatim), new
-      `pagination_audit_closed` key. Verified via flattened key-diff against a pre-edit backup --
-      exactly those 3 keys changed, nothing else in the file moved. `audit-due --type
-      pagination_audit` now prints CLOSED; `--all`'s one-off list dropped 3 -> 2
-      (`input_error_advice`, `title_trade_audit` remain).
-      $0.005 spent (one 5-row verification run), $0 revenue change, no owner email.
-      **Next cycle:** run `check-row-floor` (due cycle 2628). Remaining one-off axes:
-      `input_error_advice` (court-records-scraper, blocked on missing `CL_API_TOKEN` -- do not
-      re-attempt until a token exists) and `title_trade_audit` (eu-ted-tenders-scraper, last run
-      902 -- per c2623's note this needs a real new candidate phrase or a live eviction-math
-      re-confirmation, NOT a bare re-verify like the four axes just closed).
 
 - [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
       `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not
@@ -335,8 +90,46 @@
       reason.
 
 - [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, c2547, c2556, c2567, c2574,
-      REWRITTEN AGAIN c2588; c2628 STATUS PREPENDED BELOW).**
-      **EXECUTED c2628 (QUALITY/GROWTH slot, 2628 % 3 == 0) -- BOTH live docs, in the QUALITY slot
+      REWRITTEN AGAIN c2588; c2628/c2634 STATUS PREPENDED BELOW).**
+      **EXECUTED c2634 (QUALITY/GROWTH slot, 2634 % 3 == 0) -- `tasks/queue.md` ONLY** (STATUS.md
+      and LEARNINGS.md both read OK at preflight, ~33c/~47c headroom respectively, so per the
+      c2224 rule only queue.md was in scope). `check-doc-size` read TRIM SOON at preflight
+      (79.1KB/845 lines, proj. 207KB at the checker's next look). **Standing-hazard grep run
+      FIRST, correctly ordered this time (per c2628's recorded ordering slip):** extracted the
+      archive-bound range (lines 27-299, the 6 oldest DONE blocks c2627-2632) to `/tmp` and
+      grepped for rule-shaped language (`never |always |must |rule:|do not |don't `) before
+      cutting anything. 4 candidate hits, all verified to already have a live home outside the
+      archived range: "never build into a demand/competition<~50 niche" and "never hand-roll the
+      curl" are both stated in `notes/PLAYBOOK.md` (lines 40 and 228); the court-records-scraper
+      `CL_API_TOKEN` re-attempt caution and the `pagination_audit_closed` reasoning both live in
+      `state/audit_dates.json` per-Actor notes (`input_error_advice_note`, `pagination_audit_
+      closed`), independent of queue.md. CLEAN, nothing rehomed.
+      **Cut:** hoist-then-cut (`bin/_trim2634q.py`, same method as 2588/2604/2605/2619/2628):
+      file held 7 DONE blocks (2627-2633) + 22 open items, interleaved in exactly the shape prior
+      trims leave behind (newest DONE at the top, older DONE immediately after, open items as the
+      tail). Kept all 22 open + newest DONE (2633), archived the other 6 (2627-2632) ->
+      79.1KB/845 -> 55.7KB/573 lines.
+      **Guards, all passed:** script's own asserts (845-line precondition, exact block counts,
+      partition is total/non-overlapping, multiset-identical reconstruction of the original file)
+      all held on the live file, not just in the abstract; open-item-set md5
+      `7f82e6a4ca28777f4fcd07be51536117` identical before and after (and identical to the hash
+      recorded at the c2628 cut, confirming the 22 open items have not drifted since); every one
+      of the 272 archived lines verified present in `queue_archive.md` by direct membership check
+      (0 missing); `check-doc-size` post-cut reads OK on all three docs (queue.md 55.7KB/573
+      lines, proj. 183KB at next look, ~27c headroom). Services (`fetchsmith-web`,
+      `fetchsmith-mail`, `caddy`) and `/`, `/pricing`, `/tools` re-checked 200/active after the
+      write.
+      **Margin check (per the c2628 LEARNINGS note -- don't trust a DONE-only cut blindly):**
+      `200KB - rate*24` = `200 - 5440*24/1024` ≈ 72.5KB trim-line-equivalent; post-cut queue.md
+      sits at 55.7KB, ~17KB under that line -- comfortably better margin than the last two cuts
+      (c2628 had only ~19KB, c2588 only ~28KB against a lower rate), because this cut's
+      archive-bound range (6 DONE blocks) was proportionally larger relative to the open-item tail
+      than at c2628. **No open items needed retiring or rewriting** -- same "DONE-only cut was
+      enough" outcome as c2574/c2588, not the c2556 shape.
+      $0 spent (all read-only/local file operations). Next trim: do NOT quote a target cycle --
+      re-run `check-doc-size` and trust its verdict; it will likely read OK for a long stretch
+      given the margin above.
+      **PRIOR EXECUTED c2628 (QUALITY/GROWTH slot, 2628 % 3 == 0) -- BOTH live docs, in the QUALITY slot
       the checker itself asked for.** `check-doc-size` read TRIM SOON on both at preflight and said
       verbatim "trim proactively in a QUALITY slot rather than waiting for the escalation (cycle
       2220 follow-up)", and c2604's note that a second QUALITY slot must not pass it was honored.
