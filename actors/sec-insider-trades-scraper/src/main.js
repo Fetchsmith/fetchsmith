@@ -136,7 +136,12 @@ function selectFilings(idx, picked, cap) {
 
 // SEC asks for <=10 req/s with a declared UA; we stay well under.
 let lastRequestAt = 0;
+// `lastGetWas404` lets a caller distinguish WHY secGet returned null without changing its return
+// type at all 4 call sites. Safe because every call site awaits secGet before reading this (no
+// concurrent secGet calls anywhere in the file), so it always reflects the call that just finished.
+let lastGetWas404 = false;
 async function secGet(url, { json = false } = {}) {
+  lastGetWas404 = false;
   const gap = 150 - (Date.now() - lastRequestAt);
   if (gap > 0) await new Promise((r) => setTimeout(r, gap));
   for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -150,7 +155,7 @@ async function secGet(url, { json = false } = {}) {
         headers: { 'user-agent': UA, 'accept-encoding': 'gzip, deflate' },
         responseType: json ? 'json' : 'text',
       });
-      if (res.statusCode === 404) return null;
+      if (res.statusCode === 404) { lastGetWas404 = true; return null; }
       if (res.statusCode === 200) return res.body;
       log.warning(`HTTP ${res.statusCode} for ${url}`);
     } catch (err) {
@@ -259,7 +264,16 @@ function keepRow(row) {
 // Zero-row bookkeeping (cycle 1756): the statusMessage chain at the bottom may only name a
 // cause this particular run actually observed, so each cause needs its own observed-count.
 const unresolvedTickers = [];
-let missingSubmissionIndex = 0;
+// Split in two (cycle 2625): a numeric CIK typed directly (input.js:278) skips the ticker map
+// entirely and is never validated to exist, so `secGet` on the submissions index can come back
+// null for two causes that need opposite advice -- a permanent 404 (verified live: a nonexistent
+// CIK like CIK0000000001 404s every time, forever) means "this CIK does not exist", while a
+// retry-exhausted network/5xx error is the genuinely transient EDGAR blip the old single counter's
+// "re-run in a few minutes" advice was written for. Collapsing them (the old `missingSubmissionIndex`)
+// gave a buyer who mistyped a CIK permanently wrong advice, same defect shape as the openFDA fix
+// on fda-recall-scraper (c2624) -- a 4xx/5xx collapsed to one `null` with one unconditional message.
+let missingSubmissionIndex404 = 0; // permanent: SEC confirms this CIK does not exist
+let missingSubmissionIndex = 0; // transient: request failed after retries, cause unknown
 let filingsSelected = 0;
 let legacyFilings = 0;
 let holdingsOnlyFilings = 0;
@@ -457,8 +471,13 @@ try {
     const padded = iss.cik.padStart(10, '0');
     const sub = await secGet(`https://data.sec.gov/submissions/CIK${padded}.json`, { json: true });
     if (!sub) {
-      missingSubmissionIndex += 1;
-      log.warning(`No submissions index for CIK ${padded} (${iss.input}).`);
+      if (lastGetWas404) {
+        missingSubmissionIndex404 += 1;
+        log.warning(`No submissions index for CIK ${padded} (${iss.input}) -- SEC EDGAR returned 404: this CIK does not exist. Re-running will not help; check the ticker or CIK.`);
+      } else {
+        missingSubmissionIndex += 1;
+        log.warning(`No submissions index for CIK ${padded} (${iss.input}) -- request failed after retries.`);
+      }
       continue;
     }
     const recent = sub.filings?.recent ?? {};
@@ -634,9 +653,16 @@ if (!pushed) {
     // Not a "no match" answer -- the walk never finished, so say that instead of advising a widen.
     zeroRowMessage = `0 rows: the run hit its time budget before any row was delivered (${filingsSelected} filing(s) `
       + 'selected). Raise the run timeout, or narrow the request (fewer issuers, lower maxFilingsPerIssuer).';
-  } else if (missingSubmissionIndex && missingSubmissionIndex === issuers.length - unresolvedTickers.length) {
-    zeroRowMessage = `0 rows: SEC returned no submissions index for any of the ${missingSubmissionIndex} issuer(s) `
-      + 'resolved. That is usually a transient EDGAR error -- please re-run in a few minutes.';
+  } else if ((missingSubmissionIndex404 || missingSubmissionIndex)
+    && missingSubmissionIndex404 + missingSubmissionIndex === issuers.length - unresolvedTickers.length) {
+    // Two independent causes can both be true at once (some CIKs plain don't exist, others hit a
+    // genuine EDGAR blip), so report whichever actually happened -- never guess "transient" for a
+    // CIK that 404s, which previously told a buyer who mistyped a CIK to retry forever.
+    const parts = [];
+    if (missingSubmissionIndex404) parts.push(`${missingSubmissionIndex404} CIK(s) do not exist in SEC EDGAR (re-running will not help; check the ticker/CIK)`);
+    if (missingSubmissionIndex) parts.push(`${missingSubmissionIndex} issuer(s) hit a request failure that is usually transient EDGAR flakiness -- re-run in a few minutes for those`);
+    zeroRowMessage = `0 rows: SEC returned no submissions index for any of the ${missingSubmissionIndex404 + missingSubmissionIndex} issuer(s) `
+      + `resolved: ${parts.join('; ')}.`;
   } else if (!filingsSelected) {
     zeroRowMessage = `0 rows: no ${forms} filings for ${who} exist in the window searched`
       + (sinceDate ? ` (sinceDate ${sinceDate} or later)` : '')
@@ -692,6 +718,10 @@ if (!pushed) {
     causes.push(`${unresolvedTickers.length} of the ${issuers.length} issuer(s) you asked for did not resolve to a `
       + `CIK (${unresolvedTickers.join(', ')}) and contributed no rows. Use the ticker exactly as SEC lists it in `
       + "company_tickers.json, or pass that issuer's numeric CIK instead.");
+  }
+  if (missingSubmissionIndex404) {
+    causes.push(`SEC returned no submissions index for ${missingSubmissionIndex404} resolved issuer(s) -- those CIK(s) `
+      + 'do not exist in EDGAR, so re-running will not pick them up; check the ticker/CIK instead.');
   }
   if (missingSubmissionIndex) {
     causes.push(`SEC returned no submissions index for ${missingSubmissionIndex} resolved issuer(s), which therefore `

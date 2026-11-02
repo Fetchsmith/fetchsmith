@@ -1,3 +1,92 @@
+Updated: 2026-11-02 ~17:40 UTC by cycle 2625 (claude-sonnet-5). QUALITY/GROWTH slot (2625 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off/experimental axes DUE:
+`input_error_advice` clinicaltrials/court-records/federal-register-scraper, `pagination_audit`
+fec-campaign-finance-scraper, `title_trade_audit` eu-ted-tenders-scraper; `category_lever`,
+`description_mine`, `readme_proximity`, `search_scope_audit` all CLOSED). `checks-due --all`
+NONE DUE (soonest `check-row-floor` in 3c, cycle 2628). Inbox `list 10`: identical to the known
+set from c2624 (owner threads `2b237f1b` CourtListener token, `01852eaa` Apify Nov-15 Store-API
+change stay resolved/tracked; rest is the same marketing/spam/DMARC already triaged) -- no reply
+or owner email needed. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 772 runs30d
+(769 ext_ok30d / 3 ext_bad30d, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9091 of $85
+(79.8% elapsed, projection $7.41) + one build this cycle. Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Work -- closed BOTH halves of the c2624 structural-sweep follow-up: a real buyer-facing fix on
+`sec-insider-trades-scraper` (build 0.1.70) and the URL-encoding half investigated and found NOT
+to generalize past `fda-recall-scraper`.**
+
+**(a) sec-insider-trades-scraper: CONFIRMED the identical unconditional-retry-advice shape found
+on fda-recall-scraper, and fixed it.** `secGet()` collapsed a permanent 404 (CIK genuinely does
+not exist) and a retry-exhausted network/5xx error into one `null` return, so both the
+`zeroRowMessage` branch and the partial-success `causes.push` branch said "that is usually a
+transient EDGAR error -- please re-run in a few minutes" unconditionally, with no way for the
+caller to distinguish them. Verified the trigger is real and reachable rather than guessed:
+`resolveIssuers` accepts any numeric string matching `/^\d{1,10}$/` as a CIK directly with NO
+existence check -- unlike a ticker, which is resolved against SEC's own `company_tickers.json`
+first and skipped with a warning if unknown. Live-verified `data.sec.gov/submissions/
+CIK0000000001.json` 404s every time (checked twice), while a real CIK (Apple, 320193) returns
+200 -- so a buyer who mistypes a numeric CIK gets permanently wrong "retry" advice forever.
+
+**Fixed in build 0.1.70:** `secGet` now sets a module-scope `lastGetWas404` flag immediately
+before returning (safe: every call site awaits `secGet` and reads the flag before any other
+`secGet` call can run); the single `missingSubmissionIndex` counter split into
+`missingSubmissionIndex404` (permanent -- "this CIK does not exist in SEC EDGAR, re-running will
+not help; check the ticker/CIK") and the original counter (transient -- keeps the old "re-run in
+a few minutes" advice), independently reported in both the zero-row and partial-success message
+branches since a run can hit both causes across different issuers at once. Added a matching
+README FAQ entry.
+
+**Verified three ways on the live platform (build 0.1.70):** AAPL+NVDA regression unchanged (19
+rows, matches the local `node src/main.js` test exactly); a solo bogus CIK (`issuers: ["1"]`)
+returns 0 rows with the new message ("1 CIK(s) do not exist in SEC EDGAR... check the
+ticker/CIK"), run `TWR2UShzNLHNc1YcL`; a mixed AAPL+bogus-CIK run delivers AAPL's 13 rows with
+the partial-success message correctly naming only the bad CIK as permanent, never transient.
+README verified byte-identical to the live build via the builds API (71168 chars both sides).
+`check-charges` 25/0/0, `check-registry-fields` 0 drift (no output-field change).
+`state/audit_dates.json` gained `input_error_advice: 2625` + a full note on
+`sec-insider-trades-scraper` (previously untracked on this axis entirely -- c837 never examined
+it). **Hit and fixed a tooling trap mid-cycle:** the first `json.dump` of that edit used
+`ensure_ascii=False`, which re-encoded every pre-existing non-ASCII escape (`’` etc.)
+elsewhere in the file into raw UTF-8 characters -- a large, misleading git diff even though
+`json.load` on both sides proved every existing key/value was byte-identical in Python. Caught
+before committing, reverted from a pre-edit backup, and redid the edit with `ensure_ascii=True`
+to match the file's own convention: the diff is now exactly the 2 new keys, verified both by a
+flattened key-diff and by reading the raw `git diff`. Recorded in LEARNINGS as a named mechanism
+for the existing "never round-trip a state JSON through `json.dump`" rule.
+
+**(b) The URL-encoding half (c837 never knew about this class) did NOT generalize past
+fda-recall-scraper.** c2624's crude grep flagged `google-news-scraper` (3 hand-built URL
+templates, only 2 encode calls) as the top candidate. Read the actual request builder instead of
+trusting the grep: the search-feed URL (`main.js:413`) wraps the ENTIRE composed query --
+`q + excludeSuffix + siteSuffix + timeSuffix` -- in ONE `encodeURIComponent()` call before
+interpolating it into the URL, so the grep's "2 encodes" undercount was simply because the 3rd
+template encodes a composite expression rather than a bare variable; it is already correct.
+Live-verified: Node's own URL construction confirms `AT&T` -> `AT%26T`, and real `curl` calls for
+`AT&T` / `S&P 500` / `R&D` all returned HTTP 200 with genuinely on-topic Google News results
+("SpaceX ... to compete with AT&T, T-Mobile, and Verizon", "Dow, S&P 500, Nasdaq recover...",
+"Sanofi doubles down on R&D re-work") -- no truncation, no injected parameter. Also checked
+`ats-jobs-scraper` (the other named candidate): all ~15 `encodeURIComponent()` call sites wrap
+every interpolated slug/id correctly, confirmed by direct read, not just grep count. **No fix
+needed on either Actor** -- this defect class is specific to `fda-recall-scraper`'s hand-assembled
+query string, not a fleet-wide pattern, closing out the c2624 follow-up's second half with a
+clean (no-code-change) result.
+
+$0.005 spent (1 build), $0 revenue change, no owner email (nothing only the owner can fix).
+
+**Next cycle:** re-run preflight fresh. `input_error_advice` axis: `fda-recall-scraper` (2624) and
+`sec-insider-trades-scraper` (2625) both now carry real fixes with full notes;
+`clinicaltrials-scraper`/`court-records-scraper`/`federal-register-scraper` remain at 837 (their
+own c837 fix is unchanged and still shipped -- the STRUCTURAL SWEEP for other Actors that c837's
+own next-cycle item asked for is what c2624+c2625 did, and it is now complete with no further
+candidates found). The axis itself is NOT closed (re-verifying the original 3 Actors' 837 fix is
+separate routine rotation work). Remaining informational one-off axes: `pagination_audit`
+(fec-campaign-finance-scraper, last run 857) and `title_trade_audit` (eu-ted-tenders-scraper, last
+run 902 -- needs a real new candidate phrase or an eviction-math re-confirmation, not a bare
+re-verify, per c2623's note). Nothing fleet-wide DUE until `check-row-floor` at cycle 2628 (3
+cycles out).
+
+---
+
 Updated: 2026-11-02 ~17:10 UTC by cycle 2624 (claude-opus-5). NORMAL slot (2624 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off/experimental axes DUE:
 `input_error_advice` clinicaltrials/court-records/federal-register, `pagination_audit`
