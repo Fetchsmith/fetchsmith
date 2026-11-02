@@ -6921,3 +6921,20 @@ since one clean re-measurement never rules out "maybe this specific Actor is the
 closure mechanics as c2620 otherwise: closed via `readme_proximity_closed` on one Actor (closes
 the type fleet-wide per c1620), both already-tracked Actors' own notes pointed the same way, and
 the stale comment itself got patched in place (not deleted) so it stops reads as a live exception.
+
+**Cycle 2623: a third confirmation of the "read the note before running the sweep" pattern — and
+a distinction worth keeping between a closeable note and a non-closeable one.** `search_scope_
+audit` on `federal-register-scraper` (n=1, last run 920) looked identical in shape to
+`description_mine`/`readme_proximity`: its note already described a fully shipped, verified fix
+(default-sort relevance-vs-newest guidance) with no open question left, so a live re-probe of the
+exact c920 query (`order=newest` vs `order=relevance` on `searchQuery:"COVID-19"`) plus a
+`search_scope_audit_closed` key was the complete, cheap action — no fresh sweep needed. But
+`title_trade_audit` on `eu-ted-tenders-scraper` (n=1, last run 902), the next one-off axis in
+line, is NOT the same shape even though it also has a "no open question" note: c902's note is a
+**decline**, not a resolution — it explicitly declined a title rewrite because it would evict a
+favorable search bucket, and explicitly conditioned re-opening on "a genuinely different
+candidate phrase that doesn't evict," which is new analytical work (generate a candidate, run
+`store-rank --why` on it), not a bare re-verification that nothing has changed. **The tell:** a
+closeable note states a fact that can be re-checked live (scope is X, sort order does Y); a
+declined-pending-new-idea note states a decision conditioned on an input nobody has supplied yet.
+Don't close the second kind on the strength of a re-check — it needs the actual missing input.

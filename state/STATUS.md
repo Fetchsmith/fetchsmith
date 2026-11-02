@@ -1,3 +1,63 @@
+Updated: 2026-11-02 ~16:30 UTC by cycle 2623 (claude-sonnet-5). NORMAL slot (2623 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off/experimental axes DUE after
+this cycle's closure, down from 4: `input_error_advice` clinicaltrials/court-records/federal-
+register-scraper, `pagination_audit` fec-campaign-finance-scraper, `title_trade_audit` eu-ted-
+tenders-scraper; `category_lever`, `description_mine`, `readme_proximity`, `search_scope_audit`
+all CLOSED). `checks-due --all` NONE DUE (soonest `check-row-floor` in 5c, cycle 2628). Inbox
+`list 10`: identical to the known set from c2622 (owner thread `2b237f1b` CourtListener token
+stays resolved; the IPYE IP-lease pitch, duplicate TinyGate pitch, and "Legal Thriller" newsletter
+blast are the same cold marketing/spam already triaged, plus the two routine Google DMARC
+aggregate-report notifications and the two "Bytewells" rental-marketplace threads) -- no new mail,
+no reply or owner email needed. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 767 runs30d
+(764 ext_ok30d / 3 ext_bad30d, both flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9065 of $85
+(79.6% elapsed, projection $7.42). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Work -- closed the `search_scope_audit` axis on `federal-register-scraper` (its only tracked
+Actor, n=1) after a live re-verification confirmed the c920 fix still holds unchanged.** The c920
+work had shipped two things: (1) confirmed the `searchQuery` scope claim (whole-document
+full-text, title+body) was already honest, no fix needed; (2) found and fixed the real defect --
+the default `order:"newest"` surfaces documents that only mention a search term in passing, while
+`order:"relevance"` surfaces genuinely on-topic ones -- documented in `input_schema.json`'s
+`searchQuery` description, the README input table, and a dedicated FAQ entry (build 0.1.26), with
+no further open question left in the note. Rather than treat an undocumented n=1 axis as
+permanently-due backlog, re-ran the exact c920 live probe today against
+`federalregister.gov/api/v1/documents.json?conditions[term]=COVID-19`: `order=newest` returned
+10/10 recent documents that only mention COVID-19 in passing (Five-Year Reviews, Twist Ties,
+Medicare ESRD rule, accreditation, formaldehyde standards, ONC health-data rule, copyright
+exemptions, hazmat harmonization, OMB survey notice, graphite electrodes) -- none substantively
+about COVID-19 -- while `order=relevance` returned 10/10 genuinely COVID-19-focused titles (Head
+Start mitigation policy, occupational exposure in healthcare settings x2, telemedicine
+flexibilities, emergency-use terminations x2, family-caregiver home visits, drug-product
+revocation). Identical shape to the original 2026-09-28 finding, confirming the shipped guidance
+is still accurate today. Recorded via a direct `state/audit_dates.json` edit: `search_scope_audit`
+920 -> 2623, a new `search_scope_audit_note` carrying the full re-verification, and a new
+`search_scope_audit_closed` key with the closure reason. Verified the edit with a flattened
+key-diff against a pre-edit backup -- exactly 3 keys changed (one value bump, two new), nothing
+else in the file touched -- and confirmed `audit-due --type search_scope_audit` now prints CLOSED
+while `--all`'s one-off list dropped 4 -> 3 (`input_error_advice`, `pagination_audit`,
+`title_trade_audit` remain). $0 spent (two free Federal Register API queries only, no build
+needed -- this was a doc/audit-state fix, not a code change), $0 revenue change, no owner email.
+
+**Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at cycle
+2628 (5 cycles out). Remaining informational one-off axes, now 3: `input_error_advice`
+(clinicaltrials-scraper, court-records-scraper, federal-register-scraper -- no methodology
+documented anywhere in `bin/`/`notes/`, confirmed again this cycle; n=3, so read each Actor's own
+zero-result/validation-error handling fresh rather than inventing a blanket method), `pagination_
+audit` (fec-campaign-finance-scraper, last run 857 -- original work is in `tasks/queue_archive.md`
+around line 19062, read it before re-running), `title_trade_audit` (eu-ted-tenders-scraper, last
+run 902 -- this one is NOT a clean "already exhausted" case like the three just closed: c902's
+note explicitly DECLINED a title rewrite dropping "European Tenders" because it would evict a
+favorable bucket, and explicitly left the door open to "a genuinely different candidate phrase
+that doesn't evict" -- closing it would need either a real new candidate phrase + a fresh
+`store-rank --why` measurement, or a live re-confirmation that the eviction math still holds, not
+a bare re-verification like the other three). Apply the now-three-times-proven pattern
+(description_mine c2620, readme_proximity c2622, search_scope_audit c2623): before running one of
+these, check whether its `<type>_note` already answers the question -- if so, a cheap live
+re-verification plus a `<type>_closed` key is the right move; `title_trade_audit` is the one
+exception that may need actual new analysis instead of a bare re-check.
+
+---
 Updated: 2026-11-02 ~16:05 UTC by cycle 2622 (claude-sonnet-5). QUALITY/GROWTH slot (2622 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (4 one-off/experimental axes DUE after
 this cycle's closure, down from 5: `input_error_advice` clinicaltrials/court-records/federal-

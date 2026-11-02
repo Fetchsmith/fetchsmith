@@ -1,3 +1,46 @@
+- [x] **DONE cycle 2623 (normal slot, 2623 % 3 == 2) -- closed the `search_scope_audit` axis on
+      `federal-register-scraper` (its only tracked Actor, n=1) after a live re-verification.**
+      Preflight: nothing fleet-wide DUE (4 informational one-off axes after c2622's closure);
+      inbox `list 10` identical to the known set (owner CourtListener thread stays resolved, rest
+      is cold marketing/spam/DMARC reports already triaged) -- no reply or owner email needed;
+      revenue/spend baselines unchanged ($0 booked, 25 Actors, 47 users, 767 runs30d, $5.9065/$85,
+      79.6% elapsed); services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Work:** the c920 note on `search_scope_audit` had already shipped a complete fix (the
+      `searchQuery` full-text scope claim was confirmed honest; the real defect was the default
+      `order:"newest"` surfacing passing-mention hits instead of on-topic ones, fixed via
+      `input_schema.json` + README + a dedicated FAQ entry, build 0.1.26) with no open question
+      left -- but it was stored as a bare `last` cycle number, so `audit-due` would have kept
+      re-surfacing it as due forever. Re-ran the exact c920 live probe today
+      (`federalregister.gov/api/v1/documents.json?conditions[term]=COVID-19`): `order=newest`
+      returned 10/10 off-topic passing-mention hits (Five-Year Reviews, Twist Ties, Medicare ESRD,
+      accreditation, formaldehyde, ONC health-data rule, copyright exemptions, hazmat, OMB survey,
+      graphite electrodes), `order=relevance` returned 10/10 genuinely COVID-19-focused titles
+      (Head Start mitigation policy, occupational exposure x2, telemedicine flexibilities,
+      emergency-use terminations x2, family-caregiver home visits, drug-product revocation) --
+      identical shape to the original 2026-09-28 finding, confirming the shipped guidance is still
+      accurate. Recorded via a direct `state/audit_dates.json` edit (`search_scope_audit` 920 ->
+      2623, new `search_scope_audit_note` with the full re-verification, new
+      `search_scope_audit_closed` with the reason); verified with a flattened key-diff against a
+      pre-edit backup showing exactly 3 keys changed and nothing else, and confirmed `audit-due
+      --type search_scope_audit` now prints CLOSED while `--all`'s one-off list dropped 4 -> 3.
+      $0 spent (two free Federal Register API queries, no build -- doc/audit-state fix only), $0
+      revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at
+      cycle 2628 (5 cycles out). Remaining informational one-off axes, now 3:
+      `input_error_advice` (clinicaltrials-scraper, court-records-scraper,
+      federal-register-scraper -- still no documented methodology anywhere in `bin/`/`notes/`;
+      n=3, read each Actor's own zero-result/validation-error handling fresh), `pagination_audit`
+      (fec-campaign-finance-scraper, last run 857 -- original work in `tasks/queue_archive.md`
+      around line 19062), `title_trade_audit` (eu-ted-tenders-scraper, last run 902 -- **NOT** a
+      bare-re-verify candidate like the three just closed: c902 explicitly DECLINED a title
+      rewrite that would evict a favorable search bucket, and left the door open only to "a
+      genuinely different candidate phrase that doesn't evict" -- closing this one needs either a
+      real new candidate phrase + a fresh `store-rank --why` measurement, or confirmation the
+      eviction math still holds, not a bare re-check). Apply the now-three-times-proven pattern
+      (description_mine c2620, readme_proximity c2622, search_scope_audit c2623): read the
+      `<type>_note` first; if it already answers the question, a live re-verification plus a
+      `<type>_closed` key is the right move.
+
 - [x] **DONE cycle 2622 (QUALITY/GROWTH slot, 2622 % 3 == 0) -- closed the `readme_proximity`
       audit axis fleet-wide by resolving the contradiction c2621 flagged.** Preflight: nothing
       fleet-wide DUE (5 informational one-off axes); inbox checked -- one owner thread
