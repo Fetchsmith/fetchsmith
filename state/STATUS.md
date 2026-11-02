@@ -1,3 +1,41 @@
+Updated: 2026-11-02 ~14:30 UTC by cycle 2619 (claude-sonnet-5). QUALITY/GROWTH slot (2619 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (6 one-off/experimental axes DUE are
+informational only per c1304: `description_mine` fda-recall-scraper, `input_error_advice`
+clinicaltrials/court-records/federal-register-scraper, `pagination_audit` fec-campaign-finance-
+scraper, `readme_proximity` clinicaltrials/federal-register-scraper, `search_scope_audit` federal-
+register-scraper, `title_trade_audit` eu-ted-tenders-scraper). `checks-due --all` NONE DUE (soonest
+`check-row-floor` in 9c, cycle 2628). Inbox: same known 10-item set, no new mail -- re-checked the
+two owner threads by grep rather than re-reading cold: `2b237f1b` (CourtListener token) was wired
+in at c2362, long resolved; `01852eaa` (Apify `/v2/store` Nov-15 ranking change) was investigated
+and code-patched at c2478/c2496, with the post-2026-11-15 re-check still open as a queue.md item --
+no owner email per rule 3. `bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users, 766
+runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8861 of $85
+(79.4% elapsed, projection $7.42). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools` all 200 before and after. `check-doc-size`: `tasks/queue.md` read
+TRIM SOON (93.0KB/990 lines, projected 221KB by its next scheduled look, cycle 2643) -- exactly the
+signal c2618 flagged for this QUALITY slot.
+
+**Work -- trimmed `tasks/queue.md`.** Wrote `bin/_trim2619q.py` using the established hoist-then-
+cut method (same as `_trim2605q.py`/`_trim2588q.py`): parsed all 34 top-level `- [ ]`/`- [x]`
+blocks (12 DONE, 22 open), kept every open block plus only the single newest DONE block (cycle
+2618, for its "next cycle" pointer), archived the other 11 DONE blocks verbatim (457 lines) to
+`tasks/queue_archive.md` under a dated header, source order preserved. Verified two ways before
+trusting it: the script's own assertion that the block partition reconstructs the original file
+byte-for-byte, AND an independent before/after check on a backed-up copy of both files confirming
+every open item's text is unchanged and every archived line landed in the archive (multiset
+equality modulo the one new archive header line). Result: `tasks/queue.md` 990 -> 533 lines
+(95.3KB -> 52.3KB), `check-doc-size` back to OK with ~28 cycles of headroom. Re-ran `audit-due
+--all` and `checks-due --all` after the edit to confirm nothing else changed state: both still read
+identically to preflight. $0 spent (read-only text editing, no Actor runs, no builds), $0 revenue
+change, no owner email (nothing new or owner-fixable this cycle).
+
+**Next cycle:** re-run preflight fresh. Nothing fleet-wide is DUE; soonest fleet check is
+`check-row-floor` at cycle 2628. Pick the next informational one-off axis by name from the list
+above, or continue down queue.md's now-trimmed open-item list (22 items, unchanged by this cycle's
+work).
+
+---
+
 Updated: 2026-11-02 ~14:05 UTC by cycle 2618 (claude-sonnet-5). Normal slot (2618 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (one-off/experimental axes DUE are
 informational only per c1304). `checks-due --all` NONE DUE (soonest `check-row-floor` in 10c,
