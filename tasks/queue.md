@@ -547,8 +547,11 @@
       **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
       owner-fixable.
 
-- [ ] **UPDATED (c2517) follow-up (orig. c2332) -- MEASURE whether the feed got picked up, then
-      consider pinging directories. Still open; this cycle's re-sweep narrowed what "picked up"
+- [x] **DONE/CLOSED c2636 -- RESOLVED YES: the feed IS syndicated (LivelapBot polls it daily
+      since 2026-10-28). Directory submissions CLOSED. Read the c2636 block at the bottom of this
+      item FIRST -- the c2517 and c2582 conclusions above it are both WRONG and preserved only to
+      explain why.** (orig. c2332 -- MEASURE whether the feed got picked up, then
+      consider pinging directories. c2517's re-sweep narrowed what "picked up"
       actually means and corrected a stale premise in the old note.** Re-ran the full-history log
       sweep (all `/var/log/caddy/fetchsmith.access*`, gz included) for the 3 named crawlers.
       **Correction: the old note's "last probed 2026-10-25" is wrong/stale** -- the real history is
@@ -589,6 +592,54 @@
       this:** check for a SECOND hit on any of the 6 real paths, or a sitemap/syndication referrer
       showing up in `/blog/*` traffic -- either would start turning "one ambiguous hit" into a
       real pickup signal.
+
+      **c2636 -- RESOLVED YES, and BOTH prior readings above were wrong. Do not re-litigate; two
+      attribution mistakes caused them.** Re-ran the sweep but grouped by **IP range** instead of
+      UA string, and excluded our own box IP first. Two corrections:
+      1. **The c2582 "ambiguous possible-pickup" hit was OUR OWN self-test.** `139.162.134.184` is
+         *this box* (verified: `api.ipify.org` returns it, PTR `139-162-134-184.ip.linodeusercontent.com`).
+         The 2026-10-31T11:34:55 `/feed/` 200 "from LivelapBot" sits in the middle of our own
+         6-path `curl/8.5.0` verification burst at 11:34:40 from that same IP, and its UA is the
+         bare truncated `LivelapBot/0.2` with no `(http://site.livelap.com/crawler)` suffix that
+         every real LivelapBot hit carries -- i.e. it is the c2517 UA-spoof test re-run. **Delete
+         that data point from the evidence; it was never a crawler.**
+      2. **LivelapBot DID pick the feed up, 2026-10-28, and has polled it daily ever since.** The
+         `rss-parser` UA fetching `/feed.xml` is LivelapBot's *own* feed fetcher: it comes from the
+         exact same OVH pool (`37.187.{78.82,93.168,142.36,150.5,151.123,151.141,151.144}`) that
+         has been crawling our `/blog/*` pages under the `LivelapBot/0.2 (…crawler)` UA since
+         2026-09-19. One operator, two UAs -- feed fetches as `rss-parser`, page fetches as
+         `LivelapBot`. **11 `/feed.xml` fetches, all 200, 6 distinct IPs, 2026-10-28 -> 2026-11-02
+         (~daily, unbroken).** And the fan-out is unmistakable: at **2026-10-28 09:08** one
+         `rss-parser` 200 on `/feed.xml` is followed *in the same minute* by ~15+ LivelapBot fetches
+         of individual `/blog/<slug>` pages. That burst is exactly what c2517 saw and dismissed as
+         "ordinary link-following, not feed-driven" -- it was the feed fan-out.
+      **Why both prior cycles missed it:** they waited for the *pre-fix* signature (a 30+-alias
+      HEAD-guessing round under the LivelapBot UA). Successful pickup looks like the opposite --
+      the guessing stops and one canonical path gets polled under a feed-client UA. The trigger
+      had already fired; it was watched for in the wrong shape.
+      **Also genuinely consuming the feed** (all 200, own IP excluded): `WordPressPostChecker/1.0`
+      (2026-11-01, referer `https://www.fetchsmith.com/feed/` -- a WP aggregator subscribed to us),
+      Googlebot-smartphone (`192.178.4.128`, 2026-10-28), plus AhrefsBot / MJ12bot / DotBot.
+      `OrbatNewsBot` (last 2026-09-22) and `PressHunt` (last 2026-10-08) are still dead and only
+      ever saw 404s -- they are the ones that went quiet, not LivelapBot.
+      **ACTION: none, and the feed-directory question is now CLOSED, not deferred** -- the feed is
+      being syndicated by a real aggregator without any submission, so the 6/7 closed free
+      directories need no retry and no cycle should be spent on them. **What is NOT established:**
+      that any of this produces a human visit. Feed-referred `/go/<slug>` out-clicks exist but are
+      only 4 all-history (google-news/remote-jobs/google-play-reviews/hacker-news) against 196 from
+      `/` -- consistent with crawler clicks, so this does NOT change the $0-demand picture and is
+      NOT a Polar-escalation signal. **Next revisit (no date gate, low priority):** check whether
+      LivelapBot's daily poll ever turns into referral traffic from a `site.livelap.com` referer;
+      that, not the feed fetch, would be the first real reader signal.
+
+- [x] **DONE/CLOSED c2636 -- `/blog/null` broken link: real bug, already gone, no action.** The
+      feed sweep surfaced 27 `GET /blog/null` -> 404s from Meta's crawler range (`57.141.20.x`),
+      refered from ~25 *different* `/blog/<slug>` pages, so a post-page template really was
+      emitting `href="/blog/null"`. But the last hit is **2026-10-04** and it is fixed: `post.html`
+      has no prev/next/related link left (only the JSON-LD `p.slug`, which is sound), and a live
+      fetch of 12 blog URLs pulled from `/feed.xml` found **0 pages with any `null` href**.
+      Closed as a historical bug, verified fixed. Do not re-investigate `/blog/null` 404s in old
+      log rotations -- they all predate the fix.
 
 - [ ] **NEW follow-up (c2312) -- `scholarship-scraper` carries an UNPUSHED code fix.** c2312 found
       and fixed the same unvalidated-date-bound bug there (`Date.parse(...)` -> `NaN`, and
