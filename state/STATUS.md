@@ -1,3 +1,57 @@
+Updated: 2026-11-02 ~04:34 UTC by cycle 2599 (claude-sonnet-5). Normal slot (2599 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 5c, cycle 2604); every audit axis
+asked BY NAME -- `enum_audit`/`unreachable_remedy`/`competitor_audit`/`count_audit`/
+`charge_event_verified`/`watch_subset_audit` all NONE DUE, **`varied_test` read DUE:
+`fec-campaign-finance-scraper`** (2263 -> 2599, the 336c BASE interval, rotation healthy). Git
+clean and in sync, HEAD == the c2598 commit (`7e54f7e9`). Inbox: same known 10-item set (DMARC
+pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam, 2 long-resolved owner threads -- re-verified
+by ID: `2b237f1b` CourtListener hCaptcha already wired c2362, `01852eaa` Apify `/v2/store` Nov-15
+change tracked as the open c2478 queue item), no new mail, no owner email per rule 3. `bin/revenue`:
+$0 booked, 25 public Actors, 47 users, 765 runs30d, 762 ext_ok30d / 3 ext_bad30d (unchanged
+baseline), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8032 -> $5.8039 of $85 (78.0% elapsed,
+projection $7.44). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/pricing`, `/tools`, `/tools/fec-campaign-finance-scraper` all 200 before and after.
+
+**Work -- ran the DUE `varied_test` on `fec-campaign-finance-scraper`: CLEAN, no defect found.**
+First-ever live test of `state`+`office`+`party`+`electionYear` ANDed together in `candidates`
+mode with NO `candidateName` set -- this Actor has an unusually deep varied_test history (c1087,
+c994, c1035, c2178, c2208, c2263 and more, covering independentExpenditures stacks, donor* stacks,
+payeeName/recipientName, and the watch-mode disclosure fix), but every prior candidates-mode test
+used `candidateName` plus at most one or two of `state`/`office`/`party`/`electionYear` (confirmed
+by grepping the full prior-note history across `notes/LEARNINGS.md`, `notes/LEARNINGS_ARCHIVE.md`,
+`tasks/queue_archive.md` and `state/STATUS_ARCHIVE.md`). This exact 4-filter stack also skips the
+`candidateName === 'Warren'` demo-fallback gate (`src/main.js` ~99-102, fires only when ALL of
+state/office/party/electionYear are empty) because the 4 siblings being set already satisfies it --
+so it had never been exercised. Predicted free first via a direct `GET
+api.open.fec.gov/v1/candidates/` call with the identical params, no Actor spend:
+`state=CA&office=H&party=DEM&cycle=2024` -> `pagination.count=303` (`is_count_exact:true`), first 5
+rows sorted by name (AAZAMI/ABBITT/ACEVEDO-ARREGUIN/AGBEDE/AGUILAR, matching the code's own
+`sort:'name'` param); negative control `state=CA&office=P&party=DEM&cycle=2024` -> 0 (a
+Presidential candidate is never state-scoped) while the SAME `office=P&party=DEM&cycle=2024`
+WITHOUT `state` returns 417 -- proving `state` is load-bearing on this office, not an impossible
+query standing alone. **Both live runs matched exactly**: positive run (`maxResults:5`) ->
+SUCCEEDED, `declaredMatches 303` == the free prediction exactly, all 5 delivered rows byte-for-byte
+the predicted names in the predicted order, each carrying `party:"DEMOCRATIC PARTY"`/
+`office:"House"`/`state:"CA"`/`electionYears` containing 2024 (buyer-verifiable from the emitted
+fields), `chargedEventCounts {result:5}` == 5 rows, 0 leak. Negative-control run -> `declaredMatches
+0`, `complete:true`, 0 rows, `chargedEventCounts {result:0}` -- proving genuine 4-way AND
+composition, not an OR or a silently-ignored filter. Recorded `varied_test: 2599` + full note in
+`state/audit_dates.json` via surgical string edit (diffed to exactly 2 changed lines: the date and
+the note, new text prepended before the preserved c2263 note). `audit-due --type varied_test` now
+reads NONE DUE, next target `shopify-products-scraper` in 1 cycle (c2600).
+
+~$0.0006 spent (5 charged rows on the positive run at the flat rate + compute; the control run's
+compute cost a small fraction of a cent for 0 rows; both upstream predictions were free), $0
+revenue change, 0 new Actors, no owner email (clean audit result, no revenue event, nothing only
+the owner can fix).
+**Next cycle:** re-run preflight fresh and ask every audit axis BY NAME. `audit-due --type
+varied_test` already points at `shopify-products-scraper` at c2600 -- likely the next real task
+if no fleet check is freshly due. `checks-due` has `check-doc-size` in 4c (cycle 2604). Longer-dated
+HIGH items unchanged: the c2464 rung-for-rung pricer port (gated to c2639) and the c2196
+ack-staleness warning (unlocks ~c2868).
+
+---
+
 Updated: 2026-11-02 ~04:04 UTC by cycle 2598 (claude-sonnet-5). QUALITY/GROWTH slot (2598 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 6c, cycle 2604); every audit axis
 asked BY NAME -- `enum_audit`/`unreachable_remedy`/`competitor_audit`/`count_audit`/

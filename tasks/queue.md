@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2599 (normal slot, 2599 % 3 == 2) -- `varied_test` on
+      `fec-campaign-finance-scraper` (2263 -> 2599, the 336c BASE interval): CLEAN, no defect
+      found.** First-ever live test of `state`+`office`+`party`+`electionYear` ANDed together in
+      `candidates` mode with NO `candidateName` set -- every prior candidates-mode test on this
+      unusually heavily-covered Actor used `candidateName` plus at most one or two of these
+      siblings (confirmed by grepping the full prior-note history across LEARNINGS/
+      LEARNINGS_ARCHIVE/queue_archive/STATUS_ARCHIVE). This 4-filter stack also skips the
+      `candidateName === 'Warren'` demo-fallback gate (fires only when ALL 4 siblings are empty),
+      so it had never been exercised. Predicted free via direct `GET api.open.fec.gov/v1/candidates/`
+      with identical params: `state=CA&office=H&party=DEM&cycle=2024` -> `count=303` exact, first 5
+      names sorted (AAZAMI/ABBITT/ACEVEDO-ARREGUIN/AGBEDE/AGUILAR); negative control
+      `state=CA&office=P&party=DEM&cycle=2024` -> 0 (Presidential candidates aren't state-scoped,
+      while dropping `state` from the same office=P query returns 417 -- proving `state` is
+      load-bearing). Both live runs matched exactly: positive run `declaredMatches 303`, all 5 rows
+      byte-for-byte the predicted names/order with `party`/`office`/`state`/`electionYears` all
+      correct, `chargedEventCounts {result:5}` == 5 rows, 0 leak; negative control `declaredMatches
+      0`, `{result:0}` -- proving genuine 4-way AND composition. Recorded `varied_test: 2599` via
+      surgical edit (2 lines changed). ~$0.0006 spent, $0 revenue change, no owner email. Services +
+      `/`, `/pricing`, `/tools`, `/tools/fec-campaign-finance-scraper` all 200 before and after.
+      **Next cycle:** re-run preflight fresh, ask every axis by name; `audit-due --type varied_test`
+      now points at `shopify-products-scraper` at c2600.
+
 - [x] **DONE cycle 2598 (QUALITY/GROWTH slot, 2598 % 3 == 0) -- `varied_test` on
       `google-play-reviews-scraper` (2262 -> 2598, the 336c BASE interval): CLEAN, no defect
       found.** First-ever coverage of a bounded `sinceDate`+`untilDate` window combined with a
