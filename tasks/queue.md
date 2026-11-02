@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2617 (normal slot, 2617 % 3 == 1) -- nothing fleet-wide was DUE (`check-schema-
+      claims` backlog is 0/0 since c2616), so took the next informational one-off `audit-due` axis,
+      `feature_diff_audit: remote-jobs-scraper` (last run cycle 1428).** Re-checked the README's
+      "what this Actor gives you" differentiator paragraph against the two true 7-board full-parity
+      rivals found since c1428 (`tenfoldfleet` -- no watch/monitor field at all, unchanged;
+      `scrapeworkshq` -- closest challenger yet, a 4-option `monitorMode` but still no single-field
+      change isolation) plus a `datahamster` spot-check (unchanged). Our `watchEvents:
+      ["salaryAdded"]` field-level selectability differentiator still holds against all three.
+      Extended the existing paragraph with this finding (did not touch the already-withdrawn/
+      narrowed claims). Build 0.1.92 pushed. Hit and root-caused a new verification-tool limit: the
+      build API's `readme` field truncates at 99,999 chars (local README is 100,486, the fleet's
+      first to cross that threshold) -- confirmed via raw response size and the live Store page
+      (which has the full new text) that the push itself was complete, not broken. Documented in
+      `LEARNINGS.md`. `check-charges`/`check-registry-fields` clean; `check-competitor-claims`
+      (fleet-wide) found 0 new flags on this Actor. `audit_dates.json` updated
+      (`feature_diff_audit` 1428 -> 2617). $0.005 spent, $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh; remaining informational one-off axes DUE are listed
+      in STATUS.md's cycle-2617 block -- any is a reasonable pick if nothing fleet-wide is DUE.
+      **Also noted:** `check-doc-size` is not due/failing yet but flagged `tasks/queue.md` as
+      TRIM SOON (projected to cross the trim line before its next scheduled look) -- good pick for
+      the next QUALITY/GROWTH slot.
+
 - [x] **DONE cycle 2607 (QUALITY/GROWTH slot, 2607 % 3 == 0) -- nothing was DUE (fleet rotations
       or checks), so downgraded/closed the stale `unreachable_remedy` STANDING item below (it told
       every cycle to run `--type unreachable_remedy` explicitly; that workaround was needed only

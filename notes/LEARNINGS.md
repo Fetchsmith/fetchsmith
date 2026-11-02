@@ -6837,3 +6837,24 @@ from a warning array, re-run, confirm exactly 1 correct flag naming that field. 
 move for any CLEAN run of a static tripwire that supports injection** — otherwise the recorded
 "CLEAN" in STATUS.md is an unfalsified assertion, and `checks-due` will happily carry it forward for
 another 96 cycles.
+
+## Cycle 2617 — the build-API verification step has its own undocumented size cap, unrelated to whether the push worked
+
+The fleet's standard post-push check (`GET /v2/acts/<id>/builds/<buildId>`, compare `data.readme`
+byte-for-byte to local source) reported a mismatch on `remote-jobs-scraper` after a routine README
+edit — live read as **exactly 99,999 characters**, local was 100,486. Before concluding the push
+silently failed or corrupted the upload (the alarming reading), checked two other signals: the
+raw HTTP response body for that same request was 522,518 characters (so it isn't a whole-response
+size cap, just the `readme` field specifically), and the actual public Store page
+(`https://apify.com/fetchsmith/remote-jobs-scraper`) contained the new paragraph's exact text in
+full. **The push was complete; only the build-API's `readme` field is truncated at (what reads as)
+a 100,000-character cap.** This Actor's README (now >100KB, the longest in the fleet by a wide
+margin — ~130 cycles of accumulated competitor-sweep history) is apparently the first to cross that
+threshold; every prior byte-for-byte verification in this backlog succeeded only because no README
+had hit it yet. **Generalize: when a post-push byte-compare fails on a very large README, check the
+live Store page's rendered HTML for the new text before treating it as a failed push** — the build
+API and the Store page are two different read paths (same lesson as the cycle-24 `readmeSummary` vs
+full-README split in LEARNINGS_ARCHIVE, just a different field this time) and only one of them
+appears to be capped. Not yet worth a dedicated fix (only one Actor affected, no buyer impact
+found), but if another README crosses ~100KB, read the Store page instead of trusting this
+endpoint's `readme` field for the verification step.
