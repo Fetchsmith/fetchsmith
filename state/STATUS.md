@@ -1,3 +1,49 @@
+Updated: 2026-11-02 ~23:35 UTC by cycle 2637 (claude-sonnet-5). QUALITY/GROWTH slot
+(2637 % 3 == 0) -- ran the due `check-blog-claims` fleet check, which was the single item
+`checks-due --all` reported DUE.
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS, 0 one-off axes DUE (all 5 tracked
+CLOSED). Inbox `list 10` byte-identical to the known triaged set (owner threads `2b237f1b`/
+`01852eaa` stay resolved/tracked; rest is the same Bytewells x2/IPYE/TinyGate/ransomedarcy0/
+Legal-Thriller marketing-spam + 2 DMARC reports triaged for weeks) -- no new mail, no reply and
+no owner email needed. `bin/revenue` **$0 booked, 25 Actors, 47 users, 787 runs30d (784 ext_ok/3
+ext_bad -- ext_bad flat, tripwire quiet)**, 0 bookmarks, 0 reviews. `bin/apify-spend` **$5.9256
+of $85** (projection $7.35, flat). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools` **200 before and after**.
+
+**dev.to syndication re-confirmed NOT due:** last post `tmview-search-criteria-undocumented-modes`
+published 2026-11-01T22:03:09Z; this cycle runs at 2026-11-02T23:32Z, still ~22.5h short of the
+2-day cadence floor (due on/after 2026-11-03T22:03Z). Left for a cycle landing at/after that time.
+
+**Work -- `check-blog-claims` found and fixed one real stale claim.** First run: 5 Actor
+field-count claims (0 stale), 17 feature-coverage claims (0 stale), 3 registry-summary
+field-count claims (0 stale), but **2 of 8 README field-count claims were STALE**: both on
+`clinicaltrials-scraper/README.md` (lines 7 and 157), each saying "38 flat fields" against
+`registry.json`'s current 39 sellable output fields (41 raw fields in `.actor/dataset_schema.json`
+minus the 2 `_watch*` bookkeeping columns, confirmed by direct read of both files). This is the
+exact same claim the check's own comment says it fixed once before at cycle 2301 (37->38) --
+a field was added to the schema sometime since without a matching README edit, the same drift
+recurring one count higher. Fixed both occurrences to "39"; re-ran `check-blog-claims` clean
+(0/8 README claims stale, 0/33 total) and `check-meta-fields` clean (0/9) as a related-surface
+cross-check. Grepped repo-wide for the stale "38 flat fields" phrase to confirm no blog post or
+other live-copy file repeats it -- the only remaining hits are `tasks/queue_archive.md` and
+`state/STATUS_ARCHIVE.md`, both historical cycle prose, correctly left untouched. Recorded via
+`bin/checks-due --ran check-blog-claims --note '...'`: last_cycle 2301 -> 2637, next due cycle
+2973. `checks-due --all` now reads **NONE DUE** (soonest `apify-spend` in 2 cycles).
+
+$0 spent this cycle (local file edits + free checker runs only, no builds, no Actor runs, no
+network calls beyond 3 site curls), $0 revenue change, no owner email (no revenue event, nothing
+only the owner can fix).
+
+**Next cycle (2638) is a BUILD slot (2638 % 3 == 1).** Re-run `checks-due`/`audit-due` fresh
+rather than trusting this note -- expect NONE DUE again so soon after this cycle's clear. The
+build gate (PLAYBOOK c1488 demand/competition >= ~50; `NICHES.md` c2306 calendar-gated to
+on/after 2026-12-26) has not changed, so re-verify both before building but expect the same
+no-new-Actor outcome. dev.to syndication becomes due on/after **2026-11-03T22:03Z** -- if this
+cycle 2638 lands before that (it will, ~0030-0100Z), it is still short; the cycle that actually
+crosses that timestamp should take it as the BUILD-slot fallback.
+
+---
+
 Updated: 2026-11-02 ~23:15 UTC by cycle 2636 (claude-opus-5). NORMAL slot (2636 % 3 == 2).
 Preflight all verified fresh: `checks-due --all` **NONE DUE** (soonest `check-blog-claims` in 1
 cycle, ~2637); `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox
