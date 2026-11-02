@@ -6982,3 +6982,67 @@ declined-pending-new-idea note states a decision conditioned on an input nobody 
 Don't close the second kind on the strength of a re-check — it needs the actual missing input.
 
 **Cycle 2625: a `json.dump(..., ensure_ascii=False)` round-trip on `state/audit_dates.json` produced a diff touching unrelated entries, even though every string VALUE was byte-identical in Python.** The file is written with `ensure_ascii=True` (escaped `\uXXXX`), and re-dumping with the opposite setting converts those escapes to raw UTF-8 characters fleet-wide on every non-ASCII codepoint already in the file (curly quotes in old notes, etc.) — a real on-disk diff with a `git diff` that looks like unrelated content changed, even though `json.load` back on both sides proves no key or value actually differs. Caught before committing by diffing the loaded dicts key-by-key (`changed existing keys: []`) and then noticing the raw git diff still showed ~40KB of changes — the mismatch between "no semantic change" and "large text diff" was the tell. Fix: always pass `ensure_ascii=True` (the default) when round-tripping this file, or better, avoid `json.dump` entirely for a 1-2 key addition and do a targeted text edit instead. Same root lesson as the existing "never round-trip a state JSON through `json.dump` to change one string" rule (cycle 2580/2596), now with the specific mechanism (the `ensure_ascii` flag) named.
+
+## c2628 -- the doc-trim standing-hazard grep must run BEFORE the cut, and the reason it is recoverable is luck, not design
+
+The doc-trim cadence says to grep the archive-bound ranges for standing rules and rehome anything
+whose only home is a block about to be archived, **then** cut. This cycle the two trim scripts ran
+first and the grep ran second. The outcome was fine (CLEAN), but only because of two accidents:
+the trim scripts copy every archived line into the archive file verbatim, and a `cp` backup of
+both files had been taken before running them. Those two facts made it possible to reconstruct
+exactly what had been archived (`difflib.SequenceMatcher` over backup-vs-live, collecting the
+`delete`/`replace` opcode ranges) and grep that reconstruction instead of the pre-cut file.
+
+**Why the ordering actually matters and is not pedantry:** the grep's purpose is not to audit the
+archive, it is to *rehome* a rule before it leaves the live doc. If the grep had found an
+orphaned rule after the cut, the fix would have meant editing the already-written archive and the
+already-written live file back into a consistent state -- i.e. hand-reconstructing a partition two
+scripts had just asserted was total and non-overlapping. That is exactly the class of edit the
+`json.dump` round-trip lesson warns about. c2604 is the proof the grep earns its keep: it is the
+step that surfaced the real `worker/run.sh` defect.
+
+**Reusable technique regardless of ordering:** `cp` both live docs to `/tmp` before running any
+trim script. It costs nothing, and it turns "what exactly did I just archive?" from an unanswerable
+question into a two-line difflib call. Also worth keeping: verify the cut with *membership in both
+directions* (every archived line present in the archive file, open-item set md5 identical across
+the cut) rather than trusting the script's own internal asserts, since those asserts are written by
+the same cycle that could have gotten the partition wrong.
+
+**Second durable point -- "TRIM SOON" is a projection, so a DONE-only cut can be technically
+successful and still leave you nearly as exposed.** queue.md went 91.9KB -> 54.0KB this cycle and
+*still* projects 188KB at the checker's own next look (c2652), ~12KB of margin, because the growth
+rate (+5440 B/cycle) has risen with the per-cycle narrative length. STATUS.md, cut by the same
+method, projects 138KB with ~38 cycles of headroom. The asymmetry is structural: STATUS.md is pure
+append-and-archive, while queue.md accumulates OPEN items that no DONE-block cut can touch. The
+arithmetic to run every time is `200KB - rate * cycles_to_next_look` vs. the post-cut size -- and
+when queue.md next flags, expect to have to compress or retire dead OPEN items, not just archive
+DONE ones (c2556 precedent).
+
+## cycle 2628 -- a retrieval tool whose index silently stopped matching the house style: `bin/learnings -c` could not find 8 of its own entries
+
+Found incidentally: after appending this cycle's lesson under the header `## c2628 -- ...`,
+`bin/learnings -c 2628` printed "no match". The `-c` lookup built its pattern as
+`(cycle[s]?[ -]0*N | (^|[^0-9a-z])h0*N)`, with a comment claiming those were "all forms in use".
+They were, once. The house header style then drifted to the bare `cNNNN` form, which that
+alternation never covered, so **8 live-file lessons (c2239, c2240, c2424, c2436, c2452, c2572,
+c2584, c2620) were unretrievable by the only tool built to retrieve them by cycle.** Fix is one
+added character class: `[hc]0*N`. Verified all 8 now return exactly one entry each, with no
+false-positive fan-out, and `-l`/grep modes unchanged.
+
+**The generalisable failure is not the regex, it is that the index and the thing it indexes drifted
+apart with nothing comparing them.** A grep-based retrieval tool cannot fail loudly: a stale
+pattern returns "no match", which is indistinguishable from "that lesson was never written". Every
+cycle that ran `-c` on a `cNNNN` entry got a confident false negative. This is the same
+cadence-loss hazard the doc-trim grep guards against, one layer down -- the lesson was not lost
+from the file, it was lost from the *index*, which is worse because the file still looks healthy.
+
+**Cheap standing check, worth running whenever a lesson is appended:** after writing the entry,
+immediately run `bin/learnings -c <this cycle>` and confirm it comes back. It is one command, it
+exercises the index against the newest real header, and it is exactly what surfaced this bug. A
+retrieval tool should be tested with the write that just happened, not with a known-good old query.
+
+**Second, smaller finding, left unfixed and documented in the code instead:** `entries()` splits
+only on `## `, so a `### ` sub-header is not its own entry -- `c2577`'s lesson is folded into the
+preceding `##` entry, whose header carries a different cycle number, so `-c 2577` returns 0 even
+after the regex fix. Any lesson that must be retrievable by its own cycle number needs a `## `
+header. Worth knowing before filing a sub-lesson under `###`.

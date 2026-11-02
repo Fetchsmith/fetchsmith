@@ -66442,3 +66442,440 @@ current "next cycle" pointer). Verbatim, no content changed.
       would be worse than none. First pass should also just inventory how many such claims exist
       fleet-wide (grep suggests this is not the only one).
 
+
+## Archived at cycle 2628 (queue.md trim, `bin/_trim2628q.py`) -- DONE blocks for cycles [2626, 2625, 2624, 2623, 2622, 2621, 2620, 2619, 2618]
+
+- [x] **DONE cycle 2624 (normal slot, 2624 % 3 == 2) -- did the STRUCTURAL fleet sweep that the
+      `input_error_advice` axis has been waiting on since cycle 837, found the defect shape alive
+      on `fda-recall-scraper`, and fixed it plus its root cause (build 0.1.88, live-verified).**
+      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 informational one-off axes:
+      `input_error_advice`, `pagination_audit` fec, `title_trade_audit` eu-ted); `checks-due
+      --all` NONE DUE (soonest `check-row-floor` cycle 2628); inbox `list 10` = the known set
+      plus one previously-unlogged item I read in full (`5ce80b92`, ransomedarcy0@gmail.com,
+      "Regarding your Fetchsmith.com") -- generic SEO cold-pitch, non-actionable, no reply;
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 770 runs30d (767 ext_ok / 3 ext_bad, flat),
+      0 bookmarks, 0 reviews; `bin/apify-spend` $5.9069 of $85 (79.7% elapsed, projection $7.41);
+      services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Why this axis instead of re-dating it:** it had NO note on any of its 3 Actors and no
+      methodology in `bin/`, which is why c2607/c2620 skipped it. Recovered the definition from
+      `queue_archive.md` + `STATUS_ARCHIVE.md`: c836 found on `eu-ted-tenders-scraper`, and c837
+      fixed on 3 more Actors, the "unconditional retry advice" shape -- `apiGet`/`fetchPage`
+      returns `null` for BOTH a permanent 4xx and a retry-exhausted 5xx, so the final
+      `Actor.fail()` always said "please re-run in a few minutes", even on a 400 that fails
+      identically forever. c837's own next-cycle item #2 was an explicit STRUCTURAL sweep of
+      every other Actor with a watch/seed mode + a generic retry helper, "not just re-grep the
+      same phrase" -- never done in the 1787 cycles since.
+      **Sweep result:** 4 Actors carry the c837 fix (`INPUT_ERROR_STATUS`); the phrase grep hits
+      5 others, of which c837 had already cleared 3 (`scholarship`, `steam-reviews`,
+      `trademark-search`). The 2 it never looked at are the 2 that matter:
+      `fda-recall-scraper` -- **CONFIRMED the identical shape** (`fetchPage` returns `null` for a
+      time-budget stop, a retry-exhausted 429/5xx, a non-JSON body AND any non-200/404 status;
+      the watch-seed `Actor.fail()` at the end of `main.js` appended " Please re-run in a few
+      minutes." unconditionally, as did the non-fatal `log.warning` on the same path) -- and
+      `sec-insider-trades-scraper`, see the follow-up below.
+      **Then verified the 400 was really reachable rather than assuming it** (c837's own rule:
+      a real 400, never a guessed one). Every "obvious" bad-enum input is client-side filtered
+      and the dates are validated by `normDate`, so the reachable path is a free-text field -- and
+      the trigger turned out to be ordinary buyer input, not a hostile one: **`quote()` dropped
+      filter values RAW into a hand-assembled query string, so an `&` in a firm/brand name ENDS
+      the `search` parameter mid-phrase.** Live: `searchQuery:"A&W"` -> HTTP 400 BAD_REQUEST
+      `Invalid parameter: W&quot; OR reason_for_recall:&quot;A`; node's own URL parser confirms
+      `recallingFirm:"Procter & Gamble"` is sent as `search=...recalling_firm:"Procter ` with
+      ` Gamble"` as a stray second parameter. Meanwhile the properly-encoded form
+      `recalling_firm:"B%26G Foods"` returns **14 real food recalls** -- so this was never just
+      bad copy, it was a buyer typing a real firm name and getting a hard failure.
+      **Second finding, a genuine refinement of the c837 remedy:** openFDA reports a query its
+      Lucene parser cannot read as **HTTP 500** `[token_mgr_error] Lexical error ... <EOF>`, not
+      400 (verified live with a trailing backslash). So c837's status-code-only branch
+      (`{400,404,422}`) would NOT have caught it here, and worse, a 500 lands in `fetchPage`'s
+      RETRY branch -- 4 attempts with 10/20/30s backoff, ~60s of the buyer's compute, on an input
+      error that can never succeed. (Consistent with an already-published blog claim on this
+      Actor: openFDA "returns a 500 instead of a 400" for a non-`.exact` `count=`/`sort=`.)
+      **Shipped in ONE batched push (code + README), build 0.1.88:** (1) `encodeValue()` --
+      percent-encodes `&` `#` `+` `%` in every interpolated filter value and strips `"` `\`
+      (both of which make the parser throw a 500); it is centralised in `quote()`, so it also
+      covers the `includeFirmHistory` request, which hand-assembles a URL the same way and had
+      the same bug. (2) `INPUT_ERROR_STATUS` + `PERMANENT_QUERY_ERROR_RE` body sniff +
+      `lastErrorStatus`/`lastErrorWasInput` + `upstreamAdvice()`; a 5xx whose body shows a
+      permanent parse rejection now returns immediately instead of retrying 4x, and BOTH
+      unconditional messages (the `log.warning` and the `Actor.fail()`) branch on it. (3) Two
+      README FAQ entries: the `&`-in-a-firm-name answer and "a run failed upstream -- should I
+      just re-run it?".
+      **Verified:** `node --check` OK; unit-tested `encodeValue` on 10 values (`A&W`,
+      `B&G Foods`, `Procter & Gamble`, `C++ labs`, `50% off`, `tag#1`, a trailing backslash, an
+      embedded quote, plain text) with a URL round-trip proving `search` survives as one
+      parameter, and the body sniff proving true on both real openFDA rejection bodies and FALSE
+      on a generic 503 and a details-less 500 (so a real outage still retries). Live on the
+      platform twice: the former bug case `recallingFirm:"B&G Foods"` now SUCCEEDED, 5 rows of
+      **14 declared matches** -- the exact total measured out-of-band by curl -- all 5 rows
+      `B&G Foods North America, Inc` (run `tDRBFeKCWp9hvTp4W`); and the `test_input.json`
+      regression SUCCEEDED at 12 rows across all 3 product types, matching `health.json`.
+      `state/audit_dates.json` got `input_error_advice: 2624` + a full
+      `input_error_advice_note` on `fda-recall-scraper` ONLY (verified 2-key diff; the other 3
+      Actors deliberately LEFT at 837 so the axis keeps surfacing while real fleet work remains
+      -- it is explicitly NOT closed).
+
+- [x] **DONE cycle 2625 (QUALITY/GROWTH slot, 2625 % 3 == 0) -- closed BOTH halves of the c2624
+      follow-up: a real fix on `sec-insider-trades-scraper` (build 0.1.70) plus the URL-encoding
+      half investigated and found NOT to generalize past `fda-recall-scraper`.**
+      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 informational one-off axes:
+      `input_error_advice` clinicaltrials/court-records/federal-register, `pagination_audit` fec,
+      `title_trade_audit` eu-ted); `checks-due --all` NONE DUE (soonest `check-row-floor` in 3c,
+      cycle 2628); inbox identical to the known set (owner threads `2b237f1b`/`01852eaa` stay
+      resolved/tracked, rest already-triaged marketing/spam/DMARC) -- no reply or owner email
+      needed; `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad,
+      flat), 0 bookmarks, 0 reviews; `bin/apify-spend` $5.9091 of $85 (79.8% elapsed, projection
+      $7.41) + this cycle's one build; services and `/`, `/pricing`, `/tools` all 200 before and
+      after.
+      **(a) sec-insider-trades-scraper: CONFIRMED and FIXED the identical unconditional-retry-
+      advice shape as fda-recall-scraper.** `secGet()` collapsed a permanent 404 (CIK genuinely
+      does not exist) and a retry-exhausted network/5xx error into one `null` return, with the
+      caller unable to tell them apart -- both `zeroRowMessage` and the partial-success
+      `causes.push` branch said "that is usually a transient EDGAR error -- please re-run in a
+      few minutes" unconditionally. Verified the 404 is real and reachable, not guessed:
+      `resolveIssuers` accepts any `/^\d{1,10}$/` numeric input as a CIK directly with NO
+      existence check (unlike a ticker, checked against `company_tickers.json` first), and live
+      `curl data.sec.gov/submissions/CIK0000000001.json` 404s (checked twice) while a real CIK
+      (Apple, 320193) returns 200 -- so a buyer who mistypes a CIK gets permanently wrong "retry"
+      advice. **Fixed in build 0.1.70:** `secGet` now sets a `lastGetWas404` flag the caller reads
+      immediately after each call (safe -- no concurrent `secGet` calls anywhere in the file);
+      split `missingSubmissionIndex` into `missingSubmissionIndex404` (permanent: "this CIK does
+      not exist, re-running will not help") and the original counter (transient, keeps the old
+      "re-run in a few minutes" advice) in both the zero-row and partial-success message branches;
+      added a README FAQ entry. **Verified three ways live on the platform:** AAPL+NVDA regression
+      unchanged (19 rows, matches the local test exactly); a solo bogus CIK (`"1"`) returns 0 rows
+      with the new "does not exist... check the ticker/CIK" message (run `TWR2UShzNLHNc1YcL`); a
+      mixed AAPL+bogus-CIK run delivers AAPL's 13 rows with the partial-success message correctly
+      naming only the bad CIK as permanent, never transient. README verified byte-identical to the
+      live build via the builds API (71168 chars, exact match). `check-charges` 25/0/0,
+      `check-registry-fields` 0 drift (no output-field change). `state/audit_dates.json` gained
+      `input_error_advice: 2625` + a full note on `sec-insider-trades-scraper` (previously
+      untracked on this axis at all -- c837 never examined it); verified by diff that exactly
+      those 2 keys were added and nothing else in the file changed (re-did the edit once after the
+      first attempt's `ensure_ascii=False` re-dump spuriously touched unrelated unicode escapes
+      elsewhere in the file -- re-ran with `ensure_ascii=True` to match the file's own convention
+      and got a clean 2-key diff; see LEARNINGS).
+      **(b) The URL-encoding half did NOT generalize.** c2624's crude grep flagged
+      `google-news-scraper` (3 hand-built URL templates, only 2 encode calls) as the top
+      candidate. Read the actual request builder rather than trusting the grep: the query feed
+      URL (`main.js:413`) wraps the ENTIRE query string -- `q + excludeSuffix + siteSuffix +
+      timeSuffix` -- in ONE `encodeURIComponent()` call before interpolating it, so the grep's
+      "3 templates, 2 encodes" undercount was because the 3rd (correct) call encodes a composite
+      expression, not a bare variable. Live-verified: `node`'s own URL-building confirms `AT&T` ->
+      `AT%26T`, and real `curl` calls for `AT&T`/`S&P 500`/`R&D` all returned HTTP 200 with
+      genuinely on-topic Google News results (e.g. "SpaceX ... to compete with AT&T, T-Mobile, and
+      Verizon", "Stock market today: Dow, S&P 500, Nasdaq...", "Sanofi doubles down on R&D
+      re-work") -- no injection, no truncated query. Also checked `ats-jobs-scraper` (the other
+      named candidate): all ~15 `encodeURIComponent()` call sites wrap every interpolated
+      slug/id, grepped and confirmed. **Conclusion: the URL-encoding bug is specific to
+      `fda-recall-scraper`'s hand-assembled query string, not a fleet-wide pattern** -- no fix
+      needed on either candidate, and no further Actors are flagged for this half.
+      $0.005 spent (1 build), $0 revenue change, no owner email (nothing only the owner can fix).
+      **Next cycle:** re-run preflight fresh. `input_error_advice` axis state: `fda-recall-scraper`
+      (2624) and `sec-insider-trades-scraper` (2625) both carry real fixes and full notes;
+      `clinicaltrials-scraper`/`court-records-scraper`/`federal-register-scraper` remain at 837
+      (their own c837 fix is unchanged/still shipped -- only the STRUCTURAL SWEEP for other
+      Actors was this and the prior cycle's work, and that sweep is now complete with no more
+      candidates found). The axis is NOT closed (re-verifying the 3 Actors' own 837 fix is
+      separate, routine rotation work, not blocked on anything). Remaining informational one-off
+      axes: `pagination_audit` (fec-campaign-finance-scraper, last run 857) and `title_trade_audit`
+      (eu-ted-tenders-scraper, last run 902 -- needs a real new candidate phrase or an eviction-math
+      re-confirmation, not a bare re-verify, per c2623's note). Nothing fleet-wide DUE until
+      `check-row-floor` at cycle 2628 (3 cycles out).
+
+- [x] **DONE cycle 2626 (normal slot, 2626 % 3 == 1) -- picked up exactly the routine rotation
+      work c2625 flagged as separate from the structural sweep: re-verified the c837
+      `input_error_advice` fix on the 3 Actors the c2624/c2625 sweep never touched, specifically
+      checking whether the openFDA-only refinement (a permanent query-syntax error reported as a
+      5xx, which status-code-only `INPUT_ERROR_STATUS` would retry 4x instead of failing fast)
+      generalizes to their upstreams.**
+      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (same 3 one-off axes DUE as last
+      cycle); `checks-due --all` NONE DUE (soonest `check-row-floor` cycle 2628, 2c out); inbox
+      `list 10` had 5 items not seen in the last few cycles' "known set" -- read all 5 in full:
+      `04dda4a1`/`a661a19a` ("Monthly rentals...") are a 2-part cold-pitch from a third-party
+      Apify-Actor storefront (Bytewells/ThoughtPivot) soliciting a developer-waitlist signup, not
+      a buyer; `c2fa5a9c` (IPYE, free IPv6 /48 offer) and `06daa491` (TinyGate API gateway, Chinese
+      marketing) are unrelated infra spam; `2420a902` is a fiction-newsletter spam blast. All 5
+      non-actionable, no reply sent. The 2 owner threads (`2b237f1b` CourtListener token,
+      `01852eaa` Apify Nov-15 Store-API change) remain correctly resolved/tracked, untouched.
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0
+      bookmarks, 0 reviews. Also spot-checked the CLAUDE.md Polar-traffic gate rather than
+      skipping it from memory: `/pricing` 320 and `/tools` 468 raw pageviews over the last 7 days
+      (~45-67/day) -- well under the required sustained >100/day, and per cycle-32/1652's bot
+      correction raw pageviews are NOT the verified metric anyway (out-click data this cycle:
+      0/0/267/289/24 unclassifiable_pre1652/declared_bot/ua_ok_no_css/sweeper/verified -- the
+      crawler share stays dominant), so still no Polar email. `bin/apify-spend` $5.9155 of $85
+      (79.8% elapsed, projection $7.41), unchanged by this cycle (0 builds, 0 runs -- pure
+      investigation, no code touched). Services and `/`, `/pricing`, `/tools` all 200 before and
+      after.
+      **Work: live-probed each of the 3 Actors' real upstream for the same defect class found on
+      `fda-recall-scraper`, rather than re-reading old notes.** `clinicaltrials-scraper`
+      (clinicaltrials.gov/api/v2/studies): 3 malformed `filter.advanced` payloads (unbalanced
+      paren, unknown `AREA` field name, garbage Lucene tokens) all returned a clean **HTTP 400**
+      with a specific parser message -- never a 5xx. `federal-register-scraper`
+      (federalregister.gov/api/v1/documents.json): an unterminated quote and a garbage boolean
+      string (`foo AND AND OR`) in `conditions[term]` both returned **HTTP 200** with a
+      best-effort full-text match (21 and 86 results) -- federalregister.gov's search degrades
+      gracefully on bad syntax instead of erroring at all. **Neither upstream reproduces the
+      openFDA quirk, so the existing c837 status-code fix is already sufficient on both -- no
+      code change needed, confirmed rather than assumed.** `court-records-scraper`
+      (courtlistener.com/api/rest/v4/search/) could NOT be tested: it requires `authorization:
+      Token <CL_API_TOKEN>` and no such token exists in `secrets/env` (confirmed by grep), so every
+      probe 401'd regardless of query content -- this is the same gap as the already-tracked owner
+      thread `2b237f1b` (needs a human for CourtListener auth/hCaptcha), not a new finding.
+      **State: `state/audit_dates.json` updated for exactly 3 Actors, verified as a clean 5-key
+      diff against a pre-edit backup before writing (same `ensure_ascii=True` discipline c2625's
+      LEARNINGS note flagged).** `clinicaltrials-scraper` and `federal-register-scraper` both got
+      `input_error_advice: 2626` + a full verification note (both previously carried the bare int
+      837 with no note text at all). `court-records-scraper` got only an explanatory
+      `input_error_advice_note` (the date field is deliberately LEFT at 837, not advanced to 2626,
+      since it was never actually verified) -- `audit-due --all` re-run after the edit now
+      correctly reports only `court-records-scraper` as outstanding on this axis, not all 3.
+      $0 spent (no builds/runs), $0 revenue change, no owner email (no revenue event; the
+      CourtListener token gap is already the subject of a tracked, resolved-pending-owner thread,
+      not a new ask).
+      **Next cycle:** the `input_error_advice` axis's only remaining gap is `court-records-scraper`,
+      and it is genuinely blocked on the missing `CL_API_TOKEN` -- do not re-attempt this probe
+      until that token exists; if the owner ever supplies one, that is the moment to both unblock
+      court-records-scraper's own degraded runs AND finish this verification pass. Remaining
+      informational one-off axes unchanged: `pagination_audit` (fec-campaign-finance-scraper,
+      last run 857) and `title_trade_audit` (eu-ted-tenders-scraper, last run 902, needs a real
+      new candidate phrase or an eviction-math re-confirmation per c2623's note). Nothing
+      fleet-wide DUE until `check-row-floor` at cycle 2628 (2 cycles out).
+
+- [x] **DONE cycle 2623 (normal slot, 2623 % 3 == 2) -- closed the `search_scope_audit` axis on
+      `federal-register-scraper` (its only tracked Actor, n=1) after a live re-verification.**
+      Preflight: nothing fleet-wide DUE (4 informational one-off axes after c2622's closure);
+      inbox `list 10` identical to the known set (owner CourtListener thread stays resolved, rest
+      is cold marketing/spam/DMARC reports already triaged) -- no reply or owner email needed;
+      revenue/spend baselines unchanged ($0 booked, 25 Actors, 47 users, 767 runs30d, $5.9065/$85,
+      79.6% elapsed); services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Work:** the c920 note on `search_scope_audit` had already shipped a complete fix (the
+      `searchQuery` full-text scope claim was confirmed honest; the real defect was the default
+      `order:"newest"` surfacing passing-mention hits instead of on-topic ones, fixed via
+      `input_schema.json` + README + a dedicated FAQ entry, build 0.1.26) with no open question
+      left -- but it was stored as a bare `last` cycle number, so `audit-due` would have kept
+      re-surfacing it as due forever. Re-ran the exact c920 live probe today
+      (`federalregister.gov/api/v1/documents.json?conditions[term]=COVID-19`): `order=newest`
+      returned 10/10 off-topic passing-mention hits (Five-Year Reviews, Twist Ties, Medicare ESRD,
+      accreditation, formaldehyde, ONC health-data rule, copyright exemptions, hazmat, OMB survey,
+      graphite electrodes), `order=relevance` returned 10/10 genuinely COVID-19-focused titles
+      (Head Start mitigation policy, occupational exposure x2, telemedicine flexibilities,
+      emergency-use terminations x2, family-caregiver home visits, drug-product revocation) --
+      identical shape to the original 2026-09-28 finding, confirming the shipped guidance is still
+      accurate. Recorded via a direct `state/audit_dates.json` edit (`search_scope_audit` 920 ->
+      2623, new `search_scope_audit_note` with the full re-verification, new
+      `search_scope_audit_closed` with the reason); verified with a flattened key-diff against a
+      pre-edit backup showing exactly 3 keys changed and nothing else, and confirmed `audit-due
+      --type search_scope_audit` now prints CLOSED while `--all`'s one-off list dropped 4 -> 3.
+      $0 spent (two free Federal Register API queries, no build -- doc/audit-state fix only), $0
+      revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at
+      cycle 2628 (5 cycles out). Remaining informational one-off axes, now 3:
+      `input_error_advice` (clinicaltrials-scraper, court-records-scraper,
+      federal-register-scraper -- still no documented methodology anywhere in `bin/`/`notes/`;
+      n=3, read each Actor's own zero-result/validation-error handling fresh), `pagination_audit`
+      (fec-campaign-finance-scraper, last run 857 -- original work in `tasks/queue_archive.md`
+      around line 19062), `title_trade_audit` (eu-ted-tenders-scraper, last run 902 -- **NOT** a
+      bare-re-verify candidate like the three just closed: c902 explicitly DECLINED a title
+      rewrite that would evict a favorable search bucket, and left the door open only to "a
+      genuinely different candidate phrase that doesn't evict" -- closing this one needs either a
+      real new candidate phrase + a fresh `store-rank --why` measurement, or confirmation the
+      eviction math still holds, not a bare re-check). Apply the now-three-times-proven pattern
+      (description_mine c2620, readme_proximity c2622, search_scope_audit c2623): read the
+      `<type>_note` first; if it already answers the question, a live re-verification plus a
+      `<type>_closed` key is the right move.
+
+- [x] **DONE cycle 2622 (QUALITY/GROWTH slot, 2622 % 3 == 0) -- closed the `readme_proximity`
+      audit axis fleet-wide by resolving the contradiction c2621 flagged.** Preflight: nothing
+      fleet-wide DUE (5 informational one-off axes); inbox checked -- one owner thread
+      (`2b237f1b`) re-read in full and confirmed it is the already-resolved CourtListener token
+      exchange (matches STATUS's c2362 record), and the handful of inbox items not in the prior
+      "known set" (an IPv6/proxy-lease pitch, a duplicate TinyGate pitch, a "Legal Thriller"
+      newsletter blast) are all plain cold marketing/spam, read in full, none actionable; revenue/
+      spend baselines unchanged ($0 booked, 25 Actors, 47 users, 766 runs30d, $5.906/$85, 79.6%
+      elapsed); services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Work:** `bin/store-rank`'s own header (cycle 1468: Store's Algolia record has NO `readme`
+      field, only the LLM-paraphrased `readmeSummary`, so README edits are not a reliable
+      search-rank lever) directly contradicted a stale cycle-956 comment lower in the same file
+      claiming the live record on `steam-reviews-scraper` had BOTH a real `readme` field and
+      `readmeSummary` -- c2621 flagged this as unreconciled before anyone picks `readme_proximity`
+      again. Reconciled live rather than trusting either side: queried the raw Algolia index for
+      "drive-by reviews" (the exact c956 probe phrase) on that exact Actor today -- the hit has NO
+      `readme` key at all (only `readmeSummary`), and `_highlightResult` shows the match landed in
+      `readmeSummary`, not `readme`. Separately re-confirmed `restrictSearchableAttributes=readme`
+      still 400s with "attribute readme is not in searchableAttributes setting" -- an INDEX-WIDE
+      Algolia setting, so it cannot be true for some Actors and false for others; this settles the
+      question fleet-wide, not per-Actor. Patched the stale c956 comment in `bin/store-rank`
+      (~line 706) in place with this finding so it stops reading as a live exception. Both Actors
+      currently tracked on the axis already pointed the same way (federal-register-scraper's own
+      c1468 note already said "do NOT re-attempt"; clinicaltrials-scraper's c916 entry had no note
+      contradicting it either), so a fleet-wide close was safe: added `readme_proximity_closed` to
+      `state/audit_dates.json` on `federal-register-scraper` (closing any one Actor retires the
+      type fleet-wide, per the c1620 mechanism) with the full reconciliation recorded. Verified via
+      a flattened key-diff against a pre-edit backup that exactly one key was added and nothing
+      else in the file changed, and `audit-due --type readme_proximity` now prints CLOSED while
+      `--all` drops the one-off list 5 -> 4 (`input_error_advice`, `pagination_audit`,
+      `search_scope_audit`, `title_trade_audit` remain). $0 spent (two free Algolia queries, no
+      Actor runs, no build needed -- this was a doc/audit-state fix, not a code or README change),
+      $0 revenue change, no owner email (nothing new or owner-fixable).
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at
+      cycle 2628 (6 cycles out). Remaining informational one-off axes, now 4: `input_error_advice`
+      (clinicaltrials-scraper, court-records-scraper, federal-register-scraper -- no methodology
+      documented anywhere in `bin/`/`notes/` as of c2621's check, so read the Actors' own
+      zero-result/validation-error handling fresh before inventing a method), `pagination_audit`
+      (fec-campaign-finance-scraper), `search_scope_audit` (federal-register-scraper, no note),
+      `title_trade_audit` (eu-ted-tenders-scraper). Apply the now-twice-proven pattern: before
+      RUNNING one of these, check whether its existing `<type>_note` already answers the question
+      -- if so, a live re-verification plus a `<type>_closed` key is the right (cheap) action, not
+      a fresh sweep.
+
+- [x] **DONE cycle 2621 (normal slot, 2621 % 3 == 2) -- preflight-only cycle that caught a live
+      false positive instead of working a backlog item.** Preflight: nothing fleet-wide DUE
+      (5 informational one-off axes DUE, unchanged); inbox read in full for the 3 non-owner
+      non-obvious-spam threads (SEO-spam pitch, 2x "Bytewells by ThoughtPivot" second-storefront
+      marketing) -- all cold marketing, no reply/owner-email needed; revenue/spend unchanged
+      ($0 booked, 25 Actors, $5.8885/$85); services and site all 200.
+      **Work:** ran `bin/actor-health` as part of preflight (not just `bin/revenue`'s counters) and
+      caught `remote-jobs-scraper` returning a raw `502 Bad Gateway` from Apify's own
+      `run-sync-get-dataset-items` endpoint. Re-ran `--only remote-jobs-scraper` immediately: clean
+      `201`/10 items/correct `sample_keys` -- confirmed transient Apify platform blip, not a real
+      regression. The first (failing) run had already (a) written the 502 into
+      `state/health.json` and (b) auto-appended a `FIX FAILED ACTORS` line to this file via
+      `actor-health`'s own auto-task logic -- both would have sent a future cycle chasing a ghost
+      failure, so I patched the `state/health.json` entry to the confirmed-clean retry result and
+      removed the false queue line rather than leaving either for a no-op "fix" later.
+      Also spot-checked two queue items for staleness: the Apify `/v2/store` Nov-15 change item is
+      confirmed still "nothing urgent before the date" (13 days out, already code-patched); the
+      `scholarship-scraper` bold.org-recovery gate has not fired (`check-source-endpoints` CLEAN,
+      `actor-health`'s retired-probe still reads 429/cleared=False) -- no action on either.
+      $0 spent beyond two free health-check runs, $0 revenue change, no owner email, no build.
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at
+      cycle 2628. **Before picking `readme_proximity` on `federal-register-scraper` or
+      `clinicaltrials-scraper`, read `bin/store-rank` lines ~55-90 AND ~700-725 together** --
+      cycle 1468's header claims the README-insert lever is dead fleet-wide
+      (`readmeSummary` paraphrase, not real `readme`, in the Algolia record), but the file's own
+      cycle-956 comment documents a live contradicting case on `steam-reviews-scraper` (a real,
+      searchable `readme` field). Nobody has reconciled these two claims; the right next step is a
+      per-Actor live-record probe (does THIS Actor's Algolia record carry a literal `readme` field
+      or only `readmeSummary`?), not trusting either blanket claim. `input_error_advice` (last run
+      837, no note on any of its 3 Actors, no methodology found in `bin/` or `notes/` this cycle)
+      and `search_scope_audit` (920, no note) are both lower-risk picks with no internal
+      contradiction to untangle first -- reasonable fallback if `readme_proximity`'s reconciliation
+      turns out bigger than one slot.
+
+- [x] **DONE cycle 2620 (normal slot, 2620 % 3 == 1) -- nothing fleet-wide was DUE, so took the
+      next informational one-off `audit-due` axis, `description_mine: fda-recall-scraper` (last run
+      cycle 904, the only Actor on this n=1 axis), AND piggybacked the c2552 FDA-classification
+      tripwire on the same Actor.** Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS
+      (6 one-off axes DUE, informational only per the c1304 rule); `checks-due --all` NONE DUE
+      (soonest `check-row-floor` in 8c, cycle 2628); inbox `list 12` = same known set, no new mail
+      (the two owner threads `2b237f1b`/`01852eaa` remain long-resolved/tracked, and `dc593cfb` is
+      the old "Done" reply c2618 already identified) -- no owner email per rule 3; `bin/revenue`
+      unchanged ($0 booked, 25 public Actors, 47 users, 766 runs30d, 763 ext_ok30d / 3 ext_bad30d,
+      0 bookmarks, 0 reviews); `bin/apify-spend` $5.8865 of $85 (79.4% elapsed, projection $7.41);
+      services all active and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Work 1 -- `description_mine` RE-VERIFIED then CLOSED (not just deferred).** The c904 note
+      already asserted the axis was exhausted ("description is now FULL (300/300) -- no further
+      description-mine possible"), but it was recorded as a plain `last` date, so the scheduler
+      kept re-surfacing it and a future cycle would have re-worked a structurally dead lever --
+      exactly the failure mode the c1620 `<type>_closed` mechanism exists for. Re-verified the
+      claim live rather than trusting it: `check-store-meta` reports 0 actionable drift fleet-wide
+      (so live Store description == local `meta.json`), and that description measures EXACTLY
+      300/300 chars still ending in ' FDA API'. Re-measured all 19 tracked terms via `store-rank
+      fda-recall-scraper`: **19/19 still ranked, nothing fell out of the index** (i.e. the
+      readmeSummary-paraphrase decay class `check-term-anchor` watches for has NOT fired here),
+      14/19 in top-20, and `fda api` sits at **p19, byte-identical to where c1837 left it**.
+      Head terms drifted worse (fda recall p63->p94, drug recall p55->p118, food recall p69->p89,
+      device recall p81->p107, enforcement report p6->p11, food recall api p3->p19) while
+      `fda database` IMPROVED p2->p1; per `store-rank`'s own header that drift is the store pool
+      growing beneath our fixed 2-user `storePosition` ceiling (81999), NOT our carriage decaying
+      -- confirmed by carrier attribute, not inferred from rank. `store-rank --why "fda api"`
+      re-confirms the c904 MECHANISM verbatim: we are p19 inside the `words=2 exact=2 prox=1
+      attr=2` (description) bucket of 17 records spanning p9-p25, ordered only by storePosition,
+      and the single bucket above us is `attr=0` (title) with 7 records at p1-p7. So the only
+      remaining lever is still a CONTIGUOUS 'FDA API' in the TITLE -- which would break
+      'fda recall'/'recall database'/'fda database' contiguity, and since `fda database` now
+      measures **p1**, that trade is strictly WORSE than it was at c904. Recorded via a direct
+      `state/audit_dates.json` edit (`description_mine` 904 -> 2620, new `description_mine_closed`
+      with the reason, prior note kept verbatim behind `[prior note preserved]`); verified the edit
+      two ways -- a sorted-key diff against a backup showed EXACTLY those 3 keys changed and
+      nothing else, and `audit-due --type description_mine` now prints `CLOSED` while `--all`
+      moves it from the DUE list into `CLOSED (never a backlog)`, shrinking the one-off list 6 -> 5.
+      The closure note explicitly routes any future title rewrite to `title_trade_audit` rather
+      than to deleting the key.
+      **Work 2 -- c2552 tripwire re-checked (3 curls, free, same Actor).**
+      `api.fda.gov/{food,drug,device}/enforcement.json?count=classification.exact` gives
+      `Not Yet Classified` = **food 1, drug 2, device 1 -- EXACTLY unchanged for the third
+      consecutive reading** (c2552, c2583, c2620). No count at 0, tripwire has not fired, no code
+      change. Updated that queue item with the observation that the counts have now been static for
+      32 days, so c2552's "demonstrably moves" premise is weaker than assumed -- keep the tripwire
+      (n=1 on food and device is still one reclassification from dead) but never spend a dedicated
+      cycle on it; piggyback it, as this cycle did.
+      $0 spent, no build pushed (nothing needed one), $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh -- do NOT trust these numbers (c2120 lesson).
+      `check-row-floor` comes DUE at cycle 2628, so a normal slot before then has no fleet work;
+      cycle 2621 is a NORMAL slot (2621 % 3 == 2) and the next QUALITY/GROWTH slot is cycle 2622
+      (2622 % 3 == 0). Remaining informational
+      one-off axes DUE, now 5 after this closure: `input_error_advice` (clinicaltrials-scraper,
+      court-records-scraper, federal-register-scraper), `pagination_audit`
+      (fec-campaign-finance-scraper), `readme_proximity` (clinicaltrials-scraper,
+      federal-register-scraper), `search_scope_audit` (federal-register-scraper),
+      `title_trade_audit` (eu-ted-tenders-scraper). **Note the pattern this cycle found and apply
+      it:** several of these one-off axes may likewise be ALREADY-ANSWERED rather than open work.
+      Before running one, read its `<type>_note` first -- if the note itself says the lever is
+      exhausted, the correct action is a cheap live re-verification plus a `<type>_closed` key, not
+      a re-run. `federal-register-scraper` carries 3 of the 5 and is the highest-value place to
+      look next. Also: `readme_proximity` overlaps the `--why` readme-prox measurement used above.
+
+- [x] **DONE cycle 2619 (QUALITY/GROWTH slot, 2619 % 3 == 0) -- trimmed `tasks/queue.md` per the
+      c2618 flag.** Preflight: `audit-due --all` NONE DUE fleet-wide (6 one-off/experimental axes
+      DUE, informational only per cycle-1304 rule, not a backlog); `checks-due --all` NONE DUE
+      (soonest `check-row-floor` in 9c, cycle 2628); inbox checked (same known 10-item set --
+      the two owner threads `2b237f1b` CourtListener token and `01852eaa` Apify `/v2/store`
+      Nov-15 change are both long-resolved/tracked, re-confirmed by grep rather than re-read
+      cold); revenue/spend baselines unchanged ($0 booked, 25 Actors, 47 users, 766 runs30d,
+      763 ext_ok30d/3 ext_bad30d, $5.8861 of $85); services and `/`, `/pricing`, `/tools` all 200
+      before and after. `check-doc-size` read TRIM SOON on `tasks/queue.md` (93.0KB/990 lines,
+      projected 221KB by its next scheduled look, c2643) -- exactly what c2618 flagged.
+      **Work:** wrote `bin/_trim2619q.py` following the established hoist-then-cut method
+      (c2588/2604/2605q): parsed all 34 top-level blocks (12 DONE, 22 open), kept every open
+      block plus only the newest DONE block (cycle 2618, for its "next cycle" pointer), archived
+      the other 11 DONE blocks verbatim (457 lines) to `tasks/queue_archive.md` under a dated
+      header. Verified before running: block partition reconstructs the original file byte-
+      for-byte (script's own assertion) AND a full before/after diff on a backed-up copy
+      confirmed no open item's text changed and every archived line landed in the archive.
+      Result: queue.md 990 -> 533 lines (95.3KB -> 52.3KB), back to OK on `check-doc-size`
+      (~28 cycles of headroom). $0 spent, $0 revenue change, no owner email (nothing new/
+      owner-fixable).
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide is DUE; soonest fleet check is
+      `check-row-floor` at cycle 2628. Pick the next informational one-off axis by name (see the
+      `audit-due --all` list above) or continue down this queue's open items.
+
+- [x] **DONE cycle 2618 (normal slot, 2618 % 3 == 2) -- nothing fleet-wide was DUE, so took the
+      next informational one-off `audit-due` axis, `dataType_enum_audit: sam-gov-opportunities-
+      scraper` (last run cycle 899, the only Actor on this n=1 experimental axis).** Re-ran the
+      exact cycle-899 method against SAM.gov's live unauthenticated search backend for all 6
+      mapped `index=` values: `opp=5,651,355 dbra=85,426 wd=107,653 sca=2,666 cfda=7,400
+      ei=169,189` -- all HTTP 200, distinct, non-empty; movement since the 899 baseline
+      (5,629,292/85,426/107,586/2,666/7,392/169,123) is natural growth only (dbra/sca unchanged
+      exactly), no value dead, no aliasing. Re-pulled one live sample row per non-opportunities
+      family and confirmed every extracted field's type/shape still matches the code's own
+      citations (`wd` revisionNumber/isActive/modifiedDate; `cfda` isActive/isFunded/
+      historicalIndex; `ei` isActive/terminationDate/noPublicDisplayFlag) -- clean
+      re-confirmation, no code change, no build needed. Recorded via a direct `audit_dates.json`
+      edit (899 -> 2618, prior note kept via `[prior note preserved]`); verified `audit-due
+      --type dataType_enum_audit` now reads 0 due (next 3962) and drops off `--all`'s one-off
+      list. Also widened the inbox check to `list 15` and confirmed the one extra item surfaced
+      (`dc593cfb`) is an old owner "Done" reply on the already-resolved identity-verification
+      thread, not new. $0 spent, $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh. Remaining one-off axes DUE: `description_mine`
+      (fda-recall-scraper), `input_error_advice` (clinicaltrials-scraper, court-records-scraper,
+      federal-register-scraper), `pagination_audit` (fec-campaign-finance-scraper),
+      `readme_proximity` (clinicaltrials-scraper, federal-register-scraper), `search_scope_audit`
+      (federal-register-scraper), `title_trade_audit` (eu-ted-tenders-scraper). **Cycle 2619 is a
+      QUALITY/GROWTH slot (2619 % 3 == 0) -- good pick is the `tasks/queue.md` doc-trim, since
+      `check-doc-size` now reads TRIM SOON on this file (90.7KB/963 lines, will read TRIM DUE at
+      its next scheduled look, cycle 2642)** -- see the doc-trim cadence item below for the
+      pre-derived partition method (re-measure fresh, do not trust these line numbers).
+

@@ -56,6 +56,17 @@
       "acked_date": "2026-10-29"
     },
     {
+      "fp": "074e14eef00b",
+      "slug": "steam-reviews-scraper",
+      "handle": "technicaldost/steam-scraper-games-prices-reviews",
+      "verb": "retired",
+      "dates": [],
+      "context": ": prices, discounts, tags, review scores, developers, plus review text, playtime and votes. Works after Valve retired the appreviews JSON endpoint (Oct 2026). Search, top sellers, specials or app URLs. NONE",
+      "note": "Keyword false positive on an already-resolved axis, same shape as the five existing steam [retired]/[shuts down] acks (c2129/c2196/c2292): the [retired] match is the RIVAL advertising that its own Actor 'Works after Valve retired the appreviews JSON endpoint (Oct 2026)' -- i.e. it is announcing the same migration we completed at c2129, not reporting a NEW upstream change. Re-verified LIVE this cycle (c2628), not inherited: (1) grep of actors/steam-reviews-scraper/src/ shows every remaining 'appreviews' string is a COMMENT explaining the retirement -- zero call sites (reviews_html.js:2, main.js:113/156/177/543/944 are all prose); reviews run on the steamcommunity.com HTML path. (2) bare curl of steamcommunity.com/app/570/homecontent/ from this box returned HTTP 200 / 96265 bytes / 70 apphub_Card review blocks, so the replacement route is healthy. (3) bin/actor-health --only steam-reviews-scraper returned items=10, fail_rows=0, with real review fields populated (reviewId/review/language/recommended/createdAt). (4) bin/check-row-floor ran CLEAN this same cycle across all 24 live Actors. Rival marketing copy is permanent and would otherwise re-flag on every daily run.",
+      "acked_cycle": 2628,
+      "acked_date": "2026-11-02"
+    },
+    {
       "fp": "0bc5bebecd62",
       "slug": "steam-reviews-scraper",
       "handle": "pinkish_gallop/steam-reviews-scraper",
