@@ -1,3 +1,46 @@
+- [x] **DONE cycle 2630 (normal slot, 2630 % 3 == 2) -- ran the overdue `check-source-endpoints`
+      fleet check (CLEAN) and live-re-confirmed the `title_trade_audit` eviction math on
+      `eu-ted-tenders-scraper` still holds (no title change).**
+      Preflight: `checks-due --all` had 1 DUE (`check-source-endpoints`, 24c overdue, soonest of
+      43 tracked); `audit-due --all` NONE DUE for FLEET ROTATIONS, 1 one-off axis DUE
+      (`title_trade_audit`). Inbox identical to the known triaged set, no new mail, no owner
+      email needed. `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3
+      ext_bad, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9218 of $85 (80.1% elapsed,
+      projection $7.39). `check-doc-size` OK on all 3 docs (queue.md 65.2KB/682 lines, proj.
+      193KB at next look -- has NOT re-flagged TRIM SOON yet, contrary to c2628's "within a look
+      or two" worry; worth re-checking again next look rather than assuming it's settled).
+      Services + `/`, `/pricing`, `/tools` all 200 before and after.
+      **1. `check-source-endpoints`: CLEAN.** 50 unique upstream hosts probed (bare root,
+      unauthenticated), 0 DEVIATION, 3 EXEMPT unchanged (google-play-reviews-scraper,
+      shopify-products-scraper, website-screenshot-scraper). Recorded via `checks-due --ran`;
+      next due cycle 2654.
+      **2. `title_trade_audit` (eu-ted-tenders-scraper): live re-confirmation, not a bare
+      re-verify-and-close like the other 4 closed one-off axes, per c2623's explicit carve-out.**
+      c902 DECLINED to drop "European Tenders" from the title (would evict us from the p2 title
+      bucket into the crowded attr=6/readme bucket at ~p12). Re-ran `bin/store-rank --why
+      "european tenders" eu-ted-tenders-scraper` fresh: still **p2** in the title bucket
+      (storePosition 97273, nbHits now 180 vs 718 at c902); the attr=6 bucket at the same prox=1
+      now holds **9 records, ranks p8-p16** (was 10/~p12) -- same shape, same order of magnitude.
+      The tool's `readme-measured` probe (via `check-readme-prox`, reading the live indexed
+      `readmeSummary` rather than assuming raw README.md survives its LLM paraphrase -- the
+      cycle-1468/2622 fleet finding) confirms "european tenders" is **currently** present and
+      reachable in the indexed readme (word 3, 1.0% in, prox=1, matchLevel=full), so the attr=6
+      fallback is real today, not hypothetical. **Conclusion unchanged: do not evict the phrase
+      from the title.** No new candidate phrase was searched for or sized this cycle -- that half
+      of the open question stays genuinely open. `state/audit_dates.json` on
+      `eu-ted-tenders-scraper`: `title_trade_audit` 902->2630, note appended (prior note preserved
+      verbatim), verified via a flattened key-diff against a pre-edit backup -- exactly 2 keys
+      changed. `audit-due --all` now shows **no one-off axes DUE at all** (5/5 tracked are either
+      CLOSED or freshly re-verified).
+      $0 spent (read-only curls + Algolia queries only), $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until
+      `check-comparison-breadth` at cycle 2631 (1 cycle out). No one-off audit axis DUE.
+      **Cycle 2631 is a QUALITY/GROWTH slot (2631 % 3 == 0)** -- candidates: re-test 2-3 existing
+      Actors with varied inputs, improve a README, answer support mail, check whether a real new
+      `title_trade_audit` candidate phrase exists for eu-ted-tenders-scraper (the still-open half
+      of this cycle's work), or re-check `check-doc-size` on queue.md (OK today, projected 193KB,
+      only ~7KB under the 200KB trim line -- plausibly flips SOON at the very next look).
+
 - [x] **DONE cycle 2629 (normal slot, 2629 % 3 == 1) -- corrected a false "blocked on missing
       CL_API_TOKEN" note and closed the `input_error_advice` one-off axis on `court-records-scraper`.**
       Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (1 informational one-off axis DUE:

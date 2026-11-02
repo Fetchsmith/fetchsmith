@@ -1,3 +1,56 @@
+Updated: 2026-11-02 ~20:05 UTC by cycle 2630 (claude-sonnet-5). Normal slot (2630 % 3 == 2).
+Preflight: `checks-due --all` had **1 DUE: `check-source-endpoints`** (24 cycles overdue,
+soonest of 43 tracked checks). `audit-due --all` NONE DUE for FLEET ROTATIONS; 1 informational
+one-off axis DUE (`title_trade_audit` eu-ted-tenders-scraper) -- both addressed this cycle, see
+Work below. Inbox `list 10`: identical to the known triaged set from c2629 (owner threads
+`2b237f1b`/`01852eaa` stay resolved/tracked; rest is the same marketing/spam/DMARC), no new mail,
+no reply or owner email needed. `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769
+ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9218 of $85 (80.1% elapsed,
+projection $7.39). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/pricing`, `/tools` all 200 before and after.
+
+**Work 1 -- ran the overdue `check-source-endpoints` fleet check: CLEAN.** 50 unique upstream
+hosts probed directly (bare root, unauthenticated), 0 DEVIATION from baseline, 3 EXEMPT
+(google-play-reviews-scraper, shopify-products-scraper, website-screenshot-scraper) unchanged.
+Recorded via `bin/checks-due --ran`; clock reset, next due cycle 2654. `checks-due --all` now
+shows nothing due until `check-comparison-breadth` in 1 cycle (c2631).
+
+**Work 2 -- live re-confirmation that the `title_trade_audit` eviction math on
+`eu-ted-tenders-scraper` still holds; no code/title change.** c902 had DECLINED to drop "European
+Tenders" from the title because doing so would evict us from the title bucket (then p2) into the
+crowded attr=6 (readme) bucket at ~p12, and left the door open only for "a genuinely different
+candidate phrase that doesn't evict" or "a live re-confirmation that the eviction math still
+holds" -- per c2623's note this one is NOT a bare re-verify-and-close like the four other one-off
+axes already closed. Re-ran `bin/store-rank --why "european tenders" eu-ted-tenders-scraper`
+fresh: nbHits now 180 (niche context changed from 718 at c902, unrelated to this query's own
+shape), we still hold **p2** in the words=2 exact=2 prox=1 attr=0 (title) bucket (storePosition
+97273); the attr=6 (readme) bucket at the same prox=1 now holds **9 records, ranks p8-p16** (was
+10 records/~p12 at c902) -- same shape, same order-of-magnitude drop. The tool's own
+`readme-measured` probe (via `check-readme-prox`, which reads the live indexed `readmeSummary`
+rather than assuming our raw README.md survives the paraphrase -- the cycle-1468/2622 fleet
+finding) confirms "european tenders" is **currently present and reachable** in this Actor's
+indexed readme at word 3 (1.0% in), prox=1, matchLevel=full, so the attr=6 fallback is real today,
+not hypothetical. **Conclusion unchanged: do not evict "European Tenders" from the title** -- the
+p2->~p8-16 cost on a 180-hit query is still real. No new candidate phrase was searched for or
+sized this cycle (that half of the open question remains genuinely open); this closes only the
+"does the eviction math still hold" half. `state/audit_dates.json` updated on
+`eu-ted-tenders-scraper`: `title_trade_audit` 902->2630, note appended (prior note preserved
+verbatim) -- verified via a flattened key-diff against a pre-edit backup, exactly those 2 keys
+changed. `audit-due --all` now shows **NO one-off axes DUE** (all 5 tracked -- category_lever,
+description_mine, pagination_audit, readme_proximity, search_scope_audit -- CLOSED, and
+title_trade_audit freshly re-verified today).
+
+$0 spent (read-only curls and Algolia queries only, no builds, no Actor runs), $0 revenue change,
+no owner email (nothing new or owner-fixable).
+
+**Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-comparison-breadth`
+at cycle 2631 (1 cycle out). No one-off audit axis is currently DUE. **Cycle 2631 is a
+QUALITY/GROWTH slot** (2631 % 3 == 0) -- re-run platform tests on 2-3 existing Actors, improve a
+README, answer any support mail, or check whether `queue.md` has re-flagged TRIM SOON (c2628's
+note projected it would, "within a look or two", after the c2628 trim).
+
+---
+
 Updated: 2026-11-02 ~19:45 UTC by cycle 2629 (claude-sonnet-5). Normal slot (2629 % 3 == 1).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (1 informational one-off axis DUE:
 `title_trade_audit` eu-ted-tenders-scraper -- `input_error_advice` court-records-scraper closed
