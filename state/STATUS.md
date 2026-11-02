@@ -1,3 +1,52 @@
+Updated: 2026-11-02 ~04:04 UTC by cycle 2598 (claude-sonnet-5). QUALITY/GROWTH slot (2598 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 6c, cycle 2604); every audit axis
+asked BY NAME -- `enum_audit`/`unreachable_remedy`/`competitor_audit`/`count_audit`/
+`charge_event_verified`/`watch_subset_audit` all NONE DUE, **`varied_test` read DUE:
+`google-play-reviews-scraper`** (2262 -> 2598, exactly the 336c BASE interval, rotation healthy).
+Git clean and in sync, HEAD == the c2597 safety-net commit (`b866bf12`). Inbox: same known 10-item
+set (DMARC pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam, 2 long-resolved owner threads --
+re-verified by ID: `2b237f1b` CourtListener hCaptcha already wired c2362, `01852eaa` Apify
+`/v2/store` Nov-15 change tracked as the open c2478 queue item), no new mail, no owner email per
+rule 3. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 776 runs30d, 773 ext_ok30d / 3
+ext_bad30d (unchanged baseline), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8021 of $85 (78.0%
+elapsed, projection $7.44). `bin/traffic`: unchanged, tools/pricing visits still far under the
+>100/day Polar gate. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/pricing`, `/tools`, `/tools/google-play-reviews-scraper` all 200 before and after.
+
+**Work -- ran the DUE `varied_test` on `google-play-reviews-scraper`: CLEAN, no defect found.**
+First-ever coverage of a bounded `sinceDate`+`untilDate` window combined with a scalar `keyword`
+filter in a PLAIN (non-watch) run -- confirmed via the full prior note that this exact pairing had
+never been exercised (prior rounds covered appVersions+sinceDate+minThumbsUp at c1081,
+searchTerms+genres+ratingFilter+minThumbsUp+keywords at c1513, country+language+replyFilter+
+minReviewLength at c2175, and watch-mode scoreChanged/includeAppDetails disclosure at c2207/c2262,
+but never a bounded date window with any text filter outside watch mode). Predicted free first via
+the `google-play-scraper` npm library already vendored in this Actor's own `node_modules` (no Apify
+spend): fetched `com.discord`'s 3000 newest reviews (real span 2026-10-11..2026-11-01), computed
+`sinceDate=2026-10-20T00:00Z`/`untilDate=2026-10-25T00:00Z` AND `keyword="voice"` -> 17 of 712
+in-window rows; negative control `keyword="zzqxnonexistentkeyword"` in the same window -> 0 (a
+discriminating prediction, not a smoke test). **Both live runs matched exactly**: run 1
+(`maxReviewsPerApp:3000, maxResults:20, includeAppDetails:false`) -> SUCCEEDED, `chargedEventCounts
+{result:17}` == the prediction exactly, 0 leak; the first 10 rows read back via `bin/varied-test`
+matched the predicted `reviewId`s/dates byte-for-byte and every row's `date` fell inside the window
+AND its `text` contained "voice" (buyer-verifiable). Run 2 (control) -> SUCCEEDED,
+`chargedEventCounts {result:0}` -- proving genuine AND composition (not an OR, not a silently-
+ignored bound), confirming the result isn't an artifact of a wide window. Recorded `varied_test:
+2598` + full note in `state/audit_dates.json` via surgical string edit (diffed to exactly 2 changed
+lines: the date and the note, new text prepended before the preserved c2262 note). `audit-due
+--type varied_test` now reads NONE DUE, next target `fec-campaign-finance-scraper` in 1 cycle
+(c2599).
+
+~$0.0005 spent (17 charged rows on run 1 at the flat $0.0001/result rate + compute; run 2's control
+cost ~$0.0005 of compute for 0 rows; both upstream predictions were free), $0 revenue change, 0 new
+Actors, no owner email (clean audit result, no revenue event, nothing only the owner can fix).
+**Next cycle:** re-run preflight fresh and ask every audit axis BY NAME. `audit-due --type
+varied_test` already points at `fec-campaign-finance-scraper` at c2599 -- likely the next real task
+if no fleet check is freshly due. `checks-due` has `check-doc-size` in 5c (cycle 2604). Longer-dated
+HIGH items unchanged: the c2464 rung-for-rung pricer port (gated to c2639) and the c2196
+ack-staleness warning (unlocks ~c2868).
+
+---
+
 Updated: 2026-11-02 ~03:35 UTC by cycle 2597 (claude-sonnet-5). Normal slot (2597 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 7c, cycle 2604); every audit axis
 asked BY NAME -- `enum_audit`/`unreachable_remedy`/`competitor_audit`/`count_audit`/

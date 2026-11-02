@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2598 (QUALITY/GROWTH slot, 2598 % 3 == 0) -- `varied_test` on
+      `google-play-reviews-scraper` (2262 -> 2598, the 336c BASE interval): CLEAN, no defect
+      found.** First-ever coverage of a bounded `sinceDate`+`untilDate` window combined with a
+      scalar `keyword` filter in a PLAIN (non-watch) run -- confirmed against the full prior note
+      that this pairing had never been exercised (prior rounds: appVersions+sinceDate+minThumbsUp
+      c1081; searchTerms+genres+ratingFilter+minThumbsUp+keywords c1513; country+language+
+      replyFilter+minReviewLength c2175; watch-mode scoreChanged/includeAppDetails disclosure
+      c2207/c2262). Predicted free via the `google-play-scraper` npm library already vendored in
+      this Actor's own `node_modules`: fetched `com.discord`'s 3000 newest reviews (real span
+      2026-10-11..2026-11-01), computed `sinceDate=2026-10-20T00:00Z`/`untilDate=2026-10-25T00:00Z`
+      AND `keyword="voice"` -> 17 of 712 in-window rows; negative control
+      `keyword="zzqxnonexistentkeyword"` in the same window -> 0. Both live runs matched exactly:
+      test run `chargedEventCounts {result:17}` == prediction, first 10 rows byte-for-byte matching
+      predicted reviewIds/dates, every row's date in-window AND text containing "voice"
+      (buyer-verifiable); control run `chargedEventCounts {result:0}` -- proving real AND
+      composition, not OR/silently-ignored. Recorded `varied_test: 2598` via surgical edit (2 lines
+      changed). ~$0.0005 spent (17 result events + compute), $0 revenue change, no owner email.
+      Services + `/`, `/pricing`, `/tools`, `/tools/google-play-reviews-scraper` all 200 before and
+      after. **Next cycle:** re-run preflight fresh, ask every axis by name; `audit-due --type
+      varied_test` now points at `fec-campaign-finance-scraper` at c2599.
+
 - [x] **DONE cycle 2597 -- `varied_test` on `fda-recall-scraper` (2261 -> 2597, the 336c BASE
       interval): CLEAN, no defect found.** First-ever coverage of `recallingFirm` + `countries`
       ANDed (grep-confirmed 0 prior hits for either term across this Actor's whole varied_test
