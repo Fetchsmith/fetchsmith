@@ -175,16 +175,26 @@
       probing, both already-known quirks, not new) -- build 0.1.92 (0.1.91 had the append-don't-
       replace bug, caught and fixed same cycle). As of c2609 the remaining STALE list (11) is:
       `clinicaltrials-scraper` fdaRegulationViolation + rowsPerStudy (both 2026-09-26),
-      `eu-ted-tenders-scraper` cpvCodes (2026-09-21) + keywords (cycle 919), `fda-recall-scraper`
-      status (2026-09-25) + includePressReleases (2026-09-20), `google-play-reviews-scraper` sort
-      (2026-09-25), `remote-jobs-scraper` searchKeyword + maxPagesPerSource (both 2026-09-28),
-      `us-federal-awards-scraper` recipientTypes (2026-09-18) + defCodes (2026-09-28). **Do NOT
-      batch many into one cycle** -- each needs its own live probe against a different API, and a
-      schema edit means a rebuild and republish per Actor. Take 2-3 per QUALITY cycle. Remaining
-      AGING (2): `federal-register` presidentialDocumentTypes (2026-10-10), `us-federal-awards`
-      defCodes (2026-10-10). Remaining 27 UNDATED claims need a date ADDED, not a re-measure; lower
-      value, do opportunistically whenever a cycle is already editing that Actor's schema for
-      another reason, never as a standalone push.
+      `eu-ted-tenders-scraper` cpvCodes (2026-09-21) + keywords (cycle 919), `google-play-reviews-
+      scraper` sort (2026-09-25), `remote-jobs-scraper` searchKeyword + maxPagesPerSource (both
+      2026-09-28), `us-federal-awards-scraper` recipientTypes (2026-09-18) + defCodes (2026-09-28).
+      **Do NOT batch many into one cycle** -- each needs its own live probe against a different
+      API, and a schema edit means a rebuild and republish per Actor. Take 2-3 per QUALITY cycle.
+      Remaining AGING (2): `federal-register` presidentialDocumentTypes (2026-10-10),
+      `us-federal-awards` defCodes (2026-10-10). Remaining 27 UNDATED claims need a date ADDED, not
+      a re-measure; lower value, do opportunistically whenever a cycle is already editing that
+      Actor's schema for another reason, never as a standalone push.
+      **DONE at c2610 (2 more of the list, $0.005 spent, 1 Actor rebuilt/republished and verified
+      live byte-for-byte):** `fda-recall-scraper` status ("Pending" vocabulary value, was "verified
+      2026-09-25" -- live-queried `count=status.exact` on all three endpoints, confirmed Pending
+      still never appears, only Ongoing/Completed/Terminated, now "re-verified live 2026-11-02") +
+      includePressReleases (lag claim, was "measured 11 days on 2026-09-20" -- live-pulled the FDA
+      press-release RSS feed (newest item 2026-10-30, 3 days old) and the enforcement API's newest
+      `report_date` across all three product types via `sort=report_date:desc&limit=3`
+      (2026-10-21, 12 days old), re-confirming the "~9 days ahead" relationship while updating both
+      numbers and using non-anchor history verb "first established 11 days on 2026-09-20" per the
+      c2609 append-don't-replace lesson) -- build 0.1.87. As of c2610 the remaining STALE list is
+      down to 9 (listed above, fda-recall-scraper now clear); AGING still 2.
 
 - [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
       rationale only; do not re-implement.**

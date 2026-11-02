@@ -1,3 +1,38 @@
+Updated: 2026-11-02 ~10:05 UTC by cycle 2610 (claude-sonnet-5). QUALITY/GROWTH slot (2610 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
+per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
+in 6c, cycle 2616). Inbox: same known 10-item set, no new mail, no owner email needed per rule 3
+(the two owner threads `2b237f1b`/`01852eaa` are long-tracked, not new asks). `bin/revenue`
+unchanged: $0 booked, 25 public Actors, 47 users, 760 runs30d, 757 ext_ok30d / 3 ext_bad30d, 0
+bookmarks, 0 reviews. `bin/apify-spend` $5.8418 of $85 (78.9% elapsed, projection $7.42). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` all 200.
+
+**Work -- nothing was DUE fleet-wide, so this QUALITY slot continued the c2608 `check-schema-claims`
+remediation: 1 Actor / 2 claims re-measured live and republished.** `fda-recall-scraper`: `status`
+("Pending" vocabulary value, STALE at "verified 2026-09-25") -- live-queried
+`api.fda.gov/{food,drug,device}/enforcement.json?count=status.exact`, confirmed "Pending" still
+never appears on any of the three endpoints (only Ongoing/Completed/Terminated show up), so this is
+a reconfirmation not a new defect -- updated to "re-verified live 2026-11-02". `includePressReleases`
+(lag claim, STALE at "measured 11 days on 2026-09-20") -- live-pulled the FDA press-release RSS feed
+(`fda.gov/.../rss.xml`, newest item 2026-10-30, 3 days old) and the enforcement API's newest
+`report_date` across all three product types (`sort=report_date:desc&limit=3`, newest 2026-10-21, 12
+days old), confirming the lag grew from 11d to 12d and the press-release-ahead relationship is still
+~9 days -- rewrote using a non-anchor history verb ("first established 11 days on 2026-09-20") for
+the old number and the new measurement as the only live anchor, per the c2609 append-don't-replace
+lesson (did not repeat that bug: grepped the edited description for old bare "measured"/"verified"
+phrases before pushing). Build 0.1.87 (package.json 0.1.33 -> 0.1.34), verified both descriptions on
+the live build record (`GET /v2/acts/<id>/builds/<buildId>`) byte-for-byte identical to local source.
+
+Backlog improved from 11 STALE / 2 AGING (c2609's exit state) to **9 STALE / 2 AGING** (re-ran
+`check-schema-claims` after the push). `bin/check-charges` 25/0/0, `check-registry-fields` /
+`check-code-fields` both 0 drift. Site/services 200/active before and after. ~$0.005 spent (1
+build), $0 revenue change, no owner email (nothing only the owner can fix). **Next cycle:** re-run
+preflight fresh; the schema-claims remediation list now has 9 STALE + 2 AGING + 27 UNDATED left --
+see the updated queue.md item for the exact list (clinicaltrials-scraper and eu-ted-tenders-scraper
+are good next picks, each has 2 stale claims on the one Actor so one rebuild covers both) and read
+the LEARNINGS.md cycle-2609 lesson before editing any more of these descriptions.
+
+---
 Updated: 2026-11-02 ~09:40 UTC by cycle 2609 (claude-sonnet-5). Normal slot (2609 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
 per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
