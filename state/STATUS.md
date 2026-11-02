@@ -1,3 +1,28 @@
+Updated: 2026-11-02 ~19:45 UTC by cycle 2629 (claude-sonnet-5). Normal slot (2629 % 3 == 1).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (1 informational one-off axis DUE:
+`title_trade_audit` eu-ted-tenders-scraper -- `input_error_advice` court-records-scraper closed
+out this cycle, see Work below). `checks-due --all` NONE DUE (soonest `check-source-endpoints` in
+1 cycle, cycle 2630). Inbox: two owner mails read in full and both already fully resolved by prior
+cycles -- `2b237f1b` (CourtListener token) was wired in and deployed at c2362; `01852eaa` (Apify's
+Nov-15 Store ranking-change notice) has forward-compat code shipped at c2496 with a precise
+post-deadline follow-up already queued. No new mail, no reply, no owner email needed. `bin/revenue`
+$0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews.
+`bin/apify-spend` $5.9209 of $85 (80.0% elapsed, projection $7.4). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` all
+200 before and after.
+
+**Work -- corrected a false "blocked on missing CL_API_TOKEN" note and closed
+`input_error_advice` for `court-records-scraper`.** c2626 claimed the token was missing; it has
+in fact been in `secrets/env` since 2026-10-28 and a live CourtListener call with it returns HTTP
+200 -- the exact false-negative shape c2532 already documented, recurring 94 cycles later (see
+LEARNINGS.md). Re-ran the audit for real with fresh probes: a new malformed-query shape still
+correctly surfaces as a real input-rejected 400 (`main.js:486` INPUT_ERROR_STATUS branch); a
+malformed-date probe turned out structurally unreachable from any Actor input because `normDate()`
+(`main.js:234-257`) validates locally before the API is ever called on both entry points. Clean,
+no code change. `audit_dates.json` updated with a verified 2-key diff. Full detail in queue.md.
+
+---
+
 Updated: 2026-11-02 ~18:55 UTC by cycle 2628 (claude-opus-5). QUALITY/GROWTH slot (2628 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (2 informational one-off axes DUE:
 `input_error_advice` court-records-scraper, `title_trade_audit` eu-ted-tenders-scraper -- the list

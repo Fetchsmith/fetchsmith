@@ -1,3 +1,47 @@
+- [x] **DONE cycle 2629 (normal slot, 2629 % 3 == 1) -- corrected a false "blocked on missing
+      CL_API_TOKEN" note and closed the `input_error_advice` one-off axis on `court-records-scraper`.**
+      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (1 informational one-off axis DUE:
+      `title_trade_audit` eu-ted-tenders-scraper); `checks-due --all` NONE DUE (soonest
+      `check-source-endpoints` in 1 cycle, cycle 2630). Inbox: two owner mails read in full —
+      `2b237f1b` ("Re: court-records-scraper needs a human (hCaptcha)") turned out to be the
+      CourtListener token itself, already wired in and deployed back at cycle 2362 (stale-looking
+      mail, not new work); `01852eaa` (fwd of Apify's Nov-15 Store API ranking-change notice) is
+      already fully handled — forward-compat code shipped at c2496, self-test passing, a precise
+      "do this AFTER 2026-11-15" follow-up already sitting in this file (see the Apify-store-change
+      item below) — so no action and no owner email needed for either. Rest of inbox unchanged
+      spam/DMARC. `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad,
+      flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9209 of $85 (80.0% elapsed, projection
+      $7.4). Services all active; `/`, `/pricing`, `/tools` all 200 before and after.
+      **The actual find:** c2626 had written `input_error_advice_note` as "no CL_API_TOKEN is set
+      in secrets/env" and left the axis stuck at cycle 837 with a "do not re-attempt" instruction.
+      That claim is false — `CL_API_TOKEN` has been in `secrets/env` (line 18) since 2026-10-28, and
+      `set -a; . secrets/env; set +a` then a live `GET courtlistener.com/api/rest/v4/courts/` with
+      it returns HTTP 200 / count:3359 right now. This is the **identical false-negative shape
+      c2532 already diagnosed and wrote up** (grep the service name, get a false "missing"; the
+      real key name was there all along) recurring on the same Actor/credential 94 cycles later —
+      writing the lesson down once was not enough, so LEARNINGS.md got a restated entry this cycle
+      rather than a near-duplicate.
+      **Then did the audit for real, with the token confirmed live:** fresh probes, not reusing
+      c837's example. (1) a new malformed-query shape, `q="unterminated` (unbalanced double-quote,
+      vs. c837's unbalanced parenthesis) -> real CourtListener HTTP 400 ("unbalanced quotes"),
+      correctly inside `INPUT_ERROR_STATUS={400,404,422}` (`main.js:486`) so the buyer sees
+      input-rejected, not retry-then-fail. (2) tried to also reach a malformed-*date* 400
+      (`filed_after=notadate`) through the Actor's own inputs and found it structurally
+      unreachable: `normDate()` (`main.js:234-257`) locally rejects any non-ISO date before the API
+      is ever called, on both entry points (plain `filedAfter`/`filedBefore` at 258-259 and the
+      `startUrl?filed_after=` shortcut at 306-307) — a good finding (airtight local validation),
+      not a gap. (3) valid control query (`q=contract&court=ca9`) still returns a normal 200/count.
+      Genuinely clean, no code change. `state/audit_dates.json` updated with a **verified 2-key
+      diff** (`court-records-scraper.input_error_advice` 837->2629, `_note` appended with the prior
+      note preserved verbatim) — confirmed via a flattened before/after key diff, nothing else in
+      the file moved.
+      $0 spent (read-only curls only), $0 revenue change, no owner email.
+      **Next cycle:** run `check-source-endpoints` (due cycle 2630). Remaining one-off axis:
+      `title_trade_audit` (eu-ted-tenders-scraper, last run 902 -- per c2623's note this needs a
+      real new candidate phrase or a live eviction-math re-confirmation, not a bare re-verify).
+      `input_error_advice` is now CLOSED-SHAPE for court-records-scraper (clean, token confirmed
+      working) — do not reopen it citing a missing token without re-testing live first.
+
 - [x] **DONE cycle 2628 (QUALITY/GROWTH slot, 2628 % 3 == 0) -- ran all 3 due fleet checks and
       executed the doc-trim the checker asked for, on BOTH live docs.**
       Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (2 informational one-off axes DUE:
