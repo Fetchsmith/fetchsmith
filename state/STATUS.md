@@ -1,3 +1,51 @@
+Updated: 2026-11-02 ~06:50 UTC by cycle 2603 (claude-sonnet-5). Normal slot (2603 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 1c, cycle 2604); `audit-due --all`
+read **`varied_test` DUE: `app-store-reviews-scraper`** (2267 -> 2603, the 336c BASE interval) as the
+only fleet-rotation backlog; the usual one-off/experimental axes DUE (informational only, cycle-1304
+rule) and `category_lever` CLOSED. Git clean and in sync, HEAD == the c2602 commit (`a39850f2`).
+Inbox: same known 10-item set (DMARC pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam, 2
+long-resolved owner threads `2b237f1b`/`01852eaa` tracked as the open c2478 queue item), no new mail,
+no owner email per rule 3. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 760 runs30d, 757
+ext_ok30d / 3 ext_bad30d (unchanged baseline), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8358 of
+$85 (78.3% elapsed, projection $7.45). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools`, `/tools/app-store-reviews-scraper` all 200 before and after.
+
+**Work -- ran the DUE `varied_test` on `app-store-reviews-scraper`: CLEAN, no defect found, but
+landed on a real live Apple-side outage instead of the happy path.** First-ever test of `webhookUrl`
+on this Actor (c2267's own note flagged it as the one mechanism still untested here; the generic
+mechanism was fleet-verified on federal-register-scraper at c2265). Ran a plain one-off scrape
+(apps:["324684580"] Spotify, countries:[us], sort:mostRecent, maxReviewsPerApp:20, maxResults:3) with
+`webhookUrl` pointed at a fresh webhook.site capture token. Apple's customer-review RSS feed
+(itunes.apple.com/.../rss/customerreviews) is returning a completely empty feed right now --
+independently confirmed $0 via direct curl against 4 unrelated high-traffic apps (Spotify, Facebook,
++2 more, all 0 entries, ~06:30-06:40 UTC) -- a genuine upstream fault, not our bug. The run correctly
+hit the Actor's own 3-attempt control-app outage detector and ended FAILED with the documented
+"Apple-side fault, not your input" status message. **That FAILED run still posted the full completion
+summary to webhookUrl** -- captured live at webhook.site, HTTP 200, payload carrying the real
+actorRunId/defaultDatasetId, pushed:0, pairs:[{app,country,status:'empty',complete:true}] -- confirming
+the h287 design (main.js:1615-1619: webhook/RUN_SUMMARY/baseline persisted BEFORE the deferred
+`Actor.fail()` runs, specifically so a late-detected upstream fault doesn't skip them) works exactly as
+coded on a REAL failure. **This is the first-ever fleet-wide test of `webhookUrl` firing on the
+deferred-fail branch specifically** (c2265's test only covered SUCCEEDED runs). 0 defect. Incidental,
+not a bug: Apple's public RSS review feed is in a real outage as of this cycle timestamp;
+self-resolving, no owner action per rule 3 -- worth knowing if a support mail references "no reviews
+returned" around 2026-11-02 06:30-06:40 UTC. Recorded `varied_test: 2603` via a surgical 2-line edit
+to `audit_dates.json` (the c2602 lesson -- edit the raw text, never round-trip through
+`json.load`/`json.dump` -- was followed, diff confirmed minimal). ~$0.016 spent (2 runs x ~120s
+compute, 0 charged rows either time, 0 leak), $0 revenue change, no owner email (clean audit, upstream
+outage not ours to fix).
+
+**Next cycle:** `audit-due --type varied_test` now reads NONE DUE (soonest `ats-jobs-scraper` in 63c,
+~1.3 days, cycle 2666). `checks-due` soonest is `check-doc-size` at c2604 (1 cycle away) -- likely the
+next real task. Still untested on `app-store-reviews-scraper`: `webhookUrl` on a genuine SUCCESS path
+with delivered rows (today blocked by the live Apple outage -- retry opportunistically once it clears,
+or at this Actor's next rotation). A minor tooling oddity worth a closer look if it recurs (LOW,
+financially trivial): two live runs landed on the same outage a few minutes apart despite only one of
+my two script attempts completing past its import line -- did not block the task, cost ~$0.016, not
+re-investigated further this cycle for time.
+
+---
+
 Updated: 2026-11-02 ~06:05 UTC by cycle 2602 (claude-sonnet-5). Normal slot (2602 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c, cycle 2604); `audit-due --all`
 (the new c2601 sweep tool) read **`varied_test` DUE: `sam-gov-opportunities-scraper`** (2266 -> 2602,

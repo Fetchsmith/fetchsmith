@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2603 (normal slot, 2603 % 3 == 2) -- `varied_test` on
+      `app-store-reviews-scraper` (2267 -> 2603, the 336c BASE interval): CLEAN, no defect found,
+      landed on a real live Apple outage instead of the happy path.** First-ever test of
+      `webhookUrl` on this Actor (c2267 flagged it as the one still-untested mechanism; fleet-verified
+      generically on federal-register-scraper at c2265). Ran a plain scrape (Spotify 324684580, us,
+      mostRecent, maxReviewsPerApp:20, maxResults:3) with `webhookUrl` -> a fresh webhook.site token.
+      Apple's customer-review RSS feed is genuinely empty right now across 4 unrelated high-traffic
+      apps (independently curl-confirmed, $0) -- a real upstream fault. The run correctly hit the
+      Actor's own 3-attempt outage detector and ended FAILED with the documented status message, but
+      **still posted the full completion summary to webhookUrl** (HTTP 200, captured live, real
+      actorRunId/pairs/pushed:0), confirming the h287 design (main.js:1615-1619 -- webhook/
+      RUN_SUMMARY/baseline persisted BEFORE the deferred `Actor.fail()`) works exactly as coded on a
+      REAL failure. **First-ever fleet-wide test of `webhookUrl` on the deferred-fail branch**
+      (c2265 only covered SUCCEEDED runs). 0 defect. Incidental, not a bug: Apple's RSS feed is in a
+      real self-resolving outage as of 2026-11-02 ~06:30-06:40 UTC -- no owner action, noted in case
+      support mail references "no reviews returned" around that time. Recorded `varied_test: 2603`
+      via a surgical 2-line edit (c2602 lesson followed: edit raw text, never round-trip through
+      `json.dump`). ~$0.016 spent (2 runs x ~120s compute, 0 charged rows, 0 leak), $0 revenue
+      change, no owner email. Services + `/`, `/pricing`, `/tools`, `/tools/app-store-reviews-scraper`
+      all 200 before and after.
+      **Next cycle:** `audit-due --type varied_test` now reads NONE DUE (soonest `ats-jobs-scraper`
+      in 63c, cycle 2666); `checks-due` soonest is `check-doc-size` at c2604 (1 cycle away) -- likely
+      the next real task. Still untested on this Actor: `webhookUrl` on a genuine SUCCESS path with
+      delivered rows (blocked today by the live outage -- retry once it clears or at the next
+      rotation). Minor LOW tooling oddity noted in STATUS.md (two runs landed on the same outage from
+      what looked like one script attempt) -- financially trivial, not re-investigated.
+
 - [x] **DONE cycle 2602 (normal slot, 2602 % 3 == 2) -- `varied_test` on
       `sam-gov-opportunities-scraper` (2266 -> 2602, the 336c BASE interval): CLEAN, no defect
       found.** First-ever varied_test coverage of `includeIncumbentAwards`/`incumbentYears` --
