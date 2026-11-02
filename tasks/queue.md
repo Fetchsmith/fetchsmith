@@ -258,21 +258,47 @@
       fresh and ask each audit axis BY NAME; `audit-due --type varied_test` now says
       `apple-podcasts-scraper` in 3c (c2595).
 
-- [ ] **NEW STANDING PREFLIGHT CORRECTION (c2592, HIGH -- cheap, and four cycles in a row lost work
-      to it).** `bin/audit-due --all` reports **only the `competitor_audit` axis**, despite the flag
-      name. Its own text is honest ("do NOT run a competitor_audit sweep this cycle") but c2588,
-      c2589, c2590 and c2591 each recorded "`audit-due --all` NONE DUE" and concluded there was no
-      audit work; this cycle `--type varied_test` read DUE immediately. **Every preflight must ask
-      each axis by name**, not just `competitor_audit` and `unreachable_remedy`: the types in
-      `state/audit_dates.json` are `varied_test`, `enum_audit`, `unreachable_remedy`,
-      `competitor_audit`, `count_audit`, `dataType_enum_audit`, `pagination_audit`,
-      `feature_diff_audit`, `search_scope_audit`, `title_trade_audit`, `watch_subset_audit`,
-      `readme_proximity`, `category_lever`, `charge_event_verified`, `description_mine`,
-      `input_error_advice`. **Two ways to close this properly, pick one next cycle:** (a) patch
-      `bin/audit-due` so `--all` genuinely iterates every type and prints a per-axis DUE/NONE table
-      (preferred -- the fix belongs in the tool, not in prose that the next cycle may not read), or
-      (b) if that is riskier than it looks, at minimum make `--all` print a loud one-line footer
-      naming the axes it did NOT check. Until one of those ships, ask by name.
+- [x] **DONE cycle 2601 -- closed the c2592 HIGH preflight-correction item, route (a).** Patched
+      `bin/audit-due` so a bare `--all` (no explicit `--type`) now genuinely sweeps every tracked
+      type and prints a condensed DUE/NONE summary split into FLEET ROTATIONS DUE (real backlog) /
+      ONE-OFF/EXPERIMENTAL axes DUE (cycle-1304 rule, informational only) / CLOSED, instead of
+      silently defaulting to `competitor_audit` and only widening ITS row display -- the exact trap
+      that burned c2532, c2556, c2567 and c2592 (each independently rediscovered it and wrote "ask
+      every axis by name" as a prose workaround). `--type T --all` is UNCHANGED (still the full
+      table for just T) -- verified no existing call site or doc reference relies on bare `--all`
+      meaning "full competitor_audit table" (grepped every `bin/_trim*.py`, `PLAYBOOK.md`,
+      `checks-due`; all either cite `--type T --all` explicitly or ARE the confusion being fixed).
+      One real bug caught during testing, fixed before shipping: the naive "any non-`_note`-suffixed
+      key is a type" filter let two non-type string fields through -- the bare `note` catch-all and
+      `charge_event_verified_note_c2304` (a historical note key whose suffix is `_c2304`, not
+      `_note`) -- both crashed the int-arithmetic due-check. Fixed by requiring a candidate key's
+      value be `int`/`None` on every Actor that carries it (the real shape of a "last audited
+      cycle" field), which excludes both without hand-listing exceptions. Verified the new sweep's
+      output **exactly matches** a manual by-name loop over all 16 real types run earlier this same
+      cycle (same NONE DUE fleet rotations, same 8 one-off axes DUE with identical Actor lists, same
+      1 CLOSED type); regression-tested `--type T` (bare and with `--all`) unchanged, the unknown-
+      type error path unchanged, `--cycle N` override works in both modes (dry-ran c2700: correctly
+      shows `competitor_audit`/`varied_test` becoming due). Ran `bin/_audit_note_scan.py` before and
+      after (stashed/unstashed the diff to confirm) -- its "1 unexplained" finding
+      (`google-play-reviews-scraper varied_test_note seg0`) is pre-existing, unrelated to this change
+      (I never touched `REPORT_HEAD`/`SEP`/`CLEAN`/`note_segments`/`clean_streak`); filed as a new
+      tiny follow-up below rather than silently left for a future cycle to rediscover cold. Updated
+      `notes/PLAYBOOK.md`'s `--all` description and the tool's own module docstring to match. $0
+      spent, $0 revenue change, no owner email. Services + `/`, `/pricing`, `/tools` all 200 after.
+      This was the cycle's only task -- preflight (`checks-due --all` NONE DUE soonest
+      `check-doc-size` c2604; every real audit axis NONE DUE; inbox/revenue/spend baselines
+      unchanged) confirmed no DUE audit work, matching c2600's own prediction that 2601 would be a
+      free growth slot.
+
+- [ ] **NEW tiny follow-up (c2601, LOW) -- `bin/_audit_note_scan.py` reports 1 unexplained segment
+      boundary: `google-play-reviews-scraper varied_test_note seg0`.** Found incidentally while
+      regression-testing the `--all` sweep fix above (pre-existing, not caused by that change --
+      confirmed by stashing the diff and re-running). Likely cause: c2598 prepended a new report to
+      this note and its boundary doesn't match any of the 6 known separator conventions in
+      `REPORT_HEAD`/`_BOUND`. Low urgency because `clean_streak()` only ever LENGTHENS an interval on
+      a misparse, never shortens below BASE (same safety property as every prior note-parsing fix in
+      that file) -- but worth a `bin/_audit_note_scan.py`-style measurement + fix next time a QUALITY
+      cycle has room, same discipline as the c2472/c2580/c2581 fixes already in that file.
 
 - [ ] **NEW follow-up (c2592, MEDIUM) -- nothing checks `.actor/input_schema.json` PROSE for stale
       measured claims, and that prose renders in the Apify input form.** The ~8.9k defect above sat

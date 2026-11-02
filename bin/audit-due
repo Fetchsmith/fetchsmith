@@ -7,6 +7,11 @@ Read-only, no network. Reads state/audit_dates.json and prints, oldest-first, th
 Actors whose last audit of <type> is older than that Actor's effective minimum
 re-audit interval. Prints `NONE DUE` (and the soonest-due Actor) when nothing is.
 
+`--all` with NO `--type` (cycle 2601) sweeps every tracked axis and prints a
+condensed DUE/NONE summary instead of one type's full table -- this is the
+standard whole-fleet preflight command. `--type T --all` is unchanged: the full
+table for just T.
+
 NOTE on one-off types (cycle 1304 rule, re-learned the hard way at cycle 1618 after it
 rotted out of active memory in LEARNINGS_ARCHIVE): several tracked types
 (`category_lever`, `dataType_enum_audit`, `pagination_audit`, `search_scope_audit`,
@@ -297,9 +302,108 @@ def current_cycle():
     return None
 
 
+def sweep_all_types(data, cyc, base):
+    """`audit-due --all` with NO `--type`: every tracked axis, condensed (cycle 2601).
+
+    Deliberately terse (actor names only, no per-row last/gap/interval/streak) --
+    this is a discovery pass to tell you WHICH axes need the detailed view, not a
+    replacement for `bin/audit-due --type <t> --all` on the one that's actually
+    DUE. CLOSED types are listed and skipped, same contract as the single-type
+    path. One-off/experimental types (cycle-1304 rule) are reported in their own
+    section, never merged into the real backlog, because merging them is exactly
+    the false-positive this tool exists to avoid (see module docstring).
+    """
+    # cycle 2601: the suffix filter alone lets two non-type keys through -- the
+    # bare `note` catch-all (confirmed elsewhere in this file to be a mixed,
+    # oldest-first-on-one-Actor, multi-type scratchpad no `--type` value ever
+    # reads) and `charge_event_verified_note_c2304` (a one-off historical note
+    # key whose own suffix is `_c2304`, not `_note`). Both hold free-text
+    # strings, not cycle numbers. A real type's value is always an int (last
+    # audited cycle) or None (never audited) on every Actor that carries it, so
+    # requiring that shape -- rather than hand-listing exceptions -- also covers
+    # any future one-off note key with a non-standard suffix.
+    candidate_keys = {k for v in data.values() if isinstance(v, dict) for k in v
+                      if not k.endswith(("_note", "_skip_until_date",
+                                          "_min_interval", "_closed"))}
+    types = sorted(k for k in candidate_keys
+                   if all(isinstance(v.get(k, None), (int, type(None)))
+                          for v in data.values() if isinstance(v, dict) and k in v))
+    retired = retired_slugs()
+    live = live_slugs()
+    today = datetime.date.today()
+    rotation_due, oneoff_due, closed_types = [], [], []
+    for typ in types:
+        closed = next((v[f"{typ}_closed"] for v in data.values()
+                       if isinstance(v, dict) and v.get(f"{typ}_closed")), None)
+        if closed:
+            closed_types.append(typ)
+            continue
+        tracked_for_type = {s for s, v in data.items()
+                            if isinstance(v, dict) and typ in v}
+        is_fleet_rotation = bool(live) and len(tracked_for_type) > len(live) / 2
+        due_slugs = []
+        for slug, v in sorted(data.items()):
+            if not isinstance(v, dict) or typ not in v or slug in retired:
+                continue
+            last = v[typ]
+            if last is None:
+                if is_fleet_rotation:
+                    due_slugs.append(slug)
+                continue
+            skip = v.get(f"{typ}_skip_until_date")
+            if skip and today < datetime.date.fromisoformat(skip):
+                continue
+            streak = clean_streak(v.get(NOTE_KEY_OVERRIDES.get(typ, f"{typ}_note")))
+            override = v.get(f"{typ}_min_interval")
+            interval = override if override is not None else min(
+                base * 2 ** min(streak, 2), CAP)
+            if cyc - last >= interval:
+                due_slugs.append(slug)
+        if is_fleet_rotation:
+            due_slugs += sorted(live - set(data) - retired)
+        if due_slugs:
+            (rotation_due if is_fleet_rotation else oneoff_due).append(
+                (typ, due_slugs))
+
+    print(f"audit-due --all (every type, cycle {cyc}, {len(types)} type(s) checked):")
+    print()
+    if rotation_due:
+        print("FLEET ROTATIONS DUE (real backlog -- ask each by name with "
+              "`--type <t>` for the full table):")
+        for typ, slugs in rotation_due:
+            print(f"  {typ}: {', '.join(slugs)}")
+    else:
+        print("FLEET ROTATIONS: NONE DUE.")
+    if oneoff_due:
+        print("\nONE-OFF/EXPERIMENTAL axes DUE (cycle-1304 rule -- informational "
+              "only, NOT a backlog unless you intend to roll the type out "
+              "fleet-wide):")
+        for typ, slugs in oneoff_due:
+            print(f"  {typ}: {', '.join(slugs)}")
+    if closed_types:
+        print(f"\nCLOSED (never a backlog): {', '.join(closed_types)}")
+    print(f"\nAll types checked: {', '.join(types)}")
+
+    try:
+        import importlib.util
+        from importlib.machinery import SourceFileLoader
+        path = "/root/agent/bin/checks-due"
+        spec = importlib.util.spec_from_file_location(
+            "checks_due", path, loader=SourceFileLoader("checks_due", path))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        line = mod.footer(cyc)
+        if line:
+            print("\n" + line)
+    except Exception:          # noqa: BLE001 -- see single-type path above
+        print("\nFLEET CHECKS: footer unavailable (bin/checks-due broken?) -- "
+              "run bin/checks-due by hand")
+
+
 def main():
     a = sys.argv[1:]
-    typ = a[a.index("--type") + 1] if "--type" in a else "competitor_audit"
+    explicit_type = "--type" in a
+    typ = a[a.index("--type") + 1] if explicit_type else "competitor_audit"
     base = int(a[a.index("--base") + 1]) if "--base" in a else BASE
     cyc = int(a[a.index("--cycle") + 1]) if "--cycle" in a else current_cycle()
     show_all = "--all" in a
@@ -307,6 +411,20 @@ def main():
         sys.exit("audit-due: could not determine current cycle; pass --cycle N")
 
     data = json.load(open(STATE))
+
+    # Cycle 2601: `--all` with NO `--type` used to silently fall back to the
+    # `competitor_audit` default and just widen ITS row display -- every axis but
+    # that one stayed invisible. Four separate cycles (2532, 2556, 2567, 2592)
+    # independently rediscovered this and documented "ask every axis by name" as a
+    # prose workaround, which depends on a future cycle re-reading that note. This
+    # makes the tool itself sweep every type instead, so a bare `--all` is finally
+    # the fleet-wide check its own name implies. `--type X --all` (explicit type)
+    # is UNCHANGED -- it still means "show the whole table for X", preserving every
+    # existing call site and doc reference.
+    if show_all and not explicit_type:
+        sweep_all_types(data, cyc, base)
+        return
+
     if not any(isinstance(v, dict) and typ in v for v in data.values()):
         sys.exit(f"audit-due: --type {typ!r} matches 0 Actors in {STATE} -- "
                  f"likely a typo, not a genuinely empty backlog. Known types: "
