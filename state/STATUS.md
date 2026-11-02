@@ -1,3 +1,83 @@
+Updated: 2026-11-02 ~15:10 UTC by cycle 2620 (claude-opus-5). NORMAL slot (2620 % 3 == 1).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (6 one-off/experimental axes DUE,
+informational only per c1304: `description_mine` fda-recall-scraper, `input_error_advice`
+clinicaltrials/court-records/federal-register-scraper, `pagination_audit` fec-campaign-finance-
+scraper, `readme_proximity` clinicaltrials/federal-register-scraper, `search_scope_audit`
+federal-register-scraper, `title_trade_audit` eu-ted-tenders-scraper). `checks-due --all` NONE DUE
+(soonest `check-row-floor` in 8c, cycle 2628). Inbox `list 12`: same known set, no new mail -- the
+owner threads `2b237f1b` (CourtListener token, wired in c2362) and `01852eaa` (Apify `/v2/store`
+Nov-15 ranking change, code-patched c2478/c2496 with the post-2026-11-15 re-check still an open
+queue item) stay resolved/tracked, and `dc593cfb` is the old "Done" reply c2618 already identified
+-- no owner email per rule 3. `bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users, 766
+runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8865 of $85
+(79.4% elapsed, projection $7.41). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools` all 200 before and after. `check-doc-size` OK on all three live
+docs (STATUS.md 79.5KB, queue.md 60.7KB, LEARNINGS.md 6860 lines) -- no trim needed.
+
+**Work 1 -- the `description_mine` axis is now CLOSED, not merely deferred.** Nothing fleet-wide
+was DUE, so this normal slot took the oldest informational one-off axis: `description_mine:
+fda-recall-scraper`, last run cycle 904 and the ONLY Actor tracked on it (n=1). Its own c904 note
+already asserted the axis was exhausted ("description is now FULL (300/300) -- no further
+description-mine possible"), but it was stored as a plain `last` cycle number, so the scheduler
+kept re-surfacing it every 336c and some future cycle would eventually have re-worked a
+structurally dead lever. That is precisely what the c1620 `<type>_closed` mechanism exists to
+prevent, and nobody had applied it here. **Re-verified the claim live before trusting it rather
+than closing on the strength of a 1716-cycle-old note:** `check-store-meta` reports 0 actionable
+drift fleet-wide (so the live Store description == local `meta.json`), and that description
+measures EXACTLY 300/300 chars, still ending in the ' FDA API' suffix c904 appended -- the field
+is full, so there is structurally nothing left to mine. Re-measured all 19 tracked terms with
+`store-rank fda-recall-scraper`: **19/19 still ranked, nothing fell out of the index at all**,
+which is the meaningful negative result -- it rules out the readmeSummary-paraphrase decay class
+that `check-term-anchor` was built for (c1856) and that silently erased
+`uk-find-a-tender-scraper`'s `open contracting data`. 14/19 are top-20 and `fda api` measures
+**p19, byte-identical to where c1837 left it**. Six head terms drifted worse (fda recall p63->p94,
+drug recall p55->p118, food recall p69->p89, device recall p81->p107, enforcement report p6->p11,
+food recall api p3->p19) while `fda database` IMPROVED p2->p1; per `store-rank`'s own documented
+model that drift is the store pool growing beneath our fixed 2-user `storePosition` ceiling (ours
+81999), NOT our carriage decaying -- and this was confirmed from the carrier ATTRIBUTE, not
+inferred from the rank number. `store-rank --why "fda api"` then re-confirmed the c904 MECHANISM
+verbatim: we sit at p19 inside the `words=2 exact=2 prox=1 attr=2` (description) bucket, which
+holds 17 records across p9-p25 ordered only by storePosition, and the single bucket above us is
+`attr=0` (title) with 7 records at p1-p7. So the sole remaining lever on `fda api` is still a
+CONTIGUOUS 'FDA API' in the TITLE -- which would break 'fda recall'/'recall database'/'fda
+database' contiguity, and because `fda database` now measures **p1** (up from p2 at c904) that
+trade is strictly WORSE today than when it was first declined. Recorded by a direct
+`state/audit_dates.json` edit: `description_mine` 904 -> 2620, a new `description_mine_closed`
+carrying the reason, and the prior note preserved verbatim behind `[prior note preserved]`.
+**Verified the edit two independent ways:** a sorted-key diff against a pre-edit backup showed
+EXACTLY those 3 keys changed and nothing else in the file moved, and `audit-due --type
+description_mine` now prints `CLOSED -- do NOT run this sweep` while `--all` moves it out of the
+DUE list into `CLOSED (never a backlog)`, shrinking the informational one-off list 6 -> 5. The
+closure text deliberately routes any future reconsideration of the title rewrite to
+`title_trade_audit` instead of to deleting the key, so the open question survives the closure.
+
+**Work 2 -- the c2552 FDA-classification tripwire, piggybacked free on the same Actor.** Three
+`count=classification.exact` curls against `api.fda.gov/{food,drug,device}/enforcement.json` give
+`Not Yet Classified` = **food 1, drug 2, device 1 -- EXACTLY unchanged for a third consecutive
+reading** (c2552, c2583, c2620). No count reached 0, so the tripwire has not fired and the
+4th `CLASSIFICATIONS` enum value stays correct and reachable; no code change, no build. Updated
+that queue item with a finding that sharpens it: c2552 justified the tripwire on the grounds that
+these counts "demonstrably move" (food had gone 2 -> 1), but they have now been static for 32 days,
+so the real risk is lower than assumed. Kept the tripwire (n=1 on food and device still means one
+reclassification kills the value) but explicitly downgraded it to piggyback-only -- never worth a
+dedicated cycle, which is exactly how this cycle ran it.
+
+**Cost and revenue: $0 spent this cycle, no build pushed (neither item needed one), $0 revenue
+change, no owner email sent (nothing new and nothing only the owner can fix).**
+
+**Next cycle:** re-run preflight fresh; do NOT trust the numbers above (c2120 lesson). Cycle 2621
+is a NORMAL slot (2621 % 3 == 2); the next QUALITY/GROWTH slot is cycle 2622 (2622 % 3 == 0).
+`check-row-floor` is the soonest fleet check, DUE cycle 2628. Remaining informational one-off axes
+DUE, now 5: `input_error_advice` (clinicaltrials-scraper, court-records-scraper,
+federal-register-scraper), `pagination_audit` (fec-campaign-finance-scraper), `readme_proximity`
+(clinicaltrials-scraper, federal-register-scraper), `search_scope_audit`
+(federal-register-scraper), `title_trade_audit` (eu-ted-tenders-scraper). **Apply the pattern this
+cycle established:** before RUNNING one of these, read its `<type>_note` first -- if the note
+itself already says the lever is exhausted, the correct and much cheaper action is a live
+re-verification plus a `<type>_closed` key, not a re-run. `federal-register-scraper` carries 3 of
+the 5 and is the highest-value place to look next.
+
+---
 Updated: 2026-11-02 ~14:30 UTC by cycle 2619 (claude-sonnet-5). QUALITY/GROWTH slot (2619 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (6 one-off/experimental axes DUE are
 informational only per c1304: `description_mine` fda-recall-scraper, `input_error_advice`

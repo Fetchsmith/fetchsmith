@@ -6858,3 +6858,51 @@ full-README split in LEARNINGS_ARCHIVE, just a different field this time) and on
 appears to be capped. Not yet worth a dedicated fix (only one Actor affected, no buyer impact
 found), but if another README crosses ~100KB, read the Store page instead of trusting this
 endpoint's `readme` field for the verification step.
+
+## c2620 — an audit axis whose own note already says "exhausted" must be CLOSED, not re-dated: the scheduler cannot read prose
+
+`bin/audit-due` decides what to re-run from one number per (Actor, type) — a `last` cycle — plus a
+fixed interval. The human-readable `<type>_note` sitting right beside it is invisible to that
+logic. So an axis can be **permanently and correctly answered in its note while remaining on the
+DUE list forever**, and each future cycle that picks it up pays the full re-investigation cost to
+rediscover a conclusion already written down. c2620 found exactly this on `description_mine:
+fda-recall-scraper`: the c904 note ends "description is now FULL (300/300) — no further
+description-mine possible on this Actor", yet the axis had been re-surfacing for 1716 cycles
+because it was only ever re-dated. The fix mechanism already existed — `<type>_closed` (built
+c1620 for `category_lever`) — nobody had connected it to the notes.
+
+**The rule: whenever you pick up an audit axis, read its `<type>_note` BEFORE doing any work.** If
+the note already declares the lever structurally exhausted, the cycle's correct output is a cheap
+live re-verification plus a `<type>_closed` key — not a re-run. "Not due for 336 cycles" and "this
+question is permanently answered" are different states and the file has distinct slots for them;
+using the deferral slot for a closure quietly schedules duplicated work forever.
+
+Three things that make the difference between a closure and a cop-out:
+
+1. **Re-verify the note's factual premise live before closing.** A note can be stale: it was true
+   when written and the world moved. c2620's close rested on three fresh measurements, not on
+   c904's word — `check-store-meta` showing 0 drift (live Store description == local
+   `meta.json`), that description measuring exactly 300/300 chars, and `store-rank --why` showing
+   the same ranking-bucket mechanism the note had claimed. Had any of them disagreed, the axis
+   would have re-opened instead.
+2. **Check the axis's n before writing the key.** `<type>_closed` set on ANY Actor closes the type
+   **fleet-wide**. That is right for an n=1 experimental axis (verify with a scan of
+   `audit_dates.json` for who else carries a `<type>` key — c2620 confirmed fda-recall-scraper was
+   the only one) and badly wrong for a rotation that happens to be exhausted on one Actor. For
+   that case, the `_skip_until_date` / `_min_interval` keys are the right tool.
+3. **Route the surviving open question somewhere, in the closure text itself.** "Exhausted" rarely
+   means "nothing could ever help"; it usually means *this* lever is spent while a different,
+   costlier lever remains. `description_mine` closed with the note that `fda api` (p19) is still
+   winnable via a contiguous 'FDA API' in the TITLE, and that if anyone revisits it they must do so
+   under `title_trade_audit` rather than by deleting the closed key. A closure that drops the live
+   question on the floor just converts rediscovered work into lost work.
+
+Also worth generalizing from the same cycle: the re-verification was nearly free because a
+19-term `store-rank <slug>` run answers two questions at once — "is the axis still exhausted?" and
+"has any tracked term silently decayed out of the index?" (the `check-term-anchor` /
+readmeSummary-paraphrase class). 19/19 still ranked here. **And when a one-off tripwire's own
+premise weakens, say so in the item rather than deleting it:** the c2552 FDA `Not Yet Classified`
+counts were justified on "these demonstrably move", but three readings 32 days apart measured
+food 1 / drug 2 / device 1 exactly unchanged, so c2620 kept the tripwire (n=1 on two endpoints is
+still one reclassification from dead) and downgraded it to piggyback-only — checked free on any
+cycle already touching that Actor, never worth a dedicated one.

@@ -1,3 +1,67 @@
+- [x] **DONE cycle 2620 (normal slot, 2620 % 3 == 1) -- nothing fleet-wide was DUE, so took the
+      next informational one-off `audit-due` axis, `description_mine: fda-recall-scraper` (last run
+      cycle 904, the only Actor on this n=1 axis), AND piggybacked the c2552 FDA-classification
+      tripwire on the same Actor.** Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS
+      (6 one-off axes DUE, informational only per the c1304 rule); `checks-due --all` NONE DUE
+      (soonest `check-row-floor` in 8c, cycle 2628); inbox `list 12` = same known set, no new mail
+      (the two owner threads `2b237f1b`/`01852eaa` remain long-resolved/tracked, and `dc593cfb` is
+      the old "Done" reply c2618 already identified) -- no owner email per rule 3; `bin/revenue`
+      unchanged ($0 booked, 25 public Actors, 47 users, 766 runs30d, 763 ext_ok30d / 3 ext_bad30d,
+      0 bookmarks, 0 reviews); `bin/apify-spend` $5.8865 of $85 (79.4% elapsed, projection $7.41);
+      services all active and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Work 1 -- `description_mine` RE-VERIFIED then CLOSED (not just deferred).** The c904 note
+      already asserted the axis was exhausted ("description is now FULL (300/300) -- no further
+      description-mine possible"), but it was recorded as a plain `last` date, so the scheduler
+      kept re-surfacing it and a future cycle would have re-worked a structurally dead lever --
+      exactly the failure mode the c1620 `<type>_closed` mechanism exists for. Re-verified the
+      claim live rather than trusting it: `check-store-meta` reports 0 actionable drift fleet-wide
+      (so live Store description == local `meta.json`), and that description measures EXACTLY
+      300/300 chars still ending in ' FDA API'. Re-measured all 19 tracked terms via `store-rank
+      fda-recall-scraper`: **19/19 still ranked, nothing fell out of the index** (i.e. the
+      readmeSummary-paraphrase decay class `check-term-anchor` watches for has NOT fired here),
+      14/19 in top-20, and `fda api` sits at **p19, byte-identical to where c1837 left it**.
+      Head terms drifted worse (fda recall p63->p94, drug recall p55->p118, food recall p69->p89,
+      device recall p81->p107, enforcement report p6->p11, food recall api p3->p19) while
+      `fda database` IMPROVED p2->p1; per `store-rank`'s own header that drift is the store pool
+      growing beneath our fixed 2-user `storePosition` ceiling (81999), NOT our carriage decaying
+      -- confirmed by carrier attribute, not inferred from rank. `store-rank --why "fda api"`
+      re-confirms the c904 MECHANISM verbatim: we are p19 inside the `words=2 exact=2 prox=1
+      attr=2` (description) bucket of 17 records spanning p9-p25, ordered only by storePosition,
+      and the single bucket above us is `attr=0` (title) with 7 records at p1-p7. So the only
+      remaining lever is still a CONTIGUOUS 'FDA API' in the TITLE -- which would break
+      'fda recall'/'recall database'/'fda database' contiguity, and since `fda database` now
+      measures **p1**, that trade is strictly WORSE than it was at c904. Recorded via a direct
+      `state/audit_dates.json` edit (`description_mine` 904 -> 2620, new `description_mine_closed`
+      with the reason, prior note kept verbatim behind `[prior note preserved]`); verified the edit
+      two ways -- a sorted-key diff against a backup showed EXACTLY those 3 keys changed and
+      nothing else, and `audit-due --type description_mine` now prints `CLOSED` while `--all`
+      moves it from the DUE list into `CLOSED (never a backlog)`, shrinking the one-off list 6 -> 5.
+      The closure note explicitly routes any future title rewrite to `title_trade_audit` rather
+      than to deleting the key.
+      **Work 2 -- c2552 tripwire re-checked (3 curls, free, same Actor).**
+      `api.fda.gov/{food,drug,device}/enforcement.json?count=classification.exact` gives
+      `Not Yet Classified` = **food 1, drug 2, device 1 -- EXACTLY unchanged for the third
+      consecutive reading** (c2552, c2583, c2620). No count at 0, tripwire has not fired, no code
+      change. Updated that queue item with the observation that the counts have now been static for
+      32 days, so c2552's "demonstrably moves" premise is weaker than assumed -- keep the tripwire
+      (n=1 on food and device is still one reclassification from dead) but never spend a dedicated
+      cycle on it; piggyback it, as this cycle did.
+      $0 spent, no build pushed (nothing needed one), $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh -- do NOT trust these numbers (c2120 lesson).
+      `check-row-floor` comes DUE at cycle 2628, so a normal slot before then has no fleet work;
+      cycle 2621 is a NORMAL slot (2621 % 3 == 2) and the next QUALITY/GROWTH slot is cycle 2622
+      (2622 % 3 == 0). Remaining informational
+      one-off axes DUE, now 5 after this closure: `input_error_advice` (clinicaltrials-scraper,
+      court-records-scraper, federal-register-scraper), `pagination_audit`
+      (fec-campaign-finance-scraper), `readme_proximity` (clinicaltrials-scraper,
+      federal-register-scraper), `search_scope_audit` (federal-register-scraper),
+      `title_trade_audit` (eu-ted-tenders-scraper). **Note the pattern this cycle found and apply
+      it:** several of these one-off axes may likewise be ALREADY-ANSWERED rather than open work.
+      Before running one, read its `<type>_note` first -- if the note itself says the lever is
+      exhausted, the correct action is a cheap live re-verification plus a `<type>_closed` key, not
+      a re-run. `federal-register-scraper` carries 3 of the 5 and is the highest-value place to
+      look next. Also: `readme_proximity` overlaps the `--why` readme-prox measurement used above.
+
 - [x] **DONE cycle 2619 (QUALITY/GROWTH slot, 2619 % 3 == 0) -- trimmed `tasks/queue.md` per the
       c2618 flag.** Preflight: `audit-due --all` NONE DUE fleet-wide (6 one-off/experimental axes
       DUE, informational only per cycle-1304 rule, not a backlog); `checks-due --all` NONE DUE
@@ -66,6 +130,14 @@
       contrast measured EXACTLY unchanged (6/23/8) across the same 26 days and needs no tripwire.
       **Re-checked live cycle 2583 (2026-11-01): still food 1, drug 2, device 1 -- unchanged from
       c2552's measurement, no count at 0, tripwire has not fired, no action taken.**
+      **Re-checked live cycle 2620 (2026-11-02): still food 1, drug 2, device 1 -- EXACTLY
+      unchanged for a third consecutive reading (c2552, c2583, c2620), no count at 0, tripwire has
+      not fired, no action taken.** Worth noting the stability: the c2552 rationale for the
+      tripwire was that the counts "demonstrably move" (food went 2 -> 1 between 2026-10-06 and
+      c2552), but across the 32 days since they have not moved at all, so the practical risk is
+      lower than c2552 assumed. Keep the tripwire (n=1 on food and device still means one
+      reclassification kills the value), but do NOT spend a dedicated cycle on it -- piggyback the
+      3 curls on any cycle that already touches this Actor, as c2620 did.
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
