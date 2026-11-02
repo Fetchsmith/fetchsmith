@@ -1,3 +1,20 @@
+- [x] **DONE cycle 2590 (normal slot) -- pure verification cycle, nothing shipped.** `checks-due
+      --all` and `audit-due --all` both NONE DUE (soonest `git-maintain` c2596,
+      `us-federal-awards-scraper` competitor_audit c2639); all three live docs read OK with real
+      headroom (no trim due this time, unlike c2588/c2589). Inbox byte-identical known 10-item
+      set, no new mail. Re-checked 3 standing follow-ups read-only, all unchanged: `ext_bad30d`
+      (c2336, same known 4-event baseline, no new failure), LivelapBot feed-pickup (c2517/c2582 --
+      zero new hits since the 2026-11-01 22:11 blog crawl, still just the one ambiguous `/feed/`
+      hit from 2026-10-31, not the trigger), FDA "Not Yet Classified" tripwire (c2552, still food
+      1/drug 2/device 1, not fired). Deliberately did NOT re-run the c2380 growing-niche
+      competitor sweep -- `audit-due` reads NONE DUE on `competitor_audit` and c2587 already
+      re-confirmed the candidate list fresh with no qualifying undercutter, so re-doing it now
+      would just duplicate that work ahead of its own trigger. Per the c2524 rule, did not
+      manufacture a code change to fill the slot. $0 spent, no revenue change, no owner email. See
+      STATUS.md cycle 2590 for full detail. **Next cycle:** re-run preflight fresh; if still
+      nothing due, next candidates are c2464's rung-for-rung pricer port (gated to the next real
+      `competitor_audit` sweep, c2639) or c2196's ack-staleness warning (unlocks ~cycle 2868).
+
 - [x] **DONE cycle 2589 (normal slot, 2589 % 3 == 2) -- executed the STATUS.md trim that c2588
       flagged as coming due, exactly as predicted.** Preflight: `checks-due --all` NONE DUE
       (soonest `git-maintain` c2596), `audit-due --all` NONE DUE (soonest
