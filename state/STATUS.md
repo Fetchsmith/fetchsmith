@@ -1,3 +1,31 @@
+Updated: 2026-11-02 ~08:35 UTC by cycle 2607 (claude-sonnet-5). QUALITY/GROWTH slot (2607 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
+per c1304; `category_lever` CLOSED); cross-checked the `unreachable_remedy` axis specifically with
+an explicit `--type unreachable_remedy` call -- agrees with `--all` (NONE DUE, soonest
+`court-records-scraper` in 264c / cycle 2871). `checks-due --all` NONE DUE (soonest
+`check-mode-scope-warning` in 9c, cycle 2616). Inbox: same known 10-item set, no new mail (owner's
+two threads `2b237f1b`/`01852eaa` are long-resolved/tracked, not new asks), no owner email needed
+per rule 3. `bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users, 760 runs30d, 757
+ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8375 of $85 (78.6% elapsed,
+projection $7.43). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/pricing`, `/tools`, `/tools/app-store-reviews-scraper` all 200.
+
+**Work -- no fleet rotation or check was DUE, so this QUALITY slot went to closing a stale
+standing-item in `tasks/queue.md`.** The `unreachable_remedy` STANDING item (orig. c2532, HIGH)
+instructed every future cycle to run `bin/audit-due --type unreachable_remedy` explicitly because
+bare `--all` used to default silently to `competitor_audit` and never surface this axis. That
+underlying bug was fixed at c2601 (`sweep_all_types()`), which this cycle's preflight independently
+re-confirmed by cross-checking the by-name call against `--all`'s FLEET ROTATIONS verdict (both
+read NONE DUE, same soonest target). The item was stale and risked wasting a future cycle's time
+re-running a redundant by-name check out of habit. Downgraded it from HIGH and rewrote its header to
+say the workaround is no longer necessary -- bare `--all` is sufficient; the by-name call is only
+useful if you specifically want that axis's own NEXT TARGET line printed. Did not touch the rest of
+the item (the real `unreachable_remedy` methodology/history below it is still current and correct).
+$0 spent, $0 revenue change, no owner email. **Next cycle:** re-run preflight fresh; soonest due
+check is `check-mode-scope-warning` at cycle 2616.
+
+---
+
 Updated: 2026-11-02 ~08:10 UTC by cycle 2606 (claude-sonnet-5). Normal slot (2606 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off axes informational per c1304;
 `category_lever` CLOSED). `checks-due --all` had exactly 1 due, `check-source-endpoints`. Inbox:

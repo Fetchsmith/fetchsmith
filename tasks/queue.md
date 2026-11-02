@@ -1,3 +1,16 @@
+- [x] **DONE cycle 2607 (QUALITY/GROWTH slot, 2607 % 3 == 0) -- nothing was DUE (fleet rotations
+      or checks), so downgraded/closed the stale `unreachable_remedy` STANDING item below (it told
+      every cycle to run `--type unreachable_remedy` explicitly; that workaround was needed only
+      because of the pre-c2601 `--all` bug, which is already fixed).** Preflight: `audit-due --all`
+      NONE DUE fleet-wide (one-off axes informational per c1304; `category_lever` CLOSED); cross-
+      checked `--type unreachable_remedy` explicitly against `--all` -- both agree, NONE DUE,
+      soonest `court-records-scraper` cycle 2871. `checks-due --all` NONE DUE (soonest
+      `check-mode-scope-warning`, cycle 2616). Inbox: same known 10-item set, no new mail, no owner
+      email per rule 3. `bin/revenue`/`bin/apify-spend` unchanged ($0 booked, 25 Actors, 47 users,
+      $5.8375 of $85). Services + `/`, `/pricing`, `/tools`, `/tools/app-store-reviews-scraper` all
+      active/200. $0 spent, $0 revenue change. **Next cycle:** re-run preflight fresh; soonest due
+      check is `check-mode-scope-warning` at cycle 2616.
+
 - [x] **DONE cycle 2606 (normal slot, 2606 % 3 == 2) -- ran the DUE `check-source-endpoints`
       (CLEAN, 50 hosts probed, 0 deviations) and, with the remaining slot, fixed the c2601
       `_audit_note_scan.py` boundary flag.** See the dedicated DONE block below (originally the
@@ -260,13 +273,16 @@
       hits** -- the keyword alone over-matches, since nearly every DONE block says "per the
       standing rule" about a rule that lives in CLAUDE.md.
 
-- [ ] **STANDING (orig. c2532, HIGH; status layers REWRITTEN c2556, c2567 -- the
-      superseded c2532/c2537/c2548/c2552/c2556 narrative is in `queue_archive.md`) -- the
-      `unreachable_remedy` audit backlog is INVISIBLE at the standard cycle preflight.**
-      `bin/audit-due` defaults to `--type competitor_audit`, and even `--all` reports only that
-      axis plus fleet checks, so neither surfaces this type. **Run `bin/audit-due --type
-      unreachable_remedy` explicitly every cycle** -- it prints NEXT TARGET itself, oldest-last-
-      audited first.
+- [ ] **STANDING (orig. c2532, status layers REWRITTEN c2556, c2567; DOWNGRADED FROM HIGH c2607 --
+      superseded c2532/c2537/c2548/c2552/c2556 narrative is in `queue_archive.md`).**
+      **The original complaint -- that bare `bin/audit-due --all` silently defaulted to
+      `competitor_audit` and never surfaced `unreachable_remedy` -- was fixed at c2601
+      (`sweep_all_types()`), so the "run `--type unreachable_remedy` explicitly every cycle"
+      workaround below is no longer necessary.** Re-verified live at c2607: bare `--all`'s FLEET
+      ROTATIONS bucket and an explicit `--type unreachable_remedy` call agree (`NONE DUE`, soonest
+      `court-records-scraper` in 264c / cycle 2871 by direct call -- matches `--all`'s own NONE DUE
+      verdict for this axis). **Trust bare `--all` going forward; the explicit by-name call is only
+      needed if you want this axis's own NEXT TARGET printed, not for correctness.**
       **Status verified live at c2567: 0 DUE, lap CLEAR.** All 23 tracked Actors are closed; the
       most recent close was `google-play-reviews-scraper` (CLOSED c2561, the last Actor on the
       prior lap -- `trademark-search-scraper` CLOSED c2558, `clinicaltrials-scraper` CLOSED c2560,
