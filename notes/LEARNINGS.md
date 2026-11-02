@@ -6651,3 +6651,29 @@ cases that ever occurred. (3) **"Read-only" is a claim about intent, not about t
 `bin/revenue` reads the Apify API and reports, which is why nobody thought of it as a writer, but
 it persists a history snapshot to a tracked path on every invocation. When wiring a dirty-tree
 tripwire, enumerate what the *protocol itself* writes before deciding that dirt implies neglect.
+
+## Cycle 2608 — a claim is only schedulable if it carries its own anchor, and "measured <date>" has two different meanings
+Built `bin/check-schema-claims` (the c2592 follow-up): `.actor/input_schema.json` descriptions render
+into the Apify input form, so they are buyer-facing copy, and no checker had ever opened them.
+Four lessons that generalise past this one tool. (1) **Classify claims by what they anchor to, not
+by whether they look stale.** The useful split was not fresh-vs-stale but ANCHORED (a date, or a
+cycle number — this fleet writes both, and a cycle number converts to an age just as cleanly at 48
+cycles/day) vs UNANCHORED. An unanchored measurement can never go stale on a schedule because there
+is nothing to compare against, so its remedy is the opposite one: add the date, don't re-measure.
+Any future prose checker should report that class separately rather than lumping it in or dropping
+it — it is also the honest statement of the checker's own coverage. (2) **A date next to a
+measurement verb is not necessarily the measurement's date.** "verified live: a
+filedAfter=filedBefore=2024-06-13 window returns the 6 SCOTUS opinions filed that day" graded as
+872 days stale. The fix that worked needed no sentence parsing and cost one line: a measurement
+cannot predate the fleet that measured it, so any anchor-adjacent date older than `cycle_now/48`
+is something else. Reach for an invariant about the WORLD before reaching for a better regex.
+(3) **`\b`-anchor every verb in a prose regex.** `(?:re-)?verified` matched inside "unverified" —
+not a near-miss but the inverted claim, flagging a field that was explicitly saying it does NOT
+trust a number. (4) **A noisy inventory is not a cheap first pass, it is a dead one.** The first
+draft triggered UNDATED on any bare 4-digit number and reported 85 hits that were mostly example
+values, API limits and scoring weights; requiring a strict anchor verb or an approximation tilde
+(`~85k`, `~3% of rows` — the tilde is the thing this fleet only writes when it has actually
+counted) cut it to 27, nearly all real. Measure that ratio before and after any trigger change.
+Related standing limit, carried over from the earlier claim checkers and worth restating: the tool
+reads the DATE and never judges the NUMBER, because every one of these counts a live external
+dataset. STALE means "go re-measure", never "this is wrong".

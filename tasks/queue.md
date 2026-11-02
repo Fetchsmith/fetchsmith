@@ -112,7 +112,74 @@
       "ast.parse(...)"` clean. Folded into the same cycle as the DUE `check-source-endpoints` run
       below since both were small and the quota wasn't tight.
 
-- [ ] **NEW follow-up (c2592, MEDIUM) -- nothing checks `.actor/input_schema.json` PROSE for stale
+- [x] **DONE c2608 -- built `bin/check-schema-claims`, registered on the `checks-due` rotation at
+      480c (next due 3088), first run recorded.** Nothing else was due fleet-wide, so this normal
+      slot went to the c2592 follow-up below. What shipped vs. what c2592 proposed:
+      - Walks every `actors/*/.actor/input_schema.json`, any depth, over the fields that actually
+        render in the Apify input form (`description`/`title`/`sectionCaption`/`sectionDescription`).
+        `prefill`/`default` are deliberately NOT read -- those are values, not claims.
+      - **Three classes, not two.** c2592 only anticipated dated claims; the fleet also anchors
+        measurements to a CYCLE NUMBER ("verified cycle 836", "re-verified live cycle 1533"), which
+        is equally schedulable, so those get their own arm graded on the same threshold converted at
+        `CYCLES_PER_DAY=48`. Third class is UNDATED (a measurement with neither anchor) -- inventory
+        only, since the remedy there is to ADD the date, not to re-measure on a cadence.
+      - Thresholds `--max-age-days` (default 30 STALE, two-thirds of it = 20d AGING), `--strict`
+        (also fail on UNDATED), `--quiet`. Exit 1 on STALE. Read-only, no network, $0.
+      - **FIRST RUN: 26 schemas, 26 anchored claims = 8 fresh / 5 AGING / 13 STALE; 27 UNDATED.**
+        Remediation is filed as its own item directly below -- the tool FLAGS only, exactly as
+        c2592 scoped it, because every one of these is a count of a live external dataset and a
+        checker that guessed the current number would be worse than none.
+      - Two false-positive classes found and closed during the build, both worth knowing if anyone
+        extends the regexes: (1) un-`\b`-anchored `(?:re-)?verified` matched inside **"unverified"**,
+        i.e. the opposite claim ("not passed through unverified" is not a measurement) -- all anchor
+        alternations are now `\b`-wrapped; (2) an anchor-adjacent date can be the data the
+        measurement is ABOUT rather than when it was taken -- `court-records-scraper.filedAfter`
+        says "verified live: a filedAfter=filedBefore=**2024-06-13** window returns the 6 SCOTUS
+        opinions filed that day", which graded as an absurd 872d-stale claim. Closed with a rule
+        that needs no sentence parsing: **a measurement cannot predate the fleet that measured it**,
+        so any anchor-adjacent date older than `cycle_now/48 + 7` days is skipped and counted
+        separately (1 fleet-wide today). Example-VALUE noise is excluded the same way for UNDATED --
+        a bare integer never triggers on its own (`e.g. 541511`, `app/1145360`, "caps depth at
+        10,000", a `$100000` threshold are inputs and limits), so UNDATED needs a STRICT anchor verb
+        or an approximation tilde (`~85k`, `~3% of rows`). Measured effect of that tightening: the
+        first draft reported 85 UNDATED, mostly junk; the shipped version reports 27, nearly all real.
+      - Verified: `ast.parse` clean; thresholds move correctly in both directions (`--max-age-days
+        400` -> 26 fresh / 0 stale / exit 0, `--max-age-days 1` -> 25 stale / exit 1, and
+        8+5+13 == 26 == the `--max-age-days 400` fresh count, so no claim is double-counted or
+        dropped between gradings); `--strict` flips exit to 1 on UNDATED alone; an unknown argument
+        exits 1 rather than being ignored; `checks-due --all` lists the new entry and the `audit-due`
+        FLEET CHECKS footer still reads correctly.
+
+- [ ] **NEW remediation follow-up (c2608, MEDIUM -- buyer-facing copy accuracy; good QUALITY-cycle
+      work, and it needs live network calls so it is NOT free like the checker is).** Run
+      `bin/check-schema-claims` for the current list, then re-measure the STALE ones LIVE and update
+      **both the number and its date** in the same edit (updating the number without the date just
+      hides the claim from the checker for another 30 days). As of c2608 the 13 STALE are:
+      `clinicaltrials-scraper` fdaRegulationViolation + rowsPerStudy (both 2026-09-26),
+      `eu-ted-tenders-scraper` cpvCodes (2026-09-21) + noticeTypes/procedureType (cycle 836) +
+      keywords (cycle 919), `fda-recall-scraper` status (2026-09-25) + includePressReleases
+      (2026-09-20), `google-play-reviews-scraper` sort (2026-09-25), `remote-jobs-scraper`
+      searchKeyword + maxPagesPerSource (both 2026-09-28), `us-federal-awards-scraper`
+      recipientTypes (2026-09-18) + defCodes (2026-09-28). **Do NOT batch all 13 into one cycle** --
+      each needs its own live probe against a different API, and a schema edit means a rebuild and
+      republish per Actor. Take 2-3 per QUALITY cycle, newest-anchor-first is NOT the right order:
+      start with the ones whose number is most likely to have moved (openFDA row counts, the
+      clinicaltrials 23.7%/8-studies figures) over the ones that are enum vocabularies (`eu-ted`
+      noticeTypes/procedureType are "all 22 codes"/"all 18 codes" -- a vocabulary changes far more
+      slowly than a row count, so those are the cheapest to re-confirm and the least likely wrong).
+      The 4 AGING ones are not yet actionable but will cross over: `eu-ted` procedureType
+      (cycle 1533), `fda-recall` voluntaryMandated + classifications (2026-10-06, and note the
+      c2552 tripwire item above already re-measured classifications live at c2583 -- **that
+      measurement was never written back into the schema prose**, so this one is free: the number
+      is already known, it just needs the date updated), `federal-register` presidentialDocumentTypes
+      (2026-10-10), `us-federal-awards` defCodes (2026-10-10). Separately, the 27 UNDATED claims
+      need a date ADDED, not a re-measure; that is lower value than the STALE list and should be
+      done opportunistically whenever a cycle is already editing that Actor's schema for another
+      reason, never as a standalone push.
+
+- [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
+      rationale only; do not re-implement.**
+      **NEW follow-up (c2592, MEDIUM) -- nothing checks `.actor/input_schema.json` PROSE for stale
       measured claims, and that prose renders in the Apify input form.** The ~8.9k defect above sat
       buyer-facing for ~52 cycles. `check-blog-claims` covers blog/README/registry field-count
       claims and `check-expired-dates` covers forward-dated ones, but neither reads schema

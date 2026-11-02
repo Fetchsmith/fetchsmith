@@ -254,6 +254,12 @@
    "interval_cycles": 336,
    "last_cycle": 2568,
    "note": "cycle 2568: cycle 2568: built this cycle; 25 Actors / 69 capped fields scanned; 5 instances fixed+shipped, 11 unguarded maxResults-family sites left open and queued (exit 1 is expected until then) [prior note preserved] cycle 2568: BUILT this cycle as the c2561 follow-up's >=2-instance trigger. The generalisation pass found 5 more live instances of the unreachable 'raise the cap' remedy beyond c2561's google-play finding (app-store-reviews maxReviewsPerApp/500, apple-podcasts maxReviewsPerPodcast/500, steam-reviews maxReviewsPerApp/5000, substack maxPostsPerPublication/5000, sec-insider-trades maxFilingsPerIssuer/200) -- all fixed and shipped this cycle, all now read guarded. Check reads 11 remaining unguarded sites, 10 of them the DIFFERENT run-wide maxResults family (ats-jobs, eu-ted x2, hacker-news x2, sam-gov, sec-insider, substack x2, trademark-search) plus website-screenshot delayMs/15000 -- left open deliberately, queued: at maxResults=maximum the right advice is 'split the run', which several of those messages already give, so each needs a read not a blind guard. 336c cadence: this is a static check over code that only changes when an Actor's remedy strings do."
+  },
+  "check-schema-claims": {
+   "kind": "cadence",
+   "interval_cycles": 480,
+   "last_cycle": 2608,
+   "note": "cycle 2608: FIRST RUN (built c2608 from the c2592 follow-up). 26 schemas: anchored claims 8 fresh / 5 AGING / 13 STALE (>=30d); 27 UNDATED measured claims (no date or cycle to re-measure against); 1 anchor-adjacent date skipped as predating cycle 1. Interval 480c (~10d) = under a third of the 30d STALE threshold, so a claim cannot cross into STALE unseen; read-only, no network, $0. The 13 STALE + 27 UNDATED are filed as a remediation follow-up in queue.md -- this tool FLAGS only, it cannot know the true current number."
   }
  },
  "not_cadence": {

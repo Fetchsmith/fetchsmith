@@ -1,0 +1,260 @@
+#!/usr/bin/env python3
+"""Flag a dated MEASUREMENT claim in `.actor/input_schema.json` prose that nobody has
+re-measured (follow-up filed cycle 2592, queue.md; built cycle 2608).
+
+WHY: schema `description` strings render straight into the Apify input form, so they
+are buyer-facing copy exactly like a README — but nothing in the fleet read them.
+`check-blog-claims` covers blog/README/registry field-count claims and
+`check-expired-dates` covers forward-dated ones; neither opens a schema file. The seed
+case (c2592) was a measured "~8.9k" that sat wrong in a schema description for ~52
+cycles because it was silently inherited rather than re-measured.
+
+METHOD, and the hard scope limit: this checker CANNOT know the true current number for
+any of these claims -- they are counts of live external datasets (studies registry-wide,
+openFDA rows, SAM.gov wage determinations). A checker that guessed one would be worse
+than none. So it only reads the DATE each claim anchors itself to and reports its age:
+AGING/STALE means "go re-measure this", never "this is wrong".
+
+Three classes are reported, by what the claim anchors itself to:
+
+  DATED   -- a measurement anchor (measured / re-measured / verified / live-verified /
+             as of / sampled / source change / at time of writing) sitting within a
+             tight window of a YYYY-MM-DD date. Age is checked against --max-age-days.
+  CYCLE   -- the same, but anchored to a cycle number instead ("verified cycle 836",
+             "re-verified live cycle 1533") -- a convention this fleet writes often and
+             which is just as schedulable, since a cycle number converts straight to an
+             age in cycles. Same threshold, converted at CYCLES_PER_DAY.
+  UNDATED -- a measurement claim with NEITHER anchor. These can never go stale on a
+             schedule because there is nothing to compare against -- the remedy is to
+             add the date it was measured, not to re-measure on a cadence. Reported as
+             an inventory (and as the reason the other two classes are incomplete), not
+             as a failure, unless --strict is passed.
+
+Example-value noise is the hard part here and is excluded deliberately: a date only
+counts when a measurement anchor sits next to it (`e.g. 2026-01-01` is not a
+measurement), and for the UNDATED class a bare integer never triggers on its own --
+`e.g. 541511`, `app/1145360`, "caps depth at 10,000" and a `$100000` threshold are
+inputs and limits, not measurements. UNDATED needs either a STRICT anchor verb or an
+approximation tilde (`~85k`, `~3% of rows`), the two things this fleet only writes when
+it has actually gone and counted something.
+
+Usage:
+  bin/check-schema-claims [--max-age-days N] [--strict] [--quiet]
+
+Read-only, no network, $0. Exit 1 if any DATED claim is STALE (or, with --strict, if
+any UNDATED claim exists).
+"""
+import glob
+import json
+import os
+import re
+import sys
+from datetime import date
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TODAY = date.today()
+CYCLES_PER_DAY = 48  # same constant bin/checks-due uses
+
+DEFAULT_MAX_AGE_DAYS = 30  # STALE at/above this; AGING from two thirds of it
+# Fields that actually render in the Apify input form. `prefill`/`default` are values,
+# not prose, and are deliberately excluded -- a prefilled example date is not a claim.
+PROSE_KEYS = ("description", "title", "sectionCaption", "sectionDescription")
+
+DATE_RE = re.compile(r"\d{4}-\d{2}-\d{2}")
+# The measurement verbs this fleet actually writes. Kept to the forms in use rather
+# than every synonym: a loose anchor pulls in example dates and drowns the signal.
+# \b-anchored: without it, "(?:re-)?verified" matches inside "unverified", which reads
+# as the OPPOSITE claim ("not passed through unverified" is not a measurement).
+ANCHOR = (
+    r"\b(?:(?:re-)?measured|(?:re-)?verified|live-verified|live-meas\w*|(?:re-)?checked|"
+    r"as of|sampled|at time of writing|source change|when measured|observed)"
+)
+# The subset of those verbs that, on their own, mean "we went and counted this".
+# "checked"/"observed" are deliberately NOT here: both are written as plain prose verbs
+# all over these schemas ("the top 5 matches per term are checked") and anchoring the
+# UNDATED class on them produced mostly noise when measured at c2608.
+STRICT_ANCHOR = (
+    r"\b(?:(?:re-)?measured|live-meas\w*|(?:re-)?verified|live-verified|sampled|"
+    r"as of|at time of writing|when measured)"
+)
+# Anchor before its date ("as of 2026-11-01", "verified live 2026-10-10"), or date
+# before its anchor ("2026-10-23 source change"). Both windows are tight on purpose.
+ANCHOR_THEN_DATE = re.compile(rf"(?:{ANCHOR})[^.;]{{0,40}}?(\d{{4}}-\d{{2}}-\d{{2}})", re.I)
+DATE_THEN_ANCHOR = re.compile(rf"(\d{{4}}-\d{{2}}-\d{{2}})[^.;]{{0,25}}?(?:{ANCHOR})", re.I)
+# The fleet's other anchor convention: "verified cycle 836", "re-verified live cycle 1533".
+ANCHOR_THEN_CYCLE = re.compile(rf"(?:{ANCHOR})[^.;]{{0,30}}?cycle\s+(\d{{3,5}})", re.I)
+STRICT_ANCHOR_RE = re.compile(STRICT_ANCHOR, re.I)
+CYCLE_RE = re.compile(r"cycle\s+\d{3,5}", re.I)
+# An APPROXIMATED magnitude -- ~85k, ~3%, ~6. The tilde is the signal: this fleet writes
+# it only for a number it measured rather than one the input/API defines. A bare integer
+# is NOT a trigger (too many example values and hard limits look identical).
+APPROX_RE = re.compile(r"~\s*[\d,.]+")
+
+
+def parse_date(s):
+    try:
+        return date(*map(int, s.split("-")))
+    except ValueError:
+        return None
+
+
+def prose_strings(path):
+    """(json-ish path, string) for every form-rendered prose field, at any depth."""
+    out = []
+
+    def walk(node, where):
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if k in PROSE_KEYS and isinstance(v, str):
+                    out.append((f"{where}.{k}", v))
+                else:
+                    walk(v, f"{where}.{k}")
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                walk(v, f"{where}[{i}]")
+
+    with open(path) as f:
+        walk(json.load(f), "")
+    return out
+
+
+def dated_claims(text):
+    """{date_string: measurement excerpt} for every anchor-adjacent date in the text."""
+    found = {}
+    for rx in (ANCHOR_THEN_DATE, DATE_THEN_ANCHOR):
+        for m in rx.finditer(text):
+            found.setdefault(m.group(1), re.sub(r"\s+", " ", m.group().strip()))
+    return found
+
+
+def cycle_claims(text):
+    """{cycle_number: excerpt} for every anchor-adjacent 'cycle NNNN' in the text."""
+    return {
+        int(m.group(1)): re.sub(r"\s+", " ", m.group().strip())
+        for m in ANCHOR_THEN_CYCLE.finditer(text)
+    }
+
+
+def current_cycle():
+    """Last `cycle=NNNN ... start` line in worker.log -- same source bin/checks-due and
+    bin/audit-due read, so a CYCLE-anchored age is measured on the same clock they are."""
+    try:
+        with open("/root/agent/logs/worker.log") as f:
+            hits = re.findall(r"cycle=(\d+)\s+model=\S+\s+start", f.read())
+        return int(hits[-1]) if hits else None
+    except OSError:
+        return None
+
+
+def excerpt(text, span, pad=45):
+    lo, hi = span
+    s = text[max(0, lo - pad):hi + pad].strip().replace("\n", " ")
+    return re.sub(r"\s+", " ", s)
+
+
+def main(argv):
+    max_age = DEFAULT_MAX_AGE_DAYS
+    strict = quiet = False
+    i = 1
+    while i < len(argv):
+        a = argv[i]
+        if a == "--max-age-days":
+            i += 1
+            max_age = int(argv[i])
+        elif a == "--strict":
+            strict = True
+        elif a == "--quiet":
+            quiet = True
+        else:
+            sys.exit(f"check-schema-claims: unknown argument {a!r} (see --help in the docstring)")
+        i += 1
+    aging_at = max(1, (max_age * 2) // 3)
+    cyc_now = current_cycle()
+    max_age_c, aging_at_c = max_age * CYCLES_PER_DAY, aging_at * CYCLES_PER_DAY
+
+    # A "measurement" cannot predate the fleet that measured it. Cycle 1 is cyc_now
+    # cycles back at CYCLES_PER_DAY, and any anchor-adjacent date older than that is
+    # necessarily something else -- the seed case is court-records-scraper's
+    # "verified live: a filedAfter=filedBefore=2024-06-13 window returns the 6 SCOTUS
+    # opinions filed that day", where the date is the DATA the measurement is about.
+    # Skipping these beats widening the anchor regex to guess at sentence roles.
+    fleet_age_days = (cyc_now // CYCLES_PER_DAY) + 7 if cyc_now else 10 ** 6
+
+    stale = aging = ok = undated = schemas = data_dates = 0
+    undated_by_actor = {}
+
+    def grade(age_days):
+        """(verdict, counted-as) for an age in days -- shared by both anchor forms."""
+        if age_days >= max_age:
+            return "STALE", "stale"
+        if age_days >= aging_at:
+            return "AGING", "aging"
+        return None, "ok"
+
+    for path in sorted(glob.glob(os.path.join(ROOT, "actors/*/.actor/input_schema.json"))):
+        rel = os.path.relpath(path, ROOT)
+        slug = rel.split("/")[1]
+        try:
+            fields = prose_strings(path)
+        except (OSError, ValueError) as e:
+            print(f"PARSE-FAIL {rel}  {e}")
+            stale += 1  # a schema we cannot read is strictly worse than a stale claim
+            continue
+        schemas += 1
+        for where, text in fields:
+            anchored = 0
+            for ds, snippet in sorted(dated_claims(text).items()):
+                d = parse_date(ds)
+                if d is None or d > TODAY:
+                    continue  # malformed, or a measurement dated in the future -- not stale yet
+                age = (TODAY - d).days
+                if age > fleet_age_days:
+                    data_dates += 1
+                    continue  # a date the measurement is ABOUT, not when it was taken
+                anchored += 1
+                verdict, bucket = grade(age)
+                ok, aging, stale = (
+                    ok + (bucket == "ok"), aging + (bucket == "aging"), stale + (bucket == "stale"))
+                if verdict and not quiet:
+                    print(f'{verdict} {slug}{where}  measured {ds} '
+                          f'({age}d / ~{age * CYCLES_PER_DAY}c ago) -- "{snippet}"')
+            for cnum, snippet in sorted(cycle_claims(text).items()):
+                if cyc_now is None or cnum > cyc_now:
+                    continue  # no clock to measure against, or a forward reference
+                anchored += 1
+                gap = cyc_now - cnum
+                verdict, bucket = grade(gap // CYCLES_PER_DAY)
+                ok, aging, stale = (
+                    ok + (bucket == "ok"), aging + (bucket == "aging"), stale + (bucket == "stale"))
+                if verdict and not quiet:
+                    print(f'{verdict} {slug}{where}  measured cycle {cnum} '
+                          f'({gap}c / ~{gap // CYCLES_PER_DAY}d ago) -- "{snippet}"')
+            if anchored:
+                continue  # the field carries at least one re-measure handle
+            # Neither anchor form present: is this field making a measurement claim anyway?
+            m = STRICT_ANCHOR_RE.search(text) or APPROX_RE.search(text)
+            if m and not DATE_RE.search(text) and not CYCLE_RE.search(text):
+                undated += 1
+                undated_by_actor.setdefault(slug, []).append((where, excerpt(text, m.span())))
+
+    if undated_by_actor and not quiet:
+        print()
+        for slug in sorted(undated_by_actor):
+            for where, snip in undated_by_actor[slug]:
+                print(f'UNDATED {slug}{where}  no date to re-measure against -- "{snip}"')
+
+    print(
+        f"\ncheck-schema-claims: {schemas} schema(s); anchored claims {ok} fresh / {aging} AGING "
+        f"(>={aging_at}d / {aging_at_c}c) / {stale} STALE (>={max_age}d / {max_age_c}c); "
+        f"{undated} undated measured claim(s)"
+        + (f"; skipped {data_dates} anchor-adjacent date(s) predating cycle 1" if data_dates else "")
+    )
+    if stale:
+        print("  -> re-measure each STALE claim live, then update BOTH the number and its date.")
+    if undated:
+        print("  -> UNDATED: add the measurement date so the claim becomes schedulable (inventory only).")
+    return 1 if (stale or (strict and undated)) else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
