@@ -1,3 +1,43 @@
+- [x] **DONE cycle 2627 (normal slot, 2627 % 3 == 2) -- closed the `pagination_audit` axis
+      fleet-wide (n=1, fec-campaign-finance-scraper) via the established "note already says
+      exhausted, promote to `_closed`" pattern used on `description_mine`/`readme_proximity`/
+      `search_scope_audit`.**
+      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off axes DUE:
+      `input_error_advice` court-records-scraper, `pagination_audit` fec-campaign-finance-scraper,
+      `title_trade_audit` eu-ted-tenders-scraper); `checks-due --all` NONE DUE (soonest
+      `check-row-floor` cycle 2628, 1c out -- **next cycle should run it**); inbox `list 10`
+      identical to the known set, no new mail, no owner email needed; `bin/revenue` $0 booked, 25
+      Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews;
+      `bin/apify-spend` $5.9178 of $85 (79.9% elapsed, projection $7.41); services and `/`,
+      `/pricing`, `/tools` all 200 before and after.
+      **Why this axis:** c857's own note already said "this closes the fleet's FEC
+      pagination/timeout work... no further pagination follow-up queued for this Actor" but was
+      never promoted to a `pagination_audit_closed` key, so the 336c rotation kept resurfacing it
+      (DUE again this cycle, 1770 cycles later). Rather than trust the old note blindly, live
+      re-verified all three mechanisms before closing: (1) the unconditional all-10-fields-empty
+      guard at `main.js:169-178` read directly -- still a pure JS throw with no network call
+      before it; (2) re-tested `sort_nulls_last` pagination directly against
+      `api.open.fec.gov` -- a bounded-only `schedule_a` query still 504s "Query timed out" in
+      ~15.7s (matches c2537's unreachable_remedy number exactly), a filtered
+      `contributor_employer=GOOGLE` query pages correctly across the boundary via the returned
+      `last_indexes` cursor, dates strictly descending, no 422, no silent truncation; (3) two live
+      Apify runs on the platform build (`MbmObp7bpnEJaHcC5`): filtered `donorEmployer:GOOGLE`
+      SUCCEEDED 5/5 charged with correct fields, the exact unfiltered shape FAILED in ~2.2s (not a
+      30s timeout) with 0 charged -- the named-fields guard fires exactly as designed. All three
+      pieces of the c857 fix hold unchanged 1770 cycles later.
+      **State:** `state/audit_dates.json` on `fec-campaign-finance-scraper`:
+      `pagination_audit` 857 -> 2627, new verification note (prior note preserved verbatim), new
+      `pagination_audit_closed` key. Verified via flattened key-diff against a pre-edit backup --
+      exactly those 3 keys changed, nothing else in the file moved. `audit-due --type
+      pagination_audit` now prints CLOSED; `--all`'s one-off list dropped 3 -> 2
+      (`input_error_advice`, `title_trade_audit` remain).
+      $0.005 spent (one 5-row verification run), $0 revenue change, no owner email.
+      **Next cycle:** run `check-row-floor` (due cycle 2628). Remaining one-off axes:
+      `input_error_advice` (court-records-scraper, blocked on missing `CL_API_TOKEN` -- do not
+      re-attempt until a token exists) and `title_trade_audit` (eu-ted-tenders-scraper, last run
+      902 -- per c2623's note this needs a real new candidate phrase or a live eviction-math
+      re-confirmation, NOT a bare re-verify like the four axes just closed).
+
 - [x] **DONE cycle 2624 (normal slot, 2624 % 3 == 2) -- did the STRUCTURAL fleet sweep that the
       `input_error_advice` axis has been waiting on since cycle 837, found the defect shape alive
       on `fda-recall-scraper`, and fixed it plus its root cause (build 0.1.88, live-verified).**

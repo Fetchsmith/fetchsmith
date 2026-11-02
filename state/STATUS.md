@@ -1,3 +1,54 @@
+Updated: 2026-11-02 ~18:25 UTC by cycle 2627 (claude-sonnet-5). NORMAL slot (2627 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off axes DUE: `input_error_advice`
+court-records-scraper, `pagination_audit` fec-campaign-finance-scraper, `title_trade_audit`
+eu-ted-tenders-scraper). `checks-due --all` NONE DUE (soonest `check-row-floor` cycle 2628, 1c
+out). Inbox `list 10`: identical to the known set from c2626, no new mail -- the two owner threads
+(`2b237f1b` CourtListener token, `01852eaa` Apify Nov-15 Store-API change) stay resolved/tracked;
+rest is the same marketing/spam/DMARC already triaged, no reply or owner email needed.
+`bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0
+bookmarks, 0 reviews. `bin/apify-spend` $5.9178 of $85 (79.9% elapsed, projection $7.41) + one live
+verification run this cycle. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
+`/`, `/pricing`, `/tools` all 200 before and after.
+
+**Work -- closed the `pagination_audit` axis fleet-wide (n=1, fec-campaign-finance-scraper), the
+same "note already says exhausted, promote to `_closed`" pattern used on `description_mine`
+(c2620), `readme_proximity` (c2622) and `search_scope_audit` (c2623).** The c857 note already
+stated in plain language that it "closes the fleet's FEC pagination/timeout work... no further
+pagination follow-up queued for this Actor", but nobody had promoted it to a `pagination_audit_
+closed` key, so the 336c rotation kept re-surfacing an axis with nothing left to find (it came up
+DUE again this cycle). Rather than trust a 1770-cycle-old note blindly, re-verified all three
+mechanisms live before closing: (1) the unconditional all-10-fields-empty guard at
+`main.js:169-178` is still a pure JS throw with no network call before it (read directly, cannot
+regress silently); (2) re-tested the `sort_nulls_last` pagination mechanism directly against
+`api.open.fec.gov` -- a bounded-only `schedule_a` query still 504s "Query timed out" in ~15.7s
+(matches c2537's unreachable_remedy re-measurement exactly), while a filtered
+`contributor_employer=GOOGLE` query pages correctly across the boundary using the returned
+`last_indexes` cursor, dates strictly descending, no 422, no silent truncation; (3) two real live
+Apify runs on the platform build (actor `MbmObp7bpnEJaHcC5`): the filtered `donorEmployer:GOOGLE`
+shape SUCCEEDED, 5/5 rows charged, correct fields; the exact unfiltered shape
+(`{searchMode:'contributions', electionYear:2026}`) FAILED in ~2.2s (not a 30s timeout), 0
+charged -- the named-fields guard fires exactly as designed. All three pieces of the c857 fix
+hold unchanged 1770 cycles later. Recorded via a direct `state/audit_dates.json` edit: `pagination_
+audit` 857 -> 2627, a new verification note (prior note preserved verbatim), and a new
+`pagination_audit_closed` key. Verified the edit with a flattened key-diff against a pre-edit
+backup -- exactly those 3 keys changed on `fec-campaign-finance-scraper`, nothing else in the file
+moved -- and confirmed `audit-due --type pagination_audit` now prints CLOSED while `--all`'s
+one-off list dropped 3 -> 2 (`input_error_advice`, `title_trade_audit` remain).
+
+$0.005 spent (one 5-row verification run), $0 revenue change, no owner email (nothing new or
+owner-fixable this cycle).
+
+**Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at cycle
+2628 (1 cycle out) -- next cycle should run it. Remaining informational one-off axes, now 2:
+`input_error_advice` (court-records-scraper, genuinely blocked on missing `CL_API_TOKEN` -- do not
+re-attempt until a token exists) and `title_trade_audit` (eu-ted-tenders-scraper, last run 902 --
+per c2623's note this one is NOT a clean "already exhausted" case: it needs either a real new
+candidate title phrase that doesn't evict the favorable bucket, or a live re-confirmation that the
+eviction math still holds -- not a bare re-verify like the three just closed). Apply the
+now-four-times-proven pattern: before running one of these, check whether its `<type>_note` already
+answers the question.
+
+---
 Updated: 2026-11-02 ~18:05 UTC by cycle 2626 (claude-sonnet-5). NORMAL slot (2626 % 3 == 1).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (same 3 one-off axes DUE as last cycle).
 `checks-due --all` NONE DUE (soonest `check-row-floor` cycle 2628, 2c out). Inbox `list 10`: 5
