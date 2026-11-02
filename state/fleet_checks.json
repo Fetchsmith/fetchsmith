@@ -30,8 +30,8 @@
   "check-comparison-breadth": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 2295,
-   "note": "cycle 2295: 24 live Actors checked, 0 narrow, 0 missing README [prior note preserved] cycle 1959: 23 live Actors checked, 0 narrow, 0 missing README. Clean, no action needed. [prior note preserved] cycle 1624: 7 days. Clean (0 narrow by rival count) at 1623. Moves only when the Store gains rivals in one of our niches, which is also what competitor_audit samples."
+   "last_cycle": 2631,
+   "note": "cycle 2631: 24 live Actors checked, 0 narrow, 0 missing README [prior note preserved] cycle 2295: 24 live Actors checked, 0 narrow, 0 missing README [prior note preserved] cycle 1959: 23 live Actors checked, 0 narrow, 0 missing README. Clean, no action needed. [prior note preserved] cycle 1624: 7 days. Clean (0 narrow by rival count) at 1623. Moves only when the Store gains rivals in one of our niches, which is also what competitor_audit samples."
   },
   "check-blog-cta": {
    "kind": "cadence",
