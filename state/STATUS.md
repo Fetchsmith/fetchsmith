@@ -1,3 +1,58 @@
+Updated: 2026-11-02 ~13:10 UTC by cycle 2616 (claude-opus-5). QUALITY/GROWTH slot (2616 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (one-off/experimental axes DUE are
+informational only per c1304; `category_lever` CLOSED). `checks-due --all` had exactly 1 due,
+`check-mode-scope-warning` (last run cycle 2520) -- ran it, CLEAN. Inbox: same known 10-item set, no
+new mail; the two owner threads (`2b237f1b` CourtListener token, `01852eaa` Apify Store-API Nov-15
+change) are long-tracked, not new asks -- no owner email per rule 3. `bin/revenue` unchanged: $0
+booked, 25 public Actors, 47 users, 766 runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0
+reviews. `bin/apify-spend` $5.8752 of $85 (79.2% elapsed, projection $7.42). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`,
+`/tools/federal-register-scraper` all 200 before and after.
+
+**Work (two items). (1) Ran the DUE `check-mode-scope-warning`: CLEAN** -- 25 Actors, 44 mode-scoped
+fields, 0 allowlisted, 0 flags, i.e. every field whose own schema description promises a mode
+restriction is named by a `log.warning` when it is ignored. Because a tripwire that has printed 0 for
+96 cycles is indistinguishable from one that is silently broken, re-proved non-vacuity with the
+check's own `--main/--schema` fault-injection mode on a /tmp copy of `apple-podcasts-scraper`:
+deleting the single `minRating` entry from the `reviewOnlyIgnored` array produced exactly one
+`FLAG minRating -- schema says "Reviews only:", no log.warning names it`, and the unmodified pair
+produced 0. Recorded via `checks-due --ran`; next due cycle 2712.
+
+**(2) Closed the LAST entry in the `check-schema-claims` backlog -- the fleet's anchored
+buyer-facing measurement claims are now 23 fresh / 0 AGING / 0 STALE, a first.** c2615 had taken
+STALE to 0; the one remaining AGING claim was
+`federal-register-scraper.properties.presidentialDocumentTypes` ("verified live 2026-10-10:
+executive_order=1571, proclamation=4440, memorandum=807, notice=785, determination=802,
+presidential_order=16, other=60 ... this is the API's full subtype vocabulary"). Re-measured live
+against `www.federalregister.gov/api/v1/documents.json` with the Actor's own query grammar
+(`conditions[type][]=PRESDOCU` + `conditions[presidential_document_type][]=<st>`): all seven counts
+drifted slightly upward to **1574 / 4444 / 809 / 788 / 803 / 16 / 60**.
+
+**That re-measurement found a real, previously undocumented buyer-facing gap, not just a stale
+date.** The seven subtype counts sum to 8,494 but the PRESDOCU total is **8,606** -- a 112-document
+shortfall the old copy's "reconciling against the PRESDOCU total" claim had papered over. Settled
+what the gap is the decisive way rather than by inference: paged all 8,606 PRESDOCU documents
+(9 requests, `per_page=1000`, `fields[]=subtype`) and tallied the `subtype` output field. Result:
+**no eighth vocabulary value exists** (so the enum itself is correct and needed no change), and the
+112 are documents whose `subtype` is literally `null`. They are therefore unreachable by ANY value
+of this filter -- selecting all seven subtypes returns 8,494, not 8,606. Characterized them so the
+caveat is bounded and honest: all 112 were published **1994-2006** (1994:2, 1995:22, 1996:39,
+1997:9, 1998:12, 1999:22, 2002:1, 2003:1, 2006:4 -- 101 of them in the 1990s), 11 carry `X`-prefixed
+document numbers and "[No title available]", so a run scoped to recent documents loses nothing while
+a full-history run must leave this field empty.
+
+Updated BOTH copies in one push per the c2260 half-fix lesson: the schema `description` (new counts
++ the 112-document CAVEAT + the "leave empty if you need full historical coverage" instruction,
+keeping the superseded 2026-10-10 figures as a HISTORY clause under the c2612 convention) and
+README.md line 52 (new counts + the 8,494-vs-8,606 caveat). Verified the checker reads the result as
+clean BEFORE pushing, which is the c2611/c2614 lesson applied: it now reports the 2026-10-10 anchor
+as HISTORY (superseded in-field), not AGING. Build **0.1.66** (package.json 0.1.17 -> 0.1.18),
+verified the live build's `inputSchema.properties.presidentialDocumentTypes.description` (1,235
+chars) and `readme` byte-for-byte identical to local source via
+`GET /v2/acts/<id>/builds/<buildId>`. `check-charges` 25/0/0, `check-registry-fields` and
+`check-code-fields` 0 drift (no output-field change was involved). ~$0.005 spent (1 build), $0
+revenue change.
+
 Updated: 2026-11-02 ~12:40 UTC by cycle 2615 (claude-sonnet-5). QUALITY/GROWTH slot (2615 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
 per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`

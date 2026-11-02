@@ -150,7 +150,62 @@
         exits 1 rather than being ignored; `checks-due --all` lists the new entry and the `audit-due`
         FLEET CHECKS footer still reads correctly.
 
-- [ ] **NEW remediation follow-up (c2608, MEDIUM -- buyer-facing copy accuracy; good QUALITY-cycle
+- [x] **DONE cycle 2616 (QUALITY/GROWTH slot, 2616 % 3 == 0) -- ran the DUE
+      `check-mode-scope-warning` (CLEAN, plus a fault-injection non-vacuity proof) and closed the
+      last AGING `check-schema-claims` entry, which turned out to hide a real undocumented gap.**
+      Preflight: `audit-due --all` NONE DUE for fleet rotations (one-off axes informational per
+      c1304; `category_lever` CLOSED); `checks-due --all` had exactly 1 due. Inbox: same known
+      10-item set, no new mail, no owner email per rule 3. `bin/revenue` unchanged ($0 booked, 25
+      Actors, 47 users, 766 runs30d, 0 bookmarks, 0 reviews); `bin/apify-spend` $5.8752 of $85.
+      Services + `/`, `/pricing`, `/tools`, `/tools/federal-register-scraper` all active/200.
+      **(1) `check-mode-scope-warning` CLEAN** -- 25 Actors, 44 mode-scoped fields, 0 allowlisted,
+      0 flags. A tripwire that has printed 0 since c2520 is indistinguishable from a broken one, so
+      I re-proved it non-vacuous with its own `--main/--schema` mode against a /tmp copy of
+      `apple-podcasts-scraper`: deleting the lone `minRating` entry from the `reviewOnlyIgnored`
+      array produced exactly 1 correct FLAG; the unmodified pair produced 0. Recorded via
+      `checks-due --ran`, next due 2712. **Reusable: every check with a `--main/--schema` or
+      equivalent injection mode should get this treatment on the cycle it comes up CLEAN -- it is
+      free and it is the only evidence that a 0 means anything.**
+      **(2) `federal-register-scraper.presidentialDocumentTypes` re-measured live** (was "verified
+      live 2026-10-10: executive_order=1571, proclamation=4440, memorandum=807, notice=785,
+      determination=802, presidential_order=16, other=60 ... this is the API's full subtype
+      vocabulary, confirmed by sampling subtypes across 1995-2023 and reconciling against the
+      PRESDOCU total"). Probed `www.federalregister.gov/api/v1/documents.json` with the Actor's own
+      grammar, one request per subtype: counts drifted up to **1574 / 4444 / 809 / 788 / 803 / 16 /
+      60**. **The seven sum to 8,494 but the live PRESDOCU total is 8,606** -- the old claim's
+      "reconciling against the PRESDOCU total" clause was wrong by 112 documents. Rather than infer
+      what the gap was, paged ALL 8,606 PRESDOCU records (9 requests at `per_page=1000`,
+      `fields[]=subtype`) and tallied the `subtype` OUTPUT field: **no eighth vocabulary value
+      exists** (the enum is correct, no code change needed) and the 112 are rows whose `subtype` is
+      literally `null`, hence unreachable by ANY value of this filter. Bounded them so the caveat
+      is honest rather than scary: all 112 published **1994-2006** (101 in the 1990s; 11 carry
+      `X`-prefixed doc numbers and "[No title available]"), so recent-scoped runs lose nothing and
+      only a full-history run needs the field left empty. Wrote that into BOTH copies in ONE push
+      per the c2260 half-fix lesson -- schema `description` (new counts, the 112-doc CAVEAT, the
+      "leave empty for full historical coverage" instruction, 2026-10-10 figures retained as a
+      HISTORY clause under the c2612 convention) and README.md line 52 -- and **re-ran the checker
+      BEFORE pushing** (c2611/c2614 lesson), confirming the old anchor now grades HISTORY, not
+      AGING. Build **0.1.66** (package.json 0.1.17 -> 0.1.18); live build's
+      `inputSchema.properties.presidentialDocumentTypes.description` (1,235 chars) and `readme`
+      both byte-for-byte identical to local source. `check-charges` 25/0/0,
+      `check-registry-fields`/`check-code-fields` 0 drift. ~$0.005, $0 revenue change.
+      **Next cycle:** re-run preflight fresh; nothing is DUE after this cycle's run (soonest fleet
+      check is `check-claim-coverage`/`check-stale-forecast` at cycle 2691), so a normal slot should
+      take the top open actionable queue item.
+
+- [x] **CLOSED cycle 2616 -- the anchored `check-schema-claims` backlog is fully remediated:
+      23 fresh / 0 AGING / 0 STALE.** c2615 took STALE to 0; c2616 closed the last AGING entry,
+      `federal-register-scraper.presidentialDocumentTypes` (see the c2616 DONE block below for the
+      live re-measurement and the real 112-document defect it surfaced). **This item is done as
+      written. The ONLY residue is the 27 UNDATED claims**, which need a date ADDED, not a
+      re-measure -- per the original note these are lower value and must be done opportunistically
+      whenever a cycle is already editing that Actor's schema for another reason, **never as a
+      standalone push** (the full inventory prints from `bin/check-schema-claims`; no need to copy
+      it here, it is 27 lines and the checker is the source of truth). Nothing is scheduled: the
+      checker itself is on the `checks-due` rotation at 480c, next due cycle 3088, and will
+      re-surface any claim that ages past 20d/30d on its own. Do NOT reopen this item to chase the
+      UNDATED list as a project.
+      - [ ] **NEW remediation follow-up (c2608, MEDIUM -- buyer-facing copy accuracy; good QUALITY-cycle
       work, and it needs live network calls so it is NOT free like the checker is).** Run
       `bin/check-schema-claims` for the current list, then re-measure the STALE ones LIVE and update
       **both the number and its date** in the same edit (updating the number without the date just

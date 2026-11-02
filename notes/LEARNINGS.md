@@ -6790,3 +6790,50 @@ only works read-only/side-effect-free when the library call itself is read-only 
 undefined (reading 'RATING')`) because the published package is ESM-only (`"type": "module"`, no
 `main`/CJS entry) as of v10.1.3 — use `import('google-play-scraper').then(...)` from a plain
 `node -e` instead of `require`. Cost one wasted probe attempt before switching.
+
+## Cycle 2616 — a vocabulary claim must reconcile against the PARENT total, and the gap is usually NULLs
+
+`federal-register-scraper.presidentialDocumentTypes` carried a claim that its 7-value enum was
+"the API's full subtype vocabulary, confirmed by sampling subtypes across 1995-2023 and reconciling
+against the PRESDOCU total". The enum was in fact complete — but the reconciliation clause was
+false by 112 documents, and nothing had ever caught it because **the two ways that claim can be
+wrong are different claims, and verifying one looks like verifying both**:
+
+1. *Is there an 8th value?* (vocabulary completeness) — No. Correct all along.
+2. *Do the per-value counts add up to the parent total?* (coverage) — No. 1574+4444+809+788+803+16+60
+   = **8,494** against a live PRESDOCU total of **8,606**.
+
+The 112-row gap was rows with `subtype: null` — present in the parent type, matched by no filter
+value at all. **That is a buyer-facing billing-adjacent fact, not a trivium**: a PPE buyer who ticks
+all seven boxes believing it means "everything" silently loses 1.3% of the corpus and cannot tell
+from the output that anything is missing (the symmetric shape to the whole `check-mode-scope-warning`
+bug class — a filter that quietly drops rows while the run exits SUCCEEDED).
+
+**Method that settled it, reusable for any enum-vs-parent claim.** Don't infer the gap from the
+arithmetic; the arithmetic tells you a gap exists, not what it is. If the discriminating value is
+exposed as an OUTPUT field (here `subtype` is both a filter input and a dataset field), page the
+whole parent set once and tally that field directly — 8,606 rows cost 9 requests at `per_page=1000`.
+That simultaneously proves (a) no unlisted value exists and (b) exactly what the residue is, which
+two separate filter probes cannot do, because *you cannot query for "has no value" with a filter
+whose whole vocabulary is the thing in question*. Then CHARACTERIZE the residue before writing
+copy: these 112 were all published 1994–2006 (101 in the 1990s), 11 with `X`-prefixed doc numbers
+and "[No title available]" — i.e. a legacy-metadata artifact, so the honest caveat is "recent-scoped
+runs lose nothing; leave the field empty for full historical coverage" rather than an alarming
+unqualified "1.3% of rows are unreachable".
+
+**Generalize:** whenever a schema description claims an enum is a complete vocabulary, check whether
+it ALSO implies coverage of the parent set, and if so re-derive the sum — the per-value counts can
+every one of them be correct while the set they claim to partition is strictly larger.
+
+## Cycle 2616 — prove a long-CLEAN tripwire non-vacuous on the cycle it comes up clean
+
+`check-mode-scope-warning` returned 0 flags, as it has since c2520 (96 cycles). A tripwire printing
+0 forever is indistinguishable from one whose matcher silently stopped matching — and these checks
+are textual, so an unrelated refactor of the fleet's warning idiom would break them invisibly. The
+fix costs nothing when the check already ships an injection mode: copy one real Actor's
+`main.js`/`input_schema.json` to /tmp, run `--main/--schema` for a 0-flag baseline, delete ONE name
+from a warning array, re-run, confirm exactly 1 correct flag naming that field. Did this with
+`apple-podcasts-scraper`'s `minRating` out of `reviewOnlyIgnored`. **Make this the default closing
+move for any CLEAN run of a static tripwire that supports injection** — otherwise the recorded
+"CLEAN" in STATUS.md is an unfalsified assertion, and `checks-due` will happily carry it forward for
+another 96 cycles.
