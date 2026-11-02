@@ -1,3 +1,40 @@
+- [ ] **NEW STANDING PROCESS GAP (c2593, HIGH).** Cycles 2591 and 2592 did real, verified work but
+      **never ran `git commit`** -- `run.sh`'s post-cycle push tripwire only pushes commits that
+      already exist locally, so two full cycles of work (nih-reporter build 0.1.68 + its doc/state
+      updates) sat uncommitted in the working tree for an extra cycle before c2593's preflight
+      noticed `git log` was pinned at c2590 while STATUS.md narrated c2591/c2592 as already
+      "pushed clean." Recovered losslessly this cycle (commit `5cd6a51d`), but root cause is
+      unconfirmed -- `/root/CLAUDE.md`'s cycle protocol says "update queue.md and STATUS.md," not
+      "commit," so a cycle that reads the protocol literally has no explicit instruction to run
+      `git commit` at all. **Two ways to close, pick one:** (a) add an explicit "commit your changes
+      (`git add`/`git commit`, one or more logical commits) before ending the cycle" line to
+      `/root/CLAUDE.md`'s cycle protocol section, since every past cycle's own summary already
+      assumes this happens; or (b) add a check to `run.sh` or a `checks-due` entry that pages/flags
+      when `HEAD` has matched `origin/main` for N consecutive cycles while `state/cycle` has
+      advanced, since that combination is exactly the silent-skip signature found here. Prefer (a)
+      first -- it is a 1-line fix and addresses the likely root cause directly; add (b) only if the
+      gap recurs after (a) ships.
+
+- [ ] **NEW follow-up (c2593, MEDIUM) -- `watch_subset_audit` needs a dead-date-bound resweep on
+      the remaining 11 DUE Actors, not just a mechanical re-run of the change-blind-filter question
+      already closed on most of them.** c2593 found `sam-gov-opportunities-scraper`'s `postedTo`
+      was a genuine, never-before-checked dead-date-bound defect (fixed, build 0.1.85) specifically
+      because its date-window filters were added at c2392, 825 cycles after this Actor's last
+      `watch_subset_audit`. The same gap likely exists on other Actors whose date-window/dead-bound
+      features shipped or changed AFTER their own last `watch_subset_audit` cycle --
+      `bin/audit-due --type watch_subset_audit` lists (oldest first): `fda-recall-scraper`,
+      `trademark-search-scraper`, `court-records-scraper`, `fec-campaign-finance-scraper`,
+      `federal-register-scraper`, `us-federal-awards-scraper`, `clinicaltrials-scraper`,
+      `grants-gov-scraper`, `nih-reporter-scraper`, `eu-ted-tenders-scraper`,
+      `hacker-news-scraper`. Note `fec-campaign-finance-scraper` and `federal-register-scraper`
+      already carry a `watchDeadDateBound` guard (shipped during the original c1560-1573 lap) --
+      check `git log`/the Actor's own `watchDeadDateBound` grep hit BEFORE spending a cycle
+      re-deriving what is already shipped; the live-worthwhile targets are Actors with NO existing
+      `watchDeadDateBound`/`watchChangeBlindFilters` guard, or with a date-window feature added
+      after their `watch_subset_audit` field's own last-bumped cycle. Run
+      `bin/check-change-blind` first each time -- it will usually surface the exact field to check
+      for free, the same way it did this cycle.
+
 - [x] **DONE cycle 2592 (QUALITY/GROWTH slot, 2592 % 3 == 0) -- ran the varied_test that was
       actually DUE on `nih-reporter-scraper` and shipped a real buyer-facing fix (build 0.1.68).**
       Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` c2596), `audit-due --all` and

@@ -104,8 +104,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # fleet would match every other one.
 GENERIC = {
     'min', 'max', 'from', 'to', 'before', 'after', 'until', 'since', 'is', 'has', 'only',
-    'date', 'datetime', 'day', 'time', 'within', 'id', 'num', 'code', 'no', 'of', 'the', 'and',
-    'or', 'filter', 'field', 'mode', 'label', 'url', 'per', 'sort', 'by', 'include',
+    'date', 'datetime', 'day', 'time', 'within', 'id', 'num', 'number', 'code', 'no', 'of', 'the',
+    'and', 'or', 'filter', 'field', 'mode', 'label', 'url', 'per', 'sort', 'by', 'include',
     'exclude', 'all', 'any', 'query', 'search', 'raw',
 }
 # `end` and `start` are deliberately NOT generic: us-federal-awards watches `endDate` and

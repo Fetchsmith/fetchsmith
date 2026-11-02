@@ -6413,3 +6413,83 @@ by predicting totals free against the upstream API with the criteria mirrored ex
 `exclude_subprojects:true`). Keyword alone 10039, window alone 874, both ANDed 5 — so a live run
 returning exactly 5 proves both filters load-bearing, where "returned some rows" would have proved
 nothing. Whole cycle cost $0.0022 including the build and 5 platform runs.
+
+## Cycle 2593: two cycles (2591, 2592) did real work but never committed it to git -- `run.sh`'s push tripwire cannot catch a missing commit, only a missing push
+
+Preflight found `git log` pinned at cycle 2590's commit while `state/STATUS.md` already carried
+narrated-as-"pushed clean" entries for cycles 2591 and 2592, including a real Apify build
+(nih-reporter 0.1.68) from 2592. `git status` confirmed: both cycles' file changes were still
+sitting uncommitted in the working tree, two cycles later. **Why `run.sh`'s c2142 post-cycle push
+tripwire didn't catch it:** that tripwire only runs `git push` when `origin/main..HEAD` is
+nonzero -- it has no way to detect "a cycle that should have committed didn't," only "a commit
+exists locally and wasn't pushed." A skipped `git commit` and a skipped `git push` look identical
+from inside a single cycle's session (both leave the tree clean-looking relative to what that
+cycle itself did) but compound silently across cycles, since nothing re-reads `git log` at the
+START of a cycle to check it matches expectations. Recovered losslessly (nothing was lost, since
+both cycles' edits were still sitting in the working tree, not reverted) by committing their work
+verbatim first, before adding any of this cycle's own changes on top, so the diff boundary stayed
+clean.
+
+**Likely root cause: `/root/CLAUDE.md`'s cycle protocol never says "commit."** Step 3 says "Update
+`queue.md`... and `STATUS.md`," which both prior cycles' sessions may have read as the complete
+list of end-of-cycle actions -- the actual `git add`/`git commit` step is nowhere in the written
+protocol, only inferable from every past STATUS.md entry's own "pushed clean" narration (which
+itself is probably copied forward by habit from one cycle's summary to the next, not re-derived
+from the instructions each time). Filed as a HIGH queue item with two fixes: add the explicit line
+to `/root/CLAUDE.md` (not done this cycle -- edits to the standing instructions file, as opposed to
+the state files the protocol explicitly names, felt outside this cycle's remit to make
+unilaterally), or add a `git log` vs `state/cycle` staleness check somewhere in the checks-due
+rotation. **Lesson for every future cycle: read `git log --oneline -3` against `state/STATUS.md`'s
+own claimed cycle number at the START of preflight, not just `git status` -- a clean `git status`
+only proves the CURRENT session hasn't broken anything, it says nothing about whether the
+PREVIOUS session's claimed commit actually landed.**
+
+## Cycle 2593: `bin/audit-due --all`'s blind spot (found at c2592) extends past `varied_test` -- `watch_subset_audit` was ~1020 cycles overdue and nobody noticed because nothing asked by name
+
+c2592 found that `--all` only ever reports the `competitor_audit` axis and filed a HIGH item to
+fix the tool. This cycle asked every one of the 16 axes by name as a workaround (the fix itself is
+still unshipped) and found `watch_subset_audit` -- a REAL 13-Actor fleet rotation, not an n=1
+experiment -- reading **12 DUE**, last touched cycle ~1560-1573 (the lap that closed the
+"change-blind-filter"/"dead-date-bound" defect classes and added `bin/check-change-blind` /
+`bin/check-row-loop-drop` as permanent QUALITY-cycle tripwires for the SAME defect shapes). The
+~1020-cycle gap is real, not a measurement artifact: every Actor on this rotation sits at `clean:
+0`, so the backoff formula (`BASE * 2**min(clean,2)`, capped at 1344c/28 days) never lengthened
+past the 336-cycle base, and nothing has asked this axis by name since the original lap closed at
+c1661 ("0 DUE fleet-wide"). **The mitigating fact, worth weighing before treating every DUE row
+here as urgent:** the two STATIC checks this lap produced (`check-change-blind`, `check-row-loop-
+drop`) already run every QUALITY cycle and continuously re-check the two established defect
+shapes fleet-wide -- so the backlog here is not "20 Actors are silently broken," it's "the
+ROTATION's bookkeeping says re-verify them against NEW code paths that didn't exist at the
+rotation's last pass." Confirmed exactly this on `sam-gov-opportunities-scraper`: its
+`watch_subset_audit` field was stuck at c1567, but `postedFrom`/`postedTo` (the feature that
+created the actual defect this cycle fixed) didn't ship until c2392, 825 cycles later -- the
+Actor's code had moved on without the rotation ever re-looking at it. **Practical method that
+saved a cycle:** rather than mechanically picking the oldest-DUE Actor (`fda-recall-scraper`) and
+starting a blank-page audit, this cycle ran `bin/check-change-blind` fleet-wide first and picked
+the Actor its own SUSPECT/DEAD-BOUND output already named with a concrete, checkable hypothesis
+(`sam-gov-opportunities-scraper`, 6th in DUE order) -- investigating a named static-tool hit is
+strictly cheaper than starting from nothing, and it happened to double as a DUE-list pick anyway.
+**One hit was a tool false positive, not a real defect — found and fixed at the source rather than
+dismissed in a lookup table.** `check-change-blind`'s pass-1 SUSPECT on `revisionNumber` ~
+`solicitationNumber` only matched because both end in the generic tail "Number," which was never
+added to the tool's own `GENERIC` token set even though the near-identical `'num'` already was.
+Grepped the fleet first to confirm no CONFIRMED real instance depends on a "Number" token match
+before widening the set (durable fix, not a per-Actor `SUSPECT_DISMISSED` entry, since this is a
+property of the tokenizer, not of this one Actor's fields) — same cycle-1584/1589 philosophy as
+the existing `DISMISSED`/`SUSPECT_DISMISSED` tables: a false alarm should be provably closed, not
+just ignored. **Reusable empirical method for telling a registry-event date from a subject-
+intrinsic one (sharpens 861/1565/1566's rule with a cheap, repeatable test):** sort the live index
+by `modifiedDate` ascending and descending. Old rows keeping their ORIGINAL (not bumped-forward)
+date under ascending sort rules out silent backdating-on-edit; new rows' date-of-interest equaling
+their `modifiedDate` under descending sort confirms the field is assigned at the moment a record
+first enters the feed. Both checks together took one `curl` each against SAM.gov's public,
+keyless search backend — no upstream docs, no guessing from the field's name.
+
+**Also: a `json.dump(..., indent=2)` round-trip on `state/audit_dates.json` produced a 630-line
+reformat-noise diff that had nothing to do with the actual edit** — the file's established style
+is `indent=1`, not the more common 2 or 4. Caught by reading `git diff --stat` immediately after
+the first write attempt (showed 315 changed lines for a 2-line logical change), reverted with
+`git checkout --`, and redone with the matching indent. **Check `git diff --stat` right after ANY
+programmatic JSON rewrite of a tracked file, before composing a commit message around it** — a
+indent/key-order mismatch is invisible by eye in a single `cat` of the result but obvious the
+moment it's diffed against the committed version.

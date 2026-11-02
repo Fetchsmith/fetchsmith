@@ -1747,6 +1747,37 @@ function changesBetween(prev, next) {
     return types.length ? { types, previous } : null;
 }
 
+// Dead date bound (cycle 2593; same class as apple-podcasts-scraper / fec-campaign-finance-scraper
+// / federal-register-scraper's watchDeadDateBound). Distinct from the change-blind-filter class
+// below: this is about an IDENTITY watch (new-row detection), not snapshot field-diff blindness,
+// and it fires whenever watchMode is on, with or without watchChanges. `postedTo` pins an upper
+// bound on `publishDate` -- the calendar date SAM.gov itself posted the notice, confirmed live
+// cycle 2593 to be a REGISTRY-EVENT date, not subject-intrinsic: sorting index=opp by
+// `modifiedDate` ascending shows active notices still carrying their ORIGINAL publishDate from as
+// far back as 2011-2015, never bumped forward on edit (same fact the comment below already relies
+// on, "publishDate never moves"), while sorting by `-modifiedDate` shows every brand-new notice's
+// publishDate equal to its modifiedDate on the day it first appears. So a notice SAM.gov has never
+// shown before always carries today's date, never an old one (unlike court-records-scraper's
+// `filedBefore`, dismissed at c850/c1562 for the opposite reason: CourtListener backfills old
+// dockets with recent index dates but old dateFiled). Once today's date passes a fixed `postedTo`,
+// no notice can ever again have a publishDate on or before it, so this watch goes permanently
+// blind to new notices -- while a quiet run keeps emitting the same reassuring "nothing new"
+// message forever. Scoped to the dataTypes where postedTo is even applied (`postedWindowSupported`
+// already excludes exclusions, which has no publish date at all).
+const watchDeadDateBound = watchMode && postedWindowSupported && postedTo != null;
+if (watchDeadDateBound) {
+    log.warning(
+        `watchLabel "${watchLabel}" is combined with a fixed postedTo (${postedTo}). Once today's date passes `
+        + 'that cutoff, no notice can ever have a publishDate on or before it anymore, so this watch is now '
+        + 'permanently unable to report any new notice -- "nothing new" will look identical to "the watch is '
+        + 'dead" forever after.',
+    );
+    log.warning(
+        'Drop postedTo from a watched query (seed a fresh baseline afterward) so publishDate stays unbounded, '
+        + 'or remove watchLabel if you really do want a fixed historical window instead of an ongoing watch.',
+    );
+}
+
 // Change-blind filters (cycle 1560/1561/1567; same class as grants-gov-scraper c860 /
 // clinicaltrials-scraper c861 / fda-recall-scraper c1560 / trademark-search-scraper c1561).
 // Two independent instances here, confirmed live against real sam.gov rows (cycle 1567, naics
@@ -2268,6 +2299,10 @@ if (watchMode && seedFailure) {
                 ? ` NOTE: the baseline stopped at the ${SEED_CAP}-record cap. Narrow the query (a keyword`
                 + `${isCfda || isExclusions ? ', an organization' : isWd ? ', a state' : ', a NAICS code, a set-aside/notice type'}) so `
                 + `the whole result set fits, or the first incremental run will report ${ROW_NOUN_PLURAL} past the cap as new.`
+                : '')
+            + (watchDeadDateBound
+                ? ` NOTE: postedTo is fixed, so this watch will stop finding anything new once today's date passes `
+                + 'it -- see the warning above.'
                 : ''),
         );
     } else {
@@ -2281,6 +2316,10 @@ if (watchMode && seedFailure) {
             + (pushed === 0 && watchChangeBlindFilters.length
                 ? ` NOTE: this run also cannot report any ${watchChangeBlindFilters.join('/')} change at all (see `
                 + 'the change-blind-filter warning(s) above), so "nothing changed" is not evidence here.'
+                : '')
+            + (pushed - changedCount === 0 && watchDeadDateBound
+                ? ' NOTE: postedTo is fixed on this watch, so "0 new" may mean the date cutoff has made it '
+                + 'permanently blind rather than the normal quiet result -- see the warning above.'
                 : ''),
         );
     }
@@ -2385,6 +2424,7 @@ const runSummary = {
     changedRedelivered: watchMode && !seeding ? changedCount : null,
     skippedSeen: watchMode && !seeding ? skippedSeen : null,
     watchChangeBlindFilters: watchMode && watchChanges ? watchChangeBlindFilters : null,
+    watchDeadDateBound: watchMode ? watchDeadDateBound : null,
 };
 await Actor.setValue('RUN_SUMMARY', runSummary);
 

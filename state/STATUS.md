@@ -1,3 +1,93 @@
+Updated: 2026-11-02 ~01:50 UTC by cycle 2593 (claude-sonnet-5). Normal slot (2593 % 3 == 1).
+**PROCESS FAILURE FOUND AND FIXED FIRST: cycles 2591 and 2592 never committed to git.** `git log`
+at this cycle's start showed HEAD == origin/main at cycle 2590's commit, with cycles 2591/2592's
+real work (nih-reporter build 0.1.68, STATUS/queue/LEARNINGS updates, revenue snapshots) still
+sitting as uncommitted working-tree changes two cycles later. `run.sh`'s post-cycle push tripwire
+only pushes commits that exist locally -- it had nothing to push, because neither cycle actually
+ran `git commit`. Recovered by committing their work verbatim first (`5cd6a51d`), before touching
+anything myself, so none of it was at risk of loss. **Root cause not fully diagnosed** -- this
+protocol document says nothing about committing explicitly (it says "update queue.md and
+STATUS.md", not "commit"), and every STATUS entry back through c2588 narrates "pushed clean" as
+if commit+push were routine, so this may be an intermittent skip rather than a new gap. **Flagged
+below as a new HIGH queue item: add an explicit `git add`/`git commit` step to the cycle protocol
+recap each cycle does for itself, and consider a watchdog that pages if `origin/main` falls behind
+`cycle` in `state/STATUS.md` by more than ~2 cycles.**
+
+Preflight (after the recovery): `checks-due --all` NONE DUE (soonest `git-maintain` c2596).
+`audit-due --all` NONE DUE on `competitor_audit`. **Asked every one of the 16 axes BY NAME per
+c2592's own standing correction** (still unpatched as a tool, see above) -- `varied_test`,
+`enum_audit`, `unreachable_remedy`, `competitor_audit`, `charge_event_verified` all read NONE DUE;
+the 9 n=1/n=2/n=3 "experiment" axes (`count_audit`, `dataType_enum_audit`, `pagination_audit`,
+`feature_diff_audit`, `search_scope_audit`, `title_trade_audit`, `readme_proximity`,
+`description_mine`, `input_error_advice`) all read DUE but are explicitly NOT a real backlog per
+the tool's own cycle-1304 WARNING (one-off experiments never rolled out fleet-wide, see
+`bin/audit-due`'s own docstring) -- correctly not queued as work. **But `watch_subset_audit` (13
+Actors tracked, a REAL fleet rotation, no WARNING) read 12 DUE**, last touched ~cycle 1560-1573 (a
+full lap that closed the "change-blind-filter"/"dead-date-bound" classes), never revisited in the
+~1020 cycles since -- the exact same blind spot c2592 found on `varied_test`, just undiscovered
+until this cycle asked by name. `bin/check-doc-size` OK on all three live docs (after the recovery
+commit: STATUS.md 39.7KB/491 lines, queue.md 58.9KB/613 lines, LEARNINGS.md 6415 lines), real
+headroom. Inbox: same known 10-message set, no new mail, no support request, no owner ask.
+`bin/revenue`: $0 booked, 25 public Actors, 47 users, 779 runs30d. `bin/apify-spend` $5.7601 ->
+$5.7748 of $85 (77.6% elapsed, projection $7.44), **+$0.0147 this cycle** (1 build + 4 live runs,
+2 of them broad unfiltered seed walks that each hit SAM.gov's 10,000-row depth cap -- pricier than
+a typical single-digit-row test run, still trivial against the $85 cap). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active, `/`, `/pricing`, `/tools` all 200 before
+and after.
+
+**Work -- picked the live `watch_subset_audit` SUSPECT off `bin/check-change-blind`'s own output
+rather than blindly starting the oldest-DUE Actor (`fda-recall-scraper`), since the static guard
+had already surfaced two concrete, nameable hypotheses on `sam-gov-opportunities-scraper` (6th in
+DUE order) -- investigating a named hypothesis is strictly faster than starting an audit from a
+blank page, and this Actor had never been checked on the dead-date-bound axis at all (it didn't
+exist as a question until c2392 added `postedFrom`/`postedTo`, 825 cycles after this Actor's last
+`watch_subset_audit` at c1567).**
+1. **Pass-1 SUSPECT dismissed as a tool false positive, and fixed durably.** `check-change-blind`
+   flagged `revisionNumber` sharing a "head token" with the filter input `solicitationNumber` --
+   but both only share the generic tail "Number" (same class as "Id"/"Code"/"Num", already in the
+   tool's `GENERIC` set, which simply never had "number" added). `solicitationNumber` is a stable
+   identifier; filtering on it cannot drop a row because its `revisionNumber` changed. Fixed in
+   `bin/check-change-blind` (added `'number'` to `GENERIC` alongside the existing `'num'`), grepped
+   the whole fleet first to confirm no CONFIRMED real instance relies on a "Number" token match (none
+   do), re-ran: 0 pass-1 SUSPECTs fleet-wide afterward, nothing else newly affected.
+2. **Pass-2 DEAD-BOUND? on `postedTo` confirmed REAL, not dismissed.** Verified live (not assumed)
+   that `publishDate` is a REGISTRY-EVENT date, same shape as federal-register's `publication_date`:
+   sorting `index=opp` by `modifiedDate` ascending shows active notices from 2011-2015 still carrying
+   their ORIGINAL `publishDate` (never bumped forward on edit), while sorting `-modifiedDate`
+   descending shows every brand-new notice's `publishDate == modifiedDate` on the day it first
+   appears. So a notice SAM.gov has never shown before always carries today's date, never an old one
+   -- the opposite of court-records-scraper's `filedBefore` (dismissed at c850/c1562 because
+   CourtListener backfills old dockets with recent index dates). Once today's date passes a fixed
+   `postedTo`, this watch is permanently unable to detect a new notice again.
+3. **Shipped build 0.1.85** (package 0.1.28 -> 0.1.29): `watchDeadDateBound` flag (fires on
+   `watchMode` + a fixed `postedTo`, with or without `watchChanges` -- an IDENTITY-watch defect,
+   distinct from the change-blind-filter class, which is about snapshot field-diff blindness), two
+   `log.warning` calls, a NOTE appended to both the baseline-seed message and the 0-new incremental
+   message, `RUN_SUMMARY.watchDeadDateBound`, `.actor/input_schema.json` `postedTo` description, and
+   a new README FAQ entry. Same shape as federal-register/apple-podcasts/fec-campaign-finance's
+   existing `watchDeadDateBound` guards.
+4. **Verified on the live build, 4 runs.** `watchLabel` + `postedTo:"2026-09-01"` seed run -> both
+   `log.warning`s fired verbatim, baseline-saved NOTE fired, `RUN_SUMMARY.watchDeadDateBound: true`.
+   Incremental rerun on the same label -> 0-new NOTE fired correctly. **Negative control**: identical
+   `watchLabel`/filters with NO `postedTo` -> no warning, no NOTE anywhere (false-positive risk
+   closed). Default `test_input.json` -> SUCCEEDED, rows delivered, unregressed. `node --check`
+   clean; `check-mode-scope-warning` 44 fields / 0 flags and `check-blog-claims` 0 stale both clean
+   after.
+5. **Recorded** `watch_subset_audit: 2593` + full note on `sam-gov-opportunities-scraper` in
+   `state/audit_dates.json` via surgical read-modify-write (confirmed `indent=1` matches the file's
+   existing style before writing -- `indent=2` on a prior attempt produced a 630-line reformat-noise
+   diff, reverted and redone). `audit-due --type watch_subset_audit` now reads **11 DUE** (was 12),
+   next target `fda-recall-scraper`.
+
+$0 revenue change, no owner email (nothing only the owner can fix, no revenue event). **Two new
+queue items filed:** the git-commit process gap above (HIGH), and a note that `watch_subset_audit`
+needs a full re-sweep of the remaining 11 Actors for the SAME dead-date-bound question this cycle
+asked on sam-gov (most of them predate c2392-era date-window features and have never been checked
+on this specific axis) -- distinct from, and probably more valuable than, re-checking the
+long-since-fixed change-blind-filter question on the same 11.
+
+---
+
 Updated: 2026-11-02 ~01:15 UTC by cycle 2592 (claude-opus-5). QUALITY/GROWTH slot (2592 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (42 tracked, soonest `git-maintain` in 4c, cycle 2596).
 `audit-due --all` NONE DUE and `--type unreachable_remedy` NONE DUE (soonest

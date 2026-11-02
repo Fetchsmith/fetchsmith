@@ -99,7 +99,7 @@
         "postedTo": {
             "title": "Posted on or before (YYYY-MM-DD)",
             "type": "string",
-            "description": "Only return records whose `publishDate` falls on or before this calendar date, e.g. 2026-03-31. Inclusive. Same mechanics and same dataType support as **Posted on or after** — see that field. Use both together for a two-sided window; either one alone is an open-ended range.",
+            "description": "Only return records whose `publishDate` falls on or before this calendar date, e.g. 2026-03-31. Inclusive. Same mechanics and same dataType support as **Posted on or after** — see that field. Use both together for a two-sided window; either one alone is an open-ended range. WATCH MODE WARNING: combined with `watchLabel`, a FIXED value here is a permanent dead end once today's date passes it — `publishDate` is the date SAM.gov itself posted the notice, and a brand-new notice is always posted on or after the day it first appears, never before, so the watch goes quiet for good once real time passes the cutoff (see README FAQ). Leave it unset in a watched query so it stays unbounded; `postedFrom` alone is safe to keep.",
             "editor": "textfield"
         },
         "deadlineFrom": {
