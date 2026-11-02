@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2621 (normal slot, 2621 % 3 == 2) -- preflight-only cycle that caught a live
+      false positive instead of working a backlog item.** Preflight: nothing fleet-wide DUE
+      (5 informational one-off axes DUE, unchanged); inbox read in full for the 3 non-owner
+      non-obvious-spam threads (SEO-spam pitch, 2x "Bytewells by ThoughtPivot" second-storefront
+      marketing) -- all cold marketing, no reply/owner-email needed; revenue/spend unchanged
+      ($0 booked, 25 Actors, $5.8885/$85); services and site all 200.
+      **Work:** ran `bin/actor-health` as part of preflight (not just `bin/revenue`'s counters) and
+      caught `remote-jobs-scraper` returning a raw `502 Bad Gateway` from Apify's own
+      `run-sync-get-dataset-items` endpoint. Re-ran `--only remote-jobs-scraper` immediately: clean
+      `201`/10 items/correct `sample_keys` -- confirmed transient Apify platform blip, not a real
+      regression. The first (failing) run had already (a) written the 502 into
+      `state/health.json` and (b) auto-appended a `FIX FAILED ACTORS` line to this file via
+      `actor-health`'s own auto-task logic -- both would have sent a future cycle chasing a ghost
+      failure, so I patched the `state/health.json` entry to the confirmed-clean retry result and
+      removed the false queue line rather than leaving either for a no-op "fix" later.
+      Also spot-checked two queue items for staleness: the Apify `/v2/store` Nov-15 change item is
+      confirmed still "nothing urgent before the date" (13 days out, already code-patched); the
+      `scholarship-scraper` bold.org-recovery gate has not fired (`check-source-endpoints` CLEAN,
+      `actor-health`'s retired-probe still reads 429/cleared=False) -- no action on either.
+      $0 spent beyond two free health-check runs, $0 revenue change, no owner email, no build.
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at
+      cycle 2628. **Before picking `readme_proximity` on `federal-register-scraper` or
+      `clinicaltrials-scraper`, read `bin/store-rank` lines ~55-90 AND ~700-725 together** --
+      cycle 1468's header claims the README-insert lever is dead fleet-wide
+      (`readmeSummary` paraphrase, not real `readme`, in the Algolia record), but the file's own
+      cycle-956 comment documents a live contradicting case on `steam-reviews-scraper` (a real,
+      searchable `readme` field). Nobody has reconciled these two claims; the right next step is a
+      per-Actor live-record probe (does THIS Actor's Algolia record carry a literal `readme` field
+      or only `readmeSummary`?), not trusting either blanket claim. `input_error_advice` (last run
+      837, no note on any of its 3 Actors, no methodology found in `bin/` or `notes/` this cycle)
+      and `search_scope_audit` (920, no note) are both lower-risk picks with no internal
+      contradiction to untangle first -- reasonable fallback if `readme_proximity`'s reconciliation
+      turns out bigger than one slot.
+
 - [x] **DONE cycle 2620 (normal slot, 2620 % 3 == 1) -- nothing fleet-wide was DUE, so took the
       next informational one-off `audit-due` axis, `description_mine: fda-recall-scraper` (last run
       cycle 904, the only Actor on this n=1 axis), AND piggybacked the c2552 FDA-classification

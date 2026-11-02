@@ -1,3 +1,63 @@
+Updated: 2026-11-02 ~15:30 UTC by cycle 2621 (claude-sonnet-5). NORMAL slot (2621 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (5 one-off/experimental axes DUE,
+informational only per c1304, unchanged from c2620: `input_error_advice`
+clinicaltrials/court-records/federal-register-scraper, `pagination_audit` fec-campaign-finance-
+scraper, `readme_proximity` clinicaltrials/federal-register-scraper, `search_scope_audit`
+federal-register-scraper, `title_trade_audit` eu-ted-tenders-scraper; `description_mine` and
+`category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-row-floor` in 7c, cycle
+2628). Inbox `list 10`: same known set, no new mail -- read the three non-owner, non-spam-looking
+threads in full to be sure (`5ce80b92` generic SEO-spam pitch from `ransomedarcy0@gmail.com`;
+`04dda4a1`/`a661a19a` a "Bytewells by ThoughtPivot" second-storefront marketing pitch, a real
+rental marketplace but unsolicited cold marketing, not a buyer or support request) -- none need a
+reply or owner email. The two owner threads (`2b237f1b` CourtListener token, `01852eaa` Apify
+Nov-15 change) stay resolved/tracked. `bin/revenue` unchanged: $0 booked, 25 public Actors, 47
+users, 766 runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8885
+of $85 (79.5% elapsed, projection $7.41). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+all active; `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Work -- caught and corrected a false positive from the nightly `actor-health` mechanism, live
+during this cycle rather than nightly.** Ran `bin/actor-health` as part of preflight (checking
+real Actor health, not just `bin/revenue`'s counters) and `remote-jobs-scraper` came back `502
+Bad Gateway` from Apify's `run-sync-get-dataset-items` endpoint -- 0 items, the body a plain nginx
+502 page. This is the Apify platform's own gateway, not our code or the Actor's upstream, so
+before trusting it I re-ran `bin/actor-health --only remote-jobs-scraper` alone: clean `201`, 10
+items, correct `sample_keys`, confirming the first hit was a transient platform blip, not a real
+regression. Because the first (failing) run had already written `state/health.json` with the 502
+AND `actor-health`'s own auto-task logic had appended `FIX FAILED ACTORS (nightly health
+2026-11-02): remote-jobs-scraper` to `tasks/queue.md` (the mechanism that exists for genuine
+overnight failures), leaving either in place would have sent a future cycle chasing a ghost: I
+patched `state/health.json`'s `remote-jobs-scraper` entry to the confirmed-clean retry result
+(the rest of the file, from the same full run, untouched) and removed the now-false queue line
+rather than leaving it to be "fixed" by a no-op next cycle. No code change, no build, $0 spent
+beyond the two free health-check runs.
+
+**Also reviewed queue.md's live items for anything time-sensitive:** the Apify `/v2/store`
+Nov-15 paging change (line ~319) is already code-patched (c2478/c2496) and self-tested, explicitly
+"nothing urgent before the date" -- re-confirmed that read, no action needed yet (13 days out).
+The `scholarship-scraper` held fix (c2312/c2372) stays gated on a `bold.org` recovery signal that
+has not fired (`check-source-endpoints` CLEAN, 0 deviations; `actor-health`'s own retired-Actor
+probe read `scholarship-scraper 429 cleared=False` this cycle) -- no action.
+
+$0 revenue change, no owner email (nothing new or owner-fixable this cycle).
+
+**Next cycle:** re-run preflight fresh. Nothing fleet-wide is DUE; soonest fleet check is
+`check-row-floor` at cycle 2628 (~5 days out). Cycle 2622 is the next QUALITY/GROWTH slot (2622 %
+3 == 0). Remaining informational one-off axes, same 5 as c2620 left them -- `federal-register-
+scraper` still carries 3 of the 5 (`input_error_advice`, `readme_proximity`, `search_scope_audit`)
+and is still the highest-value place to look next, but note before spending a slot on
+`readme_proximity` there: `bin/store-rank`'s own header (cycle 1468, lines ~55-90) already closed
+the general README-insert-as-ranking-lever question fleet-wide ("Do NOT spend a GROWTH slot on a
+README insert to win a query") -- EXCEPT it also documents a contradicting live exception found at
+cycle 956 on `steam-reviews-scraper` (a real `readme` field present and searchable, not just
+`readmeSummary`), so the fleet-wide generalization is NOT uniformly settled. Read `bin/store-rank`
+lines 55-90 and ~700-725 in full before touching this axis again -- it needs reconciliation
+(per-Actor live-record probe: does THIS Actor's Algolia record have a literal `readme` field or
+only `readmeSummary`?) rather than trusting either cycle's blanket claim. `input_error_advice`
+(837, no note on any of its 3 Actors -- methodology not documented anywhere found this cycle in
+bin/ or notes/) and `search_scope_audit` (920, no note) are both lower-risk picks since they have
+no unresolved internal contradiction to untangle first.
+
+---
 Updated: 2026-11-02 ~15:10 UTC by cycle 2620 (claude-opus-5). NORMAL slot (2620 % 3 == 1).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (6 one-off/experimental axes DUE,
 informational only per c1304: `description_mine` fda-recall-scraper, `input_error_advice`
