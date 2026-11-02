@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2606 (normal slot, 2606 % 3 == 2) -- ran the DUE `check-source-endpoints`
+      (CLEAN, 50 hosts probed, 0 deviations) and, with the remaining slot, fixed the c2601
+      `_audit_note_scan.py` boundary flag.** See the dedicated DONE block below (originally the
+      c2601 item) for the audit-due fix details. Preflight: `audit-due --all` NONE DUE fleet-wide
+      (one-off axes informational per c1304; `category_lever` CLOSED); `checks-due --all` had
+      exactly 1 due, `check-source-endpoints`, last run cycle 2582. Inbox: same known set plus one
+      new spam item (`2420a902`, a book-promo pitch) -- no action, no owner email per rule 3.
+      `bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users, 760 runs30d, 757 ext_ok30d / 3
+      ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8369 of $85 (78.5% elapsed, projection
+      $7.44). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+      `/tools`, `/tools/app-store-reviews-scraper` all 200 before and after. `state/autocommit.log`
+      unchanged (still the 2 known c2597/c2603 false-positive lines, pre-c2604-fix).
+      **Work 1 -- `check-source-endpoints`: CLEAN.** 50 unique hosts probed, 0 DEVIATION, 0
+      RECOVERED (bold.org for `scholarship-scraper` still not watched-recovered -- see the c2312
+      item below, still gated on that signal). 3 Actors EXEMPT as before (google-play-reviews-
+      scraper, shopify-products-scraper, website-screenshot-scraper). Recorded via `bin/checks-due
+      --ran check-source-endpoints`; next due cycle 2630.
+      **Work 2 -- fixed the c2601 note-parser boundary flag.** Details in that DONE block.
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** re-run preflight fresh;
+      `checks-due --all` next due is `check-mode-scope-warning` in ~10c.
+
 - [x] **DONE cycle 2605 (normal slot, 2605 % 3 == 1; both `audit-due --all` and `checks-due --all`
       read NONE DUE at preflight, so per the standing rule the slot went to the c2604-deferred
       doc-trim instead of manufacturing a code change) -- executed the doc-trim cadence on BOTH
@@ -62,15 +83,21 @@
       **TRIM ITSELF IS DEFERRED and is the top QUALITY-slot item** -- see the doc-trim cadence item
       below, where c2604 left the full pre-derived structure for both files.
 
-- [ ] **NEW tiny follow-up (c2601, LOW) -- `bin/_audit_note_scan.py` reports 1 unexplained segment
-      boundary: `google-play-reviews-scraper varied_test_note seg0`.** Found incidentally while
-      regression-testing the `--all` sweep fix above (pre-existing, not caused by that change --
-      confirmed by stashing the diff and re-running). Likely cause: c2598 prepended a new report to
-      this note and its boundary doesn't match any of the 6 known separator conventions in
-      `REPORT_HEAD`/`_BOUND`. Low urgency because `clean_streak()` only ever LENGTHENS an interval on
-      a misparse, never shortens below BASE (same safety property as every prior note-parsing fix in
-      that file) -- but worth a `bin/_audit_note_scan.py`-style measurement + fix next time a QUALITY
-      cycle has room, same discipline as the c2472/c2580/c2581 fixes already in that file.
+- [x] **DONE cycle 2606 -- fixed the c2601 `_audit_note_scan.py` unexplained-boundary flag
+      (`google-play-reviews-scraper varied_test_note seg0`).** Root cause: `_LABEL` in
+      `bin/audit-due` matched "prior note preserved" but stopped there, so the real plain-text
+      (non-bracket) separator " | prior note preserved below: cycle 2262" never matched REPORT_HEAD
+      (the literal word "below" sat between "preserved" and the required colon). Same shape as the
+      c2580 bracket-arm fix, just the plain-text arm this time. Fix: added the same optional
+      `(?:\s+below)?` after `(?:\s+preserved)?` in `_LABEL`. Simulated first against all 137 stored
+      notes (loaded the live module, compared `clean_streak`/segment counts before vs. after):
+      changes exactly the one flagged note (6 -> 7 segments) and moves ZERO `clean_streak` values
+      fleet-wide -- the safe direction per the file's own invariant (splitting a wrongly-merged
+      segment can only shorten the newest segment, never lengthen an interval below BASE). Verified
+      live: `_audit_note_scan.py` now reports 0 unexplained (was 1); `audit-due --all` FLEET
+      ROTATIONS still read NONE DUE (unchanged) confirming no interval shifted; `python3 -c
+      "ast.parse(...)"` clean. Folded into the same cycle as the DUE `check-source-endpoints` run
+      below since both were small and the quota wasn't tight.
 
 - [ ] **NEW follow-up (c2592, MEDIUM) -- nothing checks `.actor/input_schema.json` PROSE for stale
       measured claims, and that prose renders in the Apify input form.** The ~8.9k defect above sat

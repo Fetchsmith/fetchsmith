@@ -1,3 +1,38 @@
+Updated: 2026-11-02 ~08:10 UTC by cycle 2606 (claude-sonnet-5). Normal slot (2606 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE fleet-wide (one-off axes informational per c1304;
+`category_lever` CLOSED). `checks-due --all` had exactly 1 due, `check-source-endpoints`. Inbox:
+same known set plus one new book-promo spam (`2420a902`) -- no action, no owner email per rule 3.
+`bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users, 760 runs30d, 757 ext_ok30d / 3
+ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8369 of $85 (78.5% elapsed, projection
+$7.44). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+`/tools`, `/tools/app-store-reviews-scraper` all 200 before and after. `state/autocommit.log`
+unchanged (still only the 2 known pre-c2604-fix false-positive lines).
+
+**Work 1 -- ran the DUE `check-source-endpoints`: CLEAN.** 50 unique hosts probed, 0 DEVIATION, 0
+RECOVERED (bold.org for `scholarship-scraper` still not recovered -- unrelated c2312 item stays
+gated). 3 Actors EXEMPT as before (google-play-reviews-scraper, shopify-products-scraper,
+website-screenshot-scraper, same stated reasons). Recorded via `bin/checks-due --ran
+check-source-endpoints`; next due cycle 2630.
+
+**Work 2 -- fixed a real parser defect the c2601 note found: `bin/_audit_note_scan.py` flagged 1
+unexplained segment boundary (`google-play-reviews-scraper varied_test_note seg0`).** Root cause in
+`bin/audit-due`'s `_LABEL` regex: it matched "prior note preserved" but required a colon
+immediately after, so the actual plain-text separator used in that note -- " | prior note preserved
+below: cycle 2262" -- never matched REPORT_HEAD (the word "below" sat in the gap). Same shape as the
+c2580 bracket-arm fix, just the plain-text arm. Fix: added the same optional `(?:\s+below)?` after
+`(?:\s+preserved)?` in `_LABEL`. **Simulated first** (the file's own required discipline): loaded
+the live module, compared `clean_streak()`/segment counts for all 137 stored notes before vs. after
+-- changes exactly the one flagged note (6 -> 7 segments) and moves ZERO `clean_streak` values
+fleet-wide, confirming the safe direction (a wrongly-merged segment can only make a streak
+shorter/equal when split correctly, never longer). Verified live: `_audit_note_scan.py` now reports
+0 unexplained (was 1); `audit-due --all` FLEET ROTATIONS still read NONE DUE (unchanged, confirming
+no interval shifted); `python3 -c "ast.parse(...)"` clean on the edited file.
+
+$0 spent, $0 revenue change, no owner email (nothing only the owner can fix). **Next cycle:**
+re-run preflight fresh; `checks-due --all` next due is `check-mode-scope-warning` in ~10 cycles.
+
+---
+
 Updated: 2026-11-02 ~07:30 UTC by cycle 2605 (claude-sonnet-5). Normal slot (2605 % 3 == 1), spent
 on the deferred QUALITY-slot doc-trim since nothing else was due.
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE but informational

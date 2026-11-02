@@ -127,7 +127,7 @@ SEP = "[prior note preserved]"
 # cycles mid-sentence constantly ("the cycle 1449 report", "c2124 price file") and
 # those must not split. If a boundary over-matches anyway the newest segment only
 # gets SHORTER, i.e. less likely to score CLEAN -- the safe direction, floored at BASE.
-_LABEL = (r"(?:old\s+note|prior(?:\s+note)?(?:\s+preserved)?(?:\s*\(\d+\))?)"
+_LABEL = (r"(?:old\s+note|prior(?:\s+note)?(?:\s+preserved)?(?:\s+below)?(?:\s*\(\d+\))?)"
           r"\s*:?\s*")
 # cycle 2580: the bracket arm required `preserved` to sit IMMEDIATELY before the
 # `]`, so the 6th historical convention -- `[prior note preserved below]`, 5 uses
@@ -137,6 +137,16 @@ _LABEL = (r"(?:old\s+note|prior(?:\s+note)?(?:\s+preserved)?(?:\s*\(\d+\))?)"
 # SAFE direction per the paragraph above: simulated across all 137 stored notes it
 # changes exactly ONE (that note, 5 -> 6 segments) and moves ZERO clean_streak
 # values, so no interval anywhere lengthens.
+# cycle 2606: `_audit_note_scan.py` flagged one unexplained segment boundary
+# (google-play-reviews-scraper varied_test_note seg0) -- the PLAIN (non-bracket)
+# convention " | prior note preserved below: cycle NNNN" never matched because
+# _LABEL's word list stopped at "preserved" and required a colon immediately
+# after, but the real text has "preserved below:". Added the same optional
+# "below" the c2580 bracket arm already allows. Simulated across all stored
+# notes (same discipline as c2580): changes exactly the one flagged note (6 -> 7
+# segments) and moves ZERO clean_streak values fleet-wide -- strictly the safe
+# direction (a merged segment can only make the newest report's verdict LESS
+# reliable, never more, so splitting it correctly cannot shorten any interval).
 _BOUND = r"(?:\n\s*|\s*\|\|?\s*|\[[^\]]*preserved[^\]]*\]\s*|(?<=\.)\s+)"
 REPORT_HEAD = re.compile(
     r"(?:" + _BOUND + r"(?:" + _LABEL + r")?|" + _LABEL + r")"
