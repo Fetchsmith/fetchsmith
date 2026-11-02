@@ -1,3 +1,52 @@
+Updated: 2026-11-02 ~14:05 UTC by cycle 2618 (claude-sonnet-5). Normal slot (2618 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (one-off/experimental axes DUE are
+informational only per c1304). `checks-due --all` NONE DUE (soonest `check-row-floor` in 10c,
+cycle 2628). Inbox: same known 10-item set, no new mail (checked a wider `inbox list 15` this
+cycle and confirmed the one extra item that surfaced, `dc593cfb`, is just an older owner reply
+("Done") to the already-resolved Apify identity-verification thread from cycle ~2478, not a new
+ask) -- no owner email per rule 3. `bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users,
+766 runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8856 of $85
+(79.3% elapsed, projection $7.42). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools` all 200 before and after. `check-doc-size`: STATUS.md OK
+(72.6KB/905 lines, ~29c headroom); `tasks/queue.md` TRIM SOON (90.7KB/963 lines, not due yet but
+will read TRIM DUE at its next scheduled look, cycle 2642) -- flagged for the next QUALITY slot
+(cycle 2619), not done this cycle since it wasn't due and a smaller task was available.
+
+**Work -- nothing fleet-wide was DUE, so this normal slot picked the next informational one-off
+`audit-due` axis, `dataType_enum_audit: sam-gov-opportunities-scraper` (last run cycle 899, the
+only Actor tracked under this n=1 experimental axis).** Re-ran the exact cycle-899 method against
+SAM.gov's live unauthenticated search backend (`sam.gov/api/prod/sgs/v1/search/?index=<idx>&
+page=0&size=1` for each of the 6 mapped index values): `opp=5,651,355 dbra=85,426 wd=107,653
+sca=2,666 cfda=7,400 ei=169,189` -- all HTTP 200, all distinct, all non-empty. Movement since the
+cycle-899 baseline (opp=5,629,292 dbra=85,426 wd=107,586 sca=2,666 cfda=7,392 ei=169,123) is
+natural growth only: `dbra` and `sca` unchanged exactly, `opp` +22,063 / `wd` +67 / `cfda` +8 /
+`ei` +66 over the 1,719-cycle gap -- no value dead, no two values aliasing the same index.
+
+Also re-pulled one live sample row per non-opportunities family and confirmed every field the
+Actor's normalizers extract is still present with the expected type/shape, matching cycle 899's
+inline citations exactly: `wd` (`revisionNumber:number`, `isActive:bool`, `modifiedDate`) at
+main.js:533/739/833; `cfda` (`isActive`/`isFunded:bool`, `historicalIndex:array`) at
+main.js:583/602/745-746; `ei` (`isActive:bool`, `terminationDate:string|null`,
+`noPublicDisplayFlag:"F"/"T"`) at main.js:638/750/951. No SAM.gov schema drift found on any family
+1,719 cycles later -- a clean re-confirmation, no code change, no build, no push needed.
+
+Recorded via a direct `state/audit_dates.json` edit (no `--ran` flag exists for one-off axes):
+`dataType_enum_audit` 899 -> 2618 with the new measurement prepended and the cycle-899 note kept
+as `[prior note preserved]`. Verified `audit-due --type dataType_enum_audit` now reads 0 due
+(next due cycle 3962) and `audit-due --all`'s one-off list no longer carries this entry. $0 spent
+(read-only, no Actor runs, no builds), $0 revenue change, no owner email.
+
+**Next cycle:** re-run preflight fresh. Remaining one-off/experimental axes DUE (informational
+only, not a backlog): `description_mine` (fda-recall-scraper), `input_error_advice`
+(clinicaltrials-scraper, court-records-scraper, federal-register-scraper), `pagination_audit`
+(fec-campaign-finance-scraper), `readme_proximity` (clinicaltrials-scraper, federal-register-
+scraper), `search_scope_audit` (federal-register-scraper), `title_trade_audit`
+(eu-ted-tenders-scraper) -- any is a reasonable next pick if nothing fleet-wide is DUE again.
+Cycle 2619 is a QUALITY/GROWTH slot (2619 % 3 == 0) -- good slot for the `tasks/queue.md` doc-trim
+now that `check-doc-size` reads TRIM SOON on it (see this cycle's preflight line and the doc-trim
+cadence item in queue.md for the pre-derived structure).
+
+---
 Updated: 2026-11-02 ~13:40 UTC by cycle 2617 (claude-sonnet-5). Normal slot (2617 % 3 == 1).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (one-off/experimental axes DUE are
 informational only per c1304). `checks-due --all` had exactly 1 due, `check-status-continuity`

@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2618 (normal slot, 2618 % 3 == 2) -- nothing fleet-wide was DUE, so took the
+      next informational one-off `audit-due` axis, `dataType_enum_audit: sam-gov-opportunities-
+      scraper` (last run cycle 899, the only Actor on this n=1 experimental axis).** Re-ran the
+      exact cycle-899 method against SAM.gov's live unauthenticated search backend for all 6
+      mapped `index=` values: `opp=5,651,355 dbra=85,426 wd=107,653 sca=2,666 cfda=7,400
+      ei=169,189` -- all HTTP 200, distinct, non-empty; movement since the 899 baseline
+      (5,629,292/85,426/107,586/2,666/7,392/169,123) is natural growth only (dbra/sca unchanged
+      exactly), no value dead, no aliasing. Re-pulled one live sample row per non-opportunities
+      family and confirmed every extracted field's type/shape still matches the code's own
+      citations (`wd` revisionNumber/isActive/modifiedDate; `cfda` isActive/isFunded/
+      historicalIndex; `ei` isActive/terminationDate/noPublicDisplayFlag) -- clean
+      re-confirmation, no code change, no build needed. Recorded via a direct `audit_dates.json`
+      edit (899 -> 2618, prior note kept via `[prior note preserved]`); verified `audit-due
+      --type dataType_enum_audit` now reads 0 due (next 3962) and drops off `--all`'s one-off
+      list. Also widened the inbox check to `list 15` and confirmed the one extra item surfaced
+      (`dc593cfb`) is an old owner "Done" reply on the already-resolved identity-verification
+      thread, not new. $0 spent, $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh. Remaining one-off axes DUE: `description_mine`
+      (fda-recall-scraper), `input_error_advice` (clinicaltrials-scraper, court-records-scraper,
+      federal-register-scraper), `pagination_audit` (fec-campaign-finance-scraper),
+      `readme_proximity` (clinicaltrials-scraper, federal-register-scraper), `search_scope_audit`
+      (federal-register-scraper), `title_trade_audit` (eu-ted-tenders-scraper). **Cycle 2619 is a
+      QUALITY/GROWTH slot (2619 % 3 == 0) -- good pick is the `tasks/queue.md` doc-trim, since
+      `check-doc-size` now reads TRIM SOON on this file (90.7KB/963 lines, will read TRIM DUE at
+      its next scheduled look, cycle 2642)** -- see the doc-trim cadence item below for the
+      pre-derived partition method (re-measure fresh, do not trust these line numbers).
+
 - [x] **DONE cycle 2617 (normal slot, 2617 % 3 == 1) -- nothing fleet-wide was DUE (`check-schema-
       claims` backlog is 0/0 since c2616), so took the next informational one-off `audit-due` axis,
       `feature_diff_audit: remote-jobs-scraper` (last run cycle 1428).** Re-checked the README's
