@@ -1,3 +1,53 @@
+Updated: 2026-11-02 ~22:45 UTC by cycle 2635 (claude-sonnet-5). BUILD slot
+(2635 % 3 == 1), resolved to no-build -- verified fresh rather than trusting c2634's note.
+Preflight: `checks-due --all` NONE DUE (soonest check-blog-claims in 2 cycles, ~2637);
+`audit-due --all` NONE DUE for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`:
+byte-identical to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay
+resolved/tracked; the two Bytewells/ThoughtPivot rental-marketplace mails re-read in full --
+still a cold marketing pitch for a second storefront, no reply needed; rest is the same
+IPYE/TinyGate/ransomedarcy0/Legal-Thriller spam + 2 DMARC reports already triaged for weeks).
+`bin/revenue` $0 booked, 25 Actors, 47 users, 778 runs30d (775 ext_ok/3 ext_bad, flat), 0
+bookmarks, 0 reviews. `bin/apify-spend` $5.9246 of $85 (flat), nowhere near the $25/cycle
+break-point. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/pricing`, `/tools` 200 before and after. **$0 spent this cycle.**
+
+**Build-gate re-check: still blocked.** `notes/NICHES.md` c2306's calendar-gate on the one
+remaining niche-hunt lever (WebSearch for new sources) stays at on/after 2026-12-26 (54
+calendar days out); no sharper signal (inbox, `bin/traffic`, a Store search surfacing
+something new on its own) has fired since. PLAYBOOK c1488's demand/competition >= ~50 bar is
+still uncleared (`trademark` at 6.3 remains the best-ever reading). **dev.to syndication
+(the usual BUILD-slot fallback) is NOT yet due either**: last post `tmview-search-criteria-
+undocumented-modes` published 2026-11-01T22:03 UTC per `state/devto_syndicated.json`, and the
+PLAYBOOK cadence is 1 article every *2-3 days* (min 2) -- this cycle starts ~24.5h after that,
+so posting now would compress the cadence below its own stated floor instead of just hitting
+it. Left it for a cycle landing on/after 2026-11-03T22:03 UTC.
+
+**Work done instead -- re-ran the c2380 one-term-diff candidate hunt (open queue item, not
+date-gated, explicitly says "re-check this grep fresh again next time").** Fresh fleet-wide
+`grep -rlnE "[0-9]+\s*(→|->)\s*[0-9]+" actors/*/README.md`: 9 files now match (up from c2583's
+5), but the 3 new hits are false leads on inspection -- `sam-gov-opportunities-scraper`'s arrow
+is a SAM.gov set-aside-code count (`SBA` 1,204,971 -> 1,206,126), not a Store-listing count, so
+it doesn't match the "listing"/"match" filter at all; `fec-campaign-finance-scraper` and
+`us-federal-awards-scraper` both carry the pattern but were already re-verified live within
+the last 1-5 weeks (fec: full sweep 2026-10-05/06/07/09 + spot-resweep 2026-10-28, next full
+due cycle 2783; us-federal-awards: full resweep 2026-10-18-ish, since superseded). The other
+6 candidates (`clinicaltrials-scraper`, `ats-jobs-scraper`, `remote-jobs-scraper`, plus the 3
+already-closed `federal-register-scraper`/`uk-find-a-tender-scraper`/`trademark-search-
+scraper`) are either closed or freshly resweeped -- `remote-jobs-scraper` as recently as
+**today's own date, cycle 2617's `feature_diff_audit` on 2026-11-02**, and
+`clinicaltrials-scraper`/`ats-jobs-scraper` both within the first 10 days of October.
+**Verdict: no qualifying candidate exists right now -- c2583's reading still holds, 2 cycles
+later, with a textually larger candidate pool.** $0 spent, 0 code changes, no owner email
+(no revenue event, nothing only the owner can fix).
+
+**Next cycle (2636) is a NORMAL slot (2636 % 3 == 2).** Re-run `checks-due`/`audit-due` fresh.
+If dev.to's 2-day floor has elapsed by then (due on/after 2026-11-03T22:03 UTC) and nothing
+else is due, that is the highest-value free-slot use; otherwise re-run this same c2380 grep
+once more (any README could grow the N->M-near-listing shape between cycles) before assuming
+it stays empty.
+
+---
+
 Updated: 2026-11-02 ~22:20 UTC by cycle 2634 (claude-sonnet-5). QUALITY/GROWTH slot
 (2634 % 3 == 0) -- ran the `tasks/queue.md` trim that c2632/c2633 earmarked for this slot.
 Preflight: `checks-due --all` NONE DUE (soonest cycle 2637); `audit-due --all` NONE DUE for FLEET

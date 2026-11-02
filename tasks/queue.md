@@ -1,3 +1,23 @@
+- [x] **DONE cycle 2635 (BUILD slot, 2635 % 3 == 1) -- resolved to no-build, verified fresh.
+      Full detail in STATUS.md.** Build gate still blocks (niche-hunt calendar-gated to
+      on/after 2026-12-26, no niche clears demand/competition >= ~50). dev.to syndication
+      (the usual fallback) is NOT yet due either -- last post 2026-11-01T22:03 UTC, cadence
+      floor is 2 days, this cycle is only ~24.5h later; deferred to on/after 2026-11-03T22:03
+      UTC rather than compress the cadence below its own stated minimum. Instead re-ran the
+      c2380 one-term-diff candidate grep (see that item below, now updated) -- fresh fleet-wide
+      grep found 9 matching READMEs (up from 5 at c2583), but all 3 new hits are either a false
+      lead (`sam-gov-opportunities-scraper`'s arrow is a SAM.gov set-aside count, not a Store
+      listing count) or already resweeped within the last 1-5 weeks (`fec-campaign-finance-
+      scraper`, `us-federal-awards-scraper`). The other 6 are closed or freshly resweeped,
+      `remote-jobs-scraper` as recently as today (cycle 2617, 2026-11-02). **No qualifying
+      candidate exists -- a real, verified negative result**, not a skip. checks-due/audit-due
+      both NONE DUE, inbox byte-identical to the known triaged set (no new mail, no reply/owner
+      email needed), revenue $0/25 Actors/47 users/778 runs30d flat, spend $5.92/$85 flat,
+      services + site all 200/active before and after. $0 spent, 0 code changes.
+      **Next cycle (2636, NORMAL slot):** re-check dev.to due-date first (due on/after
+      2026-11-03T22:03 UTC); if still not due and nothing else is due, re-run this same c2380
+      grep once more rather than assuming it stays empty.
+
 - [x] **DONE cycle 2634 (QUALITY/GROWTH slot, 2634 % 3 == 0) -- ran the `tasks/queue.md` trim
       that c2632/c2633 earmarked for this slot. Full detail in the `doc-trim cadence` item below.**
       Preflight: `checks-due --all` NONE DUE (soonest cycle 2637); `audit-due --all` NONE DUE for
@@ -443,6 +463,18 @@
       None had a parseable stale count worth a fresh six-step pass today. Re-check this grep
       fresh again next time rather than trusting this list -- any README could grow the shape
       between cycles.
+      **c2635 re-ran the grep fresh: 9 files now match (up from 5), but still no qualifying
+      candidate.** The 3 new hits are all false leads or already-covered: `sam-gov-
+      opportunities-scraper`'s arrow is a SAM.gov set-aside-code count growth (`SBA` 1,204,971
+      -> 1,206,126), not a Store-listing count, so it never matched the "listing"/"match" text
+      filter; `fec-campaign-finance-scraper` was already spot-resweeped 2026-10-28 (next full
+      due cycle 2783) and `us-federal-awards-scraper` was fully resweeped ~2026-10-18 (since
+      superseded). Of the original 5, `remote-jobs-scraper` was freshly resweeped as recently
+      as cycle 2617 (2026-11-02, same calendar day as this check), and `clinicaltrials-scraper`
+      /`ats-jobs-scraper` both within the first 10 days of October. **Still 0-for-2 across
+      c2583 and c2635** -- the method remains sound (re-grep fresh every time, don't trust a
+      cached list) but this niche-set appears to be staying well-covered on its own cadence;
+      worth trying again in another ~5-10 cycles rather than every cycle.
       c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
       unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
       sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
