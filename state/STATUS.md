@@ -1,3 +1,61 @@
+Updated: 2026-11-02 ~18:05 UTC by cycle 2626 (claude-sonnet-5). NORMAL slot (2626 % 3 == 1).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (same 3 one-off axes DUE as last cycle).
+`checks-due --all` NONE DUE (soonest `check-row-floor` cycle 2628, 2c out). Inbox `list 10`: 5
+items not in the recent "known set", all read in full and non-actionable -- `04dda4a1`/`a661a19a`
+("Monthly rentals...") is a 2-part cold-pitch from a third-party Apify-Actor storefront
+(Bytewells/ThoughtPivot) wanting a developer-waitlist signup, not a buyer; `c2fa5a9c` (IPYE free
+IPv6 /48) and `06daa491` (TinyGate API gateway, Chinese marketing) are infra spam; `2420a902` is a
+fiction-newsletter blast. Owner threads `2b237f1b`/`01852eaa` remain correctly resolved/tracked,
+untouched. `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat),
+0 bookmarks, 0 reviews. Spot-checked the CLAUDE.md Polar-traffic gate (not from memory): `/pricing`
+320 / `/tools` 468 raw pageviews over 7 days (~45-67/day, well under the required sustained
+>100/day), and raw pageviews aren't even the verified metric per the cycle-32/1652 bot correction
+(out-click breakdown this cycle: 267 declared_bot / 289 ua_ok_no_css / 24 sweeper / 0 verified) --
+still no Polar email. `bin/apify-spend` $5.9155 of $85 (79.8% elapsed, projection $7.41),
+unchanged (0 builds/runs this cycle -- pure investigation). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Work -- the routine-rotation half of `input_error_advice` that c2625 explicitly separated from
+the c2624/c2625 structural sweep: re-verified the c837 fix on the 3 Actors the sweep never
+touched, by live-probing whether the openFDA-only refinement (a permanent query-syntax error
+reported as a 5xx, which a status-code-only `INPUT_ERROR_STATUS` retries 4x instead of failing
+fast) generalizes to their own upstreams, rather than re-reading old notes.**
+
+`clinicaltrials-scraper` (clinicaltrials.gov/api/v2/studies): 3 malformed `filter.advanced`
+payloads (unbalanced paren, unknown `AREA` field name, garbage Lucene tokens) all returned a clean
+**HTTP 400** with a specific parser error message -- never a 5xx. `federal-register-scraper`
+(federalregister.gov/api/v1/documents.json): an unterminated quote and a garbage boolean string
+(`foo AND AND OR`) in `conditions[term]` both returned **HTTP 200** with a best-effort full-text
+match (21 and 86 results) -- this upstream degrades gracefully on bad search syntax instead of
+erroring. **Neither reproduces the openFDA quirk, so the existing c837 fix is already sufficient
+on both -- confirmed live, no code change needed.** `court-records-scraper`
+(courtlistener.com/api/rest/v4/search/) could NOT be tested: it requires `authorization: Token
+<CL_API_TOKEN>` and no such token exists in `secrets/env` (confirmed by grep), so every probe
+401'd regardless of query content -- the same already-tracked gap as owner thread `2b237f1b`
+(court-records-scraper needs a human for CourtListener auth/hCaptcha), not a new finding.
+
+**State updated for exactly 3 Actors, verified as a clean 5-key diff against a pre-edit backup
+before writing (same `ensure_ascii=True` discipline c2625's LEARNINGS note flagged).**
+`clinicaltrials-scraper` and `federal-register-scraper` both got `input_error_advice: 2626` + a
+full verification note (previously bare `837` with no note text). `court-records-scraper` got
+only an explanatory note -- its date is deliberately LEFT at 837 since it was never actually
+verified. `audit-due --all` re-run after the edit now correctly reports only
+`court-records-scraper` as outstanding on this axis.
+
+$0 spent (0 builds, 0 runs), $0 revenue change, no owner email (no revenue event; the
+CourtListener token gap is already the subject of a tracked, resolved-pending-owner thread).
+
+**Next cycle:** `input_error_advice`'s only remaining gap is `court-records-scraper`, genuinely
+blocked on the missing `CL_API_TOKEN` -- do not re-attempt this probe until a token exists; if the
+owner ever supplies one, that is the moment to both unblock court-records-scraper's own degraded
+runs AND finish this verification. Remaining informational one-off axes unchanged:
+`pagination_audit` (fec-campaign-finance-scraper, last run 857) and `title_trade_audit`
+(eu-ted-tenders-scraper, last run 902, needs a real new candidate phrase or an eviction-math
+re-confirmation per c2623's note). Nothing fleet-wide DUE until `check-row-floor` at cycle 2628 (2
+cycles out).
+
+---
+
 Updated: 2026-11-02 ~17:40 UTC by cycle 2625 (claude-sonnet-5). QUALITY/GROWTH slot (2625 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off/experimental axes DUE:
 `input_error_advice` clinicaltrials/court-records/federal-register-scraper, `pagination_audit`
