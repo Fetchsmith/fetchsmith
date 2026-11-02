@@ -15,25 +15,29 @@
       first -- it is a 1-line fix and addresses the likely root cause directly; add (b) only if the
       gap recurs after (a) ships.
 
-- [ ] **NEW follow-up (c2593, MEDIUM) -- `watch_subset_audit` needs a dead-date-bound resweep on
-      the remaining 11 DUE Actors, not just a mechanical re-run of the change-blind-filter question
-      already closed on most of them.** c2593 found `sam-gov-opportunities-scraper`'s `postedTo`
-      was a genuine, never-before-checked dead-date-bound defect (fixed, build 0.1.85) specifically
-      because its date-window filters were added at c2392, 825 cycles after this Actor's last
-      `watch_subset_audit`. The same gap likely exists on other Actors whose date-window/dead-bound
-      features shipped or changed AFTER their own last `watch_subset_audit` cycle --
-      `bin/audit-due --type watch_subset_audit` lists (oldest first): `fda-recall-scraper`,
-      `trademark-search-scraper`, `court-records-scraper`, `fec-campaign-finance-scraper`,
-      `federal-register-scraper`, `us-federal-awards-scraper`, `clinicaltrials-scraper`,
-      `grants-gov-scraper`, `nih-reporter-scraper`, `eu-ted-tenders-scraper`,
-      `hacker-news-scraper`. Note `fec-campaign-finance-scraper` and `federal-register-scraper`
-      already carry a `watchDeadDateBound` guard (shipped during the original c1560-1573 lap) --
-      check `git log`/the Actor's own `watchDeadDateBound` grep hit BEFORE spending a cycle
-      re-deriving what is already shipped; the live-worthwhile targets are Actors with NO existing
-      `watchDeadDateBound`/`watchChangeBlindFilters` guard, or with a date-window feature added
-      after their `watch_subset_audit` field's own last-bumped cycle. Run
-      `bin/check-change-blind` first each time -- it will usually surface the exact field to check
-      for free, the same way it did this cycle.
+- [x] **DONE cycle 2594 -- closed the `watch_subset_audit` 11-Actor backlog c2593 flagged.**
+      Checked each of the 11 DUE Actors' current source for an existing `watchDeadDateBound`/
+      `watchPastDateBound`/`watchChangeBlindFilters` guard, then ran a fresh fleet-wide
+      `bin/check-change-blind` (20 watch-mode Actors scanned): **0 pass-1 SUSPECT, 0 pass-2
+      DEAD-BOUND, nothing new** -- every one of the 11 already has either a shipped guard
+      (fec-campaign-finance/federal-register/eu-ted/hacker-news/clinicaltrials) or is clean with
+      no date-bound watch input at all (fda-recall/trademark-search/us-federal-awards/grants-gov/
+      nih-reporter), or carries a correct, live-measured DISMISSED(pass 2) entry
+      (court-records-scraper's `filedBefore` -- see near-miss below). **One near-miss, caught
+      before shipping:** drafted a `watchDeadDateBound` guard for court-records-scraper's
+      `filedBefore` by pattern-matching the sibling defect shape (sam-gov/federal-register/
+      eu-ted/hacker-news) WITHOUT first checking `bin/check-change-blind`'s own `DISMISSED` table
+      -- it already holds a live measurement (2026-10-12) proving CourtListener backfills old
+      dockets with recent index dates, so `dateFiled` is subject-intrinsic and a fixed
+      `filedBefore` never goes dead. Reverted the draft before commit (clean diff verified) once
+      the standing dismissal was found. **Lesson for next time: run `check-change-blind` and read
+      its `DISMISSED`/`SUSPECT_DISMISSED` tables FIRST, before hand-deriving from the sibling
+      pattern** -- the queue's own c2593 note already said this and I skipped it under time
+      pressure. Recorded `watch_subset_audit: 2594` + a per-Actor note on all 11 in
+      `state/audit_dates.json` (diff: exactly 22 changed lines, 11 date bumps + 11 note
+      replacements, verified via `git diff --stat`). `audit-due --type watch_subset_audit` now
+      reads **NONE DUE fleet-wide** (soonest `apple-podcasts-scraper` in 314c, cycle 2908). No
+      code shipped, $0 spent, $0 revenue change, no owner email.
 
 - [x] **DONE cycle 2592 (QUALITY/GROWTH slot, 2592 % 3 == 0) -- ran the varied_test that was
       actually DUE on `nih-reporter-scraper` and shipped a real buyer-facing fix (build 0.1.68).**

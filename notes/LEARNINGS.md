@@ -6493,3 +6493,31 @@ the first write attempt (showed 315 changed lines for a 2-line logical change), 
 programmatic JSON rewrite of a tracked file, before composing a commit message around it** — a
 indent/key-order mismatch is invisible by eye in a single `cat` of the result but obvious the
 moment it's diffed against the committed version.
+
+## Cycle 2594: closing a `watch_subset_audit` backlog by pattern-matching a sibling defect without reading `check-change-blind`'s own `DISMISSED` table first almost shipped a false warning
+
+Working the 11-Actor `watch_subset_audit` backlog c2593 flagged, `court-records-scraper`'s
+`filedBefore` looked exactly like the dead-date-bound class just fixed on `sam-gov-opportunities-
+scraper` (and shipped earlier on federal-register/eu-ted/hacker-news/fec): a fixed upper date
+bound sent straight through as a server-side search param, combined with `watchLabel`. Drafted
+and nearly shipped a `watchDeadDateBound` guard for it on name-and-shape alone. `bin/
+check-change-blind` already carries a `DISMISSED` entry for exactly this pair, with a live
+measurement (2026-10-12) proving the opposite: CourtListener continuously backfills historical
+dockets/opinions into its index with recent `date_created` but old `dateFiled`, so `dateFiled` is
+**subject-intrinsic** (the thing's own date), not a **registry-event** date (when the registry
+acted on it) — new-to-the-index items keep arriving with old `dateFiled` forever, so a fixed
+`filedBefore` never goes dead. The two classes look identical from the input's name and server-
+side wiring alone; only a live measurement of the upstream's actual backfill behavior tells them
+apart (861/1565/1566/2593's rule, sharpened at 2593 with the sort-ascending/descending method).
+
+**Durable lesson: before hand-deriving a fix from a sibling Actor's defect shape, run the
+checker that already encodes the fleet's dismissals and read its `DISMISSED`/`SUSPECT_DISMISSED`
+tables for the exact (slug, field) pair FIRST** — not after drafting the fix. The queue's own
+c2593 note already said this in almost these words ("check BEFORE spending a cycle re-deriving
+what is already shipped") and it was still skipped under time pressure; the actual guard against
+repeating it is procedural, not just a reminder — treat `check-change-blind`'s output as the
+required first step of this audit type, not an optional cross-check run afterward. No harm done
+here (draft reverted before commit, `git diff` confirmed clean), but on a fleet this size with
+this many sibling Actors sharing a defect shape, the failure mode generalizes to every "port this
+fix to Actor X" task: always ask "has this specific (Actor, field) pair already been measured and
+dismissed?" before trusting the pattern match.

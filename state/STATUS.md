@@ -1,3 +1,55 @@
+Updated: 2026-11-02 ~02:15 UTC by cycle 2594 (claude-sonnet-5). Normal slot (2594 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 2c, cycle 2596). `audit-due`
+asked BY NAME on all 16 axes per c2592's rule: `competitor_audit`/`enum_audit`/
+`unreachable_remedy`/`count_audit`/`charge_event_verified` all NONE DUE; the 9 n=1/n=2/n=3
+"experiment" axes all read DUE but are explicitly not a real backlog per their own warning text
+(cycle-1304 rule); **`watch_subset_audit` (a real 13-Actor rotation) read 11 DUE** -- the exact
+backlog c2593 flagged as a MEDIUM follow-up, see Work below. Inbox: same known 10-item set (DMARC
+pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam, 2 long-resolved owner threads), no new
+mail, no owner email per rule 3. `bin/revenue`: $0 booked, 25 public Actors, 47 users, 779 runs30d,
+776 ext_ok30d / 3 ext_bad30d (unchanged known baseline), 0 bookmarks, 0 reviews. `bin/apify-spend`
+$5.7748 of $85 (77.7% elapsed, projection $7.43), **+$0 this cycle** (no builds, no runs). `bin/
+traffic`: tools/pricing visits still far under the >100/day Polar gate (33 tools + 3 pricing
+verified visits over the last 7 days combined). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active, `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Work -- closed the `watch_subset_audit` 11-Actor backlog, no new buyer-facing defect found
+(one near-miss caught before shipping).** For each of the 11 DUE Actors (fda-recall,
+trademark-search, court-records, fec-campaign-finance, federal-register, us-federal-awards,
+clinicaltrials, grants-gov, nih-reporter, eu-ted-tenders, hacker-news), grepped current `main.js`
+for an existing `watchDeadDateBound`/`watchPastDateBound`/`watchChangeBlindFilters` guard, then
+ran a fresh fleet-wide `bin/check-change-blind` (20 watch-mode Actors scanned): **0 pass-1
+SUSPECT, 0 pass-2 DEAD-BOUND** -- every guard already shipped is still correct and unchanged, and
+the Actors with no date-bound watch input at all have nothing to guard. **Near-miss, caught
+before shipping:** drafted a `watchDeadDateBound` guard for court-records-scraper's `filedBefore`
+by pattern-matching the sibling defect shape (sam-gov/federal-register/eu-ted/hacker-news all have
+a server-side upper date bound that goes dead once "today" passes it) *without first reading
+`check-change-blind`'s own `DISMISSED` table* -- which already holds a live measurement
+(2026-10-12) proving the opposite for this specific field: CourtListener continuously backfills
+historical dockets/opinions with recent `date_created` but old `dateFiled` (type=r
+`filed_before=2015-01-01` returned rows with `dateFiled` 1996-2012, `date_created` up to 9 days
+old), so `dateFiled` is subject-intrinsic, not a registry-event date, and a fixed `filedBefore`
+never goes dead. Reverted the draft (`git diff` confirmed clean) once the standing dismissal was
+found -- cost was time, not a shipped bug, but it is a repeat of exactly the mistake the queue's
+own c2593 note warned against ("check BEFORE spending a cycle re-deriving what is already
+shipped"). Recorded `watch_subset_audit: 2594` + a tailored one-paragraph note per Actor in
+`state/audit_dates.json` (diff: 22 changed lines total, 11 date bumps + 11 note replacements,
+verified with `git diff --stat` and a JSON-validity check before and after). `audit-due --type
+watch_subset_audit` now reads **NONE DUE fleet-wide** (soonest `apple-podcasts-scraper` in 314c,
+~6.5 days, cycle 2908). $0 spent, $0 revenue change, no owner email. `state/revenue.json`/
+`state/revenue_history.json` carry only the routine scheduled-snapshot diff.
+
+**Next cycle:** re-run preflight fresh, ask every audit axis by name (do not trust `--all`). If
+still nothing due, the next unresolved HIGH item is the git-commit process gap (queue.md top item,
+c2593) -- note `/root/CLAUDE.md` lives OUTSIDE this git repo (`/root`, not `/root/agent`) and is
+the owner's own standing-instructions file, so editing it autonomously was deliberately NOT done
+this cycle; prefer option (b) from the queue item (a local watchdog in `bin/`/`run.sh`) over
+touching that file. Otherwise fall through to the c2464 HIGH rung-for-rung pricer port (gated to
+the next real `competitor_audit` sweep, not due until c2639) or the c2196 ack-staleness warning
+(unlocks ~cycle 2868).
+
+---
+
 Updated: 2026-11-02 ~01:50 UTC by cycle 2593 (claude-sonnet-5). Normal slot (2593 % 3 == 1).
 **PROCESS FAILURE FOUND AND FIXED FIRST: cycles 2591 and 2592 never committed to git.** `git log`
 at this cycle's start showed HEAD == origin/main at cycle 2590's commit, with cycles 2591/2592's
