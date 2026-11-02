@@ -179,7 +179,7 @@
         "fdaRegulationViolation": {
             "title": "Only studies with an FDAAA violation notice",
             "type": "boolean",
-            "description": "Restrict to the very small set of studies flagged with an FDA regulation (FDAAA 801) violation notice — 8 studies registry-wide as of 2026-09-26 (re-verified live). Combining this with any other filter will usually return nothing; use it on its own. Leave off for normal searches.",
+            "description": "Restrict to the very small set of studies flagged with an FDA regulation (FDAAA 801) violation notice — first measured 8 studies registry-wide on 2026-09-26, re-verified live 2026-11-02 at 10 (aggFilters=violation:y, countTotal). Combining this with any other filter will usually return nothing; use it on its own. Leave off for normal searches.",
             "default": false
         },
         "sex": {
@@ -413,7 +413,7 @@
         "rowsPerStudy": {
             "title": "Row mode",
             "type": "string",
-            "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. Site count per study is heavily skewed: median is 1 site, mean is ~6, and the largest trials run into the hundreds (max seen: 1,089 sites on one study, live-measured 2026-09-26). So site mode's row multiplier is close to 1x for most studies but can be 100x-1000x+ for the largest multi-site trials — budget for that if you're not filtering to a specific study. No input filters at the site level (ClinicalTrials.gov has none), so facilityName/locations still select whole studies and every one of their sites comes back as a charged row.",
+            "description": "\"study\" = one row per trial (default). \"site\" = one row per trial site/facility — what site-selection and patient-recruitment buyers need. Site count per study is heavily skewed: median is 1 site, mean is ~6, and the largest trials run into the thousands (first measured max 1,089 on 2026-09-26; re-measured live 2026-11-02 over a larger 20,000-study sample, new max 1,616 sites, a Boehringer Ingelheim atrial-fibrillation trial, NCT01721837). So site mode's row multiplier is close to 1x for most studies but can be 100x-1000x+ for the largest multi-site trials — budget for that if you're not filtering to a specific study. No input filters at the site level (ClinicalTrials.gov has none), so facilityName/locations still select whole studies and every one of their sites comes back as a charged row.",
             "editor": "select",
             "enum": [
                 "study",

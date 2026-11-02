@@ -1,3 +1,44 @@
+Updated: 2026-11-02 ~10:40 UTC by cycle 2611 (claude-sonnet-5). Normal slot (2611 % 3 == 1).
+Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
+per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
+in 5c, cycle 2616). Inbox: same known 10-item set, no new mail; confirmed the two owner threads
+(`2b237f1b` CourtListener token -- already wired in at c2362, long resolved; `01852eaa` Apify
+`/v2/store` Nov-15 ranking change -- already investigated/code-patched at c2478/c2496, tracked, not
+urgent until after 2026-11-15) are not new asks, no owner email needed per rule 3. `bin/revenue`
+unchanged: $0 booked, 25 public Actors, 47 users, 764 runs30d, 761 ext_ok30d / 3 ext_bad30d, 0
+bookmarks, 0 reviews. `bin/apify-spend` $5.8481 of $85 (78.8% elapsed, projection $7.42). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` all 200 before
+and after.
+
+**Work -- nothing was DUE fleet-wide, so this normal slot continued the c2608 `check-schema-claims`
+remediation: 1 Actor / 2 claims re-measured live and republished, plus a matching README fix.**
+`clinicaltrials-scraper`: `fdaRegulationViolation` (STALE at "8 studies registry-wide as of
+2026-09-26") -- live-queried `clinicaltrials.gov/api/v2/studies?aggFilters=violation:y&countTotal=
+true`, found the true count had moved **8 -> 10** (a real defect, not just a stale date) --
+rewrote with non-anchor history verb ("first measured 8 ... on 2026-09-26, re-verified live
+2026-11-02 at 10"). `rowsPerStudy` (STALE at "max seen: 1,089 sites on one study, live-measured
+2026-09-26") -- this was always a SAMPLE statistic (the schema's own text says "median 1... mean
+~6" over a sample, not an exhaustive registry scan of 609,551 studies), so a fresh 5,000-study pull
+reproduced median/mean almost exactly (1 / 6.06) but a smaller max (782, expected sample noise);
+widened to 20,000 studies for a more defensible re-measurement -- new max **1,616 sites**, sanity-
+checked by fetching that one study directly (`NCT01721837`, a real Boehringer Ingelheim atrial-
+fibrillation trial with 1,616 distinct `facility` entries, not a data artifact). Also fixed the
+README's duplicate copy of the old 1,089 figure (line 13) -- the c2260 lesson is that a fix landing
+in only one copy of a claim is a half-fix with a long half-life. Build 0.1.97 (package.json
+0.1.36 -> 0.1.37), verified both descriptions on the live build record byte-for-byte identical to
+local source.
+
+`check-schema-claims` re-run clean. `check-charges` 25/0/0, `check-registry-fields` /
+`check-code-fields` both 0 drift. Site/services 200/active before and after. ~$0.005 spent (1
+build), $0 revenue change, no owner email. **Next cycle:** re-run preflight fresh; the remaining
+schema-claims STALE list is down to ~7-8 (`eu-ted-tenders-scraper` cpvCodes + keywords is the best
+next pick, 2 stale claims on one Actor); 2 AGING remain (`federal-register-scraper`
+presidentialDocumentTypes, `us-federal-awards-scraper` defCodes); 27 UNDATED claims still need a
+date added opportunistically, never as a standalone push. See the updated queue.md item for the
+full list and order.
+
+---
+
 Updated: 2026-11-02 ~10:05 UTC by cycle 2610 (claude-sonnet-5). QUALITY/GROWTH slot (2610 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
 per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`

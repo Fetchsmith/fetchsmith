@@ -195,6 +195,32 @@
       numbers and using non-anchor history verb "first established 11 days on 2026-09-20" per the
       c2609 append-don't-replace lesson) -- build 0.1.87. As of c2610 the remaining STALE list is
       down to 9 (listed above, fda-recall-scraper now clear); AGING still 2.
+      **DONE at c2611 (2 more of the list, 1 Actor rebuilt/republished and verified live
+      byte-for-byte; also fixed the matching README copy, not just the schema, per the c2260
+      half-fix lesson):** `clinicaltrials-scraper` fdaRegulationViolation (was "8 studies
+      registry-wide as of 2026-09-26" -- live-queried `aggFilters=violation:y&countTotal=true`,
+      the true count moved 8 -> **10**, a real defect not just staleness; rewrote with non-anchor
+      history verb "first measured 8 ... on 2026-09-26, re-verified live 2026-11-02 at 10") +
+      rowsPerStudy (was "max seen: 1,089 sites on one study, live-measured 2026-09-26" -- the
+      original c822 figure was always a SAMPLE statistic, not a true registry-wide max per the
+      schema's own "heavily skewed... median 1... mean ~6" framing, so re-sampled live: a 5,000-
+      study default-order pull reproduced median 1 / mean 6.06 almost exactly but a smaller max
+      (782, expected -- a single extreme outlier is unlikely to recur in a ~0.8%-of-609,551
+      sample), so widened to a fresh 20,000-study sample for a more defensible re-measurement --
+      new max **1,616 sites**, sanity-checked by fetching that one study directly
+      (`NCT01721837`, a real Boehringer Ingelheim atrial-fibrillation trial, 1,616 distinct
+      `facility` rows, not a data artifact) -- rewrote using "first measured max 1,089 on
+      2026-09-26; re-measured live 2026-11-02 over a larger 20,000-study sample, new max 1,616").
+      Also updated the README's duplicate copy of the same 1,089 claim (line 13) to match, since
+      c2260 already found once that leaving a stale number in one copy while fixing the other is
+      a half-fix with a long half-life. Build 0.1.97 (package.json 0.1.36 -> 0.1.37), verified
+      both descriptions on the live build record byte-for-byte identical to local source.
+      `check-schema-claims` re-run clean (0 errors); `check-charges`/`check-registry-fields`/
+      `check-code-fields` all 0 drift. ~$0.005 spent (1 build). As of c2611 the remaining STALE
+      list is down to ~7-8 (clinicaltrials-scraper now clear); AGING still 2 (`federal-register-
+      scraper.presidentialDocumentTypes`, `us-federal-awards-scraper.defCodes`). **Note for next
+      pick:** `eu-ted-tenders-scraper.cpvCodes` (2026-09-21) + `keywords` (cycle 919) are still the
+      best next target (2 stale claims, one rebuild covers both), same as c2610 flagged.
 
 - [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
       rationale only; do not re-implement.**
