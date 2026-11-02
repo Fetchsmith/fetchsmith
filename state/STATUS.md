@@ -1,3 +1,55 @@
+Updated: 2026-11-02 ~20:35 UTC by cycle 2631 (claude-sonnet-5). QUALITY/GROWTH slot (2631 % 3 == 0).
+Preflight: `checks-due --all` had **1 DUE: `check-comparison-breadth`** (soonest of 44 tracked
+checks). `audit-due --all` NONE DUE for FLEET ROTATIONS, 0 one-off axes DUE (the only open one,
+`title_trade_audit` eu-ted-tenders-scraper, was addressed this cycle, see Work below). Inbox
+`list 10`: identical to the known triaged set from c2630 (owner threads `2b237f1b`/`01852eaa`
+stay resolved/tracked; rest is the same marketing/spam/DMARC incl. `5ce80b92` re-confirmed
+non-actionable), no new mail, no reply or owner email needed. `bin/revenue` $0 booked, 25
+Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews.
+`bin/apify-spend` $5.9222 of $85 (80.2% elapsed, projection $7.39). `check-doc-size` OK on all 3
+docs (STATUS.md 40.0KB/514 lines, queue.md 68.8KB/725 lines, LEARNINGS.md 7054 lines) -- no trim
+needed. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+`/tools` all 200 before and after.
+
+**Work 1 -- ran the due `check-comparison-breadth` fleet check: CLEAN.** 24 live Actors checked,
+0 narrow (<3 rivals by full `owner/slug`), 0 missing README. Recorded via `bin/checks-due --ran`;
+next due cycle 2967.
+
+**Work 2 -- the candidate-phrase search c2630 left open on `title_trade_audit`
+(eu-ted-tenders-scraper), with real new data, not a bare re-verify.** c902 declined to evict
+"European Tenders" from the title (would drop a p2 title-bucket win to ~p8-16 in the readme
+fallback) and left the door open for either a live re-confirmation (done at c2630) or a genuinely
+new candidate phrase that doesn't cost that eviction. Current title is 60/63 chars (only 3 free --
+too few to add any phrase without an eviction regardless of value), so this cycle's question was
+narrowly "is there a phrase valuable enough to justify the trade". Live `store-rank --why`'d 6
+fresh phrases never priced before on this Actor: `procurement monitoring` (no attr=0/title bucket
+in top 60, best reachable is attr=2/description at p1-p6), `tender search` (attr=0 bucket has 35
+records, we're outside it), `contract notices api` (no attr=0 bucket at all in top 60), `eu
+grants and tenders` (attr=0 bucket only 2 records but prox=10-12 -- a weak match, best real slot
+is a 1-record attr=2 bucket at p4), `government contracts` (attr=0 bucket a full 60 records, we're
+outside it entirely), `procurement intelligence` (attr=0 bucket 11 records, we're outside it).
+None has the cheap/reachable sub-10-record title-attr slot that made `tender data`/`tender data
+api`/`cpv codes` real wins back at cycle 906/869 -- every bucket tried this cycle is either too
+crowded (35-60 records, landing mid-pack on storePosition rather than top-5) or would only land
+via the attr=6 readme path, which cycle 1468 already proved rots on Algolia's LLM paraphrase and
+should not be scored as a durable win. **Conclusion: no candidate phrase found this cycle that
+would justify evicting "European Tenders" (still a real, live p2 on 180 hits)** -- the question is
+closed on the data actually searched, not by assumption. `state/audit_dates.json` on
+`eu-ted-tenders-scraper`: `title_trade_audit` 2630->2631, note appended (prior note, including
+c902's and c2630's, preserved verbatim) -- verified via a flattened key-diff against a pre-edit
+backup, exactly 2 keys changed (`title_trade_audit`, `title_trade_note`). `audit-due --all` now
+shows **NO one-off axes DUE at all**.
+$0 spent (read-only Algolia queries + curls only), $0 revenue change, no owner email.
+
+**Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-cta-presence` at
+cycle 2632 (1 cycle out). No one-off audit axis currently DUE -- if a genuinely new angle on
+`title_trade_audit` surfaces later (a new multi-hundred-hit query with a verified sub-10-record
+title bucket), it's worth another look, but don't re-spend a cycle re-deriving this one's search
+without new information. **Flag: `check-doc-size` now projects queue.md at 199KB at its next
+look (1KB under the 200KB trim line)** -- this cycle's own additions pushed it from 196KB's prior
+projection; the next time `check-doc-size` runs, it will very likely say TRIM SOON or flip
+outright, so budget a cycle for it soon (archive DONE blocks per the existing pattern).
+
 Updated: 2026-11-02 ~20:05 UTC by cycle 2630 (claude-sonnet-5). Normal slot (2630 % 3 == 2).
 Preflight: `checks-due --all` had **1 DUE: `check-source-endpoints`** (24 cycles overdue,
 soonest of 43 tracked checks). `audit-due --all` NONE DUE for FLEET ROTATIONS; 1 informational

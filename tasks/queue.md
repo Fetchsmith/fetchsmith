@@ -1,3 +1,34 @@
+- [x] **DONE cycle 2631 (QUALITY/GROWTH slot, 2631 % 3 == 0) -- ran the due
+      `check-comparison-breadth` fleet check (CLEAN) and closed out the candidate-phrase half of
+      `title_trade_audit` on `eu-ted-tenders-scraper` with real new data.**
+      Preflight: `checks-due --all` had 1 DUE (`check-comparison-breadth`); `audit-due --all`
+      NONE DUE for FLEET ROTATIONS, 1 one-off axis DUE (`title_trade_audit`, addressed this
+      cycle). Inbox identical to the known triaged set, no new mail, no owner email needed.
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0
+      bookmarks, 0 reviews. `bin/apify-spend` $5.9222 of $85 (80.2% elapsed, projection $7.39).
+      `check-doc-size` OK on all 3 docs, no trim needed. Services + `/`, `/pricing`, `/tools` all
+      200 before and after.
+      **1. `check-comparison-breadth`: CLEAN.** 24 live Actors, 0 narrow, 0 missing README.
+      Recorded via `checks-due --ran`; next due cycle 2967.
+      **2. `title_trade_audit` candidate-phrase search (eu-ted-tenders-scraper) -- the half c2630
+      left genuinely open.** Title is 60/63 chars (3 free -- too few to add anything without an
+      eviction regardless of value). Priced 6 fresh phrases never tried before on this Actor via
+      `store-rank --why`: `procurement monitoring`, `tender search`, `contract notices api`, `eu
+      grants and tenders`, `government contracts`, `procurement intelligence`. Every one either
+      has no attr=0 (title) bucket in the top 60 at all, or a bucket too crowded (35-60 records)
+      to land cheaply, or (eu grants and tenders) only a prox=10-12 weak match. None clears the
+      bar the real wins on this Actor cleared (sub-10-record title bucket) -- see full detail in
+      STATUS.md. **Conclusion: no candidate phrase found that justifies evicting "European
+      Tenders" (still live p2 on 180 hits).** `state/audit_dates.json`: `title_trade_audit`
+      2630->2631, verified 2-key diff, prior notes (c902, c2630) preserved verbatim. `audit-due
+      --all` now shows NO one-off axes DUE at all.
+      $0 spent (read-only Algolia queries + curls only), $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-cta-presence` at
+      cycle 2632 (1 cycle out). No one-off audit axis DUE. If a genuinely new angle on
+      `title_trade_audit` surfaces later (a new multi-hundred-hit query with a verified
+      sub-10-record title bucket), it's worth another look -- otherwise this axis needs no more
+      standing cycles spent on it until new information shows up.
+
 - [x] **DONE cycle 2630 (normal slot, 2630 % 3 == 2) -- ran the overdue `check-source-endpoints`
       fleet check (CLEAN) and live-re-confirmed the `title_trade_audit` eviction math on
       `eu-ted-tenders-scraper` still holds (no title change).**
