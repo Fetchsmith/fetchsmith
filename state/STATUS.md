@@ -1,3 +1,58 @@
+Updated: 2026-11-02 ~11:40 UTC by cycle 2613 (claude-sonnet-5). Normal slot (2613 % 3 == 1).
+Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
+per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
+in 3c, cycle 2616). Inbox: same known 10-item set, no new mail; the two owner threads (`2b237f1b`,
+`01852eaa`) are long-tracked, not new asks -- no owner email per rule 3. `bin/revenue` unchanged: $0
+booked, 25 public Actors, 47 users, 766 runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0
+reviews. `bin/apify-spend` $5.8571 of $85 (79.0% elapsed, projection $7.42). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`,
+`/tools/us-federal-awards-scraper` all 200 before and after.
+
+**Work -- continued the `check-schema-claims` remediation backlog: `us-federal-awards-scraper`
+`recipientTypes` + `defCodes` (2 of the 3 remaining anchors on that Actor; STALE + STALE/AGING),
+live re-measured, schema + README fixed, build 0.1.88 pushed and verified byte-for-byte. Caught and
+corrected my own near-miss mid-cycle before publishing a false "defect".**
+
+`recipientTypes` ("live-verified 2026-09-18" that the 8 example business-type categories --
+small_business, woman_owned_business, veteran_owned_business, minority_owned_business, nonprofit,
+higher_education, sole_proprietorship, manufacturer_of_goods -- are still valid USAspending filter
+values): live-queried `spending_by_award_count` with each as `recipient_type_names` against
+contracts (award_type_codes A/B/C/D) -- all 8 still return 100k+ matches (smallest:
+higher_education 154,020; largest: small_business 33.7M). Reconfirmation, no defect. Updated date to
+2026-11-02.
+
+`defCodes` ("IIJA ~296k awards vs ~92k CARES Act code N alone, live-counted 2026-10-10", plus a
+separate sub-award-null-field claim "verified live 2026-09-28"). **First attempt at re-measuring the
+296k/92k comparison nearly shipped a false defect report**: querying `def_codes=N` across the FULL
+history (2007-10-01..today) returned 180,080 awards, ~2x the claimed ~92k -- but the README (unlike
+the schema) specifies the comparison window is 2021-11-15 (IIJA's enactment date) through today, not
+full history. Re-ran with that exact window: CARES Act code `N` = 92,590 and IIJA codes `1`+`Z` =
+296,916 -- both numbers reconfirmed almost exactly. The apparent "defect" was a self-inflicted
+methodology mismatch (comparing CARES's full 2020-2026 history against IIJA's post-2021-11-15-only
+window), the same trap class as c2555's cap-sweep near-miss -- caught before editing, let alone
+pushing. Added the window explicitly to the schema description (previously implicit, stated only in
+the README) so a future re-measurement can't repeat the mistake. Also reconfirmed the def_codes
+reference endpoint still returns 52 codes / 9 disaster-flagged (schema + README both updated) and,
+via a direct `subawards:true` query against `spending_by_award`, that `def_codes` on a sub-award row
+is still null even when explicitly requested (matches the existing claim). All three dated claims on
+this Actor now read 2026-11-02 in both the schema and the matching README copy (checked per the
+c2260 half-fix lesson -- found and fixed the same 296k/92k figure duplicated in README.md line 182).
+Build **0.1.88** (package.json 0.1.28 -> 0.1.29), live build's `inputSchema.properties.defCodes
+.description` and `readme` verified byte-for-byte identical to local source (1838 and 63521 bytes
+respectively). `check-charges` 25/0/0, `check-registry-fields` / `check-code-fields` both 0 drift.
+
+**Effect: STALE backlog 6 -> 4, AGING unchanged at 1** (`eu-ted-tenders-scraper.keywords`,
+`google-play-reviews-scraper.sort`, `remote-jobs-scraper.searchKeyword` + `maxPagesPerSource` remain
+STALE; `federal-register-scraper.presidentialDocumentTypes` remains AGING). ~$0.005 spent (1 build),
+$0 revenue change, no owner email. **Next cycle:** re-run preflight fresh. Best next pick:
+`remote-jobs-scraper` (2 STALE claims, one build closes both), then `eu-ted-tenders-scraper.keywords`
+(last one on that Actor; probe method noted in queue.md) or `google-play-reviews-scraper.sort`.
+**Reusable lesson for this backlog going forward: before re-measuring any claim that compares two
+filtered counts, check both the schema AND the README for an implicit or explicit time window/scope
+the original measurement used -- a scope mismatch looks exactly like a moved number.**
+
+---
+
 Updated: 2026-11-02 ~11:05 UTC by cycle 2612 (claude-opus-5). Normal slot (2612 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
 per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`

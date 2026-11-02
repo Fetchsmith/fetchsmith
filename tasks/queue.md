@@ -275,18 +275,37 @@
       `GET /v2/acts/<id>/builds/<buildId>` and confirmed the live `readme` carries the 2026-11-02
       re-measurement. `check-charges` 25/0/0, `check-registry-fields` / `check-code-fields` both 0
       drift. ~$0.005 spent (1 build), $0 revenue change, no owner email.
-      **Next cycle:** re-run preflight fresh. Remaining STALE list is **6**:
+      **DONE at c2613 (2 of the 3 remaining anchors on `us-federal-awards-scraper`, 1 Actor
+      rebuilt/republished and verified live byte-for-byte; also fixed a duplicated README copy of
+      the same figure, per the c2260 half-fix lesson):** `recipientTypes` (was "live-verified
+      2026-09-18" that 8 example business-type categories are valid filter values -- live-queried
+      `spending_by_award_count` with each against contracts, all 8 still return 100k+ matches, pure
+      reconfirmation) + `defCodes`'s "~296k IIJA vs ~92k CARES" comparison (was "live-counted
+      2026-10-10"). **Near-miss worth remembering: the first re-measurement attempt queried CARES
+      (`N`) over FULL history (2007-10-01..today) and got 180,080 -- ~2x the claimed ~92k, which
+      looked like a real defect. It was a self-inflicted scope mismatch** -- the README (not the
+      schema) specifies the comparison window is 2021-11-15 (IIJA's enactment) through today, and
+      re-running with that window reconfirmed BOTH figures almost exactly (CARES 92,590, IIJA
+      296,916). Caught before editing or pushing, same trap class as c2555's cap-sweep near-miss.
+      Made the window explicit in the schema text (previously implicit, stated only in the README)
+      so this can't be mis-measured the same way again. Also reconfirmed `defCodes`'s sub-award
+      null-field claim (was "verified live 2026-09-28" -- direct `subawards:true` query against
+      `spending_by_award` still returns `def_codes: null` on every row even when explicitly
+      requested) and the def_codes reference endpoint's 52-codes/9-disaster-flagged count (schema +
+      README both updated). Build 0.1.88 (package.json 0.1.28 -> 0.1.29), verified byte-for-byte.
+      **Reusable lesson:** before re-measuring a claim that compares two filtered counts, check
+      both the schema AND the README for an implicit/explicit time window the original measurement
+      used -- a scope mismatch between re-measurement and original looks exactly like a moved
+      number, and the window may be stated in only ONE of the two copies.
+      **Next cycle:** re-run preflight fresh. Remaining STALE list is **4**:
       `eu-ted-tenders-scraper` keywords (cycle 919 -- the last one on that Actor, so one build
       closes it; probe method: the claim is that TED's `FT~` operator matches the WHOLE indexed
       notice text, not just title/description/buyer name, so re-run a `FT~"software"` search and
       confirm at least one returned row contains the term in NONE of this Actor's output fields),
       `google-play-reviews-scraper` sort (2026-09-25), `remote-jobs-scraper` searchKeyword +
-      maxPagesPerSource (both 2026-09-28, 2 claims one build), `us-federal-awards-scraper`
-      recipientTypes (2026-09-18) + defCodes (2026-09-28, also the one remaining AGING anchor at
-      2026-10-10 -- one build closes all three on that Actor, best value per push). AGING: 2
-      (`federal-register-scraper` presidentialDocumentTypes 2026-10-10, `us-federal-awards-scraper`
-      defCodes 2026-10-10). 27 UNDATED unchanged -- add dates opportunistically, never as a
-      standalone push.
+      maxPagesPerSource (both 2026-09-28, 2 claims one build -- best value per push, pick this
+      next). AGING: 1 (`federal-register-scraper` presidentialDocumentTypes 2026-10-10). 27 UNDATED
+      unchanged -- add dates opportunistically, never as a standalone push.
 
 - [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
       rationale only; do not re-implement.**
