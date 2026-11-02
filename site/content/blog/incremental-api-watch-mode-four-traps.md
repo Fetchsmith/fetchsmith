@@ -11,7 +11,7 @@ We shipped this mode (`watchLabel`) across 20 Actors: seven government-data host
 
 ## Trap 0: the API's own "recent" flag is not your "new"
 
-NIH RePORTER has a `newly_added_projects_only` boolean, and it is genuinely useful — but it means "recently added to the index", index-wide. Set it and you get roughly the same ~8,900 projects back on every run until they age out of the flag. That is a perfectly correct answer to a question nobody asked. A weekly alert needs "something new matched **my** query", and no server-side flag can answer that, because the server has no idea what you fetched last Tuesday.
+NIH RePORTER has a `newly_added_projects_only` boolean, and it is genuinely useful — but it means "recently added to the index", index-wide. Set it and you get the same set back on every run until those projects age out of the flag. How big that set is also moves under you: measured on 2026-09-11 it was roughly 8,900 projects, and re-measured on 2026-11-02 it was 109 — every one of the 109 carrying the same `date_added` of 2026-10-31, i.e. a single weekly index load. Either way it is a perfectly correct answer to a question nobody asked, and the volatility is its own trap: a filter whose reach swings by two orders of magnitude between runs cannot be the thing your alert is built on. A weekly alert needs "something new matched **my** query", and no server-side flag can answer that, because the server has no idea what you fetched last Tuesday.
 
 So: you keep a baseline of ids you have already delivered, and you diff against it. Everything below is a consequence of that.
 

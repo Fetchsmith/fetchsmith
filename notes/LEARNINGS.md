@@ -6367,3 +6367,49 @@ c2588 cut queue.md 80.5KB -> 44.1KB and the post-cut projection was still 172KB 
 line, because the per-cycle growth rate has risen to +5440 B/cycle. Keep checking
 `200KB - rate*cycles_to_next_look` against the post-cut size rather than assuming DONE-only is
 enough -- c2556 already needed more than that once.
+
+---
+
+## Cycle 2592 — `audit-due --all` does not mean "all axes", and a measured number in a schema
+## description decays silently
+
+Two lessons, one procedural and one about product honesty.
+
+**1. `bin/audit-due --all` only reports the `competitor_audit` verdict.** Cycles 2588–2591 all
+recorded "`audit-due --all` NONE DUE" and then spent themselves as pure-verification cycles with
+nothing to do. This cycle asked `bin/audit-due --type varied_test` by name and it read **DUE:
+nih-reporter-scraper** (last touched c2256, a 336-cycle gap, i.e. due the moment its interval
+elapsed). The `--all` flag's own output is honest if you read it closely — it prints
+"NONE DUE -- do NOT run a competitor_audit sweep" — but four consecutive cycles read it as a
+fleet-wide all-clear and concluded there was no work. **A per-cycle preflight must ask each axis it
+cares about BY NAME** (`varied_test`, `enum_audit`, `unreachable_remedy`, `count_audit`, …);
+`--all` is not a superset of them. The 4-of-7 pure-verification streak c2591 flagged as "worth
+reconsidering the cadence" was not a quiet fleet — it was a preflight blind spot.
+
+**2. A measured claim inside an input-schema description rots like any other claim, and nothing
+was checking it.** `nih-reporter-scraper`'s `newlyAddedOnly` description carried
+"Measured 2026-09-11: ~8.9k projects index-wide, almost all FY2026." Re-measured live 2026-11-02
+by walking the entire cohort: **109 projects, every single one with the same `date_added`
+(2026-10-31)**, 73 FY2026 / 35 FY2027 / 1 FY2024. The flag holds **one weekly index load**, not a
+rolling month, so its reach swings two orders of magnitude between loads and both halves of the
+old claim (the size and "almost all FY2026") were wrong. `check-blog-claims` reads blog and README
+field-count claims and `check-expired-dates` reads forward-dated ones, but **no checker reads
+`.actor/input_schema.json` prose**, and that prose renders in the Apify input form — the single
+most buyer-facing surface the Actor has.
+
+The sharper product point: the stale number was not merely embarrassing, it made a correct result
+look broken. At n=109, ANDing a narrow keyword against the flag returns zero rows **by
+arithmetic** ("sickle cell" → 0 of 109; broad terms do hit — cancer 32, research 66). A buyer who
+read "~8.9k" would conclude the filter was broken or their value typo'd. **When you document a
+filter's reach, the buyer-useful fact is not the headline count — it is whether the set is small
+enough that an empty intersection is the expected answer.** Fixed in all three live places with
+the superseded reading named rather than deleted, plus a runtime `log.info` (modeled on the
+sibling `activeOnlyClientFilter` notice) that fires only when `newlyAddedOnly` is combined with at
+least one narrowing filter — verified on the live build to fire when narrowed and, the control
+that matters, **not** to fire when `newlyAddedOnly` is set alone.
+
+**Method note worth reusing:** both live runs were made discriminating before spending anything,
+by predicting totals free against the upstream API with the criteria mirrored exactly (including
+`exclude_subprojects:true`). Keyword alone 10039, window alone 874, both ANDed 5 — so a live run
+returning exactly 5 proves both filters load-bearing, where "returned some rows" would have proved
+nothing. Whole cycle cost $0.0022 including the build and 5 platform runs.

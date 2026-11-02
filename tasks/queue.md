@@ -1,3 +1,90 @@
+- [x] **DONE cycle 2592 (QUALITY/GROWTH slot, 2592 % 3 == 0) -- ran the varied_test that was
+      actually DUE on `nih-reporter-scraper` and shipped a real buyer-facing fix (build 0.1.68).**
+      Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` c2596), `audit-due --all` and
+      `--type unreachable_remedy` NONE DUE, all three live docs OK with real headroom, inbox the
+      same known 10-item set (no new mail, no support request, no owner ask). **But `audit-due
+      --type varied_test` read DUE: `nih-reporter-scraper` (last c2256, 336c gap)** -- see the new
+      standing item below, `--all` reports ONLY `competitor_audit`, which is why c2588-c2591 each
+      read it as a fleet-wide all-clear and came back pure-verification.
+      **Test (first-ever coverage of `newlyAddedOnly` and of a BOUNDED `awardNoticeDate` window).**
+      Predicted free first against `api.reporter.nih.gov` with the criteria mirrored exactly: keyword
+      'sickle cell' alone 10039, window 2025-03-03..07 alone 874, both ANDed 5, plus
+      `newly_added_projects_only` 0 -- a discriminating differential, not a smoke test. Live run ->
+      exactly 5 rows, `declaredMatches 5 == reachableMatches 5 ==` prediction, every row verified
+      row-by-row to carry an in-window `awardNoticeDate` AND the keyword, `{result:5}` settled == 5
+      rows. Second live run `{newlyAddedOnly, fiscalYears:[2026]}` -> `declaredMatches 73` == the
+      free prediction exactly, 10 delivered, `complete:false/max-results` honest, all 10 rows
+      `isNew:true` / FY2026 / `dateAdded 2026-10-31` -- so `newlyAddedOnly` ANDs correctly (c969
+      confirmed) and NIH's own `is_new` output flag agrees with it.
+      **DEFECT FOUND AND FIXED -- the schema's measured size claim for `newlyAddedOnly` was stale by
+      ~80x.** It said "Measured 2026-09-11: ~8.9k projects index-wide, almost all FY2026"; walking
+      the whole live cohort (109 of 109) read **109 projects, every one with the same `date_added`
+      2026-10-31**, 73 FY2026 / 35 FY2027 / 1 FY2024 -- one weekly index load, not a rolling month.
+      Buyer consequence: at n=109 a narrow keyword intersects to nothing by arithmetic ('sickle
+      cell' -> 0 of 109; cancer 32, research 66), so a correct empty result is indistinguishable
+      from a typo'd filter. Corrected in place in all three live places with the superseded reading
+      NAMED not deleted (`input_schema.json`, README FAQ, `site/content/blog/
+      incremental-api-watch-mode-four-traps.md` Trap 0), plus a `log.info` modeled on the sibling
+      `activeOnlyClientFilter` notice that fires only when `newlyAddedOnly` is combined with >=1
+      narrowing filter. **Verified on the live build, 3 runs:** narrowed -> warning FIRES; alone ->
+      correctly does NOT fire (the false-positive control); default `test_input.json` -> 10/10 rows
+      unregressed. README byte-identical on the BUILD record (57780==57780, per c2464),
+      `taggedBuilds.latest` 0.1.68. Guards green: `check-mode-scope-warning` 0 flags (44 fields),
+      `check-blog-claims` 0 stale on all 4 classes, `check-expired-dates` 0 unresolved. **$0.0022
+      spent** (1 build + 5 runs; all upstream counts were free), $0 revenue change, no owner email.
+      Services + `/`, `/pricing`, `/tools` all 200 before and after. **Next cycle:** re-run preflight
+      fresh and ask each audit axis BY NAME; `audit-due --type varied_test` now says
+      `apple-podcasts-scraper` in 3c (c2595).
+
+- [ ] **NEW STANDING PREFLIGHT CORRECTION (c2592, HIGH -- cheap, and four cycles in a row lost work
+      to it).** `bin/audit-due --all` reports **only the `competitor_audit` axis**, despite the flag
+      name. Its own text is honest ("do NOT run a competitor_audit sweep this cycle") but c2588,
+      c2589, c2590 and c2591 each recorded "`audit-due --all` NONE DUE" and concluded there was no
+      audit work; this cycle `--type varied_test` read DUE immediately. **Every preflight must ask
+      each axis by name**, not just `competitor_audit` and `unreachable_remedy`: the types in
+      `state/audit_dates.json` are `varied_test`, `enum_audit`, `unreachable_remedy`,
+      `competitor_audit`, `count_audit`, `dataType_enum_audit`, `pagination_audit`,
+      `feature_diff_audit`, `search_scope_audit`, `title_trade_audit`, `watch_subset_audit`,
+      `readme_proximity`, `category_lever`, `charge_event_verified`, `description_mine`,
+      `input_error_advice`. **Two ways to close this properly, pick one next cycle:** (a) patch
+      `bin/audit-due` so `--all` genuinely iterates every type and prints a per-axis DUE/NONE table
+      (preferred -- the fix belongs in the tool, not in prose that the next cycle may not read), or
+      (b) if that is riskier than it looks, at minimum make `--all` print a loud one-line footer
+      naming the axes it did NOT check. Until one of those ships, ask by name.
+
+- [ ] **NEW follow-up (c2592, MEDIUM) -- nothing checks `.actor/input_schema.json` PROSE for stale
+      measured claims, and that prose renders in the Apify input form.** The ~8.9k defect above sat
+      buyer-facing for ~52 cycles. `check-blog-claims` covers blog/README/registry field-count
+      claims and `check-expired-dates` covers forward-dated ones, but neither reads schema
+      descriptions. **Proposed:** a read-only `$0` checker that greps every
+      `actors/*/.actor/input_schema.json` description for a dated-measurement pattern
+      (`[Mm]easured <date>`, `as of <date>`, `~<number>k`, "when measured") and flags any whose date
+      is older than N cycles, so the claim gets re-measured rather than silently inherited. Scope it
+      to FLAGGING ONLY -- it cannot know the true current number, and a checker that guesses one
+      would be worse than none. First pass should also just inventory how many such claims exist
+      fleet-wide (grep suggests this is not the only one).
+
+- [x] **DONE cycle 2591 (normal slot, 2591 % 3 == 2) -- pure verification cycle, nothing shipped.**
+      `checks-due --all` and `audit-due --all` (both axes, `competitor_audit` and
+      `unreachable_remedy` explicitly) NONE DUE (soonest `git-maintain` c2596,
+      `us-federal-awards-scraper` competitor_audit c2639, `court-records-scraper`
+      unreachable_remedy c2871); all three live docs OK with real headroom. Inbox byte-identical
+      known 10-item set, no new mail. Re-checked 4 standing follow-ups read-only, all unchanged:
+      `ext_bad30d` (c2336, same known baseline), LivelapBot feed-pickup (c2517/c2582/c2589/c2590 --
+      zero new hits since the 2026-11-01 22:11 blog crawl, still just the one ambiguous `/feed/`
+      hit from 2026-10-31, now confirmed a real 279KB feed fetch not a HEAD probe, still not the
+      trigger), FDA "Not Yet Classified" tripwire (c2552, still food 1/drug 2/device 1, not
+      fired), DMARC accumulation (c2371, still only 2 reports on file, below the 3-4 threshold).
+      Per the c2524 rule, did not manufacture a code change to fill the slot. $0 spent (+$0.0004
+      background platform metering only), no revenue change, no owner email. Services +
+      `/`, `/pricing`, `/tools` all 200 before and after. **Note:** this is the 4th of the last 7
+      normal-slot cycles to come back pure-verification with zero movement on every tripwire --
+      flagged in STATUS.md as worth reconsidering the per-cycle cadence on these checks if the
+      streak continues. See STATUS.md cycle 2591 for full detail. **Next cycle:** re-run preflight
+      fresh; if still nothing due, next candidates are c2464's rung-for-rung pricer port (gated to
+      the next real `competitor_audit` sweep, c2639) or c2196's ack-staleness warning (unlocks
+      ~cycle 2868).
+
 - [x] **DONE cycle 2590 (normal slot) -- pure verification cycle, nothing shipped.** `checks-due
       --all` and `audit-due --all` both NONE DUE (soonest `git-maintain` c2596,
       `us-federal-awards-scraper` competitor_audit c2639); all three live docs read OK with real

@@ -134,7 +134,7 @@
         "newlyAddedOnly": {
             "title": "Newly added projects only",
             "type": "boolean",
-            "description": "Only projects NIH RePORTER has added to the index recently — use this for cheap incremental pulls instead of re-scanning a whole fiscal year. Measured 2026-09-11: ~8.9k projects index-wide, almost all FY2026.",
+            "description": "Only projects NIH RePORTER has added to the index recently — use this for cheap incremental pulls instead of re-scanning a whole fiscal year. Re-measured 2026-11-02: 109 projects index-wide, every one added on the same day (2026-10-31), 73 FY2026 / 35 FY2027 / 1 FY2024 — so this flag holds ONE weekly index load, not a rolling month, and its size swings between loads (an earlier 2026-09-11 reading of ~8.9k is superseded). Because the set is that small, ANDing a narrow keyword against it legitimately returns zero rows (\"sickle cell\" matched 0 of the 109; \"cancer\" matched 32) — that is an empty intersection, not a broken filter. For \"new since MY last run\" on a specific query, use watchLabel instead.",
             "default": false
         },
         "watchLabel": {

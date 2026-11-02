@@ -584,6 +584,30 @@ if (activeOnlyClientFilter) {
     );
 }
 
+// Cycle 2592 varied_test: `newlyAddedOnly` is live and ANDs correctly, but the cohort it selects is
+// FAR smaller than this Actor documented (schema used to claim ~8.9k from a 2026-09-11 reading).
+// Re-measured 2026-11-02 against api.reporter.nih.gov directly: 109 projects index-wide, and every
+// single one carried the SAME date_added (2026-10-31) -- NIH's flag holds one weekly index load, not
+// a rolling month, so the size swings by an order of magnitude between loads. At that size a narrow
+// keyword intersects to nothing by arithmetic ("sickle cell" -> 0 of 109, while "cancer" -> 32), and
+// a legitimately empty intersection is indistinguishable to the buyer from a filter they typo'd.
+// Say so up front rather than only in the generic zero-row advice at the bottom of the run.
+const newlyAddedNarrowed = input.newlyAddedOnly === true && !searchId && !exclusiveProjectNums
+    && (Boolean(keyword) || fiscalYears.length > 0 || agencyIcCodes.length > 0 || activityCodes.length > 0
+        || awardTypes.length > 0 || orgNames.length > 0 || orgStates.length > 0 || piNames.length > 0
+        || minAwardAmount !== null || maxAwardAmount !== null
+        || Boolean(awardNoticeDateFrom) || Boolean(awardNoticeDateTo));
+if (newlyAddedNarrowed) {
+    log.info(
+        'newlyAddedOnly is combined with other filters. This flag is NIH RePORTER\'s own "recently '
+        + 'added to the index" set, which is one weekly index load and therefore small -- measured '
+        + '2026-11-02 at 109 projects index-wide, all added on the same day. ANDing a narrow filter '
+        + 'against a set that size legitimately returns zero rows, which is NOT the same as a wrong '
+        + 'filter value. If you get nothing, drop newlyAddedOnly to confirm your other filters match '
+        + 'at all, or use watchLabel instead for "new since MY last run".',
+    );
+}
+
 // Named so the warning below can tell the buyer exactly which of their inputs the saved search
 // overrode, instead of quietly returning a result set that ignores half the form.
 // `keyword` no longer needs the old compare-against-the-default guard here: the schema default is
