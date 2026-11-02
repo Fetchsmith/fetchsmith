@@ -316,7 +316,7 @@
         "outcomeMeasure": {
             "title": "Outcome measure contains",
             "type": "string",
-            "description": "Search only the study's stated outcome measures, e.g. \"progression-free survival\" or \"overall survival\". Maps to query.outc.",
+            "description": "Search only the study's stated outcome measures, e.g. \"progression-free survival\" or \"overall survival\". Maps to query.outc, which searches the measure title AND its description, across all three outcome buckets (primary, secondary and other) — every row returns `primaryOutcomes`, `secondaryOutcomes` and `otherOutcomes` so you can see which endpoint actually matched. Measured on 200 live studies matching \"progression-free survival\" (2026-11-02): 13.0% declare a non-empty `otherOutcomes` and 0.5% matched only there.",
             "editor": "textfield"
         },
         "studyStartDateFrom": {

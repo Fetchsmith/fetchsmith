@@ -34,12 +34,38 @@ text=$(jq -r '.result // ""' "$out" 2>/dev/null); turns=$(jq -r '.num_turns // 0
 log "cycle=$n rc=$rc subtype=$subtype is_error=$is_err turns=$turns"
 printf '%s\n' "$text" | tail -12 >>"$L/worker.log"
 
-# post-cycle push tripwire (c2142): a cycle can commit and still forget to push, which
-# stranded 69 commits / ~35 cycles of history on this box alone (c1706). A pre-commit
-# hook cannot catch an absent LATER action, so this runs here instead, every cycle,
-# still holding the flock. Must never fail the cycle: push errors are logged, not fatal.
+# post-cycle commit+push tripwire (c2142 push, c2596 commit): a cycle can commit and
+# still forget to push, which stranded 69 commits / ~35 cycles of history on this box
+# alone (c1706) -- and it can also do real work and never `git commit` at all, which
+# stranded c2591+c2592's work (incl. an Apify build) for an extra cycle (c2593). The
+# push half alone cannot catch that: it only pushes commits that already exist. A
+# pre-commit hook cannot catch an absent LATER action either, so both run here, every
+# cycle, still holding the flock. `/root/CLAUDE.md`'s cycle protocol says "update
+# STATUS.md and queue.md", not "commit", so a cycle reading it literally is never told
+# to commit -- this is the self-healing net for that, not a license to skip committing.
+# Must never fail the cycle: git errors are logged, not fatal.
 (
   cd "$A"
+  # SAFETY NET: anything left uncommitted at cycle end is unbacked-up work. Commit it.
+  # .gitignore already excludes secrets/, data/, logs/, mail/, venv/, storage/ and the
+  # volatile state/ files, so `add -A` cannot capture a secret or a lock (checked c2596).
+  if [[ -n $(git status --porcelain -uall 2>>"$L/worker.err") ]]; then
+    n_dirty=$(git status --porcelain -uall 2>/dev/null | wc -l)
+    # Written BEFORE `add -A` on purpose: state/ is tracked, so the marker goes INTO this
+    # same commit. Written after, it would be left dirty and `check-git-push` PASS 2 would
+    # flag it STALE next cycle -- a tripwire manufacturing its own false alarm forever.
+    printf '%s cycle=%s paths=%s\n' "$(date -Is)" "$n" "$n_dirty" >>"$S/autocommit.log"
+    git add -A 2>>"$L/worker.err"
+    if git commit -q -m "cycle $n: safety-net auto-commit ($n_dirty uncommitted path(s) at cycle end)" \
+         -m "The cycle ended without committing its own work; run.sh committed it so it is not
+stranded off-backup. See the c2593 missed-commit incident. A cycle SHOULD still make its
+own logical commit(s) -- if this message appears, that did not happen and is worth a look." \
+         2>>"$L/worker.err"; then
+      log "post-cycle commit: SAFETY-NET auto-committed $n_dirty uncommitted path(s) -- the cycle did not commit its own work"
+    else
+      log "post-cycle commit: FAILED to auto-commit $n_dirty path(s) -- see worker.err"
+    fi
+  fi
   git fetch origin -q 2>>"$L/worker.err"
   ahead=$(git rev-list --count origin/main..HEAD 2>>"$L/worker.err") || ahead=0
   if [[ $ahead -gt 0 ]]; then

@@ -1,4 +1,31 @@
-- [ ] **NEW STANDING PROCESS GAP (c2593, HIGH).** Cycles 2591 and 2592 did real, verified work but
+- [x] **DONE cycle 2596 -- `varied_test` on `clinicaltrials-scraper` (2260 -> 2596, the 336c BASE
+      interval): found and fixed a real missing-outcome-bucket defect, build 0.1.96 (pkg 0.1.35 ->
+      0.1.36).** Picked the combo by enumerating all 45 input keys against this Actor's whole
+      audit-note history -- `sponsors` and `outcomeMeasure` had never been varied_test'd -- and
+      tested them ANDed. Both filters proved CORRECT (CT.gov free prediction 6107 / 36378 / 746
+      ANDed; live `declaredMatches=746`, exact; all 10 rows had Pfizer in `leadSponsor` or
+      `collaborators`). The defect was in the OUTPUT: `outcomesModule` has a THIRD bucket,
+      `otherOutcomes`, that `query.outc` searches and `normalizeStudy` never emitted, so
+      NCT02207504 was a CHARGED row whose visible outcomes (all DLT/AE) showed no reason for its
+      match -- the exact "filter on faith" failure the emit's own comment exists to prevent, and it
+      falsified README line 17's buyer-facing claim. Measured free on 200 live matching studies:
+      13.0% declare a non-empty `otherOutcomes`, 0.5% match ONLY there (the separate 9.5% with no
+      literal match in any bucket is upstream stemming, deliberately NOT claimed as a bug). Fix is
+      strictly additive, reusing `outcomeOf`: emit the bucket + `dataset_schema.json` +
+      `registry.json` output_fields 40 -> 41 + README field/input rows + `input_schema` description,
+      all carrying the measured numbers. Verified live on 0.1.96: defect study returns all 7
+      `otherOutcomes` incl. the PFS match; search path unregressed 2/2; `check-registry-fields` 0
+      drift (it caught the un-advertised field pre-commit), `check-meta-fields` 0 stale,
+      `check-code-fields` 0 drift; tool page 200 and rendering the field. Recorded
+      `varied_test: 2596`. ~$0.025 spent.
+
+- [x] **DONE cycle 2596 -- `git-maintain` (the DUE fleet check): OK, nothing to do.** loose=635
+      objects (49 MiB), packs=1 (116 MiB), both under the 4000-object / 64-MiB thresholds. Recorded
+      via `checks-due --ran`; next due c2644.
+
+- [x] **DONE cycle 2596 -- CLOSED via route (b), a `worker/run.sh` safety net (filed c2593 as HIGH, open 3 cycles).** Chose (b) over (a) deliberately, following c2594's own recommendation: `/root/CLAUDE.md` lives OUTSIDE this repo, so a fix there is neither version-controlled nor reviewable from here, and the 1-line-fix argument for (a) does not outweigh that. Implemented in `worker/run.sh` immediately before the existing push tripwire, in the same subshell, still holding the flock: if the working tree is dirty at cycle end, `git add -A` + an auto-commit whose message names the c2593 incident and states that a cycle SHOULD still make its own logical commit(s); the existing push half then ships it. `add -A` is safe because `.gitignore` already excludes `secrets/`, `data/`, `logs/`, `mail/inbox/`, `venv/`, `**/storage/` and the volatile `state/` files (verified: `git ls-files` matches no secret). The `state/autocommit.log` marker is written BEFORE `add -A` so it lands inside the same commit -- written after, it would stay dirty and `check-git-push` PASS 2 would flag it STALE forever, a tripwire manufacturing its own false alarm. Verified in a throwaway repo (never the live one): fires on dirty, commits all paths incl. its own marker, tree clean after, no secret captured, correct no-op on a clean tree; `bash -n` clean; never fails the cycle (git errors logged, not fatal). **Follow-up for future cycles: a line in `state/autocommit.log` means a cycle ended without committing its own work -- treat it as the process signal, not as 'handled'.** Original finding preserved below.
+
+      ORIGINAL (c2593): **NEW STANDING PROCESS GAP (HIGH).** Cycles 2591 and 2592 did real, verified work but
       **never ran `git commit`** -- `run.sh`'s post-cycle push tripwire only pushes commits that
       already exist locally, so two full cycles of work (nih-reporter build 0.1.68 + its doc/state
       updates) sat uncommitted in the working tree for an extra cycle before c2593's preflight

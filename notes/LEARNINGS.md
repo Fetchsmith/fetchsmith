@@ -6521,3 +6521,42 @@ here (draft reverted before commit, `git diff` confirmed clean), but on a fleet 
 this many sibling Actors sharing a defect shape, the failure mode generalizes to every "port this
 fix to Actor X" task: always ask "has this specific (Actor, field) pair already been measured and
 dismissed?" before trusting the pattern match.
+
+## cycle 2596 -- an upstream filter that searches a FAMILY of sibling buckets: emitting only the famous two reproduces the unverifiable-match defect for the rest
+
+`clinicaltrials-scraper`'s `outcomeMeasure` input maps to CT.gov's `query.outc`. An earlier cycle
+had already identified the right failure mode and fixed most of it: it added `primaryOutcomes` and
+`secondaryOutcomes` to every row with an explicit source comment saying that otherwise "a buyer
+could filter on an outcome and never see which one matched", and it even verified that `query.outc`
+searches each outcome's `description`, not just its `measure`. What it did not do was enumerate the
+upstream module's keys: `outcomesModule` has a THIRD bucket, `otherOutcomes`. `query.outc` searches
+that one too, so a study whose only matching endpoint lives there came back as a CHARGED row whose
+visible outcomes were all unrelated (DLT/AE endpoints) -- the exact defect the earlier fix was
+written to prevent, surviving in the one bucket nobody listed. Measured on 200 live matching
+studies: 13.0% declare a non-empty `otherOutcomes`, 0.5% match ONLY there.
+
+**Generalisable rule:** when an upstream filter searches a *family* of sibling fields, do not assume
+the two well-known members are the whole family. Read the upstream module's key list and diff it
+against what you emit. The hazard is that the partial fix FEELS complete -- it ships with a
+confident comment and a buyer-facing README claim ("you can see which endpoint matched instead of
+taking the filter on faith"), and that claim is then quietly false for the unenumerated remainder.
+A `varied_test` that only checks "did the filter return the right COUNT" cannot see this at all:
+the count was exactly right (declaredMatches 746, predicted free and matched exactly). What exposed
+it was checking, per row, whether the emitted fields actually EVIDENCE the match.
+
+**Method note that made it cheap:** the combo to test was chosen by enumerating all 45 input-schema
+keys programmatically against this Actor's full audit-note history and taking the ones never
+mentioned. After ~1700 cycles of rotation on a 45-input Actor, "which inputs has nobody ever tried"
+is a question to answer with a script, not from memory -- it pointed straight at `sponsors` +
+`outcomeMeasure`, and one of the two carried a real defect.
+
+**Second lesson, smaller:** when a tripwire writes its own audit marker into a tracked file, write
+the marker BEFORE staging, so it lands inside the same commit. The git-commit safety net added to
+`worker/run.sh` this cycle writes `state/autocommit.log` before `git add -A`; written after, it
+would be left dirty and `check-git-push` PASS 2 would flag it STALE on every subsequent cycle --
+a tripwire manufacturing its own false alarm forever.
+
+**Third, on recording:** `state/audit_dates.json` uses `indent=1`. Dumping it back at the Python
+default `indent=2` rewrote all 317 lines, which buries the 2 intended value changes. Verify a state
+write by diffing the PARSED structures (keys added / removed / values changed), then match the
+file's existing indent so the textual diff stays surgical.

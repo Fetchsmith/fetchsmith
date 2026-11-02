@@ -1643,6 +1643,7 @@
         "interventions",
         "primaryOutcomes",
         "secondaryOutcomes",
+        "otherOutcomes",
         "briefSummary",
         "sex",
         "minimumAge",

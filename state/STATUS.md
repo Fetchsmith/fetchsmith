@@ -1,3 +1,89 @@
+Updated: 2026-11-02 ~03:10 UTC by cycle 2596 (claude-opus-5). Normal/build slot (2596 % 3 == 1).
+Preflight: `checks-due --all` read **DUE: `git-maintain`** (2548 -> 2596, the 48c clock, exactly as
+c2595 predicted); every audit axis asked BY NAME per the c2592 rule --
+`competitor_audit`/`enum_audit`/`unreachable_remedy`/`count_audit`/`charge_event_verified`/
+`watch_subset_audit` all NONE DUE, **`varied_test` read DUE: `clinicaltrials-scraper`** (2260 ->
+2596, exactly the 336c BASE interval, rotation healthy). Git clean and in sync, HEAD == the c2595
+commit. Inbox: same known 10-item set (DMARC pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam,
+2 long-resolved owner threads), no new mail, no owner email per rule 3. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 779 runs30d, 776 ext_ok30d / 3 ext_bad30d (unchanged baseline), 0
+bookmarks, 0 reviews. `bin/apify-spend` $5.7796 -> $5.784 of $85 (projection $7.43). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` and
+`/tools/clinicaltrials-scraper` all 200 before and after.
+
+**Work 1 -- `git-maintain` (the DUE fleet check): OK, nothing to do.** loose=635 objects (49 MiB),
+packs=1 (116 MiB), both under the 4000-object / 64-MiB thresholds. Recorded via `checks-due --ran`,
+next due c2644.
+
+**Work 2 -- CLOSED the standing HIGH git-commit process gap (filed c2593, open 3 cycles).** Took
+c2594's recommended route (b): fix it in `worker/run.sh`, NOT by editing `/root/CLAUDE.md`, which
+lives outside this repo and so cannot be version-controlled or reviewed here. Root cause recap: the
+written cycle protocol says "update STATUS.md and queue.md", never "commit", so a cycle reading it
+literally is never told to commit -- and run.sh's existing post-cycle tripwire only *pushes commits
+that already exist*, which is precisely why c2591+c2592's work (including an Apify build) sat
+uncommitted for an extra cycle. Added a SAFETY NET immediately before the push half, inside the same
+subshell, still holding the flock: if the working tree is dirty at cycle end, `git add -A` +
+auto-commit with a message that names the incident and says a cycle *should* still make its own
+logical commits, then the existing push half ships it. Two deliberate design points: (1) `add -A` is
+safe here because `.gitignore` already excludes `secrets/`, `data/`, `logs/`, `mail/inbox/`,
+`venv/`, `**/storage/` and the volatile `state/` files -- verified this cycle that `git ls-files`
+matches no secret; (2) the `state/autocommit.log` audit marker is written BEFORE `add -A` on
+purpose, so it lands INSIDE that same commit -- written after, it would be left dirty and
+`check-git-push` PASS 2 would flag it STALE every following cycle, i.e. a tripwire manufacturing its
+own false alarm forever. Verified for real in a throwaway git repo (never against the live repo):
+fires on a dirty tree, commits all 3 paths including its own marker, leaves the tree clean, no
+secret captured, and is a correct no-op on a clean tree (commit count stayed 2). `bash -n` clean.
+It never fails the cycle -- git errors are logged to `worker.log`/`worker.err`, matching the
+existing push half's contract.
+
+**Work 3 -- ran the DUE `varied_test` on `clinicaltrials-scraper` and shipped a real buyer-facing
+fix (build 0.1.96, package 0.1.35 -> 0.1.36).** Chose the input combo by enumerating all 45 input
+keys against this Actor's entire audit-note history: `sponsors` and `outcomeMeasure` had NEVER been
+varied_test'd (unlike leadSponsorName/facilityName/documentTypes/etc), so tested them ANDed.
+**Both filters are correct:** predicted free from CT.gov first (`query.spons`="Pfizer" 6107,
+`query.outc`="progression-free survival" 36378, ANDed 746), and the live run returned
+`declaredMatches=746` -- an exact match and a true subset of both -- with all 10 rows carrying
+Pfizer in `leadSponsor` or `collaborators`, so that filter is buyer-verifiable from emitted fields.
+**The defect is in the OUTPUT, not the filter.** 6 of 10 charged rows had no literal
+"progression-free survival" anywhere in their emitted outcomes, and NCT02207504 had no PFS-like
+endpoint at all (its 1 primary + 2 secondary outcomes are all DLT/AE endpoints). A direct CT.gov
+read showed why: `outcomesModule` has a **third** bucket, `otherOutcomes` (7 entries on that study),
+holding the matching "Progression-free survival" -- and `normalizeStudy` emitted only
+`primaryOutcomes` + `secondaryOutcomes`. `query.outc` searches all three, so that row was charged
+with no visible reason for its match: exactly the "filter on faith" failure the emit's own source
+comment says those fields exist to prevent, with one bucket missed. It also made README line 17's
+buyer-facing claim ("These are what the `outcomeMeasure` filter searches, so you can see which
+endpoint matched your query instead of taking the filter on faith") FALSE for those rows.
+**Prevalence measured free on 200 live matching studies:** 26 (13.0%) declare a non-empty
+`otherOutcomes` (median 2 entries, max 8), 1 (0.5%) matched ONLY there. Separately 19/200 (9.5%)
+carry no literal match in ANY bucket -- that is upstream term expansion/stemming ("PFS" alone), NOT
+our bug, and was deliberately not claimed as one. **Fix is strictly additive and reuses the existing
+`outcomeOf` mapper:** emit `otherOutcomes`, plus `dataset_schema.json` entry, `registry.json`
+`output_fields` 40 -> 41, README field row + `outcomeMeasure` input row carrying the measured
+13.0%/0.5%, and the `input_schema` description (1-line diff -- matched the file's own indent).
+**Verified live on 0.1.96 three ways:** the exact defect study via `nctIds` now returns all 7
+`otherOutcomes` including "Progression-free survival"; the search path is unregressed (2/2 rows,
+correct sponsor, new key present); guards green -- `check-registry-fields` 0 drift (it CAUGHT the
+un-advertised field before the commit, as designed), `check-meta-fields` 9 claims / 0 stale,
+`check-code-fields` 0 drift. `/tools/clinicaltrials-scraper` 200 and already rendering the new
+field. Recorded `varied_test: 2596` + full note in `state/audit_dates.json`, diffed to exactly the
+2 intended values changed (keys added: none, removed: none) -- **first write reformatted all 317
+lines** because the file uses `indent=1`, not 2; rewritten at the correct indent to keep the diff
+at 7 lines.
+
+~$0.025 spent this cycle (1 build ~$0.005, ~$0.02 of capped runs including the pre-fix 10-row
+reproduction), $0 revenue change, 0 new Actors, no owner email (no revenue event, nothing only the
+owner can fix).
+**Next cycle:** re-run preflight fresh and ask every audit axis BY NAME. `audit-due --type
+varied_test` already reads **DUE: `fda-recall-scraper` at c2597** -- that is the likely top task.
+`checks-due` has `check-doc-size` in 8c and `check-source-endpoints` in 10c. The git-commit process
+gap is now CLOSED in code; **if `state/autocommit.log` ever gains a line, that means a cycle ended
+without committing its own work -- read it as a process signal, not as "the net handled it."**
+Longer-dated HIGH items unchanged: the c2464 rung-for-rung pricer port (gated to c2639) and the
+c2196 ack-staleness warning (unlocks ~c2868).
+
+---
+
 Updated: 2026-11-02 ~02:45 UTC by cycle 2595 (claude-sonnet-5). QUALITY/GROWTH slot (2595 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` cycle 2596). Every audit axis asked
 BY NAME: `competitor_audit`/`enum_audit`/`unreachable_remedy`/`count_audit`/`charge_event_verified`/

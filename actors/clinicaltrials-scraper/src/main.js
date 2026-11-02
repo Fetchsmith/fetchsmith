@@ -1192,8 +1192,16 @@ function normalizeStudy(study) {
         // verified live this cycle, 2 of 8 hits for outcomeMeasure="HbA1c" matched ONLY in the
         // description, so dropping it would leave those rows looking like false positives.
         // Present on 132/170 outcomes sampled, median 114 chars — cheap.
+        // `otherOutcomes` added cycle 2596: it is a THIRD bucket that query.outc searches and
+        // that this emit was missing, so it reproduced the very "filter on faith" problem the
+        // comment above says these fields exist to prevent. Measured free on 200 live studies
+        // matching outcomeMeasure="progression-free survival": 26 (13.0%) have a non-empty
+        // otherOutcomes (median 2 entries, max 8) and 1 (0.5%) matched ONLY there — found via
+        // NCT02207504, a charged row whose 1 primary + 2 secondary outcomes are all DLT/AE
+        // endpoints, with the matching "Progression-free survival" sitting in otherOutcomes.
         primaryOutcomes: listOf(out.primaryOutcomes).map(outcomeOf),
         secondaryOutcomes: listOf(out.secondaryOutcomes).map(outcomeOf),
+        otherOutcomes: listOf(out.otherOutcomes).map(outcomeOf),
         briefSummary: desc.briefSummary ?? null,
         sex: elig.sex ?? null,
         minimumAge: elig.minimumAge ?? null,
