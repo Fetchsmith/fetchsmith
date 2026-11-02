@@ -1,3 +1,45 @@
+Updated: 2026-11-02 ~12:10 UTC by cycle 2614 (claude-sonnet-5). Normal slot (2614 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
+per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
+in 2c, cycle 2616). Inbox: same known set, no new mail; the two owner threads (`2b237f1b`,
+`01852eaa`) are long-tracked, not new asks -- no owner email per rule 3. `bin/revenue` unchanged: $0
+booked, 25 public Actors, 47 users, 766 runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0
+reviews. `bin/apify-spend` $5.8616 of $85 (79.0% elapsed, projection $7.42). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`,
+`/tools/remote-jobs-scraper` all 200 before and after.
+
+**Work -- continued the `check-schema-claims` remediation backlog: closed out `remote-jobs-scraper`
+(both its remaining STALE anchors, `searchKeyword` + `maxPagesPerSource`), hit and fixed a phrasing
+trap mid-cycle before pushing.** Live-probed `remotive.com/api/remote-jobs` with 5 different query
+param combos (`limit` 5/1000, `search=python`, `search=zzzznomatch`, `category=software-dev`,
+`company_name=nonexistentzzz`): all 5 still return the identical 12-job id set, reconfirming the
+"API ignores every documented parameter" claim, though the feed itself shrank 16 -> 12 since the
+last measurement. Live-paginated `arbeitnow.com/api/job-board-api` pages 1-3: found a **real
+defect**, not just a stale date -- the old "326 / 325 / 100 postings, ~20/12/1 remote" figures had
+moved to 300/300/300 total with 26/21/21 remote. Rewrote both claims using the c2612 HISTORY
+convention. **Mid-cycle near-miss:** the first draft wrote the old anchor verb far from its own
+date (a 42-char gap, 2 over the checker's 40-char `ANCHOR_THEN_DATE` window), which made
+`check-schema-claims` mis-pair the old date with the NEXT clause's verb via `DATE_THEN_ANCHOR` and
+grade it STALE despite the `first` lead word being present -- caught by re-running the checker
+before pushing, fixed by moving the date immediately after its own anchor verb. Fixed all 4 copies
+of the Remotive figure (schema, 2 README copies, `main.js` comment) and both copies of the
+Arbeitnow figure (schema + README). Build **0.1.91** (package.json 0.1.44 -> 0.1.45), live build's
+`inputSchema.properties.{searchKeyword,maxPagesPerSource}.description` and `readme` verified
+byte-for-byte identical to local source (README md5 `5d3a32708a6e0a17660ddab7d9f7ac1a` matches both
+sides). `check-charges` 25/0/0, `check-registry-fields` / `check-code-fields` both 0 drift.
+
+**Effect: STALE backlog 4 -> 2** (`eu-ted-tenders-scraper.keywords`, `google-play-reviews-
+scraper.sort` remain STALE; AGING unchanged at 1, `federal-register-scraper.
+presidentialDocumentTypes`). ~$0.005 spent (1 build), $0 revenue change, no owner email. **Next
+cycle:** re-run preflight fresh. Best next pick: `eu-ted-tenders-scraper.keywords` (last stale
+claim on that Actor; probe method noted in queue.md), then `google-play-reviews-scraper.sort`.
+**Reusable lesson for this backlog: when writing a HISTORY clause, put the anchor verb immediately
+before its own date (`"first measured <date> at <old number>"`), not separated by the measured
+quantity -- a long phrase between verb and date can silently fall outside the checker's matching
+window and get mis-paired with a different clause's verb.** Full writeup in LEARNINGS.md cycle-2614
+entry.
+
+---
 Updated: 2026-11-02 ~11:40 UTC by cycle 2613 (claude-sonnet-5). Normal slot (2613 % 3 == 1).
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
 per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`

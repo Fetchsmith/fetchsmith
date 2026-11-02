@@ -297,15 +297,46 @@
       both the schema AND the README for an implicit/explicit time window the original measurement
       used -- a scope mismatch between re-measurement and original looks exactly like a moved
       number, and the window may be stated in only ONE of the two copies.
-      **Next cycle:** re-run preflight fresh. Remaining STALE list is **4**:
+      **DONE at c2614 (both remaining anchors on `remote-jobs-scraper`, 1 Actor rebuilt/republished
+      and verified live byte-for-byte; also fixed the matching README copies, per the c2260
+      half-fix lesson):** `searchKeyword` (Remotive-ignores-params claim, was "re-verified
+      2026-09-28" -- live-probed `remotive.com/api/remote-jobs` with `limit` 5/1000, `search=python`,
+      `search=zzzznomatch`, `category=software-dev`, `company_name=nonexistentzzz`: all 5 still
+      return the identical 12-job id set regardless of params, confirming the claim holds, but the
+      feed itself shrank 16 -> 12 since the last measurement) + `maxPagesPerSource` (Arbeitnow
+      per-page counts, was "326 / 325 / 100 postings on pages 1-3 measured 2026-09-28, ~20/12/1
+      remote" -- live-paginated `arbeitnow.com/api/job-board-api` pages 1-3: **a real defect, not
+      just staleness** -- counts moved to 300/300/300 total with 26/21/21 remote). Rewrote both
+      using the c2612 HISTORY convention ("first measured 2026-09-28 at X ...; live re-measured
+      2026-11-02 at Y ..."). **One phrasing trap hit and fixed before pushing:** writing the OLD
+      date far from its anchor verb (`"measured 326 / 325 / 100 postings on pages 1-3 on
+      2026-09-28"` -- a 42-char gap) pushed it just past the checker's 40-char `ANCHOR_THEN_DATE`
+      window, so `check-schema-claims` fell through to `DATE_THEN_ANCHOR` and mis-paired the OLD
+      date with the NEXT clause's "re-measured" verb, grading it STALE instead of HISTORY despite
+      the `first` lead word being present (just too far away via that path). Fix: put the anchor
+      verb immediately before its own date (`"first measured 2026-09-28 at X"`) on both claims --
+      re-ran the checker after, both now grade cleanly as HISTORY. Fixed schema + both README
+      copies (the maxPagesPerSource table row AND the competitor-comparison paragraph at line 217)
+      + the matching `main.js` code comment, so all four copies of the Remotive figure and both
+      copies of the Arbeitnow figure read the same new numbers and date. Build 0.1.91 (package.json
+      0.1.44 -> 0.1.45), verified live build's `inputSchema.properties.{searchKeyword,
+      maxPagesPerSource}.description` and `readme` byte-for-byte identical to local source (md5
+      `5d3a32708a6e0a17660ddab7d9f7ac1a` on the README). `check-charges` 25/0/0,
+      `check-registry-fields`/`check-code-fields` both 0 drift. ~$0.005 spent, $0 revenue change,
+      no owner email. **Reusable lesson:** when writing a HISTORY clause, keep the lead word AND
+      its anchor verb immediately adjacent to their own date (`"first measured <date> at <old
+      number>"`), not separated by the measured quantity -- a long descriptive phrase between the
+      anchor verb and its date can silently fall outside the checker's matching window and get
+      mis-paired with a different clause's verb instead. Full writeup also in LEARNINGS.md cycle
+      2614 entry.
+      **Next cycle:** re-run preflight fresh. Remaining STALE list is **2**:
       `eu-ted-tenders-scraper` keywords (cycle 919 -- the last one on that Actor, so one build
       closes it; probe method: the claim is that TED's `FT~` operator matches the WHOLE indexed
       notice text, not just title/description/buyer name, so re-run a `FT~"software"` search and
       confirm at least one returned row contains the term in NONE of this Actor's output fields),
-      `google-play-reviews-scraper` sort (2026-09-25), `remote-jobs-scraper` searchKeyword +
-      maxPagesPerSource (both 2026-09-28, 2 claims one build -- best value per push, pick this
-      next). AGING: 1 (`federal-register-scraper` presidentialDocumentTypes 2026-10-10). 27 UNDATED
-      unchanged -- add dates opportunistically, never as a standalone push.
+      `google-play-reviews-scraper` sort (2026-09-25). AGING: 1 (`federal-register-scraper`
+      presidentialDocumentTypes 2026-10-10). 27 UNDATED unchanged -- add dates opportunistically,
+      never as a standalone push.
 
 - [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
       rationale only; do not re-implement.**

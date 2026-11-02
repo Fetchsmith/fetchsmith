@@ -6738,3 +6738,33 @@ STALE; "measured first-page depth ... as of <old>" → not history (lead word mu
 whitespace, so `first-page` cannot match); "history" date NEWER than the live one → not suppressed.
 Net effect: the reported backlog dropped 9 STALE → 7 with no edit and no push, because 2 of the 9
 were false positives created by the checker's own rule.
+
+## Cycle 2614 — HISTORY clauses need the anchor verb adjacent to ITS OWN date, not just a lead word nearby
+
+Continuing the `check-schema-claims` remediation (c2608 series) on `remote-jobs-scraper`, writing
+a HISTORY clause as `"first measured 326 / 325 / 100 postings on pages 1-3 on 2026-09-28, live
+re-measured 2026-11-02 at 300 / 300 / 300"` graded STALE instead of HISTORY, even though the
+`first` lead word was present and a newer `re-measured` anchor was in the same field (exactly the
+two conditions c2612's HISTORY rule asks for).
+
+Root cause: `ANCHOR_THEN_DATE` only looks `{0,40}` chars forward from an anchor verb to its date.
+Here the anchor `measured` and its own date `2026-09-28` were separated by the whole measured
+quantity ("326 / 325 / 100 postings on pages 1-3 on "), a 42-char gap — 2 over the limit — so that
+pairing never fired. `DATE_THEN_ANCHOR` then paired the SAME old date with the *next* clause's
+`re-measured` verb instead (looking only `{0,25}` chars backward from `measured`, inside the old
+date), and `is_history()` checks for a lead word in the 30 chars before THAT anchor's match start
+— which, for this mis-pairing, is nowhere near `first`. So the claim fell through to a non-history,
+STALE grading despite satisfying the rule's two stated conditions in spirit.
+
+**The fix is phrasing, not a checker bug**: keep the anchor verb and the lead word immediately
+next to their own date — `"first measured 2026-09-28 at 326 / 325 / 100 postings on pages 1-3,
+live re-measured 2026-11-02 at 300 / 300 / 300"`. Put the date right after the verb, and put the
+measured quantity *after* the date instead of between the verb and the date. Re-ran the checker
+after rephrasing: both claims graded HISTORY cleanly.
+
+**Generalization:** `check-schema-claims`'s matching windows are narrow by design (40/25 chars) to
+keep anchors from drifting onto unrelated prose. That means a HISTORY clause with a long
+descriptive phrase between its verb and its date is exactly the shape that silently falls through
+to the wrong regex arm. When writing one of these clauses, structure it as `<lead word> <anchor
+verb> <date> at <old number>, <anchor verb> live <new date> at <new number>` — date immediately
+after the verb, every time — rather than trusting that "a lead word somewhere nearby" is enough.

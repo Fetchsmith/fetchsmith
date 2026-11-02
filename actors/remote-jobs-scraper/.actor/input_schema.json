@@ -14,7 +14,7 @@
     "searchKeyword": {
       "title": "Keyword",
       "type": "string",
-      "description": "Only keep postings whose title, company, category or tags contain this text (case-insensitive), e.g. \"python\" or \"customer support\". It is also passed to Jobicy's own search parameter, so that board filters server-side as well. Remotive's API ignores every parameter it documents (re-verified 2026-09-28), so its rows are narrowed by this Actor alone. Leave empty for all postings.",
+      "description": "Only keep postings whose title, company, category or tags contain this text (case-insensitive), e.g. \"python\" or \"customer support\". It is also passed to Jobicy's own search parameter, so that board filters server-side as well. Remotive's API ignores every parameter it documents (first measured 2026-09-28, re-verified live 2026-11-02: limit/search/category/company_name all still return the same fixed 12-job feed), so its rows are narrowed by this Actor alone. Leave empty for all postings.",
       "editor": "textfield"
     },
     "titleExcludeKeyword": {
@@ -98,7 +98,7 @@
     "maxPagesPerSource": {
       "title": "Max pages per source",
       "type": "integer",
-      "description": "Only affects the paginated sources — Arbeitnow (the board chooses the page size, not you: 326 / 325 / 100 postings on pages 1-3 measured 2026-09-28, and only ~20 / 12 / 1 of those are flagged remote) and Himalayas (20 postings per page, cursor-based). The other five boards return their whole feed in one request. In watch mode this value is part of the label fingerprint: it decides how deep a baseline reaches, so changing it starts a fresh (free) baseline rather than reporting older postings from the newly-reached pages as new.",
+      "description": "Only affects the paginated sources — Arbeitnow (the board chooses the page size, not you: first measured 2026-09-28 at 326 / 325 / 100 postings on pages 1-3, live re-measured 2026-11-02 at 300 / 300 / 300, of which 26 / 21 / 21 are flagged remote) and Himalayas (20 postings per page, cursor-based). The other five boards return their whole feed in one request. In watch mode this value is part of the label fingerprint: it decides how deep a baseline reaches, so changing it starts a fresh (free) baseline rather than reporting older postings from the newly-reached pages as new.",
       "default": 2,
       "minimum": 1,
       "maximum": 20
