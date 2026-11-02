@@ -1,3 +1,76 @@
+Updated: 2026-11-02 ~21:05 UTC by cycle 2632 (claude-opus-5). BUILD slot (2632 % 3 == 1) -- but see
+Work 4: the build slot was deliberately spent on maintenance, not a new Actor, and the gate that
+forces that is written down, not a judgement call.
+Preflight: `checks-due --all` had **2 DUE: `check-cta-presence`, `sync-apify-prices`** (both last
+run cycle 2296, 336c cadence, 43 tracked checks). `audit-due --all` NONE DUE for FLEET ROTATIONS;
+2 one-off axes remain open and neither is actionable (`input_error_advice` court-records-scraper
+blocked on a missing `CL_API_TOKEN`, `title_trade_audit` eu-ted-tenders-scraper closed out with
+real new data by c2631). Inbox `list 10`: **identical to the known triaged set from c2630/c2631**,
+no new mail -- owner threads `2b237f1b`/`01852eaa` stay resolved/tracked, rest is the same
+marketing/spam/DMARC, no reply and no owner email needed. `bin/revenue` $0 booked, 25 Actors, 47
+users, 772 runs30d (769 ext_ok/3 ext_bad, **flat vs c2631**), 0 bookmarks, 0 reviews. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` 200 before and
+after. **$0 spent this cycle** (every tool run was free/offline or a read-only API call; no build,
+no push, no publish).
+
+**Work 1 -- due `check-cta-presence`: CLEAN.** Every blog page carries >=1 `/go/<slug>` CTA and
+there is no untracked bare `apify.com` CTA anywhere. The only 2 non-OK lines are `INFO`, not
+failures: `/blog/public-content-apis-hidden-second-step` and `/blog/watch-baseline-eviction-rebilling`
+are multi-Actor posts with no single Actor to put in a sidebar CTA, which is the expected reading
+for that shape. Recorded via `checks-due --ran`; next due cycle 2968.
+
+**Work 2 -- due `sync-apify-prices`: CLEAN, no drift.** 25 tools, 25 with a live quotable price,
+**0 updated** -- every price in `registry.json` still matches the live Apify listing, so the site's
+quoted prices and the Store are in agreement. Recorded; next due cycle 2968.
+
+**Work 3 -- ran `check-disclosure` 46 cycles EARLY (it was the soonest-due check, 2 cycles out)
+while `DEVTO_API_KEY` was already sourced: CLEAN.** 88 site blog posts + 27 dev.to articles
+checked, **0 missing disclosures**. Done now on purpose rather than next cycle: this is the
+AI-authorship-disclosure compliance check (dev.to policy) and its 48c clock is a *backstop* against
+the QUALITY-cycle instruction being skipped, so resetting it while the key was in the environment
+costs ~20s and removes the only check that was about to fire. Next due cycle 2680.
+
+**Work 4 -- BUILD slot, and the decision was NO new Actor. This is the written gate, not a
+preference.** Verified the daily cap was not the binding constraint first: 0 Actor dirs created
+today (newest is `website-screenshot-scraper`, 2026-10-16, i.e. 17 days ago -- so recent build
+slots have already been resolving this way). Two standing rules then close it:
+ - **PLAYBOOK's falsified-hypothesis box (c1488):** do not build into, or spend a GROWTH slot
+   optimizing rank in, a niche with `demand/competition` < ~50. All 25 current Actors sit in
+   public-registry/gov-data niches whose entire 30d user pool is 22-171 users split ~25 ways; our
+   best-ever niche reading is `trademark` at **6.3**. Winning a dead market is still $0.
+ - **`NICHES.md` c2306:** niche-hunting is exhausted across *all* axes (dataset-name guessing, the
+   WebSearch-for-new-sources lever now 0-for-3, the EU legal-mandate structural lever, paid/B2B
+   anti-bot, CATEGORY-level, and 10 keyword-category sweeps), and the one lever with a remaining
+   cadence is explicitly gated to a **calendar** date: re-run the WebSearch hunt **no sooner than
+   on/after ~2026-12-26**. Today is 2026-11-02, so running it now would be violating the note that
+   downgraded it. No niche work done, correctly.
+ Every other open queue item was also checked and is correctly gated on a trigger that has not
+ fired -- the 2 FDA/grants-gov tripwires are latent, the 15-file `_batch_price_*` rung-for-rung fix
+ is deliberately deferred to the next cycle that actually runs a `competitor_audit` (none due), and
+ the held `scholarship-scraper` fix waits on `check-source-endpoints` printing `RECOVERED bold.org`
+ (due in 22c; the note explicitly forbids re-probing bold.org by hand on spec). `check-doc-size`
+ was not due (in 20c) and both live docs were last trimmed at c2628.
+
+**Free pre-deadline checkpoint on the 2026-11-15 Apify `/v2/store` change (13 days out).** Ran
+`bin/_store_paging_selftest.py`: **3/3 PASS**, no network/auth/cost. Confirms the c2496 hardening
+still holds -- `store-anon-rank` and `check-store-rank` degrade to `UNKNOWN` (never a false
+`NOT FOUND`) once `offset` stops being honoured, and `store-visibility` survives `total` going
+away without a `KeyError`. The post-deadline half of that item (a live `store-anon-rank` re-read,
+plus the genuinely interesting upside re-measure of whether the new match-to-query default removes
+the c2072 `totalUsers` cold-start penalty) remains correctly gated to **after 2026-11-15**.
+
+**Measurement worth keeping -- the demand picture is unchanged and still reads zero everywhere it
+matters.** `bin/traffic`: **0 verified out_clicks** against 272 `declared_bot` + 290 `ua_ok_no_css`
++ 24 `sweeper` -- i.e. all 586 `/go/` hits are crawlers or our own curl, exactly the c1652 bot-test
+pattern, and **0 API calls / 0 results**. `bin/usage-trend`: fleet 772 runs30d, +9 in 24h, top
+movers `eu-ted-tenders-scraper` +4/24h (+11 all) and `website-screenshot-scraper` +1/24h (+12 all),
+with every `bkmk`/`rev` column still 0 -- and that tool's own note is that runs30d/users are
+platform artifacts, not demand. So: **no buyer signal, and therefore no Polar escalation** (CLAUDE.md
+defers checkout until >100 visits/day to /pricing or /tools, or a purchase request in the inbox --
+neither is remotely close). No owner email sent, correctly: no revenue event and nothing only the
+owner can fix.
+
+---
 Updated: 2026-11-02 ~20:35 UTC by cycle 2631 (claude-sonnet-5). QUALITY/GROWTH slot (2631 % 3 == 0).
 Preflight: `checks-due --all` had **1 DUE: `check-comparison-breadth`** (soonest of 44 tracked
 checks). `audit-due --all` NONE DUE for FLEET ROTATIONS, 0 one-off axes DUE (the only open one,
