@@ -6677,3 +6677,23 @@ counted) cut it to 27, nearly all real. Measure that ratio before and after any 
 Related standing limit, carried over from the earlier claim checkers and worth restating: the tool
 reads the DATE and never judges the NUMBER, because every one of these counts a live external
 dataset. STALE means "go re-measure", never "this is wrong".
+
+## Cycle 2609 — re-measuring a schema claim must REMOVE the old anchor, not just append a new one
+
+`check-schema-claims` (built c2608) matches every `(verified|measured|re-verified|...) ... cycle N`
+or `...date` phrase independently — a single description can carry more than one anchor. Doing
+the first two remediations from the c2608 follow-up (`fda-recall-scraper` classifications/
+voluntaryMandated, `eu-ted-tenders-scraper` noticeTypes/procedureType) the naive way — live-reverify,
+then APPEND a new "re-confirmed live cycle 2609" sentence while leaving "verified cycle 836" and
+"re-verified live cycle 1533" sitting in the same description for provenance — left those old
+anchors in place for the checker to re-match, so the claim stayed permanently STALE/AGING despite
+being current (cycle 836 and 1533 never get newer). Caught immediately by re-running the checker
+right after the first push (12 fresh / 2 AGING / 11 STALE expected, got the same 10/3/13 as before
+the edit) rather than trusting the edit — re-ran it again after rewriting. **Fix: when refreshing a
+schema claim, either replace the old anchor phrase entirely, or keep the history but strip the
+anchor VERB from anything but the newest one** (e.g. "first established cycle 836, updated cycle
+1533, re-verified live cycle 2609" — "established"/"updated" don't match the ANCHOR verb list, so
+only the newest clause counts). Re-verify with the checker itself, not just visual inspection of the
+diff, since the regex's multi-match behavior is not obvious from reading the sentence. Required a
+second `apify push` on `eu-ted-tenders-scraper` (build 0.1.91 had the bug, 0.1.92 fixed it) — caught
+before the buyer-facing build was trusted, but it cost one wasted build (~$0.005).

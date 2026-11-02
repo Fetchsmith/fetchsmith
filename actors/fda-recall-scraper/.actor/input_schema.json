@@ -66,7 +66,7 @@
     "voluntaryMandated": {
       "title": "Voluntary or FDA mandated",
       "type": "string",
-      "description": "Filter by whether the recall was voluntary (firm-initiated) or FDA mandated. FDA-mandated recalls are rare (under 2% of all recalls) and often signal a more serious enforcement action. \"N/A\" is FDA's own value for recalls where the initiating party was never captured (37 rows as of 2026-10-06); a further 23 rows carry an empty value for this field and are only reachable with this filter left on \"Any\".",
+      "description": "Filter by whether the recall was voluntary (firm-initiated) or FDA mandated. FDA-mandated recalls are rare (under 2% of all recalls) and often signal a more serious enforcement action. \"N/A\" is FDA's own value for recalls where the initiating party was never captured (37 rows as of 2026-11-02, unchanged since 2026-10-06: food 6, drug 23, device 8); a further 23 rows carry an empty value for this field and are only reachable with this filter left on \"Any\".",
       "editor": "select",
       "enum": ["", "Voluntary: Firm initiated", "FDA Mandated", "N/A"],
       "enumTitles": ["Any", "Voluntary (firm initiated)", "FDA Mandated", "N/A (initiating party not captured)"],
@@ -75,7 +75,7 @@
     "classifications": {
       "title": "Classifications",
       "type": "array",
-      "description": "Recall severity. Class I = reasonable probability of serious harm or death, Class II = temporary/reversible harm, Class III = unlikely to cause harm. \"Not Yet Classified\" is a real but very rare fourth value FDA uses before a center assigns severity (5 rows across all three endpoints as of 2026-10-06) — so selecting Class I + II + III is not identical to leaving this empty. Leave empty for all.",
+      "description": "Recall severity. Class I = reasonable probability of serious harm or death, Class II = temporary/reversible harm, Class III = unlikely to cause harm. \"Not Yet Classified\" is a real but very rare fourth value FDA uses before a center assigns severity (4 rows across all three endpoints as of 2026-11-02: food 1, drug 2, device 1) — so selecting Class I + II + III is not identical to leaving this empty. Leave empty for all.",
       "editor": "select",
       "items": {
         "type": "string",

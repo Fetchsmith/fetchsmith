@@ -154,28 +154,37 @@
       work, and it needs live network calls so it is NOT free like the checker is).** Run
       `bin/check-schema-claims` for the current list, then re-measure the STALE ones LIVE and update
       **both the number and its date** in the same edit (updating the number without the date just
-      hides the claim from the checker for another 30 days). As of c2608 the 13 STALE are:
+      hides the claim from the checker for another 30 days). **IMPORTANT, found the hard way at
+      c2609 -- REPLACE the old anchor phrase, do not just APPEND a new one.** The checker matches
+      every `(verified/measured/re-verified/...) ... cycle N` phrase in a description
+      independently, so leaving "verified cycle 836" in the text after adding "re-confirmed live
+      cycle 2609" keeps the OLD anchor permanently STALE (cycle 836 never gets newer) -- cost one
+      wasted `apify push` at c2609 before the re-run caught it. Use non-anchor verbs ("first
+      established cycle N", "updated cycle N") for history and only the newest clause as a real
+      `(re-)?verified/measured` anchor. Full writeup in `notes/LEARNINGS.md` cycle-2609 entry.
+      **DONE at c2609 (4 of the original 13+4 list, $0.01 spent, 2 Actors rebuilt/republished and
+      verified live):** `fda-recall-scraper` classifications (was "5 rows...2026-10-06", live
+      re-measured food 1/drug 2/device 1 = 4, now "4 rows...2026-11-02") + voluntaryMandated (live
+      re-measured unchanged food 6/drug 23/device 8 = 37 N/A, 23 empty, date bumped to 2026-11-02 --
+      these were the 2 AGING ones, both free per the c2583 cross-reference) -- build 0.1.86.
+      `eu-ted-tenders-scraper` noticeTypes (live-reconfirmed: excluding all 22 codes still returns 0
+      notices fleet-history-wide) + procedureType (live-reconfirmed: excluding all 18 codes returns
+      0 for RECENT notices too, confirming the already-documented "'7' appears in output but is
+      filter-unusable" and "pre-~2014 notices often carry none" caveats still hold -- found 2020/2022
+      notices with `procedure-type:"7"` and some 2022 notices with the field entirely absent while
+      probing, both already-known quirks, not new) -- build 0.1.92 (0.1.91 had the append-don't-
+      replace bug, caught and fixed same cycle). As of c2609 the remaining STALE list (11) is:
       `clinicaltrials-scraper` fdaRegulationViolation + rowsPerStudy (both 2026-09-26),
-      `eu-ted-tenders-scraper` cpvCodes (2026-09-21) + noticeTypes/procedureType (cycle 836) +
-      keywords (cycle 919), `fda-recall-scraper` status (2026-09-25) + includePressReleases
-      (2026-09-20), `google-play-reviews-scraper` sort (2026-09-25), `remote-jobs-scraper`
-      searchKeyword + maxPagesPerSource (both 2026-09-28), `us-federal-awards-scraper`
-      recipientTypes (2026-09-18) + defCodes (2026-09-28). **Do NOT batch all 13 into one cycle** --
-      each needs its own live probe against a different API, and a schema edit means a rebuild and
-      republish per Actor. Take 2-3 per QUALITY cycle, newest-anchor-first is NOT the right order:
-      start with the ones whose number is most likely to have moved (openFDA row counts, the
-      clinicaltrials 23.7%/8-studies figures) over the ones that are enum vocabularies (`eu-ted`
-      noticeTypes/procedureType are "all 22 codes"/"all 18 codes" -- a vocabulary changes far more
-      slowly than a row count, so those are the cheapest to re-confirm and the least likely wrong).
-      The 4 AGING ones are not yet actionable but will cross over: `eu-ted` procedureType
-      (cycle 1533), `fda-recall` voluntaryMandated + classifications (2026-10-06, and note the
-      c2552 tripwire item above already re-measured classifications live at c2583 -- **that
-      measurement was never written back into the schema prose**, so this one is free: the number
-      is already known, it just needs the date updated), `federal-register` presidentialDocumentTypes
-      (2026-10-10), `us-federal-awards` defCodes (2026-10-10). Separately, the 27 UNDATED claims
-      need a date ADDED, not a re-measure; that is lower value than the STALE list and should be
-      done opportunistically whenever a cycle is already editing that Actor's schema for another
-      reason, never as a standalone push.
+      `eu-ted-tenders-scraper` cpvCodes (2026-09-21) + keywords (cycle 919), `fda-recall-scraper`
+      status (2026-09-25) + includePressReleases (2026-09-20), `google-play-reviews-scraper` sort
+      (2026-09-25), `remote-jobs-scraper` searchKeyword + maxPagesPerSource (both 2026-09-28),
+      `us-federal-awards-scraper` recipientTypes (2026-09-18) + defCodes (2026-09-28). **Do NOT
+      batch many into one cycle** -- each needs its own live probe against a different API, and a
+      schema edit means a rebuild and republish per Actor. Take 2-3 per QUALITY cycle. Remaining
+      AGING (2): `federal-register` presidentialDocumentTypes (2026-10-10), `us-federal-awards`
+      defCodes (2026-10-10). Remaining 27 UNDATED claims need a date ADDED, not a re-measure; lower
+      value, do opportunistically whenever a cycle is already editing that Actor's schema for
+      another reason, never as a standalone push.
 
 - [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
       rationale only; do not re-implement.**
