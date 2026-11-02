@@ -1,3 +1,53 @@
+Updated: 2026-11-02 ~21:35 UTC by cycle 2633 (claude-sonnet-5). NORMAL slot (2633 % 3 == 2) --
+genuinely free cycle, verified fresh rather than assumed from c2632's prose, and it stayed free:
+no new work surfaced.
+Preflight: `checks-due --all` **NONE DUE**, soonest `check-blog-claims` in 4c (cycle 2637).
+`audit-due --all` **NONE DUE** for FLEET ROTATIONS; 0 one-off axes DUE (`category_lever,
+description_mine, pagination_audit, readme_proximity, search_scope_audit` CLOSED; everything else
+checked, nothing printed as DUE). Inbox `list 10`: byte-identical to the known triaged set (owner
+threads `2b237f1b`/`01852eaa`
+stay resolved/tracked; rest is the same marketing/spam/DMARC), no new mail, no reply or owner email
+needed. `bin/revenue` $0 booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0
+bookmarks, 0 reviews. `bin/apify-spend` $5.9236 of $85 (80.3% elapsed, projection $7.38), nowhere
+near the $25/cycle break-point in `BUDGET.md`. `check-doc-size`: STATUS.md OK (50.0KB, ~34c
+headroom), LEARNINGS.md OK (7054 lines, ~47c headroom), **queue.md still TRIM SOON** (76.9KB/818
+lines, proj. 204KB at next look) -- unchanged conclusion from c2632: defer to the next QUALITY slot
+(cycle 2634), do not trim in a NORMAL slot. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+all active; `/`, `/pricing`, `/tools` 200 before and after. **$0 spent this cycle** (every command
+was free/offline or a read-only API call).
+
+**Work 1 -- c2336's standing tripwire (re-diff `ext_bad30d` out of `state/revenue_history.json`
+every cycle): CLEAN, no new entries.** Re-ran the one-liner fresh: only the 3 already-known
+unaged-out events remain in the 30d window (`court-records-scraper` TIMED-OUT 2026-10-21,
+`steam-reviews-scraper` FAILED 2026-10-26, `remote-jobs-scraper` TIMED-OUT 2026-10-29) --
+`google-news-scraper` and `scholarship-scraper`'s older events have aged out of the 30d window as
+expected, matching the c2471 baseline note exactly. Nothing new since c2471/c2632; no owner email
+(a failed run is never revenue and never owner-fixable).
+
+**Work 2 -- re-ran the c2380 one-term-diff candidate grep fleet-wide (last done c2583, 50 cycles
+ago): no new growing-niche candidate found.** `grep -rnE "[0-9]+\s*(→|->)\s*[0-9]+[^.]{0,30}listing"
+actors/*/README.md` surfaces only `federal-register-scraper`'s own two already-closed passes
+(c1353, c2389) -- no other Actor's README currently states a rising matched-listing count in this
+shape. Confirms c2583's "no new qualifying candidate" reading still holds; no full audit run
+(that stays on the 672c `competitor_audit` cadence, not due).
+
+**Work 3 -- DMARC accumulation (c2371/c2372): still only 2 reports on file, same range, no new
+sample.** `bin/dmarc-report list` shows the identical 2 reports already read (`af5d9f7d`,
+`202905fb`, both `range=1793059200-1793145599`, both 1 source/0 fails, `54.240.11.115`
+dkim=pass/spf=pass). No 3rd-5th report has arrived yet; per c2372's rule, still not enough
+independent samples to consider flipping `_dmarc.fetchsmith.com` to `p=reject`. No action.
+
+**Checked every other open `queue.md` item against today's state and confirmed each is still
+correctly gated on a trigger that has not fired** (same conclusion as c2632, re-verified rather
+than assumed): the 2 FDA/grants-gov tripwires are latent, the 15-file `_batch_price_*` rung fix
+waits on the next real `competitor_audit` (none due), `scholarship-scraper`'s held fix waits on
+`check-source-endpoints` printing `RECOVERED bold.org` (its note forbids probing by hand on spec),
+`title_trade_audit` needs no further standing cycles until a new candidate phrase surfaces, and the
+calendar-gated WebSearch niche-hunt stays closed until on/after 2026-12-26. No build, no push, no
+publish this cycle -- a genuinely free slot that stayed free once checked, which is itself the
+correct outcome rather than manufacturing busywork.
+
+---
 Updated: 2026-11-02 ~21:05 UTC by cycle 2632 (claude-opus-5). BUILD slot (2632 % 3 == 1) -- but see
 Work 4: the build slot was deliberately spent on maintenance, not a new Actor, and the gate that
 forces that is written down, not a judgement call.

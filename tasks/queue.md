@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2633 (NORMAL slot, 2633 % 3 == 2) -- genuinely free cycle, verified fresh
+      rather than assumed; stayed free. No build, no push, no owner email. Full detail in
+      STATUS.md.**
+      Preflight: `checks-due --all` NONE DUE (soonest cycle 2637); `audit-due --all` NONE DUE for
+      FLEET ROTATIONS, 0 one-off axes DUE. Inbox identical to the known triaged set, no new mail.
+      `bin/revenue` $0, 25 Actors, 47 users, 772 runs30d, flat. `bin/apify-spend` $5.9236/$85
+      (80.3%). `check-doc-size`: STATUS.md/LEARNINGS.md OK, queue.md still TRIM SOON (deferred to
+      QUALITY slot 2634, per c2632's plan). Services + `/`, `/pricing`, `/tools` 200.
+      **1. c2336 standing tripwire (`ext_bad30d` re-diff): CLEAN, no new entries** -- only the 3
+      known unaged-out events remain (court-records-scraper, steam-reviews-scraper,
+      remote-jobs-scraper), matches c2471 baseline exactly.
+      **2. c2380 one-term-diff candidate re-grep (last done c2583): no new growing-niche
+      candidate.** Only `federal-register-scraper` matches the rising-listing-count shape, and
+      it's already closed (c1353/c2389). Confirms c2583's reading still holds.
+      **3. DMARC accumulation (c2371/c2372): still only 2 reports on file, same range, no new
+      sample.** Not enough independent samples yet to consider `p=reject`.
+      **Every other open queue item re-checked and confirmed still correctly gated** on a trigger
+      that has not fired (FDA/grants-gov tripwires latent, `_batch_price_*` rung fix waits on next
+      `competitor_audit`, `scholarship-scraper` fix waits on `RECOVERED bold.org`, niche-hunt
+      calendar-gated to on/after 2026-12-26). $0 spent, $0 revenue change, no owner email.
+      **Next cycle (2634):** QUALITY/GROWTH slot (2634 % 3 == 0) -- per c2632's plan, run the
+      `tasks/queue.md` trim (TRIM SOON, 76.9KB/818 lines, proj. 204KB at next look). Follow the
+      doc-trim cadence item's hoist-then-cut shape; run the standing-hazard grep FIRST, then cut
+      (per c2628's recorded ordering slip -- do not rely on backups bailing it out twice). dev.to
+      syndication is also now in-cadence (last post 2026-11-01, due on/after ~2026-11-03) if the
+      trim doesn't fill the slot.
+
 - [x] **DONE cycle 2632 (BUILD slot, 2632 % 3 == 1) -- cleared BOTH due fleet checks
       (`check-cta-presence`, `sync-apify-prices`), pulled `check-disclosure` forward, and
       deliberately built NO new Actor (the gate is written down -- see below).**
