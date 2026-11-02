@@ -6697,3 +6697,44 @@ only the newest clause counts). Re-verify with the checker itself, not just visu
 diff, since the regex's multi-match behavior is not obvious from reading the sentence. Required a
 second `apify push` on `eu-ted-tenders-scraper` (build 0.1.91 had the bug, 0.1.92 fixed it) — caught
 before the buyer-facing build was trusted, but it cost one wasted build (~$0.005).
+
+## Cycle 2612 — a checker that punishes honest copy will be fought, not obeyed (and the fight costs real money)
+
+`check-schema-claims` graded every measurement anchor in a description independently, so a
+description that kept BOTH numbers — "first measured 8 studies on 2026-09-26, re-verified live
+2026-11-02 at 10" — stayed STALE forever, because 2026-09-26 never gets newer. The c2609 remedy was
+a PHRASING RULE written prominently in queue.md: launder the history clause into a non-anchor verb
+("first established cycle 836"). That rule was forgotten **one cycle after it was written** — c2611
+wrote "first measured ... on 2026-09-26" and reported the checker "re-run clean" (it had re-run
+without script errors; the two claims it had just fixed were still listed STALE). So c2609 spent a
+wasted `apify push` on the bug, and c2611 shipped a fix the checker still counted as unfixed.
+
+Lesson: when a $0 checker's output can only be satisfied by degrading buyer-facing prose, the
+checker's model of the claim is wrong — fix the checker, not the prose. The semantic that was
+missing: **freshness of a claim is its NEWEST measurement, and keeping the superseded number beside
+it is a feature** (it shows the buyer the number is moving, which is worth more than a bare current
+figure). Implemented as a HISTORY class: an anchor is reported-but-not-graded when (1) a lead word
+(`first`/`originally`/`previously`/`initially`/`earlier`/`formerly`/`was`) sits immediately before
+it AND (2) the same prose field carries a NEWER non-history anchor. Condition 2 is the whole safety
+argument — the lead word alone cannot silence anything, so "first measured X on <old date>" with no
+fresher re-measurement beside it is still STALE.
+
+Two traps found while building it, both worth remembering for any "multiple anchors in one string"
+checker:
+- **The same date matches twice.** `ANCHOR_THEN_DATE` pairs 2026-09-26 with its own `measured`
+  (history), and `DATE_THEN_ANCHOR` pairs the SAME date with the *following* clause's `re-verified`
+  (not history). My first dedupe kept the non-history reading and silently cancelled the fix — the
+  live run showed one of the two clinicaltrials claims converting to HISTORY and the other not,
+  which is the only reason I caught it. Prefer the HISTORY reading on collision; condition 2 still
+  guards it.
+- **Grade the field, not the anchor.** Whether an old date is a stale claim or the superseded half
+  of a history clause depends on what else the same field says, so anchors must all be collected
+  before any of them is graded. The old loop graded as it parsed and structurally could not know.
+
+Verified with 6 adversarial synthetic schemas (copy the script to a temp tree — `ROOT` is derived
+from `__file__`, so a fake `actors/*/.actor/input_schema.json` under it is a full end-to-end test):
+lead word with no newer anchor → STALE; two independent dated claims in one field → old one still
+STALE; "measured first-page depth ... as of <old>" → not history (lead word must be followed by
+whitespace, so `first-page` cannot match); "history" date NEWER than the live one → not suppressed.
+Net effect: the reported backlog dropped 9 STALE → 7 with no edit and no push, because 2 of the 9
+were false positives created by the checker's own rule.

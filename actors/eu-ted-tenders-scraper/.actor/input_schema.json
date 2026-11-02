@@ -13,7 +13,7 @@
     "cpvCodes": {
       "title": "CPV codes",
       "type": "array",
-      "description": "Common Procurement Vocabulary codes to filter by, 8 digits (e.g. 72000000 for IT services, 45000000 for construction). Leave empty for all. IMPORTANT -- TED matches the whole CPV SUBTREE under each code you give, at every level, not the code itself: 72000000 also returns notices tagged only 72313000 or 72220000, and even a narrow code like 72267000 also returns its children 72267100/72267200. Measured 2026-09-21: of 10 notices matched by 72267000, only 6 carried that literal code. There is no exact-code mode -- post-filter the cpvCodes output field yourself if you need one.",
+      "description": "Common Procurement Vocabulary codes to filter by, 8 digits (e.g. 72000000 for IT services, 45000000 for construction). Leave empty for all. IMPORTANT -- TED matches the whole CPV SUBTREE under each code you give, at every level, not the code itself: 72000000 also returns notices tagged only 72313000 or 72220000, and even a narrow code like 72267000 also returns its children 72267100/72267200. First measured 2026-09-21 on a 10-notice sample (6 carried the literal 72267000); re-measured live 2026-11-02 on a 100-notice sample from the last 365 days: 67 of 100 notices matched by 72267000 carried that literal code (35 carried the child 72267100, 3 carried 72267200), and only 36 of 100 matched by 72000000 carried 72000000 itself (e.g. notice 723769-2025 is tagged 72200000 and 79400000 only). So expect a third or more of your rows not to carry the code you asked for, and more of them the broader the code. There is no exact-code mode -- post-filter the cpvCodes output field yourself if you need one.",
       "editor": "stringList",
       "default": []
     },

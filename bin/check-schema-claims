@@ -30,6 +30,21 @@ Three classes are reported, by what the claim anchors itself to:
              an inventory (and as the reason the other two classes are incomplete), not
              as a failure, unless --strict is passed.
 
+HISTORY clauses (added cycle 2612, after this checker caused two wasted edits): a good
+schema description often keeps the number it USED to report next to the current one --
+"first measured 8 studies on 2026-09-26, re-verified live 2026-11-02 at 10" tells a
+buyer the count is moving, which is worth more than the bare current figure. Graded
+naively, that older date stays STALE forever (2026-09-26 never gets newer), so c2609
+and c2611 both burned an `apify push` rewriting honest copy to dodge the checker. An
+anchor is therefore treated as HISTORY -- reported, never graded -- when BOTH hold:
+  1. a history lead word sits immediately before it (`first`, `originally`,
+     `previously`, `initially`, `earlier`, `formerly`, `used to be`, `was`), and
+  2. the SAME prose field carries another, non-history anchor that is NEWER.
+Condition 2 is what makes this safe: "first measured ... 2026-09-26" with no fresher
+re-measurement beside it is still graded STALE, so the lead word alone cannot silence a
+claim, and an independent second claim in the same description (no lead word) is graded
+on its own date as before.
+
 Example-value noise is the hard part here and is excluded deliberately: a date only
 counts when a measurement anchor sits next to it (`e.g. 2026-01-01` is not a
 measurement), and for the UNDATED class a bare integer never triggers on its own --
@@ -84,6 +99,12 @@ DATE_THEN_ANCHOR = re.compile(rf"(\d{{4}}-\d{{2}}-\d{{2}})[^.;]{{0,25}}?(?:{ANCH
 # The fleet's other anchor convention: "verified cycle 836", "re-verified live cycle 1533".
 ANCHOR_THEN_CYCLE = re.compile(rf"(?:{ANCHOR})[^.;]{{0,30}}?cycle\s+(\d{{3,5}})", re.I)
 STRICT_ANCHOR_RE = re.compile(STRICT_ANCHOR, re.I)
+# A lead word marking the anchor that follows as a SUPERSEDED measurement rather than
+# the live one. Must sit immediately before the anchor (at most two filler words), so
+# "first measured 8 ... on 2026-09-26" is history but "measured first-page depth" is not.
+HISTORY_LEAD = re.compile(
+    r"\b(?:first|originally|initially|previously|earlier|formerly|used to be|was)"
+    r"\s+(?:\w+[\s,]+){0,2}$", re.I)
 CYCLE_RE = re.compile(r"cycle\s+\d{3,5}", re.I)
 # An APPROXIMATED magnitude -- ~85k, ~3%, ~6. The tilde is the signal: this fleet writes
 # it only for a number it measured rather than one the input/API defines. A bare integer
@@ -118,21 +139,45 @@ def prose_strings(path):
     return out
 
 
+def is_history(text, start):
+    """Does a history lead word sit immediately before the anchor starting at `start`?"""
+    return bool(HISTORY_LEAD.search(text[max(0, start - 30):start]))
+
+
+def _add(found, key, m, text):
+    """Record one anchor match, keeping the HISTORY reading if a key matches twice.
+
+    One date routinely matches both regexes: "first measured 8 ... on 2026-09-26,
+    re-verified live 2026-11-02" pairs 2026-09-26 with its own `measured` (history) and
+    again with the FOLLOWING clause's `re-verified` (not history). The history reading is
+    the author's intent -- the lead word is attached to that date -- and it is safe to
+    prefer it because a history anchor is still graded unless a fresher non-history
+    anchor exists elsewhere in the same field.
+    """
+    snippet = re.sub(r"\s+", " ", m.group().strip())
+    hist = is_history(text, m.start())
+    if key in found:
+        prev_snippet, prev_hist = found[key]
+        found[key] = (prev_snippet, prev_hist or hist)
+    else:
+        found[key] = (snippet, hist)
+
+
 def dated_claims(text):
-    """{date_string: measurement excerpt} for every anchor-adjacent date in the text."""
+    """{date_string: (excerpt, is_history)} for every anchor-adjacent date in the text."""
     found = {}
     for rx in (ANCHOR_THEN_DATE, DATE_THEN_ANCHOR):
         for m in rx.finditer(text):
-            found.setdefault(m.group(1), re.sub(r"\s+", " ", m.group().strip()))
+            _add(found, m.group(1), m, text)
     return found
 
 
 def cycle_claims(text):
-    """{cycle_number: excerpt} for every anchor-adjacent 'cycle NNNN' in the text."""
-    return {
-        int(m.group(1)): re.sub(r"\s+", " ", m.group().strip())
-        for m in ANCHOR_THEN_CYCLE.finditer(text)
-    }
+    """{cycle_number: (excerpt, is_history)} for every anchor-adjacent 'cycle NNNN'."""
+    found = {}
+    for m in ANCHOR_THEN_CYCLE.finditer(text):
+        _add(found, int(m.group(1)), m, text)
+    return found
 
 
 def current_cycle():
@@ -180,7 +225,7 @@ def main(argv):
     # Skipping these beats widening the anchor regex to guess at sentence roles.
     fleet_age_days = (cyc_now // CYCLES_PER_DAY) + 7 if cyc_now else 10 ** 6
 
-    stale = aging = ok = undated = schemas = data_dates = 0
+    stale = aging = ok = undated = schemas = data_dates = history = 0
     undated_by_actor = {}
 
     def grade(age_days):
@@ -202,8 +247,11 @@ def main(argv):
             continue
         schemas += 1
         for where, text in fields:
-            anchored = 0
-            for ds, snippet in sorted(dated_claims(text).items()):
+            # Collect every anchor in the field FIRST: whether an old date is a stale
+            # claim or the superseded half of a history clause depends on what else the
+            # same field says, so nothing can be graded one anchor at a time.
+            anchors = []  # (age_days, label, snippet, is_history)
+            for ds, (snippet, hist) in sorted(dated_claims(text).items()):
                 d = parse_date(ds)
                 if d is None or d > TODAY:
                     continue  # malformed, or a measurement dated in the future -- not stale yet
@@ -211,25 +259,30 @@ def main(argv):
                 if age > fleet_age_days:
                     data_dates += 1
                     continue  # a date the measurement is ABOUT, not when it was taken
-                anchored += 1
+                anchors.append((age, f"measured {ds} ({age}d / ~{age * CYCLES_PER_DAY}c ago)",
+                                snippet, hist))
+            for cnum, (snippet, hist) in sorted(cycle_claims(text).items()):
+                if cyc_now is None or cnum > cyc_now:
+                    continue  # no clock to measure against, or a forward reference
+                gap = cyc_now - cnum
+                anchors.append((gap // CYCLES_PER_DAY,
+                                f"measured cycle {cnum} ({gap}c / ~{gap // CYCLES_PER_DAY}d ago)",
+                                snippet, hist))
+            # The live reading for this field: the newest anchor NOT marked as history.
+            live_age = min([a for a, _, _, h in anchors if not h], default=None)
+            for age, label, snippet, hist in anchors:
+                if hist and live_age is not None and live_age < age:
+                    history += 1  # superseded by a fresher re-measurement in the same field
+                    if not quiet:
+                        print(f'HISTORY {slug}{where}  {label}, superseded {live_age}d ago '
+                              f'-- "{snippet}"')
+                    continue
                 verdict, bucket = grade(age)
                 ok, aging, stale = (
                     ok + (bucket == "ok"), aging + (bucket == "aging"), stale + (bucket == "stale"))
                 if verdict and not quiet:
-                    print(f'{verdict} {slug}{where}  measured {ds} '
-                          f'({age}d / ~{age * CYCLES_PER_DAY}c ago) -- "{snippet}"')
-            for cnum, snippet in sorted(cycle_claims(text).items()):
-                if cyc_now is None or cnum > cyc_now:
-                    continue  # no clock to measure against, or a forward reference
-                anchored += 1
-                gap = cyc_now - cnum
-                verdict, bucket = grade(gap // CYCLES_PER_DAY)
-                ok, aging, stale = (
-                    ok + (bucket == "ok"), aging + (bucket == "aging"), stale + (bucket == "stale"))
-                if verdict and not quiet:
-                    print(f'{verdict} {slug}{where}  measured cycle {cnum} '
-                          f'({gap}c / ~{gap // CYCLES_PER_DAY}d ago) -- "{snippet}"')
-            if anchored:
+                    print(f'{verdict} {slug}{where}  {label} -- "{snippet}"')
+            if anchors:
                 continue  # the field carries at least one re-measure handle
             # Neither anchor form present: is this field making a measurement claim anyway?
             m = STRICT_ANCHOR_RE.search(text) or APPROX_RE.search(text)
@@ -247,6 +300,7 @@ def main(argv):
         f"\ncheck-schema-claims: {schemas} schema(s); anchored claims {ok} fresh / {aging} AGING "
         f"(>={aging_at}d / {aging_at_c}c) / {stale} STALE (>={max_age}d / {max_age_c}c); "
         f"{undated} undated measured claim(s)"
+        + (f"; {history} HISTORY clause(s) superseded in-field" if history else "")
         + (f"; skipped {data_dates} anchor-adjacent date(s) predating cycle 1" if data_dates else "")
     )
     if stale:

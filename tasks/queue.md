@@ -215,12 +215,78 @@
       c2260 already found once that leaving a stale number in one copy while fixing the other is
       a half-fix with a long half-life. Build 0.1.97 (package.json 0.1.36 -> 0.1.37), verified
       both descriptions on the live build record byte-for-byte identical to local source.
-      `check-schema-claims` re-run clean (0 errors); `check-charges`/`check-registry-fields`/
+      **IMPORTANT CORRECTION (c2612): c2611's "check-schema-claims re-run clean" was wrong** --
+      it had re-run without script ERRORS, but both claims it had just fixed were still listed
+      STALE, because "first measured 8 ... on 2026-09-26" uses an ANCHOR verb and so kept the old
+      date live for the checker. That is the c2609 phrasing rule being forgotten one cycle after it
+      was written down here. **c2612 fixed the CHECKER instead of the prose** (see below) -- the
+      phrasing rule is now OBSOLETE: you may keep the superseded number in buyer-facing copy with a
+      lead word ("first measured X on <old>; re-measured live <new> at Y") and the checker reports
+      it as HISTORY rather than STALE, as long as a NEWER non-history anchor sits in the same field.
+      No rewrite or push is needed for the c2611 clinicaltrials descriptions; they are correct.
+      `check-charges`/`check-registry-fields`/
       `check-code-fields` all 0 drift. ~$0.005 spent (1 build). As of c2611 the remaining STALE
       list is down to ~7-8 (clinicaltrials-scraper now clear); AGING still 2 (`federal-register-
       scraper.presidentialDocumentTypes`, `us-federal-awards-scraper.defCodes`). **Note for next
       pick:** `eu-ted-tenders-scraper.cpvCodes` (2026-09-21) + `keywords` (cycle 919) are still the
       best next target (2 stale claims, one rebuild covers both), same as c2610 flagged.
+
+- [x] **DONE cycle 2612 (normal slot, 2612 % 3 == 2) -- nothing was DUE fleet-wide, so this slot
+      (a) fixed a real defect in `bin/check-schema-claims` that was manufacturing false STALEs and
+      had already cost 2 wasted/half-wasted `apify push`es, and (b) remediated 1 more real STALE
+      claim live (`eu-ted-tenders-scraper.cpvCodes`), schema + README + build.**
+      Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes informational
+      only per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest
+      `check-mode-scope-warning` in 4c, cycle 2616). Inbox: same known 10-item set, no new mail;
+      the two owner threads (`2b237f1b`, `01852eaa`) are long-tracked, not new asks -- no owner
+      email per rule 3. `bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users, 766 runs30d,
+      763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8521 of $85 (78.9%
+      elapsed, projection $7.42). Services + `/`, `/pricing`, `/tools`,
+      `/tools/eu-ted-tenders-scraper` all active/200 before and after.
+      **(a) `check-schema-claims` HISTORY class.** The checker graded every anchor in a description
+      independently, so an honest description keeping both the old and new number stayed STALE
+      forever on the old date. c2609 responded with a phrasing rule (launder history into a
+      non-anchor verb); c2611 forgot it one cycle later and shipped a half-fix it believed was
+      clean. Fixed the model instead: an anchor is now reported as HISTORY (not graded) when a lead
+      word (`first`/`originally`/`previously`/`initially`/`earlier`/`formerly`/`was`) sits
+      immediately before it AND the same prose field carries a NEWER non-history anchor. The second
+      condition is the safety argument -- a lead word alone cannot silence a claim. Verified with 6
+      adversarial synthetic schemas (temp tree, `ROOT` derives from `__file__`): lead word with no
+      newer anchor -> still STALE; two independent dated claims in one field -> old one still
+      STALE; "measured first-page depth ... as of <old>" -> not history; "history" date NEWER than
+      the live one -> not suppressed. Two implementation traps hit and documented in LEARNINGS
+      c2612 (the same date matches BOTH anchor regexes, once as history and once paired with the
+      next clause's verb -- prefer the history reading on collision; and anchors must all be
+      collected before any is graded, since the verdict depends on the whole field). **Effect: the
+      reported backlog dropped 9 STALE -> 7 with no edit and no push -- 2 of the 9 were false
+      positives the checker itself created.** $0, read-only, no network.
+      **(b) `eu-ted-tenders-scraper.cpvCodes` re-measured live** (was "Measured 2026-09-21: of 10
+      notices matched by 72267000, only 6 carried that literal code" -- a 10-notice sample). Probed
+      `api.ted.europa.eu/v3/notices/search` directly with the Actor's own query grammar
+      (`(classification-cpv=<code>) AND publication-date>=today(-365)`), 100 notices per code: the
+      subtree effect is unchanged and the ratio holds -- **67 of 100** matched by 72267000 carried
+      that literal code (35 carried child 72267100, 3 carried 72267200), and only **36 of 100**
+      matched by 72000000 carried 72000000 itself (e.g. notice `723769-2025` is tagged 72200000 and
+      79400000 only). Kept the original figure as a HISTORY clause using the new convention. Fixed
+      BOTH copies per the c2260 half-fix lesson: schema description AND the README FAQ (README line
+      17 needed no edit -- it defers to the FAQ and carries no dated number). Build **0.1.93**
+      (package.json 0.1.22 -> 0.1.23), verified the live build's
+      `inputSchema.properties.cpvCodes.description` byte-for-byte identical to local source via
+      `GET /v2/acts/<id>/builds/<buildId>` and confirmed the live `readme` carries the 2026-11-02
+      re-measurement. `check-charges` 25/0/0, `check-registry-fields` / `check-code-fields` both 0
+      drift. ~$0.005 spent (1 build), $0 revenue change, no owner email.
+      **Next cycle:** re-run preflight fresh. Remaining STALE list is **6**:
+      `eu-ted-tenders-scraper` keywords (cycle 919 -- the last one on that Actor, so one build
+      closes it; probe method: the claim is that TED's `FT~` operator matches the WHOLE indexed
+      notice text, not just title/description/buyer name, so re-run a `FT~"software"` search and
+      confirm at least one returned row contains the term in NONE of this Actor's output fields),
+      `google-play-reviews-scraper` sort (2026-09-25), `remote-jobs-scraper` searchKeyword +
+      maxPagesPerSource (both 2026-09-28, 2 claims one build), `us-federal-awards-scraper`
+      recipientTypes (2026-09-18) + defCodes (2026-09-28, also the one remaining AGING anchor at
+      2026-10-10 -- one build closes all three on that Actor, best value per push). AGING: 2
+      (`federal-register-scraper` presidentialDocumentTypes 2026-10-10, `us-federal-awards-scraper`
+      defCodes 2026-10-10). 27 UNDATED unchanged -- add dates opportunistically, never as a
+      standalone push.
 
 - [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
       rationale only; do not re-implement.**
