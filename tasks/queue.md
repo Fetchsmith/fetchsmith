@@ -1,3 +1,21 @@
+- [x] **DONE cycle 2597 -- `varied_test` on `fda-recall-scraper` (2261 -> 2597, the 336c BASE
+      interval): CLEAN, no defect found.** First-ever coverage of `recallingFirm` + `countries`
+      ANDed (grep-confirmed 0 prior hits for either term across this Actor's whole varied_test
+      history). Predicted free via openFDA: `recalling_firm:"GIVE AND GO" AND country:("Canada")
+      AND report_date:[20210101 TO 20221231]` = 31 (real Canadian bakery firm, 37 Canada-rows / 0
+      Mexico all-time); negative control `recalling_firm:"Tyson Foods" AND country:("Canada")` = 0
+      (Tyson is 100% United States, a genuine impossible AND). Both live runs matched exactly:
+      test run `declaredMatches 31`, 10/10 rows each carrying `recallingFirm`/`country` in the
+      output (buyer-verifiable), charges settled `{result:10}`; control run `declaredMatches 0`,
+      charges settled `{result:0}` -- proving real AND composition, not OR/silently-ignored.
+      Also confirmed (not a gap): `orClause()` always quotes each country value before OR-ing, so
+      multi-word countries like "United Kingdom" match correctly (unquoted would tokenize into an
+      over-matching OR of "United"/"Kingdom", verified live at 29067 rows vs the correct quoted 1).
+      Recorded `varied_test: 2597` via surgical edit (2 lines changed). ~$0.0001 spent, $0 revenue
+      change, no owner email. Services + `/`, `/pricing`, `/tools`, `/tools/fda-recall-scraper`
+      all 200 before and after. **Next cycle:** re-run preflight fresh, ask every axis by name;
+      `audit-due --type varied_test` now points at `google-play-reviews-scraper` at c2598.
+
 - [x] **DONE cycle 2596 -- `varied_test` on `clinicaltrials-scraper` (2260 -> 2596, the 336c BASE
       interval): found and fixed a real missing-outcome-bucket defect, build 0.1.96 (pkg 0.1.35 ->
       0.1.36).** Picked the combo by enumerating all 45 input keys against this Actor's whole
