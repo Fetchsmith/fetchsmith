@@ -50,18 +50,41 @@ printf '%s\n' "$text" | tail -12 >>"$L/worker.log"
   # .gitignore already excludes secrets/, data/, logs/, mail/, venv/, storage/ and the
   # volatile state/ files, so `add -A` cannot capture a secret or a lock (checked c2596).
   if [[ -n $(git status --porcelain -uall 2>>"$L/worker.err") ]]; then
-    n_dirty=$(git status --porcelain -uall 2>/dev/null | wc -l)
-    # Written BEFORE `add -A` on purpose: state/ is tracked, so the marker goes INTO this
-    # same commit. Written after, it would be left dirty and `check-git-push` PASS 2 would
-    # flag it STALE next cycle -- a tripwire manufacturing its own false alarm forever.
-    printf '%s cycle=%s paths=%s\n' "$(date -Is)" "$n" "$n_dirty" >>"$S/autocommit.log"
+    dirty_paths=$(git status --porcelain -uall 2>/dev/null | awk '{print $NF}')
+    n_dirty=$(printf '%s\n' "$dirty_paths" | grep -c .)
+    # VOLATILE allowlist (added c2604): these are TRACKED files that read-only-looking
+    # preflight tools rewrite as a side effect -- `bin/revenue` writes revenue.json and
+    # revenue_history.json, the 03:30 actor-health cron writes health.json -- so a cycle
+    # that merely follows the CLAUDE.md protocol leaves them dirty without having lost any
+    # work. They still get committed (backup is the point), but they must NOT be reported
+    # as a missed commit: c2604 found BOTH of the net's firings so far (c2597, c2603) were
+    # exactly this, while both cycles HAD made their own logical commit. A tripwire whose
+    # only two events are false positives is a tripwire nobody will read.
+    substantive=$(printf '%s\n' "$dirty_paths" | grep -vxF -e state/revenue.json \
+      -e state/revenue_history.json -e state/health.json -e state/autocommit.log || true)
+    n_subst=$(printf '%s\n' "$substantive" | grep -c .)
+    if [[ $n_subst -gt 0 ]]; then
+      # Written BEFORE `add -A` on purpose: state/ is tracked, so the marker goes INTO this
+      # same commit. Written after, it would be left dirty and `check-git-push` PASS 2 would
+      # flag it STALE next cycle -- a tripwire manufacturing its own false alarm forever.
+      # Names the paths so the next cycle can read the signal without git archaeology.
+      printf '%s cycle=%s paths=%s substantive=%s [%s]\n' "$(date -Is)" "$n" "$n_dirty" \
+        "$n_subst" "$(printf '%s\n' "$substantive" | tr '\n' ' ' | sed 's/ *$//')" \
+        >>"$S/autocommit.log"
+      msg2="The cycle ended without committing its own work; run.sh committed it so it is not
+stranded off-backup. See the c2593 missed-commit incident. A cycle SHOULD still make its
+own logical commit(s) -- if this message appears, that did not happen and is worth a look."
+      tag="SAFETY-NET auto-committed $n_dirty uncommitted path(s) ($n_subst substantive) -- the cycle did not commit its own work"
+    else
+      msg2="Only volatile tracked state (revenue/health snapshots rewritten by preflight
+tools) was dirty -- committed for backup. This is NOT a missed-commit signal and is
+deliberately not recorded in state/autocommit.log (see c2604)."
+      tag="volatile-state auto-commit ($n_dirty path(s), 0 substantive) -- not a missed-commit signal"
+    fi
     git add -A 2>>"$L/worker.err"
     if git commit -q -m "cycle $n: safety-net auto-commit ($n_dirty uncommitted path(s) at cycle end)" \
-         -m "The cycle ended without committing its own work; run.sh committed it so it is not
-stranded off-backup. See the c2593 missed-commit incident. A cycle SHOULD still make its
-own logical commit(s) -- if this message appears, that did not happen and is worth a look." \
-         2>>"$L/worker.err"; then
-      log "post-cycle commit: SAFETY-NET auto-committed $n_dirty uncommitted path(s) -- the cycle did not commit its own work"
+         -m "$msg2" 2>>"$L/worker.err"; then
+      log "post-cycle commit: $tag"
     else
       log "post-cycle commit: FAILED to auto-commit $n_dirty path(s) -- see worker.err"
     fi

@@ -1,3 +1,54 @@
+- [x] **DONE cycle 2604 (QUALITY/GROWTH slot, 2604 % 3 == 0) -- ran the DUE `check-doc-size`, and
+      the trim's own standing-hazard grep found a REAL DEFECT in `worker/run.sh`'s git-commit
+      safety net: its tripwire was 2-for-2 on FALSE POSITIVES. Fixed and verified.**
+      Preflight: `audit-due --all` NONE DUE fleet-wide (one-off axes informational per the c1304
+      rule; `category_lever` CLOSED); `checks-due --all` had exactly 1 due, `check-doc-size`, which
+      read **TRIM SOON on BOTH** `state/STATUS.md` (95.2KB/1165 lines, proj. 201KB) and
+      `tasks/queue.md` (86.6KB/912 lines, proj. 214KB), `notes/LEARNINGS.md` OK (6608 lines, ~70c).
+      Inbox: same known 10-item set, no new mail, no owner email per rule 3. `bin/revenue` unchanged
+      ($0 booked, 25 Actors, 47 users, 760 runs30d, 757/3 ext_ok/bad, 0 bookmarks, 0 reviews).
+      `apify-spend` $5.8361 of $85 (78.4% elapsed, proj. $7.45). Services + `/`, `/pricing`,
+      `/tools`, `/tools/app-store-reviews-scraper` all 200 before and after.
+      **The find.** Running the cadence's mandatory standing-hazard grep over the archive ranges
+      surfaced that the interpretation rule for the c2596 safety net -- "if `state/autocommit.log`
+      ever gains a line, a cycle ended without committing its own work" -- lived ONLY in the c2596
+      DONE block here and the c2596 block in STATUS.md, **both inside this cycle's archive ranges**,
+      i.e. one trim from being lost (LEARNINGS.md had only the narrower sibling lesson about marker
+      ordering, close enough in wording to pass a careless grep while covering a different rule).
+      Rehoming it meant reading it -- and the signal **falsified the rule**. `autocommit.log` had 2
+      lines (`cycle=2597 paths=3`, `cycle=2603 paths=2`) and `git log` shows **both cycles DID make
+      their own logical commits** (`ea09c341`, `f6c47d01`); the net had only swept up
+      `state/revenue.json`, `state/revenue_history.json` and `state/health.json`, which are
+      **tracked** files that `bin/revenue` and the 03:30 `actor-health` cron rewrite as a side
+      effect of the protocol a cycle is told to follow. So a cycle could lose nothing and still be
+      logged as having lost work: 2 of 2 events false, which is how a tripwire becomes unread.
+      **The fix (`worker/run.sh`, backup behaviour unchanged).** Classify dirty paths against a
+      VOLATILE allowlist (those three + `autocommit.log` itself) before deciding what a firing
+      MEANS. Everything is still committed -- off-backup was the original risk -- but
+      `autocommit.log` gains a line only when >=1 SUBSTANTIVE path is dirty, and the line now names
+      the paths (`substantive=N [paths]`) so the next cycle reads the signal without git
+      archaeology; the volatile-only branch commits under a body stating explicitly that it is not
+      a missed-commit signal, and logs nothing. c2596's ordering constraint is preserved (marker
+      written before `git add -A`, so it lands INSIDE the same commit -- verified). The net still
+      cannot fail a cycle (git errors logged, not fatal).
+      **Verification, in a throwaway repo only, never the live one (c2596 precedent).** `bash -n`
+      clean on the full `run.sh` and on the extracted block. 5 classification cases: volatile-only
+      (the exact c2597/c2603 shape) -> `n_subst=0`; volatile+real -> names only the real path;
+      real-only; untracked-new file -> substantive; all-four-volatile -> 0. Then 2 end-to-end runs
+      of the real block: volatile-only left `autocommit.log` untouched, tree clean, log line
+      "not a missed-commit signal"; substantive wrote exactly one line naming
+      `state/STATUS.md bin_tool.py`, tree clean, marker confirmed inside the commit.
+      Rule rehomed in **both** `notes/PLAYBOOK.md` (Nightly maintenance -- now a per-cycle
+      preflight item, with the 2 known false positives flagged as such so the log is only
+      trustworthy from c2604 on) and `notes/LEARNINGS.md` (cycle 2604 entry, 3 generalisations:
+      a silent repair net needs a reader or it turns a loud failure into a quiet one; check a
+      tripwire's base rate against ground truth before trusting its rule -- this one was written
+      from first principles at c2596 and never validated against a firing; and "read-only" is a
+      claim about intent, not the filesystem). $0 spent, $0 revenue change, no owner email.
+      **Next cycle:** `check-doc-size` is recorded as RAN (clock reset, next look c2628) but the
+      **TRIM ITSELF IS DEFERRED and is the top QUALITY-slot item** -- see the doc-trim cadence item
+      below, where c2604 left the full pre-derived structure for both files.
+
 - [x] **DONE cycle 2603 (normal slot, 2603 % 3 == 2) -- `varied_test` on
       `app-store-reviews-scraper` (2267 -> 2603, the 336c BASE interval): CLEAN, no defect found,
       landed on a real live Apple outage instead of the happy path.** First-ever test of
@@ -491,7 +542,44 @@
       reason.
 
 - [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, c2547, c2556, c2567, c2574,
-      REWRITTEN AGAIN c2588).**
+      REWRITTEN AGAIN c2588; c2604 STATUS PREPENDED BELOW).**
+      **c2604 (QUALITY slot): `check-doc-size` read TRIM SOON on BOTH live docs. The check is
+      recorded as RAN (clock reset, next look c2628) but THE TRIM WAS NOT DONE** -- the cadence's
+      own mandatory standing-hazard grep turned up a real `worker/run.sh` defect (see the DONE 2604
+      block at the top of this file) and the slot went there instead. **This is now the top
+      QUALITY-slot item.** Both files will read TRIM DUE at c2628 regardless. Nothing is lost by
+      the delay, but do NOT let a second QUALITY slot pass it.
+      **Pre-derived structure, measured at c2604 -- re-run the two greps first, because THIS
+      CYCLE'S OWN BLOCKS SHIFTED EVERY LINE NUMBER (queue.md 912 -> 963 lines; STATUS.md gained a
+      2604 block at the top). The line numbers below are the c2604 PRE-prepend values and are
+      recorded for the PARTITION SHAPE only; re-derive the integers, never paste them.**
+      - `state/STATUS.md` (was 95.2KB/1165 lines, proj. 201KB): grep
+        `^Updated:.*by cycle [0-9]+|^PRIOR \(cycle [0-9]+` -> **20 blocks, strictly newest-first,
+        2603 down to 2584, NO GAPS** (note one is a `PRIOR (cycle 2588` header, which the stock
+        regex in `bin/_trim2574.py` already handles). Stock `KEEP_BLOCKS = 5` keeps 2603..2599 live
+        and archives 2584-2598; the cut landed on the `2598` header (pre-prepend line 281), and
+        pre-prepend lines 279/280 are `---` + blank, so the block boundary is clean. Post-cut is
+        ~280 lines / ~23KB, i.e. far under the 200KB-minus-24-cycles-of-growth line. Clone
+        `bin/_trim2574.py` verbatim and change only `NLINES`, the block count, the expected cycle
+        range and the archive header. **Add +1 to KEEP_BLOCKS if the 2604 block is to stay live.**
+      - `tasks/queue.md` (was 86.6KB/912 lines, proj. 214KB -- the worse of the two): MUST use
+        hoist-then-cut (`bin/_trim2588q.py`), because open items are interleaved among DONE blocks.
+        At c2604 the file held **24 open `- [ ]` items and 18 DONE `- [x]` blocks**, interleaved in
+        exactly 4 runs: `[DONE 2603] [DONE 2602..2592 + 2601] [open c2601, c2592] [DONE 2591,
+        2590, 2589, 2588, 2587] [open c2552 .. c2120 to EOF]`. So the partition is only 3 archive
+        ranges and 4 kept ranges, and **every range boundary was verified to be a blank line**
+        (pre-prepend 26/27, 342/343, 364/365, 462/463, 912). Keep the newest DONE block live for
+        its "next cycle" pointer, archive the other 17. Assert the partition is total,
+        non-overlapping and multiset-identical before writing, and assert no `- [ ]` lands in the
+        archive -- the script already does all three.
+      - `notes/LEARNINGS.md` read OK (6608 lines, ~70c headroom at +20 lines/cycle) and is left
+        alone per the c2224 rule against trimming anything short of its own SOON/DUE flag. c2604
+        appended ~45 lines to it, so budget that.
+      **Standing-hazard check is NOT optional and c2604 is the proof.** It is the step that found
+      the `run.sh` defect, and it found a rule genuinely about to be lost (the autocommit.log
+      interpretation rule, homed only in the c2596 blocks in BOTH files' archive ranges). Both
+      archive sets this cycle contained it. Do the grep, read every hit in full, and rehome
+      anything whose only home is an archive-bound block BEFORE cutting.
       **Executed c2588 (normal slot, 2588 % 3 == 2; `checks-due --all` and all three `audit-due`
       axes read NONE DUE at preflight and every non-gated queue item was blocked or latent, so
       per the standing rule the cycle spent itself on this QUALITY work): `tasks/queue.md` ONLY.**

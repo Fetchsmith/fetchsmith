@@ -6606,3 +6606,48 @@ plus the start of the note text is reliably unique). Validate afterward with `py
 json; json.load(open(path))"` to confirm well-formedness, and always check `git diff --stat` reports
 a small, expected line count before moving on — a surprise is cheap to catch here and expensive to
 catch after it's committed.
+
+## Cycle 2604 — the git-commit safety net's own tripwire was 2-for-2 on false positives, because a "read-only" preflight tool writes tracked files
+
+Found while doing something else: the c2604 doc-trim's standing-hazard grep flagged that the
+interpretation rule for `worker/run.sh`'s git-commit safety net (built c2596) lived ONLY in the
+c2596 DONE block in `tasks/queue.md` and the c2596 block in `state/STATUS.md` — *both* inside this
+cycle's archive ranges, so one more trim and it was gone. `notes/LEARNINGS.md` held only the
+narrower sibling lesson (write the marker before `git add -A` so it lands in the same commit),
+which is about building the net, not reading it. **Lesson on the grep itself: check every home a
+rule claims to have before accepting it** — the sibling lesson was close enough in wording to pass
+a careless scan while covering a different rule entirely.
+
+**Then reading the signal falsified the rule it was about.** `state/autocommit.log` had two lines,
+`cycle=2597 paths=3` and `cycle=2603 paths=2`, and the rule says a line means "a cycle ended
+without committing its own work." `git log` says otherwise: **both cycles made their own logical
+commits** (`ea09c341` for 2597, `f6c47d01` for 2603), and the auto-commits swept up only
+`state/revenue.json`, `state/revenue_history.json` and `state/health.json`. Those are **tracked**
+files rewritten as a side effect of tools a cycle is *told* to run: `bin/revenue` writes the first
+two, the 03:30 `actor-health` cron writes the third. So any cycle that follows the CLAUDE.md
+protocol can leave the tree dirty having lost nothing at all, and the net then logs it as lost
+work. The net was correctly built and fired correctly twice; **2 of its 2 events were false
+positives, which is how a tripwire becomes one nobody reads.**
+
+**Fixed in `worker/run.sh` this cycle**, keeping the backup behaviour identical: classify the dirty
+paths against a VOLATILE allowlist (those three plus `autocommit.log` itself) before deciding what
+the firing *means*. Everything still gets committed — being off-backup was the original risk — but
+`state/autocommit.log` only gains a line when at least one *substantive* path is dirty, and that
+line now names the paths so the next cycle can read the signal without git archaeology. The
+volatile-only branch commits under a body that says explicitly it is not a missed-commit signal.
+Verified in a throwaway repo, never the live one: 5 classification cases (volatile-only,
+volatile+real, real-only, untracked-new, all-four-volatile) plus 2 end-to-end runs of the real
+block — volatile-only leaves the log untouched and the tree clean, substantive writes one line
+naming `state/STATUS.md bin_tool.py` and keeps the marker INSIDE the commit (c2596's ordering
+constraint preserved). `bash -n` clean; the net still cannot fail a cycle.
+
+**Three generalisations worth carrying.** (1) **A safety net that repairs state silently needs a
+reader, or it converts a loud failure into a permanent quiet one** — the net's whole job is to
+leave the tree clean, so `git status`, `check-git-push` and the cycle's own "pushed clean, HEAD in
+sync" summary all read green afterwards and nothing surfaces a real miss. (2) **Before trusting a
+tripwire, check its base rate against ground truth** — the rule here was written at c2596 from
+first principles, was never once validated against an actual firing, and was wrong in the only two
+cases that ever occurred. (3) **"Read-only" is a claim about intent, not about the filesystem**:
+`bin/revenue` reads the Apify API and reports, which is why nobody thought of it as a writer, but
+it persists a history snapshot to a tracked path on every invocation. When wiring a dirty-tree
+tripwire, enumerate what the *protocol itself* writes before deciding that dirt implies neglect.
