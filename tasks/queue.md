@@ -1,3 +1,47 @@
+- [x] **DONE cycle 2622 (QUALITY/GROWTH slot, 2622 % 3 == 0) -- closed the `readme_proximity`
+      audit axis fleet-wide by resolving the contradiction c2621 flagged.** Preflight: nothing
+      fleet-wide DUE (5 informational one-off axes); inbox checked -- one owner thread
+      (`2b237f1b`) re-read in full and confirmed it is the already-resolved CourtListener token
+      exchange (matches STATUS's c2362 record), and the handful of inbox items not in the prior
+      "known set" (an IPv6/proxy-lease pitch, a duplicate TinyGate pitch, a "Legal Thriller"
+      newsletter blast) are all plain cold marketing/spam, read in full, none actionable; revenue/
+      spend baselines unchanged ($0 booked, 25 Actors, 47 users, 766 runs30d, $5.906/$85, 79.6%
+      elapsed); services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Work:** `bin/store-rank`'s own header (cycle 1468: Store's Algolia record has NO `readme`
+      field, only the LLM-paraphrased `readmeSummary`, so README edits are not a reliable
+      search-rank lever) directly contradicted a stale cycle-956 comment lower in the same file
+      claiming the live record on `steam-reviews-scraper` had BOTH a real `readme` field and
+      `readmeSummary` -- c2621 flagged this as unreconciled before anyone picks `readme_proximity`
+      again. Reconciled live rather than trusting either side: queried the raw Algolia index for
+      "drive-by reviews" (the exact c956 probe phrase) on that exact Actor today -- the hit has NO
+      `readme` key at all (only `readmeSummary`), and `_highlightResult` shows the match landed in
+      `readmeSummary`, not `readme`. Separately re-confirmed `restrictSearchableAttributes=readme`
+      still 400s with "attribute readme is not in searchableAttributes setting" -- an INDEX-WIDE
+      Algolia setting, so it cannot be true for some Actors and false for others; this settles the
+      question fleet-wide, not per-Actor. Patched the stale c956 comment in `bin/store-rank`
+      (~line 706) in place with this finding so it stops reading as a live exception. Both Actors
+      currently tracked on the axis already pointed the same way (federal-register-scraper's own
+      c1468 note already said "do NOT re-attempt"; clinicaltrials-scraper's c916 entry had no note
+      contradicting it either), so a fleet-wide close was safe: added `readme_proximity_closed` to
+      `state/audit_dates.json` on `federal-register-scraper` (closing any one Actor retires the
+      type fleet-wide, per the c1620 mechanism) with the full reconciliation recorded. Verified via
+      a flattened key-diff against a pre-edit backup that exactly one key was added and nothing
+      else in the file changed, and `audit-due --type readme_proximity` now prints CLOSED while
+      `--all` drops the one-off list 5 -> 4 (`input_error_advice`, `pagination_audit`,
+      `search_scope_audit`, `title_trade_audit` remain). $0 spent (two free Algolia queries, no
+      Actor runs, no build needed -- this was a doc/audit-state fix, not a code or README change),
+      $0 revenue change, no owner email (nothing new or owner-fixable).
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at
+      cycle 2628 (6 cycles out). Remaining informational one-off axes, now 4: `input_error_advice`
+      (clinicaltrials-scraper, court-records-scraper, federal-register-scraper -- no methodology
+      documented anywhere in `bin/`/`notes/` as of c2621's check, so read the Actors' own
+      zero-result/validation-error handling fresh before inventing a method), `pagination_audit`
+      (fec-campaign-finance-scraper), `search_scope_audit` (federal-register-scraper, no note),
+      `title_trade_audit` (eu-ted-tenders-scraper). Apply the now-twice-proven pattern: before
+      RUNNING one of these, check whether its existing `<type>_note` already answers the question
+      -- if so, a live re-verification plus a `<type>_closed` key is the right (cheap) action, not
+      a fresh sweep.
+
 - [x] **DONE cycle 2621 (normal slot, 2621 % 3 == 2) -- preflight-only cycle that caught a live
       false positive instead of working a backlog item.** Preflight: nothing fleet-wide DUE
       (5 informational one-off axes DUE, unchanged); inbox read in full for the 3 non-owner

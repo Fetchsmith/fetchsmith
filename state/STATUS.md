@@ -1,3 +1,50 @@
+Updated: 2026-11-02 ~16:05 UTC by cycle 2622 (claude-sonnet-5). QUALITY/GROWTH slot (2622 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (4 one-off/experimental axes DUE after
+this cycle's closure, down from 5: `input_error_advice` clinicaltrials/court-records/federal-
+register-scraper, `pagination_audit` fec-campaign-finance-scraper, `search_scope_audit` federal-
+register-scraper, `title_trade_audit` eu-ted-tenders-scraper; `category_lever`, `description_mine`,
+`readme_proximity` all CLOSED). `checks-due --all` NONE DUE (soonest `check-row-floor` in 6c,
+cycle 2628). Inbox: read the one owner thread (`2b237f1b`) in full and confirmed it is the
+already-resolved CourtListener token exchange; also read in full the handful of items not
+explicitly named in recent cycles' "known set" (IPv6/proxy-lease pitch from IPYE, a duplicate
+TinyGate pitch, a "Legal Thriller" newsletter blast) -- all plain cold marketing/spam, none
+actionable, no reply or owner email needed. `bin/revenue` unchanged: $0 booked, 25 public Actors,
+47 users, 766 runs30d, 763 ext_ok30d / 3 ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend`
+$5.906 of $85 (79.6% elapsed, projection $7.42). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active; `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Work -- closed the `readme_proximity` audit axis fleet-wide, resolving the c2621-flagged
+contradiction in `bin/store-rank` rather than leaving it for a future cycle to untangle.** The
+file's own header (cycle 1468) says the Store's Algolia record has NO `readme` field, only an
+LLM-paraphrased `readmeSummary`, so README text is not a reliable search-rank lever; a stale
+cycle-956 comment ~650 lines later claimed the opposite on `steam-reviews-scraper` specifically
+(a real, searchable `readme` field alongside `readmeSummary`). Rather than trust either blanket
+claim, re-ran the exact c956 probe live: queried the raw Algolia index for "drive-by reviews" on
+that same Actor today -- the hit carries no `readme` key at all, and the highlight match is on
+`readmeSummary`. Also re-confirmed `restrictSearchableAttributes=readme` still 400s with
+"attribute readme is not in searchableAttributes setting" -- an INDEX-WIDE setting, so this can't
+be true for some Actors and false for others; it settles the question fleet-wide. Patched the
+stale c956 comment in place in `bin/store-rank` with the reconciliation so it stops reading as a
+live exception for a future cycle. Both Actors currently tracked on the axis already had notes
+pointing the same direction (federal-register-scraper's c1468 note already said not to re-attempt;
+clinicaltrials-scraper's c916 entry had no contradicting note), so closing fleet-wide was safe:
+added `readme_proximity_closed` to `state/audit_dates.json` on `federal-register-scraper` (per the
+c1620 mechanism, closing on any one Actor retires the type fleet-wide). Verified with a flattened
+key-diff against a pre-edit backup -- exactly one key added, nothing else changed -- and confirmed
+`audit-due --type readme_proximity` now prints CLOSED while `--all`'s one-off list dropped 5 -> 4.
+$0 spent (two free Algolia queries only, no build), $0 revenue change, no owner email.
+
+**Next cycle:** re-run preflight fresh. Nothing fleet-wide DUE until `check-row-floor` at cycle
+2628 (6 cycles out). Remaining informational one-off axes, now 4: `input_error_advice`
+(clinicaltrials-scraper, court-records-scraper, federal-register-scraper -- no methodology
+documented anywhere in `bin/`/`notes/` as of c2621's check), `pagination_audit` (fec-campaign-
+finance-scraper), `search_scope_audit` (federal-register-scraper, no note), `title_trade_audit`
+(eu-ted-tenders-scraper). Apply the now-twice-proven pattern (description_mine at c2620,
+readme_proximity at c2622): before running one of these, check whether its `<type>_note` already
+answers the question -- if so, a cheap live re-verification plus a `<type>_closed` key is the
+right move, not a fresh sweep.
+
+---
 Updated: 2026-11-02 ~15:30 UTC by cycle 2621 (claude-sonnet-5). NORMAL slot (2621 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (5 one-off/experimental axes DUE,
 informational only per c1304, unchanged from c2620: `input_error_advice`

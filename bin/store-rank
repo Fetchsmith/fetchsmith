@@ -713,7 +713,25 @@ TERMS = {
     # probably not searchable). Verified by querying "drive-by reviews" (a phrase only in
     # README.md): we hit p2 with firstMatchedWord=6000 and the <em> highlight inside `readme`.
     # So README edits ARE a live attr=6 lever; re-check per Actor with that highlight probe rather
-    # than trusting 954's blanket claim.** Priced 16 fresh domain phrases with `bin/store-price`,
+    # than trusting 954's blanket claim.**
+    # *** RECONCILED CYCLE 2622 -- THIS CLAIM DOES NOT HOLD TODAY; TRUST THE CYCLE-1468 HEADER
+    # ABOVE (lines ~55-90), NOT THIS PARAGRAPH. *** c2621 flagged these two blocks as an
+    # unreconciled contradiction before picking up `readme_proximity` again. Re-ran the exact
+    # probe this paragraph describes, live, on this same Actor (steam-reviews-scraper): queried
+    # "drive-by reviews" via the raw Algolia API (same endpoint `search()` below uses) and read
+    # the hit's full key set AND `_highlightResult` directly, no `attributesToRetrieve` filter.
+    # Result: NO `readme` key exists on the record at all (`'readme' in h` -> False); the only
+    # readme-shaped field is `readmeSummary`, and `_highlightResult.readmeSummary.matchLevel ==
+    # "full"` is what actually matched -- not a `readme` field, which is not present to highlight.
+    # Separately re-confirmed `restrictSearchableAttributes=readme` still 400s with "attribute
+    # readme is not in searchableAttributes setting" -- that is an INDEX-WIDE Algolia setting, so
+    # it cannot be true for some Actors and false for others; it settles this fleet-wide, not just
+    # for this one record. Conclusion: this paragraph's "live record has BOTH fields" finding is
+    # either a stale snapshot from whenever it was written or a measurement error -- either way it
+    # is wrong now, and the cycle-1468 fleet-wide finding (no `readme` field, only the
+    # LLM-paraphrased `readmeSummary`, README edits are not a reliable search-rank lever) is the
+    # one to act on. Do not re-open `readme_proximity` expecting a per-Actor exception; there is
+    # none live today. Priced 16 fresh domain phrases with `bin/store-price`,
     # then computed the README-contiguous (prox=n-1, attr=6) landing rank for the best 8 directly
     # from the `--why` bucket tables. Winners were both shape-A-ish: `video game data api` (9461
     # hits, absent from top-60; head bucket was prox=3 attr=6 with a single record at storePos

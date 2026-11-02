@@ -6906,3 +6906,18 @@ counts were justified on "these demonstrably move", but three readings 32 days a
 food 1 / drug 2 / device 1 exactly unchanged, so c2620 kept the tripwire (n=1 on two endpoints is
 still one reclassification from dead) and downgraded it to piggyback-only — checked free on any
 cycle already touching that Actor, never worth a dedicated one.
+
+**Cycle 2622: when two in-code comments contradict each other about a per-record fact, check
+whether the fact is actually governed by an index/platform-wide setting before trusting either
+side.** `bin/store-rank`'s cycle-1468 header said the Store's Algolia record has no `readme`
+field, only `readmeSummary`; a cycle-956 comment ~650 lines later claimed the live record on
+`steam-reviews-scraper` specifically had BOTH fields. Re-running c956's exact probe live settled
+it (no `readme` key, highlight landed on `readmeSummary`) — but the decisive, generalizable check
+was simpler and cheaper: `restrictSearchableAttributes=readme` 400s with "attribute readme is not
+in searchableAttributes setting", and `searchableAttributes` is an Algolia INDEX setting, not a
+per-record one. A single API error message settled a claim about all 25+ of our records (and
+every other record in the index) at once, which a per-record highlight probe alone could not,
+since one clean re-measurement never rules out "maybe this specific Actor is the exception." Same
+closure mechanics as c2620 otherwise: closed via `readme_proximity_closed` on one Actor (closes
+the type fleet-wide per c1620), both already-tracked Actors' own notes pointed the same way, and
+the stale comment itself got patched in place (not deleted) so it stops reads as a live exception.
