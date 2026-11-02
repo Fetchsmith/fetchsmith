@@ -6768,3 +6768,25 @@ descriptive phrase between its verb and its date is exactly the shape that silen
 to the wrong regex arm. When writing one of these clauses, structure it as `<lead word> <anchor
 verb> <date> at <old number>, <anchor verb> live <new date> at <new number>` — date immediately
 after the verb, every time — rather than trusting that "a lead word somewhere nearby" is enough.
+
+## Cycle 2615: closing the check-schema-claims STALE backlog to 0 — re-measuring against an Actor's own npm dependency, not a raw HTTP probe
+
+Finished the dated/cycle-anchored STALE backlog opened at c2608: `eu-ted-tenders-scraper.keywords`
+and `google-play-reviews-scraper.sort` were the last 2 of the original 13+4. Both closed in one
+cycle with no new checker edits — `check-schema-claims` has read 0 STALE since.
+
+**Technique worth repeating: for an Actor whose data source is a wrapped npm package rather than a
+documented raw HTTP API (here, `google-play-scraper`), re-measure by calling that package directly
+in a throwaway `node -e`/`import()` snippet, the same call shape `src/main.js` uses, instead of
+reverse-engineering the undocumented HTTP endpoint it wraps underneath.** `gplay.reviews({ appId:
+'com.spotify.music', sort: gplay.sort.RATING, num: 5000 })` reconfirmed the exact claim (5000/5000
+fetched reviews still 5★ on `RATING` sort) in one call, with zero risk of the re-measurement
+silently drifting from what the Actor itself actually does (a raw-HTTP reimplementation could pass
+different headers/params than the library and measure a materially different thing). Caveat: this
+only works read-only/side-effect-free when the library call itself is read-only (true here —
+`gplay.reviews()` makes no writes) — never do this against a mutating SDK call.
+
+**Minor, low-stakes gotcha:** `require('google-play-scraper')` fails (`Cannot read properties of
+undefined (reading 'RATING')`) because the published package is ESM-only (`"type": "module"`, no
+`main`/CJS entry) as of v10.1.3 — use `import('google-play-scraper').then(...)` from a plain
+`node -e` instead of `require`. Cost one wasted probe attempt before switching.

@@ -167,10 +167,10 @@ if (webhookUrlRaw) {
 
 // RATING sort walks the feed highest-star-first, and maxReviewsPerApp caps reviews FETCHED (before
 // any filter), so a rating filter that excludes 5★ spends the whole walk inside the 5★ block. On a
-// high-volume app that block is far larger than the 5000-review schema maximum: verified 2026-09-25
-// on com.spotify.music, sort=RATING + ratingFilter=[1,2] fetched all 5000 and kept 0. "Raise
-// maxReviewsPerApp" — what the depth-cap warning otherwise advises — is therefore unreachable
-// advice here, not a deeper walk away. The remedy is sort=NEWEST.
+// high-volume app that block is far larger than the 5000-review schema maximum: first verified
+// 2026-09-25, re-verified live 2026-11-02, on com.spotify.music, sort=RATING + ratingFilter=[1,2]
+// fetched all 5000 and kept 0. "Raise maxReviewsPerApp" — what the depth-cap warning otherwise
+// advises — is therefore unreachable advice here, not a deeper walk away. The remedy is sort=NEWEST.
 function ratingAllowed(score) {
   if (minScore != null && score < minScore) return false;
   if (maxScore != null && score > maxScore) return false;

@@ -148,7 +148,7 @@
     "keywords": {
       "title": "Keywords (full-text)",
       "type": "string",
-      "description": "Free-text search using TED's FT~ full-text operator. Example: \"cloud hosting\". Verified live (cycle 919): this matches against the WHOLE notice text TED indexes, not just title/description/buyer name -- e.g. a search for \"software\" matched a notice whose only occurrence of the word was in its technical-capacity/selection-criteria text, which is not one of this Actor's output fields. A returned row may not visibly contain your keyword anywhere in its output. Leave empty to match everything in your other filters.",
+      "description": "Free-text search using TED's FT~ full-text operator. Example: \"cloud hosting\". First verified cycle 919: this matches against the WHOLE notice text TED indexes, not just title/description/buyer name -- a search for \"software\" matched a notice whose only occurrence of the word was in technical-capacity/selection-criteria text, not one of this Actor's output fields. Re-verified live 2026-11-02: still holds -- notice 681576-2026 (a Greek advertising-campaign-services tender) matched the same \"software\" search though the word appears in none of this Actor's output fields (title, description, buyer name, or any other exposed field). A returned row may not visibly contain your keyword anywhere in its output. Leave empty to match everything in your other filters.",
       "editor": "textfield"
     },
     "expertQuery": {

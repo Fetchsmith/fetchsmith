@@ -337,6 +337,32 @@
       `google-play-reviews-scraper` sort (2026-09-25). AGING: 1 (`federal-register-scraper`
       presidentialDocumentTypes 2026-10-10). 27 UNDATED unchanged -- add dates opportunistically,
       never as a standalone push.
+      **DONE at c2615 (both remaining STALE claims, 2 Actors rebuilt/republished and verified live
+      byte-for-byte; also fixed a 3rd copy of the google-play claim hiding in a `main.js` comment,
+      per the c2260 half-fix lesson) -- STALE backlog is now 0.** `eu-ted-tenders-scraper.keywords`:
+      live-probed `api.ted.europa.eu/v3/notices/search` with `FT~"software" AND publication-
+      date>=today(-30)` (6,495 of 78,916 in-window notices matched, confirming the operator is a
+      real filter) and pulled the full output-field set for matched notice `681576-2026` (a Greek
+      advertising-campaign-services tender) — "software" appears in none of this Actor's exposed
+      fields, reconfirming the claim exactly (new example; the old German architectural-notice
+      example from cycle 919 may no longer be in TED's live window). Build 0.1.94.
+      `google-play-reviews-scraper.sort`: rather than hit Google Play's API over HTTP directly,
+      called the Actor's own `google-play-scraper` npm dependency in a one-off `node -e` (the same
+      path `src/main.js` uses) — `gplay.reviews({ appId: 'com.spotify.music', sort:
+      gplay.sort.RATING, num: 5000 })` still returns exactly 5000 rows, **all 5000 still 5★**,
+      reconfirming the claim unchanged since 2026-09-25. Build 0.1.101. Both used the c2612 HISTORY
+      convention with the anchor verb immediately before its own date (c2614 phrasing lesson) and
+      were re-run through `check-schema-claims` before pushing to confirm HISTORY, not STALE
+      grading. `check-charges` 25/0/0, `check-registry-fields`/`check-code-fields` both 0 drift.
+      **This closes the entire c2608 dated/cycle-anchored STALE backlog for the first time since
+      the checker shipped** (22 fresh / 1 AGING / 0 STALE / 27 UNDATED). Remaining AGING (1):
+      `federal-register-scraper.presidentialDocumentTypes` (2026-10-10, not yet 30d old — do not
+      touch until it actually ages past the threshold). 27 UNDATED unchanged, lower priority, add
+      dates opportunistically only when already editing that Actor's schema for another reason.
+      **Next cycle:** re-run preflight fresh; `check-schema-claims` has no actionable STALE item
+      until something currently fresh crosses 30d or the one AGING entry does — fall through to
+      whatever queue.md's next top item is (or the default QUALITY-cycle menu: README/competitor-
+      diff work, support mail, site copy).
 
 - [x] **CLOSED c2608, superseded by the c2608 item above -- original c2592 text kept for the
       rationale only; do not re-implement.**

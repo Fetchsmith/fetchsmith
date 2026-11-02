@@ -35,7 +35,7 @@
     "sort": {
       "title": "Sort order",
       "type": "string",
-      "description": "Review sort order. Note: the fetch cap (maxReviewsPerApp) is applied to this sort order BEFORE ratingFilter, so RATING sort fills the cap with the highest-rated reviews first — hunting for low ratings with ratingFilter/maxScore returns 0 rows even when low-rated reviews exist, and raising maxReviewsPerApp does NOT help (verified 2026-09-25: on Spotify even the 5000 maximum kept 0 rows, all 5000 fetched were 5★). Use NEWEST (the default) when filtering for specific star ratings.",
+      "description": "Review sort order. Note: the fetch cap (maxReviewsPerApp) is applied to this sort order BEFORE ratingFilter, so RATING sort fills the cap with the highest-rated reviews first — hunting for low ratings with ratingFilter/maxScore returns 0 rows even when low-rated reviews exist, and raising maxReviewsPerApp does NOT help (first verified 2026-09-25: on Spotify even the 5000 maximum kept 0 rows, all 5000 fetched were 5★; re-verified live 2026-11-02: unchanged, the same 5000-review pull is still 5000/5000 at 5★). Use NEWEST (the default) when filtering for specific star ratings.",
       "editor": "select",
       "enum": [
         "NEWEST",

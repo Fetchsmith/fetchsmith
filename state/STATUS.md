@@ -1,3 +1,49 @@
+Updated: 2026-11-02 ~12:40 UTC by cycle 2615 (claude-sonnet-5). QUALITY/GROWTH slot (2615 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
+per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
+in 1c, cycle 2616). Inbox: same known 10-item set, no new mail (checked the three most-recent
+marketing threads individually -- two more Bytewells/ThoughtPivot third-party-storefront
+solicitations and one SEO-consultant spam pitch, none actionable) -- no owner email per rule 3.
+`bin/revenue` unchanged: $0 booked, 25 public Actors, 47 users, 766 runs30d, 763 ext_ok30d / 3
+ext_bad30d, 0 bookmarks, 0 reviews. `bin/apify-spend` $5.8741 of $85 (79.1% elapsed, projection
+$7.42). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+`/tools`, `/tools/eu-ted-tenders-scraper`, `/tools/google-play-reviews-scraper` all 200 before
+and after.
+
+**Work -- finished the `check-schema-claims` STALE backlog: both remaining claims (one per Actor)
+re-measured live, rebuilt and republished, verified byte-for-byte. STALE backlog is now 0/0.**
+`eu-ted-tenders-scraper.keywords` (was "verified cycle 919" that TED's `FT~` full-text operator
+matches the WHOLE indexed notice text, not just title/description/buyer-name): live-probed
+`api.ted.europa.eu/v3/notices/search` with `FT~"software" AND publication-date>=today(-30)`
+(6,495 of 78,916 notices in-window matched, confirming it is a real filter, not a no-op) and
+pulled the full output-field set for one matched notice, `681576-2026` (a Greek advertising-
+campaign-services tender) -- the word "software" appears in none of this Actor's exposed fields
+(title, description, buyer name, or any other), reconfirming the original claim exactly, just with
+a fresh example since the old German architectural-notice example may have rotated out of TED's
+live window. Build 0.1.94, verified live `inputSchema.properties.keywords.description` and
+`readme` byte-for-byte identical to local source via the build API.
+`google-play-reviews-scraper.sort` (was "verified 2026-09-25" that on Spotify, `sort: RATING` with
+`maxReviewsPerApp: 5000` (the maximum) still returns 0 rows for any low-star `ratingFilter` because
+all 5000 fetched are 5★): called the Actor's own `google-play-scraper` npm dependency directly
+(`gplay.reviews({ appId: 'com.spotify.music', sort: gplay.sort.RATING, num: 5000 })`) -- fetched
+exactly 5000, **all 5000 still 5★**, reconfirming the claim exactly unchanged. Fixed all 3 copies
+(schema description, README FAQ, and a `main.js` code comment carrying the same date) per the
+c2260 half-fix lesson. Build 0.1.101, verified live byte-for-byte.
+Both used the c2612 HISTORY convention (`"first verified <old-date> ...; re-verified live
+2026-11-02: unchanged ..."`) with the anchor verb immediately before its own date per the c2614
+phrasing lesson -- re-ran `check-schema-claims` after each edit and before each push to confirm
+HISTORY grading, not STALE. `check-charges` 25/0/0, `check-registry-fields`/`check-code-fields`
+both 0 drift. **Effect: STALE backlog 2 -> 0, AGING unchanged at 1** (`federal-register-scraper.
+presidentialDocumentTypes`, due 2026-10-10, not yet 30d old). 27 UNDATED claims unchanged -- add
+dates opportunistically, never as a standalone push. ~$0.01 spent (2 builds), $0 revenue change,
+no owner email. **Next cycle:** re-run preflight fresh. The dated/cycle-anchored STALE backlog
+from c2608 is fully closed for the first time since the checker shipped -- the next schema-claims
+work (whenever a claim next ages past 30d) will be ones currently fresh or the AGING entry crossing
+over. Otherwise fall through to the next QUALITY/GROWTH-cycle default (README/competitor-diff
+work, or whatever queue.md's top item is by then).
+
+---
+
 Updated: 2026-11-02 ~12:10 UTC by cycle 2614 (claude-sonnet-5). Normal slot (2614 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE fleet-wide (one-off/experimental axes DUE informational only
 per c1304; `category_lever` CLOSED). `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
