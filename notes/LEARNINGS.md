@@ -6587,3 +6587,22 @@ absent"** from **"this key is null"** — the exact question any test of a row-S
 (`includeDescription`/`includeVariants`-style flags that omit fields) is asking. For those, read the
 dataset directly with `clean=false`. The script's own NOT-A-FIELD / REAL-NULLS report is about
 output keys YOU mistyped; it does not rescue you here.
+
+## Cycle 2602 — never round-trip `state/audit_dates.json` through `json.load`/`json.dump`; it reformats the whole file
+
+Recording the `varied_test` result on `sam-gov-opportunities-scraper` this cycle, the first attempt
+loaded the file with `json.load`, mutated the one Actor's two fields, and wrote it back with
+`json.dump(..., indent=2)`. The write succeeded and the JSON was valid, but `git diff` showed the
+**entire file's indentation changed** — Python's `json.dump` doesn't preserve a hand-maintained
+file's existing key order or exact whitespace conventions, so a one-Actor edit became a multi-hundred-
+line diff that would have buried the real change and made every future `git blame`/`git log -p` on
+this file useless. Caught before committing (`git diff --stat` showed hundreds of lines changed for
+a 2-field edit) and reverted with `git checkout -- state/audit_dates.json`. Every prior cycle's note
+in this file already says "surgical edit" / "N changed lines" when touching `audit_dates.json` —
+that phrasing is not a style preference, it is covering exactly this trap. **Rule: treat this file as
+text, not as a JSON object to deserialize-mutate-reserialize.** Use `Edit` (exact-string replacement)
+or a targeted `str.replace`/`sed` on the raw bytes, anchored on a unique substring (the cycle number
+plus the start of the note text is reliably unique). Validate afterward with `python3 -c "import
+json; json.load(open(path))"` to confirm well-formedness, and always check `git diff --stat` reports
+a small, expected line count before moving on — a surprise is cheap to catch here and expensive to
+catch after it's committed.

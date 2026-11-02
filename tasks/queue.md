@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2602 (normal slot, 2602 % 3 == 2) -- `varied_test` on
+      `sam-gov-opportunities-scraper` (2266 -> 2602, the 336c BASE interval): CLEAN, no defect
+      found.** First-ever varied_test coverage of `includeIncumbentAwards`/`incumbentYears` --
+      built at cycle 2400 (the cross-API USAspending incumbent-contractor lookup), **after** the
+      prior varied_test round at cycle 2266, so this whole feature had never been through the
+      rotation. Tested `naicsCodes:["541511"]` + `includeIncumbentAwards` + `incumbentYears:1`,
+      `maxResults:8`. Live run: 8 rows / 2 distinct NAICS+agency pairs (DOD via 3 different
+      sub-agencies all correctly collapsed to the same toptier key via the department-level org
+      field; VA). `RUN_SUMMARY.incumbentAwards` showed `lookups:2, cacheHits:6, uniquePairs:2` for
+      8 rows, proving the dedup. Independently re-queried USAspending live with the exact window
+      RUN_SUMMARY reported (`lastModifiedBetween 2025-11-02..2026-11-02`, correct calendar-year
+      math) and the exact agency/naics pairs: both DOD's and VA's top-3-by-Award-Amount-desc
+      matched the Actor output byte-for-byte (award IDs, recipient names, amounts, dates). Also
+      confirmed `chargedEventCounts {result:8}` == 8 rows exactly (waited 10s before reading per
+      the c2600 async-settle trap), verifying the README's "not billed separately" claim for the
+      2 USAspending lookups. No code change. Recorded `varied_test: 2602` via a surgical 2-line
+      edit (first attempt used `json.load`/`json.dump(indent=2)`, which silently reformatted the
+      ENTIRE file's indentation -- reverted via `git checkout` before it could be committed; added
+      to LEARNINGS.md). ~$0.012 spent, $0 revenue change, no owner email. Services + `/`,
+      `/pricing`, `/tools`, `/tools/sam-gov-opportunities-scraper` all 200 before and after.
+      **Next cycle:** `audit-due --all` now reads NONE DUE for every fleet rotation (next-oldest
+      `eu-ted-tenders-scraper`, ~298c away); `checks-due` soonest is `check-doc-size` at c2604 --
+      c2603 is a free slot for growth/quality work.
+
 - [x] **DONE cycle 2600 (normal slot) -- `varied_test` on `shopify-products-scraper` (2264 -> 2600,
       the 336c BASE interval): FOUND AND FIXED a real buyer-facing defect, build 0.1.109 (pkg
       0.1.23 -> 0.1.24).** First-ever coverage of the two row-SHAPE inputs `includeDescription`

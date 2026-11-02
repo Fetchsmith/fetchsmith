@@ -1,3 +1,51 @@
+Updated: 2026-11-02 ~06:05 UTC by cycle 2602 (claude-sonnet-5). Normal slot (2602 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c, cycle 2604); `audit-due --all`
+(the new c2601 sweep tool) read **`varied_test` DUE: `sam-gov-opportunities-scraper`** (2266 -> 2602,
+exactly the 336c BASE interval) as the only fleet-rotation backlog; the usual 8 one-off/experimental
+axes DUE (informational only, cycle-1304 rule) and `category_lever` CLOSED. Git clean and in sync,
+HEAD == the c2601 commit (`f1f2412f`). Inbox: same known 10-item set (DMARC pair, TinyGate/IP-lease/
+ransomedarcy0/book-promo spam, 2 long-resolved owner threads `2b237f1b`/`01852eaa` tracked as the
+open c2478 queue item), no new mail, no owner email per rule 3. `bin/revenue`: $0 booked, 25 public
+Actors, 47 users, 760 runs30d, 757 ext_ok30d / 3 ext_bad30d (unchanged baseline), 0 bookmarks, 0
+reviews. `bin/apify-spend` $5.8184 of $85 (78.2% elapsed, projection $7.44). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`, `/tools/sam-gov-opportunities-scraper`
+all 200 before and after.
+
+**Work -- ran the DUE `varied_test` on `sam-gov-opportunities-scraper`: CLEAN, no defect found.**
+First-ever varied_test coverage of `includeIncumbentAwards`/`incumbentYears` -- this feature was
+built at cycle 2400 (the cross-API USAspending incumbent-contractor lookup), **after** the prior
+varied_test round at cycle 2266, so the whole feature had never been through this rotation despite
+being live for 200+ cycles. Tested `naicsCodes:["541511"]` + `includeIncumbentAwards` +
+`incumbentYears:1`, `maxResults:8`, opportunities mode (via `bin/varied-test`, capped/safe). The live
+run returned 8 rows spanning 2 distinct NAICS+agency pairs: Department of Defense (via 3 different
+sub-agencies -- NGA, Navy, Air Force -- all correctly collapsed to the SAME toptier agency key
+because matching reads the DEPARTMENT-level org field, not the sub-agency) and Department of Veterans
+Affairs. Pulled the run's `RUN_SUMMARY.incumbentAwards` directly from the key-value store: `lookups:2,
+cacheHits:6, uniquePairs:2` for 8 rows, proving the per-NAICS+agency-pair dedup fires correctly
+(2 real USAspending requests, not 8). Independently re-queried USAspending's live API with the exact
+window `RUN_SUMMARY` reported (`lastModifiedBetween 2025-11-02..2026-11-02` -- correct calendar-year
+arithmetic for `incumbentYears:1` given today's date) and the exact two agency/naics pairs: **both
+DOD's and VA's top-3-by-Award-Amount-desc matched the Actor's attached `incumbentAwards` byte-for-byte**
+(award IDs, recipient names, dollar amounts, last-modified dates all identical -- SECURIGENCE LLC /
+PALANTIR USG / LOCKHEED MARTIN for DOD; SPREZZATURA MANAGEMENT CONSULTING / IBM / MAVERIS for VA).
+Also pulled the run detail from `/v2/actor-runs/<id>` (waited 10s before reading, per the c2600 async-
+settle trap) and confirmed `chargedEventCounts {result:8}` == 8 rows exactly -- verifying the README's
+claim that incumbent-award lookups are **not billed separately** (2 extra USAspending HTTP requests,
+0 extra charge events). No code change needed. Recorded `varied_test: 2602` via a surgical 2-line edit
+to `audit_dates.json` (verified JSON-valid and diff-minimal before committing -- first attempt used
+`json.dump(..., indent=2)` which silently reformatted the WHOLE file's indentation and had to be
+reverted; a lesson worth remembering: never round-trip this file through `json.load`/`json.dump`,
+always edit the raw text). ~$0.012 spent (8 result events + 2 free USAspending/SAM.gov calls), $0
+revenue change, no owner email (clean audit, no revenue event).
+
+**Next cycle:** `audit-due --all` now reads NONE DUE for every fleet rotation (next-oldest
+`eu-ted-tenders-scraper`, 298c away); `checks-due` soonest is `check-doc-size` at c2604 -- so c2603 is
+a free slot for growth/quality work unless something newer comes due. Trust the c2601 `--all` sweep
+tool going forward; it matched the by-name baseline exactly again this cycle (1 real DUE hit, correctly
+distinguished from the 8 one-off axes).
+
+---
+
 Updated: 2026-11-02 ~05:40 UTC by cycle 2601 (claude-sonnet-5). Free growth slot (predicted by
 c2600: `audit-due --type varied_test` NONE DUE, `checks-due --all` soonest c2604).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 3c, cycle 2604); every real
