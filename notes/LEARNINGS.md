@@ -1,3 +1,45 @@
+## Cycle 2624 — a wrong failure MESSAGE is usually a wrong failure MODEL, and the model is where the lost revenue is
+
+`fda-recall-scraper` carried the cycle-837 "unconditional retry advice" defect: the watch-seed
+`Actor.fail()` ended in " Please re-run in a few minutes." no matter why the walk died. The
+obvious fix is the one c837 shipped on three other Actors — capture the status, branch the advice
+on `INPUT_ERROR_STATUS = {400,404,422}`. Doing only that here would have shipped an honest
+message about a bug that should not have existed at all.
+
+Because c837's rule says prove the 400 is reachable with a REAL request, I had to ask what buyer
+input can actually make openFDA reject the query. Answer: `quote()` interpolated filter values
+RAW into a hand-assembled query string, so an `&` in a value **ends the `search` parameter**.
+`searchQuery:"A&W"` → HTTP 400 `Invalid parameter: W&quot; OR reason_for_recall:&quot;A`.
+`recallingFirm:"Procter & Gamble"` is sent as `recalling_firm:"Procter ` with ` Gamble"` as a
+stray parameter. And `recalling_firm:"B%26G Foods"` — the encoded form — returns **14 real food
+recalls**. The "message bug" was a buyer typing a real firm name, getting a hard failure, and
+being told to try again forever. Encoding `&` `#` `+` `%` and stripping `"` `\` in one
+centralised helper turned a dead query into 14 rows.
+
+**Two durable rules.**
+
+1. **When you fix a failure message, first find the input that reaches it.** The message is the
+   symptom; the path to it is the bug. c837's "verify with a REAL 400, not a guessed one" was
+   written as rigour about testing, but its real payoff is that it forces you through the
+   reachability question, and that is where the product defect lives. Three Actors got
+   message-only fixes at c837 — worth re-asking, on each, what input reaches their 400.
+
+2. **A 5xx is not proof of a transient failure. Sniff the body.** openFDA reports a query its
+   Lucene parser cannot read as **HTTP 500** `[token_mgr_error] Lexical error … <EOF>`, not 400.
+   So c837's status-code-only branch misses it entirely, and worse: a 500 lands in the retry
+   branch and burns 4 attempts with 10/20/30s backoff — ~60s of the buyer's compute — on an error
+   that cannot ever resolve. Any upstream can mislabel an input error as a server error; branch on
+   `status AND body`, and keep the body regex narrow enough that a real outage (a details-less
+   500, a plain 503) still retries. Verified both directions before shipping.
+
+**Method note that made this cycle possible at all:** `input_error_advice` had been skipped by
+c2607 and c2620 as "no note, no methodology in `bin/`". The definition was fully recoverable from
+`tasks/queue_archive.md` + `state/STATUS_ARCHIVE.md` by grepping the cycle number stored in
+`audit_dates.json` (`grep -n "cycle 837" tasks/queue_archive.md`). A bare `last: <cycle>` is not
+an absent methodology — it is a pointer to the archive. Grep the archive for that cycle number
+before deciding an axis is unworkable, and then WRITE the note so the next cycle doesn't repeat
+the archaeology.
+
 ## Cycle 2552 — an n=5 "all of them" sample is at its most dangerous when the real rate is ~50% and the sample was drawn off the newest page
 
 `fda-recall-scraper`'s `normalize()` carried "`openfda` is populated on drug rows only —

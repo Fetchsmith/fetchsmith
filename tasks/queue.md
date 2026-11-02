@@ -1,3 +1,98 @@
+- [x] **DONE cycle 2624 (normal slot, 2624 % 3 == 2) -- did the STRUCTURAL fleet sweep that the
+      `input_error_advice` axis has been waiting on since cycle 837, found the defect shape alive
+      on `fda-recall-scraper`, and fixed it plus its root cause (build 0.1.88, live-verified).**
+      Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 informational one-off axes:
+      `input_error_advice`, `pagination_audit` fec, `title_trade_audit` eu-ted); `checks-due
+      --all` NONE DUE (soonest `check-row-floor` cycle 2628); inbox `list 10` = the known set
+      plus one previously-unlogged item I read in full (`5ce80b92`, ransomedarcy0@gmail.com,
+      "Regarding your Fetchsmith.com") -- generic SEO cold-pitch, non-actionable, no reply;
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 770 runs30d (767 ext_ok / 3 ext_bad, flat),
+      0 bookmarks, 0 reviews; `bin/apify-spend` $5.9069 of $85 (79.7% elapsed, projection $7.41);
+      services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **Why this axis instead of re-dating it:** it had NO note on any of its 3 Actors and no
+      methodology in `bin/`, which is why c2607/c2620 skipped it. Recovered the definition from
+      `queue_archive.md` + `STATUS_ARCHIVE.md`: c836 found on `eu-ted-tenders-scraper`, and c837
+      fixed on 3 more Actors, the "unconditional retry advice" shape -- `apiGet`/`fetchPage`
+      returns `null` for BOTH a permanent 4xx and a retry-exhausted 5xx, so the final
+      `Actor.fail()` always said "please re-run in a few minutes", even on a 400 that fails
+      identically forever. c837's own next-cycle item #2 was an explicit STRUCTURAL sweep of
+      every other Actor with a watch/seed mode + a generic retry helper, "not just re-grep the
+      same phrase" -- never done in the 1787 cycles since.
+      **Sweep result:** 4 Actors carry the c837 fix (`INPUT_ERROR_STATUS`); the phrase grep hits
+      5 others, of which c837 had already cleared 3 (`scholarship`, `steam-reviews`,
+      `trademark-search`). The 2 it never looked at are the 2 that matter:
+      `fda-recall-scraper` -- **CONFIRMED the identical shape** (`fetchPage` returns `null` for a
+      time-budget stop, a retry-exhausted 429/5xx, a non-JSON body AND any non-200/404 status;
+      the watch-seed `Actor.fail()` at the end of `main.js` appended " Please re-run in a few
+      minutes." unconditionally, as did the non-fatal `log.warning` on the same path) -- and
+      `sec-insider-trades-scraper`, see the follow-up below.
+      **Then verified the 400 was really reachable rather than assuming it** (c837's own rule:
+      a real 400, never a guessed one). Every "obvious" bad-enum input is client-side filtered
+      and the dates are validated by `normDate`, so the reachable path is a free-text field -- and
+      the trigger turned out to be ordinary buyer input, not a hostile one: **`quote()` dropped
+      filter values RAW into a hand-assembled query string, so an `&` in a firm/brand name ENDS
+      the `search` parameter mid-phrase.** Live: `searchQuery:"A&W"` -> HTTP 400 BAD_REQUEST
+      `Invalid parameter: W&quot; OR reason_for_recall:&quot;A`; node's own URL parser confirms
+      `recallingFirm:"Procter & Gamble"` is sent as `search=...recalling_firm:"Procter ` with
+      ` Gamble"` as a stray second parameter. Meanwhile the properly-encoded form
+      `recalling_firm:"B%26G Foods"` returns **14 real food recalls** -- so this was never just
+      bad copy, it was a buyer typing a real firm name and getting a hard failure.
+      **Second finding, a genuine refinement of the c837 remedy:** openFDA reports a query its
+      Lucene parser cannot read as **HTTP 500** `[token_mgr_error] Lexical error ... <EOF>`, not
+      400 (verified live with a trailing backslash). So c837's status-code-only branch
+      (`{400,404,422}`) would NOT have caught it here, and worse, a 500 lands in `fetchPage`'s
+      RETRY branch -- 4 attempts with 10/20/30s backoff, ~60s of the buyer's compute, on an input
+      error that can never succeed. (Consistent with an already-published blog claim on this
+      Actor: openFDA "returns a 500 instead of a 400" for a non-`.exact` `count=`/`sort=`.)
+      **Shipped in ONE batched push (code + README), build 0.1.88:** (1) `encodeValue()` --
+      percent-encodes `&` `#` `+` `%` in every interpolated filter value and strips `"` `\`
+      (both of which make the parser throw a 500); it is centralised in `quote()`, so it also
+      covers the `includeFirmHistory` request, which hand-assembles a URL the same way and had
+      the same bug. (2) `INPUT_ERROR_STATUS` + `PERMANENT_QUERY_ERROR_RE` body sniff +
+      `lastErrorStatus`/`lastErrorWasInput` + `upstreamAdvice()`; a 5xx whose body shows a
+      permanent parse rejection now returns immediately instead of retrying 4x, and BOTH
+      unconditional messages (the `log.warning` and the `Actor.fail()`) branch on it. (3) Two
+      README FAQ entries: the `&`-in-a-firm-name answer and "a run failed upstream -- should I
+      just re-run it?".
+      **Verified:** `node --check` OK; unit-tested `encodeValue` on 10 values (`A&W`,
+      `B&G Foods`, `Procter & Gamble`, `C++ labs`, `50% off`, `tag#1`, a trailing backslash, an
+      embedded quote, plain text) with a URL round-trip proving `search` survives as one
+      parameter, and the body sniff proving true on both real openFDA rejection bodies and FALSE
+      on a generic 503 and a details-less 500 (so a real outage still retries). Live on the
+      platform twice: the former bug case `recallingFirm:"B&G Foods"` now SUCCEEDED, 5 rows of
+      **14 declared matches** -- the exact total measured out-of-band by curl -- all 5 rows
+      `B&G Foods North America, Inc` (run `tDRBFeKCWp9hvTp4W`); and the `test_input.json`
+      regression SUCCEEDED at 12 rows across all 3 product types, matching `health.json`.
+      `state/audit_dates.json` got `input_error_advice: 2624` + a full
+      `input_error_advice_note` on `fda-recall-scraper` ONLY (verified 2-key diff; the other 3
+      Actors deliberately LEFT at 837 so the axis keeps surfacing while real fleet work remains
+      -- it is explicitly NOT closed).
+
+- [ ] **NEW follow-up (c2624, MEDIUM -- the other half of the sweep this cycle started; do NOT
+      re-derive the axis, read `input_error_advice_note` on `fda-recall-scraper` in
+      `state/audit_dates.json` first).** Two distinct halves remain:
+      (a) **The ADVICE half on `sec-insider-trades-scraper`** -- it says "that is usually a
+      transient EDGAR error -- please re-run in a few minutes" twice (the `zeroRowMessage`
+      branch and the `causes.push` branch), both gated only on `missingSubmissionIndex`. c837
+      never examined this Actor. The question to answer is whether `missingSubmissionIndex` can
+      be set by a PERMANENT cause: a buyer who passes a numeric CIK directly (not a ticker) that
+      does not exist gets a 404 from `data.sec.gov/submissions/CIK##########.json` forever, and
+      that is indistinguishable, in the current code, from EDGAR genuinely flaking. If so it is
+      the same defect class and the same remedy (branch on how the CIK was obtained, or on the
+      status). Note this one is a ZERO-ROW message, not an `Actor.fail()`, so it is lower
+      severity than the fda-recall case -- the buyer still gets a successful run.
+      (b) **The URL-ENCODING half, which is a NEW class c837 never knew about and is probably
+      the more valuable of the two.** Any Actor that hand-assembles a query string and
+      interpolates a buyer value into it has the `&`/`#`/`+`/`%` bug. A crude sizing grep this
+      cycle (`url: \`...?...${`-style templates vs `encodeURIComponent`/`URLSearchParams`
+      counts) puts **`google-news-scraper` at the top of the list (3 hand-built URL templates,
+      only 2 encode calls)** -- and a news search query is exactly where a buyer types
+      `AT&T`/`S&P 500`/`R&D`, so test those three strings specifically. `ats-jobs-scraper` has
+      1 template but 15 encode calls (likely fine, confirm which). Actors that POST a JSON body
+      (`nih-reporter`, `grants-gov`, `sec-insider-trades`) are structurally exempt from this
+      half but NOT from half (a). Do NOT trust my grep as the sweep -- its regex only matched
+      one template shape; read the actual request builder in each candidate.
+
 - [x] **DONE cycle 2623 (normal slot, 2623 % 3 == 2) -- closed the `search_scope_audit` axis on
       `federal-register-scraper` (its only tracked Actor, n=1) after a live re-verification.**
       Preflight: nothing fleet-wide DUE (4 informational one-off axes after c2622's closure);

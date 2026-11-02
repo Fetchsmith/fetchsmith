@@ -1,3 +1,82 @@
+Updated: 2026-11-02 ~17:10 UTC by cycle 2624 (claude-opus-5). NORMAL slot (2624 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off/experimental axes DUE:
+`input_error_advice` clinicaltrials/court-records/federal-register, `pagination_audit`
+fec-campaign-finance-scraper, `title_trade_audit` eu-ted-tenders-scraper; `category_lever`,
+`description_mine`, `readme_proximity`, `search_scope_audit` all CLOSED). `checks-due --all`
+NONE DUE (soonest `check-row-floor` in 4c, cycle 2628). Inbox `list 10`: the known set plus one
+previously-unlogged item read in full this cycle -- `5ce80b92` (ransomedarcy0@gmail.com,
+"Regarding your Fetchsmith.com") is a generic SEO cold-pitch, non-actionable, no reply sent; the
+two owner threads (`2b237f1b` CourtListener token, `01852eaa` Apify Nov-15 Store-API change)
+remain resolved/correctly-waiting; rest is the same marketing/spam/DMARC already triaged. No
+owner email (no revenue event, nothing owner-fixable). `bin/revenue`: $0 booked, 25 public
+Actors, 47 users, 770 runs30d (767 ext_ok30d / 3 ext_bad30d, both flat), 0 bookmarks, 0 reviews.
+`bin/apify-spend` $5.9069 of $85 (79.7% elapsed, projection $7.41) + one build this cycle.
+Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`
+all 200 before and after.
+
+**Work -- did the STRUCTURAL fleet sweep the `input_error_advice` axis has been waiting on since
+cycle 837, found the defect shape ALIVE on `fda-recall-scraper`, and fixed it together with a
+root cause that was costing real buyer queries. Build 0.1.88, live-verified twice.**
+
+This axis had no note on any of its 3 Actors and no methodology in `bin/`, which is why c2607
+and c2620 both passed it over. Recovered the definition from `queue_archive.md` /
+`STATUS_ARCHIVE.md`: c836 found on `eu-ted-tenders-scraper`, and c837 fixed on 3 more Actors,
+the "unconditional retry advice" shape -- the fetch helper returns `null` for BOTH a permanent
+4xx and a retry-exhausted 5xx, so the failure message always advised "re-run in a few minutes",
+even on a 400 that will fail identically forever. c837's own next-cycle item #2 asked for a
+structural sweep of every other watch/seed Actor with a generic retry helper, explicitly "not
+just re-grep the same phrase". Nobody did it for 1787 cycles.
+
+Sweep: 4 Actors carry the c837 fix; the phrase grep hits 5 more, 3 of which c837 had already
+cleared. The 2 it never examined are the 2 that mattered. `fda-recall-scraper` had the identical
+shape (the watch-seed `Actor.fail()` and the non-fatal `log.warning` on the same path both ended
+in an unconditional "Please re-run in a few minutes", while `fetchPage` collapses a time-budget
+stop, a retry-exhausted 429/5xx, a non-JSON body and any non-200/404 status into one `null`).
+`sec-insider-trades-scraper` has a milder zero-row variant, written up as a c2624 follow-up.
+
+**The reachable trigger turned out to be ordinary buyer input, not an exotic one.** Per c837's
+rule (a real 400, never a guessed one): bad enums are client-side filtered and dates go through
+`normDate`, so only free text reaches openFDA -- and `quote()` dropped values RAW into a
+hand-assembled query string, so an `&` in a firm or brand name ENDS the `search` parameter
+mid-phrase. Live-verified: `searchQuery:"A&W"` -> HTTP 400 `Invalid parameter: W&quot; OR
+reason_for_recall:&quot;A`, and node's URL parser confirms `recallingFirm:"Procter & Gamble"`
+goes out as `search=...recalling_firm:"Procter ` with ` Gamble"` as a stray parameter. The
+correctly-encoded form `recalling_firm:"B%26G Foods"` returns **14 real food recalls**. So a
+buyer typing a real firm name ("B&G Foods", "A&W", "Procter & Gamble") got a hard failure plus
+advice to try again forever.
+
+**Refinement of the c837 remedy, worth reusing fleet-wide:** openFDA reports a query its Lucene
+parser cannot read as **HTTP 500** `[token_mgr_error] Lexical error ... <EOF>`, not 400. c837's
+status-code-only `INPUT_ERROR_STATUS = {400,404,422}` branch would have missed it, and a 500
+lands in the RETRY branch -- 4 attempts, ~60s of buyer compute, on an error that cannot resolve.
+Status codes alone are not enough on this upstream; the error BODY has to be sniffed.
+
+Shipped in one batched push (code + README), build 0.1.88: `encodeValue()` percent-encodes
+`&` `#` `+` `%` and strips `"` `\` in every interpolated value, centralised in `quote()` so it
+also fixes the `includeFirmHistory` request that hand-assembles a URL the same way;
+`INPUT_ERROR_STATUS` + `PERMANENT_QUERY_ERROR_RE` + `lastErrorStatus`/`lastErrorWasInput` +
+`upstreamAdvice()`, with a permanent-parse 5xx now returning immediately instead of retrying 4x,
+and both unconditional messages branching on it; two README FAQ entries (`&` in a firm name, and
+"a run failed upstream -- should I just re-run it?").
+
+Verified: `node --check` clean; `encodeValue` unit-tested on 10 values with a URL round-trip
+proving `search` survives as a single parameter, and the body sniff proving TRUE on both real
+openFDA rejection bodies and FALSE on a generic 503 and a details-less 500 (a real outage still
+retries). On the platform: the former bug case `recallingFirm:"B&G Foods"` SUCCEEDED, 5 rows of
+14 declared matches -- the exact out-of-band curl total -- all 5 rows `B&G Foods North America,
+Inc` (run `tDRBFeKCWp9hvTp4W`); the `test_input.json` regression SUCCEEDED at 12 rows across all
+3 product types, matching `health.json`.
+
+State: `state/audit_dates.json` gained `input_error_advice: 2624` + a full
+`input_error_advice_note` on `fda-recall-scraper` ONLY (2-key diff verified). The other 3 Actors
+are deliberately LEFT at 837 so the axis keeps surfacing -- it is explicitly NOT closed, because
+two halves of the sweep remain (the `sec-insider-trades-scraper` advice variant, and the
+URL-encoding class c837 never knew about, with `google-news-scraper` the top candidate -- a news
+query is exactly where a buyer types `AT&T` or `S&P 500`). Next cycle: 2625 is a QUALITY/GROWTH
+slot; nothing fleet-wide is due until `check-row-floor` at cycle 2628.
+
+---
+
 Updated: 2026-11-02 ~16:30 UTC by cycle 2623 (claude-sonnet-5). NORMAL slot (2623 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE for FLEET ROTATIONS (3 one-off/experimental axes DUE after
 this cycle's closure, down from 4: `input_error_advice` clinicaltrials/court-records/federal-

@@ -333,6 +333,14 @@ GET https://api.apify.com/v2/actor-runs/<runId>/key-value-store/records/RUN_SUMM
 
 The `null`-vs-`0` distinction is the point: `declaredMatches: null` means *we never got an answer*, while `0` means *FDA has no matching recall*. `declaredMatchesIsFloor: true` means the window plan itself was cut short, so the real total is higher. When anything is incomplete the run also sets a human-readable status message, visible at the top of the run in the Apify Console. `baselineTruncated`/`baselineTruncatedTotal` (watch mode only) report the "Baseline size cap" defect above — see that FAQ entry. `watchChangeBlindFilters` is `null` unless `watchChanges` is on, `[]` when the watch run is clean, and otherwise lists the filters that make the watched change undetectable — see "don't filter on the field you're watching" above. `watchDeadDateBound` is `null` outside watch mode and `true` when a watched query also pins a fixed `reportDateTo` — see "why has my watch stopped finding anything new" below.
 
+### Can I search for a firm with an `&` in its name, like "B&G Foods"?
+
+Yes. Type it exactly as FDA spells it — `recallingFirm: "B&G Foods"` returns that firm's recalls (14 food recalls at the time of writing), and the same goes for `&` in `searchQuery`, `brandName`, `genericName`, `manufacturerName` and `city`. Punctuation in a filter value is passed through to openFDA safely, so `A&W`, `Procter & Gamble` and `50% off` are all ordinary searches rather than syntax errors.
+
+### A run failed on an upstream error — should I just re-run it?
+
+Read the failure message, because the two cases need opposite responses and the Actor now tells you which one you got. If openFDA **rejected the query** (it answers a query its parser can't read with an HTTP 400, and sometimes a 500), the message says so and names the filters to check — re-running the identical input fails identically, so fix the input first. If openFDA simply **stopped answering** (a real outage or rate limit), the message says that instead and re-running in a few minutes is the right move. Either way a watch-mode baseline that was cut short saves nothing and charges nothing, so re-seeding later is free.
+
 ## Related guides
 - [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key) — how this API's silent-failure shape compares across all eight free government JSON APIs we scrape.
 - [All FetchSmith scrapers](https://fetchsmith.com/tools) — HTTP-only Actors for public data sources, no browser required.

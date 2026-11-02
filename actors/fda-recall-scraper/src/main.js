@@ -417,7 +417,28 @@ const order = input.order === 'asc' ? 'asc' : 'desc';
 const SORT = `${dateField}:${order}`;
 
 // Lucene-ish query syntax: openFDA ANDs space-separated clauses and needs quoted phrases.
-const quote = (v) => `"${String(v).replace(/"/g, '')}"`;
+//
+// Every value below is interpolated RAW into a hand-assembled query string (see fetchPage and
+// the firm-history request), so a character that is special in a URL query has to be
+// percent-encoded HERE or it silently breaks the request instead of filtering. Found cycle 2624
+// and all verified live against openFDA that day:
+//   `&`  ENDS the search parameter mid-phrase -> openFDA 400 BAD_REQUEST "Invalid parameter:
+//        W&quot; OR reason_for_recall:&quot;A" for searchQuery "A&W". This is not an exotic
+//        input: `recalling_firm:"B%26G Foods"` returns 14 real food recalls, and the same firm
+//        spelled with a raw `&` returned a hard 400 before this fix. Firm/brand names with `&`
+//        are common ("B&G Foods", "Procter & Gamble", "A&W").
+//   `#`  starts a fragment, so the rest of the clause never reaches the server at all.
+//   `+`  is openFDA's own clause separator and would be read back as a space.
+//   `%`  would be read as the start of someone else's escape.
+// `"` and `\` are STRIPPED rather than encoded: an unbalanced or trailing-escaped quote makes
+// openFDA's Lucene parser throw, and it reports that as HTTP 500 SERVER_ERROR
+// ([token_mgr_error] Lexical error ... <EOF>) -- a permanent input error wearing a transient
+// status code, which fetchPage would otherwise retry 4 times for nothing. Literal spaces are
+// left alone (got normalizes them to %20, which openFDA accepts inside a quoted phrase).
+const encodeValue = (v) => String(v)
+    .replace(/["\\]/g, '')
+    .replace(/[&#+%]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`);
+const quote = (v) => `"${encodeValue(v)}"`;
 const orClause = (field, values) => `${field}:(${values.map(quote).join('+OR+')})`;
 
 // The press-release fallback below (see runPressReleases) re-implements searchQuery client-side
@@ -500,6 +521,38 @@ function buildSearch(from, to) {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// --- Permanent-vs-transient upstream failure (cycle 2624, the cycle-837 defect shape) ---------
+// `fetchPage` returns null for BOTH a permanent rejection of the buyer's query and a genuinely
+// transient outage, and every downstream message used to collapse the two into one piece of
+// advice: "please re-run in a few minutes". On a rejected query that advice is actively wrong --
+// the same input fails identically forever, so the buyer re-runs into a wall. Same root cause and
+// same remedy as cycle 837's fix on federal-register/court-records/clinicaltrials-scraper, except
+// openFDA needs a BODY sniff as well as a status check (see the 429/5xx branch in fetchPage).
+const INPUT_ERROR_STATUS = new Set([400, 404, 422]);
+// Both of openFDA's own permanent-rejection signatures, verified live cycle 2624:
+// 400 {"error":{"code":"BAD_REQUEST","message":"Invalid parameter: ..."}} and
+// 500 {"error":{"code":"SERVER_ERROR","details":"[token_mgr_error] Lexical error ..."}}.
+const PERMANENT_QUERY_ERROR_RE = /token_mgr_error|Lexical error|parse_exception|BAD_REQUEST|Invalid parameter/i;
+const isPermanentQueryError = (body) => PERMANENT_QUERY_ERROR_RE.test(String(body ?? '').slice(0, 2000));
+const parseErrorDetail = (body) => {
+    let parsed = null;
+    try { parsed = JSON.parse(body); } catch { /* fall through to the raw body */ }
+    return parsed?.error?.details ?? parsed?.error?.message ?? String(body).slice(0, 300);
+};
+// Upstream error bodies run to 300+ chars and the run status message is clamped at 500, so an
+// uncapped echo displaces the Actor's OWN words after it -- which is where the billing-relevant
+// part lives. The full body is always in the log.warning that precedes each use.
+const clampDetail = (d) => (String(d).length > 120 ? `${String(d).slice(0, 120)}...` : String(d));
+let lastErrorStatus = null;
+let lastErrorWasInput = false;
+// The one piece of advice that must never be unconditional.
+const upstreamAdvice = () => (lastErrorWasInput
+    ? `openFDA REJECTED the query rather than failing to answer it (HTTP ${lastErrorStatus}), so re-running `
+        + 'the same input will fail the same way. Check the free-text filters (searchQuery, recallingFirm, '
+        + 'brandName, genericName, manufacturerName, city) and the date window, then run again.'
+    : 'This looks like an openFDA-side outage or rate limit rather than a problem with your input '
+        + '— please re-run in a few minutes.');
+
 // `search` is pre-encoded with `+` separators the way openFDA documents it, so the URL is
 // assembled by hand rather than through URLSearchParams (which would escape the `+` and the
 // bracket range into something the API rejects).
@@ -531,6 +584,23 @@ async function fetchPage(productType, search, limit, skip) {
             continue;
         }
         if (resp.statusCode === 429 || resp.statusCode >= 500) {
+            // openFDA reports a query its Lucene parser cannot read as HTTP 500 SERVER_ERROR,
+            // not 400 (verified live cycle 2624: a trailing backslash in a quoted phrase ->
+            // 500 "[token_mgr_error] Lexical error ... Encountered: <EOF>"). That is a PERMANENT
+            // input error wearing a transient status code: retrying it 4 times with backoff
+            // burns ~60s of the buyer's run and cannot ever succeed. Branch on the body, not
+            // just the code -- status-code branching alone (the cycle-837 INPUT_ERROR_STATUS
+            // fix on the other Actors) does not catch this upstream's shape.
+            if (isPermanentQueryError(resp.body)) {
+                const detail = parseErrorDetail(resp.body);
+                log.warning(`openFDA ${productType} rejected the QUERY with ${resp.statusCode}: ${detail}`);
+                lastErrorStatus = resp.statusCode;
+                lastErrorWasInput = true;
+                lastApiFailure = `HTTP ${resp.statusCode} (query rejected): ${clampDetail(detail)}`;
+                return null;
+            }
+            lastErrorStatus = resp.statusCode;
+            lastErrorWasInput = false;
             // A server Retry-After has no upper bound of its own (a real one logged elsewhere on
             // this fleet: 3600s) -- never let it sleep past this run's own timeout.
             const waitS = Number(resp.headers['retry-after']) || attempt * 10;
@@ -552,11 +622,15 @@ async function fetchPage(productType, search, limit, skip) {
             // where the billing-relevant part lives ("recalls past that point are NOT in the
             // baseline, so the next incremental run would deliver and charge them as new"). The
             // full body is in the log.warning immediately above, so nothing is lost.
-            lastApiFailure = `HTTP ${resp.statusCode}: ${detail.length > 120 ? `${detail.slice(0, 120)}...` : detail}`;
+            lastErrorStatus = resp.statusCode;
+            lastErrorWasInput = INPUT_ERROR_STATUS.has(resp.statusCode);
+            lastApiFailure = `HTTP ${resp.statusCode}: ${clampDetail(detail)}`;
             return null;
         }
         if (!parsed) {
             log.warning(`openFDA ${productType} returned a non-JSON body: ${String(resp.body).slice(0, 200)}`);
+            lastErrorStatus = resp.statusCode;
+            lastErrorWasInput = false;
             lastApiFailure = 'non-JSON response body';
             return null;
         }
@@ -1337,7 +1411,10 @@ if (watchMode && seedFailure) {
     log.warning(
         `Baseline walk for watch label "${watchLabel}" was cut short (${seedFailure}), so NO baseline was saved. `
         + 'A partial baseline would have caused every recall past the stopping point to be delivered and charged '
-        + 'as "new" on your next run. Re-run the same label and filters once the source recovers.',
+        + `as "new" on your next run. ${lastErrorWasInput
+            ? `Do NOT just re-run: openFDA rejected the query itself (HTTP ${lastErrorStatus}), so the same input `
+                + 'will fail the same way. Fix the filters named above first.'
+            : 'Re-run the same label and filters once the source recovers.'}`,
     );
 } else if (watchMode) {
     await saveWatchRecord(seeding ? 'seeded' : 'incremental');
@@ -1589,8 +1666,14 @@ if (watchMode && seedFailure) {
     // them. Reserved as the suffix; the upstream cause truncates first, and it is in the log whole.
     await Actor.fail(clampStatusMessage(
         `The watch baseline could not be completed: ${seedFailure.replace(/[.\s]*$/, '')}.`,
+        // The advice half must branch on WHY the walk failed (cycle 2624): on a query openFDA
+        // rejected outright, "re-run in a few minutes" sends the buyer into a loop that can
+        // never succeed. Both halves are short enough to survive the 500-char clamp.
         ' No baseline was saved (a partial one would cause you to be charged twice for the same'
-        + ' recalls later) and nothing was charged. Please re-run in a few minutes.',
+        + ` recalls later) and nothing was charged.${lastErrorWasInput
+            ? ` openFDA rejected the query (HTTP ${lastErrorStatus}) — re-running the same input will fail`
+                + ' the same way; fix the free-text filters or the date window first.'
+            : ' Please re-run in a few minutes.'}`,
     ));
 }
 
