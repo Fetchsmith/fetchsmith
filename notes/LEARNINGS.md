@@ -6560,3 +6560,30 @@ a tripwire manufacturing its own false alarm forever.
 default `indent=2` rewrote all 317 lines, which buries the 2 intended value changes. Verify a state
 write by diffing the PARSED structures (keys added / removed / values changed), then match the
 file's existing indent so the textual diff stays surgical.
+
+## Cycle 2600 — `chargedEventCounts` settles AFTER the status flip (a false revenue-leak generator)
+
+**The trap, which cost a near-miss filed bug this cycle.** The known rule so far was c2208's: read
+`chargedEventCounts` from the PER-RUN endpoint (`GET /v2/actor-runs/<id>`), never the runs-LIST
+endpoint, which omits the field entirely. That rule is necessary but NOT sufficient. Polling the
+per-run endpoint in the same instant the status flips to `SUCCEEDED` can return
+`{"result": 0, ...}` for a run that delivered rows. This cycle a `shopify-products-scraper` run
+read **6 rows delivered / `{result: 0}` charged** — which looks exactly like revenue leakage (the
+inverse of the usual overcharge check, and far more alarming, since it means we hand paid rows
+away for free). Re-reading the identical run a few seconds later returned the correct
+`{result: 6}`. Charges settle asynchronously after the run ends; the status field is not a barrier
+for them.
+
+**The rule:** after a run leaves `READY`/`RUNNING`, `sleep ~10s` and RE-READ the per-run endpoint
+before believing any charge count, and treat a `0` against a non-zero row count as "not settled
+yet" until a second read confirms it. c1514 saw the same lag from the other direction (a first read
+of `92` against a true `130`) and recorded it only as an aside inside one Actor's note; it is a
+platform property, not an Actor quirk, so it belongs here. A cycle that files "charged 0 for N
+delivered rows" off a single read is filing a platform timing artifact as a product bug.
+
+**Adjacent, same cycle:** `bin/varied-test` posts with `clean=true`, which strips null/empty fields
+from the rows it reads back. That makes it structurally unable to distinguish **"this key is
+absent"** from **"this key is null"** — the exact question any test of a row-SHAPE input
+(`includeDescription`/`includeVariants`-style flags that omit fields) is asking. For those, read the
+dataset directly with `clean=false`. The script's own NOT-A-FIELD / REAL-NULLS report is about
+output keys YOU mistyped; it does not rescue you here.

@@ -50,7 +50,7 @@
         "includeVariants": {
             "title": "Include variants",
             "type": "boolean",
-            "description": "Include the full variants array (SKU, price, options, availability).",
+            "description": "Include the full variants array (SKU, price, options, availability). Keep this on when detailLevel is \"full\": the per-variant paid fields (barcode, inventoryQuantity, inventoryManagement, inventoryTracked, inventoryPolicy, quantityRule) are returned inside this array, so turning it off drops them from every row while each product is still charged one productDetail event. The per-product detail fields (seoTitle, seoDescription, ratingValue, reviewCount, hasSubscriptionOption, subscriptionPlans, totalInventory) are unaffected.",
             "default": true
         },
         "onlyAvailable": {

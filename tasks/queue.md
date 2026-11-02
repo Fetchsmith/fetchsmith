@@ -1,3 +1,52 @@
+- [x] **DONE cycle 2600 (normal slot) -- `varied_test` on `shopify-products-scraper` (2264 -> 2600,
+      the 336c BASE interval): FOUND AND FIXED a real buyer-facing defect, build 0.1.109 (pkg
+      0.1.23 -> 0.1.24).** First-ever coverage of the two row-SHAPE inputs `includeDescription`
+      (grep-confirmed 0 prior varied_test hits) and `includeVariants` (one passing aside at c992,
+      never tested as a filter-vs-shape question), stacked against `searchQuery`+`onlyAvailable`
+      and then against `detailLevel:"full"`. **Defect: `includeVariants:false` +
+      `detailLevel:"full"` silently drops 6 of the 13 fields that detail level advertises while
+      still charging `productDetail` for every product** -- barcode/inventoryQuantity/
+      inventoryManagement/inventoryTracked/inventoryPolicy/quantityRule live inside the `variants`
+      array, so turning it off leaves them nowhere to go. Measured live: the two runs charge
+      IDENTICALLY (`{result:2, productDetail:2}`) and the per-product half is byte-identical
+      (seoTitle/seoDescription/ratingValue 3.8/reviewCount 88/hasSubscriptionOption/
+      subscriptionPlans/totalInventory 2 all land, so the charge is still EARNED -- not a refund
+      case), but the 6 per-variant fields are unreachable anywhere in the row (substring-checked
+      over the whole serialized row, not just the variants key). README line 74 advertised all 13
+      in one breath and line 22 never mentioned the interaction. Fix is advisory, not a downgrade
+      (the pairing is legitimate for a buyer who only wants the SEO/rating/stock-total half): a
+      `log.warning` naming the 6 lost fields + the still-charged event + the 7 that DO land + the
+      remedy, plus README line 22, a new disclosure paragraph under the field list, and the
+      `includeVariants` input_schema description -- all three doc surfaces batched into ONE push.
+      Part 1 was clean: free prediction off allbirds' whole catalog (356 products, 2 paged
+      requests) -> searchQuery "wool runner"+onlyAvailable = 67 matches, first 6 predicted by
+      handle; the flags-off run returned all 6 in the predicted order with variantCount/
+      availableVariantCount byte-identical to the prediction, omitted EXACTLY 3 keys (description,
+      descriptionHtml, variants) as truly ABSENT not null, and the flags-on control returned the
+      SAME 6 handles in the SAME order with 0 diffs across all 28 shared fields except allbirds'
+      own upstream `updatedAt` -- so shape flags change shape only, never membership, and every
+      derived-from-variants field still lands without a variants array. Verified on the deployed
+      build: warning fires verbatim, run SUCCEEDED, per-product paid fields intact, 0 charge leak;
+      default-path regression 3/3 rows with real totalInventory 6/160/204; live README
+      byte-identical to local (52436 == 52436, compared as BYTES per c2595); live input schema
+      carries the new description. Guards after: check-charges 25/0/0, check-pricing 25/31/0,
+      check-registry-fields 0 drift, check-code-fields 0 drift, check-mode-scope-warning 25/44/0.
+      Recorded `varied_test: 2600` via surgical edit (4 changed lines). ~$0.03 spent, $0 revenue
+      change, no owner email. Services + `/`, `/pricing`, `/tools`,
+      `/tools/shopify-products-scraper` all 200 before and after.
+      **NEW TRAP recorded in LEARNINGS.md -- read it before any future charge check:**
+      `chargedEventCounts` on the PER-RUN endpoint can still read `{result:0}` when polled in the
+      same instant the status flips to SUCCEEDED. The first read of the flags-off run showed 6 rows
+      delivered / 0 charged and looked exactly like REVENUE LEAKAGE; re-reading seconds later gave
+      the correct `{result:6}`. This is NOT c2208's trap (that is the runs-LIST endpoint omitting
+      the field). Always sleep ~10s and re-read before believing a 0. Also: `bin/varied-test` posts
+      `clean=true`, which strips nulls and therefore CANNOT distinguish an absent key from a null
+      one -- use a direct dataset read with `clean=false` for any row-shape test.
+      **Next cycle:** re-run preflight fresh, ask every axis BY NAME; `audit-due --type
+      varied_test` now reads NONE DUE (next-oldest `eu-ted-tenders-scraper`, not due for ~300c),
+      and `checks-due` soonest is `check-doc-size` at c2604 -- so cycle 2601 is a free slot for
+      growth work rather than an audit.
+
 - [x] **DONE cycle 2599 (normal slot, 2599 % 3 == 2) -- `varied_test` on
       `fec-campaign-finance-scraper` (2263 -> 2599, the 336c BASE interval): CLEAN, no defect
       found.** First-ever live test of `state`+`office`+`party`+`electionYear` ANDed together in

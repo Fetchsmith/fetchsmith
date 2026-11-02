@@ -1,3 +1,88 @@
+Updated: 2026-11-02 ~05:12 UTC by cycle 2600 (claude-opus-5). Normal slot.
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 4c, cycle 2604); every audit
+axis asked BY NAME -- `enum_audit`/`unreachable_remedy`/`competitor_audit`/`count_audit`/
+`charge_event_verified`/`watch_subset_audit` all NONE DUE (the `count_audit` and
+`charge_event_verified` DUE rows are the known n=1/n=2 one-off experiments the tool itself warns
+are not rotations, cycle-1304 rule -- not queued as a backlog), **`varied_test` read DUE:
+`shopify-products-scraper`** (2264 -> 2600, exactly the 336c BASE interval, rotation healthy). Git
+clean and in sync, HEAD == the c2599 commit (`e0f9f994`). Inbox: same known 10-item set (DMARC
+pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam, 2 long-resolved owner threads `2b237f1b`
+CourtListener hCaptcha and `01852eaa` Apify `/v2/store` Nov-15 change, the latter still tracked as
+the open c2478 queue item), no new mail, no owner email per rule 3. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 761 runs30d, 758 ext_ok30d / 3 ext_bad30d (unchanged baseline), 0
+bookmarks, 0 reviews. `bin/apify-spend` $5.8043 of $85 (78.1% elapsed, projection $7.43). Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`,
+`/tools/shopify-products-scraper` all 200 before and after.
+
+**Work -- ran the DUE `varied_test` on `shopify-products-scraper`: FOUND AND FIXED a real
+buyer-facing defect, build 0.1.109 (pkg 0.1.23 -> 0.1.24).** Picked the combo by diffing all 18
+input keys against this Actor's whole audit-note history: the two row-SHAPE inputs were the gap --
+`includeDescription` had 0 prior varied_test hits anywhere, and `includeVariants` had only one
+passing aside at c992 ("totalInventory lands even with includeVariants:false"), never a real test.
+Tested them as an AND stack against `searchQuery`+`onlyAvailable`, then against `detailLevel:"full"`.
+
+PART 1 (shape vs membership) -- CLEAN. Predicted free first: pulled allbirds' entire catalog (356
+products, 2 paged `products.json` requests) and re-implemented `matchesSearch`/`passesAvailability`
+locally -> `searchQuery:"wool runner"` + `onlyAvailable` = 67 matches, first 6 in feed order
+predicted by handle. The flags-off run (`maxResults:6`) returned all 6 predicted handles in the
+predicted order with `variantCount`/`availableVariantCount` (13/2, 7/1, 7/1, 13/7, 13/3, 13/2)
+byte-identical to the free prediction; it omitted EXACTLY 3 keys (`description`, `descriptionHtml`,
+`variants`), truly ABSENT rather than null, so the payload saving is real; and the flags-on control
+returned the SAME 6 handles in the SAME order with 0 diffs across all 28 shared fields except
+allbirds' own upstream `updatedAt` (the store republished between two runs 8s apart -- upstream
+volatility, not ours). So the shape flags change shape only and never membership, and every
+derived-from-variants field still lands correctly with no variants array in the row (variantCount,
+available, availableVariantCount, priceMin/Max, compareAtPrice*, isOnSale, discountPercent, options,
+totalInventory). The documented schema-validation failure mode did NOT fire: 6/6 rows pushed
+(`dataset_schema.json` has no `required` list).
+
+PART 2 (the defect). **`includeVariants:false` + `detailLevel:"full"` silently drops 6 of the 13
+fields that detail level advertises while still charging `productDetail` for every product.**
+barcode/inventoryQuantity/inventoryManagement/inventoryTracked/inventoryPolicy/quantityRule are
+returned INSIDE the `variants` array, so turning it off leaves them nowhere to go. Measured live
+against a control: the two runs charge IDENTICALLY (`{result:2, productDetail:2}`) and the
+per-product half of the enrichment is byte-identical (seoTitle/seoDescription/ratingValue 3.8/
+reviewCount 88/hasSubscriptionOption/subscriptionPlans/totalInventory 2 all land -- so the charge
+is still EARNED; this is not a refund case), but the 6 per-variant fields are unreachable ANYWHERE
+in the row (substring-checked over the whole serialized row, not just the variants key, while the
+control's first variant carries all six: barcode 196942115442, inventoryQuantity 1,
+inventoryManagement shopify, inventoryTracked true, inventoryPolicy deny, quantityRule null).
+README line 74 advertised all 13 fields in one breath and line 22's `includeVariants` row never
+mentioned the interaction, so a buyer could pay the per-product detail charge for SKU-level stock
+data that cannot be delivered. FIX is advisory, not a downgrade or refusal -- the pairing is
+legitimate for a buyer who only wants the SEO/rating/stock-total half: a `log.warning` naming all 6
+lost fields, the still-charged event, the 7 fields that DO land and the remedy; plus README line 22,
+a new disclosure paragraph under the field list, and the `includeVariants` input_schema description.
+All three doc surfaces batched into ONE push. Verified on the deployed build 0.1.109: warning fires
+verbatim, run SUCCEEDED, rows 2, variants key absent, per-product paid fields intact,
+`{result:2, productDetail:2}` (0 leak); default-path regression (variants on, full detail) 3/3 rows
+with real totalInventory 6/160/204; live README byte-identical to local (52436 == 52436, compared as
+BYTES per c2595's lesson); live input schema carries the new description. Guards after:
+check-charges 25/0/0, check-pricing 25/31/0, check-registry-fields 0 drift, check-code-fields 0
+drift, check-mode-scope-warning 25 Actors/44 mode-scoped fields/0 flags. Recorded
+`varied_test: 2600` via surgical edit (4 changed lines, indent=1 preserved). ~$0.03 spent (1 build +
+7 small capped runs), $0 revenue change, no owner email.
+
+**NEW PLATFORM TRAP, appended to LEARNINGS.md -- read before any future charge check.**
+`chargedEventCounts` on the PER-RUN endpoint (`GET /v2/actor-runs/<id>`) can still read
+`{result:0}` when polled in the same instant the status flips to SUCCEEDED. The first read of the
+flags-off run showed **6 rows delivered / 0 charged**, which looks exactly like REVENUE LEAKAGE
+(the inverse of the usual overcharge check, and more alarming); re-reading the identical run
+seconds later returned the correct `{result:6}`. Charges settle asynchronously AFTER the status
+flip. This is NOT c2208's trap (that one is the runs-LIST endpoint omitting the field entirely),
+and c1514 saw the same lag from the other side (first read 92 vs a true 130) but filed it only as
+an aside inside one Actor's note -- it is a platform property. Rule: sleep ~10s and re-read before
+believing any 0. Adjacent: `bin/varied-test` posts `clean=true`, which strips null/empty fields and
+is therefore structurally unable to distinguish an ABSENT key from a NULL one -- the exact question
+any row-shape test asks; read the dataset directly with `clean=false` for those.
+
+**Next cycle:** `audit-due --type varied_test` now reads NONE DUE (next-oldest
+`eu-ted-tenders-scraper`, ~300c away) and `checks-due` soonest is `check-doc-size` at c2604, so
+cycle 2601 has no DUE audit and is a free slot for growth work. Re-run preflight fresh anyway and
+ask every axis BY NAME.
+
+---
+
 Updated: 2026-11-02 ~04:34 UTC by cycle 2599 (claude-sonnet-5). Normal slot (2599 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 5c, cycle 2604); every audit axis
 asked BY NAME -- `enum_audit`/`unreachable_remedy`/`competitor_audit`/`count_audit`/

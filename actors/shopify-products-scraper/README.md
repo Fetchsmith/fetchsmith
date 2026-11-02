@@ -19,7 +19,7 @@ It doubles as a Shopify catalog API and a general product feed API: query any st
 | `productTypes` | array | Only keep products whose product type contains one of these (case-insensitive OR), e.g. `["Shoes","Sandals"]`. Combines with every other filter via AND. Ignored on direct product URLs. |
 | `maxProductsPerStore` | integer | Cap per store (default 500) |
 | `includeDescription` | boolean | Plain-text description (default true) |
-| `includeVariants` | boolean | Full variants array with SKU, price, options, availability (default true) |
+| `includeVariants` | boolean | Full variants array with SKU, price, options, availability (default true). Leaving it `true` also matters when `detailLevel` is `"full"`: the variants array is the only container the paid per-variant inventory fields can be returned in (see below) |
 | `onlyAvailable` | boolean | Skip sold-out products |
 | `minPrice` | integer | Only keep products with a variant at or above this price (matches when the product's own price range overlaps the window — a $40-$120 hoodie matches `minPrice: 100`). Store's own currency, no FX conversion. Filtered-out products are never charged. |
 | `maxPrice` | integer | Only keep products with a variant at or below this price (same range-overlap rule). Store's own currency, no FX conversion. Filtered-out products are never charged. |
@@ -72,6 +72,8 @@ It doubles as a Shopify catalog API and a general product feed API: query any st
 }
 ```
 `barcode`/`inventoryQuantity`/`inventoryManagement`/`inventoryTracked`/`inventoryPolicy`/`quantityRule` (per variant), `totalInventory`/`hasSubscriptionOption`/`subscriptionPlans` (per product), `seoTitle`, `seoDescription`, `ratingValue` and `reviewCount` are only present when `detailLevel` is `"full"` (see Input) — Shopify's bulk `products.json` feed carries none of them.
+
+**`detailLevel:"full"` needs `includeVariants:true` to deliver the per-variant half.** The six per-variant fields above live inside the `variants` array, so `includeVariants:false` leaves them with nowhere to go and they appear in no row at all — while every product is still charged one `productDetail` event. The per-product half (`seoTitle`, `seoDescription`, `ratingValue`, `reviewCount`, `hasSubscriptionOption`, `subscriptionPlans`, `totalInventory`) does still land, so the combination is legitimate if that is all you want — `totalInventory` in particular is rolled up from the detail route's own variant data and is correct even with no `variants` array in the row (verified live, cycle 2600: the two runs charge identically and every per-product field is byte-identical to a run with variants on). The run warns in its log when you ask for this pairing. If you want `barcode`/`inventoryQuantity`/stock policy per SKU, keep `includeVariants` at its `true` default.
 
 `quantityRule` (`{min, max, increment}`) is only populated for a real, non-default rule — a minimum order quantity, a case-pack increment, or a per-order cap — Shopify's own implicit default (`min:1, max:null, increment:1`) is reported as `null` instead so it doesn't look like every product has a "rule". `hasSubscriptionOption`/`subscriptionPlans` cover both Shopify's native subscriptions and app-backed ones like Recharge (verified live on both); `subscriptionPlans[].plans[].discountPercent` is `null` when a plan doesn't use a flat percentage discount (e.g. a fixed-price override).
 

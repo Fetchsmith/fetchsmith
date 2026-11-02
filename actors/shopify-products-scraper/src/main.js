@@ -36,6 +36,25 @@ const withDesc = input.includeDescription !== false;
 const withVariants = input.includeVariants !== false;
 const onlyAvailable = !!input.onlyAvailable;
 const detailLevel = input.detailLevel === 'full' ? 'full' : 'basic';
+// `includeVariants:false` removes the ONLY container the paid per-variant detail fields can be
+// returned in, so pairing it with `detailLevel:"full"` silently drops 6 of the 13 fields that
+// level advertises while still charging `productDetail` for every product. Measured live on
+// allbirds (cycle 2600): the two runs charge identically ({result:2, productDetail:2}) and the
+// per-product half of the enrichment is byte-identical (seoTitle/seoDescription/ratingValue/
+// reviewCount/hasSubscriptionOption/subscriptionPlans/totalInventory all land, so the charge is
+// still earned), but barcode/inventoryQuantity/inventoryManagement/inventoryTracked/
+// inventoryPolicy/quantityRule are unreachable anywhere in the row. Advisory only — the run is
+// legitimate and still delivers real paid data, so it must not be downgraded or refused; a buyer
+// who only wants the SEO/rating/stock-total half is entitled to ask for exactly this.
+if (detailLevel === 'full' && !withVariants) {
+  log.warning('"includeVariants": false with "detailLevel": "full" — the per-variant paid fields '
+    + '(barcode, inventoryQuantity, inventoryManagement, inventoryTracked, inventoryPolicy, '
+    + 'quantityRule) have no variants array to be returned in, so they will NOT appear in any row, '
+    + 'yet every product is still charged one "productDetail" event. The per-product detail fields '
+    + '(seoTitle, seoDescription, ratingValue, reviewCount, hasSubscriptionOption, '
+    + 'subscriptionPlans, totalInventory) DO land. Set "includeVariants": true to receive the '
+    + 'per-variant data you are paying for.');
+}
 const searchQuery = String(input.searchQuery ?? '').normalize('NFC').trim();
 const searchWords = searchQuery ? searchQuery.toLowerCase().split(/\s+/).filter(Boolean) : [];
 // Price/sale filters work on the SHAPED row (priceMin/priceMax/isOnSale), not on raw Shopify JSON,
