@@ -15,6 +15,50 @@
       first -- it is a 1-line fix and addresses the likely root cause directly; add (b) only if the
       gap recurs after (a) ships.
 
+- [x] **DONE cycle 2595 -- ran the fleet's DUE `varied_test` on `apple-podcasts-scraper` and shipped
+      a real buyer-facing fix (build 0.1.114, pkg 0.1.35 -> 0.1.36).** Preflight: `checks-due --all`
+      NONE DUE (soonest `git-maintain` c2596), every audit axis asked BY NAME (`competitor_audit`/
+      `enum_audit`/`unreachable_remedy`/`count_audit`/`charge_event_verified`/`watch_subset_audit`
+      all NONE DUE) except `varied_test` DUE on `apple-podcasts-scraper` (2259 -> 2595, 336c gap --
+      exactly the BASE interval, so the rotation is healthy, not stuck). Git was already clean and
+      in sync with origin (no repeat of the c2593 missed-commit gap). Inbox: same known 10-item set,
+      no new mail. `bin/revenue`/`bin/traffic`/`bin/apify-spend` all unchanged baselines ($0 booked,
+      25 Actors, 47 users, 779 runs30d; traffic unchanged; spend $5.7748 -> $5.7796 of $85). All
+      three live docs OK with real headroom (no trim needed).
+      **First-ever `varied_test` coverage of `dataType: "publisher"` / `maxPodcastsPerPublisher`**
+      -- confirmed programmatically (substring search) that neither term appears anywhere in this
+      Actor's entire varied_test history (cycles 2259/2204/2172/1564/1077/1030/986/935/893), despite
+      episodes/reviews/podcasts/charts each being exercised repeatedly. **Defect found and fixed:**
+      the publisher branch does one `itunes lookup?id=<id>&entity=podcast` per given id and pushes
+      every returned show with `publisherId:<id>`, with no check that `<id>` is actually a
+      publisher/artist ID rather than a show's own `collectionId`. Live-verified against real Apple
+      endpoints first ($0): a real publisher (NYT, artist id 121664449) returns 51 shows, none with
+      `collectionId == 121664449`; a real 2-show publisher (Joe Budden, artistId 1535844019) returns
+      2 shows, neither `collectionId` equal to the artistId; but passing a SHOW's own `collectionId`
+      (Last Podcast On The Left, 437299706) as a publisher id returns exactly 1 result -- that SAME
+      show, `collectionId == the queried id` -- because Apple's lookup API silently falls back to
+      "this id is itself a podcast" when it isn't a real artist id. That exact coincidence is the
+      tell (a genuine artist id lives in a different ID namespace and essentially never equals one
+      of its own shows' collectionIds), so added a `log.warning` on that condition naming the likely
+      mistake and pointing at `dataType: "podcasts"`/`"episodes"` instead -- advisory only, still
+      delivers and charges the row (a real 1-show publisher IS possible, just indistinguishable from
+      this case without the warning). Verified locally (4 cases, $0) then on the live platform build
+      (0.1.114): mistake-case run SUCCEEDED, warning fired verbatim, `chargedEventCounts {result:1}`
+      == 1 row (0 leak); default `test_input.json` SUCCEEDED, 5/5 unregressed. README FAQ updated
+      with the same explanation; live README confirmed byte-identical to local (66,149 UTF-8 bytes
+      both sides -- first comparison attempt used raw `len()` on the JSON-decoded string and gave a
+      false MISMATCH because that undercounts multi-byte em-dashes; re-checked by diffing actual
+      bytes, which matched). Guards clean after: `check-mode-scope-warning` 44 fields/0 flags,
+      `check-charges` 25/0/0, `check-registry-fields` 0 drift. Recorded `varied_test: 2595` + full
+      note in `state/audit_dates.json` via surgical edit (diffed to exactly 3 changed lines: the
+      date, the note, both inside the existing per-Actor dict). `audit-due --type varied_test` now
+      reads NONE DUE, next target `clinicaltrials-scraper` in 1 cycle (c2596). ~$0.0008 spent (1
+      build + 2 tiny platform runs), $0 revenue change, no owner email. Services + `/`, `/pricing`,
+      `/tools`, `/tools/apple-podcasts-scraper` all 200 before and after. **Not done this cycle:**
+      the still-open HIGH git-commit-process-gap item below (git was already clean, so there was
+      nothing to recover, but the underlying "no explicit commit instruction" gap is unaddressed) --
+      next cycle that isn't already spending itself on a DUE audit should pick it up.
+
 - [x] **DONE cycle 2594 -- closed the `watch_subset_audit` 11-Actor backlog c2593 flagged.**
       Checked each of the 11 DUE Actors' current source for an existing `watchDeadDateBound`/
       `watchPastDateBound`/`watchChangeBlindFilters` guard, then ran a fresh fleet-wide

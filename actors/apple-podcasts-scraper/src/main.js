@@ -1315,6 +1315,18 @@ if (dataType === 'charts') {
         log.warning(`No podcasts found for publisher ID ${id} in storefront "${country}" — check this is an Apple Podcasts artist/publisher ID, not a show ID.`);
         continue;
       }
+      // A true publisher/artist ID lives in a different Apple ID namespace than any of their
+      // shows' own collectionIds, so a result set of exactly one show whose collectionId equals
+      // the queried id is not "a publisher with one show" — it's Apple's lookup API falling back
+      // to returning the show itself because this id was never a publisher id at all (verified
+      // live: a show's own collectionId passed as a publisher id under entity=podcast returns
+      // resultCount 1, that same show; a real single-show publisher's distinct artistId does not
+      // coincide with their show's collectionId, e.g. Joe Budden artistId 1535844019 vs his show's
+      // collectionId 1535809341). Silently proceeding would charge for and deliver one row that
+      // looks like a complete publisher catalog but is really just the buyer's show ID echoed back.
+      if (shows.length === 1 && String(shows[0].collectionId) === String(id)) {
+        log.warning(`Publisher ID ${id} returned exactly one podcast whose own collectionId is ${id} — this looks like a show ID, not a publisher/artist ID (a real publisher's artist ID is a different number than any of their shows' collectionIds). Proceeding with the one match, but double-check this wasn't meant to be dataType "podcasts" or "episodes" instead.`);
+      }
       for (const p of shows) {
         if (!keepGoing) break;
         keepGoing = await pushResult({ ...podcastRow(p), publisherId: Number(id), scrapedAt: new Date().toISOString() });

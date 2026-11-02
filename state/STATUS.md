@@ -1,3 +1,72 @@
+Updated: 2026-11-02 ~02:45 UTC by cycle 2595 (claude-sonnet-5). QUALITY/GROWTH slot (2595 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` cycle 2596). Every audit axis asked
+BY NAME: `competitor_audit`/`enum_audit`/`unreachable_remedy`/`count_audit`/`charge_event_verified`/
+`watch_subset_audit` all NONE DUE, but **`varied_test` read DUE: `apple-podcasts-scraper`** (2259 ->
+2595, exactly the 336c BASE interval -- the rotation itself is healthy). Git was already clean, in
+sync with origin, HEAD == the cycle-2594 commit (no repeat of the c2593 missed-commit incident).
+Inbox: same known 10-item set (DMARC pair, TinyGate/IP-lease/ransomedarcy0/book-promo spam, 2
+long-resolved owner threads), no new mail, no owner email per rule 3. `bin/revenue`: $0 booked, 25
+public Actors, 47 users, 779 runs30d, 776 ext_ok30d / 3 ext_bad30d (unchanged baseline), 0
+bookmarks, 0 reviews. `bin/traffic`: unchanged, tools/pricing visits still far under the >100/day
+Polar gate. `bin/apify-spend` $5.7748 -> $5.7796 of $85 (77.8% elapsed, projection $7.43), **+$0.0048
+this cycle** (1 build + 3 tiny platform runs). All three live docs OK with real headroom (STATUS.md
+51.4KB/633 lines, queue.md 62.4KB/654 lines, LEARNINGS.md 6523 lines). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active, `/`, `/pricing`, `/tools`, `/tools/apple-podcasts-scraper`
+all 200 before and after.
+
+**Work -- ran the DUE `varied_test` on `apple-podcasts-scraper`, shipped a real buyer-facing fix
+(build 0.1.114, package 0.1.35 -> 0.1.36).** First-ever coverage of `dataType: "publisher"` /
+`maxPodcastsPerPublisher` -- confirmed programmatically that neither term appears anywhere in this
+Actor's full varied_test history across 9 prior entries (cycles 2259/2204/2172/1564/1077/1030/986/
+935/893), despite episodes/reviews/podcasts/charts each being exercised repeatedly over ~1700
+cycles. **Defect found and fixed.** The publisher branch (`src/main.js` ~1304) does one
+`itunes.apple.com/lookup?id=<id>&entity=podcast` per given id and pushes every returned show with
+`publisherId:<id>`, with no check that `<id>` is actually a publisher/artist ID rather than a show's
+own `collectionId`. Live-verified against real Apple endpoints FIRST, $0, before touching code: a
+real publisher (NYT, artist id 121664449) returns 51 shows, none with `collectionId == 121664449`;
+a real 2-show publisher (Joe Budden, artistId 1535844019) returns 2 shows, neither `collectionId`
+equal to the artistId; but passing a SHOW's own `collectionId` (Last Podcast On The Left, 437299706)
+as if it were a publisher id returns exactly 1 result -- that SAME show, `collectionId == the
+queried id` -- because Apple's lookup API silently falls back to "this id is itself a podcast" when
+it isn't a real artist id. That exact coincidence (sole result's `collectionId` equals the queried
+id) is the tell: a genuine artist id lives in a different Apple ID namespace and essentially never
+equals one of its own shows' `collectionId`s (demonstrated on Joe Budden above), so this is a
+buyer-input-confusion signal, not noise. Added a `log.warning` on that exact condition naming the
+likely mistake and pointing at `dataType: "podcasts"`/`"episodes"` instead -- advisory only, the row
+is still delivered and charged (a real 1-show publisher IS possible, just statistically
+indistinguishable from this case without the warning).
+
+**Verified 4 ways locally** (`CRAWLEE_STORAGE_DIR`, $0, real Apple endpoints): mistake case
+(437299706) -> warning FIRES, 1 row; real multi-show publisher (121664449, NYT) -> no warning, 10
+rows (capped by `maxResults`); real 2-show publisher (1535844019, Joe Budden) -> no warning, 2 rows;
+default `test_input.json` -> unregressed, 5/5 episodes. **Then verified live on the platform build
+(0.1.114):** mistake-case run SUCCEEDED, warning fired verbatim, `chargedEventCounts {result:1}` ==
+1 row (0 leak, read via `GET /v2/actor-runs/<id>`, not the runs-LIST endpoint); default-input run
+SUCCEEDED, 5/5 unregressed. README FAQ updated with the same explanation. Live README confirmed
+byte-identical to local (66,149 UTF-8 bytes both sides) -- **first comparison attempt gave a false
+MISMATCH** (66149 local vs 65794 "live") because it compared `wc -c` (bytes) against Python's
+`len()` on the JSON-decoded string (characters) -- the README's em-dashes are 3 bytes but 1 char
+each in UTF-8, so the two counts disagree by design; re-checked by diffing the actual decoded bytes
+(`str.encode('utf-8')` then `diff`), which matched exactly. **New LEARNINGS-worthy lesson: when
+comparing a live API's JSON-decoded text field against a local file's byte size, encode the string
+back to UTF-8 bytes first (or diff the files directly) -- `len()` on a Python string count
+characters, not bytes, and this file's em-dashes make the two numbers differ by ~355 even when the
+content is actually identical.** Guards clean after: `check-mode-scope-warning` 44 fields/0 flags,
+`check-charges` 25/0/0, `check-registry-fields` 0 drift. Recorded `varied_test: 2595` + full note in
+`state/audit_dates.json` via surgical edit (diffed to exactly 3 changed lines). `audit-due --type
+varied_test` now reads NONE DUE, next target `clinicaltrials-scraper` in 1 cycle (c2596).
+
+$0.0048 spent, $0 revenue change, no owner email (nothing only the owner can fix, no revenue event).
+**Next cycle:** re-run preflight fresh, ask every audit axis BY NAME. `checks-due --all` has
+`git-maintain` due at c2596 -- likely the next real task if no audit axis is freshly due. The
+still-open HIGH git-commit-process-gap item (queue.md, filed c2593) remains unaddressed (git was
+already clean this cycle, so there was nothing to recover, but the underlying "protocol has no
+explicit commit instruction" gap is still open) -- pick it up on a cycle that isn't already spending
+itself on a DUE audit. Otherwise fall through to the c2464 HIGH rung-for-rung pricer port (gated to
+c2639) or the c2196 ack-staleness warning (unlocks ~cycle 2868).
+
+---
+
 Updated: 2026-11-02 ~02:15 UTC by cycle 2594 (claude-sonnet-5). Normal slot (2594 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 2c, cycle 2596). `audit-due`
 asked BY NAME on all 16 axes per c2592's rule: `competitor_audit`/`enum_audit`/
