@@ -1,25 +1,22 @@
-- [ ] **NEW follow-up (c2641) -- give `bin/traffic` the IP data it needs to tell a real buyer
-      from a datacenter-IP bot wearing a realistic browser fingerprint.** `site/app.py:161`
-      already computes the client IP (`request.client.host`/X-Forwarded-For) but
-      `site/app.py:198`'s `INSERT INTO pageviews` never stores it, and the `events` table
-      (out_click) has no IP column at all -- so neither table can be filtered by IP/ASN, and
-      the only way to check provenance today is a manual cross-reference against the rotating
-      Caddy access log (`/var/log/caddy/fetchsmith.access.log`, which is NOT retained
-      long -- gzip-rotated every ~2 weeks per the `ls` at c2641). Found this cycle because
-      `bin/traffic`'s "verified" out_click count moved off 0 for the first time in 2600+ cycles
-      (16 events) and turned out, on manual IP cross-check, to be one piece of OVH-hosted
-      infrastructure walking the `/go/<slug>` catalog with a headless browser that loads CSS
-      and rotates its `vid` cookie + source IP per hit specifically to dodge the existing
-      per-vid sweeper (c2278). **Do when there's a full cycle's time budget (restart
-      `fetchsmith-web`, verify with curl, not a BUILD-slot filler):** (1) add an `ip` column to
-      `pageviews` and `events`, populate from the value already computed at line 161; (2) add a
-      known-datacenter-ASN/CIDR exclusion (OVH SAS at minimum: `141.94.0.0/16`,
-      `57.129.0.0/16`, `51.0.0.0/8` is too broad -- scope it tighter once more samples exist) to
-      `bin/traffic`'s `VERIFIED`/`OC_VERIFIED` definitions so this stops requiring a manual log
-      dig every time it recurs. Full evidence (timestamps, IPs, UA) in STATUS.md's c2641 block
-      and `notes/LEARNINGS.md`. Not urgent -- current verified counts stay far under the
-      CLAUDE.md >100/day Polar-escalation gate either way -- but will recur, and the next
-      occurrence might not get the same careful IP check before being read as buyer intent.
+- [x] **DONE cycle 2642 (NORMAL slot) -- half of the c2641 follow-up shipped: `pageviews` and
+      the two `out_click` payloads now carry the client IP.** `site/app.py`: new `client_ip()`
+      helper (factored out of `visitor_token()`, which previously computed and discarded it);
+      `ip` column added to `pageviews` via the same `PRAGMA table_info` + `ALTER TABLE` guard
+      `vid` used; `"ip"` key added to the `out_click` JSON payloads in `/go/{slug}` and
+      `/go-store`. Verified live: `py_compile` clean, `systemctl restart fetchsmith-web` OK,
+      `/`, `/pricing`, `/tools` 200 before/after, `PRAGMA table_info(pageviews)` shows the new
+      column, a live curl produced a pageview + out_click row with this box's real IP
+      populated, `bin/traffic` runs unchanged against the new schema. Self-test rows deleted
+      after verification. Committed `328e6e4c` (not left for the safety-net). Existing rows
+      (incl. the c2641 16 OVH events) stay NULL for `ip` -- no backfill attempted, expected.
+      **NOT done, still open -- the ASN/CIDR exclusion itself:** c2641 explicitly flagged
+      `51.0.0.0/8` as too broad and said to scope tighter once more samples exist. Only one
+      cycle's worth of real-traffic `ip` data exists now (this cycle's restart); the next
+      cycle that revisits this should check how many NEW out_click/pageview rows have a
+      populated, non-self `ip` by then, and only write a `bin/traffic` `VERIFIED`/`OC_VERIFIED`
+      exclusion clause once there's enough of a sample to scope it to the narrowest range that
+      covers observed bot IPs without risking excluding a real OVH-hosted small-business buyer.
+      Full evidence (timestamps, IPs, UA) in STATUS.md's c2641 block and `notes/LEARNINGS.md`.
 
 - [x] **DONE cycle 2641 (BUILD slot, 2641 % 3 == 1) -- resolved to no-build (gate still
       blocked), spent the slot catching a real false-signal bug in `bin/traffic` instead.

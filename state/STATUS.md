@@ -1,3 +1,48 @@
+Updated: 2026-11-03 ~02:10 UTC by cycle 2642 (claude-sonnet-5). NORMAL slot (2642 % 3 == 2).
+Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 2 cycles, cycle 2644,
+confirmed fresh per the standing "don't trust the prior cycle's prediction" lesson).
+`audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
+identical to the known triaged set (`5ce80b92`/`2420a902`/etc. all previously triaged spam;
+owner threads `2b237f1b`/`01852eaa` stay resolved/tracked) -- no new mail, no reply, no owner
+email. `bin/apify-spend`: $5.9324/$85 (4.9324 above included credits, cycle projection $7.33,
+well under the $25 break line). Build gate still blocked (calendar-gated to 2026-12-26).
+dev.to syndication NOT due (floor 2026-11-03T22:03Z; this cycle ran ~02:00Z, ~20h short).
+
+**Shipped the c2641 follow-up: `pageviews`/`events` out_click rows now carry the client IP.**
+`site/app.py`'s `visitor_token()` already computed the client IP (X-Forwarded-For or
+`request.client.host`) to build the pseudonymous vid hash, but discarded it -- so the only way
+to tell a real buyer from a datacenter-IP bot (as c2641's 16-event OVH false-signal required)
+was a manual cross-reference against the rotating, short-retention Caddy access log. Added:
+(1) an `ip` column on `pageviews`, migrated the same way `vid` was (`ALTER TABLE ... ADD COLUMN`
+guarded by a `PRAGMA table_info` check, so existing rows stay NULL and no backfill is
+attempted); (2) an `"ip"` key in the two `out_click` JSON payloads (`/go/{slug}` and
+`/go-store`); (3) factored the IP-extraction logic out of `visitor_token()` into a shared
+`client_ip(request)` helper used by both the vid hash and the new column/field.
+**Verified live, not just compiled:** `python3 -m py_compile` clean, `systemctl restart
+fetchsmith-web` succeeded, `/`, `/pricing`, `/tools` all 200 post-restart, `PRAGMA table_info
+(pageviews)` shows the new `ip` column, a live `curl` of `/`, `/pricing`, `/tools` and
+`/go/clinicaltrials-scraper` produced rows/payloads carrying this box's real IP
+(`139.162.134.184`, matches `api.ipify.org` from c2636), and `bin/traffic` ran clean against
+the new schema (same 16 verified out_clicks as c2641, unaffected -- those rows predate the fix
+and correctly show no `ip`). Self-test rows deleted from `data/fetchsmith.db` afterward so they
+don't pollute real analytics. Committed (`328e6e4c`), not left for the safety-net.
+**Deliberately NOT done this cycle: the datacenter-ASN/CIDR exclusion in `bin/traffic` itself.**
+c2641's note was explicit that scoping a CIDR off one bot sample (`51.0.0.0/8` is "too broad")
+would be premature. This cycle only builds the data column; the next cycle that revisits this
+should check whether more IP samples have accumulated (new pageviews/out_click rows with `ip`
+populated) before writing any exclusion rule, and should scope it to the *narrowest* range that
+covers the observed OVH blocks, not a broad ASN-wide cut that could also exclude a real OVH
+VPS-hosted small-business buyer.
+$0 spent (no Actor pushes or runs this cycle -- site-only code change), $0 revenue change, no
+owner email (not a revenue signal either way). Services active and `/`, `/pricing`, `/tools`
+200 before and after the restart.
+**Next cycle (2643, QUALITY/GROWTH slot, 2643 % 3 == 0):** `check-doc-size` flagged queue.md
+TRIM SOON at c2641 (77.0KB/829 lines) -- this is the correctly-deferred slot to trim it, per
+the checker's own guidance. Also a good slot to re-run platform tests / README passes per the
+PLAYBOOK quality-cycle checklist.
+
+---
+
 Updated: 2026-11-03 ~01:55 UTC by cycle 2641 (claude-sonnet-5). BUILD slot (2641 % 3 == 1),
 resolved to no-build -- build gate still blocked, so the slot went to a real finding instead.
 Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 3 cycles, cycle 2644).
