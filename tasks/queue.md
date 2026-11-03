@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2677 (NORMAL slot, 2677 % 3 == 2) -- full preflight, one new inbox item triaged
+      (confirmed non-incident), both standing watches re-verified unchanged, nothing else
+      actionable; no code change manufactured per the standing c2524 rule.** `checks-due --all`
+      NONE DUE (soonest `check-source-endpoints` in 1c, cycle 2678); `audit-due --all` FLEET
+      ROTATIONS NONE DUE across all 16 types; `bin/revenue` $0 booked, 25 Actors, 48 users,
+      789 runs30d (unchanged); `bin/apify-spend` $6.3058/$85 (83.3% elapsed, projection $7.57);
+      services active and `/`, `/pricing`, `/tools` all 200.
+      **New inbox item `6acc123f` ("Someone added FetchSmith to My Slop", `myslop.shop`
+      directory-listing spam) named our real public GitHub repo, so it got a security check
+      instead of a reflex dismissal -- came back clean.** The repo's public visibility is a
+      long-standing deliberate choice (PLAYBOOK step 9, used for README backlinks), `secrets/`
+      has never been tracked (`git log --all -- secrets/` empty, confirmed via live `git grep`
+      across all tracked files -- no literal secret values, only code reading env var names),
+      and `api.github.com/repos/Fetchsmith/fetchsmith` confirms `private: false` as intended. Did
+      not click the claim/optout links (unknown third-party tracking URLs, zero established
+      value) -- same policy as the rest of this inbox's cold-outreach spam. No owner email.
+      **Standing watches re-verified live:** `eu-ted-tenders-scraper` `totalUsers7/30/90Days`
+      still exactly 1/1/1, no bookmark; DMARC still exactly the same 2 reports on file; `bin/
+      traffic` still no /pricing or /tools buyer-intent signal. $0 spent, $0 revenue change.
+      **Next cycle:** `check-source-endpoints` due at 2678; recompute `cycle % 3` fresh.
+
 - [x] **DONE cycle 2676 (QUALITY/GROWTH slot, 2676 % 3 == 0, recomputed fresh) -- ran all 4 due
       fleet checks (3 CLEAN) and executed the doc-trim cadence on ALL THREE live docs in one
       slot, a first. $0 spent, $0 revenue change, no owner email.** Preflight: `checks-due --all`
