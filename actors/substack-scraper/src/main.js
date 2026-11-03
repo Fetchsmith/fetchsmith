@@ -11,6 +11,16 @@ import { gotScraping } from 'got-scraping';
 import * as cheerio from 'cheerio';
 
 await Actor.init();
+// Bare `throw new Error()` at module scope charges $0 correctly but leaves the FAILED run's
+// `statusMessage` EMPTY -- the remedy reaches only the log as a stack trace, which buyers do not
+// read (c2357/c2648/c2649 fleet pattern; this Actor had zero `Actor.fail` calls anywhere before
+// this). Safe to call before any other top-level await below because Actor.init() has already
+// run. The trailing `throw` is unreachable in practice (Actor.fail() process.exit()s before its
+// promise resolves) and exists only so a rejected value can never fall through as "no filter".
+async function failInput(msg) {
+  await Actor.fail(msg);
+  throw new Error(msg);
+}
 // A run can fan out across many publications (URL list or category discovery) x many posts x
 // per-post detail/comment fetches, all strictly sequential — heavy inputs can approach the
 // platform timeout with real work still queued. Stop proactively with a safety margin and flush
@@ -68,16 +78,16 @@ if (contentType === 'thread') {
 // widen-and-bill defect class as sinceDate/clinicaltrials-scraper's date filters. Throw instead,
 // matching the fleet's dominant convention for this input shape.
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-function parseDateBound(raw, fieldName) {
+async function parseDateBound(raw, fieldName) {
   const s = String(raw ?? '').trim();
   if (!s) return null;
   if (!DATE_RE.test(s)) {
-    throw new Error(`"${fieldName}" must be YYYY-MM-DD (got ${JSON.stringify(raw)}). An unparseable date here used to be silently ignored, matching every post regardless of this filter.`);
+    await failInput(`"${fieldName}" must be YYYY-MM-DD (got ${JSON.stringify(raw)}). An unparseable date here used to be silently ignored, matching every post regardless of this filter.`);
   }
   return new Date(s);
 }
-const publishedAfter = parseDateBound(input.publishedAfter, 'publishedAfter');
-const publishedBefore = parseDateBound(input.publishedBefore, 'publishedBefore');
+const publishedAfter = await parseDateBound(input.publishedAfter, 'publishedAfter');
+const publishedBefore = await parseDateBound(input.publishedBefore, 'publishedBefore');
 const minReactionCount = input.minReactionCount != null ? Number(input.minReactionCount) : null;
 const minCommentCount = input.minCommentCount != null ? Number(input.minCommentCount) : null;
 const minRestackCount = input.minRestackCount != null ? Number(input.minRestackCount) : null;

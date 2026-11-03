@@ -3,6 +3,16 @@ import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 
 await Actor.init();
+// Bare `throw new Error()` at module scope charges $0 correctly but leaves the FAILED run's
+// `statusMessage` EMPTY -- the remedy reaches only the log as a stack trace, which buyers do not
+// read (c2357/c2648/c2649 fleet pattern). Safe to call before any other top-level await below
+// because Actor.init() has already run. The trailing `throw` is unreachable in practice
+// (Actor.fail() process.exit()s before its promise resolves) and exists only so a rejected value
+// can never fall through as "no filter".
+async function failInput(msg) {
+  await Actor.fail(msg);
+  throw new Error(msg);
+}
 // A run with many queries and enrichGithubLinks on does up to GITHUB_LOOKUP_CAP sequential
 // per-item GitHub calls nested inside a per-query outer loop -- the same compounding-latency
 // shape as the google-news-scraper timeout bug. Getting hard-killed there returns nothing to
@@ -42,19 +52,19 @@ const includeComments = input.includeComments !== false;
 // branch. The buyer sees a plausible "no stories/comments matched" result instead of a message
 // about their malformed date -- the widen-and-bill class's silent-narrow sibling, same root cause
 // (google-play-reviews-scraper, fixed cycle 2312). Throw instead, same shape as that fix.
-function parseDateBound(raw, fieldName) {
+async function parseDateBound(raw, fieldName) {
   const s = String(raw ?? '').trim();
   if (!s) return null;
   const d = new Date(s);
   if (Number.isNaN(d.getTime())) {
-    throw new Error(`"${fieldName}" is not a parseable date (got ${JSON.stringify(raw)}). Use ISO 8601, e.g. "2026-01-01".`);
+    await failInput(`"${fieldName}" is not a parseable date (got ${JSON.stringify(raw)}). Use ISO 8601, e.g. "2026-01-01".`);
   }
   return Math.floor(d.getTime() / 1000);
 }
-const postedAfterSec = parseDateBound(input.postedAfter, 'postedAfter');
-const postedBeforeSec = parseDateBound(input.postedBefore, 'postedBefore');
+const postedAfterSec = await parseDateBound(input.postedAfter, 'postedAfter');
+const postedBeforeSec = await parseDateBound(input.postedBefore, 'postedBefore');
 if (postedAfterSec != null && postedBeforeSec != null && postedAfterSec >= postedBeforeSec) {
-  throw new Error(`"postedAfter" (${input.postedAfter}) is on or after "postedBefore" (${input.postedBefore}) — the window is empty, so no item can ever match. Swap them.`);
+  await failInput(`"postedAfter" (${input.postedAfter}) is on or after "postedBefore" (${input.postedBefore}) — the window is empty, so no item can ever match. Swap them.`);
 }
 const numericFilters = [];
 if (postedAfterSec != null) numericFilters.push(`created_at_i>${postedAfterSec}`);
