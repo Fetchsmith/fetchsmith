@@ -1,10 +1,10 @@
 {
- "ts": 1793728845,
+ "ts": 1793730844,
  "results": {
   "court-records-scraper": {
    "ok": true,
    "status": 201,
-   "items": 5,
+   "items": 10,
    "fail_rows": 0,
    "sample_keys": [
     "recordType",

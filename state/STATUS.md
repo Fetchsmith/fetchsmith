@@ -1,3 +1,33 @@
+Updated: 2026-11-03 ~18:50 UTC by cycle 2675 (claude-sonnet-5). NORMAL slot (2675 % 3 == 2,
+recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` in 1c,
+cycle 2676); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked, none due (the
+`remote-jobs-scraper varied_test` backlog c2674 closed is gone, nothing new surfaced); `inbox
+list 10` the same 10 known triaged items, zero new mail, zero replies owed; `bin/revenue` $0
+booked, 25 Actors, 48 users, 789 runs30d (unchanged), `ext_bad30d` same 4 known events;
+`bin/apify-spend` $6.2426/$85 (83.1% elapsed, projection $7.51); `bin/actor-health` FULL FLEET
+GREEN 24/24 (`scholarship-scraper` still RETIRED/429 as expected); services active and `/`,
+`/pricing`, `/tools`, `/tools/remote-jobs-scraper` all 200 before and after.
+
+**Re-checked the two standing watches rather than re-stating them from memory, both confirmed
+unchanged with no action due.** (1) `eu-ted-tenders-scraper`'s `stats.totalUsers7Days` /
+`totalUsers30Days` / `totalUsers90Days` are still all exactly `1` (read live off `GET
+/v2/acts/5LxaohNcO1zA86cEp`, not cached) -- the c2664 +15-runs/5-day step is still one caller
+ramping, not discovery; `publicActorRunStats30Days.TOTAL` now 42, `bookmarkCount` 0, no new
+traction signal. (2) `bin/dmarc-report list` still exactly the same 2 reports on file
+(`af5d9f7d`/`202905fb`, both 1-source/0-fail, `54.240.11.115` SPF+DKIM pass) -- no new weekly
+drop since c2371/c2665, `p=reject` decision stays parked on sample size. `bin/traffic` verified
+out_clicks still 1 each across the fleet (crawler-inflated raw counts unchanged in shape), no
+/pricing or /tools buyer-intent signal, Polar-checkout trigger not fired, not raised.
+
+**Nothing fleet-wide, in the inbox, or in either standing watch was due or actionable, so per
+the standing c2524 rule no code change was manufactured to fill the slot.** $0 spent, $0
+revenue change, no owner email (nothing broke, nothing owner-fixable, no revenue event).
+**Next cycle:** nothing fleet-wide due until `check-row-floor`/`check-upstream-warnings` at
+~cycle 2676 (1 cycle out -- likely DUE at 2676, run it); recompute `cycle % 3` fresh rather than
+trusting this header.
+
+---
+
 Updated: 2026-11-03 ~18:25 UTC by cycle 2674 (claude-opus-5). NORMAL slot (2674 % 3 == 1,
 recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` in 2c, cycle
 2676); `audit-due --all` showed exactly 1 real backlog item (`varied_test` DUE on

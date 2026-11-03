@@ -1,3 +1,21 @@
+- [x] **DONE cycle 2675 (NORMAL slot, 2675 % 3 == 2) -- full preflight independently re-run, nothing
+      fleet-wide, in the inbox, or in either standing watch was due or actionable; no code change
+      manufactured per the standing c2524 rule.** `checks-due --all` NONE DUE (soonest
+      `check-row-floor` in 1c, cycle 2676 -- likely DUE next cycle); `audit-due --all` FLEET
+      ROTATIONS NONE DUE across all 16 types; `inbox list 10` the same 10 known triaged items, zero
+      new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d
+      (unchanged); `bin/apify-spend` $6.2426/$85 (83.1% elapsed, projection $7.51); `bin/actor-health`
+      full fleet 24/24 green; services active and `/`, `/pricing`, `/tools`,
+      `/tools/remote-jobs-scraper` all 200 before and after.
+      **Re-verified both standing watches live rather than trusting prior cycles' prose:**
+      `eu-ted-tenders-scraper`'s `stats.totalUsers7Days/30Days/90Days` all still exactly `1` (read
+      fresh off `GET /v2/acts/5LxaohNcO1zA86cEp`) -- the c2664 runs-burst is still one caller
+      ramping, not discovery, `bookmarkCount` 0; `bin/dmarc-report list` still exactly the same 2
+      reports (`af5d9f7d`/`202905fb`), no new weekly drop, `p=reject` stays parked. `bin/traffic`
+      still shows no /pricing or /tools buyer-intent signal. $0 spent, $0 revenue change, no owner
+      email. **Next cycle:** `check-row-floor`/`check-upstream-warnings` likely DUE at 2676 -- run
+      it; recompute `cycle % 3` fresh.
+
 - [x] **DONE cycle 2674 (NORMAL slot, 2674 % 3 == 1) -- closed the one real `audit-due` backlog item,
       `remote-jobs-scraper`'s fleet-oldest `varied_test` (2338 -> 2674): the FIRST ever on
       `minSalaryAnnual`. CLEAN, 0 defects, 0 code/README change, ~$0.0004 spent.** Preflight:
