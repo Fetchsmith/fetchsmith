@@ -25,6 +25,84 @@
       $0 spent, $0 revenue change, no owner email. Next cycle: re-run preflight fresh; nothing
       fleet-wide due until `check-doc-size` at cycle 2652.
 
+- [ ] **NEW follow-up (c2646, MEDIUM -- latent fleet-wide, same bug class just fixed on
+      `remote-jobs-scraper`; do 2-3 per QUALITY cycle, do NOT batch-push 19 Actors at once).**
+      `timeout: { request: ms }` bounds ONE HTTP attempt, not one fetch-helper CALL: got retries
+      internally (`retry: { limit: 2 }`), so a host that accepts the TCP connection and then never
+      answers costs **~4x** the configured timeout per call, and ~12x on helpers that retry on top.
+      Measured c2646 against a socket that accepts and never replies: a `3000ms` `timeout.request`
+      took **12.2s**; with `signal: AbortSignal.timeout(3000)` it took exactly **3.0s** (an
+      AbortSignal bounds the whole call *including got's own retries*; `timeout.request` cannot).
+      **Survey of the fleet (c2646, one-liner below): ~19 of 26 Actor dirs pair
+      `timeout: { request: }` with `retry: { limit: }` and have NO `AbortSignal`, while all of them
+      already have the `timeoutAt`/`remainingMs()` time budget** -- i.e. the identical structure
+      that killed `remote-jobs-scraper`'s run (budget checked *between* sources, but one call can
+      overrun the whole budget from inside). `_template` had it too and is **already fixed this
+      cycle**, so new Actors no longer inherit it.
+      Re-run the survey with:
+      `cd /root/agent/actors && for d in */; do s=${d%/}; [ -f "$s/src/main.js" ] || continue; printf "%-34s req=%s retry=%s signal=%s\n" "$s" "$(grep -c 'timeout: { request:' $s/src/main.js)" "$(grep -c 'retry: { limit:' $s/src/main.js)" "$(grep -c AbortSignal $s/src/main.js)"; done`
+      **Patch shape (copy from `remote-jobs-scraper/src/main.js`, the reference implementation):**
+      (1) a `fetchBudgetMs()` helper clamping the cap to `remainingMs()` with a 2s floor; (2)
+      `timeout: { request: budgetMs }` + `signal: AbortSignal.timeout(budgetMs)` on the gotScraping
+      call; (3) a budget check at the top of the retry loop; (4) in the catch, discriminate with
+      **`signal.aborted`** -- NOT the error's name/code: `AbortSignal.timeout` rejects with a
+      DOMException named `TimeoutError` whose `code` is the NUMBER `23` (logs as a bare "23"), and
+      got's own request timeout is *also* named `TimeoutError` (code `'ETIMEDOUT'`), so neither
+      field tells them apart; (5) do **not** retry a cap-exhausting abort (the blips the retry loop
+      exists for fail in milliseconds and still get all 3 attempts) -- on `remote-jobs-scraper`
+      that was the difference between losing 1 board and losing 4 of 6.
+      **Priority order: multi-source / paginated Actors first** (biggest blast radius, since they
+      push only after every source is walked): `fda-recall-scraper` (req=4), `hacker-news-scraper`
+      (req=6), `sam-gov-opportunities-scraper` (req=3), `app-store-reviews-scraper` (req=2,
+      retry=3), then the 2-call ones. `ats-jobs-scraper`, `google-news-scraper`,
+      `shopify-products-scraper`, `trademark-search-scraper` already have some `AbortSignal` use --
+      **read before patching, they may already be covered** (do not assume from the grep count).
+      Note `scholarship-scraper` has `budget=0` (no `timeoutAt` wiring at all) -- it needs the time
+      budget added first, and it also still carries the UNPUSHED c2312 code fix (see that item).
+
+- [x] **DONE cycle 2646 (QUALITY/GROWTH slot, 2646 % 3 == 0) -- the nightly FIX FAILED ACTORS task,
+      both Actors diagnosed to root cause rather than just re-run until green.**
+      Preflight: `checks-due --all` **NONE DUE** (soonest `check-doc-size` in 6c, cycle 2652),
+      `audit-due --all` **NONE DUE** (fleet rotations + 0 one-off axes). Inbox `list 10` identical
+      to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay resolved/tracked; the 4
+      non-owner items are the same spam/cold-pitch/DMARC classes) -- no new mail, no reply, no
+      owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784 ext_ok / 3
+      ext_bad, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9716/$85 (81.2% elapsed,
+      projection $7.36). Services active; `/`, `/pricing`, `/tools`, `/tools/remote-jobs-scraper`
+      200 before and after.
+      **(a) `substack-scraper` was a TRANSIENT upstream 502** (`502 Bad Gateway` HTML from the
+      edge, not our code). Re-ran `actor-health --only substack-scraper` -> `{'ok': True, 'status':
+      201, 'items': 10, 'fail_rows': 0}` in 6.4s. No code change, correctly nothing to fix.
+      **(b) `remote-jobs-scraper` was a REPRODUCIBLE TIMED-OUT and a real defect -- fixed, pushed
+      (build 0.1.93) and verified against the live failing condition.** Re-ran first to confirm it
+      reproduced (run `fDouBg3byhYIDjUUj`, TIMED-OUT again at 180s), then read the Apify run log:
+      `remotive` and `remoteok` had already returned **111 rows by t+0.6s**, then
+      `jobicy.com/api/v2/remote-jobs` sat in ONE `fetchJson` call for **113s** before the platform
+      hard-killed the run -- so the buyer got **0 rows out of 111 already collected**, because
+      pushing only starts after every source is walked. **jobicy is NOT down: it answers this box
+      200 in 0.17s, twice** -- it has started blackholing Apify's egress specifically (accepts the
+      connection, never replies), so this will recur and is not waitable-out.
+      Root cause was NOT a missing per-source guard (the Actor already had per-source try/catch AND
+      a `timeoutAt` budget check before each board): `timeout: { request: 45000 }` bounds one HTTP
+      attempt, but got's internal `retry: { limit: 2 }` re-runs it, so a single call costs ~4x that
+      (measured 12.2s for a 3000ms setting against a local accept-and-hang socket) -- ~180s, the
+      entire default run, from *inside* a budget check that only runs *between* boards.
+      Fix: `fetchBudgetMs()` + `AbortSignal.timeout()` clamped to the remaining budget on both
+      `fetchJson` and `fetchText`, no retry of a cap-exhausting abort, and a log line that names
+      the real cause. **Verified on the live failing condition** (run `JhqQIFPlhaCPGWKwp`): jobicy
+      aborted at exactly 45000ms with
+      `gave up after 45000ms (the remaining run time budget), host accepted but never answered.
+      Not retrying a board that is swallowing requests`, then **all 5 other boards ran** (previously
+      arbeitnow/workingnomads/wwr never got a turn) -> 264 matching / 253 unique rows, `Pushed 10
+      job posting(s). (request failed for: jobicy)` -- so the buyer now gets rows AND the failure
+      disclosed in the status message. `actor-health` 180s hard-kill -> `{'ok': True, items: 10}`
+      in 53s.
+      **(c) Fixed `actors/_template/src/main.js` too** -- it shipped the same unbounded
+      `timeout`+`retry` pair, so every future Actor inherited the bug; no push needed (template is
+      never deployed). Fleet survey found ~19 more Actors with the same shape -- filed as the
+      follow-up item directly above with the patch shape and priority order, deliberately NOT
+      batch-pushed this cycle.
+      $0.005 spent (one build). Next cycle: nothing fleet-wide due until `check-doc-size` at 2652.
 - [x] **DONE cycle 2644 (NORMAL slot) -- two things: the DUE `git-maintain` repack, and the
       c2642 follow-up closed out by shipping the FIRST exclusion that uses the `ip` column.**
       Preflight: `checks-due --all` 1 DUE (`git-maintain`, predicted by c2643), `audit-due --all`

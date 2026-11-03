@@ -1,3 +1,74 @@
+Updated: 2026-11-03 ~04:15 UTC by cycle 2646 (claude-opus-5). QUALITY/GROWTH slot (2646 % 3 == 0).
+Preflight: `checks-due --all` **NONE DUE** (soonest `check-doc-size` in 6c, cycle 2652).
+`audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`:
+same known triaged set, no new mail (owner threads `2b237f1b` CourtListener token /
+`01852eaa` Apify Nov-15 Store API change stay resolved/tracked; the 4 non-owner items are
+the same cold-pitch/spam/DMARC classes triaged for weeks) -- no reply needed, no owner
+email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784 ext_ok / 3 ext_bad,
+flat vs c2645), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9716/$85 (81.2% elapsed,
+projection $7.36). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
+`/`, `/pricing`, `/tools`, `/tools/remote-jobs-scraper` 200 before and after. Build gate
+still calendar-blocked to 2026-12-26. dev.to syndication not due.
+
+**Work -- the nightly `FIX FAILED ACTORS` task (substack-scraper, remote-jobs-scraper) was
+the top unblocked item and a genuine failure, so this QUALITY slot went to diagnosing both
+to root cause rather than re-running them until green.**
+
+**(a) `substack-scraper` = TRANSIENT upstream 502, no code change.** The recorded error was
+`502 Bad Gateway` HTML from the edge, not our code. `actor-health --only substack-scraper`
+-> `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}` in 6.4s. Correctly nothing to fix.
+
+**(b) `remote-jobs-scraper` = REPRODUCIBLE TIMED-OUT, a real defect. FIXED, pushed (build
+0.1.93), verified against the live failing condition.** Reproduced it first (run
+`fDouBg3byhYIDjUUj`, TIMED-OUT again at 180s), then read the Apify run log: `remotive` +
+`remoteok` had already returned **111 rows by t+0.6s**, then ONE `fetchJson` to
+`jobicy.com/api/v2/remote-jobs` sat **113s** until the platform hard-killed the run -- the
+buyer got **0 rows out of 111 already collected**, because pushing only starts after every
+source is walked. **jobicy is not down: it answers THIS box 200 in 0.17s, twice** -- it has
+started blackholing Apify's egress (accepts, never replies), so it recurs and is not
+waitable-out. **Root cause was a guard that could not fire, not a missing one:** the Actor
+already had per-source try/catch AND a `timeoutAt` budget checked before each board, but
+`timeout: { request: 45000 }` bounds ONE HTTP attempt, not one `fetchJson` CALL -- got
+retries internally (`retry: { limit: 2 }`), so the true cost is ~4x that (measured: a
+3000ms setting took 12.2s against a local accept-and-hang socket), i.e. ~180s = the whole
+run, consumed from INSIDE a budget that is only checked BETWEEN boards.
+Fix: `fetchBudgetMs()` + `signal: AbortSignal.timeout(budgetMs)` clamped to `remainingMs()`
+on both `fetchJson` and `fetchText` (an AbortSignal bounds the whole call *including got's
+retries* -- same test: exactly 3.0s; `timeout.request` cannot), no retry of a cap-exhausting
+abort, and a log line naming the real cause. **Verified on the live failure** (run
+`JhqQIFPlhaCPGWKwp`): jobicy aborted at exactly 45000ms, **all 5 other boards then ran**
+(arbeitnow/workingnomads/wwr previously never got a turn) -> 264 matching / 253 unique rows,
+`Pushed 10 job posting(s). (request failed for: jobicy)`, so the buyer now gets rows AND the
+failure disclosed. `actor-health`: 180s hard-kill -> `{'ok': True, items: 10}` in 53s.
+
+**(c) Same bug fixed in `actors/_template/src/main.js`** (it shipped the identical unbounded
+`timeout`+`retry` pair, so every future Actor inherited it; no push needed, never deployed).
+**Fleet survey: ~19 of 26 Actor dirs carry the same shape** (`timeout: { request:` +
+`retry: { limit:` with no `AbortSignal`), all of them already having the `timeoutAt` budget
+that cannot save them. Deliberately NOT batch-pushed this cycle (19 builds, 19 unverified
+runs); filed as a MEDIUM follow-up in queue.md with the re-run survey one-liner, the 5-step
+patch shape, the `signal.aborted` discrimination trap, and a priority order (multi-source
+Actors first: fda-recall, hacker-news, sam-gov, app-store-reviews). Note 4 Actors already
+use some `AbortSignal` -- read before patching. `scholarship-scraper` has no `timeoutAt`
+wiring at all and also still carries the UNPUSHED c2312 fix.
+
+$0.005 spent (one build), $0 revenue change, no owner email (buyer-intent funnel unchanged
+and far below the >100/day Polar trigger; this is a reliability fix, not a revenue event).
+Post-edit integrity: `check-status-continuity` NONE MISSING (23/23 completed cycles in the
+2623..2646 window have a block), `check-status-blocks-kept` OK (1050 blocks, none destroyed).
+**`check-doc-size` read TRIM SOON for `state/STATUS.md` + `tasks/queue.md`** -- not DUE and it
+does not fail, but both are projected to cross the trim line before the checker next looks
+(cycle 2652), so its own guidance is to trim proactively in a QUALITY slot. Did NOT trim here:
+this QUALITY slot went to a live product defect (an Actor returning 0 rows to buyers), which
+outranks doc hygiene that has ~6 cycles of runway. **Next QUALITY slot (2649) should do the
+trim** -- use the generalized hoist-then-cut script from c2643 (which already handles the
+interleaved-DONE-block wrinkle), and run the standing-hazard grep plus the open-item md5 /
+archive-membership guards before and after, as c2643 did.
+
+**Next cycle (2647, NORMAL slot):** re-run preflight fresh; nothing fleet-wide due until
+`check-doc-size` at cycle 2652; the top unblocked item is the fleet-wide `AbortSignal`
+follow-up above (take 2-3 Actors, verify each with a real run before the next).
+
 Updated: 2026-11-03 ~03:35 UTC by cycle 2645 (claude-sonnet-5). NORMAL slot (2645 % 3 == 2).
 Preflight: `checks-due --all` **NONE DUE** (soonest `check-doc-size` in 7c, cycle 2652).
 `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`:

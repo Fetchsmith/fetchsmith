@@ -37,6 +37,26 @@ function timeBudgetOk() {
   return true;
 }
 
+// `timeout: { request: ms }` bounds ONE HTTP attempt, not one fetchJson/fetchText call: got
+// retries internally (`retry: { limit: 2 }`) and this file retries on top of that, so the real
+// worst case per call is ~4x the configured timeout and ~12x per source. Measured against a
+// socket that accepts and never answers (cycle 2646): a 3000ms `timeout.request` took 12.2s.
+// At the production 45000ms that is ~180s inside a single call — the entire default run — which
+// is exactly how 2026-11-03's nightly health run died: jobicy.com stopped answering Apify's
+// egress (still healthy from everywhere else), one call sat in it for 113s, and the platform
+// hard-killed the run with 111 already-collected rows from Remotive/Remote OK never pushed.
+// An AbortSignal, unlike `timeout.request`, bounds the WHOLE call including got's own retries
+// (verified same test: exactly 3.0s), so clamping it to the remaining budget guarantees the
+// source loop gets control back while there is still time to push what it has.
+const FETCH_TIMEOUT_MS = 45_000;
+function fetchBudgetMs() {
+  const left = remainingMs();
+  // 2s floor: only reachable deep inside a paginated source (the loop skips a source outright
+  // once the budget is gone), and a doomed 2s attempt is still better than a 0ms one that
+  // aborts before the socket opens and reports a misleading transport error.
+  return left === Infinity ? FETCH_TIMEOUT_MS : Math.max(2000, Math.min(FETCH_TIMEOUT_MS, left));
+}
+
 const SOURCE_SITE = {
   remotive: 'https://remotive.com',
   remoteok: 'https://remoteok.com',
@@ -366,12 +386,19 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function fetchJson(url) {
   let lastErr;
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (!timeBudgetOk()) {
+      lastErr ??= new Error(`${url}: the run's time budget ran out before this board answered.`);
+      break;
+    }
+    const budgetMs = fetchBudgetMs();
+    const signal = AbortSignal.timeout(budgetMs);
     try {
       const res = await gotScraping({
         url,
         responseType: 'json',
         headers: { 'User-Agent': UA, Accept: 'application/json' },
-        timeout: { request: 45000 },
+        timeout: { request: budgetMs },
+        signal,
         retry: { limit: 2 },
         ...(attempt > 0 ? { http2: false } : {}),
       });
@@ -388,9 +415,31 @@ async function fetchJson(url) {
     } catch (err) {
       if (err.statusCode && !err.retryable) throw err;
       lastErr = err;
-      if (attempt < 2) {
-        log.warning(`${url}: ${err.code || err.name} (${err.message}). Retrying over HTTP/1.1.`);
+      // `signal.aborted` rather than the error's name/code: AbortSignal.timeout rejects with a
+      // DOMException named TimeoutError whose `code` is the NUMBER 23 (would log as a bare "23"),
+      // and got's own request-timeout error is *also* named TimeoutError (code 'ETIMEDOUT'), so
+      // neither field tells the two apart. The signal does, unambiguously.
+      const what = signal.aborted
+        ? `gave up after ${budgetMs}ms (the remaining run time budget), host accepted but never answered`
+        : `${err.code || err.name} (${err.message})`;
+      // Burning the whole clamped cap without receiving one byte is not the failure this retry
+      // loop was built for: the blips it exists for (Remote OK's ERR_HTTP2_ERROR /
+      // HPE_INVALID_CONSTANT) fail in milliseconds, so they still get all 3 attempts. A host that
+      // accepts the connection and then answers nothing is blackholing us, and two more full-cap
+      // attempts buy nothing while costing the boards further down the loop their turn -- with
+      // jobicy down that is the difference between losing 1 board and losing 4 of 6.
+      if (signal.aborted) {
+        log.warning(`${url}: ${what}. Not retrying a board that is swallowing requests; continuing with the others.`);
+        break;
+      }
+      // Only promise a retry that is actually going to happen -- once the budget is gone the loop
+      // breaks at the top, and a "Retrying" line the run never acts on sends whoever reads this
+      // log hunting for a second attempt that does not exist.
+      if (attempt < 2 && remainingMs() > 0) {
+        log.warning(`${url}: ${what}. Retrying over HTTP/1.1.`);
         await sleep(500 * (attempt + 1));
+      } else {
+        log.warning(`${url}: ${what}. Out of attempts for this board; continuing with the others.`);
       }
     }
   }
@@ -402,12 +451,19 @@ async function fetchJson(url) {
 async function fetchText(url) {
   let lastErr;
   for (let attempt = 0; attempt < 3; attempt += 1) {
+    if (!timeBudgetOk()) {
+      lastErr ??= new Error(`${url}: the run's time budget ran out before this board answered.`);
+      break;
+    }
+    const budgetMs = fetchBudgetMs();
+    const signal = AbortSignal.timeout(budgetMs);
     try {
       const res = await gotScraping({
         url,
         responseType: 'text',
         headers: { 'User-Agent': UA, Accept: 'application/rss+xml, application/xml, text/xml' },
-        timeout: { request: 45000 },
+        timeout: { request: budgetMs },
+        signal,
         retry: { limit: 2 },
         ...(attempt > 0 ? { http2: false } : {}),
       });
@@ -421,9 +477,31 @@ async function fetchText(url) {
     } catch (err) {
       if (err.statusCode && !err.retryable) throw err;
       lastErr = err;
-      if (attempt < 2) {
-        log.warning(`${url}: ${err.code || err.name} (${err.message}). Retrying over HTTP/1.1.`);
+      // `signal.aborted` rather than the error's name/code: AbortSignal.timeout rejects with a
+      // DOMException named TimeoutError whose `code` is the NUMBER 23 (would log as a bare "23"),
+      // and got's own request-timeout error is *also* named TimeoutError (code 'ETIMEDOUT'), so
+      // neither field tells the two apart. The signal does, unambiguously.
+      const what = signal.aborted
+        ? `gave up after ${budgetMs}ms (the remaining run time budget), host accepted but never answered`
+        : `${err.code || err.name} (${err.message})`;
+      // Burning the whole clamped cap without receiving one byte is not the failure this retry
+      // loop was built for: the blips it exists for (Remote OK's ERR_HTTP2_ERROR /
+      // HPE_INVALID_CONSTANT) fail in milliseconds, so they still get all 3 attempts. A host that
+      // accepts the connection and then answers nothing is blackholing us, and two more full-cap
+      // attempts buy nothing while costing the boards further down the loop their turn -- with
+      // jobicy down that is the difference between losing 1 board and losing 4 of 6.
+      if (signal.aborted) {
+        log.warning(`${url}: ${what}. Not retrying a board that is swallowing requests; continuing with the others.`);
+        break;
+      }
+      // Only promise a retry that is actually going to happen -- once the budget is gone the loop
+      // breaks at the top, and a "Retrying" line the run never acts on sends whoever reads this
+      // log hunting for a second attempt that does not exist.
+      if (attempt < 2 && remainingMs() > 0) {
+        log.warning(`${url}: ${what}. Retrying over HTTP/1.1.`);
         await sleep(500 * (attempt + 1));
+      } else {
+        log.warning(`${url}: ${what}. Out of attempts for this board; continuing with the others.`);
       }
     }
   }

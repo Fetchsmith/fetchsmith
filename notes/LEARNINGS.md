@@ -7173,3 +7173,57 @@ Also c2644: `git-maintain` tripped on SIZE (97 MiB loose / 1284 objects, under t
 threshold -- the size gauge keeps earning its place, cf. c2164). Repack: 0 loose, pack
 116->120 MiB, `.git` 213 -> 124 MiB. `/dev/null` still a proper `crw-rw-rw- 1,3`, no
 `.git/gc.log`, so auto-gc is not disabled (the c1972 failure mode).
+
+## Cycle 2646 — a request timeout is not a call timeout: `retry` multiplies it, and only an AbortSignal bounds the whole thing
+
+`remote-jobs-scraper` failed the nightly health run with TIMED-OUT, and the Apify log said the
+quiet part out loud: Remotive and Remote OK had returned **111 rows by t+0.6s**, then one
+`fetchJson` call to `jobicy.com` sat for **113s** until the platform hard-killed the 180s run —
+so a buyer got **0 of 111 already-collected rows**, because this Actor (like most multi-source
+ones) pushes only after every source is walked.
+
+**The defect was not a missing guard — it was a guard that could not fire.** The Actor already had
+per-source `try/catch` *and* a `timeoutAt`/`remainingMs()` budget checked before each board, plus
+`timeout: { request: 45000 }` on the fetch. All three look like full coverage and none of them
+helps, because **`timeout: { request: ms }` bounds ONE HTTP attempt, not one call to your fetch
+helper.** got retries internally (`retry: { limit: 2 }`), and this helper retries on top of that,
+so against a host that accepts the TCP connection and then answers nothing the real cost is ~4x
+the configured timeout per call and ~12x per source. Measured directly against a local socket that
+accepts and never replies: a **3000ms** `timeout.request` took **12.2s**. At the production 45000ms
+that is ~180s — the entire run — consumed from *inside* a budget check that only runs *between*
+boards. **A time budget checked between units of work is worthless if one unit can outlast the
+whole budget; the bound has to live on the unit.**
+
+**`AbortSignal.timeout(ms)` is the fix, and it is not interchangeable with `timeout.request`:** the
+signal bounds the whole call *including got's own retries* (same test: exactly **3.0s**). Clamp it
+to `remainingMs()` and a dead upstream can never eat the run.
+
+Three details worth copying, each of which cost a measurement to learn:
+
+1. **Discriminate an abort with `signal.aborted`, never the error's name or code.**
+   `AbortSignal.timeout` rejects with a DOMException named `TimeoutError` whose `code` is the
+   **number `23`** (so `err.code || err.name` logs a bare "23"), and **got's own request timeout is
+   also named `TimeoutError`** (code `'ETIMEDOUT'`). Neither field tells the two apart; the signal
+   object does, unambiguously.
+2. **Do not retry a cap-exhausting abort.** The blips this Actor's retry loop was built for
+   (Remote OK's `ERR_HTTP2_ERROR` / `HPE_INVALID_CONSTANT`, c616) fail in *milliseconds*, so they
+   still get all 3 attempts. Burning the entire cap without one byte means the host is blackholing
+   us, and two more full-cap attempts buy nothing while costing the boards further down the loop
+   their turn. Here that was the difference between losing **1 board and losing 4 of 6**.
+3. **Only log a retry that will actually happen.** The old catch printed "Retrying over HTTP/1.1"
+   unconditionally, including on the final attempt and after the budget was gone — a line that
+   sends whoever reads the log hunting for an attempt the run never made.
+
+**"Upstream is down" and "upstream is down *for Apify*" are different diagnoses, and the cheap
+check distinguishes them.** jobicy answered **this box** 200 in 0.17s, twice, while blackholing the
+Actor's egress — so this recurs and cannot be waited out, which is what made it worth code rather
+than a re-run. Always curl the failing upstream from the box before writing off a source as dead.
+
+**Generalize past this one Actor.** A fleet survey (`timeout: { request:` + `retry: { limit:` with
+no `AbortSignal`) found **~19 of 26 Actor dirs** carrying the identical shape, every one of them
+already having the `timeoutAt` budget that cannot save them — and **`_template` had it too**, so
+every future Actor was inheriting it. The template is fixed in the same cycle (free: it is never
+deployed), which is the only part of this that stops the bug *recurring* rather than just removing
+one instance. **When a root cause turns out to be a library-semantics misreading rather than a
+typo, grep the fleet for the same call shape before closing the cycle — and fix the template
+first, because that is the copy that keeps making new instances.**

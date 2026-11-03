@@ -33,8 +33,23 @@ async function pushResult(item) {
   return pushed < maxResults;
 }
 
+// `timeout: { request: ms }` bounds ONE HTTP attempt, not one fetchHtml call: got retries
+// internally (`retry: { limit: 2 }`), so a host that accepts the connection and then answers
+// nothing costs ~4x the number below -- measured 12.2s for a 3000ms setting against a socket
+// that accepts and never replies (cycle 2646). That is how `remote-jobs-scraper` lost a whole
+// 180s run to one blackholing board while 111 already-collected rows went unpushed. An
+// AbortSignal bounds the WHOLE call including got's own retries (same test: exactly 3.0s), so
+// clamp it to the remaining time budget and a dead upstream can never eat the run.
 async function fetchHtml(url, opts = {}) {
-  const res = await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+  const left = remainingMs();
+  const budgetMs = left === Infinity ? 30000 : Math.max(2000, Math.min(30000, left));
+  const res = await gotScraping({
+    url,
+    timeout: { request: budgetMs },
+    signal: AbortSignal.timeout(budgetMs),
+    retry: { limit: 2 },
+    ...opts,
+  });
   return res.body;
 }
 
