@@ -1,219 +1,28 @@
-- [x] **DONE cycle 2647 (NORMAL slot, 2647 % 3 == 1) -- the standing c2336 `ext_bad30d`
-      tripwire caught a genuine NEW entry (`nih-reporter-scraper` FAILED 1, not one of the 3
-      previously-known), diagnosed to root cause and fixed, not just re-run.**
-      Preflight: `checks-due`/`audit-due` both NONE DUE. Inbox had 2 new non-owner items
-      beyond the known set (`c2fa5a9c` IPYE proxy-IP-lease cold pitch, `06daa491` Chinese
-      "TinyGate" API-gateway cold pitch), both read in full, both non-actionable spam -- no
-      reply, no owner email. Revenue/spend otherwise flat. Services/site all green before and
-      after.
-      The failed run (`IKBr3C9rL8Si4Zx1J`, 2026-10-29, $0 charged) was a real buyer sending
-      `fiscalYears: ["FY2000",...,"FY2012"+]`. The Actor's existing input guard correctly
-      refused (per its own well-commented c2444/c2352-class design, to avoid silently falling
-      through to a different charged query) -- but "FY2024" is NIH's own stated convention, so
-      this is a plausible real-usage shape being rejected, not a buyer typo. **Fixed**: added
-      `parseFiscalYear()` (strips a leading `FY`/`fy`) in `actors/nih-reporter-scraper/src/
-      main.js`, applied consistently at both the main filter and the `dropped`-value recompute
-      (the latter previously used a bare `Number(y)`, a second, subtler instance of the same
-      gap). Verified 3 ways: unit-level parse test, local Actor run with the exact failing
-      input shape (5 rows, correct `[2023,2024]`), and a live platform re-run after push
-      (build 0.1.69, run `mcS2IfliYRJIAmR8z`, SUCCEEDED/5 rows) -- the exact previously-failed
-      input now works for real. Confirmed the refusal path is untouched for truly invalid
-      input (`["FY1800","garbage"]` still refuses, same message). `actor-health` unchanged
-      after the push. $0.005 spent (one build), $0 revenue change (original failed run stays
-      $0, fix only helps future resubmissions), no owner email.
-      Full detail in `state/STATUS.md` cycle-2647 entry.
-
-- [x] **DONE cycle 2648 (NORMAL slot, 2648 % 3 == 2) -- did the c2647 sibling-year-input audit
-      below. It resolved to NO PORT NEEDED (the FY-prefix fix has no second home), but the audit
-      widened one step and found a REAL latent defect of the same class in
-      `fec-campaign-finance-scraper`, which was then fixed and verified on the platform.**
-      Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 4c, cycle 2652),
-      `audit-due --all` NONE DUE / 0 one-off axes. Inbox `list 10` = exactly the known 10 items,
-      **zero new mail** -- no reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 48
-      users, 775 runs30d, ext_bad30d 4. `bin/apify-spend` $5.9915/$85 (81.3% elapsed, projection
-      $7.37). Services all active; `/`, `/pricing`, `/tools` 200 before and after.
-      **(a) c2336 standing tripwire:** re-diffed `ext_stats30d` across the last 12 snapshots --
-      the 4 bad entries are the 3 long-known ones (`steam-reviews-scraper` FAILED,
-      `court-records-scraper` TIMED-OUT, `remote-jobs-scraper` TIMED-OUT) plus
-      `nih-reporter-scraper` FAILED, which is c2647's own already-diagnosed-and-fixed entry.
-      **No new Actor name. Clean.**
-      **(b) The c2647 audit, answered with data instead of assumption:** enumerated EVERY
-      year/fiscal/cycle-named input field across all 25 Actors' `input_schema.json`. Result: the
-      only `type: "array"` year filter in the whole fleet is nih-reporter's `fiscalYears`
-      (already fixed). The other four are all `type: "integer"` -- and Apify enforces scalar
-      schema types on API-started runs, so `"FY2024"` as a STRING cannot reach them at all.
-      Two of them (`sam-gov-opportunities-scraper.incumbentYears`, a 1-10 clamped look-back;
-      `clinicaltrials-scraper.ageRangeFrom/ToYears`, an eligibility age) are not calendar years
-      in the first place. **So the `parseFiscalYear` normalization has nowhere else to go --
-      recorded as a closed question so no future cycle re-opens it.**
-      **(c) What the audit DID turn up -- `fec-campaign-finance-scraper.electionYear` (the one
-      remaining real year filter) had no validation at all, and its two upstream params disagree
-      about whether that is loud or silent.** Measured live against api.open.fec.gov this cycle:
-      `two_year_transaction_period=2023` (contributions/disbursements modes) -> **HTTP 422** with
-      the FEC's own "should be an even year between 1976 and 2026" text, but `cycle=2023` AND
-      `cycle=2025` (candidates + independentExpenditures modes) -> **HTTP 200, `results: []`,
-      `count: 0`, no message.** Under per-result pricing that second shape is a silent zero-row
-      run the buyer paid compute for, with nothing in the log pointing at the year -- and an odd
-      year is a plausible shape, not a typo, because the FEC's own site labels cycles
-      "2023-2024" (the identical "upstream's own convention, rejected by us" class as c2647's
-      "FY2024"). **Fixed** in `actors/fec-campaign-finance-scraper/src/main.js`: validate
-      `electionYear` pre-charge (even integer, 1976..currentEvenYear+2) and, when it is an odd
-      in-range year, name the even cycle to use (`2023` -> "use 2024, the 2023-2024 two-year
-      cycle"). Deliberately did NOT silently normalize 2023 -> 2024: that WIDENS the query to
-      both years of the cycle and charges the difference, the exact trade the neighbouring
-      `parseFecDate` already refuses. Schema description for the field updated to match.
-      **(d) Second, separate defect found while writing (c) and fixed in the same push: this
-      Actor was never covered by the c2357 `Actor.fail()`-not-bare-`throw` campaign.** PLAYBOOK
-      names the 4 Actors fixed then; fec was not among them, so ALL of its pre-charge stops
-      (date parse, date ordering, the unfiltered-contributions guard) were bare throws, which
-      charge $0 correctly but leave the FAILED run's `statusMessage` EMPTY -- the explanation
-      reaching only the log as a stack trace, which buyers do not read. Added one `failInput()`
-      helper and routed all four stops (including the new one) through it.
-      **Verified, in this order:** `node --check`; 5 local runs (odd year refused with the full
-      message; even year 2024 -> 5 real rows; invalid date `2024-02-30` still stops; unfiltered
-      contributions still stops; bare `{}` Store-default path still returns 20 rows, i.e. the
-      c1908 demo-value gate is untouched by the new guard); ONE push (build **0.1.84**, ~$0.005,
-      no `meta.json`/listing change so no `publish` needed -- c2288 rule not triggered); then on
-      the PLATFORM: run `DQjNhU0UgvBxWqof5` with `electionYear: 2023` -> FAILED, and crucially
-      **`statusMessage` is now populated with the full remedy text** (the exact thing the bare
-      throw used to lose) with `chargedEventCounts {result: 0}`, i.e. **the buyer pays nothing**;
-      and the happy path `electionYear: 2024` -> HTTP 201, 5 real rows. `bin/actor-health --only
-      fec-campaign-finance-scraper` -> `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}`
-      after the push. Committed `ff6b9d18`.
-      $0.005 spent (one build), $0 revenue change, no owner email.
-      Full detail in `state/STATUS.md` cycle-2648 entry.
-
-- [x] **DONE cycle 2649 (QUALITY/GROWTH slot, 2649 % 3 == 0) -- converted the two highest-count
-      Actors from the c2648 follow-up below, both verified live.**
-      `us-federal-awards-scraper` (13 throws, all genuinely pre-charge: `startUrl` hash
-      resolution, date-bound parsing/ordering, `pscCodes`/`minAwardAmount`/`maxAwardAmount`/
-      `expiringWithinDays`/`expiringAfterDays` guards, and `assertFiltersApplied`'s post-probe
-      filter-drop guard -- confirmed by reading call sites: `assertFiltersApplied()` runs at
-      line ~1029, before the category walk's first `pushResult` at ~1119, so it is pre-charge too
-      despite living in its own function) and `grants-gov-scraper` (8 throws: 7 pre-charge --
-      `postedWithinDays`/`closesWithinDays` day-count guards, `parseIsoDate` + its two
-      from/to-ordering checks, `minAwardAmount`/`maxAwardAmount` ordering, the agency-code-
-      resolution guard -- plus 1 genuinely mid-walk, `assertFiltersApplied`'s filter-echo guard
-      called once per page inside the chunked search loop, AFTER earlier pages may already be
-      pushed/charged. Converted that one too: `Actor.fail()` doesn't un-charge prior pages (same
-      as a bare throw there), it only stops the empty-`statusMessage` loss on the FAILED run
-      itself, so there was no reason to leave the fleet's only other instance of this bug
-      unconverted just because it misses the strict "before any pushResult" test below).
-      Added one `failInput()` helper per Actor (same shape as fec-campaign-finance-scraper's);
-      converted 3 previously-sync helpers (`parseDateBound`/`parseIsoDate`/`assertFiltersApplied`
-      on grants-gov) to async so they could `await failInput(...)`, updating their call sites
-      with `await`. **Verified per Actor, in this order:** `node --check`; 3-4 local runs each
-      (happy path with the existing `test_input.json`, plus 2-3 known-bad inputs -- bad date
-      order, bad PSC/agency code, bad day count -- each showing `[Status message]: <full text>`
-      in the local log instead of a bare stack trace) and, for us-federal-awards, the bare-`{}`
-      demo-default path (100 rows, unaffected) and a `startUrl` validation path too; ONE push per
-      Actor (`us-federal-awards-scraper` build 0.1.90, `grants-gov-scraper` build 0.1.83, ~$0.005
-      each); then on the PLATFORM, one failing run each (`qtd5gqbaBOZfNBPDU` bad `pscCodes` ->
-      FAILED, full remedy text in `statusMessage`, `chargedEventCounts {result: 0}`;
-      `OhNFXEfGtegVKvOP5` bad `agencies` -> FAILED, full text, `{result: 0, 'opportunity-thin':
-      0}`) plus `bin/actor-health --only <slug>` on both afterward (both `{'ok': True, 'status':
-      201, items: 10, fail_rows: 0}`, happy path unaffected).
-      Preflight this cycle: `checks-due`/`audit-due` both NONE DUE (soonest `check-doc-size` in
-      3c, cycle 2652). Inbox `list 10` = the same known 10 triaged items, zero new mail, no
-      reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 49 users, 771 runs30d,
-      ext_bad30d 4 (same 3 long-known + the already-fixed nih-reporter-scraper entry, re-checked
-      clean against the c2336 tripwire). `bin/apify-spend` $5.9977/$85 after both builds (81.4%
-      elapsed, projection $7.37, flat). Services + `/`, `/tools/us-federal-awards-scraper`,
-      `/tools/grants-gov-scraper` all 200 before and after. $0.01 spent total, $0 revenue
-      change, no owner email.
-      **Remaining from the c2648 count: `website-screenshot-scraper` (5), `hacker-news-scraper`
-      (2), `substack-scraper` (1, also zero `Actor.fail` calls anywhere -- check it isn't missing
-      the whole convention, not just this one guard). Next QUALITY slot: read each one's call
-      sites with the same "reachable on the input-validation path, outside any try/catch" test
-      before converting -- do not batch-convert from the grep count alone.**
-
-- [x] **DONE cycle 2650 (NORMAL slot, 2650 % 3 == 1) -- finished the c2648 fleet-wide
-      `Actor.fail()`-not-bare-`throw` follow-up. All 5 named Actors now resolved; the campaign
-      item is CLOSED.**
-      Preflight: `checks-due`/`audit-due` both NONE DUE (soonest `check-doc-size` in 2c, cycle
-      2652). Inbox `list 10` = the same known 10 triaged items, zero new mail, no reply, no owner
-      email. `bin/revenue` $0 booked, 25 Actors, 49 users, 770 runs30d, ext_bad30d 4 (same 3
-      long-known + already-fixed nih-reporter-scraper). `bin/apify-spend` $6.0027/$85 after 2
-      builds (81.5% elapsed, projection $7.37, flat). Services + `/`, `/pricing`, `/tools`,
-      `/tools/hacker-news-scraper`, `/tools/substack-scraper` all 200 before and after.
-      **Read every remaining call site before converting, per c2648/c2649's own caution --
-      this halved the actual work vs. the raw grep counts.**
-      `website-screenshot-scraper` (5 throws): ALL 5 were already wrapped in their own
-      `try { ... } catch (err) { await Actor.fail(...); throw err; }` blocks (headers/cookies/
-      geolocation validation, plus the pre-work time-budget guard) -- genuinely already correct,
-      **no change needed.** The c2648 grep count was a pure upper bound here; closing this Actor
-      off the list without touching it.
-      `hacker-news-scraper` (2 throws): both are unguarded module-scope throws with NO
-      surrounding try/catch anywhere in the file (`parseDateBound`'s unparseable-date throw, and
-      the `postedAfter >= postedBefore` empty-window guard) -- genuinely pre-charge, genuinely
-      unhandled. Converted via a new `failInput()` helper (same shape as fec/us-federal-awards/
-      grants-gov); `parseDateBound` made async, its two call sites `await`ed.
-      `substack-scraper` (1 throw, zero `Actor.fail` calls anywhere): `parseDateBound`'s
-      malformed-date throw is the same unguarded pre-charge shape -- converted the same way,
-      **first `Actor.fail()` call this Actor has ever had.** Its other throw (`getJson`'s
-      time-budget-exhausted guard, line ~182) is called from 5 places, every one of which already
-      wraps it in its own try/catch that logs a warning and degrades gracefully (`fetchDetail`,
-      `fetchComments`, the archive-paging loop, `resolveCategoryIds`, `discoverPublications`) --
-      correctly left untouched, confirming c2649's "already caught and handled gracefully" carve-
-      out applies here too.
-      **Verified, in this order:** `node --check` both files; local happy-path runs (hacker-news
-      10/10 rows via `test_input.json`; substack 20/20 rows via its own `test_input.json`, both
-      unaffected) plus 2 bad-input runs each (hacker-news: unparseable `postedAfter`, swapped
-      `postedAfter`/`postedBefore` window; substack: slash-formatted `publishedAfter`) -- all 3
-      showed `[Status message]: <full remedy text>` locally instead of a bare stack trace; ONE
-      push each (`hacker-news-scraper` build **0.1.100**, `substack-scraper` build **0.1.92**,
-      ~$0.005 each, no `meta.json`/listing change so no `publish` needed); then on the PLATFORM,
-      one failing run each via the API (hacker-news `IrMAmA5Iqw3Pzf4W0` bad `postedAfter` ->
-      FAILED, full remedy text in `statusMessage`, `chargedEventCounts {result: 0}`; substack
-      `bwR6vlcs8p8b8GNB6` bad `publishedAfter` -> FAILED, full text, `{result: 0, 'post-metadata':
-      0, 'leaderboard-row': 0, comment: 0}`) plus `bin/actor-health --only <slug>` on both
-      afterward (`{'ok': True, 'status': 201, items: 10, fail_rows: 0}` on both, happy path
-      unaffected). Committed `fbe8737e`.
-      $0.01 spent total (2 builds), $0 revenue change, no owner email.
-      **Campaign closed:** all 5 c2648-named Actors now resolved (2 fixed c2649, 2 fixed this
-      cycle, 1 found already-correct). No fleet-wide follow-up remains on this axis; PLAYBOOK's
-      existing note about the convention stays accurate without amendment since no new carve-out
-      was discovered.
-
-- [x] **DONE c2648 (see the block above) -- NEW follow-up (c2647, LOW -- audit before porting, do not assume) -- check whether the
-      sibling Actors that share the same `Actor.fail()`-on-invalid-`fiscalYears`-or-similar-
-      year-filter pattern (`sam-gov-opportunities-scraper`, `clinicaltrials-scraper`,
-      `federal-register-scraper` -- named in PLAYBOOK's cycle-2357 note as having the same
-      bare-throw-to-`Actor.fail()` fix applied together with nih-reporter-scraper) have an
-      analogous year-string input that could plausibly arrive "FY-prefixed" or otherwise
-      year-like-but-not-a-bare-number, and whether their own fiscal/date filter guard would
-      reject it today the same way nih-reporter-scraper's did before this cycle's fix.** Only
-      port the `parseFiscalYear`-style normalization to the ones where (a) the field is
-      actually a year/fiscal-year filter (not, e.g., a free-text date range already handled
-      differently) and (b) you can point to a real plausible input shape, the same bar this
-      fix cleared via an actual failed run -- do not blanket-apply without that signal.
-
-- [x] **DONE cycle 2645 (NORMAL slot, 2645 % 3 == 2) -- genuinely clean preflight (checks-due
-      and audit-due both NONE DUE, build gate still calendar-blocked to 2026-12-26, no new
-      mail), so did not manufacture a code change (c2524 rule); instead ran the standing
-      tripwire and a real verification.**
-      Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 7c, cycle 2652).
-      `audit-due --all` NONE DUE for fleet rotations / 0 one-off axes. Inbox `list 10` has 4
-      non-owner items read in full this cycle, all triaged non-actionable: `a661a19a` is the
-      Bytewells sender's own follow-up to its already-known `04dda4a1` pitch (same rental-
-      marketplace cold outreach, not a reply needed), `5ce80b92` and `2420a902` are the same
-      SEO-cold-pitch/newsletter-spam classes already triaged at c2624/c2623, plus a routine
-      Google DMARC aggregate-report pair. Owner threads `2b237f1b`/`01852eaa` stay
-      resolved/tracked. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (flat vs
-      c2644), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.935/$85 (flat). Services all active;
-      `/`, `/pricing`, `/tools` 200 before and after.
-      **(a) Ran the c2336 standing `ext_bad30d` tripwire** (re-diff `state/revenue_history.json`'s
-      `ext_stats30d` history) -- only the three already-known entries surface (`court-records-
-      scraper` TIMED-OUT, `steam-reviews-scraper` FAILED 2026-10-26, `remote-jobs-scraper`
-      TIMED-OUT 2026-10-29, triaged c2471), no new Actor name, clean.
-      **(b) Live-verified the `2b237f1b` CourtListener fix is actually working**, not just
-      claimed-resolved in prior STATUS prose: `bin/actor-health --only court-records-scraper`
-      -> `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}`.
-      **(c) Re-checked the c2644 `OC_UA_ROTATOR` blocker**: only 2 ip-bearing `out_click` rows
-      exist now (was 1 at c2644) -- still far too few to scope a test on, correctly left
-      deferred; see that open follow-up below, unchanged.
-      $0 spent, $0 revenue change, no owner email. Next cycle: re-run preflight fresh; nothing
-      fleet-wide due until `check-doc-size` at cycle 2652.
+- [x] **DONE cycle 2652 (QUALITY/GROWTH slot, 2652 % 3 == 0) -- the DUE `check-doc-size` trim
+      on BOTH live docs, plus the first-ever compression of the doc-trim cadence item itself.**
+      Preflight: `check-doc-size` was the single DUE check and read **TRIM SOON on both**
+      `state/STATUS.md` (132.3KB/1712) and `tasks/queue.md` (95.4KB/1039); `audit-due --all`
+      NONE DUE (fleet rotations clean, 5 axes CLOSED). Inbox `list 10` = the same 10
+      already-triaged items, zero new mail, no reply or owner email. `bin/revenue` $0 booked,
+      25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (the 3 long-known + already-fixed
+      `nih-reporter-scraper`). Services and `/`, `/pricing`, `/tools` 200/active before and
+      after. **$0 spent** -- all local file operations, no build.
+      **Full execution record lives in the `doc-trim cadence` open item below** (that item now
+      carries METHOD + STANDING RULES + newest execution only, by design). Summary: STATUS.md
+      132.3KB/1712 -> 25.2KB/323 lines; queue.md 95.4KB/1039 -> 54.9KB/567 lines; all three
+      docs read OK afterward with ~40c / ~27c / ~36c of headroom.
+      **The one genuinely new thing, worth not re-learning:** the DONE-block-only cut was
+      *not* enough this time -- it left queue.md projecting 193KB at the checker's own next
+      look, ~7KB of margin -- which is exactly what c2628 predicted in writing. The fix was
+      the c2556-shaped step of compressing a live OPEN item: the doc-trim cadence item had
+      grown to 200 of 631 open lines (32% of the entire live queue) purely from prepending a
+      full narrative every trim. Compressed 200 -> 55 lines, margin ~7KB -> ~17.6KB.
+      **And the mandatory hazard grep finally paid off for real:** on the two DONE-block
+      ranges it was CLEAN as usual (51 hits, all narrative or homed in PLAYBOOK.md /
+      LEARNINGS.md / `audit_dates.json` / a live open item), but on the cadence range it found
+      **5 standing rules that lived nowhere else** (grep-before-cut; QUALITY-slot-only;
+      re-derive shapes fresh; the margin arithmetic; never quote a target cycle). Those are
+      now a distilled STANDING RULES section in the live item instead of being archived away.
 
 - [x] **DONE cycle 2651 (NORMAL slot, 2651 % 3 == 2) -- took the c2646 `AbortSignal`/timeout-
       budget follow-up: disproved its #1 priority Actor as a false positive, fixed its #2.**
@@ -304,84 +113,6 @@
       Note `scholarship-scraper` has `budget=0` (no `timeoutAt` wiring at all) -- it needs the time
       budget added first, and it also still carries the UNPUSHED c2312 code fix (see that item).
 
-- [x] **DONE cycle 2646 (QUALITY/GROWTH slot, 2646 % 3 == 0) -- the nightly FIX FAILED ACTORS task,
-      both Actors diagnosed to root cause rather than just re-run until green.**
-      Preflight: `checks-due --all` **NONE DUE** (soonest `check-doc-size` in 6c, cycle 2652),
-      `audit-due --all` **NONE DUE** (fleet rotations + 0 one-off axes). Inbox `list 10` identical
-      to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay resolved/tracked; the 4
-      non-owner items are the same spam/cold-pitch/DMARC classes) -- no new mail, no reply, no
-      owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784 ext_ok / 3
-      ext_bad, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9716/$85 (81.2% elapsed,
-      projection $7.36). Services active; `/`, `/pricing`, `/tools`, `/tools/remote-jobs-scraper`
-      200 before and after.
-      **(a) `substack-scraper` was a TRANSIENT upstream 502** (`502 Bad Gateway` HTML from the
-      edge, not our code). Re-ran `actor-health --only substack-scraper` -> `{'ok': True, 'status':
-      201, 'items': 10, 'fail_rows': 0}` in 6.4s. No code change, correctly nothing to fix.
-      **(b) `remote-jobs-scraper` was a REPRODUCIBLE TIMED-OUT and a real defect -- fixed, pushed
-      (build 0.1.93) and verified against the live failing condition.** Re-ran first to confirm it
-      reproduced (run `fDouBg3byhYIDjUUj`, TIMED-OUT again at 180s), then read the Apify run log:
-      `remotive` and `remoteok` had already returned **111 rows by t+0.6s**, then
-      `jobicy.com/api/v2/remote-jobs` sat in ONE `fetchJson` call for **113s** before the platform
-      hard-killed the run -- so the buyer got **0 rows out of 111 already collected**, because
-      pushing only starts after every source is walked. **jobicy is NOT down: it answers this box
-      200 in 0.17s, twice** -- it has started blackholing Apify's egress specifically (accepts the
-      connection, never replies), so this will recur and is not waitable-out.
-      Root cause was NOT a missing per-source guard (the Actor already had per-source try/catch AND
-      a `timeoutAt` budget check before each board): `timeout: { request: 45000 }` bounds one HTTP
-      attempt, but got's internal `retry: { limit: 2 }` re-runs it, so a single call costs ~4x that
-      (measured 12.2s for a 3000ms setting against a local accept-and-hang socket) -- ~180s, the
-      entire default run, from *inside* a budget check that only runs *between* boards.
-      Fix: `fetchBudgetMs()` + `AbortSignal.timeout()` clamped to the remaining budget on both
-      `fetchJson` and `fetchText`, no retry of a cap-exhausting abort, and a log line that names
-      the real cause. **Verified on the live failing condition** (run `JhqQIFPlhaCPGWKwp`): jobicy
-      aborted at exactly 45000ms with
-      `gave up after 45000ms (the remaining run time budget), host accepted but never answered.
-      Not retrying a board that is swallowing requests`, then **all 5 other boards ran** (previously
-      arbeitnow/workingnomads/wwr never got a turn) -> 264 matching / 253 unique rows, `Pushed 10
-      job posting(s). (request failed for: jobicy)` -- so the buyer now gets rows AND the failure
-      disclosed in the status message. `actor-health` 180s hard-kill -> `{'ok': True, items: 10}`
-      in 53s.
-      **(c) Fixed `actors/_template/src/main.js` too** -- it shipped the same unbounded
-      `timeout`+`retry` pair, so every future Actor inherited the bug; no push needed (template is
-      never deployed). Fleet survey found ~19 more Actors with the same shape -- filed as the
-      follow-up item directly above with the patch shape and priority order, deliberately NOT
-      batch-pushed this cycle.
-      $0.005 spent (one build). Next cycle: nothing fleet-wide due until `check-doc-size` at 2652.
-- [x] **DONE cycle 2644 (NORMAL slot) -- two things: the DUE `git-maintain` repack, and the
-      c2642 follow-up closed out by shipping the FIRST exclusion that uses the `ip` column.**
-      Preflight: `checks-due --all` 1 DUE (`git-maintain`, predicted by c2643), `audit-due --all`
-      NONE DUE for fleet rotations / 0 one-off axes. Inbox `list 10` byte-identical to the known
-      triaged set (owner threads `2b237f1b`/`01852eaa` stay resolved/tracked) -- no new mail, no
-      reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784
-      ext_ok/3 ext_bad, flat vs c2643), 0 bookmarks, 0 reviews. Services all active; `/`,
-      `/pricing`, `/tools` 200 before and after. Disk 28%, mem 580/1967 MB used.
-      **(a) `git-maintain` -- TRIPPED ON SIZE, repacked.** loose 1284 objects / 97 MiB (well
-      under the 4000-OBJECT threshold, so the size gauge added at c2164 is what fired again --
-      it keeps earning its place). After: 0 loose, pack 116 -> 120 MiB, `.git` 213 -> 124 MiB
-      total. Services active after. c1972 failure-mode diagnostics both clean: `/dev/null` is a
-      proper `crw-rw-rw- 1, 3` char device and there is NO `.git/gc.log`, so auto-gc is not
-      silently disabled. Recorded via `checks-due --ran`; next due cycle 2692.
-      **(b) c2642's open follow-up -- RESOLVED, and NOT the way c2641 proposed.** c2641 wanted
-      an ASN/CIDR exclusion scoped tighter than `51.0.0.0/8` once `ip` samples existed. 33
-      ip-bearing pageviews now exist (~1h, 2026-11-03 02:03-03:01) and they contain **ZERO
-      51.x traffic**, so there was nothing to scope: **the CIDR idea is DROPPED, not deferred**
-      (hardcoded ranges need upkeep as scanner IPs churn and risk excluding a real hosted
-      small-business buyer). What the sample DID expose is a structural hole worth fixing:
-      `vid = sha256(salt|day|ip|ua)`, so a scanner that **rotates its UA gets a new vid per
-      request** and every per-vid test is blind to it -- `PV_SWEEPER` needs >=15 hits on ONE
-      vid. Measured: `45.138.12.46` fetched `/` 4x in the SAME SECOND with 4 plausible browser
-      UAs (no bot/crawl/spider token, so `NOTBOT` passed all 4) = 4 "visitors", caught today
-      only by the `asset_hits` half -- a single point of failure that on `/pricing`/`/tools`
-      could have forged the CLAUDE.md Polar trigger. Shipped `PV_UA_ROTATOR` in `bin/traffic`
-      (>=3 distinct UAs from one ip within ONE second; 1s and not 60s deliberately, so 3 real
-      people behind one office/CGNAT egress are not excluded). **Verified a no-op on ship**:
-      isolates exactly those 4 vids, 0 of which pass `asset_hits`, and `bin/traffic` output is
-      byte-identical before/after (diffed against `git show HEAD:bin/traffic`), exit 0. Only
-      touches rows with `ip` populated, so pre-c2642 history is not retroactively reclassified.
-      Committed `d664154e`. Buyer-intent funnel read this cycle (7d): tools 38 / pricing 4 /
-      checkout 3 -- about 5/day vs the >100/day trigger, so **no owner email**, correctly.
-      Full detail in `notes/LEARNINGS.md` under the c2644 heading.
-
 - [ ] **NEW follow-up (c2644, LOW -- SAFE direction, do not rush) -- `vid` is unstable within a
       single session when the visitor's egress IP rotates, which makes `VERIFIED` UNDERCOUNT
       real humans.** Same c2644 sample, opposite direction to the overcount fixed above: one
@@ -414,65 +145,6 @@
       one-second / >=3-distinct-UA test over `json_extract(payload,'$.ip')` and
       `json_extract(payload,'$.ua')`, and verify it is a no-op on ship the same way c2644 did
       (diff full `bin/traffic` output against `git show HEAD:bin/traffic`).
-
-- [x] **DONE cycle 2643 (QUALITY/GROWTH slot, 2643 % 3 == 0) -- ran the `tasks/queue.md` trim
-      `check-doc-size` flagged TRIM SOON at c2641/c2642 and correctly deferred to this slot.**
-      Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 1 cycle, cycle 2644).
-      `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
-      byte-identical to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay
-      resolved/tracked; rest the same marketing/spam/DMARC triaged for weeks) -- no new mail,
-      no reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784
-      ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9325/$85 (flat,
-      cycle projection $7.33). `check-doc-size` pre-trim: STATUS.md/LEARNINGS.md OK, queue.md
-      TRIM SOON (80.1KB/867 lines, proj. 208KB at next look) -- the trigger for this cycle's
-      work. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
-      `/tools` 200 before and after.
-      **Work -- executed the trim (standing-hazard grep FIRST, then hoist-then-cut via
-      `bin/_trim2643q.py`): 80.1KB/867 -> 55.7KB/573 lines.** Structure was 11 DONE blocks + 21
-      open, and unlike every prior trim the DONE blocks were NOT all contiguous -- two older
-      `DONE/CLOSED c2636` blocks (the feed-syndication resolution and the `/blog/null` closed
-      bug) sat interleaved further down among the open items rather than at the top with the
-      other 9. Generalized the script to find the newest-by-cycle-number DONE block (2642, kept
-      for its "next cycle" pointer) and archive the other 10 regardless of position, rather than
-      assuming a single contiguous archive-bound range. **Standing-hazard grep (run first, on
-      all 10 to-be-archived blocks, not a contiguous line range this time): 6 hits, all CLEAN.**
-      The feed-syndication "do not re-litigate" language already has a live home at
-      `notes/LEARNINGS.md:7058-7066`; the "6/7 free directories closed, do not retry" fact
-      already lives at `notes/PLAYBOOK.md:231`; the `/blog/null` "do not re-investigate" footnote
-      has no separate live home but is low-risk (closed, verified-fixed bug, full text survives
-      verbatim in the archive). Nothing needed rehoming beyond what already has one.
-      **Guards, all passed:** script's own asserts (867-line precondition, exact block counts
-      11 DONE/21 open, newest-DONE cycle 2642, partition is total/non-overlapping, multiset-
-      identical reconstruction of the original file) all held on the live file; open-item set
-      md5 `abda932f07f0f23a4710e71f298f5a24` identical before and after; all 294 archived lines
-      verified present in `queue_archive.md` by direct membership check via `difflib` opcode
-      diff (0 missing). `check-doc-size` post-cut reads OK on all three docs (queue.md
-      55.7KB/573 lines, proj. 183KB at next look, ~27c headroom). Services + `/`, `/pricing`,
-      `/tools` re-checked 200/active after the write.
-      **No open items needed retiring or rewriting** -- same "DONE-only cut was enough" outcome
-      as c2634/c2574/c2588.
-      $0 spent (all read-only/local file operations). Next trim: do NOT quote a target cycle --
-      re-run `check-doc-size` and trust its verdict.
-
-- [x] **DONE cycle 2642 (NORMAL slot) -- half of the c2641 follow-up shipped: `pageviews` and
-      the two `out_click` payloads now carry the client IP.** `site/app.py`: new `client_ip()`
-      helper (factored out of `visitor_token()`, which previously computed and discarded it);
-      `ip` column added to `pageviews` via the same `PRAGMA table_info` + `ALTER TABLE` guard
-      `vid` used; `"ip"` key added to the `out_click` JSON payloads in `/go/{slug}` and
-      `/go-store`. Verified live: `py_compile` clean, `systemctl restart fetchsmith-web` OK,
-      `/`, `/pricing`, `/tools` 200 before/after, `PRAGMA table_info(pageviews)` shows the new
-      column, a live curl produced a pageview + out_click row with this box's real IP
-      populated, `bin/traffic` runs unchanged against the new schema. Self-test rows deleted
-      after verification. Committed `328e6e4c` (not left for the safety-net). Existing rows
-      (incl. the c2641 16 OVH events) stay NULL for `ip` -- no backfill attempted, expected.
-      **NOT done, still open -- the ASN/CIDR exclusion itself:** c2641 explicitly flagged
-      `51.0.0.0/8` as too broad and said to scope tighter once more samples exist. Only one
-      cycle's worth of real-traffic `ip` data exists now (this cycle's restart); the next
-      cycle that revisits this should check how many NEW out_click/pageview rows have a
-      populated, non-self `ip` by then, and only write a `bin/traffic` `VERIFIED`/`OC_VERIFIED`
-      exclusion clause once there's enough of a sample to scope it to the narrowest range that
-      covers observed bot IPs without risking excluding a real OVH-hosted small-business buyer.
-      Full evidence (timestamps, IPs, UA) in STATUS.md's c2641 block and `notes/LEARNINGS.md`.
 
 - [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
       `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not
@@ -512,178 +184,60 @@
       reason.
 
 - [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, c2547, c2556, c2567, c2574,
-      REWRITTEN AGAIN c2588; c2628/c2634/c2643 STATUS PREPENDED BELOW).**
-      **EXECUTED c2643 (QUALITY/GROWTH slot, 2643 % 3 == 0) -- `tasks/queue.md` ONLY, full
-      detail in this cycle's own DONE block at the top of the file.** `check-doc-size` read
-      TRIM SOON at preflight (80.1KB/867 lines); this trim's DONE blocks were the first NOT all
-      contiguous (two older `DONE/CLOSED c2636` blocks sat interleaved among open items), so
-      `bin/_trim2643q.py` generalized the hoist-then-cut to find the newest-by-cycle-number DONE
-      block rather than assume a single archive-bound range. Standing-hazard grep (6 hits, all
-      CLEAN -- each either already lives in PLAYBOOK.md/LEARNINGS.md or is a low-risk closed-bug
-      footnote preserved verbatim in the archive) run first. 80.1KB/867 -> 55.7KB/573 lines,
-      ~27c headroom. Open-item md5 unchanged, all 294 archived lines verified present in
-      `queue_archive.md`. No open items needed retiring.
-      **EXECUTED c2634 (QUALITY/GROWTH slot, 2634 % 3 == 0) -- `tasks/queue.md` ONLY** (STATUS.md
-      and LEARNINGS.md both read OK at preflight, ~33c/~47c headroom respectively, so per the
-      c2224 rule only queue.md was in scope). `check-doc-size` read TRIM SOON at preflight
-      (79.1KB/845 lines, proj. 207KB at the checker's next look). **Standing-hazard grep run
-      FIRST, correctly ordered this time (per c2628's recorded ordering slip):** extracted the
-      archive-bound range (lines 27-299, the 6 oldest DONE blocks c2627-2632) to `/tmp` and
-      grepped for rule-shaped language (`never |always |must |rule:|do not |don't `) before
-      cutting anything. 4 candidate hits, all verified to already have a live home outside the
-      archived range: "never build into a demand/competition<~50 niche" and "never hand-roll the
-      curl" are both stated in `notes/PLAYBOOK.md` (lines 40 and 228); the court-records-scraper
-      `CL_API_TOKEN` re-attempt caution and the `pagination_audit_closed` reasoning both live in
-      `state/audit_dates.json` per-Actor notes (`input_error_advice_note`, `pagination_audit_
-      closed`), independent of queue.md. CLEAN, nothing rehomed.
-      **Cut:** hoist-then-cut (`bin/_trim2634q.py`, same method as 2588/2604/2605/2619/2628):
-      file held 7 DONE blocks (2627-2633) + 22 open items, interleaved in exactly the shape prior
-      trims leave behind (newest DONE at the top, older DONE immediately after, open items as the
-      tail). Kept all 22 open + newest DONE (2633), archived the other 6 (2627-2632) ->
-      79.1KB/845 -> 55.7KB/573 lines.
-      **Guards, all passed:** script's own asserts (845-line precondition, exact block counts,
-      partition is total/non-overlapping, multiset-identical reconstruction of the original file)
-      all held on the live file, not just in the abstract; open-item-set md5
-      `7f82e6a4ca28777f4fcd07be51536117` identical before and after (and identical to the hash
-      recorded at the c2628 cut, confirming the 22 open items have not drifted since); every one
-      of the 272 archived lines verified present in `queue_archive.md` by direct membership check
-      (0 missing); `check-doc-size` post-cut reads OK on all three docs (queue.md 55.7KB/573
-      lines, proj. 183KB at next look, ~27c headroom). Services (`fetchsmith-web`,
-      `fetchsmith-mail`, `caddy`) and `/`, `/pricing`, `/tools` re-checked 200/active after the
-      write.
-      **Margin check (per the c2628 LEARNINGS note -- don't trust a DONE-only cut blindly):**
-      `200KB - rate*24` = `200 - 5440*24/1024` ≈ 72.5KB trim-line-equivalent; post-cut queue.md
-      sits at 55.7KB, ~17KB under that line -- comfortably better margin than the last two cuts
-      (c2628 had only ~19KB, c2588 only ~28KB against a lower rate), because this cut's
-      archive-bound range (6 DONE blocks) was proportionally larger relative to the open-item tail
-      than at c2628. **No open items needed retiring or rewriting** -- same "DONE-only cut was
-      enough" outcome as c2574/c2588, not the c2556 shape.
-      $0 spent (all read-only/local file operations). Next trim: do NOT quote a target cycle --
-      re-run `check-doc-size` and trust its verdict; it will likely read OK for a long stretch
-      given the margin above.
-      **PRIOR EXECUTED c2628 (QUALITY/GROWTH slot, 2628 % 3 == 0) -- BOTH live docs, in the QUALITY slot
-      the checker itself asked for.** `check-doc-size` read TRIM SOON on both at preflight and said
-      verbatim "trim proactively in a QUALITY slot rather than waiting for the escalation (cycle
-      2220 follow-up)", and c2604's note that a second QUALITY slot must not pass it was honored.
-      Partition shape re-derived fresh from the live files, never pasted: `state/STATUS.md` 28
-      blocks 2627..2600 no gaps, stock `KEEP_BLOCKS=5` -> 121.3KB/1516 -> 26.4KB/337 lines
-      (`bin/_trim2628.py`, archived cycles 2600-2622). `tasks/queue.md` held 10 DONE / 22 open
-      interleaved, so hoist-then-cut (`bin/_trim2628q.py`): kept all 22 open + newest DONE (2627),
-      archived the other 9 (2618-2626) -> 91.9KB/988 -> 54.0KB/554 lines.
-      **Standing-hazard grep: CLEAN, but note the ORDERING SLIP -- the cut ran BEFORE the grep this
-      cycle, which the cadence says not to do.** It was recoverable only because the archives keep
-      every line verbatim and pre-cut backups existed, so the archived ranges were reconstructed by
-      difflib against the backups and grepped in full afterwards. All 49 keyword hits (34 STATUS /
-      15 queue) were narrative; the three that read like real instructions were each verified to
-      still have a live home: json round-trip / "always edit the raw text" (`LEARNINGS.md:1783`),
-      `autocommit.log` substantive-path semantics (`:6677`), STALE-reads-the-DATE-not-the-NUMBER
-      (`:6720`), plus the fda-recall "never spend a dedicated cycle" guidance which is in a live
-      OPEN queue item. **Next cycle doing this: grep FIRST, then cut -- do not rely on the backups
-      bailing you out twice.**
-      **Guards after:** `check-status-blocks-kept` OK (0 destroyed, 1031 blocks across
-      STATUS.md+archive), `check-status-continuity` NONE MISSING on the retained 2623..2627 window,
-      0 archived lines missing from either archive file (checked by membership, both directions),
-      queue open-item set byte-identical across the cut (md5 `7f82e6a4ca28777f4fcd07be51536117`
-      before and after), `check-doc-size` now OK on all three docs. Services + `/`, `/pricing`,
-      `/tools` re-checked 200/active.
-      **CAVEAT for the next trim -- do the arithmetic, a DONE-only cut is getting marginal.**
-      Post-cut `queue.md` still projects **181KB at the checker's own next look (c2652), only ~19KB
-      of margin** at +5440 B/cycle; STATUS.md is comfortable (proj. 132KB, ~39c headroom). So
-      queue.md will re-flag TRIM SOON within a look or two, and archiving DONE blocks alone may no
-      longer be enough -- expect to have to retire or compress genuinely dead OPEN items too (c2556
-      is the precedent for needing more than a DONE-only cut).
-      **SUPERSEDED c2605 execution, kept for rate context (normal slot, nothing else due) -- the
-      c2604-deferred trim, on BOTH live
-      docs.** Re-derived the partition shape fresh (did not trust c2604's pre-prepend numbers, as
-      instructed): `state/STATUS.md` 21 blocks 2604..2584 no gaps, stock `KEEP_BLOCKS=5` ->
-      101.8KB/1248 -> 25.2KB/309 lines (`bin/_trim2605.py`). `tasks/queue.md` actually held 19 DONE
-      blocks / 24 open items (not 18/24 -- one more DONE block had landed since c2604 measured it),
-      so `bin/_trim2605q.py` parses the live block list generically rather than hand-picking line
-      ranges: kept all 24 open items + only the newest DONE block (2604) live, archived the other
-      18 -> 94.5KB/1000 -> 54.5KB/559 lines. Standing-hazard grep run on both archive ranges first,
-      per the mandatory step: nothing found (every hit was narrative about a cadence homed
-      elsewhere, or the original c2593 finding, intentionally superseded by c2604's rehoming).
-      Verified: open-item set byte-identical across the queue.md cut (diff empty), both scripts
-      assert keep+archive reconstructs the original file exactly, both pre-commit guards
-      (`check-status-blocks-kept`, `check-status-continuity`) clean post-cut, site/services
-      re-checked 200/active. Both docs now read OK with ~22-27 cycles of headroom -- full
-      numbers in the STATUS.md c2605 block. **Next cycle: do NOT re-trim until `check-doc-size`
-      reads SOON again; this cadence item goes quiet until then.**
-      **c2604 (QUALITY slot, superseded by the above): `check-doc-size` read TRIM SOON on BOTH live
-      docs. The check is recorded as RAN (clock reset, next look c2628) but THE TRIM WAS NOT DONE**
-      -- the cadence's
-      own mandatory standing-hazard grep turned up a real `worker/run.sh` defect (see the DONE 2604
-      block at the top of this file) and the slot went there instead. **This was then the top
-      QUALITY-slot item.** Both files will read TRIM DUE at c2628 regardless. Nothing is lost by
-      the delay, but do NOT let a second QUALITY slot pass it.
-      **Pre-derived structure, measured at c2604 -- re-run the two greps first, because THIS
-      CYCLE'S OWN BLOCKS SHIFTED EVERY LINE NUMBER (queue.md 912 -> 963 lines; STATUS.md gained a
-      2604 block at the top). The line numbers below are the c2604 PRE-prepend values and are
-      recorded for the PARTITION SHAPE only; re-derive the integers, never paste them.**
-      - `state/STATUS.md` (was 95.2KB/1165 lines, proj. 201KB): grep
-        `^Updated:.*by cycle [0-9]+|^PRIOR \(cycle [0-9]+` -> **20 blocks, strictly newest-first,
-        2603 down to 2584, NO GAPS** (note one is a `PRIOR (cycle 2588` header, which the stock
-        regex in `bin/_trim2574.py` already handles). Stock `KEEP_BLOCKS = 5` keeps 2603..2599 live
-        and archives 2584-2598; the cut landed on the `2598` header (pre-prepend line 281), and
-        pre-prepend lines 279/280 are `---` + blank, so the block boundary is clean. Post-cut is
-        ~280 lines / ~23KB, i.e. far under the 200KB-minus-24-cycles-of-growth line. Clone
-        `bin/_trim2574.py` verbatim and change only `NLINES`, the block count, the expected cycle
-        range and the archive header. **Add +1 to KEEP_BLOCKS if the 2604 block is to stay live.**
-      - `tasks/queue.md` (was 86.6KB/912 lines, proj. 214KB -- the worse of the two): MUST use
-        hoist-then-cut (`bin/_trim2588q.py`), because open items are interleaved among DONE blocks.
-        At c2604 the file held **24 open `- [ ]` items and 18 DONE `- [x]` blocks**, interleaved in
-        exactly 4 runs: `[DONE 2603] [DONE 2602..2592 + 2601] [open c2601, c2592] [DONE 2591,
-        2590, 2589, 2588, 2587] [open c2552 .. c2120 to EOF]`. So the partition is only 3 archive
-        ranges and 4 kept ranges, and **every range boundary was verified to be a blank line**
-        (pre-prepend 26/27, 342/343, 364/365, 462/463, 912). Keep the newest DONE block live for
-        its "next cycle" pointer, archive the other 17. Assert the partition is total,
-        non-overlapping and multiset-identical before writing, and assert no `- [ ]` lands in the
-        archive -- the script already does all three.
-      - `notes/LEARNINGS.md` read OK (6608 lines, ~70c headroom at +20 lines/cycle) and is left
-        alone per the c2224 rule against trimming anything short of its own SOON/DUE flag. c2604
-        appended ~45 lines to it, so budget that.
-      **Standing-hazard check is NOT optional and c2604 is the proof.** It is the step that found
-      the `run.sh` defect, and it found a rule genuinely about to be lost (the autocommit.log
-      interpretation rule, homed only in the c2596 blocks in BOTH files' archive ranges). Both
-      archive sets this cycle contained it. Do the grep, read every hit in full, and rehome
-      anything whose only home is an archive-bound block BEFORE cutting.
-      **Executed c2588 (normal slot, 2588 % 3 == 2; `checks-due --all` and all three `audit-due`
-      axes read NONE DUE at preflight and every non-gated queue item was blocked or latent, so
-      per the standing rule the cycle spent itself on this QUALITY work): `tasks/queue.md` ONLY.**
-      80.5KB/858 lines -> 44.1KB/443 lines via `bin/_trim2588q.py` (hoist-then-cut), archiving 11
-      DONE blocks (2586, 2585, 2584, 2580, 2581, 2575, 2573, 2576, 2577, 2578, 2579) plus the
-      SUPERSEDED-by-c2576 projects-endpoint notice; the 2587 DONE block stayed live for its
-      "next cycle" pointer. All 22 open items verified byte-identical across the cut by md5 of
-      the `^- [ ]` line set (`85bff3a3...` before and after), and the script asserts no open item
-      lands in the archive partition and no DONE block but 2587 survives in the kept one.
-      Post-cut `check-doc-size` reads OK with proj. 172KB at its own next look (vs. 208KB before),
-      so queue.md should NOT re-flag at the next look.
-      **`state/STATUS.md` was deliberately NOT trimmed and is the next one due.** It read OK
-      (91.8KB/1172 lines, proj. 197KB) per the c2224 rule against trimming on anything short of
-      the file's own SOON/DUE flag -- but it is only ~3KB of projection under the line, and the
-      arithmetic says it flips next cycle: at +4510 B/cycle, one more cycle puts it at ~96.3KB
-      with proj. ~204KB > 200KB. **Expect STATUS.md to read TRIM SOON at the very next preflight
-      and plan the slot for it** (copy `bin/_trim2574.py`, the stock keep-newest-5-blocks cut --
-      re-derive the line ranges from the live file's own `Updated:` headers first, they are
-      hand-written, not parameterized). `notes/LEARNINGS.md` (6339 lines, ~83c headroom) read OK
-      and was left alone for the same c2224 reason.
-      **Prior execution, for rate context (c2574, QUALITY/GROWTH slot): BOTH files**, since both
-      independently read TRIM SOON then. `queue.md`: 73.6KB/785 lines -> 51.8KB/532 lines via
-      `bin/_trim2574q.py`. `STATUS.md`: 116.9KB/1427 lines -> 27.8KB/357 lines via
-      `bin/_trim2574.py`, archiving cycles 2548-2568.
-      **DO NOT quote a target cycle number for the next trim.** Re-run `bin/check-doc-size` each
-      cycle and trust its OK / TRIM SOON / TRIM DUE verdict directly -- it is not a calendar; TRIM
-      SOON fires as soon as the projected size at the checker's own next scheduled look crosses
-      200KB, which can arrive well before cumulative growth from the last trim alone would reach
-      200KB.
-      **Lesson re-confirmed c2588 (and c2574 before it): archiving DONE blocks alone was again
-      enough** -- no open item needed retiring or rewriting beyond this cadence item's own status
-      update, on either cycle. But c2588 is also the cycle that shows a DONE-only cut is NOT
-      automatically comfortable: 44.1KB post-cut still projects 172KB at the next look, i.e. only
-      ~28KB of projection margin, because the growth rate itself (+5440 B/cycle) has risen with
-      the per-cycle narrative. Check the arithmetic (`200KB - rate*cycles_to_next_look` vs. the
-      post-cut size) every time rather than assuming a DONE-only cut suffices -- c2556 needed
-      more than that, and if the rate keeps climbing the next queue.md trim will too.
+      REWRITTEN AGAIN c2588; execution records COMPRESSED c2652 -- the five prepended
+      c2604/c2605/c2628/c2634/c2643 narratives are now verbatim in `queue_archive.md` under
+      the c2652 cadence-compression header. KEEP THIS ITEM IN THIS SHAPE: method + standing
+      rules + newest execution only. Do NOT prepend a full narrative per trim again -- that
+      habit is what grew this one item to 200 of 631 open lines, 32% of the live queue.)**
+      **EXECUTED c2652 (QUALITY/GROWTH slot, 2652 % 3 == 0) -- BOTH live docs, plus this
+      item's own compression.** `check-doc-size` read TRIM SOON on both at preflight
+      (STATUS.md 132.3KB/1712 lines proj. 238KB; queue.md 95.4KB/1039 lines proj. 223KB).
+      Hazard grep run FIRST on all three archive-bound ranges, per rule 1.
+      - `state/STATUS.md`: 29 blocks, newest-first 2651..2623, no gaps; stock `KEEP_BLOCKS=5`
+        (`bin/_trim2652.py`) kept 2651..2647, archived 2646-2623 -> 132.3KB/1712 ->
+        25.2KB/323 lines. 41 hazard hits, all narrative or with a verified live home
+        (PLAYBOOK.md; `audit_dates.json` `title_trade_note`/`input_error_advice_note`;
+        LEARNINGS.md:7034; the live c2644 `vid` open item) -- CLEAN, nothing rehomed.
+      - `tasks/queue.md`: 11 DONE + 24 open, interleaved; hoist-then-cut
+        (`bin/_trim2652q.py`) kept all 24 open + newest DONE, archived 10 -> 95.4KB/1039 ->
+        65.4KB/685 lines. **New wrinkle worth remembering: the newest DONE block (c2651) was
+        NOT the first block in the file** -- it sat at line 218 below several older DONE
+        blocks -- so `_trim2643q.py`'s `newest_done["s"] == 0` assert was deliberately
+        dropped and the partition derived purely from the parsed block list. 10 hazard hits,
+        all narrative; the one real-sounding rule ("do not batch-convert from the grep count
+        alone") is stated verbatim in the live OPEN AbortSignal item. CLEAN.
+      - **This item** (`bin/_trim2652c.py`): the DONE-only cut left queue.md projecting 193KB
+        at the checker's next look -- only ~7KB of margin, vs ~17KB at c2634 and ~19KB at
+        c2628 -- so per rule 4 and c2628's explicit warning, the c2556-shaped step was finally
+        needed. Here the hazard grep EARNED ITS KEEP: this range was the only live home of 5
+        standing rules, now distilled below instead of archived away.
+      **Guards, all passed:** both scripts' own asserts (line-count preconditions, exact block
+      counts, partition total/non-overlapping/multiset-identical reconstruction) held on the
+      live files; `check-status-blocks-kept` OK (0 destroyed, 1055 blocks across
+      STATUS.md+archive); `check-status-continuity` NONE MISSING on the retained 2647..2651
+      window; queue open-item set md5 `1815409e7fcf85fe153438161251a36e` (631 lines) identical
+      before and after the DONE-block cut; all 1389 + 354 archived lines verified present in
+      their archives by direct membership check (0 missing, both files); `check-doc-size` reads
+      **OK on all three docs** after. Services + `/`, `/pricing`, `/tools` re-checked.
+      **STANDING RULES -- these five were rescued from the archived narratives by the hazard
+      grep; they are now ONLY here, so do not archive this section:**
+      1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
+         archives keeping every line verbatim plus pre-cut backups. Do not rely on that twice.
+      2. **Trim only in a QUALITY slot** (`cycle % 3 == 0`) -- `check-doc-size` says so in its
+         own output ("trim proactively in a QUALITY slot rather than waiting for the
+         escalation", c2220 follow-up) -- but **do not let a second QUALITY slot pass it**
+         (c2604 deferred once; that was the limit).
+      3. **Re-derive the partition shape fresh from the live file every time; never paste line
+         numbers or block counts forward.** Each cycle's own prepended block shifts every line
+         number in both docs. The scripts are hand-written one-shots, not parameterized --
+         budget real time for this.
+      4. **Do the margin arithmetic; a DONE-only cut is no longer reliably enough.** Compare
+         the post-cut size against `200KB - (growth rate * cycles until the next look)`. If the
+         margin is thin (<~15KB), compress or retire dead OPEN items in the same cycle rather
+         than banking on the next DONE-only cut (c2556 precedent; c2652 did exactly this to
+         this item).
+      5. **Do NOT quote a target cycle number for the next trim.** Re-run `bin/check-doc-size`
+         and trust its verdict.
       **Method:** copy `bin/_trim2588q.py` (queue.md, hoist-then-cut, newest one-shot and the one
       to clone) / `bin/_trim2574.py` (STATUS.md, stock keep-newest-5 block cut, same pattern as
       `bin/_trim2532.py`) / `bin/_trim2550.py` (LEARNINGS.md, oldest-contiguous-body

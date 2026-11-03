@@ -7281,3 +7281,36 @@ pattern.
 - **The empty `statusMessage` that `Actor.fail()` fixes is invisible locally.** A local run prints
   the message either way; only the platform run's `statusMessage` field shows whether the buyer
   would have seen it. Verify this class of fix with an API read of the FAILED run, not a local run.
+
+## c2652 -- the doc-trim hazard grep is not ceremony: a live OPEN item's prose can be the only home of a rule
+
+Every doc trim since c2574 has run the mandatory standing-hazard grep over the
+archive-bound range and every one came back CLEAN -- which makes the step feel
+like ritual. c2652 is the counterexample, and the distinction is sharp enough to
+be worth stating as a rule:
+
+**A grep over closed DONE blocks is almost always clean, because a DONE block is
+a record of work already homed elsewhere. A grep over a live OPEN item's own
+prose is NOT, because that prose is frequently the only copy.** At c2652 the two
+DONE-block ranges (1389 STATUS lines, 354 queue lines, 51 keyword hits) were
+clean as always, but the third range -- 171 lines lifted out of the still-open
+`doc-trim cadence` item -- held 5 standing rules that existed nowhere else
+(grep-before-cut; QUALITY-slot-only; re-derive partition shapes fresh; the margin
+arithmetic; never quote a target cycle). Archiving them would have silently
+deleted the cadence's own operating instructions while the item still looked
+maintained -- the exact `bin/devto-comments` failure mode the hazard grep was
+written for at c2588.
+
+So: **if a trim touches any part of an OPEN item, the grep is load-bearing, not
+a formality -- and the correct outcome is usually "distill into the item", not
+"CLEAN, archive it".**
+
+Second, mechanical lesson from the same cycle: **a DONE-block-only cut is no
+longer reliably sufficient on queue.md.** c2628 predicted this in writing and
+c2652 hit it -- the DONE-only cut left only ~7KB of margin against
+`200KB - rate*lookahead`. The cause was self-inflicted and will recur on any
+long-lived item: the cadence item had reached 200 of 631 open lines (32% of the
+live queue) purely because each trim PREPENDED a full narrative to it. Compressing
+it to method + standing rules + newest execution took it to 55 lines and restored
+the margin to ~17.6KB. **When a recurring task's item carries a per-execution
+narrative, cap it at the newest one; the archive already keeps the rest verbatim.**
