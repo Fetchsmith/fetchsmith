@@ -44,10 +44,35 @@ NOTBOT="ua NOT LIKE '%bot%' AND ua NOT LIKE '%crawl%' AND ua NOT LIKE '%spider%'
 # hole before it can produce a false trigger or contaminate the pending c2276 CTA-fix
 # measurement (~cycle 2420).
 PV_SWEEPER="vid IN (SELECT vid FROM pageviews WHERE vid IS NOT NULL GROUP BY vid HAVING count(*) >= 15 AND (max(ts)-min(ts)) <= 90)"
-# Verified = browser-ish UA AND actually loaded our CSS AND not a same-second link sweep.
-# Both original halves still matter: the UA test alone lets scanners through, and the asset
-# test alone lets our own `curl` tests through.
-VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits) AND NOT ($PV_SWEEPER)"
+# Cycle 2644: the first exclusion that USES the `ip` column c2642 added, and it closes a hole
+# PV_SWEEPER structurally CANNOT see. vid = sha256(salt|day|ip|ua) (site/app.py visitor_token),
+# so a scanner that rotates its User-Agent gets a DIFFERENT vid per request and every
+# per-vid test above is blind to it -- PV_SWEEPER needs >=15 hits on ONE vid, and these
+# arrive as N vids with 1 hit each. Measured live in the first hour of ip data: 45.138.12.46
+# fetched `/` FOUR times in the SAME SECOND (02:53:45) with 4 different plausible
+# browser UAs (2x Mac Chrome, 2x Win64 Chrome, no 'bot'/'crawl'/'spider' token) => 4 distinct
+# vids, 4 "visitors", all passing NOTBOT and all invisible to PV_SWEEPER. Only the
+# asset_hits half caught them (none fetched /static/*), which is a SINGLE point of failure:
+# any UA-rotating scanner that also pulls the CSS would have scored 4 verified /-visitors
+# from one IP in one second, and on /pricing or /tools it would feed the CLAUDE.md
+# Polar-escalation trigger (>100 verified visits/day).
+# WINDOW IS DELIBERATELY ONE SECOND, not 60s: 3+ distinct UAs from one IP inside a single
+# second is not reachable by humans, whereas a 60s window would also catch 3 real people
+# sharing one office/CGNAT egress -- exactly the "don't exclude a real small-business buyer"
+# risk c2641 raised when it proposed (and this cycle's data refutes) a blanket 51.0.0.0/8
+# CIDR block. No hardcoded ranges here at all: the test is behavioural, so it needs no
+# maintenance as scanner IPs churn. The c2644 sample contained ZERO 51.x traffic, so that
+# CIDR idea is dropped, not deferred.
+# Matches only rows with ip populated (c2642 onward), so pre-c2642 history is untouched and
+# nothing is retroactively reclassified. Verified a NO-OP on ship: it isolates exactly those
+# 4 vids and 0 of them pass asset_hits, so no reported number moved -- it is purely a
+# future-proofing fix, same posture as c2278's.
+PV_UA_ROTATOR="vid IN (SELECT p.vid FROM pageviews p JOIN (SELECT ip, ts FROM pageviews WHERE ip IS NOT NULL GROUP BY ip, ts HAVING count(DISTINCT ua) >= 3) b ON p.ip = b.ip AND p.ts = b.ts)"
+# Verified = browser-ish UA AND actually loaded our CSS AND not a same-second link sweep
+# AND not a same-second UA-rotating scanner. All halves still matter: the UA test alone lets
+# scanners through, the asset test alone lets our own `curl` tests through, and the per-vid
+# sweeper test alone is blind to UA rotation.
+VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits) AND NOT ($PV_SWEEPER) AND NOT ($PV_UA_ROTATOR)"
 
 echo "== daily totals last $D days (raw = every hit; verified = loaded our CSS)"
 sqlite3 -header -column $DB "SELECT date(ts,'unixepoch') d, count(*) raw_views,
