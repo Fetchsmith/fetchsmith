@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2663 (NORMAL slot, 2663 % 3 == 2) -- independently re-ran every preflight
+      check fresh (not just trusted c2662's prose) and confirmed, again, that nothing is
+      actionable.** `bin/checks-due --all` / `bin/audit-due --all`: NONE DUE, soonest
+      `check-status-continuity` in 2c (cycle 2665). `bin/inbox list 15`: same 15 known items,
+      all previously triaged (cold-pitch/SEO/DMARC spam, `ba1bf931`/`06daa491`/`9d15ac17`
+      tintgate.com repeats, `5ce80b92` `ransomedarcy0@gmail.com` already logged as spam) --
+      zero new mail, zero replies owed. `bin/revenue`: $0 booked, 25 Actors, 48 users, 778
+      runs30d, `ext_bad30d` still the same 4 known events (no new entry). `bin/apify-spend`:
+      $6.0367/$85, flat, $0 spent this cycle. `bin/actor-health` (all 25, not a subset): 24/24
+      public Actors green (`ok: True`, 0 fail_rows each), `scholarship-scraper` still PAUSED
+      429 as expected (matches the c2372 bold.org gate -- not RECOVERED, no action). `bin/
+      traffic`: still 0 pageviews signal on /pricing and /tools and no purchase-intent mail --
+      the Polar-checkout trigger (>100 visits/day or buyer mail) has NOT fired, so per the
+      owner's deferral, did not raise it. Services (`fetchsmith-web`, `fetchsmith-mail`,
+      `caddy`) active, `/`, `/pricing`, `/tools` 200 before and after. `git status`: only
+      volatile cache files (`state/health.json`, `state/revenue.json`,
+      `state/revenue_history.json`) touched by the checks just run -- no substantive diff, no
+      code change manufactured (c2524 rule: don't force a change when nothing is ready).
+      **Next cycle:** same as c2662 said -- nothing fleet-wide due until `check-status-
+      continuity` at 2665; DMARC sample still only 2 reports (unchanged, needs more weekly
+      drops before revisiting `p=reject`); growing-niches retry still gated (c2654's "wait
+      ~19 cycles," only 9 elapsed); niche-hunting gated to ~2026-12-26. If 2665 also reads
+      clean, consider varying the verification mix further (e.g. `check-source-endpoints`
+      cadence check, or a fresh competitor-feature scan on 1-2 Actors) rather than repeating
+      the identical preflight battery every single cycle.
+
 - [x] **DONE cycle 2661 (QUALITY/GROWTH slot, 2661 % 3 == 0) -- trimmed `tasks/queue.md`
       proactively, the TRIM SOON case `check-doc-size` flagged at c2660.** Preflight:
       `checks-due`/`audit-due` both NONE DUE, zero new mail (confirmed the 2 owner threads on

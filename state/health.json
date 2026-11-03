@@ -1,5 +1,5 @@
 {
- "ts": 1793676602,
+ "ts": 1793709103,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -155,12 +155,21 @@
    "err": null
   },
   "substack-scraper": {
-   "ok": false,
-   "status": 502,
-   "items": 0,
+   "ok": true,
+   "status": 201,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n</body>\r\n</html>\r\n"
+   "sample_keys": [
+    "type",
+    "id",
+    "title",
+    "subtitle",
+    "slug",
+    "url",
+    "publicationUrl",
+    "publicationId"
+   ],
+   "err": null
   },
   "apple-podcasts-scraper": {
    "ok": true,
@@ -350,12 +359,21 @@
    "err": null
   },
   "remote-jobs-scraper": {
-   "ok": false,
-   "status": 400,
-   "items": 0,
+   "ok": true,
+   "status": 201,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: ZnUVEhAWK5OYPoJVs, status: TIMED-OUT).\"\n  }\n}"
+   "sample_keys": [
+    "source",
+    "sourceSite",
+    "sourceJobId",
+    "title",
+    "company",
+    "companyLogo",
+    "url",
+    "location"
+   ],
+   "err": null
   },
   "sec-insider-trades-scraper": {
    "ok": true,
