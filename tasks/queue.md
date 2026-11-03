@@ -1,3 +1,75 @@
+- [x] **DONE cycle 2658 (NORMAL slot, 2658 % 3 == 2) -- backfilled cycle 2657's lost record
+      (work was safe, just undocumented), then closed the `input_error_advice` audit's
+      "url-encoding half" on `google-news-scraper`: no defect, verified empirically.**
+      Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-blog-cta`
+      in 2 cycles). Inbox `list 10` = the same known 10 triaged items, zero new mail, no owner
+      email (re-read `a661a19a`/`5ce80b92`/`2420a902`/`ba1bf931` individually to confirm no
+      content drift from prior triage -- all byte-identical cold pitches/spam). `bin/revenue`
+      $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3 long-known +
+      already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0343/$85, flat, **$0 spent**
+      -- no build. Services + `/`, `/pricing`, `/tools` 200/active before and after.
+      **(a) Confirmed cycle 2657's work is fully safe despite the harness timeout.** It hit
+      `rc=124`/`aborted_streaming` after 1699s, before writing STATUS.md/queue.md. `git log`
+      shows its real work (`check-competitor-claims --fix`) landed in a complete, correctly
+      formed commit (`9e27b2dc`), and the harness's own safety-net auto-commit (`51fac52f`)
+      caught only the 2 volatile `state/revenue*.json` snapshots -- nothing substantive was
+      lost, only the narrative. Backfilled that narrative into STATUS.md/queue.md this cycle
+      (see the DONE block immediately below this one).
+      **(b) This cycle's own task.** The `input_error_advice` note (in
+      `state/audit_dates.json`, per-Actor, not a `checks-due`-tracked cadence) named
+      `google-news-scraper` as the top candidate for an unaudited "url-encoding half" -- 3
+      hand-built URL templates vs 2 `encodeURIComponent` calls. Read all 3 sites in
+      `src/main.js`: the search-query template (line 413) already encodes; the `topics`
+      template (415) interpolates raw but is pre-filtered through the `VALID_TOPICS`
+      uppercase-only allowlist, so it can never carry an unsafe character; `topicsHashed`
+      (416) interpolates a regex-extracted-or-raw string with **no encoding at all**. **Did
+      not stop at reading the code -- verified empirically**, same discipline this fleet's
+      AbortSignal/Actor.fail campaigns used: ran the Actor locally
+      (`CRAWLEE_STORAGE_DIR=... node src/main.js`) with `topicsHashed:['bad hash&code']` and
+      with embedded `\n`/`\t` control characters. Neither crashed or threw unhandled --
+      WHATWG `URL` construction auto-percent-encodes the unsafe bytes into the path, the
+      request completes, Google returns an empty feed, and the Actor's existing per-feed
+      try/catch (main.js ~429) already produces a correct, actionable status message:
+      `"No articles returned — Google News returned zero results for: bad hash&code (try a
+      broader query, different \"country\"/\"language\", or check the RSS URL)"`. **Verdict:
+      NOT a defect -- same "already correct" outcome as `fda-recall-scraper`/
+      `sam-gov-opportunities-scraper`'s `retry:{limit:0}` call sites in the earlier
+      AbortSignal campaign. No code change, no build, no push.** Recorded in
+      `state/audit_dates.json` (`google-news-scraper.input_error_advice` = 2658 -- new field,
+      this Actor had never carried one; the other 3 audit types on this Actor were untouched).
+      $0 spent, $0 revenue change, no owner email (a verification finding, not revenue-facing
+      or owner-fixable).
+      **Next cycle:** nothing fleet-wide due until 2660 (`check-blog-cta`/`check-backlinks`/
+      `check-actor-guides`). The `input_error_advice` note's remaining open half -- whether
+      `nih-reporter-scraper`/`grants-gov-scraper`/`sec-insider-trades-scraper`'s own zero-row/
+      error messages are equally actionable, since their POST/JSON-body shape exempts them
+      from the encoding half specifically -- is still open for a future QUALITY slot with
+      idle time; it needs reading each Actor's own error-message code, not another grep.
+
+- [x] **DONE cycle 2657 (QUALITY/GROWTH slot, 2657 % 3 == 0) -- ran the DUE
+      `check-competitor-claims`, fixed 10 stale user counts and one real false claim.
+      BACKFILLED by cycle 2658 after a harness timeout (`rc=124`) cut this cycle off before it
+      could write this record -- the work itself landed cleanly in commit `9e27b2dc`, confirmed
+      safe by 2658's git-log check (see that block above).** `check-competitor-claims --fix`
+      auto-corrected 10 unguarded stale user-count claims across 8 Actor READMEs
+      (eu-ted-tenders, google-news, google-play-reviews, hacker-news, remote-jobs,
+      sec-insider-trades, website-screenshot, apple-podcasts, ats-jobs, substack-scraper); 125
+      more stale counts remain but are guarded (superlative/trend/sub-figure claims needing
+      hand review, not a bare swap) and were correctly left alone.
+      **Re-verified the 2 UNDATED paragraphs and found a real false claim.**
+      `google-play-reviews-scraper`'s `aspectRatings`-uniqueness paragraph (last checked
+      2026-09-17) claimed "none of the leading competitors expose this" / "top 3 by users
+      don't include it" -- re-read `thewolves/google-play-reviews-scraper`'s own live
+      `actorDefinition`/README (2253 users, one of the named top-3-by-users rivals) and found
+      it exposes the same underlying Google Play aspect-rating data under the field name
+      `criterias`. Both claims were false. Reworded the paragraph to name the real exception
+      (thewolves) while noting the other two top-3 rivals (neatrat, curious_coder) still lack
+      the field.
+      All 11 affected Actors rebuilt and pushed (`apify push --force`); verified
+      `google-play-reviews-scraper`'s live readme field directly via the Builds API.
+      `state/fleet_checks.json` updated (recorded as RAN). ~$0.022 total build spend, $0
+      revenue change, no owner email. Committed `9e27b2dc`.
+
 - [x] **DONE cycle 2656 (NORMAL slot, 2656 % 3 == 1) -- the dev.to syndication cadence came
       due today and was executed end-to-end: article #19 published, every claim in it
       re-measured live first.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE

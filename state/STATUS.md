@@ -1,3 +1,75 @@
+Updated: 2026-11-03 ~10:25 UTC by cycle 2658 (claude-sonnet-5). NORMAL slot (2658 % 3 == 2).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-blog-cta` in 2
+cycles). Inbox `list 10` = the same known 10 triaged items (owner threads `2b237f1b`/`01852eaa`
+long resolved; the rest confirmed-again cold-pitch/DMARC/SEO spam -- `a661a19a`, `5ce80b92`,
+`2420a902`, `ba1bf931` individually re-read, all byte-matching prior triage), **zero new mail**,
+no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3
+long-known + already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0343/$85, flat, **$0
+spent this cycle** -- no build. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools` 200 before and after.
+
+**First, backfilled cycle 2657's record: it did real, fully-committed work but hit the harness
+timeout (`rc=124`, `aborted_streaming` after 1699s) before it could write STATUS.md/queue.md.**
+Confirmed via `git log`/`git show` that nothing was lost: `9e27b2dc` is a complete, correctly-
+committed `check-competitor-claims --fix` run (10 stale user counts fixed across 8 READMEs,
+plus a real false claim corrected on `google-play-reviews-scraper` -- see the DONE block below
+for the full record), and the harness's own safety-net auto-commit (`51fac52f`) caught only the
+2 volatile `state/revenue*.json` snapshots, confirming no in-progress edit was dropped. The only
+actual gap was the missing STATUS.md/queue.md narrative, now written retroactively below.
+
+**Second, this cycle's own task: closed the `input_error_advice` audit's open "url-encoding
+half of the sweep" question on `google-news-scraper`, its named top candidate.** Read all 3
+URL-construction sites in `actors/google-news-scraper/src/main.js`: the search-query template
+already `encodeURIComponent`s its value (line 413); the `topics` template interpolates raw but
+is pre-filtered through the `VALID_TOPICS` uppercase-allowlist so it can never carry an unsafe
+character; `topicsHashed` interpolates a regex-extracted-or-raw string with NO encoding at all.
+**Verified empirically, not just by reading the code:** ran the Actor locally with
+`topicsHashed:['bad hash&code']` and with embedded `\n`/`\t` control characters -- neither
+crashed; WHATWG URL construction auto-percent-encodes the unsafe bytes, the request completes,
+Google returns an empty feed, and the Actor's existing per-feed try/catch already produces the
+correct, actionable status message ("...Google News returned zero results for: bad hash&code
+(try a broader query, different \"country\"/\"language\", or check the RSS URL)"). **Verdict: no
+defect, no code change -- same "already correct" shape as the AbortSignal campaign's `retry:0`
+false positives.** Recorded in `state/audit_dates.json` (`google-news-scraper.input_error_advice`
+= 2658, new field -- this Actor had never carried one). No build, no push (nothing to ship).
+$0 spent, $0 revenue change, no owner email (a verification finding, not a revenue event or
+anything owner-fixable). **Next cycle:** nothing fleet-wide due until `check-blog-cta`/
+`check-backlinks`/`check-actor-guides` at 2660. The `input_error_advice` note's remaining open
+half (whether nih-reporter/grants-gov/sec-insider-trades-scraper's own zero-row/error messages
+are equally actionable, since their POST/JSON-body shape exempts them from the encoding half) is
+still open for a future QUALITY slot with idle time.
+
+---
+
+Updated: 2026-11-03 ~09:57 UTC by cycle 2657 (claude-sonnet-5). QUALITY/GROWTH slot
+(2657 % 3 == 0). **Backfilled by cycle 2658 after a harness timeout cut this cycle off before
+it could write STATUS.md/queue.md -- see the 2658 block above for how this was confirmed safe.**
+Preflight (from the committed work): `check-competitor-claims` was DUE (144c cadence) and was
+the cycle's task.
+
+**Ran `check-competitor-claims --fix`: auto-corrected 10 unguarded stale user-count claims
+across 8 Actor READMEs** (eu-ted-tenders, google-news, google-play-reviews, hacker-news,
+remote-jobs, sec-insider-trades, website-screenshot, apple-podcasts, ats-jobs, substack-scraper
+-- 8 Actors, 10 fixes); 125 more stale counts remain but are guarded (superlative/trend/
+sub-figure claims that need hand review, not a bare number swap) and were correctly left alone.
+
+**Re-verified the 2 UNDATED paragraphs and found a real false claim.**
+`google-play-reviews-scraper`'s `aspectRatings`-uniqueness paragraph (last checked 2026-09-17)
+claimed "none of the leading competitors expose this" / "top 3 by users don't include it" --
+re-read `thewolves/google-play-reviews-scraper`'s own live `actorDefinition` and README (2253
+users, one of the niche's named top-3-by-users rivals) and found it exposes the same underlying
+Google Play aspect-rating data under the field name `criterias`. **Both claims were false.**
+Reworded the paragraph to name the real exception (thewolves) while noting the other two top-3
+rivals (neatrat, curious_coder) still lack the field.
+
+All 11 affected Actors rebuilt and pushed (`apify push --force`) so the live Store listings
+carry the corrected numbers and claim; verified `google-play-reviews-scraper`'s live readme
+field directly via the Builds API. `state/fleet_checks.json` updated (`check-competitor-claims`
+recorded as RAN). ~$0.022 total build spend, $0 revenue change, no owner email (a listing-
+accuracy fix, not a revenue event). Committed `9e27b2dc`.
+
+---
+
 Updated: 2026-11-03 ~09:20 UTC by cycle 2656 (claude-opus-5). NORMAL slot (2656 % 3 == 1).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-competitor-claims`
 in 1 cycle, 2657; 0 fleet rotations due). Inbox `list 10` = the same known 10 triaged items,
