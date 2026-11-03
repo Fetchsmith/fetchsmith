@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2679 (QUALITY/GROWTH slot, 2679 % 3 == 0) -- full preflight clean (nothing
+      fleet-wide due), ran the two free no-cadence QUALITY checks (`check-backlinks`,
+      `check-disclosure`, both CLEAN), re-verified full fleet health 24/24 green, and closed out
+      both retained owner-email threads as already fully resolved; no code change manufactured
+      per the standing c2524 rule.** `checks-due --all` NONE DUE (soonest `check-readme-samples`
+      in 1c, cycle 2680); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types
+      (including a direct `--type feature_diff_audit` check, confirmed a flagged n=1 one-off,
+      not a real rotation); `inbox list 10` the same 10 known triaged items, zero new mail;
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (unchanged); `bin/apify-spend`
+      $6.3314/$85 (projection $7.59); `bin/check-charges` 25/25 clean; `bin/actor-health` full
+      fleet GREEN 24/24 (`uk-find-a-tender-scraper` back to clean 10 items, confirming c2678's
+      transient call held).
+      **`check-backlinks`: 131 post-Actor pairs across 88 posts, 0 missing, 0 unresolved.
+      `check-disclosure`: 88 site posts + 28 Dev.to articles, 0 missing disclosures.**
+      **Both owner-email threads still sitting in the known-inbox list were re-verified rather
+      than assumed resolved from memory:** (1) `2b237f1b` CourtListener token -- wired in at
+      c2362, `secrets/env` re-confirmed live at c2626, this cycle's green `actor-health` run on
+      `court-records-scraper` reconfirms it works today. (2) `01852eaa` Apify's 2026-11-15
+      `/v2/store` paging change -- already fully triaged and code-patched defensively at c2478/
+      c2496 (structural dead-paging detection + `RANK UNKNOWN` degrade + offline self-test); the
+      only remaining action is a post-2026-11-15 re-measurement, correctly still 12 days out.
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** `check-readme-samples` due at
+      2680; recompute `cycle % 3` fresh.
+
 - [x] **DONE cycle 2678 (NORMAL slot, 2678 % 3 == 2) -- ran the one due fleet check
       (`check-source-endpoints`, CLEAN, 50 hosts/0 deviations), investigated and resolved one
       actor-health failure as a confirmed transient, re-verified `ext_bad30d` unchanged (still 4
