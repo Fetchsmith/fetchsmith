@@ -12,6 +12,77 @@
       healthy this cycle (charge path reached; ~23.6x net margin), so there is nothing to fix --
       this item exists only to stop the number being re-misread as traction.
 
+- [ ] **OPEN (c2666) -- `google-news-scraper` varied_test is still DUE** (`audit-due --type
+      varied_test` flagged BOTH it and `ats-jobs-scraper` this cycle; only `ats-jobs-scraper` got
+      done -- see the DONE block below for why it ate the whole cycle). Pick a genuinely new edge
+      case, not the zero-result query already tested at c2330 (`queries:['zzxqwplkjasdfqwpoiuxyz9999nonsense']`)
+      -- good untested candidates from the input schema: `topics`/`topicsHashed` (never varied_test'd
+      on this Actor), or the documented `publishedAfter`+`publishedBefore`+`excludeSites` Google
+      leak-protection path (`main.js` lines ~154-163/446-486, "drops anything more than a day
+      outside the window, unbilled, and says so in run status") -- that one's own code comment
+      names a real historical bug class (c788) and has apparently never been re-verified by
+      varied_test specifically.
+
+- [ ] **LOW follow-up (c2666) -- check whether any OTHER Actor has the same "keep first non-empty
+      candidate in fixed priority order" collision bug `ats-jobs-scraper`'s auto-detect just had
+      fixed (see DONE block below and LEARNINGS cycle 2666).** The durable lesson: a fixed priority
+      order is only safe as a tie-break among EMPTY candidates, not populated ones. Grep the fleet
+      for similar "try N sources/platforms, keep the first that responds" patterns (anything doing
+      multi-platform/multi-source auto-detection, not just single-upstream retries) and check
+      whether each one's fallback-selection logic could pick a small/wrong real match over a large
+      genuine one. Not urgent -- no evidence yet that any other Actor has this shape -- but cheap
+      to rule out on an idle QUALITY slot.
+
+- [x] **DONE cycle 2666 (NORMAL slot, 2666 % 3 == 2 -- recomputed fresh, NOT the QUALITY slot
+      c2665 guessed forward) -- `audit-due --type varied_test` found 2 Actors DUE
+      (`ats-jobs-scraper`, `google-news-scraper`); ran the first end-to-end and it surfaced a real,
+      previously-unknown defect instead of a clean no-op, which ate the full cycle.** Preflight
+      first, all clean: `checks-due --all` NONE DUE (soonest `check-row-floor` in 10c, cycle 2676);
+      `audit-due --all` showed exactly the one real backlog (`varied_test` on the 2 named Actors,
+      all other types CLOSED or not due); `inbox list 10` same known 10 triaged items, zero new
+      mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 778 runs30d, `ext_bad30d` same 4 known
+      events; `bin/apify-spend` $6.084/$85 (82.5% elapsed, projection $7.37); services + `/`,
+      `/pricing`, `/tools`, `/tools/ats-jobs-scraper` all 200/active before and after.
+      **Edge case picked for `ats-jobs-scraper`: auto-detect (`"ats":"auto"`) on a slug that is a
+      genuinely POPULATED board on two different platforms at once** -- never isolated this way
+      before (c2330's varied_test used a nonexistent-slug warning + happy path, not a same-slug
+      cross-platform collision). Used the Actor's OWN `input_schema.json` default example
+      (`slug:"ramp"`, documented there as the canonical Ashby case) with `ats` omitted: auto-detect
+      resolved to **Greenhouse** instead -- a 1-posting junk/test board ("Copy of Chief Legal
+      Officer"), confirmed live via a free, non-billable direct call to
+      `boards-api.greenhouse.io/v1/boards/ramp/jobs` -- silently returning the WRONG company
+      instead of the real Ramp (fintech) Ashby board (confirmed live via
+      `api.ashbyhq.com/posting-api/job-board/ramp`, dozens of real postings). The run SUCCEEDED
+      with plausible-looking output (a real title, a real location) and no warning at all.
+      **Root cause:** `fetchAuto()` picked the first non-empty board in a fixed `AUTO_DETECT_ATS`
+      priority order (Greenhouse first) rather than the largest non-empty board, so a small decoy
+      beats a large real match whenever the decoy sits earlier in the priority list. **Fixed:**
+      replaced the priority-order `.find()` with a `boardSize()`-max `reduce` over all non-empty
+      candidates (fixed priority order kept only as the all-empty tie-break, unchanged). Pushed
+      `ats-jobs-scraper` build **0.1.117** (~$0.005), re-ran the identical `auto:ramp` input live
+      -- now returns real Ashby rows (Security Engineer, Mobile Engineer, etc.), `atsSource:ashby`
+      confirmed. **Paired edge case in the same cycle** (per the established pattern of combining
+      a never-tested edge case with a happy-path/second check):
+      `employmentTypeKeyword:"contract"` on `auto:airbnb` (resolves to Greenhouse) + explicit
+      `workday:okgov` in one run -- SUCCEEDED, `chargedEventCounts {job:0}` (correctly uncharged
+      for 0 kept rows), per-board WARN logs named the exact reason on both platforms (Greenhouse:
+      field not published at all; Workday: only "Full time"/"Part time" exposed), and the
+      aggregate status message's "373 open posting(s)" matched the two boards' own 213+160 counts
+      exactly. Post-push: `check-charges` 0 drift, `actor-health --only ats-jobs-scraper` 10/10
+      clean. Full root-cause writeup + the generalizable lesson in `notes/LEARNINGS.md` (cycle
+      2666 entry) and the LOW fleet-wide follow-up item above.
+      **`google-news-scraper`'s varied_test stayed DUE — did not start it this cycle** (the
+      ats-jobs-scraper investigation, fix, push and re-verification filled the time budget; see
+      the OPEN item above for the next cycle's starting point, with 2 specific untested-edge-case
+      candidates already named so it doesn't need to re-derive them).
+      ~$0.005 spent (one build), $0 revenue change, no owner email (a reliability fix is not a
+      revenue event and nothing here is owner-fixable).
+      **Next cycle:** finish `google-news-scraper`'s varied_test (still DUE, gap now 336c+1 — it
+      does not go stale, `audit-due` just keeps showing it DUE until run). Nothing fleet-wide is
+      due until `check-row-floor`/`check-upstream-warnings` at ~cycle 2676. Recompute `cycle % 3`
+      fresh rather than trusting any prior cycle's printed slot label (c2665 mislabeled 2666 as
+      QUALITY; true value is 2666 % 3 == 2, NORMAL).
+
 - [x] **DONE cycle 2665 (NORMAL slot, 2665 % 3 == 1) -- full independent preflight re-run, one
       real due check executed, one standing doubt about DMARC sample size resolved with no code
       change needed.** `checks-due --all` had exactly 1 DUE: ran `check-status-continuity` fresh

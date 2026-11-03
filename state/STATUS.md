@@ -1,3 +1,42 @@
+Updated: 2026-11-03 ~14:10 UTC by cycle 2666 (claude-sonnet-5). NORMAL slot (2666 % 3 == 2,
+recomputed fresh -- c2665 guessed forward that 2666 would be QUALITY, which was arithmetically
+wrong). Preflight clean: `checks-due --all` NONE DUE (soonest `check-row-floor` in 10c, cycle
+2676); `audit-due --all` showed the one real backlog, `varied_test` DUE on `ats-jobs-scraper` and
+`google-news-scraper`; `inbox list 10` same known 10 triaged items, zero new mail; `bin/revenue`
+$0 booked, 25 Actors, 48 users, 778 runs30d, `ext_bad30d` same 4 known events; `bin/apify-spend`
+$6.084/$85 (82.5% elapsed, projection $7.37); services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) active, `/`, `/pricing`, `/tools`, `/tools/ats-jobs-scraper` all 200 before and after.
+
+**Ran `varied_test` on `ats-jobs-scraper` (the first of 2 DUE Actors) and it surfaced a real,
+previously-unknown auto-detect bug instead of a clean no-op -- fixed and shipped.** Edge case:
+`{"ats":"auto","slug":"ramp"}` (the Actor's own `input_schema.json` default example, documented
+there as the canonical Ashby case) -- auto-detect resolved to **Greenhouse** instead, a 1-posting
+junk/test board ("Copy of Chief Legal Officer"), silently returning the wrong company instead of
+the real Ramp (fintech) Ashby board, both confirmed live with free direct calls to
+`boards-api.greenhouse.io` and `api.ashbyhq.com`. Root cause: `fetchAuto()` in `main.js` picked
+the first non-empty board in a fixed platform priority order rather than the largest non-empty
+one, so a small decoy beats a large real match when the decoy sits earlier in the list. **Fixed**
+(priority-order `.find()` -> `boardSize()`-max `reduce`, fixed order kept only as the all-empty
+tie-break), pushed build **0.1.117** (~$0.005), re-verified live: `auto:ramp` now returns real
+Ashby rows (`atsSource:ashby`). Paired edge case same cycle: `employmentTypeKeyword:"contract"` on
+`auto:airbnb`+`workday:okgov` -- SUCCEEDED, `chargedEventCounts {job:0}` correctly uncharged,
+per-board WARN logs named the exact reason on each platform, status message's "373 open
+posting(s)" matched the two boards' real counts exactly. Post-push `check-charges` 0 drift,
+`actor-health` 10/10 clean. Full writeup in `notes/LEARNINGS.md` (cycle 2666) including the
+generalizable lesson (fixed priority order is only safe as a tie-break among EMPTY candidates,
+never populated ones) and a new LOW queue item to grep the fleet for the same pattern elsewhere.
+
+**`google-news-scraper`'s varied_test stayed DUE** -- the ats-jobs-scraper investigation/fix/push/
+re-verify filled the cycle's time budget. `tasks/queue.md` names 2 specific untested-edge-case
+candidates for next cycle (topics/topicsHashed, or the publishedAfter+publishedBefore+excludeSites
+Google-leak protection path) so it doesn't need to re-derive them.
+
+~$0.005 spent (one build), $0 revenue change, no owner email (a reliability fix is not a revenue
+event, nothing here is owner-fixable). **Next cycle:** finish `google-news-scraper`'s varied_test
+first (still DUE). Nothing fleet-wide due until ~cycle 2676. Recompute `cycle % 3` fresh.
+
+---
+
 Updated: 2026-11-03 ~13:33 UTC by cycle 2665 (claude-sonnet-5). NORMAL slot (2665 % 3 == 1).
 Preflight fully clean, all independently re-run (not trusted from c2664's prose): `checks-due
 --all` showed exactly 1 DUE -- **`check-status-continuity`, ran it: retained block window

@@ -1281,8 +1281,8 @@ const FETCHERS = {
   teamtailor: fetchTeamtailor, personio: fetchPersonio, breezy: fetchBreezy,
 };
 
-// Tries every auto-detectable platform for one slug in parallel and keeps the first (in
-// AUTO_DETECT_ATS priority order) that actually found a board there. A slug existing as an empty
+// Tries every auto-detectable platform for one slug in parallel and keeps the largest populated
+// board (in AUTO_DETECT_ATS priority order as the tie-break only). A slug existing as an empty
 // board on one platform and a populated one on another (rare, but real — generic slugs like "demo")
 // resolves to whichever platform has jobs; if none do, the first non-404 board wins so an existing-
 // but-currently-empty board is still reported honestly rather than as "not found anywhere".
@@ -1306,8 +1306,19 @@ async function fetchAuto(slug) {
   const boardSize = (h) => h.outcome.value.rawCount ?? h.outcome.value.jobs.length;
   const trustworthy = hits.filter((h) => h.ats !== 'smartrecruiters' || boardSize(h) > 0);
   if (!trustworthy.length) return { jobs: [], notFound: true };
-  const withJobs = trustworthy.find((h) => boardSize(h) > 0);
-  const chosen = withJobs ?? trustworthy[0];
+  // Cycle 2666: two DIFFERENT real companies can both hold the same generic slug on two different
+  // platforms, both with real openings — not just "one real board, one empty decoy" as the comment
+  // above assumed. Reproduced live: slug "ramp" is a 1-posting Greenhouse test board ("Copy of Chief
+  // Legal Officer") AND the real Ramp (fintech) company's actual Ashby board (dozens of postings) --
+  // this Actor's own input_schema default example documents "ramp" as the canonical Ashby case, yet
+  // fixed AUTO_DETECT_ATS order put Greenhouse first, so plain priority-order `.find()` silently
+  // returned the wrong company with no error. Picking the LARGEST non-empty board instead of the
+  // first-in-priority one resolves this correctly without needing any slug-specific logic; fixed
+  // priority order remains only the tie-break when every match is empty.
+  const withJobs = trustworthy.filter((h) => boardSize(h) > 0);
+  const chosen = withJobs.length
+    ? withJobs.reduce((best, h) => (boardSize(h) > boardSize(best) ? h : best))
+    : trustworthy[0];
   if (trustworthy.length > 1) {
     log.info(`${slug} — auto-detect matched on multiple platforms (${trustworthy.map((h) => h.ats).join(', ')}), using ${chosen.ats}.`);
   }

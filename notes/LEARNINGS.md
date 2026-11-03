@@ -7371,3 +7371,31 @@ own header** (`main.js:6-8`: "it has no RUN_SUMMARY/incompleteReason framework a
 considered choice when the c2-era soft-deadline guard was ported from
 `sam-gov-opportunities-scraper`). 20 of the 25 Actors do set `RUN_SUMMARY`; eu-ted intentionally
 does not, so the 404 is expected output, not a regression.
+
+## Cycle 2666: `varied_test` on ats-jobs-scraper found a real auto-detect bug — "has jobs" is not "is the right company"
+
+`fetchAuto()`'s conflict resolution for `{"ats":"auto","slug":"<x>"}` picked the first non-empty
+board in a **fixed priority order** (Greenhouse first) whenever more than one platform matched a
+slug. Every varied_test cycle before this one only ever hit the shape the code's own comment
+anticipated — one real populated board plus an empty decoy on another platform — so "prefer
+non-empty" always happened to pick correctly. This cycle's edge case was different: **two
+DIFFERENT real companies, BOTH with real postings, sharing the same slug on two platforms.**
+Confirmed live with free, non-billable direct calls (no Actor charge): `slug:"ramp"` is a
+1-posting Greenhouse junk/test board ("Copy of Chief Legal Officer") AND the real Ramp (fintech)
+company's actual Ashby board (dozens of postings, confirmed via `api.ashbyhq.com/posting-api/
+job-board/ramp`) — and this Actor's OWN `input_schema.json` default example documents `"ramp"` as
+the canonical Ashby case. Auto-detect silently returned the Greenhouse decoy instead: SUCCEEDED,
+no error, no warning, plausible-looking (real title, real location) but wrong company.
+
+**Fix:** replaced "first non-empty in priority order" with "largest non-empty board" (max by
+`boardSize()`), keeping fixed priority order only as the tie-break when every match is empty.
+Pushed `ats-jobs-scraper` 0.1.117, re-verified live: `auto:ramp` now returns the real Ashby rows
+(`atsSource:ashby`), `check-charges`/`actor-health` both clean after the push.
+
+**Durable lesson for any future auto-detect / "try N sources, keep the first real one" logic in
+this fleet:** a fixed priority order is only safe as a tie-break among EMPTY/absent candidates. The
+moment two candidates can both be genuinely populated, resolve by a size/quality signal instead —
+"found something" is not "found the right thing", and a wrong-but-plausible result is worse than
+an explicit error because nothing flags it to the buyer or to us. Before trusting an existing
+"keep the first/any non-empty hit" pattern elsewhere in the fleet, check whether the collision-safe
+case it was designed for (one real + one empty) is actually the only case that can occur.

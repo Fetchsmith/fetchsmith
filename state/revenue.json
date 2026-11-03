@@ -1,5 +1,5 @@
 {
- "ts": 1793712617,
+ "ts": 1793714431,
  "date": "2026-11-03",
  "apify": {
   "google-news-scraper": {
@@ -7,7 +7,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 813,
+   "runs": 814,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -26,7 +26,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 844,
+   "runs": 845,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -45,7 +45,7 @@
    "users": 4,
    "users30d": 1,
    "runs30d": 29,
-   "runs": 878,
+   "runs": 879,
    "ext_ok30d": 29,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -64,7 +64,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 861,
+   "runs": 862,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -83,7 +83,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 805,
+   "runs": 806,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -102,7 +102,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 34,
-   "runs": 843,
+   "runs": 844,
    "ext_ok30d": 34,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -121,7 +121,7 @@
    "users": 1,
    "users30d": 0,
    "runs30d": 28,
-   "runs": 832,
+   "runs": 833,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -140,7 +140,7 @@
    "users": 2,
    "users30d": 2,
    "runs30d": 36,
-   "runs": 817,
+   "runs": 818,
    "ext_ok30d": 35,
    "ext_bad30d": 1,
    "ext_stats30d": {
@@ -178,7 +178,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 42,
-   "runs": 813,
+   "runs": 814,
    "ext_ok30d": 42,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -197,7 +197,7 @@
    "users": 3,
    "users30d": 3,
    "runs30d": 56,
-   "runs": 843,
+   "runs": 844,
    "ext_ok30d": 56,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -216,7 +216,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 769,
+   "runs": 770,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -235,7 +235,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 762,
+   "runs": 763,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -254,7 +254,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 728,
+   "runs": 729,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -273,7 +273,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 762,
+   "runs": 763,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -292,7 +292,7 @@
    "users": 1,
    "users30d": 0,
    "runs30d": 28,
-   "runs": 694,
+   "runs": 695,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -311,7 +311,7 @@
    "users": 3,
    "users30d": 2,
    "runs30d": 29,
-   "runs": 679,
+   "runs": 680,
    "ext_ok30d": 28,
    "ext_bad30d": 1,
    "ext_stats30d": {
@@ -330,7 +330,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 648,
+   "runs": 649,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -349,7 +349,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 496,
+   "runs": 497,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -368,7 +368,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 31,
-   "runs": 355,
+   "runs": 356,
    "ext_ok30d": 30,
    "ext_bad30d": 1,
    "ext_stats30d": {
@@ -387,7 +387,7 @@
    "users": 3,
    "users30d": 2,
    "runs30d": 57,
-   "runs": 390,
+   "runs": 391,
    "ext_ok30d": 57,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -406,7 +406,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 28,
-   "runs": 286,
+   "runs": 287,
    "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -425,7 +425,7 @@
    "users": 1,
    "users30d": 0,
    "runs30d": 28,
-   "runs": 251,
+   "runs": 252,
    "ext_ok30d": 27,
    "ext_bad30d": 1,
    "ext_stats30d": {
@@ -444,7 +444,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 27,
-   "runs": 255,
+   "runs": 256,
    "ext_ok30d": 27,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -463,7 +463,7 @@
    "users": 1,
    "users30d": 1,
    "runs30d": 17,
-   "runs": 158,
+   "runs": 159,
    "ext_ok30d": 17,
    "ext_bad30d": 0,
    "ext_stats30d": {
