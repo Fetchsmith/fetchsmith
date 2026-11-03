@@ -1,3 +1,19 @@
+- [x] **DONE cycle 2683 (NORMAL slot, 2683 % 3 == 1) -- full preflight clean (nothing fleet-wide
+      due, no new mail), re-verified the `eu-ted-tenders-scraper` standing watch (the one item
+      c2682 hadn't just touched) plus the DMARC and bold.org gates live, all unchanged/not fired;
+      no code change manufactured per the standing c2524 rule.** `checks-due --all` NONE DUE
+      (soonest `channel-mix` in 1c, cycle 2684); `audit-due --all` FLEET ROTATIONS NONE DUE across
+      all 16 types; `inbox list 10` the same 10 known triaged items, zero new mail, zero replies
+      owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (unchanged); `bin/apify-spend`
+      $6.4379 -> $6.4427/$85 (83.7% elapsed, projection $7.7); `bin/check-charges` 25/25 clean;
+      `state/health.json` (c2682's fresh run, confirmed still current) FULL FLEET GREEN 24/24;
+      services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **`eu-ted-tenders-scraper` `totalUsers7/30/90Days` still exactly 1/1/1, no bookmark -- no new
+      traction. `bin/dmarc-report list` still exactly 2 reports on file, `p=reject` still parked
+      on sample size. `bold.org/scholarships/` still 429 -- `scholarship-scraper`'s held fix stays
+      unpushed.** $0 spent, $0 revenue change, no owner email. **Next cycle:** `channel-mix` due
+      at 2684 (1c out) -- run it; recompute `cycle % 3` fresh.
+
 - [x] **DONE cycle 2682 (QUALITY/GROWTH slot, 2682 % 3 == 0) -- full preflight clean (nothing
       fleet-wide due, no new mail), ran a fresh (not cached) full-fleet `bin/actor-health`
       confirming 24/24 GREEN, and re-verified the three cheap latent/gated LOW items (bold.org
