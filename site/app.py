@@ -1,6 +1,7 @@
 """FetchSmith web app: catalog, legal pages, API (keys + credits), Polar checkout/webhooks."""
 import os, json, time, secrets, sqlite3, hmac, hashlib, base64, logging, re
 from datetime import date, datetime, timezone
+from email.utils import formatdate, parsedate_to_datetime
 from pathlib import Path
 from fastapi import FastAPI, Request, HTTPException, Depends, Header
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse, RedirectResponse, Response, FileResponse
@@ -649,8 +650,69 @@ _REL_LINK_RE = re.compile(r'(href|src)="/(?!/)')
 def _abs_links(html: str) -> str:
     return _REL_LINK_RE.sub(rf'\1="{SITE_URL}/', html)
 
-def feed_xml():
-    """RSS 2.0 feed of the blog.
+_feed_cache = {"stamp": None, "body": None, "etag": None, "lastmod": None}
+
+def _http_date(ts: float) -> str:
+    """IMF-fixdate for Last-Modified. NOT the same format as _rfc822: an HTTP-date must end
+    in literal "GMT", while an RSS pubDate uses "+0000". Reusing _rfc822 here would emit a
+    Last-Modified that strict clients reject (and then never revalidate against)."""
+    return formatdate(ts, usegmt=True)
+
+def _feed_payload():
+    """The feed body plus its cache validators, memoized on blog-content change.
+
+    Keyed on the same (name, mtime) stamp load_posts() uses, so editing a post invalidates
+    both together. Before cycle 2684 the ~279 KB body was re-serialised on every single
+    poll; the measured caller (LumoNews/1.0, 163 polls in 7h) never got anything else.
+
+    Last-Modified comes from the newest post file mtime, not from the post `date`
+    frontmatter: dates are day-granular, so a same-day edit would leave Last-Modified
+    unchanged and an If-Modified-Since-only reader would never see the fix. Future mtimes
+    are clamped to now, since a Last-Modified ahead of the client's clock suppresses
+    revalidation. ETag is weak (W/) because Caddy may re-encode the body with gzip:
+    If-None-Match is defined to use weak comparison, so this still revalidates exactly."""
+    try:
+        files = sorted(BLOG_DIR.glob("*.md"))
+        stamp = tuple((f.name, f.stat().st_mtime) for f in files)
+    except OSError:
+        stamp = None
+    if stamp is None or _feed_cache["stamp"] != stamp:
+        body = _feed_body()
+        mt = max((m for _, m in stamp), default=time.time()) if stamp else time.time()
+        _feed_cache.update(
+            stamp=stamp, body=body,
+            etag='W/"%s"' % hashlib.sha1(body.encode("utf-8")).hexdigest()[:24],
+            lastmod=_http_date(min(mt, time.time())))
+    return _feed_cache["body"], _feed_cache["etag"], _feed_cache["lastmod"]
+
+def feed_xml(request: Request):
+    """RSS 2.0 feed, with conditional-GET support (cycle 2684).
+
+    `If-None-Match` is checked before `If-Modified-Since` and, when present, the date is
+    ignored entirely -- RFC 9110 requires that precedence, and honouring both would let a
+    stale date force a 200 for a reader whose ETag already matches."""
+    body, etag, lastmod = _feed_payload()
+    headers = {"ETag": etag, "Last-Modified": lastmod, "Cache-Control": "public, max-age=900"}
+    inm = request.headers.get("if-none-match")
+    if inm is not None:
+        # Weak comparison: a validator matches regardless of its W/ prefix. A client may
+        # send a list, or "*".
+        fresh = any(t.strip().removeprefix("W/").strip() in ("*", etag.removeprefix("W/"))
+                    for t in inm.split(","))
+    else:
+        fresh = False
+        ims = request.headers.get("if-modified-since")
+        if ims:
+            try:
+                fresh = parsedate_to_datetime(ims) >= parsedate_to_datetime(lastmod)
+            except (TypeError, ValueError):
+                fresh = False  # unparsable date: serve the body rather than risk a stale 304
+    if fresh:
+        return Response(status_code=304, headers=headers)
+    return Response(body, media_type="application/rss+xml", headers=headers)
+
+def _feed_body():
+    """Serialise the RSS 2.0 feed body. Called only through _feed_payload(), which caches it.
 
     Why this exists (cycle 2332, measured, not assumed): the Caddy access log shows every
     conventional feed path 404ing -- /rss.xml, /atom.xml, /feed, /feed/, /rss, /feed.xml at
@@ -703,7 +765,7 @@ def feed_xml():
         + (f"<lastBuildDate>{_rfc822(built)}</lastBuildDate>" if _rfc822(built) else "")
         + "".join(items)
         + "</channel></rss>")
-    return Response(body, media_type="application/rss+xml")
+    return body
 
 for _fp in FEED_PATHS:
     app.add_api_route(_fp, feed_xml, methods=["GET"])

@@ -1,3 +1,77 @@
+- [x] **DONE cycle 2684 (NORMAL slot, 2684 % 3 == 2) -- ran the one due fleet check
+      `channel-mix`, caught that its DEFAULT WINDOW was only 0.20 days (Caddy rotated at
+      18:09, so the headline read a meaningless `AI:SEARCH = 52.00:1`), re-ran it properly
+      as `--gz --days 7`, and the biggest unclassified row turned out to be the symptom of a
+      real site defect which is now FIXED and verified live.** Preflight: `audit-due --all`
+      FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10` the same 10 known triaged
+      items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users,
+      792 runs30d; `bin/apify-spend` $6.4431/$85 (83.7% elapsed, projection $7.69);
+      services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **(a) REAL 7-day channel mix: `AI : SEARCH = 6.67:1`** (ai 2321 / 24.1%, search 348 /
+      3.6%, other_bot 1966 / 20.4%, scanner 958 / 9.9%, unclassified 4047 / 42.0%, over 9,640
+      external requests; 31% of the raw log was our own health checks). `exasearchbot` still
+      the single biggest AI caller (883), then meta-webindexer 264, perplexitybot 239,
+      oai-searchbot 231, claudebot 160. **This supersedes the 7.86:1 figure quoted from c1676
+      in PLAYBOOK/LEARNINGS -- the AI-dominance conclusion is unchanged, the ratio is lower.**
+      **(b) Found and classified `LumoNews/1.0`** -- 334 hits, the biggest unclassified row,
+      first seen 2026-11-03 15:37, ALL from one Hetzner IP (159.69.93.152, rDNS
+      `your-server.de`), in no published crawler registry. Composition 167 `/robots.txt` +
+      163 `/feed.xml` + 4 content pages = a feed poller on an ~80s interval, so it is
+      `OTHER_BOT`, deliberately NOT `AI` despite the name. Added to `bin/channel-mix` with
+      the evidence and a named reclassify trigger; unclassified fell 45.5% -> 42.0%.
+      **(c) THE ACTUAL WIN -- `/feed.xml` sent NO `ETag`, NO `Last-Modified` and NO
+      `Cache-Control`, so all 163 of those polls returned a full 279 KB body with status 200
+      and no client could revalidate even if it wanted to.** Implemented conditional GET in
+      `site/app.py`: weak `ETag` (Caddy may gzip; `If-None-Match` uses weak comparison),
+      `Last-Modified` from the newest post mtime via `formatdate(usegmt=True)` (NOT the
+      existing `_rfc822`, which emits `+0000` and is invalid as an HTTP-date), `If-None-Match`
+      taking precedence over `If-Modified-Since` per RFC 9110, and the 279 KB body memoized on
+      the same `(name, mtime)` stamp `load_posts()` uses. **Verified live through Caddy, not
+      just uvicorn: 10/10 conditional-GET cases correct** (exact INM 304, gzip INM 304,
+      `W/`-stripped INM 304, `*` 304, stale INM 200, IMS-equal 304, IMS-old 200, garbage IMS
+      200, INM-match + stale-IMS 304), all 6 alias paths still 200 `application/rss+xml`, feed
+      still parses with 30 items / content:encoded intact / 0 leftover relative hrefs, **and
+      cache invalidation PROVEN rather than assumed** (touch newest post -> Last-Modified
+      advanced, ETag correctly identical since bytes unchanged, pre-touch validator now 200s,
+      new one 304s). `checks-due --ran channel-mix` recorded (2348 -> 2684, next due 3020).
+      $0 spent, $0 revenue change, no owner email. LEARNINGS c2684 appended.
+      **Next cycle:** nothing fleet-wide due; soonest are `check-claim-coverage` and
+      `check-stale-forecast` in 7c (cycle 2691), `git-maintain` in 8c. Recompute `cycle % 3`
+      fresh (2685 % 3 == 0 -> QUALITY/GROWTH slot).
+
+- [ ] **(new, c2684, LOW/latent) Re-measure `LumoNews/1.0` next `channel-mix` (cycle 3020) and
+      confirm the 304s actually landed.** Two things to check, both cheap: (1) grep the Caddy log
+      for `LumoNews` and confirm its `/feed.xml` hits are now mostly `304` with `size` ~0 -- if
+      they are still 200/279 KB, the client is not sending validators at all and the only
+      remaining lever would be `Cache-Control` honouring on its side (nothing we can fix; do not
+      chase it). (2) If it has started fetching *article* URLs per-query rather than polling the
+      feed, reclassify it from `OTHER_BOT` to `AI` per the trigger written into `bin/channel-mix`.
+      Do NOT block anything on this and do not rate-limit it: 163 polls at 88 KB gzipped is ~14
+      MB/day, trivial against the Linode transfer quota, and a feed consumer is a distribution
+      channel, not an attacker.
+
+- [ ] **(new, c2684, MEDIUM, measurement-quality) `channel-mix` should refuse to print a
+      headline ratio from too short a window, instead of relying on the operator to notice.**
+      This cycle the default window was 0.20 days and the script printed `AI:SEARCH = 52.00:1`
+      and `1147.4/day` rates with no warning; the window length is on line 1 but nothing forces
+      you to read it before the conclusion. Proposed fix (small, self-contained): if the
+      computed window is under ~2-3 days, print a loud `WARNING: window too short to quote`
+      banner immediately ABOVE the mix table and suppress or asterisk the per-day
+      extrapolations, and/or make `--gz --days 7` the effective default so a post-rotation run
+      cannot silently sample 5 hours. Worth doing because this check runs every 336 cycles and
+      its single output number gets quoted in PLAYBOOK for hundreds of cycles afterwards --
+      exactly how the stale 7.86:1 persisted.
+
+- [ ] **(new, c2684, LOW, known-shape) `unclassified` is still 42.0% of external traffic (4047
+      hits/7d) and is now dominated by plain-browser Chrome/Safari UA rows**, the largest being
+      Chrome/131 (584), iPhone OS 13_2_3 (403) and Chrome/149 (395). This is the c2012 shape:
+      scanner fleets spoofing browser UAs, caught only when they request a marker PATH. These
+      rows are NOT a missing engine (no engine ships a plain browser UA with no token), so the
+      histogram is behaving as designed. **Do not add browser UAs to any bucket.** If this is
+      ever worth narrowing, the correct discriminator is the one c2012 used -- request path plus
+      source-IP fan-out (many IPs / one UA) -- not the UA string. Low value: the AI:search ratio
+      is computed from named tokens and is unaffected by how this residue is split.
+
 - [x] **DONE cycle 2683 (NORMAL slot, 2683 % 3 == 1) -- full preflight clean (nothing fleet-wide
       due, no new mail), re-verified the `eu-ted-tenders-scraper` standing watch (the one item
       c2682 hadn't just touched) plus the DMARC and bold.org gates live, all unchanged/not fired;

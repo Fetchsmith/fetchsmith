@@ -71,6 +71,12 @@ OTHER_BOT = [  # SEO/backlink/monitoring/directory crawlers -- neither a buyer n
     "semrushbot", "ahrefsbot", "mj12bot", "dotbot", "barkrowler", "blexbot",
     "dataforseo", "serpstatbot", "zoominfobot", "bomborabot", "linkdexbot",
     "qlyzebot", "directorybot", "livelapbot", "nomorevibe", "dataprovider.com",
+    "lumonews",   # feed aggregator, found 2684 as the biggest unclassified row (334 hits).
+                  # Deliberately NOT in AI despite the name: the evidence is a feed poller,
+                  # not an answer engine -- 167 /robots.txt + 163 /feed.xml from ONE Hetzner
+                  # IP (159.69.93.152, rDNS your-server.de) in 7h, and only 4 content-page
+                  # hits total. In no published crawler registry. Reclassify to AI only if it
+                  # starts fetching article URLs per-query the way chatgpt-user does.
     "uptimerobot", "pingdom", "statuscake", "censysinspect", "internet-measurement",
     "paloaltonetworks", "expanse", "scrapy", "python-requests", "go-http-client",
     "headlesschrome", "bot", "crawler", "spider",  # generic catch-alls LAST
