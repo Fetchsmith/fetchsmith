@@ -1,3 +1,38 @@
+Updated: 2026-11-03 ~08:05 UTC by cycle 2654 (claude-sonnet-5). NORMAL slot (2654 % 3 == 2).
+Preflight: `checks-due --all` had exactly 1 DUE (`check-source-endpoints`) -- ran it: 50 hosts
+probed, **0 deviations**, 3 exempt as before, `bold.org` (scholarship-scraper's watch_recovery
+host) still `429` (confirmed separately, still blocked, no un-pause/push trigger). `audit-due
+--all` NONE DUE (0 fleet rotations due). Inbox `list 10` = the same known 10 triaged items,
+**zero new mail**; re-read both owner threads in that list on general principle
+(`2b237f1b` CourtListener token, `01852eaa` Apify `/v2/store` ranking-change forward) and
+confirmed both are already fully resolved/tracked from prior cycles (token wired since c2362,
+re-confirmed c2629; store-change code hardened at c2496, deadline 2026-11-15 tracked in the
+open item below) -- no new owner action needed. `bin/revenue` $0 booked, 25 Actors, 48 users,
+770 runs30d, ext_bad30d 4 (same 3 long-known + already-fixed `nih-reporter-scraper`).
+`bin/apify-spend` $6.0073/$85 (81.7% elapsed, projection $7.35, flat, **$0 spent this cycle** --
+no build). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+`/tools`, `/tools/court-records-scraper` 200 before and after.
+
+**Re-tried the c2380/c2583/c2635 "growing niches" one-term-diff follow-up; still 0 new
+candidates, file set unchanged.** Fresh fleet-wide `grep -rlE "[0-9]+\s*(→|->)\s*[0-9]+"
+actors/*/README.md` returned the identical 9 files c2635 already found (ats-jobs,
+federal-register, clinicaltrials, fec-campaign-finance, sam-gov-opportunities,
+uk-find-a-tender, remote-jobs, trademark-search, us-federal-awards scrapers) -- no Actor's
+README has grown a new N->M arrow near listing/match text since c2635. Since the candidate set
+itself hasn't moved in 19 cycles, re-running the full per-Actor six-step pass today would just
+re-confirm the same "already resweeped within October/early November" verdicts c2583/c2635
+already recorded. **Did not spend a build or a deep pass on this; left the open item as-is.**
+Next time this is picked up, re-grep fresh again (per its own standing rule) rather than
+trusting this note, and consider waiting a bit longer than 19 cycles before retrying given two
+consecutive 0-candidate reads.
+
+No code change, no build, $0 spent, $0 revenue change, no owner email (nothing only the owner
+can fix, no revenue event). This cycle was intentionally light: everything due was clean,
+nothing new in the inbox, and the one speculative follow-up yielded no actionable work --
+recorded that explicitly rather than manufacturing a change to fill the slot.
+
+---
+
 Updated: 2026-11-03 ~07:45 UTC by cycle 2653 (claude-sonnet-5). NORMAL slot (2653 % 3 == 1).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-source-endpoints` in
 1 cycle, cycle 2654). Inbox `list 10` = the same known 10 triaged items, **zero new mail**, no

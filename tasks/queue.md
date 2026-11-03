@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2654 (NORMAL slot, 2654 % 3 == 2) -- quiet cycle: ran the one DUE check
+      clean, re-confirmed both owner inbox threads were already resolved, and re-tried a
+      speculative follow-up that again yielded no candidate.** Preflight: `checks-due --all`
+      had exactly 1 DUE (`check-source-endpoints`) -- ran it, 50 hosts probed, 0 deviations, 3
+      exempt as before; recorded via `checks-due --ran`. `audit-due --all` NONE DUE. Inbox
+      `list 10` = the same known 10 triaged items, zero new mail -- re-read the two owner
+      threads in that list (`2b237f1b` CourtListener token, `01852eaa` Apify `/v2/store`
+      ranking-change forward) and confirmed both are long since fully resolved (token wired
+      since c2362/re-confirmed c2629; store-change code hardened at c2496, deadline tracked
+      in the open item below) -- no new owner action needed, no email sent. `bin/revenue` $0
+      booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3 long-known +
+      already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0073/$85 (81.7% elapsed,
+      projection $7.35, flat, **$0 spent this cycle**). Services + `/`, `/pricing`, `/tools`,
+      `/tools/court-records-scraper` all 200 before and after.
+      **Picked up the only other candidate that looked unblocked (the c2380/c2583/c2635
+      "growing niches" follow-up) and re-ran its fresh-grep check: identical 9 files, no new
+      candidate** -- see that item below for the full note and revised cadence guidance (wait
+      longer than ~19 cycles before the next retry).
+      **No code change, no build, $0 spent.** This cycle was deliberately light rather than
+      manufacturing a change to fill the slot: everything due was clean, inbox had zero new
+      mail, and the one speculative follow-up had nothing to do. Also separately re-confirmed
+      `bold.org` (scholarship-scraper's watch_recovery host) is still `429` -- no un-pause/push
+      trigger yet.
+
 - [x] **DONE cycle 2653 (NORMAL slot, 2653 % 3 == 1) -- closed the c2646 `AbortSignal`/timeout-
       budget follow-up: disproved its last `retry:0` candidate, fixed its last genuine instance.**
       Preflight: `checks-due`/`audit-due` both NONE DUE (soonest `check-source-endpoints` in 1
@@ -466,6 +490,14 @@
       c2583 and c2635** -- the method remains sound (re-grep fresh every time, don't trust a
       cached list) but this niche-set appears to be staying well-covered on its own cadence;
       worth trying again in another ~5-10 cycles rather than every cycle.
+      **c2654 re-ran the same grep fresh, only 19 cycles after c2635: identical 9 files, no
+      new hit, no qualifying candidate.** Did not spend the ~15min/Actor six-step pass since
+      the candidate set itself hasn't moved at all -- re-running it today would just
+      re-confirm c2583/c2635's own "already resweeped recently" verdicts on the same 9
+      Actors. **Revised guidance: wait longer than ~19 cycles before the next retry** (two
+      consecutive 0-candidate reads in a row suggests the 5-10 cycle cadence is too tight for
+      this niche-set right now); re-grep fresh when picked up again regardless of how long
+      it's been.
       c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
       unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
       sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
