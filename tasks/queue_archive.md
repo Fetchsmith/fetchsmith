@@ -68364,3 +68364,432 @@ current "next cycle" pointer). Verbatim, no content changed.
       added first) and still carries the unpushed c2312 code fix (see that item) -- do not spend
       a build on the AbortSignal pattern there before un-retiring it.
 
+
+## Archived at cycle 2676 (queue.md trim, `bin/_trim2676q.py`) -- 16 DONE blocks, document order preserved
+
+- [x] **DONE cycle 2674 (NORMAL slot, 2674 % 3 == 1) -- closed the one real `audit-due` backlog item,
+      `remote-jobs-scraper`'s fleet-oldest `varied_test` (2338 -> 2674): the FIRST ever on
+      `minSalaryAnnual`. CLEAN, 0 defects, 0 code/README change, ~$0.0004 spent.** Preflight:
+      `checks-due --all` NONE DUE (soonest `check-row-floor` in 2c, cycle 2676); `audit-due --all`
+      showed exactly 1 real backlog item; `inbox list 10` the same 10 known triaged items, zero new
+      mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (786 -> 789),
+      `ext_bad30d` same 4 known events; `bin/apify-spend` $6.2155/$85 (83.1% elapsed, projection
+      $7.48); `bin/actor-health` FULL FLEET GREEN 24/24; services and all 4 probed pages 200.
+
+      **The reusable method point (also in LEARNINGS c2674).** Every drop in the `minSalaryAnnual`
+      block of `keep()` is CONSERVATIVE (unknown period, unknown/non-USD currency, ceiling-only row
+      all drop rather than pass), so the reflex "did the filter leak extra rows we charged for" probe
+      CANNOT FAIL here and would have produced a meaningless green. The only informative direction is
+      the inverse: a row whose RAW `salaryMin` is far BELOW the floor but whose ANNUALIZED value clears
+      it, which is delivered only if the multiplication genuinely happens. Probe
+      `{sources:[himalayas], minSalaryAnnual:135000, maxPagesPerSource:5, maxResults:25}`, floor placed
+      INSIDE one company's hourly ladder (`micro1`, $21-$70/hr) so rows split on arithmetic alone.
+      Free prediction first (reimplemented `num`/`canonPeriod`/`PERIOD_ANNUAL_MULTIPLIER` against the
+      live `himalayas.app/jobs/api` pages) = 17 rows; live run `fw6BI7JYvz2T5BTA7` = 17/17 identical
+      rows, identical order, `chargedEventCounts {job:17}` exact (off `GET /v2/actor-runs/<id>`, c2184
+      rule), 0 leak. Four discriminators fired: annualization applied at all; multiplier is 2080 and
+      not a rounded 2000 ($65/hr kept at 135,200, $60/hr dropped at 124,800); yearly NOT multiplied
+      (108,000 and 117,000 yearly rows dropped); USD-only gate holds (all 15 non-USD rows dropped,
+      incl. PHP-monthly 35,000 = 420,000 annualized). Full writeup in `state/audit_dates.json`
+      (`varied_test_note`) and the `state/STATUS.md` cycle-2674 block.
+
+- [x] **DONE cycle 2672 (NORMAL slot, 2672 % 3 == 2) -- closed the one real `audit-due` backlog item,
+      `steam-reviews-scraper`'s fleet-oldest `varied_test` (2336 -> 2672), and it was NOT clean: found
+      and fixed a silent over-charge on an UNPARSEABLE date string.** Preflight: `checks-due --all`
+      NONE DUE (soonest `check-row-floor` in 4c, cycle 2676); `audit-due --all` showed exactly 1 real
+      backlog item (`varied_test` DUE on `steam-reviews-scraper`); `inbox list 10` the same 10 known
+      triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users,
+      780 runs30d (778 -> 780), `ext_bad30d` same 4 known events; `bin/apify-spend` $6.182/$85 (82.9%
+      elapsed, projection $7.45); `bin/actor-health` full fleet -- `apple-podcasts-scraper` came back
+      502 Bad Gateway (nginx HTML, i.e. an Apify-gateway hiccup on OUR OWN probe, not an external
+      user's run, so no `ext_bad30d` impact) and an immediate targeted re-run was clean (201, 5 items,
+      0 fail_rows) => transient, confirmed rather than assumed, no code change; `scholarship-scraper`
+      still PAUSED/429 as expected; `bin/check-charges` 25/25 clean; services active and `/`,
+      `/pricing`, `/tools`, `/tools/steam-reviews-scraper` all 200.
+
+- [x] DONE cycle 2673 -- auto-added FIX FAILED ACTORS line (shopify-products-scraper) was this
+      cycle's own `bin/actor-health` probe (`items:0` with `err:'[]'`, no fail_rows), not an
+      external failure. An immediate targeted re-run (`actor-health --only shopify-products-scraper`)
+      came back clean (201, 10 items, 0 fail_rows) -- transient, confirmed rather than assumed, no
+      code change. Same pattern as c2669's trademark-search-scraper and c2672's apple-podcasts-scraper.
+      **The finding.** Targeted the one input shape no prior `varied_test` had touched (c2258 did
+      games-mode sortBy erasure, c2336 did a partial-unparseable `apps` list): a `reviewsAfter` /
+      `reviewsBefore` value that is a string but not a parseable date. An Invalid Date is **truthy but
+      NaN**, so it failed every `!isNaN` guard in the file at once -- it set no window
+      (`reviewPassesFilters`, main.js:667-668), triggered no early-stop (main.js:798), contributed
+      nothing to `hasDateWindow` (main.js:67), and *therefore also skipped the `sortBy` -> `"recent"`
+      forcing at main.js:88*. Net effect for a buyer who typed the common non-US day-first form
+      `"30/06/2026"` (or `"last 30 days"`): a **non-chronological** review population, **no** date
+      filter, and a charge for **every row** of it -- while the schema text promises both a date
+      window and "Forces Sort to 'Most recent'". Disclosure was zero on all three channels: no
+      `log.warning`, `ignoredInputs: []` in RUN_SUMMARY, and nothing in the status message. Root
+      cause: both fields are `editor: "textfield"` with no `pattern`, so Apify validates nothing on
+      the way in, and the Actor already had the disclose-and-continue recipe for `webhookUrl`
+      (main.js:213) and for `unparsedApps` -- these two date fields were simply never wired into it.
+
+      **The fix + verification.** Detect invalid dates at parse time and push the bare field name into
+      `ignoredInputs`; that one hook is what carries the disclosure into EVERY status-message branch
+      (via the existing `ignoredSuffix`) and into `RUN_SUMMARY.ignoredInputs`, rather than patching 12
+      message strings. Warning also names the two second-order surprises explicitly (you were charged
+      for the unfiltered set; Sort was left as what you set). Build **0.1.92**, one push (~$0.005),
+      code-only diff. Predicted the behaviour free first (`node -e` on the raw `new Date()` semantics),
+      reproduced it with a free local run, then re-ran old-vs-new locally and live: platform run
+      `VQqT5LloX4n3aeI4T` fires the warning, carries the `NOTE: ... ignored: reviewsAfter` status
+      suffix, and reports `ignoredInputs: ["reviewsAfter"]`. **Regressions all clean**: the
+      byte-identical run with a VALID `"2026-06-30"` behaves exactly as before (forcing warning fires,
+      `ignoredInputs: []`) -- proving the gate keys on parseability and not merely on the field being
+      set; both fields invalid -> 2 warnings and both names; no-date default -> `ignoredInputs: []`.
+      `actor-health --only` green (10 rows), `check-charges` 25/25, no output-field change so
+      `registry.json`/`dataset_schema.json` untouched. Recorded in `state/audit_dates.json`
+      (`varied_test: 2672`); `audit-due --type varied_test --all` now reads NONE DUE fleet-wide.
+      $0.005 spent, $0 revenue change, no owner email (a reliability/billing-correctness fix is
+      neither a revenue event nor owner-fixable). **Next cycle:** `varied_test` on
+      `remote-jobs-scraper` comes due at 2674 and `check-row-floor`/`check-upstream-warnings` at
+      ~2676; recompute `cycle % 3` fresh (2673 % 3 == 0, QUALITY/GROWTH).
+
+- [x] **DONE cycle 2673 (QUALITY/GROWTH slot, 2673 % 3 == 0) -- ran the c2672 "NaN date is truthy"
+      sweep across all 8 named candidates. Fleet is CLEAN: every one already fails loudly on an
+      unparseable date, none has the silent-drop hole.** Preflight all clean first: `checks-due --all`
+      / `audit-due --all` both NONE DUE (soonest `check-row-floor` in 3c, cycle 2676); `inbox list 10`
+      the same known items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 786 runs30d
+      (780 -> 786), `ext_bad30d` same 4 known events; `bin/apify-spend` $6.201/$85 (83.0% elapsed,
+      projection $7.47); `bin/actor-health` 24/25 green on first pass, `shopify-products-scraper`
+      returned 0 items (see DONE line above -- confirmed transient, immediate re-run clean); `bin/
+      check-charges` 25/25 clean; services + `/`, `/pricing`, `/tools` 200 before and after.
+      **Method:** `grep -n "new Date(input\.\|isNaN" src/main.js` per candidate, then read every hit
+      in context. Result per Actor: `grants-gov-scraper` -- `parseIsoDate`/`parseUsDate` round-trip
+      through `Date.UTC` and compare back to the input string; any mismatch calls `failInput()` and
+      stops the run (hardened at cycle 591, predates c2672). `google-play-reviews-scraper` --
+      `parseDateBound` throws on `Number.isNaN(d.getTime())`, with an in-code comment already naming
+      this exact bug class as the reason it throws instead of warns. `app-store-reviews-scraper` --
+      `reviewsAfter`/`reviewsBefore` each call `Actor.fail()` on an invalid date (lines 106-114) --
+      loud failure, not a silent charge. `eu-ted-tenders-scraper` -- `normalizeDate` requires 8 digits
+      after stripping dashes and throws otherwise. `federal-register-scraper` -- `normDate` round-trips
+      through `Date.UTC`/`isValidYmd` and throws on mismatch (hardened cycle 2315, predates c2672).
+      `fda-recall-scraper` -- identical `normDate`/`isValidYmd` round-trip, throws. `clinicaltrials-
+      scraper` -- `parseDateBound` throws on anything failing a strict `YYYY-MM-DD` regex, with an
+      in-code comment citing `sec-insider-trades-scraper` (cycle 2016) as the precedent this avoids.
+      `sec-insider-trades-scraper` -- `sinceDate` fails the regex -> `sinceDateInvalid` is set, a
+      `log.warning` fires AND the run proceeds with no lower bound; disclosed (not silent) and matches
+      this Actor's own README-documented "leave empty for no bound" semantics, so this is a deliberate,
+      disclosed design choice, not the c2672 bug shape. **Conclusion: `steam-reviews-scraper` was the
+      one outlier, now fixed; the rest of the fleet already follows the fail-loudly convention this
+      class requires** (clinicaltrials-scraper's own comment at line 266-269 independently lists 9 of
+      these Actors as already doing this). No code change, no build, no push, $0 spent, $0 revenue
+      change, no owner email (a clean verification sweep is neither a revenue event nor owner-fixable).
+      **Next cycle:** `varied_test` on `remote-jobs-scraper` comes due at 2674;
+      `check-row-floor`/`check-upstream-warnings` due ~2676. Recompute `cycle % 3` fresh.
+
+- [x] **DONE cycle 2671 (NORMAL slot, 2671 % 3 == 1) -- full independent preflight re-run, nothing
+      fleet-wide or in the inbox was due or actionable, no code change manufactured per the
+      standing c2524 rule.** `checks-due --all` / `audit-due --all` both NONE DUE (soonest
+      `check-row-floor` in 5c, cycle 2676); `inbox list 10` the same 10 known triaged items --
+      specifically re-confirmed both owner threads (`2b237f1b` CourtListener token, `01852eaa`
+      Apify Nov-15 Store-API change) stay resolved/tracked via grep against STATUS_ARCHIVE.md
+      rather than just trusting the header; `bin/revenue` $0 booked, 25 Actors, 48 users, 778
+      runs30d, `ext_bad30d` same 4 known events; `bin/apify-spend` $6.169/$85 (82.9% elapsed,
+      projection $7.44); `bin/actor-health` 24/24 green, `scholarship-scraper` still PAUSED/429;
+      `bin/check-charges` 25/25 clean; `bin/traffic` no buyer-intent signal; `bin/dmarc-report
+      list` still exactly 2 samples (0 new since c2371/c2665). Re-read every LOW/latent queue
+      follow-up (c2644 vid undercount, c2552/c2540 tripwires, c2478 Store paging, c2312
+      scholarship bold.org gate, c2371 DMARC) -- all still correctly gated, none fire today.
+      $0 spent, $0 revenue change, no owner email. Full detail in `state/STATUS.md` cycle-2671
+      block. **Next cycle:** nothing fleet-wide due until ~cycle 2676; recompute `cycle % 3`
+      fresh (2672 % 3 == 2, NORMAL).
+
+- [x] DONE cycle 2674 -- auto-added FIX FAILED ACTORS line (apple-podcasts-scraper) is STALE and now
+      closed. c2672 had already diagnosed that failure as a 502 nginx Apify-gateway hiccup on our OWN
+      probe (not an external user's run, so no `ext_bad30d` impact) and re-run it clean. This cycle's
+      full `bin/actor-health` independently re-confirms it: `apple-podcasts-scraper` {ok:True, 201,
+      items:5, fail_rows:0}, and the whole fleet is green 24/24. No code change -- there was never a
+      defect to fix. (Same pattern and same resolution as c2669's trademark-search-scraper and
+      c2673's shopify-products-scraper, the latter ALSO re-confirmed green at 10 items this cycle.)
+- [x] **DONE cycle 2670 (QUALITY/GROWTH slot, 2670 % 3 == 0) -- closed the one real `audit-due`
+      backlog item, `grants-gov-scraper`'s fleet-oldest `varied_test` (2334 -> 2670).** Tested
+      the two documented date-filter precedence rules TOGETHER for the first time
+      (`postedWithinDays` dropped when `postedFrom`/`postedTo` is set; `closesWithinDays`
+      dropped when `closeDateFrom`/`closeDateTo` is set) -- a free-predicted 9-row window
+      (hand-filtered from a direct `api.grants.gov` call) came back byte-identical on a real,
+      free LOCAL run of the Actor (`CRAWLEE_STORAGE_DIR=./storage node src/main.js`, no platform
+      charge needed since both rules are pure client-side branching). Both precedence warnings
+      and `ignoredInputs` fired correctly. CLEAN, 0 defects, no code change, $0 spent. Full
+      writeup in `state/audit_dates.json` (`varied_test_note`) and `state/STATUS.md` cycle-2670
+      block. `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide again.
+
+- [x] DONE cycle 2669 -- auto-added FIX FAILED ACTORS line (trademark-search-scraper,
+      run `OBZEMyP5RTKYclFo9`) was this cycle's own `bin/actor-health` probe, not an external
+      failure. `statusMessage` was the Actor's own self-diagnosed transient-network text ("flaky
+      exit node rather than an outage -- re-run in a few minutes"), confirmed transient by an
+      immediate re-run: `bin/actor-health --only trademark-search-scraper` came back clean (201,
+      10 items, 0 fail_rows). No code change; see STATUS.md cycle 2669 for full detail.
+- [x] **DONE cycle 2667 -- `google-news-scraper` varied_test (the item c2666 left OPEN below).**
+      Picked the leak-protection candidate (the other named candidate, `topics`/`topicsHashed`,
+      stays open for a future varied_test slot -- not re-queued separately since `audit-due` will
+      naturally re-surface this Actor in ~336c and either candidate is still valid then). Ran live
+      via `bin/run-charged`: `publishedAfter:"2026-09-01"`, `publishedBefore:"2026-09-10"`,
+      `excludeSites:["pinterest.com"]`, `queries:["artificial intelligence"]`,
+      `maxItemsPerQuery:50`, `maxResults:50` (run `W3jSYB5d7MsWvJ1WK`) -- the exact c788 bug
+      shape (explicit date window + excludeSites), never before driven through the real Actor by
+      a varied_test (c788/c933 only direct-curl'd Google). Result: 46 rows pushed, all
+      `publishedAt` within 2026-09-01..09-10 (inside the documented tolerance), statusMessage
+      correctly reported "Dropped 4 article(s) that Google returned well outside your
+      publishedAfter/publishedBefore window ... you were not charged for them", and
+      `chargedEventCounts` settled `{result:46}` -- exactly the pushed count, so the 4 leaked
+      rows were genuinely uncharged (no over- or under-billing). Backstop verified working
+      end-to-end on current code, 0 defects, no code change. `check-charges` 25/25 clean,
+      `actor-health --only google-news-scraper` ok. Recorded in `state/audit_dates.json`
+      (`varied_test: 2667`). `audit-due --type varied_test --all` now reads **0 DUE across all
+      25 Actors** -- the backlog c2666 found is fully closed. ~$0.083 spent (46 charged rows).
+
+- [x] **DONE cycle 2668 -- the c2666 fleet-wide sweep for the "fixed order decides between
+      populated candidates" bug class. Found and fixed exactly ONE more instance
+      (`app-store-reviews-scraper`, build 0.1.121); the rest of the fleet is genuinely clean.**
+      Method matters and is written up in LEARNINGS cycle 2668: the keyword grep
+      (`auto.?detect|fetchAuto|firstNonEmpty`) hits ONLY `ats-jobs-scraper` and would have closed
+      this item as "nothing found" -- the class is structural, so the real sweep is "wherever
+      several POPULATED candidates get reduced to one by `.find()`/`break`/`[0]`, ask what decides
+      the winner". Audited every such site in all 25 `src/main.js`. Verdicts: SAFE/one-ranked-source
+      `google-play-reviews-scraper:539` (Google Play's own relevance order -- order *within* one
+      upstream ranking is real signal, do NOT "fix" it); SAFE/refuses-to-guess
+      `sam-gov-opportunities-scraper:1504-1509` (agency-key collision -> both `null`) and
+      `sec-insider-trades-scraper:356` (`length === 1` or nothing) -- these are the pattern to copy
+      when no quality signal exists; everything else is transient-failure retry or enum
+      normalisation, not candidate selection. **BROKEN: `app-store-reviews-scraper.resolveAppName`**
+      -- built `results = [...iosHits, ...macHits]` then `find(exactTitle) ||
+      find(anyTokenSubstringAnywhere)`, so iOS-concatenated-first decided between two equally
+      "relevant" populated candidates. Two wrong answers proved live with FREE
+      `itunes.apple.com/search` probes (no Actor run): (1) `"sketch app"` + `includeMacApps:true`
+      -> iOS "Sketchbook®" (substring hit) beat the real Mac "Sketch" (word hit); (2)
+      `"affinity photo"` -> "Canva AI Photo & Video Editor", silently, on the generic token `photo`
+      alone, and the caller was then CHARGED for Canva's reviews -- while the function's own warning
+      string had promised for years that "an unrelated top hit is treated as no match rather than
+      guessed". **Fixed** with a scored scan (5 exact title / 4 all tokens as whole words in title /
+      3 all tokens anywhere / 2 partial-but-whole-word / 1 partial substring), best tier wins and
+      list order survives only as the tie-break WITHIN a tier, plus a coverage gate (multi-token
+      query, candidate matching < half the query's token chars -> score 0) and a warning that now
+      names what actually matched. **Verified by OLD-vs-NEW diff on live payloads** (edited block
+      sliced straight out of `src/main.js` into a throwaway harness, 17 names x {iOS-only, +Mac} =
+      34 outcomes): 2 fixed, 31 byte-identical, 1 incidental wash. Then live on platform (run
+      `GvHuRPNAEZH9N0Qa9`): `"sketch app"` -> `Sketch (id 1667260533) in the Mac App Store`,
+      `"affinity photo"` -> the new honest NO-match warning naming `matched only "photo"`. 5 rows,
+      `chargedEventCounts {result:0}` -- CORRECT, not a leak: `FREE_REVIEWS_PER_RUN = 10`
+      (`src/main.js:387`) makes the first 10 reviews of every run free. Post-push `check-charges`
+      25/25 clean, `actor-health --only app-store-reviews-scraper` ok (201, 10 items, 0 fail_rows).
+      No output-field change, so `check-registry-fields`/`check-meta-fields` are not triggered, and
+      `test_input.json` is untouched so `exampleRunInput` cannot have drifted.
+
+- [x] **DONE cycle 2666 (NORMAL slot, 2666 % 3 == 2 -- recomputed fresh, NOT the QUALITY slot
+      c2665 guessed forward) -- `audit-due --type varied_test` found 2 Actors DUE
+      (`ats-jobs-scraper`, `google-news-scraper`); ran the first end-to-end and it surfaced a real,
+      previously-unknown defect instead of a clean no-op, which ate the full cycle.** Preflight
+      first, all clean: `checks-due --all` NONE DUE (soonest `check-row-floor` in 10c, cycle 2676);
+      `audit-due --all` showed exactly the one real backlog (`varied_test` on the 2 named Actors,
+      all other types CLOSED or not due); `inbox list 10` same known 10 triaged items, zero new
+      mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 778 runs30d, `ext_bad30d` same 4 known
+      events; `bin/apify-spend` $6.084/$85 (82.5% elapsed, projection $7.37); services + `/`,
+      `/pricing`, `/tools`, `/tools/ats-jobs-scraper` all 200/active before and after.
+      **Edge case picked for `ats-jobs-scraper`: auto-detect (`"ats":"auto"`) on a slug that is a
+      genuinely POPULATED board on two different platforms at once** -- never isolated this way
+      before (c2330's varied_test used a nonexistent-slug warning + happy path, not a same-slug
+      cross-platform collision). Used the Actor's OWN `input_schema.json` default example
+      (`slug:"ramp"`, documented there as the canonical Ashby case) with `ats` omitted: auto-detect
+      resolved to **Greenhouse** instead -- a 1-posting junk/test board ("Copy of Chief Legal
+      Officer"), confirmed live via a free, non-billable direct call to
+      `boards-api.greenhouse.io/v1/boards/ramp/jobs` -- silently returning the WRONG company
+      instead of the real Ramp (fintech) Ashby board (confirmed live via
+      `api.ashbyhq.com/posting-api/job-board/ramp`, dozens of real postings). The run SUCCEEDED
+      with plausible-looking output (a real title, a real location) and no warning at all.
+      **Root cause:** `fetchAuto()` picked the first non-empty board in a fixed `AUTO_DETECT_ATS`
+      priority order (Greenhouse first) rather than the largest non-empty board, so a small decoy
+      beats a large real match whenever the decoy sits earlier in the priority list. **Fixed:**
+      replaced the priority-order `.find()` with a `boardSize()`-max `reduce` over all non-empty
+      candidates (fixed priority order kept only as the all-empty tie-break, unchanged). Pushed
+      `ats-jobs-scraper` build **0.1.117** (~$0.005), re-ran the identical `auto:ramp` input live
+      -- now returns real Ashby rows (Security Engineer, Mobile Engineer, etc.), `atsSource:ashby`
+      confirmed. **Paired edge case in the same cycle** (per the established pattern of combining
+      a never-tested edge case with a happy-path/second check):
+      `employmentTypeKeyword:"contract"` on `auto:airbnb` (resolves to Greenhouse) + explicit
+      `workday:okgov` in one run -- SUCCEEDED, `chargedEventCounts {job:0}` (correctly uncharged
+      for 0 kept rows), per-board WARN logs named the exact reason on both platforms (Greenhouse:
+      field not published at all; Workday: only "Full time"/"Part time" exposed), and the
+      aggregate status message's "373 open posting(s)" matched the two boards' own 213+160 counts
+      exactly. Post-push: `check-charges` 0 drift, `actor-health --only ats-jobs-scraper` 10/10
+      clean. Full root-cause writeup + the generalizable lesson in `notes/LEARNINGS.md` (cycle
+      2666 entry) and the LOW fleet-wide follow-up item above.
+      **`google-news-scraper`'s varied_test stayed DUE — did not start it this cycle** (the
+      ats-jobs-scraper investigation, fix, push and re-verification filled the time budget; see
+      the OPEN item above for the next cycle's starting point, with 2 specific untested-edge-case
+      candidates already named so it doesn't need to re-derive them).
+      ~$0.005 spent (one build), $0 revenue change, no owner email (a reliability fix is not a
+      revenue event and nothing here is owner-fixable).
+      **Next cycle:** finish `google-news-scraper`'s varied_test (still DUE, gap now 336c+1 — it
+      does not go stale, `audit-due` just keeps showing it DUE until run). Nothing fleet-wide is
+      due until `check-row-floor`/`check-upstream-warnings` at ~cycle 2676. Recompute `cycle % 3`
+      fresh rather than trusting any prior cycle's printed slot label (c2665 mislabeled 2666 as
+      QUALITY; true value is 2666 % 3 == 2, NORMAL).
+
+- [x] **DONE cycle 2665 (NORMAL slot, 2665 % 3 == 1) -- full independent preflight re-run, one
+      real due check executed, one standing doubt about DMARC sample size resolved with no code
+      change needed.** `checks-due --all` had exactly 1 DUE: ran `check-status-continuity` fresh
+      (retained window 2647..2664, 17 completed cycles per `worker.log`, **NONE MISSING**),
+      recorded via `checks-due --ran` (next due cycle 2713). `audit-due --all` FLEET ROTATIONS
+      NONE DUE. Zero new mail (same 10 known triaged items), $0 revenue change (25 Actors, 48
+      users, 778 runs30d, `ext_bad30d` same 4 known events), `apify-spend` $6.0667/$85 (82.5%
+      elapsed, proj. $7.36), `actor-health` 24/24 green + `scholarship-scraper` still PAUSED/429
+      as expected, `traffic` still no buyer-intent signal, services/site all 200/active before
+      and after.
+      **Then checked a nagging detail rather than re-stating the preflight prose: STATUS.md/
+      queue.md have been citing "DMARC sample still only 2 reports" for many cycles, but the
+      full (untruncated) inbox actually holds 22 `dmarc@fetchsmith.com` messages, not 2.** Read
+      every one of the 22 directly (not through `inbox list 10`'s truncation) against
+      `dmarc-report`'s own `attachments`-array selection logic: **only 2 of the 22
+      (`af5d9f7d`, `202905fb`) carry an `attachments` array**; the other 20 have no
+      `attachments` key, `text`, or `html` field at all -- confirmed these are relics of the
+      pre-cycle-1626 receiver.py bug the tool's own docstring already documents ("every DMARC
+      report unreadable" before the fix), and the raw body was never stored for them, so there
+      is nothing recoverable. **Conclusion: the "2 reports" figure was correct all along, not
+      stale** -- closed the doubt with evidence instead of leaving it to be re-wondered next
+      cycle. Both real reports are 1-source/1-message/0-fail (`54.240.11.115`, SPF+DKIM pass),
+      so `p=reject` stays parked per the standing c2371 guidance (needs more weekly drops).
+      Also re-confirmed the Apify `/v2/store` 2026-11-15 item (below) has no action due today --
+      its own note already says the next step is strictly post-deadline.
+      No code change (nothing was broken), no owner email (closing an internal doubt is neither
+      a revenue event nor owner-fixable). $0 spent.
+      **Next cycle:** nothing fleet-wide due until ~cycle 2676 (`check-row-floor`/
+      `check-upstream-warnings`); 2666 is a true QUALITY/GROWTH slot (2666 % 3 == 0, recompute
+      fresh). If 2666 also reads clean, the best-queued real work is the c2464 `_batch_price_*.py`
+      rung-for-rung port below -- but only once a `competitor_audit` for that niche actually
+      comes due, per its own gating.
+
+- [x] **DONE cycle 2664 (QUALITY/GROWTH slot, 2664 % 3 == 0 -- recomputed fresh per the c2659
+      rule) -- spent the slot on the fleet's one live demand signal instead of re-running c2663's
+      battery, as c2663 asked.** Preflight first, all clean: `checks-due --all` / `audit-due --all`
+      NONE DUE (soonest `check-status-continuity` in 1c, cycle 2665); `inbox list 10` the same 10
+      known triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48
+      users, 778 runs30d, `ext_bad30d` still the same 4 known events; `bin/apify-spend` $6.0513/$85
+      (82.4% elapsed, projection $7.34, far under the $25 trip-wire); `bin/actor-health` 24/24
+      public Actors green, `scholarship-scraper` still PAUSED/429 (`cleared=False`, so the c2372
+      bold.org gate has NOT opened -- the unpushed c2312 fix stays unpushed); `bin/traffic` still
+      no /pricing or /tools buyer-intent signal, so the Polar trigger has not fired and was not
+      raised; services active and `/`, `/pricing`, `/tools` 200 before and after.
+      **Then did real work on the one deviation `bin/usage-trend` reports** (details in the standing
+      watch above and in LEARNINGS c2664): established it is one caller ramping rather than
+      traction via the windowed distinct-user counts, then ran the c2168 demand-burst protocol on
+      it end-to-end. (a) **Charge path live-re-verified** with `bin/run-charged` -- 5 pushed, 5
+      charged, settled, clean; charge-before-push shape (`main.js:441-445`) means a buyer charge
+      limit cannot yield unpaid rows. Recorded as `charge_event_verified: 2664` in
+      `state/audit_dates.json` (explicitly labelled a re-verification, since c2305 already closed
+      the full 30-event matrix). (b) **Unit economics measured live for the first time on this
+      Actor:** $0.0000508/row cost vs live-read $0.0015/result at 20% Apify margin -> $0.0012/row
+      net, **~23.6x net / ~29.5x gross** (trademark-search was ~4x at c2168), so this traffic is no
+      cost risk at any plausible scale. (c) Confirmed `RUN_SUMMARY: none (HTTP 404)` on this Actor
+      is **deliberate** (`main.js:6-8` documents the absent framework), not a regression -- noted so
+      it is not chased again. One paid Actor run, ~$0.00025, against the BUDGET.md "Apify platform
+      usage above included credits" line ($120 allocated, ~$6 used). **Next cycle:**
+      `check-status-continuity` is due at 2665 (run it); DMARC sample still only 2 reports so
+      `p=reject` stays parked; growing-niches retry and niche-hunting both still gated (~2026-12-26);
+      the `/v2/store` 2026-11-15 item needs its pre-deadline look in the next ~12 days.
+
+- [x] **DONE cycle 2663 (NORMAL slot, 2663 % 3 == 2) -- independently re-ran every preflight
+      check fresh (not just trusted c2662's prose) and confirmed, again, that nothing is
+      actionable.** `bin/checks-due --all` / `bin/audit-due --all`: NONE DUE, soonest
+      `check-status-continuity` in 2c (cycle 2665). `bin/inbox list 15`: same 15 known items,
+      all previously triaged (cold-pitch/SEO/DMARC spam, `ba1bf931`/`06daa491`/`9d15ac17`
+      tintgate.com repeats, `5ce80b92` `ransomedarcy0@gmail.com` already logged as spam) --
+      zero new mail, zero replies owed. `bin/revenue`: $0 booked, 25 Actors, 48 users, 778
+      runs30d, `ext_bad30d` still the same 4 known events (no new entry). `bin/apify-spend`:
+      $6.0367/$85, flat, $0 spent this cycle. `bin/actor-health` (all 25, not a subset): 24/24
+      public Actors green (`ok: True`, 0 fail_rows each), `scholarship-scraper` still PAUSED
+      429 as expected (matches the c2372 bold.org gate -- not RECOVERED, no action). `bin/
+      traffic`: still 0 pageviews signal on /pricing and /tools and no purchase-intent mail --
+      the Polar-checkout trigger (>100 visits/day or buyer mail) has NOT fired, so per the
+      owner's deferral, did not raise it. Services (`fetchsmith-web`, `fetchsmith-mail`,
+      `caddy`) active, `/`, `/pricing`, `/tools` 200 before and after. `git status`: only
+      volatile cache files (`state/health.json`, `state/revenue.json`,
+      `state/revenue_history.json`) touched by the checks just run -- no substantive diff, no
+      code change manufactured (c2524 rule: don't force a change when nothing is ready).
+      **Next cycle:** same as c2662 said -- nothing fleet-wide due until `check-status-
+      continuity` at 2665; DMARC sample still only 2 reports (unchanged, needs more weekly
+      drops before revisiting `p=reject`); growing-niches retry still gated (c2654's "wait
+      ~19 cycles," only 9 elapsed); niche-hunting gated to ~2026-12-26. If 2665 also reads
+      clean, consider varying the verification mix further (e.g. `check-source-endpoints`
+      cadence check, or a fresh competitor-feature scan on 1-2 Actors) rather than repeating
+      the identical preflight battery every single cycle.
+
+- [x] **DONE cycle 2661 (QUALITY/GROWTH slot, 2661 % 3 == 0) -- trimmed `tasks/queue.md`
+      proactively, the TRIM SOON case `check-doc-size` flagged at c2660.** Preflight:
+      `checks-due`/`audit-due` both NONE DUE, zero new mail (confirmed the 2 owner threads on
+      the inbox list stay resolved: CourtListener token wired c2362, Apify `/v2/store` change
+      hardened c2496), $0 revenue change, $0 spent, services/site all 200/active before and
+      after. `check-doc-size` read `tasks/queue.md` TRIM SOON (83.7KB/917 lines, projected
+      211KB by its next scheduled look) while `state/STATUS.md` stayed OK -- trimmed queue.md
+      only. Ran the standing-hazard grep first over the 10 archive-bound DONE blocks (cycles
+      2646, 2651-2659): clean, nothing needed rehoming (the c2646 AbortSignal campaign and the
+      c2357 bare-throw/`Actor.fail()` campaign are both independently confirmed closed
+      fleet-wide, so a stale "3 Actors remaining" note from an older STATUS.md passage is dead
+      and was not carried forward). Wrote `bin/_trim2661q.py` (hoist-then-cut: keep every OPEN
+      block + the newest DONE block by cycle number, archive the other 10 to
+      `tasks/queue_archive.md`, asserts on block/cycle counts and line-count conservation so a
+      structural surprise aborts instead of corrupting the file). Archived 379 lines (cycles
+      2646, 2651-2659). **Verified**: `check-doc-size` now reads `OK tasks/queue.md 52.3KB 538
+      lines ~28 cycles of headroom` (was TRIM SOON); the script's own conservation asserts
+      passed; `queue_archive.md` grew by exactly the archived content. No Actor code touched,
+      no build, no push beyond the doc commit. Full narrative in `state/STATUS.md` cycle-2661
+      block.
+      **Next cycle:** nothing fleet-wide due until `check-status-continuity` at 2665.
+      `state/STATUS.md` is still OK (58.2KB, ~32c headroom) -- re-check `check-doc-size` fresh
+      rather than assuming; no open AbortSignal/bare-throw follow-up remains anywhere in this
+      file.
+
+- [x] **DONE cycle 2660 (NORMAL slot, 2660 % 3 == 2 -- recomputed fresh from the integer per
+      c2659's process finding) -- ran all 3 due fleet checks (all clean) and then the 2
+      cadence-less QUALITY checkers, which surfaced and fixed one real doc-hygiene defect.**
+      Preflight: `audit-due --all` FLEET ROTATIONS NONE DUE; `checks-due --all` 3 DUE. Zero new
+      mail (same known 10 triaged), no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users,
+      775 runs30d, ext_bad30d 4 (same 3 long-known + already-fixed nih-reporter-scraper).
+      `bin/apify-spend` $6.0352/$85, flat, $0 spent -- no build, no push. Services + `/`,
+      `/pricing`, `/tools` 200/active before and after.
+      **(a) The 3 due checks, all clean, all recorded via `checks-due --ran`:** `check-blog-cta`
+      88 posts, 0 missing-CTA / 0 roundup-no-one-hop-path / 0 bad-slug / 0 dead internal link
+      (2324 -> 2660, next 2996); `check-backlinks` 131 post(guide)-Actor pairs across 88 posts, 0
+      missing, 0 unresolved (1988 -> 2660, next 3332); `check-actor-guides` 24 live Actors, 0
+      flagged, every Actor clears the floor with room (min dedicated=2, min related=3;
+      `ats-jobs-scraper` richest 12/15) (1988 -> 2660, next 3332).
+      **(b) Leaned QUALITY-flavored per c2659's note on the silently-skipped c2658 QUALITY slot**
+      and ran the two checkers with NO `checks-due` cadence (PLAYBOOK "every QUALITY cycle"):
+      `check-code-fields` = **0 Actors with code-only field drift** fleet-wide (all remaining
+      annotations are the known-benign soft/non-row-literal/FIELD_SUPPRESS classes);
+      `check-source-bytes` = `692 files checked, 1 flagged`, and **the single fleet-wide hit was
+      `notes/LEARNINGS.md:7318` itself** -- the c2655 note documenting the `gen-output-schema`
+      soft-hyphen fix, which **quoted the offending artifact (`"U.S.<U+00AD>-based"`) with the raw
+      U+00AD still embedded**. c2655 fixed the real bug correctly and then reintroduced the exact
+      byte class it had purged, into the record of the fix.
+      **Fixed rather than annotated, deliberately.** Checked the tool first: `check-source-bytes`
+      is a plain byte scan over `TEXT_SUFFIXES` with **no allowlist/suppress mechanism** (grepped;
+      only `SKIP_PARTS` for node_modules/.git/storage) and **no `checks-due` cadence** -- there is
+      nowhere to record "intentional", so leaving it would make every future QUALITY cycle
+      re-investigate the same self-referential flag while a genuinely new hit hid inside an
+      already-normal-looking non-zero count. Rewrote the quote as the spelled-out escape
+      `<U+00AD>` + a short inline note on why; meaning preserved exactly (an invisible char in a
+      quotation conveyed nothing to a reader) and strictly more legible. **`check-source-bytes`
+      now reads 0 flagged across 692 files.** No Actor code touched, nothing buyer-facing -> no
+      build, no push needed (unlike c2655, whose instance was in a live `dataset_schema.json` and
+      did require pushing `sam-gov-opportunities-scraper` 0.1.86).
+      Appended the durable lesson to `notes/LEARNINGS.md` (verified the new note is itself clean
+      -- it names codepoints, never pastes them): **when documenting a byte/codepoint finding
+      anywhere under `/root/agent`, name the codepoint (`U+00AD`, `U+200B`, `\x00`), never paste
+      the character**; general form, **a checker with no suppress list must be kept at a zero
+      baseline because its only signal is the count, so any "known-benign" hit left in place
+      silently spends that signal** (same reasoning as c2478's `RANK UNKNOWN`-vs-`NOT FOUND`).
+      **Also confirmed so it is not re-opened early:** the c2478 Apify `/v2/store` item (deadline
+      2026-11-15, 12 days out) needs nothing today -- code half done early at c2496, remaining
+      half explicitly post-deadline, `store-anon-rank` next due ~c2744 (pre-change), expected
+      reading `paging_ok: True` until the date.
+      **For the next cycle:** nothing fleet-wide due for 5 cycles (`check-status-continuity`
+      soonest ~2665). **Both cadence-less checkers are now at a clean zero baseline as of 2660 --
+      any non-zero `check-source-bytes` count from here is a real new hit; do NOT re-derive the
+      LEARNINGS self-flag.** 2661 % 3 == 0, so 2661 is a true QUALITY/GROWTH slot (recompute
+      yourself anyway). Worth a look there: `check-doc-size` is not due until ~2676, but STATUS.md
+      has grown 25.2KB (post-c2652-trim) -> ~53KB and queue.md 65.4KB -> ~79KB, so the doc-trim
+      cadence may read TRIM SOON before its checker is scheduled.
+
