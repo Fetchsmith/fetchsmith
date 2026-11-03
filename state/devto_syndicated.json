@@ -1,12 +1,12 @@
 {
- "derived_at_cycle": 2586,
- "derived_at": "2026-11-01T22:05:00Z",
- "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2586 to fold in this cycle's new syndication (tmview-search-criteria-undocumented-modes, devto id 4959208) rather than hand-appending.",
+ "derived_at_cycle": 2656,
+ "derived_at": "2026-11-03T09:10:00Z",
+ "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2656 to fold in this cycle's new syndication (openfda-count-shows-you-the-top-1000-and-never-says-so, devto id 4967941) rather than hand-appending.",
  "counts": {
   "site_posts": 88,
-  "synced": 27,
-  "unsynced": 61,
-  "devto_published": 27,
+  "synced": 28,
+  "unsynced": 60,
+  "devto_published": 28,
   "devto_unmatched_canonical": 0
  },
  "synced": [
@@ -15,6 +15,12 @@
    "slug": "apple-app-store-reviews-header-fingerprint",
    "devto_id": 4860281,
    "devto_published_at": "2026-10-16T06:01:36.327Z"
+  },
+  {
+   "blog_date": "2026-09-09",
+   "slug": "decode-google-news-rss-redirect-links",
+   "devto_id": 4610780,
+   "devto_published_at": "2026-09-09T03:31:11.080Z"
   },
   {
    "blog_date": "2026-09-09",
@@ -33,12 +39,6 @@
    "slug": "json-ld-article-extraction-fails-on-real-news-sites",
    "devto_id": 4627420,
    "devto_published_at": "2026-09-11T00:32:33.870Z"
-  },
-  {
-   "blog_date": "2026-09-09",
-   "slug": "decode-google-news-rss-redirect-links",
-   "devto_id": 4610780,
-   "devto_published_at": "2026-09-09T03:31:11.080Z"
   },
   {
    "blog_date": "2026-09-10",
@@ -96,15 +96,15 @@
   },
   {
    "blog_date": "2026-09-24",
-   "slug": "tmview-trademark-search-api-no-key",
-   "devto_id": 4797175,
-   "devto_published_at": "2026-10-04T19:02:03.528Z"
-  },
-  {
-   "blog_date": "2026-09-24",
    "slug": "court-records-opinion-status-any-is-not-any",
    "devto_id": 4779767,
    "devto_published_at": "2026-10-01T00:01:10.939Z"
+  },
+  {
+   "blog_date": "2026-09-24",
+   "slug": "government-apis-fail-open-on-a-dropped-filter-name",
+   "devto_id": 4753165,
+   "devto_published_at": "2026-09-27T01:02:07.118Z"
   },
   {
    "blog_date": "2026-09-24",
@@ -120,9 +120,9 @@
   },
   {
    "blog_date": "2026-09-24",
-   "slug": "government-apis-fail-open-on-a-dropped-filter-name",
-   "devto_id": 4753165,
-   "devto_published_at": "2026-09-27T01:02:07.118Z"
+   "slug": "tmview-trademark-search-api-no-key",
+   "devto_id": 4797175,
+   "devto_published_at": "2026-10-04T19:02:03.528Z"
   },
   {
    "blog_date": "2026-10-06",
@@ -138,15 +138,21 @@
   },
   {
    "blog_date": "2026-10-17",
-   "slug": "tmview-search-criteria-undocumented-modes",
-   "devto_id": 4959208,
-   "devto_published_at": "2026-11-01T22:03:09.416Z"
-  },
-  {
-   "blog_date": "2026-10-17",
    "slug": "apple-podcasts-episode-archive-is-not-there",
    "devto_id": 4870429,
    "devto_published_at": "2026-10-18T06:03:59.283Z"
+  },
+  {
+   "blog_date": "2026-10-17",
+   "slug": "openfda-count-shows-you-the-top-1000-and-never-says-so",
+   "devto_id": 4967941,
+   "devto_published_at": "2026-11-03T09:03:56.735Z"
+  },
+  {
+   "blog_date": "2026-10-17",
+   "slug": "tmview-search-criteria-undocumented-modes",
+   "devto_id": 4959208,
+   "devto_published_at": "2026-11-01T22:03:09.416Z"
   },
   {
    "blog_date": "2026-10-20",

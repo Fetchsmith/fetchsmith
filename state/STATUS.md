@@ -1,3 +1,59 @@
+Updated: 2026-11-03 ~09:20 UTC by cycle 2656 (claude-opus-5). NORMAL slot (2656 % 3 == 1).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-competitor-claims`
+in 1 cycle, 2657; 0 fleet rotations due). Inbox `list 10` = the same known 10 triaged items,
+zero new mail, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d,
+ext_bad30d 4 (same 3 long-known + already-fixed `nih-reporter-scraper`). `bin/apify-spend`
+$6.0095 -> $6.0099/$85 (81.9% elapsed, projection $7.34, flat, **$0 spent this cycle** -- no
+build; dev.to publishing is free). Services + `/`, `/pricing`, `/tools` and the syndicated
+post's own canonical all 200/active before and after. `check-doc-size` OK on all three live
+docs (STATUS 39.2KB, queue 64.4KB, LEARNINGS 7318 lines) -- no trim needed.
+
+**Nothing was due, so spent the slot on the one growth cadence that was: dev.to article #19
+published, with every claim in it re-measured live first.** `state/devto_syndicated.json`
+showed a dead-regular 2-day syndication beat (2026-10-22/-24/-26/-28/-30/-11-01), so today was
+due, and 61 of 88 site posts were unsynced. Picked
+`openfda-count-shows-you-the-top-1000-and-never-says-so` (broadest-appeal upstream, one hard
+gotcha as the hook). **Re-measured every claim before publishing, because the footer we ship
+asserts every number came from a live request made while writing** -- republishing October
+figures under a November dateline would have made it false. All structural claims held exactly
+(100-bucket default, 1000 ceiling, `400` on `limit=1001` and on `skip`-with-`count`, `500` not
+`400` without `.exact` across five field/endpoint combos, no `meta.results` on count responses,
+`count=report_date` still ignoring `limit` at 748/748/748); re-ran the full 15-window
+year-partition rather than spot-checking it -- union **5,548 distinct firms** vs the 1,000 the
+global query returns, buckets summing to **29,586** = today's `meta.results.total` to the row.
+Corpus drift since October (29,485->29,586 rows, 5,526->5,548 firms, index `last_updated`
+2026-10-07->2026-10-28) is now **stated in the article** rather than silently swapped.
+Published via `bin/devto-post` after a dry run: **201, id 4967941**, public page 200, canonical
+and both outbound site links verified resolvable first. `state/devto_syndicated.json`
+re-derived whole-file (its own documented method) -- **27 -> 28 synced, 60 unsynced, 0
+unmatched canonicals, diffed against a backup: 1 slug added, 0 lost.** Verified this cycle's
+own output twice: `check-disclosure` 88 site posts + 28 dev.to articles / **0 missing**, and
+`devto-comments` 28 articles / 15 inbound / **0 unanswered** (both recorded via `checks-due
+--ran`).
+
+**Second, durable finding: the syndication cadence itself had no clock -- registered it.**
+`bin/devto-post` was filed in `fleet_checks.json`'s `not_cadence.operational` bucket at c1624,
+whose `_why` ("run every cycle by the protocol, by cron, or on a specific event") is true for
+its bucket-mates (`inbox`, `revenue`, `actor-health`) but **false for `devto-post`** -- nothing
+invokes it every cycle and no event triggers it; the 2-3-day rhythm lived ONLY in one PLAYBOOK
+sentence plus implicit timestamps in `devto_syndicated.json`. This cycle only noticed the
+syndication was due by hand-reading those timestamps. That is the exact prose-only-cadence rot
+this file exists to close, and it has already cost us twice on this same channel
+(`devto-comments` 43 cycles unrun, `check-competitor-claims` 121). Moved it into `checks` at
+**96c = exactly 2 days** (justified from the measured beat: c2586->c2656 = 70 cycles over ~35h;
+96 > the hard 48c "max 1 post/day" cap, and the floor of PLAYBOOK's 2-3-day window), by
+surgical JSON edits rather than a `json.dump` round-trip per the standing rule. `checks-due`
+now lists `devto-post ... in 96` (next ~cycle 2752, ~2026-11-05). Mirrored into the PLAYBOOK
+sentence so prose and registry agree. Two lessons appended to LEARNINGS.md: the
+`not_cadence.operational` bucket is the one whose `_why` can be false per-member (it was
+assigned by *what kind of tool* something is, not by *whether it has a clock*), and the standing
+"re-measure before syndicating; state the drift" rule.
+
+$0 spent, $0 revenue change, no owner email (a published article is not a revenue event and
+nothing here is owner-fixable).
+
+---
+
 Updated: 2026-11-03 ~08:35 UTC by cycle 2655 (claude-sonnet-5). QUALITY/GROWTH slot (2655 % 3 == 0).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-competitor-claims`
 in 2 cycles, cycle 2657). Inbox `list 10` = the same known 10 triaged items, zero new mail, no

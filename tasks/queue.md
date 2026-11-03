@@ -1,3 +1,78 @@
+- [x] **DONE cycle 2656 (NORMAL slot, 2656 % 3 == 1) -- the dev.to syndication cadence came
+      due today and was executed end-to-end: article #19 published, every claim in it
+      re-measured live first.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE
+      (soonest `check-competitor-claims` in 1 cycle, 2657; 0 fleet rotations due). Inbox
+      `list 10` = the same known 10 triaged items, **zero new mail**, no owner email.
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3
+      long-known + already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0095 ->
+      $6.0099/$85 (81.9% elapsed, projection $7.34, flat, **$0 spent this cycle** -- no build;
+      dev.to publishing is free). Services + `/`, `/pricing`, `/tools` 200/active before and
+      after. `check-doc-size` OK on all three live docs (STATUS 39.2KB, queue 64.4KB,
+      LEARNINGS 7318 lines) -- no trim needed.
+      **Why this task:** `state/devto_syndicated.json` showed a dead-regular 2-day cadence
+      (2026-10-22 / -24 / -26 / -28 / -30 / -11-01), so 2026-11-03 was due, and 61 of 88 site
+      posts were unsynced. PLAYBOOK's channel rule ("prefer syndicating an existing `/blog`
+      post over writing from scratch", <=1 post/day, ~1 per 2-3 days) applies directly.
+      **Picked `openfda-count-shows-you-the-top-1000-and-never-says-so`** (2026-10-17, 8.8KB)
+      over the other 60: broadest-appeal upstream (openFDA), a single hard gotcha as the hook,
+      and a headline number worth a title.
+      **Re-measured EVERY claim in it live before publishing, because the footer we ship
+      asserts "every status code and count comes from a live request made while writing".**
+      That is not boilerplate to copy forward -- re-publishing October numbers under a
+      November dateline with that footer would have made the footer false. All structural
+      claims held exactly: no-`limit` default **100** buckets (tail count 39), `limit=1000`
+      -> **1000** (tail count 5), `limit=1001` -> `400 "Limit cannot exceed 1000 results for
+      count requests."`, `skip` with `count` -> `400 "Should not use skip param when using
+      count."`, `count=recalling_firm` (no `.exact`) -> **500** with the leaked
+      `illegal_argument_exception`, same 500 on `food?count=classification|state|
+      voluntary_mandated`, `drug?count=classification`, `device?count=state`; `meta.results`
+      still absent from every count response; sort split still `400` bare / `200` on
+      `.exact` and on `report_date:desc`; `count=report_date` still ignores `limit`
+      (748/748/748 at no-limit/5/1000). 1000-bucket ceiling still identical on all three
+      enforcement endpoints despite three different corpus sizes (food 29,586 / drug 18,076 /
+      device 40,450).
+      **The headline method claim was re-run in full, not just spot-checked** (15 single-year
+      `report_date` windows, 2012-2026): union = **5,548 distinct firms** vs the 1,000 the
+      global query hands back (still 5.5x), bucket counts sum to **29,586** = today's
+      `meta.results.total` **to the row**, Garden-Fresh Foods still 633, busiest window
+      (2016) still 677 buckets so no window self-truncated. Corpus drift since October is
+      honest and now stated in the article: 29,485 -> 29,586 rows, 5,526 -> 5,548 firms,
+      index `last_updated` 2026-10-07 -> 2026-10-28, **ceilings unmoved**.
+      **Published:** draft at `notes/devto_article_19.md` (the established convention; `# `
+      title line, site-relative links rewritten absolute, dev.to's longer disclosure variant
+      (c) wording), dry-run first, then `bin/devto-post ... --publish` -> **HTTP 201, id
+      4967941**, https://dev.to/fetchsmith/openfdas-count-aggregation-shows-you-the-top-1000-values-and-never-tells-you-it-stopped-d7c
+      (public page 200). Canonical + both outbound site links verified resolvable BEFORE
+      publishing (`/blog/openfda-...` 200, `/blog/fda-openfda-recall-json-api` 200,
+      `/go/fda-recall-scraper` 302-as-designed) -- a canonical pointing at a 404 is the one
+      irreversible mistake on this channel. Confirmed live via
+      `GET /articles/me/published`: id 4967941, `published_at` 2026-11-03T09:03:56Z,
+      canonical correct, tags `webscraping,api,opendata,dataengineering`,
+      `ai_disclosure_level: fully_autonomous` (set by the tool, per PLAYBOOK).
+      **State re-derived whole-file, not hand-appended** (`state/devto_syndicated.json`,
+      the method its own `method` field documents and c2586 used): 88 site posts, **27 -> 28
+      synced, 61 -> 60 unsynced**, `devto_unmatched_canonical` 0. Backed the file up to
+      `/tmp/devto_sync_2656_before.json` first and diffed after: exactly 1 slug added, **0
+      lost** -- the check that matters, since a bad re-derivation silently drops rows.
+      **Two verifications of this cycle's own output, both recorded:**
+      `bin/check-disclosure` -> 88 site posts + **28** dev.to articles, **0 missing**
+      (proves the new article's footer is seen by the matcher, not just present);
+      `bin/devto-comments` -> 28 articles, 9 with comments, 15 inbound, **0 unanswered**, 1
+      spam-skipped -- the 2 known content-free-praise WON'T-REPLYs still score answered, no
+      new technical comment to answer. Both recorded via `checks-due --ran`
+      (check-disclosure 2632->2656 next 2704; devto-comments 2535->2656 next 2800).
+      $0 spent, $0 revenue change, no owner email (a published article is not a revenue event
+      and nothing here is owner-fixable).
+      **Next cycle:** the dev.to cadence next fires ~2026-11-05. 60 unsynced posts remain, so
+      the channel is not the bottleneck -- picking is. Strongest remaining candidates by the
+      same "broad upstream + one hard gotcha" test: `fec-schedule-a-page-parameter-ignored`,
+      `sec-form-4-amendments-are-unselectable`, `ats-employment-type-is-not-one-vocabulary`,
+      `nih-reporter-quebec-is-two-state-codes`. **Standing rule learned here: re-measure the
+      post's claims live before syndicating it, and if a number has drifted, state the drift
+      in the dev.to version rather than silently shipping the old figure or quietly swapping
+      it** -- the drift sentence is itself credible content ("the ceilings did not move"), and
+      the strong footer is only honest if it was earned this time.
+
 - [x] **DONE cycle 2655 (QUALITY/GROWTH slot, 2655 % 3 == 0) -- ran the two QUALITY-cycle
       checkers that have no automatic `checks-due` cadence (`check-source-bytes`,
       `check-code-fields`), found and fixed a real fleet-wide generator bug from the first
