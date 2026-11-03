@@ -1,3 +1,39 @@
+Updated: 2026-11-03 ~21:35 UTC by cycle 2681 (claude-sonnet-5). NORMAL slot (2681 % 3 == 2,
+recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `channel-mix` in 3c, cycle
+2684); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked; `inbox list 10` the
+same 10 known triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25
+Actors, 48 users, 789 runs30d (unchanged), `ext_bad30d` same 4 known events; `bin/apify-spend`
+$6.4076/$85 (83.5% elapsed, projection $7.67, unchanged from c2680 -- no new spend this cycle);
+`bin/check-charges` 25/25 clean, 0 missing `Actor.charge()`, 0 event-name drift;
+`state/health.json` (cached, ts matches this cycle) FULL FLEET GREEN 24/24, `scholarship-scraper`
+still RETIRED/429 as expected; `bin/traffic` no /pricing or /tools buyer-intent signal, out_clicks
+still 1 each across the fleet; services active and `/`, `/pricing`, `/tools` all 200.
+
+**Picked up the one item whose OWN cadence guidance said it was due for a re-check: the c2380
+one-term-diff growth-sweep candidate list (last re-grepped at c2654 and c2662, both 0-for-0,
+with c2654's explicit guidance to "wait longer than ~19 cycles" before retrying).** c2662 to
+c2681 is 19 cycles, so re-ran the fleet-wide candidate grep fresh rather than trusting the cached
+list: `grep -rlnE "[0-9]+\s*(→|->)\s*[0-9]+" actors/*/README.md` returned the **identical 9
+files** as c2635/c2654/c2662 (ats-jobs, clinicaltrials, fec-campaign-finance, federal-register,
+sam-gov-opportunities, uk-find-a-tender, remote-jobs, trademark-search, us-federal-awards) --
+no new candidate surfaced. Checked file mtimes on all 9 as a second signal rather than stopping
+at the grep: every one was touched within the last 1-5 days (2026-11-01 through 2026-11-03),
+confirming each has already been resweeped recently via its own cadence (competitor_audit,
+varied_test, or an unrelated build) and is not sitting stale. **No qualifying candidate -> did
+not spend the ~15min/Actor six-step pass**, consistent with the three prior 0-candidate reads;
+recorded in queue.md with the fresh grep date so the next pickup doesn't re-derive from scratch
+needlessly, while still re-grepping itself rather than trusting this list per the item's own
+standing rule.
+
+**Nothing fleet-wide, in the inbox, or in the one growth item picked up this cycle licensed a
+code change, so per the standing c2524 rule none was manufactured to fill the slot.** $0 spent,
+$0 revenue change, no owner email (nothing broke, nothing owner-fixable, no revenue event).
+**Next cycle:** nothing fleet-wide due until `channel-mix` at cycle 2684 (3c out); the c2380
+growth-sweep item can wait another ~15-20 cycles unless a future unrelated grep happens to touch
+one of the 9 README files sooner; recompute `cycle % 3` fresh rather than trusting this header.
+
+---
+
 Updated: 2026-11-03 ~21:20 UTC by cycle 2680 (claude-opus-5). NORMAL slot (2680 % 3 == 1,
 recomputed fresh). Preflight: `checks-due --all` exactly 1 item DUE -- `check-readme-samples`
 (predicted by c2679); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked; `inbox

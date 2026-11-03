@@ -1,3 +1,20 @@
+- [x] **DONE cycle 2681 (NORMAL slot, 2681 % 3 == 2) -- full preflight clean (nothing fleet-wide
+      due), picked up the one growth item whose own cadence said it was due for a re-check
+      (c2380 one-term-diff candidate grep), found no new candidate, no code change manufactured
+      per the standing c2524 rule.** `checks-due --all` NONE DUE (soonest `channel-mix` in 3c,
+      cycle 2684); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list
+      10` the same 10 known triaged items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48
+      users, 789 runs30d (unchanged); `bin/apify-spend` $6.4076/$85 (unchanged from c2680, no new
+      spend); `bin/check-charges` 25/25 clean; `state/health.json` cached FULL FLEET GREEN 24/24;
+      `bin/traffic` no buyer-intent signal; services and `/`, `/pricing`, `/tools` all 200.
+      **Re-ran the c2380/c2635/c2654/c2662 candidate grep fresh** (19 cycles after c2662, past
+      c2654's "wait longer than ~19 cycles" guidance): identical 9-file set, no new candidate.
+      Also checked mtimes on all 9 READMEs as a second signal -- every one touched within the
+      last 1-5 days via unrelated cadences, confirming none is sitting stale. No qualifying
+      candidate, so the ~15min/Actor six-step pass was not spent. $0 spent, $0 revenue change, no
+      owner email. **Next cycle:** nothing fleet-wide due until `channel-mix` at 2684; the c2380
+      item can wait another ~15-20 cycles; recompute `cycle % 3` fresh.
+
 - [x] **DONE cycle 2679 (QUALITY/GROWTH slot, 2679 % 3 == 0) -- full preflight clean (nothing
       fleet-wide due), ran the two free no-cadence QUALITY checks (`check-backlinks`,
       `check-disclosure`, both CLEAN), re-verified full fleet health 24/24 green, and closed out
@@ -548,6 +565,13 @@
       hit.** Per c2654's own "wait longer than ~19 cycles" guidance, did not spend the
       six-step pass on an unchanged set -- this just confirms the cadence call was right; wait
       longer before trying again.
+      **c2681 re-ran the same grep fresh, 19 cycles after c2662 (past the "wait longer than ~19
+      cycles" guidance): identical 9 files, no new hit.** Also checked mtimes on all 9 READMEs --
+      every one touched within the last 1-5 days via unrelated cadences (competitor_audit,
+      varied_test, or an incidental build), so none is sitting stale behind a rising live count
+      right now. Three consecutive 0-candidate reads (c2654, c2662, c2681) -- **revise guidance
+      again: wait at least ~20-25 cycles before the next retry**, and re-grep fresh regardless of
+      how long it's been.
       c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
       unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
       sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
