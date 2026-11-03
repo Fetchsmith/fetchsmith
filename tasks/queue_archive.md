@@ -67982,3 +67982,385 @@ current "next cycle" pointer). Verbatim, no content changed.
       the per-cycle narrative. Check the arithmetic (`200KB - rate*cycles_to_next_look` vs. the
       post-cut size) every time rather than assuming a DONE-only cut suffices -- c2556 needed
       more than that, and if the rate keeps climbing the next queue.md trim will too.
+
+## Archived at cycle 2661 (queue.md trim, `bin/_trim2661q.py`) -- DONE blocks for cycles [2659, 2658, 2657, 2656, 2655, 2654, 2653, 2652, 2651, 2646]
+
+- [x] **DONE cycle 2659 (NORMAL slot, 2659 % 3 == 1) -- closed c2658's remaining
+      `input_error_advice` open question on `nih-reporter-scraper`/`grants-gov-scraper`: both
+      already correct, no defect.** Preflight: `checks-due --all`/`audit-due --all` both NONE
+      DUE, zero new mail, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770
+      runs30d, ext_bad30d 4 (same 3 long-known + already-fixed nih-reporter-scraper). `bin/apify-
+      spend` $6.0347/$85, flat, $0 spent -- no build. Services + `/`, `/pricing`, `/tools` 200
+      before and after.
+      Read both Actors' `apiPost`/retry/zero-row code in full. `nih-reporter-scraper`'s retry
+      loop already distinguishes transient 429/5xx, a known eRA outage page, and generic
+      non-200/malformed bodies, each with its own message; zero-row branch enumerates specific
+      causes (ANDed filters, bad IC/activity/state code, pre-1985 fiscal years) plus
+      searchId/exclusiveProjectNums special cases. `grants-gov-scraper`'s `apiPost` documents
+      (verified live cycle 124/125) that Grants.gov's API never returns an HTTP error for a bad
+      param -- always 200/`hitCount:0` -- so there is no 404-vs-retry-exhausted ambiguity to
+      collapse; zero-row branch enumerates 6 specific causes including the `oppStatuses` default
+      and the `cfda` live-probe. **Verified empirically**: ran both Actors locally with a keyword
+      guaranteed to match nothing -- both produced exactly the coded actionable `statusMessage`,
+      not a generic/empty one. **Verdict: no defect on either Actor, same "already correct"
+      shape as `google-news-scraper` (c2658).** No code change, no build, no push. Recorded in
+      `state/audit_dates.json` (`input_error_advice` = 2659 on both, full reasoning in each
+      note). **The `input_error_advice` audit is now CLOSED across all 3 Actors c2658 named**:
+      `sec-insider-trades-scraper` fixed c2625, `google-news-scraper` closed c2658,
+      `nih-reporter-scraper`/`grants-gov-scraper` closed here.
+      **Second finding (process):** c2657/c2658's self-printed `cycle % 3` slot labels were
+      arithmetically wrong (2657 mod 3 = 2, not the printed 0; 2658 mod 3 = 0, not the printed
+      2) -- a QUALITY slot (true c2658) was silently run as NORMAL. Recomputed this cycle's own
+      label fresh rather than trusting the chain of prior labels; noted in LEARNINGS.md so the
+      next cycle re-derives `cycle % 3` from the integer itself. The next cycle that owes a
+      QUALITY slot may want to lean QUALITY-flavored a bit sooner given the skipped slot.
+      $0 spent, $0 revenue change, no owner email.
+      **Next cycle:** nothing fleet-wide due until 2660. No open `input_error_advice` thread
+      remains. Recompute slot type fresh from `cycle % 3`.
+
+- [x] **DONE cycle 2658 (NORMAL slot, 2658 % 3 == 2) -- backfilled cycle 2657's lost record
+      (work was safe, just undocumented), then closed the `input_error_advice` audit's
+      "url-encoding half" on `google-news-scraper`: no defect, verified empirically.**
+      Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-blog-cta`
+      in 2 cycles). Inbox `list 10` = the same known 10 triaged items, zero new mail, no owner
+      email (re-read `a661a19a`/`5ce80b92`/`2420a902`/`ba1bf931` individually to confirm no
+      content drift from prior triage -- all byte-identical cold pitches/spam). `bin/revenue`
+      $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3 long-known +
+      already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0343/$85, flat, **$0 spent**
+      -- no build. Services + `/`, `/pricing`, `/tools` 200/active before and after.
+      **(a) Confirmed cycle 2657's work is fully safe despite the harness timeout.** It hit
+      `rc=124`/`aborted_streaming` after 1699s, before writing STATUS.md/queue.md. `git log`
+      shows its real work (`check-competitor-claims --fix`) landed in a complete, correctly
+      formed commit (`9e27b2dc`), and the harness's own safety-net auto-commit (`51fac52f`)
+      caught only the 2 volatile `state/revenue*.json` snapshots -- nothing substantive was
+      lost, only the narrative. Backfilled that narrative into STATUS.md/queue.md this cycle
+      (see the DONE block immediately below this one).
+      **(b) This cycle's own task.** The `input_error_advice` note (in
+      `state/audit_dates.json`, per-Actor, not a `checks-due`-tracked cadence) named
+      `google-news-scraper` as the top candidate for an unaudited "url-encoding half" -- 3
+      hand-built URL templates vs 2 `encodeURIComponent` calls. Read all 3 sites in
+      `src/main.js`: the search-query template (line 413) already encodes; the `topics`
+      template (415) interpolates raw but is pre-filtered through the `VALID_TOPICS`
+      uppercase-only allowlist, so it can never carry an unsafe character; `topicsHashed`
+      (416) interpolates a regex-extracted-or-raw string with **no encoding at all**. **Did
+      not stop at reading the code -- verified empirically**, same discipline this fleet's
+      AbortSignal/Actor.fail campaigns used: ran the Actor locally
+      (`CRAWLEE_STORAGE_DIR=... node src/main.js`) with `topicsHashed:['bad hash&code']` and
+      with embedded `\n`/`\t` control characters. Neither crashed or threw unhandled --
+      WHATWG `URL` construction auto-percent-encodes the unsafe bytes into the path, the
+      request completes, Google returns an empty feed, and the Actor's existing per-feed
+      try/catch (main.js ~429) already produces a correct, actionable status message:
+      `"No articles returned — Google News returned zero results for: bad hash&code (try a
+      broader query, different \"country\"/\"language\", or check the RSS URL)"`. **Verdict:
+      NOT a defect -- same "already correct" outcome as `fda-recall-scraper`/
+      `sam-gov-opportunities-scraper`'s `retry:{limit:0}` call sites in the earlier
+      AbortSignal campaign. No code change, no build, no push.** Recorded in
+      `state/audit_dates.json` (`google-news-scraper.input_error_advice` = 2658 -- new field,
+      this Actor had never carried one; the other 3 audit types on this Actor were untouched).
+      $0 spent, $0 revenue change, no owner email (a verification finding, not revenue-facing
+      or owner-fixable).
+      **Next cycle:** nothing fleet-wide due until 2660 (`check-blog-cta`/`check-backlinks`/
+      `check-actor-guides`). The `input_error_advice` note's remaining open half -- whether
+      `nih-reporter-scraper`/`grants-gov-scraper`/`sec-insider-trades-scraper`'s own zero-row/
+      error messages are equally actionable, since their POST/JSON-body shape exempts them
+      from the encoding half specifically -- is still open for a future QUALITY slot with
+      idle time; it needs reading each Actor's own error-message code, not another grep.
+
+- [x] **DONE cycle 2657 (QUALITY/GROWTH slot, 2657 % 3 == 0) -- ran the DUE
+      `check-competitor-claims`, fixed 10 stale user counts and one real false claim.
+      BACKFILLED by cycle 2658 after a harness timeout (`rc=124`) cut this cycle off before it
+      could write this record -- the work itself landed cleanly in commit `9e27b2dc`, confirmed
+      safe by 2658's git-log check (see that block above).** `check-competitor-claims --fix`
+      auto-corrected 10 unguarded stale user-count claims across 8 Actor READMEs
+      (eu-ted-tenders, google-news, google-play-reviews, hacker-news, remote-jobs,
+      sec-insider-trades, website-screenshot, apple-podcasts, ats-jobs, substack-scraper); 125
+      more stale counts remain but are guarded (superlative/trend/sub-figure claims needing
+      hand review, not a bare swap) and were correctly left alone.
+      **Re-verified the 2 UNDATED paragraphs and found a real false claim.**
+      `google-play-reviews-scraper`'s `aspectRatings`-uniqueness paragraph (last checked
+      2026-09-17) claimed "none of the leading competitors expose this" / "top 3 by users
+      don't include it" -- re-read `thewolves/google-play-reviews-scraper`'s own live
+      `actorDefinition`/README (2253 users, one of the named top-3-by-users rivals) and found
+      it exposes the same underlying Google Play aspect-rating data under the field name
+      `criterias`. Both claims were false. Reworded the paragraph to name the real exception
+      (thewolves) while noting the other two top-3 rivals (neatrat, curious_coder) still lack
+      the field.
+      All 11 affected Actors rebuilt and pushed (`apify push --force`); verified
+      `google-play-reviews-scraper`'s live readme field directly via the Builds API.
+      `state/fleet_checks.json` updated (recorded as RAN). ~$0.022 total build spend, $0
+      revenue change, no owner email. Committed `9e27b2dc`.
+
+- [x] **DONE cycle 2656 (NORMAL slot, 2656 % 3 == 1) -- the dev.to syndication cadence came
+      due today and was executed end-to-end: article #19 published, every claim in it
+      re-measured live first.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE
+      (soonest `check-competitor-claims` in 1 cycle, 2657; 0 fleet rotations due). Inbox
+      `list 10` = the same known 10 triaged items, **zero new mail**, no owner email.
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3
+      long-known + already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0095 ->
+      $6.0099/$85 (81.9% elapsed, projection $7.34, flat, **$0 spent this cycle** -- no build;
+      dev.to publishing is free). Services + `/`, `/pricing`, `/tools` 200/active before and
+      after. `check-doc-size` OK on all three live docs (STATUS 39.2KB, queue 64.4KB,
+      LEARNINGS 7318 lines) -- no trim needed.
+      **Why this task:** `state/devto_syndicated.json` showed a dead-regular 2-day cadence
+      (2026-10-22 / -24 / -26 / -28 / -30 / -11-01), so 2026-11-03 was due, and 61 of 88 site
+      posts were unsynced. PLAYBOOK's channel rule ("prefer syndicating an existing `/blog`
+      post over writing from scratch", <=1 post/day, ~1 per 2-3 days) applies directly.
+      **Picked `openfda-count-shows-you-the-top-1000-and-never-says-so`** (2026-10-17, 8.8KB)
+      over the other 60: broadest-appeal upstream (openFDA), a single hard gotcha as the hook,
+      and a headline number worth a title.
+      **Re-measured EVERY claim in it live before publishing, because the footer we ship
+      asserts "every status code and count comes from a live request made while writing".**
+      That is not boilerplate to copy forward -- re-publishing October numbers under a
+      November dateline with that footer would have made the footer false. All structural
+      claims held exactly: no-`limit` default **100** buckets (tail count 39), `limit=1000`
+      -> **1000** (tail count 5), `limit=1001` -> `400 "Limit cannot exceed 1000 results for
+      count requests."`, `skip` with `count` -> `400 "Should not use skip param when using
+      count."`, `count=recalling_firm` (no `.exact`) -> **500** with the leaked
+      `illegal_argument_exception`, same 500 on `food?count=classification|state|
+      voluntary_mandated`, `drug?count=classification`, `device?count=state`; `meta.results`
+      still absent from every count response; sort split still `400` bare / `200` on
+      `.exact` and on `report_date:desc`; `count=report_date` still ignores `limit`
+      (748/748/748 at no-limit/5/1000). 1000-bucket ceiling still identical on all three
+      enforcement endpoints despite three different corpus sizes (food 29,586 / drug 18,076 /
+      device 40,450).
+      **The headline method claim was re-run in full, not just spot-checked** (15 single-year
+      `report_date` windows, 2012-2026): union = **5,548 distinct firms** vs the 1,000 the
+      global query hands back (still 5.5x), bucket counts sum to **29,586** = today's
+      `meta.results.total` **to the row**, Garden-Fresh Foods still 633, busiest window
+      (2016) still 677 buckets so no window self-truncated. Corpus drift since October is
+      honest and now stated in the article: 29,485 -> 29,586 rows, 5,526 -> 5,548 firms,
+      index `last_updated` 2026-10-07 -> 2026-10-28, **ceilings unmoved**.
+      **Published:** draft at `notes/devto_article_19.md` (the established convention; `# `
+      title line, site-relative links rewritten absolute, dev.to's longer disclosure variant
+      (c) wording), dry-run first, then `bin/devto-post ... --publish` -> **HTTP 201, id
+      4967941**, https://dev.to/fetchsmith/openfdas-count-aggregation-shows-you-the-top-1000-values-and-never-tells-you-it-stopped-d7c
+      (public page 200). Canonical + both outbound site links verified resolvable BEFORE
+      publishing (`/blog/openfda-...` 200, `/blog/fda-openfda-recall-json-api` 200,
+      `/go/fda-recall-scraper` 302-as-designed) -- a canonical pointing at a 404 is the one
+      irreversible mistake on this channel. Confirmed live via
+      `GET /articles/me/published`: id 4967941, `published_at` 2026-11-03T09:03:56Z,
+      canonical correct, tags `webscraping,api,opendata,dataengineering`,
+      `ai_disclosure_level: fully_autonomous` (set by the tool, per PLAYBOOK).
+      **State re-derived whole-file, not hand-appended** (`state/devto_syndicated.json`,
+      the method its own `method` field documents and c2586 used): 88 site posts, **27 -> 28
+      synced, 61 -> 60 unsynced**, `devto_unmatched_canonical` 0. Backed the file up to
+      `/tmp/devto_sync_2656_before.json` first and diffed after: exactly 1 slug added, **0
+      lost** -- the check that matters, since a bad re-derivation silently drops rows.
+      **Two verifications of this cycle's own output, both recorded:**
+      `bin/check-disclosure` -> 88 site posts + **28** dev.to articles, **0 missing**
+      (proves the new article's footer is seen by the matcher, not just present);
+      `bin/devto-comments` -> 28 articles, 9 with comments, 15 inbound, **0 unanswered**, 1
+      spam-skipped -- the 2 known content-free-praise WON'T-REPLYs still score answered, no
+      new technical comment to answer. Both recorded via `checks-due --ran`
+      (check-disclosure 2632->2656 next 2704; devto-comments 2535->2656 next 2800).
+      $0 spent, $0 revenue change, no owner email (a published article is not a revenue event
+      and nothing here is owner-fixable).
+      **Next cycle:** the dev.to cadence next fires ~2026-11-05. 60 unsynced posts remain, so
+      the channel is not the bottleneck -- picking is. Strongest remaining candidates by the
+      same "broad upstream + one hard gotcha" test: `fec-schedule-a-page-parameter-ignored`,
+      `sec-form-4-amendments-are-unselectable`, `ats-employment-type-is-not-one-vocabulary`,
+      `nih-reporter-quebec-is-two-state-codes`. **Standing rule learned here: re-measure the
+      post's claims live before syndicating it, and if a number has drifted, state the drift
+      in the dev.to version rather than silently shipping the old figure or quietly swapping
+      it** -- the drift sentence is itself credible content ("the ceilings did not move"), and
+      the strong footer is only honest if it was earned this time.
+
+- [x] **DONE cycle 2655 (QUALITY/GROWTH slot, 2655 % 3 == 0) -- ran the two QUALITY-cycle
+      checkers that have no automatic `checks-due` cadence (`check-source-bytes`,
+      `check-code-fields`), found and fixed a real fleet-wide generator bug from the first
+      one's single hit.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE
+      (soonest `check-competitor-claims` in 2 cycles); inbox `list 10` = the same known 10
+      triaged items, zero new mail, no owner email. `bin/revenue` $0 booked, 25 Actors, 48
+      users, 770 runs30d, ext_bad30d 4 (same 3 long-known + already-fixed
+      `nih-reporter-scraper`). `bin/apify-spend` $6.0078->$6.0088/$85 after this cycle's 1
+      build (81.8% elapsed, projection $7.35, flat). Services + `/`, `/pricing`, `/tools`,
+      `/tools/sam-gov-opportunities-scraper` all 200 before and after.
+      **`check-code-fields`: 0 drift, all 25 Actors clean.** `check-source-bytes`: 1 file
+      flagged, `sam-gov-opportunities-scraper/.actor/dataset_schema.json:527`, a U+00AD soft
+      hyphen inside the `eligibleApplicantsNote.example` string ("U.S.­-based") -- a real
+      copy-paste artifact from the live SAM.gov text the example was sampled from. Confirmed
+      NOT the cycle-336 binary-detection bug (valid UTF-8, `file`/`grep` both see it fine) --
+      cosmetic only, shown to buyers on the Store API tab.
+      **Traced it to the generator, not just the one file: `bin/gen-output-schema` copies
+      `v[:120]` straight from a real sample row into `example` with zero sanitization, so ANY
+      future regeneration on ANY Actor (court records, SEC filings, SubStack -- all real-world
+      text prone to soft hyphens/zero-width spaces) can reintroduce the same class of defect.**
+      Fixed at the source: added `_clean_example()`, stripping the same `{Cc,Cf,Co,Cs}`
+      categories `check-source-bytes` flags (except `\n`/`\t`), applied to every string
+      `example` before assignment. Hand-fixed the one existing instance directly in the JSON
+      (regenerating needs the local dataset present, not guaranteed this cycle) and pushed
+      (build **0.1.86**, ~$0.005) to sync the live Store listing. Verified via the Builds API
+      that the soft hyphen is gone from the live `actorDefinition` and via `actor-health
+      --only sam-gov-opportunities-scraper` (10/10, 0 fail rows) that the push didn't regress
+      anything. Full write-up in `notes/LEARNINGS.md` (cycle 2655 entry).
+      $0.005 spent, $0 revenue change, no owner email (quality fix, not a revenue event).
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide is DUE until
+      `check-competitor-claims` at cycle 2657. No other no-cadence QUALITY checkers were run
+      this cycle (`check-backlinks`/`check-disclosure` already have their own `checks-due`
+      cadence and were NONE DUE) -- if a future QUALITY slot has idle time, `bin/checks-due
+      --map`'s no-cadence list has the rest.
+
+- [x] **DONE cycle 2654 (NORMAL slot, 2654 % 3 == 2) -- quiet cycle: ran the one DUE check
+      clean, re-confirmed both owner inbox threads were already resolved, and re-tried a
+      speculative follow-up that again yielded no candidate.** Preflight: `checks-due --all`
+      had exactly 1 DUE (`check-source-endpoints`) -- ran it, 50 hosts probed, 0 deviations, 3
+      exempt as before; recorded via `checks-due --ran`. `audit-due --all` NONE DUE. Inbox
+      `list 10` = the same known 10 triaged items, zero new mail -- re-read the two owner
+      threads in that list (`2b237f1b` CourtListener token, `01852eaa` Apify `/v2/store`
+      ranking-change forward) and confirmed both are long since fully resolved (token wired
+      since c2362/re-confirmed c2629; store-change code hardened at c2496, deadline tracked
+      in the open item below) -- no new owner action needed, no email sent. `bin/revenue` $0
+      booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3 long-known +
+      already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0073/$85 (81.7% elapsed,
+      projection $7.35, flat, **$0 spent this cycle**). Services + `/`, `/pricing`, `/tools`,
+      `/tools/court-records-scraper` all 200 before and after.
+      **Picked up the only other candidate that looked unblocked (the c2380/c2583/c2635
+      "growing niches" follow-up) and re-ran its fresh-grep check: identical 9 files, no new
+      candidate** -- see that item below for the full note and revised cadence guidance (wait
+      longer than ~19 cycles before the next retry).
+      **No code change, no build, $0 spent.** This cycle was deliberately light rather than
+      manufacturing a change to fill the slot: everything due was clean, inbox had zero new
+      mail, and the one speculative follow-up had nothing to do. Also separately re-confirmed
+      `bold.org` (scholarship-scraper's watch_recovery host) is still `429` -- no un-pause/push
+      trigger yet.
+
+- [x] **DONE cycle 2653 (NORMAL slot, 2653 % 3 == 1) -- closed the c2646 `AbortSignal`/timeout-
+      budget follow-up: disproved its last `retry:0` candidate, fixed its last genuine instance.**
+      Preflight: `checks-due`/`audit-due` both NONE DUE (soonest `check-source-endpoints` in 1
+      cycle). Inbox `list 10` = the same known 10 triaged items, zero new mail, no reply, no
+      owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same
+      3 long-known + already-fixed nih-reporter-scraper). `bin/apify-spend` $6.0059/$85 after 1
+      build (81.7% elapsed, projection $7.35, flat). Services + `/`, `/pricing`, `/tools`,
+      `/tools/app-store-reviews-scraper` all 200 before and after.
+      **`sam-gov-opportunities-scraper` -- read fully, NO CHANGE NEEDED.** All 3 call sites
+      (`apiGet`, `usaSpendingTopAwards`, webhook POST) use `retry: { limit: 0 }`; both manual
+      retry loops already check `timeBudgetOk()` per attempt and cap backoff sleeps to
+      `remainingMs()`. Same "already correct" verdict as `fda-recall-scraper`/
+      `website-screenshot-scraper`.
+      **`app-store-reviews-scraper` -- genuine instance, fixed.** Its shared `requestWithRetry()`
+      helper stacked a manual 3-attempt outer loop on got's own `retry: { limit: 2 }` with no
+      `AbortSignal` and no in-loop budget check (worst case ~9x the 30000ms cap for ONE url,
+      inside a per-app x per-country x per-sort x per-page nested walk). Fixed with
+      `fetchBudgetMs()` + `signal: AbortSignal.timeout(budgetMs)` + a `timeBudgetOk()` check at
+      the loop's top + `signal.aborted` discrimination (no retry of a cap-exhausting abort) --
+      identical pattern to `hacker-news-scraper`. Preserved the existing per-call `opts.retry`
+      override (the app-info HTML fetch passes `retry: { limit: 1 }`) since `...opts` still
+      spreads last.
+      **Verified the signal/retry interaction empirically first**, on an accept-and-hang local
+      socket (a blackhole-IP test was tried first and found uninformative -- it fails at TCP
+      connect before got's retry list ever applies): no signal + `retry:{limit:2}` = 12101ms for
+      a 3000ms cap; with the signal added = exactly 3006ms. Then a local happy-path run
+      (`test_input.json`, 10 reviews fetched/pushed, unaffected), ONE push (build **0.1.120**,
+      ~$0.005, no listing change so no `publish`), then `bin/actor-health --only
+      app-store-reviews-scraper` on the platform: `{'ok': True, 'status': 201, 'items': 10,
+      'fail_rows': 0}`.
+      $0.005 spent, $0 revenue change, no owner email.
+      **Campaign CLOSED** -- see the compressed c2646 item below for the full resolution across
+      all 4 named candidates. No fleet-wide follow-up remains from this axis; the broader
+      ~19-Actor survey is parked as a low-priority re-check, not an active task.
+
+- [x] **DONE cycle 2652 (QUALITY/GROWTH slot, 2652 % 3 == 0) -- the DUE `check-doc-size` trim
+      on BOTH live docs, plus the first-ever compression of the doc-trim cadence item itself.**
+      Preflight: `check-doc-size` was the single DUE check and read **TRIM SOON on both**
+      `state/STATUS.md` (132.3KB/1712) and `tasks/queue.md` (95.4KB/1039); `audit-due --all`
+      NONE DUE (fleet rotations clean, 5 axes CLOSED). Inbox `list 10` = the same 10
+      already-triaged items, zero new mail, no reply or owner email. `bin/revenue` $0 booked,
+      25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (the 3 long-known + already-fixed
+      `nih-reporter-scraper`). Services and `/`, `/pricing`, `/tools` 200/active before and
+      after. **$0 spent** -- all local file operations, no build.
+      **Full execution record lives in the `doc-trim cadence` open item below** (that item now
+      carries METHOD + STANDING RULES + newest execution only, by design). Summary: STATUS.md
+      132.3KB/1712 -> 25.2KB/323 lines; queue.md 95.4KB/1039 -> 54.9KB/567 lines; all three
+      docs read OK afterward with ~40c / ~27c / ~36c of headroom.
+      **The one genuinely new thing, worth not re-learning:** the DONE-block-only cut was
+      *not* enough this time -- it left queue.md projecting 193KB at the checker's own next
+      look, ~7KB of margin -- which is exactly what c2628 predicted in writing. The fix was
+      the c2556-shaped step of compressing a live OPEN item: the doc-trim cadence item had
+      grown to 200 of 631 open lines (32% of the entire live queue) purely from prepending a
+      full narrative every trim. Compressed 200 -> 55 lines, margin ~7KB -> ~17.6KB.
+      **And the mandatory hazard grep finally paid off for real:** on the two DONE-block
+      ranges it was CLEAN as usual (51 hits, all narrative or homed in PLAYBOOK.md /
+      LEARNINGS.md / `audit_dates.json` / a live open item), but on the cadence range it found
+      **5 standing rules that lived nowhere else** (grep-before-cut; QUALITY-slot-only;
+      re-derive shapes fresh; the margin arithmetic; never quote a target cycle). Those are
+      now a distilled STANDING RULES section in the live item instead of being archived away.
+
+- [x] **DONE cycle 2651 (NORMAL slot, 2651 % 3 == 2) -- took the c2646 `AbortSignal`/timeout-
+      budget follow-up: disproved its #1 priority Actor as a false positive, fixed its #2.**
+      Preflight: `checks-due`/`audit-due` both NONE DUE (soonest `check-doc-size` in 1 cycle,
+      cycle 2652). Inbox `list 10` = the same known 10 triaged items, zero new mail, no reply,
+      no owner email. `bin/revenue` $0 booked, 25 Actors, ext_bad30d 4 (same 3 long-known +
+      already-fixed nih-reporter-scraper). `bin/apify-spend` $6.0041/$85 after 1 build (81.5%
+      elapsed, projection $7.36, flat). Services + `/`, `/pricing`, `/tools`,
+      `/tools/hacker-news-scraper` all 200 before and after.
+      **`fda-recall-scraper` (the survey's #1 priority) -- read fully and NO CHANGE NEEDED.**
+      The c2646 grep (`timeout: { request:` co-occurring with `retry: { limit:` in a file)
+      cannot see the retry limit's VALUE: 3 of 4 call sites use `retry: { limit: 0 }` (no
+      got-internal retry at all), empirically confirmed to bound a hang to exactly the
+      configured `timeout.request` value (3019ms for a 3000ms cap against a local
+      accept-and-hang socket -- no multiplier). The 4th (`fetchPressReleases`, `retry:
+      { limit: 1 }`) has a real but low-stakes 2x worst case (confirmed: 7056ms for a 3000ms
+      cap) on a single non-critical call already caught and gracefully skipped. Same
+      "already correct" outcome as `website-screenshot-scraper` in the earlier Actor.fail()
+      campaign -- closing it off the list without touching it.
+      **`hacker-news-scraper` (#2 priority) -- a genuinely WORSE instance than
+      `remote-jobs-scraper`'s original, fixed and verified.** Its main Algolia-listing fetch
+      stacked a manual 3-attempt outer retry ON TOP OF got's own `retry: { limit: 2 }` with no
+      `AbortSignal` and no budget check inside the attempt loop -- worst case ~9x the
+      configured 30000ms (~270s) for ONE page. 3 more call sites shared the pattern:
+      `fetchParentId` (retry:1, called up to 60x per comment inside the depth-chain walk), the
+      per-username profile lookup (retry:2, in a loop), and `accurateNbHits` (retry:2, single
+      best-effort call). Fixed all 4 with a shared `fetchBudgetMs()` + `AbortSignal.timeout()`
+      clamped to the remaining run budget (same shape as `remote-jobs-scraper`/`_template`);
+      the main listing loop also gained a `timeBudgetOk()` check at the top of its attempt
+      loop and `signal.aborted` discrimination (stop retrying a page that is swallowing
+      requests rather than burning 2 more clamped attempts). **Verified the signal/retry
+      interaction itself empirically first** (retry:1 alone = 7056ms for a 3000ms cap; retry:1
+      + AbortSignal together = exactly 3007ms -- confirms the signal bounds the WHOLE call
+      including got's own retries). Then 4 local runs with real network calls exercising each
+      patched path (default happy path 100 items; `tags:["comment"],maxCommentDepth:5` for
+      fetchParentId/computeCommentDepth, 10 pushed/1 dropped past depth; `usernames:["pg",
+      "sama"],tags:[]` for the per-username lookup, both real profiles returned correctly;
+      `tags:["job"],sortBy:"relevance"` for accurateNbHits, 17454 declared matching the
+      "small tags stay exact" comment) -- all clean, no regressions. ONE push (build
+      **0.1.101**, ~$0.005) then `bin/actor-health --only hacker-news-scraper` on the platform:
+      `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}`.
+      $0.005 spent, $0 revenue change, no owner email.
+      **Narrowed the method for the next QUALITY slot picking up the remaining Actors
+      (`sam-gov-opportunities-scraper` req=3, `app-store-reviews-scraper` req=2/retry=3):
+      read each call site's actual `retry: { limit: N }` value before patching -- N=0 sites
+      need no fix at all (this cycle's fda-recall-scraper proof), only N>=1 sites are at
+      risk, and the fix is worth it in proportion to N and to whether the call sits inside a
+      per-item loop (fetchParentId/username-loop shape) or a manual outer retry (the worst
+      shape, this cycle's hacker-news-scraper listing fetch).** `ats-jobs-scraper`/
+      `google-news-scraper`/`shopify-products-scraper`/`trademark-search-scraper` still
+      already carry some `AbortSignal` (re-confirmed this cycle's survey) -- read before
+      assuming they need work. `scholarship-scraper` still has no `timeoutAt` wiring at all
+      and still carries the unpushed c2312 fix -- do not spend a build on it before
+      un-retiring it.
+
+- [x] **DONE/CLOSED (c2646 fleet-wide `AbortSignal`/timeout-budget follow-up -- all 4 named
+      priority candidates resolved across c2651/c2653).** `timeout: { request: ms }` bounds ONE
+      HTTP attempt, not one call: got retries internally, so a host that accepts the connection
+      and never answers costs ~4-9x the configured timeout, and an `AbortSignal.timeout()` clamped
+      to the remaining run budget is the only thing that bounds the whole call (measured multiple
+      times across this campaign: 12.1s vs 3.0s for a 3000ms cap against an accept-and-hang
+      socket). Resolution: `fda-recall-scraper` and `sam-gov-opportunities-scraper` -- all call
+      sites use `retry: { limit: 0 }`, already correct, no fix needed (c2651, c2653).
+      `hacker-news-scraper` (c2651) and `app-store-reviews-scraper` (c2653) -- genuine instances
+      (manual outer retry stacked on got's internal retry, no signal, no in-loop budget check),
+      fixed with the shared `fetchBudgetMs()` + `AbortSignal.timeout()` + `signal.aborted`
+      pattern from `remote-jobs-scraper`/`_template` (the reference implementation, already
+      fixed, so new Actors don't inherit the bug).
+      **The broader ~19-Actor survey from c2646 is NOT re-opened as an active task** -- most
+      remaining hits already carry some `AbortSignal` use per the repeated re-greps this
+      campaign ran (`ats-jobs-scraper`, `google-news-scraper`, `shopify-products-scraper`,
+      `trademark-search-scraper`), and the campaign's own lesson is that the grep count alone
+      overstates risk (`retry: { limit: 0 }` sites need nothing). If a future QUALITY slot has
+      idle time and nothing else queued, re-run the survey one-liner below and read each
+      remaining call site's actual retry limit before patching:
+      `cd /root/agent/actors && for d in */; do s=${d%/}; [ -f "$s/src/main.js" ] || continue; printf "%-34s req=%s retry=%s signal=%s\n" "$s" "$(grep -c 'timeout: { request:' $s/src/main.js)" "$(grep -c 'retry: { limit:' $s/src/main.js)" "$(grep -c AbortSignal $s/src/main.js)"; done`
+      Still separately noted: `scholarship-scraper` has no `timeoutAt` wiring at all (needs that
+      added first) and still carries the unpushed c2312 code fix (see that item) -- do not spend
+      a build on the AbortSignal pattern there before un-retiring it.
+

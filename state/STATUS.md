@@ -1,3 +1,46 @@
+Updated: 2026-11-03 ~11:55 UTC by cycle 2661 (claude-sonnet-5). QUALITY/GROWTH slot
+(2661 % 3 == 0, recomputed fresh from the integer). Preflight: `checks-due --all`/
+`audit-due --all` both NONE DUE (soonest `check-status-continuity` in 4c, cycle 2665).
+Inbox `list 10` = the same known 10 triaged items, zero new mail -- confirmed the two owner
+threads on the list stay resolved: `2b237f1b` (CourtListener token) was wired at c2362, and
+`01852eaa` (Apify `/v2/store` ranking change, deadline 2026-11-15) was already hardened at
+c2496 with the remainder deliberately deferred post-deadline, `store-anon-rank` next due
+~c2744. No reply needed, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users,
+778 runs30d, ext_bad30d 4 (same 3 long-known + already-fixed `nih-reporter-scraper`).
+`bin/apify-spend` $6.0357/$85, flat, **$0 spent this cycle** -- no build, no push. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` 200
+before and after.
+
+**Ran `check-doc-size` per c2660's flag: `tasks/queue.md` read TRIM SOON (83.7KB/917 lines,
+projected 211KB by the checker's next scheduled look, past the 200KB trim line) while
+`state/STATUS.md` was still OK (58.2KB). This QUALITY slot is exactly the proactive trim
+point c2660 named, so trimmed queue.md only.** Ran the standing-hazard grep first over the
+10 archive-bound DONE blocks (cycles 2646, 2651-2659) -- all hits were narrative already
+homed elsewhere (closed-campaign details, a naming rule already in LEARNINGS.md, and
+cross-references to the doc-trim item's own STANDING RULES section, which is OPEN and
+untouched by this cut) or independently reconfirmed closed with no open follow-up (the
+c2646 AbortSignal/timeout-budget campaign and the c2357 bare-throw/`Actor.fail()` campaign
+both grepped clean fleet-wide -- a stale STATUS.md passage from several cycles back once
+named 3 "remaining" Actors for the latter, but the live queue.md carries no such open item
+and the archived DONE blocks confirm "all 4 named candidates" and "no fleet-wide follow-up
+remains from this axis"). Wrote `bin/_trim2661q.py` following the established
+hoist-then-cut method (keep every OPEN block + only the newest DONE block by cycle number,
+archive the rest to `tasks/queue_archive.md` under a dated header, with asserts on block
+counts/cycle numbers/line-count conservation so a structural surprise aborts instead of
+silently corrupting the file). Archived 10 DONE blocks (cycles 2659 down to 2646; c2660
+itself, already the first block, stays live for its "next cycle" pointer), 379 lines moved.
+**Verified**: `check-doc-size` now reads `OK tasks/queue.md 52.3KB 538 lines ~28 cycles of
+headroom` (was TRIM SOON); line-count-conservation and open-items-unchanged asserts inside
+the script itself passed (did not just trust the printed counts); `queue_archive.md` grew
+by exactly the archived byte count with nothing else touched.
+
+No Actor code touched, nothing buyer-facing -> no build, no push beyond the doc commit, $0
+spent, $0 revenue change, no owner email (doc hygiene is neither a revenue event nor
+owner-fixable). **Next cycle:** nothing fleet-wide due until `check-status-continuity` at
+2665. `state/STATUS.md` itself is still OK (58.2KB, ~32c headroom) -- no need to trim it
+this slot; re-run `check-doc-size` fresh next QUALITY cycle rather than assuming today's
+headroom holds.
+
 Updated: 2026-11-03 ~11:20 UTC by cycle 2660 (claude-opus-5). NORMAL slot (2660 % 3 == 2,
 recomputed fresh from the integer per c2659's process finding, not counted forward from the
 previous cycle's printed label). Preflight: `audit-due --all` FLEET ROTATIONS NONE DUE;
