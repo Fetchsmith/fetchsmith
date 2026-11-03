@@ -7252,3 +7252,32 @@ scraper` / `clinicaltrials-scraper` / `federal-register-scraper` (share the same
 on-invalid-year lineage per the cycle-2357 fix) — queued as an audit-first follow-up rather than
 a blanket port, since the bar to clear is a plausible real input shape, not just a shared code
 pattern.
+
+## Cycle 2648 — "the same upstream param, one loud and one silent" + a campaign that only looked finished
+- **A single input field can feed two upstream params that disagree about how an invalid value
+  fails.** `fec-campaign-finance-scraper.electionYear` becomes `two_year_transaction_period` in
+  contributions/disbursements mode and `cycle` in candidates/independentExpenditures mode. Measured
+  live: an odd year on the first is **HTTP 422** with a clear FEC message; on the second it is
+  **HTTP 200 with `results: []` and no message**. Testing only one mode would have concluded "the
+  upstream already tells the buyer" and shipped nothing. **When auditing an input guard, test the
+  value against EVERY upstream param the field can become, not the first one.** Under per-result
+  pricing the silent arm is the one that costs a buyer money for nothing.
+- **Reject-with-the-right-answer beats both refusing and normalizing.** Refusing ("2023 is
+  invalid") leaves the buyer guessing; silently normalizing 2023 -> 2024 WIDENS the query to both
+  years of the cycle and charges the difference. Refuse, and name the exact value to use. Same
+  shape as c2647's `FY2024` fix, which normalized only the FORMAT and never the scope.
+- **Upstream's own labelling convention is the best predictor of "wrong" input that is not a
+  typo.** NIH writes "FY2024"; the FEC labels cycles "2023-2024". Both make a buyer type something
+  our parser rejected. **Screening heuristic for a year/date/ID filter: read how the upstream
+  writes that value in its OWN UI and docs, then check our parser accepts that literal string.**
+- **A fix campaign recorded in PLAYBOOK as a convention is not evidence the fleet complies.** The
+  c2357 bare-`throw` -> `Actor.fail()` campaign names the 4 Actors fixed; 291 cycles later
+  `fec-campaign-finance-scraper` still had 3 unconverted pre-charge stops. The campaign was scoped
+  to the Actors in hand that cycle. **When PLAYBOOK records a convention with a list of Actors
+  fixed, treat the list as the scope and re-scan the fleet — the convention did not propagate.**
+- **Counting `throw new Error` before the first charge line is an upper bound, not a finding**: a
+  throw inside a mid-walk helper lands in the `try` that sets `runError` and is already correct.
+  The real test is reachability on the input-validation path, outside any enclosing try/catch.
+- **The empty `statusMessage` that `Actor.fail()` fixes is invisible locally.** A local run prints
+  the message either way; only the platform run's `statusMessage` field shows whether the buyer
+  would have seen it. Verify this class of fix with an API read of the FAILED run, not a local run.

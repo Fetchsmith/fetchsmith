@@ -23,7 +23,84 @@
       $0, fix only helps future resubmissions), no owner email.
       Full detail in `state/STATUS.md` cycle-2647 entry.
 
-- [ ] **NEW follow-up (c2647, LOW -- audit before porting, do not assume) -- check whether the
+- [x] **DONE cycle 2648 (NORMAL slot, 2648 % 3 == 2) -- did the c2647 sibling-year-input audit
+      below. It resolved to NO PORT NEEDED (the FY-prefix fix has no second home), but the audit
+      widened one step and found a REAL latent defect of the same class in
+      `fec-campaign-finance-scraper`, which was then fixed and verified on the platform.**
+      Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 4c, cycle 2652),
+      `audit-due --all` NONE DUE / 0 one-off axes. Inbox `list 10` = exactly the known 10 items,
+      **zero new mail** -- no reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 48
+      users, 775 runs30d, ext_bad30d 4. `bin/apify-spend` $5.9915/$85 (81.3% elapsed, projection
+      $7.37). Services all active; `/`, `/pricing`, `/tools` 200 before and after.
+      **(a) c2336 standing tripwire:** re-diffed `ext_stats30d` across the last 12 snapshots --
+      the 4 bad entries are the 3 long-known ones (`steam-reviews-scraper` FAILED,
+      `court-records-scraper` TIMED-OUT, `remote-jobs-scraper` TIMED-OUT) plus
+      `nih-reporter-scraper` FAILED, which is c2647's own already-diagnosed-and-fixed entry.
+      **No new Actor name. Clean.**
+      **(b) The c2647 audit, answered with data instead of assumption:** enumerated EVERY
+      year/fiscal/cycle-named input field across all 25 Actors' `input_schema.json`. Result: the
+      only `type: "array"` year filter in the whole fleet is nih-reporter's `fiscalYears`
+      (already fixed). The other four are all `type: "integer"` -- and Apify enforces scalar
+      schema types on API-started runs, so `"FY2024"` as a STRING cannot reach them at all.
+      Two of them (`sam-gov-opportunities-scraper.incumbentYears`, a 1-10 clamped look-back;
+      `clinicaltrials-scraper.ageRangeFrom/ToYears`, an eligibility age) are not calendar years
+      in the first place. **So the `parseFiscalYear` normalization has nowhere else to go --
+      recorded as a closed question so no future cycle re-opens it.**
+      **(c) What the audit DID turn up -- `fec-campaign-finance-scraper.electionYear` (the one
+      remaining real year filter) had no validation at all, and its two upstream params disagree
+      about whether that is loud or silent.** Measured live against api.open.fec.gov this cycle:
+      `two_year_transaction_period=2023` (contributions/disbursements modes) -> **HTTP 422** with
+      the FEC's own "should be an even year between 1976 and 2026" text, but `cycle=2023` AND
+      `cycle=2025` (candidates + independentExpenditures modes) -> **HTTP 200, `results: []`,
+      `count: 0`, no message.** Under per-result pricing that second shape is a silent zero-row
+      run the buyer paid compute for, with nothing in the log pointing at the year -- and an odd
+      year is a plausible shape, not a typo, because the FEC's own site labels cycles
+      "2023-2024" (the identical "upstream's own convention, rejected by us" class as c2647's
+      "FY2024"). **Fixed** in `actors/fec-campaign-finance-scraper/src/main.js`: validate
+      `electionYear` pre-charge (even integer, 1976..currentEvenYear+2) and, when it is an odd
+      in-range year, name the even cycle to use (`2023` -> "use 2024, the 2023-2024 two-year
+      cycle"). Deliberately did NOT silently normalize 2023 -> 2024: that WIDENS the query to
+      both years of the cycle and charges the difference, the exact trade the neighbouring
+      `parseFecDate` already refuses. Schema description for the field updated to match.
+      **(d) Second, separate defect found while writing (c) and fixed in the same push: this
+      Actor was never covered by the c2357 `Actor.fail()`-not-bare-`throw` campaign.** PLAYBOOK
+      names the 4 Actors fixed then; fec was not among them, so ALL of its pre-charge stops
+      (date parse, date ordering, the unfiltered-contributions guard) were bare throws, which
+      charge $0 correctly but leave the FAILED run's `statusMessage` EMPTY -- the explanation
+      reaching only the log as a stack trace, which buyers do not read. Added one `failInput()`
+      helper and routed all four stops (including the new one) through it.
+      **Verified, in this order:** `node --check`; 5 local runs (odd year refused with the full
+      message; even year 2024 -> 5 real rows; invalid date `2024-02-30` still stops; unfiltered
+      contributions still stops; bare `{}` Store-default path still returns 20 rows, i.e. the
+      c1908 demo-value gate is untouched by the new guard); ONE push (build **0.1.84**, ~$0.005,
+      no `meta.json`/listing change so no `publish` needed -- c2288 rule not triggered); then on
+      the PLATFORM: run `DQjNhU0UgvBxWqof5` with `electionYear: 2023` -> FAILED, and crucially
+      **`statusMessage` is now populated with the full remedy text** (the exact thing the bare
+      throw used to lose) with `chargedEventCounts {result: 0}`, i.e. **the buyer pays nothing**;
+      and the happy path `electionYear: 2024` -> HTTP 201, 5 real rows. `bin/actor-health --only
+      fec-campaign-finance-scraper` -> `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}`
+      after the push. Committed `ff6b9d18`.
+      $0.005 spent (one build), $0 revenue change, no owner email.
+      Full detail in `state/STATUS.md` cycle-2648 entry.
+
+- [ ] **NEW follow-up (c2648, MEDIUM -- fleet-wide gap in a campaign everyone assumed was
+      finished; measure before touching anything).** c2357 fixed the bare-`throw`-instead-of-
+      `Actor.fail()` shape on 4 Actors (`sam-gov-opportunities-scraper`, `clinicaltrials-
+      scraper`, `nih-reporter-scraper`, `federal-register-scraper`) and PLAYBOOK records it as
+      the convention -- but c2648 found `fec-campaign-finance-scraper` had never been converted,
+      so **the campaign was scoped to the Actors that happened to be in hand that cycle, not to
+      the fleet.** A first-pass count of `throw new Error` appearing textually BEFORE each
+      Actor's first charge line: `us-federal-awards-scraper` 13, `grants-gov-scraper` 8,
+      `website-screenshot-scraper` 5, `hacker-news-scraper` 2, `substack-scraper` 1 (that last
+      one also has ZERO `Actor.fail` calls anywhere). **That count is an UPPER BOUND, not the
+      finding** -- a throw inside a helper that only runs mid-walk lands in the `try` that sets
+      `runError` and is already correct. The actual test is whether the throw is reachable on the
+      INPUT-VALIDATION path, before any `pushResult`, and outside any enclosing try/catch. Do
+      2-3 Actors per cycle, highest count first, one push each; for each converted stop confirm
+      on the platform that `statusMessage` is non-empty and `chargedEventCounts.result` is 0, the
+      way c2648 did -- the empty `statusMessage` is the whole point and is invisible locally.
+
+- [x] **DONE c2648 (see the block above) -- NEW follow-up (c2647, LOW -- audit before porting, do not assume) -- check whether the
       sibling Actors that share the same `Actor.fail()`-on-invalid-`fiscalYears`-or-similar-
       year-filter pattern (`sam-gov-opportunities-scraper`, `clinicaltrials-scraper`,
       `federal-register-scraper` -- named in PLAYBOOK's cycle-2357 note as having the same
