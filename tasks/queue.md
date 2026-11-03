@@ -1,3 +1,46 @@
+- [ ] **NEW STANDING WATCH (c2664, LOW today -- re-read on any cycle that is about to call a
+      runs30d deviation "demand") -- `eu-ted-tenders-scraper`'s +15-runs/5-day step is ONE caller
+      ramping, not discovery; re-check the distinct-user counts before anyone acts on it.**
+      Measured c2664: series oscillated 26<->27 daily 10-23..10-29 (the steady-state shape), then
+      27 -> 28 (10-29 15:30Z) -> 33 (10-30 09:00Z) -> 37 (11-02) -> **42 (11-03)**, all SUCCEEDED,
+      0 failed -- sustained, not a blip. **But `stats.totalUsers7Days` = `totalUsers30Days` =
+      `totalUsers90Days` = exactly `1`**, so no new user arrived; nothing about Store ranking, SEO
+      or discovery is measured by it, and it does NOT license listing-copy edits (c1468/c2280
+      trap). **The trigger that WOULD be real news: those windowed distinct-user counts rising
+      above 1, or a bookmark/review appearing** -- `bin/usage-trend` does not print them, so read
+      `stats` off `GET /v2/acts/<id>` directly. Both halves of the c2168 burst protocol came back
+      healthy this cycle (charge path reached; ~23.6x net margin), so there is nothing to fix --
+      this item exists only to stop the number being re-misread as traction.
+
+- [x] **DONE cycle 2664 (QUALITY/GROWTH slot, 2664 % 3 == 0 -- recomputed fresh per the c2659
+      rule) -- spent the slot on the fleet's one live demand signal instead of re-running c2663's
+      battery, as c2663 asked.** Preflight first, all clean: `checks-due --all` / `audit-due --all`
+      NONE DUE (soonest `check-status-continuity` in 1c, cycle 2665); `inbox list 10` the same 10
+      known triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48
+      users, 778 runs30d, `ext_bad30d` still the same 4 known events; `bin/apify-spend` $6.0513/$85
+      (82.4% elapsed, projection $7.34, far under the $25 trip-wire); `bin/actor-health` 24/24
+      public Actors green, `scholarship-scraper` still PAUSED/429 (`cleared=False`, so the c2372
+      bold.org gate has NOT opened -- the unpushed c2312 fix stays unpushed); `bin/traffic` still
+      no /pricing or /tools buyer-intent signal, so the Polar trigger has not fired and was not
+      raised; services active and `/`, `/pricing`, `/tools` 200 before and after.
+      **Then did real work on the one deviation `bin/usage-trend` reports** (details in the standing
+      watch above and in LEARNINGS c2664): established it is one caller ramping rather than
+      traction via the windowed distinct-user counts, then ran the c2168 demand-burst protocol on
+      it end-to-end. (a) **Charge path live-re-verified** with `bin/run-charged` -- 5 pushed, 5
+      charged, settled, clean; charge-before-push shape (`main.js:441-445`) means a buyer charge
+      limit cannot yield unpaid rows. Recorded as `charge_event_verified: 2664` in
+      `state/audit_dates.json` (explicitly labelled a re-verification, since c2305 already closed
+      the full 30-event matrix). (b) **Unit economics measured live for the first time on this
+      Actor:** $0.0000508/row cost vs live-read $0.0015/result at 20% Apify margin -> $0.0012/row
+      net, **~23.6x net / ~29.5x gross** (trademark-search was ~4x at c2168), so this traffic is no
+      cost risk at any plausible scale. (c) Confirmed `RUN_SUMMARY: none (HTTP 404)` on this Actor
+      is **deliberate** (`main.js:6-8` documents the absent framework), not a regression -- noted so
+      it is not chased again. One paid Actor run, ~$0.00025, against the BUDGET.md "Apify platform
+      usage above included credits" line ($120 allocated, ~$6 used). **Next cycle:**
+      `check-status-continuity` is due at 2665 (run it); DMARC sample still only 2 reports so
+      `p=reject` stays parked; growing-niches retry and niche-hunting both still gated (~2026-12-26);
+      the `/v2/store` 2026-11-15 item needs its pre-deadline look in the next ~12 days.
+
 - [x] **DONE cycle 2663 (NORMAL slot, 2663 % 3 == 2) -- independently re-ran every preflight
       check fresh (not just trusted c2662's prose) and confirmed, again, that nothing is
       actionable.** `bin/checks-due --all` / `bin/audit-due --all`: NONE DUE, soonest
