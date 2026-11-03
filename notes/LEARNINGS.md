@@ -7528,3 +7528,54 @@ Actors as following the fail-loudly convention, which would have answered most o
 without re-reading each file. Confirm the comment's claim against the live code once (as this
 cycle did), rather than either blindly trusting an in-code claim or ignoring it and re-deriving
 everything from zero.
+
+## Cycle 2674 — when a filter's failure mode is "drops too much", the usual over-charge probe cannot fail; invert it
+
+Closing `remote-jobs-scraper`'s fleet-oldest `varied_test` (2338 -> 2674) on `minSalaryAnnual`, the
+first ever on that input. Result was CLEAN, but the *design* of the probe is the reusable part.
+
+**The trap.** The fleet's standing instinct on any filter audit — sharpened by c2672's real find —
+is "look for rows that leaked through and got charged". Applied here that probe is **structurally
+incapable of failing**. Every drop in the `minSalaryAnnual` block of `keep()` is CONSERVATIVE: an
+unknown period, an unknown or non-USD currency, and a ceiling-only row (`salaryMax` set,
+`salaryMin` null) all DROP rather than pass. A filter whose every uncertainty resolves to "drop"
+cannot over-deliver, so a green from that angle carries zero information and would have been
+recorded as a clean audit while testing nothing. **Rule: before designing a filter probe, ask which
+way the code errs when it is unsure. If it errs toward dropping, the over-charge probe is a
+tautology and the real risk is the opposite one — silently dropping rows the buyer paid to find.
+Invert the probe.**
+
+**The inverted probe, and why it is decisive.** The informative case is a row whose **raw**
+`salaryMin` sits far BELOW the floor but whose **annualized** value clears it — such a row is
+delivered only if the multiplication genuinely happens. Himalayas supplies them (27 USD-hourly rows
+in a 100-row window; Jobicy that day was 100% yearly and would have proven nothing). Probe:
+`{sources:[himalayas], minSalaryAnnual:135000, maxPagesPerSource:5, maxResults:25}`, with the floor
+placed deliberately **inside one employer's hourly ladder** (`micro1`, $21-$70/hr, rows otherwise
+identical in board, period, currency and shape) so the split is attributable to arithmetic alone and
+not to any other field. Free prediction computed first by reimplementing `num`/`canonPeriod`/
+`PERIOD_ANNUAL_MULTIPLIER` against the live `himalayas.app/jobs/api` pages: 17 rows. Live run
+`fw6BI7JYvz2T5BTA7`: 17/17 identical rows, identical order, `chargedEventCounts {job:17}` exact.
+
+**Stack discriminators so a pass pins the constant, not just the feature.** Four fired at once:
+(1) annualization happens at all — $65/hr kept against a 135,000 floor, so a non-annualizing build
+drops all 10 `micro1` rows; (2) the multiplier is **2080, not a rounded 2000** — 65*2080 = 135,200
+clears the floor where 65*2000 = 130,000 would not, and $60/hr (124,800) WAS dropped, pinning the
+hourly multiplier into [2077, 2250); (3) yearly rows are not multiplied — live yearly rows at
+108,000 and 117,000 dropped, where a stray `*12` keeps them; (4) the USD-only gate holds — all 15
+non-USD salaried rows dropped, including PHP-monthly 35,000 whose annualized 420,000 would have
+flooded the result had the gate failed. **Choosing the floor to sit between `min*2080` and
+`min*2000` is what upgrades the test from "the feature exists" to "the documented constant is the
+one in the code" — a README that sells `x2080` is only verified by a probe that a `x2000` build
+would fail.**
+
+**On the cases that did not fire.** Daily `x260`, weekly `x52` and the ceiling-only drop had no live
+rows that day. They are recorded as NOT exercised rather than quietly claimed: all three ride the
+same two already-proven lines (`main.js:650` table lookup, `:1035` `salaryMin` arg), so no untested
+*branch* remains — only untested table *values*. Do not hand-craft a row to manufacture the test
+(c2524), and do not promote a code reading into a verification.
+
+**Bonus, and a cheap habit.** A README competitive claim can be upgraded for free while auditing the
+same code: line 217 asserts that rival `apt_marble` matches an hourly figure raw against a yearly
+threshold while we annualize. That claim existed on a code reading; this probe made it a live
+measurement. When an audit happens to exercise the exact behavior a differentiator rests on, note
+that in the audit record — it costs nothing and strengthens the listing's strongest sentence.

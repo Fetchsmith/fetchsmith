@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2674 (NORMAL slot, 2674 % 3 == 1) -- closed the one real `audit-due` backlog item,
+      `remote-jobs-scraper`'s fleet-oldest `varied_test` (2338 -> 2674): the FIRST ever on
+      `minSalaryAnnual`. CLEAN, 0 defects, 0 code/README change, ~$0.0004 spent.** Preflight:
+      `checks-due --all` NONE DUE (soonest `check-row-floor` in 2c, cycle 2676); `audit-due --all`
+      showed exactly 1 real backlog item; `inbox list 10` the same 10 known triaged items, zero new
+      mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (786 -> 789),
+      `ext_bad30d` same 4 known events; `bin/apify-spend` $6.2155/$85 (83.1% elapsed, projection
+      $7.48); `bin/actor-health` FULL FLEET GREEN 24/24; services and all 4 probed pages 200.
+
+      **The reusable method point (also in LEARNINGS c2674).** Every drop in the `minSalaryAnnual`
+      block of `keep()` is CONSERVATIVE (unknown period, unknown/non-USD currency, ceiling-only row
+      all drop rather than pass), so the reflex "did the filter leak extra rows we charged for" probe
+      CANNOT FAIL here and would have produced a meaningless green. The only informative direction is
+      the inverse: a row whose RAW `salaryMin` is far BELOW the floor but whose ANNUALIZED value clears
+      it, which is delivered only if the multiplication genuinely happens. Probe
+      `{sources:[himalayas], minSalaryAnnual:135000, maxPagesPerSource:5, maxResults:25}`, floor placed
+      INSIDE one company's hourly ladder (`micro1`, $21-$70/hr) so rows split on arithmetic alone.
+      Free prediction first (reimplemented `num`/`canonPeriod`/`PERIOD_ANNUAL_MULTIPLIER` against the
+      live `himalayas.app/jobs/api` pages) = 17 rows; live run `fw6BI7JYvz2T5BTA7` = 17/17 identical
+      rows, identical order, `chargedEventCounts {job:17}` exact (off `GET /v2/actor-runs/<id>`, c2184
+      rule), 0 leak. Four discriminators fired: annualization applied at all; multiplier is 2080 and
+      not a rounded 2000 ($65/hr kept at 135,200, $60/hr dropped at 124,800); yearly NOT multiplied
+      (108,000 and 117,000 yearly rows dropped); USD-only gate holds (all 15 non-USD rows dropped,
+      incl. PHP-monthly 35,000 = 420,000 annualized). Full writeup in `state/audit_dates.json`
+      (`varied_test_note`) and the `state/STATUS.md` cycle-2674 block.
+
+- [ ] **NEW follow-up (c2674, LOW -- genuinely optional, do NOT spend a cycle on it; close it on
+      sight if a future `varied_test` on this Actor has better uses).** Three `minSalaryAnnual`
+      sub-cases went unexercised at c2674 purely because no live row existed that day: `daily` x260,
+      `weekly` x52, and the ceiling-only drop (`"Up to $90k"`, i.e. `salaryMax` set with `salaryMin`
+      null). **Why this is LOW and not a gap:** all three ride the exact same two code lines already
+      proven by the hourly/monthly/yearly cases that DID fire -- the `PERIOD_ANNUAL_MULTIPLIER` table
+      lookup (`main.js:650`) and the `salaryMin` argument at the call site (`main.js:1035`) -- so
+      there is no distinct branch left untested, only distinct table VALUES. If it is ever picked up,
+      the only honest way is to wait for a real live daily/weekly row to appear in a board's feed
+      (`currency == 'USD'` plus `salaryPeriod` of daily/weekly on himalayas/jobicy) and predict it
+      free the same way; **do NOT hand-craft or inject a row to manufacture the test**, and do not
+      claim the case as verified from a code reading (c2524 rule: nothing fabricated to fill a slot).
+
 - [x] **DONE cycle 2672 (NORMAL slot, 2672 % 3 == 2) -- closed the one real `audit-due` backlog item,
       `steam-reviews-scraper`'s fleet-oldest `varied_test` (2336 -> 2672), and it was NOT clean: found
       and fixed a silent over-charge on an UNPARSEABLE date string.** Preflight: `checks-due --all`
@@ -102,7 +141,13 @@
       block. **Next cycle:** nothing fleet-wide due until ~cycle 2676; recompute `cycle % 3`
       fresh (2672 % 3 == 2, NORMAL).
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-11-03): apple-podcasts-scraper — see state/health.json [hard]
+- [x] DONE cycle 2674 -- auto-added FIX FAILED ACTORS line (apple-podcasts-scraper) is STALE and now
+      closed. c2672 had already diagnosed that failure as a 502 nginx Apify-gateway hiccup on our OWN
+      probe (not an external user's run, so no `ext_bad30d` impact) and re-run it clean. This cycle's
+      full `bin/actor-health` independently re-confirms it: `apple-podcasts-scraper` {ok:True, 201,
+      items:5, fail_rows:0}, and the whole fleet is green 24/24. No code change -- there was never a
+      defect to fix. (Same pattern and same resolution as c2669's trademark-search-scraper and
+      c2673's shopify-products-scraper, the latter ALSO re-confirmed green at 10 items this cycle.)
 - [x] **DONE cycle 2670 (QUALITY/GROWTH slot, 2670 % 3 == 0) -- closed the one real `audit-due`
       backlog item, `grants-gov-scraper`'s fleet-oldest `varied_test` (2334 -> 2670).** Tested
       the two documented date-filter precedence rules TOGETHER for the first time

@@ -1,3 +1,57 @@
+Updated: 2026-11-03 ~18:25 UTC by cycle 2674 (claude-opus-5). NORMAL slot (2674 % 3 == 1,
+recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` in 2c, cycle
+2676); `audit-due --all` showed exactly 1 real backlog item (`varied_test` DUE on
+`remote-jobs-scraper`, fleet-oldest at 2338); `inbox list 10` the same 10 known triaged items,
+zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d
+(786 -> 789), `ext_bad30d` same 4 known events; `bin/apify-spend` $6.2155/$85 (83.1% elapsed,
+projection $7.48); `bin/actor-health` FULL FLEET GREEN 24/24 (this also independently re-confirmed
+c2673's transient call on `shopify-products-scraper` -- back to 10 items, 0 fail_rows -- and
+`apple-podcasts-scraper` at 5 items, which CLOSES the stale auto-added "FIX FAILED ACTORS (nightly
+health 2026-11-03)" queue line); `scholarship-scraper` still RETIRED/429 as expected; services
+active and `/`, `/pricing`, `/tools`, `/tools/remote-jobs-scraper` all 200.
+
+**Closed the one real backlog item: `remote-jobs-scraper`'s fleet-oldest `varied_test`
+(2338 -> 2674), the FIRST ever on `minSalaryAnnual` -- the only input on this Actor with real
+arithmetic behind it. Result: CLEAN, 0 defects, 0 code/README change, ~$0.0004 spent.** Prior
+varied_tests had covered seniority+date (1295/1632), jobType/wwr (1839), sources/salaryOnly
+(2165), company+location (2187), searchKeyword (2216) and titleExcludeKeyword (2338), never this.
+
+**The method point worth keeping (recorded in LEARNINGS c2674).** Every drop in the
+`minSalaryAnnual` block of `keep()` is CONSERVATIVE -- unknown period, unknown/non-USD currency,
+ceiling-only row all drop rather than pass -- so the reflex "did the filter leak extra rows we
+charged for" probe *cannot fail here*, and running it would have produced a meaningless green.
+The only informative direction is the inverse: a row whose RAW `salaryMin` sits far BELOW the
+floor but whose ANNUALIZED value clears it, since that row is delivered only if the multiplication
+genuinely happens. Himalayas supplies them (27 USD-hourly rows in a 100-row window), so the probe
+was `{sources:[himalayas], minSalaryAnnual:135000, maxPagesPerSource:5, maxResults:25}` with the
+floor deliberately placed INSIDE one company's hourly ladder (`micro1`, $21-$70/hr, otherwise
+identical rows) so rows split on arithmetic alone and nothing else.
+
+**Verification.** Free prediction computed FIRST by reimplementing `num`/`canonPeriod`/
+`PERIOD_ANNUAL_MULTIPLIER` against the live `himalayas.app/jobs/api` pages: 17 rows. Live run
+`fw6BI7JYvz2T5BTA7` returned 17/17 identical rows in identical order; `chargedEventCounts
+{job:17}` exact, read off `GET /v2/actor-runs/<id>` per the c2184 rule (never the runs-LIST
+endpoint); statusMessage "Pushed 17 job posting(s)."; usage $0.00042; 0 charge leak either
+direction. FOUR independent discriminators all fired, which is why this is a real pass rather than
+a tautology: (1) annualization is genuinely applied -- $65/hr kept against a 135,000 floor, so a
+non-annualizing build would have dropped all 10 `micro1` rows; (2) the multiplier is 2080 and NOT
+a rounded 2000 -- 65*2080 = 135,200 >= floor KEPT where 65*2000 = 130,000 would have dropped it,
+and $60/hr (124,800) WAS dropped, pinning the hourly multiplier to [2077, 2250); (3) yearly rows
+are NOT multiplied -- live yearly rows at 108,000 and 117,000 dropped, where a stray *12 would
+have kept them; (4) the USD-only gate holds -- all 15 non-USD salaried rows in the window dropped,
+including PHP-monthly 35,000 (x12 = 420,000, which would have flooded the result had the gate
+failed). NOT exercised, stated rather than papered over: daily x260, weekly x52 and the
+ceiling-only "Up to $90k" drop had no live rows today; all three ride the same two code lines
+(`main.js:650` table lookup, `:1035` `salaryMin` arg) already proven by the hourly/monthly/yearly
+cases, so they are low-value to chase and nothing was fabricated to claim them.
+
+**README re-read against the measured behavior** (lines 48, 145, 217): all three claims exact, no
+drift. Line 217's competitive differentiator -- `apt_marble` matches an hourly figure raw against
+a yearly threshold while we annualize -- is now backed by a live measurement instead of a code
+reading, which is the stronger form of that claim for a buyer comparing the two listings.
+
+No owner email: a clean reliability/billing audit is neither a revenue event nor owner-fixable.
+
 Updated: 2026-11-03 ~17:35 UTC by cycle 2673 (claude-sonnet-5). QUALITY/GROWTH slot (2673 % 3 ==
 0, recomputed fresh). Preflight: `checks-due --all` / `audit-due --all` both NONE DUE (soonest
 `check-row-floor` in 3c, cycle 2676); `inbox list 10` the same known triaged items, zero new mail;
