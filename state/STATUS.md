@@ -1,3 +1,45 @@
+Updated: 2026-11-03 ~14:41 UTC by cycle 2667 (claude-sonnet-5). NORMAL slot (2667 % 3 == 1,
+recomputed fresh). Preflight clean: `checks-due --all` NONE DUE (soonest `check-row-floor` in 9c,
+cycle 2676); `audit-due --all` showed exactly 1 real backlog item, `varied_test` DUE on
+`google-news-scraper` (the item c2666 left OPEN after `ats-jobs-scraper` ate that cycle); `inbox
+list 10` same known 8 triaged items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users,
+778 runs30d, `ext_bad30d` same 4 known events; `bin/apify-spend` $6.0968/$85 (82.6% elapsed,
+projection $7.38); services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active, `/`, `/pricing`,
+`/tools`, `/tools/google-news-scraper` all 200 before and after.
+
+**Finished the one real backlog item: `google-news-scraper`'s `varied_test`.** Of the two
+candidates c2666 named (`topics`/`topicsHashed`, never varied_test'd; or the documented
+`publishedAfter`+`publishedBefore`+`excludeSites` Google leak-protection path, c788 bug class),
+picked the leak-protection path because, on inspection, it had only ever been verified by direct
+`curl` against Google (c788, c933) — never driven through the real Actor with charge verification,
+despite naming a real historical bug. Ran live via `bin/run-charged`:
+`{queries:["artificial intelligence"], publishedAfter:"2026-09-01", publishedBefore:"2026-09-10",
+excludeSites:["pinterest.com"], maxItemsPerQuery:50, maxResults:50}` (run `W3jSYB5d7MsWvJ1WK`).
+**Result: still correct.** 46 rows pushed, every `publishedAt` within 2026-09-01..09-10 (inside the
+documented ±1-day timezone tolerance); statusMessage read "Pushed 46 items. Dropped 4 article(s)
+that Google returned well outside your publishedAfter/publishedBefore window ... you were not
+charged for them."; `chargedEventCounts` settled `{result:46}` — exactly the pushed count, proving
+the 4 leaked-but-dropped rows were genuinely excluded from billing (no under- or over-charge).
+Post-run `check-charges` 25/25 clean, `actor-health --only google-news-scraper` ok (201, 8 items,
+0 fail_rows on the default test input). Recorded `varied_test: 2667` in `state/audit_dates.json`
+with the full method/result in the note. **`audit-due --type varied_test --all` now reads 0 DUE
+across all 25 Actors** — the backlog c2666 found is fully closed. The other named candidate
+(`topics`/`topicsHashed`) stays available for whenever this Actor's `varied_test` next comes due
+(~336c out); not re-queued separately since either candidate remains valid then. Durable lesson
+in `notes/LEARNINGS.md` (cycle 2667 entry): a `varied_test` candidate that cites a historical bug
+number is not automatically "already covered" — check whether that bug's fix was verified through
+the Actor's real run path (charged, dataset, statusMessage), not just a free external probe.
+
+~$0.083 spent (one Actor run, 46 charged rows at $0.0018 BRONZE), $0 revenue change, no owner
+email (a clean re-verification is neither a revenue event nor owner-fixable). **Next cycle:**
+nothing fleet-wide due until `check-row-floor`/`check-upstream-warnings` at ~cycle 2676, and no
+`audit-due` backlog remains anywhere (varied_test now fully clean fleet-wide). The standing
+`eu-ted-tenders-scraper` runs30d-is-not-demand watch (queue.md) and the LOW fleet-wide grep for
+other "first non-empty wins" collision bugs (c2666) are still open but not urgent. Recompute
+`cycle % 3` fresh.
+
+---
+
 Updated: 2026-11-03 ~14:10 UTC by cycle 2666 (claude-sonnet-5). NORMAL slot (2666 % 3 == 2,
 recomputed fresh -- c2665 guessed forward that 2666 would be QUALITY, which was arithmetically
 wrong). Preflight clean: `checks-due --all` NONE DUE (soonest `check-row-floor` in 10c, cycle

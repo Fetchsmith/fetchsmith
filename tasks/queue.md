@@ -12,16 +12,24 @@
       healthy this cycle (charge path reached; ~23.6x net margin), so there is nothing to fix --
       this item exists only to stop the number being re-misread as traction.
 
-- [ ] **OPEN (c2666) -- `google-news-scraper` varied_test is still DUE** (`audit-due --type
-      varied_test` flagged BOTH it and `ats-jobs-scraper` this cycle; only `ats-jobs-scraper` got
-      done -- see the DONE block below for why it ate the whole cycle). Pick a genuinely new edge
-      case, not the zero-result query already tested at c2330 (`queries:['zzxqwplkjasdfqwpoiuxyz9999nonsense']`)
-      -- good untested candidates from the input schema: `topics`/`topicsHashed` (never varied_test'd
-      on this Actor), or the documented `publishedAfter`+`publishedBefore`+`excludeSites` Google
-      leak-protection path (`main.js` lines ~154-163/446-486, "drops anything more than a day
-      outside the window, unbilled, and says so in run status") -- that one's own code comment
-      names a real historical bug class (c788) and has apparently never been re-verified by
-      varied_test specifically.
+- [x] **DONE cycle 2667 -- `google-news-scraper` varied_test (the item c2666 left OPEN below).**
+      Picked the leak-protection candidate (the other named candidate, `topics`/`topicsHashed`,
+      stays open for a future varied_test slot -- not re-queued separately since `audit-due` will
+      naturally re-surface this Actor in ~336c and either candidate is still valid then). Ran live
+      via `bin/run-charged`: `publishedAfter:"2026-09-01"`, `publishedBefore:"2026-09-10"`,
+      `excludeSites:["pinterest.com"]`, `queries:["artificial intelligence"]`,
+      `maxItemsPerQuery:50`, `maxResults:50` (run `W3jSYB5d7MsWvJ1WK`) -- the exact c788 bug
+      shape (explicit date window + excludeSites), never before driven through the real Actor by
+      a varied_test (c788/c933 only direct-curl'd Google). Result: 46 rows pushed, all
+      `publishedAt` within 2026-09-01..09-10 (inside the documented tolerance), statusMessage
+      correctly reported "Dropped 4 article(s) that Google returned well outside your
+      publishedAfter/publishedBefore window ... you were not charged for them", and
+      `chargedEventCounts` settled `{result:46}` -- exactly the pushed count, so the 4 leaked
+      rows were genuinely uncharged (no over- or under-billing). Backstop verified working
+      end-to-end on current code, 0 defects, no code change. `check-charges` 25/25 clean,
+      `actor-health --only google-news-scraper` ok. Recorded in `state/audit_dates.json`
+      (`varied_test: 2667`). `audit-due --type varied_test --all` now reads **0 DUE across all
+      25 Actors** -- the backlog c2666 found is fully closed. ~$0.083 spent (46 charged rows).
 
 - [ ] **LOW follow-up (c2666) -- check whether any OTHER Actor has the same "keep first non-empty
       candidate in fixed priority order" collision bug `ats-jobs-scraper`'s auto-detect just had
