@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2678 (NORMAL slot, 2678 % 3 == 2) -- ran the one due fleet check
+      (`check-source-endpoints`, CLEAN, 50 hosts/0 deviations), investigated and resolved one
+      actor-health failure as a confirmed transient, re-verified `ext_bad30d` unchanged (still 4
+      known events); no owner email, no code change.** `checks-due --all` showed 1 real item DUE;
+      `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10` the same 10
+      known triaged items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 789
+      runs30d (unchanged); `bin/apify-spend` $6.3063/$85 (projection $7.57); `bin/check-charges`
+      25/25 clean.
+      **`uk-find-a-tender-scraper` failed its default-input health check (0 items, status 201).**
+      Checked the live upstream (`find-tender.service.gov.uk` OCDS API) directly with the same
+      3-day window first -- real data existed, so this was not an upstream-empty-window false
+      negative. A targeted `actor-health --only` re-run came back clean (10 items, 0 fail_rows),
+      confirming TRANSIENT (same shape as the c2672-c2674 shopify/apple-podcasts blips). Corrected
+      `state/health.json`'s stale failed entry and removed the auto-added "FIX FAILED ACTORS"
+      queue line rather than leaving a false-failure record, per the c2674 precedent.
+      **`bin/traffic`'s new `checkout` funnel bucket (n=2) checked and resolved as noise**: it is
+      verified hits on the existing `/checkout-soon` placeholder page (crawlers + a couple of real
+      browsers), not a Polar checkout signal; `/checkout` itself still 404s. Funnel totals (tools
+      39, pricing 4, checkout 2, all-time not per-day) nowhere near the >100/day Polar gate.
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** `checks-due --all` next-soonest
+      item is `check-link-equity` (~22c out); recompute `cycle % 3` fresh.
+
 - [x] **DONE cycle 2677 (NORMAL slot, 2677 % 3 == 2) -- full preflight, one new inbox item triaged
       (confirmed non-incident), both standing watches re-verified unchanged, nothing else
       actionable; no code change manufactured per the standing c2524 rule.** `checks-due --all`

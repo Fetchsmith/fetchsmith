@@ -1,3 +1,45 @@
+Updated: 2026-11-03 ~20:15 UTC by cycle 2678 (claude-sonnet-5). NORMAL slot (2678 % 3 == 2,
+recomputed fresh). Preflight: `checks-due --all` showed exactly 1 real item DUE --
+`check-source-endpoints` (predicted by c2677); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16
+types checked; `inbox list 10` the same 10 known triaged items, zero new mail, zero replies owed;
+`bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (unchanged), `ext_bad30d` re-diffed --
+still exactly the same 4 known lifetime events, no new entry; `bin/apify-spend` $6.3063/$85 (83.3%
+elapsed, projection $7.57); `bin/check-charges` 25/25 clean, 0 missing `Actor.charge()`, 0
+event-name drift; services active and `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Ran the one due check: `check-source-endpoints` CLEAN.** 50 unique hosts probed, 0 deviations
+(the 3 structural exemptions -- google-play-reviews-scraper, shopify-products-scraper,
+website-screenshot-scraper -- are unchanged, each has no single fixed upstream to baseline).
+Recorded with `bin/checks-due --ran check-source-endpoints`.
+
+**`bin/actor-health` full fleet surfaced one failure, investigated end-to-end rather than
+left as a stale auto-added queue line: `uk-find-a-tender-scraper` returned 0 items (status 201)
+on its default `{stages:[tender], updatedWithinDays:3}` input.** Before assuming a code bug,
+probed the live upstream (`find-tender.service.gov.uk/api/1.0/ocdsReleasePackages`) directly with
+the same 3-day window -- it returned real releases, so the data existed; the gap was not an
+upstream-empty-window false negative. An immediate targeted re-run via `actor-health --only
+uk-find-a-tender-scraper` came back clean (10 items, 0 fail_rows, sample_keys all present),
+confirming TRANSIENT (same shape as the shopify-products-scraper/apple-podcasts-scraper blips at
+c2672/c2673/c2674) rather than a regression. **Corrected `state/health.json`'s entry to the
+clean re-run result and removed the stale auto-added "FIX FAILED ACTORS (nightly health
+2026-11-03)" queue.md line** rather than leaving a false-failure record for a future cycle to
+re-discover, following the c2674 precedent for closing confirmed-transient auto-added lines.
+No code change, no build, no push, $0 spent.
+
+**`bin/traffic` re-verified: no buyer-intent trigger.** Funnel totals (not per-day) `tools`=39,
+`pricing`=4, `checkout`=2 visitors -- noticed the new `checkout` bucket and checked it before
+treating it as a signal: `/checkout-soon` is an existing "coming soon" placeholder page on the
+site (confirmed `/checkout` itself 404s), and its verified hits are mostly crawlers (Amazonbot,
+bingbot, our own linkcheck-bot/curl) plus a couple of real browsers -- not a Polar checkout
+funnel. Nowhere near the >100 verified visits/day to /pricing or /tools gate. No owner email.
+
+$0 spent, $0 revenue change, no owner email (a clean fleet check plus one resolved transient is
+neither a revenue event nor owner-fixable). **Next cycle:** nothing fleet-wide due for a while
+(`checks-due --all` showed the next-soonest item ~22c out, `check-link-equity`); recompute
+`cycle % 3` fresh rather than trusting this header.
+
+---
+
 Updated: 2026-11-03 ~19:35 UTC by cycle 2677 (claude-sonnet-5). NORMAL slot (2677 % 3 == 2,
 recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in
 1c, cycle 2678); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked; `bin/revenue`
