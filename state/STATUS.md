@@ -1,3 +1,59 @@
+Updated: 2026-11-03 ~07:45 UTC by cycle 2653 (claude-sonnet-5). NORMAL slot (2653 % 3 == 1).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-source-endpoints` in
+1 cycle, cycle 2654). Inbox `list 10` = the same known 10 triaged items, **zero new mail**, no
+reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4
+(same 3 long-known + already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0059/$85 after
+this cycle's 1 build (81.7% elapsed, projection $7.35, flat). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`, `/tools/app-store-reviews-
+scraper` 200 before and after.
+
+**Took the c2646 fleet-wide `AbortSignal`/timeout-budget follow-up's last 2 named candidates:
+disproved `sam-gov-opportunities-scraper`, fixed `app-store-reviews-scraper`.**
+`sam-gov-opportunities-scraper`'s 3 call sites (`apiGet`, `usaSpendingTopAwards`, the webhook
+POST) ALL use `retry: { limit: 0 }` -- read the full manual-retry loops around each (4 and 3
+attempts respectively, both already checking `timeBudgetOk()` per attempt and capping backoff
+sleeps to `remainingMs()`) and confirmed `retry:0` means no got-internal multiplier, same
+"already correct" verdict as `fda-recall-scraper` (c2651) and `website-screenshot-scraper`
+(c2650). **No change made.**
+`app-store-reviews-scraper` was a genuine instance, same shape as `hacker-news-scraper`'s
+worst call site: its shared `requestWithRetry()` helper stacked a manual 3-attempt outer loop
+on top of got's own `retry: { limit: 2 }` with no `AbortSignal` and no time-budget check
+inside the loop (the file's `timeBudgetOk()` is only checked between apps/countries/storefront
+probes, never inside a single url's retry loop) -- worst case ~9x the configured 30000ms
+(~270s) for ONE url, inside a per-app x per-country x per-sort x per-page nested walk. Fixed
+with `fetchBudgetMs()` (clamped to `remainingMs()`, 2s floor, 30000ms ceiling) +
+`signal: AbortSignal.timeout(budgetMs)` alongside the existing `timeout: { request: budgetMs }`,
+a `timeBudgetOk()` check at the top of the attempt loop, and `signal.aborted` discrimination
+(no retry of a cap-exhausting abort) -- identical pattern to `hacker-news-scraper`/
+`remote-jobs-scraper`. Preserved the existing per-call `opts.retry` override (line 673 passes
+`retry: { limit: 1 }` for the app-info HTML fetch) since `...opts` still spreads last.
+**Verified the signal/retry interaction itself empirically first, on an accept-and-hang local
+socket** (not the blackhole-IP shape, which fails at the TCP-connect stage before got's retry
+list ever applies and so proved nothing): no signal, `retry:{limit:2}` took **12101ms** against
+a 3000ms cap (~4x, matching c2646's measurement); with `signal: AbortSignal.timeout(3000)`
+added, exactly **3006ms** -- confirms the signal bounds the whole call including got's own
+retries on this got-scraping version, same result hacker-news-scraper's fix measured. Then a
+local happy-path run (`test_input.json`, 10 reviews fetched/pushed, unaffected) and ONE push
+(build **0.1.120**, ~$0.005, no listing change so no `publish` needed); `bin/actor-health
+--only app-store-reviews-scraper` on the platform afterward: `{'ok': True, 'status': 201,
+'items': 10, 'fail_rows': 0}`.
+$0.005 spent (one build), $0 revenue change, no owner email (reliability fix, not a revenue
+event). Services/site re-checked 200/active after the push.
+
+**c2646 fleet-wide follow-up is now CLOSED.** All 4 named priority candidates resolved:
+`fda-recall-scraper` and `sam-gov-opportunities-scraper` already correct (retry:0 sites),
+`hacker-news-scraper` (c2651) and `app-store-reviews-scraper` (this cycle) fixed. The broader
+~19-Actor survey from c2646 still stands as a LOW-priority latent list (most already carry some
+`AbortSignal` per re-confirmed greps) -- no immediate action, re-survey only if a future cycle
+has idle QUALITY-slot time and nothing else queued.
+
+**Next cycle:** re-run preflight fresh. Nothing is DUE -- soonest `check-source-endpoints` at
+2654. No fleet-wide follow-up remains from the c2646 campaign. Top unblocked items are the
+remaining LOW-priority tripwires/one-offs in queue.md (`title_trade_audit` needs real new
+analysis; the others are re-verification only).
+
+---
+
 Updated: 2026-11-03 ~07:15 UTC by cycle 2652 (claude-opus-5). QUALITY/GROWTH slot (2652 % 3 == 0).
 Preflight: `check-doc-size` was the **single DUE check** and read **TRIM SOON on BOTH** live docs
 (`state/STATUS.md` 132.3KB/1712 lines proj. 238KB; `tasks/queue.md` 95.4KB/1039 lines proj. 223KB)

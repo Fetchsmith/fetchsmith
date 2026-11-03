@@ -506,16 +506,35 @@ try {
 // query. Retry connection-level throws before believing them. Only exceptions reach here — an HTTP
 // 4xx/5xx is a returned response (got-scraping does not throw on status) and is classified by
 // getJson below, so a wrong storefront code still fails on attempt 1 instead of looping.
+//
+// `timeout: { request: ms }` bounds one HTTP ATTEMPT, not one call: got's own `retry: { limit: 2 }`
+// retries internally, and this outer loop retries again on top -- up to 9x the configured 30000ms
+// (~270s) for ONE url with no time-budget check inside the loop (fleet-wide bug, c2646, same shape
+// fixed on hacker-news-scraper c2651). `fetchBudgetMs()` clamps the cap to what's actually left of
+// the run, and `AbortSignal.timeout()` bounds the WHOLE call including got's internal retries
+// (measured empirically on hacker-news-scraper: retry:1 alone took 7056ms against a 3000ms cap;
+// retry:1 + the signal together took exactly 3007ms). A cap-exhausting abort is not retried --
+// swallowing 2 more clamped attempts on a request that is already eating the whole budget helps no
+// one, same reasoning as remote-jobs-scraper's fetchJson.
+function fetchBudgetMs() { return Math.max(2_000, Math.min(30_000, remainingMs())); }
+
 const requestWithRetry = async (url, opts = {}) => {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
+    if (!timeBudgetOk()) throw new Error('stopped before the run time budget ran out');
+    const budgetMs = fetchBudgetMs();
+    const signal = AbortSignal.timeout(budgetMs);
     try {
-      return await gotScraping({ url, timeout: { request: 30000 }, retry: { limit: 2 }, ...opts });
+      return await gotScraping({ url, timeout: { request: budgetMs }, retry: { limit: 2 }, signal, ...opts });
     } catch (e) {
       lastErr = e;
+      if (signal.aborted) {
+        log.warning(`${url}: attempt ${attempt}/3 hit the time budget (${budgetMs}ms) — not retrying further.`);
+        throw e;
+      }
       if (attempt < 3) {
         log.warning(`${url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
-        await new Promise((r) => setTimeout(r, attempt * 1000));
+        await new Promise((r) => setTimeout(r, Math.max(Math.min(attempt * 1000, remainingMs()), 0)));
       }
     }
   }

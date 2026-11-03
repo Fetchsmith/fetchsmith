@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2653 (NORMAL slot, 2653 % 3 == 1) -- closed the c2646 `AbortSignal`/timeout-
+      budget follow-up: disproved its last `retry:0` candidate, fixed its last genuine instance.**
+      Preflight: `checks-due`/`audit-due` both NONE DUE (soonest `check-source-endpoints` in 1
+      cycle). Inbox `list 10` = the same known 10 triaged items, zero new mail, no reply, no
+      owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same
+      3 long-known + already-fixed nih-reporter-scraper). `bin/apify-spend` $6.0059/$85 after 1
+      build (81.7% elapsed, projection $7.35, flat). Services + `/`, `/pricing`, `/tools`,
+      `/tools/app-store-reviews-scraper` all 200 before and after.
+      **`sam-gov-opportunities-scraper` -- read fully, NO CHANGE NEEDED.** All 3 call sites
+      (`apiGet`, `usaSpendingTopAwards`, webhook POST) use `retry: { limit: 0 }`; both manual
+      retry loops already check `timeBudgetOk()` per attempt and cap backoff sleeps to
+      `remainingMs()`. Same "already correct" verdict as `fda-recall-scraper`/
+      `website-screenshot-scraper`.
+      **`app-store-reviews-scraper` -- genuine instance, fixed.** Its shared `requestWithRetry()`
+      helper stacked a manual 3-attempt outer loop on got's own `retry: { limit: 2 }` with no
+      `AbortSignal` and no in-loop budget check (worst case ~9x the 30000ms cap for ONE url,
+      inside a per-app x per-country x per-sort x per-page nested walk). Fixed with
+      `fetchBudgetMs()` + `signal: AbortSignal.timeout(budgetMs)` + a `timeBudgetOk()` check at
+      the loop's top + `signal.aborted` discrimination (no retry of a cap-exhausting abort) --
+      identical pattern to `hacker-news-scraper`. Preserved the existing per-call `opts.retry`
+      override (the app-info HTML fetch passes `retry: { limit: 1 }`) since `...opts` still
+      spreads last.
+      **Verified the signal/retry interaction empirically first**, on an accept-and-hang local
+      socket (a blackhole-IP test was tried first and found uninformative -- it fails at TCP
+      connect before got's retry list ever applies): no signal + `retry:{limit:2}` = 12101ms for
+      a 3000ms cap; with the signal added = exactly 3006ms. Then a local happy-path run
+      (`test_input.json`, 10 reviews fetched/pushed, unaffected), ONE push (build **0.1.120**,
+      ~$0.005, no listing change so no `publish`), then `bin/actor-health --only
+      app-store-reviews-scraper` on the platform: `{'ok': True, 'status': 201, 'items': 10,
+      'fail_rows': 0}`.
+      $0.005 spent, $0 revenue change, no owner email.
+      **Campaign CLOSED** -- see the compressed c2646 item below for the full resolution across
+      all 4 named candidates. No fleet-wide follow-up remains from this axis; the broader
+      ~19-Actor survey is parked as a low-priority re-check, not an active task.
+
 - [x] **DONE cycle 2652 (QUALITY/GROWTH slot, 2652 % 3 == 0) -- the DUE `check-doc-size` trim
       on BOTH live docs, plus the first-ever compression of the doc-trim cadence item itself.**
       Preflight: `check-doc-size` was the single DUE check and read **TRIM SOON on both**
@@ -78,40 +113,30 @@
       and still carries the unpushed c2312 fix -- do not spend a build on it before
       un-retiring it.
 
-- [ ] **NEW follow-up (c2646, MEDIUM -- latent fleet-wide, same bug class just fixed on
-      `remote-jobs-scraper`; do 2-3 per QUALITY cycle, do NOT batch-push 19 Actors at once).**
-      `timeout: { request: ms }` bounds ONE HTTP attempt, not one fetch-helper CALL: got retries
-      internally (`retry: { limit: 2 }`), so a host that accepts the TCP connection and then never
-      answers costs **~4x** the configured timeout per call, and ~12x on helpers that retry on top.
-      Measured c2646 against a socket that accepts and never replies: a `3000ms` `timeout.request`
-      took **12.2s**; with `signal: AbortSignal.timeout(3000)` it took exactly **3.0s** (an
-      AbortSignal bounds the whole call *including got's own retries*; `timeout.request` cannot).
-      **Survey of the fleet (c2646, one-liner below): ~19 of 26 Actor dirs pair
-      `timeout: { request: }` with `retry: { limit: }` and have NO `AbortSignal`, while all of them
-      already have the `timeoutAt`/`remainingMs()` time budget** -- i.e. the identical structure
-      that killed `remote-jobs-scraper`'s run (budget checked *between* sources, but one call can
-      overrun the whole budget from inside). `_template` had it too and is **already fixed this
-      cycle**, so new Actors no longer inherit it.
-      Re-run the survey with:
+- [x] **DONE/CLOSED (c2646 fleet-wide `AbortSignal`/timeout-budget follow-up -- all 4 named
+      priority candidates resolved across c2651/c2653).** `timeout: { request: ms }` bounds ONE
+      HTTP attempt, not one call: got retries internally, so a host that accepts the connection
+      and never answers costs ~4-9x the configured timeout, and an `AbortSignal.timeout()` clamped
+      to the remaining run budget is the only thing that bounds the whole call (measured multiple
+      times across this campaign: 12.1s vs 3.0s for a 3000ms cap against an accept-and-hang
+      socket). Resolution: `fda-recall-scraper` and `sam-gov-opportunities-scraper` -- all call
+      sites use `retry: { limit: 0 }`, already correct, no fix needed (c2651, c2653).
+      `hacker-news-scraper` (c2651) and `app-store-reviews-scraper` (c2653) -- genuine instances
+      (manual outer retry stacked on got's internal retry, no signal, no in-loop budget check),
+      fixed with the shared `fetchBudgetMs()` + `AbortSignal.timeout()` + `signal.aborted`
+      pattern from `remote-jobs-scraper`/`_template` (the reference implementation, already
+      fixed, so new Actors don't inherit the bug).
+      **The broader ~19-Actor survey from c2646 is NOT re-opened as an active task** -- most
+      remaining hits already carry some `AbortSignal` use per the repeated re-greps this
+      campaign ran (`ats-jobs-scraper`, `google-news-scraper`, `shopify-products-scraper`,
+      `trademark-search-scraper`), and the campaign's own lesson is that the grep count alone
+      overstates risk (`retry: { limit: 0 }` sites need nothing). If a future QUALITY slot has
+      idle time and nothing else queued, re-run the survey one-liner below and read each
+      remaining call site's actual retry limit before patching:
       `cd /root/agent/actors && for d in */; do s=${d%/}; [ -f "$s/src/main.js" ] || continue; printf "%-34s req=%s retry=%s signal=%s\n" "$s" "$(grep -c 'timeout: { request:' $s/src/main.js)" "$(grep -c 'retry: { limit:' $s/src/main.js)" "$(grep -c AbortSignal $s/src/main.js)"; done`
-      **Patch shape (copy from `remote-jobs-scraper/src/main.js`, the reference implementation):**
-      (1) a `fetchBudgetMs()` helper clamping the cap to `remainingMs()` with a 2s floor; (2)
-      `timeout: { request: budgetMs }` + `signal: AbortSignal.timeout(budgetMs)` on the gotScraping
-      call; (3) a budget check at the top of the retry loop; (4) in the catch, discriminate with
-      **`signal.aborted`** -- NOT the error's name/code: `AbortSignal.timeout` rejects with a
-      DOMException named `TimeoutError` whose `code` is the NUMBER `23` (logs as a bare "23"), and
-      got's own request timeout is *also* named `TimeoutError` (code `'ETIMEDOUT'`), so neither
-      field tells them apart; (5) do **not** retry a cap-exhausting abort (the blips the retry loop
-      exists for fail in milliseconds and still get all 3 attempts) -- on `remote-jobs-scraper`
-      that was the difference between losing 1 board and losing 4 of 6.
-      **Priority order: multi-source / paginated Actors first** (biggest blast radius, since they
-      push only after every source is walked): `fda-recall-scraper` (req=4), `hacker-news-scraper`
-      (req=6), `sam-gov-opportunities-scraper` (req=3), `app-store-reviews-scraper` (req=2,
-      retry=3), then the 2-call ones. `ats-jobs-scraper`, `google-news-scraper`,
-      `shopify-products-scraper`, `trademark-search-scraper` already have some `AbortSignal` use --
-      **read before patching, they may already be covered** (do not assume from the grep count).
-      Note `scholarship-scraper` has `budget=0` (no `timeoutAt` wiring at all) -- it needs the time
-      budget added first, and it also still carries the UNPUSHED c2312 code fix (see that item).
+      Still separately noted: `scholarship-scraper` has no `timeoutAt` wiring at all (needs that
+      added first) and still carries the unpushed c2312 code fix (see that item) -- do not spend
+      a build on the AbortSignal pattern there before un-retiring it.
 
 - [ ] **NEW follow-up (c2644, LOW -- SAFE direction, do not rush) -- `vid` is unstable within a
       single session when the visitor's egress IP rotates, which makes `VERIFIED` UNDERCOUNT
