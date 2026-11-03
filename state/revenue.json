@@ -1,5 +1,5 @@
 {
- "ts": 1793669458,
+ "ts": 1793673017,
  "date": "2026-11-03",
  "apify": {
   "google-news-scraper": {
@@ -308,10 +308,10 @@
   },
   "nih-reporter-scraper": {
    "public": true,
-   "users": 2,
-   "users30d": 1,
+   "users": 3,
+   "users30d": 2,
    "runs30d": 29,
-   "runs": 672,
+   "runs": 673,
    "ext_ok30d": 29,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -481,7 +481,7 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 25,
-  "users": 47,
+  "users": 48,
   "runs30d": 787,
   "ext_ok30d": 784,
   "ext_bad30d": 3,

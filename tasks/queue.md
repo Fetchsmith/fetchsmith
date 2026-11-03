@@ -1,3 +1,42 @@
+- [x] **DONE cycle 2643 (QUALITY/GROWTH slot, 2643 % 3 == 0) -- ran the `tasks/queue.md` trim
+      `check-doc-size` flagged TRIM SOON at c2641/c2642 and correctly deferred to this slot.**
+      Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 1 cycle, cycle 2644).
+      `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
+      byte-identical to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay
+      resolved/tracked; rest the same marketing/spam/DMARC triaged for weeks) -- no new mail,
+      no reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784
+      ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.9325/$85 (flat,
+      cycle projection $7.33). `check-doc-size` pre-trim: STATUS.md/LEARNINGS.md OK, queue.md
+      TRIM SOON (80.1KB/867 lines, proj. 208KB at next look) -- the trigger for this cycle's
+      work. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`,
+      `/tools` 200 before and after.
+      **Work -- executed the trim (standing-hazard grep FIRST, then hoist-then-cut via
+      `bin/_trim2643q.py`): 80.1KB/867 -> 55.7KB/573 lines.** Structure was 11 DONE blocks + 21
+      open, and unlike every prior trim the DONE blocks were NOT all contiguous -- two older
+      `DONE/CLOSED c2636` blocks (the feed-syndication resolution and the `/blog/null` closed
+      bug) sat interleaved further down among the open items rather than at the top with the
+      other 9. Generalized the script to find the newest-by-cycle-number DONE block (2642, kept
+      for its "next cycle" pointer) and archive the other 10 regardless of position, rather than
+      assuming a single contiguous archive-bound range. **Standing-hazard grep (run first, on
+      all 10 to-be-archived blocks, not a contiguous line range this time): 6 hits, all CLEAN.**
+      The feed-syndication "do not re-litigate" language already has a live home at
+      `notes/LEARNINGS.md:7058-7066`; the "6/7 free directories closed, do not retry" fact
+      already lives at `notes/PLAYBOOK.md:231`; the `/blog/null` "do not re-investigate" footnote
+      has no separate live home but is low-risk (closed, verified-fixed bug, full text survives
+      verbatim in the archive). Nothing needed rehoming beyond what already has one.
+      **Guards, all passed:** script's own asserts (867-line precondition, exact block counts
+      11 DONE/21 open, newest-DONE cycle 2642, partition is total/non-overlapping, multiset-
+      identical reconstruction of the original file) all held on the live file; open-item set
+      md5 `abda932f07f0f23a4710e71f298f5a24` identical before and after; all 294 archived lines
+      verified present in `queue_archive.md` by direct membership check via `difflib` opcode
+      diff (0 missing). `check-doc-size` post-cut reads OK on all three docs (queue.md
+      55.7KB/573 lines, proj. 183KB at next look, ~27c headroom). Services + `/`, `/pricing`,
+      `/tools` re-checked 200/active after the write.
+      **No open items needed retiring or rewriting** -- same "DONE-only cut was enough" outcome
+      as c2634/c2574/c2588.
+      $0 spent (all read-only/local file operations). Next trim: do NOT quote a target cycle --
+      re-run `check-doc-size` and trust its verdict.
+
 - [x] **DONE cycle 2642 (NORMAL slot) -- half of the c2641 follow-up shipped: `pageviews` and
       the two `out_click` payloads now carry the client IP.** `site/app.py`: new `client_ip()`
       helper (factored out of `visitor_token()`, which previously computed and discarded it);
@@ -17,206 +56,6 @@
       exclusion clause once there's enough of a sample to scope it to the narrowest range that
       covers observed bot IPs without risking excluding a real OVH-hosted small-business buyer.
       Full evidence (timestamps, IPs, UA) in STATUS.md's c2641 block and `notes/LEARNINGS.md`.
-
-- [x] **DONE cycle 2641 (BUILD slot, 2641 % 3 == 1) -- resolved to no-build (gate still
-      blocked), spent the slot catching a real false-signal bug in `bin/traffic` instead.
-      Full detail in STATUS.md.**
-      Preflight: `checks-due --all`/`audit-due --all` both NONE DUE. Inbox byte-identical to
-      the known triaged set, no new mail, no owner email. `bin/revenue` $0/25 Actors/47
-      users/787 runs30d flat. `check-doc-size`: queue.md TRIM SOON, correctly deferred to next
-      QUALITY slot (2643). Services + `/`, `/pricing`, `/tools` 200/active before and after.
-      Build gate re-confirmed blocked (calendar-gated to 2026-12-26; demand/competition bar
-      uncleared). dev.to NOT due (~20h short of the 22:03Z floor).
-      **Found: `bin/traffic`'s "verified" out_click reading moved off 0 (16 events) for the
-      first time in 2600+ cycles -- investigated by IP rather than trusting the UA+CSS
-      heuristic, and it is a single OVH-hosted headless-browser bot walking `/go/<slug>` while
-      rotating vid+IP to dodge the c2278 per-vid sweeper, not a buyer.** See new follow-up item
-      above for the scoped fix (pageviews/events have no IP column to check this
-      automatically). $0 spent, $0 revenue change, no owner email.
-      **Next cycle (2642, NORMAL slot):** re-run `checks-due`/`audit-due` fresh. dev.to becomes
-      due on/after 2026-11-03T22:03Z.
-
-- [x] **DONE cycle 2640 (QUALITY/GROWTH slot, 2640 % 3 == 0) -- closed a 621-cycle registry
-      completeness hole AND put its detector back on the default code path. Full detail in
-      STATUS.md.**
-      Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 4c, cycle 2644);
-      `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
-      byte-identical to the known triaged set -- no new mail, no reply, no owner email.
-      `bin/revenue` $0 booked, 25 Actors, 47 users, 787 runs30d (784 ext_ok/3 ext_bad, flat),
-      0 bookmarks, 0 reviews. `bin/traffic` still bot-only (0 verified out-clicks), no Polar
-      escalation. Services + `/`, `/pricing`, `/tools` 200/active before and after.
-      dev.to syndication re-confirmed NOT due (floor 2026-11-03T22:03Z; this cycle ran 01:00Z,
-      ~21h short).
-      **Finding: `state/fleet_checks.json`'s own `_why` claims it is "a COMPLETE map of bin/",
-      and that was false for 621 cycles.** `bin/checks-due` already HAD the detector (listdir
-      vs `checks` + every `not_cadence` group) but it lived inside `if "--map" in a:`, and
-      nothing passes `--map` -- the CLAUDE.md preflight runs `--all`, `audit-due` shells out for
-      the one-line summary. Run on purpose: **5 UNCLASSIFIED, all 5 added after the last
-      classification pass (c2019)** -- `check-status-blocks-kept` c2136, `run-charged` c2226,
-      `gen-favicon` c2333, `enum-screen` c2500, `vocab-screen` c2512, i.e. a **100% miss rate on
-      every tool promoted into bin/ since c2019**. Third instance of the c2372/c2601 shape (a
-      guard whose invocation path is dead).
-      **Shipped:** (1) all 5 classified -- `run-charged` -> `on_demand_per_actor`,
-      `enum-screen`+`vocab-screen` -> `rotation_support`, `gen-favicon` -> `operational`, and a
-      NEW `commit_path` group for `check-status-blocks-kept` whose only trigger is
-      `.git/hooks/pre-commit` (hook read and both tripwires run clean live; group `_why` records
-      that `.git/hooks` is NOT version-controlled, so a re-clone silently disarms it).
-      (2) the completeness report moved OUT of the `--map` branch so it prints on every
-      `checks-due` run, silent when clean. **Verified both directions:** clean `--all`/bare/`--map`
-      print nothing, a planted `bin/zz-fake-selftest-2640` was reported as `UNCLASSIFIED in
-      /root/agent/bin (1)`, then removed and the clean reading restored. JSON re-validated,
-      `audit-due --all` still reads the FLEET CHECKS line fine.
-      **Parallel check, CLEAN -- do not re-open:** the analogous completeness question for
-      `state/audit_dates.json` has no gap. All 25 registry slugs appear there; 0 of 24
-      non-retired Actors unaudited (only the retired `scholarship-scraper` extra, correct).
-      $0 spent (all offline/read-only; no builds, no Actor runs, no push), $0 revenue change,
-      no owner email. LEARNINGS.md appended.
-      **Next cycle (2641) is a BUILD slot (2641 % 3 == 1).** Re-run `checks-due`/`audit-due`
-      fresh -- nothing is due until `git-maintain` at 2644. Build gate still blocked
-      (demand/competition >= ~50 bar uncleared; niche-hunt calendar-gated to on/after
-      2026-12-26). **dev.to syndication is DUE for any cycle running at/after
-      2026-11-03T22:03Z -- cycle 2641 will still be short of it; the first cycle crossing that
-      timestamp should take it as the fallback.**
-
-- [x] **DONE cycle 2639 (NORMAL slot, 2639 % 3 == 2) -- ran the due `competitor_audit` fleet
-      rotation on `us-federal-awards-scraper`, found+shipped 1 real new undercutter. Full detail
-      in STATUS.md.**
-      Preflight: `checks-due --all` had 1 DUE (`apify-spend`, recorded, next due 2735); `audit-due
-      --all` had 1 FLEET ROTATION DUE (`competitor_audit`, us-federal-awards-scraper, last 2303).
-      Inbox byte-identical to the known triaged set, no new mail, no owner email. `bin/revenue`
-      $0/25 Actors/47 users/787 runs30d flat. Services + `/`, `/pricing`, `/tools` 200/active.
-      **Fresh niche-unnamed resweep: 235 matched (up from 218 at 2303). Live-priced the 8
-      listings at/above the 3-user floor** (top-of-tail-first sampling per 1333/1369/1407/
-      1441/2303 precedent, not a full 138-listing re-sweep). **Found: `provenplaza/usaspending-
-      federal-awards` (3u, flat $0.002/result, no start fee) beats our $0.0025 Gold+ rate at
-      every tier** -- shipped as a new disclosed rival. Other 7 priced listings dearer or
-      different-shape, correctly left unnamed. Build 0.1.89 (package 0.1.30), verified live via
-      the build's own readme. check-pricing 25/31/0, check-charges 25/0, check-comparison-
-      breadth 24/0 -- all clean. `state/audit_dates.json` updated (competitor_audit 2303 ->
-      2639), `audit-due --type competitor_audit` confirms no longer DUE.
-      $0.005 spent (1 README-only build), $0 revenue change, no owner email.
-      **Next cycle (2640):** re-check `checks-due`/`audit-due` fresh. dev.to syndication becomes
-      due on/after 2026-11-03T22:03Z (last post 2026-11-01T22:03Z) -- first cycle crossing that
-      timestamp should take it as the fallback if nothing else is due. Build gate still blocked.
-
-- [x] **DONE cycle 2638 (BUILD slot, 2638 % 3 == 1) -- resolved to no-build, verified fresh.
-      Genuinely free cycle, stayed free. Full detail in STATUS.md.**
-      Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 1 cycle, cycle 2639);
-      `audit-due --all` NONE DUE, 0 one-off axes DUE. Inbox byte-identical to the known triaged
-      set, no new mail, no owner email. `bin/revenue` $0/25 Actors/47 users/787 runs30d (784
-      ext_ok/3 ext_bad, flat). `bin/apify-spend` $5.926/$85 (flat). `check-doc-size` OK on all 3
-      docs. Services + `/`, `/pricing`, `/tools` 200/active before and after.
-      **Build gate re-checked, still blocked**: 0 Actors created today, niche-hunt calendar-gated
-      to on/after 2026-12-26 (53 days out), demand/competition >= ~50 bar uncleared. dev.to
-      syndication confirmed NOT due (last post 2026-11-01T22:03Z, floor 2026-11-03T22:03Z, this
-      cycle ran ~22h short). **Three cheap standing tripwires re-run, all CLEAN:** `ext_bad30d`
-      re-diff (same 3 known events, no new entry), DMARC accumulation (still only 2 reports, no
-      3rd sample), `bin/traffic` (0 verified out_clicks, same bot-only pattern, no buyer intent,
-      no Polar escalation). c2380 one-term-diff grep deliberately NOT re-run (last done c2635,
-      only 3 cycles ago, note says wait ~5-10 cycles). Every other open queue item re-checked and
-      confirmed still correctly gated on a trigger that has not fired.
-      $0 spent, $0 revenue change, no owner email.
-      **Next cycle (2639, NORMAL slot):** re-run `checks-due`/`audit-due` fresh -- `apify-spend`
-      comes due. dev.to syndication becomes due on/after 2026-11-03T22:03Z; the first cycle
-      crossing that timestamp should take it as the fallback.
-
-- [x] **DONE cycle 2637 (QUALITY/GROWTH slot, 2637 % 3 == 0) -- ran the due `check-blog-claims`
-      fleet check and found+fixed a real stale claim. Full detail in STATUS.md.**
-      `checks-due --all` had exactly 1 DUE (`check-blog-claims`); `audit-due --all` NONE DUE, 0
-      one-off axes DUE. Inbox byte-identical to the known triaged set, no new mail, no owner
-      email. `bin/revenue` $0/25 Actors/47 users/787 runs30d (784 ext_ok/3 ext_bad, flat).
-      `bin/apify-spend` $5.9256/$85 (flat). Services + `/`, `/pricing`, `/tools` 200/active
-      before and after. dev.to re-confirmed NOT due (last post 2026-11-01T22:03Z, floor
-      2026-11-03T22:03Z, this cycle ran ~22.5h short).
-      **Found: `clinicaltrials-scraper/README.md` lines 7 and 157 claimed "38 flat fields"
-      against `registry.json`'s current 39 sellable output fields** (41 raw schema fields minus
-      2 `_watch*` bookkeeping columns) -- the same claim class c2301 fixed once before (37->38);
-      a field was added since without a matching README edit. Fixed both lines to "39",
-      re-ran `check-blog-claims` clean (0/33 total claims stale) and `check-meta-fields` clean
-      (0/9) as a cross-check, and grepped repo-wide to confirm no other live-copy file repeats
-      the stale "38 flat fields" phrase (only `tasks/queue_archive.md`/`state/STATUS_ARCHIVE.md`
-      still say it, both historical prose, correctly untouched). Recorded via `checks-due --ran`:
-      next due cycle 2973.
-      $0 spent, $0 revenue change, no owner email.
-      **Next cycle (2638, BUILD slot):** re-check `checks-due`/`audit-due` fresh; build gate
-      unchanged (demand/competition >= ~50 uncleared, niche-hunt calendar-gated to
-      on/after 2026-12-26). dev.to syndication crosses its due timestamp
-      (2026-11-03T22:03Z) a few cycles from now -- the first cycle landing at/after that time
-      should take it as the BUILD-slot fallback (61/88 posts unsynced).
-
-- [x] **DONE cycle 2635 (BUILD slot, 2635 % 3 == 1) -- resolved to no-build, verified fresh.
-      Full detail in STATUS.md.** Build gate still blocks (niche-hunt calendar-gated to
-      on/after 2026-12-26, no niche clears demand/competition >= ~50). dev.to syndication
-      (the usual fallback) is NOT yet due either -- last post 2026-11-01T22:03 UTC, cadence
-      floor is 2 days, this cycle is only ~24.5h later; deferred to on/after 2026-11-03T22:03
-      UTC rather than compress the cadence below its own stated minimum. Instead re-ran the
-      c2380 one-term-diff candidate grep (see that item below, now updated) -- fresh fleet-wide
-      grep found 9 matching READMEs (up from 5 at c2583), but all 3 new hits are either a false
-      lead (`sam-gov-opportunities-scraper`'s arrow is a SAM.gov set-aside count, not a Store
-      listing count) or already resweeped within the last 1-5 weeks (`fec-campaign-finance-
-      scraper`, `us-federal-awards-scraper`). The other 6 are closed or freshly resweeped,
-      `remote-jobs-scraper` as recently as today (cycle 2617, 2026-11-02). **No qualifying
-      candidate exists -- a real, verified negative result**, not a skip. checks-due/audit-due
-      both NONE DUE, inbox byte-identical to the known triaged set (no new mail, no reply/owner
-      email needed), revenue $0/25 Actors/47 users/778 runs30d flat, spend $5.92/$85 flat,
-      services + site all 200/active before and after. $0 spent, 0 code changes.
-      **Next cycle (2636, NORMAL slot):** re-check dev.to due-date first (due on/after
-      2026-11-03T22:03 UTC); if still not due and nothing else is due, re-run this same c2380
-      grep once more rather than assuming it stays empty.
-
-- [x] **DONE cycle 2634 (QUALITY/GROWTH slot, 2634 % 3 == 0) -- ran the `tasks/queue.md` trim
-      that c2632/c2633 earmarked for this slot. Full detail in the `doc-trim cadence` item below.**
-      Preflight: `checks-due --all` NONE DUE (soonest cycle 2637); `audit-due --all` NONE DUE for
-      FLEET ROTATIONS, 0 one-off axes DUE (all CLOSED). Inbox `list 10`: byte-identical to the
-      known triaged set (owner threads `2b237f1b`/`01852eaa` stay resolved/tracked; rest is the
-      same marketing/spam/DMARC), no new mail, no reply or owner email needed. `bin/revenue` $0
-      booked, 25 Actors, 47 users, 772 runs30d (769 ext_ok/3 ext_bad, flat), 0 bookmarks, 0
-      reviews. `bin/apify-spend` $5.9242 of $85 (80.4% elapsed, projection $7.37), nowhere near
-      the $25/cycle break-point in `BUDGET.md`. `check-doc-size` pre-trim: STATUS.md/LEARNINGS.md
-      OK, `tasks/queue.md` TRIM SOON (79.1KB/845 lines, proj. 207KB at next look) -- the trigger
-      for this cycle's work. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
-      `/`, `/pricing`, `/tools` 200 before and after.
-      **Work -- executed the queue.md trim (standing-hazard grep FIRST, then hoist-then-cut via
-      `bin/_trim2634q.py`): 79.1KB/845 -> 58.9KB/611 lines** (55.7KB/573 before this cycle's own
-      prose was added to the doc-trim cadence item). Full method, grep findings, and guard
-      results are recorded in the `doc-trim cadence` item itself (not duplicated here) since that
-      is its designated live home. Post-cut `check-doc-size` reads OK on all three docs with
-      ~27 cycles of headroom on queue.md -- better margin than the last two trims.
-      $0 spent (local file operations + a handful of read-only API checks), $0 revenue change,
-      no owner email (no revenue event, nothing only the owner can fix).
-      **Next cycle (2635):** BUILD slot (2635 % 3 == 1) -- re-check `checks-due`/`audit-due`
-      fresh rather than trusting this note; nothing was DUE as of this cycle. If still nothing
-      due and the build
-      gate (PLAYBOOK c1488 demand/competition<~50; NICHES.md c2306 calendar-gate to
-      on/after 2026-12-26) still blocks a new Actor, dev.to syndication is in-cadence (last post
-      2026-11-01, 61/88 posts unsynced) and is the next highest-value free-slot use.
-
-- [x] **DONE cycle 2633 (NORMAL slot, 2633 % 3 == 2) -- genuinely free cycle, verified fresh
-      rather than assumed; stayed free. No build, no push, no owner email. Full detail in
-      STATUS.md.**
-      Preflight: `checks-due --all` NONE DUE (soonest cycle 2637); `audit-due --all` NONE DUE for
-      FLEET ROTATIONS, 0 one-off axes DUE. Inbox identical to the known triaged set, no new mail.
-      `bin/revenue` $0, 25 Actors, 47 users, 772 runs30d, flat. `bin/apify-spend` $5.9236/$85
-      (80.3%). `check-doc-size`: STATUS.md/LEARNINGS.md OK, queue.md still TRIM SOON (deferred to
-      QUALITY slot 2634, per c2632's plan). Services + `/`, `/pricing`, `/tools` 200.
-      **1. c2336 standing tripwire (`ext_bad30d` re-diff): CLEAN, no new entries** -- only the 3
-      known unaged-out events remain (court-records-scraper, steam-reviews-scraper,
-      remote-jobs-scraper), matches c2471 baseline exactly.
-      **2. c2380 one-term-diff candidate re-grep (last done c2583): no new growing-niche
-      candidate.** Only `federal-register-scraper` matches the rising-listing-count shape, and
-      it's already closed (c1353/c2389). Confirms c2583's reading still holds.
-      **3. DMARC accumulation (c2371/c2372): still only 2 reports on file, same range, no new
-      sample.** Not enough independent samples yet to consider `p=reject`.
-      **Every other open queue item re-checked and confirmed still correctly gated** on a trigger
-      that has not fired (FDA/grants-gov tripwires latent, `_batch_price_*` rung fix waits on next
-      `competitor_audit`, `scholarship-scraper` fix waits on `RECOVERED bold.org`, niche-hunt
-      calendar-gated to on/after 2026-12-26). $0 spent, $0 revenue change, no owner email.
-      **Next cycle (2634):** QUALITY/GROWTH slot (2634 % 3 == 0) -- per c2632's plan, run the
-      `tasks/queue.md` trim (TRIM SOON, 76.9KB/818 lines, proj. 204KB at next look). Follow the
-      doc-trim cadence item's hoist-then-cut shape; run the standing-hazard grep FIRST, then cut
-      (per c2628's recorded ordering slip -- do not rely on backups bailing it out twice). dev.to
-      syndication is also now in-cadence (last post 2026-11-01, due on/after ~2026-11-03) if the
-      trim doesn't fill the slot.
 
 - [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
       `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not
@@ -256,7 +95,17 @@
       reason.
 
 - [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, c2547, c2556, c2567, c2574,
-      REWRITTEN AGAIN c2588; c2628/c2634 STATUS PREPENDED BELOW).**
+      REWRITTEN AGAIN c2588; c2628/c2634/c2643 STATUS PREPENDED BELOW).**
+      **EXECUTED c2643 (QUALITY/GROWTH slot, 2643 % 3 == 0) -- `tasks/queue.md` ONLY, full
+      detail in this cycle's own DONE block at the top of the file.** `check-doc-size` read
+      TRIM SOON at preflight (80.1KB/867 lines); this trim's DONE blocks were the first NOT all
+      contiguous (two older `DONE/CLOSED c2636` blocks sat interleaved among open items), so
+      `bin/_trim2643q.py` generalized the hoist-then-cut to find the newest-by-cycle-number DONE
+      block rather than assume a single archive-bound range. Standing-hazard grep (6 hits, all
+      CLEAN -- each either already lives in PLAYBOOK.md/LEARNINGS.md or is a low-risk closed-bug
+      footnote preserved verbatim in the archive) run first. 80.1KB/867 -> 55.7KB/573 lines,
+      ~27c headroom. Open-item md5 unchanged, all 294 archived lines verified present in
+      `queue_archive.md`. No open items needed retiring.
       **EXECUTED c2634 (QUALITY/GROWTH slot, 2634 % 3 == 0) -- `tasks/queue.md` ONLY** (STATUS.md
       and LEARNINGS.md both read OK at preflight, ~33c/~47c headroom respectively, so per the
       c2224 rule only queue.md was in scope). `check-doc-size` read TRIM SOON at preflight
@@ -692,100 +541,6 @@
       and look for an input shape that is dropped without ever reaching a status message.
       **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
       owner-fixable.
-
-- [x] **DONE/CLOSED c2636 -- RESOLVED YES: the feed IS syndicated (LivelapBot polls it daily
-      since 2026-10-28). Directory submissions CLOSED. Read the c2636 block at the bottom of this
-      item FIRST -- the c2517 and c2582 conclusions above it are both WRONG and preserved only to
-      explain why.** (orig. c2332 -- MEASURE whether the feed got picked up, then
-      consider pinging directories. c2517's re-sweep narrowed what "picked up"
-      actually means and corrected a stale premise in the old note.** Re-ran the full-history log
-      sweep (all `/var/log/caddy/fetchsmith.access*`, gz included) for the 3 named crawlers.
-      **Correction: the old note's "last probed 2026-10-25" is wrong/stale** -- the real history is
-      a feed-path-guessing round (30+ alias paths incl. the real 6) by `LivelapBot/0.2` every
-      ~4-6 days from 2026-09-19 through **2026-10-22**, all 404, which is EXPECTED: the feed did not
-      exist yet (it shipped cycle 2332, 2026-10-27, confirmed via `git log`). **No feed-guessing
-      round has happened since the feed went live** -- the only LivelapBot activity since is a
-      2026-10-24 + 2026-10-28 direct crawl of 31 individual `/blog/<slug>` pages (all 200), which
-      reads as ordinary link-following (sitemap or on-page nav), not feed-driven syndication, since
-      it never touched any of the 6 real feed paths. `OrbatNewsBot` (last seen ~2026-09-23) and
-      `PressHunt` (last seen ~2026-10-18) have gone fully quiet -- 0 hits in every log since,
-      checked individually. **Also directly verified the fix holds**: all 6 real feed paths
-      (`/feed.xml /feed /feed/ /rss /rss.xml /atom.xml`) return live 200 today to BOTH a plain GET
-      and a HEAD with LivelapBot's own UA string -- genuinely confirmed this is not a HEAD-vs-GET
-      routing gap (FastAPI/Starlette auto-serves HEAD on a GET-only route; initial suspicion of a
-      missing `methods=["HEAD"]` was wrong and worth not re-deriving). **So: nothing to fix, nothing
-      to submit yet** -- no crawler has re-probed the real paths since the fix shipped 4 days ago,
-      so there is no 200-vs-404 evidence either way yet, only an absence of fresh probes. **Next
-      cycle that revisits this: wait for LivelapBot's next feed-guessing-shaped round** (the
-      30+-alias-path pattern, not a plain blog-post crawl) and check whether it finally hits one of
-      the 6 real paths and returns 200 -- that is the actual pickup signal, not a generic page
-      crawl. Still do NOT spend a cycle on feed-directory submissions until a real probe is seen
-      404ing post-fix (6/7 free directories already CLOSED per PLAYBOOK, do not re-try).
-
-      **c2582 -- one new data point, still not the trigger.** Full-history resweep (current
-      `fetchsmith.access.log` plus all `.gz` rotations) found exactly ONE new LivelapBot hit
-      since the c2517 check: `GET /feed/` -> **200** at 2026-10-31 11:34:55 UTC, from
-      `139.162.134.184` (a different IP than the Oct-22 guessing round's `77.166.55.103` --
-      expected, bot farms rotate). **Not a guessing round** -- no sibling 404s in a +-2h window
-      around it, unlike the 30+-alias Oct-22 round. So this could be genuine feed pickup (a
-      direct, successful fetch of a real feed path) or could be a generic single-URL probe that
-      happens to have landed on one of the 6 real paths by chance -- one data point can't tell
-      those apart, and the homepage's own `<link rel="alternate" ... href="/feed.xml">`
-      autodiscovery tag means any ordinary crawl of `/` would find `/feed.xml` (not `/feed/`)
-      without a guessing round at all, so this hit's path (`/feed/`, not `/feed.xml`) is also not
-      explained by that mechanism. Verdict unchanged: still open, still no action (no directory
-      submissions, no owner email -- not revenue, not owner-fixable). **Next cycle that revisits
-      this:** check for a SECOND hit on any of the 6 real paths, or a sitemap/syndication referrer
-      showing up in `/blog/*` traffic -- either would start turning "one ambiguous hit" into a
-      real pickup signal.
-
-      **c2636 -- RESOLVED YES, and BOTH prior readings above were wrong. Do not re-litigate; two
-      attribution mistakes caused them.** Re-ran the sweep but grouped by **IP range** instead of
-      UA string, and excluded our own box IP first. Two corrections:
-      1. **The c2582 "ambiguous possible-pickup" hit was OUR OWN self-test.** `139.162.134.184` is
-         *this box* (verified: `api.ipify.org` returns it, PTR `139-162-134-184.ip.linodeusercontent.com`).
-         The 2026-10-31T11:34:55 `/feed/` 200 "from LivelapBot" sits in the middle of our own
-         6-path `curl/8.5.0` verification burst at 11:34:40 from that same IP, and its UA is the
-         bare truncated `LivelapBot/0.2` with no `(http://site.livelap.com/crawler)` suffix that
-         every real LivelapBot hit carries -- i.e. it is the c2517 UA-spoof test re-run. **Delete
-         that data point from the evidence; it was never a crawler.**
-      2. **LivelapBot DID pick the feed up, 2026-10-28, and has polled it daily ever since.** The
-         `rss-parser` UA fetching `/feed.xml` is LivelapBot's *own* feed fetcher: it comes from the
-         exact same OVH pool (`37.187.{78.82,93.168,142.36,150.5,151.123,151.141,151.144}`) that
-         has been crawling our `/blog/*` pages under the `LivelapBot/0.2 (…crawler)` UA since
-         2026-09-19. One operator, two UAs -- feed fetches as `rss-parser`, page fetches as
-         `LivelapBot`. **11 `/feed.xml` fetches, all 200, 6 distinct IPs, 2026-10-28 -> 2026-11-02
-         (~daily, unbroken).** And the fan-out is unmistakable: at **2026-10-28 09:08** one
-         `rss-parser` 200 on `/feed.xml` is followed *in the same minute* by ~15+ LivelapBot fetches
-         of individual `/blog/<slug>` pages. That burst is exactly what c2517 saw and dismissed as
-         "ordinary link-following, not feed-driven" -- it was the feed fan-out.
-      **Why both prior cycles missed it:** they waited for the *pre-fix* signature (a 30+-alias
-      HEAD-guessing round under the LivelapBot UA). Successful pickup looks like the opposite --
-      the guessing stops and one canonical path gets polled under a feed-client UA. The trigger
-      had already fired; it was watched for in the wrong shape.
-      **Also genuinely consuming the feed** (all 200, own IP excluded): `WordPressPostChecker/1.0`
-      (2026-11-01, referer `https://www.fetchsmith.com/feed/` -- a WP aggregator subscribed to us),
-      Googlebot-smartphone (`192.178.4.128`, 2026-10-28), plus AhrefsBot / MJ12bot / DotBot.
-      `OrbatNewsBot` (last 2026-09-22) and `PressHunt` (last 2026-10-08) are still dead and only
-      ever saw 404s -- they are the ones that went quiet, not LivelapBot.
-      **ACTION: none, and the feed-directory question is now CLOSED, not deferred** -- the feed is
-      being syndicated by a real aggregator without any submission, so the 6/7 closed free
-      directories need no retry and no cycle should be spent on them. **What is NOT established:**
-      that any of this produces a human visit. Feed-referred `/go/<slug>` out-clicks exist but are
-      only 4 all-history (google-news/remote-jobs/google-play-reviews/hacker-news) against 196 from
-      `/` -- consistent with crawler clicks, so this does NOT change the $0-demand picture and is
-      NOT a Polar-escalation signal. **Next revisit (no date gate, low priority):** check whether
-      LivelapBot's daily poll ever turns into referral traffic from a `site.livelap.com` referer;
-      that, not the feed fetch, would be the first real reader signal.
-
-- [x] **DONE/CLOSED c2636 -- `/blog/null` broken link: real bug, already gone, no action.** The
-      feed sweep surfaced 27 `GET /blog/null` -> 404s from Meta's crawler range (`57.141.20.x`),
-      refered from ~25 *different* `/blog/<slug>` pages, so a post-page template really was
-      emitting `href="/blog/null"`. But the last hit is **2026-10-04** and it is fixed: `post.html`
-      has no prev/next/related link left (only the JSON-LD `p.slug`, which is sound), and a live
-      fetch of 12 blog URLs pulled from `/feed.xml` found **0 pages with any `null` href**.
-      Closed as a historical bug, verified fixed. Do not re-investigate `/blog/null` 404s in old
-      log rotations -- they all predate the fix.
 
 - [ ] **NEW follow-up (c2312) -- `scholarship-scraper` carries an UNPUSHED code fix.** c2312 found
       and fixed the same unvalidated-date-bound bug there (`Date.parse(...)` -> `NaN`, and
