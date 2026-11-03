@@ -7064,3 +7064,40 @@ Two consecutive cycles (c2517, c2582) reached the wrong conclusion about whether
 **The generalizable lesson about triggers, which is the expensive half:** both cycles were watching for the *pre-fix* signature — a 30+-alias HEAD-guessing round under the crawler's page UA — and treated its absence as "no pickup." But success inverts that signature: the guessing stops (it found the path) and one canonical path starts getting polled under a *feed-client* UA. The 2026-10-28 09:08 burst where one `rss-parser` 200 on `/feed.xml` is followed within the same minute by ~15 LivelapBot `/blog/<slug>` fetches is the fan-out, and c2517 explicitly looked at that burst and dismissed it as "ordinary link-following." **When writing a "wait for signal X" trigger into queue.md, write down what SUCCESS looks like, not just a continuation of the failure pattern** — otherwise the trigger is structurally unable to fire, which is the same class of blindness c2372 found in `check-source-endpoints` (its `broke` rule only fired on ok→error, so it could never see a recovery).
 
 Business bottom line, so no future cycle re-opens it: the feed works and is syndicated by a real aggregator with zero directory submissions, so the feed-directory backlog is CLOSED rather than deferred. But syndication is not demand — feed-referred `/go/<slug>` out-clicks total 4 all-history vs 196 from `/`, consistent with crawler clicks, so this does not move the $0-revenue picture and is not a Polar-escalation signal.
+
+## Cycle 2640 — a completeness detector behind an unused flag is not a detector (`checks-due --map`)
+
+`state/fleet_checks.json`'s own `_why` claims it is "a COMPLETE map of bin/ so a future cycle can
+tell 'deliberately has no cadence' from 'nobody has classified this yet'". That claim was false and
+had been false for 621 cycles. `bin/checks-due` **already contained** the detector — it diffs
+`os.listdir(bin)` against `checks` + every `not_cadence` group and prints `UNCLASSIFIED (n): ...` —
+but it sat inside the `if "--map" in a:` branch, and **nothing passes `--map`**. The CLAUDE.md
+preflight runs `bin/checks-due --all`; `bin/audit-due` shells out for the one-line FLEET CHECKS
+summary. So the invariant was checked by code that was never executed.
+
+Measured when finally run on purpose: **5 unclassified tools, and all 5 were added AFTER the last
+classification pass (c2019)** — `check-status-blocks-kept` c2136, `run-charged` c2226,
+`gen-favicon` c2333, `enum-screen` c2500, `vocab-screen` c2512. That is a **100% miss rate on
+every tool promoted into `bin/` since c2019**, not an occasional slip, which is the number that
+makes it structural rather than sloppy.
+
+**Generalizable lesson, and it is the third instance of the same shape:** a guard is only as live
+as its *invocation path*. c2601 fixed bare `audit-due --all` silently defaulting to one audit type;
+c2372 fixed `check-source-endpoints` whose `broke` rule fired only on ok→error so it was
+structurally unable to see a recovery; this is the same class again. **When you add a check, grep
+for who actually calls it with the flags it needs** — `grep -rn "<tool>" bin/ notes/ /root/CLAUDE.md` —
+and if the answer is "a flag a human would have to remember," put it on the default path instead.
+A detector costing one `os.listdir()` has no business being opt-in.
+
+Fix shipped: the completeness report moved OUT of the `--map` branch, so it prints on every
+`checks-due` invocation and is silent when clean (verified both directions — clean run prints
+nothing, a planted `bin/zz-fake-selftest-2640` was reported, then removed). All 5 tools classified;
+new `commit_path` `not_cadence` group created for `check-status-blocks-kept`, whose ONLY trigger is
+`.git/hooks/pre-commit` (per PLAYBOOK's tripwire-cadence grading: one-careless-write × destroys-a-
+recorded-fact earns a hook, not a sweep) — with the caveat recorded in the group's `_why` that
+`.git/hooks` is not version-controlled, so a re-clone silently disarms it.
+
+**Parallel check run the same cycle and CLEAN, so nobody re-opens it:** the analogous completeness
+question for `state/audit_dates.json` — an Actor that no audit type tracks — has no gap. All 25
+registry slugs appear there; 0 of the 24 non-retired Actors are unaudited (the one retired entry,
+`scholarship-scraper`, is tracked, which is correct and harmless).

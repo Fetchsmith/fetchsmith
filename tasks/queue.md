@@ -1,3 +1,45 @@
+- [x] **DONE cycle 2640 (QUALITY/GROWTH slot, 2640 % 3 == 0) -- closed a 621-cycle registry
+      completeness hole AND put its detector back on the default code path. Full detail in
+      STATUS.md.**
+      Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 4c, cycle 2644);
+      `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
+      byte-identical to the known triaged set -- no new mail, no reply, no owner email.
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 787 runs30d (784 ext_ok/3 ext_bad, flat),
+      0 bookmarks, 0 reviews. `bin/traffic` still bot-only (0 verified out-clicks), no Polar
+      escalation. Services + `/`, `/pricing`, `/tools` 200/active before and after.
+      dev.to syndication re-confirmed NOT due (floor 2026-11-03T22:03Z; this cycle ran 01:00Z,
+      ~21h short).
+      **Finding: `state/fleet_checks.json`'s own `_why` claims it is "a COMPLETE map of bin/",
+      and that was false for 621 cycles.** `bin/checks-due` already HAD the detector (listdir
+      vs `checks` + every `not_cadence` group) but it lived inside `if "--map" in a:`, and
+      nothing passes `--map` -- the CLAUDE.md preflight runs `--all`, `audit-due` shells out for
+      the one-line summary. Run on purpose: **5 UNCLASSIFIED, all 5 added after the last
+      classification pass (c2019)** -- `check-status-blocks-kept` c2136, `run-charged` c2226,
+      `gen-favicon` c2333, `enum-screen` c2500, `vocab-screen` c2512, i.e. a **100% miss rate on
+      every tool promoted into bin/ since c2019**. Third instance of the c2372/c2601 shape (a
+      guard whose invocation path is dead).
+      **Shipped:** (1) all 5 classified -- `run-charged` -> `on_demand_per_actor`,
+      `enum-screen`+`vocab-screen` -> `rotation_support`, `gen-favicon` -> `operational`, and a
+      NEW `commit_path` group for `check-status-blocks-kept` whose only trigger is
+      `.git/hooks/pre-commit` (hook read and both tripwires run clean live; group `_why` records
+      that `.git/hooks` is NOT version-controlled, so a re-clone silently disarms it).
+      (2) the completeness report moved OUT of the `--map` branch so it prints on every
+      `checks-due` run, silent when clean. **Verified both directions:** clean `--all`/bare/`--map`
+      print nothing, a planted `bin/zz-fake-selftest-2640` was reported as `UNCLASSIFIED in
+      /root/agent/bin (1)`, then removed and the clean reading restored. JSON re-validated,
+      `audit-due --all` still reads the FLEET CHECKS line fine.
+      **Parallel check, CLEAN -- do not re-open:** the analogous completeness question for
+      `state/audit_dates.json` has no gap. All 25 registry slugs appear there; 0 of 24
+      non-retired Actors unaudited (only the retired `scholarship-scraper` extra, correct).
+      $0 spent (all offline/read-only; no builds, no Actor runs, no push), $0 revenue change,
+      no owner email. LEARNINGS.md appended.
+      **Next cycle (2641) is a BUILD slot (2641 % 3 == 1).** Re-run `checks-due`/`audit-due`
+      fresh -- nothing is due until `git-maintain` at 2644. Build gate still blocked
+      (demand/competition >= ~50 bar uncleared; niche-hunt calendar-gated to on/after
+      2026-12-26). **dev.to syndication is DUE for any cycle running at/after
+      2026-11-03T22:03Z -- cycle 2641 will still be short of it; the first cycle crossing that
+      timestamp should take it as the fallback.**
+
 - [x] **DONE cycle 2639 (NORMAL slot, 2639 % 3 == 2) -- ran the due `competitor_audit` fleet
       rotation on `us-federal-awards-scraper`, found+shipped 1 real new undercutter. Full detail
       in STATUS.md.**

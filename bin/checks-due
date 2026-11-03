@@ -175,14 +175,24 @@ def main():
                 continue
             print(f"\n{group}: {v['_why']}")
             print("  " + ", ".join(v["tools"]))
-        missing = known_tools() - set(data["checks"]) - {
-            t for g, v in data["not_cadence"].items() if not g.startswith("_")
-            for t in v["tools"]}
-        if missing:
-            print(f"\nUNCLASSIFIED ({len(missing)}): {', '.join(sorted(missing))}")
-            print("  -> classify each as a cadence entry or into a not_cadence group "
-                  "when you next touch it; an unclassified tool is one nobody has "
-                  "decided about, which is how check-competitor-claims rotted.")
+    # Completeness of the registry is printed OUTSIDE the --map branch (cycle 2640).
+    # It used to be --map-only, and nothing in the CLAUDE.md preflight passes --map --
+    # every cycle runs `--all` -- so the detector for "nobody has classified this tool"
+    # was itself unreachable in practice, the same cadence-loss shape it guards against
+    # (cf. c2601's sweep_all_types() fix for bare `audit-due --all`). Measured at c2640:
+    # 5 unclassified tools, and ALL FIVE were added after the last classification pass
+    # (c2019) -- check-status-blocks-kept c2136, run-charged c2226, gen-favicon c2333,
+    # enum-screen c2500, vocab-screen c2512 -- i.e. every tool promoted into bin/ in the
+    # following 621 cycles went unclassified, so the miss rate was 100%, not a slip.
+    # Printing it on every run costs one os.listdir() and is silent when clean.
+    missing = known_tools() - set(data["checks"]) - {
+        t for g, v in data["not_cadence"].items() if not g.startswith("_")
+        for t in v["tools"]}
+    if missing:
+        print(f"\nUNCLASSIFIED in {BIN} ({len(missing)}): {', '.join(sorted(missing))}")
+        print("  -> classify each as a cadence entry or into a not_cadence group "
+              "when you next touch it; an unclassified tool is one nobody has "
+              "decided about, which is how check-competitor-claims rotted.")
 
 
 if __name__ == "__main__":

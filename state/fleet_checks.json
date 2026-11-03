@@ -288,7 +288,8 @@
     "gen-output-schema",
     "gen-actor-icons",
     "gen-og-image",
-    "harvest-courtlistener-courts"
+    "harvest-courtlistener-courts",
+    "run-charged"
    ]
   },
   "rotation_support": {
@@ -316,7 +317,9 @@
     "check-meta-fields",
     "check-registry-fields",
     "check-validated-filters",
-    "check-store-meta"
+    "check-store-meta",
+    "enum-screen",
+    "vocab-screen"
    ]
   },
   "on_demand_research": {
@@ -342,7 +345,14 @@
     "indexnow",
     "polar-setup",
     "dmarc-report",
-    "check-git-push"
+    "check-git-push",
+    "gen-favicon"
+   ]
+  },
+  "commit_path": {
+   "_why": "Enforced by .git/hooks/pre-commit on EVERY commit, which is strictly tighter than any cadence could be, so a clock here would only add noise (see notes/PLAYBOOK.md 'Tripwire cadence grading': a bug class one careless write can create AND that DESTROYS a recorded fact earns a commit-path hook instead of a sweep). Classified cycle 2640. CAVEAT: .git/hooks is not version-controlled, so if the repo is ever re-cloned these stop firing silently and nothing else would notice -- re-install per PLAYBOOK. Note bin/check-shell-expansion is in the same hook but ALSO carries a 336c cadence entry under 'checks' (belt and braces, deliberate); bin/check-status-blocks-kept has the hook as its ONLY trigger.",
+   "tools": [
+    "check-status-blocks-kept"
    ]
   },
   "utility": {
