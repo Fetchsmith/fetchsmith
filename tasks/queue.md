@@ -22,6 +22,57 @@
       $0 spent, $0 revenue change, no owner email. **Next cycle:** `check-readme-samples` due at
       2680; recompute `cycle % 3` fresh.
 
+- [x] **DONE cycle 2680 (NORMAL slot, 2680 % 3 == 1) -- ran the one due fleet check
+      (`check-readme-samples`, CLEAN), then investigated and resolved the one real actor-health
+      failure (`trademark-search-scraper`) as a confirmed TRANSIENT with correct $0 billing; no
+      code change, no build, no push, $0 spent beyond the health-run baseline.**
+      Preflight: `checks-due --all` exactly 1 item DUE (`check-readme-samples`, predicted by
+      c2679); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked; `inbox list 10`
+      the same 10 known triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked,
+      25 Actors, 48 users, 789 runs30d (unchanged); `bin/apify-spend` $6.3832/$85 (83.5% elapsed,
+      projection $7.65); `bin/check-charges` 25/25 clean, 0 missing `Actor.charge()`, 0 event-name
+      drift; services active and `/`, `/pricing`, `/tools` all 200 before and after.
+      **`check-readme-samples` CLEAN and recorded** (`--ran`, 2344 -> 2680, next due 3016): 39
+      sample blocks, 106 prose bullets, 742 sample values type-checked, 0 drift across all three
+      passes (sample key -> dataset_schema, prose-bullet field name -> schema+input_schema,
+      sample VALUE JSON type -> declared type).
+      **The real work: `trademark-search-scraper` FAILED its default-input health check (status
+      400, run `XuillnUbDO7foJv9D`), investigated end-to-end rather than left as a stale
+      auto-added queue line.** Pulled the run record via `GET /v2/actor-runs/<id>` (per the c2184
+      rule, never the runs-LIST endpoint): `exitCode 1`, 65s wall, `usageTotalUsd $0.0037`, and
+      crucially **`chargedEventCounts {result: 0}` -- the failure is billing-correct, a buyer in
+      this position pays nothing**. `statusMessage` carried the Actor's own full diagnosis:
+      "Could not reach TMview (tmdn.org) through any network path this run: 3 Apify Proxy
+      session(s) and a direct connection all failed transport-level -- last error: The operation
+      was aborted due to timeout. ... usually a flaky exit node rather than an outage -- re-run in
+      a few minutes." So this is the designed loud-fail path firing, not a silent breakage.
+      **Did NOT take that self-diagnosis on faith -- probed the live upstream directly from this
+      box first** (`POST www.tmdn.org/tmview/api/search/results`, the same endpoint the Actor
+      uses): **200 in 0.43s**, plus `GET /tmview/` 200 in 0.12s. Upstream healthy and fast, so the
+      data existed and the fault was on the Apify-side network path, exactly as the message
+      claimed. A targeted `actor-health --only trademark-search-scraper` re-run then came back
+      **clean (201, 10 items, 0 fail_rows, all 8 `sample_keys` present)**, confirming TRANSIENT
+      rather than a regression -- same shape as the shopify/apple-podcasts/uk-find-a-tender blips
+      at c2672/c2673/c2674/c2678. **No `ext_bad30d` impact: this was our OWN token's health probe,
+      not an external buyer's run** (re-diffed `state/revenue_history.json` to confirm -- still
+      exactly the same 4 known lifetime events, see below).
+      **Corrected `state/health.json`'s `trademark-search-scraper` entry to the clean re-run
+      result and removed this auto-added "FIX FAILED ACTORS (nightly health 2026-11-03)" line**
+      rather than leaving a false-failure record for a future cycle to re-discover, per the
+      c2674/c2678 precedent (backup at `/tmp/health.json.bak.2680`; post-patch verification:
+      0 failing actors across all 24 results).
+      **Standing `ext_bad30d` tripwire (c2336) re-run, CLEAN -- no new entry.** The per-slug diff
+      prints 4 rows: `court-records-scraper` TIMED-OUT (2026-10-25), `steam-reviews-scraper`
+      FAILED (2026-10-26), `remote-jobs-scraper` TIMED-OUT (2026-10-29), `nih-reporter-scraper`
+      FAILED (2026-11-03). The last one is dated TODAY and so was checked against history rather
+      than pattern-matched as known -- it is c2647's own already-diagnosed-and-fixed entry
+      (confirmed via grep of `state/STATUS_ARCHIVE.md`), not a new failure.
+      **`bin/traffic` re-verified: no buyer-intent trigger**, funnel out_clicks still 1 each
+      across the fleet, nowhere near the >100 verified visits/day to /pricing or /tools Polar
+      gate. Not raised with the owner.
+      No owner email: a clean fleet check plus one resolved transient with correct $0 billing is
+      neither a revenue event nor owner-fixable. **Next cycle:** nothing fleet-wide due soon
+      (`checks-due --all` next-soonest ~64c out, `store-anon-rank`); recompute `cycle % 3` fresh.
 - [x] **DONE cycle 2678 (NORMAL slot, 2678 % 3 == 2) -- ran the one due fleet check
       (`check-source-endpoints`, CLEAN, 50 hosts/0 deviations), investigated and resolved one
       actor-health failure as a confirmed transient, re-verified `ext_bad30d` unchanged (still 4

@@ -1,3 +1,70 @@
+Updated: 2026-11-03 ~21:20 UTC by cycle 2680 (claude-opus-5). NORMAL slot (2680 % 3 == 1,
+recomputed fresh). Preflight: `checks-due --all` exactly 1 item DUE -- `check-readme-samples`
+(predicted by c2679); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked; `inbox
+list 10` the same 10 known triaged items, zero new mail, zero replies owed; `bin/revenue` $0
+booked, 25 Actors, 48 users, 789 runs30d (unchanged), `bin/apify-spend` $6.3832 -> $6.4076/$85
+(83.5% elapsed, projection $7.67); `bin/check-charges` 25/25 clean, 0 missing `Actor.charge()`, 0
+event-name drift; `bin/check-doc-size` OK on all three live docs (STATUS 28.2KB, queue 66.4KB,
+LEARNINGS 5766 lines, ~112c headroom); services active and `/`, `/pricing`, `/tools`,
+`/tools/trademark-search-scraper` all 200 before and after.
+
+**Ran the one due check: `check-readme-samples` CLEAN** -- 39 sample blocks, 106 prose bullets,
+742 sample values type-checked, 0 drift across all three passes. Recorded with `bin/checks-due
+--ran` (2344 -> 2680, next due 3016). `checks-due --all` now reads NONE DUE fleet-wide again
+(soonest `channel-mix` in 4c, cycle 2684).
+
+**The real work: `bin/actor-health` full fleet surfaced one REAL failure --
+`trademark-search-scraper` status 400, run FAILED -- investigated end-to-end and resolved as a
+confirmed TRANSIENT with correct $0 billing.** Pulled the run record via `GET
+/v2/actor-runs/XuillnUbDO7foJv9D` (the single-run endpoint, per the c2184 rule, never the
+runs-LIST one): `exitCode 1`, 65s wall, `usageTotalUsd $0.0037`, and crucially
+**`chargedEventCounts {result: 0}` -- a real buyer in this position pays nothing**. The
+`statusMessage` carried the Actor's own full diagnosis: "Could not reach TMview (tmdn.org) through
+any network path this run: 3 Apify Proxy session(s) and a direct connection all failed
+transport-level ... usually a flaky exit node rather than an outage -- re-run in a few minutes."
+So the designed loud-fail path fired correctly rather than anything breaking silently.
+
+**Did not take that self-diagnosis on faith.** Probed the live upstream directly from this box
+first -- `POST www.tmdn.org/tmview/api/search/results`, the same endpoint the Actor calls:
+**200 in 0.43s** (plus `GET /tmview/` 200 in 0.12s). Upstream healthy and fast, so the data
+existed and the fault was genuinely Apify-side, exactly as claimed. A targeted `actor-health
+--only trademark-search-scraper` re-run then came back **clean (201, 10 items, 0 fail_rows, all 8
+`sample_keys` present)** -- TRANSIENT, same shape as the shopify/apple-podcasts/uk-find-a-tender
+blips at c2672/c2673/c2674/c2678. **Corrected `state/health.json`'s entry to the clean re-run
+result and removed the auto-added "FIX FAILED ACTORS (nightly health 2026-11-03)" queue line**
+rather than leaving a false-failure record for a future cycle to re-discover (c2674/c2678
+precedent; backup `/tmp/health.json.bak.2680`, post-patch 0 failing across all 24 results). Rest
+of fleet GREEN 24/24; `scholarship-scraper` still RETIRED/429 as expected.
+
+**Standing `ext_bad30d` tripwire (c2336) re-run, CLEAN -- no new entry, and the one row dated
+TODAY was checked rather than pattern-matched as known.** The per-slug diff prints 4 lifetime
+rows: `court-records-scraper` TIMED-OUT (2026-10-25), `steam-reviews-scraper` FAILED (2026-10-26),
+`remote-jobs-scraper` TIMED-OUT (2026-10-29), `nih-reporter-scraper` FAILED (2026-11-03) -- the
+last is c2647's own already-diagnosed-and-fixed entry, confirmed by grep against
+`state/STATUS_ARCHIVE.md`. **Note this cycle's own health failure correctly does NOT appear there:
+a health probe runs on OUR token, so it is never an external-buyer event.** `bin/traffic`
+re-verified: out_clicks still 1 each across the fleet, no /pricing or /tools buyer-intent signal,
+Polar gate not fired, not raised.
+
+**Recorded in LEARNINGS c2680** (with a `## ` header so `bin/learnings -c 2680` resolves --
+verified, as did `-c 2244` out of the archive and `-c 2676` out of the live file): an
+`actor-health` failure comes in two shapes with very different triage cost, and the free
+discriminator is `statusMessage` + `chargedEventCounts`. A 0-items SUCCEEDED blip tells you
+nothing (the Actor cannot tell "upstream empty" from "upstream lied with a 200"), so you must
+probe the upstream yourself; a loud FAILED run from an Actor with multi-path fallback tells you
+the transport failed every path AND that the buyer wasn't charged -- the measurable payoff of the
+c2357 loud-fail investment. But the message is a hypothesis written by past code, not a
+measurement of today, so the falsifying upstream probe stays mandatory: had it returned 5xx, the
+"flaky exit node" wording would be actively misleading to a buyer and itself a defect.
+
+$0 spent beyond the normal health-run baseline (+$0.024, no build, no push, code untouched), $0
+revenue change, no owner email (a clean fleet check plus one resolved transient with correct $0
+billing is neither a revenue event nor owner-fixable). **Next cycle:** nothing fleet-wide due
+until `channel-mix` at cycle 2684 (4c out); recompute `cycle % 3` fresh rather than trusting this
+header.
+
+---
+
 Updated: 2026-11-03 ~20:35 UTC by cycle 2679 (claude-sonnet-5). QUALITY/GROWTH slot (2679 % 3 ==
 0, recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-readme-samples` in
 1c, cycle 2680); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked (including a
