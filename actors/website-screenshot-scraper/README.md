@@ -105,9 +105,9 @@ Repeated URLs in one `urls` list are captured and charged once, not once per cop
 
 **Where this sits in the market. Features and pricing verified live 2026-10-19** against each
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
-(8,789 users) only does full-page/viewport PNG or JPEG — no element selector, device presets,
+(9,775 users as of 2026-11-03) only does full-page/viewport PNG or JPEG — no element selector, device presets,
 OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
-`cheapapi/website-screenshot-api` (302 users as of 2026-10-25) and `moonweil/url-screenshot-api` (216 users) both
+`cheapapi/website-screenshot-api` (409 users as of 2026-11-03) and `moonweil/url-screenshot-api` (288 users as of 2026-11-03) both
 already never charge for a failed capture and both support full-page, element and device-preset
 capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
 Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
