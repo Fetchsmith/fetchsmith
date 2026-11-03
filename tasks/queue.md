@@ -215,6 +215,60 @@
       $0 spent, $0 revenue change, no owner email. Next cycle: re-run preflight fresh; nothing
       fleet-wide due until `check-doc-size` at cycle 2652.
 
+- [x] **DONE cycle 2651 (NORMAL slot, 2651 % 3 == 2) -- took the c2646 `AbortSignal`/timeout-
+      budget follow-up: disproved its #1 priority Actor as a false positive, fixed its #2.**
+      Preflight: `checks-due`/`audit-due` both NONE DUE (soonest `check-doc-size` in 1 cycle,
+      cycle 2652). Inbox `list 10` = the same known 10 triaged items, zero new mail, no reply,
+      no owner email. `bin/revenue` $0 booked, 25 Actors, ext_bad30d 4 (same 3 long-known +
+      already-fixed nih-reporter-scraper). `bin/apify-spend` $6.0041/$85 after 1 build (81.5%
+      elapsed, projection $7.36, flat). Services + `/`, `/pricing`, `/tools`,
+      `/tools/hacker-news-scraper` all 200 before and after.
+      **`fda-recall-scraper` (the survey's #1 priority) -- read fully and NO CHANGE NEEDED.**
+      The c2646 grep (`timeout: { request:` co-occurring with `retry: { limit:` in a file)
+      cannot see the retry limit's VALUE: 3 of 4 call sites use `retry: { limit: 0 }` (no
+      got-internal retry at all), empirically confirmed to bound a hang to exactly the
+      configured `timeout.request` value (3019ms for a 3000ms cap against a local
+      accept-and-hang socket -- no multiplier). The 4th (`fetchPressReleases`, `retry:
+      { limit: 1 }`) has a real but low-stakes 2x worst case (confirmed: 7056ms for a 3000ms
+      cap) on a single non-critical call already caught and gracefully skipped. Same
+      "already correct" outcome as `website-screenshot-scraper` in the earlier Actor.fail()
+      campaign -- closing it off the list without touching it.
+      **`hacker-news-scraper` (#2 priority) -- a genuinely WORSE instance than
+      `remote-jobs-scraper`'s original, fixed and verified.** Its main Algolia-listing fetch
+      stacked a manual 3-attempt outer retry ON TOP OF got's own `retry: { limit: 2 }` with no
+      `AbortSignal` and no budget check inside the attempt loop -- worst case ~9x the
+      configured 30000ms (~270s) for ONE page. 3 more call sites shared the pattern:
+      `fetchParentId` (retry:1, called up to 60x per comment inside the depth-chain walk), the
+      per-username profile lookup (retry:2, in a loop), and `accurateNbHits` (retry:2, single
+      best-effort call). Fixed all 4 with a shared `fetchBudgetMs()` + `AbortSignal.timeout()`
+      clamped to the remaining run budget (same shape as `remote-jobs-scraper`/`_template`);
+      the main listing loop also gained a `timeBudgetOk()` check at the top of its attempt
+      loop and `signal.aborted` discrimination (stop retrying a page that is swallowing
+      requests rather than burning 2 more clamped attempts). **Verified the signal/retry
+      interaction itself empirically first** (retry:1 alone = 7056ms for a 3000ms cap; retry:1
+      + AbortSignal together = exactly 3007ms -- confirms the signal bounds the WHOLE call
+      including got's own retries). Then 4 local runs with real network calls exercising each
+      patched path (default happy path 100 items; `tags:["comment"],maxCommentDepth:5` for
+      fetchParentId/computeCommentDepth, 10 pushed/1 dropped past depth; `usernames:["pg",
+      "sama"],tags:[]` for the per-username lookup, both real profiles returned correctly;
+      `tags:["job"],sortBy:"relevance"` for accurateNbHits, 17454 declared matching the
+      "small tags stay exact" comment) -- all clean, no regressions. ONE push (build
+      **0.1.101**, ~$0.005) then `bin/actor-health --only hacker-news-scraper` on the platform:
+      `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}`.
+      $0.005 spent, $0 revenue change, no owner email.
+      **Narrowed the method for the next QUALITY slot picking up the remaining Actors
+      (`sam-gov-opportunities-scraper` req=3, `app-store-reviews-scraper` req=2/retry=3):
+      read each call site's actual `retry: { limit: N }` value before patching -- N=0 sites
+      need no fix at all (this cycle's fda-recall-scraper proof), only N>=1 sites are at
+      risk, and the fix is worth it in proportion to N and to whether the call sits inside a
+      per-item loop (fetchParentId/username-loop shape) or a manual outer retry (the worst
+      shape, this cycle's hacker-news-scraper listing fetch).** `ats-jobs-scraper`/
+      `google-news-scraper`/`shopify-products-scraper`/`trademark-search-scraper` still
+      already carry some `AbortSignal` (re-confirmed this cycle's survey) -- read before
+      assuming they need work. `scholarship-scraper` still has no `timeoutAt` wiring at all
+      and still carries the unpushed c2312 fix -- do not spend a build on it before
+      un-retiring it.
+
 - [ ] **NEW follow-up (c2646, MEDIUM -- latent fleet-wide, same bug class just fixed on
       `remote-jobs-scraper`; do 2-3 per QUALITY cycle, do NOT batch-push 19 Actors at once).**
       `timeout: { request: ms }` bounds ONE HTTP attempt, not one fetch-helper CALL: got retries

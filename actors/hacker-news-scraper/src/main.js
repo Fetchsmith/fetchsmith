@@ -28,6 +28,18 @@ function timeBudgetOk() {
   if (remainingMs() <= 0) { timeBudgetExceeded = true; return false; }
   return true;
 }
+// `timeout: { request: ms }` bounds one HTTP ATTEMPT, not one call: got retries internally
+// (`retry: { limit: N }`), so a host that accepts the connection and never answers costs ~(N+1)x
+// the configured timeout, and more on top of that for any manual retry loop around the call
+// (c2646 fleet finding, measured: a 3000ms timeout.request took 7.0s at retry:1 against a
+// local accept-and-hang socket). An AbortSignal bounds the WHOLE call including got's own
+// retries (same test: exactly 3.0s even with retry:1) -- clamp it to the remaining run budget
+// so no single hung host can burn more than what is actually left.
+const FETCH_TIMEOUT_MS = 30_000;
+function fetchBudgetMs() {
+  const left = remainingMs();
+  return left === Infinity ? FETCH_TIMEOUT_MS : Math.max(2000, Math.min(FETCH_TIMEOUT_MS, left));
+}
 const input = (await Actor.getInput()) ?? {};
 
 let queries = (input.queries ?? []).map((q) => String(q).trim()).filter((q) => q.length);
@@ -201,7 +213,8 @@ async function accurateNbHits(wantTags, filters) {
   if (filters.length) url.searchParams.set('numericFilters', filters.join(','));
   url.searchParams.set('hitsPerPage', '0');
   try {
-    const res = await gotScraping({ url: url.toString(), timeout: { request: 30000 }, retry: { limit: 2 }, responseType: 'json' });
+    const budgetMs = fetchBudgetMs();
+    const res = await gotScraping({ url: url.toString(), timeout: { request: budgetMs }, signal: AbortSignal.timeout(budgetMs), retry: { limit: 2 }, responseType: 'json' });
     return typeof res.body.nbHits === 'number' ? res.body.nbHits : null;
   } catch {
     return null; // best-effort correction only; caller falls back to the original (possibly inflated) count
@@ -638,9 +651,11 @@ let depthLookups = 0;
 let depthLookupCapped = false;
 
 async function fetchParentId(id) {
+  const budgetMs = Math.min(15000, fetchBudgetMs());
   const res = await gotScraping({
     url: `https://hn.algolia.com/api/v1/items/${id}`,
-    timeout: { request: 15000 },
+    timeout: { request: budgetMs },
+    signal: AbortSignal.timeout(budgetMs),
     retry: { limit: 1 },
     responseType: 'json',
   });
@@ -906,13 +921,24 @@ for (const query of queries) {
       // outer retry, one blip drops the rest of this query's pages, distinguishable from
       // "genuinely 0 hits" only by the erroredQueries note. Retry a handful of times before giving up.
       for (let attempt = 1; attempt <= 3; attempt += 1) {
+        if (!timeBudgetOk()) { lastErr ??= new Error('the run\'s time budget ran out before this page answered'); break; }
+        const budgetMs = fetchBudgetMs();
+        const signal = AbortSignal.timeout(budgetMs);
         try {
-          const res = await gotScraping({ url: url.toString(), timeout: { request: 30000 }, retry: { limit: 2 }, responseType: 'json' });
+          const res = await gotScraping({ url: url.toString(), timeout: { request: budgetMs }, signal, retry: { limit: 2 }, responseType: 'json' });
           body = res.body;
           lastErr = null;
           break;
         } catch (e) {
           lastErr = e;
+          // `signal.aborted` (not the error's name/code -- both AbortSignal.timeout and got's own
+          // request-timeout error are named TimeoutError, see fetchBudgetMs's comment) means the
+          // run's own budget is gone, not a transient blip: burning two more clamped-to-the-same-
+          // shrinking-budget attempts cannot succeed and only costs the remaining queries their turn.
+          if (signal.aborted) {
+            log.warning(`Query failed (${query || '<none>'}, page ${page}): gave up after ${budgetMs}ms (the remaining run time budget), host accepted but never answered. Not retrying a page that is swallowing requests.`);
+            break;
+          }
           if (attempt < 3) {
             log.warning(`Query failed (${query || '<none>'}, page ${page}), attempt ${attempt}/3: ${e.message} — retrying.`);
             await new Promise((r) => setTimeout(r, attempt * 1000));
@@ -1063,9 +1089,11 @@ for (const username of usernames) {
   if (!keepGoing || !timeBudgetOk()) { notReachedUsers.push(username); continue; }
   let data;
   try {
+    const budgetMs = fetchBudgetMs();
     const res = await gotScraping({
       url: `https://hacker-news.firebaseio.com/v0/user/${encodeURIComponent(username)}.json`,
-      timeout: { request: 30000 },
+      timeout: { request: budgetMs },
+      signal: AbortSignal.timeout(budgetMs),
       retry: { limit: 2 },
       responseType: 'json',
     });
