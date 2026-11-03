@@ -327,8 +327,14 @@ const includePublications = input.includePublications !== false;
 const includeAbstract = input.includeAbstract !== false;
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 20000);
 
+// NIH itself writes fiscal years as "FY2024" (its own RePORTER UI, grant notices, budget docs),
+// so a buyer who copies that convention into fiscalYears gets Number("FY2024") = NaN and the
+// guard below used to reject every one of them (found live, cycle 2647: a real run sent
+// ["FY2000".."FY2012"+] and got refused). Strip a leading FY/fy (optional space) before parsing;
+// a bare 4-digit string still parses the same as before, so this only ADDS acceptance.
+const parseFiscalYear = (y) => Number(String(y).trim().replace(/^fy\s*/i, ''));
 const fiscalYearsRaw = listOf(input.fiscalYears);
-const fiscalYears = fiscalYearsRaw.map((y) => Number(y)).filter((y) => Number.isInteger(y) && y >= 1985 && y <= 2100);
+const fiscalYears = fiscalYearsRaw.map(parseFiscalYear).filter((y) => Number.isInteger(y) && y >= 1985 && y <= 2100);
 // THE SAME TRAP AS c2352's clinicaltrials-scraper nctIds, found live here too (fault-injected,
 // not inferred): `fiscalYears` is the ONE field among this Actor's filter inputs whose invalid
 // values are DROPPED rather than kept-and-warned (contrast agencyIcCodes/activityCodes/orgStates
@@ -364,7 +370,7 @@ if (fiscalYearsRaw.length > 0 && fiscalYears.length === 0) {
     ));
 }
 if (fiscalYearsRaw.length > fiscalYears.length && fiscalYears.length > 0) {
-    const dropped = fiscalYearsRaw.filter((y) => !fiscalYears.includes(Number(y)));
+    const dropped = fiscalYearsRaw.filter((y) => !fiscalYears.includes(parseFiscalYear(y)));
     log.warning(
         `Dropped invalid fiscalYears value(s): ${dropped.join(', ')} (must be a whole number from 1985 to 2100). `
         + `Running with the rest: ${fiscalYears.join(', ')}.`,

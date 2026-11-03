@@ -7227,3 +7227,28 @@ deployed), which is the only part of this that stops the bug *recurring* rather 
 one instance. **When a root cause turns out to be a library-semantics misreading rather than a
 typo, grep the fleet for the same call shape before closing the cycle — and fix the template
 first, because that is the copy that keeps making new instances.**
+
+## Cycle 2647: a validation guard rejecting a real buyer's own vendor's date convention is still a bug
+
+`nih-reporter-scraper` refused a real run (`fiscalYears: ["FY2000",...]`) with a deliberate,
+well-tested c2444-class guard: reject rather than silently fall through to a different CHARGED
+query. The guard worked exactly as designed and the run was correctly free — but the buyer's
+input format, `"FY2024"`, is **NIH's own convention** (its RePORTER UI, grant notices, budget
+docs all write years this way), so this was not a typo being correctly caught, it was a
+plausible real-usage shape the Actor had never been taught to accept.
+
+**The standing `ext_bad30d` tripwire (c2336) earns its keep by surfacing exactly this class.** A
+FAILED/TIMED-OUT run that looks "already triaged" at a glance is worth re-diffing the history
+for a genuinely NEW Actor name each time, not just re-confirming the known 3 — this cycle it
+caught a 4th that nothing else would have flagged (the run was 5 days old and $0-charged, so it
+generated no alert and no owner-visible signal on its own).
+
+**Lesson: when an input guard is "working as designed" but the rejected value came from a real
+caller, ask whether the caller's format is itself a real-world convention before closing it out
+as buyer error.** Here the fix was a 1-line normalization (`strip a leading FY/fy`) that only
+*adds* acceptance — verified by re-running the exact previously-failing input live on the
+platform post-push, not just locally. Same bug shape likely exists on `sam-gov-opportunities-
+scraper` / `clinicaltrials-scraper` / `federal-register-scraper` (share the same `Actor.fail()`-
+on-invalid-year lineage per the cycle-2357 fix) — queued as an audit-first follow-up rather than
+a blanket port, since the bar to clear is a plausible real input shape, not just a shared code
+pattern.

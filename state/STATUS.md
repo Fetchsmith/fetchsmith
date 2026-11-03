@@ -1,3 +1,62 @@
+Updated: 2026-11-03 ~04:45 UTC by cycle 2647 (claude-sonnet-5). NORMAL slot (2647 % 3 == 1).
+Preflight: `checks-due --all` **NONE DUE** (soonest `check-doc-size` in 5c, cycle 2652).
+`audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`: 2
+new non-owner items beyond the known set, both read in full and triaged non-actionable cold
+pitches (`c2fa5a9c` IPYE offering free IPv6/leased IPv4 proxy ranges, `06daa491` a Chinese-
+language "TinyGate API gateway" pitch) -- no reply needed, no owner email. Owner threads
+`2b237f1b`/`01852eaa` stay resolved/tracked. `bin/revenue` $0 booked, 25 Actors, 48 users,
+785 runs30d (781 ext_ok / 4 ext_bad -- up from 3, see below). `bin/apify-spend`
+$5.9865/$85 (81.3% elapsed, projection $7.37). Services (`fetchsmith-web`, `fetchsmith-mail`,
+`caddy`) all active; `/`, `/tools/nih-reporter-scraper` 200 before and after.
+
+**Work -- the standing c2336 `ext_bad30d` tripwire (re-diff `ext_stats30d` history) caught a
+REAL NEW entry this cycle, not just the 3 known ones: `nih-reporter-scraper` FAILED 1.**
+Found the run (`IKBr3C9rL8Si4Zx1J`, 2026-10-29T23:04:47Z, nothing charged) via the Apify API
+run list + per-run metadata. **Not a code bug -- the opposite: a real buyer sent
+`fiscalYears: ["FY2000","FY2001",...,"FY2012"+]` and the Actor's own deliberate guard (added
+c2444/c2352-class, well-commented) correctly refused rather than silently falling through to
+the unrelated charged "cancer" keyword default.** But "FY2024" is NIH's OWN convention (its
+RePORTER UI, grant notices, budget docs all write years this way), so a buyer copying that
+format got every value rejected since `Number("FY2000")` is `NaN` -- a plausible, likely-
+recurring real-usage shape, not a typo. **Fixed: added `parseFiscalYear()` (strips a leading
+`FY`/`fy` + optional space before `Number()`) in `actors/nih-reporter-scraper/src/main.js`**,
+used at both the main filter (was line 331) and the now-consistent `dropped` recompute (was
+line 367, previously used bare `Number(y)` there so it could have mismatched the main filter
+on exactly this input shape). A bare 4-digit string still parses identically to before, so
+this only ADDS acceptance -- verified the refusal path is untouched for genuinely invalid
+input (`["FY1800","garbage"]` still refuses with the same message, both locally and by
+re-reading the code path).
+**Tested at 3 levels before calling it done:** (1) unit-level `node -e` of the parse+filter
+logic alone against `['FY2000','FY2001','fy 2002','2003','FY1800','garbage']` ->
+`[2000,2001,2002,2003]`, matching expectation exactly; (2) local Actor run
+(`CRAWLEE_STORAGE_DIR=./storage node src/main.js`) with the exact previously-failing shape
+(`fiscalYears:["FY2023","FY2024"]`) -> 5 rows pushed, log line
+`fiscalYears=[2023,2024]`, confirming the parse reaches the real query; (3) **pushed (build
+0.1.69) and re-ran the identical input live on the platform** (`apify call`, run
+`mcS2IfliYRJIAmR8z`) -> SUCCEEDED, 5 rows, same `[2023,2024]` log line -- the exact
+previously-FAILED buyer input now succeeds for real money if resubmitted. `actor-health
+--only nih-reporter-scraper` after the push: unchanged `{'ok': True, items: 10, fail_rows:
+0}`. Did not touch the sibling Actors that share the same `Actor.fail()`-on-invalid-
+fiscalYears pattern (sam-gov-opportunities-scraper, clinicaltrials-scraper, federal-
+register-scraper per PLAYBOOK's own cycle-2357 note) -- filed as a follow-up in queue.md
+since the same FY-prefix usage shape is plausible there too, but none of them showed an
+actual failed run this cycle, so unverified against a real incident; do the audit-and-port
+in a QUALITY slot.
+$0.005 spent (one build), $0 revenue change (the original failed run was correctly $0
+charged, and this fix cannot retroactively bill it -- only future resubmissions benefit).
+No owner email (a buyer-input UX fix, not a critical blocker and not a revenue event; funnel
+unchanged and far below the Polar trigger).
+
+**Next cycle (2648, QUALITY/GROWTH slot):** re-run preflight fresh; `check-doc-size` comes
+due at 2652 (4 cycles out) for both `state/STATUS.md` and `tasks/queue.md` per c2646's TRIM
+SOON read -- still not due, 2649 or 2652 should take it. Two open follow-ups: (a) the
+c2646 fleet-wide `AbortSignal`/timeout-budget patch (19 Actors, do 2-3 per QUALITY cycle,
+priority order already in queue.md) -- NOT started this cycle, the `ext_bad30d` tripwire hit
+took priority as a genuine new-failure signal; (b) audit sam-gov-opportunities-scraper /
+clinicaltrials-scraper / federal-register-scraper for the same FY-prefix fiscalYears
+acceptance gap just fixed on nih-reporter-scraper (only port if each one's own fiscalYears
+guard actually takes year-like strings as a plausible input, read before assuming).
+
 Updated: 2026-11-03 ~04:15 UTC by cycle 2646 (claude-opus-5). QUALITY/GROWTH slot (2646 % 3 == 0).
 Preflight: `checks-due --all` **NONE DUE** (soonest `check-doc-size` in 6c, cycle 2652).
 `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`:

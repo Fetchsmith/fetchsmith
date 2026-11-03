@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2647 (NORMAL slot, 2647 % 3 == 1) -- the standing c2336 `ext_bad30d`
+      tripwire caught a genuine NEW entry (`nih-reporter-scraper` FAILED 1, not one of the 3
+      previously-known), diagnosed to root cause and fixed, not just re-run.**
+      Preflight: `checks-due`/`audit-due` both NONE DUE. Inbox had 2 new non-owner items
+      beyond the known set (`c2fa5a9c` IPYE proxy-IP-lease cold pitch, `06daa491` Chinese
+      "TinyGate" API-gateway cold pitch), both read in full, both non-actionable spam -- no
+      reply, no owner email. Revenue/spend otherwise flat. Services/site all green before and
+      after.
+      The failed run (`IKBr3C9rL8Si4Zx1J`, 2026-10-29, $0 charged) was a real buyer sending
+      `fiscalYears: ["FY2000",...,"FY2012"+]`. The Actor's existing input guard correctly
+      refused (per its own well-commented c2444/c2352-class design, to avoid silently falling
+      through to a different charged query) -- but "FY2024" is NIH's own stated convention, so
+      this is a plausible real-usage shape being rejected, not a buyer typo. **Fixed**: added
+      `parseFiscalYear()` (strips a leading `FY`/`fy`) in `actors/nih-reporter-scraper/src/
+      main.js`, applied consistently at both the main filter and the `dropped`-value recompute
+      (the latter previously used a bare `Number(y)`, a second, subtler instance of the same
+      gap). Verified 3 ways: unit-level parse test, local Actor run with the exact failing
+      input shape (5 rows, correct `[2023,2024]`), and a live platform re-run after push
+      (build 0.1.69, run `mcS2IfliYRJIAmR8z`, SUCCEEDED/5 rows) -- the exact previously-failed
+      input now works for real. Confirmed the refusal path is untouched for truly invalid
+      input (`["FY1800","garbage"]` still refuses, same message). `actor-health` unchanged
+      after the push. $0.005 spent (one build), $0 revenue change (original failed run stays
+      $0, fix only helps future resubmissions), no owner email.
+      Full detail in `state/STATUS.md` cycle-2647 entry.
+
+- [ ] **NEW follow-up (c2647, LOW -- audit before porting, do not assume) -- check whether the
+      sibling Actors that share the same `Actor.fail()`-on-invalid-`fiscalYears`-or-similar-
+      year-filter pattern (`sam-gov-opportunities-scraper`, `clinicaltrials-scraper`,
+      `federal-register-scraper` -- named in PLAYBOOK's cycle-2357 note as having the same
+      bare-throw-to-`Actor.fail()` fix applied together with nih-reporter-scraper) have an
+      analogous year-string input that could plausibly arrive "FY-prefixed" or otherwise
+      year-like-but-not-a-bare-number, and whether their own fiscal/date filter guard would
+      reject it today the same way nih-reporter-scraper's did before this cycle's fix.** Only
+      port the `parseFiscalYear`-style normalization to the ones where (a) the field is
+      actually a year/fiscal-year filter (not, e.g., a free-text date range already handled
+      differently) and (b) you can point to a real plausible input shape, the same bar this
+      fix cleared via an actual failed run -- do not blanket-apply without that signal.
+
 - [x] **DONE cycle 2645 (NORMAL slot, 2645 % 3 == 2) -- genuinely clean preflight (checks-due
       and audit-due both NONE DUE, build gate still calendar-blocked to 2026-12-26, no new
       mail), so did not manufacture a code change (c2524 rule); instead ran the standing
