@@ -83,22 +83,70 @@
       $0.005 spent (one build), $0 revenue change, no owner email.
       Full detail in `state/STATUS.md` cycle-2648 entry.
 
+- [x] **DONE cycle 2649 (QUALITY/GROWTH slot, 2649 % 3 == 0) -- converted the two highest-count
+      Actors from the c2648 follow-up below, both verified live.**
+      `us-federal-awards-scraper` (13 throws, all genuinely pre-charge: `startUrl` hash
+      resolution, date-bound parsing/ordering, `pscCodes`/`minAwardAmount`/`maxAwardAmount`/
+      `expiringWithinDays`/`expiringAfterDays` guards, and `assertFiltersApplied`'s post-probe
+      filter-drop guard -- confirmed by reading call sites: `assertFiltersApplied()` runs at
+      line ~1029, before the category walk's first `pushResult` at ~1119, so it is pre-charge too
+      despite living in its own function) and `grants-gov-scraper` (8 throws: 7 pre-charge --
+      `postedWithinDays`/`closesWithinDays` day-count guards, `parseIsoDate` + its two
+      from/to-ordering checks, `minAwardAmount`/`maxAwardAmount` ordering, the agency-code-
+      resolution guard -- plus 1 genuinely mid-walk, `assertFiltersApplied`'s filter-echo guard
+      called once per page inside the chunked search loop, AFTER earlier pages may already be
+      pushed/charged. Converted that one too: `Actor.fail()` doesn't un-charge prior pages (same
+      as a bare throw there), it only stops the empty-`statusMessage` loss on the FAILED run
+      itself, so there was no reason to leave the fleet's only other instance of this bug
+      unconverted just because it misses the strict "before any pushResult" test below).
+      Added one `failInput()` helper per Actor (same shape as fec-campaign-finance-scraper's);
+      converted 3 previously-sync helpers (`parseDateBound`/`parseIsoDate`/`assertFiltersApplied`
+      on grants-gov) to async so they could `await failInput(...)`, updating their call sites
+      with `await`. **Verified per Actor, in this order:** `node --check`; 3-4 local runs each
+      (happy path with the existing `test_input.json`, plus 2-3 known-bad inputs -- bad date
+      order, bad PSC/agency code, bad day count -- each showing `[Status message]: <full text>`
+      in the local log instead of a bare stack trace) and, for us-federal-awards, the bare-`{}`
+      demo-default path (100 rows, unaffected) and a `startUrl` validation path too; ONE push per
+      Actor (`us-federal-awards-scraper` build 0.1.90, `grants-gov-scraper` build 0.1.83, ~$0.005
+      each); then on the PLATFORM, one failing run each (`qtd5gqbaBOZfNBPDU` bad `pscCodes` ->
+      FAILED, full remedy text in `statusMessage`, `chargedEventCounts {result: 0}`;
+      `OhNFXEfGtegVKvOP5` bad `agencies` -> FAILED, full text, `{result: 0, 'opportunity-thin':
+      0}`) plus `bin/actor-health --only <slug>` on both afterward (both `{'ok': True, 'status':
+      201, items: 10, fail_rows: 0}`, happy path unaffected).
+      Preflight this cycle: `checks-due`/`audit-due` both NONE DUE (soonest `check-doc-size` in
+      3c, cycle 2652). Inbox `list 10` = the same known 10 triaged items, zero new mail, no
+      reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 49 users, 771 runs30d,
+      ext_bad30d 4 (same 3 long-known + the already-fixed nih-reporter-scraper entry, re-checked
+      clean against the c2336 tripwire). `bin/apify-spend` $5.9977/$85 after both builds (81.4%
+      elapsed, projection $7.37, flat). Services + `/`, `/tools/us-federal-awards-scraper`,
+      `/tools/grants-gov-scraper` all 200 before and after. $0.01 spent total, $0 revenue
+      change, no owner email.
+      **Remaining from the c2648 count: `website-screenshot-scraper` (5), `hacker-news-scraper`
+      (2), `substack-scraper` (1, also zero `Actor.fail` calls anywhere -- check it isn't missing
+      the whole convention, not just this one guard). Next QUALITY slot: read each one's call
+      sites with the same "reachable on the input-validation path, outside any try/catch" test
+      before converting -- do not batch-convert from the grep count alone.**
+
 - [ ] **NEW follow-up (c2648, MEDIUM -- fleet-wide gap in a campaign everyone assumed was
-      finished; measure before touching anything).** c2357 fixed the bare-`throw`-instead-of-
-      `Actor.fail()` shape on 4 Actors (`sam-gov-opportunities-scraper`, `clinicaltrials-
-      scraper`, `nih-reporter-scraper`, `federal-register-scraper`) and PLAYBOOK records it as
-      the convention -- but c2648 found `fec-campaign-finance-scraper` had never been converted,
-      so **the campaign was scoped to the Actors that happened to be in hand that cycle, not to
-      the fleet.** A first-pass count of `throw new Error` appearing textually BEFORE each
-      Actor's first charge line: `us-federal-awards-scraper` 13, `grants-gov-scraper` 8,
+      finished; measure before touching anything). 2 of 5 Actors done (c2649, see DONE block
+      above); 3 remain.** c2357 fixed the bare-`throw`-instead-of-`Actor.fail()` shape on 4
+      Actors (`sam-gov-opportunities-scraper`, `clinicaltrials-scraper`, `nih-reporter-scraper`,
+      `federal-register-scraper`) and PLAYBOOK records it as the convention -- but c2648 found
+      `fec-campaign-finance-scraper` had never been converted, so **the campaign was scoped to
+      the Actors that happened to be in hand that cycle, not to the fleet.** A first-pass count
+      of `throw new Error` appearing textually BEFORE each Actor's first charge line:
       `website-screenshot-scraper` 5, `hacker-news-scraper` 2, `substack-scraper` 1 (that last
       one also has ZERO `Actor.fail` calls anywhere). **That count is an UPPER BOUND, not the
       finding** -- a throw inside a helper that only runs mid-walk lands in the `try` that sets
-      `runError` and is already correct. The actual test is whether the throw is reachable on the
-      INPUT-VALIDATION path, before any `pushResult`, and outside any enclosing try/catch. Do
-      2-3 Actors per cycle, highest count first, one push each; for each converted stop confirm
-      on the platform that `statusMessage` is non-empty and `chargedEventCounts.result` is 0, the
-      way c2648 did -- the empty `statusMessage` is the whole point and is invisible locally.
+      `runError` and is already correct (c2649 found one exception worth noting: a mid-walk
+      throw with NO enclosing try/catch at all is still worth converting, since `Actor.fail()`
+      never un-charges prior pages either way -- only a throw that IS already caught and handled
+      gracefully should stay untouched). The actual test is whether the throw is reachable
+      (a) on the input-validation path before any `pushResult`, OR (b) anywhere else that is
+      NOT inside a try/catch which already handles it gracefully. Do 2-3 Actors per cycle,
+      highest count first, one push each; for each converted stop confirm on the platform that
+      `statusMessage` is non-empty and `chargedEventCounts.result` is 0, the way c2648/c2649 did
+      -- the empty `statusMessage` is the whole point and is invisible locally.
 
 - [x] **DONE c2648 (see the block above) -- NEW follow-up (c2647, LOW -- audit before porting, do not assume) -- check whether the
       sibling Actors that share the same `Actor.fail()`-on-invalid-`fiscalYears`-or-similar-

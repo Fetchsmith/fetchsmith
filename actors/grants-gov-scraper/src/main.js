@@ -11,6 +11,20 @@ function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.
 function timeBudgetOk() { return remainingMs() > 0; }
 let timeBudgetExceeded = false;
 
+// Pre-charge input validation stops the run through Actor.fail(), NOT a bare `throw` (PLAYBOOK,
+// cycle 2357): a bare throw does charge $0 correctly, but it leaves the FAILED run's
+// `statusMessage` empty, so the explanation lands only in the run log as a stack trace -- which
+// buyers do not read. Actor.fail() calls setStatusMessage() before exiting. This Actor was not
+// among the four c2357 converted and still had every date/amount/agency guard as a bare throw
+// until cycle 2649 (c2648's fleet-wide follow-up). Safe from a top-level-await module because
+// Actor.init() has always run by the time input is parsed.
+// The trailing `throw` is unreachable in practice (Actor.fail() process.exit()s before its
+// promise resolves) and exists only so a rejected value can never fall through as "no filter".
+async function failInput(msg) {
+    await Actor.fail(msg);
+    throw new Error(msg);
+}
+
 // Grants.gov's own internal search API (no API key, no auth). It is POST + JSON body, unlike
 // Federal Register / ClinicalTrials.gov which are both GET — do not reuse a GET helper here.
 const API = 'https://api.grants.gov/v1/api';
@@ -134,7 +148,7 @@ if (input.postedWithinDays !== undefined && input.postedWithinDays !== null && i
     // Throws rather than warns (cycle 591), same reason as parseIsoDate below: this branch only
     // runs when the caller explicitly set a value, and ignoring it leaves NO date filter at all,
     // so the run would return (and bill for) the whole unfiltered set the caller was narrowing.
-    else throw new Error(`"postedWithinDays" is not a valid day count: "${input.postedWithinDays}". Use a positive whole number of days (e.g. 7). The run stops instead of ignoring it, because dropping the window would return every matching opportunity and charge you for the difference.`);
+    else await failInput(`"postedWithinDays" is not a valid day count: "${input.postedWithinDays}". Use a positive whole number of days (e.g. 7). The run stops instead of ignoring it, because dropping the window would return every matching opportunity and charge you for the difference.`);
 }
 
 // Grants.gov's API has no absolute-date filter at all (verified live: posting a
@@ -149,7 +163,7 @@ if (input.postedWithinDays !== undefined && input.postedWithinDays !== null && i
 // for the whole unfiltered set. Judge a failed parse by whether ignoring it narrows or widens the
 // result set: widening under per-result pricing must stop the run, and a log.warning inside an
 // otherwise-successful run is not a fix because nobody reads it.
-function parseIsoDate(s, label) {
+async function parseIsoDate(s, label) {
     if (s === undefined || s === null || s === '') return null;
     const trimmed = String(s).trim();
     if (!trimmed) return null;
@@ -159,7 +173,7 @@ function parseIsoDate(s, label) {
     // March 1, 2024-13-01 becomes 2025-01-01), so the ISO round-trip back to the input string is
     // the check that actually catches a calendar-invalid date.
     if (!m || Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== trimmed) {
-        throw new Error(
+        await failInput(
             `"${label}" is not a valid date: "${trimmed}". Use YYYY-MM-DD (e.g. 2024-01-31). `
             + 'The run stops instead of ignoring the bound, because dropping it would widen the '
             + 'result set to every matching opportunity and charge you for the difference.',
@@ -173,10 +187,10 @@ function parseUsDate(s) {
     const d = new Date(Date.UTC(Number(m[3]), Number(m[1]) - 1, Number(m[2])));
     return Number.isNaN(d.getTime()) ? null : d;
 }
-const postedFrom = parseIsoDate(input.postedFrom, 'postedFrom');
-const postedTo = parseIsoDate(input.postedTo, 'postedTo');
+const postedFrom = await parseIsoDate(input.postedFrom, 'postedFrom');
+const postedTo = await parseIsoDate(input.postedTo, 'postedTo');
 if (postedFrom !== null && postedTo !== null && postedFrom > postedTo) {
-    throw new Error(`postedFrom (${input.postedFrom}) is after postedTo (${input.postedTo}).`);
+    await failInput(`postedFrom (${input.postedFrom}) is after postedTo (${input.postedTo}).`);
 }
 const hasAbsoluteDateFilter = postedFrom !== null || postedTo !== null;
 if (hasAbsoluteDateFilter && postedWithinDays !== null) {
@@ -193,10 +207,10 @@ if (hasAbsoluteDateFilter && postedWithinDays !== null) {
 // filter would silently delete roughly half the default result set, so rows with no deadline are
 // dropped with their own named counter in the final summary rather than folded into the
 // postedFrom/postedTo one.
-const closeDateFrom = parseIsoDate(input.closeDateFrom, 'closeDateFrom');
-const closeDateTo = parseIsoDate(input.closeDateTo, 'closeDateTo');
+const closeDateFrom = await parseIsoDate(input.closeDateFrom, 'closeDateFrom');
+const closeDateTo = await parseIsoDate(input.closeDateTo, 'closeDateTo');
 if (closeDateFrom !== null && closeDateTo !== null && closeDateFrom > closeDateTo) {
-    throw new Error(`closeDateFrom (${input.closeDateFrom}) is after closeDateTo (${input.closeDateTo}).`);
+    await failInput(`closeDateFrom (${input.closeDateFrom}) is after closeDateTo (${input.closeDateTo}).`);
 }
 const hasCloseDateFilter = closeDateFrom !== null || closeDateTo !== null;
 
@@ -212,7 +226,7 @@ if (input.closesWithinDays !== undefined && input.closesWithinDays !== null && i
     if (Number.isFinite(n) && n >= 1) closesWithinDays = Math.floor(n);
     // Throws for the same reason as postedWithinDays above: a dropped deadline window widens the
     // billable result set instead of narrowing it.
-    else throw new Error(`"closesWithinDays" is not a valid day count: "${input.closesWithinDays}". Use a positive whole number of days (e.g. 30). The run stops instead of ignoring it, because dropping the window would return every matching opportunity and charge you for the difference.`);
+    else await failInput(`"closesWithinDays" is not a valid day count: "${input.closesWithinDays}". Use a positive whole number of days (e.g. 30). The run stops instead of ignoring it, because dropping the window would return every matching opportunity and charge you for the difference.`);
 }
 if (hasCloseDateFilter && closesWithinDays !== null) {
     log.warning('Both closesWithinDays and closeDateFrom/closeDateTo are set; ignoring closesWithinDays since an absolute range was given.');
@@ -235,7 +249,7 @@ const hasEffectiveCloseDateFilter = effectiveCloseDateFrom !== null || effective
 const minAwardAmount = Number.isFinite(Number(input.minAwardAmount)) && input.minAwardAmount !== '' && input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
 const maxAwardAmount = Number.isFinite(Number(input.maxAwardAmount)) && input.maxAwardAmount !== '' && input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
 if (minAwardAmount !== null && maxAwardAmount !== null && minAwardAmount > maxAwardAmount) {
-    throw new Error(`minAwardAmount (${minAwardAmount}) is greater than maxAwardAmount (${maxAwardAmount}).`);
+    await failInput(`minAwardAmount (${minAwardAmount}) is greater than maxAwardAmount (${maxAwardAmount}).`);
 }
 const enrich = input.enrich !== false || minAwardAmount !== null || maxAwardAmount !== null;
 const PAGE_SIZE = 1000; // No row cap was found (5000 verified in one call), but keeping requests
@@ -308,7 +322,7 @@ if (unknownAgencies.length) {
 // that did resolve (warned above); only a list where NOTHING resolved is refused, and a thrown run
 // is charged nothing at all, which is the outcome the buyer would have picked.
 if (wantedAgencies.length && !resolvedAgencies.length) {
-    throw new Error(
+    await failInput(
         `None of the ${wantedAgencies.length} agency code(s) you supplied (${wantedAgencies.join(', ')}) exist on `
         + 'Grants.gov, so the agency filter would have been dropped and the run would have returned EVERY '
         + 'agency\'s opportunities instead. Refusing to run rather than bill you for the wrong rows. Copy an '
@@ -746,7 +760,7 @@ if (watchDeadDateBound) {
 // assertion costs zero extra requests and cannot false-positive on our own known-good names.
 // It exists to catch the day Grants.gov renames or retires one of them underneath us.
 const ECHO_EXEMPT = new Set(['keywordEncoded']); // boolean flag, echoed as a real bool not our string
-function assertFiltersApplied(sent, page) {
+async function assertFiltersApplied(sent, page) {
     const echo = page?.data?.searchParams;
     if (!echo || typeof echo !== 'object') return; // no echo block = nothing to check against
     const dropped = Object.keys(sent).filter((k) => {
@@ -756,7 +770,11 @@ function assertFiltersApplied(sent, page) {
         return String(echo[k] ?? '') !== String(want);
     });
     if (!dropped.length) return;
-    throw new Error(
+    // Reachable mid-walk (page 2+ of a chunk), after earlier pages may already be pushed and
+    // charged -- Actor.fail() does not and should not un-charge those; it only makes sure THIS
+    // run's FAILED status carries the reason instead of an empty statusMessage (same c2357/c2648
+    // bare-throw gap as the pre-charge guards above).
+    await failInput(
         `Grants.gov silently ignored ${dropped.length} search filter(s): ${dropped.join(', ')}. `
         + 'An unrecognized parameter name is dropped without any error and the API returns the '
         + 'UNFILTERED result set, which would bill you for far more rows than you asked for. '
@@ -1183,7 +1201,7 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
                 chunksCounted.add(agencyChunk);
                 declaredMatches = (declaredMatches ?? 0) + page.data.hitCount;
             }
-            assertFiltersApplied(params, page);
+            await assertFiltersApplied(params, page);
             const pageHits = listOf(page?.data?.oppHits);
             if (!pageHits.length) break;
             scanned += pageHits.length;

@@ -20,6 +20,21 @@ const clampStatusMessage = (msg, suffix = '') => {
 };
 const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
 
+// Pre-charge input validation stops the run through Actor.fail(), NOT a bare `throw` (PLAYBOOK,
+// cycle 2357): a bare throw does charge $0 correctly, but it leaves the FAILED run's
+// `statusMessage` empty, so the explanation lands only in the run log as a stack trace -- which
+// buyers do not read. Actor.fail() calls setStatusMessage() before exiting. This Actor was not
+// among the four c2357 converted and still had every pre-charge stop (startUrl parsing, date
+// bounds, pscCodes/award-amount/expiring guards, the post-probe filter-drop guard) as a bare
+// throw until cycle 2649 (c2648's fleet-wide follow-up). Safe from a top-level-await module
+// because Actor.init() has always run by the time input is parsed.
+// The trailing `throw` is unreachable in practice (Actor.fail() process.exit()s before its
+// promise resolves) and exists only so a rejected value can never fall through as "no filter".
+async function failInput(msg) {
+    await Actor.fail(msg);
+    throw new Error(msg);
+}
+
 const timeoutAt = Actor.getEnv().timeoutAt?.getTime() ?? null;
 const TIME_BUDGET_MARGIN_MS = 45_000;
 function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.now() - TIME_BUDGET_MARGIN_MS; }
@@ -124,14 +139,14 @@ if (startUrlInput) {
   try {
     host = new URL(startUrlInput).hostname.replace(/^www\./, '');
   } catch {
-    throw new Error(`"startUrl" is not a valid URL: ${JSON.stringify(startUrlInput)}`);
+    await failInput(`"startUrl" is not a valid URL: ${JSON.stringify(startUrlInput)}`);
   }
   if (host !== 'usaspending.gov') {
-    throw new Error(`"startUrl" must be a usaspending.gov link, got host ${JSON.stringify(host)}.`);
+    await failInput(`"startUrl" must be a usaspending.gov link, got host ${JSON.stringify(host)}.`);
   }
   const hashMatch = startUrlInput.match(/[?&#]hash=([a-f0-9]{32})/i) ?? startUrlInput.match(/\/search\/([a-f0-9]{32})/i);
   if (!hashMatch) {
-    throw new Error(
+    await failInput(
       '"startUrl" is a usaspending.gov link but no saved-search hash was found in it (expected '
       + '?hash=<32 hex chars> or /search/<32 hex chars>). Copy the link from the "Share" action '
       + 'on a usaspending.gov Advanced Search results page.',
@@ -151,14 +166,14 @@ if (startUrlInput) {
     // Same network-level failure mode as postPage's retry loop, but this is a single pre-flight
     // call before any row is pushed or charged, so fail fast with a message that says what to do
     // instead of letting a raw TimeoutError surface as an unexplained crash.
-    throw new Error(
+    await failInput(
       `"startUrl"'s saved-search hash (${hash}) could not be resolved: the request to `
       + `api.usaspending.gov failed (${err.message}). This is a network-level failure, not a bad `
       + 'link -- re-run the Actor; nothing was charged.',
     );
   }
   if (resolveResp.statusCode !== 200 || !resolveResp.body?.filter?.filters) {
-    throw new Error(
+    await failInput(
       `"startUrl"'s saved-search hash (${hash}) could not be resolved (HTTP ${resolveResp.statusCode}). `
       + 'It may have expired, or the link was mistyped -- copy it fresh from usaspending.gov.',
     );
@@ -249,18 +264,18 @@ const isValidYmd = (y, m, d) => {
     const dt = new Date(Date.UTC(y, m - 1, d));
     return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
 };
-const parseDateBound = (raw, field, fallback) => {
+const parseDateBound = async (raw, field, fallback) => {
     if (raw == null || raw === '') return fallback;
     const s = String(raw).trim().slice(0, 10);
     if (!DATE_RE.test(s) || !isValidYmd(Number(s.slice(0, 4)), Number(s.slice(5, 7)), Number(s.slice(8, 10)))) {
-        throw new Error(`"${field}" is not a real calendar date: ${JSON.stringify(raw)}. Use YYYY-MM-DD, e.g. 2026-08-01.`);
+        await failInput(`"${field}" is not a real calendar date: ${JSON.stringify(raw)}. Use YYYY-MM-DD, e.g. 2026-08-01.`);
     }
     return s;
 };
-const endDate = parseDateBound(input.endDate, 'endDate', isoDay(today));
-const startDate = parseDateBound(input.startDate, 'startDate', isoDay(new Date(today.getTime() - 365 * 86400_000)));
+const endDate = await parseDateBound(input.endDate, 'endDate', isoDay(today));
+const startDate = await parseDateBound(input.startDate, 'startDate', isoDay(new Date(today.getTime() - 365 * 86400_000)));
 if (startDate > endDate) {
-    throw new Error(`"startDate" (${startDate}) is after "endDate" (${endDate}) — the window is empty. Swap them.`);
+    await failInput(`"startDate" (${startDate}) is after "endDate" (${endDate}) — the window is empty. Swap them.`);
 }
 const effectiveStart = startDate < EARLIEST ? EARLIEST : startDate;
 
@@ -343,7 +358,7 @@ const naicsCodes = (input.naicsCodes ?? []).map((c) => String(c).trim()).filter(
 const pscCodes = (input.pscCodes ?? []).map((c) => String(c).trim().toUpperCase()).filter(Boolean);
 const badPsc = pscCodes.find((c) => !/^[A-Z0-9]{1,4}$/.test(c));
 if (badPsc) {
-  throw new Error(`"pscCodes" entry ${JSON.stringify(badPsc)} is not a PSC code — must be 1 to 4 letters/digits, e.g. "R425" (leaf), "R4" or "10" (prefix group), "R" (whole category).`);
+  await failInput(`"pscCodes" entry ${JSON.stringify(badPsc)} is not a PSC code — must be 1 to 4 letters/digits, e.g. "R425" (leaf), "R4" or "10" (prefix group), "R" (whole category).`);
 }
 // Disaster Emergency Fund Codes (re-verified live against api.usaspending.gov/api/v2/references/def_codes/,
 // 2026-10-10): of the API's 52 accepted codes, exactly 9 carry a `disaster` flag -- L/M/N/O/P/U/V are
@@ -357,21 +372,21 @@ const defCodes = (input.defCodes ?? []).map((c) => String(c).trim().toUpperCase(
 const minAwardAmount = input.minAwardAmount != null ? Number(input.minAwardAmount) : null;
 const maxAwardAmount = input.maxAwardAmount != null ? Number(input.maxAwardAmount) : null;
 if (minAwardAmount != null && maxAwardAmount != null && minAwardAmount > maxAwardAmount) {
-  throw new Error(`"minAwardAmount" (${minAwardAmount}) is greater than "maxAwardAmount" (${maxAwardAmount}) — no award can ever match. Swap them.`);
+  await failInput(`"minAwardAmount" (${minAwardAmount}) is greater than "maxAwardAmount" (${maxAwardAmount}) — no award can ever match. Swap them.`);
 }
 const expiringWithinDays = input.expiringWithinDays != null ? Number(input.expiringWithinDays) : null;
 const expiringAfterDays = input.expiringAfterDays != null ? Number(input.expiringAfterDays) : null;
 if (expiringWithinDays != null && (!Number.isFinite(expiringWithinDays) || expiringWithinDays < 1)) {
-  throw new Error('"expiringWithinDays" must be a positive integer number of days.');
+  await failInput('"expiringWithinDays" must be a positive integer number of days.');
 }
 if (expiringAfterDays != null && (!Number.isFinite(expiringAfterDays) || expiringAfterDays < 0)) {
-  throw new Error('"expiringAfterDays" must be a non-negative integer number of days.');
+  await failInput('"expiringAfterDays" must be a non-negative integer number of days.');
 }
 if (expiringAfterDays != null && expiringWithinDays == null) {
   log.warning('"expiringAfterDays" requires "expiringWithinDays" to also be set -- ignoring "expiringAfterDays".');
 }
 if (expiringAfterDays != null && expiringWithinDays != null && expiringAfterDays >= expiringWithinDays) {
-  throw new Error(`"expiringAfterDays" (${expiringAfterDays}) must be less than "expiringWithinDays" (${expiringWithinDays}) — otherwise no award can ever match.`);
+  await failInput(`"expiringAfterDays" (${expiringAfterDays}) must be less than "expiringWithinDays" (${expiringWithinDays}) — otherwise no award can ever match.`);
 }
 if (expiringWithinDays != null && isSubaward) {
   log.warning('"expiringWithinDays"/"expiringAfterDays" only apply in awardLevel="prime" mode -- sub-award records carry no period-of-performance end date. Ignoring.');
@@ -888,7 +903,7 @@ async function assertFiltersApplied() {
         }
         const results = body.results ?? [];
         if (results.length > 0) {
-            throw new Error(
+            await failInput(
                 `USAspending no longer recognises the "${name}" search filter: a probe request with `
                 + `"${name}" set to a value that cannot match any real award still returned `
                 + `${results.length} row(s), which means the parameter is now being silently dropped `

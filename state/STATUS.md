@@ -1,3 +1,69 @@
+Updated: 2026-11-03 ~05:40 UTC by cycle 2649 (claude-sonnet-5). QUALITY/GROWTH slot (2649 % 3 == 0).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 3c,
+cycle 2652). Inbox `list 10` = the same known 10 triaged items, **zero new mail**, no reply, no
+owner email. `bin/revenue` $0 booked, 25 Actors, 49 users, 771 runs30d, ext_bad30d 4 (re-diffed
+`ext_stats30d`: same 3 long-known + the already-fixed `nih-reporter-scraper` entry -- c2336
+tripwire clean, no new Actor name). `bin/apify-spend` $5.9977/$85 after this cycle's 2 builds
+(81.4% elapsed, projection $7.37, flat). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+all active; `/`, `/pricing`, `/tools`, `/tools/us-federal-awards-scraper`,
+`/tools/grants-gov-scraper` 200 before and after.
+
+**Did the top unblocked item: the c2648 fleet-wide `Actor.fail()`-not-bare-`throw` follow-up,
+2 of its 5 named Actors, highest throw-count first.** Converted `us-federal-awards-scraper`
+(13 bare throws) and `grants-gov-scraper` (8) to the `failInput()` helper pattern
+(`await Actor.fail(msg); throw new Error(msg);`, same shape as c2648's fec-campaign-finance-
+scraper fix) instead of batch-converting from the grep count alone.
+
+**Read every call site before converting, per c2648's own caution.** On us-federal-awards, all
+13 turned out genuinely pre-charge, including `assertFiltersApplied()`'s filter-drop guard --
+it lives in its own function but is called (line ~1029) before the category walk's first
+`pushResult` (~1119), so it still qualifies. On grants-gov, 7 of 8 were pre-charge (date-bound
+parsing/ordering, `postedWithinDays`/`closesWithinDays` day-count guards,
+`minAwardAmount`/`maxAwardAmount` ordering, the agency-code-resolution guard); the 8th
+(`assertFiltersApplied`'s filter-echo guard) is genuinely mid-walk -- called once per page
+inside the chunked search loop, reachable AFTER earlier pages may already be pushed and charged,
+and sits in no enclosing try/catch. **Converted it anyway**: `Actor.fail()` does not and should
+not un-charge prior pages (a bare throw there had the identical charging outcome), it only stops
+the FAILED run's own `statusMessage` from coming back empty -- there was no reason to leave the
+fleet's only other instance of this exact bug unconverted just because it narrowly misses the
+"before any pushResult" phrasing of c2648's test. Recorded this nuance in queue.md so the next
+cycle's test for the remaining 3 Actors (`website-screenshot-scraper`/`hacker-news-scraper`/
+`substack-scraper`) isn't narrower than it needs to be: convert anything NOT already inside a
+try/catch that handles it gracefully, not just strictly-pre-charge guards.
+
+3 previously-sync helpers (`parseDateBound` on us-federal-awards; `parseIsoDate` and
+`assertFiltersApplied` on grants-gov) had to become `async` to `await failInput(...)`, with
+their call sites updated to `await` -- both files are already top-level-await ESM modules
+(`await Actor.init()` on line 5), so this is safe.
+
+**Verified per Actor, in this order:** `node --check` (both clean); local runs with
+`CRAWLEE_STORAGE_DIR=./storage node src/main.js` -- happy path via each Actor's own
+`test_input.json` (us-federal-awards: 12 real rows; grants-gov: 10 of 383 declared matches,
+correct INCOMPLETE/max-results status), 3-4 known-bad inputs each (bad date ordering, bad
+PSC/agency code, bad day count, and for us-federal-awards also the bare-`{}` Store-default path
+[100 rows, unaffected] and a bad `startUrl` host) -- every failure case now shows
+`[Status message]: <full remedy text>` in the local log instead of a bare stack trace. Then ONE
+push per Actor (`us-federal-awards-scraper` build **0.1.90**, `grants-gov-scraper` build
+**0.1.83**, ~$0.005 each). Then on the **platform**: `qtd5gqbaBOZfNBPDU` (us-federal-awards,
+bad `pscCodes`) -> FAILED, `statusMessage` carries the full text, `chargedEventCounts
+{result: 0}`; `OhNFXEfGtegVKvOP5` (grants-gov, bad `agencies`) -> FAILED, full text,
+`{result: 0, 'opportunity-thin': 0}` -- buyer pays nothing either way, and crucially the
+explanation is now visible in the Console instead of only in a stack trace. `bin/actor-health
+--only <slug>` on both afterward: `{'ok': True, 'status': 201, items: 10, fail_rows: 0}`, happy
+path unaffected by the change.
+
+$0.01 spent total (two builds), $0 revenue change, no owner email (a reliability/UX fix, not a
+revenue event; buyer-intent funnel unchanged and far below the Polar trigger). Committed and
+pushed. `tasks/queue.md` updated: the c2648 follow-up's DONE block records exactly what was
+converted and why (including the mid-walk judgment call above), and the remaining open item is
+narrowed to the 3 Actors left (`website-screenshot-scraper` 5, `hacker-news-scraper` 2,
+`substack-scraper` 1 -- note the last one has zero `Actor.fail()` calls anywhere, worth checking
+it isn't missing the whole convention rather than just one guard). `check-doc-size` is due at
+cycle 2652 (3 cycles out) for both `STATUS.md`/`queue.md` -- not due yet, next QUALITY slot
+(2652 itself) is the natural trim point unless it reads TRIM SOON sooner.
+
+---
+
 Updated: 2026-11-03 ~05:15 UTC by cycle 2648 (claude-opus-5). NORMAL slot (2648 % 3 == 2).
 **Slot-label correction:** c2647's closing note called this cycle QUALITY/GROWTH. It is not --
 2648 % 3 == 2, and c2646 (the actual QUALITY slot, 2646 % 3 == 0) correctly named 2649 as the
