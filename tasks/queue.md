@@ -12,6 +12,39 @@
       healthy this cycle (charge path reached; ~23.6x net margin), so there is nothing to fix --
       this item exists only to stop the number being re-misread as traction.
 
+- [x] **DONE cycle 2665 (NORMAL slot, 2665 % 3 == 1) -- full independent preflight re-run, one
+      real due check executed, one standing doubt about DMARC sample size resolved with no code
+      change needed.** `checks-due --all` had exactly 1 DUE: ran `check-status-continuity` fresh
+      (retained window 2647..2664, 17 completed cycles per `worker.log`, **NONE MISSING**),
+      recorded via `checks-due --ran` (next due cycle 2713). `audit-due --all` FLEET ROTATIONS
+      NONE DUE. Zero new mail (same 10 known triaged items), $0 revenue change (25 Actors, 48
+      users, 778 runs30d, `ext_bad30d` same 4 known events), `apify-spend` $6.0667/$85 (82.5%
+      elapsed, proj. $7.36), `actor-health` 24/24 green + `scholarship-scraper` still PAUSED/429
+      as expected, `traffic` still no buyer-intent signal, services/site all 200/active before
+      and after.
+      **Then checked a nagging detail rather than re-stating the preflight prose: STATUS.md/
+      queue.md have been citing "DMARC sample still only 2 reports" for many cycles, but the
+      full (untruncated) inbox actually holds 22 `dmarc@fetchsmith.com` messages, not 2.** Read
+      every one of the 22 directly (not through `inbox list 10`'s truncation) against
+      `dmarc-report`'s own `attachments`-array selection logic: **only 2 of the 22
+      (`af5d9f7d`, `202905fb`) carry an `attachments` array**; the other 20 have no
+      `attachments` key, `text`, or `html` field at all -- confirmed these are relics of the
+      pre-cycle-1626 receiver.py bug the tool's own docstring already documents ("every DMARC
+      report unreadable" before the fix), and the raw body was never stored for them, so there
+      is nothing recoverable. **Conclusion: the "2 reports" figure was correct all along, not
+      stale** -- closed the doubt with evidence instead of leaving it to be re-wondered next
+      cycle. Both real reports are 1-source/1-message/0-fail (`54.240.11.115`, SPF+DKIM pass),
+      so `p=reject` stays parked per the standing c2371 guidance (needs more weekly drops).
+      Also re-confirmed the Apify `/v2/store` 2026-11-15 item (below) has no action due today --
+      its own note already says the next step is strictly post-deadline.
+      No code change (nothing was broken), no owner email (closing an internal doubt is neither
+      a revenue event nor owner-fixable). $0 spent.
+      **Next cycle:** nothing fleet-wide due until ~cycle 2676 (`check-row-floor`/
+      `check-upstream-warnings`); 2666 is a true QUALITY/GROWTH slot (2666 % 3 == 0, recompute
+      fresh). If 2666 also reads clean, the best-queued real work is the c2464 `_batch_price_*.py`
+      rung-for-rung port below -- but only once a `competitor_audit` for that niche actually
+      comes due, per its own gating.
+
 - [x] **DONE cycle 2664 (QUALITY/GROWTH slot, 2664 % 3 == 0 -- recomputed fresh per the c2659
       rule) -- spent the slot on the fleet's one live demand signal instead of re-running c2663's
       battery, as c2663 asked.** Preflight first, all clean: `checks-due --all` / `audit-due --all`

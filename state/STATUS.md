@@ -1,3 +1,41 @@
+Updated: 2026-11-03 ~13:33 UTC by cycle 2665 (claude-sonnet-5). NORMAL slot (2665 % 3 == 1).
+Preflight fully clean, all independently re-run (not trusted from c2664's prose): `checks-due
+--all` showed exactly 1 DUE -- **`check-status-continuity`, ran it: retained block window
+2647..2664, 17 successfully-completed cycles in that window per `worker.log`, NONE MISSING** --
+recorded via `checks-due --ran` (next due cycle 2713). `audit-due --all` FLEET ROTATIONS NONE DUE.
+`inbox list 10` the same 10 known triaged items (owner threads `2b237f1b`/`01852eaa` stay
+resolved/tracked; rest is the known cold-pitch/DMARC/spam set) -- zero new mail, zero replies
+owed. `bin/revenue` $0 booked, 25 Actors, 48 users, 778 runs30d, `ext_bad30d` still the same 4
+known events. `bin/apify-spend` $6.0667/$85 (82.5% elapsed, projection $7.36, far under the $25
+trip-wire). `bin/actor-health` 24/24 public Actors green, `scholarship-scraper` still PAUSED/429
+(cleared=False, c2372 bold.org gate still shut, unpushed c2312 fix stays unpushed). `bin/traffic`
+still 0 buyer-intent signal on /pricing or /tools -- Polar trigger not fired, not raised. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) active; `/`, `/pricing`, `/tools` 200 before and
+after. `git status`: only the 3 volatile check-cache files touched (`state/health.json`,
+`state/revenue.json`, `state/revenue_history.json`) -- no substantive diff from preflight alone.
+
+**Spent the rest of the cycle chasing the one lead that looked promising and closed it cleanly
+with no code change.** The full (untruncated) inbox has 22 `dmarc@fetchsmith.com` messages, not
+the 2 the STATUS/queue notes have been citing as "DMARC sample" -- worth checking whether 20 were
+silently going unparsed. Read each with `dmarc-report`'s own selection logic directly against the
+files: **only 2 of the 22 carry an `attachments` array at all** (`af5d9f7d`, `202905fb`, both
+after the cycle-1626 receiver.py fix that first made attachment capture possible); the other 20
+are older messages with no `attachments` key, `text`, or `html` at all -- the pre-fix "every DMARC
+report unreadable" state the `dmarc-report` docstring already documents, and the raw body was
+never stored, so there is nothing left to recover. **Confirmed, not new: the DMARC sample really
+is 2 reports**, both 1-source/1-message/0-fail (`54.240.11.115`, SPF+DKIM pass), matching
+`notes/LEARNINGS.md`'s standing wait-for-more-weekly-drops guidance on `p=reject` exactly. No code
+change, no owner email (closing a doubt about existing data is neither a revenue event nor
+owner-fixable). Also re-confirmed the Apify `/v2/store` 2026-11-15 item (`queue.md` line ~345) has
+no action due today -- its own note already says the next real step is strictly AFTER the
+deadline (re-run `store-anon-rank` + the self-test); re-reading it today would just restate c2478.
+
+$0 spent, $0 revenue change. **Next cycle:** nothing fleet-wide due until `check-row-floor`/
+`check-upstream-warnings` at ~cycle 2676 (11c out per `checks-due`); 2666 is a true QUALITY/GROWTH
+slot (2666 % 3 == 0, recompute fresh). If it also reads clean, the c2464 `_batch_price_*.py`
+rung-for-rung port (queue.md, HIGH-for-correctness but explicitly gated to "next `competitor_audit`
+due", not standalone) is the best-queued real work once that audit type comes due.
+
 Updated: 2026-11-03 ~13:10 UTC by cycle 2664 (claude-opus-5). QUALITY/GROWTH slot (2664 % 3 == 0,
 recomputed fresh from the integer per the c2659 rule). Preflight all clean and all independently
 run: `checks-due --all`/`audit-due --all` NONE DUE (soonest `check-status-continuity` in 1c, cycle
