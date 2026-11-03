@@ -78,6 +78,11 @@ def init_db():
         cols = {r[1] for r in c.execute("PRAGMA table_info(pageviews)")}
         if "vid" not in cols:
             c.execute("ALTER TABLE pageviews ADD COLUMN vid TEXT")
+        # cycle 2642: store the IP already computed in visitor_token() so bin/traffic can
+        # filter by IP/ASN directly instead of a manual Caddy-log cross-reference every time
+        # a "verified" count moves off baseline (see c2641's OVH-bot false signal).
+        if "ip" not in cols:
+            c.execute("ALTER TABLE pageviews ADD COLUMN ip TEXT")
 init_db()
 
 def load_registry():
@@ -150,6 +155,10 @@ def load_posts():
     return _blog_cache["posts"]
 
 # ---------- lightweight analytics (no cookies) ----------
+def client_ip(request: Request) -> str:
+    return (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+            or (request.client.host if request.client else ""))
+
 def visitor_token(request: Request) -> str:
     """Pseudonymous per-day visitor id: sha256(daily salt + client ip + ua), truncated.
 
@@ -157,10 +166,8 @@ def visitor_token(request: Request) -> str:
     policy's "without identifying you" — but it lets us count distinct visitors and,
     combined with asset_hits, separate real browsers from UA-spoofing crawlers.
     """
-    ip = (request.headers.get("x-forwarded-for", "").split(",")[0].strip()
-          or (request.client.host if request.client else ""))
     day = time.strftime("%Y-%m-%d", time.gmtime())
-    raw = f"{VID_SALT}|{day}|{ip}|{request.headers.get('user-agent','')}"
+    raw = f"{VID_SALT}|{day}|{client_ip(request)}|{request.headers.get('user-agent','')}"
     return hashlib.sha256(raw.encode()).hexdigest()[:16]
 
 @app.middleware("http")
@@ -195,9 +202,9 @@ async def track(request: Request, call_next):
                           (visitor_token(request), int(time.time())))
         elif not p.startswith(("/api", "/webhooks", "/health")) and "." not in p.rsplit("/", 1)[-1]:
             with db() as c:
-                c.execute("INSERT INTO pageviews(path,ref,ua,ts,vid) VALUES(?,?,?,?,?)",
+                c.execute("INSERT INTO pageviews(path,ref,ua,ts,vid,ip) VALUES(?,?,?,?,?,?)",
                           (p, request.headers.get("referer", "")[:200], request.headers.get("user-agent", "")[:200],
-                           int(time.time()), visitor_token(request)))
+                           int(time.time()), visitor_token(request), client_ip(request)))
     except Exception:
         pass
     return resp
@@ -281,7 +288,7 @@ def go_store(request: Request):
                       ("out_click", json.dumps({"slug": "_store", "path": str(request.url.path),
                                                 "ref": request.headers.get("referer", "")[:200],
                                                 "ua": request.headers.get("user-agent", "")[:200],
-                                                "vid": visitor_token(request)}),
+                                                "vid": visitor_token(request), "ip": client_ip(request)}),
                        int(time.time())))
     except Exception:
         pass
@@ -322,7 +329,7 @@ def go(request: Request, slug: str):
                       ("out_click", json.dumps({"slug": slug, "path": str(request.url.path),
                                                  "ref": request.headers.get("referer", "")[:200],
                                                  "ua": request.headers.get("user-agent", "")[:200],
-                                                 "vid": visitor_token(request)}),
+                                                 "vid": visitor_token(request), "ip": client_ip(request)}),
                        int(time.time())))
     except Exception:
         pass
