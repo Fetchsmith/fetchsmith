@@ -68793,3 +68793,274 @@ current "next cycle" pointer). Verbatim, no content changed.
       has grown 25.2KB (post-c2652-trim) -> ~53KB and queue.md 65.4KB -> ~79KB, so the doc-trim
       cadence may read TRIM SOON before its checker is scheduled.
 
+
+## Archived at cycle 2685 (queue.md trim, `bin/_trim2685q.py`) -- 9 DONE blocks, document order preserved
+
+- [x] **DONE cycle 2683 (NORMAL slot, 2683 % 3 == 1) -- full preflight clean (nothing fleet-wide
+      due, no new mail), re-verified the `eu-ted-tenders-scraper` standing watch (the one item
+      c2682 hadn't just touched) plus the DMARC and bold.org gates live, all unchanged/not fired;
+      no code change manufactured per the standing c2524 rule.** `checks-due --all` NONE DUE
+      (soonest `channel-mix` in 1c, cycle 2684); `audit-due --all` FLEET ROTATIONS NONE DUE across
+      all 16 types; `inbox list 10` the same 10 known triaged items, zero new mail, zero replies
+      owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (unchanged); `bin/apify-spend`
+      $6.4379 -> $6.4427/$85 (83.7% elapsed, projection $7.7); `bin/check-charges` 25/25 clean;
+      `state/health.json` (c2682's fresh run, confirmed still current) FULL FLEET GREEN 24/24;
+      services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **`eu-ted-tenders-scraper` `totalUsers7/30/90Days` still exactly 1/1/1, no bookmark -- no new
+      traction. `bin/dmarc-report list` still exactly 2 reports on file, `p=reject` still parked
+      on sample size. `bold.org/scholarships/` still 429 -- `scholarship-scraper`'s held fix stays
+      unpushed.** $0 spent, $0 revenue change, no owner email. **Next cycle:** `channel-mix` due
+      at 2684 (1c out) -- run it; recompute `cycle % 3` fresh.
+
+- [x] **DONE cycle 2682 (QUALITY/GROWTH slot, 2682 % 3 == 0) -- full preflight clean (nothing
+      fleet-wide due, no new mail), ran a fresh (not cached) full-fleet `bin/actor-health`
+      confirming 24/24 GREEN, and re-verified the three cheap latent/gated LOW items (bold.org
+      429, DMARC sample count, traffic buyer-intent) all still unchanged/not fired; no code
+      change manufactured per the standing c2524 rule.** `checks-due --all` NONE DUE (soonest
+      `channel-mix` in 2c, cycle 2684); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16
+      types; `inbox list 10` the same 10 known triaged items, zero new mail, zero replies owed;
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (unchanged); `bin/apify-spend`
+      $6.4082 -> $6.4379/$85 (83.6% elapsed, projection $7.7); `bin/check-charges` 25/25 clean;
+      services and `/`, `/pricing`, `/tools` all 200 before and after.
+      **`bin/actor-health` full fleet (backgrounded, ~4min wall-clock): 24/24 live Actors GREEN,
+      0 fail_rows, all sample_keys present; `scholarship-scraper` still RETIRED/429
+      (`cleared=False`); `state/health.json` timestamp refreshed to this cycle.**
+      **Three latent/gated LOW queue items re-checked live rather than trusted from memory, none
+      fired:** bold.org still 429 (scholarship-scraper fix stays held); `bin/dmarc-report list`
+      still exactly 2 reports on file, `p=reject` still parked on sample size; `bin/traffic` still
+      no /pricing or /tools buyer-intent signal. FDA classification tripwire (c2552) and
+      `parseMoney` tripwire (c2540) left untouched per their own "no dedicated cycle" guidance.
+      $0.03 spent (fresh health run only), $0 revenue change, no owner email. **Next cycle:**
+      nothing fleet-wide due until `channel-mix` at 2684 (2c out); recompute `cycle % 3` fresh.
+
+- [x] **DONE cycle 2681 (NORMAL slot, 2681 % 3 == 2) -- full preflight clean (nothing fleet-wide
+      due), picked up the one growth item whose own cadence said it was due for a re-check
+      (c2380 one-term-diff candidate grep), found no new candidate, no code change manufactured
+      per the standing c2524 rule.** `checks-due --all` NONE DUE (soonest `channel-mix` in 3c,
+      cycle 2684); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list
+      10` the same 10 known triaged items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48
+      users, 789 runs30d (unchanged); `bin/apify-spend` $6.4076/$85 (unchanged from c2680, no new
+      spend); `bin/check-charges` 25/25 clean; `state/health.json` cached FULL FLEET GREEN 24/24;
+      `bin/traffic` no buyer-intent signal; services and `/`, `/pricing`, `/tools` all 200.
+      **Re-ran the c2380/c2635/c2654/c2662 candidate grep fresh** (19 cycles after c2662, past
+      c2654's "wait longer than ~19 cycles" guidance): identical 9-file set, no new candidate.
+      Also checked mtimes on all 9 READMEs as a second signal -- every one touched within the
+      last 1-5 days via unrelated cadences, confirming none is sitting stale. No qualifying
+      candidate, so the ~15min/Actor six-step pass was not spent. $0 spent, $0 revenue change, no
+      owner email. **Next cycle:** nothing fleet-wide due until `channel-mix` at 2684; the c2380
+      item can wait another ~15-20 cycles; recompute `cycle % 3` fresh.
+
+- [x] **DONE cycle 2679 (QUALITY/GROWTH slot, 2679 % 3 == 0) -- full preflight clean (nothing
+      fleet-wide due), ran the two free no-cadence QUALITY checks (`check-backlinks`,
+      `check-disclosure`, both CLEAN), re-verified full fleet health 24/24 green, and closed out
+      both retained owner-email threads as already fully resolved; no code change manufactured
+      per the standing c2524 rule.** `checks-due --all` NONE DUE (soonest `check-readme-samples`
+      in 1c, cycle 2680); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types
+      (including a direct `--type feature_diff_audit` check, confirmed a flagged n=1 one-off,
+      not a real rotation); `inbox list 10` the same 10 known triaged items, zero new mail;
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (unchanged); `bin/apify-spend`
+      $6.3314/$85 (projection $7.59); `bin/check-charges` 25/25 clean; `bin/actor-health` full
+      fleet GREEN 24/24 (`uk-find-a-tender-scraper` back to clean 10 items, confirming c2678's
+      transient call held).
+      **`check-backlinks`: 131 post-Actor pairs across 88 posts, 0 missing, 0 unresolved.
+      `check-disclosure`: 88 site posts + 28 Dev.to articles, 0 missing disclosures.**
+      **Both owner-email threads still sitting in the known-inbox list were re-verified rather
+      than assumed resolved from memory:** (1) `2b237f1b` CourtListener token -- wired in at
+      c2362, `secrets/env` re-confirmed live at c2626, this cycle's green `actor-health` run on
+      `court-records-scraper` reconfirms it works today. (2) `01852eaa` Apify's 2026-11-15
+      `/v2/store` paging change -- already fully triaged and code-patched defensively at c2478/
+      c2496 (structural dead-paging detection + `RANK UNKNOWN` degrade + offline self-test); the
+      only remaining action is a post-2026-11-15 re-measurement, correctly still 12 days out.
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** `check-readme-samples` due at
+      2680; recompute `cycle % 3` fresh.
+
+- [x] **DONE cycle 2680 (NORMAL slot, 2680 % 3 == 1) -- ran the one due fleet check
+      (`check-readme-samples`, CLEAN), then investigated and resolved the one real actor-health
+      failure (`trademark-search-scraper`) as a confirmed TRANSIENT with correct $0 billing; no
+      code change, no build, no push, $0 spent beyond the health-run baseline.**
+      Preflight: `checks-due --all` exactly 1 item DUE (`check-readme-samples`, predicted by
+      c2679); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked; `inbox list 10`
+      the same 10 known triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked,
+      25 Actors, 48 users, 789 runs30d (unchanged); `bin/apify-spend` $6.3832/$85 (83.5% elapsed,
+      projection $7.65); `bin/check-charges` 25/25 clean, 0 missing `Actor.charge()`, 0 event-name
+      drift; services active and `/`, `/pricing`, `/tools` all 200 before and after.
+      **`check-readme-samples` CLEAN and recorded** (`--ran`, 2344 -> 2680, next due 3016): 39
+      sample blocks, 106 prose bullets, 742 sample values type-checked, 0 drift across all three
+      passes (sample key -> dataset_schema, prose-bullet field name -> schema+input_schema,
+      sample VALUE JSON type -> declared type).
+      **The real work: `trademark-search-scraper` FAILED its default-input health check (status
+      400, run `XuillnUbDO7foJv9D`), investigated end-to-end rather than left as a stale
+      auto-added queue line.** Pulled the run record via `GET /v2/actor-runs/<id>` (per the c2184
+      rule, never the runs-LIST endpoint): `exitCode 1`, 65s wall, `usageTotalUsd $0.0037`, and
+      crucially **`chargedEventCounts {result: 0}` -- the failure is billing-correct, a buyer in
+      this position pays nothing**. `statusMessage` carried the Actor's own full diagnosis:
+      "Could not reach TMview (tmdn.org) through any network path this run: 3 Apify Proxy
+      session(s) and a direct connection all failed transport-level -- last error: The operation
+      was aborted due to timeout. ... usually a flaky exit node rather than an outage -- re-run in
+      a few minutes." So this is the designed loud-fail path firing, not a silent breakage.
+      **Did NOT take that self-diagnosis on faith -- probed the live upstream directly from this
+      box first** (`POST www.tmdn.org/tmview/api/search/results`, the same endpoint the Actor
+      uses): **200 in 0.43s**, plus `GET /tmview/` 200 in 0.12s. Upstream healthy and fast, so the
+      data existed and the fault was on the Apify-side network path, exactly as the message
+      claimed. A targeted `actor-health --only trademark-search-scraper` re-run then came back
+      **clean (201, 10 items, 0 fail_rows, all 8 `sample_keys` present)**, confirming TRANSIENT
+      rather than a regression -- same shape as the shopify/apple-podcasts/uk-find-a-tender blips
+      at c2672/c2673/c2674/c2678. **No `ext_bad30d` impact: this was our OWN token's health probe,
+      not an external buyer's run** (re-diffed `state/revenue_history.json` to confirm -- still
+      exactly the same 4 known lifetime events, see below).
+      **Corrected `state/health.json`'s `trademark-search-scraper` entry to the clean re-run
+      result and removed this auto-added "FIX FAILED ACTORS (nightly health 2026-11-03)" line**
+      rather than leaving a false-failure record for a future cycle to re-discover, per the
+      c2674/c2678 precedent (backup at `/tmp/health.json.bak.2680`; post-patch verification:
+      0 failing actors across all 24 results).
+      **Standing `ext_bad30d` tripwire (c2336) re-run, CLEAN -- no new entry.** The per-slug diff
+      prints 4 rows: `court-records-scraper` TIMED-OUT (2026-10-25), `steam-reviews-scraper`
+      FAILED (2026-10-26), `remote-jobs-scraper` TIMED-OUT (2026-10-29), `nih-reporter-scraper`
+      FAILED (2026-11-03). The last one is dated TODAY and so was checked against history rather
+      than pattern-matched as known -- it is c2647's own already-diagnosed-and-fixed entry
+      (confirmed via grep of `state/STATUS_ARCHIVE.md`), not a new failure.
+      **`bin/traffic` re-verified: no buyer-intent trigger**, funnel out_clicks still 1 each
+      across the fleet, nowhere near the >100 verified visits/day to /pricing or /tools Polar
+      gate. Not raised with the owner.
+      No owner email: a clean fleet check plus one resolved transient with correct $0 billing is
+      neither a revenue event nor owner-fixable. **Next cycle:** nothing fleet-wide due soon
+      (`checks-due --all` next-soonest ~64c out, `store-anon-rank`); recompute `cycle % 3` fresh.
+- [x] **DONE cycle 2678 (NORMAL slot, 2678 % 3 == 2) -- ran the one due fleet check
+      (`check-source-endpoints`, CLEAN, 50 hosts/0 deviations), investigated and resolved one
+      actor-health failure as a confirmed transient, re-verified `ext_bad30d` unchanged (still 4
+      known events); no owner email, no code change.** `checks-due --all` showed 1 real item DUE;
+      `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10` the same 10
+      known triaged items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 789
+      runs30d (unchanged); `bin/apify-spend` $6.3063/$85 (projection $7.57); `bin/check-charges`
+      25/25 clean.
+      **`uk-find-a-tender-scraper` failed its default-input health check (0 items, status 201).**
+      Checked the live upstream (`find-tender.service.gov.uk` OCDS API) directly with the same
+      3-day window first -- real data existed, so this was not an upstream-empty-window false
+      negative. A targeted `actor-health --only` re-run came back clean (10 items, 0 fail_rows),
+      confirming TRANSIENT (same shape as the c2672-c2674 shopify/apple-podcasts blips). Corrected
+      `state/health.json`'s stale failed entry and removed the auto-added "FIX FAILED ACTORS"
+      queue line rather than leaving a false-failure record, per the c2674 precedent.
+      **`bin/traffic`'s new `checkout` funnel bucket (n=2) checked and resolved as noise**: it is
+      verified hits on the existing `/checkout-soon` placeholder page (crawlers + a couple of real
+      browsers), not a Polar checkout signal; `/checkout` itself still 404s. Funnel totals (tools
+      39, pricing 4, checkout 2, all-time not per-day) nowhere near the >100/day Polar gate.
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** `checks-due --all` next-soonest
+      item is `check-link-equity` (~22c out); recompute `cycle % 3` fresh.
+
+- [x] **DONE cycle 2677 (NORMAL slot, 2677 % 3 == 2) -- full preflight, one new inbox item triaged
+      (confirmed non-incident), both standing watches re-verified unchanged, nothing else
+      actionable; no code change manufactured per the standing c2524 rule.** `checks-due --all`
+      NONE DUE (soonest `check-source-endpoints` in 1c, cycle 2678); `audit-due --all` FLEET
+      ROTATIONS NONE DUE across all 16 types; `bin/revenue` $0 booked, 25 Actors, 48 users,
+      789 runs30d (unchanged); `bin/apify-spend` $6.3058/$85 (83.3% elapsed, projection $7.57);
+      services active and `/`, `/pricing`, `/tools` all 200.
+      **New inbox item `6acc123f` ("Someone added FetchSmith to My Slop", `myslop.shop`
+      directory-listing spam) named our real public GitHub repo, so it got a security check
+      instead of a reflex dismissal -- came back clean.** The repo's public visibility is a
+      long-standing deliberate choice (PLAYBOOK step 9, used for README backlinks), `secrets/`
+      has never been tracked (`git log --all -- secrets/` empty, confirmed via live `git grep`
+      across all tracked files -- no literal secret values, only code reading env var names),
+      and `api.github.com/repos/Fetchsmith/fetchsmith` confirms `private: false` as intended. Did
+      not click the claim/optout links (unknown third-party tracking URLs, zero established
+      value) -- same policy as the rest of this inbox's cold-outreach spam. No owner email.
+      **Standing watches re-verified live:** `eu-ted-tenders-scraper` `totalUsers7/30/90Days`
+      still exactly 1/1/1, no bookmark; DMARC still exactly the same 2 reports on file; `bin/
+      traffic` still no /pricing or /tools buyer-intent signal. $0 spent, $0 revenue change.
+      **Next cycle:** `check-source-endpoints` due at 2678; recompute `cycle % 3` fresh.
+
+- [x] **DONE cycle 2676 (QUALITY/GROWTH slot, 2676 % 3 == 0, recomputed fresh) -- ran all 4 due
+      fleet checks (3 CLEAN) and executed the doc-trim cadence on ALL THREE live docs in one
+      slot, a first. $0 spent, $0 revenue change, no owner email.** Preflight: `checks-due --all`
+      **4 DUE** (`check-row-floor`, `check-doc-size`, `check-readme-live-row`,
+      `check-upstream-warnings`); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types;
+      `inbox list 10` the same 10 known triaged items, zero new mail, zero replies owed;
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d (unchanged), `ext_bad30d` same 4
+      known events.
+      **The 3 non-trim checks, all CLEAN and all recorded:** `check-row-floor` 24 live Actors,
+      every one >=60% of its requested cap, none declined from its own observed best;
+      `check-readme-live-row` 15 entries, 0 mismatches; `check-upstream-warnings` 23 niches swept,
+      11256 listings / 6316 in-niche, no rival advertises a NEW upstream shutdown/deprecation/
+      migration (+8 known acks, unchanged). Also ran `check-source-bytes` per the QUALITY-cycle
+      instruction (it has no cadence of its own): **694 files, 0 flagged** -- the c2660 zero
+      baseline holds, so the next non-zero count is real signal.
+      **`check-doc-size` was the real work: TRIM DUE on LEARNINGS.md, TRIM SOON on both others ->
+      all three trimmed.** LEARNINGS 7581 -> 5731 lines; STATUS.md 1386 -> 200 lines/15.6KB;
+      queue.md 974 -> 548 lines/53.1KB; `check-doc-size` now reads OK on all three. Hazard grep run
+      BEFORE every cut (cadence rule 1), all three CLEAN -- full per-doc detail, the guards, and the
+      margin arithmetic live in the doc-trim cadence item's EXECUTED c2676 record, not here (rule:
+      newest execution only, do not prepend a narrative per trim).
+      **Recorded in LEARNINGS c2676:** c2652's compression of the cadence item is now measurably
+      paying off (queue.md's DONE-only cut left ~18KB of margin vs ~7KB at c2652, so no open-item
+      compression was needed); and a LEARNINGS.md trim is structurally lower-risk than a
+      STATUS/queue one because `bin/learnings` searches live+archive in one pass -- archiving
+      relocates a learning rather than hiding it -- so the worry there is cut DEPTH (c1976), not
+      loss. Do not let that skip the grep.
+      **Next cycle:** nothing fleet-wide due until `check-source-endpoints` at cycle 2678 (2c out);
+      recompute `cycle % 3` fresh rather than trusting this header.
+
+- [x] **DONE cycle 2675 (NORMAL slot, 2675 % 3 == 2) -- full preflight independently re-run, nothing
+      fleet-wide, in the inbox, or in either standing watch was due or actionable; no code change
+      manufactured per the standing c2524 rule.** `checks-due --all` NONE DUE (soonest
+      `check-row-floor` in 1c, cycle 2676 -- likely DUE next cycle); `audit-due --all` FLEET
+      ROTATIONS NONE DUE across all 16 types; `inbox list 10` the same 10 known triaged items, zero
+      new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d
+      (unchanged); `bin/apify-spend` $6.2426/$85 (83.1% elapsed, projection $7.51); `bin/actor-health`
+      full fleet 24/24 green; services active and `/`, `/pricing`, `/tools`,
+      `/tools/remote-jobs-scraper` all 200 before and after.
+      **Re-verified both standing watches live rather than trusting prior cycles' prose:**
+      `eu-ted-tenders-scraper`'s `stats.totalUsers7Days/30Days/90Days` all still exactly `1` (read
+      fresh off `GET /v2/acts/5LxaohNcO1zA86cEp`) -- the c2664 runs-burst is still one caller
+      ramping, not discovery, `bookmarkCount` 0; `bin/dmarc-report list` still exactly the same 2
+      reports (`af5d9f7d`/`202905fb`), no new weekly drop, `p=reject` stays parked. `bin/traffic`
+      still shows no /pricing or /tools buyer-intent signal. $0 spent, $0 revenue change, no owner
+      email. **Next cycle:** `check-row-floor`/`check-upstream-warnings` likely DUE at 2676 -- run
+      it; recompute `cycle % 3` fresh.
+
+
+## Archived at cycle 2685 (queue.md in-place compression of the c2380 one-term-diff follow-up item, per the c2652 precedent) -- superseded per-execution narrative, verbatim
+
+      **c2583 re-derived the candidate list fresh (fleet-wide `grep -rnE "[0-9]+\s*(→|->)\s*
+      [0-9]+" actors/*/README.md`) and found no new qualifying candidate: the only Actors whose
+      README carries ANY N->M arrow near "listing"/"match" text are `ats-jobs-scraper`,
+      `clinicaltrials-scraper`, `fec-campaign-finance-scraper`, `remote-jobs-scraper` and
+      `us-federal-awards-scraper`, and all five show "no new undercutter" narratives from spot-
+      resweeps within the last ~5-20 cycles (remote-jobs-scraper cycle 2376, fec cycle 2375,
+      clinicaltrials/us-federal-awards/ats-jobs all re-verified within October) rather than the
+      specific "stated README count is stale behind a RISING live total" gap this method targets.
+      None had a parseable stale count worth a fresh six-step pass today. Re-check this grep
+      fresh again next time rather than trusting this list -- any README could grow the shape
+      between cycles.
+      **c2635 re-ran the grep fresh: 9 files now match (up from 5), but still no qualifying
+      candidate.** The 3 new hits are all false leads or already-covered: `sam-gov-
+      opportunities-scraper`'s arrow is a SAM.gov set-aside-code count growth (`SBA` 1,204,971
+      -> 1,206,126), not a Store-listing count, so it never matched the "listing"/"match" text
+      filter; `fec-campaign-finance-scraper` was already spot-resweeped 2026-10-28 (next full
+      due cycle 2783) and `us-federal-awards-scraper` was fully resweeped ~2026-10-18 (since
+      superseded). Of the original 5, `remote-jobs-scraper` was freshly resweeped as recently
+      as cycle 2617 (2026-11-02, same calendar day as this check), and `clinicaltrials-scraper`
+      /`ats-jobs-scraper` both within the first 10 days of October. **Still 0-for-2 across
+      c2583 and c2635** -- the method remains sound (re-grep fresh every time, don't trust a
+      cached list) but this niche-set appears to be staying well-covered on its own cadence;
+      worth trying again in another ~5-10 cycles rather than every cycle.
+      **c2654 re-ran the same grep fresh, only 19 cycles after c2635: identical 9 files, no
+      new hit, no qualifying candidate.** Did not spend the ~15min/Actor six-step pass since
+      the candidate set itself hasn't moved at all -- re-running it today would just
+      re-confirm c2583/c2635's own "already resweeped recently" verdicts on the same 9
+      Actors. **Revised guidance: wait longer than ~19 cycles before the next retry** (two
+      consecutive 0-candidate reads in a row suggests the 5-10 cycle cadence is too tight for
+      this niche-set right now); re-grep fresh when picked up again regardless of how long
+      it's been.
+      **c2662 re-ran the same grep fresh, only 8 cycles after c2654: identical 9 files, no new
+      hit.** Per c2654's own "wait longer than ~19 cycles" guidance, did not spend the
+      six-step pass on an unchanged set -- this just confirms the cadence call was right; wait
+      longer before trying again.
+      **c2681 re-ran the same grep fresh, 19 cycles after c2662 (past the "wait longer than ~19
+      cycles" guidance): identical 9 files, no new hit.** Also checked mtimes on all 9 READMEs --
+      every one touched within the last 1-5 days via unrelated cadences (competitor_audit,
+      varied_test, or an incidental build), so none is sitting stale behind a rising live count
+      right now. Three consecutive 0-candidate reads (c2654, c2662, c2681) -- **revise guidance
+      again: wait at least ~20-25 cycles before the next retry**, and re-grep fresh regardless of
+      how long it's been.
+      **Remaining candidates, in rough order:** any niche
+      whose last audit noted "re-opened"/growth, and the `notes/NICHES.md` growth table
+      (line ~684 onward).
