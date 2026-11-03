@@ -7403,3 +7403,63 @@ case it was designed for (one real + one empty) is actually the only case that c
 ## c2667 — a documented bug-class fix can go 879 cycles (c788→c2667) without a varied_test actually driving it through the real Actor
 
 `google-news-scraper`'s Google-leak backstop (explicit `publishedAfter`/`publishedBefore` + `excludeSites` makes Google return articles months/years outside the window) was fixed at cycle 788 and re-measured at c933 — both times by direct `curl` against `news.google.com`, never by running the Actor itself end-to-end with charge verification. Every later `varied_test` cycle on this Actor (1071/1027/1322/1658/1994/2201/2231/2330) exercised a *different* field combination, so the one input shape with a named historical bug class quietly never got a live run-through on current code for 879 cycles. Closed it this cycle: `bin/run-charged` with `publishedAfter:"2026-09-01"`, `publishedBefore:"2026-09-10"`, `excludeSites:["pinterest.com"]` — 46/50 rows pushed, 4 correctly dropped (all `publishedAt` outside the ±1-day tolerance) and NOT charged (`chargedEventCounts {result:46}` == pushed count exactly), statusMessage named the drop. Still correct. **Generalization: when scanning a `varied_test` backlog, a candidate that cites a historical bug number (c788, c933, c1027...) is not automatically "already covered" just because that bug's own fix was verified live at the time — check whether the verification happened through the Actor's actual run path (charged, dataset, status message) or only through a free external probe that predicts what the Actor *should* do. The two are not the same test.**
+
+## Cycle 2668: the c2666 bug class generalised — "passes a relevance test" is not "is the best candidate", and a SUBSTRING hit must not outrank a WORD hit
+
+Cycle 2666 fixed `ats-jobs-scraper`'s auto-detect (a fixed platform priority order let a small
+decoy board beat the real one) and queued a fleet-wide sweep for the same shape. **The sweep is
+done and it found exactly one more instance, in `app-store-reviews-scraper`'s `resolveAppName`.**
+
+**How to run this sweep (the keyword grep is NOT enough).** `grep -il "auto.?detect|fetchAuto|
+firstNonEmpty"` across all 25 `src/main.js` hits only `ats-jobs-scraper`, which reads as "ruled
+out" and is wrong. The bug class is *structural*, not nominal: **anywhere several populated
+candidates are reduced to one by `.find()`/`break`/`[0]`, ask what decides the winner.** Three
+outcomes worth telling apart, all present in this fleet:
+- **Safe — one ranked source.** `google-play-reviews-scraper:539` (`results.find(genreAllowed) ??
+  results[0]`) picks by Google Play's own relevance order. Order *within* one upstream's ranking is
+  real signal; it is only meaningless *across* independently-ranked sources. Do not "fix" these.
+- **Safe — refuses to guess.** `sam-gov-opportunities-scraper:1504-1509` maps both colliding agency
+  names to `null` on a key collision ("neither is more correct, so match NEITHER"), and
+  `sec-insider-trades-scraper:356` only accepts `supersedesCandidateAccessions` at `length === 1`.
+  This is the pattern to copy when there is no quality signal to rank by.
+- **Broken — fixed source order decides.** `resolveAppName` built `results = [...iosHits,
+  ...macHits]` and took `find(exact-title) || find(anyTokenSubstringAnywhere)`, so with
+  `includeMacApps: true` an iOS app matching one token as a *substring* beat the real Mac app
+  matching it as a *word*, purely because iOS results are concatenated first.
+
+**Two live-verified wrong answers (free `itunes.apple.com/search` probes, no Actor run needed):**
+1. `appNames: ["sketch app"]`, `includeMacApps: true` -> resolved to the iOS **"Sketchbook®"**
+   ("sketch" is a substring of "sketchbook") instead of the Mac **"Sketch"** (id 1667260533), which
+   matches as a whole word. Pure concatenation-order loss — the exact c2666 shape.
+2. `appNames: ["affinity photo"]` -> resolved to **"Canva AI Photo & Video Editor"**, silently,
+   because the generic token `photo` appears in its title. Affinity Photo is not on the US store at
+   all. **The caller was then charged for Canva's reviews** — and the function's own warning string
+   promises the opposite ("an unrelated top hit is treated as no match rather than guessed"), so
+   the implementation did not meet a promise it was already making in prose.
+
+**Fix (build 0.1.121):** replaced the two `find()`s with a scored scan — 5 exact title / 4 all
+query tokens as whole words in the title / 3 all tokens anywhere in title+bundleId+artistName /
+2 partial but as a whole word / 1 partial substring only — best tier wins, **list order survives
+only as the tie-break *within* a tier** (so iOS-before-Mac still breaks genuine ties, e.g.
+`cardhop`). Plus a coverage gate: for a multi-token query, a candidate matching **less than half
+the query's token characters** scores 0 (`photo` = 5 of 13 chars in "affinity photo"), and the
+no-match warning now names what did match ("matched only \"photo\" of your query") instead of just
+naming the top hit.
+
+**The generalisable rules:**
+- A fixed order over *populated* candidates is a bug; it is only safe as a tie-break among
+  candidates of **equal measured quality** (c2666: equal size; here: equal match tier).
+- **Substring containment is not match quality.** `hay.includes(token)` makes "sketch" match
+  "sketchbook" and "cut" match "capcut". Any relevance test built on `includes()` needs a
+  word-boundary tier above it, or compound names silently win.
+- **A single shared generic token is not a match.** When one upstream "returns some app for almost
+  any input" (Apple's search, documented at line 647 for years), a relevance predicate must be
+  measured against *how much of the query* it covers — otherwise every query containing `photo`,
+  `pro`, `app`, `news` or `video` resolves to something, and on a PPE Actor a silent wrong
+  resolution is a **billed** wrong answer, which is worse than returning nothing.
+- **Verify a selection change by diffing OLD vs NEW on the same live payloads, not by spot-checking
+  the fix.** Extracting the edited block straight out of `src/main.js` into a throwaway harness
+  (`python3` slice of the file -> `sim2.mjs`) and replaying 17 app names x {iOS-only, +Mac} showed
+  34 outcomes: 2 fixed, 31 byte-identical, and **1 incidental reshuffle** ("sketch app" iOS-only
+  moved from "Sketchbook®" to "AR Drawing: Sketch & Paint", both wrong since Sketch is Mac-only) —
+  a wash worth knowing about, and the kind of thing spot-checking the two fixed cases would hide.

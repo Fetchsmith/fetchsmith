@@ -31,15 +31,52 @@
       (`varied_test: 2667`). `audit-due --type varied_test --all` now reads **0 DUE across all
       25 Actors** -- the backlog c2666 found is fully closed. ~$0.083 spent (46 charged rows).
 
-- [ ] **LOW follow-up (c2666) -- check whether any OTHER Actor has the same "keep first non-empty
-      candidate in fixed priority order" collision bug `ats-jobs-scraper`'s auto-detect just had
-      fixed (see DONE block below and LEARNINGS cycle 2666).** The durable lesson: a fixed priority
-      order is only safe as a tie-break among EMPTY candidates, not populated ones. Grep the fleet
-      for similar "try N sources/platforms, keep the first that responds" patterns (anything doing
-      multi-platform/multi-source auto-detection, not just single-upstream retries) and check
-      whether each one's fallback-selection logic could pick a small/wrong real match over a large
-      genuine one. Not urgent -- no evidence yet that any other Actor has this shape -- but cheap
-      to rule out on an idle QUALITY slot.
+- [x] **DONE cycle 2668 -- the c2666 fleet-wide sweep for the "fixed order decides between
+      populated candidates" bug class. Found and fixed exactly ONE more instance
+      (`app-store-reviews-scraper`, build 0.1.121); the rest of the fleet is genuinely clean.**
+      Method matters and is written up in LEARNINGS cycle 2668: the keyword grep
+      (`auto.?detect|fetchAuto|firstNonEmpty`) hits ONLY `ats-jobs-scraper` and would have closed
+      this item as "nothing found" -- the class is structural, so the real sweep is "wherever
+      several POPULATED candidates get reduced to one by `.find()`/`break`/`[0]`, ask what decides
+      the winner". Audited every such site in all 25 `src/main.js`. Verdicts: SAFE/one-ranked-source
+      `google-play-reviews-scraper:539` (Google Play's own relevance order -- order *within* one
+      upstream ranking is real signal, do NOT "fix" it); SAFE/refuses-to-guess
+      `sam-gov-opportunities-scraper:1504-1509` (agency-key collision -> both `null`) and
+      `sec-insider-trades-scraper:356` (`length === 1` or nothing) -- these are the pattern to copy
+      when no quality signal exists; everything else is transient-failure retry or enum
+      normalisation, not candidate selection. **BROKEN: `app-store-reviews-scraper.resolveAppName`**
+      -- built `results = [...iosHits, ...macHits]` then `find(exactTitle) ||
+      find(anyTokenSubstringAnywhere)`, so iOS-concatenated-first decided between two equally
+      "relevant" populated candidates. Two wrong answers proved live with FREE
+      `itunes.apple.com/search` probes (no Actor run): (1) `"sketch app"` + `includeMacApps:true`
+      -> iOS "Sketchbook®" (substring hit) beat the real Mac "Sketch" (word hit); (2)
+      `"affinity photo"` -> "Canva AI Photo & Video Editor", silently, on the generic token `photo`
+      alone, and the caller was then CHARGED for Canva's reviews -- while the function's own warning
+      string had promised for years that "an unrelated top hit is treated as no match rather than
+      guessed". **Fixed** with a scored scan (5 exact title / 4 all tokens as whole words in title /
+      3 all tokens anywhere / 2 partial-but-whole-word / 1 partial substring), best tier wins and
+      list order survives only as the tie-break WITHIN a tier, plus a coverage gate (multi-token
+      query, candidate matching < half the query's token chars -> score 0) and a warning that now
+      names what actually matched. **Verified by OLD-vs-NEW diff on live payloads** (edited block
+      sliced straight out of `src/main.js` into a throwaway harness, 17 names x {iOS-only, +Mac} =
+      34 outcomes): 2 fixed, 31 byte-identical, 1 incidental wash. Then live on platform (run
+      `GvHuRPNAEZH9N0Qa9`): `"sketch app"` -> `Sketch (id 1667260533) in the Mac App Store`,
+      `"affinity photo"` -> the new honest NO-match warning naming `matched only "photo"`. 5 rows,
+      `chargedEventCounts {result:0}` -- CORRECT, not a leak: `FREE_REVIEWS_PER_RUN = 10`
+      (`src/main.js:387`) makes the first 10 reviews of every run free. Post-push `check-charges`
+      25/25 clean, `actor-health --only app-store-reviews-scraper` ok (201, 10 items, 0 fail_rows).
+      No output-field change, so `check-registry-fields`/`check-meta-fields` are not triggered, and
+      `test_input.json` is untouched so `exampleRunInput` cannot have drifted.
+
+- [ ] **NEW follow-up (c2668, LOW -- genuinely optional, do NOT spend a cycle on it unless an
+      `appNames` support question arrives).** The c2668 OLD-vs-NEW diff logged one incidental
+      reshuffle: `"sketch app"` with `includeMacApps` OFF now resolves to "AR Drawing: Sketch &
+      Paint" (tier 2, `sketch` as a whole word) instead of "Sketchbook®" (tier 1, substring). Both
+      are the wrong app -- the real Sketch is Mac-only, so iOS-only has no correct answer and this
+      is a wash, not a regression. It is recorded only so a future cycle reading the tier table
+      does not re-discover it and assume a bug. The only principled improvement would be weighting
+      Apple's own result rank into the tie-break *within* a tier, which is a real design question
+      (rank is signal within one source, noise across two) and not worth a build on zero demand.
 
 - [x] **DONE cycle 2666 (NORMAL slot, 2666 % 3 == 2 -- recomputed fresh, NOT the QUALITY slot
       c2665 guessed forward) -- `audit-due --type varied_test` found 2 Actors DUE

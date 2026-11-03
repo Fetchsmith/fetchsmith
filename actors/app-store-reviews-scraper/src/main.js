@@ -633,16 +633,47 @@ async function resolveAppName(name) {
   if (!results.length) return null;
   const qTokens = name.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/).filter((t) => t.length >= 3);
   const norm = (s) => String(s || '').toLowerCase();
-  const isRelevant = (r) => {
-    const hay = `${norm(r.trackName)} ${norm(r.bundleId)} ${norm(r.artistName)}`;
-    return qTokens.length ? qTokens.some((t) => hay.includes(t)) : hay.includes(norm(name));
+  const hayOf = (r) => `${norm(r.trackName)} ${norm(r.bundleId)} ${norm(r.artistName)}`;
+  // "sketch" inside "Sketchbook" is a SUBSTRING hit, not a word hit. Ranking those two apart is
+  // what stops the iOS "Sketchbook" (listed first) beating the real Mac "Sketch" on "sketch app".
+  const asWord = (t, s) => new RegExp(`(^|[^a-z0-9])${t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^a-z0-9]|$)`).test(s);
+  const qChars = qTokens.join('').length;
+  // Match QUALITY decides, and the list order (iOS results before Mac ones) is only the tie-break
+  // WITHIN one tier. Until cycle 2668 this was `find(exact) || find(any-token-substring-anywhere)`,
+  // i.e. a fixed source order picked between two equally "relevant" populated candidates — the same
+  // bug class as ats-jobs-scraper's auto-detect (cycle 2666), where a fixed platform priority order
+  // let a small decoy board beat the real one. Tier 5 keeps the old exact-title rule unchanged:
+  // without it "final cut pro" with includeMacApps on resolves to the iOS "Final Cut Camera".
+  const score = (r) => {
+    if (norm(r.trackName) === norm(name)) return 5;
+    if (!qTokens.length) return hayOf(r).includes(norm(name)) ? 1 : 0;
+    const hay = hayOf(r);
+    const title = norm(r.trackName);
+    const inHay = qTokens.filter((t) => hay.includes(t));
+    if (!inHay.length) return 0;
+    // A MINORITY of the query's text matching is Apple's "returns some app for almost any input"
+    // behaviour, not a match. Verified live cycle 2668: "affinity photo" (Affinity Photo is not on
+    // the US store) hit "Canva AI Photo & Video Editor" on the generic token "photo" alone — 5 of
+    // 13 query chars — and resolved to it SILENTLY, so the caller was charged for Canva's reviews.
+    if (qTokens.length > 1 && inHay.join('').length * 2 < qChars) return 0;
+    if (inHay.length === qTokens.length && qTokens.every((t) => asWord(t, title))) return 4;
+    if (inHay.length === qTokens.length) return 3;
+    if (inHay.some((t) => asWord(t, hay))) return 2;
+    return 1;
   };
-  // Exact title match wins over the loose token rule. Without this, "final cut pro" with
-  // includeMacApps on would still resolve to the iOS "Final Cut Camera" (it shares the token
-  // "final" and comes first), which is exactly the app the caller did not ask for.
-  const match = results.find((r) => norm(r.trackName) === norm(name)) || results.find(isRelevant);
+  let match = null;
+  let bestScore = 0;
+  for (const r of results) {
+    const s = score(r);
+    if (s > bestScore) { bestScore = s; match = r; }
+  }
   if (!match) {
-    const top = results[0]?.trackName ? ` (Apple's closest hit was the unrelated "${results[0].trackName}")` : '';
+    const near = results.map((r) => ({ r, hit: qTokens.filter((t) => hayOf(r).includes(t)) }))
+      .filter((x) => x.hit.length)
+      .sort((a, b) => b.hit.join('').length - a.hit.join('').length)[0];
+    const top = near
+      ? ` (Apple's closest hit, "${near.r.trackName}", matched only "${near.hit.join('", "')}" of your query)`
+      : (results[0]?.trackName ? ` (Apple's closest hit was the unrelated "${results[0].trackName}")` : '');
     const where = includeMacApps ? 'iOS and Mac App Store' : 'iOS App Store';
     log.warning(`appNames: NO real match found for "${name}"${top} — searched the ${where} in the "${searchCountry}" storefront. Apple's search API returns some app for almost any input, so an unrelated top hit is treated as no match rather than guessed.${includeMacApps ? '' : ' If this is a Mac-only app, set "includeMacApps": true.'} Use a numeric app id or App Store URL instead.`);
     return null;

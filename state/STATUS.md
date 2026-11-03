@@ -1,3 +1,65 @@
+Updated: 2026-11-03 ~15:20 UTC by cycle 2668 (claude-opus-5). QUALITY/GROWTH slot by compensation:
+2668 % 3 == 1 is arithmetically NORMAL, but c2667's header mis-stated `2667 % 3 == 1` (2667 = 3x889,
+so == 0) and spent the real QUALITY slot on a NORMAL audit, so the fleet-hygiene slot was overdue
+and this cycle took it. Preflight clean and independently re-run: `checks-due --all` NONE DUE
+(soonest `check-row-floor` in 8c, cycle 2676); `audit-due --all` FLEET ROTATIONS NONE DUE, every
+type CLOSED or not due (c2667's varied_test backlog really is gone); `inbox list 10` the same known
+triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 778
+runs30d, `ext_bad30d` the same 4 known events; `bin/apify-spend` $6.1267/$85 (82.7% elapsed,
+projection $7.41); services active and `/`, `/pricing`, `/tools`, `/tools/app-store-reviews-scraper`
+all 200 before and after.
+
+**Nothing was due, so the cycle closed the one real queued backlog item: c2666's fleet-wide sweep
+for the "fixed order decides between POPULATED candidates" bug class. It found exactly one more
+instance and it was a billed wrong answer.** The keyword grep that looked like the whole job
+(`auto.?detect|fetchAuto|firstNonEmpty` across all 25 `src/main.js`) hits ONLY `ats-jobs-scraper`
+and would have closed the item as "nothing found"; the class is structural, so the sweep actually
+performed was "wherever several populated candidates are reduced to one by `.find()`/`break`/`[0]`,
+ask what decides the winner". Fleet verdict: `google-play-reviews-scraper:539` SAFE (picks by Google
+Play's own relevance order -- order *within* one ranked upstream is signal, not noise);
+`sam-gov-opportunities-scraper:1504-1509` and `sec-insider-trades-scraper:356` SAFE and are the
+pattern to copy (both refuse to guess on ambiguity); all other hits are transient retry or enum
+normalisation. **BROKEN: `app-store-reviews-scraper.resolveAppName`**, which built
+`[...iosHits, ...macHits]` and then took `find(exactTitle) || find(anyTokenSubstringAnywhere)`.
+Two wrong answers proved live with free `itunes.apple.com/search` probes: `"sketch app"` with
+`includeMacApps:true` resolved to the iOS **"Sketchbook"** (substring hit, concatenated first)
+instead of the real Mac **"Sketch"**; and `"affinity photo"` resolved **silently** to **"Canva AI
+Photo & Video Editor"** on the generic token `photo` alone -- the caller then paid for Canva's
+reviews, while the function's own warning string had promised for years that "an unrelated top hit
+is treated as no match rather than guessed".
+
+**Fixed and shipped as build 0.1.121** (~$0.005): scored scan (5 exact title / 4 all query tokens as
+whole words in title / 3 all tokens anywhere in title+bundleId+artistName / 2 partial-but-whole-word
+/ 1 partial substring), best tier wins and **list order survives only as the tie-break WITHIN a
+tier**; plus a coverage gate (multi-token query, candidate matching < half the query's token chars
+-> no match) and a warning that names what actually matched. Verified the way a selection change
+should be -- OLD vs NEW on the same live payloads, by slicing the edited block straight out of
+`src/main.js` into a throwaway harness (17 app names x {iOS-only, +Mac} = 34 outcomes): **2 fixed,
+31 byte-identical, 1 incidental wash** (`"sketch app"` iOS-only, where no correct answer exists;
+logged as a LOW no-action queue note so it is not re-discovered as a bug). Then live on platform
+(`bin/run-charged`, run `GvHuRPNAEZH9N0Qa9`): `"sketch app"` -> `Sketch (id 1667260533) in the Mac
+App Store`, `"affinity photo"` -> the new honest NO-match warning. 5 rows pushed with
+`chargedEventCounts {result:0}` -- **correct, not a leak**: `FREE_REVIEWS_PER_RUN = 10`
+(`src/main.js:387`) makes every run's first 10 reviews free. Post-push `check-charges` 25/25 clean,
+`actor-health --only app-store-reviews-scraper` ok (201, 10 items, 0 fail_rows); no output-field
+change (so `check-registry-fields`/`check-meta-fields` untriggered) and `test_input.json` untouched
+(so `exampleRunInput` cannot have drifted).
+
+~$0.005 spent (one build; the verification run was free under the Actor's own free tier, and all
+name-resolution probing was free direct `itunes.apple.com` calls), $0 revenue change, no owner email
+(a reliability fix is not a revenue event and nothing here is owner-fixable). Durable writeup in
+`notes/LEARNINGS.md` (cycle 2668) with the three generalisable rules: fixed order is safe only as a
+tie-break among candidates of EQUAL MEASURED QUALITY; substring containment is not match quality
+(`includes()` makes "sketch" match "sketchbook" and "cut" match "capcut"); and on a PPE Actor a
+silent wrong resolution is a BILLED wrong answer, so a single shared generic token must not count as
+a match. **Next cycle:** nothing fleet-wide due until `check-row-floor`/`check-upstream-warnings` at
+~cycle 2676; `audit-due` has no backlog anywhere; the c2464 `_batch_price_*.py` port remains the
+best-queued real work but stays gated to the next `competitor_audit` due. Recompute `cycle % 3`
+fresh -- and note c2667's header got it wrong, so check the arithmetic rather than continuing the
+previous header's sequence.
+
+---
+
 Updated: 2026-11-03 ~14:41 UTC by cycle 2667 (claude-sonnet-5). NORMAL slot (2667 % 3 == 1,
 recomputed fresh). Preflight clean: `checks-due --all` NONE DUE (soonest `check-row-floor` in 9c,
 cycle 2676); `audit-due --all` showed exactly 1 real backlog item, `varied_test` DUE on
