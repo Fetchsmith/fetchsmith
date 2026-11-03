@@ -1,3 +1,44 @@
+- [ ] **NEW follow-up (c2641) -- give `bin/traffic` the IP data it needs to tell a real buyer
+      from a datacenter-IP bot wearing a realistic browser fingerprint.** `site/app.py:161`
+      already computes the client IP (`request.client.host`/X-Forwarded-For) but
+      `site/app.py:198`'s `INSERT INTO pageviews` never stores it, and the `events` table
+      (out_click) has no IP column at all -- so neither table can be filtered by IP/ASN, and
+      the only way to check provenance today is a manual cross-reference against the rotating
+      Caddy access log (`/var/log/caddy/fetchsmith.access.log`, which is NOT retained
+      long -- gzip-rotated every ~2 weeks per the `ls` at c2641). Found this cycle because
+      `bin/traffic`'s "verified" out_click count moved off 0 for the first time in 2600+ cycles
+      (16 events) and turned out, on manual IP cross-check, to be one piece of OVH-hosted
+      infrastructure walking the `/go/<slug>` catalog with a headless browser that loads CSS
+      and rotates its `vid` cookie + source IP per hit specifically to dodge the existing
+      per-vid sweeper (c2278). **Do when there's a full cycle's time budget (restart
+      `fetchsmith-web`, verify with curl, not a BUILD-slot filler):** (1) add an `ip` column to
+      `pageviews` and `events`, populate from the value already computed at line 161; (2) add a
+      known-datacenter-ASN/CIDR exclusion (OVH SAS at minimum: `141.94.0.0/16`,
+      `57.129.0.0/16`, `51.0.0.0/8` is too broad -- scope it tighter once more samples exist) to
+      `bin/traffic`'s `VERIFIED`/`OC_VERIFIED` definitions so this stops requiring a manual log
+      dig every time it recurs. Full evidence (timestamps, IPs, UA) in STATUS.md's c2641 block
+      and `notes/LEARNINGS.md`. Not urgent -- current verified counts stay far under the
+      CLAUDE.md >100/day Polar-escalation gate either way -- but will recur, and the next
+      occurrence might not get the same careful IP check before being read as buyer intent.
+
+- [x] **DONE cycle 2641 (BUILD slot, 2641 % 3 == 1) -- resolved to no-build (gate still
+      blocked), spent the slot catching a real false-signal bug in `bin/traffic` instead.
+      Full detail in STATUS.md.**
+      Preflight: `checks-due --all`/`audit-due --all` both NONE DUE. Inbox byte-identical to
+      the known triaged set, no new mail, no owner email. `bin/revenue` $0/25 Actors/47
+      users/787 runs30d flat. `check-doc-size`: queue.md TRIM SOON, correctly deferred to next
+      QUALITY slot (2643). Services + `/`, `/pricing`, `/tools` 200/active before and after.
+      Build gate re-confirmed blocked (calendar-gated to 2026-12-26; demand/competition bar
+      uncleared). dev.to NOT due (~20h short of the 22:03Z floor).
+      **Found: `bin/traffic`'s "verified" out_click reading moved off 0 (16 events) for the
+      first time in 2600+ cycles -- investigated by IP rather than trusting the UA+CSS
+      heuristic, and it is a single OVH-hosted headless-browser bot walking `/go/<slug>` while
+      rotating vid+IP to dodge the c2278 per-vid sweeper, not a buyer.** See new follow-up item
+      above for the scoped fix (pageviews/events have no IP column to check this
+      automatically). $0 spent, $0 revenue change, no owner email.
+      **Next cycle (2642, NORMAL slot):** re-run `checks-due`/`audit-due` fresh. dev.to becomes
+      due on/after 2026-11-03T22:03Z.
+
 - [x] **DONE cycle 2640 (QUALITY/GROWTH slot, 2640 % 3 == 0) -- closed a 621-cycle registry
       completeness hole AND put its detector back on the default code path. Full detail in
       STATUS.md.**

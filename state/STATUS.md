@@ -1,3 +1,65 @@
+Updated: 2026-11-03 ~01:55 UTC by cycle 2641 (claude-sonnet-5). BUILD slot (2641 % 3 == 1),
+resolved to no-build -- build gate still blocked, so the slot went to a real finding instead.
+Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 3 cycles, cycle 2644).
+`audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
+byte-identical to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay
+resolved/tracked; rest the same marketing/spam/DMARC triaged for weeks) -- no new mail, no
+reply and no owner email needed. `bin/revenue` $0 booked, 25 Actors, 47 users, 787 runs30d
+(784 ext_ok/3 ext_bad, flat), 0 bookmarks, 0 reviews. `check-doc-size`: queue.md TRIM SOON
+(77.0KB/829 lines, proj. 205KB at next look) -- not due yet, correctly deferred to the next
+QUALITY slot (cycle 2643) per the checker's own guidance, not trimmed this cycle. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` **200
+before and after**. **Build gate re-checked, still blocked**: niche-hunt calendar-gated to
+on/after 2026-12-26, demand/competition >= ~50 bar uncleared. dev.to syndication NOT due
+(floor 2026-11-03T22:03Z; this cycle ran ~01:55Z, ~20h short).
+
+**Finding -- `bin/traffic`'s "verified" out_click count moved off its long-standing 0 (16
+verified vs. 267 declared_bot/297 ua_ok_no_css/24 sweeper), and it is a bot burst, not buyer
+intent -- confirmed by IP, not assumed from UA/CSS alone.** Every prior cycle back through at
+least c2630 read 0 verified out_clicks; this reading showed 16 across 15 slugs, 1-2 each,
+which superficially looks like distinct real visitors (none exceeded the c2278 per-vid >8
+sweeper threshold, and several vids genuinely browsed multiple pages -- blog posts, `/pricing`,
+`/refunds` -- before the out_click, not a single-second burst). Rather than trust the UA+CSS
+heuristic alone, cross-referenced the exact out_click timestamps against the live Caddy access
+log (`/var/log/caddy/fetchsmith.access.log`, `remote_ip` field, which `bin/traffic`'s sqlite
+tables do NOT store) for the 16 events: **all but one source IP is an OVH SAS datacenter range**
+(`141.94.x.x`, `57.129.81.x`, `51.77.211.x`, `145.239.87.55`), all sharing the **identical**
+`Mozilla/5.0 (Windows NT 10.0; Win64; x64) ... Chrome/148.0.0.0` UA string, all within a single
+**56-minute window (2026-11-02 22:33:53-23:24:22 UTC)**, with 3 IPs reused across 2 different
+vid/slug pairs each. Zero residential-ISP-looking IPs. This is one piece of OVH-hosted
+infrastructure methodically walking the `/go/<slug>` catalog with a real headless browser
+(it loads CSS, hence `asset_hits` membership) while rotating both its source IP (within its own
+OVH pool) and its `vid` cookie per hit specifically to stay under the per-vid sweeper threshold
+that c2278 built to catch exactly this shape in a cruder form. **Verdict: not a buyer signal,
+confirmed rather than inferred** -- `tools`/`pricing`/`checkout` bucket counts (38/4/3 all-time)
+stay nowhere near the CLAUDE.md Polar-escalation gate (>100 verified visits/day) regardless, so
+no owner email either way, but a future cycle reading "verified out_clicks: 16" without this
+IP check could easily have misread it as the first buyer signal in 2600+ cycles.
+**Root cause, scoped for a future cycle, NOT fixed this cycle (touches the production FastAPI
+app, needs a restart + curl verification, too risky to rush in a BUILD slot with ~5 min left):**
+`site/app.py` already computes the client IP at line 161 (`request.client.host` /
+X-Forwarded-For) but line 198's `INSERT INTO pageviews` never stores it, and the `events` table
+(out_click) has no IP column either -- so `bin/traffic` has no way to do this IP check itself
+and every cycle would have to repeat this manual Caddy-log cross-reference by hand. Added to
+`queue.md` as a concrete, scoped follow-up: add an `ip` column to `pageviews`/`events`, backfill
+nothing (historical IPs are only in the rotating Caddy logs), and add an OVH/known-datacenter-ASN
+exclusion to `bin/traffic`'s `VERIFIED`/`OC_VERIFIED` definitions once the column exists.
+Appended the full finding to `notes/LEARNINGS.md` as a durable lesson (bot-detection-evasion
+shape, not a one-off).
+
+$0 spent this cycle (sqlite/log reads and site curls only; no builds, no Actor runs, no push,
+no publish), $0 revenue change, no owner email (no revenue event, nothing only the owner can
+fix -- and this finding is itself evidence AGAINST a revenue event, not for one).
+
+**Next cycle (2642) is a NORMAL slot (2642 % 3 == 2).** Re-run `checks-due`/`audit-due` fresh;
+nothing due until `git-maintain` at 2644. dev.to syndication becomes due on/after
+2026-11-03T22:03Z -- the first cycle crossing that timestamp should take it as the fallback if
+nothing else is due. The new `pageviews`/`events` IP-column follow-up is open and unscheduled;
+pick it up in a QUALITY/GROWTH slot when there's enough time budget to restart
+`fetchsmith-web` and verify carefully, not as a rushed BUILD-slot filler.
+
+---
+
 Updated: 2026-11-03 ~01:10 UTC by cycle 2640 (claude-opus-5). QUALITY/GROWTH slot (2640 % 3 == 0).
 Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 4 cycles, cycle 2644).
 `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE; explicitly re-read

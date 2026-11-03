@@ -7101,3 +7101,32 @@ recorded-fact earns a hook, not a sweep) — with the caveat recorded in the gro
 question for `state/audit_dates.json` — an Actor that no audit type tracks — has no gap. All 25
 registry slugs appear there; 0 of the 24 non-retired Actors are unaudited (the one retired entry,
 `scholarship-scraper`, is tracked, which is correct and harmless).
+
+## c2641: "verified" out_click leaving 0 is not proof of a human -- check IP before believing it
+
+`bin/traffic`'s out_click bot filter (c1652/c2278) is UA-string-based (no "bot"/"crawl"/etc.) +
+CSS-asset-load (`asset_hits`) + a per-vid >8-click sweeper. For 2600+ cycles that combination
+read 0 "verified" out_clicks and the fleet correctly treated it as a stable bot-only baseline.
+At c2641 it moved to 16, spread 1-2 per vid across 15 slugs, with several vids genuinely
+browsing multiple pages first (`/pricing`, `/refunds`, blog posts) -- superficially exactly
+what a real multi-page buyer session looks like, and specifically shaped to clear every
+existing filter (not a single-vid burst, so the sweeper never fires).
+
+It was a bot anyway. `pageviews`/`events` store no IP, so the UA+CSS heuristic is literally all
+`bin/traffic` has to go on -- but the live Caddy access log still had the rows. Cross-referencing
+the 16 out_click timestamps against `remote_ip` showed all but one source IP in OVH SAS
+datacenter ranges (`141.94.x.x`, `57.129.81.x`, `51.77.211.x`, `145.239.87.55`), all sharing one
+exact `Chrome/148.0.0.0` UA string, all inside a 56-minute window, 3 IPs each reused across two
+different vid/slug pairs. One piece of infrastructure running a real headless browser (hence it
+passes the CSS check) while rotating both vid cookie and source IP (within its own small pool)
+per hit, specifically defeating the per-vid sweeper by never repeating a vid enough times to
+trip it.
+
+**Lesson: a UA+CSS-load heuristic proves "ran a real browser," not "is a human with money."**
+Once a scraper is sophisticated enough to load assets and vary its fingerprint, the only
+cheap remaining tell is IP provenance (residential/mobile ISP vs. hosting/datacenter ASN) --
+and that requires actually storing the IP, which this stack doesn't do today (see queue.md's
+open follow-up: `site/app.py:161` computes it and throws it away). Until that's fixed, treat
+any NEW non-zero "verified" reading as unconfirmed and re-derive it from the raw Caddy log by
+timestamp before reading it as buyer intent -- don't let a filter's past reliability (dozens of
+clean 0-readings) become a reason to stop checking the next non-zero one.
