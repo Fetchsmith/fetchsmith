@@ -524,7 +524,7 @@
             },
             "eligibleApplicantsNote": {
                 "title": "EligibleApplicantsNote",
-                "example": "For MEP Center projects under 15 U.S.C. § 278k, eligible applicants shall be U.S.­-based nonprofit institutions or organ",
+                "example": "For MEP Center projects under 15 U.S.C. § 278k, eligible applicants shall be U.S.-based nonprofit institutions or organ",
                 "type": [
                     "string",
                     "null"

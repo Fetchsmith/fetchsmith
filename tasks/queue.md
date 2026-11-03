@@ -1,3 +1,38 @@
+- [x] **DONE cycle 2655 (QUALITY/GROWTH slot, 2655 % 3 == 0) -- ran the two QUALITY-cycle
+      checkers that have no automatic `checks-due` cadence (`check-source-bytes`,
+      `check-code-fields`), found and fixed a real fleet-wide generator bug from the first
+      one's single hit.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE
+      (soonest `check-competitor-claims` in 2 cycles); inbox `list 10` = the same known 10
+      triaged items, zero new mail, no owner email. `bin/revenue` $0 booked, 25 Actors, 48
+      users, 770 runs30d, ext_bad30d 4 (same 3 long-known + already-fixed
+      `nih-reporter-scraper`). `bin/apify-spend` $6.0078->$6.0088/$85 after this cycle's 1
+      build (81.8% elapsed, projection $7.35, flat). Services + `/`, `/pricing`, `/tools`,
+      `/tools/sam-gov-opportunities-scraper` all 200 before and after.
+      **`check-code-fields`: 0 drift, all 25 Actors clean.** `check-source-bytes`: 1 file
+      flagged, `sam-gov-opportunities-scraper/.actor/dataset_schema.json:527`, a U+00AD soft
+      hyphen inside the `eligibleApplicantsNote.example` string ("U.S.­-based") -- a real
+      copy-paste artifact from the live SAM.gov text the example was sampled from. Confirmed
+      NOT the cycle-336 binary-detection bug (valid UTF-8, `file`/`grep` both see it fine) --
+      cosmetic only, shown to buyers on the Store API tab.
+      **Traced it to the generator, not just the one file: `bin/gen-output-schema` copies
+      `v[:120]` straight from a real sample row into `example` with zero sanitization, so ANY
+      future regeneration on ANY Actor (court records, SEC filings, SubStack -- all real-world
+      text prone to soft hyphens/zero-width spaces) can reintroduce the same class of defect.**
+      Fixed at the source: added `_clean_example()`, stripping the same `{Cc,Cf,Co,Cs}`
+      categories `check-source-bytes` flags (except `\n`/`\t`), applied to every string
+      `example` before assignment. Hand-fixed the one existing instance directly in the JSON
+      (regenerating needs the local dataset present, not guaranteed this cycle) and pushed
+      (build **0.1.86**, ~$0.005) to sync the live Store listing. Verified via the Builds API
+      that the soft hyphen is gone from the live `actorDefinition` and via `actor-health
+      --only sam-gov-opportunities-scraper` (10/10, 0 fail rows) that the push didn't regress
+      anything. Full write-up in `notes/LEARNINGS.md` (cycle 2655 entry).
+      $0.005 spent, $0 revenue change, no owner email (quality fix, not a revenue event).
+      **Next cycle:** re-run preflight fresh. Nothing fleet-wide is DUE until
+      `check-competitor-claims` at cycle 2657. No other no-cadence QUALITY checkers were run
+      this cycle (`check-backlinks`/`check-disclosure` already have their own `checks-due`
+      cadence and were NONE DUE) -- if a future QUALITY slot has idle time, `bin/checks-due
+      --map`'s no-cadence list has the rest.
+
 - [x] **DONE cycle 2654 (NORMAL slot, 2654 % 3 == 2) -- quiet cycle: ran the one DUE check
       clean, re-confirmed both owner inbox threads were already resolved, and re-tried a
       speculative follow-up that again yielded no candidate.** Preflight: `checks-due --all`

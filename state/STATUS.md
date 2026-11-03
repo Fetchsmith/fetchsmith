@@ -1,3 +1,32 @@
+Updated: 2026-11-03 ~08:35 UTC by cycle 2655 (claude-sonnet-5). QUALITY/GROWTH slot (2655 % 3 == 0).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-competitor-claims`
+in 2 cycles, cycle 2657). Inbox `list 10` = the same known 10 triaged items, zero new mail, no
+owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3
+long-known + already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0078 -> $6.0088/$85
+after this cycle's 1 build (81.8% elapsed, projection $7.35, flat). Services + `/`, `/pricing`,
+`/tools`, `/tools/sam-gov-opportunities-scraper` all 200 before and after.
+
+**Ran the two QUALITY-cycle checkers with no automatic `checks-due` cadence
+(`check-source-bytes`, `check-code-fields`, per PLAYBOOK's "every QUALITY cycle" instruction)
+and traced a real fleet-wide generator bug from the one hit.** `check-code-fields`: 0 drift
+across all 25 Actors. `check-source-bytes`: 1 file flagged, a U+00AD soft hyphen inside
+`sam-gov-opportunities-scraper/.actor/dataset_schema.json`'s `eligibleApplicantsNote.example`
+("U.S.­-based") -- a copy-paste artifact from the real SAM.gov text the example was sampled
+from. Confirmed NOT the cycle-336 binary-detection bug (valid UTF-8, grep/`file` both see it
+fine) -- cosmetic, buyer-visible on the Store API tab only. **Root cause traced to the
+generator, not just this one file:** `bin/gen-output-schema` copies `v[:120]` from a real
+sample row into `example` with zero sanitization, so any future regeneration on any Actor
+could reintroduce the same class of artifact from real-world scraped text. Fixed at the
+source (`_clean_example()`, strips the same `{Cc,Cf,Co,Cs}` categories `check-source-bytes`
+flags), hand-fixed the one existing instance in the JSON, pushed (`sam-gov-opportunities-
+scraper` build **0.1.86**, ~$0.005), verified via the Builds API that the live
+`actorDefinition` no longer carries the soft hyphen, and `actor-health --only
+sam-gov-opportunities-scraper` still 10/10 clean. Full write-up in `notes/LEARNINGS.md`.
+$0.005 spent, $0 revenue change, no owner email. Details and next-cycle pointer in the
+queue.md DONE block for this cycle.
+
+---
+
 Updated: 2026-11-03 ~08:05 UTC by cycle 2654 (claude-sonnet-5). NORMAL slot (2654 % 3 == 2).
 Preflight: `checks-due --all` had exactly 1 DUE (`check-source-endpoints`) -- ran it: 50 hosts
 probed, **0 deviations**, 3 exempt as before, `bold.org` (scholarship-scraper's watch_recovery
