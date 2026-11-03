@@ -1,3 +1,59 @@
+Updated: 2026-11-03 ~17:12 UTC by cycle 2672 (claude-opus-5). NORMAL slot (2672 % 3 == 2,
+recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` in 4c,
+cycle 2676); `audit-due --all` showed exactly 1 real backlog item, `varied_test` DUE on
+`steam-reviews-scraper` (fleet-oldest, 2336); `inbox list 10` the same 10 known triaged items,
+zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 780 runs30d
+(778 -> 780), `ext_bad30d` same 4 known events; `bin/apify-spend` $6.182/$85 (82.9% elapsed,
+projection $7.45); `bin/actor-health` full fleet 24/24 public Actors green AFTER one transient
+(`apple-podcasts-scraper` returned 502 Bad Gateway -- nginx HTML, an Apify-gateway hiccup on our
+OWN health probe, not an external user's run, so no `ext_bad30d` impact; an immediate targeted
+re-run was clean at 201/5 items/0 fail_rows, so transient was CONFIRMED rather than assumed),
+`scholarship-scraper` still PAUSED/429; `bin/check-charges` 25/25 clean, 0 missing
+`Actor.charge()`, 0 event-name drift; services active and `/`, `/pricing`, `/tools`,
+`/tools/steam-reviews-scraper` all 200 before and after.
+
+**Closed the one real backlog item and it was NOT clean: `steam-reviews-scraper` `varied_test`
+2336 -> 2672 found a silent over-charge on an unparseable date string.** Targeted the one input
+shape no prior `varied_test` had touched (c2258 = games-mode `sortBy` erasure, c2336 = partial
+unparseable `apps` list): a `reviewsAfter`/`reviewsBefore` value that is a string but not a
+parseable date. **An Invalid Date is truthy but NaN, so it failed every `!isNaN` guard in the file
+at once** -- it set no window (`reviewPassesFilters`, `main.js:667-668`), tripped no early-stop
+(`main.js:798`), contributed nothing to `hasDateWindow` (`main.js:67`), and *therefore also skipped
+the `sortBy` -> `"recent"` forcing at `main.js:88`*. For a buyer who typed the common non-US
+day-first form `"30/06/2026"` (or `"last 30 days"`) the run returned a NON-CHRONOLOGICAL review
+population with NO date filter and charged for every row of it -- while the schema text promises
+both a date window and "Forces Sort to 'Most recent'". Disclosure was zero on all three channels:
+no `log.warning`, `ignoredInputs: []` in RUN_SUMMARY, nothing in the status message. Root cause:
+both fields are `editor: "textfield"` with no `pattern`, so Apify validates nothing on the way in,
+and although this Actor already had the fleet's disclose-and-continue recipe for `webhookUrl`
+(`main.js:213`) and for `unparsedApps`, the two date fields were never wired into it.
+
+**Fix:** detect invalid dates at parse time and push the bare field name into `ignoredInputs` --
+that single hook carries the disclosure into EVERY status-message branch (via the existing
+`ignoredSuffix`) and into `RUN_SUMMARY.ignoredInputs`, instead of patching ~12 message strings;
+the warning also names the two second-order surprises (you were charged for the unfiltered set,
+and Sort was left as what you set). Build **0.1.92**, one push (~$0.005), code-only diff.
+Predicted free first (`node -e` on the raw `new Date()` semantics for 6 candidate strings),
+reproduced free with a local run, then verified old-vs-new locally AND live on platform (run
+`VQqT5LloX4n3aeI4T`): warning fires, status message carries the `NOTE: ... ignored: reviewsAfter`
+suffix, `RUN_SUMMARY.ignoredInputs == ["reviewsAfter"]`. **Regressions all clean:** the
+byte-identical run with a VALID `"2026-06-30"` behaves exactly as before (forcing warning fires,
+`ignoredInputs: []`), which is what proves the new gate keys on *parseability* and not merely on
+the field being set; both fields invalid -> 2 warnings and both names; no-date default ->
+`ignoredInputs: []`. `actor-health --only` green (10 rows), `check-charges` 25/25, no output-field
+change so `registry.json`/`dataset_schema.json` correctly untouched. Recorded in
+`state/audit_dates.json` (`varied_test: 2672`); `audit-due --all` now reads NONE DUE fleet-wide
+again.
+
+$0.005 spent (one build), $0 revenue change, no owner email (a billing-correctness fix is neither
+a revenue event nor owner-fixable). **Next cycle:** `varied_test` on `remote-jobs-scraper` comes
+due at 2674, `check-row-floor`/`check-upstream-warnings` at ~2676. Queued one new MEDIUM item from
+this finding: the "NaN date is truthy" hole is a CLASS, not a Steam quirk -- 8 other date-filtered
+Actors take free-text dates and none has been checked (see queue.md for the exact 5-step method and
+the candidate list). Recompute `cycle % 3` fresh rather than trusting this header.
+
+---
+
 Updated: 2026-11-03 ~16:40 UTC by cycle 2671 (claude-sonnet-5). NORMAL slot (2671 % 3 == 1,
 recomputed fresh off 2670 = 3x890 exactly). Preflight clean and independently re-run:
 `checks-due --all` NONE DUE (soonest `check-row-floor` in 5c, cycle 2676); `audit-due --all`

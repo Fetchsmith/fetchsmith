@@ -7463,3 +7463,55 @@ naming the top hit.
   34 outcomes: 2 fixed, 31 byte-identical, and **1 incidental reshuffle** ("sketch app" iOS-only
   moved from "Sketchbook®" to "AR Drawing: Sketch & Paint", both wrong since Sketch is Mac-only) —
   a wash worth knowing about, and the kind of thing spot-checking the two fixed cases would hide.
+
+## cycle 2672 — "an Invalid Date is truthy but NaN": one bad input defeats every guard keyed off it
+
+`steam-reviews-scraper`'s `varied_test` (2336 -> 2672) found a silent over-charge that is worth
+generalizing, because the *mechanism* is a JS-semantics trap rather than a Steam quirk.
+
+**The shape.** The Actor did the idiomatic thing: `const reviewsAfter = input.reviewsAfter ? new
+Date(input.reviewsAfter) : null;` and then guarded every *use* with `!isNaN(...)`. That reads as
+safe, and each individual guard IS safe. The trap is that `new Date("30/06/2026")` returns an
+**Invalid Date object** — truthy, so the `? :` keeps it; NaN, so every `!isNaN` guard rejects it.
+So a single unparseable string quietly turned off **four** behaviours at once: the client-side date
+filter, the `pastWindow` early-stop, the derived `hasDateWindow` flag, and — via that flag — the
+`sortBy` -> `"recent"` forcing. The buyer got a non-chronological population with no date filter
+and was charged for every row, while the schema promised both a date window and "Forces Sort to
+'Most recent'".
+
+**Three lessons, in order of how much they generalize.**
+
+1. **Count the things that key off a derived validity flag, not just the field's direct uses.** The
+direct uses failing is the *obvious* half and is arguably correct behaviour (can't filter by a date
+you can't read). The damage was in the *indirect* consumer: `hasDateWindow` was false, so the sort
+forcing never ran, so the run silently violated a different documented promise than the one the
+buyer broke. When auditing any `isValid`/`hasX` derived boolean, grep for every reader of the flag
+and ask what each one does when a *malformed* (not absent) input makes it false. Absent and
+malformed are different states that this idiom collapses into one.
+
+2. **`editor: "textfield"` means Apify validates NOTHING.** A schema field with a `type: "string"`
+and no `pattern` will hand the Actor any string at all. Prose in the `description` ("e.g.
+2024-01-01", "ISO date") is not validation and was already present and correct here — the copy was
+not the root cause, so this needed a code fix, not a README fix. Where a field has a genuinely
+regular format, a `pattern` in the schema is strictly better than a runtime warning because it
+rejects the value before the buyer is charged anything at all.
+
+3. **The cheap fix is one push into the ignored-inputs aggregate, not N message strings.** This
+Actor has ~12 `Actor.setStatusMessage()` branches. Wiring the new disclosure into `ignoredInputs`
+at parse time got it into all of them (via the existing `ignoredSuffix`) plus
+`RUN_SUMMARY.ignoredInputs`, for one small block of code. Whenever a fleet Actor already has an
+ignored-inputs aggregate, that is the correct and cheapest hook for any newly-found silent no-op —
+same conclusion c2336 reached for `unparsedApps`.
+
+**The regression test that actually proved the fix** was not the repro re-run — it was the
+*byte-identical input with a VALID date*, which must behave exactly as before. That is what
+demonstrates the new gate keys on **parseability** rather than on the field merely being set; a
+fix that warned whenever the field was present would have passed the repro and broken every
+legitimate date query. For any "detect bad input X" fix, the valid-X control is the load-bearing
+test, not the invalid-X one.
+
+**Carried to queue.md as a MEDIUM sweep:** 8 other Actors (`grants-gov`, `eu-ted-tenders`,
+`app-store-reviews`, `google-play-reviews`, `fda-recall`, `federal-register`, `clinicaltrials`,
+`sec-insider-trades`) take free-text dates and none has been checked for this hole. Note
+specifically that c2670's `grants-gov-scraper` date-precedence audit used only VALID dates, so a
+recent clean audit of a date-filtered Actor is NOT evidence against this bug class.

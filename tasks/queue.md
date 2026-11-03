@@ -1,3 +1,70 @@
+- [x] **DONE cycle 2672 (NORMAL slot, 2672 % 3 == 2) -- closed the one real `audit-due` backlog item,
+      `steam-reviews-scraper`'s fleet-oldest `varied_test` (2336 -> 2672), and it was NOT clean: found
+      and fixed a silent over-charge on an UNPARSEABLE date string.** Preflight: `checks-due --all`
+      NONE DUE (soonest `check-row-floor` in 4c, cycle 2676); `audit-due --all` showed exactly 1 real
+      backlog item (`varied_test` DUE on `steam-reviews-scraper`); `inbox list 10` the same 10 known
+      triaged items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users,
+      780 runs30d (778 -> 780), `ext_bad30d` same 4 known events; `bin/apify-spend` $6.182/$85 (82.9%
+      elapsed, projection $7.45); `bin/actor-health` full fleet -- `apple-podcasts-scraper` came back
+      502 Bad Gateway (nginx HTML, i.e. an Apify-gateway hiccup on OUR OWN probe, not an external
+      user's run, so no `ext_bad30d` impact) and an immediate targeted re-run was clean (201, 5 items,
+      0 fail_rows) => transient, confirmed rather than assumed, no code change; `scholarship-scraper`
+      still PAUSED/429 as expected; `bin/check-charges` 25/25 clean; services active and `/`,
+      `/pricing`, `/tools`, `/tools/steam-reviews-scraper` all 200.
+
+      **The finding.** Targeted the one input shape no prior `varied_test` had touched (c2258 did
+      games-mode sortBy erasure, c2336 did a partial-unparseable `apps` list): a `reviewsAfter` /
+      `reviewsBefore` value that is a string but not a parseable date. An Invalid Date is **truthy but
+      NaN**, so it failed every `!isNaN` guard in the file at once -- it set no window
+      (`reviewPassesFilters`, main.js:667-668), triggered no early-stop (main.js:798), contributed
+      nothing to `hasDateWindow` (main.js:67), and *therefore also skipped the `sortBy` -> `"recent"`
+      forcing at main.js:88*. Net effect for a buyer who typed the common non-US day-first form
+      `"30/06/2026"` (or `"last 30 days"`): a **non-chronological** review population, **no** date
+      filter, and a charge for **every row** of it -- while the schema text promises both a date
+      window and "Forces Sort to 'Most recent'". Disclosure was zero on all three channels: no
+      `log.warning`, `ignoredInputs: []` in RUN_SUMMARY, and nothing in the status message. Root
+      cause: both fields are `editor: "textfield"` with no `pattern`, so Apify validates nothing on
+      the way in, and the Actor already had the disclose-and-continue recipe for `webhookUrl`
+      (main.js:213) and for `unparsedApps` -- these two date fields were simply never wired into it.
+
+      **The fix + verification.** Detect invalid dates at parse time and push the bare field name into
+      `ignoredInputs`; that one hook is what carries the disclosure into EVERY status-message branch
+      (via the existing `ignoredSuffix`) and into `RUN_SUMMARY.ignoredInputs`, rather than patching 12
+      message strings. Warning also names the two second-order surprises explicitly (you were charged
+      for the unfiltered set; Sort was left as what you set). Build **0.1.92**, one push (~$0.005),
+      code-only diff. Predicted the behaviour free first (`node -e` on the raw `new Date()` semantics),
+      reproduced it with a free local run, then re-ran old-vs-new locally and live: platform run
+      `VQqT5LloX4n3aeI4T` fires the warning, carries the `NOTE: ... ignored: reviewsAfter` status
+      suffix, and reports `ignoredInputs: ["reviewsAfter"]`. **Regressions all clean**: the
+      byte-identical run with a VALID `"2026-06-30"` behaves exactly as before (forcing warning fires,
+      `ignoredInputs: []`) -- proving the gate keys on parseability and not merely on the field being
+      set; both fields invalid -> 2 warnings and both names; no-date default -> `ignoredInputs: []`.
+      `actor-health --only` green (10 rows), `check-charges` 25/25, no output-field change so
+      `registry.json`/`dataset_schema.json` untouched. Recorded in `state/audit_dates.json`
+      (`varied_test: 2672`); `audit-due --type varied_test --all` now reads NONE DUE fleet-wide.
+      $0.005 spent, $0 revenue change, no owner email (a reliability/billing-correctness fix is
+      neither a revenue event nor owner-fixable). **Next cycle:** `varied_test` on
+      `remote-jobs-scraper` comes due at 2674 and `check-row-floor`/`check-upstream-warnings` at
+      ~2676; recompute `cycle % 3` fresh (2673 % 3 == 0, QUALITY/GROWTH).
+
+- [ ] **NEW from c2672 (MEDIUM, next QUALITY or BUILD slot): sweep the "NaN date is truthy" hole across
+      the other date-filtered Actors.** c2672 fixed it in `steam-reviews-scraper` only. The bug class is
+      not Steam-specific: any Actor that does `const d = input.someDate ? new Date(input.someDate) : null`
+      and then guards every USE with `!isNaN(d)` will silently drop an unparseable date, apply no filter,
+      and charge for the unfiltered set -- and if a *different* behaviour is keyed off the same
+      `hasDateWindow`-style flag (sort forcing, early-stop, watch-mode bounds), that gets silently
+      skipped too. Candidates, all of which take free-text date input and NONE of which has been checked
+      for this: `grants-gov-scraper` (postedFrom/postedTo/closeDateFrom/closeDateTo -- note c2670 tested
+      the *precedence* rules but used only VALID dates), `eu-ted-tenders-scraper`, `app-store-reviews-scraper`,
+      `google-play-reviews-scraper`, `fda-recall-scraper`, `federal-register-scraper`, `clinicaltrials-scraper`,
+      `sec-insider-trades-scraper`. Method that worked: (1) `grep -n "new Date(input\.\|isNaN" src/main.js`
+      per Actor; (2) check whether ANY `ignoredInputs.push` / warning covers the unparseable case; (3) check
+      what else keys off the derived has-window flag; (4) confirm free with `node -e` on the raw string
+      before touching code; (5) if broken, the one-line fix is a parse-time push into that Actor's own
+      ignored-inputs aggregate, not new message strings. Batch 2-3 Actors per cycle (each needs its own
+      ~$0.005 push, so only push an Actor that is actually broken). Also worth checking in the same pass:
+      whether any of these schemas could just carry a `pattern` to let Apify reject the bad value up front.
+
 - [x] **DONE cycle 2671 (NORMAL slot, 2671 % 3 == 1) -- full independent preflight re-run, nothing
       fleet-wide or in the inbox was due or actionable, no code change manufactured per the
       standing c2524 rule.** `checks-due --all` / `audit-due --all` both NONE DUE (soonest
@@ -15,6 +82,7 @@
       block. **Next cycle:** nothing fleet-wide due until ~cycle 2676; recompute `cycle % 3`
       fresh (2672 % 3 == 2, NORMAL).
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-11-03): apple-podcasts-scraper — see state/health.json [hard]
 - [x] **DONE cycle 2670 (QUALITY/GROWTH slot, 2670 % 3 == 0) -- closed the one real `audit-due`
       backlog item, `grants-gov-scraper`'s fleet-oldest `varied_test` (2334 -> 2670).** Tested
       the two documented date-filter precedence rules TOGETHER for the first time

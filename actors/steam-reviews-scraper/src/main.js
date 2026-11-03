@@ -121,6 +121,32 @@ const includePlayerCount = input.includePlayerCount === true;
 // run's status message. Collected by `.push()` at each warning site rather than as one literal
 // because the sites are spread across the input-parsing block AND the dataType:"games" branch.
 const ignoredInputs = [];
+// An unparseable date string is TRUTHY but NaN, so it fails every `!isNaN` guard above: it sets no
+// window, contributes nothing to `hasDateWindow`, and therefore also skips the sortBy forcing at the
+// top of this file — the buyer gets a non-chronological population AND no date filter, then pays for
+// every row of it. Nothing disclosed that: the schema's `editor: "textfield"` means Apify validates
+// nothing, and `new Date("30/06/2026")` (day-first, the common non-US form) is an Invalid Date.
+// Same disclose-and-continue recipe as `webhookUrl` below and `unparsedApps` further down; pushing
+// the bare name into `ignoredInputs` is what carries it into every status-message branch via
+// `ignoredSuffix` and into RUN_SUMMARY.ignoredInputs. Live-reproduced cycle 2672 on app 1145360:
+// reviewsAfter:"30/06/2026" + sortBy:"funny" pushed and charged 10 unfiltered rows with
+// `ignoredInputs: []` and not one warning, while the byte-identical run with a valid "2026-06-30"
+// correctly warned and forced "recent".
+const invalidDates = [
+  ['reviewsAfter', input.reviewsAfter, reviewsAfter],
+  ['reviewsBefore', input.reviewsBefore, reviewsBefore],
+].filter(([, raw, parsed]) => raw && parsed && isNaN(parsed));
+for (const [name, raw] of invalidDates) {
+  ignoredInputs.push(name);
+  log.warning(
+    `"${name}" (${JSON.stringify(String(raw))}) is not a date this Actor can read, so it was ignored `
+    + 'and NO date window was applied — every review in the scanned window was returned and charged '
+    + 'for, not just the ones in your intended range. Use an ISO date like "2024-01-01" '
+    + '(year-month-day); day-first forms like "30/06/2026" and phrases like "last 30 days" cannot be '
+    + `parsed. Because the window was dropped, Sort was also left as "${sortBy}" instead of being `
+    + 'forced to "recent".',
+  );
+}
 if (dayRange && dataType === 'reviews') {
   ignoredInputs.push('dayRange');
   log.warning(
