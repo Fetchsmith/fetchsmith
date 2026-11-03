@@ -1,3 +1,38 @@
+Updated: 2026-11-03 ~15:40 UTC by cycle 2669 (claude-sonnet-5). NORMAL slot (2669 % 3 == 2,
+recomputed fresh off 2667=3x889). Preflight clean and independently re-run: `checks-due --all`
+NONE DUE (soonest `check-row-floor` in 7c, cycle 2676); `audit-due --all` FLEET ROTATIONS NONE
+DUE, every type CLOSED or not due; `inbox list 10` the same known 10 triaged items (owner threads
+`2b237f1b`/`01852eaa` stay resolved/tracked, `01852eaa`'s 2026-11-15 `/v2/store` deadline still
+12 days out and already hardened per c2478/c2496), zero new mail, zero replies owed; `bin/revenue`
+$0 booked, 25 Actors, 48 users, 778 runs30d, `ext_bad30d` same 4 known events; `bin/apify-spend`
+$6.1293/$85 (82.7% elapsed, projection $7.41); services active and `/`, `/pricing`, `/tools`,
+`/tools/ats-jobs-scraper` all 200.
+
+**One live signal surfaced and resolved within the cycle, nothing else was due.**
+`bin/actor-health` (full fleet) returned FAILED on `trademark-search-scraper` (run
+`OBZEMyP5RTKYclFo9`, exit 1, `statusMessage`: "Could not reach TMview (tmdn.org) through any
+network path this run: 3 Apify Proxy session(s) and a direct connection all failed transport-level
+— last error: The operation was aborted due to timeout. TMview itself is frequently reachable when
+this happens, so it is usually a flaky exit node rather than an outage — re-run in a few minutes.")
+— this is the Actor's own self-diagnosed transient-network message, not a new code path. Confirmed
+transient rather than assumed: immediately re-ran `bin/actor-health --only trademark-search-scraper`
+and it came back clean (201, 10 items, 0 fail_rows). This run was our own health probe, not an
+external user's, so it does not touch `ext_bad30d` (that counter is external-run-only); no fleet
+regression, no code change. Also ran `bin/check-charges` as a different verification angle than
+recent clean cycles (per c2663's "vary the check mix" note) — 25/25 priced Actors, 0 missing
+`Actor.charge()`, 0 event-name drift.
+
+**Per the standing c2524 rule, no code change was manufactured to fill the slot** — nothing
+fleet-wide was due and the one anomaly resolved itself as transient on re-check. Best-queued real
+work for the next NORMAL/QUALITY slot that finds something due: the c2464 `_batch_price_*.py`
+rung-for-rung port (gated to the next `competitor_audit` due) and the c2646 `AbortSignal`/
+timeout-budget patch (19 Actors, 2-3 per QUALITY cycle). $0 spent this cycle, $0 revenue change,
+no owner email (transient network blip on our own probe, not a revenue event or owner-fixable).
+**Next cycle:** nothing fleet-wide due until `check-row-floor`/`check-upstream-warnings` at
+~cycle 2676; recompute `cycle % 3` fresh rather than continuing this header's sequence.
+
+---
+
 Updated: 2026-11-03 ~15:20 UTC by cycle 2668 (claude-opus-5). QUALITY/GROWTH slot by compensation:
 2668 % 3 == 1 is arithmetically NORMAL, but c2667's header mis-stated `2667 % 3 == 1` (2667 = 3x889,
 so == 0) and spent the real QUALITY slot on a NORMAL audit, so the fleet-hygiene slot was overdue

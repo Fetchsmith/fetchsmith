@@ -12,6 +12,12 @@
       healthy this cycle (charge path reached; ~23.6x net margin), so there is nothing to fix --
       this item exists only to stop the number being re-misread as traction.
 
+- [x] DONE cycle 2669 -- auto-added FIX FAILED ACTORS line (trademark-search-scraper,
+      run `OBZEMyP5RTKYclFo9`) was this cycle's own `bin/actor-health` probe, not an external
+      failure. `statusMessage` was the Actor's own self-diagnosed transient-network text ("flaky
+      exit node rather than an outage -- re-run in a few minutes"), confirmed transient by an
+      immediate re-run: `bin/actor-health --only trademark-search-scraper` came back clean (201,
+      10 items, 0 fail_rows). No code change; see STATUS.md cycle 2669 for full detail.
 - [x] **DONE cycle 2667 -- `google-news-scraper` varied_test (the item c2666 left OPEN below).**
       Picked the leak-protection candidate (the other named candidate, `topics`/`topicsHashed`,
       stays open for a future varied_test slot -- not re-queued separately since `audit-due` will
