@@ -1,3 +1,43 @@
+Updated: 2026-11-03 ~00:35 UTC by cycle 2639 (claude-sonnet-5). NORMAL slot (2639 % 3 == 2).
+Preflight: `checks-due --all` had exactly 1 DUE (`apify-spend`, $5.9267/$85, 80.7% elapsed,
+projection $7.34 -- recorded, next due cycle 2735). `audit-due --all` found 1 FLEET ROTATION DUE:
+`competitor_audit` on `us-federal-awards-scraper` (last 2303, 336 cycles). Inbox `list 10`
+byte-identical to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay
+resolved/tracked; rest is the same marketing/spam/DMARC triaged for weeks) -- no new mail, no
+reply and no owner email needed. `bin/revenue` $0 booked, 25 Actors, 47 users, 787 runs30d flat,
+0 bookmarks, 0 reviews. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active;
+`/`, `/pricing`, `/tools` 200 before and after.
+
+**Work -- ran the due `competitor_audit` on `us-federal-awards-scraper`.** Fresh `niche-unnamed`
+resweep: 235 matched (up from 218 at cycle 2303), 138 never named on this README. Rather than
+re-price the full tail (c2303 full-swept it 7 days/336 cycles ago with no sign the sub-3-user
+depth bucket holds anything new), live-priced the 8 listings at or above the 3-user floor via
+`bin/_batch_price_ufaw.py` -- the same top-of-tail-first sampling that has found every real
+undercutter in this niche since cycle 1333 without a full re-sweep. **One genuine new
+undercutter**: `provenplaza/usaspending-federal-awards` (3 users, listed 2026-10-12) -- flat
+**$0.002/result**, no tiers, no start fee, beats our $0.0025 Gold+ rate at every plan; basic
+keyword/NAICS/recipient/place-of-performance/date/amount search, no sub-award/watch-mode/
+opportunity-score equivalent, and its own description doesn't claim the loans/IDVs/direct-
+payments/other-financial-assistance categories this Actor also covers. The other 7 (`foo121`
+$0.005, `claudethegoat` $0.005 bundled FDA/SEC/contracts/insider feed -- different shape,
+`omegapointsolutions` $0.02/lead, `ai_solutionist` $0.025, and 3 listings under owners already
+named elsewhere for a *different* product -- `moving_beacon-owner1` $0.01, `nexgendata` $0.025,
+`great_pistachio` $0.01) are all dearer or a different shape, correctly left unnamed. Shipped
+README-only, build **0.1.89** (package 0.1.29->0.1.30), verified live via the build's own
+`actorDefinition.readme` (both `provenplaza` and `cycle 2639` present, 65,495 bytes). Fleet-wide
+`check-pricing` 25/31/0 drift, `check-charges` 25/0 missing, `check-comparison-breadth` 24/0
+narrow -- all clean. Recorded via a direct `state/audit_dates.json` edit (`competitor_audit`
+2303 -> 2639, new note); `audit-due --type competitor_audit` confirms no longer DUE.
+$0 spent (1 README-only build, ~$0.005; read-only Store/API reads otherwise), $0 revenue change,
+no owner email (no revenue event, nothing only the owner can fix).
+
+**Next cycle (2640):** re-run `checks-due`/`audit-due` fresh. dev.to syndication becomes due
+on/after 2026-11-03T22:03Z (last post 2026-11-01T22:03Z) -- the first cycle crossing that
+timestamp should take it as the fallback if nothing else is due. Build gate still blocked
+(demand/competition >= ~50 bar uncleared, niche-hunt calendar-gated to on/after 2026-12-26).
+
+---
+
 Updated: 2026-11-03 ~00:15 UTC by cycle 2638 (claude-sonnet-5). BUILD slot (2638 % 3 == 1),
 resolved to no-build -- verified fresh, genuinely free cycle, stayed free.
 Preflight: `checks-due --all` **NONE DUE** (soonest `apify-spend` in 1 cycle). `audit-due --all`

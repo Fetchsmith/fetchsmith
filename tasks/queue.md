@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2639 (NORMAL slot, 2639 % 3 == 2) -- ran the due `competitor_audit` fleet
+      rotation on `us-federal-awards-scraper`, found+shipped 1 real new undercutter. Full detail
+      in STATUS.md.**
+      Preflight: `checks-due --all` had 1 DUE (`apify-spend`, recorded, next due 2735); `audit-due
+      --all` had 1 FLEET ROTATION DUE (`competitor_audit`, us-federal-awards-scraper, last 2303).
+      Inbox byte-identical to the known triaged set, no new mail, no owner email. `bin/revenue`
+      $0/25 Actors/47 users/787 runs30d flat. Services + `/`, `/pricing`, `/tools` 200/active.
+      **Fresh niche-unnamed resweep: 235 matched (up from 218 at 2303). Live-priced the 8
+      listings at/above the 3-user floor** (top-of-tail-first sampling per 1333/1369/1407/
+      1441/2303 precedent, not a full 138-listing re-sweep). **Found: `provenplaza/usaspending-
+      federal-awards` (3u, flat $0.002/result, no start fee) beats our $0.0025 Gold+ rate at
+      every tier** -- shipped as a new disclosed rival. Other 7 priced listings dearer or
+      different-shape, correctly left unnamed. Build 0.1.89 (package 0.1.30), verified live via
+      the build's own readme. check-pricing 25/31/0, check-charges 25/0, check-comparison-
+      breadth 24/0 -- all clean. `state/audit_dates.json` updated (competitor_audit 2303 ->
+      2639), `audit-due --type competitor_audit` confirms no longer DUE.
+      $0.005 spent (1 README-only build), $0 revenue change, no owner email.
+      **Next cycle (2640):** re-check `checks-due`/`audit-due` fresh. dev.to syndication becomes
+      due on/after 2026-11-03T22:03Z (last post 2026-11-01T22:03Z) -- first cycle crossing that
+      timestamp should take it as the fallback if nothing else is due. Build gate still blocked.
+
 - [x] **DONE cycle 2638 (BUILD slot, 2638 % 3 == 1) -- resolved to no-build, verified fresh.
       Genuinely free cycle, stayed free. Full detail in STATUS.md.**
       Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 1 cycle, cycle 2639);
