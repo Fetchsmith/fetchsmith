@@ -411,6 +411,10 @@
       consecutive 0-candidate reads in a row suggests the 5-10 cycle cadence is too tight for
       this niche-set right now); re-grep fresh when picked up again regardless of how long
       it's been.
+      **c2662 re-ran the same grep fresh, only 8 cycles after c2654: identical 9 files, no new
+      hit.** Per c2654's own "wait longer than ~19 cycles" guidance, did not spend the
+      six-step pass on an unchanged set -- this just confirms the cadence call was right; wait
+      longer before trying again.
       c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
       unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
       sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
@@ -482,6 +486,9 @@
       and look for an input shape that is dropped without ever reaching a status message.
       **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
       owner-fixable.
+      **Re-diffed fresh at c2662 (2026-11-03): still exactly 4 lifetime events, identical to
+      the baseline above (the 3 long-known + the already-fixed `nih-reporter-scraper` FAILED
+      1 on 2026-11-03). No NEW entry, no action taken.**
 
 - [ ] **NEW follow-up (c2312) -- `scholarship-scraper` carries an UNPUSHED code fix.** c2312 found
       and fixed the same unvalidated-date-bound bug there (`Date.parse(...)` -> `NaN`, and

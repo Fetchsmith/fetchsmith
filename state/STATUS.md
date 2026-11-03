@@ -1,3 +1,47 @@
+Updated: 2026-11-03 ~12:15 UTC by cycle 2662 (claude-sonnet-5). NORMAL slot (2662 % 3 == 1,
+recomputed fresh from the integer). Preflight: `checks-due --all`/`audit-due --all` both
+NONE DUE (soonest `check-status-continuity` in 3c, cycle 2665). Inbox `list 10` = the same
+known 9 triaged items, zero new mail -- confirmed the two owner threads stay resolved
+(`2b237f1b` CourtListener token wired c2362, `01852eaa` Apify `/v2/store` change hardened
+c2496, remainder deliberately post-deadline). `bin/revenue` $0 booked, 25 Actors, 48 users,
+778 runs30d, ext_bad30d 4 (same 3 long-known + already-fixed `nih-reporter-scraper`).
+`bin/apify-spend` $6.0363/$85, flat, **$0 spent this cycle** -- no build, no push. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` 200
+before and after.
+
+**No ready task this cycle -- every live queue item is either already clean/closed or
+explicitly gated on a trigger that has not fired, and both standing fallbacks (niche-hunting,
+growing-niches re-grep) are also blocked. Ran the cheap verification work instead rather than
+manufacture a code change (c2524 rule).**
+1. **c2336 `ext_bad30d` tripwire, re-diffed fresh from `state/revenue_history.json`:** 4
+   lifetime events, identical to the known baseline -- `court-records-scraper` TIMED-OUT
+   (2026-10-08), `steam-reviews-scraper` FAILED (2026-10-26), `remote-jobs-scraper` TIMED-OUT
+   (2026-10-29), `nih-reporter-scraper` FAILED (2026-11-03, already diagnosed-and-fixed at
+   c2647, re-confirmed clean by c2742/c2787's own notes at STATUS.md lines ~692/762/787/806).
+   No NEW entry beyond those four -- nothing to triage.
+2. **c2380 growing-niches README-arrow grep re-run fresh:** `grep -rnlE
+   "[0-9]+\s*(→|->)\s*[0-9]+" actors/*/README.md` -- same 9 files as c2635/c2654 (8 cycles
+   ago), no new file. Per c2654's own guidance ("wait longer than ~19 cycles before the next
+   retry"), 8 cycles is too soon -- did not spend the ~15min/Actor six-step pass on an
+   unchanged candidate set.
+3. **`bin/dmarc-report list`:** still only 2 reports on file (both covering the same
+   2026-10-26 range, both 1 source / 0 fails), unchanged since c2372 -- not enough sample to
+   revisit the c2371 `p=reject` decision.
+4. **Niche-hunting / new-Actor build:** confirmed via `notes/NICHES.md`'s own c2306 closing
+   note that every axis (10 keyword-category sweeps, WebSearch-for-sources, EU legal-mandate,
+   paid/B2B anti-bot, category-level) is fully exhausted, with the one remaining lever
+   (WebSearch-for-new-sources) explicitly gated to no sooner than ~2026-12-26. Did not
+   re-attempt a search this cycle.
+
+$0 spent, $0 revenue change, no owner email (a clean verification cycle is neither a revenue
+event nor owner-fixable). **Next cycle:** nothing fleet-wide due until `check-status-
+continuity` at 2665. If still nothing is due then either, the next calendar date worth
+re-checking for real new work is the DMARC sample (whenever 2-3 more weekly reports land) or
+2026-12-26 (WebSearch-for-sources lever). Recompute `cycle % 3` fresh rather than trusting
+this label forward.
+
+---
+
 Updated: 2026-11-03 ~11:55 UTC by cycle 2661 (claude-sonnet-5). QUALITY/GROWTH slot
 (2661 % 3 == 0, recomputed fresh from the integer). Preflight: `checks-due --all`/
 `audit-due --all` both NONE DUE (soonest `check-status-continuity` in 4c, cycle 2665).
