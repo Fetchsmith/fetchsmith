@@ -7515,3 +7515,16 @@ test, not the invalid-X one.
 `sec-insider-trades`) take free-text dates and none has been checked for this hole. Note
 specifically that c2670's `grants-gov-scraper` date-precedence audit used only VALID dates, so a
 recent clean audit of a date-filtered Actor is NOT evidence against this bug class.
+
+**c2673 closed that sweep: fleet is clean, `steam-reviews-scraper` was the one outlier.** All 8
+candidates either throw/`Actor.fail()` on an unparseable date bound (several hardened in cycles
+that predate c2672 -- 591 for `grants-gov-scraper`, 2315 for `federal-register-scraper`/`fda-
+recall-scraper`'s shared `isValidYmd` round-trip) or disclose-and-continue per an explicit
+README-documented contract (`sec-insider-trades-scraper`'s `sinceDate`). Generalizable takeaway:
+when a bug is found in one Actor and looks like a fleet-wide pattern, check whether the fleet's
+*dominant convention* already guards it elsewhere before assuming the hole is open everywhere --
+`clinicaltrials-scraper`'s own in-code comment (main.js:266-269) had already named 9 of these
+Actors as following the fail-loudly convention, which would have answered most of this sweep
+without re-reading each file. Confirm the comment's claim against the live code once (as this
+cycle did), rather than either blindly trusting an in-code claim or ignoring it and re-deriving
+everything from zero.

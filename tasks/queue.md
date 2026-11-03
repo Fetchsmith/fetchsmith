@@ -12,6 +12,11 @@
       still PAUSED/429 as expected; `bin/check-charges` 25/25 clean; services active and `/`,
       `/pricing`, `/tools`, `/tools/steam-reviews-scraper` all 200.
 
+- [x] DONE cycle 2673 -- auto-added FIX FAILED ACTORS line (shopify-products-scraper) was this
+      cycle's own `bin/actor-health` probe (`items:0` with `err:'[]'`, no fail_rows), not an
+      external failure. An immediate targeted re-run (`actor-health --only shopify-products-scraper`)
+      came back clean (201, 10 items, 0 fail_rows) -- transient, confirmed rather than assumed, no
+      code change. Same pattern as c2669's trademark-search-scraper and c2672's apple-podcasts-scraper.
       **The finding.** Targeted the one input shape no prior `varied_test` had touched (c2258 did
       games-mode sortBy erasure, c2336 did a partial-unparseable `apps` list): a `reviewsAfter` /
       `reviewsBefore` value that is a string but not a parseable date. An Invalid Date is **truthy but
@@ -47,23 +52,38 @@
       `remote-jobs-scraper` comes due at 2674 and `check-row-floor`/`check-upstream-warnings` at
       ~2676; recompute `cycle % 3` fresh (2673 % 3 == 0, QUALITY/GROWTH).
 
-- [ ] **NEW from c2672 (MEDIUM, next QUALITY or BUILD slot): sweep the "NaN date is truthy" hole across
-      the other date-filtered Actors.** c2672 fixed it in `steam-reviews-scraper` only. The bug class is
-      not Steam-specific: any Actor that does `const d = input.someDate ? new Date(input.someDate) : null`
-      and then guards every USE with `!isNaN(d)` will silently drop an unparseable date, apply no filter,
-      and charge for the unfiltered set -- and if a *different* behaviour is keyed off the same
-      `hasDateWindow`-style flag (sort forcing, early-stop, watch-mode bounds), that gets silently
-      skipped too. Candidates, all of which take free-text date input and NONE of which has been checked
-      for this: `grants-gov-scraper` (postedFrom/postedTo/closeDateFrom/closeDateTo -- note c2670 tested
-      the *precedence* rules but used only VALID dates), `eu-ted-tenders-scraper`, `app-store-reviews-scraper`,
-      `google-play-reviews-scraper`, `fda-recall-scraper`, `federal-register-scraper`, `clinicaltrials-scraper`,
-      `sec-insider-trades-scraper`. Method that worked: (1) `grep -n "new Date(input\.\|isNaN" src/main.js`
-      per Actor; (2) check whether ANY `ignoredInputs.push` / warning covers the unparseable case; (3) check
-      what else keys off the derived has-window flag; (4) confirm free with `node -e` on the raw string
-      before touching code; (5) if broken, the one-line fix is a parse-time push into that Actor's own
-      ignored-inputs aggregate, not new message strings. Batch 2-3 Actors per cycle (each needs its own
-      ~$0.005 push, so only push an Actor that is actually broken). Also worth checking in the same pass:
-      whether any of these schemas could just carry a `pattern` to let Apify reject the bad value up front.
+- [x] **DONE cycle 2673 (QUALITY/GROWTH slot, 2673 % 3 == 0) -- ran the c2672 "NaN date is truthy"
+      sweep across all 8 named candidates. Fleet is CLEAN: every one already fails loudly on an
+      unparseable date, none has the silent-drop hole.** Preflight all clean first: `checks-due --all`
+      / `audit-due --all` both NONE DUE (soonest `check-row-floor` in 3c, cycle 2676); `inbox list 10`
+      the same known items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 786 runs30d
+      (780 -> 786), `ext_bad30d` same 4 known events; `bin/apify-spend` $6.201/$85 (83.0% elapsed,
+      projection $7.47); `bin/actor-health` 24/25 green on first pass, `shopify-products-scraper`
+      returned 0 items (see DONE line above -- confirmed transient, immediate re-run clean); `bin/
+      check-charges` 25/25 clean; services + `/`, `/pricing`, `/tools` 200 before and after.
+      **Method:** `grep -n "new Date(input\.\|isNaN" src/main.js` per candidate, then read every hit
+      in context. Result per Actor: `grants-gov-scraper` -- `parseIsoDate`/`parseUsDate` round-trip
+      through `Date.UTC` and compare back to the input string; any mismatch calls `failInput()` and
+      stops the run (hardened at cycle 591, predates c2672). `google-play-reviews-scraper` --
+      `parseDateBound` throws on `Number.isNaN(d.getTime())`, with an in-code comment already naming
+      this exact bug class as the reason it throws instead of warns. `app-store-reviews-scraper` --
+      `reviewsAfter`/`reviewsBefore` each call `Actor.fail()` on an invalid date (lines 106-114) --
+      loud failure, not a silent charge. `eu-ted-tenders-scraper` -- `normalizeDate` requires 8 digits
+      after stripping dashes and throws otherwise. `federal-register-scraper` -- `normDate` round-trips
+      through `Date.UTC`/`isValidYmd` and throws on mismatch (hardened cycle 2315, predates c2672).
+      `fda-recall-scraper` -- identical `normDate`/`isValidYmd` round-trip, throws. `clinicaltrials-
+      scraper` -- `parseDateBound` throws on anything failing a strict `YYYY-MM-DD` regex, with an
+      in-code comment citing `sec-insider-trades-scraper` (cycle 2016) as the precedent this avoids.
+      `sec-insider-trades-scraper` -- `sinceDate` fails the regex -> `sinceDateInvalid` is set, a
+      `log.warning` fires AND the run proceeds with no lower bound; disclosed (not silent) and matches
+      this Actor's own README-documented "leave empty for no bound" semantics, so this is a deliberate,
+      disclosed design choice, not the c2672 bug shape. **Conclusion: `steam-reviews-scraper` was the
+      one outlier, now fixed; the rest of the fleet already follows the fail-loudly convention this
+      class requires** (clinicaltrials-scraper's own comment at line 266-269 independently lists 9 of
+      these Actors as already doing this). No code change, no build, no push, $0 spent, $0 revenue
+      change, no owner email (a clean verification sweep is neither a revenue event nor owner-fixable).
+      **Next cycle:** `varied_test` on `remote-jobs-scraper` comes due at 2674;
+      `check-row-floor`/`check-upstream-warnings` due ~2676. Recompute `cycle % 3` fresh.
 
 - [x] **DONE cycle 2671 (NORMAL slot, 2671 % 3 == 1) -- full independent preflight re-run, nothing
       fleet-wide or in the inbox was due or actionable, no code change manufactured per the

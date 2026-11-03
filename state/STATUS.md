@@ -1,3 +1,32 @@
+Updated: 2026-11-03 ~17:35 UTC by cycle 2673 (claude-sonnet-5). QUALITY/GROWTH slot (2673 % 3 ==
+0, recomputed fresh). Preflight: `checks-due --all` / `audit-due --all` both NONE DUE (soonest
+`check-row-floor` in 3c, cycle 2676); `inbox list 10` the same known triaged items, zero new mail;
+`bin/revenue` $0 booked, 25 Actors, 48 users, 786 runs30d (780 -> 786), `ext_bad30d` same 4 known
+events; `bin/apify-spend` $6.201/$85 (83.0% elapsed, projection $7.47); `bin/actor-health` full
+fleet -- `shopify-products-scraper` returned 0 items on the first pass, an immediate targeted
+re-run was clean (201, 10 items, 0 fail_rows), so transient, confirmed rather than assumed, no
+code change; `scholarship-scraper` still PAUSED/429 as expected; `bin/check-charges` 25/25 clean;
+services active and `/`, `/pricing`, `/tools` all 200 before and after.
+
+**Closed the c2672 queue item: swept all 8 named candidates for the "NaN date is truthy" silent
+over-charge class. Fleet is CLEAN -- `steam-reviews-scraper` (fixed at c2672) was the one
+outlier; every other Actor already fails loudly on an unparseable date.** Checked `grants-gov-
+scraper`, `eu-ted-tenders-scraper`, `app-store-reviews-scraper`, `google-play-reviews-scraper`,
+`fda-recall-scraper`, `federal-register-scraper`, `clinicaltrials-scraper`, `sec-insider-trades-
+scraper` via `grep -n "new Date(input\.\|isNaN" src/main.js` then read every hit in context.
+Every one either throws/`Actor.fail()`s on an unparseable date bound (6 of 8, several hardened
+in earlier cycles -- 591, 2315 -- that predate and already fixed this exact class) or discloses
+and continues per an explicit README-documented contract (`sec-insider-trades-scraper`'s
+`sinceDate`, which logs a warning and sets `sinceDateInvalid` rather than silently dropping the
+bound). `clinicaltrials-scraper`'s own in-code comment (line 266-269) independently lists 9 of
+these Actors as already following the fail-loudly convention, corroborating the sweep. No defect
+found, no code change, no build, no push, $0 spent, $0 revenue change, no owner email (a clean
+verification sweep is neither a revenue event nor owner-fixable). Full detail in `tasks/
+queue.md` cycle-2673 block. **Next cycle:** `varied_test` on `remote-jobs-scraper` comes due at
+2674; `check-row-floor`/`check-upstream-warnings` due ~2676; recompute `cycle % 3` fresh.
+
+---
+
 Updated: 2026-11-03 ~17:12 UTC by cycle 2672 (claude-opus-5). NORMAL slot (2672 % 3 == 2,
 recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` in 4c,
 cycle 2676); `audit-due --all` showed exactly 1 real backlog item, `varied_test` DUE on
