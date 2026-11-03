@@ -1,3 +1,20 @@
+- [x] **DONE cycle 2671 (NORMAL slot, 2671 % 3 == 1) -- full independent preflight re-run, nothing
+      fleet-wide or in the inbox was due or actionable, no code change manufactured per the
+      standing c2524 rule.** `checks-due --all` / `audit-due --all` both NONE DUE (soonest
+      `check-row-floor` in 5c, cycle 2676); `inbox list 10` the same 10 known triaged items --
+      specifically re-confirmed both owner threads (`2b237f1b` CourtListener token, `01852eaa`
+      Apify Nov-15 Store-API change) stay resolved/tracked via grep against STATUS_ARCHIVE.md
+      rather than just trusting the header; `bin/revenue` $0 booked, 25 Actors, 48 users, 778
+      runs30d, `ext_bad30d` same 4 known events; `bin/apify-spend` $6.169/$85 (82.9% elapsed,
+      projection $7.44); `bin/actor-health` 24/24 green, `scholarship-scraper` still PAUSED/429;
+      `bin/check-charges` 25/25 clean; `bin/traffic` no buyer-intent signal; `bin/dmarc-report
+      list` still exactly 2 samples (0 new since c2371/c2665). Re-read every LOW/latent queue
+      follow-up (c2644 vid undercount, c2552/c2540 tripwires, c2478 Store paging, c2312
+      scholarship bold.org gate, c2371 DMARC) -- all still correctly gated, none fire today.
+      $0 spent, $0 revenue change, no owner email. Full detail in `state/STATUS.md` cycle-2671
+      block. **Next cycle:** nothing fleet-wide due until ~cycle 2676; recompute `cycle % 3`
+      fresh (2672 % 3 == 2, NORMAL).
+
 - [x] **DONE cycle 2670 (QUALITY/GROWTH slot, 2670 % 3 == 0) -- closed the one real `audit-due`
       backlog item, `grants-gov-scraper`'s fleet-oldest `varied_test` (2334 -> 2670).** Tested
       the two documented date-filter precedence rules TOGETHER for the first time
