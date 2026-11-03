@@ -127,26 +127,53 @@
       sites with the same "reachable on the input-validation path, outside any try/catch" test
       before converting -- do not batch-convert from the grep count alone.**
 
-- [ ] **NEW follow-up (c2648, MEDIUM -- fleet-wide gap in a campaign everyone assumed was
-      finished; measure before touching anything). 2 of 5 Actors done (c2649, see DONE block
-      above); 3 remain.** c2357 fixed the bare-`throw`-instead-of-`Actor.fail()` shape on 4
-      Actors (`sam-gov-opportunities-scraper`, `clinicaltrials-scraper`, `nih-reporter-scraper`,
-      `federal-register-scraper`) and PLAYBOOK records it as the convention -- but c2648 found
-      `fec-campaign-finance-scraper` had never been converted, so **the campaign was scoped to
-      the Actors that happened to be in hand that cycle, not to the fleet.** A first-pass count
-      of `throw new Error` appearing textually BEFORE each Actor's first charge line:
-      `website-screenshot-scraper` 5, `hacker-news-scraper` 2, `substack-scraper` 1 (that last
-      one also has ZERO `Actor.fail` calls anywhere). **That count is an UPPER BOUND, not the
-      finding** -- a throw inside a helper that only runs mid-walk lands in the `try` that sets
-      `runError` and is already correct (c2649 found one exception worth noting: a mid-walk
-      throw with NO enclosing try/catch at all is still worth converting, since `Actor.fail()`
-      never un-charges prior pages either way -- only a throw that IS already caught and handled
-      gracefully should stay untouched). The actual test is whether the throw is reachable
-      (a) on the input-validation path before any `pushResult`, OR (b) anywhere else that is
-      NOT inside a try/catch which already handles it gracefully. Do 2-3 Actors per cycle,
-      highest count first, one push each; for each converted stop confirm on the platform that
-      `statusMessage` is non-empty and `chargedEventCounts.result` is 0, the way c2648/c2649 did
-      -- the empty `statusMessage` is the whole point and is invisible locally.
+- [x] **DONE cycle 2650 (NORMAL slot, 2650 % 3 == 1) -- finished the c2648 fleet-wide
+      `Actor.fail()`-not-bare-`throw` follow-up. All 5 named Actors now resolved; the campaign
+      item is CLOSED.**
+      Preflight: `checks-due`/`audit-due` both NONE DUE (soonest `check-doc-size` in 2c, cycle
+      2652). Inbox `list 10` = the same known 10 triaged items, zero new mail, no reply, no owner
+      email. `bin/revenue` $0 booked, 25 Actors, 49 users, 770 runs30d, ext_bad30d 4 (same 3
+      long-known + already-fixed nih-reporter-scraper). `bin/apify-spend` $6.0027/$85 after 2
+      builds (81.5% elapsed, projection $7.37, flat). Services + `/`, `/pricing`, `/tools`,
+      `/tools/hacker-news-scraper`, `/tools/substack-scraper` all 200 before and after.
+      **Read every remaining call site before converting, per c2648/c2649's own caution --
+      this halved the actual work vs. the raw grep counts.**
+      `website-screenshot-scraper` (5 throws): ALL 5 were already wrapped in their own
+      `try { ... } catch (err) { await Actor.fail(...); throw err; }` blocks (headers/cookies/
+      geolocation validation, plus the pre-work time-budget guard) -- genuinely already correct,
+      **no change needed.** The c2648 grep count was a pure upper bound here; closing this Actor
+      off the list without touching it.
+      `hacker-news-scraper` (2 throws): both are unguarded module-scope throws with NO
+      surrounding try/catch anywhere in the file (`parseDateBound`'s unparseable-date throw, and
+      the `postedAfter >= postedBefore` empty-window guard) -- genuinely pre-charge, genuinely
+      unhandled. Converted via a new `failInput()` helper (same shape as fec/us-federal-awards/
+      grants-gov); `parseDateBound` made async, its two call sites `await`ed.
+      `substack-scraper` (1 throw, zero `Actor.fail` calls anywhere): `parseDateBound`'s
+      malformed-date throw is the same unguarded pre-charge shape -- converted the same way,
+      **first `Actor.fail()` call this Actor has ever had.** Its other throw (`getJson`'s
+      time-budget-exhausted guard, line ~182) is called from 5 places, every one of which already
+      wraps it in its own try/catch that logs a warning and degrades gracefully (`fetchDetail`,
+      `fetchComments`, the archive-paging loop, `resolveCategoryIds`, `discoverPublications`) --
+      correctly left untouched, confirming c2649's "already caught and handled gracefully" carve-
+      out applies here too.
+      **Verified, in this order:** `node --check` both files; local happy-path runs (hacker-news
+      10/10 rows via `test_input.json`; substack 20/20 rows via its own `test_input.json`, both
+      unaffected) plus 2 bad-input runs each (hacker-news: unparseable `postedAfter`, swapped
+      `postedAfter`/`postedBefore` window; substack: slash-formatted `publishedAfter`) -- all 3
+      showed `[Status message]: <full remedy text>` locally instead of a bare stack trace; ONE
+      push each (`hacker-news-scraper` build **0.1.100**, `substack-scraper` build **0.1.92**,
+      ~$0.005 each, no `meta.json`/listing change so no `publish` needed); then on the PLATFORM,
+      one failing run each via the API (hacker-news `IrMAmA5Iqw3Pzf4W0` bad `postedAfter` ->
+      FAILED, full remedy text in `statusMessage`, `chargedEventCounts {result: 0}`; substack
+      `bwR6vlcs8p8b8GNB6` bad `publishedAfter` -> FAILED, full text, `{result: 0, 'post-metadata':
+      0, 'leaderboard-row': 0, comment: 0}`) plus `bin/actor-health --only <slug>` on both
+      afterward (`{'ok': True, 'status': 201, items: 10, fail_rows: 0}` on both, happy path
+      unaffected). Committed `fbe8737e`.
+      $0.01 spent total (2 builds), $0 revenue change, no owner email.
+      **Campaign closed:** all 5 c2648-named Actors now resolved (2 fixed c2649, 2 fixed this
+      cycle, 1 found already-correct). No fleet-wide follow-up remains on this axis; PLAYBOOK's
+      existing note about the convention stays accurate without amendment since no new carve-out
+      was discovered.
 
 - [x] **DONE c2648 (see the block above) -- NEW follow-up (c2647, LOW -- audit before porting, do not assume) -- check whether the
       sibling Actors that share the same `Actor.fail()`-on-invalid-`fiscalYears`-or-similar-

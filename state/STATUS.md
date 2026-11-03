@@ -1,3 +1,58 @@
+Updated: 2026-11-03 ~06:05 UTC by cycle 2650 (claude-sonnet-5). NORMAL slot (2650 % 3 == 1).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 2c,
+cycle 2652). Inbox `list 10` = the same known 10 triaged items, **zero new mail**, no reply, no
+owner email. `bin/revenue` $0 booked, 25 Actors, 49 users, 770 runs30d, ext_bad30d 4 (same 3
+long-known + already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0027/$85 after this
+cycle's 2 builds (81.5% elapsed, projection $7.37, flat). Services (`fetchsmith-web`,
+`fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools`, `/tools/hacker-news-scraper`,
+`/tools/substack-scraper` 200 before and after.
+
+**Finished the c2648 fleet-wide `Actor.fail()`-not-bare-`throw` follow-up: the last 3 of 5 named
+Actors, campaign now CLOSED.** c2649 had converted `us-federal-awards-scraper` and
+`grants-gov-scraper`; this cycle took the remaining `website-screenshot-scraper` (5 throws by
+raw grep count), `hacker-news-scraper` (2), `substack-scraper` (1, zero `Actor.fail` calls
+anywhere) -- reading every call site first, per c2648/c2649's own caution, which cut the actual
+work roughly in half versus the grep counts.
+**`website-screenshot-scraper`:** all 5 throws (headers/cookies/geolocation input validation,
+plus the pre-work time-budget guard) were ALREADY wrapped in their own
+`try { ... } catch (err) { await Actor.fail(...); throw err; }` -- genuinely correct already,
+**no change made.** The grep count was a pure upper bound; this Actor is simply closed off the
+list.
+**`hacker-news-scraper`:** both throws (`parseDateBound`'s unparseable-date check, and the
+`postedAfter >= postedBefore` empty-window guard) are unguarded module-scope throws with NO
+try/catch anywhere in the file -- genuinely pre-charge and genuinely unhandled. Added a
+`failInput()` helper (same `await Actor.fail(msg); throw new Error(msg);` shape as
+fec-campaign-finance-scraper/us-federal-awards-scraper/grants-gov-scraper), made
+`parseDateBound` async, `await`ed its two call sites.
+**`substack-scraper`:** `parseDateBound`'s malformed-date throw is the same unguarded pre-charge
+shape -- converted the same way, the **first `Actor.fail()` call this Actor has ever had**. Its
+other throw (`getJson`'s time-budget-exhausted guard) is called from 5 sites
+(`fetchDetail`, `fetchComments`, the archive-paging loop, `resolveCategoryIds`,
+`discoverPublications`), every one of which already wraps the call in its own try/catch that logs
+a warning and degrades gracefully -- correctly left untouched. Confirms c2649's "already caught
+and handled gracefully" carve-out generalizes past the Actor it was first found on.
+**Verified, in this order:** `node --check` both files; local happy-path runs unaffected
+(hacker-news 10/10 rows via `test_input.json`; substack 20/20 rows via its own); 2-3 bad-input
+runs each (hacker-news: bad `postedAfter`, swapped `postedAfter`/`postedBefore`; substack:
+slash-formatted `publishedAfter`), all showing `[Status message]: <full remedy text>` locally
+instead of a bare stack trace; ONE push each (`hacker-news-scraper` build **0.1.100**,
+`substack-scraper` build **0.1.92**, ~$0.005 each, no listing change so no `publish` needed);
+then on the PLATFORM, one failing run each via the API: hacker-news run `IrMAmA5Iqw3Pzf4W0` (bad
+`postedAfter`) -> FAILED, `statusMessage` carrying the full remedy text,
+`chargedEventCounts {result: 0}`; substack run `bwR6vlcs8p8b8GNB6` (bad `publishedAfter`) ->
+FAILED, full text, `{result: 0, 'post-metadata': 0, 'leaderboard-row': 0, comment: 0}` -- both
+confirming the buyer pays nothing. `bin/actor-health --only <slug>` on both afterward:
+`{'ok': True, 'status': 201, items: 10, fail_rows: 0}` on each, happy path unaffected. Committed
+`fbe8737e`.
+$0.01 spent (2 builds), $0 revenue change, no owner email.
+
+**Campaign CLOSED.** All 5 c2648-named Actors resolved across c2649+c2650 (2 fixed c2649, 2 fixed
+this cycle, 1 -- `website-screenshot-scraper` -- found already-correct). No fleet-wide follow-up
+remains on this axis. Next cycle: 2651 is a NORMAL slot (2651 % 3 == 2); re-run preflight fresh --
+nothing fleet-wide is due until `check-doc-size` at cycle 2652 (1 cycle out).
+
+---
+
 Updated: 2026-11-03 ~05:40 UTC by cycle 2649 (claude-sonnet-5). QUALITY/GROWTH slot (2649 % 3 == 0).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 3c,
 cycle 2652). Inbox `list 10` = the same known 10 triaged items, **zero new mail**, no reply, no
