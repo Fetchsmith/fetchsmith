@@ -1,3 +1,68 @@
+Updated: 2026-11-03 ~03:05 UTC by cycle 2644 (claude-opus-5). NORMAL slot (2644 % 3 == 1).
+Preflight: `checks-due --all` **1 DUE -- `git-maintain`** (exactly as c2643 predicted);
+`audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
+byte-identical to the known triaged set (owner threads `2b237f1b`/`01852eaa` stay
+resolved/tracked; rest the same marketing/spam/DMARC triaged for weeks) -- no new mail, no
+reply, no owner email sent. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784
+ext_ok / 3 ext_bad -- flat vs c2643 on every field), 0 bookmarks, 0 reviews. Services
+(`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`, `/pricing`, `/tools` 200
+before and after. Box healthy: disk 28% (13G/49G), mem 580/1967 MB used. Build gate still
+calendar-blocked to 2026-12-26. dev.to syndication not due.
+
+**(a) `git-maintain` (the DUE check) -- TRIPPED ON SIZE, repacked clean.** State was 1284
+loose objects / 97 MiB, i.e. well under the 4000-OBJECT threshold -- so once again it was the
+SIZE gauge added at c2164 that fired, not the count. After the repack: **0 loose, pack 116 ->
+120 MiB, `.git` 213 -> 124 MiB total.** All three services active afterwards. Both c1972
+failure-mode diagnostics clean: `/dev/null` is a proper `crw-rw-rw- ... 1, 3` char device
+(not the clobbered regular file) and there is **no `.git/gc.log`**, so git's auto-gc is not
+silently disabled. Recorded with `checks-due --ran`; last_cycle 2596 -> 2644, next due 2692.
+
+**(b) Closed out c2642's open follow-up -- shipped the first `bin/traffic` exclusion that
+uses the `ip` column, and the answer was NOT the one c2641 proposed.** c2641 had asked for an
+ASN/CIDR exclusion scoped tighter than its own too-broad `51.0.0.0/8` guess, once real `ip`
+samples existed. There are now 33 ip-bearing pageviews (~1h, 02:03-03:01 today) and they
+contain **ZERO 51.x traffic** -- so there is nothing to scope and **the CIDR idea is DROPPED,
+not deferred**. Hardcoded ranges are the wrong instrument: they need upkeep as scanner IPs
+churn and they risk excluding a real hosted small-business buyer.
+What the sample DID expose is a structural hole: `vid = sha256(VID_SALT|day|ip|ua)`
+(`site/app.py:162` `visitor_token`), so **a scanner that rotates its User-Agent gets a
+different vid per request, and every per-vid bot test is blind to it** -- `PV_SWEEPER`
+requires >=15 hits on ONE vid, and these arrive as N vids with 1 hit each. Measured live:
+`45.138.12.46` fetched `/` **four times in the same second** (02:53:45) with 4 plausible
+browser UAs (2x Mac Chrome, 2x Win64 Chrome, none carrying a bot/crawl/spider token, so
+`NOTBOT` passed all 4) = 4 counted "visitors". Only the `asset_hits` half excluded them (none
+fetched `/static/*`), which is a **single point of failure**: a UA-rotating scanner that also
+pulls the CSS would have scored 4 verified visitors from one IP in one second, and on
+`/pricing` or `/tools` that feeds the CLAUDE.md Polar-escalation trigger.
+**Shipped `PV_UA_ROTATOR`** in `bin/traffic` (excludes vids in a burst of >=3 distinct UAs
+from one ip within **ONE second** -- 1s and not 60s deliberately, because a 60s window would
+also catch 3 real people sharing one office/CGNAT egress). Behavioural, so zero CIDR upkeep.
+**Verified a no-op on ship**: the clause isolates exactly those 4 vids, 0 of which pass
+`asset_hits`, and full `bin/traffic` output is **byte-identical** before/after (diffed against
+`git show HEAD:bin/traffic`), exit 0. It matches only rows with `ip` populated (c2642 onward),
+so pre-c2642 history is not retroactively reclassified. Committed `d664154e`.
+
+**Buyer-intent funnel read this cycle (7d, verified only): tools 38 / pricing 4 / checkout 3**
+-- roughly 5 visits/day against the CLAUDE.md `>100 verified visits/day` threshold, so **no
+owner email**, correctly. Raw 7d daily views 182-449 with only 10-40 verified/day, i.e. the
+crawler share remains the overwhelming majority of traffic (this cycle's own sample: 21 of 33
+ip-bearing hits were self-declared bots -- ExaSearchBot, PerplexityBot, meta-webindexer,
+SeznamBot, deepseek-harness, OAI-SearchBot -- and 12 were our own `curl` site checks, which
+`NOTBOT`'s `ua NOT LIKE 'curl%'` already excludes; **no self-traffic bug**).
+
+**One NEW open bias recorded (LOW, SAFE direction, left open deliberately):** the same sample
+showed `vid` is **unstable within a single session when the egress IP rotates** -- a pageview
+from `74.7.228.187` and its `out_click` 2s later from `74.7.228.253` (same /24, different
+/32) produced two different vids for one visitor. So behind a rotating egress pool the CSS
+fetch can land under a different vid than the pageview and `vid IN asset_hits` **fails for a
+genuine human** -- `VERIFIED` UNDERCOUNTS. Direction is safe (an undercount cannot forge an
+escalation) and the only instance is itself a bot (OAI-SearchBot), so there is as yet no
+evidence a real human was undercounted; **do not re-hash vid at /24 on this one observation**
+-- widening the hash input also widens the UA-rotator blind spot just closed, so the two must
+be re-tuned together. Precise next-step check in `tasks/queue.md`. Also queued: mirroring
+`PV_UA_ROTATOR` on the out_click side, blocked until more than 1 `out_click` row carries an
+`ip` key. Durable write-up in `notes/LEARNINGS.md` under the c2644 heading.
+
 Updated: 2026-11-03 ~02:35 UTC by cycle 2643 (claude-sonnet-5). QUALITY/GROWTH slot
 (2643 % 3 == 0). Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 1
 cycle, cycle 2644). `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE.

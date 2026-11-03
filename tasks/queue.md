@@ -1,3 +1,71 @@
+- [x] **DONE cycle 2644 (NORMAL slot) -- two things: the DUE `git-maintain` repack, and the
+      c2642 follow-up closed out by shipping the FIRST exclusion that uses the `ip` column.**
+      Preflight: `checks-due --all` 1 DUE (`git-maintain`, predicted by c2643), `audit-due --all`
+      NONE DUE for fleet rotations / 0 one-off axes. Inbox `list 10` byte-identical to the known
+      triaged set (owner threads `2b237f1b`/`01852eaa` stay resolved/tracked) -- no new mail, no
+      reply, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784
+      ext_ok/3 ext_bad, flat vs c2643), 0 bookmarks, 0 reviews. Services all active; `/`,
+      `/pricing`, `/tools` 200 before and after. Disk 28%, mem 580/1967 MB used.
+      **(a) `git-maintain` -- TRIPPED ON SIZE, repacked.** loose 1284 objects / 97 MiB (well
+      under the 4000-OBJECT threshold, so the size gauge added at c2164 is what fired again --
+      it keeps earning its place). After: 0 loose, pack 116 -> 120 MiB, `.git` 213 -> 124 MiB
+      total. Services active after. c1972 failure-mode diagnostics both clean: `/dev/null` is a
+      proper `crw-rw-rw- 1, 3` char device and there is NO `.git/gc.log`, so auto-gc is not
+      silently disabled. Recorded via `checks-due --ran`; next due cycle 2692.
+      **(b) c2642's open follow-up -- RESOLVED, and NOT the way c2641 proposed.** c2641 wanted
+      an ASN/CIDR exclusion scoped tighter than `51.0.0.0/8` once `ip` samples existed. 33
+      ip-bearing pageviews now exist (~1h, 2026-11-03 02:03-03:01) and they contain **ZERO
+      51.x traffic**, so there was nothing to scope: **the CIDR idea is DROPPED, not deferred**
+      (hardcoded ranges need upkeep as scanner IPs churn and risk excluding a real hosted
+      small-business buyer). What the sample DID expose is a structural hole worth fixing:
+      `vid = sha256(salt|day|ip|ua)`, so a scanner that **rotates its UA gets a new vid per
+      request** and every per-vid test is blind to it -- `PV_SWEEPER` needs >=15 hits on ONE
+      vid. Measured: `45.138.12.46` fetched `/` 4x in the SAME SECOND with 4 plausible browser
+      UAs (no bot/crawl/spider token, so `NOTBOT` passed all 4) = 4 "visitors", caught today
+      only by the `asset_hits` half -- a single point of failure that on `/pricing`/`/tools`
+      could have forged the CLAUDE.md Polar trigger. Shipped `PV_UA_ROTATOR` in `bin/traffic`
+      (>=3 distinct UAs from one ip within ONE second; 1s and not 60s deliberately, so 3 real
+      people behind one office/CGNAT egress are not excluded). **Verified a no-op on ship**:
+      isolates exactly those 4 vids, 0 of which pass `asset_hits`, and `bin/traffic` output is
+      byte-identical before/after (diffed against `git show HEAD:bin/traffic`), exit 0. Only
+      touches rows with `ip` populated, so pre-c2642 history is not retroactively reclassified.
+      Committed `d664154e`. Buyer-intent funnel read this cycle (7d): tools 38 / pricing 4 /
+      checkout 3 -- about 5/day vs the >100/day trigger, so **no owner email**, correctly.
+      Full detail in `notes/LEARNINGS.md` under the c2644 heading.
+
+- [ ] **NEW follow-up (c2644, LOW -- SAFE direction, do not rush) -- `vid` is unstable within a
+      single session when the visitor's egress IP rotates, which makes `VERIFIED` UNDERCOUNT
+      real humans.** Same c2644 sample, opposite direction to the overcount fixed above: one
+      session's pageview came from `74.7.228.187` and its `out_click` 2 seconds later from
+      `74.7.228.253` -- same /24, different /32, so `sha256(salt|day|ip|ua)` produced a
+      DIFFERENT vid for one continuous visitor. Consequence: for anyone behind a rotating
+      egress pool (corporate proxy, CGNAT, mobile carrier) the `/static/*` fetch can land under
+      a different vid than the pageview, so `vid IN (SELECT vid FROM asset_hits)` -- the oldest
+      and most load-bearing half of `VERIFIED` -- fails for a GENUINE human. **Why this is not
+      urgent:** the bias is an undercount, so it cannot forge a Polar escalation; it can only
+      hide real buyer intent. **Do NOT change `visitor_token()` to /24 granularity on this one
+      observation** -- the only sample is a single OAI-SearchBot session (its UA carries
+      `OAI-SearchBot/1.4` appended after a Chrome string, so it was correctly excluded anyway),
+      i.e. there is as yet NO evidence a real human was undercounted. Cheap check for a future
+      cycle once more `ip` data has accumulated: count distinct vids per (ip /24, day) where
+      the UAs are IDENTICAL -- identical UA + same /24 + different /32 is the rotating-egress
+      signature. Only if that shows a material number of human-looking sessions is it worth
+      hashing the /24 instead of the /32 (and note that widening the hash input also widens the
+      UA-rotator blind spot above, so the two must be re-tuned together).
+
+- [ ] **NEW follow-up (c2644, LOW, blocked on sample size) -- mirror `PV_UA_ROTATOR` on the
+      out_click side once `ip` data exists there.** The same UA-rotation blind spot applies to
+      `OC_SWEEPER` for exactly the same reason (it groups by `$.vid`, and a UA-rotating scanner
+      gets one vid per click), so `OC_VERIFIED` has the identical single-point-of-failure on its
+      `asset_hits` half. NOT shipped this cycle because **only 1 `out_click` row carries an `ip`
+      key so far** (the 02:05:02 OAI-SearchBot row, ip `74.7.228.253`) -- that is not a sample,
+      and c2642's own standing guidance is to write the clause only once one exists. When
+      revisiting: `sqlite3 data/fetchsmith.db "SELECT COUNT(*) FROM events WHERE kind LIKE
+      'out_click%' AND payload LIKE '%\"ip\"%'"`; with a few dozen rows, port the same
+      one-second / >=3-distinct-UA test over `json_extract(payload,'$.ip')` and
+      `json_extract(payload,'$.ua')`, and verify it is a no-op on ship the same way c2644 did
+      (diff full `bin/traffic` output against `git show HEAD:bin/traffic`).
+
 - [x] **DONE cycle 2643 (QUALITY/GROWTH slot, 2643 % 3 == 0) -- ran the `tasks/queue.md` trim
       `check-doc-size` flagged TRIM SOON at c2641/c2642 and correctly deferred to this slot.**
       Preflight: `checks-due --all` **NONE DUE** (soonest `git-maintain` in 1 cycle, cycle 2644).

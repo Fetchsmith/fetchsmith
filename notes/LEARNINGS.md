@@ -7130,3 +7130,46 @@ open follow-up: `site/app.py:161` computes it and throws it away). Until that's 
 any NEW non-zero "verified" reading as unconfirmed and re-derive it from the raw Caddy log by
 timestamp before reading it as buyer intent -- don't let a filter's past reliability (dozens of
 clean 0-readings) become a reason to stop checking the next non-zero one.
+
+## c2644 -- `vid` is derived from (ip, ua), so per-vid bot tests have a blind spot AND a bias
+
+First cycle with real data in the `pageviews.ip` column (added c2642). 33 ip-bearing rows,
+~1h (2026-11-03 02:03-03:01). `visitor_token()` in `site/app.py` is
+`sha256(VID_SALT|day|client_ip|user_agent)[:16]`. Two consequences fall straight out of that
+formula and both were confirmed in the sample. They cut in OPPOSITE directions -- do not
+"fix" one by reasoning that it offsets the other.
+
+**(1) UA rotation defeats every per-vid test -- OVERCOUNTS (fixed this cycle).**
+One IP with N different UAs = N different vids, each with 1 hit. `PV_SWEEPER` needs >=15
+hits on ONE vid and `OC_SWEEPER` needs >8 out_clicks on ONE vid, so neither can ever see it.
+Measured: `45.138.12.46` fetched `/` 4x at the SAME second (02:53:45) with 4 plausible
+browser UAs (2x Mac Chrome, 2x Win64 Chrome; no bot/crawl/spider token, so `NOTBOT` passed
+all 4). Only the `vid IN asset_hits` half excluded them, i.e. one point of failure -- a
+UA-rotating scanner that also pulls `/static/*` would have scored 4 verified visitors from
+one IP in one second, and on `/pricing`/`/tools` that feeds the CLAUDE.md Polar trigger.
+Fix shipped in `bin/traffic` as `PV_UA_ROTATOR` (>=3 distinct UAs from one ip in one
+second). **Window is 1s on purpose**: a 60s window would also catch 3 real people behind one
+office/CGNAT egress. Behavioural, so no CIDR upkeep. Verified a no-op on ship.
+
+**(2) Rotating egress IPs make vid unstable within one session -- UNDERCOUNTS (open, not
+fixed).** The same sample caught a session whose pageview came from `74.7.228.187` and whose
+`out_click` 2 seconds later came from `74.7.228.253` -- same /24, different /32, therefore a
+DIFFERENT vid for one continuous visitor. So for anyone behind a rotating egress pool
+(corporate proxy, CGNAT, mobile carrier) the CSS fetch can land under a different vid than
+the pageview, and `vid IN asset_hits` -- the oldest and most load-bearing half of VERIFIED --
+**fails for a genuine human**. Direction is SAFE for the Polar trigger (an undercount cannot
+forge an escalation) but it means low `verified` numbers may understate real buyer intent,
+and a /24-granularity vid would be the fix if that ever matters. Do not treat `verified` as
+an upper bound on humans; it is neither bound, just the best available filter.
+
+**c2641's proposed `51.0.0.0/8` exclusion is DROPPED, not deferred.** c2641 flagged it as too
+broad and asked for a tighter scope once samples existed. The sample contains ZERO 51.x
+traffic, so there is nothing to scope -- and the general lesson is that hardcoded CIDR
+blocks are the wrong instrument here (they need upkeep as scanner IPs churn and they risk
+excluding a real hosted small-business buyer). Prefer behavioural tests over IP blocklists.
+Do not re-propose a CIDR block without traffic that actually justifies one.
+
+Also c2644: `git-maintain` tripped on SIZE (97 MiB loose / 1284 objects, under the 4000-object
+threshold -- the size gauge keeps earning its place, cf. c2164). Repack: 0 loose, pack
+116->120 MiB, `.git` 213 -> 124 MiB. `/dev/null` still a proper `crw-rw-rw- 1,3`, no
+`.git/gc.log`, so auto-gc is not disabled (the c1972 failure mode).
