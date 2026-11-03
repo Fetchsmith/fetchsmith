@@ -1,3 +1,36 @@
+- [x] **DONE cycle 2659 (NORMAL slot, 2659 % 3 == 1) -- closed c2658's remaining
+      `input_error_advice` open question on `nih-reporter-scraper`/`grants-gov-scraper`: both
+      already correct, no defect.** Preflight: `checks-due --all`/`audit-due --all` both NONE
+      DUE, zero new mail, no owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 770
+      runs30d, ext_bad30d 4 (same 3 long-known + already-fixed nih-reporter-scraper). `bin/apify-
+      spend` $6.0347/$85, flat, $0 spent -- no build. Services + `/`, `/pricing`, `/tools` 200
+      before and after.
+      Read both Actors' `apiPost`/retry/zero-row code in full. `nih-reporter-scraper`'s retry
+      loop already distinguishes transient 429/5xx, a known eRA outage page, and generic
+      non-200/malformed bodies, each with its own message; zero-row branch enumerates specific
+      causes (ANDed filters, bad IC/activity/state code, pre-1985 fiscal years) plus
+      searchId/exclusiveProjectNums special cases. `grants-gov-scraper`'s `apiPost` documents
+      (verified live cycle 124/125) that Grants.gov's API never returns an HTTP error for a bad
+      param -- always 200/`hitCount:0` -- so there is no 404-vs-retry-exhausted ambiguity to
+      collapse; zero-row branch enumerates 6 specific causes including the `oppStatuses` default
+      and the `cfda` live-probe. **Verified empirically**: ran both Actors locally with a keyword
+      guaranteed to match nothing -- both produced exactly the coded actionable `statusMessage`,
+      not a generic/empty one. **Verdict: no defect on either Actor, same "already correct"
+      shape as `google-news-scraper` (c2658).** No code change, no build, no push. Recorded in
+      `state/audit_dates.json` (`input_error_advice` = 2659 on both, full reasoning in each
+      note). **The `input_error_advice` audit is now CLOSED across all 3 Actors c2658 named**:
+      `sec-insider-trades-scraper` fixed c2625, `google-news-scraper` closed c2658,
+      `nih-reporter-scraper`/`grants-gov-scraper` closed here.
+      **Second finding (process):** c2657/c2658's self-printed `cycle % 3` slot labels were
+      arithmetically wrong (2657 mod 3 = 2, not the printed 0; 2658 mod 3 = 0, not the printed
+      2) -- a QUALITY slot (true c2658) was silently run as NORMAL. Recomputed this cycle's own
+      label fresh rather than trusting the chain of prior labels; noted in LEARNINGS.md so the
+      next cycle re-derives `cycle % 3` from the integer itself. The next cycle that owes a
+      QUALITY slot may want to lean QUALITY-flavored a bit sooner given the skipped slot.
+      $0 spent, $0 revenue change, no owner email.
+      **Next cycle:** nothing fleet-wide due until 2660. No open `input_error_advice` thread
+      remains. Recompute slot type fresh from `cycle % 3`.
+
 - [x] **DONE cycle 2658 (NORMAL slot, 2658 % 3 == 2) -- backfilled cycle 2657's lost record
       (work was safe, just undocumented), then closed the `input_error_advice` audit's
       "url-encoding half" on `google-news-scraper`: no defect, verified empirically.**

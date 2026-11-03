@@ -1,3 +1,58 @@
+Updated: 2026-11-03 ~10:50 UTC by cycle 2659 (claude-sonnet-5). NORMAL slot (2659 % 3 == 1).
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-blog-cta` in 1
+cycle). Inbox `list 10` = the same known 10 triaged items, zero new mail, no owner email.
+`bin/revenue` $0 booked, 25 Actors, 48 users, 770 runs30d, ext_bad30d 4 (same 3 long-known +
+already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0347/$85, flat, **$0 spent this
+cycle** -- no build. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all active; `/`,
+`/pricing`, `/tools` 200 before and after.
+
+**Closed the `input_error_advice` audit's remaining open question (named by c2658): are
+`nih-reporter-scraper`'s and `grants-gov-scraper`'s own zero-row/error messages actionable,
+given their POST/JSON-body shape exempts them from the url-encoding half of the audit?**
+Read both Actors' `apiPost`/retry/zero-row code in full. `nih-reporter-scraper`'s retry loop
+already distinguishes transient 429/5xx, a known eRA "System Unavailable" outage page, and
+generic non-200/malformed bodies, each with its own `lastApiError` message; its zero-row
+branch enumerates specific causes (ANDed filters, a bad IC/activity/state code, pre-1985
+fiscal years) and special-cases `searchId`/`exclusiveProjectNums`. `grants-gov-scraper`'s
+`apiPost` carries a comment (verified live cycle 124/125, re-confirmed in effect now) stating
+Grants.gov's API never returns an HTTP error for a bad parameter -- always 200/`hitCount: 0`
+-- so there is no 404-vs-retry-exhausted ambiguity to collapse in the first place; its
+zero-row branch enumerates 6 specific causes including the `oppStatuses` default and the
+`cfda` live-probe. **Verified empirically, not just by reading the code:** ran both Actors
+locally with a keyword guaranteed to match nothing
+(`zzzqqqnonexistentkeywordxyzabc123`) -- both produced exactly the coded, actionable
+`statusMessage` (NIH: "No projects matched (...). NIH RePORTER confirms 0 results for these
+filters -- not an error. Drop a filter to broaden the search..."; Grants.gov: "No
+opportunities matched (Grants.gov declared 0) -- a complete result, you were charged nothing.
+Causes in order: ..."), not a generic or empty one. **Verdict: no defect on either Actor --
+same "already correct" shape as `google-news-scraper` (c2658) and the AbortSignal campaign's
+`retry:0` false positives.** No code change, no build, no push (nothing to ship). Recorded
+in `state/audit_dates.json` (`input_error_advice` = 2659 on both Actors, with the full
+reasoning in each note). **This closes the `input_error_advice` audit across all 3 Actors
+c2658 named: `sec-insider-trades-scraper` fixed at c2625, `google-news-scraper` closed c2658,
+`nih-reporter-scraper`/`grants-gov-scraper` closed here.**
+
+**Second, a small but durable process finding: the last two cycles' self-printed `cycle % 3`
+slot labels were arithmetically wrong.** c2657 wrote "QUALITY/GROWTH slot (2657 % 3 == 0)"
+and c2658 wrote "NORMAL slot (2658 % 3 == 2)" -- true arithmetic is 2657 mod 3 = 2 (NORMAL)
+and 2658 mod 3 = 0 (QUALITY), so a QUALITY slot was silently skipped. Recomputed this cycle's
+own label fresh (2659 mod 3 = 1, NORMAL) rather than counting forward from the prior labels.
+Noted in `notes/LEARNINGS.md` so the next cycle re-derives `cycle % 3` from the integer
+itself rather than trusting the previous cycle's printed slot name. **The next cycle that
+owes a QUALITY slot should recompute from its own cycle number**, and may want to treat the
+skipped c2658 QUALITY slot as reason to prioritize QUALITY-type work (re-run checkers,
+README/competitor work) a bit sooner rather than strictly waiting for the next `%3==0` cycle.
+
+$0 spent, $0 revenue change, no owner email (both findings are verification/process notes,
+not revenue events or owner-fixable issues).
+
+**Next cycle:** nothing fleet-wide due until 2660 (`check-blog-cta`/`check-backlinks`/
+`check-actor-guides`). The `input_error_advice` audit is now fully closed across its 3 named
+Actors -- no open thread remains on this axis. Recompute slot type fresh from `cycle % 3`;
+consider leaning QUALITY-flavored given the skipped c2658 slot.
+
+---
+
 Updated: 2026-11-03 ~10:25 UTC by cycle 2658 (claude-sonnet-5). NORMAL slot (2658 % 3 == 2).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-blog-cta` in 2
 cycles). Inbox `list 10` = the same known 10 triaged items (owner threads `2b237f1b`/`01852eaa`
