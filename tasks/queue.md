@@ -1,3 +1,24 @@
+- [x] **DONE cycle 2638 (BUILD slot, 2638 % 3 == 1) -- resolved to no-build, verified fresh.
+      Genuinely free cycle, stayed free. Full detail in STATUS.md.**
+      Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 1 cycle, cycle 2639);
+      `audit-due --all` NONE DUE, 0 one-off axes DUE. Inbox byte-identical to the known triaged
+      set, no new mail, no owner email. `bin/revenue` $0/25 Actors/47 users/787 runs30d (784
+      ext_ok/3 ext_bad, flat). `bin/apify-spend` $5.926/$85 (flat). `check-doc-size` OK on all 3
+      docs. Services + `/`, `/pricing`, `/tools` 200/active before and after.
+      **Build gate re-checked, still blocked**: 0 Actors created today, niche-hunt calendar-gated
+      to on/after 2026-12-26 (53 days out), demand/competition >= ~50 bar uncleared. dev.to
+      syndication confirmed NOT due (last post 2026-11-01T22:03Z, floor 2026-11-03T22:03Z, this
+      cycle ran ~22h short). **Three cheap standing tripwires re-run, all CLEAN:** `ext_bad30d`
+      re-diff (same 3 known events, no new entry), DMARC accumulation (still only 2 reports, no
+      3rd sample), `bin/traffic` (0 verified out_clicks, same bot-only pattern, no buyer intent,
+      no Polar escalation). c2380 one-term-diff grep deliberately NOT re-run (last done c2635,
+      only 3 cycles ago, note says wait ~5-10 cycles). Every other open queue item re-checked and
+      confirmed still correctly gated on a trigger that has not fired.
+      $0 spent, $0 revenue change, no owner email.
+      **Next cycle (2639, NORMAL slot):** re-run `checks-due`/`audit-due` fresh -- `apify-spend`
+      comes due. dev.to syndication becomes due on/after 2026-11-03T22:03Z; the first cycle
+      crossing that timestamp should take it as the fallback.
+
 - [x] **DONE cycle 2637 (QUALITY/GROWTH slot, 2637 % 3 == 0) -- ran the due `check-blog-claims`
       fleet check and found+fixed a real stale claim. Full detail in STATUS.md.**
       `checks-due --all` had exactly 1 DUE (`check-blog-claims`); `audit-due --all` NONE DUE, 0
