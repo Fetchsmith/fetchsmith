@@ -1,3 +1,48 @@
+Updated: 2026-11-03 ~16:05 UTC by cycle 2670 (claude-sonnet-5). QUALITY/GROWTH slot (2670 % 3 ==
+0, 2670 = 3x890 exactly). Preflight clean and independently re-run: `checks-due --all` NONE DUE
+(soonest `check-row-floor` in 6c, cycle 2676); `audit-due --all` showed exactly 1 real backlog
+item, `varied_test` DUE on `grants-gov-scraper`; `inbox list 10` the same known 8 triaged items,
+zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 778 runs30d,
+`ext_bad30d` same 4 known events; `bin/apify-spend` $6.1485/$85 (82.8% elapsed, projection
+$7.43); `bin/actor-health` (full fleet) 24/24 public Actors green, `scholarship-scraper` still
+PAUSED/429 as expected; services active and `/`, `/pricing`, `/tools`, `/tools/grants-gov-scraper`
+all 200.
+
+**Closed the one real backlog item: `grants-gov-scraper`'s fleet-oldest `varied_test` (2334 ->
+2670, 336c gap).** Targeted the two documented date-filter precedence rules that had never been
+exercised TOGETHER: `postedWithinDays` is dropped when `postedFrom`/`postedTo` is set
+(`main.js:196-198`), and `closesWithinDays` is dropped when `closeDateFrom`/`closeDateTo` is set
+(`main.js:231-234`) -- both existed in code/prose and each had been *read*, but no prior
+`varied_test` entry (1041/1292/1628/1833/2185/2213/2334) had ever set a relative AND an absolute
+filter from the same family at once. Predicted free first via a direct
+`api.grants.gov/v1/api/search2` call (caught my own probe bug: `oppStatuses` must be the
+pipe-joined string `"forecasted|posted"`, not an array -- an array-shaped probe silently returned
+`hitCount:0` until re-read against `main.js:502`): `keyword:"wildfire"` -> 25 hits; hand-filtered
+all 25 by `openDate`/`closeDate` to the intended windows -> exactly 9 matches, sized so a wrongly
+-honored relative filter would collapse the count sharply rather than shift it by one row (the
+earliest close in the matched set is 11/14, well outside a wrongly-applied `closesWithinDays:7`
+window). Ran the real Actor **locally for $0** (`CRAWLEE_STORAGE_DIR=./storage node src/main.js`
+under `ACTOR_TEST_PAY_PER_EVENT=true`) rather than a platform run, since both rules are pure
+client-side branching and local still exercises the real `apiPost()` call against the real
+grants.gov API plus the real `Actor.charge()`/`ignoredInputs` logic -- no platform charge needed
+to validate pure branching logic. **Result: CLEAN, exact match.** Both precedence warnings fired
+by name, `RUN_SUMMARY.ignoredInputs` listed both fields, the status message named both, and the
+c2334 forecasted+closeDate interaction warning also correctly fired (oppStatuses included
+`forecasted`). Pushed exactly 9 rows, and the opportunity numbers were byte-identical to the free
+hand-filtered prediction (not just the count) -- proving both absolute windows were genuinely
+applied, not silently intersected with the relative ones. Charged 0 enriched / 9
+`opportunity-thin`, matching `enrich:false`. No defect, no code change. Recorded in
+`state/audit_dates.json` (`varied_test: 2670`); `audit-due --all` now reads **FLEET ROTATIONS:
+NONE DUE** across the whole fleet again. Local test storage cleaned up after.
+
+$0 spent (local run only, no Apify platform call), $0 revenue change, no owner email (a clean
+verification is neither a revenue event nor owner-fixable). **Next cycle:** nothing fleet-wide due
+until `check-row-floor`/`check-upstream-warnings` at ~cycle 2676, and no `audit-due` backlog
+remains anywhere. The standing `eu-ted-tenders-scraper` runs30d-is-not-demand watch (queue.md) is
+still open but not urgent. Recompute `cycle % 3` fresh rather than trusting this header.
+
+---
+
 Updated: 2026-11-03 ~15:40 UTC by cycle 2669 (claude-sonnet-5). NORMAL slot (2669 % 3 == 2,
 recomputed fresh off 2667=3x889). Preflight clean and independently re-run: `checks-due --all`
 NONE DUE (soonest `check-row-floor` in 7c, cycle 2676); `audit-due --all` FLEET ROTATIONS NONE

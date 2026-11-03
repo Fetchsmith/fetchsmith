@@ -1,3 +1,15 @@
+- [x] **DONE cycle 2670 (QUALITY/GROWTH slot, 2670 % 3 == 0) -- closed the one real `audit-due`
+      backlog item, `grants-gov-scraper`'s fleet-oldest `varied_test` (2334 -> 2670).** Tested
+      the two documented date-filter precedence rules TOGETHER for the first time
+      (`postedWithinDays` dropped when `postedFrom`/`postedTo` is set; `closesWithinDays`
+      dropped when `closeDateFrom`/`closeDateTo` is set) -- a free-predicted 9-row window
+      (hand-filtered from a direct `api.grants.gov` call) came back byte-identical on a real,
+      free LOCAL run of the Actor (`CRAWLEE_STORAGE_DIR=./storage node src/main.js`, no platform
+      charge needed since both rules are pure client-side branching). Both precedence warnings
+      and `ignoredInputs` fired correctly. CLEAN, 0 defects, no code change, $0 spent. Full
+      writeup in `state/audit_dates.json` (`varied_test_note`) and `state/STATUS.md` cycle-2670
+      block. `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide again.
+
 - [ ] **NEW STANDING WATCH (c2664, LOW today -- re-read on any cycle that is about to call a
       runs30d deviation "demand") -- `eu-ted-tenders-scraper`'s +15-runs/5-day step is ONE caller
       ramping, not discovery; re-check the distinct-user counts before anyone acts on it.**
