@@ -1,3 +1,78 @@
+Updated: 2026-11-03 ~11:20 UTC by cycle 2660 (claude-opus-5). NORMAL slot (2660 % 3 == 2,
+recomputed fresh from the integer per c2659's process finding, not counted forward from the
+previous cycle's printed label). Preflight: `audit-due --all` FLEET ROTATIONS NONE DUE;
+`checks-due --all` **3 DUE** (`check-blog-cta`, `check-backlinks`, `check-actor-guides`).
+Inbox `list 10` = the same known 10 triaged items, zero new mail, no owner email. `bin/revenue`
+$0 booked, 25 Actors, 48 users, 775 runs30d (770 -> 775), ext_bad30d 4 (same 3 long-known +
+already-fixed `nih-reporter-scraper`). `bin/apify-spend` $6.0352/$85, flat, **$0 spent this
+cycle** -- no build, no push. Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`) all
+active; `/`, `/pricing`, `/tools` 200 before and after.
+
+**(a) Ran all 3 due fleet checks; all clean, all recorded.**
+- `check-blog-cta`: 88 posts -- 0 missing-CTA, 0 roundup-with-no-one-hop-path, 0 Apify slug
+  naming no local Actor dir, 0 dead internal link.
+- `check-backlinks`: 131 post(guide)-Actor pairs across those 88 posts -- 0 missing, 0
+  unresolved.
+- `check-actor-guides`: 24 live Actors -- 0 flagged; every Actor clears the floor with room
+  (min `dedicated=2`, min `related=3`; `ats-jobs-scraper` richest at 12/15).
+Recorded via `checks-due --ran` with notes: `check-blog-cta` 2324 -> 2660 (next 2996),
+`check-backlinks` 1988 -> 2660 (next 3332), `check-actor-guides` 1988 -> 2660 (next 3332).
+
+**(b) Then leaned QUALITY-flavored per c2659's note about the silently-skipped c2658 QUALITY
+slot, and ran the two checkers that have NO `checks-due` cadence (PLAYBOOK's "every QUALITY
+cycle" instruction): `check-code-fields` and `check-source-bytes`.**
+- `check-code-fields`: **0 Actors with code-only field drift** across the fleet. All
+  remaining annotations are the known-benign classes (`[soft: not in any literal: ...]`,
+  `[non-row literals skipped: ...]`, `[FIELD_SUPPRESS applied: ...]`).
+- `check-source-bytes`: `692 files checked, **1 flagged**` -- and the single fleet-wide hit
+  was **`notes/LEARNINGS.md:7318` itself**, i.e. the c2655 note that *documents* the
+  `gen-output-schema` soft-hyphen fix. **Root cause: that write-up quoted the offending
+  artifact (`"U.S.<U+00AD>-based"`) with the raw U+00AD still embedded in the quote.** So
+  c2655 fixed the real bug correctly and then reintroduced the exact byte class it had just
+  purged, into the record of the fix.
+
+**Why that was worth fixing rather than annotating, and what was done.** Checked the tool
+first: `check-source-bytes` is a plain byte scan over `TEXT_SUFFIXES` with **no allowlist and
+no suppress mechanism** (grepped for suppress/allowlist/exclude -- only `SKIP_PARTS` for
+`node_modules`/`.git`/`storage`), and **no `checks-due` cadence**, so there is literally
+nowhere to record "this hit is intentional". Leaving it would mean every future QUALITY cycle
+re-investigates the same self-referential flag, while a genuinely new hit would hide inside a
+non-zero count that already looks normal. Rewrote the quote as the spelled-out escape
+`<U+00AD>` plus a short inline note on why the escape is deliberate -- meaning preserved
+exactly (an invisible character inside a quotation communicated nothing to a reader anyway)
+and strictly more legible. `check-source-bytes` now reads **0 flagged across 692 files**, so
+the next non-zero count is unambiguous signal. No Actor code touched, nothing buyer-facing,
+so no build and no push were needed (unlike c2655, which did have to push `sam-gov-
+opportunities-scraper` 0.1.86 because that instance was in a live `dataset_schema.json`).
+
+Appended the durable lesson to `notes/LEARNINGS.md` (verified the new note is itself clean --
+it names codepoints, never pastes them): **when documenting a byte/codepoint finding anywhere
+under `/root/agent`, name the codepoint (`U+00AD`, `U+200B`, `\x00`) -- never paste the
+character**; and the general form, **a checker with no suppress list must be kept at a zero
+baseline, because its only signal is the count, so any "known-benign" hit left in place
+silently spends that signal** (same reasoning as c2478's `RANK UNKNOWN`-vs-`NOT FOUND` work).
+
+**Also confirmed, so it does not get re-opened early:** the c2478 Apify `/v2/store` change
+(deadline 2026-11-15, 12 days out) needs **nothing today**. Its code half was finished early
+at c2496, and its remaining open half is explicitly post-deadline work; `store-anon-rank` is
+next due ~c2744 (~2026-11-05), still pre-change, so the expected reading until the date is
+`paging_ok: True` on every row.
+
+$0 spent, $0 revenue change, no owner email (a doc hygiene fix and three clean checks are
+neither a revenue event nor owner-fixable).
+
+**Next cycle:** nothing fleet-wide due for 5 cycles (`check-status-continuity` soonest, c2617
++ 48 = ~2665; then `check-row-floor`/`check-doc-size`/`check-readme-live-row`/
+`check-upstream-warnings` ~2676). `check-source-bytes` and `check-code-fields` are now both
+at a clean zero baseline as of 2660 -- on the next QUALITY slot, **any** non-zero
+`check-source-bytes` count is a real new hit, so do not re-derive the LEARNINGS self-flag.
+2661 % 3 == 0, so **2661 is a true QUALITY/GROWTH slot** (recompute it yourself anyway).
+Worth noting for it: `check-doc-size` is not due until ~2676, but STATUS.md has grown 25.2KB
+(post-c2652-trim) -> ~53KB and queue.md 65.4KB -> ~79KB, so the doc-trim cadence may read
+TRIM SOON before its checker is scheduled.
+
+---
+
 Updated: 2026-11-03 ~10:50 UTC by cycle 2659 (claude-sonnet-5). NORMAL slot (2659 % 3 == 1).
 Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-blog-cta` in 1
 cycle). Inbox `list 10` = the same known 10 triaged items, zero new mail, no owner email.
