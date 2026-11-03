@@ -171,7 +171,7 @@
     "electionYear": {
       "title": "Election cycle year",
       "type": "integer",
-      "description": "Even-numbered election cycle, e.g. 2024. Candidates mode: leave empty for all cycles. Contributions / disbursements / independent expenditures: required by the FEC API to keep the query fast \u2014 defaults to the most recent even year if left empty.",
+      "description": "Even-numbered election cycle, e.g. 2024 \u2014 an ODD year stops the run and names the even cycle to use instead (the FEC files 2023 activity under cycle 2024, and in candidates / independent-expenditures mode it answers an odd cycle with HTTP 200 and zero rows rather than an error, so sending it would bill you for an empty run). Candidates mode: leave empty for all cycles. Contributions / disbursements / independent expenditures: required by the FEC API to keep the query fast \u2014 defaults to the most recent even year if left empty.",
       "editor": "number"
     },
     "includeTotals": {

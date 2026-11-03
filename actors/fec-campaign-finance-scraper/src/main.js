@@ -44,12 +44,27 @@ const supportOppose = ['S', 'O'].includes(String(input.supportOppose ?? '').trim
   : '';
 const minAmount = input.minAmount ? Number(input.minAmount) : undefined;
 const maxAmount = input.maxAmount ? Number(input.maxAmount) : undefined;
-// A bad date bound THROWS (cycle 591). It used to warn and return undefined, which deleted the
-// bound from the query entirely: the run then succeeded, returned the whole unfiltered set, and
+// Pre-charge input validation stops the run through Actor.fail(), NOT a bare `throw` (PLAYBOOK,
+// cycle 2357): a bare throw does charge $0 correctly, but it leaves the FAILED run's
+// `statusMessage` empty, so the explanation lands only in the run log as a stack trace -- which
+// buyers do not read. Actor.fail() calls setStatusMessage() before exiting, so the Console shows
+// the reason. c2357 fixed four Actors that had shipped the bare-throw shape; this one was not
+// among them and still had all of its pre-charge stops as bare throws (date parse, date ordering,
+// the unfiltered-contributions guard) until cycle 2648. Safe from a top-level-await module
+// because Actor.init() has always run by the time input is parsed.
+// The trailing `throw` is unreachable in practice (Actor.fail() process.exit()s before its promise
+// resolves) and exists only so that if it ever DID return, a rejected value still cannot fall
+// through and be treated as "no filter" -- the silent widening cycle 591 fixed below.
+async function failInput(msg) {
+  await Actor.fail(msg);
+  throw new Error(msg);
+}
+// A bad date bound STOPS THE RUN (cycle 591). It used to warn and return undefined, which deleted
+// the bound from the query entirely: the run then succeeded, returned the whole unfiltered set, and
 // billed per result for rows the caller never asked for. Judge a failed parse by whether ignoring
 // it narrows or widens the result set -- widening under per-result pricing must stop the run, and
 // a log.warning in an otherwise-successful run is not a fix because nobody reads it.
-function parseFecDate(s, label) {
+async function parseFecDate(s, label) {
   const trimmed = String(s ?? '').trim();
   if (!trimmed) return undefined;
   // The ISO round-trip is what rejects calendar-invalid dates that the regex accepts: V8 silently
@@ -58,7 +73,7 @@ function parseFecDate(s, label) {
   const shaped = /^\d{4}-\d{2}-\d{2}$/.test(trimmed);
   const d = shaped ? new Date(`${trimmed}T00:00:00.000Z`) : null;
   if (!shaped || Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== trimmed) {
-    throw new Error(
+    await failInput(
       `"${label}" is not a valid date: "${trimmed}". Use YYYY-MM-DD (e.g. 2024-01-31). `
       + 'The run stops instead of ignoring the bound, because dropping it would widen the search '
       + 'to every matching row and charge you for the difference.',
@@ -66,10 +81,10 @@ function parseFecDate(s, label) {
   }
   return trimmed;
 }
-const contributionDateFrom = parseFecDate(input.contributionDateFrom, 'contributionDateFrom');
-const contributionDateTo = parseFecDate(input.contributionDateTo, 'contributionDateTo');
+const contributionDateFrom = await parseFecDate(input.contributionDateFrom, 'contributionDateFrom');
+const contributionDateTo = await parseFecDate(input.contributionDateTo, 'contributionDateTo');
 if (contributionDateFrom && contributionDateTo && contributionDateFrom > contributionDateTo) {
-  throw new Error(`contributionDateFrom (${contributionDateFrom}) is after contributionDateTo (${contributionDateTo}).`);
+  await failInput(`contributionDateFrom (${contributionDateFrom}) is after contributionDateTo (${contributionDateTo}).`);
 }
 const state = (input.state ?? '').trim().toUpperCase();
 const office = (input.office ?? '').trim().toUpperCase();
@@ -81,6 +96,43 @@ const currentEvenYear = new Date().getUTCFullYear() - (new Date().getUTCFullYear
 const electionYear = input.electionYear
   ? Number(input.electionYear)
   : (isTxnMode ? currentEvenYear : undefined);
+// FEC cycles are EVEN years only, and the two API params this one field feeds disagree about how
+// loudly they say so -- both measured live 2026-11-03 (cycle 2648) against api.open.fec.gov:
+//   two_year_transaction_period=2023 (contributions, disbursements) -> HTTP 422 "Invalid
+//     two_year_transaction period. A valid two_year_transaction_period should be an even year
+//     between 1976 and 2026." -- loud, the run fails with the FEC's own text.
+//   cycle=2023 and cycle=2025 (candidates, independentExpenditures) -> HTTP 200, `results: []`,
+//     `count: 0`, no message at all.
+// That second shape is the dangerous one: under per-result pricing an odd year there is a SILENT
+// zero-row run with nothing in the log pointing at the year, and the buyer still paid for the
+// compute. An odd year is a plausible thing to send rather than a typo -- the FEC's own site
+// labels cycles "2023-2024", so someone after 2023 contributions naturally writes 2023 (same
+// class as nih-reporter-scraper's "FY2024", cycle 2647: the upstream's own convention, rejected).
+// Stop with the even year that actually covers theirs instead of normalizing 2023 -> 2024
+// silently: that normalization WIDENS the query to both years of the cycle and charges for the
+// difference, which is the exact trade parseFecDate above already refuses to make.
+if (electionYear !== undefined) {
+  // Candidates file for the next cycle before it opens, so allow one cycle ahead of today's;
+  // anything past that is the FEC's own 422 range check to make, not a number to hard-code.
+  const maxCycle = currentEvenYear + 2;
+  const usable = Number.isInteger(electionYear) && electionYear % 2 === 0
+    && electionYear >= 1976 && electionYear <= maxCycle;
+  if (!usable) {
+    const oddInRange = Number.isInteger(electionYear) && electionYear % 2 !== 0
+      && electionYear >= 1975 && electionYear < maxCycle;
+    await failInput(
+      `"electionYear" must be an even FEC cycle year between 1976 and ${maxCycle}, not `
+      + `${JSON.stringify(input.electionYear)}.`
+      + (oddInRange
+        ? ` The FEC files ${electionYear} activity under cycle ${electionYear + 1} (the `
+          + `${electionYear}-${electionYear + 1} two-year cycle), so use ${electionYear + 1}.`
+        : '')
+      + ` The run stops instead of sending it: in searchMode "candidates" and `
+      + `"independentExpenditures" the FEC answers an invalid cycle with HTTP 200 and zero rows `
+      + `(verified live), so continuing would bill you for an empty run with no explanation.`,
+    );
+  }
+}
 
 // `candidateName` carried a schema `default: "Warren"` until cycle 1908. Apify merges a schema
 // default into EVERY run that omits the field, so `{"state":"MA","office":"S"}` was silently
@@ -169,7 +221,7 @@ if (searchMode === 'candidates') {
 if (searchMode === 'contributions' && !donorName && !donorEmployer && !donorOccupation && !donorCity
   && !donorZip && !state && minAmount === undefined && maxAmount === undefined
   && !contributionDateFrom && !contributionDateTo) {
-  throw new Error(
+  await failInput(
     'searchMode "contributions" with no narrowing filter set matches roughly 173 million rows -- '
     + "the FEC's own API times out serving page 1 of that scan, so this run would fail anyway after "
     + 'burning its request budget. Set at least one of: donorName, donorEmployer, donorOccupation, '
