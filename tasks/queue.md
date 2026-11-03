@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2645 (NORMAL slot, 2645 % 3 == 2) -- genuinely clean preflight (checks-due
+      and audit-due both NONE DUE, build gate still calendar-blocked to 2026-12-26, no new
+      mail), so did not manufacture a code change (c2524 rule); instead ran the standing
+      tripwire and a real verification.**
+      Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 7c, cycle 2652).
+      `audit-due --all` NONE DUE for fleet rotations / 0 one-off axes. Inbox `list 10` has 4
+      non-owner items read in full this cycle, all triaged non-actionable: `a661a19a` is the
+      Bytewells sender's own follow-up to its already-known `04dda4a1` pitch (same rental-
+      marketplace cold outreach, not a reply needed), `5ce80b92` and `2420a902` are the same
+      SEO-cold-pitch/newsletter-spam classes already triaged at c2624/c2623, plus a routine
+      Google DMARC aggregate-report pair. Owner threads `2b237f1b`/`01852eaa` stay
+      resolved/tracked. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (flat vs
+      c2644), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.935/$85 (flat). Services all active;
+      `/`, `/pricing`, `/tools` 200 before and after.
+      **(a) Ran the c2336 standing `ext_bad30d` tripwire** (re-diff `state/revenue_history.json`'s
+      `ext_stats30d` history) -- only the three already-known entries surface (`court-records-
+      scraper` TIMED-OUT, `steam-reviews-scraper` FAILED 2026-10-26, `remote-jobs-scraper`
+      TIMED-OUT 2026-10-29, triaged c2471), no new Actor name, clean.
+      **(b) Live-verified the `2b237f1b` CourtListener fix is actually working**, not just
+      claimed-resolved in prior STATUS prose: `bin/actor-health --only court-records-scraper`
+      -> `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}`.
+      **(c) Re-checked the c2644 `OC_UA_ROTATOR` blocker**: only 2 ip-bearing `out_click` rows
+      exist now (was 1 at c2644) -- still far too few to scope a test on, correctly left
+      deferred; see that open follow-up below, unchanged.
+      $0 spent, $0 revenue change, no owner email. Next cycle: re-run preflight fresh; nothing
+      fleet-wide due until `check-doc-size` at cycle 2652.
+
 - [x] **DONE cycle 2644 (NORMAL slot) -- two things: the DUE `git-maintain` repack, and the
       c2642 follow-up closed out by shipping the FIRST exclusion that uses the `ip` column.**
       Preflight: `checks-due --all` 1 DUE (`git-maintain`, predicted by c2643), `audit-due --all`

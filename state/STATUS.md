@@ -1,3 +1,42 @@
+Updated: 2026-11-03 ~03:35 UTC by cycle 2645 (claude-sonnet-5). NORMAL slot (2645 % 3 == 2).
+Preflight: `checks-due --all` **NONE DUE** (soonest `check-doc-size` in 7c, cycle 2652).
+`audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`:
+same known triaged set (owner threads `2b237f1b` CourtListener token / `01852eaa` Apify
+Nov-15 Store API change stay resolved/tracked; a new `a661a19a` is just the Bytewells
+rental-marketplace sender's own follow-up to its already-triaged `04dda4a1` pitch, and
+`5ce80b92`/`2420a902`/DMARC pair are the same marketing/spam/report classes triaged for
+weeks) -- read all 4 non-owner items in full this cycle to confirm, no reply needed, no
+owner email. `bin/revenue` $0 booked, 25 Actors, 48 users, 787 runs30d (784 ext_ok / 3
+ext_bad -- flat vs c2644), 0 bookmarks, 0 reviews. `bin/apify-spend` $5.935/$85 (81.1%
+elapsed, projection $7.32, flat). Services (`fetchsmith-web`, `fetchsmith-mail`, `caddy`)
+all active; `/`, `/pricing`, `/tools` 200 before and after. Build gate still calendar-
+blocked to 2026-12-26 (niche-hunt demand/competition bar uncleared). dev.to syndication
+not due.
+
+**Work -- genuinely clean preflight (no checks/audits due, build gate blocked, no new
+mail), so this NORMAL slot went to the standing c2336 `ext_bad30d` tripwire plus a real
+verification of the c2b237f1b CourtListener fix, instead of manufacturing a code change
+(per the c2524 rule).**
+(a) Ran the c2336 one-liner re-diff of `state/revenue_history.json`'s `ext_stats30d`
+history: only the three already-known entries surface (`court-records-scraper`
+TIMED-OUT 1, `steam-reviews-scraper` FAILED 1 2026-10-26, `remote-jobs-scraper`
+TIMED-OUT 1 2026-10-29, the last already triaged at c2471) -- no new Actor name beyond
+the known baseline, tripwire clean.
+(b) Owner thread `2b237f1b` (CourtListener API token, sent 2026-10-28) was recorded as
+"resolved" in prior STATUS entries but hadn't been re-verified live for several cycles --
+ran `bin/actor-health --only court-records-scraper` directly rather than trusting the
+note: **real result, `{'ok': True, 'status': 201, 'items': 10, 'fail_rows': 0}`**, so the
+token is genuinely wired in and the Actor is live-healthy, not just claimed-fixed.
+(c) Checked whether the c2644 follow-up (mirror `PV_UA_ROTATOR` onto `out_click`) is
+unblocked yet: `events` table now has only **2** ip-bearing `out_click` rows (was 1 at
+c2644) -- still far short of a usable sample, correctly left deferred, no action taken.
+$0 spent, $0 revenue change, no owner email (nothing owner-fixable, no revenue event).
+Next cycle: re-run preflight fresh; nothing fleet-wide due until `check-doc-size` at
+cycle 2652 (~7 cycles out); keep watching the out_click `ip` sample size before shipping
+`OC_UA_ROTATOR`.
+
+---
+
 Updated: 2026-11-03 ~03:05 UTC by cycle 2644 (claude-opus-5). NORMAL slot (2644 % 3 == 1).
 Preflight: `checks-due --all` **1 DUE -- `git-maintain`** (exactly as c2643 predicted);
 `audit-due --all` **NONE DUE** for FLEET ROTATIONS, 0 one-off axes DUE. Inbox `list 10`
