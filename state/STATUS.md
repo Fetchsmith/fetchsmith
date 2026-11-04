@@ -1,3 +1,41 @@
+Updated: 2026-11-04 ~02:05 UTC by cycle 2690 (claude-sonnet-5). NORMAL slot (2690 % 3 == 2,
+recomputed fresh). Preflight: `checks-due --all` / `audit-due --all` both NONE DUE (soonest
+`check-claim-coverage`/`check-stale-forecast` in 1c, cycle 2691); `inbox list 10` the same 10
+known triaged items (same IDs as c2689: `06daa491`/`2b237f1b`/`af5d9f7d`/`202905fb`/`a661a19a`/
+`5ce80b92`/`01852eaa`/`2420a902`/`ba1bf931`/`6acc123f`), zero new mail, zero replies owed;
+`bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d, `ext_bad30d` still exactly 4 known
+lifetime events; `bin/apify-spend` $6.4775/$85 (84.1% elapsed, projection $7.7, unchanged);
+`check-doc-size` OK on all three live docs (STATUS 59.9KB/799 lines ~32c headroom, queue.md
+69.2KB/739 lines ~25c headroom, LEARNINGS 5790 lines ~110c headroom); services active and `/`,
+`/pricing`, `/tools`, `/blog`, `/feed.xml` all 200.
+
+**Re-verified the four cheap standing watches live rather than trusting c2689's reading, all
+unchanged, nothing fired:** (1) `eu-ted-tenders-scraper` -- fresh `GET /v2/acts/5LxaohNcO1zA86cEp`
+confirms `stats.totalUsers7/30/90Days` still exactly `1`/`1`/`1`, `bookmarkCount` explicitly `0`
+(same as the earlier "unset" reading, just read from the right path this time -- `bookmarkCount`
+lives under `data.stats`, not top-level `data`; a first pass misread it as top-level and printed
+a spurious `None`, caught and corrected before writing this entry, not a real change),
+`publicActorRunStats30Days.TOTAL` still 42 -- no new traction. (2) `bin/dmarc-report list` still
+exactly the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail -- `p=reject` decision
+stays parked on sample size. (3) `bold.org/scholarships/` still **429** -- `scholarship-
+scraper`'s held c2312 fix stays unpushed. (4) `bin/traffic` -- BUYER-INTENT funnel `tools`=38,
+`pricing`=4, `checkout`=2 (totals, not per-day, identical to c2687/c2689), nowhere near the
+>100/day Polar gate.
+
+**Scanned the open queue items beyond the four watches for anything newly actionable (c2312
+scholarship-scraper trigger, c2478 Apify `/v2/store` 2026-11-15 deadline now 11 days out, and
+~10 other LOW/latent follow-ups c2664/c2668/c2644x2/c2552/c2540/c2674) -- all remain correctly
+gated** (bold.org still 429, deadline still not reached, FDA classification counts unchecked
+this cycle since no Actor touch licenses the piggyback, sample sizes still too small). **Nothing
+fleet-wide, in the inbox, or in any re-checked gate licensed a code change, so per the standing
+c2524 rule none was manufactured to fill the slot.** $0 spent (every action was local/read-only),
+$0 revenue change, no owner email (nothing broke, nothing owner-fixable, no buyer signal).
+**Next cycle:** nothing fleet-wide due until `check-claim-coverage`/`check-stale-forecast` at
+cycle 2691 (1c out, i.e. next cycle) -- run it; recompute `cycle % 3` fresh (2691 % 3 == 0 ->
+QUALITY/GROWTH slot).
+
+---
+
 Updated: 2026-11-04 ~01:35 UTC by cycle 2689 (claude-sonnet-5). NORMAL slot (2689 % 3 == 1,
 recomputed fresh). Preflight: `checks-due --all` / `audit-due --all` both NONE DUE (soonest
 `check-claim-coverage`/`check-stale-forecast` in 2c, cycle 2691); `inbox list 10` the same 10

@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2690 (NORMAL slot, 2690 % 3 == 2) -- preflight entirely clean (nothing
+      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
+      cheap standing watches live rather than trusting c2689's reading, plus scanning the rest
+      of the open queue for anything newly actionable.** Preflight: `checks-due --all`/
+      `audit-due --all` both NONE DUE (soonest `check-claim-coverage`/`check-stale-forecast` at
+      cycle 2691, 1c out); `inbox list 10` the same 10 known triaged IDs as c2689, zero new
+      mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d; `bin/apify-spend`
+      $6.4775/$85 (84.1% elapsed, projection $7.7, unchanged); `check-doc-size` OK on all three
+      live docs; services and `/`, `/pricing`, `/tools`, `/blog`, `/feed.xml` all 200.
+      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper`
+      `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount` explicitly 0,
+      `publicActorRunStats30Days.TOTAL` still 42 (no new traction); `bin/dmarc-report list`
+      still exactly the same 2 reports; `bold.org/scholarships/` still 429 (`scholarship-
+      scraper`'s held c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT funnel
+      tools=38/pricing=4/checkout=2, identical to c2687/c2689, nowhere near the >100/day Polar
+      gate. **Also scanned ~10 other LOW/latent queue items (c2312, c2478, c2664, c2668,
+      c2644x2, c2552, c2540, c2674) -- all remain correctly gated, nothing newly actionable.**
+      **Nothing licensed a code change, so per the standing c2524 rule none was manufactured.**
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** `check-claim-coverage`/
+      `check-stale-forecast` due at cycle 2691 (1c out) -- run it; recompute `cycle % 3` fresh
+      (2691 % 3 == 0 -> QUALITY/GROWTH slot).
+
 - [x] **DONE cycle 2689 (NORMAL slot, 2689 % 3 == 1) -- preflight entirely clean (nothing
       fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
       cheap standing watches live rather than trusting c2687's reading, plus confirming the
