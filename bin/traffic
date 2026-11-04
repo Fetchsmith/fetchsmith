@@ -73,6 +73,28 @@ PV_UA_ROTATOR="vid IN (SELECT p.vid FROM pageviews p JOIN (SELECT ip, ts FROM pa
 # scanners through, the asset test alone lets our own `curl` tests through, and the per-vid
 # sweeper test alone is blind to UA rotation.
 VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits) AND NOT ($PV_SWEEPER) AND NOT ($PV_UA_ROTATOR)"
+# Cycle 2696: ENGAGED is a strictly TIGHTER floor reported ALONGSIDE verified, not a new
+# VERIFIED half -- deliberately NOT folded into VERIFIED, because every number in STATUS.md
+# and the CLAUDE.md Polar gate is denominated in `verified` and silently redefining it would
+# invalidate the whole recorded history rather than add information.
+# WHY IT EXISTS: all four prior contamination fixes (c32 UA, c1712 renderer UAs, c2278
+# same-second sweeps, c2644 UA rotation) are *token-* or *burst*-shaped, so they are blind to
+# the population actually dominating this funnel today -- a DISTRIBUTED crawl whose every
+# request is individually indistinguishable from a human. Measured c2696 over the live 7-day
+# window: of 138 verified vids, 127 (92%) viewed exactly ONE path, and 142 of 157 verified
+# views (90%) carried NO referrer, from IPs spread over ~30 distinct networks (1-2 vids each,
+# so no burst/rotation test can see them) with a UA spread of 22 distinct strings over 38
+# vids -- near 1:1, spanning Chrome 117->156 and iPhone OS 11->18, i.e. obsolete-version
+# traffic no real human population produces. Only ~6% of verified views carry a search
+# referrer. That is residential-proxy SEO/AI crawling, not buyers.
+# THE TEST: a referrer OR >=2 distinct paths. Both are things a one-shot crawler does not do
+# and a real visitor usually does; it is a FLOOR, so it undercounts a genuine
+# direct-navigation single-page reader, which is the safe direction for a gate that triggers
+# an owner email. Measured effect on the buyer-intent funnel: tools 39n/38v -> 9n/8v,
+# pricing 4/4 -> 3/3, checkout 2/2 -> 0/0 (~4.3x inflation on tools). Both numbers stay far
+# below the >100/day gate, so this changed no decision today -- it exists so that whenever
+# the funnel DOES approach the gate, the cycle reads an honest number before mailing.
+ENGAGED="((ref IS NOT NULL AND ref <> '') OR vid IN (SELECT vid FROM pageviews WHERE vid IS NOT NULL GROUP BY vid HAVING count(DISTINCT path) >= 2))"
 
 echo "== daily totals last $D days (raw = every hit; verified = loaded our CSS)"
 sqlite3 -header -column $DB "SELECT date(ts,'unixepoch') d, count(*) raw_views,
@@ -86,9 +108,14 @@ sqlite3 -header -column $DB "SELECT path, count(*) n, count(DISTINCT vid) visito
 
 echo "== BUYER-INTENT funnel (verified only) -- the CLAUDE.md Polar trigger reads THIS,"
 echo "   not the raw counts. >100 verified visits/day to /pricing or /tools = email owner."
+echo "   engaged_* (c2696) = verified AND (has a referrer OR viewed >=2 paths): a tighter"
+echo "   FLOOR that a distributed one-page-no-referrer crawl cannot reach. 92% of verified"
+echo "   vids are 1-path and 90% referrer-less, so read engaged_* before mailing the owner."
 sqlite3 -header -column $DB "SELECT CASE WHEN path LIKE '/checkout%' THEN 'checkout'
     WHEN path='/pricing' THEN 'pricing' WHEN path LIKE '/tools%' THEN 'tools' END bucket,
-  count(*) n, count(DISTINCT vid) visitors FROM pageviews
+  count(*) n, count(DISTINCT vid) visitors,
+  sum(CASE WHEN $ENGAGED THEN 1 ELSE 0 END) engaged_n,
+  count(DISTINCT CASE WHEN $ENGAGED THEN vid END) engaged_v FROM pageviews
   WHERE $SINCE AND $VERIFIED AND (path LIKE '/checkout%' OR path='/pricing' OR path LIKE '/tools%')
   GROUP BY bucket ORDER BY n DESC;"
 

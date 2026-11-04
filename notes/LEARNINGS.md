@@ -5837,3 +5837,42 @@ c2684 found the trap (a 0.20-day post-rotation window printed `AI:SEARCH = 52.00
 **(2) Generalisable: when you add a default to make a tool safer, check which flag's *purpose* the new default destroys.** The first cut of this change applied the 7-day default to `--weekly` too — which clips the multi-WEEK trend that is the only reason `--weekly` exists (c1676). Caught in testing, not by review. `--weekly` now means "whole window" unless `--days` is explicitly passed. Worth having: the restored 9-week trend is itself a finding — AI crawling grew **106 → 330 hits/day** from W36 to W43 while search went 42.6 → 51.6, so the ratio peaking at **14.3:1** in W40 and settling to ~6.4:1 is *search recovering*, not AI declining. A ratio moving because its denominator improved reads as bad news if you only look at the ratio.
 
 **(3) THE REAL TRAP, and it is general to every `_*_selftest.py` in `bin/`: a self-test that loads an extensionless sibling via `SourceFileLoader` can report `ALL PASS` against a previous version of the file under test.** The negative control is what exposed it — set `QUOTABLE_DAYS = 2.0` → `0.0`, run the test, it correctly printed 8/16 FAILURES; restore the file, re-run, and it **kept printing the same 8 failures while `channel-mix` itself demonstrably behaved correctly**. Cause: `SourceFileLoader` writes `__pycache__/channel-mixcpython-312.pyc` (note the malformed name — no `.` separator, because the module name carries no suffix) and validates it against the source's **mtime at 1-second granularity plus its size**. `2.0` → `0.0` changes neither the size nor, within the same second, the mtime, so Python served stale bytecode. The dangerous direction is the mirror image of what I saw: a regression introduced by a same-size edit would have been *masked* by a cached PASS. Fix, and it must run **before** the load: `sys.dont_write_bytecode = True`, `importlib.invalidate_caches()`, and unlink any pre-existing `__pycache__/<name>*.pyc`. Then verified the hard way — the same-size, same-second edit now fails and the same-second restore passes. **Rule: any self-test that imports a file by path must disable and clear the bytecode cache first, or its PASS means nothing.** Also fixed two smaller things the control surfaced: a bare `out.index(...)` raised `ValueError` and buried every remaining check behind a traceback (guard with `in` first so a regression prints a readable FAIL list), and the summary line hardcoded `/14` while 16 checks ran — a stale literal under-reporting the test's own coverage.
+
+## Cycle 2696 — the buyer-intent funnel's contamination is now DISTRIBUTED, which makes every one of the four prior fixes structurally blind to it
+
+**All four existing anti-crawler halves in `bin/traffic` are token-shaped or burst-shaped**: c32
+(UA blocklist), c1712 (two renderer UAs with no `bot` token), c2278 (one vid, >=15 hits in <=90s),
+c2644 (one IP, >=3 UAs in one second). Each was found by looking for a *concentration* — a bad UA
+string, or many hits sharing a vid/IP/second. This cycle measured the population that currently
+dominates the funnel and it has no concentration at all to find: of **138 verified vids in the live
+7-day window, 127 (92%) viewed exactly ONE path**, **142 of 157 verified views (90%) carried NO
+referrer**, and the IPs spread over ~30 distinct networks at **1–2 vids each**. Every request is
+individually indistinguishable from a human; only the *aggregate shape* gives it away. A
+residential-proxy SEO/AI crawl defeats all four tests by construction, because it never presents
+two requests close enough together, on one vid, on one IP, or under a flagged UA.
+
+**The tell that is robust and cost one query: UA diversity against visitor count.** 22 distinct UA
+strings across 38 vids is near 1:1, and the spread runs **Chrome 117→156 and iPhone OS 11→18**. A
+real population of 38 humans clusters hard on the 2–3 current Chrome builds; it does not produce a
+near-uniform sample including years-obsolete versions. Treat "distinct UAs ≈ distinct visitors" as
+a crawl signature in its own right — it is visible at small n, where every burst test needs volume
+to fire.
+
+**Shipped `ENGAGED` as a reported floor, deliberately NOT as a fifth VERIFIED half.** The test is
+`a referrer OR >=2 distinct paths`. Measured effect on the funnel: `tools` 39n/38v → **9n/8v**,
+`pricing` 4/4 → 3/3, `checkout` 2/2 → **0/0** — i.e. **~4.3x inflation** on the one bucket the
+CLAUDE.md Polar gate actually reads. **Why alongside and not folded in:** every traffic number in
+STATUS.md's recorded history and the gate's own wording (">100 verified visits/day") are
+denominated in `verified`; quietly redefining that term would invalidate ~2700 cycles of recorded
+comparisons rather than add information. The two numbers side by side are strictly more than
+either alone. It is also an honest *floor*, not an estimate — it undercounts a genuine
+direct-navigation single-page reader, which is the safe direction for a number whose only job is
+to decide whether to email the owner.
+
+**It changed no decision today and that is the point.** Both numbers sit far below >100/day
+(9/7 ≈ 1.3 engaged tools-visits/day vs the 5.6/day `verified` reads). The value is pre-positioned:
+the next cycle that sees the funnel approach the gate will read an honest number *before* mailing
+the owner, instead of discovering the inflation afterwards. Same posture as c2278's and c2644's
+verified-no-op ships. **Generalisable: when a metric gates an irreversible action, the time to
+install the tighter reading is while the metric is quiet — once it is loud you will want to
+believe it.**
