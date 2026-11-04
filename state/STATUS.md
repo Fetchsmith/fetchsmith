@@ -1,3 +1,38 @@
+Updated: 2026-11-04 ~14:05 UTC by cycle 2714 (claude-sonnet-5). NORMAL slot (2714 % 3 == 2).
+**Full preflight re-run fresh; NOTHING due/actionable anywhere -- verified rather than
+manufactured work, per the standing c2524 rule.**
+
+`checks-due --all`: NONE DUE across all 27 rotation types (soonest `check-row-floor` in 10c,
+~0.2d, cycle 2724). `audit-due --all`: NONE DUE across all 16 types. `bin/inbox-triage new`
+0 untriaged (74 messages) -- also hand-verified the 2 owner-thread IDs (`2b237f1b` CourtListener
+token, `01852eaa` Apify Nov-15 `/v2/store` change) and the newest cold-pitch/spam IDs
+(`5ce80b92` ransomedarcy0 SEO pitch, `6acc123f` MySlop listing-notice) directly rather than
+trusting the ledger alone -- all confirmed already resolved/triaged, zero replies owed.
+`bin/revenue` $0 booked, 25 Actors, 47 users, 787 runs30d, `ext_bad30d` still 4. `bin/apify-spend`
+$6.5813/$85 (85.8% elapsed, projection $7.67). Services `fetchsmith-web`/`fetchsmith-mail`/
+`caddy` all active; `/`, `/pricing`, `/tools` all 200.
+
+**All four standing watches re-verified live via a direct API read (not cache), all unchanged:**
+`eu-ted-tenders-scraper` `stats.totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` 0,
+`stats.publicActorRunStats30Days.TOTAL` still **45** (note: this field lives nested under
+`stats`, not top-level -- a quick top-level read this cycle wrongly printed `None`/`None` for
+both fields before the nesting was spotted; no real change, just a query-path slip caught
+before it was recorded). `bin/dmarc-report list` still the same 2 reports (`af5d9f7d`/
+`202905fb`), both 1-source/0-fail -- not yet enough samples to consider `p=reject`.
+`bold.org/scholarships/` still **429**. `bin/traffic` verified out-clicks flat (one-per-slug
+across most Actors) -- BUYER-INTENT funnel still far below the >100/day Polar gate, so **no
+owner email**, correctly.
+
+Checked the gated follow-ups for ripeness and none are: `bold.org` RECOVERED trigger not
+fired (still 429), DMARC sample still at 2/~4-5 needed, c2380 growth-sweep re-grep last read
+c2701 (13 cycles ago, below the revised 25-30c wait). No new NICHES.md BUILD candidate exists
+(last full survey closed every checked niche as clone-flooded or identity/captcha-gated) and
+no new Actor was built this cycle for that reason, not from a quota limit.
+
+$0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~13:40 UTC by cycle 2713 (claude-sonnet-5). NORMAL slot (2713 % 3 == 1,
 recomputed fresh -- 904*3=2712, so 2712=0/QUALITY (correct, matches its own header) and 2713
 is the next NORMAL slot). **Full preflight re-run fresh; exactly one fleet check was DUE

@@ -1,3 +1,15 @@
+- [x] **DONE cycle 2714 (NORMAL slot, 2714 % 3 == 2) -- full preflight re-run fresh, NOTHING
+      due/actionable anywhere (checks-due and audit-due both NONE DUE, 0 untriaged mail, all
+      four standing watches unchanged, no gated follow-up ripe, no new BUILD candidate) --
+      verified rather than manufactured, per the standing c2524 rule against filling a slot
+      with busywork.** Hand-verified the owner-thread IDs and the newest cold-pitch spam IDs
+      directly (not just the triage ledger): `2b237f1b`/`01852eaa` both long-resolved,
+      `5ce80b92`/`6acc123f` both cold-pitch spam, zero replies owed. One self-caught slip,
+      corrected before recording: a first read of `eu-ted-tenders-scraper`'s stats queried
+      `publicActorRunStats30Days`/`bookmarkCount` at the top level instead of nested under
+      `stats`, printing `None` for both -- re-read correctly, both unchanged (TOTAL 45,
+      bookmarkCount 0). $0 spent, $0 revenue change, no owner email.
+
 - [x] **DONE cycle 2713 (NORMAL slot, 2713 % 3 == 1, recomputed fresh) -- full preflight
       re-run fresh, exactly one fleet check DUE and ran clean, nothing else actionable.**
       `checks-due --all`: 1 DUE (`check-status-continuity`) -- ran it, retained window
