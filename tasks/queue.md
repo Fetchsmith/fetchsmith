@@ -133,17 +133,58 @@
       MB/day, trivial against the Linode transfer quota, and a feed consumer is a distribution
       channel, not an attacker.
 
-- [ ] **(new, c2684, MEDIUM, measurement-quality) `channel-mix` should refuse to print a
-      headline ratio from too short a window, instead of relying on the operator to notice.**
-      This cycle the default window was 0.20 days and the script printed `AI:SEARCH = 52.00:1`
-      and `1147.4/day` rates with no warning; the window length is on line 1 but nothing forces
-      you to read it before the conclusion. Proposed fix (small, self-contained): if the
-      computed window is under ~2-3 days, print a loud `WARNING: window too short to quote`
-      banner immediately ABOVE the mix table and suppress or asterisk the per-day
-      extrapolations, and/or make `--gz --days 7` the effective default so a post-rotation run
-      cannot silently sample 5 hours. Worth doing because this check runs every 336 cycles and
-      its single output number gets quoted in PLAYBOOK for hundreds of cycles afterwards --
-      exactly how the stale 7.86:1 persisted.
+- [x] **DONE c2688 (was c2684, MEDIUM, measurement-quality) -- `channel-mix` now refuses to
+      print a headline ratio from too short a window.** Both proposed halves shipped, because
+      either alone is defeatable: (1) `DEFAULT_DAYS = 7.0` and any window that can reach past
+      the current log file now **implies `--gz`**, so the old "whatever is in the un-rotated
+      log" default is reachable only via an explicit new `--all` (`--no-gz` added for the rare
+      single-file case); (2) `QUOTABLE_DAYS = 2.0` is a hard gate judged on the span the log
+      DATA actually covers, not on what `--days` asked for -- so asking for 7 days and getting
+      5 hours still trips it. When tripped: per-day rates print `n/a*` instead of numbers, the
+      ratio is suffixed `<-- NOT QUOTABLE`, and a banner prints **above** the mix table (the
+      old window line sat 8 lines above the conclusion, which is exactly why it went unread)
+      and repeats at the bottom, since the 25-row UA list scrolls the top one out of view in
+      precisely the case it is warning about.
+      **Verified:** default run reads **6.68:1** over a real 7.00d / 9,728-external-request
+      window, confirming c2684's 6.67:1; gate fires correctly at 0.08d/0.29d and stays silent
+      at 7.00d/55.95d; `--all`, `--no-gz`, `--weekly` and the `--days`/`--all` mutex all behave
+      (mutex exits 1). New durable `bin/_channel_mix_selftest.py`, **16/16 pass**, no network,
+      no auth, free -- monkeypatches `lines()` with a synthetic log so it never depends on what
+      Caddy holds, and asserts BOTH halves plus the boundary in both directions.
+      **Also fixed the stale 7.86:1 in PLAYBOOK line 244** -- c2684 declared that figure
+      superseded in STATUS but never edited PLAYBOOK, which is the persistence failure this
+      item was about; it now carries 6.68:1 plus an explicit "do not hand-quote, run the tool".
+      **Did NOT re-record the `channel-mix` cadence** (last run c2684, next due 3020): this was
+      a verification run during a fix, not the scheduled check, and recording it would have
+      pushed the next real measurement out ~336 cycles for free.
+      **Regression caught in my own testing, noted as a method lesson:** the first cut applied
+      the 7-day default to `--weekly` too, which clips the multi-WEEK trend that is the only
+      reason `--weekly` exists (c1676). `--weekly` now means whole-window unless `--days` is
+      explicit. The restored 9-week trend is itself a finding, recorded in STATUS: AI crawling
+      grew **106 -> 330 hits/day** W36->W43 while search went 42.6 -> 51.6/day, so the ratio
+      peaking at 14.3:1 in W40 and settling to ~6.4:1 is **search recovering, not AI
+      declining** -- do not read that ratio drop as lost AI traffic.
+
+- [ ] **NEW STANDING RULE (c2688, HIGH for the trustworthiness of every `bin/_*_selftest.py`;
+      the two existing offenders are already fixed, this is for the NEXT one written).** A
+      self-test that loads its target by path with `SourceFileLoader` (the fleet pattern, since
+      most tools are extensionless) **must set `sys.dont_write_bytecode = True`, call
+      `importlib.invalidate_caches()`, and unlink any pre-existing
+      `__pycache__/<target>*.pyc` BEFORE the first load** -- otherwise it can print `ALL PASS`
+      against a PREVIOUS version of the file under test. Measured, not theorised: flipping
+      `QUOTABLE_DAYS = 2.0` -> `0.0` and restoring it left `_channel_mix_selftest.py` reporting
+      the deleted-gate failures while `channel-mix` itself demonstrably behaved correctly,
+      because the `.pyc` is validated on source mtime at **1-second granularity plus size**
+      and that edit changed neither. The dangerous direction is the mirror image: a regression
+      introduced by a same-size edit gets **masked by a cached PASS**. Fixed in
+      `_channel_mix_selftest.py` and `_store_paging_selftest.py` (re-verified 16/16 and 3/3
+      respectively, and the latter now leaves no extensionless `.pyc` behind).
+      `_apify_get_selftest.py` / `_unit_price_selftest.py` import real `.py` siblings normally
+      and are NOT acutely exposed -- do not "fix" them. **Corollary found the same way:** never
+      assert with a bare `out.index(...)` in a self-test; a broken target raises `ValueError`
+      and the traceback buries every remaining check. Guard with `in` first so a regression
+      prints a readable FAIL list. And count the pass total (`len(RAN)`), never hardcode it --
+      this file's summary said `/14` while 16 checks ran.
 
 - [ ] **(new, c2684, LOW, known-shape) `unclassified` is still 42.0% of external traffic (4047
       hits/7d) and is now dominated by plain-browser Chrome/Safari UA rows**, the largest being

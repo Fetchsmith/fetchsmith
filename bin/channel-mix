@@ -1,11 +1,28 @@
 #!/usr/bin/env python3
 """Channel mix from the Caddy access log: who is actually fetching fetchsmith.com.
 
-Usage: channel-mix [--days N] [--gz] [--paths] [--unknown N]
-  --days N    only count requests in the last N days (default: whole log window)
+Usage: channel-mix [--days N | --all] [--gz] [--no-gz] [--paths] [--unknown N]
+  --days N    only count requests in the last N days (DEFAULT 7, which also turns --gz on)
+  --all       no cutoff: whole available log window (the pre-cycle-2688 default)
   --gz        also read rotated /var/log/caddy/*.log.gz (slower; needed for old windows)
+  --no-gz     current log file only; overrides the --gz that --days/--all imply
   --paths     print the per-path breakdown of AI-engine fetches
   --unknown N show the top N unclassified UAs (default 25)
+
+Cycle 2688: the default used to be "whole CURRENT log file", so a run shortly after
+Caddy rotated sampled 0.20 days and printed a confident `AI:SEARCH = 52.00:1` plus
+`1147.4/day` rates (cycle 2684 -- the real 7-day figure was 6.67:1, 172x off on the
+ratio). Two independent fixes, because either alone can still be defeated:
+  1. the default window is now 7 days WITH the rotated files, so a post-rotation run
+     cannot silently sample five hours;
+  2. QUOTABLE_DAYS below is a hard gate -- if the window ACTUALLY covered by log data
+     is under it, the per-day rates are replaced by `n/a*` and the ratio is labelled
+     NOT QUOTABLE, printed as a banner ABOVE the mix table rather than as a number on
+     line 1 that the reader is trusted to notice. The gate reads the real first->last
+     hit span, so it still fires if --days 7 is asked for but only 5 hours exist.
+This matters more than its frequency suggests: the check runs every 336 cycles and its
+one headline number gets quoted in PLAYBOOK/LEARNINGS for hundreds of cycles after --
+exactly how the stale 7.86:1 from cycle 1676 survived to 2684.
 
 This is item (s) on the queue, re-measured each GROWTH cycle. It exists as a script
 because the same count was hand-rolled four times (cycles 1648-1652) and was wrong
@@ -28,6 +45,9 @@ log (3593/9221 at cycle 1676) and all come from our public IP. UA-matching `curl
 would also sweep up genuine external curl users, and would miss our own non-curl probes.
 """
 import argparse, collections, glob, gzip, json, subprocess, sys, time
+
+DEFAULT_DAYS = 7.0     # c2688: was "whole current log file", i.e. 0.20d right after a rotation.
+QUOTABLE_DAYS = 2.0    # below this the mix is sample noise; rates/ratio are refused, not printed.
 
 # Our own public IP: every self-hit in the log came from here (verified cycle 1676).
 # Derived live so the script keeps working if the box is ever re-addressed.
@@ -136,14 +156,28 @@ def lines(use_gz):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=float)
+    ap.add_argument("--all", action="store_true",
+                    help="no cutoff, whole available window (pre-2688 default)")
     ap.add_argument("--gz", action="store_true")
+    ap.add_argument("--no-gz", dest="no_gz", action="store_true",
+                    help="current log file only; overrides an implied --gz")
     ap.add_argument("--paths", action="store_true")
     ap.add_argument("--weekly", action="store_true",
                     help="per-ISO-week ai/search rates (implies --gz; this is where the TREND is)")
     ap.add_argument("--unknown", type=int, default=25)
     a = ap.parse_args()
-    if a.weekly:
+    if a.days is not None and a.all:
+        sys.exit("channel-mix: --days and --all are mutually exclusive")
+    # Any window that can reach past the current log file needs the rotated ones, so imply
+    # --gz rather than leaving the caller to pair the two flags correctly (c2684 did not).
+    if a.weekly or a.all or a.days is None or a.days > 0.1:
         a.gz = True
+    if a.no_gz:
+        a.gz = False
+    if a.days is None and not a.all:
+        # --weekly's entire point (c1676) is the multi-WEEK trend, so the 7-day default would
+        # clip it to one-and-a-bit weeks: there, no explicit --days means the whole window.
+        a.days = None if a.weekly else DEFAULT_DAYS
 
     mine = self_ips()
     cutoff = time.time() - a.days * 86400 if a.days else 0
@@ -199,19 +233,37 @@ def main():
     ext = total - self_hits
     print(f"   {ext} external requests classified\n")
 
+    # The gate (c2688): judged on the span the log DATA actually covers, not on --days,
+    # so asking for 7 days and getting 5 hours of post-rotation log still trips it.
+    quotable = span_d >= QUOTABLE_DAYS
+    if not quotable:
+        print("#" * 72)
+        print(f"# WARNING: window is {span_d:.2f} days -- UNDER the {QUOTABLE_DAYS:g}-day minimum. "
+              "DO NOT QUOTE")
+        print("# these numbers in STATUS/PLAYBOOK/LEARNINGS or compare them to a prior")
+        print("# reading. Per-day rates are suppressed (`n/a*`) because extrapolating from")
+        print("# a sub-day sample is what produced cycle 2684's bogus 52.00:1 headline.")
+        print(f"# Re-run as `channel-mix --days 7` (now the default) for a real figure.")
+        print("#" * 72)
+        print()
+
+    def rate(n):
+        return f"{n/span_d:7.1f}/day" if quotable else "     n/a*"
+
     print("== channel mix (external only)")
     for b in ("ai", "search", "other_bot", "scanner", "unclassified"):
         n = counts[b]
-        print(f"   {b:14s} {n:6d}  {100*n/max(ext,1):5.1f}%   {n/span_d:7.1f}/day")
+        print(f"   {b:14s} {n:6d}  {100*n/max(ext,1):5.1f}%   {rate(n)}")
     ai, se = counts["ai"], counts["search"]
     ratio = f"{ai/se:.2f}:1" if se else "n/a (zero search hits)"
-    print(f"\n   AI : SEARCH = {ratio}")
+    suffix = "" if quotable else f"   <-- NOT QUOTABLE ({span_d:.2f}d window)"
+    print(f"\n   AI : SEARCH = {ratio}{suffix}")
 
     for b in ("ai", "search", "other_bot", "scanner"):
         if per_bot[b]:
             print(f"\n== {b} breakdown")
             for pat, n in per_bot[b].most_common():
-                print(f"   {pat:32s} {n:6d}  {n/span_d:7.1f}/day")
+                print(f"   {pat:32s} {n:6d}  {rate(n)}")
 
     if a.weekly:
         # Cycle 1676: the TREND is the finding, and it is invisible in a single ~5-day window of
@@ -237,6 +289,12 @@ def main():
         print(f"   {n:6d}  {ua}")
     if not unknown:
         print("   (none)")
+
+    # Repeated at the bottom on purpose: the UA list above is 25 rows, so a banner printed
+    # only at the top scrolls out of view in exactly the situation it is warning about.
+    if not quotable:
+        print(f"\n!! REMINDER: {span_d:.2f}-day window, under the {QUOTABLE_DAYS:g}-day minimum -- "
+              "nothing above is quotable. Re-run `channel-mix --days 7`.")
 
 
 if __name__ == "__main__":

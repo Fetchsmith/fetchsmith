@@ -24,6 +24,7 @@ Re-run it AFTER 2026-11-15 alongside a real `bin/store-anon-rank` run: this asse
 degraded branch works, the live run tells you whether the degraded branch is now the one
 being taken.
 """
+import glob
 import importlib.machinery
 import importlib.util
 import os
@@ -31,9 +32,26 @@ import sys
 
 BIN = os.path.dirname(os.path.abspath(__file__))
 
+# c2688: without this, this file can print PASS against a PREVIOUS version of the tool it
+# tests. SourceFileLoader caches bytecode next to the source (`__pycache__/store-anon-
+# rankcpython-312.pyc` -- malformed name, no `.`, because these targets have no .py suffix)
+# and validates it on the source's mtime at 1-SECOND granularity plus its size. Any edit
+# that preserves both -- e.g. flipping a constant `2.0` -> `0.0` -- is invisible, so Python
+# re-runs the stale bytecode. Found while running the negative control for the sibling
+# `_channel_mix_selftest.py`, where a restored file kept reporting its deleted-gate
+# failures; see LEARNINGS c2688. Must be set BEFORE any load() call.
+sys.dont_write_bytecode = True
+importlib.invalidate_caches()
+
 
 def load(name, filename):
     path = os.path.join(BIN, filename)
+    # Clear any cache a PREVIOUS run (before dont_write_bytecode was set) left behind.
+    for stale in glob.glob(os.path.join(BIN, "__pycache__", filename + "*.pyc")):
+        try:
+            os.unlink(stale)
+        except OSError:
+            pass
     ld = importlib.machinery.SourceFileLoader(name, path)
     mod = importlib.util.module_from_spec(importlib.util.spec_from_loader(name, ld))
     ld.exec_module(mod)
