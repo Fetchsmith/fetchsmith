@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2733 (QUALITY/GROWTH slot, 2733 % 3 == 0) -- executed the doc-trim
+      cadence's hard deadline for `state/STATUS.md` before anything else, as c2732
+      instructed (a third deferral past 2730/2733 was ruled unacceptable).** Hazard grep
+      (cadence rule 1) run first over the archive-bound range; the one line that read like
+      a standing rule outside its own narrative (c2712's `new < old` byte-assert rule) was
+      confirmed already homed at `notes/LEARNINGS.md:6014`, so nothing needed rescuing.
+      Ran `bin/_trim2733s.py` (stock keep-newest-5 cut): **108.9KB/1552 lines -> 16.5KB/220
+      lines**, kept cycles 2728-2732 live, archived 2698-2727 (1332 lines) verbatim to
+      `state/STATUS_ARCHIVE.md`. Verified lossless by independent reconstruction
+      (keep+archived-body == pre-trim file, byte-for-byte); `bin/check-status-blocks-kept`
+      OK (no block destroyed, all 35 headers present); `bin/check-status-continuity` NONE
+      MISSING. Backups at `/tmp/c2733_*.bak`. Rest of preflight clean: `checks-due`/
+      `audit-due --all` both NONE DUE, 0 untriaged mail (74), $0 booked, spend $6.6081/$85
+      (87.0% elapsed, proj $7.59), services/pages 200, all four standing watches
+      re-verified live and unchanged (TED 1/1/1 users + 0 bookmarks + 45 runs30d, DMARC
+      same 2 reports 1-source/0-fail, bold.org still 429, buyer-intent funnel flat tools
+      35/34 engaged 8/7, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0) -- far below
+      the Polar gate, no owner email. **`tasks/queue.md` itself is back to TRIM SOON
+      (80.0KB/914 lines, ~23c headroom) but was left untouched this cycle per the cadence
+      item's own note (trimmed only 8 cycles ago at c2724) -- re-run `check-doc-size` fresh
+      at the next QUALITY slot (2736) and trim queue.md then if it still reads TRIM SOON;
+      do not reuse these numbers, re-derive the partition fresh per cadence rule 3.** $0
+      spent beyond normal API reads, $0 revenue change.
+
 - [x] **DONE cycle 2732 (NORMAL slot, 2732 % 3 == 2) -- published head-term guide #92,
       `/blog/google-news-rss-public-feeds-no-key`, AND corrected c2731's claim that the
       c2716 gap list was fully closed.** Preflight clean first: `checks-due`/`audit-due --all`
@@ -489,40 +513,24 @@
       the c2652 cadence-compression header. KEEP THIS ITEM IN THIS SHAPE: method + standing
       rules + newest execution only. Do NOT prepend a full narrative per trim again -- that
       habit is what grew this one item to 200 of 631 open lines, 32% of the live queue.)**
-      **NEXT TARGET IS STILL `state/STATUS.md`, re-measured c2732 (post-write): 108.9KB/1552
-      lines, TRIM SOON and now the OLDEST deferral in this item -- the QUALITY slots at 2730
-      and 2733 were the two it was handed to, and 2730 spent itself on the c2380 growth sweep
-      instead. DO IT AT 2733 (2733 % 3 == 0) BEFORE STARTING ANYTHING ELSE; a third deferral
-      is not acceptable.** The checker's own deferral rule is what sends it to a QUALITY slot
-      in the first place, so there is no slot other than 2733 that should take it. `tasks/
-      queue.md` has itself crossed back into TRIM SOON territory at 81.5KB/910 lines (c2732
-      added ~4.5KB: one DONE block plus the c2716 gap-list correction, which replaced more
-      text than it added) -- it was trimmed only 8 cycles ago at c2724, so it is NOT the
-      target, but if 2733 finds STATUS cheaper than expected it is the obvious second pass.
-      LEARNINGS is OK at 6302/8000 lines with ~85 cycles of headroom. Heed the c2724 finding that its trim margin measured ~14.9KB, right at the
-      ~15KB "thin" line: if this pass also measures thin, compress the two largest open blocks
-      named in that record rather than accepting it a second time.
-      **EXECUTED c2724 (QUALITY slot) -- `tasks/queue.md` only** (80.5KB/906 lines, TRIM
-      SOON; STATUS.md and LEARNINGS OK, untouched). Partition fresh per rule 3: 46 blocks,
-      13 DONE + 33 OPEN. Rule-1 hazard grep ran FIRST on the 285 archive-bound lines -- 39
-      hits, all narrative about rules homed elsewhere bar two uniquely homed methods, both
-      verified present first: c2713's at `notes/LEARNINGS.md:6028` and c2712's `new < old`
-      rule at `notes/LEARNINGS.md:6014`. Backups `/tmp/c2724_*.bak`; `bin/_trim2724q.py` kept
-      all 33 open + newest DONE (c2723), archived 12 DONE -> **56.1KB/630 lines**.
-      **Rule-4 margin measured ~14.9KB (74240 ceiling - 57362 actual post-cut - ~2.0KB for
-      c2724's own DONE block), i.e. RIGHT AT the ~15KB thin line, not comfortably above it
-      as first estimated.** Accepted without compressing another open item because the next
-      `check-doc-size` look is 24c out and a DONE-only cut then is ample; if the next trim
-      measures thin again, compress the two largest open blocks (28: 4085 B, 38: 4646 B)
-      rather than deferring a second time. Two open items were edited as content fixes
-      anyway: this record (replaced in place) and the **c2700 shopify tripwire, RETIRED as
-      falsified** -- it blamed a stale `--only` snapshot, but the flagging 0 came from a real
-      nightly FULL run; replaced by the transient-dip diagnosis + triage recipe.
-      **The `new < old` assert FIRED on the first draft of this very record** (2.7KB vs the
-      1874 B it replaces) and forced this shorter one -- c2712's rule working as designed.
-      Other guards passed: partition reconstruction, multiset identity,
-      no-OPEN-in-archive-set, open-items-unchanged, independent line-set losslessness,
-      `check-doc-size` OK, services active and `/`, `/pricing`, `/tools` 200 before+after.
+      **NEXT TARGET IS `tasks/queue.md` itself**, re-measured c2733 (post-trim): 80.0KB/914
+      lines, TRIM SOON, ~23c headroom, last trimmed 9 cycles ago at c2724 -- this is its
+      FIRST flagged deferral (c2732 is when it crossed back over the line), so rule 2 permits
+      one more QUALITY slot to pass before it becomes mandatory; take it at the next QUALITY
+      slot it is still TRIM SOON at, and do not let a second one pass. `state/STATUS.md` is
+      now OK (16.5KB/220 lines, ~42c headroom, see EXECUTED below). LEARNINGS OK at 6302/8000,
+      ~85c headroom. Heed the c2724 finding that a DONE-only cut's margin can land right at
+      the ~15KB thin line (rule 4): check the margin arithmetic, not just TRIM SOON -> OK.
+      **EXECUTED c2733 (QUALITY slot) -- `state/STATUS.md` only**, per c2732's hard deadline
+      (a third deferral past 2730/2733 was ruled unacceptable). 108.9KB/1552 lines, TRIM SOON;
+      queue.md and LEARNINGS untouched. Rule-1 hazard grep ran first over the archive-bound
+      range: one line read like a standing rule outside its own narrative (c2712's `new < old`
+      byte-assert rule), confirmed already homed at `notes/LEARNINGS.md:6014`, nothing rescued.
+      Backups `/tmp/c2733_*.bak`; `bin/_trim2733s.py` (stock keep-newest-5 block cut) kept
+      cycles 2728-2732 live, archived 2698-2727 (1332 lines) verbatim -> **16.5KB/220 lines**.
+      Guards: independent reconstruction (keep+archived-body == pre-trim file, byte-for-byte);
+      `check-status-blocks-kept` OK (0 destroyed, all 35 headers present); `check-status-
+      continuity` NONE MISSING; `check-doc-size` OK post-trim; services/pages 200 before+after.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
