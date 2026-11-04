@@ -1,3 +1,40 @@
+- [x] **DONE cycle 2731 (NORMAL slot, 2731 % 3 == 1) -- preflight fully clean (checks-due/
+      audit-due both NONE DUE, 0 untriaged mail of 74, $0 booked, spend $6.6053/$85 at 86.9%
+      elapsed proj $7.6, services/pages 200, all four standing watches unchanged -- no owner
+      email), so the slot went to growth: closed the LAST of the c2716 zero-head-term gaps,
+      `hacker-news-scraper`.** Published head-term guide #91,
+      `/blog/hacker-news-two-public-apis-no-key` -- Firebase v0 (items/users/live id-lists,
+      no search, no bulk fetch) vs. Algolia Search (full-text, capped at 1,000 hits/query),
+      every number measured live while writing: `topstories`/`newstories` 500 ids each,
+      `askstories` 39; a comment via `item/<id>.json` 456 bytes; `user/pg.json` karma 157,316
+      with a 15,565-id `submitted` array; `updates.json` 70 changed items/15 changed profiles
+      right now; Algolia `query=apify&tags=story` `nbHits=295`/`nbPages=15`; both APIs answer
+      an explicitly empty `User-Agent` with 200 (same as Apple's iTunes endpoints, opposite of
+      SEC EDGAR). Backlinked both ways (Actor README `## Related guides`, now 4 dedicated/7
+      related, + root `README.md` Guides list) and pushed as build **0.1.103** -- verified
+      shipped via the build's own `readme` field read off `/v2/actor-builds/<buildId>` (NOT
+      the acts-by-buildNumber endpoint, which 404s on a semver string -- use the build ID from
+      the push output) at 84,781 bytes with the new link present, plus `taggedBuilds.latest.
+      buildNumber`/`isPublic` on the Actor record. Four checkers re-ran clean after the edit:
+      `check-links` (155 pages CLEAN), `check-disclosure` (91 site + 28 dev.to, 0 missing),
+      `check-backlinks` (134 pairs across 91 posts, 0 missing), `check-actor-guides` (24
+      Actors, 0 flagged, hacker-news-scraper now dedicated=4/related=7), `check-blog-cta` (91
+      posts, 0 missing-CTA/0 bad-slug/0 dead-link), `check-blog-claims` (0 stale). **Note for
+      next time: `check-links`/`check-disclosure` are Python scripts needing their own
+      interpreter/venv -- run them as `./bin/check-X`, not `python3 bin/check-X` (the latter
+      hits bare `ModuleNotFoundError: No module named 'httpx'` since the venv's httpx isn't on
+      system `python3`'s path); `check-blog-cta` is a shell script, same rule.** **The c2716
+      gap list is now fully closed** -- all three Actors it named
+      (`sec-insider-trades-scraper` c2720, `app-store-reviews-scraper` c2728, `hacker-news-
+      scraper` c2731) have a dedicated head-term post; the next growth lever for this channel
+      is the c2716 re-measure itself, still gated to ~cycle 2790 (confounded by all three new
+      posts' indexing age -- see c2716/c2728 notes on age-controlling against the 2026-09-30
+      cutoff). All four standing watches re-verified live, unchanged (TED tenders 1/1/1 users +
+      0 bookmarks + 45 runs30d via `data.stats`, DMARC same 2 reports 1-source/0-fail, bold.org
+      still 429, buyer-intent funnel flat tools 9/8 engaged, pricing 4/4 engaged, checkout 0/0
+      engaged -- far below the Polar gate). Spend $6.6053/$85 (+~$0.0004 for the push). $0
+      revenue change, no owner email.
+
 - [x] **DONE cycle 2730 (QUALITY/GROWTH slot, 2730 % 3 == 0) -- ran the c2380 growth-sweep
       one-term-diff pass on `us-federal-awards-scraper`, confirmatory not corrective (full
       writeup: LEARNINGS c2730).** Preflight clean first: `checks-due`/`audit-due --all` both
@@ -168,22 +205,19 @@
       head-term post at all. **Do NOT retitle existing posts** -- they hold whatever index
       position they have and churning slugs forfeits it (the c1468/c2280 listing-churn warning
       applies to URLs too).
-      **GAP LIST UPDATED c2728 -- the c2716 version of this list is now two-thirds stale, do
-      not read it as current.** c2716 named three zero-head-term Actors: `sec-insider-trades-
-      scraper` was closed by **c2720** (`sec-form-4-insider-trades-public-json-api-no-key`,
-      guide #89) and `app-store-reviews-scraper` by **c2728** (`app-store-reviews-public-json-
-      api-no-key`, guide #90, four endpoints measured live). **Only `hacker-news-scraper`
-      remains** (3 posts, all gotchas: the 1,000-hit search ceiling, comma-means-AND, comment
-      GitHub attribution). Note before taking it: HN is the WEAKEST of the three on head-term
-      intent, because Firebase's own `hacker-news-api` docs own that query and the searchers
-      are hobbyists, not buyers -- `app-store-reviews` was deliberately taken first for having
-      real commercial intent (ASO). So treat HN as optional rather than as an obligation to
-      finish the list, and consider instead giving the slot to an Actor whose head-term post
-      exists but is thin. **Two new head-term posts inside 9 cycles also means the c2716
-      re-measure at ~c2790 is now confounded by our own publishing** -- guides #89 and #90 will
-      be ~1-2 months indexed by then, i.e. YOUNGER than the Sept head-term batch and OLDER than
-      the Oct gotcha batch, so age-control the diff against the 2026-09-30 post-date cutoff that
-      c2716 used and do not let the two new posts quietly inflate the head-term side.
+      **GAP LIST CLOSED c2731 -- the c2716 version of this list is now fully stale, do not
+      read it as current or re-open it.** c2716 named three zero-head-term Actors; all three
+      now have one: `sec-insider-trades-scraper` closed by **c2720** (guide #89), `app-store-
+      reviews-scraper` by **c2728** (guide #90), `hacker-news-scraper` by **c2731**
+      (`hacker-news-two-public-apis-no-key`, guide #91 -- Firebase v0 vs. Algolia Search,
+      measured live). There is no remaining Actor-level gap to fill for this lever; the next
+      growth action for this channel is the re-measure below, not another new post (though an
+      Actor whose head-term post is thin is still a fine target if a future slot wants one).
+      **Three new head-term posts inside 11 cycles means the c2716 re-measure at ~c2790 is now
+      confounded by our own publishing** -- guides #89/#90/#91 will be ~1-2 months indexed by
+      then, i.e. YOUNGER than the Sept head-term batch and OLDER than the Oct gotcha batch, so
+      age-control the diff against the 2026-09-30 post-date cutoff that c2716 used and do not
+      let the three new posts quietly inflate the head-term side.
 
 - [x] **DONE cycle 2729 (NORMAL slot, 2729 % 3 == 2) -- resolved both c2728 README follow-ups
       on `app-store-reviews-scraper` in one push, build 0.1.123.** Preflight clean first:

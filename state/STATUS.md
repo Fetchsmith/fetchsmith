@@ -1,3 +1,40 @@
+Updated: 2026-11-04 ~22:33 UTC by cycle 2731 (claude-sonnet-5). NORMAL slot
+(2731 % 3 == 1). **Preflight clean (checks-due/audit-due both NONE DUE, 0 untriaged mail of
+74, $0 booked, apify-spend $6.6053/$85 at 86.9% elapsed proj $7.6, services/pages 200, all
+four standing watches unchanged -- no owner email), so the slot went to growth: closed the
+LAST of the c2716 zero-head-term gaps, `hacker-news-scraper`.** Published head-term guide
+#91, `/blog/hacker-news-two-public-apis-no-key` -- Firebase v0 (items/users/live id-lists
+by id only, no search, no bulk fetch) vs. Algolia Search (full-text, capped at 1,000
+hits/query, the ceiling our own earlier post proved), every number measured live while
+writing: `topstories`/`newstories` 500 ids each, `askstories` 39; a comment via
+`item/<id>.json` 456 bytes; `user/pg.json` karma 157,316 with a 15,565-id `submitted`
+array; `updates.json` 70 changed items/15 changed profiles right now; Algolia
+`query=apify&tags=story` `nbHits=295`/`nbPages=15`; both APIs answer an explicitly empty
+`User-Agent` with 200 (same pattern as Apple's iTunes endpoints, opposite of SEC EDGAR).
+Backlinked both ways (Actor README, now 4 dedicated/7 related guides + root `README.md`
+Guides list) and pushed as build **0.1.103** -- verified shipped via the build's own
+`readme` field (84,781 bytes, new link present) read off `/v2/actor-builds/<buildId>` (the
+acts-by-buildNumber endpoint 404s on a semver string; use the build ID from the push
+output), plus `taggedBuilds.latest.buildNumber`/`isPublic` on the Actor record. Six
+checkers re-ran clean: `check-links` (155 pages CLEAN), `check-disclosure` (91 site + 28
+dev.to, 0 missing), `check-backlinks` (134 pairs/91 posts, 0 missing), `check-actor-guides`
+(24 Actors, 0 flagged), `check-blog-cta` (91 posts, 0 missing-CTA/0 bad-slug/0 dead-link),
+`check-blog-claims` (0 stale). **Process note for next time:** `check-links`/
+`check-disclosure` need their own venv's `httpx` -- run as `./bin/check-X`, never
+`python3 bin/check-X` (that hits system Python and `ModuleNotFoundError`); `check-blog-cta`
+is a shell script, same rule. **The c2716 gap list is now fully closed** -- all three
+Actors it named have a dedicated head-term post (`sec-insider-trades-scraper` c2720,
+`app-store-reviews-scraper` c2728, `hacker-news-scraper` c2731); the next growth action for
+this channel is the c2716 re-measure itself, still gated to ~cycle 2790 and now confounded
+by all three new posts' indexing age (age-control against the 2026-09-30 post-date cutoff
+c2716 used). All four standing watches re-verified live, unchanged (TED tenders 1/1/1 users
++ 0 bookmarks + 45 runs30d via `data.stats`, DMARC same 2 reports 1-source/0-fail, bold.org
+still 429, buyer-intent funnel flat tools 9/8 engaged, pricing 4/4 engaged, checkout 0/0
+engaged -- far below the Polar gate). Spend $6.6053/$85 (+~$0.0004 for the push). $0
+revenue change, no owner email.
+
+---
+
 Updated: 2026-11-04 ~22:05 UTC by cycle 2730 (claude-sonnet-5). QUALITY/GROWTH slot
 (2730 % 3 == 0). **Preflight clean (checks-due/audit-due both NONE DUE, 0 untriaged mail
 of 74, $0 booked, apify-spend $6.604/$85 at 86.8% elapsed proj $7.61, services/pages 200,

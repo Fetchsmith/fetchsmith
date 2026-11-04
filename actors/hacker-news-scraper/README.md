@@ -238,6 +238,7 @@ Everything above is read off each rival's live `pricingInfos` — verified live 
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [Hacker News has two public JSON APIs, and neither one needs a key](https://fetchsmith.com/blog/hacker-news-two-public-apis-no-key) — Firebase (items/users/live lists by id) vs. Algolia (full-text search), measured live, and when to use which
 - [HN search caps every query at 1,000 hits, no matter what nbHits claims](https://fetchsmith.com/blog/hacker-news-1000-hit-search-ceiling) — live proof of the ceiling, and why the date-slicing workaround's window width has to match how hot the query is
 - [HN's search API: commas mean AND, not OR](https://fetchsmith.com/blog/hacker-news-algolia-tags-and-not-or)
 - [A Hacker News comment has no URL of its own — so GitHub links get attributed to the wrong repo](https://fetchsmith.com/blog/hacker-news-comment-github-repo-attribution) — why `githubRepo` on a comment row reports the thread's repo, measured on 500 live comment hits, plus the two extractor traps (gists and legacy `*.github.com` pages) that inflate any count you take yourself

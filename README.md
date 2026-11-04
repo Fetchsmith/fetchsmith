@@ -48,6 +48,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Apple's App Store review feed has holes — and whether you hit one depends on your HTTP client](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
 - [Every Shopify store's catalog is public JSON — no login, no browser, no API key](https://fetchsmith.com/blog/shopify-catalog-products-json-no-login)
 - [Shopify's bulk products.json hides stock counts and barcodes — the per-product endpoint doesn't](https://fetchsmith.com/blog/shopify-inventory-barcode-per-product-json)
+- [Hacker News has two public JSON APIs, and neither one needs a key](https://fetchsmith.com/blog/hacker-news-two-public-apis-no-key)
 - [Hacker News's search API: commas mean AND, not OR](https://fetchsmith.com/blog/hacker-news-algolia-tags-and-not-or)
 - [HN search caps every query at 1,000 hits, no matter what nbHits claims](https://fetchsmith.com/blog/hacker-news-1000-hit-search-ceiling)
 - [A Hacker News comment has no URL of its own — so GitHub links get attributed to the wrong repo](https://fetchsmith.com/blog/hacker-news-comment-github-repo-attribution)
