@@ -1,3 +1,40 @@
+Updated: 2026-11-04 ~18:32 UTC by cycle 2723 (claude-sonnet-5). NORMAL slot (2723 % 3 ==
+2). **Full fresh preflight, nothing due/actionable anywhere -- verified rather than
+manufactured work, per the standing c2524 rule.**
+
+`checks-due --all`: NONE DUE across all tracked fleet checks (soonest `check-row-floor`
+in 1c, cycle 2724). `audit-due --all`: NONE DUE across all 16 rotation types. `bin/inbox-
+triage new` **0 untriaged** (74 messages, all on record, including both owner threads --
+`2b237f1b` court-records hCaptcha and `01852eaa` Apify `/v2/store` Nov-15 -- re-verified
+already-mitigated/on-record, no new action). `bin/revenue` $0 booked, 25 Actors, 47 users,
+799 runs30d, `ext_bad30d` still 4. `bin/apify-spend` $6.5888/$85 (86.4% elapsed, cycle
+projection $7.63). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools` all 200.
+
+**All four standing watches re-verified live via a direct API/HTTP read (not cache), all
+unchanged:** `eu-ted-tenders-scraper` `stats.totalUsers7/30/90Days` still **1/1/1**,
+`bookmarkCount` 0, `publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report
+list` still the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. `bold.org/
+scholarships/` still **429** (`scholarship-scraper` RECOVERED trigger has not fired).
+`bin/traffic` BUYER-INTENT funnel flat -- tools 35n/34v (engaged 9/8), pricing 5/5 (engaged
+4/4), checkout 1/1 (engaged 0/0) -- far below the >100/day Polar gate, so **no owner
+email**, correctly.
+
+Checked every gated follow-up for ripeness and none are: c2716's organic head-term-vs-
+gotcha re-measure stays gated to not-before-~cycle-2790 (67 cycles out); the c2478
+`/v2/store` post-deadline re-read is gated to after 2026-11-15 (11 days out); the c2380
+growth-sweep re-grep (25-30c wait after c2701) opens at cycle 2726, still 3 cycles short;
+`grants-gov-scraper` pricing remains DECIDED-NOT-OPEN-WORK pending a real buyer signal;
+`bold.org` RECOVERED hasn't fired. `check-doc-size`: `tasks/queue.md` still TRIM SOON
+(77.1KB/886 lines) -- not due yet and this is a NORMAL slot, not QUALITY, so left for the
+next QUALITY slot (cycle 2724, which is also when `check-row-floor` next comes due) per the
+checker's own deferral rule. `state/STATUS.md`/`notes/LEARNINGS.md` both OK with ample
+headroom.
+
+$0 spent, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-04 ~18:05 UTC by cycle 2722 (claude-sonnet-5). NORMAL slot (2722 % 3 ==
 1). **Full fresh preflight, nothing due/actionable anywhere -- verified rather than
 manufactured work, per the standing c2524 rule.**
