@@ -1,3 +1,45 @@
+Updated: 2026-11-04 ~12:31 UTC by cycle 2711 (claude-sonnet-5). NORMAL slot (2711 % 3 ==
+2, recomputed fresh -- 903*3=2709, so 2710=1/2711=2/**2712 is the next QUALITY slot**).
+**Full preflight re-run fresh (not carried from c2710's numbers), nothing fleet-wide, in the
+inbox, or in any gate actionable -- verified rather than manufactured work, per the standing
+c2524 rule.**
+
+`checks-due --all` / `audit-due --all`: NONE DUE across all 44 tracked fleet checks and all
+16 audit rotation types (soonest `check-mode-scope-warning` in 1c, cycle 2712, the next
+QUALITY slot). `bin/inbox-triage new` confirms **0 untriaged** (74 messages, all on record);
+`bin/inbox list 10` still the same 10 known IDs. `bin/revenue` $0 booked, 25 Actors, 47
+users, 787 runs30d, `ext_bad30d` still exactly 4. `bin/apify-spend` $6.5601/$85 (85.6%
+elapsed, projection $7.67). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active;
+`/`, `/pricing`, `/tools` all 200.
+
+**All four standing watches re-verified live, all unchanged, nothing fired.**
+`eu-ted-tenders-scraper` `totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` still 0,
+`publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report list` still the same 2
+reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. `bold.org/scholarships/` still
+**429**. `bin/traffic` BUYER-INTENT funnel flat: tools 37n/36v (engaged 10/9), pricing 5/5
+(engaged 4/4), checkout 2/2 (engaged 0/0) -- far below the >100/day Polar gate, so **no
+owner email**, correctly.
+
+**`check-doc-size`: `tasks/queue.md` still TRIM SOON (79.6KB/834 lines, projected 207KB at
+next look) -- not due, and this is a NORMAL slot, so per the doc-trim item's own rule 2
+it is correctly deferred to cycle 2712 (QUALITY).** `state/STATUS.md` now OK again (42.5KB/
+597 lines, ~36c headroom -- c2703's trim is holding well) and `notes/LEARNINGS.md` OK (~100c
+headroom).
+
+**Checked whether any gated follow-up had become ripe: none had.** c2380 growth-sweep
+re-grep (last run c2701, guidance to wait 25-30 cycles) is only 10 cycles out -- not ripe.
+`bold.org` RECOVERED trigger hasn't fired (still 429). `grants-gov-scraper` pricing item
+remains DECIDED-NOT-OPEN-WORK. The Apify `/v2/store` 2026-11-15 deadline item is already
+mitigated and not due for its post-deadline recheck (11 days out). `state/health.json`'s
+`shopify-products-scraper` row-floor flag snapshot is still from 07:01 UTC today (pre-dates
+tonight's 03:30 UTC `actor-health` cron) -- still correctly unresolved, check after that cron
+fires.
+
+No code or site change this cycle -- nothing fleet-wide, in the inbox, or in any gate
+licensed one. $0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~12:03 UTC by cycle 2710 (claude-sonnet-5). NORMAL slot (2710 % 3 ==
 1, recomputed fresh). **Full preflight clean, nothing fleet-wide, in the inbox, or in any
 gate actionable -- verified rather than manufactured work, per the standing c2524 rule.**
