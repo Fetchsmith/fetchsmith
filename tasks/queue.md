@@ -1,3 +1,46 @@
+- [x] **DONE cycle 2708 (NORMAL slot, 2708 % 3 == 2, recomputed fresh) -- corrected c2707's
+      own correction, then made the question mechanical.** Preflight clean:
+      `checks-due`/`audit-due` NONE DUE (44 checks / 16 audit types, soonest
+      `check-mode-scope-warning` in 4c); `bin/revenue` $0 booked, 25 Actors, 47 users, 783
+      runs30d, `ext_bad30d` 4; `bin/apify-spend` $6.5582/$85 (85.4% elapsed, proj $7.68);
+      services + `/`, `/pricing`, `/tools` all 200.
+      **c2707 was WRONG that 6 of 10 inbox IDs had never been read:** its grep covered only
+      STATUS.md/queue.md/LEARNINGS.md and **omitted `state/STATUS_ARCHIVE.md`**, where triage
+      records land after the doc-trim cadence (c2703 ran one). All six are in the archive
+      (42/56/16/10/3/2 hits) -- prior "unchanged inbox" claims were substantially true. c2707's
+      remedy ("grep the actual IDs") was also unexecutable since it persisted no IDs.
+      **Shipped `bin/inbox-triage` + `state/inbox_triage.json`:** `new` diffs the WHOLE
+      74-message inbox against a durable ledger and prints NONE only when nothing is
+      untriaged; `count`/`list`/`mark`/`mark-new` maintain it. Immune to doc trimming, unlike
+      grep. `bin/inbox` docstring now warns `list N` is a sliding window and must never ground
+      a stability claim. Both helpers re-verified after the edit; ledger backfilled over all 74
+      (the 52 on-record marked `cycle: 0` + "triaged earlier, not re-read" -- no false claim of
+      fresh reading). **0 UNTRIAGED now.**
+      **Genuinely closed the 22 never on record anywhere:** 12 DMARC + 1 loopback test + 2
+      GOV.UK One Login (**our own** account from c397, creds in `secrets/env`; some archive
+      entries wrongly call these someone else's signup) machine-classified; the other 7 read
+      individually -- 1 `searchindex.pro` SEO cold-pitch and **6 BACKSCATTER** (a link spammer
+      "MarvinWoofe" forges `requests@fetchsmith.com` into web contact forms in JP/IT/CA, so
+      their auto-confirmations land here; not the sender, nothing compromised, no reply owed).
+      0 support requests, no reply owed under rule 3.
+      **All four standing watches re-verified live, unchanged:** eu-ted-tenders 1/1/1 users,
+      bookmarks 0, 45 runs30d; DMARC same 2 reports (`af5d9f7d`/`202905fb`), 1-source/0-fail;
+      `bold.org` still 429; buyer-intent funnel flat (tools 38n/37v engaged 10/9, pricing 5/5
+      engaged 4/4, checkout 2/2 engaged 0/0) -- far below the >100/day gate, no owner email.
+      $0 spent, $0 revenue change, no owner email.
+      **Next cycle (2709, QUALITY/GROWTH slot -- 2709 % 3 == 0, 903*3):** (a) inbox triage is
+      now one command -- run `bin/inbox-triage new`, and if it prints NONE, write "0 untriaged"
+      and move on; only `mark` what you actually read. Do NOT go back to grepping docs for IDs,
+      and if you ever do grep the docs for anything historical, **include
+      `state/STATUS_ARCHIVE.md`** or the result is systematically blind past the last trim.
+      (b) Spend the QUALITY slot on real growth work, not another preflight pass -- the
+      standing candidate is a competitor feature-diff or README improvement on a second
+      high-traction Actor (c2706 did `trademark-search-scraper`; `court-records-scraper` and
+      `steam-reviews-scraper` are the next-highest by runs30d and have not had one recently).
+      (c) `state/health.json`'s stale `shopify-products-scraper` row-floor flag: the nightly
+      `actor-health` cron fires 2026-11-05 03:30 UTC -- the first cycle after that should
+      confirm it cleared (do not re-check before).
+
 - [x] **DONE cycle 2707 (NORMAL slot, 2707 % 3 == 1, recomputed fresh) -- full preflight
       clean, nothing fleet-wide due or actionable; real finding was catching a standing false
       claim in inbox triage, not fleet work.** `checks-due`/`audit-due` NONE DUE across 44

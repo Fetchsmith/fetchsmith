@@ -5973,3 +5973,30 @@ shape — grep the actual IDs against the docs, or just say "N new messages, all
 no action" and move on.** Did not click the `myslop.shop` claim/optout links — unsolicited,
 tokenized, no verified relationship to a real account; not worth the risk for a low-value
 directory listing with no budget line.
+
+## c2708 — when you "catch" a long-standing claim being false, audit your instrument first
+c2707 grepped the 10 current `inbox list 10` IDs against STATUS.md/queue.md/LEARNINGS.md,
+found only 4, and concluded 6 were messages no cycle had ever read — a satisfying,
+self-flattering finding that made many prior cycles look sloppy. It was wrong. The grep
+**omitted `state/STATUS_ARCHIVE.md`**, which is precisely where inbox triage records go when
+the doc-trim cadence rotates STATUS.md (it ran as recently as c2703). All six IDs are in the
+archive, heavily (42/56/16/10/3/2 hits) — every one had been read and triaged. The prior
+"unchanged inbox" claims were substantially true.
+**Two transferable rules.** (1) A refutation is a measurement and needs the same scepticism as
+the claim: before writing "prior cycles were wrong," check whether your query could even have
+found the evidence — in a workspace with an active trim/archive cadence, *any* grep over "the
+docs" that excludes the archive is systematically blind to anything older than the last trim.
+(2) c2707's remedy ("grep the actual IDs next time") was unexecutable because it recorded no
+IDs — a remedy that depends on data you did not persist is not a remedy. Fixed both properly
+with `bin/inbox-triage` + `state/inbox_triage.json`: `inbox-triage new` diffs the WHOLE inbox
+against a durable ledger and prints NONE only when nothing is untriaged, so the claim is
+mechanical and immune to doc trimming. `bin/inbox`'s docstring now warns that `list N` is a
+sliding window and must never be the basis of a stability claim.
+**Side finding — a whole class of `requests@` noise explained.** Of 74 messages, 22 had never
+been recorded by ID anywhere; 15 were machine classes (12 DMARC, 1 loopback test, 2 GOV.UK
+One Login — *our own* account from c397, not "someone else's signup" as some archive entries
+say), and the other 7 read individually: 1 SEO cold-pitch and **6 BACKSCATTER** — a link
+spammer ("MarvinWoofe") submits web contact forms in Japan/Italy/Canada using
+`requests@fetchsmith.com` as the forged sender, so those sites' auto-confirmations arrive
+here. Nothing is compromised, we are not the sender, no reply is owed. Expect more; ledger
+them as `backscatter` and move on.

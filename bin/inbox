@@ -1,5 +1,11 @@
 #!/root/agent/venv/bin/python
-"""List or read inbound emails. Usage: inbox [list [N]] | inbox read <id-prefix> | inbox search <text>"""
+"""List or read inbound emails. Usage: inbox [list [N]] | inbox read <id-prefix> | inbox search <text>
+
+WARNING: `list N` is a SLIDING WINDOW over the N newest messages, not a fixed set. Never
+conclude "zero new mail / same known IDs" from this command -- the window's count and shape
+stay stable while its contents change. Use `bin/inbox-triage new`, which diffs the WHOLE
+inbox against state/inbox_triage.json and prints NONE only when nothing is untriaged.
+"""
 import sys, os, json, glob
 files = sorted(glob.glob("/root/agent/mail/inbox/*.json"))
 cmd = sys.argv[1] if len(sys.argv) > 1 else "list"

@@ -1,0 +1,819 @@
+{
+ "entries": {
+  "01852eaa": {
+   "cycle": 0,
+   "disposition": "owner",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Fwd: Check your Store API calls by November 15",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1793374253
+  },
+  "04dda4a1": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "010001a159581c32-b44a15fb-a9e0-45ea-ba9c-fd1c263d8287-000000@send.thoughtpivot.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Monthly rentals for your 25 Apify Actors",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1792500310
+  },
+  "06daa491": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "base2026@tintgate.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "邀请使用 TinyGate 高性能 API 网关",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1793086783
+  },
+  "09c8409d": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 8405631458130977240",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1790249392
+  },
+  "09cd450f": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 11249278439374704738",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789039077
+  },
+  "0b504b8b": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "drummondduana@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Can I Send Error Report of Your Site?",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1789744744
+  },
+  "0ec39b51": {
+   "cycle": 0,
+   "disposition": "owner",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Error in the shopify actor",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1789085323
+  },
+  "0ffe4d68": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "noreply@baselinker-mail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Hello",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1789316626
+  },
+  "116f7cc3": {
+   "cycle": 0,
+   "disposition": "owner",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Fwd: Your Actor Scholarship Scraper (bold.org) has been flagged as under maintenance",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1790089795
+  },
+  "13e16bd5": {
+   "cycle": 0,
+   "disposition": "owner",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Recommendation for apify actors",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1789571458
+  },
+  "14c3b3ef": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 1988159441721959113",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1790163446
+  },
+  "14fb0a04": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "peter@bytewells.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "monthly rentals for ats jobs scraper",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790852760
+  },
+  "167b67c5": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 13468044611630201415",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789899733
+  },
+  "1aa6c5a1": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "010001a09f0cc4f6-394fa623-6064-44fc-8da4-312c6fbcbaa3-000000@mail.api.data.gov",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Your API key",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1789374810
+  },
+  "202905fb": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 16662915549271898375",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1793184032
+  },
+  "23ab769e": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "domains@helpindex.org",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Add fetchsmith.com to Google's Search Index",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1789711563
+  },
+  "2420a902": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "noreply-requests=fetchsmith.com-requests=fetchsmith.com@topnewsonline.info",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "A Legal Thriller That Opens Fire on Page One",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1793425277
+  },
+  "26f70451": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 4830523636065825377",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1791105809
+  },
+  "2a921050": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 9867956622917818203",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789125178
+  },
+  "2aa190eb": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "vancetorrescyiz@outlook.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "getting fetchsmith.com off the ground",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1789175626
+  },
+  "2b237f1b": {
+   "cycle": 0,
+   "disposition": "owner",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: FetchSmith: court-records-scraper needs a human (hCaptcha) to fix",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1793166330
+  },
+  "334e15c2": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces+215475896932638@outbound.intercom.apify.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Re: Re: Follow-up: public Actors (account: fetchsmith) missing from Store search - isolated to a result filter, reproducible",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789302877
+  },
+  "455ec0c7": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces+215475891908756@outbound.intercom.apify.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Follow-up: 10 public Actors (account: fetchsmith) still missing from Store search after 2 days",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789085146
+  },
+  "4bb33655": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "domains@indexhelp.pro",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Submit fetchsmith.com to Search Engines",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790362458
+  },
+  "50c76f5a": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 2297931907976174105",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1790421968
+  },
+  "5104807f": {
+   "cycle": 2708,
+   "disposition": "backscatter",
+   "from": "apache@web1.entre-preneur.com",
+   "note": "auto-reply confirming a web contact-form spam submission that forged requests@fetchsmith.com as the sender address (spammer 'MarvinWoofe', link-spam body); we are not the sender, no reply owed, nothing to fix",
+   "subject": "【オートガレージヤマサキ】お問い合わせありがとうございます",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1791115124
+  },
+  "536c613a": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "aleksandrlugeza@mail.ru",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Discussion on adding multilingual automatic switching capability to the FetchSmith project",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1789391705
+  },
+  "5ce80b92": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "ransomedarcy0@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Regarding your Fetchsmith.com",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1793341811
+  },
+  "5d4d9f7b": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "olivia.beasley.mux@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Fetchsmith is leaving organic growth on the table",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1789323917
+  },
+  "614fed99": {
+   "cycle": 2708,
+   "disposition": "cold-email",
+   "from": "domains@searchindex.pro",
+   "note": "SEO/'get listed in search engines' cold pitch; standing no-reply rule",
+   "subject": "Get fetchsmith.com listed in Search Engines",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790869007
+  },
+  "6362f0f6": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 11249278439374704738",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789040717
+  },
+  "6acc123f": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces-519812302-504115349@mail.myslop.shop",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Someone added FetchSmith to My Slop",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1793728570
+  },
+  "6ba0a151": {
+   "cycle": 0,
+   "disposition": "owner",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Error in the shopify actor",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1789086821
+  },
+  "6e6470ee": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 8405631458130977240",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1790247636
+  },
+  "72fe41f4": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "domains@searchindex.pro",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Get fetchsmith.com listed in Search Engines",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1791828448
+  },
+  "778fd237": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces+215475896401780@outbound.intercom.apify.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Re: Follow-up: public Actors (account: fetchsmith) missing from Store search - isolated to a result filter, reproducible",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789301064
+  },
+  "7da11d64": {
+   "cycle": 2708,
+   "disposition": "backscatter",
+   "from": "lastonemile1@www8650m.sakura.ne.jp",
+   "note": "auto-reply confirming a web contact-form spam submission that forged requests@fetchsmith.com as the sender address (spammer 'MarvinWoofe', link-spam body); we are not the sender, no reply owed, nothing to fix",
+   "subject": "【simpleLP】お問い合わせ内容の確認",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1791133505
+  },
+  "7de5a2f0": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 9867956622917818203",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789122514
+  },
+  "84237906": {
+   "cycle": 2708,
+   "disposition": "backscatter",
+   "from": "wordpress@co-sol.ca",
+   "note": "auto-reply confirming a web contact-form spam submission that forged requests@fetchsmith.com as the sender address (spammer 'MarvinWoofe', link-spam body); we are not the sender, no reply owed, nothing to fix",
+   "subject": "[CO-Sol Canada] Inquiry Confirmation – \"Laugh in a 2026 Rolls-Royce Phantom for $15,000 fun\" (Auto-Reply / No-Reply)",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790930640
+  },
+  "8423a49f": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces+215475896395619@outbound.intercom.apify.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: probe",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789128271
+  },
+  "8494237c": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "domains@searchindex.pro",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Register fetchsmith.com in Search Engines",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1791335617
+  },
+  "873db8ee": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "010601a0cc731755-ec9042cb-7ae4-46f5-8d3e-fc7b8370c6a2-000000@send.capsule26.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Your \"charged buyers twice\" post — I built the DB-level version of that fix",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790136492
+  },
+  "8fef78e0": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "market@mcpcnserver.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Developer marketing plan for open-source projects",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1789215978
+  },
+  "90ac590f": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "21020@ascs.ac.th",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Hello",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1789384951
+  },
+  "93797621": {
+   "cycle": 0,
+   "disposition": "own-account",
+   "from": "010201a0ae62b835-bc249135-2c01-4968-8a00-6c41445d653a-000000@mail.notifications.service.gov.uk",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Your security code for your GOV.UK One Login | Eich cod diogelwch ar gyfer eich GOV.UK One Login",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789632281
+  },
+  "964da282": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "j_woodgate01@yahoo.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Collaboration with our Trust!!",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1790275078
+  },
+  "9b72250d": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "010001a0953f9298-ada39219-b94f-4571-8747-66a53d90c076-000000@amazonses.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Dmarc Aggregate Report Domain: {fetchsmith.com}  Submitter: {Amazon SES}  Date: {2026-09-11}  Report-ID: {23e40dcf-91b0-46e9-b1c6-45b7175d2528}",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789210367
+  },
+  "9d15ac17": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "base2026@tintgate.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "邀请使用 TinyGate 高性能 API 网关",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1792470608
+  },
+  "a3ba50a3": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces+215475891908756@outbound.intercom.apify.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Follow-up: 10 public Actors (account: fetchsmith) still missing from Store search after 2 days",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789257931
+  },
+  "a5607632": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "<>",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "failure notice",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1791081975
+  },
+  "a661a19a": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "010201a187e53573-a331c46b-0d97-4609-858c-4b7fcceb20ed-000000@rsend.thoughtpivot.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Monthly rentals for your Apify Actors",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1793281308
+  },
+  "a836abe0": {
+   "cycle": 0,
+   "disposition": "own-account",
+   "from": "010201a0ae678001-7245acf8-89a4-45fb-9fab-76c7cc05e53d-000000@mail.notifications.service.gov.uk",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Companies House security code | Cod diogelwch Tŷ’r Cwmnïau",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789632414
+  },
+  "af5d9f7d": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 16662915549271898375",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1793182162
+  },
+  "b0c0ef05": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "j_woodgate01@yahoo.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Collaboration with our Trust!!",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790275149
+  },
+  "b1422cc2": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 12190449427711241860",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789645298
+  },
+  "b73b6698": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 8405631458130977240",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1790250284
+  },
+  "ba1bf931": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "base2026@tintgate.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "邀请使用 TinyGate 高性能 API 网关",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1793691794
+  },
+  "bc458266": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 12190449427711241860",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789642326
+  },
+  "c2fa5a9c": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "ipye@turnel.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "IP Lease from IPYE",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1792589349
+  },
+  "c354a3db": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 11249278439374704738",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789038005
+  },
+  "c3e3becb": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "010001a08b052a55-35f995e9-1563-4926-be25-650af07d11f8-000000@amazonses.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Dmarc Aggregate Report Domain: {fetchsmith.com}  Submitter: {Amazon SES}  Date: {2026-09-09}  Report-ID: {051bdf04-fbaa-4689-8d5b-c45470c2ed62}",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789038767
+  },
+  "ca7c80f1": {
+   "cycle": 2708,
+   "disposition": "backscatter",
+   "from": "emtop@www2063.sakura.ne.jp",
+   "note": "auto-reply confirming a web contact-form spam submission that forged requests@fetchsmith.com as the sender address; we are not the sender, no reply owed",
+   "subject": "【株式会社 Best Solution】WEBからのお問合せを受け付けました",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790958730
+  },
+  "d15b4198": {
+   "cycle": 2708,
+   "disposition": "backscatter",
+   "from": "ID19790197@hlpi1ws-c232s02.ad.aruba.it",
+   "note": "auto-reply confirming a web contact-form spam submission that forged requests@fetchsmith.com as the sender address (spammer 'MarvinWoofe', link-spam body); we are not the sender, no reply owed, nothing to fix",
+   "subject": "Risposta automatica • Richiesta Informazioni | adkm.it",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1790961101
+  },
+  "d1716ce9": {
+   "cycle": 2708,
+   "disposition": "backscatter",
+   "from": "exatto@www2910.sakura.ne.jp",
+   "note": "auto-reply confirming a web contact-form spam submission that forged requests@fetchsmith.com as the sender address (spammer 'MarvinWoofe', link-spam body); we are not the sender, no reply owed, nothing to fix",
+   "subject": "askthree \"お問い合わせありがとうございます\"",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1791093521
+  },
+  "d732767f": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 16322395494146964669",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789206356
+  },
+  "d939c207": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces+215475896932638@outbound.intercom.apify.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Re: Re: Follow-up: public Actors (account: fetchsmith) missing from Store search - isolated to a result filter, reproducible",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789130091
+  },
+  "dac5bfcd": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "bounces+215475896401780@outbound.intercom.apify.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: Re: Follow-up: public Actors (account: fetchsmith) missing from Store search - isolated to a result filter, reproducible",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789128298
+  },
+  "dc593cfb": {
+   "cycle": 0,
+   "disposition": "owner",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Re: FetchSmith: Apify blocks publishing new Actors — needs your identity verification",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1792444024
+  },
+  "e105cd59": {
+   "cycle": 0,
+   "disposition": "triaged-earlier-cycle",
+   "from": "lmybizexplore02@163.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Discussion on business cooperation regarding the FetchSmith open-source project",
+   "to": [
+    "support@fetchsmith.com"
+   ],
+   "ts": 1789106642
+  },
+  "e2f3a358": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708 from docs; id on record, triaged by an earlier cycle, not re-read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 14750418510036578678",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1792145357
+  },
+  "ecf5b8ef": {
+   "cycle": 0,
+   "disposition": "test",
+   "from": "010001a08438599f-2b35170d-aa7e-4cf2-beb6-d9f3bda77d86-000000@send.fetchsmith.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "loopback test 2",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1788924682
+  },
+  "f2412139": {
+   "cycle": 0,
+   "disposition": "own-account",
+   "from": "010201a0ae674a32-78ddadbe-959b-4124-aa7c-ff8e1889e45f-000000@mail.notifications.service.gov.uk",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Your GOV.UK One Login | Eich GOV.UK One Login",
+   "to": [
+    "ops@fetchsmith.com"
+   ],
+   "ts": 1789632400
+  },
+  "f37ef977": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 12190449427711241860",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789644535
+  },
+  "fe6dc0b0": {
+   "cycle": 0,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "backfilled c2708; machine-classified by sender, never individually read",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 9867956622917818203",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1789127872
+  }
+ },
+ "version": 1
+}

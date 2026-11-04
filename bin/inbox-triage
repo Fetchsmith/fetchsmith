@@ -1,0 +1,159 @@
+#!/root/agent/venv/bin/python
+"""Durable inbox triage ledger, so "no new mail" is a checked claim and not an assertion.
+
+Why this exists (c2708): `bin/inbox list N` is a sliding window over the N most recent
+messages by filename order, NOT a fixed set. Many cycles wrote "same 10 known triaged IDs,
+zero new mail" by pattern-matching that window's stable count and stable mostly-spam shape.
+c2707 caught the claim was false (6 of 10 had never been read) and prescribed "grep the
+actual IDs against the docs" -- but recorded no IDs, so the prescription could not be run.
+This ledger is the missing half: every triaged message id is written to
+state/inbox_triage.json, and `inbox-triage new` scans the WHOLE inbox (not a window) for
+anything not in it. If it prints NONE, "zero new mail" is a verified statement.
+
+Usage:
+  inbox-triage new                        # every untriaged message, oldest first (all 74+, no window)
+  inbox-triage count                      # one-line total/triaged/untriaged
+  inbox-triage list [N]                   # ledger entries, most recently triaged last
+  inbox-triage mark <id-prefix> <disposition> [note...]
+  inbox-triage mark-new <disposition> [note...]   # bulk-mark every currently untriaged message
+
+Dispositions are free text; the ones in use are:
+  owner  support  dmarc  spam  cold-email  auto-reply  own-account  test  backscatter
+"""
+import sys, os, json, glob, time
+
+INBOX = "/root/agent/mail/inbox/*.json"
+LEDGER = "/root/agent/state/inbox_triage.json"
+CYCLE_FILE = "/root/agent/state/cycle"
+
+
+def cycle():
+    try:
+        return int(open(CYCLE_FILE).read().strip())
+    except Exception:
+        return 0
+
+
+def messages():
+    out = []
+    for f in sorted(glob.glob(INBOX)):
+        try:
+            m = json.load(open(f))
+        except Exception:
+            continue
+        if "id" in m:
+            out.append(m)
+    out.sort(key=lambda m: m.get("ts", 0))
+    return out
+
+
+def load():
+    if not os.path.exists(LEDGER):
+        return {"version": 1, "entries": {}}
+    d = json.load(open(LEDGER))
+    d.setdefault("entries", {})
+    return d
+
+
+def save(d):
+    tmp = LEDGER + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(d, fh, indent=1, sort_keys=True, ensure_ascii=False)
+    os.replace(tmp, LEDGER)
+
+
+def key(m):
+    return m["id"][:8]
+
+
+def fmt(m):
+    return "%s  %s  %-32s -> %-26s %s" % (
+        key(m),
+        time.strftime("%Y-%m-%d", time.gmtime(m.get("ts", 0))),
+        m.get("from", "")[:32],
+        ",".join(m.get("to", []))[:26],
+        m.get("subject", "")[:58],
+    )
+
+
+def mark(d, m, disp, note):
+    d["entries"][key(m)] = {
+        "ts": m.get("ts", 0),
+        "from": m.get("from", ""),
+        "to": m.get("to", []),
+        "subject": m.get("subject", ""),
+        "disposition": disp,
+        "note": note,
+        "cycle": cycle(),
+    }
+
+
+def main():
+    cmd = sys.argv[1] if len(sys.argv) > 1 else "count"
+    msgs = messages()
+    d = load()
+    seen = d["entries"]
+    untriaged = [m for m in msgs if key(m) not in seen]
+
+    if cmd == "count":
+        print("inbox %d message(s): %d triaged, %d UNTRIAGED  (ledger %s)"
+              % (len(msgs), len(msgs) - len(untriaged), len(untriaged), LEDGER))
+        if untriaged:
+            print("run `inbox-triage new` to see them -- do NOT report 'zero new mail' until this is 0")
+        return 0
+
+    if cmd == "new":
+        if not untriaged:
+            print("NONE UNTRIAGED -- %d message(s), all on record. 'zero new mail' is verified."
+                  % len(msgs))
+            return 0
+        print("%d UNTRIAGED message(s), oldest first:" % len(untriaged))
+        for m in untriaged:
+            print("  " + fmt(m))
+        return 0
+
+    if cmd == "list":
+        n = int(sys.argv[2]) if len(sys.argv) > 2 else 30
+        rows = sorted(seen.items(), key=lambda kv: (kv[1].get("cycle", 0), kv[1].get("ts", 0)))
+        for k, e in rows[-n:]:
+            print("%s  c%-5s %-12s %s  %s" % (
+                k, e.get("cycle", "?"), e.get("disposition", "?")[:12],
+                time.strftime("%Y-%m-%d", time.gmtime(e.get("ts", 0))),
+                e.get("subject", "")[:52]))
+        return 0
+
+    if cmd == "mark":
+        if len(sys.argv) < 4:
+            print("usage: inbox-triage mark <id-prefix> <disposition> [note...]", file=sys.stderr)
+            return 2
+        pre, disp, note = sys.argv[2], sys.argv[3], " ".join(sys.argv[4:])
+        hits = [m for m in msgs if m["id"].startswith(pre)]
+        if len(hits) != 1:
+            print("id prefix %r matched %d message(s); need exactly 1" % (pre, len(hits)),
+                  file=sys.stderr)
+            return 2
+        mark(d, hits[0], disp, note)
+        save(d)
+        print("marked %s -> %s" % (key(hits[0]), disp))
+        return 0
+
+    if cmd == "mark-new":
+        if len(sys.argv) < 3:
+            print("usage: inbox-triage mark-new <disposition> [note...]", file=sys.stderr)
+            return 2
+        disp, note = sys.argv[2], " ".join(sys.argv[3:])
+        if not untriaged:
+            print("nothing untriaged")
+            return 0
+        for m in untriaged:
+            mark(d, m, disp, note)
+        save(d)
+        print("marked %d message(s) -> %s" % (len(untriaged), disp))
+        return 0
+
+    print(__doc__, file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())
