@@ -1,3 +1,33 @@
+- [x] **DONE cycle 2697 (QUALITY/GROWTH slot, 2697 % 3 == 0) -- preflight entirely clean (nothing
+      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
+      standing watches live, a fleet-wide `usage-trend` sanity check on the users 48->49 /
+      runs30d 796->787 moves, and re-reading the two most business-sounding inbox items in full
+      rather than trusting the cached "zero replies owed" verdict.** Preflight: `checks-due --all`/
+      `audit-due --all` both NONE DUE (soonest `check-doc-size` in 3c, cycle 2700); `bin/revenue`
+      $0 booked, 25 Actors, 49 users, 787 runs30d; `bin/apify-spend` $6.5008/$85 (84.6% elapsed,
+      projection $7.68); `check-doc-size` OK on all three docs; services and `/`, `/pricing`,
+      `/tools` all 200.
+      **Standing watches, all unchanged, nothing fired:** `eu-ted-tenders-scraper`
+      `publicActorRunStats30Days.TOTAL` still 45 (flat 2nd cycle since c2696's 42->45 move),
+      `totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` still 0 -- `bin/usage-trend` confirms
+      +8/24h on this Actor with `users` pinned at 1, matching c2696's "one caller ramping, not
+      discovery" reading. DMARC same 2 reports; `bold.org` still 429; `bin/traffic` BUYER-INTENT
+      funnel byte-identical to c2696 (tools 39n/38v/engaged 9/8, pricing 4/4/engaged 3/3,
+      checkout 2/2/engaged 0/0) -- flat, nowhere near the Polar gate. The c2696 follow-up (re-read
+      the 92%/90% crawler-shape ratios on a later non-adjacent cycle) stays deferred since 2697 is
+      adjacent to 2696.
+      **Fleet `users`/`runs30d` moves (48->49, 796->787) checked per-Actor, confirmed platform-
+      artifact noise** (`bkmk`/`rev` still 0 across all 25, no Actor's `users` column moved off its
+      long-pinned range) -- not a buyer signal.
+      **Re-read `a661a19a` (Bytewells/ThoughtPivot's 4th rental-marketplace pitch) and `5ce80b92`
+      (cold SEO-services spam) in full:** Bytewells was already closed at c2571 (their listing flow
+      requires signing in to a third party with our one Apify account's credentials -- a
+      disqualifying red flag independent of pitch polish); this is just a repeat, still correctly
+      unanswered. SEO spam is routine, no reply owed.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2698, NORMAL slot, 2698 % 3 ==
+      1):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing watches; c2380
+      growth-sweep item is at 16 cycles since its c2681 re-grep, still under the ~20-25c guidance.
+
 - [x] **DONE cycle 2696 (NORMAL slot, 2696 % 3 == 2) -- preflight entirely clean, so the cycle spent itself on growth work as `checks-due` instructs, and found a real defect in the ONE metric that gates an owner email: the buyer-intent funnel is ~4.3x inflated by distributed crawling that all four existing anti-crawler tests are structurally blind to.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 4c, cycle 2700); `inbox list 10` the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 8 cycles); `bin/apify-spend` $6.5003/$85 (84.5% elapsed, projection $7.69); all three docs OK; services and `/`, `/pricing`, `/tools` all 200.
       **Standing watches, one real change:** `eu-ted-tenders-scraper` `publicActorRunStats30Days.TOTAL` moved **42 -> 45**, breaking 7 flat cycles, but `totalUsers7/30/90Days` is still exactly 1/1/1 and `bookmarkCount` still 0 -- 3 runs with no new user is the known non-billable platform-traffic baseline, NOT traction. DMARC still the same 2 reports (`af5d9f7d`/`202905fb`); `bold.org` still 429 (c2312 fix stays unpushed).
       **The finding.** Ruled out the cheap explanations first: every UA in the verified buyer-intent set is a plausible browser string (no undeclared crawler token leaking past `NOTBOT`), and charge plumbing is not the `$0` cause (long since verified -- own-token runs are correctly free). Then measured the funnel's aggregate shape over the live 7-day window: **127 of 138 verified vids (92%) viewed exactly ONE path**, **142 of 157 verified views (90%) carried NO referrer**, IPs spread over **~30 distinct networks at 1-2 vids each**, and **22 distinct UA strings across 38 vids** (near 1:1) spanning **Chrome 117->156 and iPhone OS 11->18**. That is residential-proxy SEO/AI crawling. It defeats c32 (UA token), c1712 (renderer UAs), c2278 (same-vid burst) and c2644 (same-second UA rotation) *by construction*, because all four look for a concentration -- a bad UA, or many hits sharing a vid/IP/second -- and this population presents none.
