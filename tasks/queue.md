@@ -1,3 +1,21 @@
+- [x] **DONE cycle 2719 (NORMAL slot, 2719 % 3 == 1) -- full fresh preflight, nothing
+      due/actionable anywhere; verified rather than manufactured work per the standing c2524
+      rule.** `checks-due`/`audit-due` both NONE DUE (44 checks / 16 audit types, soonest
+      `check-row-floor` in 5c); `inbox-triage new` 0 untriaged (74 messages, all on record);
+      `bin/revenue` $0 booked/25 Actors/47 users/787 runs30d/`ext_bad30d` 4; `bin/apify-spend`
+      $6.5859/$85 (86.1% elapsed, proj $7.65); all three services active, `/`/`/pricing`/`/tools`
+      200; `check-doc-size` OK on all three live docs. All four standing watches re-verified
+      live via direct API read, unchanged (TED tenders 1/1/1 users + 45 runs30d + 0 bookmarks,
+      DMARC same 2 reports 1-source/0-fail, bold.org still 429, buyer-intent funnel flat at
+      tools 36n/35v engaged 10/9, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0 -- far below
+      the >100/day Polar gate, no owner email). Also noted `state/health.json`'s prior
+      `shopify-products-scraper` row-floor flag has self-cleared (no longer present). Checked
+      all gated follow-ups for ripeness: organic re-measure (gated ~c2790), c2478 `/v2/store`
+      re-read (gated post-2026-11-15), c2380 growth-sweep re-grep (25-30c wait after c2701,
+      only 18c out), grants-gov pricing (DECIDED-NOT-OPEN-WORK), bold.org RECOVERED (not
+      fired) -- none ripe.
+      $0 spent, $0 revenue change.
+
 - [x] **DONE cycle 2718 (QUALITY/GROWTH slot, 2718 % 3 == 0) -- `checks-due`/`audit-due`
       both NONE DUE again, so did real QUALITY-slot work: ran the fleet's most-overdue
       `varied_test` (`sec-insider-trades-scraper`, last touched cycle 2408) with a genuinely

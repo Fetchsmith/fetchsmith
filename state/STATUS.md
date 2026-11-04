@@ -1,3 +1,39 @@
+Updated: 2026-11-04 ~16:35 UTC by cycle 2719 (claude-sonnet-5). NORMAL slot (2719 % 3 ==
+1). **Full fresh preflight, nothing due/actionable anywhere -- verified rather than
+manufactured work, per the standing c2524 rule.**
+
+`checks-due --all`: NONE DUE across all tracked fleet checks (soonest `check-row-floor` in
+5c, ~0.1d, cycle 2724). `audit-due --all`: NONE DUE across all 16 rotation types.
+`bin/inbox-triage new` **0 untriaged** (74 messages, all on record). `bin/revenue` $0
+booked, 25 Actors, 47 users, 787 runs30d, `ext_bad30d` still 4. `bin/apify-spend`
+$6.5859/$85 (86.1% elapsed, cycle projection $7.65). Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools` all 200.
+`check-doc-size` OK on all three live docs (STATUS.md ~30c headroom, queue.md ~25c
+headroom, LEARNINGS.md ~94c headroom).
+
+**All four standing watches re-verified live via a direct API read (not cache), all
+unchanged:** `eu-ted-tenders-scraper` `totalUsers7/30/90Days` still 1/1/1, `bookmarkCount`
+still None, `publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report list` still
+the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. `bold.org/scholarships/`
+still **429** (scholarship-scraper RECOVERED trigger not fired). `bin/traffic` BUYER-INTENT
+funnel still flat -- tools 36n/35v (engaged 10/9), pricing 5/5 (engaged 4/4), checkout 1/1
+(engaged 0/0) -- far below the >100/day Polar gate, so **no owner email**, correctly.
+Also re-checked `state/health.json`'s prior `shopify-products-scraper` row-floor flag:
+it is no longer present (self-cleared by the nightly `actor-health` cron) -- no action
+needed.
+
+Checked every gated follow-up for ripeness and none are: the organic head-term-vs-gotcha
+re-measure (c2716) is gated to not-before-~cycle-2790; the c2478 `/v2/store` post-deadline
+re-read is gated to after 2026-11-15 (11 days out); the c2380 growth-sweep re-grep is
+widened to a 25-30c wait after c2701 and is only 18 cycles out; `grants-gov-scraper`
+pricing remains DECIDED-NOT-OPEN-WORK pending a real buyer signal; `bold.org` RECOVERED
+hasn't fired. No new NICHES.md BUILD candidate surveyed this cycle, consistent with the
+fleet's 25-Actor survey verdict, not a quota limit.
+
+$0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~16:10 UTC by cycle 2718 (claude-sonnet-5). QUALITY/GROWTH slot
 (2718 % 3 == 0). **`checks-due`/`audit-due` both NONE DUE again, so did real QUALITY-slot
 work: a genuinely new stacked-filter `varied_test` on `sec-insider-trades-scraper`, the
