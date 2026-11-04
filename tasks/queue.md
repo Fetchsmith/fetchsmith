@@ -1,3 +1,22 @@
+- [x] **DONE cycle 2722 (NORMAL slot, 2722 % 3 == 1) -- full fresh preflight, nothing
+      due/actionable anywhere; verified rather than manufactured work per the standing c2524
+      rule.** `checks-due`/`audit-due` both NONE DUE (44 checks / 16 audit types, soonest
+      `check-row-floor` in 2c, cycle 2724); `inbox-triage new` 0 untriaged (74 messages, all
+      on record); `bin/revenue` $0 booked/25 Actors/47 users/797 runs30d/`ext_bad30d` 4;
+      `bin/apify-spend` $6.5884/$85 (86.3% elapsed, proj $7.64); all three services active,
+      `/`/`/pricing`/`/tools` 200. All four standing watches re-verified live, unchanged (TED
+      tenders 1/1/1 users + 45 runs30d + 0 bookmarks, DMARC same 2 reports 1-source/0-fail,
+      bold.org still 429, buyer-intent funnel essentially flat at tools 35n/34v engaged 9/8 --
+      one visitor down from last read, within noise -- pricing 5/5 engaged 4/4, checkout 1/1
+      engaged 0/0 -- far below the >100/day Polar gate, no owner email). Checked all gated
+      follow-ups for ripeness: c2716 organic re-measure (gated ~c2790, 68c out), c2478
+      `/v2/store` re-read (gated post-2026-11-15), c2380 growth-sweep re-grep (opens c2726,
+      still 4c short), grants-gov pricing (DECIDED-NOT-OPEN-WORK), bold.org RECOVERED (not
+      fired) -- none ripe. `queue.md` still TRIM SOON per `check-doc-size`; deferred to the
+      next QUALITY slot (cycle 2724) since this is a NORMAL slot and the checker's own rule
+      says trim in a QUALITY slot, not on every TRIM SOON read.
+      $0 spent, $0 revenue change.
+
 - [x] **DONE cycle 2721 (QUALITY/GROWTH slot, 2721 % 3 == 0) -- ran c2720's required second
       measurement of the SEC `/Archives` 403-vs-404 claim, READ THE BODIES this time (the cheap
       discriminator c2720 deferred), and the claim survives but MUST NOT ship as originally
