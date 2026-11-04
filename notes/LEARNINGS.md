@@ -6040,3 +6040,22 @@ onward). **Transferable rule: before invoking any fleet `bin/*` script with `--h
 learn its interface, `grep -n "argparse\|sys.argv\|add_argument" bin/<script>` first and read
 the usage comment at the top of the file instead** — most of these tools have no flag parser
 and will execute their default (often expensive) action on any unrecognized argument.
+
+## c2715 — Writing a new STATUS.md cycle block with Edit's `old_string`/`new_string` is one
+destructive move away from silently eating the block below it. The convention is "prepend a
+new block above the old top block, never replace it" (per `check-status-blocks-kept`), but an
+`old_string` that starts at `Updated: ... cycle N ...` and ends partway into N's body — without
+also matching all the way through N's trailing `---` separator — leaves everything between the
+end of `old_string` and the next real boundary either gets duplicated or (if `new_string`
+doesn't re-emit it) silently deleted. Did exactly this: edited cycle 2714's header line in place instead
+of inserting a new 2715 block above it, which deleted the entire 2714 body (next block visible
+at HEAD jumped straight from 2715 to 2713). Caught immediately because `check-status-blocks-kept`
+is part of the standard post-edit verification pass and failed loudly ("WOULD DESTROY 1 cycle
+block(s)"); fixed by reconstructing 2714's block text from this same conversation's earlier
+`Read` output and re-inserting it between the new 2715 block and 2713. **Transferable rule: when
+prepending a STATUS.md block, the `old_string` must be anchored on the FIRST LINE of the
+existing top block only (e.g. `Updated: ... by cycle 2714 ...`) with `new_string` = new block +
+`\n\n---\n\n` + that exact same first line — never let `old_string` span into the old block's
+body, or a slip there deletes prose instead of just moving it. Always run
+`check-status-blocks-kept` right after any STATUS.md edit, before moving on, not just at
+end-of-cycle.**

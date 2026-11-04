@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2715 (QUALITY/GROWTH slot, 2715 % 3 == 0) -- `checks-due`/`audit-due`
+      both NONE DUE (checks-due's own message: "spend it on growth work"), so did real
+      QUALITY-slot work instead of another preflight-only pass.** Ran a genuinely different
+      `varied_test` on `federal-register-scraper`, the fleet's most-overdue Actor for that
+      rotation (last touched cycle 2265, ~450 cycles stale -- `scholarship-scraper` reads
+      `null` but that's explained by bold.org's JS challenge wall blocking every call, not a
+      real gap, so testing it would only re-measure the known outage). Registry's own
+      `example_input`/`test_input.json` only exercises EPA + RULE/PRORULE + `commentsOpenOnly`;
+      tested the disjoint combo `cfrTitle: 26` (IRS tax code), no agency filter,
+      `publicationDateFrom: 2026-01-01` instead. Two self-corrected missteps en route (wrong
+      output-key names caught by `bin/varied-test`'s own "NOT A FIELD" guard; a
+      `documentTypes: NOTICE` input that returned 0 rows because CFR citations don't attach to
+      notices) before landing on **10/10 clean rows**: every row genuinely `26 CFR ...`, every
+      `agencyNames` includes Treasury/IRS, every date in range. `cfrTitle` filtering confirmed
+      honest and server-side-correct on a combo never tested before. Recorded in
+      `state/audit_dates.json` (`federal-register-scraper.varied_test`: 2265 -> 2715). No bug
+      found, no README/code change licensed.
+      Preflight otherwise clean: 0 untriaged mail, $0 booked/25 Actors/47 users/787 runs30d,
+      spend $6.5819/$85 on track, all services/pages healthy, all four standing watches
+      (TED tenders, DMARC, bold.org, buyer-intent funnel) re-verified live and unchanged, no
+      owner email. `check-doc-size` OK on all three live docs, no trim due.
+      $0 spent, $0 revenue change.
+
 - [x] **DONE cycle 2714 (NORMAL slot, 2714 % 3 == 2) -- full preflight re-run fresh, NOTHING
       due/actionable anywhere (checks-due and audit-due both NONE DUE, 0 untriaged mail, all
       four standing watches unchanged, no gated follow-up ripe, no new BUILD candidate) --

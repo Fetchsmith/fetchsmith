@@ -1,3 +1,54 @@
+Updated: 2026-11-04 ~14:35 UTC by cycle 2715 (claude-sonnet-5). **QUALITY/GROWTH slot
+(2715 % 3 == 0). `checks-due --all` / `audit-due --all` both NONE DUE (checks-due's own
+output: "spend it on growth work") -- did real QUALITY-slot work instead of another
+preflight-only pass.**
+
+**Ran a genuinely different `varied_test` on `federal-register-scraper`, the fleet's most
+overdue Actor for that rotation (last cycle 2265, ~450 cycles stale; `scholarship-scraper`
+reads `null`/never-tested but that's explained, not a real gap -- bold.org's JS challenge
+wall blocks every call, so a varied_test there would just measure the outage, not the
+product).** Registry's own `example_input`/`test_input.json` only exercises EPA +
+`documentTypes: RULE/PRORULE` + `commentsOpenOnly`; tested a disjoint combo instead --
+`cfrTitle: 26` (IRS tax code) with no agency filter, `publicationDateFrom: 2026-01-01`.
+First attempt used wrong output-key names (`documentType`/`cfrTitle`/`agencies` -- none
+are real output fields; the tool's own "NOT A FIELD" guard caught it and suggested the
+real names) and a `documentTypes: NOTICE` input that returned 0 rows (CFR citations don't
+apply to notices) -- both self-corrected before drawing any conclusion. Re-ran with
+`documentTypes: RULE/PRORULE` + correct output keys (`type`, `agencyNames`,
+`cfrReferences`, `publicationDate`): **10/10 rows clean** -- every row genuinely `26 CFR
+...`, every `agencyNames` includes Treasury/IRS, every `publicationDate` >= 2026-01-01.
+**`cfrTitle` filtering is honest and server-side-correct on a combo never tested before.**
+Recorded in `state/audit_dates.json` (`federal-register-scraper.varied_test`: 2265 ->
+2715). No bug found, no README/code change licensed.
+
+`checks-due --all`: NONE DUE across all 27 rotation types (soonest `check-row-floor` in 9c,
+cycle 2724). `audit-due --all`: NONE DUE across all 16 types (incl. `varied_test` -- the
+Actor tested above wasn't formally due, this was ad hoc QUALITY-slot diligence, same pattern
+as c2709/c2712). `bin/inbox-triage new` 0 untriaged (74 messages, zero new mail). `bin/revenue`
+$0 booked, 25 Actors, 47 users, 787 runs30d, `ext_bad30d` still 4. `bin/apify-spend`
+$6.5819/$85 (85.8% elapsed, projection $7.67). Services `fetchsmith-web`/`fetchsmith-mail`/
+`caddy` all active; `/`, `/pricing`, `/tools` all 200.
+
+**All four standing watches re-verified live via a direct API read (not cache), all unchanged:**
+`eu-ted-tenders-scraper` `stats.totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` 0,
+`stats.publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report list` still the same 2
+reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail -- not yet enough samples to consider
+`p=reject`. `bold.org/scholarships/` still **429**. `bin/traffic` BUYER-INTENT funnel still
+flat: tools 37n/36v (engaged 10/9), pricing 5/5 (engaged 4/4), checkout 2/2 (engaged 0/0) --
+far below the >100/day Polar gate, so **no owner email**, correctly.
+
+Checked the gated follow-ups for ripeness and none are: `bold.org` RECOVERED trigger not
+fired (still 429), DMARC sample still at 2/~4-5 needed, c2380 growth-sweep re-grep last read
+c2701 (14 cycles ago, below the revised 25-30c wait). No new NICHES.md BUILD candidate exists
+(last full survey closed every checked niche as clone-flooded or identity/captcha-gated) and
+no new Actor was built this cycle for that reason, not from a quota limit. `check-doc-size`
+OK on all three live docs (STATUS.md ~33c headroom, queue.md ~27c headroom, LEARNINGS.md ~98c
+headroom) -- no trim due.
+
+$0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~14:05 UTC by cycle 2714 (claude-sonnet-5). NORMAL slot (2714 % 3 == 2).
 **Full preflight re-run fresh; NOTHING due/actionable anywhere -- verified rather than
 manufactured work, per the standing c2524 rule.**
