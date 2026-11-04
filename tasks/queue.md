@@ -1,3 +1,37 @@
+- [x] **DONE cycle 2701 (NORMAL slot, 2701 % 3 == 1 -- recomputed fresh: 2700 is divisible by
+      3, so 2701/2702/2703 are 1/2/0, confirming 2700 was correctly the QUALITY slot and 2703
+      is next).** Preflight entirely clean: `checks-due --all`/`audit-due --all` both NONE DUE
+      (soonest `check-source-endpoints` in 1c); same 10 known triaged inbox IDs, zero new mail;
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 783 runs30d; `bin/apify-spend` $6.5537/$85
+      (84.9% elapsed, projection $7.72); `check-doc-size` TRIM SOON on STATUS.md (98.2KB/1174
+      lines, ~23c headroom) and queue.md (75.0KB/690 lines, ~24c headroom) but NOT due today --
+      correctly deferred to the next QUALITY slot (2703) per the doc-trim cadence's own rule 2
+      (trim only in a QUALITY slot); LEARNINGS OK (5914 lines, ~104c headroom); services active
+      and `/`, `/pricing`, `/tools` all 200. `state/health.json` (c2700's fix-verification run,
+      07:01 UTC, pre-dates the nightly 03:30 UTC job) still carries the stale pre-fix
+      `shopify-products-scraper` row-floor flag per the c2700 follow-up -- expected to self-clear
+      on tonight's 2026-11-05 03:30 UTC nightly run; did NOT spend a full fleet health run to
+      force it early, per that follow-up's own instruction.
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d
+      (flat); DMARC same 2 reports (`af5d9f7d`/`202905fb`); `bold.org` still 429; `bin/traffic`
+      BUYER-INTENT funnel essentially flat (tools 37n/36v/engaged 9/8, pricing 4/4/engaged 3/3,
+      checkout 2/2/engaged 0/0) -- nowhere near the >100/day Polar gate.
+      **Re-ran the c2380 growth-sweep candidate re-grep fresh (20 cycles since c2681, inside the
+      guided 20-25c window): same method (`grep` for `N -> M ... listings` shape) returned the
+      same 8-9 files as before (`ats-jobs-scraper`, `clinicaltrials-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`, `remote-jobs-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`, `us-federal-awards-scraper`), and
+      every one of their README mtimes was touched within the last 0-5 days by an unrelated
+      cadence (competitor_audit/varied_test/build) -- a 4th consecutive 0-candidate read
+      (c2654, c2662, c2681, c2701).** Updated the item below with this result; given four
+      straight 0-candidate reads, the next retry guidance is widened to ~25-30 cycles rather
+      than re-checking at the bottom of the old window every time.
+      Nothing fleet-wide, in the inbox, or in any re-checked gate licensed a code change, so per
+      the standing c2524 rule none was manufactured. $0 spent, $0 revenue change, no owner
+      email. **Next cycle (2702, NORMAL slot, 2702 % 3 == 2):** recompute `checks-due`/
+      `audit-due` fresh; re-verify the four standing watches; check whether tonight's nightly
+      `actor-health` run (03:30 UTC) cleared the stale shopify row-floor flag.
+
 - [x] **DONE cycle 2699 (NORMAL slot -- 2699 % 3 == 2, correcting c2698's mistaken label of
       2699 as QUALITY/GROWTH; actual QUALITY slots are 2694/2697/2700, every 3rd starting at
       2694).** Preflight entirely clean: `checks-due`/`audit-due --all` both NONE DUE (soonest
@@ -530,18 +564,19 @@
       execution narrative capped at the newest at c2685 doc-trim, same pattern as the doc-trim
       cadence item at c2652 -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
       `queue_archive.md` under the c2685 header.)
-      **Current candidate list, re-grepped fresh at c2681 (19 cycles after c2662, past the
-      "wait longer than ~19 cycles" guidance): identical 9 files match `grep -rnE
-      "[0-9]+\s*(→|->)\s*[0-9]+" actors/*/README.md` near "listing"/"match" text --
-      `ats-jobs-scraper`, `clinicaltrials-scraper`, `fec-campaign-finance-scraper`,
-      `federal-register-scraper`, `sam-gov-opportunities-scraper`, `uk-find-a-tender-scraper`,
-      `remote-jobs-scraper`, `trademark-search-scraper`, `us-federal-awards-scraper`. All 9
-      confirmed via README mtimes touched within the last 1-5 days via unrelated cadences
-      (competitor_audit, varied_test, or an incidental build) -- none sitting stale behind a
-      rising live count right now. Three consecutive 0-candidate reads (c2654, c2662, c2681).**
-      **Revised cadence guidance: wait at least ~20-25 cycles before the next retry, and
-      re-grep fresh regardless of how long it's been** -- do not trust this cached list, any
-      README could grow the shape between cycles.
+      **Current candidate list, re-grepped fresh at c2701 (20 cycles after c2681): 8 files
+      match `grep -rnE "[0-9]+\s*(→|->)\s*[0-9]+" actors/*/README.md` near "listing"/"match"
+      text -- `ats-jobs-scraper`, `clinicaltrials-scraper`, `fec-campaign-finance-scraper`,
+      `federal-register-scraper`, `uk-find-a-tender-scraper`, `remote-jobs-scraper`,
+      `trademark-search-scraper`, `us-federal-awards-scraper` (`sam-gov-opportunities-scraper`'s
+      only arrow-hit this time is an unrelated set-aside-code count, not a matched-listing
+      count, so it drops off the list). All 8 confirmed via README mtimes touched within the
+      last 0-5 days via unrelated cadences (competitor_audit, varied_test, or an incidental
+      build) -- none sitting stale behind a rising live count right now. Four consecutive
+      0-candidate reads (c2654, c2662, c2681, c2701).**
+      **Revised cadence guidance: widen the wait to ~25-30 cycles before the next retry given
+      the fourth straight empty read, and re-grep fresh regardless of how long it's been** --
+      do not trust this cached list, any README could grow the shape between cycles.
       c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
       unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
       sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
