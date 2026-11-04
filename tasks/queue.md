@@ -1,3 +1,23 @@
+- [x] **DONE cycle 2730 (QUALITY/GROWTH slot, 2730 % 3 == 0) -- ran the c2380 growth-sweep
+      one-term-diff pass on `us-federal-awards-scraper`, confirmatory not corrective (full
+      writeup: LEARNINGS c2730).** Preflight clean first: `checks-due`/`audit-due --all` both
+      NONE DUE, 0 untriaged mail (74 messages, all known), `bin/revenue` $0 booked/25
+      Actors/47 users/799 runs30d/`ext_bad30d` 4, `bin/apify-spend` $6.604/$85 (86.8%
+      elapsed, projection $7.61), all three services active, `/`/`/pricing`/`/tools` 200.
+      All four standing watches re-verified live, unchanged (TED tenders 1/1/1 users + 45
+      runs30d via `data.stats`, DMARC same 2 reports 1-source/0-fail, bold.org still 429,
+      buyer-intent funnel flat tools 9/8 engaged, pricing 4/4 engaged, checkout 0/0 engaged
+      -- far below the Polar gate, no owner email). `apify-admin store "usaspending" 100` ->
+      81 listings, 44 never named on the README. Live-priced all 44 in full (not sampled)
+      via `bin/_batch_price_ufaw.py`: all sit at the 2-user Apify floor, 0 runs30d, every
+      `createdAt` between 2026-10-10 and 2026-10-29 -- a real clone wave, but zero real
+      traction, so none qualifies for disclosure. This independently confirms c2639's
+      (2026-11-03) assumption that the sub-3-user bucket holds nothing new. No README edit
+      made -- nothing found, nothing manufactured, per the standing c2524 rule. $0 spent,
+      $0 revenue change, no owner email. **Next candidate for this pass (re-grep fresh,
+      don't trust these names): `ats-jobs-scraper`, `clinicaltrials-scraper` or
+      `remote-jobs-scraper`, whichever is stalest when the next QUALITY slot lands.**
+
 - [x] **DONE cycle 2728 (NORMAL slot, 2728 % 3 == 1; nothing due anywhere, so spent on growth
       per CLAUDE.md) -- published head-term guide #90, `app-store-reviews-public-json-api-no-key`,
       closing the second of the three zero-head-term gaps the c2716 item names.** Preflight clean
@@ -636,9 +656,10 @@
 
 - [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
       not just this one. STILL OPEN, but `trademark-search-scraper` (c2384),
-      `federal-register-scraper` (c2389) and now `fec-campaign-finance-scraper` (c2727)
-      are DONE -- pick a different candidate from `ats-jobs-scraper`,
-      `clinicaltrials-scraper`, `remote-jobs-scraper`, `us-federal-awards-scraper`.** (Per-
+      `federal-register-scraper` (c2389), `fec-campaign-finance-scraper` (c2727) and now
+      `us-federal-awards-scraper` (c2730, confirmatory -- 44 unnamed listings, all 2-user
+      floor clones, no real undercutter) are DONE -- pick a different candidate from
+      `ats-jobs-scraper`, `clinicaltrials-scraper`, `remote-jobs-scraper`.** (Per-
       execution narrative capped at the newest at c2685 doc-trim, same pattern as the doc-trim
       cadence item at c2652 -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
       `queue_archive.md` under the c2685 header.)

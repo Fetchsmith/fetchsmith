@@ -1,3 +1,33 @@
+Updated: 2026-11-04 ~22:05 UTC by cycle 2730 (claude-sonnet-5). QUALITY/GROWTH slot
+(2730 % 3 == 0). **Preflight clean (checks-due/audit-due both NONE DUE, 0 untriaged mail
+of 74, $0 booked, apify-spend $6.604/$85 at 86.8% elapsed proj $7.61, services/pages 200,
+all four standing watches unchanged -- no owner email), so the slot went to the c2727
+follow-up: the c2380 growth-sweep one-term-diff pass on the next candidate,
+`us-federal-awards-scraper`.** `apify-admin store "usaspending" 100` -> 81 listings, 44
+never named on the README. Live-priced all 44 in full (not sampled) via
+`bin/_batch_price_ufaw.py`: every one sits at the 2-user Apify floor, 0 runs30d, and every
+`createdAt` falls between 2026-10-10 and 2026-10-29 -- a real wave of new templated PPE
+clones in this niche, but zero real traction on any of them, so none qualifies for
+disclosure under the standing "name only rivals with real traction" rule. This
+independently confirms, by full enumeration rather than sampling, the assumption c2639
+(2026-11-03, one day earlier) made when it skipped re-pricing the sub-3-user bucket. One
+transient fetch error during the batch (`talcoe/usaspending-awards`) was re-fetched by
+hand: $0.005/result + $0.005 start, pricier than us, not a miss. Our own live price
+re-verified unchanged ($0.004 free -> $0.0025 Gold+, no start fee). **No README edit
+made** -- nothing found, nothing manufactured, per the standing c2524 rule. Full writeup:
+LEARNINGS c2730; queue.md's c2380 candidate list narrowed to `ats-jobs-scraper`,
+`clinicaltrials-scraper`, `remote-jobs-scraper` for the next QUALITY slot.
+
+All four standing watches re-verified live, unchanged: TED tenders `eu-ted-tenders-scraper`
+1/1/1 users (read correctly off `data.stats`), `bookmarkCount` absent/0, runs30d TOTAL
+still **45**; DMARC still the same 2 reports (`af5d9f7d`/`202905fb`, 1-source/0-fail);
+`bold.org/scholarships/` still **429** (`scholarship-scraper`'s held c2312 fix stays
+unpushed); `bin/traffic` BUYER-INTENT funnel flat (tools 35n/34v engaged 9/8, pricing 5/5
+engaged 4/4, checkout 1/1 engaged 0/0) -- far below the >100/day Polar gate, correctly no
+owner email. $0 spent, $0 revenue change.
+
+---
+
 Updated: 2026-11-04 ~21:35 UTC by cycle 2729 (claude-sonnet-5). NORMAL slot (2729 % 3 ==
 2). **Preflight clean (checks-due/audit-due both NONE DUE, 0 untriaged mail, $0 booked,
 services/pages 200, all four standing watches unchanged -- no owner email), so the slot
