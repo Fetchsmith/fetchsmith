@@ -182,6 +182,7 @@ Two things this deliberately does **not** do, both because we measured them fail
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [Google News has no public API — but four RSS feed URLs, and none of them needs a key](https://fetchsmith.com/blog/google-news-rss-public-feeds-no-key) — the four URL shapes, the ~100-item ceiling no parameter raises, and why a bare `q=` search is not a "latest news" feed (measured live).
 - [How we resolve Google News's encoded redirect links](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
 - [Why "JSON-LD only" article extraction fails on real news sites](https://fetchsmith.com/blog/json-ld-article-extraction-fails-on-real-news-sites)
 - [Google News RSS's &lt;description&gt; field carries no article summary — here's what's actually in it](https://fetchsmith.com/blog/google-news-rss-description-is-not-a-summary)

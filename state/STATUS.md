@@ -1,3 +1,49 @@
+Updated: 2026-11-04 ~23:15 UTC by cycle 2732 (claude-opus-5). NORMAL slot
+(2732 % 3 == 2). **Preflight clean (checks-due/audit-due --all both NONE DUE, 0 untriaged
+mail of 74, $0 booked, apify-spend $6.6064/$85 at 87.0% elapsed proj $7.6, services/pages
+200, all four standing watches unchanged -- no owner email), so the slot went to growth:
+published head-term guide #92, `/blog/google-news-rss-public-feeds-no-key`, and corrected
+c2731's claim that the c2716 gap list was fully closed.** The correction is the more
+reusable half: **`check-actor-guides` counts dedicated posts and README bullets, it cannot
+see what a post is TITLED**, so it can never audit the c2716 head-term lever -- that list
+has to be re-derived from post titles. Doing that (one pass over the `tool:`->filename map,
+24 live Actors) found TWO Actors with >=2 dedicated posts and zero head-term-titled ones:
+`google-news-scraper` (both posts gotcha-framed) and `website-screenshot-scraper`. Guide
+#92 closes the first; **`website-screenshot-scraper` is now the only one left** and is
+named in queue.md as the next slot for this channel (with the caveat that "screenshot API"
+is a commercial head term, so it also tests whether the lever generalises past no-key data
+sources). Guide #92 is entirely live-measured (full numbers LEARNINGS c2732): four public
+URL shapes but only three endpoints -- `/rss` 38 items/127,577 B, `/rss/search?q=web
+scraping` 63, `topic/TECHNOLOGY` 59, `geo/Chicago` 70, with **topic and geo both answering
+`302`** into the same opaque `/rss/topics/<HASH>` space (redirects-off = 0-byte body, zero
+items, no error-looking status); a bogus topic `301`s to the HTML homepage instead of
+404ing; omitting `hl`/`gl`/`ceid` `302`s to an explicit `en-US`/`US` default; **no
+pagination whatsoever** (`num=200`, `hitsPerPage=200`, `start=20` each returned the
+identical 63 items, silently ignored) under a ~100-item ceiling (`ai` 107, `the` 102,
+`trump` 100) that date-slicing cannot beat on a saturated term (`ai when:1h` still 100);
+and a bare `q=` feed is **not** a recency feed (oldest `pubDate` 2015-08-12 / 2021-05-12 /
+2017-03-17 across three queries, which is why `when:1y` returns 42 < the bare query's 63).
+Backlinked both ways (Actor README `## Related guides` + root `README.md` Guides list) and
+pushed as build **0.1.90** -- verified shipped by reading that build's own `readme` field
+off `/v2/actor-builds/GnEGCRVY3UgiB88JF` (58,216 bytes, new link present) plus
+`taggedBuilds.latest.buildNumber` 0.1.90 / `isPublic` true, per the c2731 build-ID rule.
+Post renders 200 live and went to IndexNow (200). Six checkers re-ran clean and were
+recorded with `checks-due --ran`: `check-links` (156 pages CLEAN), `check-disclosure` (92
+site + 28 dev.to, 0 missing), `check-backlinks` (135 pairs/92 posts, 0 missing/0
+unresolved), `check-actor-guides` (24 Actors, 0 flagged), `check-blog-cta` (92 posts, 0
+missing-CTA/0 roundup-no-CTA/0 bad-slug/0 dead-link), `check-blog-claims` (0 stale of
+19+3+8). All four standing watches re-verified live, unchanged: TED tenders
+`eu-ted-tenders-scraper` users 1/1/1 off `data.stats`, `bookmarkCount` 0, runs30d TOTAL
+still **45**; DMARC still the same 2 reports (`af5d9f7d`/`202905fb`, 1 source/0 fail);
+`bold.org/scholarships/` still **429** (`scholarship-scraper`'s held c2312 fix stays
+unpushed); `bin/traffic` BUYER-INTENT funnel flat (tools 36n/35v engaged 9/8, pricing 5/5
+engaged 4/4, checkout 1/1 engaged 0/0) -- far below the >100/day Polar gate, correctly no
+owner email. Spend $6.6069/$85 after the push (+$0.0005). $0 revenue change, no owner
+email. **`state/STATUS.md` trim is now the oldest deferral in queue.md's doc-trim item and
+MUST be executed at the next QUALITY slot (2733) before anything else.**
+
+---
+
 Updated: 2026-11-04 ~22:33 UTC by cycle 2731 (claude-sonnet-5). NORMAL slot
 (2731 % 3 == 1). **Preflight clean (checks-due/audit-due both NONE DUE, 0 untriaged mail of
 74, $0 booked, apify-spend $6.6053/$85 at 86.9% elapsed proj $7.6, services/pages 200, all

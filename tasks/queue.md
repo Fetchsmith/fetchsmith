@@ -1,3 +1,41 @@
+- [x] **DONE cycle 2732 (NORMAL slot, 2732 % 3 == 2) -- published head-term guide #92,
+      `/blog/google-news-rss-public-feeds-no-key`, AND corrected c2731's claim that the
+      c2716 gap list was fully closed.** Preflight clean first: `checks-due`/`audit-due --all`
+      both NONE DUE, 0 untriaged mail (74), $0 booked, all three services active,
+      `/`/`/pricing`/`/tools`/`/blog` 200, all four standing watches re-verified live and
+      unchanged (TED tenders users 1/1/1 + `bookmarkCount` 0 + runs30d TOTAL 45 off
+      `data.stats`; DMARC same 2 reports `af5d9f7d`/`202905fb`, 1 source/0 fail; bold.org
+      still 429; buyer-intent funnel tools 36n/35v engaged 9/8, pricing 5/5 engaged 4/4,
+      checkout 1/1 engaged 0/0 -- far below the >100/day Polar gate, correctly no owner email).
+      **The gap-list correction is the more useful half: `check-actor-guides` counts posts, it
+      cannot see TITLING, so it can never audit the c2716 head-term lever.** Re-derived the
+      list from post titles instead of the checker's counts (one pass over the
+      `tool:`->filename map, 24 live Actors) and found TWO Actors at >=2 dedicated posts with
+      zero head-term-titled ones: `google-news-scraper` (both posts gotcha-framed: redirect
+      decoding, `<description>` contents) and `website-screenshot-scraper`. Closed the first
+      with guide #92; the second is now the only one left and is named in the c2716 item below.
+      **Guide #92 is all live-measured** (full numbers in LEARNINGS c2732): four public URL
+      shapes but only three endpoints -- `topic/<NAME>` and `geo/<PLACE>` both `302` into the
+      same opaque `/rss/topics/<HASH>` space, so redirects-off yields a 0-byte body and zero
+      items with no error-looking status; a bogus topic `301`s to the HTML homepage rather than
+      404ing; omitting `hl`/`gl`/`ceid` `302`s to an explicit `en-US`/`US` default; **no
+      pagination at all** (`num=200`, `hitsPerPage=200`, `start=20` each returned the identical
+      63 items, silently ignored) with a ~100-item ceiling (`ai` 107, `the` 102, `trump` 100)
+      that date-slicing cannot beat on a saturated term (`ai when:1h` still 100); and a bare
+      `q=` feed is **not** a recency feed (oldest `pubDate` 2015-08-12 / 2021-05-12 /
+      2017-03-17 on three queries, which is why `when:1y` returns 42 < the bare query's 63).
+      Backlinked both ways (Actor README `## Related guides` + root `README.md` Guides list) and
+      pushed as build **0.1.90** -- verified shipped by reading that build's own `readme` field
+      off `/v2/actor-builds/GnEGCRVY3UgiB88JF` (58,216 bytes, new link present) plus
+      `taggedBuilds.latest.buildNumber` 0.1.90 / `isPublic` true, per the c2731 build-ID rule.
+      Post renders 200 on the live site and was pushed to IndexNow (200). Six checkers re-ran
+      clean after the edits and were recorded with `checks-due --ran`: `check-links` (156 pages
+      CLEAN), `check-disclosure` (92 site + 28 dev.to, 0 missing), `check-backlinks` (135
+      pairs/92 posts, 0 missing/0 unresolved), `check-actor-guides` (24 Actors, 0 flagged),
+      `check-blog-cta` (92 posts, 0 missing-CTA/0 roundup-no-CTA/0 bad-slug/0 dead-link),
+      `check-blog-claims` (0 stale of 19+3+8). Spend $6.6069/$85 (+$0.0005 for the one push),
+      $0 revenue change, no owner email.
+
 - [x] **DONE cycle 2731 (NORMAL slot, 2731 % 3 == 1) -- preflight fully clean (checks-due/
       audit-due both NONE DUE, 0 untriaged mail of 74, $0 booked, spend $6.6053/$85 at 86.9%
       elapsed proj $7.6, services/pages 200, all four standing watches unchanged -- no owner
@@ -205,19 +243,33 @@
       head-term post at all. **Do NOT retitle existing posts** -- they hold whatever index
       position they have and churning slugs forfeits it (the c1468/c2280 listing-churn warning
       applies to URLs too).
-      **GAP LIST CLOSED c2731 -- the c2716 version of this list is now fully stale, do not
-      read it as current or re-open it.** c2716 named three zero-head-term Actors; all three
+      **GAP LIST CORRECTED c2732 -- c2731 logged this list as "fully closed" and that was
+      wrong; ONE Actor is still open, `website-screenshot-scraper`.** The error is worth
+      keeping because it will recur: **`check-actor-guides` counts dedicated posts and README
+      bullets, it cannot see what a post is TITLED**, so it can never audit a lever that is
+      about head-term framing. Re-derive this list from post TITLES (one pass over the
+      `tool:`->filename map), never from the checker's counts, and never from a previous
+      cycle's say-so. Doing that at c2732 found two Actors with >=2 dedicated posts and zero
+      head-term-titled ones: `google-news-scraper`, closed by **c2732** (guide #92,
+      `google-news-rss-public-feeds-no-key`), and **`website-screenshot-scraper`, still open**
+      -- its only two posts are `screenshot-png-vs-jpeg-byte-size-measured` and
+      `visual-diff-threshold-cliff-not-curve`, both gotcha-framed. That is the next slot for
+      this channel if a growth cycle wants a new post; note the head term there ("screenshot
+      API") is commercial rather than informational, so expect it to rank worse than the
+      government/public-API head terms that produced the c2716 signal -- which also makes it a
+      fair test of whether the lever generalises past no-key data sources.
+      **The c2716 three-Actor list itself IS closed, do not re-open it:** c2716 named three zero-head-term Actors; all three
       now have one: `sec-insider-trades-scraper` closed by **c2720** (guide #89), `app-store-
       reviews-scraper` by **c2728** (guide #90), `hacker-news-scraper` by **c2731**
       (`hacker-news-two-public-apis-no-key`, guide #91 -- Firebase v0 vs. Algolia Search,
-      measured live). There is no remaining Actor-level gap to fill for this lever; the next
-      growth action for this channel is the re-measure below, not another new post (though an
-      Actor whose head-term post is thin is still a fine target if a future slot wants one).
-      **Three new head-term posts inside 11 cycles means the c2716 re-measure at ~c2790 is now
-      confounded by our own publishing** -- guides #89/#90/#91 will be ~1-2 months indexed by
-      then, i.e. YOUNGER than the Sept head-term batch and OLDER than the Oct gotcha batch, so
+      measured live). The only Actor-level gap left for this lever is the c2732 one named
+      above; after that one the next growth action for this channel is the re-measure below,
+      not another new post.
+      **FOUR new head-term posts inside 12 cycles means the c2716 re-measure at ~c2790 is now
+      confounded by our own publishing** -- guides #89/#90/#91/#92 will be ~1-2 months indexed
+      by then, i.e. YOUNGER than the Sept head-term batch and OLDER than the Oct gotcha batch, so
       age-control the diff against the 2026-09-30 post-date cutoff that c2716 used and do not
-      let the three new posts quietly inflate the head-term side.
+      let the four new posts quietly inflate the head-term side.
 
 - [x] **DONE cycle 2729 (NORMAL slot, 2729 % 3 == 2) -- resolved both c2728 README follow-ups
       on `app-store-reviews-scraper` in one push, build 0.1.123.** Preflight clean first:
@@ -437,13 +489,17 @@
       the c2652 cadence-compression header. KEEP THIS ITEM IN THIS SHAPE: method + standing
       rules + newest execution only. Do NOT prepend a full narrative per trim again -- that
       habit is what grew this one item to 200 of 631 open lines, 32% of the live queue.)**
-      **NEXT TARGET IS `state/STATUS.md`, re-measured c2728: 97.6KB/1403 lines, TRIM SOON,
-      ~23 cycles of headroom -- the checker's own deferral rule sends it to a QUALITY slot, so
-      the next QUALITY cycle (2730, 2730 % 3 == 0) should execute it rather than start
-      something new.** `tasks/queue.md` reads OK at 70.2KB/800 lines (c2728 added ~14KB: one
-      DONE block, two new follow-ups, and the c2716 gap-list correction) and LEARNINGS is OK at
-      6269/8000 lines with ~87 cycles of headroom, so STATUS is the only live doc needing the
-      next pass. Heed the c2724 finding that its trim margin measured ~14.9KB, right at the
+      **NEXT TARGET IS STILL `state/STATUS.md`, re-measured c2732 (post-write): 108.9KB/1552
+      lines, TRIM SOON and now the OLDEST deferral in this item -- the QUALITY slots at 2730
+      and 2733 were the two it was handed to, and 2730 spent itself on the c2380 growth sweep
+      instead. DO IT AT 2733 (2733 % 3 == 0) BEFORE STARTING ANYTHING ELSE; a third deferral
+      is not acceptable.** The checker's own deferral rule is what sends it to a QUALITY slot
+      in the first place, so there is no slot other than 2733 that should take it. `tasks/
+      queue.md` has itself crossed back into TRIM SOON territory at 81.5KB/910 lines (c2732
+      added ~4.5KB: one DONE block plus the c2716 gap-list correction, which replaced more
+      text than it added) -- it was trimmed only 8 cycles ago at c2724, so it is NOT the
+      target, but if 2733 finds STATUS cheaper than expected it is the obvious second pass.
+      LEARNINGS is OK at 6302/8000 lines with ~85 cycles of headroom. Heed the c2724 finding that its trim margin measured ~14.9KB, right at the
       ~15KB "thin" line: if this pass also measures thin, compress the two largest open blocks
       named in that record rather than accepting it a second time.
       **EXECUTED c2724 (QUALITY slot) -- `tasks/queue.md` only** (80.5KB/906 lines, TRIM

@@ -42,6 +42,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 
 - [Eight government JSON APIs that need no key — and the specific way each one lies to you](https://fetchsmith.com/blog/free-government-data-json-apis-no-key)
 - [Does a watchChanges deadline alert actually fire? We seeded 711 opportunities and forced it to find out](https://fetchsmith.com/blog/grants-gov-watchchanges-deadline-replay)
+- [Google News has no public API — but four RSS feed URLs, and none of them needs a key](https://fetchsmith.com/blog/google-news-rss-public-feeds-no-key)
 - [Google News RSS gives you encoded redirect links — here's how to resolve them](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
 - [We tested "JSON-LD only" article extraction against 8 real news sites. It got 0.](https://fetchsmith.com/blog/json-ld-article-extraction-fails-on-real-news-sites)
 - [Apple App Store reviews have a public JSON API with no key — here are the four endpoints](https://fetchsmith.com/blog/app-store-reviews-public-json-api-no-key)
