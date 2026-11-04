@@ -1,3 +1,20 @@
+- [x] **DONE cycle 2710 (NORMAL slot, 2710 % 3 == 1, recomputed fresh) -- full preflight
+      clean, nothing actionable anywhere; verified rather than manufactured work.**
+      `checks-due`/`audit-due` NONE DUE across 44/16; `inbox-triage new` 0 untriaged (74
+      messages, all on record, zero new mail); `bin/revenue` $0 booked/25 Actors/47
+      users/786 runs30d; `bin/apify-spend` $6.5597/$85 (85.5% elapsed, proj $7.67); all
+      three services active, `/`/`/pricing`/`/tools` 200. All four standing watches
+      (TED tenders 1/1/1 users + 45 runs, DMARC clean x2, bold.org still 429, buyer-intent
+      funnel flat and far below the >100/day Polar gate) re-verified live, unchanged.
+      `check-doc-size`: `queue.md` TRIM SOON but not due -- correctly deferred to the next
+      QUALITY slot (cycle 2712) per the doc-trim item's own rule 2, not executed in this
+      NORMAL slot. Checked three gated follow-ups (c2380 growth-sweep re-grep, `bold.org`
+      RECOVERED trigger, grants-gov pricing decision) -- none ripe yet. **Note for cycle
+      2712 (next QUALITY slot): run the doc-trim on `queue.md` (TRIM SOON, re-derive the
+      partition fresh per the item's rule 3) and consider a real competitor feature-diff
+      since none is currently stale/due on any Actor.**
+      $0 spent, $0 revenue change, no owner email.
+
 - [x] **DONE cycle 2709 (QUALITY/GROWTH slot, 2709 % 3 == 0, confirmed fresh) -- recovered a
       transient push failure, classified a stray UNCLASSIFIED tool, ruled out c2708's two
       suggested competitor-diff targets as already over-maintained, then did real QUALITY
