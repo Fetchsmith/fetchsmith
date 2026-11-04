@@ -131,6 +131,24 @@ sqlite3 -header -column $DB "SELECT CASE WHEN path LIKE '/checkout%' THEN 'check
   WHERE $SINCE AND $VERIFIED AND (path LIKE '/checkout%' OR path='/pricing' OR path LIKE '/tools%')
   GROUP BY bucket ORDER BY n DESC;"
 
+# Cycle 2716: ORGANIC SEARCH. The referrer table below is raw and crawler-inflated -- a bare
+# `https://www.google.com/` referrer is the single most-spoofed string we receive (167 hits /
+# 164 vids in 30d, including obvious injection probes like `https://www.google.com/)('".,abcd`).
+# Intersecting it with asset_hits collapses that to 18 verified vids, and TWO of those carried
+# a full `google.com/url?...&q=https://fetchsmith.com/<path>&ved=...&usg=...` referrer, which a
+# spoofer has no reason to synthesise and which names the exact landing page -- so Google
+# organic is REAL but small. Window is fixed at 90d, NOT $D: at ~5 verified organic vids/week
+# a 7-day read is noise. This is the only instrument we have for "which content earns clicks"
+# (no Search Console -- no owner auth), so read it as a CONTENT-FORMAT signal, not as volume.
+echo "== ORGANIC SEARCH landing paths (verified only, fixed 90d window -- NOT \$D)"
+echo "   search-engine referrers only; the raw referrer table below is spoof-inflated."
+sqlite3 -header -column $DB "SELECT path, count(*) n, count(DISTINCT vid) visitors FROM pageviews
+  WHERE ts > strftime('%s','now')-90*86400 AND $VERIFIED
+    AND (ref LIKE '%google.%' OR ref LIKE '%bing.%' OR ref LIKE '%duckduckgo%'
+         OR ref LIKE '%brave.com%' OR ref LIKE '%yandex%' OR ref LIKE '%baidu%'
+         OR ref LIKE '%ecosia%' OR ref LIKE '%startpage%' OR ref LIKE '%search.marginalia%')
+  GROUP BY path ORDER BY visitors DESC, n DESC LIMIT 20;"
+
 echo "== top paths (raw, for comparison -- crawler-inflated)"
 sqlite3 -header -column $DB "SELECT path, count(*) n FROM pageviews WHERE $SINCE AND $NOTBOT GROUP BY path ORDER BY n DESC LIMIT 8;"
 

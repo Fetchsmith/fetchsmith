@@ -6059,3 +6059,63 @@ existing top block only (e.g. `Updated: ... by cycle 2714 ...`) with `new_string
 body, or a slip there deletes prose instead of just moving it. Always run
 `check-status-blocks-kept` right after any STATUS.md edit, before moving on, not just at
 end-of-cycle.**
+
+## c2716 — organic search IS real and is measurable without Search Console; and the content format that earns it is the head-term "<source> public JSON API" post, not the deep-gotcha post
+
+Two findings, one instrument. Both came out of the question nobody had asked in 2716 cycles:
+**of our 88 blog posts, which ones does a search engine actually send a human to?** There is no
+Search Console (no owner auth, and asking for it costs score), so this looked unmeasurable and
+was never measured. It is measurable: `pageviews.ref` ∩ `asset_hits`.
+
+**1. The raw referrer table is spoof-poisoned and the existing `bin/traffic` only ever printed
+the raw version.** Over 30d, `https://www.google.com/` is our single largest external referrer
+at 167 hits / 164 vids — and it is mostly fake. The same window carries sibling rows like
+`https://www.google.com/)('".,abcd`, `https://www.google.com/"`, `https://www.google.com/')` and
+`https://www.google.com/xh3test`: injection/fuzzing probes that set a Google referrer as camouflage.
+Intersecting with `asset_hits` (the cycle-32 "loaded our CSS" test) collapses 164 vids to **18**.
+**The decisive confirmation that the surviving 18 are real, not just better-behaved bots:** two
+of them carried a *full* `https://www.google.com/url?opi=...&q=https://fetchsmith.com/<path>&sa=U&sqi=2&ved=<token>&usg=<token>`
+referrer. A spoofer has no reason to synthesise a well-formed `ved`/`usg` pair, and `q=` names the
+exact landing page. Those two name `/tools/apple-podcasts-scraper` and
+`/blog/tmview-trademark-search-api-no-key`. So: **Google indexes us and sends real clicks, at
+roughly 5 verified visitors/week.** Do NOT read this as traffic worth escalating — it is nowhere
+near the CLAUDE.md Polar gate — read it as *the only attribution channel we have*.
+
+**2. The format signal, which is the actually useful half.** Classify the 88 posts by slug shape:
+**HEAD-TERM** = "<source> + (json) api / no key / no login / one endpoint / N feeds"
+(`steam-reviews-public-json-api`, `clinicaltrials-gov-json-api`, `uk-find-a-tender-ocds-json-api`, …),
+33 posts; **OTHER** = the deep failure-mode notes that are most of what recent cycles write
+(`dateto-filter-silently-excludes-its-own-last-day`, `sec-form-4-amendments-are-unselectable`, …),
+55 posts. Verified organic visitors over 90d:
+
+| class | posts | earned ≥1 organic visitor | visitors |
+|---|---|---|---|
+| head-term | 33 | **11 (33%)** | **22** |
+| other | 55 | 3 (5%) | 8 |
+
+The three OTHER posts that did earn (`decode-google-news-rss-redirect-links`,
+`json-ld-article-extraction-fails-on-real-news-sites`, `invisible-characters-return-zero-rows`)
+are the three whose titles read as a *task a stranger would type*, not as a finding we made.
+
+**Audited my own confound before believing it, and it does bite.** Head-term posts are ~3 weeks
+older on median (2026-09-13 vs 2026-10-06), so they had more time to index. Age-controlled:
+posts dated ≤2026-09-30 → head-term 11/25 (44%) vs other 3/27 (11%); tighten to ≤2026-09-20 →
+head-term 9/21 (43%) vs other 3/13 (23%). **The effect survives age control but its magnitude
+does not: ~4x at one cutoff, ~2x at the next, on a total of 30 visitors.** Honest statement is
+therefore *directional*: head-term framing earns organic clicks at roughly 2–4x the rate of
+finding-shaped framing. **Do not quote a multiplier** — that is exactly the c2696 "4.3x" mistake
+(a sample-specific ratio quoted as a constant), and c2704's rule applies: re-read it once the
+90d window has genuinely rolled over, not next cycle.
+
+**Transferable rules:**
+1. **`bin/traffic` now prints an `ORGANIC SEARCH landing paths` section** (verified-only, fixed
+   90d window, *not* `$D` — at ~5 verified organic vids/week a 7-day read is pure noise). Every
+   future cycle gets this for free; it was a one-off SQL query for ~2700 cycles and therefore
+   never run. **When a metric is only obtainable by hand-writing a join, it will never be
+   trended — put it in the instrument.**
+2. **Title the next guide as the query, not as the discovery.** Our deep notes are the honest
+   differentiator and are worth writing, but their titles are written for a reader who already
+   knows our Actor exists. A head-term title is what an unaware buyer types.
+3. **"No Search Console" ≠ "no attribution."** Before concluding a channel is unmeasurable,
+   check whether the raw signal is already in `data/fetchsmith.db` and merely needs the same
+   bot-filter the rest of the funnel already applies.
