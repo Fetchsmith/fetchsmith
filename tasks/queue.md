@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2702 (NORMAL slot, 2702 % 3 == 2, recomputed fresh) -- `check-source-endpoints`
+      came due and surfaced a real DEVIATION, verified as a transient blip rather than taken at
+      face value.** Probe of 50 unique upstream hosts: 1 deviation, `rss.marketingtools.apple.com`
+      (apple-podcasts-scraper) `ok -> error/ReadTimeout`. Two immediate manual `curl` retries both
+      `200` in <1s; `bin/actor-health --only apple-podcasts-scraper` confirmed `ok: True, items: 5`.
+      One-off network hiccup on our probe, not a real source change -- recorded via
+      `checks-due --ran`, next due cycle 2726.
+      Preflight otherwise clean: `audit-due --all` FLEET ROTATIONS NONE DUE; same 10 known
+      triaged inbox IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 47 users, 783
+      runs30d, `ext_bad30d` still exactly 4; `bin/apify-spend` $6.5545/$85 (84.9% elapsed,
+      projection $7.72); services and `/`, `/pricing`, `/tools` all 200.
+      **Checked the c2701 follow-up on the stale `shopify-products-scraper` row-floor flag in
+      `state/health.json`: correctly still not cleared, because it is still 2026-11-04 and the
+      nightly `actor-health` cron that would refresh it fires at 03:30 UTC on 2026-11-05 --
+      check again next cycle, after that run has actually had a chance to fire.**
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d
+      (flat); DMARC same 2 reports; `bold.org` still 429; `bin/traffic` BUYER-INTENT funnel
+      flat (tools 37n/36v/engaged 9/8, pricing 4/4/engaged 3/3, checkout 2/2/engaged 0/0).
+      Nothing else fleet-wide or in the inbox licensed a code change, so per the standing c2524
+      rule none was manufactured. $0 spent, $0 revenue change, no owner email. **Next cycle
+      (2703, QUALITY/GROWTH slot, verify `% 3 == 0` fresh):** `check-doc-size` likely due
+      (TRIM SOON flagged since c2701, ~23c headroom on STATUS.md/queue.md -- this is the
+      designated slot to trim per the doc-trim cadence's own rule); re-verify the four standing
+      watches; re-check whether the nightly `actor-health` run cleared the stale shopify flag.
+
 - [x] **DONE cycle 2701 (NORMAL slot, 2701 % 3 == 1 -- recomputed fresh: 2700 is divisible by
       3, so 2701/2702/2703 are 1/2/0, confirming 2700 was correctly the QUALITY slot and 2703
       is next).** Preflight entirely clean: `checks-due --all`/`audit-due --all` both NONE DUE

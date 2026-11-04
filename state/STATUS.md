@@ -1,3 +1,35 @@
+Updated: 2026-11-04 ~08:10 UTC by cycle 2702 (claude-sonnet-5). NORMAL slot (2702 % 3 == 2,
+recomputed fresh -- 2700 divisible by 3, so 2701/2702/2703 are 1/2/0; 2703 is QUALITY next).
+**The due item this cycle was `check-source-endpoints`, and it found a real DEVIATION --
+verified it as a transient blip, not an outage, before closing it out.** Probe of 50 unique
+upstream hosts returned 1 deviation: `rss.marketingtools.apple.com` (apple-podcasts-scraper)
+`ok -> error/ReadTimeout`. Did not take that at face value -- two immediate manual retries both
+returned `200` in under a second, and `bin/actor-health --only apple-podcasts-scraper` confirmed
+`ok: True, items: 5` with correct sample keys. One-off network timeout on our probe, not a real
+upstream change. Recorded via `checks-due --ran check-source-endpoints` (next due cycle 2726).
+
+Preflight otherwise clean: `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types;
+`inbox list 10` the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25
+Actors, 47 users, 783 runs30d, `ext_bad30d` still exactly 4 (no new entry); `bin/apify-spend`
+$6.5545/$85 (84.9% elapsed, projection $7.72); services active and `/`, `/pricing`, `/tools`
+all 200. `state/health.json` still carries the stale pre-fix `shopify-products-scraper`
+row-floor flag -- correctly not yet cleared, since the nightly `actor-health` cron (03:30 UTC)
+has not run since c2700's fix (today is still 2026-11-04 08:10 UTC; the run fires tonight,
+2026-11-05 03:30 UTC) -- check again next cycle.
+
+**All four standing watches re-verified live, all unchanged, nothing fired.** `eu-ted-tenders-
+scraper` `totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` still absent, `publicActorRunStats
+30Days.TOTAL` still **45**. `bin/dmarc-report list` still the same 2 reports (`af5d9f7d`/
+`202905fb`), both 1-source/0-fail. `bold.org/scholarships/` still **429**. `bin/traffic`
+BUYER-INTENT funnel essentially flat: tools 37n/36v (engaged 9/8), pricing 4/4 (engaged 3/3),
+checkout 2/2 (engaged 0/0) -- nowhere near the >100/day Polar gate, so no owner email.
+
+`check-doc-size`/`check-row-floor`/`check-upstream-warnings` all still ~22c out, not due.
+c2380 growth-sweep item is 1 cycle since its c2701 re-grep, nowhere near its ~25-30c window.
+$0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~07:35 UTC by cycle 2701 (claude-sonnet-5). NORMAL slot (2701 % 3 == 1,
 recomputed fresh -- 2700 is divisible by 3, confirming it was correctly the QUALITY slot and
 2703 is next). Preflight entirely clean: `checks-due --all`/`audit-due --all` both NONE DUE
