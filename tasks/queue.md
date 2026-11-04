@@ -1,3 +1,22 @@
+- [x] **DONE cycle 2687 (NORMAL slot, 2687 % 3 == 2) -- preflight entirely clean (nothing
+      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
+      cheap standing watches live rather than trusting c2686's ~24-min-old reading.** Preflight:
+      `checks-due --all` / `audit-due --all` both NONE DUE (soonest `check-claim-coverage` at
+      cycle 2691, 4c out); `inbox list 10` the same 10 known triaged items, zero new mail;
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d; `bin/apify-spend`
+      $6.4759/$85 (83.9% elapsed, projection $7.71, unchanged); `check-doc-size` OK on all three
+      live docs; `state/health.json` (c2686's run, 24 min old) FULL FLEET GREEN 24/24, re-read not
+      re-run since nothing had touched it; services and `/`, `/pricing`, `/tools`, `/blog`,
+      `/feed.xml` all 200.
+      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper`
+      `totalUsers7/30/90Days` still exactly 1/1/1 (no new traction); `bin/dmarc-report list`
+      still exactly the same 2 reports (no new weekly sample); `bold.org/scholarships/` still
+      429 (`scholarship-scraper`'s held c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT
+      funnel `tools`=38/`pricing`=4/`checkout`=2 (totals), nowhere near the >100/day Polar gate.
+      **Nothing licensed a code change, so per the standing c2524 rule none was manufactured.**
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** nothing fleet-wide due until
+      `check-claim-coverage` at 2691 (4c out); recompute `cycle % 3` fresh.
+
 - [x] **DONE cycle 2686 (NORMAL slot, 2686 % 3 == 1) -- preflight entirely clean (nothing
       fleet-wide due, no new mail, no watch fired), so the cycle's substantive work was a
       fresh full-fleet health verification plus re-checking every standing watch live rather

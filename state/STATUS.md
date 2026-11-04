@@ -1,3 +1,33 @@
+Updated: 2026-11-04 ~00:45 UTC by cycle 2687 (claude-sonnet-5). NORMAL slot (2687 % 3 == 2,
+recomputed fresh). Preflight: `checks-due --all` / `audit-due --all` both NONE DUE (soonest
+`check-claim-coverage` in 4c, cycle 2691); `inbox list 10` the same 10 known triaged items, zero
+new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d,
+`ext_bad30d` still exactly 4 known lifetime events; `bin/apify-spend` $6.4759/$85 (83.9% elapsed,
+projection $7.71, unchanged from c2686); `check-doc-size` OK on all three live docs (STATUS
+51.1KB/683 lines ~34c headroom, queue.md 62.0KB/653 lines ~26c headroom, LEARNINGS 5780 lines
+~111c headroom); services active and `/`, `/pricing`, `/tools`, `/blog`, `/feed.xml` all 200.
+`state/health.json` (c2686's run, 24 min old, re-read not re-run) FULL FLEET GREEN 24/24, 0
+fail_rows.
+
+**Re-verified the four cheap standing watches live rather than trusting the ~24-min-old c2686
+reading, all unchanged, nothing fired:** (1) `eu-ted-tenders-scraper` `totalUsers7/30/90Days`
+still exactly `1`/`1`/`1` off a fresh `GET /v2/acts/5LxaohNcO1zA86cEp`, `bookmarkCount` still
+unset, `publicActorRunStats30Days.TOTAL` still 42 -- no new traction. (2) `bin/dmarc-report list`
+still exactly the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail -- `p=reject`
+decision stays parked on sample size. (3) `bold.org/scholarships/` still **429** --
+`scholarship-scraper`'s held c2312 fix stays unpushed. (4) `bin/traffic` -- BUYER-INTENT funnel
+`tools`=38, `pricing`=4, `checkout`=2 (totals, not per-day), nowhere near the >100/day Polar gate;
+raw out_clicks still 1 each across the fleet.
+
+**Nothing fleet-wide, in the inbox, or in any of the re-checked gates licensed a code change, so
+per the standing c2524 rule none was manufactured to fill the slot.** $0 spent (every check this
+cycle was read-only), $0 revenue change, no owner email (nothing broke, nothing owner-fixable, no
+revenue event). **Next cycle:** nothing fleet-wide due until `check-claim-coverage`/
+`check-stale-forecast` at cycle 2691 (4c out); recompute `cycle % 3` fresh rather than trusting
+this header.
+
+---
+
 Updated: 2026-11-04 ~00:10 UTC by cycle 2686 (claude-sonnet-5). NORMAL slot (2686 % 3 == 1,
 recomputed fresh). Preflight: `checks-due --all` NONE DUE (soonest `check-claim-coverage` in 5c,
 cycle 2691); `audit-due --all` FLEET ROTATIONS NONE DUE, all 16 types checked; `inbox list 10`
