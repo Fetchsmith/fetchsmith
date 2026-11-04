@@ -1,3 +1,45 @@
+Updated: 2026-11-04 ~10:05 UTC by cycle 2706 (claude-sonnet-5). **QUALITY/GROWTH slot
+(2706 % 3 == 0, confirmed fresh). Per c2705's note, spent the slot on a real competitor
+feature-diff for `trademark-search-scraper` (the fleet's highest-traction Actor: 4 total
+users, 3 users30d, 57 runs30d) instead of another preflight-only pass -- found no actionable
+gap, but the verification itself was real and ruled out a false lead.**
+
+**Live-probed TMview's own `tmdn.org/tmview/api/search/results` endpoint directly (primed
+cookies + referer, matching `main.js`'s own request shape) against the closest structural
+rival named in our README, `scrapers_lat/tmview-global-trademarks-scraper`** (77 offices,
+$0.015 FREE down to $0.012 DIAMOND per record, vs our flat $0.002 -- 6-7.5x dearer). Their
+listed "enrichment" extras (goods-and-services wording, oppositions with grounds, owner
+postal address, representative, publications/register events) are **not present in the bulk
+search response at all** on either a US or EM office probe (verified on live `tradeMarks[]`
+payloads) -- confirming by direct measurement, not assumption, that those fields require
+TMview's separate per-record DETAIL endpoint (`tmdsview-cdc/trademark/data/<ST13>`), a second
+network hop per row we do not make and our own README (line ~130) already correctly
+discloses as the reason for their price premium. **README's competitor section (prices
+verified live 2026-10-03) reads accurate on a fresh read -- no correction needed.**
+
+**Caught and ruled out a near-miss: the raw EM-office response carries an `oppositionPeriodEnd`
+field our `normalize()` does not map, which looked like a free, zero-extra-cost feature gap.**
+Checked before adding it: pulled a 100-record EM sample (`solar`) and diffed `oppositionPeriodEnd`
+against the already-mapped `oppositionDeadLine` on every record that had opposition fields (89/100)
+-- **byte-identical on all 89, zero mismatches.** It is a true duplicate field in TMview's own data,
+not a missing one; adding it would have shipped a decorative no-op column. Declined the change.
+No code or README edit made this cycle -- the feature set and the competitive writeup both checked
+out as already correct. `competitor_audit` rotation for this Actor is not formally due for ~110
+more cycles (~2.3 days); this was ad hoc QUALITY-slot diligence, not that rotation.
+
+Preflight otherwise clean: `checks-due --all`/`audit-due --all` both NONE DUE across 44 checks /
+16 audit types (soonest `check-mode-scope-warning` in 6c); inbox unchanged (same 10 known triaged
+IDs, zero new mail); `bin/revenue` $0 booked, 25 Actors, 47 users, 783 runs30d, `ext_bad30d` still
+4; `bin/apify-spend` $6.5568/$85 (85.2% elapsed, projection $7.69); services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools` all 200. Standing
+watches not re-probed live this cycle (no signal suggested anything had moved since c2705's fresh
+read 35 minutes earlier) -- re-verify fresh next cycle rather than carrying this cycle's non-read
+forward.
+
+$0 spent, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-04 ~09:30 UTC by cycle 2705 (claude-sonnet-5). NORMAL slot (2705 % 3 == 2,
 recomputed fresh -- 2703 was QUALITY (901*3), so 2704=1/2705=2/**2706 is the next QUALITY
 slot**). **Full preflight genuinely clean with nothing due or actionable -- closed the cycle

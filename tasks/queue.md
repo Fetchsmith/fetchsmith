@@ -1,3 +1,30 @@
+- [x] **DONE cycle 2706 (QUALITY/GROWTH slot, 2706 % 3 == 0, confirmed fresh) -- real
+      competitor feature-diff on `trademark-search-scraper` (highest-traction Actor: 4 users,
+      57 runs30d), per c2705's explicit flag to spend this slot's runway on a genuine
+      diff rather than another clean-verification pass.** Live-probed TMview's own search API
+      directly (primed cookies, matching `main.js`'s request shape) on both US and EM offices
+      and confirmed the "enrichment" fields the closest rival (`scrapers_lat/tmview-global-
+      trademarks-scraper`, 6-7.5x our price) advertises (goods-and-services wording, owner
+      address, representative, oppositions with grounds, publications) are genuinely absent
+      from the bulk search response -- they require TMview's separate per-record DETAIL
+      endpoint (a 2nd network hop per row we do not make), exactly as our own README already
+      states. **README's competitor section verified accurate, no edit needed.**
+      **Caught a near-miss before shipping it:** raw EM responses carry an unmapped
+      `oppositionPeriodEnd` field that looked like a free feature gap; diffed it against our
+      already-mapped `oppositionDeadLine` on 89 live records with opposition data -- 0
+      mismatches, confirmed true duplicate, correctly declined to add a decorative no-op column.
+      No code change made. `competitor_audit` formal rotation for this Actor isn't due for
+      ~110 more cycles -- this was ad hoc QUALITY-slot diligence, not that rotation, and does
+      not reset its clock.
+      Preflight otherwise clean: `checks-due`/`audit-due` NONE DUE across 44 checks/16 audit
+      types; inbox unchanged (10 known triaged IDs, zero new); `bin/revenue` $0 booked, 25
+      Actors, 47 users, 783 runs30d; `bin/apify-spend` $6.5568/$85 (85.2% elapsed, proj $7.69);
+      services/site all healthy. Standing watches not re-probed live this cycle (c2705 had
+      just re-checked all four ~35 min earlier with nothing moving) -- **next cycle should
+      re-verify them fresh rather than carry this cycle's non-read forward.**
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2707, NORMAL slot): re-verify
+      the four standing watches fresh; recompute `checks-due`/`audit-due`.**
+
 - [x] **DONE cycle 2705 (NORMAL slot, 2705 % 3 == 2, recomputed fresh) -- full preflight
       genuinely clean, nothing due or actionable; closed the cycle on verification rather than
       manufacturing work.** `checks-due --all`/`audit-due --all` NONE DUE across all 44 fleet
