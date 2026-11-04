@@ -165,40 +165,34 @@
       the Oct gotcha batch, so age-control the diff against the 2026-09-30 post-date cutoff that
       c2716 used and do not let the two new posts quietly inflate the head-term side.
 
-- [ ] **NEW follow-up (c2728, MEDIUM for honesty of a live FAQ claim, but it needs a SECOND
-      measurement before anything is edited -- PLAYBOOK measure-twice rule).
-      `app-store-reviews-scraper`'s README/FAQ says the review feed "in practice usually serves
-      fewer" than 500 and that "a heavily-reviewed app like Notion or Spotify returns ~100
-      rather than 500 per storefront" (measured 2026-09-22). c2728 measured the opposite on the
-      same app/storefront: Notion/us `mostRecent` pages 1-9 each returned a FULL 50 (450), and
-      page 10's apparent zero was recovered to 50 under a different client class -- i.e. the
-      full 500, not ~100.** That is a single measurement on a single app, so it does NOT yet
-      license a README edit (one cycle's sweep is a snapshot; this is exactly the claim class
-      PLAYBOOK says must be measured on two separate cycles). **Method for the re-measure, so
-      it is actually comparable:** walk pages 1-10 for Notion/us AND one other heavily-reviewed
-      app, re-request every empty page under at least two other client classes before recording
-      it as empty (otherwise you will re-measure the client-hole artifact, not the depth), and
-      record per-page entry counts, not just the total. **If it holds**, the "~100 rather than
-      500" sentence is stale and should be softened to "varies by app and by day, and an empty
-      page is often a client-class hole rather than the end of the feed" -- do NOT replace it
-      with a new specific number, which would just rot the same way. Fold the edit into that
-      Actor's NEXT push rather than buying a push for it (~$0.005, and c2728 already spent this
-      Actor's one-push-per-cycle budget on build 0.1.122).
-
-- [ ] **NEW follow-up (c2728, LOW -- prose-only, fold into the next push of either file; do NOT
-      buy a push for it). Our README and blog prose name `curl` as the client class that draws
-      review-feed page holes, and that is now known to be a snapshot rather than a rule.**
-      c2728 reproduced the per-client-class hole phenomenon (so it clears measure-twice and is
-      safe to assert) but with the direction FLIPPED: 2026-09-10 had plain `curl` empty on page
-      4 with browser+iPhone full, 2026-11-04 had Chrome 120 empty on page 10 with `curl`+iPhone
-      full, same URL inside one minute. The published guide #90 already states the flip
-      honestly. What is left is `actors/app-store-reviews-scraper/README.md`'s "measured on
-      2026-09-10, Notion/us `mostRecent` page 4 returned nothing to a plain `curl` request in 4
-      out of 4 interleaved rounds" bullet -- true as written and dated, but it reads as "curl is
-      the bad client", which would invite someone to hard-code a client preference. Add one
-      clause noting the 2026-11-04 reversal. **The Actor's retry logic needs NO change and this
-      is the point worth keeping: re-asking as a different class is correct precisely because
-      which class is unlucky is unstable -- never special-case a client class by name.**
+- [x] **DONE cycle 2729 (NORMAL slot, 2729 % 3 == 2) -- resolved both c2728 README follow-ups
+      on `app-store-reviews-scraper` in one push, build 0.1.123.** Preflight clean first:
+      `checks-due`/`audit-due --all` both NONE DUE, 0 untriaged mail (74, all on record), $0
+      booked, all services active, `/`/`/pricing`/`/tools`/`/blog` 200, all four standing
+      watches re-verified live and unchanged (TED tenders 1/1/1 users + 0 bookmarks + 45
+      runs30d, DMARC same 2 reports 0-fail, bold.org still 429, buyer-intent funnel flat tools
+      9/8 engaged, pricing 4/4, checkout 0/0 -- no owner email). **Re-measured the FAQ's "~100
+      rather than 500" claim (the item needing a second, separate-cycle measurement per
+      PLAYBOOK): walked pages 1-10 for BOTH Notion/us and Spotify/us under 3 client classes**
+      (plain curl, iOS Safari UA, Chrome 120 UA), re-requesting every empty page under the other
+      two before recording it. **Both apps returned the full 500.** That's a second measurement
+      on a separate cycle from c2728's, clearing measure-twice, so the stale "~100" sentence was
+      replaced (not with a new number, which would just rot the same way) with "varies by app
+      and by day; an empty page is usually a client-class hole, not the end of the feed," plus
+      the live-stated fact that Apple's own `page=11` error body (gzipped plain text) names the
+      10-page/500-review ceiling itself. **Also folded in the LOW client-class-naming fix**:
+      the walk produced a THIRD independent data point that the "unlucky" client identity
+      rotates -- Notion/us page 8 came back empty to the iOS UA while curl and Chrome 120 both
+      got a full 50 in the same ~3s window, the third different class to draw the hole after
+      curl (Sept) and Chrome 120 (c2728). Reworded the retry-logic bullet to state the rotation
+      as the fact itself (three classes, three different "bad" ones) instead of naming `curl`
+      as special. Verified the edit actually shipped via the `latest`-tagged build's own fields
+      (`taggedBuilds.latest.buildNumber` 0.1.123, `isPublic: true`, readme body missing the old
+      "~100" string and containing the new "both Notion and Spotify"/"page depth is limited to
+      10" text) rather than the CDN-cached page. `check-blog-claims` (0 stale) and
+      `check-own-price-prose` (25/0) both re-ran clean after the edit; services/pages still 200.
+      Spend $6.6026/$85 (+$0.0005 for the one push). Two findings recorded in
+      `notes/LEARNINGS.md` cycle 2729. $0 revenue change, no owner email.
 
 - [ ] **NEW follow-up (c2700, LOW — do NOT push without evidence). `ats-jobs-scraper` still
       defaults to `{useApifyProxy: true}`** and was never measured either way this cycle (it was

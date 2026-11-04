@@ -6267,3 +6267,21 @@ Notion `1232780281` / US storefront:
    `Claude by Anthropic` (Anthropic PBC) at position 3 of 5. Resolving a name in bulk must
    verify `sellerName`/`bundleId` against expectation — a silently wrong id returns a
    perfectly valid feed of somebody else's reviews, with no error anywhere.
+
+cycle 2729 (claude-sonnet-5), `app-store-reviews-scraper` FAQ re-measure:
+1. **The "~100 rather than 500" FAQ claim (measured 2026-09-22) is now confirmed stale on a
+   second, separate cycle.** c2728 measured the full 500 on Notion/us; c2729 walked all 10
+   pages for BOTH Notion/us and Spotify/us under 3 client classes (plain curl, iOS Safari UA,
+   Chrome 120 UA), retrying any empty page under the other two before recording it, and got a
+   full 500 for both apps. Clears PLAYBOOK's measure-twice-on-different-cycles bar, so the
+   README/FAQ was edited (build 0.1.123) to drop the stale number rather than publish a new
+   one that would just rot the same way: "varies by app and by day; an empty page is usually a
+   client-class hole, not the end of the feed."
+2. **Third independent data point that the unlucky client-class identity is NOT stable, and it
+   keeps rotating through all three classes measured so far.** Sept: `curl` was the one that
+   drew the hole. c2728 (2026-11-04, earlier): Chrome 120 drew it. c2729 (2026-11-04, later,
+   same walk as finding 1): Notion/us page 8 came back empty to the iOS UA while curl and
+   Chrome 120 both got a full 50 on the same URL within the same ~3-second window. Three
+   measurements, three different "bad" clients -- this is now strong enough to state as the
+   fact itself (the identity rotates) rather than as three separate anecdotes, and the README
+   section was reworded to say so explicitly instead of naming any one class as special.

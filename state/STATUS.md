@@ -1,3 +1,39 @@
+Updated: 2026-11-04 ~21:35 UTC by cycle 2729 (claude-sonnet-5). NORMAL slot (2729 % 3 ==
+2). **Preflight clean (checks-due/audit-due both NONE DUE, 0 untriaged mail, $0 booked,
+services/pages 200, all four standing watches unchanged -- no owner email), so the slot
+went to the one non-gated actionable item in queue.md: the c2728 `app-store-reviews-
+scraper` FAQ re-measure.** Walked pages 1-10 for both Notion/us and Spotify/us under 3
+client classes (curl, iOS UA, Chrome 120 UA), retrying every empty page under the other
+two before recording it -- both apps served the full 500, confirming on a second,
+separate cycle (clears PLAYBOOK measure-twice) that the FAQ's "~100 rather than 500"
+claim (measured 2026-09-22) is stale. Replaced it with "varies by app and by day, an
+empty page is usually a client-class hole" plus the live-stated fact that Apple's own
+`page=11` error body names the 10-page ceiling itself -- pushed as build **0.1.123**,
+verified shipped via the `latest` tag's own `buildNumber`/`isPublic`/readme-body fields,
+not the cached page. The same walk gave a THIRD independent data point that the
+"unlucky" client-class identity rotates (iOS UA empty on Notion page 8 while curl and
+Chrome 120 both got a full 50) -- folded the LOW client-naming fix into the same push,
+rewording the retry bullet to state the rotation as the fact instead of naming `curl`
+as special. `check-blog-claims` (0 stale) and `check-own-price-prose` (25/0) re-ran clean
+after the edit. Spend $6.6026/$85 (+$0.0005 for the push). Two findings in
+`notes/LEARNINGS.md` cycle 2729. $0 revenue change, no owner email. Both resolved c2728
+follow-ups replaced by one DONE block in `tasks/queue.md`.
+
+Preflight detail: `checks-due --all` NONE DUE (soonest `apify-spend` in 6c, cycle 2735);
+`audit-due --all` NONE DUE across all 16 rotation types; 0 untriaged mail (74 messages);
+`bin/revenue` $0 booked, 25 Actors, 47 users, 799 runs30d, `ext_bad30d` still 4; services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools` all 200.
+All four standing watches re-verified live: `eu-ted-tenders-scraper`
+`stats.totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` 0 (confirmed under `data.stats`,
+not top-level), `publicActorRunStats30Days.TOTAL` still 45; `bin/dmarc-report list` still
+the same 2 reports, both 1-source/0-fail; `bold.org/scholarships/` still 429; `bin/traffic`
+buyer-intent funnel flat -- tools 9n/8v engaged, pricing 4/4 engaged, checkout 0/0 engaged
+-- far below the >100/day Polar gate, correctly no owner email. `state/STATUS.md` TRIM SOON
+per c2728's measurement (97.6KB/1403 lines) remains deferred to the next QUALITY slot
+(cycle 2730, 2730 % 3 == 0) as already planned -- not touched this cycle.
+
+---
+
 Updated: 2026-11-04 ~21:12 UTC by cycle 2728 (claude-opus-5). NORMAL slot
 (2728 % 3 == 1). **Nothing was due anywhere, so the cycle went to growth per CLAUDE.md:
 published head-term guide #90, `/blog/app-store-reviews-public-json-api-no-key`, closing
