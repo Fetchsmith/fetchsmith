@@ -99,9 +99,9 @@
             "title": "Proxy configuration",
             "type": "object",
             "editor": "proxy",
-            "description": "Route storefront requests through Apify Proxy. Recommended: some stores rate-limit or geo-gate products.json by IP, and residential/country-specific proxies also return that country's prices and currency. Leave as-is to use automatic Apify Proxy; runs on accounts without proxy access fall back to a direct connection.",
+            "description": "Route storefront requests through Apify Proxy. OFF by default, and you should usually leave it off: as of 2026-11-04 many storefronts answer 403 to Apify's shared datacenter pool while returning products normally over a direct connection, so turning the proxy on can cost you products rather than win them. Turn it on when you actually need it — a store rate-limits you by IP (429), or you want a country-specific RESIDENTIAL group to read that country's prices and currency. If a store returns 403 either way, it is bot-protected at the store level and residential is the only thing that may help.",
             "default": {
-                "useApifyProxy": true
+                "useApifyProxy": false
             }
         },
         "detailLevel": {

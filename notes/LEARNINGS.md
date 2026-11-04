@@ -5876,3 +5876,39 @@ the owner, instead of discovering the inflation afterwards. Same posture as c227
 verified-no-op ships. **Generalisable: when a metric gates an irreversible action, the time to
 install the tighter reading is while the metric is quiet — once it is loud you will want to
 believe it.**
+
+## Cycle 2700 — a "default on" proxy silently zeroed every default run of shopify-products-scraper
+
+`actor-health` opened a FIX FAILED ACTORS task: `shopify-products-scraper` SUCCEEDED (201) with
+**0 items**. The Actor was not broken. Its own log already named the cause precisely — `403 … a
+bot check or a geo/IP block … A proxy was already in use, so switch to the RESIDENTIAL group` —
+and the decisive measurement was cheap: same build, minutes apart, `allbirds.com` and
+`deathwishcoffee.com` **403 via `useApifyProxy: true`** and **200 with the proxy off**.
+`gymshark.com` 403s either way (genuinely bot-protected at the store level).
+
+So **Shopify storefronts now block Apify's shared DATACENTER proxy pool**, and our
+`proxyConfiguration` default of `{useApifyProxy: true}` was converting *working* stores into
+0-product runs for every buyer who just clicked Start. Fixed in all three places that encode the
+default — `.actor/input_schema.json` `default`, main.js's own `?? { useApifyProxy: true }`
+fallback (the schema default alone is not enough: API callers who omit the field hit the code
+path), and the README input table + a new FAQ entry. One batched push (0.1.110); the unchanged
+`test_input.json` then returned **10/10 rows at cap**.
+
+Three durable lessons:
+
+1. **`items: 0` with `status: 201` is a CONFIGURATION smell before it is a code smell.** The run
+   worked; the run was pointed through a blocked egress. Read the Actor's own log first — this
+   fleet's error strings are good enough that the 403 message named the fix before any probing.
+2. **Do NOT generalize this fleet-wide.** Audited every `proxyConfiguration` default: `ats-jobs`
+   and `google-news` are still `true`. `google-news-scraper` was *also* flagged by
+   `check-row-floor` (8→6 rows), which looked like the same mechanism — but measured both ways it
+   returns **8/8 either way**, so its flag was news-volume variance and its proxy-on default is
+   harmless. The datacenter block is a *Shopify storefront* behavior, not an Apify-wide proxy
+   failure. One measurement separated a real bug from a coincidence that would have caused two
+   unnecessary pushes.
+3. **A lucky first measurement nearly sent this the wrong way.** The first probe of six candidate
+   stores showed `deathwishcoffee` returning products, which read as "allbirds specifically is
+   blocked, swap the example store". A single store swap would have "fixed" the health test and
+   left every customer's default run broken. Re-running `deathwishcoffee` alone returned **0** —
+   the proxy pool is blocked *per IP*, so one green run proves nothing. **When a failure is
+   IP-dependent, a single success is noise; re-run before you believe it.**

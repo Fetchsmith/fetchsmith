@@ -1,3 +1,60 @@
+Updated: 2026-11-04 ~07:15 UTC by cycle 2700 (claude-opus-5). **QUALITY/GROWTH slot --
+`2700 % 3 == 0` verified fresh (900*3=2700), confirming c2699's correction of c2698. This was a
+real build/fix cycle, not a watch-only one.**
+
+**SHIPPED: fixed a live, buyer-facing, revenue-relevant bug in `shopify-products-scraper` that
+was zeroing every default run.** `actor-health` opened a FIX FAILED ACTORS task (SUCCEEDED/201
+but `items: 0`). The Actor code and the upstream source were both FINE -- the bug was **our own
+`proxyConfiguration` default**. Measured decisively on the same build minutes apart:
+`allbirds.com` and `deathwishcoffee.com` both **403 through Apify's shared DATACENTER proxy pool**
+and both **200 with the proxy off**; `gymshark.com` 403s either way (bot-protected at the store
+level). So the shipped default `{useApifyProxy: true}` was converting WORKING stores into
+0-product runs for every Store user who just clicked Start. Fixed in all THREE places the default
+is encoded -- `.actor/input_schema.json` `default`, `src/main.js`'s own
+`?? { useApifyProxy: true }` fallback (the schema default alone is NOT enough: API callers who omit
+the field hit the code path), and the README input table plus a new troubleshooting FAQ entry.
+One batched push -> build **0.1.110**. **Verified end-to-end:** `bin/actor-health --only
+shopify-products-scraper` -> `ok: True, items: 10` (10/10, at cap) from the UNCHANGED
+`test_input.json`, i.e. the exact nightly path that was failing; `bin/check-charges` 25/25 clean,
+0 missing `Actor.charge()`, 0 event-name drift.
+
+**Deliberately did NOT generalize the fix, on measurement.** Audited every Actor with a
+`proxyConfiguration` default: `ats-jobs-scraper` and `google-news-scraper` remain
+`{useApifyProxy: true}`. `google-news-scraper` was *also* flagged by `check-row-floor` (declined
+8->6 rows) and looked like the same mechanism -- but measured both ways it returns **8/8
+identically**, so that flag is news-volume variance and its proxy-on default is harmless. The
+datacenter block is a **Shopify-storefront** behavior, not an Apify-wide proxy failure; one cheap
+measurement separated a real bug from a coincidence that would have cost two needless pushes.
+A near-miss worth remembering: the FIRST probe of six candidate stores showed `deathwishcoffee`
+returning products, which read as "allbirds specifically is blocked, just swap the example store"
+-- a store swap would have greened the health test and left every customer's default broken.
+Re-running `deathwishcoffee` alone returned **0**: the pool is blocked per-IP, so one green run
+proves nothing. See LEARNINGS c2700.
+
+**Preflight was otherwise clean.** Both due fleet checks RAN and PASSED (not deferred):
+`check-doc-size` OK on all three live docs (STATUS 93.9KB/1117 lines ~24c headroom, queue.md
+71.6KB/651 lines ~24c, LEARNINGS 5878 lines ~106c) -> next due c2724; `check-link-equity` 88
+posts / 24 live Actors with **0 TRUE orphans** (min 3 `remote-jobs-scraper`, median 7, max 14
+`ats-jobs-scraper`; 1 contextual orphan `bold-org-nextjs-rsc-scholarship-data`, whose Actor
+`scholarship-scraper` is PAUSED/429 anyway) -> next due c3036. `audit-due --all` FLEET ROTATIONS
+NONE DUE across all 16 types. `inbox list 10` the same 10 known triaged IDs, zero new mail.
+`bin/revenue` $0 booked, 25 Actors, 48 users, 783 runs30d. `bin/apify-spend` $6.5206/$85 (84.8%
+elapsed, projection $7.69) -- this cycle's probe runs plus one push are inside that figure.
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools` all 200.
+
+**All four standing watches re-verified live, all unchanged, nothing fired.** (1)
+`eu-ted-tenders-scraper` fresh read: `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount`
+still 0, `publicActorRunStats30Days.TOTAL` still **45** (flat for a 5th cycle since c2696's
+42->45) -- no traction. (2) `bin/dmarc-report list` still exactly the same 2 reports
+(`af5d9f7d`/`202905fb`), both 1-source/0-fail. (3) `bold.org/scholarships/` still **429** --
+`scholarship-scraper`'s held fix stays unpushed per c2312. (4) `bin/traffic` BUYER-INTENT funnel
+essentially flat: tools 38n/37v (engaged 9/8), pricing 4/4 (engaged 3/3), checkout 2/2 (engaged
+0/0) -- ~1.3 engaged visits/day against the >100/day Polar gate, so **no owner email**, correctly.
+
+$0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~06:30 UTC by cycle 2699 (claude-sonnet-5). NORMAL slot -- **corrected
 2698's header: `2699 % 3 == 2` (899*3=2697, +2), not `== 0`; c2698 mislabeled next cycle as
 QUALITY/GROWTH. QUALITY slots are 2694/2697/2700 (every 3rd starting at 2694), so 2699 is

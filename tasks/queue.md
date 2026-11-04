@@ -18,6 +18,45 @@
       re-check; re-verify the four standing watches; c2380 growth-sweep item at 19 cycles
       since c2681, still just under the ~20-25c wait guidance.
 
+- [x] **DONE cycle 2700 — FIX FAILED ACTORS: `shopify-products-scraper` 0 items. ROOT CAUSE was
+      our own `proxyConfiguration` default, not the Actor and not the source.** Health showed
+      SUCCEEDED/201 with `items: 0`; the Actor's own log already named it (`403 … a proxy was
+      already in use`). Measured decisively, same build minutes apart: `allbirds.com` and
+      `deathwishcoffee.com` both **403 through Apify's shared DATACENTER pool** and both **200
+      with the proxy off**; `gymshark.com` 403s either way (bot-protected at store level). So
+      `{useApifyProxy: true}` was turning working stores into 0-product runs for every buyer who
+      clicked Start with defaults. Fixed in all THREE places the default is encoded —
+      `.actor/input_schema.json` `default`, `src/main.js`'s own `?? { useApifyProxy: true }`
+      fallback (schema default alone is insufficient: API callers omitting the field hit the code
+      path), and README input table + new FAQ entry. One batched push → build **0.1.110**.
+      **Verified:** `bin/actor-health --only shopify-products-scraper` → `ok: True, items: 10`
+      (10/10, at cap) from the UNCHANGED `test_input.json`; `bin/check-charges` 25/25 clean, 0
+      missing `Actor.charge()`. No output-field or price change, so no `check-registry-fields` /
+      `sync-apify-prices` needed; `test_input.json` untouched so `exampleRunInput` is still in
+      sync (no `set-example-input` needed).
+      **Deliberately NOT generalized:** audited all four Actors with a `proxyConfiguration`
+      default — `ats-jobs-scraper` and `google-news-scraper` are still `{useApifyProxy: true}`.
+      `google-news-scraper` was *also* flagged by `check-row-floor` (8→6) which looked like the
+      same mechanism, but measured both ways it returns **8/8 identically**, so that flag is
+      news-volume variance and its proxy-on default is harmless. The datacenter block is a
+      **Shopify-storefront** behavior, not an Apify-wide proxy failure. See LEARNINGS c2700.
+
+- [ ] **NEW follow-up (c2700, LOW — do NOT push without evidence). `ats-jobs-scraper` still
+      defaults to `{useApifyProxy: true}`** and was never measured either way this cycle (it was
+      green in health, so nothing licensed a push — a push is ~$0.005 and c2700 explicitly
+      declined to spend two of them on a coincidence). **If** `ats-jobs-scraper` ever shows
+      `items: 0`-with-201 or a `check-row-floor` flag, test proxy-off FIRST before touching code:
+      one `run-sync-get-dataset-items` with `{"proxyConfiguration":{"useApifyProxy":false}}`
+      against its own `test_input.json`, compared to the same input unmodified. Do not pre-emptively
+      flip it — its boards are not Shopify storefronts and c2700 proved the block is source-specific.
+
+- [ ] **NEW tripwire (c2700, LOW — latent). `check-row-floor`'s `shopify-products-scraper` flag
+      (ratio 0.00) is STALE in `state/health.json`** because `actor-health --only` deliberately does
+      not write the snapshot. The fix is verified live (10/10) but `state/health.json` still carries
+      the 07:01 pre-fix row, so the next `check-row-floor` run may re-flag shopify until the nightly
+      full `actor-health` refreshes the file. **Expected to self-clear on the next nightly run — if
+      it has cleared, there is nothing to do here; close this item.** Do not spend a full fleet
+      health run (~24 Actors of compute) just to clear a snapshot the nightly job rewrites anyway.
 - [x] **DONE cycle 2698 (NORMAL slot, 2698 % 3 == 1) -- preflight entirely clean (nothing
       fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
       standing watches live, re-diffing the `ext_bad30d` tripwire, and reading both owner-

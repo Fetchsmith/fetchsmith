@@ -314,16 +314,22 @@ function watchVerdict(item, storeSeeding, storeUrl) {
   };
 }
 
-// Some storefronts rate-limit or geo-gate products.json by IP, and the platform's shared egress
-// IPs get hit first. Route through Apify Proxy when the run has access to it; if the account has
-// no proxy access the run must still work, so fall back to a direct connection instead of failing.
+// Some storefronts rate-limit or geo-gate products.json by IP, so routing through Apify Proxy
+// USED to be the better default. It is not any more: as of 2026-11-04 Shopify answers 403 to the
+// shared DATACENTER pool on storefronts that return 200 to a plain connection (measured same
+// cycle, same build, minutes apart: allbirds.com and deathwishcoffee.com both 403 via
+// `useApifyProxy: true` and both 200 with the proxy off; gymshark.com 403s either way because it
+// is genuinely bot-protected at the store level). The old default therefore turned WORKING stores
+// into 0-product runs for anyone who just clicked Start, so the default is now a direct
+// connection and the proxy is opt-in for the cases it still helps (per-IP rate limits, and
+// country-specific residential groups for local prices/currency).
 let proxyUrlFor = async () => undefined;
-// Whether a proxy actually ended up in use, so the 401/403/429 advice below can stop telling a
-// buyer to "re-run with proxyConfiguration enabled" when it already is (the default is on, so that
-// was the usual case, not the edge case) and point at the residential group instead.
+// Whether a proxy actually ended up in use, so the 401/403/429 advice below points at the step the
+// buyer has NOT already taken: enabling the proxy when it is off (now the default), or switching to
+// the residential group when a datacenter proxy is already in play.
 let proxyInUse = false;
 try {
-  const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: true });
+  const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: false });
   if (proxyConfiguration) {
     proxyUrlFor = (sessionId) => proxyConfiguration.newUrl(sessionId);
     proxyInUse = true;
@@ -434,9 +440,10 @@ const STOREFRONT_STATUS = {
   401: 'this storefront is password-protected (Shopify 401) — the merchant has an "Opening soon"/password page up, so products.json is not public. Ask them for the storefront password, or drop this URL.',
   402: 'this store is frozen or closed (Shopify 402 "Unavailable Shop") — the merchant\'s plan lapsed. There is nothing to scrape, and this is not a failure on our end.',
   // The proxy-dependent half of the 403/429 advice is resolved against `proxyInUse` (set above, so
-  // it is already known here): the default IS useApifyProxy, so "enable proxyConfiguration" was
-  // advice the buyer had almost always already taken, which reads as the tool not knowing its own
-  // state. When a proxy is already in play the useful next step is a different group, not enabling it.
+  // it is already known here) rather than assuming a default, so the tool never tells a buyer to
+  // take a step they have already taken. Since the default flipped to a direct connection
+  // (2026-11-04) the usual branch is "enable proxyConfiguration"; when a datacenter proxy IS
+  // already in play the useful next step is a different group, not enabling it.
   403: `this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. ${proxyInUse ? 'A proxy was already in use, so switch proxyConfiguration to the RESIDENTIAL group' : 'Re-run with proxyConfiguration enabled (residential group)'} to get a different IP.`,
   404: 'there is no Shopify store at this URL (404 "Not Found") — check the domain/handle for a typo, or the store has been deleted.',
   429: `this storefront rate-limited us (429) — a transient per-IP throttle, not a missing or disabled products.json. Re-run with fewer storeUrls${proxyInUse ? ', or switch proxyConfiguration to the RESIDENTIAL group so each request comes from a different IP (the shared datacenter pool this run used is rate-limited by some storefronts)' : ', or with proxyConfiguration enabled so each request comes from a different IP'}.`,
