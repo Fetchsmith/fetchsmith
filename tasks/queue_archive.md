@@ -69282,3 +69282,157 @@ current "next cycle" pointer). Verbatim, no content changed.
       peaking at 14.3:1 in W40 and settling to ~6.4:1 is **search recovering, not AI
       declining** -- do not read that ratio drop as lost AI traffic.
 
+
+## Archived at cycle 2703 (queue.md trim, `bin/_trim2703q.py`) -- 9 DONE blocks, document order preserved
+
+- [x] **DONE cycle 2701 (NORMAL slot, 2701 % 3 == 1 -- recomputed fresh: 2700 is divisible by
+      3, so 2701/2702/2703 are 1/2/0, confirming 2700 was correctly the QUALITY slot and 2703
+      is next).** Preflight entirely clean: `checks-due --all`/`audit-due --all` both NONE DUE
+      (soonest `check-source-endpoints` in 1c); same 10 known triaged inbox IDs, zero new mail;
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 783 runs30d; `bin/apify-spend` $6.5537/$85
+      (84.9% elapsed, projection $7.72); `check-doc-size` TRIM SOON on STATUS.md (98.2KB/1174
+      lines, ~23c headroom) and queue.md (75.0KB/690 lines, ~24c headroom) but NOT due today --
+      correctly deferred to the next QUALITY slot (2703) per the doc-trim cadence's own rule 2
+      (trim only in a QUALITY slot); LEARNINGS OK (5914 lines, ~104c headroom); services active
+      and `/`, `/pricing`, `/tools` all 200. `state/health.json` (c2700's fix-verification run,
+      07:01 UTC, pre-dates the nightly 03:30 UTC job) still carries the stale pre-fix
+      `shopify-products-scraper` row-floor flag per the c2700 follow-up -- expected to self-clear
+      on tonight's 2026-11-05 03:30 UTC nightly run; did NOT spend a full fleet health run to
+      force it early, per that follow-up's own instruction.
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d
+      (flat); DMARC same 2 reports (`af5d9f7d`/`202905fb`); `bold.org` still 429; `bin/traffic`
+      BUYER-INTENT funnel essentially flat (tools 37n/36v/engaged 9/8, pricing 4/4/engaged 3/3,
+      checkout 2/2/engaged 0/0) -- nowhere near the >100/day Polar gate.
+      **Re-ran the c2380 growth-sweep candidate re-grep fresh (20 cycles since c2681, inside the
+      guided 20-25c window): same method (`grep` for `N -> M ... listings` shape) returned the
+      same 8-9 files as before (`ats-jobs-scraper`, `clinicaltrials-scraper`,
+      `fec-campaign-finance-scraper`, `federal-register-scraper`, `remote-jobs-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`, `us-federal-awards-scraper`), and
+      every one of their README mtimes was touched within the last 0-5 days by an unrelated
+      cadence (competitor_audit/varied_test/build) -- a 4th consecutive 0-candidate read
+      (c2654, c2662, c2681, c2701).** Updated the item below with this result; given four
+      straight 0-candidate reads, the next retry guidance is widened to ~25-30 cycles rather
+      than re-checking at the bottom of the old window every time.
+      Nothing fleet-wide, in the inbox, or in any re-checked gate licensed a code change, so per
+      the standing c2524 rule none was manufactured. $0 spent, $0 revenue change, no owner
+      email. **Next cycle (2702, NORMAL slot, 2702 % 3 == 2):** recompute `checks-due`/
+      `audit-due` fresh; re-verify the four standing watches; check whether tonight's nightly
+      `actor-health` run (03:30 UTC) cleared the stale shopify row-floor flag.
+
+- [x] **DONE cycle 2699 (NORMAL slot -- 2699 % 3 == 2, correcting c2698's mistaken label of
+      2699 as QUALITY/GROWTH; actual QUALITY slots are 2694/2697/2700, every 3rd starting at
+      2694).** Preflight entirely clean: `checks-due`/`audit-due --all` both NONE DUE (soonest
+      `check-doc-size` in 1c, cycle 2700); same 10 known triaged inbox IDs, zero new mail;
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 783 runs30d; `bin/apify-spend` $6.5025/$85
+      (84.7% elapsed, projection $7.67); `bin/check-doc-size` OK on all three docs (~24-25c
+      headroom each); `bin/actor-health` full fleet green; `bin/check-charges` 25/25 clean;
+      services and `/`, `/pricing`, `/tools` all 200.
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d
+      (4th flat cycle since c2696's bump); DMARC same 2 reports; `bold.org` still 429;
+      `bin/traffic` BUYER-INTENT funnel essentially flat vs c2696-98 (tools 39n/38v/engaged
+      9/8, pricing 4/4/engaged 3/3, checkout 2/2/engaged 0/0).
+      **`ext_bad30d` re-diffed:** still exactly the same 4 lifetime events, no new entry.
+      Scanned all open queue items -- all correctly gated, nothing newly due. Per the
+      standing c2524 rule, nothing licensed a code change so none was manufactured. $0
+      spent, $0 revenue change, no owner email. **Next cycle (2700 -- verify `% 3 == 0`
+      fresh, this IS the real QUALITY/GROWTH slot):** `check-doc-size` due for periodic
+      re-check; re-verify the four standing watches; c2380 growth-sweep item at 19 cycles
+      since c2681, still just under the ~20-25c wait guidance.
+
+- [x] **DONE cycle 2700 — FIX FAILED ACTORS: `shopify-products-scraper` 0 items. ROOT CAUSE was
+      our own `proxyConfiguration` default, not the Actor and not the source.** Health showed
+      SUCCEEDED/201 with `items: 0`; the Actor's own log already named it (`403 … a proxy was
+      already in use`). Measured decisively, same build minutes apart: `allbirds.com` and
+      `deathwishcoffee.com` both **403 through Apify's shared DATACENTER pool** and both **200
+      with the proxy off**; `gymshark.com` 403s either way (bot-protected at store level). So
+      `{useApifyProxy: true}` was turning working stores into 0-product runs for every buyer who
+      clicked Start with defaults. Fixed in all THREE places the default is encoded —
+      `.actor/input_schema.json` `default`, `src/main.js`'s own `?? { useApifyProxy: true }`
+      fallback (schema default alone is insufficient: API callers omitting the field hit the code
+      path), and README input table + new FAQ entry. One batched push → build **0.1.110**.
+      **Verified:** `bin/actor-health --only shopify-products-scraper` → `ok: True, items: 10`
+      (10/10, at cap) from the UNCHANGED `test_input.json`; `bin/check-charges` 25/25 clean, 0
+      missing `Actor.charge()`. No output-field or price change, so no `check-registry-fields` /
+      `sync-apify-prices` needed; `test_input.json` untouched so `exampleRunInput` is still in
+      sync (no `set-example-input` needed).
+      **Deliberately NOT generalized:** audited all four Actors with a `proxyConfiguration`
+      default — `ats-jobs-scraper` and `google-news-scraper` are still `{useApifyProxy: true}`.
+      `google-news-scraper` was *also* flagged by `check-row-floor` (8→6) which looked like the
+      same mechanism, but measured both ways it returns **8/8 identically**, so that flag is
+      news-volume variance and its proxy-on default is harmless. The datacenter block is a
+      **Shopify-storefront** behavior, not an Apify-wide proxy failure. See LEARNINGS c2700.
+
+- [x] **DONE cycle 2698 (NORMAL slot, 2698 % 3 == 1) -- preflight entirely clean (nothing
+      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
+      standing watches live, re-diffing the `ext_bad30d` tripwire, and reading both owner-
+      originated inbox threads in full to confirm neither has outstanding action.** Preflight:
+      `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 2c, cycle
+      2700); `bin/revenue` $0 booked, 25 Actors, 49 users, 783 runs30d; `bin/apify-spend`
+      $6.5017/$85 (84.7% elapsed, projection $7.68); all three docs OK; services and `/`,
+      `/pricing`, `/tools` all 200.
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d (3rd
+      flat cycle since c2696's bump); DMARC same 2 reports; `bold.org` still 429; `bin/traffic`
+      BUYER-INTENT funnel byte-identical to c2696/c2697 (tools 39n/38v/engaged 9/8, pricing
+      4/4/engaged 3/3, checkout 2/2/engaged 0/0).
+      **`ext_bad30d` re-diffed:** still exactly the same 4 lifetime events, no new entry.
+      **Both owner inbox threads confirmed fully closed:** `2b237f1b` (CourtListener token) --
+      `CL_API_TOKEN` live in `secrets/env` since 2026-10-28, wired into `main.js:514`, episode
+      fully resolved per LEARNINGS c5251-5253. `01852eaa` (Apify `/v2/store` 2026-11-15 ranking
+      change) -- already the c2478/c2496 queue item below, all exposed callers patched, self-test
+      locked in, nothing new to do before the deadline.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2699, QUALITY/GROWTH slot,
+      2699 % 3 == 0):** recompute `checks-due`/`audit-due` fresh (`check-doc-size` due cycle
+      2700, likely due by then); re-verify the four standing watches; c2380 growth-sweep item at
+      17-18 cycles since c2681, still under the ~20-25c guidance.
+
+- [x] **DONE cycle 2697 (QUALITY/GROWTH slot, 2697 % 3 == 0) -- preflight entirely clean (nothing
+      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
+      standing watches live, a fleet-wide `usage-trend` sanity check on the users 48->49 /
+      runs30d 796->787 moves, and re-reading the two most business-sounding inbox items in full
+      rather than trusting the cached "zero replies owed" verdict.** Preflight: `checks-due --all`/
+      `audit-due --all` both NONE DUE (soonest `check-doc-size` in 3c, cycle 2700); `bin/revenue`
+      $0 booked, 25 Actors, 49 users, 787 runs30d; `bin/apify-spend` $6.5008/$85 (84.6% elapsed,
+      projection $7.68); `check-doc-size` OK on all three docs; services and `/`, `/pricing`,
+      `/tools` all 200.
+      **Standing watches, all unchanged, nothing fired:** `eu-ted-tenders-scraper`
+      `publicActorRunStats30Days.TOTAL` still 45 (flat 2nd cycle since c2696's 42->45 move),
+      `totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` still 0 -- `bin/usage-trend` confirms
+      +8/24h on this Actor with `users` pinned at 1, matching c2696's "one caller ramping, not
+      discovery" reading. DMARC same 2 reports; `bold.org` still 429; `bin/traffic` BUYER-INTENT
+      funnel byte-identical to c2696 (tools 39n/38v/engaged 9/8, pricing 4/4/engaged 3/3,
+      checkout 2/2/engaged 0/0) -- flat, nowhere near the Polar gate. The c2696 follow-up (re-read
+      the 92%/90% crawler-shape ratios on a later non-adjacent cycle) stays deferred since 2697 is
+      adjacent to 2696.
+      **Fleet `users`/`runs30d` moves (48->49, 796->787) checked per-Actor, confirmed platform-
+      artifact noise** (`bkmk`/`rev` still 0 across all 25, no Actor's `users` column moved off its
+      long-pinned range) -- not a buyer signal.
+      **Re-read `a661a19a` (Bytewells/ThoughtPivot's 4th rental-marketplace pitch) and `5ce80b92`
+      (cold SEO-services spam) in full:** Bytewells was already closed at c2571 (their listing flow
+      requires signing in to a third party with our one Apify account's credentials -- a
+      disqualifying red flag independent of pitch polish); this is just a repeat, still correctly
+      unanswered. SEO spam is routine, no reply owed.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2698, NORMAL slot, 2698 % 3 ==
+      1):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing watches; c2380
+      growth-sweep item is at 16 cycles since its c2681 re-grep, still under the ~20-25c guidance.
+
+- [x] **DONE cycle 2696 (NORMAL slot, 2696 % 3 == 2) -- preflight entirely clean, so the cycle spent itself on growth work as `checks-due` instructs, and found a real defect in the ONE metric that gates an owner email: the buyer-intent funnel is ~4.3x inflated by distributed crawling that all four existing anti-crawler tests are structurally blind to.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 4c, cycle 2700); `inbox list 10` the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 8 cycles); `bin/apify-spend` $6.5003/$85 (84.5% elapsed, projection $7.69); all three docs OK; services and `/`, `/pricing`, `/tools` all 200.
+      **Standing watches, one real change:** `eu-ted-tenders-scraper` `publicActorRunStats30Days.TOTAL` moved **42 -> 45**, breaking 7 flat cycles, but `totalUsers7/30/90Days` is still exactly 1/1/1 and `bookmarkCount` still 0 -- 3 runs with no new user is the known non-billable platform-traffic baseline, NOT traction. DMARC still the same 2 reports (`af5d9f7d`/`202905fb`); `bold.org` still 429 (c2312 fix stays unpushed).
+      **The finding.** Ruled out the cheap explanations first: every UA in the verified buyer-intent set is a plausible browser string (no undeclared crawler token leaking past `NOTBOT`), and charge plumbing is not the `$0` cause (long since verified -- own-token runs are correctly free). Then measured the funnel's aggregate shape over the live 7-day window: **127 of 138 verified vids (92%) viewed exactly ONE path**, **142 of 157 verified views (90%) carried NO referrer**, IPs spread over **~30 distinct networks at 1-2 vids each**, and **22 distinct UA strings across 38 vids** (near 1:1) spanning **Chrome 117->156 and iPhone OS 11->18**. That is residential-proxy SEO/AI crawling. It defeats c32 (UA token), c1712 (renderer UAs), c2278 (same-vid burst) and c2644 (same-second UA rotation) *by construction*, because all four look for a concentration -- a bad UA, or many hits sharing a vid/IP/second -- and this population presents none.
+      **Shipped** `ENGAGED` in `bin/traffic` = verified AND (has a referrer OR viewed >=2 distinct paths), as a reported `engaged_n`/`engaged_v` column pair in the BUYER-INTENT block plus a 3-line header telling a future cycle to read it before mailing. Effect: `tools` **39n/38v -> 9n/8v**, `pricing` 4/4 -> 3/3, `checkout` 2/2 -> **0/0**. Verified `rc=0`, empty stderr, all 7 sections intact, and the `n`/`visitors` columns **byte-identical to the pre-edit run** -- no silent redefinition.
+      **Deliberately NOT folded into `VERIFIED`** (the reason is the whole design): STATUS.md's entire recorded traffic history and the CLAUDE.md gate's own wording (">100 verified visits/day") are denominated in `verified`, so redefining that term would invalidate ~2700 cycles of recorded comparisons instead of adding information. `ENGAGED` is also an honest FLOOR -- it undercounts a genuine direct-navigation single-page reader, the safe direction for a number whose only job is to decide an irreversible owner email.
+      Changed no decision today and that is the point: 9/7 == ~1.3 engaged tools-visits/day vs the 5.6/day `verified` reads, both far below >100/day. Same verified-no-op posture as c2278/c2644. $0 spent, $0 revenue change, no owner email. **Next cycle (2697, QUALITY/GROWTH slot, 2697 % 3 == 0):** recompute `checks-due`/`audit-due` fresh (`check-doc-size` and `check-link-equity` both due in 4c == cycle 2700, so likely still not due); re-verify the four standing watches, reading `engaged_*` alongside `verified` in the funnel now that it exists; see the c2696 follow-up item below.
+
+- [x] **DONE cycle 2695 (NORMAL slot, 2695 % 3 == 1) -- preflight entirely clean (nothing fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four standing watches live plus scanning every open queue item for anything newly actionable.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 5c, cycle 2700); `inbox list 10` the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 7 cycles); `bin/apify-spend` $6.4996/$85 (84.5% elapsed, projection $7.69); `check-doc-size` OK on all three docs (queue.md margin recovered to ~26c headroom post-c2694 trim); services and `/`, `/pricing`, `/tools` all 200.
+      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 42 runs30d (7th flat cycle); DMARC same 2 reports; `bold.org` still 429; traffic buyer-intent tools=39/38v, pricing=4/4v, checkout=2/2v -- flat, nowhere near the Polar gate.
+      **Scanned all 30 open items** -- all correctly gated. Specifically re-checked the two with the clearest "might be due" shape: c2478 Apify deadline still 11 days out; c2380 growth-sweep candidate list only 14 cycles since its c2681 re-grep, needs ~20-25. Nothing licensed a code change, so per the standing c2524 rule none was manufactured.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2696, NORMAL slot):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing watches; c2380 growth item still not due (15 cycles since c2681).
+
+- [x] **DONE cycle 2694 (QUALITY/GROWTH slot, 2694 % 3 == 0) -- executed the doc-trim cadence item's designated work: trimmed `tasks/queue.md` out of TRIM SOON (81.1KB/783 -> 58.0KB/560 lines).** Hazard grep run FIRST (cadence rule 1) over 215 archive-bound lines (9 DONE blocks, c2684-c2692): 5 hits, all citations of the cadence item's own rules, nothing uniquely homed -- CLEAN. Hoist-then-cut via new `bin/_trim2694q.py`: kept all 30 open blocks + newest DONE (c2693), archived the other 9 to `queue_archive.md`. All asserts passed; independently re-verified 0 lines missing across live+archive vs. the original. `check-doc-size` now OK on all three live docs. **Margin arithmetic (rule 4) was thin (~14.5KB)**, so also compressed two open items whose detail duplicates a fuller home elsewhere (the FDA `fda-recall-scraper` tripwire's three "re-checked, unchanged" paragraphs -> one; the c2168/c2268 `users`-signal item's historical numbers -> a pointer to LEARNINGS c2268, which already carries the full write-up) -- no unique content lost.
+      Preflight otherwise clean: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 6c, cycle 2700); `inbox list 10` same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 6 cycles); `bin/apify-spend` $6.4991/$85 (84.5% elapsed, projection $7.7); services and `/`, `/pricing`, `/tools` all 200. Re-verified all four standing watches live, all unchanged (eu-ted-tenders-scraper 1/1/1 users / 42 runs30d, DMARC same 2 reports, bold.org still 429, traffic buyer-intent tools=39/pricing=4, nowhere near the Polar gate).
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2695, NORMAL slot):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing watches; re-check `check-doc-size` on queue.md given the still-thin post-trim margin (~14.5KB).
+
+- [x] **DONE cycle 2693 (NORMAL slot, 2693 % 3 == 2) -- preflight entirely clean (nothing fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four standing watches live plus scanning every open queue item for anything newly actionable.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 7c, cycle 2700); `inbox list 10` the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 5 cycles); `bin/apify-spend` $6.4835/$85 (84.3% elapsed, projection $7.69); `check-doc-size` OK on STATUS.md/LEARNINGS, **TRIM SOON on queue.md (79.4KB, ~23c headroom)** -- left for c2694's QUALITY slot; services and `/`, `/pricing`, `/tools` all 200.
+      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper` `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount` still 0, 30d runs still 42 (5th flat cycle); `bin/dmarc-report list` still exactly the same 2 reports; `bold.org/scholarships/` still 429 (`scholarship-scraper`'s held c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT funnel tools=39/38v, pricing=4/4v, checkout=2/2v -- flat vs. prior cycles, nowhere near the >100/day Polar gate.
+      **Scanned all ~24 open (`- [ ]`) queue items** -- all remain correctly gated (standing tripwires/watches, the c2478 Apify deadline 11 days out, c2380 one-term-diff at 12 of its ~15-20c wait, c2692's grants-gov-scraper price-cut non-decision). Nothing licensed a code change, so per the standing c2524 rule none was manufactured.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2694, QUALITY/GROWTH slot):** trim `tasks/queue.md` per the doc-trim cadence item; recompute `checks-due`/`audit-due` fresh.
+

@@ -5912,3 +5912,22 @@ Three durable lessons:
    left every customer's default run broken. Re-running `deathwishcoffee` alone returned **0** —
    the proxy pool is blocked *per IP*, so one green run proves nothing. **When a failure is
    IP-dependent, a single success is noise; re-run before you believe it.**
+
+## Cycle 2703 — an Edit whose old_string is just a block's header line can silently eat the block's identity
+
+While trimming STATUS.md for this cycle's doc-trim-cadence work, the plan was to *prepend* a
+new cycle-2703 block above the existing top block (cycle 2702), per `check-status-blocks-kept`'s
+own standing instruction ("prepend your new block ABOVE the old top block instead of replacing
+it"). The `Edit` call's `old_string` was written as just the two-line "Updated: ... by cycle
+2702 ..." header (to anchor the insertion point), and `new_string` was the full new 2703 block
+ending in its own `---` separator. That is exactly backwards: it does not insert anything
+*above* the header, it **replaces the header itself**, leaving the 2702 block's body text
+still in the file but now headerless and unattributed to any cycle number.
+`check-status-blocks-kept`/`check-status-continuity` caught it immediately (2702 "missing"),
+which is the whole point of those guards existing — but it would have been silent without them.
+**The fix pattern: when prepending above an existing header line, the `old_string` must
+include that header line VERBATIM inside the replacement's `new_string` too** (new block +
+separator + the original header + original body), not just reference it as an anchor to
+overwrite. Re-run `check-status-blocks-kept` and `check-status-continuity` immediately after
+any STATUS.md edit that touches the top block, before doing anything else — it is a $0, 2-second
+check that catches exactly this class of mistake before it reaches a commit.
