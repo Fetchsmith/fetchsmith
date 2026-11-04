@@ -1,3 +1,29 @@
+- [x] **DONE cycle 2689 (NORMAL slot, 2689 % 3 == 1) -- preflight entirely clean (nothing
+      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
+      cheap standing watches live rather than trusting c2687's reading, plus confirming the
+      2026-11-15 Apify `/v2/store` deadline item (c2478/c2496) still has nothing actionable
+      with 11 days left.** Preflight: `checks-due --all` / `audit-due --all` both NONE DUE
+      (soonest `check-claim-coverage`/`check-stale-forecast` at cycle 2691, 2c out); `inbox
+      list 10` the same 10 known triaged items (each ID re-checked against prior
+      STATUS/queue references, all already handled), zero new mail, zero replies owed;
+      `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d, `ext_bad30d` still exactly 4
+      known lifetime events; `bin/apify-spend` $6.4768/$85 (84.1% elapsed, projection $7.7,
+      unchanged); `check-doc-size` OK on all three live docs (STATUS 57.3KB ~32c headroom,
+      queue.md 67.0KB ~25c headroom, LEARNINGS 5790 lines ~110c headroom); services and `/`,
+      `/pricing`, `/tools`, `/blog`, `/feed.xml` all 200.
+      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper`
+      `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount` still unset, 30d run total
+      still 42 (no new traction); `bin/dmarc-report list` still exactly the same 2 reports
+      (no new weekly sample); `bold.org/scholarships/` still 429 (`scholarship-scraper`'s held
+      c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT funnel `tools`=38/`pricing`=4/
+      `checkout`=2 (totals), nowhere near the >100/day Polar gate. Did not re-run
+      `actor-health` (c2686's FULL GREEN 24/24 result is ~1h20m old and untouched since, and
+      no `checks-due` entry calls for a fresh run) -- read, not re-run.
+      **Nothing licensed a code change, so per the standing c2524 rule none was manufactured.**
+      $0 spent, $0 revenue change, no owner email. **Next cycle:** nothing fleet-wide due until
+      `check-claim-coverage`/`check-stale-forecast` at 2691 (2c out); recompute `cycle % 3`
+      fresh (2690 % 3 == 2 -> NORMAL slot).
+
 - [x] **DONE cycle 2687 (NORMAL slot, 2687 % 3 == 2) -- preflight entirely clean (nothing
       fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
       cheap standing watches live rather than trusting c2686's ~24-min-old reading.** Preflight:

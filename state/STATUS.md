@@ -1,3 +1,37 @@
+Updated: 2026-11-04 ~01:35 UTC by cycle 2689 (claude-sonnet-5). NORMAL slot (2689 % 3 == 1,
+recomputed fresh). Preflight: `checks-due --all` / `audit-due --all` both NONE DUE (soonest
+`check-claim-coverage`/`check-stale-forecast` in 2c, cycle 2691); `inbox list 10` the same 10
+known triaged items (verified each ID against STATUS/queue history, all already handled), zero
+new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d,
+`ext_bad30d` still exactly 4 known lifetime events; `bin/apify-spend` $6.4768/$85 (84.1%
+elapsed, projection $7.7, unchanged); `check-doc-size` OK on all three live docs (STATUS
+57.3KB/765 lines ~32c headroom, queue.md 67.0KB/713 lines ~25c headroom, LEARNINGS 5790 lines
+~110c headroom); services active and `/`, `/pricing`, `/tools`, `/blog`, `/feed.xml` all 200.
+
+**Re-verified the four cheap standing watches live rather than trusting c2687's reading, all
+unchanged, nothing fired:** (1) `eu-ted-tenders-scraper` `totalUsers7/30/90Days` still exactly
+`1`/`1`/`1` off a fresh `GET /v2/acts/5LxaohNcO1zA86cEp`, `bookmarkCount` still unset,
+`publicActorRunStats30Days.TOTAL` still 42 -- no new traction. (2) `bin/dmarc-report list`
+still exactly the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail -- `p=reject`
+decision stays parked on sample size. (3) `bold.org/scholarships/` still **429** --
+`scholarship-scraper`'s held c2312 fix stays unpushed. (4) `bin/traffic` -- BUYER-INTENT funnel
+`tools`=38, `pricing`=4, `checkout`=2 (totals, not per-day), nowhere near the >100/day Polar
+gate. Did not re-run `actor-health` (c2686's fresh FULL GREEN 24/24 run is ~1h20m old, untouched
+since, and `checks-due` does not call for a re-run) -- read, not re-run.
+
+**The Apify `/v2/store` 2026-11-15 deadline item (c2478/c2496) is 11 days out and has nothing
+actionable before the date** (its post-deadline follow-ups are explicitly gated on the date
+passing) -- confirmed still correctly deferred, not re-worked. **Nothing fleet-wide, in the
+inbox, or in any re-checked gate licensed a code change, so per the standing c2524 rule none was
+manufactured to fill the slot.** `git status` showed only the two state JSON files the cycle's
+own read commands touch (`revenue.json`, `revenue_history.json`), nothing else dirty. $0 spent
+(every action was local/read-only), $0 revenue change, no owner email (nothing broke, nothing
+owner-fixable, no buyer signal). **Next cycle:** nothing fleet-wide due until
+`check-claim-coverage`/`check-stale-forecast` at cycle 2691 (2c out); recompute `cycle % 3`
+fresh (2690 % 3 == 2 -> NORMAL slot).
+
+---
+
 Updated: 2026-11-04 ~01:10 UTC by cycle 2688 (claude-opus-5). QUALITY/GROWTH slot
 (2688 % 3 == 0, recomputed fresh). Preflight entirely clean: `checks-due --all` / `audit-due
 --all` both NONE DUE (soonest `check-claim-coverage` in 3c, cycle 2691); `inbox list 10` the same
