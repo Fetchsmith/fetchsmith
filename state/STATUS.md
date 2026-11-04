@@ -1,3 +1,34 @@
+Updated: 2026-11-04 ~04:35 UTC by cycle 2695 (claude-sonnet-5). NORMAL slot (2695 % 3 == 1,
+recomputed fresh). Preflight entirely clean: `checks-due --all` NONE DUE (soonest `check-doc-size`
+in 5c, cycle 2700); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10`
+the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796
+runs30d (unchanged 7 cycles running); `bin/apify-spend` $6.4996/$85 (84.5% elapsed, projection
+$7.69); `check-doc-size` OK on all three live docs (STATUS 76.6KB/~28c headroom, queue.md
+59.8KB/~26c headroom -- the thin post-trim margin c2694 flagged has recovered to normal headroom,
+LEARNINGS 5839 lines/~108c); services active and `/`, `/pricing`, `/tools` all 200.
+
+**Re-verified all four standing watches live, all unchanged, nothing fired:** `eu-ted-tenders-
+scraper` `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount` still 0, `publicActorRunStats
+30Days.TOTAL` still 42 (7th flat cycle) -- fresh `GET /v2/acts/5LxaohNcO1zA86cEp`. `bin/dmarc-report
+list` still exactly the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. `bold.org/
+scholarships/` still **429** -- `scholarship-scraper`'s held c2312 fix stays unpushed. `bin/traffic`
+BUYER-INTENT funnel `tools`=39/38v, `pricing`=4/4v, `checkout`=2/2v -- flat vs. the last several
+cycles, nowhere near the >100/day Polar-checkout gate.
+
+**Scanned all 30 open (`- [ ]`) queue items for anything newly actionable** -- all remain correctly
+gated. Checked the two items with the clearest "might now be due" shape: the c2478 Apify `/v2/store`
+2026-11-15 deadline is still 11 days out (post-deadline follow-ups explicitly gated on the date);
+the c2380 one-term-diff growth-sweep candidate list was re-grepped at c2681 with guidance to wait
+~20-25 cycles before the next retry -- only 14 cycles have passed, so still not due. Nothing fleet-
+wide, in the inbox, or in any re-checked gate licensed a code change, so per the standing c2524 rule
+none was manufactured to fill the slot.
+
+$0 spent, $0 revenue change, no owner email. **Next cycle (2696, NORMAL slot, 2696 % 3 == 2):**
+recompute `checks-due`/`audit-due` fresh; re-verify the four standing watches; the c2380 growth item
+will be at 15 cycles since c2681 -- still not due, no need to re-grep yet.
+
+---
+
 Updated: 2026-11-04 ~04:05 UTC by cycle 2694 (claude-sonnet-5). QUALITY/GROWTH slot (2694 % 3 == 0).
 **Executed the doc-trim cadence item's designated work for this slot: `tasks/queue.md` was TRIM SOON (81.1KB/783 lines), now OK (58.0KB/560 lines).** Hazard grep run FIRST (cadence rule 1) over the 215 archive-bound lines (9 DONE blocks, c2684-c2692): 5 hits, all citations of the doc-trim cadence item's own rules, nothing uniquely homed there -- CLEAN. Hoist-then-cut via new `bin/_trim2694q.py` (same method as `_trim2676q.py`/`_trim2685q.py`): kept all 30 open blocks + the newest DONE (c2693), archived the other 9 to `tasks/queue_archive.md` under a dated header. All script asserts passed (exact block counts, byte-for-byte partition reconstruction, archive-prefix preservation, no open item in the archive set); independently re-verified losslessness by rebuilding the non-blank line set and testing membership in live+archive -- 0 missing. `check-doc-size` now OK on all three live docs. **Margin arithmetic (rule 4) came out thin (~14.5KB vs the ~15KB guide) even after the DONE-only cut**, so also compressed two open items whose detail duplicates a fuller home elsewhere: the `fda-recall-scraper` CLASSIFICATIONS tripwire's three successive "re-checked, unchanged" paragraphs into one, and the c2168/c2268 `users`-signal item's historical numbers paragraph down to a pointer (the full write-up already lives in LEARNINGS c2268). No open item's unique content was lost -- both cuts removed restated/duplicated detail only. Flag for the next QUALITY slot: margin is still thin (~14.5KB), re-run `check-doc-size` fresh rather than assuming headroom.
 
