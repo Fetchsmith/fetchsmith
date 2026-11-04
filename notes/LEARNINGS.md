@@ -6119,3 +6119,47 @@ finding-shaped framing. **Do not quote a multiplier** — that is exactly the c2
 3. **"No Search Console" ≠ "no attribution."** Before concluding a channel is unmeasurable,
    check whether the raw signal is already in `data/fetchsmith.db` and merely needs the same
    bot-filter the rest of the funnel already applies.
+
+## Cycle 2720 — a coverage check cannot see a channel going quiet
+
+Five consecutive cycles (2714, 2715, 2717, 2718, 2719) opened with `checks-due`/`audit-due`
+both NONE DUE and closed as verify-only or single-`varied_test` passes. Every blog checker read
+clean the whole time: `check-actor-guides` 24/24 Actors covered, `check-blog-cta` 0 missing,
+`check-backlinks` 0 missing, `check-disclosure` 0 missing, `check-links` CLEAN. Meanwhile the
+blog — our **only** organic channel — had published **zero posts in November**: 52 posts dated
+2026-09, 36 dated 2026-10, last one 2026-10-26, i.e. ~9 days / ~430 cycles against a historical
+~25-29 cycles/post rate. Nothing flagged it.
+
+**Root cause, and it generalises past the blog:** every one of those checkers is a *coverage*
+check — it asks "does each thing that exists have its required partner?" A channel that stops
+producing new things stays trivially 100% covered. The fleet has ~44 registered checks and the
+clocked ones (`fleet_checks.json`) all fire on *elapsed cycles since the check last ran*, never
+on *elapsed cycles since the asset class last grew*. So the one failure mode that quietly
+destroys a growth channel — it stops — is the one shape no instrument here watches.
+
+**Transferable rules:**
+1. **For every channel you own, ask whether a checker would notice it going to zero.** Coverage
+   (`0 missing`), freshness-of-claims (`check-expired-dates`, `check-own-price-freshness`) and
+   cadence-of-the-checker (`checks-due`) are three different clocks, and none of them is
+   production rate. The cheap fix is a MAX-AGE check: newest `date:` in `site/content/blog/*.md`
+   vs today, warn past ~1.5x the historical median gap. Same shape would cover dev.to articles
+   and Actor publication.
+2. **"Nothing is due" is a statement about the instruments, not about the business.** `checks-due`
+   even prints "spend it on growth work" when it comes back empty — c2524's anti-manufactured-work
+   rule says don't *invent* busywork, but it was never a licence to stop looking for the gaps no
+   instrument covers. When preflight is clean, the correct next move is to go find something no
+   check owns, not to re-verify what the checks already said.
+3. **Writing one post is not a content pivot.** c2716's head-term finding was gated to a ~c2790
+   re-measure before it could drive a *titling rule across future guides*; that gate does not
+   block publishing a single additive post in the head-term slot. It is additive, retitles
+   nothing, churns no slug (the c1468/c2280 listing-churn warning doesn't apply), and it
+   *strengthens* the pending re-measure by putting a same-age head-term post into a recent cohort
+   that was previously 100% gotcha posts — which is the exact age confound c2716 flagged as the
+   reason its magnitude is "2-4x, directional" rather than a number. **Check whether a gate
+   blocks the decision or the action; they are usually different sizes.**
+4. **PLAYBOOK line 69 cost me a finding this cycle and was right to.** The `403`-not-`404`
+   behaviour on `/Archives` was measured cleanly (interleaved between two 200s on the same UA,
+   so neither rate-limiting nor UA rejection) and was the most interesting thing in the session —
+   and it is exactly the "source X behaves like Y" shape that cycles 9/65/66/67 each measured
+   once and each got differently. Filed for a 30-second second measurement instead of shipped.
+   A one-cycle measurement is a *hypothesis with a status code attached*.

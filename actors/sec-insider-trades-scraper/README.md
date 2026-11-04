@@ -533,6 +533,8 @@ success. Surrounding whitespace is trimmed and fine; everything else is not. Cor
 
 ## Related guides
 
+- [SEC Form 4 insider trades have a public JSON API with no key — here are the three endpoints](https://fetchsmith.com/blog/sec-form-4-insider-trades-public-json-api-no-key)
+  — the start-here guide: the three keyless EDGAR endpoints this Actor is built on, why all three return `403` without a `User-Agent`, and the two shape traps in SEC's own ticker map (10,409 tickers resolve to 8,004 distinct CIKs; `filings.recent` caps at ~1,000 filings as a *count*, not a date window, so a `recent`-only backfill gets a different depth of history per issuer).
 - [One Form 4 can name ten reporting owners — and EDGAR's daily index lists the filing once per owner](https://fetchsmith.com/blog/sec-form-4-joint-filings-reporting-owners)
   — the three-day, 1,038-filing measurement behind this Actor's union-of-owners role matching: joint filings run 1.3%–7.4% of a day's Form 4s (not a stable rate), 6 of 38 have owners whose role flags differ, and exactly 1 differs in the direction that makes a first-owner-only filter drop a row.
 - [SEC Form 4 amendments correct real numbers, and no insider-trading Actor's input schema can select them](https://fetchsmith.com/blog/sec-form-4-amendments-are-unselectable)

@@ -1,3 +1,70 @@
+- [ ] **NEW follow-up (c2720, MEDIUM -- needs exactly ONE cheap re-measure, then it is
+      publishable). A nonexistent path under `www.sec.gov/Archives` returns `403`, not `404`.**
+      Measured c2720 with a valid declared `User-Agent`, interleaved between two `200`s on the
+      same UA in the same second, so it is not rate-limiting and not a UA rejection:
+      `daily-index/2026/QTR4/index.json` -> **200**, `daily-index/2026/QTR9/index.json` ->
+      **403**, `daily-index/2026/QTR4/nosuchfile.idx` -> **403**. If true this is a real and
+      unwritten-up trap: **you cannot tell "I am blocked" from "that file does not exist" by
+      status code on this host**, which means any retry-on-403 backoff loop will grind through
+      its full retry budget against a URL that will never exist, and any "is this accession
+      still there?" existence probe is unanswerable. **Why it was NOT shipped in c2720's post
+      even though it was measured:** PLAYBOOK line 69 -- a claim of the form "source X behaves
+      like Y" must be measured on **two separate cycles** before it enters an Actor's
+      behaviour, a Store listing, a README or a blog post (cycles 9/65/66/67 each measured the
+      same Apple feed once and each reached a different conclusion; two shipped and had to be
+      retracted within hours). This is exactly that claim shape. **The second measurement is
+      ~30 seconds of curl** -- re-run the three URLs above plus one more bogus-but-well-formed
+      path under a DIFFERENT `/Archives` subtree (e.g. `/Archives/edgar/data/320193/nosuch/`)
+      to check it is host-wide rather than a `daily-index`-only quirk. **What would falsify
+      it:** any of the bogus paths returning `404`, or the `403` bodies turning out to be the
+      SEC's rate-limit page rather than a generic denial (c2720 did not read the bodies -- read
+      them on the second pass, that is the cheap discriminator). **If it holds**, the write-up
+      slot is a short follow-on gotcha post for `sec-insider-trades-scraper`, and check
+      `src/main.js`'s `secGet` retry loop (3 attempts, 150 ms gap, `lastGetWas404` flag) for
+      whether it currently burns all 3 attempts on a permanent 403.
+
+- [x] **DONE cycle 2720 (NORMAL slot, 2720 % 3 == 2) -- preflight clean AGAIN (nothing due in
+      `checks-due`/`audit-due`, 0 untriaged mail, all four standing watches unchanged, top
+      MEDIUM follow-up still gated to ~c2790), so instead of a 5th consecutive verify-only
+      pass I went looking for a gap no checker owns, and found one: the blog had published
+      ZERO posts in November.** Last post 2026-10-26 -- ~9 days / ~430 cycles against a
+      historical ~25-29 cycles/post rate, in our ONLY organic channel. Every blog checker read
+      clean throughout because they are all *coverage* checks (`check-actor-guides`,
+      `check-blog-cta`, `check-backlinks`) with no **recency** clock, so a channel going quiet
+      is invisible to all of them. **Published guide #89,
+      `/blog/sec-form-4-insider-trades-public-json-api-no-key`**, aimed at the largest measured
+      content gap in the fleet: c2716 measured `sec-insider-trades-scraper` as having 4 posts,
+      all deep Form-4 gotchas, and **zero head-term post** (the format that earned organic at
+      33% vs 5%). Chose the head-term slot deliberately and note WHY it does not front-run the
+      gated c2716 decision: that gate is on a *content pivot* (a titling rule across future
+      guides), and one additive post retitles nothing and churns no slug; it also **improves**
+      the c2790 re-measure, because the recent-age cohort was previously 100% gotcha posts and
+      now has a same-age head-term member, which is the exact age confound c2716 flagged.
+      All numbers live-captured while writing: `company_tickers.json` 796,507 B / 10,409
+      tickers -> 8,004 distinct CIKs / 1,436 CIKs with >1 ticker (Alphabet 4x
+      GOOGL/GOOG/GOOGN/GOOGM on one issuer CIK, so two share classes = a duplicate request,
+      not broader coverage); `submissions/CIK0000320193.json` 163,919 B, `filings.recent` =
+      1,002 filings 2015-10-05..2026-11-03 of which 601 Form 4, `files[]` holding 1,271 more
+      (1994-01-26..2015-10-03) -- the ~1,000 is a COUNT ceiling, not a date window, so a
+      `recent`-only backfill silently gets a different depth of history per issuer; `403` on
+      empty UA vs `200` on a declared one, measured on BOTH `www.sec.gov` and `data.sec.gov`.
+      Self-caught one pre-publish error: wrote index `"1"` as MSFT from memory, live file says
+      AAPL (MSFT is `"2"`) -- re-read the payload instead of shipping it. Backlinked both
+      directions per PLAYBOOK step 10 (Actor README `## Related guides` + root README Guides
+      list) and verified the `apify push --force` landed by reading build 0.1.72's `readme`
+      field **via the API** (71,756 B, new slug present), not the CDN-cached Store page.
+      Post-publish sweep all clean and all 6 recorded in `fleet_checks.json`: `check-blog-cta`
+      89 posts / 0 missing-CTA / 0 roundup / 0 bad-slug / 0 dead-link, `check-blog-claims` 33
+      claims 0 stale, `check-disclosure` 89 site + 28 dev.to 0 missing, `check-backlinks` 132
+      pairs 0 missing, `check-actor-guides` 24 Actors 0 flagged (sec-insider dedicated 4->5,
+      related 5->6), `check-links` 153 pages / 153 assets CLEAN; `bin/indexnow` -> 200.
+      One measured finding deliberately held back for a second measurement (403-not-404 on
+      `/Archives`, filed as the open item directly above). Preflight numbers: $0 booked / 25
+      Actors / 47 users / 788 runs30d / `ext_bad30d` 4, spend $6.5863/$85 (proj $7.64), all
+      services active, `/`/`/pricing`/`/tools` 200, buyer-intent funnel flat (tools 36n/35v,
+      engaged 10/9) so no owner email.
+      $0 spent, $0 revenue change.
+
 - [x] **DONE cycle 2719 (NORMAL slot, 2719 % 3 == 1) -- full fresh preflight, nothing
       due/actionable anywhere; verified rather than manufactured work per the standing c2524
       rule.** `checks-due`/`audit-due` both NONE DUE (44 checks / 16 audit types, soonest
