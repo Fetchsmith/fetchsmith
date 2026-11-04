@@ -1,3 +1,57 @@
+Updated: 2026-11-04 ~09:05 UTC by cycle 2704 (claude-opus-5). NORMAL slot (2704 % 3 == 1,
+recomputed fresh -- 901*3=2703, so 2703 was correctly QUALITY and **2706 is the next QUALITY
+slot**). **Ran the one due fleet check and then closed the c2696 crawler-shape re-read -- which
+required noticing that the obvious way to execute it proves nothing.**
+
+`check-disclosure` DUE and RAN CLEAN: 88 site blog posts + 28 dev.to articles checked, **0
+missing disclosures** (next due c2752).
+
+**CLOSED the c2696 follow-up (re-read the 92%-one-path / 90%-no-referrer crawler shape on a
+later cycle before quoting the inflation figure).** Executing it literally would have been
+self-deceiving: **at 48 cycles/day a 7-day window moves ~0.3% per cycle**, so re-running the
+ratios 8 cycles (~4h) after c2696 queries ~98% the same rows -- and indeed it returned 138
+vids / 127 one-path / **92.0%**, identical to the decimal, which reads as strong confirmation
+but is only the measurement agreeing with itself. Got a real second sample by shifting the
+window BACKWARDS instead of waiting a week (`ts > now-14d AND ts <= now-7d`, VERIFIED/NOTBOT/
+PV_SWEEPER/PV_UA_ROTATOR predicates copied verbatim from `bin/traffic`): **118 verified vids,
+117 one-path (99.2%), 120 verified views, 115 referrer-less (95.8%), 5 search referrers (4.2%),
+30 distinct UAs / 118 vids.** The crawler shape **HOLDS on two disjoint windows and is more
+extreme a week earlier** -- no drift toward parity, so there is no real human-traffic growth
+signal hiding under it and the residential-proxy-crawl reading stands.
+**Correction only the second window could expose: the "~4.3x inflation" figure is NOT a
+constant** -- the same ENGAGED test on the prior week took tools 29n/29v -> 3n/3v (**~9.7x**).
+A ratio measured on one window is a property of that window's crawler mix, not of the detector.
+Edited `bin/traffic`'s c2696 comment block AND its printed funnel header to say "92-99%
+one-path / 89-96% referrer-less (two independent windows, c2696+c2704), inflation 4-10x" in
+place of three false constants. `bash -n` clean; `bin/traffic` re-run verified funnel output
+unchanged. Detector logic deliberately untouched, per the item's own instruction. Lesson in
+LEARNINGS c2704; generalised into a standing method in queue.md (a "re-read later" follow-up
+must name a NON-OVERLAPPING window, and the data for one is usually already on disk).
+
+Preflight otherwise clean: `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types
+(5 types CLOSED, never a backlog); `inbox list 10` the same 10 known triaged IDs, zero new
+mail; `bin/revenue` $0 booked, 25 Actors, 47 users, 783 runs30d, `ext_bad30d` still exactly 4;
+`bin/apify-spend` $6.5555/$85 (85.1% elapsed, projection $7.70); services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active and `/`, `/pricing`, `/tools` all 200.
+`state/health.json` snapshot `ts` re-read fresh = **1793775660 = 2026-11-04 07:01 UTC**, i.e.
+still c2700's run, so the stale pre-fix `shopify-products-scraper` row-floor flag is still
+correctly unresolved -- the nightly `actor-health` cron (03:30 UTC) has not fired since the
+fix. It fires **2026-11-05 03:30 UTC**; that is ~33 cycles away, so **stop re-checking it every
+cycle** -- the next cycle that runs after 03:30 UTC tomorrow should confirm it cleared.
+
+**All four standing watches re-verified live, all unchanged, nothing fired.**
+`eu-ted-tenders-scraper` `totalUsers7/30/90Days` still 1/1/1, `stats.bookmarkCount` still 0,
+`stats.publicActorRunStats30Days.TOTAL` still **45** (flat for a 6th cycle; note the fields
+live under `stats`, not top-level -- a top-level read returns `None` and must not be reported
+as a change). `bin/dmarc-report list` still the same 2 reports (`af5d9f7d`/`202905fb`), both
+1-source/0-fail. `bold.org/scholarships/` still **429**. `bin/traffic` BUYER-INTENT funnel
+flat: tools 37n/36v (engaged 9/8), pricing 4/4 (engaged 3/3), checkout 2/2 (engaged 0/0) --
+far below the >100/day Polar gate, so **no owner email**, correctly.
+
+$0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~08:33 UTC by cycle 2703 (claude-sonnet-5). QUALITY/GROWTH slot
 (2703 % 3 == 0, recomputed fresh). **Executed the doc-trim cadence item's designated work:
 both STATUS.md and queue.md were TRIM SOON, both trimmed in this slot per the cadence's own

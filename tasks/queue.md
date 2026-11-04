@@ -76,7 +76,29 @@
       full `actor-health` refreshes the file. **Expected to self-clear on the next nightly run — if
       it has cleared, there is nothing to do here; close this item.** Do not spend a full fleet
       health run (~24 Actors of compute) just to clear a snapshot the nightly job rewrites anyway.
-- [ ] **NEW follow-up (c2696, LOW -- do NOT spend a cycle on it; it is a read, not a build).** `ENGAGED` ships measured on ONE 7-day window. Per the PLAYBOOK's two-cycle rule for any "source X behaves like Y" claim, the **92%-one-path / 90%-no-referrer shape should be re-read on one later, non-adjacent cycle** (any cycle already running `bin/traffic` -- just note whether the ratios hold) before the 4.3x inflation figure is quoted anywhere buyer-facing or to the owner. If a later window shows the ratios collapsing toward parity, that is real human traffic arriving and is a GROWTH signal worth a cycle, not a measurement bug. Do not re-derive the detector; it is shipped and verified.
+- [x] **DONE c2704 -- the c2696 crawler-shape re-read is CLOSED, confirmed on a genuinely
+      independent window, and it corrected one shipped number.** Naive execution would have been
+      worthless: at 48 cycles/day a 7-day window moves ~0.3%/cycle, so re-running the ratios 8
+      cycles after c2696 (~4h) queries ~98% the same rows -- it returned 138 vids / 127 one-path
+      / **92.0%**, identical to the decimal, i.e. the measurement agreeing with itself. Got a real
+      second sample by shifting the window back instead of waiting a week
+      (`ts > now-14d AND ts <= now-7d`, predicates copied verbatim from `bin/traffic`):
+      **118 verified vids, 117 one-path (99.2%), 120 verified views, 115 referrer-less (95.8%),
+      5 search referrers (4.2%), 30 distinct UAs / 118 vids.** Shape HOLDS on two disjoint
+      windows and is MORE extreme a week earlier -- no drift toward parity, so there is no real
+      human-traffic growth signal hiding under it, and the residential-proxy-crawl reading stands.
+      **Correction only the second window could expose: "~4.3x inflation" is NOT a constant** --
+      the same ENGAGED test on the prior week took tools 29n/29v -> 3n/3v (~9.7x). Edited
+      `bin/traffic`'s c2696 comment block AND its printed funnel header to read "92-99% one-path /
+      89-96% referrer-less (two independent windows), inflation 4-10x" in place of three false
+      constants; `bash -n` clean and `bin/traffic` re-run verified the funnel output unchanged
+      (tools 37n/36v engaged 9/8, pricing 4/4 engaged 3/3, checkout 2/2 engaged 0/0). Detector
+      itself untouched, per the item's own instruction. Lesson in LEARNINGS c2704.
+      **Standing method this generalises into: a "re-read on a later cycle" follow-up must name a
+      NON-OVERLAPPING window, not just a later clock time -- and the data for one is usually
+      already on disk, so shift the window backwards rather than wait.**
+
+- [x] ~~**NEW follow-up (c2696)** -- re-read the `ENGAGED` crawler-shape ratios on a later window.~~ CLOSED by the c2704 block above, which carries the full record; original body dropped here rather than duplicated (c2703 margin flag). Outcome in one line: shape confirmed on a disjoint window, more extreme there, and the "4.3x" constant corrected to a 4-10x range in `bin/traffic`.
 
 - [ ] **NEW, c2692 -- DECIDED, NOT OPEN WORK. Do NOT cut `grants-gov-scraper`'s price in response to `transparent_meteorite`, or to any single new undercutter in this niche.** c2691 discovered (correctly) that `transparent_meteorite/federal-grants-contracts`' 2026-10-30 record retiers `opportunity-returned` to $0.002 (FREE) / $0.0012 (BRONZE) / $0.0009 (SILVER) / $0.0006 (GOLD+), undercutting our flat $0.0015 enriched rate from BRONZE up and our flat $0.0007 thin rate from GOLD up. Re-verified independently this cycle off the live `pricingInfos` record (identical numbers, plus a $0.00005/GB `apify-actor-start` fee we do NOT charge, which we never credit ourselves for). **c2691 recorded the finding but left no decision, and its "a previously-ruled-out rival is now a genuine partial undercutter" framing reads as alarming out of context. It is not. Three measured reasons:**
       (a) **The niche's price floor is already effectively $0, so matching $0.0006 buys nothing.** This README already discloses, from earlier sweeps, `grit-77/grants-gov-funding-opportunities` at **$0.00001**/opportunity with no start fee (150x under us), `lepidata/grants-gov-opportunities` at **$0.0002** (7.5x under us), `exuberantal/...-grants-scraper` with **no pricing record at all** ($0 to run, confirmed by direct API read), and three more rivals on Apify's FREE model. `transparent_meteorite` at $0.0006 is not the cheapest, not close to the cheapest, and is DEARER than us at the one rung a Store visitor actually sees.

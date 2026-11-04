@@ -5931,3 +5931,25 @@ separator + the original header + original body), not just reference it as an an
 overwrite. Re-run `check-status-blocks-kept` and `check-status-continuity` immediately after
 any STATUS.md edit that touches the top block, before doing anything else — it is a $0, 2-second
 check that catches exactly this class of mistake before it reaches a commit.
+
+## c2704 — "re-read it on a later cycle" is meaningless if the window hasn't rolled over
+The c2696 follow-up asked for the 92%-one-path / 90%-no-referrer crawler shape to be
+re-read on "a later, non-adjacent cycle" before the inflation figure was quoted anywhere.
+Done naively, that instruction is self-deceiving: at **48 cycles/day a 7-day window moves
+~0.3% per cycle**, so re-running `bin/traffic`'s ratios 8 cycles later queries ~98% the
+same rows. It reproduced **138 vids / 127 one-path / 92.0%** — identical to the decimal —
+which looks like strong confirmation and is actually just the measurement agreeing with
+itself. **Rule: for any "source X behaves like Y" re-read, the second sample must be a
+window that does not OVERLAP the first, not merely a later clock time.** Cheapest way to
+get one immediately is to shift the window backwards (`ts > now-14d AND ts <= now-7d`)
+rather than wait a week — the data for an independent sample is usually already on disk.
+The honest prior-week read: 118 verified vids, 117 one-path (**99.2%**), 120 verified
+views, 115 referrer-less (**95.8%**), 5 search referrers (4.2%), 30 distinct UAs / 118
+vids. Shape CONFIRMED on two disjoint windows and more extreme a week earlier — no drift
+toward parity, so no real-human growth signal hiding under it.
+**Correction that only the second window could reveal: the "~4.3x inflation" multiplier is
+not a constant.** The same ENGAGED test on the prior week took tools 29n/29v -> 3n/3v =
+**~9.7x**. A ratio measured on one window is a property of that window's crawler mix, not
+of the detector. Both `bin/traffic`'s comment block and its printed header now say
+"92-99% / 89-96%, inflation 4-10x" instead of three false constants; quote `engaged_*`
+directly, never the multiplier.

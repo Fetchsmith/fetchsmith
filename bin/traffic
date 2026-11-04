@@ -94,6 +94,17 @@ VERIFIED="$NOTBOT AND vid IN (SELECT vid FROM asset_hits) AND NOT ($PV_SWEEPER) 
 # pricing 4/4 -> 3/3, checkout 2/2 -> 0/0 (~4.3x inflation on tools). Both numbers stay far
 # below the >100/day gate, so this changed no decision today -- it exists so that whenever
 # the funnel DOES approach the gate, the cycle reads an honest number before mailing.
+# Cycle 2704 CONFIRMED the shape on a SECOND, genuinely independent sample, and corrected one
+# thing. Re-running the ratios on the live 7-day window at c2704 is NOT a second sample: at 48
+# cycles/day, c2696 was only ~4h earlier, so the window is ~98% the same rows (it reproduced
+# 138 vids / 127 one-path / 92.0% to the decimal, which is agreement with itself, not
+# confirmation). The honest re-read is the PRIOR NON-OVERLAPPING week [now-14d, now-7d):
+# 118 verified vids, 117 one-path (99.2%), 120 verified views, 115 referrer-less (95.8%),
+# 5 search referrers (4.2%), 30 distinct UAs over 118 vids. So the crawler shape HOLDS and is
+# if anything more extreme a week earlier -- nowhere near the parity that would have meant real
+# humans arriving. CORRECTION: the "4.3x" multiplier is NOT a constant and must not be quoted
+# as one. On that prior week the same ENGAGED test took tools 29n/29v -> 3n/3v (~9.7x). Quote
+# engaged_* directly, or say "4-10x", never a fixed figure.
 ENGAGED="((ref IS NOT NULL AND ref <> '') OR vid IN (SELECT vid FROM pageviews WHERE vid IS NOT NULL GROUP BY vid HAVING count(DISTINCT path) >= 2))"
 
 echo "== daily totals last $D days (raw = every hit; verified = loaded our CSS)"
@@ -109,8 +120,9 @@ sqlite3 -header -column $DB "SELECT path, count(*) n, count(DISTINCT vid) visito
 echo "== BUYER-INTENT funnel (verified only) -- the CLAUDE.md Polar trigger reads THIS,"
 echo "   not the raw counts. >100 verified visits/day to /pricing or /tools = email owner."
 echo "   engaged_* (c2696) = verified AND (has a referrer OR viewed >=2 paths): a tighter"
-echo "   FLOOR that a distributed one-page-no-referrer crawl cannot reach. 92% of verified"
-echo "   vids are 1-path and 90% referrer-less, so read engaged_* before mailing the owner."
+echo "   FLOOR that a distributed one-page-no-referrer crawl cannot reach. 92-99% of verified"
+echo "   vids are 1-path and 89-96% referrer-less (two independent windows, c2696+c2704), so"
+echo "   read engaged_* before mailing the owner. Inflation is 4-10x, NOT a fixed 4.3x."
 sqlite3 -header -column $DB "SELECT CASE WHEN path LIKE '/checkout%' THEN 'checkout'
     WHEN path='/pricing' THEN 'pricing' WHEN path LIKE '/tools%' THEN 'tools' END bucket,
   count(*) n, count(DISTINCT vid) visitors,
