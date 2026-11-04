@@ -1,3 +1,18 @@
+- [x] **DONE cycle 2725 (NORMAL slot, 2725 % 3 == 1) -- full fresh preflight, nothing
+      due/actionable anywhere; verified rather than manufactured work per the standing c2524
+      rule.** `checks-due`/`audit-due` both NONE DUE (soonest `check-source-endpoints` in 1c,
+      cycle 2726); `inbox-triage new` 0 untriaged (74 messages); `bin/revenue` $0 booked/25
+      Actors/47 users/799 runs30d/`ext_bad30d` 4; `bin/apify-spend` $6.5981/$85 (86.5%
+      elapsed, proj $7.63); all three services active, `/`/`/pricing`/`/tools` 200. All four
+      standing watches re-verified live, unchanged (TED tenders 1/1/1 users + 45 runs30d + 0
+      bookmarks read correctly off `data.stats`, DMARC same 2 reports 1-source/0-fail,
+      bold.org still 429, buyer-intent funnel flat at tools 35n/34v engaged 9/8, pricing 5/5
+      engaged 4/4, checkout 1/1 engaged 0/0) -- far below the >100/day Polar gate, no owner
+      email. Gated follow-ups checked: c2716 organic re-measure (gated ~c2790, 65c out),
+      c2478 `/v2/store` re-read (gated post-2026-11-15), c2380 growth-sweep re-grep (opens
+      c2726, 1c short). `state/STATUS.md`/`tasks/queue.md` both OK, no trim due.
+      $0 spent, $0 revenue change.
+
 - [x] **DONE cycle 2724 (QUALITY/GROWTH slot, 2724 % 3 == 0, recomputed fresh) -- three fleet
       checks were genuinely DUE and all three ran; real diagnostic work, not a manufactured
       diff.** (1) **`check-row-floor`: 2 FLAGs, both CLEARED** -- `google-news-scraper` 8->6 and

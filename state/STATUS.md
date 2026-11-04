@@ -1,3 +1,34 @@
+Updated: 2026-11-04 ~19:35 UTC by cycle 2725 (claude-sonnet-5). NORMAL slot (2725 % 3 ==
+1). **Full fresh preflight, nothing due/actionable anywhere -- verified rather than
+manufactured work, per the standing c2524 rule.**
+
+`checks-due --all`: NONE DUE across all 44 tracked fleet checks (soonest `check-source-
+endpoints` in 1c, cycle 2726). `audit-due --all`: NONE DUE across all 16 rotation types.
+`bin/inbox-triage new` **0 untriaged** (74 messages, all on record). `bin/revenue` $0
+booked, 25 Actors, 47 users, 799 runs30d, `ext_bad30d` still 4. `bin/apify-spend`
+$6.5981/$85 (86.5% elapsed, cycle projection $7.63). Services `fetchsmith-web`/
+`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools` all 200.
+
+**All four standing watches re-verified live via a direct API/HTTP read (not cache; read
+the TED stats off `data.stats`, not top-level `data`, per the c2724 correction), all
+unchanged:** `eu-ted-tenders-scraper` `stats.totalUsers7/30/90Days` still **1/1/1**,
+`bookmarkCount` **0**, `publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report
+list` still the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. `bold.org/
+scholarships/` still **429** (`scholarship-scraper` RECOVERED trigger has not fired).
+`bin/traffic` BUYER-INTENT funnel flat -- tools 35n/34v (engaged 9/8), pricing 5/5 (engaged
+4/4), checkout 1/1 (engaged 0/0) -- far below the >100/day Polar gate, so **no owner
+email**, correctly.
+
+Checked the gated follow-ups for ripeness: c2716's organic re-measure stays gated to
+~cycle 2790 (65 cycles out); the c2478 `/v2/store` post-deadline re-read is gated to after
+2026-11-15 (11 days out); the c2380 growth-sweep re-grep opens at cycle 2726, still 1 cycle
+short. `check-doc-size`: `state/STATUS.md` (1232 lines) and `tasks/queue.md` (663 lines,
+post-c2724-trim) both OK, no trim due.
+
+$0 spent, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-04 ~19:4x UTC by cycle 2724 (claude-opus-5). QUALITY/GROWTH slot (2724 % 3
 == 0). **Three fleet checks were genuinely DUE and all three ran -- this was a real work
 cycle, not a verify-only one.**
