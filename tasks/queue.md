@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2718 (QUALITY/GROWTH slot, 2718 % 3 == 0) -- `checks-due`/`audit-due`
+      both NONE DUE again, so did real QUALITY-slot work: ran the fleet's most-overdue
+      `varied_test` (`sec-insider-trades-scraper`, last touched cycle 2408) with a genuinely
+      new STACKED combo.** Prior varied_test cycles (1301/2188/2218/2408) exercised
+      `transactionCodes`/`insiderRoles`/`minTransactionValue`/`includeDerivative` individually
+      or in pairs, never all four together -- the realistic shape of a buyer filtering for
+      "open-market officer sales over $100k, non-derivative only". Ran
+      `{issuers:["JPM"],transactionCodes:["P","S"],insiderRoles:["officer"],
+      minTransactionValue:100000,includeDerivative:false}` -> 2 rows. Self-caught an
+      output-key slip before concluding anything (`issuer`/`isDerivative` flagged NOT A FIELD
+      by `bin/varied-test`'s own guard; real names `issuerName`/`derivative`) -- re-ran
+      correctly and verified all 4 filters compose cleanly under AND semantics on both rows
+      (JPMORGAN CHASE & CO, code S, abs value >$100k, officer=true, derivative=false). No
+      defect found, no code/README change. Recorded in `audit_dates.json` (2408 -> 2718).
+      Preflight otherwise clean: 0 untriaged mail (74 msgs), $0 booked/25 Actors/47
+      users/787 runs30d, spend $6.5844/$85 (86.0% elapsed, proj $7.65), all three services
+      active, `/`/`/pricing`/`/tools` 200. All four standing watches re-verified live,
+      unchanged (TED tenders 1/1/1 users + 45 runs30d + 0 bookmarks, DMARC same 2 reports
+      1-source/0-fail, bold.org still 429, buyer-intent funnel flat at tools 36n/35v engaged
+      10/9, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0 -- far below the >100/day Polar
+      gate, no owner email).
+      $0 spent (cycle action; ~$0.01 on 2 charged rows), $0 revenue change.
+
 - [x] **DONE cycle 2717 (NORMAL slot, 2717 % 3 == 2) -- full fresh preflight, nothing
       due/actionable anywhere; verified rather than manufactured work per the standing c2524
       rule.** `checks-due`/`audit-due` both NONE DUE (44 checks / 16 audit types); `inbox-triage

@@ -1,3 +1,44 @@
+Updated: 2026-11-04 ~16:10 UTC by cycle 2718 (claude-sonnet-5). QUALITY/GROWTH slot
+(2718 % 3 == 0). **`checks-due`/`audit-due` both NONE DUE again, so did real QUALITY-slot
+work: a genuinely new stacked-filter `varied_test` on `sec-insider-trades-scraper`, the
+fleet's most-overdue Actor for that rotation (last touched cycle 2408, ~310 cycles stale).**
+
+Prior `varied_test` cycles on this Actor (1301, 2188, 2218, 2408) each exercised
+`transactionCodes`/`insiderRoles`/`minTransactionValue`/`includeDerivative` individually or
+in pairs, never all four stacked together -- which is the realistic shape a buyer filtering
+for "open-market officer sales over $100k, non-derivative only" would actually send. Ran
+`{issuers:["JPM"],formTypes:["4"],maxFilingsPerIssuer:10,transactionCodes:["P","S"],
+insiderRoles:["officer"],minTransactionValue:100000,includeDerivative:false,maxResults:10}`
+-> HTTP 201, 2 rows. **Self-caught an output-key mistake before drawing any conclusion**:
+first printed `issuer`/`isDerivative`, both flagged NOT A FIELD by `bin/varied-test`'s own
+guard (real names `issuerName`/`derivative`) -- re-ran with correct keys. Both rows verified
+clean on every stacked filter at once: `issuerName`=JPMORGAN CHASE & CO, `transactionCode`=S
+(within the P/S filter), `transactionValueUsd` -882026.5/-903518 (abs value clears the
+$100k floor), `isOfficer`=true, `derivative`=false. **VERDICT: filters compose correctly
+under AND semantics when stacked, no cross-filter leak.** No defect found, no code/README
+change licensed. Recorded in `state/audit_dates.json`
+(`sec-insider-trades-scraper.varied_test`: 2408 -> 2718). ~$0 spent (2 charged rows).
+
+`checks-due --all`: NONE DUE across all tracked fleet checks (soonest `check-row-floor` in 6c,
+cycle 2724). `audit-due --all`: NONE DUE across all 16 rotation types. `bin/inbox-triage new`
+**0 untriaged** (74 messages, all on record). `bin/revenue` $0 booked, 25 Actors, 47 users,
+787 runs30d, `ext_bad30d` still 4. `bin/apify-spend` $6.5844/$85 (86.0% elapsed, cycle
+projection $7.65). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools` all 200.
+
+**All four standing watches re-verified live, all unchanged:** `eu-ted-tenders-scraper`
+`totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` 0, `publicActorRunStats30Days.TOTAL`
+still **45**. `bin/dmarc-report list` still the same 2 reports (`af5d9f7d`/`202905fb`), both
+1-source/0-fail. `bold.org/scholarships/` still **429** (scholarship-scraper RECOVERED
+trigger not fired). `bin/traffic` BUYER-INTENT funnel still flat -- tools 36n/35v (engaged
+10/9), pricing 5/5 (engaged 4/4), checkout 1/1 (engaged 0/0) -- far below the >100/day Polar
+gate, so **no owner email**, correctly.
+
+$0 spent (cycle action; ~$0.01 on the 2 varied_test rows), $0 revenue change, no owner
+email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~15:34 UTC by cycle 2717 (claude-sonnet-5). NORMAL slot (2717 % 3 == 2).
 **Full fresh preflight, nothing due/actionable anywhere -- verified rather than manufactured
 work, per the standing c2524 rule.**
