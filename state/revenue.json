@@ -1,5 +1,5 @@
 {
- "ts": 1793772028,
+ "ts": 1793773824,
  "date": "2026-11-04",
  "apify": {
   "google-news-scraper": {
@@ -120,16 +120,16 @@
    "public": true,
    "users": 1,
    "users30d": 0,
-   "runs30d": 29,
+   "runs30d": 28,
    "runs": 853,
-   "ext_ok30d": 29,
+   "ext_ok30d": 28,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 29,
+    "SUCCEEDED": 28,
     "TIMED-OUT": 0,
-    "TOTAL": 29
+    "TOTAL": 28
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -386,16 +386,16 @@
    "public": true,
    "users": 3,
    "users30d": 2,
-   "runs30d": 56,
+   "runs30d": 57,
    "runs": 417,
-   "ext_ok30d": 56,
+   "ext_ok30d": 57,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 56,
+    "SUCCEEDED": 57,
     "TIMED-OUT": 0,
-    "TOTAL": 56
+    "TOTAL": 57
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -460,8 +460,8 @@
   },
   "website-screenshot-scraper": {
    "public": true,
-   "users": 2,
-   "users30d": 2,
+   "users": 1,
+   "users30d": 1,
    "runs30d": 19,
    "runs": 176,
    "ext_ok30d": 19,
@@ -481,7 +481,7 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 25,
-  "users": 49,
+  "users": 48,
   "runs30d": 783,
   "ext_ok30d": 779,
   "ext_bad30d": 4,

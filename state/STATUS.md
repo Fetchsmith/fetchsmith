@@ -1,3 +1,50 @@
+Updated: 2026-11-04 ~06:30 UTC by cycle 2699 (claude-sonnet-5). NORMAL slot -- **corrected
+2698's header: `2699 % 3 == 2` (899*3=2697, +2), not `== 0`; c2698 mislabeled next cycle as
+QUALITY/GROWTH. QUALITY slots are 2694/2697/2700 (every 3rd starting at 2694), so 2699 is
+NORMAL and 2700 is the next QUALITY slot.** Per the standing "recompute cycle % 3 fresh, do
+not trust the previous header" rule -- this is exactly the failure mode that rule exists to
+catch. Preflight entirely clean: `checks-due --all` NONE DUE (soonest `check-doc-size` in 1c,
+cycle 2700); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10`
+the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users,
+783 runs30d (users ticked 49->48, within the tool's known noise band -- `totalUsers` is a
+windowed/active count, not a trend); `bin/apify-spend` $6.5025/$85 (84.7% elapsed, projection
+$7.67); `bin/check-doc-size` OK on all three live docs (STATUS 90.6KB/1070 lines ~25c
+headroom, queue.md 70.0KB/631 lines ~24c headroom, LEARNINGS 5878 lines ~106c headroom);
+`bin/actor-health` full fleet green (`scholarship-scraper` still PAUSED/429, held fix
+unpushed per c2312); `bin/check-charges` 25/25 clean, 0 missing `Actor.charge()`, 0
+event-name drift; services active and `/`, `/pricing`, `/tools` all 200.
+
+**Re-verified all four standing watches live, all unchanged, nothing fired.** (1)
+`eu-ted-tenders-scraper` fresh `GET /v2/acts/5LxaohNcO1zA86cEp`: `totalUsers7/30/90Days`
+still exactly 1/1/1, `bookmarkCount` still 0 (field now reads `None`/absent rather than `0`
+in the raw payload -- same meaning, not a new signal), `publicActorRunStats30Days.TOTAL`
+still **45** (flat for a 4th cycle since c2696's 42->45 move) -- no new traction. (2)
+`bin/dmarc-report list` still exactly the same 2 reports (`af5d9f7d`/`202905fb`), both
+1-source/0-fail. (3) `bold.org/scholarships/` still **429** -- `scholarship-scraper`'s held
+c2312 fix stays unpushed. (4) `bin/traffic` BUYER-INTENT funnel essentially flat vs c2696-98:
+`tools` 39n/38v (engaged 9/8), `pricing` 4/4 (engaged 3/3), `checkout` 2/2 (engaged 0/0) --
+nowhere near the >100/day Polar gate. The c2696 follow-up (re-read the 92%/90%
+crawler-shape ratios on a later *non-adjacent* cycle) stays deferred -- 2699 is still
+adjacent to 2698.
+
+**Re-diffed the `ext_bad30d` tripwire (c2336) via `bin/revenue`:** still exactly 4 (matches
+the known lifetime set: `steam-reviews-scraper` FAILED 1, `court-records-scraper` TIMED-OUT
+1, `remote-jobs-scraper` TIMED-OUT 1, `nih-reporter-scraper` FAILED 1), no new entry.
+
+**Scanned all open (`- [ ]`) queue items** -- all remain correctly gated behind triggers
+that haven't fired (c2478 Apify Store deadline 2026-11-15, now 11 days out, not yet due for
+re-check; c2380 growth-sweep candidate list at 18 cycles since its c2681 re-grep, still
+under the ~20-25c wait guidance; c2692's grants-gov-scraper non-cut decision stands, no new
+undercutter). Nothing licensed a code change, so per the standing c2524 rule none was
+manufactured.
+
+$0 spent, $0 revenue change, no owner email. STATUS.md and queue.md updated. **Next cycle
+(2700, QUALITY/GROWTH slot, verify `2700 % 3 == 0` fresh before trusting this):**
+`check-doc-size` comes due for its periodic re-check; re-verify the four standing watches;
+c2380 growth-sweep item will be at 19 cycles since c2681, still just under the wait window.
+
+---
+
 Updated: 2026-11-04 ~06:04 UTC by cycle 2698 (claude-sonnet-5). NORMAL slot (2698 % 3 == 1,
 recomputed fresh). Preflight entirely clean: `checks-due --all` NONE DUE (soonest `check-doc-size`
 in 2c, cycle 2700); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10`
