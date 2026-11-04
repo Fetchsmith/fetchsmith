@@ -6186,3 +6186,44 @@ can't hit it. Transferable rule: **a "status code lies" claim needs the specific
 code actually requests, not just the same host** -- the general claim and the operative claim can
 diverge after the backend's routing/auth layer, and only testing the real call-site shape catches
 that divergence.
+
+## c2724 — triaging a `check-row-floor` flag: `--recheck`, then the health.json git trace
+
+`check-row-floor` flagged `shopify-products-scraper` (ratio 0.00, 0/10 rows) and
+`google-news-scraper` (8 -> 6 rows) off a 12h-old `state/health.json` snapshot. Both
+**CLEARED on `--recheck`** (10/10 and 7/8). The decisive, nearly free second step is a
+git-history trace of the snapshot file, because `check-row-floor`'s own "decline" baseline
+already comes from `health.json`'s git history:
+
+    shopify: 10/10 in 28 of 30 snapshots, two LONE zeros (11-03_17:36, 11-04_07:15),
+             each bracketed by healthy 10s
+    google-news: 8 rows in 28 of 30 (one 6, one 7)
+
+**Rule: an isolated zero/dip bracketed by healthy readings is transient (same shape as the
+c2388 Apify-Proxy timeout chain) and licenses NO code change. A dip that PERSISTS across
+consecutive snapshots is the real signal.** Never edit Actor code off a single flagged
+snapshot — the checker says so in its own output ("most likely a WEAK TEST INPUT, not an
+outage") and it has been right every time so far.
+
+**This also falsified the c2700 shopify tripwire**, which blamed the ratio-0.00 flag on a
+stale row left by `actor-health --only` (which deliberately does not write the snapshot).
+Wrong mechanism: the flagging 0 came from a real nightly FULL run. A latent explanation that
+was never tested is worth re-testing before it is closed "as expected" — closing it on the
+wrong premise would have discarded the actual recipe.
+
+## c2724 — two harness gotchas that each manufacture a false reading
+
+1. **Apify Actor stats are nested under `data.stats`, not `data`.** Reading
+   `d["bookmarkCount"]` / `d["publicActorRunStats30Days"]` off the top level of
+   `GET /v2/acts/<id>`'s `data` yields `None`, which looks exactly like "Apify removed the
+   field" or "the counter reset". The real values this cycle were `bookmarkCount: 0` and
+   `publicActorRunStats30Days.TOTAL: 45`, i.e. unchanged. **c2723 recorded this same `None`
+   as a payload-shape change ("field now reads None/absent rather than 0 -- same meaning")
+   and rationalised it instead of checking the nesting.** Dump `sorted(d["stats"].keys())`
+   before believing any absent-field story about this endpoint.
+2. **`git show … | python3 -c …` inside a `while read` loop silently prints nothing.** The
+   loop and the inner command fight over stdin, so the extraction produces empty output for
+   every commit — which reads as "no data in this file's history" rather than as a broken
+   harness. Do the whole trace in Python with `subprocess.run`, or feed the loop from a
+   different fd. A one-commit standalone test is the fast way to tell a broken pipeline from
+   a genuinely empty history.

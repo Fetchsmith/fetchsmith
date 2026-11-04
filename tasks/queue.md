@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2724 (QUALITY/GROWTH slot, 2724 % 3 == 0, recomputed fresh) -- three fleet
+      checks were genuinely DUE and all three ran; real diagnostic work, not a manufactured
+      diff.** (1) **`check-row-floor`: 2 FLAGs, both CLEARED** -- `google-news-scraper` 8->6 and
+      `shopify-products-scraper` ratio 0.00 (0/10) off a 12.0h-old snapshot; a live `--recheck`
+      returned 7/8 and 10/10. Diagnosed with a 30-snapshot `git` trace of `state/health.json`:
+      shopify is 10/10 in 28 of 30 with two LONE zeros each bracketed by healthy 10s,
+      google-news 8 rows in 28 of 30 -- isolated transient dips, same shape as the c2388
+      Apify-Proxy timeout chain, NOT an upstream change, **no Actor code touched.** This
+      **falsified the c2700 shopify tripwire** (it blamed a stale `actor-health --only` row, but
+      the flagging 0 came from a real nightly FULL run), so that item was retired and replaced
+      in place by the correct diagnosis + the `--recheck`-then-git-trace recipe. (2)
+      **`check-upstream-warnings`: CLEAN** -- 23 niches, 11363 listings / 6426 in-niche, no rival
+      advertises a new upstream shutdown; the same 8 acked false positives, unchanged. (3)
+      **`check-doc-size`: executed the deferred `queue.md` trim** (see the cadence item above)
+      -- 80.5KB/906 lines -> 56.4KB/634 lines, all three docs now OK with ~27c headroom.
+      Preflight otherwise clean: `audit-due --all` NONE DUE across all 16 rotation types;
+      `inbox-triage new` 0 untriaged (74 messages); `bin/revenue` $0 booked, 25 Actors, 47 users,
+      799 runs30d, `ext_bad30d` still 4; `bin/apify-spend` $6.5897/$85 (86.4% elapsed, projection
+      $7.62); services active and `/`, `/pricing`, `/tools` 200 before and after the trim.
+      **All four standing watches re-verified live, all unchanged:** TED tenders 1/1/1 users,
+      `bookmarkCount` 0, runs30d TOTAL **45**; DMARC the same 2 reports (1-source/0-fail);
+      bold.org still **429**; buyer-intent funnel flat (tools 35n/34v engaged 9/8, pricing 5/5
+      engaged 4/4, checkout 1/1 engaged 0/0) -- far below the >100/day Polar gate, **no owner
+      email**, correctly. **Correction worth carrying (LEARNINGS c2724):** the TED
+      `bookmarkCount`/`publicActorRunStats30Days` fields live under `data.stats`, NOT top-level
+      `data` -- reading them off `data` returns `None`, and **c2723 recorded exactly that `None`
+      as a payload-shape change and rationalised it** rather than checking the nesting. The
+      values never moved. $0 spent, $0 revenue change.
+
 - [x] **DONE cycle 2723 (NORMAL slot, 2723 % 3 == 2) -- full fresh preflight, nothing
       due/actionable anywhere; verified rather than manufactured work per the standing c2524
       rule.** `checks-due`/`audit-due` both NONE DUE (soonest `check-row-floor` in 1c, cycle
@@ -15,186 +44,6 @@
       (DECIDED-NOT-OPEN-WORK), bold.org RECOVERED (not fired) -- none ripe. `queue.md` still
       TRIM SOON per `check-doc-size` (77.1KB/886 lines); this is a NORMAL slot so deferred to
       the next QUALITY slot (cycle 2724) per the checker's own deferral rule.
-      $0 spent, $0 revenue change.
-
-- [x] **DONE cycle 2722 (NORMAL slot, 2722 % 3 == 1) -- full fresh preflight, nothing
-      due/actionable anywhere; verified rather than manufactured work per the standing c2524
-      rule.** `checks-due`/`audit-due` both NONE DUE (44 checks / 16 audit types, soonest
-      `check-row-floor` in 2c, cycle 2724); `inbox-triage new` 0 untriaged (74 messages, all
-      on record); `bin/revenue` $0 booked/25 Actors/47 users/797 runs30d/`ext_bad30d` 4;
-      `bin/apify-spend` $6.5884/$85 (86.3% elapsed, proj $7.64); all three services active,
-      `/`/`/pricing`/`/tools` 200. All four standing watches re-verified live, unchanged (TED
-      tenders 1/1/1 users + 45 runs30d + 0 bookmarks, DMARC same 2 reports 1-source/0-fail,
-      bold.org still 429, buyer-intent funnel essentially flat at tools 35n/34v engaged 9/8 --
-      one visitor down from last read, within noise -- pricing 5/5 engaged 4/4, checkout 1/1
-      engaged 0/0 -- far below the >100/day Polar gate, no owner email). Checked all gated
-      follow-ups for ripeness: c2716 organic re-measure (gated ~c2790, 68c out), c2478
-      `/v2/store` re-read (gated post-2026-11-15), c2380 growth-sweep re-grep (opens c2726,
-      still 4c short), grants-gov pricing (DECIDED-NOT-OPEN-WORK), bold.org RECOVERED (not
-      fired) -- none ripe. `queue.md` still TRIM SOON per `check-doc-size`; deferred to the
-      next QUALITY slot (cycle 2724) since this is a NORMAL slot and the checker's own rule
-      says trim in a QUALITY slot, not on every TRIM SOON read.
-      $0 spent, $0 revenue change.
-
-- [x] **DONE cycle 2721 (QUALITY/GROWTH slot, 2721 % 3 == 0) -- ran c2720's required second
-      measurement of the SEC `/Archives` 403-vs-404 claim, READ THE BODIES this time (the cheap
-      discriminator c2720 deferred), and the claim survives but MUST NOT ship as originally
-      framed -- it is real, has a mechanism, and does not reach this Actor's code.**
-      Re-measured all 3 c2720 URLs plus a 4th (`/Archives/edgar/data/320193/nosuch/`, a different
-      subtree) bracketed between two 200 controls on the same UA: all 4 bogus paths still `403`,
-      none `404` -- the headline claim holds. **Reading the bodies changes the conclusion
-      entirely.** The two `daily-index` 403s are gzip-encoded **S3 `AccessDenied` XML**
-      (`x-amz-request-id`/`x-amz-id-2` headers, `<Error><Code>AccessDenied</Code>...`) -- the
-      textbook S3 behaviour of returning 403 instead of 404 for a GetObject on a missing key when
-      the caller lacks `s3:ListBucket` on that prefix. The `data/320193/nosuch/` 403 is a
-      *different* backend (no `x-amz-*` headers) denying a directory listing, also `AccessDenied`
-      XML but not a rate-limit page (falsification condition c2720 named did not fire). **Then
-      tested the actual shape this Actor's 4 call sites use** (`company_tickers.json`,
-      `submissions/CIK*.json`, paginated submission pages, and critically
-      `/Archives/edgar/data/<cik>/<accession>/<file>` for the raw ownership XML) against a real
-      AAPL accession dir with both a wrong filename and a wholly nonexistent accession number:
-      **both came back a clean `404`, not `403`.** So the 403-for-missing trap is confined to
-      `daily-index` index/listing paths and bare directory listings -- it does NOT occur on the
-      accession-document GET shape that `secGet` actually makes, because S3 GetObject on a
-      precise key it doesn't have returns differently once you're past the listing layer (or this
-      path isn't S3-backed the same way). **Verdict: no code change to `secGet`/`lastGetWas404`
-      (grepped -- this Actor never touches `daily-index` or a bare directory listing, confirmed
-      fleet-wide too: `grep -rl daily-index actors/` = 0 hits anywhere), and no blog/README claim
-      shipped** -- "SEC Archives returns 403 for missing paths" would be true but misleading
-      for the only consumer that matters (a scraper fetching known accession-document URLs), and
-      PLAYBOOK's bar is for claims that reach a product surface. Recorded in `LEARNINGS.md`
-      instead as a scoped, mechanism-level fact for if a future Actor ever does fetch
-      `daily-index` or lists a directory.
-
-- [x] **DONE cycle 2720 (NORMAL slot, 2720 % 3 == 2) -- preflight clean AGAIN (nothing due in
-      `checks-due`/`audit-due`, 0 untriaged mail, all four standing watches unchanged, top
-      MEDIUM follow-up still gated to ~c2790), so instead of a 5th consecutive verify-only
-      pass I went looking for a gap no checker owns, and found one: the blog had published
-      ZERO posts in November.** Last post 2026-10-26 -- ~9 days / ~430 cycles against a
-      historical ~25-29 cycles/post rate, in our ONLY organic channel. Every blog checker read
-      clean throughout because they are all *coverage* checks (`check-actor-guides`,
-      `check-blog-cta`, `check-backlinks`) with no **recency** clock, so a channel going quiet
-      is invisible to all of them. **Published guide #89,
-      `/blog/sec-form-4-insider-trades-public-json-api-no-key`**, aimed at the largest measured
-      content gap in the fleet: c2716 measured `sec-insider-trades-scraper` as having 4 posts,
-      all deep Form-4 gotchas, and **zero head-term post** (the format that earned organic at
-      33% vs 5%). Chose the head-term slot deliberately and note WHY it does not front-run the
-      gated c2716 decision: that gate is on a *content pivot* (a titling rule across future
-      guides), and one additive post retitles nothing and churns no slug; it also **improves**
-      the c2790 re-measure, because the recent-age cohort was previously 100% gotcha posts and
-      now has a same-age head-term member, which is the exact age confound c2716 flagged.
-      All numbers live-captured while writing: `company_tickers.json` 796,507 B / 10,409
-      tickers -> 8,004 distinct CIKs / 1,436 CIKs with >1 ticker (Alphabet 4x
-      GOOGL/GOOG/GOOGN/GOOGM on one issuer CIK, so two share classes = a duplicate request,
-      not broader coverage); `submissions/CIK0000320193.json` 163,919 B, `filings.recent` =
-      1,002 filings 2015-10-05..2026-11-03 of which 601 Form 4, `files[]` holding 1,271 more
-      (1994-01-26..2015-10-03) -- the ~1,000 is a COUNT ceiling, not a date window, so a
-      `recent`-only backfill silently gets a different depth of history per issuer; `403` on
-      empty UA vs `200` on a declared one, measured on BOTH `www.sec.gov` and `data.sec.gov`.
-      Self-caught one pre-publish error: wrote index `"1"` as MSFT from memory, live file says
-      AAPL (MSFT is `"2"`) -- re-read the payload instead of shipping it. Backlinked both
-      directions per PLAYBOOK step 10 (Actor README `## Related guides` + root README Guides
-      list) and verified the `apify push --force` landed by reading build 0.1.72's `readme`
-      field **via the API** (71,756 B, new slug present), not the CDN-cached Store page.
-      Post-publish sweep all clean and all 6 recorded in `fleet_checks.json`: `check-blog-cta`
-      89 posts / 0 missing-CTA / 0 roundup / 0 bad-slug / 0 dead-link, `check-blog-claims` 33
-      claims 0 stale, `check-disclosure` 89 site + 28 dev.to 0 missing, `check-backlinks` 132
-      pairs 0 missing, `check-actor-guides` 24 Actors 0 flagged (sec-insider dedicated 4->5,
-      related 5->6), `check-links` 153 pages / 153 assets CLEAN; `bin/indexnow` -> 200.
-      One measured finding deliberately held back for a second measurement (403-not-404 on
-      `/Archives`, filed as the open item directly above). Preflight numbers: $0 booked / 25
-      Actors / 47 users / 788 runs30d / `ext_bad30d` 4, spend $6.5863/$85 (proj $7.64), all
-      services active, `/`/`/pricing`/`/tools` 200, buyer-intent funnel flat (tools 36n/35v,
-      engaged 10/9) so no owner email.
-      $0 spent, $0 revenue change.
-
-- [x] **DONE cycle 2719 (NORMAL slot, 2719 % 3 == 1) -- full fresh preflight, nothing
-      due/actionable anywhere; verified rather than manufactured work per the standing c2524
-      rule.** `checks-due`/`audit-due` both NONE DUE (44 checks / 16 audit types, soonest
-      `check-row-floor` in 5c); `inbox-triage new` 0 untriaged (74 messages, all on record);
-      `bin/revenue` $0 booked/25 Actors/47 users/787 runs30d/`ext_bad30d` 4; `bin/apify-spend`
-      $6.5859/$85 (86.1% elapsed, proj $7.65); all three services active, `/`/`/pricing`/`/tools`
-      200; `check-doc-size` OK on all three live docs. All four standing watches re-verified
-      live via direct API read, unchanged (TED tenders 1/1/1 users + 45 runs30d + 0 bookmarks,
-      DMARC same 2 reports 1-source/0-fail, bold.org still 429, buyer-intent funnel flat at
-      tools 36n/35v engaged 10/9, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0 -- far below
-      the >100/day Polar gate, no owner email). Also noted `state/health.json`'s prior
-      `shopify-products-scraper` row-floor flag has self-cleared (no longer present). Checked
-      all gated follow-ups for ripeness: organic re-measure (gated ~c2790), c2478 `/v2/store`
-      re-read (gated post-2026-11-15), c2380 growth-sweep re-grep (25-30c wait after c2701,
-      only 18c out), grants-gov pricing (DECIDED-NOT-OPEN-WORK), bold.org RECOVERED (not
-      fired) -- none ripe.
-      $0 spent, $0 revenue change.
-
-- [x] **DONE cycle 2718 (QUALITY/GROWTH slot, 2718 % 3 == 0) -- `checks-due`/`audit-due`
-      both NONE DUE again, so did real QUALITY-slot work: ran the fleet's most-overdue
-      `varied_test` (`sec-insider-trades-scraper`, last touched cycle 2408) with a genuinely
-      new STACKED combo.** Prior varied_test cycles (1301/2188/2218/2408) exercised
-      `transactionCodes`/`insiderRoles`/`minTransactionValue`/`includeDerivative` individually
-      or in pairs, never all four together -- the realistic shape of a buyer filtering for
-      "open-market officer sales over $100k, non-derivative only". Ran
-      `{issuers:["JPM"],transactionCodes:["P","S"],insiderRoles:["officer"],
-      minTransactionValue:100000,includeDerivative:false}` -> 2 rows. Self-caught an
-      output-key slip before concluding anything (`issuer`/`isDerivative` flagged NOT A FIELD
-      by `bin/varied-test`'s own guard; real names `issuerName`/`derivative`) -- re-ran
-      correctly and verified all 4 filters compose cleanly under AND semantics on both rows
-      (JPMORGAN CHASE & CO, code S, abs value >$100k, officer=true, derivative=false). No
-      defect found, no code/README change. Recorded in `audit_dates.json` (2408 -> 2718).
-      Preflight otherwise clean: 0 untriaged mail (74 msgs), $0 booked/25 Actors/47
-      users/787 runs30d, spend $6.5844/$85 (86.0% elapsed, proj $7.65), all three services
-      active, `/`/`/pricing`/`/tools` 200. All four standing watches re-verified live,
-      unchanged (TED tenders 1/1/1 users + 45 runs30d + 0 bookmarks, DMARC same 2 reports
-      1-source/0-fail, bold.org still 429, buyer-intent funnel flat at tools 36n/35v engaged
-      10/9, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0 -- far below the >100/day Polar
-      gate, no owner email).
-      $0 spent (cycle action; ~$0.01 on 2 charged rows), $0 revenue change.
-
-- [x] **DONE cycle 2717 (NORMAL slot, 2717 % 3 == 2) -- full fresh preflight, nothing
-      due/actionable anywhere; verified rather than manufactured work per the standing c2524
-      rule.** `checks-due`/`audit-due` both NONE DUE (44 checks / 16 audit types); `inbox-triage
-      new` 0 untriaged (74 messages, all on record, including both owner threads visible in
-      `inbox list 10`); `bin/revenue` $0 booked/25 Actors/47 users/787 runs30d/`ext_bad30d` 4;
-      `bin/apify-spend` $6.5839/$85 (86.0% elapsed, proj $7.66); all three services active,
-      `/`/`/pricing`/`/tools` 200. All four standing watches re-verified live, unchanged (TED
-      tenders 1/1/1 users + 45 runs30d, DMARC same 2 reports 1-source/0-fail, bold.org still
-      429, buyer-intent funnel flat at tools 37n/36v engaged 10/9 -- far below the >100/day
-      Polar gate, no owner email). Checked every gated follow-up for ripeness: c2716's organic
-      re-measure (gated ~c2790), c2478 `/v2/store` re-read (gated post-2026-11-15), c2380
-      growth-sweep re-grep (widened to 25-30c wait, only 16c out), grants-gov pricing
-      (DECIDED-NOT-OPEN-WORK), bold.org RECOVERED (not fired) -- none ripe.
-      $0 spent, $0 revenue change.
-
-- [x] **DONE cycle 2716 (NORMAL slot, 2716 % 3 == 1) -- `checks-due`/`audit-due` both NONE DUE
-      again, so spent the cycle on growth per `checks-due`'s own message. Asked the question
-      nobody had asked in 2716 cycles: WHICH of our 88 blog posts does a search engine actually
-      send a human to? Answer is now a standing instrument, not a one-off.** Full retro in
-      `notes/LEARNINGS.md` c2716. Two results: (1) **organic search is real and measurable
-      without Search Console.** Raw referrers are spoof-poisoned -- `https://www.google.com/`
-      is our biggest external referrer at 167 hits/164 vids/30d, with sibling rows like
-      `https://www.google.com/)('".,abcd` and `.../xh3test` proving camouflage; `∩ asset_hits`
-      collapses it to **18 verified vids**, and two of those carried a FULL
-      `google.com/url?...&q=https://fetchsmith.com/<path>&ved=...&usg=...` referrer (unspoofable
-      shape, names the landing page) -- `/tools/apple-podcasts-scraper` and
-      `/blog/tmview-trademark-search-api-no-key`. ~5 verified organic visitors/week: real, far
-      below the Polar gate, valuable only as ATTRIBUTION. (2) **format signal:** head-term
-      "<source> public JSON API"-shaped posts earn organic at 11/33 (33%, 22 visitors) vs 3/55
-      (5%, 8 visitors) for the deep-gotcha posts that are most of what recent cycles write.
-      **Audited my own age confound and it bites** (head-term posts are ~3wk older on median):
-      age-controlled it is 44% vs 11% at a 2026-09-30 cutoff but only 43% vs 23% at 2026-09-20,
-      on 30 total visitors -- so the direction holds, the magnitude does not. Stated as "~2-4x,
-      directional", **no multiplier quoted** (that is the c2696 "4.3x" mistake). Shipped:
-      `bin/traffic` now prints an `ORGANIC SEARCH landing paths` section (verified-only, fixed
-      90d window NOT `$D`, search-engine referrers only, with the spoof caveat inline) -- run and
-      verified live. **Also checked and CLOSED a false alarm before writing anything:** 4 of 4
-      trademark posts and 3 of 4 SEC Form 4 posts link no `/tools/<slug>` page, which looked
-      like a link-equity leak on our top-traffic cluster -- it is not, CTAs correctly use the
-      one-hop `/go/<slug>` redirect straight to Apify (the money surface), and
-      `bin/check-blog-cta` reads 88 posts / 0 missing-CTA / 0 dead-link. Preflight otherwise
-      clean: 0 untriaged mail (74 msgs), $0 booked / 25 Actors / 47 users / 787 runs30d /
-      `ext_bad30d` 4, spend $6.5835/$85 (85.9% elapsed, proj. $7.67), all 3 services active,
-      `/` `/pricing` `/tools` all 200, all four standing watches re-verified live and unchanged
-      (TED 1/1/1 users + 45 runs30d + 0 bookmarks, DMARC same 2 reports 1-source/0-fail,
-      bold.org still 429, buyer-intent funnel flat at tools 24n/18v -- no owner email, correctly).
       $0 spent, $0 revenue change.
 
 - [ ] **NEW follow-up (c2716, MEDIUM -- this is the first new growth lever found in ~50 cycles,
@@ -216,111 +65,6 @@
       posts** -- they hold whatever index position they have and churning slugs forfeits it
       (the c1468/c2280 listing-churn warning applies to URLs too).
 
-- [x] **DONE cycle 2715 (QUALITY/GROWTH slot, 2715 % 3 == 0) -- `checks-due`/`audit-due`
-      both NONE DUE (checks-due's own message: "spend it on growth work"), so did real
-      QUALITY-slot work instead of another preflight-only pass.** Ran a genuinely different
-      `varied_test` on `federal-register-scraper`, the fleet's most-overdue Actor for that
-      rotation (last touched cycle 2265, ~450 cycles stale -- `scholarship-scraper` reads
-      `null` but that's explained by bold.org's JS challenge wall blocking every call, not a
-      real gap, so testing it would only re-measure the known outage). Registry's own
-      `example_input`/`test_input.json` only exercises EPA + RULE/PRORULE + `commentsOpenOnly`;
-      tested the disjoint combo `cfrTitle: 26` (IRS tax code), no agency filter,
-      `publicationDateFrom: 2026-01-01` instead. Two self-corrected missteps en route (wrong
-      output-key names caught by `bin/varied-test`'s own "NOT A FIELD" guard; a
-      `documentTypes: NOTICE` input that returned 0 rows because CFR citations don't attach to
-      notices) before landing on **10/10 clean rows**: every row genuinely `26 CFR ...`, every
-      `agencyNames` includes Treasury/IRS, every date in range. `cfrTitle` filtering confirmed
-      honest and server-side-correct on a combo never tested before. Recorded in
-      `state/audit_dates.json` (`federal-register-scraper.varied_test`: 2265 -> 2715). No bug
-      found, no README/code change licensed.
-      Preflight otherwise clean: 0 untriaged mail, $0 booked/25 Actors/47 users/787 runs30d,
-      spend $6.5819/$85 on track, all services/pages healthy, all four standing watches
-      (TED tenders, DMARC, bold.org, buyer-intent funnel) re-verified live and unchanged, no
-      owner email. `check-doc-size` OK on all three live docs, no trim due.
-      $0 spent, $0 revenue change.
-
-- [x] **DONE cycle 2714 (NORMAL slot, 2714 % 3 == 2) -- full preflight re-run fresh, NOTHING
-      due/actionable anywhere (checks-due and audit-due both NONE DUE, 0 untriaged mail, all
-      four standing watches unchanged, no gated follow-up ripe, no new BUILD candidate) --
-      verified rather than manufactured, per the standing c2524 rule against filling a slot
-      with busywork.** Hand-verified the owner-thread IDs and the newest cold-pitch spam IDs
-      directly (not just the triage ledger): `2b237f1b`/`01852eaa` both long-resolved,
-      `5ce80b92`/`6acc123f` both cold-pitch spam, zero replies owed. One self-caught slip,
-      corrected before recording: a first read of `eu-ted-tenders-scraper`'s stats queried
-      `publicActorRunStats30Days`/`bookmarkCount` at the top level instead of nested under
-      `stats`, printing `None` for both -- re-read correctly, both unchanged (TOTAL 45,
-      bookmarkCount 0). $0 spent, $0 revenue change, no owner email.
-
-- [x] **DONE cycle 2713 (NORMAL slot, 2713 % 3 == 1, recomputed fresh) -- full preflight
-      re-run fresh, exactly one fleet check DUE and ran clean, nothing else actionable.**
-      `checks-due --all`: 1 DUE (`check-status-continuity`) -- ran it, retained window
-      2698..2712, 15 completed cycles, **NONE MISSING**, recorded via `--ran`, next due
-      c2761. `audit-due --all` NONE DUE across 16 rotations. `inbox-triage new` 0 untriaged
-      (74 messages); `bin/revenue` $0 booked/25 Actors/47 users/787 runs30d; `bin/apify-spend`
-      $6.5613 -> $6.5772/$85 (ordinary trickle, see mistake note); all three services active,
-      `/`/`/pricing`/`/tools` 200. All four standing watches re-verified live, unchanged
-      (TED tenders 1/1/1 users + 45 runs30d, DMARC clean x2, bold.org still 429, buyer-intent
-      funnel flat and far below the >100/day Polar gate).
-      **Self-inflicted near-miss, caught before damage: `bin/actor-health --help` has no
-      argument parser (only a literal `"--only" in sys.argv` check) and silently fell through
-      to its real default action -- a full fleet sweep, real Apify compute spend, the exact
-      cost prior cycles (c2700-2712) had declined to pay just to refresh the stale
-      `shopify-products-scraper` snapshot.** Caught on the 300s timeout, confirmed via
-      `TaskStop` that no real second sweep ran (`logs/health.log` mtime was the 03:30 cron,
-      `apify-spend` moved only 2 cents across the whole investigation). Recorded as a
-      transferable rule in `LEARNINGS.md` c2713: grep a `bin/*` script for
-      `argparse`/`sys.argv` before probing it with `--help`. `shopify-products-scraper`
-      health snapshot still unrefreshed, unchanged, self-clears on tonight's cron.
-      $0 spent (cycle action), $0 revenue change, no owner email.
-
-- [x] **DONE cycle 2712 (QUALITY/GROWTH slot, 2712 % 3 == 0, recomputed fresh) -- executed the
-      doc-trim cadence item's designated work on `tasks/queue.md`, and ran the one fleet check
-      that was due.** Preflight clean first: `audit-due --all` NONE DUE across all 16 rotations;
-      `checks-due --all` had exactly **1 DUE (`check-mode-scope-warning`)** -- ran it, **25
-      Actors / 44 mode-scoped fields / 0 allowlisted / 0 flags** (every field whose own schema
-      description promises a mode restriction is named by a `log.warning` when ignored), recorded
-      via `--ran`, next due c2808. `inbox-triage new` 0 untriaged (74 messages); `bin/revenue` $0
-      booked / 25 Actors / 47 users / **787** runs30d / `ext_bad30d` still 4; `bin/apify-spend`
-      $6.5609/$85 (85.6% elapsed, proj $7.66); all three services active, `/`/`/pricing`/`/tools`
-      200 before and after the trim. **All four standing watches re-verified live, unchanged:**
-      eu-ted-tenders 1/1/1 users + 45 runs30d, DMARC 2 reports both 1-source/0-fail, bold.org
-      still **429**, buyer-intent funnel flat (tools 37n/36v engaged 10/9, pricing 5/5 engaged
-      4/4, checkout 2/2 engaged 0/0) -- far below the >100/day Polar gate, so **no owner email**.
-      **The trim itself is recorded in the doc-trim cadence item above (rule: newest execution
-      only) -- `queue.md` 81.5KB/835 lines -> 53.3KB/599, now OK with ~28c headroom.** Two notes
-      worth keeping out here: (1) the rule-4 margin was THIN (13.2KB) after the DONE-only cut, so
-      two open items were compressed in the same cycle -- see the cadence item; (2) **a real
-      near-miss: the replacement execution record came out 3.2KB against the 2.3KB record it
-      replaced**, i.e. the compression step was net growth under a rule whose whole purpose is to
-      prevent that. Caught only by an `assert len(new) < len(old)` in `bin/_trim2712q.py`, and the
-      first version of that assert compared LINE counts (which the longer record passed trivially
-      at narrower wrapping). **Standing rule now in LEARNINGS c2712: any "replace in place / keep
-      newest only" rule needs a mechanical `new < old` assert in bytes inside the tool that
-      applies it** -- without one it is indistinguishable from append-only after a few laps, and
-      `check-doc-size` cannot see it because it only reads whole-file size.
-      c2710's second suggestion (a competitor feature-diff) was **correctly not forced**:
-      `audit-due`'s `feature_diff_audit` and `competitor_audit` rotations are both NONE DUE and
-      c2709 had already ruled out the two standing candidates as over-maintained, so per the
-      c2524 rule no diff was manufactured to fill the slot.
-      $0 spent, $0 revenue change, no owner email.
-
-- [x] **DONE cycle 2710 (NORMAL slot, 2710 % 3 == 1, recomputed fresh) -- full preflight
-      clean, nothing actionable anywhere; verified rather than manufactured work.**
-      `checks-due`/`audit-due` NONE DUE across 44/16; `inbox-triage new` 0 untriaged (74
-      messages, all on record, zero new mail); `bin/revenue` $0 booked/25 Actors/47
-      users/786 runs30d; `bin/apify-spend` $6.5597/$85 (85.5% elapsed, proj $7.67); all
-      three services active, `/`/`/pricing`/`/tools` 200. All four standing watches
-      (TED tenders 1/1/1 users + 45 runs, DMARC clean x2, bold.org still 429, buyer-intent
-      funnel flat and far below the >100/day Polar gate) re-verified live, unchanged.
-      `check-doc-size`: `queue.md` TRIM SOON but not due -- correctly deferred to the next
-      QUALITY slot (cycle 2712) per the doc-trim item's own rule 2, not executed in this
-      NORMAL slot. Checked three gated follow-ups (c2380 growth-sweep re-grep, `bold.org`
-      RECOVERED trigger, grants-gov pricing decision) -- none ripe yet. **Note for cycle
-      2712 (next QUALITY slot): run the doc-trim on `queue.md` (TRIM SOON, re-derive the
-      partition fresh per the item's rule 3) and consider a real competitor feature-diff
-      since none is currently stale/due on any Actor.**
-      $0 spent, $0 revenue change, no owner email.
-
 - [ ] **NEW follow-up (c2700, LOW — do NOT push without evidence). `ats-jobs-scraper` still
       defaults to `{useApifyProxy: true}`** and was never measured either way this cycle (it was
       green in health, so nothing licensed a push — a push is ~$0.005 and c2700 explicitly
@@ -330,13 +74,28 @@
       against its own `test_input.json`, compared to the same input unmodified. Do not pre-emptively
       flip it — its boards are not Shopify storefronts and c2700 proved the block is source-specific.
 
-- [ ] **NEW tripwire (c2700, LOW — latent). `check-row-floor`'s `shopify-products-scraper` flag
-      (ratio 0.00) is STALE in `state/health.json`** because `actor-health --only` deliberately does
-      not write the snapshot. The fix is verified live (10/10) but `state/health.json` still carries
-      the 07:01 pre-fix row, so the next `check-row-floor` run may re-flag shopify until the nightly
-      full `actor-health` refreshes the file. **Expected to self-clear on the next nightly run — if
-      it has cleared, there is nothing to do here; close this item.** Do not spend a full fleet
-      health run (~24 Actors of compute) just to clear a snapshot the nightly job rewrites anyway.
+- [ ] **REWRITTEN c2724 -- the c2700 `shopify-products-scraper` tripwire was FALSIFIED; what
+      replaces it is the triage recipe, which is the part worth keeping.** c2700 predicted the
+      `check-row-floor` ratio-0.00 flag was a STALE `state/health.json` row (because
+      `actor-health --only` deliberately does not write the snapshot) that the nightly full run
+      would self-clear. c2724 disproved that: the flagging 0 came from a **real nightly FULL
+      run** (health ts 12.0h old, not an `--only` artifact), so "it will self-clear" was never
+      the mechanism. **Correct diagnosis (c2724): isolated single-snapshot dips.** A 30-snapshot
+      `git log`/`git show` trace of `state/health.json` showed `shopify-products-scraper` at
+      **10/10 in 28 of 30 snapshots** with exactly two lone zeros (11-03_17:36, 11-04_07:15),
+      each immediately surrounded by healthy 10s; `google-news-scraper` likewise 8 rows in 28
+      of 30 (one 6, one 7). Same shape as the c2388 transient Apify-Proxy timeout chain, NOT an
+      upstream change -- both flags CLEARED on a live `--recheck` (shopify 10/10, google-news
+      7/8) and no code was touched. **Recipe for the NEXT `check-row-floor` flag, in this
+      order:** (1) `--recheck` (one capped run per flagged Actor, cheap) and (2) the
+      health.json git-history trace -- an isolated zero bracketed by healthy readings is
+      transient and needs NO code change; a zero that PERSISTS across consecutive snapshots is
+      the real signal worth diagnosing. Do NOT edit Actor code off a single flagged snapshot.
+      **Shell gotcha that cost time here (homed `notes/LEARNINGS.md`):** do the trace in Python
+      with `subprocess`, not as `git show ... | python3 -c` inside a `while read` loop -- the
+      loop and the inner command fight over stdin and the extraction silently prints nothing,
+      which reads like "no data in history" rather than a broken harness.
+
 - [ ] **NEW, c2692 -- DECIDED, NOT OPEN WORK. Do NOT cut `grants-gov-scraper`'s price in response to `transparent_meteorite`, or to any single new undercutter in this niche.** c2691 discovered (correctly) that `transparent_meteorite/federal-grants-contracts`' 2026-10-30 record retiers `opportunity-returned` to $0.002 (FREE) / $0.0012 (BRONZE) / $0.0009 (SILVER) / $0.0006 (GOLD+), undercutting our flat $0.0015 enriched rate from BRONZE up and our flat $0.0007 thin rate from GOLD up. Re-verified independently this cycle off the live `pricingInfos` record (identical numbers, plus a $0.00005/GB `apify-actor-start` fee we do NOT charge, which we never credit ourselves for). **c2691 recorded the finding but left no decision, and its "a previously-ruled-out rival is now a genuine partial undercutter" framing reads as alarming out of context. It is not. Three measured reasons:**
       (a) **The niche's price floor is already effectively $0, so matching $0.0006 buys nothing.** This README already discloses, from earlier sweeps, `grit-77/grants-gov-funding-opportunities` at **$0.00001**/opportunity with no start fee (150x under us), `lepidata/grants-gov-opportunities` at **$0.0002** (7.5x under us), `exuberantal/...-grants-scraper` with **no pricing record at all** ($0 to run, confirmed by direct API read), and three more rivals on Apify's FREE model. `transparent_meteorite` at $0.0006 is not the cheapest, not close to the cheapest, and is DEARER than us at the one rung a Store visitor actually sees.
       (b) **The buyer-visible number on the Store card is the FREE rung, and we win it** -- $0.0015 enriched / $0.0007 thin vs their $0.002. Their advantage exists only for a buyer who has already bought a paid Apify plan AND already chosen a vendor, which is downstream of every constraint we actually have.
@@ -495,28 +254,27 @@
       the c2652 cadence-compression header. KEEP THIS ITEM IN THIS SHAPE: method + standing
       rules + newest execution only. Do NOT prepend a full narrative per trim again -- that
       habit is what grew this one item to 200 of 631 open lines, 32% of the live queue.)**
-      **EXECUTED c2712 (QUALITY slot) -- `tasks/queue.md` only** (81.5KB/835 lines, TRIM
-      SOON; STATUS.md 45.1KB/639 and LEARNINGS 6002 lines both OK, untouched). Partition
-      re-derived fresh per rule 3: 42 blocks, 10 DONE + 32 OPEN. Rule-1 hazard grep ran
-      FIRST on the 254 archive-bound lines -- 34 hits, all narrative *about* rules homed
-      elsewhere, except c2704's "a re-read follow-up must name a NON-OVERLAPPING window;
-      shift the window backwards rather than wait", archived only after confirming it is
-      homed at `notes/LEARNINGS.md:5944`. Backups to `/tmp/c2712_*.bak` first.
-      `bin/_trim2712q.py` hoist-then-cut kept all 32 open + newest DONE (c2710), archived
-      9 DONE -> **51.5KB/560 lines**. **Rule-4 margin was THIN on that DONE-only cut
-      (13.2KB: 74240 B ceiling - 61035 B projected), so two open items were compressed in
-      the same cycle** instead of banking on the next cut: this item's c2703 record was
-      replaced in place by this one ("newest execution only" applied to itself, as
-      c2703/c2652 did), and the **c2478 `/v2/store` item -- the largest open block at
-      7744 B -- was cut to its live half** (code shipped c2496; the rest was per-caller
-      investigation narrative, archived verbatim; its single-slug `check-store-rank` rule
-      confirmed homed at `notes/LEARNINGS.md:3582`, pointer kept anyway).
-      **Guards all passed:** the script's asserts (line/block preconditions, byte-for-byte
-      partition reconstruction, multiset identity, no-OPEN-in-archive-set,
-      open-items-unchanged, both rewrites asserted separately since they break multiset
-      identity by design); losslessness re-verified independently by non-blank line-set
-      membership in live+archive; `check-doc-size` OK on all three docs; services active
-      and `/`, `/pricing`, `/tools` 200 before and after.
+      **EXECUTED c2724 (QUALITY slot) -- `tasks/queue.md` only** (80.5KB/906 lines, TRIM
+      SOON; STATUS.md and LEARNINGS OK, untouched). Partition fresh per rule 3: 46 blocks,
+      13 DONE + 33 OPEN. Rule-1 hazard grep ran FIRST on the 285 archive-bound lines -- 39
+      hits, all narrative about rules homed elsewhere bar two uniquely homed methods, both
+      verified present first: c2713's at `notes/LEARNINGS.md:6028` and c2712's `new < old`
+      rule at `notes/LEARNINGS.md:6014`. Backups `/tmp/c2724_*.bak`; `bin/_trim2724q.py` kept
+      all 33 open + newest DONE (c2723), archived 12 DONE -> **56.1KB/630 lines**.
+      **Rule-4 margin measured ~14.9KB (74240 ceiling - 57362 actual post-cut - ~2.0KB for
+      c2724's own DONE block), i.e. RIGHT AT the ~15KB thin line, not comfortably above it
+      as first estimated.** Accepted without compressing another open item because the next
+      `check-doc-size` look is 24c out and a DONE-only cut then is ample; if the next trim
+      measures thin again, compress the two largest open blocks (28: 4085 B, 38: 4646 B)
+      rather than deferring a second time. Two open items were edited as content fixes
+      anyway: this record (replaced in place) and the **c2700 shopify tripwire, RETIRED as
+      falsified** -- it blamed a stale `--only` snapshot, but the flagging 0 came from a real
+      nightly FULL run; replaced by the transient-dip diagnosis + triage recipe.
+      **The `new < old` assert FIRED on the first draft of this very record** (2.7KB vs the
+      1874 B it replaces) and forced this shorter one -- c2712's rule working as designed.
+      Other guards passed: partition reconstruction, multiset identity,
+      no-OPEN-in-archive-set, open-items-unchanged, independent line-set losslessness,
+      `check-doc-size` OK, services active and `/`, `/pricing`, `/tools` 200 before+after.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the

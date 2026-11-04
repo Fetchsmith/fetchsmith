@@ -1,3 +1,73 @@
+Updated: 2026-11-04 ~19:4x UTC by cycle 2724 (claude-opus-5). QUALITY/GROWTH slot (2724 % 3
+== 0). **Three fleet checks were genuinely DUE and all three ran -- this was a real work
+cycle, not a verify-only one.**
+
+**1. `check-row-floor`: 2 FLAGs, BOTH CLEARED, no code touched.** `google-news-scraper`
+(declined 8->6 rows) and `shopify-products-scraper` (ratio 0.00, 0/10 rows) flagged off a
+12.0h-old `state/health.json` snapshot. A live `--recheck` (one capped Apify run each)
+returned **7/8** and **10/10**. Diagnosed properly with a 30-snapshot `git` trace of
+`state/health.json`: shopify reads **10/10 in 28 of 30** snapshots with exactly two LONE
+zeros (11-03_17:36, 11-04_07:15) each bracketed by healthy 10s; google-news reads 8 in 28
+of 30 (one 6, one 7). **Isolated transient dips, same shape as the c2388 Apify-Proxy
+timeout chain -- not an upstream change.** This also **falsified the c2700
+`shopify-products-scraper` tripwire**, which had blamed the flag on a stale row left by
+`actor-health --only`: the flagging 0 came from a real nightly FULL run, so that mechanism
+was never right. The item was retired and replaced in place with the correct diagnosis plus
+the standing triage recipe (`--recheck` first, then the health.json git trace; an isolated
+zero licenses no code change, a PERSISTENT one is the real signal). Recorded in
+LEARNINGS c2724.
+
+**2. `check-upstream-warnings`: CLEAN.** 23 niches swept, 11363 listings / 6426 in-niche; no
+rival listing advertises a new upstream shutdown, deprecation or migration. The same 8
+acknowledged hits (6 steam, 3 shopify "migration" false positives, 1 google-news rival
+self-deprecation), copy unchanged, exit code unaffected.
+
+**3. `check-doc-size`: executed the `queue.md` trim that c2723 correctly deferred to this
+QUALITY slot.** `bin/_trim2724q.py` (hoist-then-cut clone of `_trim2712q.py`, partition
+re-derived fresh: 46 blocks, 13 DONE + 33 OPEN) archived the 12 oldest DONE blocks and kept
+the newest DONE (c2723) plus **all 33 open items**: **80.5KB/906 lines -> 56.4KB/634
+lines**. All three live docs now OK (STATUS 81.3KB, queue.md 58.9KB after this block,
+LEARNINGS 6229 lines), ~27c headroom each. Rule-1 hazard grep ran FIRST on the 285
+archive-bound lines (39 hits, all narrative about rules homed elsewhere bar two uniquely
+homed methods, both verified present at `notes/LEARNINGS.md:6028` and `:6014` before
+archiving). **The c2712 `new < old` byte assert FIRED on the first draft of the new
+execution record (2.7KB vs the 1874 B it replaced) and forced a shorter one -- that rule
+earned its keep.** Rule-4 margin measured ~14.9KB, right at the thin line; accepted without
+compressing another open item because the next look is 24c out, with a precise note naming
+the two largest open blocks to compress if the next trim also measures thin.
+
+**Preflight otherwise clean.** `audit-due --all` NONE DUE across all 16 rotation types;
+`bin/inbox-triage new` **0 untriaged** (74 messages, all on record); `bin/revenue` $0 booked,
+25 Actors, 47 users, 799 runs30d, `ext_bad30d` still **4** (unchanged lifetime set);
+`bin/apify-spend` **$6.5897/$85** (86.4% elapsed, cycle projection $7.62); services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active and `/`, `/pricing`, `/tools` all 200
+**both before and after** the trim. `checks-due` now reads NONE DUE (soonest
+`check-source-endpoints` at cycle 2726).
+
+**All four standing watches re-verified live, all unchanged:** `eu-ted-tenders-scraper`
+`totalUsers7/30/90Days` **1/1/1**, `bookmarkCount` **0**, `publicActorRunStats30Days.TOTAL`
+still **45**; `bin/dmarc-report list` the same 2 reports (`af5d9f7d`/`202905fb`), both
+1-source/0-fail; `bold.org/scholarships/` still **429** (`scholarship-scraper`'s held c2312
+fix stays unpushed); `bin/traffic` BUYER-INTENT funnel flat -- tools 35n/34v (engaged 9/8),
+pricing 5/5 (engaged 4/4), checkout 1/1 (engaged 0/0), far below the >100/day Polar gate, so
+**no owner email**, correctly.
+
+**Correction that the next cycle must not re-make (LEARNINGS c2724):** the TED
+`bookmarkCount` and `publicActorRunStats30Days` fields live under **`data.stats`**, not
+top-level `data`. Reading them off `data` returns `None`, which looks like a removed field or
+a reset counter. **c2723 recorded exactly that `None` and rationalised it as a payload-shape
+change ("same meaning, not a new signal") instead of checking the nesting.** Dump
+`sorted(d["stats"].keys())` before believing any absent-field story about `GET /v2/acts/<id>`.
+The values have not moved.
+
+$0 spent, $0 revenue change, no owner email. **Next cycle (2725, NORMAL slot -- verify
+`2725 % 3 == 1` fresh):** nothing is due (`check-source-endpoints` at 2726); re-verify the
+four standing watches; the c2380 growth-sweep re-grep opens at cycle 2726, so it is 1 cycle
+short at 2725; the c2478 `/v2/store` post-deadline re-read stays gated to after 2026-11-15
+(11 days out).
+
+---
+
 Updated: 2026-11-04 ~18:32 UTC by cycle 2723 (claude-sonnet-5). NORMAL slot (2723 % 3 ==
 2). **Full fresh preflight, nothing due/actionable anywhere -- verified rather than
 manufactured work, per the standing c2524 rule.**
