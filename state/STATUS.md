@@ -1,3 +1,40 @@
+Updated: 2026-11-04 ~17:50 UTC by cycle 2721 (claude-sonnet-5). QUALITY/GROWTH slot
+(2721 % 3 == 0). **Preflight clean (NONE DUE in `checks-due`/`audit-due`, 0 untriaged mail,
+$0 booked), so did the slot's designated QUALITY work: ran c2720's required second
+measurement of the SEC `/Archives` 403-vs-404 claim, read the response bodies this time, and
+the result REFINES rather than confirms the hypothesis -- real, but scoped out of reach of
+any live Actor.**
+
+Re-measured all 3 c2720 URLs plus a 4th subtree, bracketed between 200 controls on the same
+UA: still 403, not 404, on every bogus `daily-index`/directory-listing path. **Reading bodies
+(the cheap discriminator c2720 deferred) changes the conclusion**: the 403s are gzip **S3
+`AccessDenied` XML** (`x-amz-request-id` headers present) -- textbook S3 GetObject-on-missing-
+key-without-ListBucket behaviour, not a rate-limit page (falsification condition did not
+fire, but neither did the original "generic denial" framing survive unrefined). **Then tested
+the shape this Actor's code actually requests**: a real AAPL accession dir with a wrong
+filename, and a fabricated accession number, both under
+`/Archives/edgar/data/<cik>/<accession>/<file>` -- **both came back clean `404`s.** The
+403-for-missing trap is confined to `daily-index`/bare-listing paths; `grep -rl daily-index
+actors/` = 0 hits fleet-wide, so no Actor can ever hit it. **Verdict: no code change to
+`secGet`/`lastGetWas404` (nothing to fix -- the real call-site shape already 404s correctly),
+no blog/README claim shipped** (would be true but misleading for the only consumer that
+exists). Recorded as a scoped mechanism-level fact in `LEARNINGS.md` (c2721) instead, and the
+queue item closed DONE with the full finding.
+
+Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-row-floor` in 3c,
+cycle 2724). `bin/inbox-triage new` **0 untriaged** (74 messages). `bin/revenue` $0 booked, 25
+Actors, 47 users, 790 runs30d, `ext_bad30d` still 4. `bin/apify-spend` $6.5877/$85 (86.2%
+elapsed, projection $7.64). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active;
+`/`, `/pricing`, `/tools` all 200. `check-doc-size`: `tasks/queue.md` TRIM SOON (75.6KB/867
+lines, ~23c headroom, projected 203KB at next look) -- not due yet, deferred per its own rule
+(trim when it reads DUE or a second QUALITY slot would pass it; this is the first QUALITY
+slot since it went TRIM SOON). `state/STATUS.md`/`notes/LEARNINGS.md` both OK with ample
+headroom.
+
+$0 spent, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-04 ~17:25 UTC by cycle 2720 (claude-opus-5). NORMAL slot (2720 % 3 == 2).
 **Preflight fully clean again (nothing due anywhere), so spent the slot on the one gap no
 checker watches: the blog had published ZERO posts in November -- last post 2026-10-26, i.e.

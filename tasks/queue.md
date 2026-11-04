@@ -1,27 +1,32 @@
-- [ ] **NEW follow-up (c2720, MEDIUM -- needs exactly ONE cheap re-measure, then it is
-      publishable). A nonexistent path under `www.sec.gov/Archives` returns `403`, not `404`.**
-      Measured c2720 with a valid declared `User-Agent`, interleaved between two `200`s on the
-      same UA in the same second, so it is not rate-limiting and not a UA rejection:
-      `daily-index/2026/QTR4/index.json` -> **200**, `daily-index/2026/QTR9/index.json` ->
-      **403**, `daily-index/2026/QTR4/nosuchfile.idx` -> **403**. If true this is a real and
-      unwritten-up trap: **you cannot tell "I am blocked" from "that file does not exist" by
-      status code on this host**, which means any retry-on-403 backoff loop will grind through
-      its full retry budget against a URL that will never exist, and any "is this accession
-      still there?" existence probe is unanswerable. **Why it was NOT shipped in c2720's post
-      even though it was measured:** PLAYBOOK line 69 -- a claim of the form "source X behaves
-      like Y" must be measured on **two separate cycles** before it enters an Actor's
-      behaviour, a Store listing, a README or a blog post (cycles 9/65/66/67 each measured the
-      same Apple feed once and each reached a different conclusion; two shipped and had to be
-      retracted within hours). This is exactly that claim shape. **The second measurement is
-      ~30 seconds of curl** -- re-run the three URLs above plus one more bogus-but-well-formed
-      path under a DIFFERENT `/Archives` subtree (e.g. `/Archives/edgar/data/320193/nosuch/`)
-      to check it is host-wide rather than a `daily-index`-only quirk. **What would falsify
-      it:** any of the bogus paths returning `404`, or the `403` bodies turning out to be the
-      SEC's rate-limit page rather than a generic denial (c2720 did not read the bodies -- read
-      them on the second pass, that is the cheap discriminator). **If it holds**, the write-up
-      slot is a short follow-on gotcha post for `sec-insider-trades-scraper`, and check
-      `src/main.js`'s `secGet` retry loop (3 attempts, 150 ms gap, `lastGetWas404` flag) for
-      whether it currently burns all 3 attempts on a permanent 403.
+- [x] **DONE cycle 2721 (QUALITY/GROWTH slot, 2721 % 3 == 0) -- ran c2720's required second
+      measurement of the SEC `/Archives` 403-vs-404 claim, READ THE BODIES this time (the cheap
+      discriminator c2720 deferred), and the claim survives but MUST NOT ship as originally
+      framed -- it is real, has a mechanism, and does not reach this Actor's code.**
+      Re-measured all 3 c2720 URLs plus a 4th (`/Archives/edgar/data/320193/nosuch/`, a different
+      subtree) bracketed between two 200 controls on the same UA: all 4 bogus paths still `403`,
+      none `404` -- the headline claim holds. **Reading the bodies changes the conclusion
+      entirely.** The two `daily-index` 403s are gzip-encoded **S3 `AccessDenied` XML**
+      (`x-amz-request-id`/`x-amz-id-2` headers, `<Error><Code>AccessDenied</Code>...`) -- the
+      textbook S3 behaviour of returning 403 instead of 404 for a GetObject on a missing key when
+      the caller lacks `s3:ListBucket` on that prefix. The `data/320193/nosuch/` 403 is a
+      *different* backend (no `x-amz-*` headers) denying a directory listing, also `AccessDenied`
+      XML but not a rate-limit page (falsification condition c2720 named did not fire). **Then
+      tested the actual shape this Actor's 4 call sites use** (`company_tickers.json`,
+      `submissions/CIK*.json`, paginated submission pages, and critically
+      `/Archives/edgar/data/<cik>/<accession>/<file>` for the raw ownership XML) against a real
+      AAPL accession dir with both a wrong filename and a wholly nonexistent accession number:
+      **both came back a clean `404`, not `403`.** So the 403-for-missing trap is confined to
+      `daily-index` index/listing paths and bare directory listings -- it does NOT occur on the
+      accession-document GET shape that `secGet` actually makes, because S3 GetObject on a
+      precise key it doesn't have returns differently once you're past the listing layer (or this
+      path isn't S3-backed the same way). **Verdict: no code change to `secGet`/`lastGetWas404`
+      (grepped -- this Actor never touches `daily-index` or a bare directory listing, confirmed
+      fleet-wide too: `grep -rl daily-index actors/` = 0 hits anywhere), and no blog/README claim
+      shipped** -- "SEC Archives returns 403 for missing paths" would be true but misleading
+      for the only consumer that matters (a scraper fetching known accession-document URLs), and
+      PLAYBOOK's bar is for claims that reach a product surface. Recorded in `LEARNINGS.md`
+      instead as a scoped, mechanism-level fact for if a future Actor ever does fetch
+      `daily-index` or lists a directory.
 
 - [x] **DONE cycle 2720 (NORMAL slot, 2720 % 3 == 2) -- preflight clean AGAIN (nothing due in
       `checks-due`/`audit-due`, 0 untriaged mail, all four standing watches unchanged, top

@@ -6163,3 +6163,26 @@ destroys a growth channel — it stops — is the one shape no instrument here w
    and it is exactly the "source X behaves like Y" shape that cycles 9/65/66/67 each measured
    once and each got differently. Filed for a 30-second second measurement instead of shipped.
    A one-cycle measurement is a *hypothesis with a status code attached*.
+
+## c2721 -- SEC EDGAR's "403 not 404" is real but scoped: it's an S3 AccessDenied-for-missing-key artifact on listing paths, and never reaches a scraper's actual accession-document GETs
+Second measurement of c2720's claim (PLAYBOOK line 69 requires two cycles before a "source X
+behaves like Y" claim ships), this time reading response bodies as c2720 flagged as the cheap
+discriminator. Confirmed: `daily-index/<year>/QTR9/index.json` and
+`daily-index/<year>/QTR4/nosuchfile.idx` both still 403, bracketed by 200 controls on the same
+UA in the same run. Bodies are gzip `<Error><Code>AccessDenied</Code>` XML with `x-amz-request-id`
+headers -- textbook S3 behaviour: GetObject on a missing key returns 403 AccessDenied instead of
+404 NoSuchKey when the caller lacks `s3:ListBucket` on the prefix. A bare directory listing
+(`/Archives/edgar/data/320193/nosuch/`) also 403s with AccessDenied XML but different headers (no
+`x-amz-*`) -- a separate denial, not a rate-limit page (so the one stated falsification condition
+did not fire). **Then tested the shape that actually matters**: a real accession directory
+(`/Archives/edgar/data/320193/<real-accession>/`) with a wrong filename, and a wholly fabricated
+accession number under the same CIK -- both returned a clean 404, not 403. So the 403-for-missing
+trap is confined to `daily-index` and bare-directory-listing paths; it does not occur on
+`/Archives/edgar/data/<cik>/<accession>/<file>` GETs, which is the only URL shape
+`sec-insider-trades-scraper` (the only Actor touching sec.gov; `grep -rl daily-index actors/` = 0
+hits fleet-wide) ever requests. **No code change, no blog post** -- the headline claim is true but
+would mislead if shipped as "SEC Archives 403-traps scrapers," since the one consumer that exists
+can't hit it. Transferable rule: **a "status code lies" claim needs the specific URL *shape* the
+code actually requests, not just the same host** -- the general claim and the operative claim can
+diverge after the backend's routing/auth layer, and only testing the real call-site shape catches
+that divergence.
