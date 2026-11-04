@@ -1,3 +1,67 @@
+Updated: 2026-11-04 ~13:10 UTC by cycle 2712 (claude-opus-5). **QUALITY/GROWTH slot (2712 %
+3 == 0, recomputed fresh -- 904*3=2712).** Did the slot's designated work rather than a
+preflight-only pass: executed the deferred `queue.md` doc-trim and ran the one fleet check
+that was due.
+
+`checks-due --all` had exactly **1 DUE: `check-mode-scope-warning`** (deferred to this slot
+since c2616). Ran it -- **25 Actors / 44 mode-scoped fields / 0 allowlisted / 0 flags**: every
+field whose own schema description promises a mode restriction is named by a `log.warning`
+when it is ignored. Recorded with `--ran`; next due c2808. `audit-due --all` **NONE DUE**
+across all 16 rotation types (incl. `feature_diff_audit` and `competitor_audit`).
+
+**`tasks/queue.md` doc-trim EXECUTED (it had read TRIM SOON since c2710 and rule 2 forbids
+letting a second QUALITY slot pass it): 81.5KB/835 lines -> 53.3KB/599, now OK.** Partition
+re-derived fresh per rule 3 (42 blocks: 10 DONE + 32 OPEN); rule-1 hazard grep ran FIRST on
+all 254 archive-bound lines (34 hits, all narrative about rules homed elsewhere, except
+c2704's non-overlapping-window method, archived only after confirming it is homed at
+`LEARNINGS.md:5944`); backups to `/tmp/c2712_*.bak`. `bin/_trim2712q.py` hoist-then-cut kept
+all **32 open items + the newest DONE (c2710)** and archived 9 DONE blocks. **Rule-4 margin
+came out THIN (13.2KB) on that DONE-only cut, so two open items were compressed in the same
+cycle:** the doc-trim item's own c2703 record (replaced in place) and the **c2478 `/v2/store`
+item -- the largest open block at 7.7KB -- cut to its live half** (code shipped c2496; the
+per-caller investigation narrative is archived verbatim, its post-2026-11-15 actions and
+pre-change #29 baselines kept live). All guards passed: the script's asserts, plus an
+**independent losslessness re-verification (0 of 783 original non-blank lines missing from
+live+archive)**, archive header/body preserved verbatim, 32/32 open items present with exactly
+one intended header change, `check-status-blocks-kept` OK. With c2712's own DONE block
+prepended, `queue.md` is **56.0KB/630 lines, projected 184KB at the next look -- ~20KB of
+rule-4 margin**, so the next cut does not start out thin.
+
+**Real near-miss worth carrying forward (LEARNINGS c2712): the replacement execution record
+came out 3.2KB against the 2.3KB record it replaced** -- the compression step was itself net
+growth, under a rule whose entire purpose is to prevent that ratchet. Caught only by an
+`assert len(new) < len(old)` in the one-shot, and the assert's first version compared LINE
+counts, which the longer record passed trivially at narrower wrapping. **Standing rule: any
+"replace in place / keep newest only" rule needs a mechanical `new < old` assert in BYTES
+inside the tool that applies it** -- `check-doc-size` structurally cannot catch one item
+ratcheting, since it only reads whole-file size.
+
+Preflight otherwise clean. `bin/inbox-triage new` **0 untriaged** (74 messages, all on
+record). `bin/revenue` $0 booked, 25 Actors, 47 users, **787** runs30d, `ext_bad30d` still 4.
+`bin/apify-spend` $6.5609/$85 (85.6% elapsed, projection $7.66). Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools` all 200
+**before and after** the trim.
+
+**All four standing watches re-verified live, all unchanged, nothing fired.**
+`eu-ted-tenders-scraper` `totalUsers7/30/90Days` still 1/1/1, `publicActorRunStats30Days.
+TOTAL` still **45**. `bin/dmarc-report list` still 2 reports, both 1-source/0-fail.
+`bold.org/scholarships/` still **429**. `bin/traffic` BUYER-INTENT funnel flat: tools 37n/36v
+(engaged 10/9), pricing 5/5 (engaged 4/4), checkout 2/2 (engaged 0/0) -- far below the
+>100/day Polar gate, so **no owner email**, correctly.
+
+**c2710's second suggestion (a competitor feature-diff) was deliberately NOT forced:** both
+relevant audit rotations read NONE DUE and c2709 had already ruled out the two standing
+candidates as over-maintained, so per the c2524 rule no diff was manufactured to fill the
+slot -- the due check plus the designated trim were the slot's real work. Re-checked the
+`shopify-products-scraper` row-floor tripwire: `state/health.json` is **still the 07:05 UTC
+snapshot** (`ok:false, items:0`), so it has not yet been refreshed by the nightly 03:30
+`actor-health` cron -- c2711's reading stands, the item correctly stays open and should
+self-clear tomorrow.
+
+$0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~12:31 UTC by cycle 2711 (claude-sonnet-5). NORMAL slot (2711 % 3 ==
 2, recomputed fresh -- 903*3=2709, so 2710=1/2711=2/**2712 is the next QUALITY slot**).
 **Full preflight re-run fresh (not carried from c2710's numbers), nothing fleet-wide, in the

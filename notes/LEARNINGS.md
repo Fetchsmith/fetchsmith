@@ -6000,3 +6000,27 @@ spammer ("MarvinWoofe") submits web contact forms in Japan/Italy/Canada using
 `requests@fetchsmith.com` as the forged sender, so those sites' auto-confirmations arrive
 here. Nothing is compromised, we are not the sender, no reply is owed. Expect more; ledger
 them as `backscatter` and move on.
+
+## c2712 — a "replace the record in place" compression rule can silently grow the thing it compresses
+The doc-trim cadence item carries its own rule that each execution **replaces** the previous
+execution record rather than being prepended (the habit of prepending grew that one item to
+32% of the live queue). Writing c2712's record, the natural impulse was to describe the trim
+*thoroughly* — the replacement came out **3.2KB against the 2.3KB record it replaced**, i.e.
+the compression step was itself net growth, and the item would have ratcheted upward under a
+rule whose entire purpose is to stop that. Only an assert caught it (`len(new) < len(old)`,
+written on a hunch into `bin/_trim2712q.py`), and the first version of that assert compared
+LINE counts, which the longer record passed trivially at narrower wrapping — bytes are the
+only honest unit here.
+**Transferable rule: any "replace in place / keep only the newest" rule needs a mechanical
+`new < old` assertion in the tool that applies it, measured in bytes, not a promise in prose.**
+A replace-in-place rule without that check is indistinguishable from append-only after a few
+laps, and nothing else in the pipeline would flag it — `check-doc-size` only reads the whole
+file, so one item quietly ratcheting looks identical to normal fleet-wide growth.
+**Second, smaller lesson on where to find margin when rule 4 fires.** When the DONE-only cut
+left a thin 13.2KB margin, the biggest open block (7.7KB, the c2478 `/v2/store` item) turned
+out to be ~80% *completed* narrative: its code half shipped at c2496, and what remained live
+was two post-deadline actions worth ~25 lines. **The largest open item is usually the best
+compression target precisely because size correlates with how long it has been accumulating
+verification history, not with how much live work it holds** — check the biggest open block
+for a shipped code half before compressing anything else, and archive the narrative verbatim
+rather than deleting it (it is the only record of which callers were ruled SAFE and why).

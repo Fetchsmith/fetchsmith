@@ -1,5 +1,305 @@
 PRIOR (closed/DONE queue items, archived by cycle 2007): queue.md was 1400 lines / 117.2KB and `bin/check-doc-size` had projected it would cross the 200KB trim line around cycle ~2021 unseen (last rated OK at cycle 2004, 111.2KB). Moved here: the v1-v15 `check-readme-live-row` extension-backlog history block (closed cycle 2004) and every closed/DONE block from cycle 1988 backward. The 5 still-open `[ ]` items at trim time (queue.md trim itself, the README/dataset_schema check candidate, the Bytewells re-evaluation, the CFDA obligation-field feature, the next blog-post candidate) all stayed in the live file. Newest-first below, same order as the source file.
 
+
+ARCHIVED BY CYCLE 2712 (doc-trim cadence, QUALITY slot): queue.md was 835 lines / 81.5KB and `bin/check-doc-size` read TRIM SOON (+5440 B/cycle, projected 207KB at its next look). Moved here: the 9 oldest DONE blocks (c2709, c2708, c2707, c2706, c2705, c2703, c2702, c2704, and the c2696 strikethrough closed by c2704); the newest DONE block (c2710) and all 32 open `[ ]` items stayed live. The rule-4 margin was THIN (13.2KB) after that DONE-only cut, so two open items were compressed in the same cycle and their superseded prose is archived immediately below the DONE blocks: the doc-trim item's c2703 execution record (replaced in place by c2712's, per its own 'newest execution only' rule) and the c2478 `/v2/store` item's per-caller investigation narrative (its code half shipped at c2496; the live post-deadline half stayed in queue.md). Hazard grep ran first on all 254 archive-bound lines: 34 hits, all narrative about rules homed elsewhere, except c2704's non-overlapping-window method, confirmed already homed at notes/LEARNINGS.md:5944 before archiving. Newest-first below, same order as the source file.
+
+- [x] **DONE cycle 2709 (QUALITY/GROWTH slot, 2709 % 3 == 0, confirmed fresh) -- recovered a
+      transient push failure, classified a stray UNCLASSIFIED tool, ruled out c2708's two
+      suggested competitor-diff targets as already over-maintained, then did real QUALITY
+      work instead.** c2708's post-cycle push had FAILED (`remote: Internal Server Error`
+      from GitHub) leaving 1 commit stuck locally -- plain `git push` succeeded immediately
+      this cycle, confirming it was a one-off GitHub-side 500. Classified `bin/inbox-triage`
+      (shipped by c2708, never registered) into `fleet_checks.json`'s `not_cadence.operational`
+      group alongside `bin/inbox` -- UNCLASSIFIED back to 0.
+      **c2708's next-cycle note pointed at `court-records-scraper`/`steam-reviews-scraper`
+      for a competitor feature-diff ("have not had one recently") -- both premises were
+      wrong.** Both READMEs already carry exhaustive, dated sweeps as recent as **2026-10-30**
+      (court-records' 12th sweep, 186 listings; steam-reviews' same-date every-tier pass).
+      Declined to duplicate that work. **Note for future cycles: before picking a README/
+      competitor-diff target from a prior note, grep the README's own `Verified live
+      YYYY-MM-DD` dates first -- a note written a few cycles ago can already be stale advice.**
+      **Did real QUALITY-slot verification instead:** `audit-due --type varied_test --all`
+      showed `eu-ted-tenders-scraper` as the fleet's most-overdue varied_test (481c stale,
+      though still not formally DUE for 191c) and it's also the standing low-traction watch
+      (1/1/1 users, flat for many cycles) -- worth confirming the flat traction is a demand
+      problem, not a broken product. Ran `bin/varied-test` with a genuinely different input
+      (`countries:["DEU"]`, `cpvCodes:["45000000"]`, `noticeTypes:["can-standard"]`,
+      `publishedWithinDays:60`): **10/10 rows clean** -- `buyerCountry` all DEU, `noticeType`
+      all can-standard, `cpvCodes` all genuine 45xxxxxx subtree members (not just the literal
+      code, matching the README's documented CPV-subtree-matching behavior). **Actor confirmed
+      healthy -- its flat traction is a discovery/demand problem, not a product defect.**
+      Recorded in `audit_dates.json` (`varied_test` 2228 -> 2709). Also ran `bin/devto-comments`
+      (not due for 91c, cheap, informative): 28 articles, 0 unanswered comments, matches
+      baseline -- recorded in `fleet_checks.json`.
+      Preflight otherwise clean: `checks-due`/`audit-due` NONE DUE across 44 checks/16 audit
+      types (soonest `check-mode-scope-warning` in 3c); `bin/inbox-triage new` NONE UNTRIAGED
+      (74 messages, all on record, 0 support requests); `bin/revenue` $0 booked, 25 Actors,
+      47 users, 784 runs30d, `ext_bad30d` 4; `bin/apify-spend` $6.5589/$85 (85.4% elapsed,
+      proj $7.68); services + `/`, `/pricing`, `/tools` all 200.
+      **All four standing watches re-verified live, all unchanged:** eu-ted-tenders 1/1/1
+      users, bookmarks None, 45 runs30d; DMARC same 2 reports, 1-source/0-fail; `bold.org`
+      still 429; buyer-intent funnel flat (tools 38n/37v engaged 10/9, pricing 5/5 engaged
+      4/4, checkout 2/2 engaged 0/0) -- far below the >100/day Polar gate, no owner email.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2710, NORMAL slot,
+      2710 % 3 == 1):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing
+      watches; `bin/inbox-triage new` should still read NONE UNTRIAGED -- if new mail has
+      landed, triage it and `mark` it in the ledger, don't just read `inbox list 10`. No
+      README/competitor-diff target has been identified as genuinely stale fleet-wide right
+      now -- if another QUALITY slot comes up before one does, consider the next-most-overdue
+      `varied_test` Actor (`federal-register-scraper`, 444c stale) rather than re-grepping
+      competitor pricing that was already re-verified within the last week.
+
+- [x] **DONE cycle 2708 (NORMAL slot, 2708 % 3 == 2, recomputed fresh) -- corrected c2707's
+      own correction, then made the question mechanical.** Preflight clean:
+      `checks-due`/`audit-due` NONE DUE (44 checks / 16 audit types, soonest
+      `check-mode-scope-warning` in 4c); `bin/revenue` $0 booked, 25 Actors, 47 users, 783
+      runs30d, `ext_bad30d` 4; `bin/apify-spend` $6.5582/$85 (85.4% elapsed, proj $7.68);
+      services + `/`, `/pricing`, `/tools` all 200.
+      **c2707 was WRONG that 6 of 10 inbox IDs had never been read:** its grep covered only
+      STATUS.md/queue.md/LEARNINGS.md and **omitted `state/STATUS_ARCHIVE.md`**, where triage
+      records land after the doc-trim cadence (c2703 ran one). All six are in the archive
+      (42/56/16/10/3/2 hits) -- prior "unchanged inbox" claims were substantially true. c2707's
+      remedy ("grep the actual IDs") was also unexecutable since it persisted no IDs.
+      **Shipped `bin/inbox-triage` + `state/inbox_triage.json`:** `new` diffs the WHOLE
+      74-message inbox against a durable ledger and prints NONE only when nothing is
+      untriaged; `count`/`list`/`mark`/`mark-new` maintain it. Immune to doc trimming, unlike
+      grep. `bin/inbox` docstring now warns `list N` is a sliding window and must never ground
+      a stability claim. Both helpers re-verified after the edit; ledger backfilled over all 74
+      (the 52 on-record marked `cycle: 0` + "triaged earlier, not re-read" -- no false claim of
+      fresh reading). **0 UNTRIAGED now.**
+      **Genuinely closed the 22 never on record anywhere:** 12 DMARC + 1 loopback test + 2
+      GOV.UK One Login (**our own** account from c397, creds in `secrets/env`; some archive
+      entries wrongly call these someone else's signup) machine-classified; the other 7 read
+      individually -- 1 `searchindex.pro` SEO cold-pitch and **6 BACKSCATTER** (a link spammer
+      "MarvinWoofe" forges `requests@fetchsmith.com` into web contact forms in JP/IT/CA, so
+      their auto-confirmations land here; not the sender, nothing compromised, no reply owed).
+      0 support requests, no reply owed under rule 3.
+      **All four standing watches re-verified live, unchanged:** eu-ted-tenders 1/1/1 users,
+      bookmarks 0, 45 runs30d; DMARC same 2 reports (`af5d9f7d`/`202905fb`), 1-source/0-fail;
+      `bold.org` still 429; buyer-intent funnel flat (tools 38n/37v engaged 10/9, pricing 5/5
+      engaged 4/4, checkout 2/2 engaged 0/0) -- far below the >100/day gate, no owner email.
+      $0 spent, $0 revenue change, no owner email.
+      **Next cycle (2709, QUALITY/GROWTH slot -- 2709 % 3 == 0, 903*3):** (a) inbox triage is
+      now one command -- run `bin/inbox-triage new`, and if it prints NONE, write "0 untriaged"
+      and move on; only `mark` what you actually read. Do NOT go back to grepping docs for IDs,
+      and if you ever do grep the docs for anything historical, **include
+      `state/STATUS_ARCHIVE.md`** or the result is systematically blind past the last trim.
+      (b) Spend the QUALITY slot on real growth work, not another preflight pass -- the
+      standing candidate is a competitor feature-diff or README improvement on a second
+      high-traction Actor (c2706 did `trademark-search-scraper`; `court-records-scraper` and
+      `steam-reviews-scraper` are the next-highest by runs30d and have not had one recently).
+      (c) `state/health.json`'s stale `shopify-products-scraper` row-floor flag: the nightly
+      `actor-health` cron fires 2026-11-05 03:30 UTC -- the first cycle after that should
+      confirm it cleared (do not re-check before).
+
+- [x] **DONE cycle 2707 (NORMAL slot, 2707 % 3 == 1, recomputed fresh) -- full preflight
+      clean, nothing fleet-wide due or actionable; real finding was catching a standing false
+      claim in inbox triage, not fleet work.** `checks-due`/`audit-due` NONE DUE across 44
+      checks/16 audit types; `bin/revenue` $0 booked, 25 Actors, 47 users, 783 runs30d;
+      `bin/apify-spend` $6.5577/$85 (85.3% elapsed, proj $7.69); services/site all healthy.
+      **Corrected a false "same 10 known triaged IDs" claim repeated across many prior
+      cycles:** `inbox list 10` is a sliding window by recency, not a fixed set, and grepping
+      this cycle's 10 actual IDs against every ID on record in the docs found only 4 of 10
+      previously seen. Read the other 6 in full -- 2 duplicate TinyGate spam blasts, 1 SEO
+      cold-email, 1 phishing-shaped newsletter redirect, 1 competitor Actor-rental cold-email,
+      1 auto-bot "claim your listing" notice from `myslop.shop` (did not click its tokenized
+      claim/optout links -- unsolicited, no budget line, low value). None were support
+      requests, correctly no reply owed. Full detail in LEARNINGS c2707; going forward, state
+      "N new, all spam/marketing, no action" instead of asserting sameness from the list's
+      shape alone.
+      **All four standing watches re-verified, unchanged:** eu-ted-tenders 1/1/1 users, 45
+      runs30d; DMARC same 2 reports; `bold.org` still 429; buyer-intent funnel flat (tools
+      38n/37v engaged 10/9, pricing 5/5 engaged 4/4, checkout 2/2 engaged 0/0) -- no owner
+      email. No code or site change; nothing licensed one per the standing c2524 rule.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2708, NORMAL slot,
+      2708 % 3 == 2):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing
+      watches; when reading the inbox, grep actual IDs against the docs rather than
+      pattern-matching the list's shape, per this cycle's correction.
+
+- [x] **DONE cycle 2706 (QUALITY/GROWTH slot, 2706 % 3 == 0, confirmed fresh) -- real
+      competitor feature-diff on `trademark-search-scraper` (highest-traction Actor: 4 users,
+      57 runs30d), per c2705's explicit flag to spend this slot's runway on a genuine
+      diff rather than another clean-verification pass.** Live-probed TMview's own search API
+      directly (primed cookies, matching `main.js`'s request shape) on both US and EM offices
+      and confirmed the "enrichment" fields the closest rival (`scrapers_lat/tmview-global-
+      trademarks-scraper`, 6-7.5x our price) advertises (goods-and-services wording, owner
+      address, representative, oppositions with grounds, publications) are genuinely absent
+      from the bulk search response -- they require TMview's separate per-record DETAIL
+      endpoint (a 2nd network hop per row we do not make), exactly as our own README already
+      states. **README's competitor section verified accurate, no edit needed.**
+      **Caught a near-miss before shipping it:** raw EM responses carry an unmapped
+      `oppositionPeriodEnd` field that looked like a free feature gap; diffed it against our
+      already-mapped `oppositionDeadLine` on 89 live records with opposition data -- 0
+      mismatches, confirmed true duplicate, correctly declined to add a decorative no-op column.
+      No code change made. `competitor_audit` formal rotation for this Actor isn't due for
+      ~110 more cycles -- this was ad hoc QUALITY-slot diligence, not that rotation, and does
+      not reset its clock.
+      Preflight otherwise clean: `checks-due`/`audit-due` NONE DUE across 44 checks/16 audit
+      types; inbox unchanged (10 known triaged IDs, zero new); `bin/revenue` $0 booked, 25
+      Actors, 47 users, 783 runs30d; `bin/apify-spend` $6.5568/$85 (85.2% elapsed, proj $7.69);
+      services/site all healthy. Standing watches not re-probed live this cycle (c2705 had
+      just re-checked all four ~35 min earlier with nothing moving) -- **next cycle should
+      re-verify them fresh rather than carry this cycle's non-read forward.**
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2707, NORMAL slot): re-verify
+      the four standing watches fresh; recompute `checks-due`/`audit-due`.**
+
+- [x] **DONE cycle 2705 (NORMAL slot, 2705 % 3 == 2, recomputed fresh) -- full preflight
+      genuinely clean, nothing due or actionable; closed the cycle on verification rather than
+      manufacturing work.** `checks-due --all`/`audit-due --all` NONE DUE across all 44 fleet
+      checks and 16 audit types (soonest `check-mode-scope-warning` in 7c). Looked for real
+      growth work per the tool's own "spend it on growth work" prompt and found none ripe: the
+      c2380 growth-sweep re-grep was done 4 cycles ago (c2701) with guidance to wait 25-30c
+      before retrying; `bold.org` RECOVERED trigger for the held `scholarship-scraper` fix
+      hasn't fired (still 429); c2692 grants-gov pricing is DECIDED-NOT-OPEN-WORK pending a
+      buyer signal; the c2478 Apify `/v2/store` 2026-11-15 item is already mitigated (c2496)
+      and not due for its post-deadline recheck for 11 more days. Did not build a new Actor --
+      no niche was checked today with enough runway left in the cycle to make a confident
+      differentiation case, and the owner's c2700 observation (discovery, not Actor count, may
+      be the binding constraint at 25 Actors/$0 booked) argues against adding surface on spec.
+      Inbox zero new mail (same 10 known triaged IDs). `bin/revenue` $0 booked, 25 Actors, 47
+      users, 783 runs30d, `ext_bad30d` still 4. `bin/apify-spend` $6.5563/$85 (85.1% elapsed,
+      proj. $7.70). Services/site all healthy.
+      **All four standing watches re-verified, unchanged:** eu-ted-tenders 1/1/1 users, 45
+      runs30d; DMARC same 2 reports; `bold.org` still 429; buyer-intent funnel flat (tools
+      38n/37v engaged 10/9, pricing 5/5 engaged 4/4, checkout 2/2 engaged 0/0) -- no owner
+      email. Stale shopify row-floor flag in `state/health.json` still correctly unresolved
+      (nightly `actor-health` cron fires 2026-11-05 03:30 UTC, ~1 day away).
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2706, QUALITY/GROWTH slot,
+      2706 % 3 == 0):** this is the designated slot for README/feature-gap work on 2-3
+      existing Actors, support-mail answers, or the dev.to article if due -- with more
+      runway than a quick preflight cycle, consider actually spending it on a competitor
+      feature-diff for one Actor rather than another clean-verification pass, since the fleet
+      has had several quiet cycles in a row with no new growth lever found.
+
+- [x] **DONE cycle 2703 (QUALITY/GROWTH slot, 2703 % 3 == 0, recomputed fresh) -- executed the
+      doc-trim cadence item's designated work: trimmed BOTH `state/STATUS.md` and
+      `tasks/queue.md` out of TRIM SOON in one slot.** `check-doc-size` read TRIM SOON on both
+      (STATUS.md 103.2KB/1245 lines proj. 209KB; queue.md 80.2KB/750 lines proj. 208KB).
+      Hazard grep run FIRST on both archive-bound ranges (cadence rule 1): STATUS.md's 1025
+      lines gave 16 hits, queue.md's 151 lines gave 3 hits, all citations of the c2524 rule or
+      cross-references to this cadence item, none uniquely homed in range -- CLEAN on both.
+      `state/STATUS.md` (`bin/_trim2703s.py`) 103.2KB/1245 -> 15.9KB/220 (kept 2698-2702,
+      archived 2671-2697). `tasks/queue.md` (`bin/_trim2703q.py`) 80.2KB/750 -> 59.6KB/590
+      (kept all 33 open + newest DONE c2702, archived 9 older DONE blocks). **Margin
+      arithmetic (rule 4) came out thin (~13KB) even after the DONE-only queue.md cut**, so
+      applied the doc-trim cadence item's own "newest execution only" rule to itself: replaced
+      its stale c2676 execution narrative with this cycle's record instead of stacking, which
+      is where the extra margin came from -- no other open item's unique content was touched.
+      All scripts' own asserts passed (exact counts, byte-for-byte partition reconstruction,
+      archive-prefix preservation, no open item archived); independently re-verified
+      losslessness on both files (0 missing lines); `check-status-blocks-kept` OK (0
+      destroyed); `check-status-continuity` NONE MISSING on retained 2698-2702; `check-doc-size`
+      now OK on all three live docs.
+      Preflight otherwise clean: `checks-due --all`/`audit-due --all` both NONE DUE (soonest
+      `check-disclosure` in 1c); same 10 known triaged inbox IDs, zero new mail; `bin/revenue`
+      $0 booked, 25 Actors, 47 users, 783 runs30d; `bin/apify-spend` $6.5551/$85 (85.0%
+      elapsed, projection $7.71); services and `/`, `/pricing`, `/tools` all 200.
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d
+      (flat); DMARC same 2 reports; `bold.org` still 429; `bin/traffic` BUYER-INTENT funnel
+      flat (tools 37n/36v/engaged 9/8, pricing 4/4/engaged 3/3, checkout 2/2/engaged 0/0).
+      **Re-checked the stale `shopify-products-scraper` row-floor flag in `state/health.json`:
+      still correctly unresolved** -- it is still 2026-11-04 (08:33 UTC) and the nightly
+      `actor-health` cron that refreshes it fires at 03:30 UTC on 2026-11-05.
+      Nothing else fleet-wide or in the inbox licensed a code change, so per the standing c2524
+      rule none was manufactured. $0 spent, $0 revenue change, no owner email. **Next cycle
+      (2704, NORMAL slot, 2704 % 3 == 1):** recompute `checks-due`/`audit-due` fresh
+      (`check-disclosure` likely due); re-verify the four standing watches; check whether
+      tonight's nightly `actor-health` run cleared the stale shopify row-floor flag; queue.md's
+      margin is still thin (~13KB) -- if `check-doc-size` reads TRIM SOON again soon, look for
+      more open items whose detail duplicates a fuller home elsewhere rather than waiting.
+
+- [x] **DONE cycle 2702 (NORMAL slot, 2702 % 3 == 2, recomputed fresh) -- `check-source-endpoints`
+      came due and surfaced a real DEVIATION, verified as a transient blip rather than taken at
+      face value.** Probe of 50 unique upstream hosts: 1 deviation, `rss.marketingtools.apple.com`
+      (apple-podcasts-scraper) `ok -> error/ReadTimeout`. Two immediate manual `curl` retries both
+      `200` in <1s; `bin/actor-health --only apple-podcasts-scraper` confirmed `ok: True, items: 5`.
+      One-off network hiccup on our probe, not a real source change -- recorded via
+      `checks-due --ran`, next due cycle 2726.
+      Preflight otherwise clean: `audit-due --all` FLEET ROTATIONS NONE DUE; same 10 known
+      triaged inbox IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 47 users, 783
+      runs30d, `ext_bad30d` still exactly 4; `bin/apify-spend` $6.5545/$85 (84.9% elapsed,
+      projection $7.72); services and `/`, `/pricing`, `/tools` all 200.
+      **Checked the c2701 follow-up on the stale `shopify-products-scraper` row-floor flag in
+      `state/health.json`: correctly still not cleared, because it is still 2026-11-04 and the
+      nightly `actor-health` cron that would refresh it fires at 03:30 UTC on 2026-11-05 --
+      check again next cycle, after that run has actually had a chance to fire.**
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d
+      (flat); DMARC same 2 reports; `bold.org` still 429; `bin/traffic` BUYER-INTENT funnel
+      flat (tools 37n/36v/engaged 9/8, pricing 4/4/engaged 3/3, checkout 2/2/engaged 0/0).
+      Nothing else fleet-wide or in the inbox licensed a code change, so per the standing c2524
+      rule none was manufactured. $0 spent, $0 revenue change, no owner email. **Next cycle
+      (2703, QUALITY/GROWTH slot, verify `% 3 == 0` fresh):** `check-doc-size` likely due
+      (TRIM SOON flagged since c2701, ~23c headroom on STATUS.md/queue.md -- this is the
+      designated slot to trim per the doc-trim cadence's own rule); re-verify the four standing
+      watches; re-check whether the nightly `actor-health` run cleared the stale shopify flag.
+
+- [x] **DONE c2704 -- the c2696 crawler-shape re-read is CLOSED, confirmed on a genuinely
+      independent window, and it corrected one shipped number.** Naive execution would have been
+      worthless: at 48 cycles/day a 7-day window moves ~0.3%/cycle, so re-running the ratios 8
+      cycles after c2696 (~4h) queries ~98% the same rows -- it returned 138 vids / 127 one-path
+      / **92.0%**, identical to the decimal, i.e. the measurement agreeing with itself. Got a real
+      second sample by shifting the window back instead of waiting a week
+      (`ts > now-14d AND ts <= now-7d`, predicates copied verbatim from `bin/traffic`):
+      **118 verified vids, 117 one-path (99.2%), 120 verified views, 115 referrer-less (95.8%),
+      5 search referrers (4.2%), 30 distinct UAs / 118 vids.** Shape HOLDS on two disjoint
+      windows and is MORE extreme a week earlier -- no drift toward parity, so there is no real
+      human-traffic growth signal hiding under it, and the residential-proxy-crawl reading stands.
+      **Correction only the second window could expose: "~4.3x inflation" is NOT a constant** --
+      the same ENGAGED test on the prior week took tools 29n/29v -> 3n/3v (~9.7x). Edited
+      `bin/traffic`'s c2696 comment block AND its printed funnel header to read "92-99% one-path /
+      89-96% referrer-less (two independent windows), inflation 4-10x" in place of three false
+      constants; `bash -n` clean and `bin/traffic` re-run verified the funnel output unchanged
+      (tools 37n/36v engaged 9/8, pricing 4/4 engaged 3/3, checkout 2/2 engaged 0/0). Detector
+      itself untouched, per the item's own instruction. Lesson in LEARNINGS c2704.
+      **Standing method this generalises into: a "re-read on a later cycle" follow-up must name a
+      NON-OVERLAPPING window, not just a later clock time -- and the data for one is usually
+      already on disk, so shift the window backwards rather than wait.**
+
+- [x] ~~**NEW follow-up (c2696)** -- re-read the `ENGAGED` crawler-shape ratios on a later window.~~ CLOSED by the c2704 block above, which carries the full record; original body dropped here rather than duplicated (c2703 margin flag). Outcome in one line: shape confirmed on a disjoint window, more extreme there, and the "4.3x" constant corrected to a 4-10x range in `bin/traffic`.
+
+- [x] **SUPERSEDED PROSE, archived c2712 (not a DONE item) -- the doc-trim cadence item's c2703 execution record,** replaced in place by c2712's per that item's own 'newest execution only' rule:
+      **EXECUTED c2703 (QUALITY/GROWTH slot, 2703 % 3 == 0) -- STATUS.md + queue.md, both
+      TRIM SOON.** `check-doc-size` read TRIM SOON on both (STATUS.md 103.2KB/1245 lines
+      proj. 209KB; queue.md 80.2KB/750 lines proj. 208KB), so both taken here per rule 2.
+      Hazard grep run FIRST on both archive-bound ranges, per rule 1: STATUS.md's 1025
+      archive-bound lines gave 16 hits, all citations of the c2524 rule (homed in CLAUDE.md)
+      or cross-references pointing AT this item as the rule's home, none uniquely homed in
+      range; queue.md's 151 archive-bound lines (9 DONE blocks) gave 3 hits, same shape.
+      CLEAN on both. `cp` of all four live+archive docs to `/tmp/c2703_*.bak` before either
+      script ran.
+      - `state/STATUS.md` (`bin/_trim2703s.py`): 32 blocks, newest-first 2702..2671, no
+        gaps; stock `KEEP_BLOCKS=5` kept 2698..2702, archived 2671-2697 -> 103.2KB/1245 ->
+        15.9KB/220 lines.
+      - `tasks/queue.md` (`bin/_trim2703q.py`): 10 DONE + 33 open; hoist-then-cut kept all 33
+        open + newest DONE (c2702), archived 9 -> 80.2KB/750 -> 60.6KB/599 lines. **Margin
+        arithmetic (rule 4) came out thin (~12KB: 200KB - projected 188KB)** even after the
+        DONE-only cut, since open items now dominate the file's mass (33 blocks vs. 9 small
+        DONE blocks archived) -- so per this item's OWN rule ("newest execution only, do not
+        stack narratives") this very execution record replaced the stale c2676 one instead of
+        being prepended on top, recovering real margin without touching any other open item's
+        unique content.
+      **Guards, all passed:** both scripts' own asserts (line-count preconditions, exact
+      block counts, byte-for-byte partition reconstruction, archive-prefix preservation, "no
+      OPEN item in the archive set", open-items-unchanged-across-the-cut) held on the live
+      files; **independently re-verified losslessness** by rebuilding each original's
+      non-blank line set and testing membership in live+archive -- 0 missing on both;
+      `check-status-blocks-kept` OK (0 destroyed); `check-status-continuity` NONE MISSING on
+      the retained 2698..2702 window; `check-doc-size` reads **OK on all three docs** after.
+      Services active and `/`, `/pricing`, `/tools` all 200 before and after.
+
+- [x] **SUPERSEDED PROSE, archived c2712 (not a DONE item) -- the c2478 `/v2/store` item as it stood before c2712 compressed it to its live half.** Kept verbatim because it is the only full record of which fleet callers were investigated and why each was ruled SAFE:
+- [ ] **NEW (c2478, MEDIUM, deadline 2026-11-15 -- not urgent today, but must be checked again before that date and again shortly after) -- Apify is changing `GET /v2/store` search behavior on 2026-11-15** (forwarded by owner, inbox `01852eaa`, from Apify's own product-marketing mail): after that date, (1) search returns one page of up to 100 Actors and `offset`/`total` no longer work for paging, (2) `sortBy` is ignored, (3) category filtering can return different Actors, (4) `bookmarkCount` is removed from the payload and ratings move into `stats`. **Investigated this cycle which fleet tools actually call `/v2/store` (not Algolia) and are exposed:**
+      - **`bin/store-anon-rank`** -- genuinely broken by this: it pages `/v2/store?search=` with `offset` to find our exact position (we sit anywhere from #29 to #354 on core terms per its cycle-2072 baseline), so after 2026-11-15 it can only see page 1 (first ~100) and will misreport "not found" for anything ranked deeper, the same false-negative shape its own docstring already warns about. `checks-due` has it next due cycle 2744 (~2026-11-05, before the change) so the next scheduled run is still safe, but the run AFTER that (~336 cycles later, after the deadline) needs the paging logic revisited first -- note it in that cycle rather than trusting a sudden empty-looking result. **Possible upside worth re-checking, not just a break:** cycle 2072's decisive finding was that Store search rank is gated on `totalUsers` (16 identically-named `grants-gov-scraper` listings proved it, 87 positions of spread with runs30d held equal) -- Apify's own mail says the new default **ranks by match-to-query instead**, which could remove exactly the cold-start penalty that finding is built on. Worth a fresh `store-anon-rank` read once the change is live, not just a mechanical pagination fix.
+      - **`bin/check-store-rank`** -- same `offset`/`total` paging pattern (`--scan` loop), but its own docstring already labels this a MINOR, non-buyer-facing surface (the real buyer surface is Algolia via `bin/store-rank`, unaffected -- confirmed this cycle it hits `algolia.net` directly, not `/v2/store`). Lower priority; same "re-check before trusting a post-2026-11-15 run" caveat applies.
+      - **Confirmed SAFE / no action needed:** `bin/niche-size` and `bin/niche-unnamed` (the tools every `competitor_audit` sweep depends on) deliberately fetch ONE page per search term and never loop on `offset` -- a cycle-1779 lesson already in the code comments, written for an unrelated reason (Algolia offset staleness) but it happens to make them immune to this change too. `bin/store-scan` single-page, no offset. `bin/apify-admin store` / `bin/check-rental-converts` pass `sortBy=relevance` but don't page past one call -- losing that param just means the platform's own new default ranking applies, not a break. No script reads `bookmarkCount` (grepped fleet-wide) or a bare `rating` field from `/v2/store`.
+      **No owner email needed** (nothing only the owner can fix, no revenue event) and no urgent fix needed today (16-day runway, nothing in the automated `checks-due` cadence hits the broken path before the deadline) -- but do NOT let this fall off the queue. Next action: when `store-anon-rank` or `check-store-rank` next come due AFTER 2026-11-15, read this note first and patch the offset-pagination loop (e.g. cap at page 1 and report "ranked beyond page 1, exact position unknown" instead of silently misreporting) before trusting the output.
+      - **CODE HALF DONE EARLY (c2496) -- all three callers are now forward-compatible, so a post-deadline run degrades honestly instead of lying.** Done now rather than at the deadline on purpose: the deferral plan had a hole. `store-anon-rank` is due cycle 2744 (~2026-11-05, pre-change) and then not again until ~cycle 3080, so no scheduled run would have patched it in the 2026-11-15 window, and any ad hoc run in between would have been trusted. Changes: (1) both rank tools detect dead paging **structurally** -- they remember each page's first `(username, name)` and stop the moment one repeats -- and report **`RANK UNKNOWN` / `UNKNOWN`, never `NOT FOUND`/`ABSENT`**; the old loops would have re-scanned page 1 up to 4x and then printed a confident false negative for every Actor ranked deeper than ~96, which per the c2072 baseline (#29-#354) is most of the fleet, i.e. a fake fleet-wide ranking collapse that invites exactly the pointless listing-copy edits c1468/c2280 warn about. (2) `data["total"]` -> `data.get("total")` everywhere. (3) `check-store-rank` now persists `paging_ok` into each `state/store_rank.json` row so a later run diffing that history can tell "unmeasurable" from "really disappeared".
+      - **NEW FINDING -- c2478's own list of exposed callers was INCOMPLETE: it missed `bin/store-visibility`,** which is single-page (so paging was never its problem) but indexed `d["total"]` directly -- a **hard KeyError**, the most severe of the three breakages, not a degraded reading. Also fixed its `a_total == t_total` "filtered" heuristic, which with both totals `None` would have been vacuously true and fired the `[filtered: ...]` note spuriously. Re-swept the other callers to confirm c2478's SAFE verdicts hold: `niche-size`'s only `offset` mention is a comment forbidding an offset loop (c1779), `store-rank`/`category-rank` are Algolia (their `offset` hits are Algolia word-offsets, unrelated), `store-scan`/`apify-admin`/`check-rental-converts`/`check-upstream-warnings` single-page and read no `total`.
+      - **Verified both ways:** live pre-change API still pages (offsets 0/90/180 each returned a different first item on `court records`, so the repeat-detector cannot false-positive today); `bin/store-anon-rank "court records"` reads **#29**, matching the c2072 baseline exactly, and `bin/check-store-rank --scan 200 court-records-scraper` independently also reads **#29** plus `pacer court` #16. The post-change behaviour cannot be tested against the live API before the date, so it is simulated and locked down in a new durable self-test, **`bin/_store_paging_selftest.py` (3/3 pass, no network, no auth, free)**, which fakes an offset-ignoring/`total`-less API and asserts each tool degrades correctly AND still reports a real rank when we are on page 1.
+      - **STILL OPEN, do this AFTER 2026-11-15:** (a) run `bin/_store_paging_selftest.py` (should still be 3/3) and then a real `bin/store-anon-rank` -- the self-test says the degraded branch works, the live run tells you whether it is now the branch being taken; (b) the **upside re-measure is the actually interesting half and is untouched**: Apify says the new default ranks by match-to-query instead of its old ordering, which could remove the cold-start `totalUsers` penalty that c2072's 16-identically-named-`grants-gov-scraper` experiment established. If a `store-anon-rank` rank jumps into the top ~20 *without* `totalUsers` rising, that falsifies the users-gating finding and would be real news worth a strategy change -- note that `/v2/store` is NOT the buyer surface (Algolia is, unaffected), so treat it as a hint about Apify's ranking direction, not as recovered traffic. Nothing here is urgent before the date; `paging_ok` being `True` on every row is the expected reading until then.
+      - A partial 2-query `check-store-rank` run was used to verify the patch and its snapshot was then **reverted out of `state/store_rank.json`** (back to 27 snapshots, last the full 50-row 2026-10-26 one) -- a 2-row snapshot sitting in a 50-row series would read as "48 queries vanished" to the next diff. **Standing rule: never leave a single-slug `check-store-rank` run in that history; back the file up first and restore it.**
+
+
 - [x] **CLOSED cycle 2004 — history of the `bin/check-readme-live-row` extension backlog**
       (shipped 1989, extended 1990/1991/1992/1993/1995/1996/1997/1998/1999/2000/2001/2002/2003,
       closed 2004). Kept below for the per-version detail, which is the record of what each
