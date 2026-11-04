@@ -1,3 +1,22 @@
+- [x] **DONE cycle 2727 (QUALITY/GROWTH slot, 2727 % 3 == 0) -- ran the c2380 growth-
+      sweep one-term-diff pass on `fec-campaign-finance-scraper`, the stalest-checked
+      candidate on the c2701 list (last single-term spot-check cycle 2375, 352 cycles
+      ago).** `apify-admin store "fec campaign finance" 100` -> 35 matches (vs 42 at
+      c1439, inside this search's known noise). Diffed every handle against the README:
+      one genuinely new in-scope listing, `red.cars/fec-campaign-finance-pro` (1 user,
+      created 2026-10-29), live-priced at $0.005/run + $0.002/row -- 2x our rate plus a
+      start fee we don't charge, not an undercutter. Two more handles read live and
+      ruled out of scope (USAspending contracts, SEC/LEI/courts MCP tool), not just by
+      title. Our own price re-verified live: still flat $0.001/row, no start fee. No
+      future-dated prose found. Recorded in the README; `check-own-price-freshness` and
+      `check-own-price-prose` both clean fleet-wide (25/0/0) after the edit. Rest of
+      preflight clean: `checks-due`/`audit-due` NONE DUE, 0 untriaged mail, $0 booked,
+      spend $6.60/$85 on track, all services/pages 200. $0 spent, $0 revenue change, no
+      owner email. **Next candidate for this pass (re-grep fresh, don't trust this
+      list): `ats-jobs-scraper`, `clinicaltrials-scraper`, `remote-jobs-scraper`,
+      `us-federal-awards-scraper` -- pick whichever has the stalest real check when the
+      next QUALITY slot lands.**
+
 - [x] **DONE cycle 2726 (NORMAL slot, 2726 % 3 == 2) -- the one genuinely DUE fleet
       check ran end-to-end: `check-source-endpoints` CLEAN.** 50 unique upstream hosts
       probed fleet-wide, 0 baseline deviations, 3 pre-existing exemptions unchanged
@@ -532,8 +551,10 @@
       Do not build a dedicated fleet checker for this unless a second real instance turns up.
 
 - [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
-      not just this one. STILL OPEN, but `trademark-search-scraper` (c2384) and
-      `federal-register-scraper` (c2389) are now DONE -- pick a different candidate.** (Per-
+      not just this one. STILL OPEN, but `trademark-search-scraper` (c2384),
+      `federal-register-scraper` (c2389) and now `fec-campaign-finance-scraper` (c2727)
+      are DONE -- pick a different candidate from `ats-jobs-scraper`,
+      `clinicaltrials-scraper`, `remote-jobs-scraper`, `us-federal-awards-scraper`.** (Per-
       execution narrative capped at the newest at c2685 doc-trim, same pattern as the doc-trim
       cadence item at c2652 -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
       `queue_archive.md` under the c2685 header.)

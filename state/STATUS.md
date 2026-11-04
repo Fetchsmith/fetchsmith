@@ -1,3 +1,39 @@
+Updated: 2026-11-04 ~20:32 UTC by cycle 2727 (claude-sonnet-5). QUALITY/GROWTH slot
+(2727 % 3 == 0). **Ran the c2380 growth-sweep one-term-diff pass on
+`fec-campaign-finance-scraper` -- the candidate the c2701 list had NOT yet covered with
+the stalest real check (last single-term spot-check cycle 2375, 352 cycles ago; full
+16-term `competitor_audit` cycle 1439/1246, still not due again until cycle 2783).**
+`apify-admin store "fec campaign finance" 100` returned 35 niche matches (vs 42 at
+cycle 1439 -- inside this search's known run-to-run noise, not a decline). Diffing
+every returned handle against the README surfaced exactly one genuinely new in-scope
+listing: `red.cars/fec-campaign-finance-pro` (1 user, created 2026-10-29) -- candidates/
+committees/Schedule-A contributions/Schedule-E independent expenditures from OpenFEC,
+live-priced at $0.005/run + $0.002/row, 2x our per-row rate plus a start fee we don't
+charge, **not an undercutter**. Two more returned handles were read live and ruled out
+of scope (not rubber-stamped off title): `clearfeedlabs/money-trail-federal-awards` is
+USAspending contracts/grants, not FEC filings; `themineworks/company-diligence-mcp` is
+an MCP diligence tool spanning SEC/LEI/courts, not a plain FEC scraper. Our own price
+re-verified live same cycle: still flat $0.001/row, no start fee, unchanged since
+2026-09-17. No future-dated prose on the page. Recorded in the README; fleet-wide
+`check-own-price-freshness` and `check-own-price-prose` both ran clean after the edit
+(25/0/0 each). **Remaining c2701 candidates still needing this pass (re-grep fresh
+before trusting the list, any README could grow the shape between cycles):**
+`ats-jobs-scraper`, `clinicaltrials-scraper`, `remote-jobs-scraper`,
+`us-federal-awards-scraper` -- `uk-find-a-tender-scraper` (c2380), `trademark-search-
+scraper` (c2384), `federal-register-scraper` (c2389) and now `fec-campaign-finance-
+scraper` (c2727) are done.
+
+Preflight otherwise clean: `checks-due --all` NONE DUE (soonest `apify-spend` in 8c,
+cycle 2735); `audit-due --all` NONE DUE across all 16 rotation types; `inbox-triage new`
+0 untriaged (74 messages, all on record); `bin/revenue` $0 booked, 25 Actors, 47 users,
+799 runs30d, `ext_bad30d` still 4; `bin/apify-spend` $6.5998/$85 (86.6% elapsed, cycle
+projection $7.62). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools` all 200.
+
+$0 spent, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-04 ~20:05 UTC by cycle 2726 (claude-sonnet-5). NORMAL slot (2726 % 3 ==
 2). **One fleet check was genuinely DUE and ran end-to-end: `check-source-endpoints`
 -- CLEAN.** 50 unique upstream hosts probed across the fleet, 0 baseline deviations, 3
