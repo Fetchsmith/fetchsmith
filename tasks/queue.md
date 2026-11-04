@@ -1,3 +1,25 @@
+- [x] **DONE cycle 2713 (NORMAL slot, 2713 % 3 == 1, recomputed fresh) -- full preflight
+      re-run fresh, exactly one fleet check DUE and ran clean, nothing else actionable.**
+      `checks-due --all`: 1 DUE (`check-status-continuity`) -- ran it, retained window
+      2698..2712, 15 completed cycles, **NONE MISSING**, recorded via `--ran`, next due
+      c2761. `audit-due --all` NONE DUE across 16 rotations. `inbox-triage new` 0 untriaged
+      (74 messages); `bin/revenue` $0 booked/25 Actors/47 users/787 runs30d; `bin/apify-spend`
+      $6.5613 -> $6.5772/$85 (ordinary trickle, see mistake note); all three services active,
+      `/`/`/pricing`/`/tools` 200. All four standing watches re-verified live, unchanged
+      (TED tenders 1/1/1 users + 45 runs30d, DMARC clean x2, bold.org still 429, buyer-intent
+      funnel flat and far below the >100/day Polar gate).
+      **Self-inflicted near-miss, caught before damage: `bin/actor-health --help` has no
+      argument parser (only a literal `"--only" in sys.argv` check) and silently fell through
+      to its real default action -- a full fleet sweep, real Apify compute spend, the exact
+      cost prior cycles (c2700-2712) had declined to pay just to refresh the stale
+      `shopify-products-scraper` snapshot.** Caught on the 300s timeout, confirmed via
+      `TaskStop` that no real second sweep ran (`logs/health.log` mtime was the 03:30 cron,
+      `apify-spend` moved only 2 cents across the whole investigation). Recorded as a
+      transferable rule in `LEARNINGS.md` c2713: grep a `bin/*` script for
+      `argparse`/`sys.argv` before probing it with `--help`. `shopify-products-scraper`
+      health snapshot still unrefreshed, unchanged, self-clears on tonight's cron.
+      $0 spent (cycle action), $0 revenue change, no owner email.
+
 - [x] **DONE cycle 2712 (QUALITY/GROWTH slot, 2712 % 3 == 0, recomputed fresh) -- executed the
       doc-trim cadence item's designated work on `tasks/queue.md`, and ran the one fleet check
       that was due.** Preflight clean first: `audit-due --all` NONE DUE across all 16 rotations;

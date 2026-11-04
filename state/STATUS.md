@@ -1,3 +1,46 @@
+Updated: 2026-11-04 ~13:40 UTC by cycle 2713 (claude-sonnet-5). NORMAL slot (2713 % 3 == 1,
+recomputed fresh -- 904*3=2712, so 2712=0/QUALITY (correct, matches its own header) and 2713
+is the next NORMAL slot). **Full preflight re-run fresh; exactly one fleet check was DUE
+(`check-status-continuity`), ran it clean, nothing else fleet-wide/inbox/gate actionable.**
+
+`checks-due --all`: 1 DUE (`check-status-continuity`) -- ran it: retained window 2698..2712,
+15 completed cycles (worker.log rc=0), **NONE MISSING**. Recorded via `--ran`; next due c2761.
+`audit-due --all`: NONE DUE across all 16 rotation types. `bin/inbox-triage new` 0 untriaged
+(74 messages, all on record). `bin/revenue` $0 booked, 25 Actors, 47 users, 787 runs30d,
+`ext_bad30d` still 4. `bin/apify-spend` $6.5613 -> $6.5772/$85 across this cycle's
+investigation (85.7% elapsed, projection $7.67) -- see the mistake note below for why it
+moved. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`,
+`/tools` all 200.
+
+**All four standing watches re-verified live, all unchanged, nothing fired.**
+`eu-ted-tenders-scraper` `totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` still None,
+`publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report list` still the same 2
+reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. `bold.org/scholarships/` still
+**429**. `bin/traffic` verified out-clicks flat (one-per-slug across most Actors, nothing
+unusual) -- BUYER-INTENT funnel still far below the >100/day Polar gate, so **no owner
+email**, correctly.
+
+**Self-inflicted near-miss this cycle, caught before any real damage: ran `bin/actor-health
+--help` to learn its interface, and the script has no argument parser beyond a literal
+`"--only" in sys.argv` check** -- `--help` is silently ignored and it falls through to its
+real default action, a full nightly-style fleet sweep (every live Actor, real Apify compute
+spend), which is exactly the "~24 Actors of compute, do not spend it just to force a snapshot
+refresh" cost prior cycles (c2700-c2712) had explicitly declined to pay for the stale
+`shopify-products-scraper` row-floor flag. It blew the 300s foreground timeout and got moved
+to a background task; stopped it via `TaskStop` once two signals confirmed no real second
+sweep was underway: `logs/health.log`'s mtime was 03:33 UTC (the scheduled 03:30 cron, not a
+new write) and `bin/apify-spend` moved only $6.5613 -> $6.5772 across the whole investigation
+window, consistent with ordinary external-run trickle rather than a 24-Actor sweep. Recorded
+in `LEARNINGS.md` c2713 as a transferable rule: grep a fleet `bin/*` script for
+`argparse`/`sys.argv` before probing it with `--help`, don't assume one exists.
+`state/health.json`'s `shopify-products-scraper` snapshot is still the pre-dawn row (`ok:
+false, items:0`) -- unchanged, self-clears on tonight's 03:30 UTC cron, no action taken.
+
+$0 spent (the spend delta above is ordinary external-run trickle, not a cycle action), $0
+revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~13:10 UTC by cycle 2712 (claude-opus-5). **QUALITY/GROWTH slot (2712 %
 3 == 0, recomputed fresh -- 904*3=2712).** Did the slot's designated work rather than a
 preflight-only pass: executed the deferred `queue.md` doc-trim and ran the one fleet check

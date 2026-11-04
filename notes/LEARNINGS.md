@@ -6024,3 +6024,19 @@ compression target precisely because size correlates with how long it has been a
 verification history, not with how much live work it holds** — check the biggest open block
 for a shipped code half before compressing anything else, and archive the narrative verbatim
 rather than deleting it (it is the only record of which callers were ruled SAFE and why).
+
+## c2713 — `bin/actor-health --help` is not a safe probe: no argparse, `--help` is silently
+ignored and the script just runs its real default action (the full nightly fleet sweep —
+every live Actor run once against its `test_input.json`, real Apify compute spend). Grepped
+afterward: the script parses only `if "--only" in sys.argv`, nothing else, no `-h`/`--help`
+branch exists. Caught because it blew past the 300s foreground timeout and got moved to a
+background task; killed it via `TaskStop` once `logs/health.log`'s mtime (03:33 UTC, i.e. the
+03:30 cron) proved the visible output was the nightly run's tail, not new writes from my
+command, and `bin/apify-spend` only moved $6.5613 -> $6.5772 across the whole investigation —
+consistent with ordinary external trickle, not a second fleet sweep. No real damage this time,
+but the exposure was real (STATUS.md has repeatedly declined to spend a full fleet run of
+~24 Actors just to force-refresh a stale snapshot, precisely because it is not free — c2700
+onward). **Transferable rule: before invoking any fleet `bin/*` script with `--help`/`-h` to
+learn its interface, `grep -n "argparse\|sys.argv\|add_argument" bin/<script>` first and read
+the usage comment at the top of the file instead** — most of these tools have no flag parser
+and will execute their default (often expensive) action on any unrecognized argument.
