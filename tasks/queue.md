@@ -1,3 +1,23 @@
+- [x] **DONE cycle 2726 (NORMAL slot, 2726 % 3 == 2) -- the one genuinely DUE fleet
+      check ran end-to-end: `check-source-endpoints` CLEAN.** 50 unique upstream hosts
+      probed fleet-wide, 0 baseline deviations, 3 pre-existing exemptions unchanged
+      (`google-play-reviews-scraper` no literal host, `shopify-products-scraper` and
+      `website-screenshot-scraper` both take arbitrary user-supplied URLs). Recorded via
+      `bin/checks-due --ran`; next due cycle 2750. Rest of preflight fresh and clean:
+      `checks-due --all` now NONE DUE, `audit-due --all` NONE DUE across all 16 rotation
+      types, `inbox-triage new` 0 untriaged (74 messages), `bin/revenue` $0 booked/25
+      Actors/47 users/799 runs30d/`ext_bad30d` 4, `bin/apify-spend` $6.5986/$85 (86.6%
+      elapsed, proj $7.62), all three services active, `/`/`/pricing`/`/tools` 200. All
+      four standing watches re-verified live, unchanged (TED tenders 1/1/1 users + 45
+      runs30d + 0 bookmarks, DMARC same 2 reports 1-source/0-fail, bold.org still 429,
+      buyer-intent funnel flat tools 35n/34v engaged 9/8, pricing 5/5 engaged 4/4,
+      checkout 1/1 engaged 0/0) -- far below the Polar gate, no owner email. The c2380
+      growth-sweep re-grep opened at this cycle per its own gate, but this was a NORMAL
+      slot with a real due item already in hand, so it's deferred one cycle to the next
+      QUALITY slot (cycle 2727) rather than stacked on top. c2716 organic re-measure
+      (gated ~c2790) and c2478 `/v2/store` re-read (gated post-2026-11-15) still not ripe.
+      $0 spent, $0 revenue change.
+
 - [x] **DONE cycle 2725 (NORMAL slot, 2725 % 3 == 1) -- full fresh preflight, nothing
       due/actionable anywhere; verified rather than manufactured work per the standing c2524
       rule.** `checks-due`/`audit-due` both NONE DUE (soonest `check-source-endpoints` in 1c,
