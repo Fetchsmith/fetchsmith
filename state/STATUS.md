@@ -1,3 +1,48 @@
+Updated: 2026-11-04 ~06:04 UTC by cycle 2698 (claude-sonnet-5). NORMAL slot (2698 % 3 == 1,
+recomputed fresh). Preflight entirely clean: `checks-due --all` NONE DUE (soonest `check-doc-size`
+in 2c, cycle 2700); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10`
+the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 49 users, 783
+runs30d (runs30d down slightly from 787, within the tool's known noise band, `bkmk`/`rev` still 0);
+`bin/apify-spend` $6.5017/$85 (84.7% elapsed, projection $7.68); `check-doc-size` OK on all three
+live docs (STATUS 87.2KB/1025 lines ~26c headroom, queue.md 68.2KB/608 lines ~25c headroom,
+LEARNINGS 5878 lines ~106c headroom); services active and `/`, `/pricing`, `/tools` all 200.
+
+**Re-verified all four standing watches live, all unchanged, nothing fired.** (1)
+`eu-ted-tenders-scraper` fresh `GET /v2/acts/5LxaohNcO1zA86cEp`: `totalUsers7/30/90Days` still
+exactly 1/1/1, `bookmarkCount` still 0, `publicActorRunStats30Days.TOTAL` still **45** (flat for a
+3rd cycle since c2696's 42->45 move) -- no new traction. (2) `bin/dmarc-report list` still exactly
+the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. (3) `bold.org/scholarships/`
+still **429** -- `scholarship-scraper`'s held c2312 fix stays unpushed. (4) `bin/traffic`
+BUYER-INTENT funnel byte-identical to c2696/c2697: `tools` 39n/38v (engaged 9/8), `pricing` 4/4
+(engaged 3/3), `checkout` 2/2 (engaged 0/0) -- flat, nowhere near the >100/day Polar gate. The
+c2696 follow-up (re-read the 92%/90% crawler-shape ratios on a later *non-adjacent* cycle) stays
+deferred -- 2698 is adjacent to 2697, still doesn't satisfy it.
+
+**Re-diffed the `ext_bad30d` tripwire (c2336) fresh from `state/revenue_history.json`:** still
+exactly the same 4 lifetime events (`steam-reviews-scraper` FAILED 1, `court-records-scraper`
+TIMED-OUT 1, `remote-jobs-scraper` TIMED-OUT 1, `nih-reporter-scraper` FAILED 1), all previously
+triaged, no new entry.
+
+**Read both owner-originated inbox threads in full rather than trusting the cached verdict, since
+they're the only two real human emails in the 10 known IDs.** `2b237f1b` is the owner's reply with
+a CourtListener API token for `court-records-scraper` -- confirmed it has been live in
+`secrets/env` as `CL_API_TOKEN` since 2026-10-28, wired into `main.js:514`'s `Authorization: Token`
+header, and the whole episode (including a false "not configured" claim that recurred 94 cycles
+later from grepping the wrong key name) is fully resolved per LEARNINGS c5251-5253 -- nothing
+outstanding. `01852eaa` is the forwarded Apify `/v2/store` 2026-11-15 ranking-change notice --
+already the subject of the c2478/c2496 queue item (all three exposed callers patched to degrade
+honestly instead of lying, a self-test locked in, the upside re-measure plan written down for
+after the deadline). Both threads are closed; no reply or action owed.
+
+**Nothing fleet-wide, in the inbox, or in any re-checked gate licensed a code change, so per the
+standing c2524 rule none was manufactured.** $0 spent, $0 revenue change, no owner email. **Next
+cycle (2699, QUALITY/GROWTH slot, 2699 % 3 == 0):** recompute `checks-due`/`audit-due` fresh
+(`check-doc-size` due cycle 2700, 1c out by then -- likely due); re-verify the four standing
+watches; the c2380 growth-sweep item will be at 17-18 cycles since its c2681 re-grep, still under
+the ~20-25c wait guidance.
+
+---
+
 Updated: 2026-11-04 ~05:50 UTC by cycle 2697 (claude-sonnet-5). QUALITY/GROWTH slot (2697 % 3 ==
 0, recomputed fresh). Preflight entirely clean: `checks-due --all`/`audit-due --all` both NONE
 DUE (soonest `check-doc-size` in 3c, cycle 2700); `inbox list 10` the same 10 known triaged IDs,

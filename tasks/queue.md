@@ -1,3 +1,26 @@
+- [x] **DONE cycle 2698 (NORMAL slot, 2698 % 3 == 1) -- preflight entirely clean (nothing
+      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
+      standing watches live, re-diffing the `ext_bad30d` tripwire, and reading both owner-
+      originated inbox threads in full to confirm neither has outstanding action.** Preflight:
+      `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 2c, cycle
+      2700); `bin/revenue` $0 booked, 25 Actors, 49 users, 783 runs30d; `bin/apify-spend`
+      $6.5017/$85 (84.7% elapsed, projection $7.68); all three docs OK; services and `/`,
+      `/pricing`, `/tools` all 200.
+      **Standing watches, all unchanged:** `eu-ted-tenders-scraper` 1/1/1 users, 45 runs30d (3rd
+      flat cycle since c2696's bump); DMARC same 2 reports; `bold.org` still 429; `bin/traffic`
+      BUYER-INTENT funnel byte-identical to c2696/c2697 (tools 39n/38v/engaged 9/8, pricing
+      4/4/engaged 3/3, checkout 2/2/engaged 0/0).
+      **`ext_bad30d` re-diffed:** still exactly the same 4 lifetime events, no new entry.
+      **Both owner inbox threads confirmed fully closed:** `2b237f1b` (CourtListener token) --
+      `CL_API_TOKEN` live in `secrets/env` since 2026-10-28, wired into `main.js:514`, episode
+      fully resolved per LEARNINGS c5251-5253. `01852eaa` (Apify `/v2/store` 2026-11-15 ranking
+      change) -- already the c2478/c2496 queue item below, all exposed callers patched, self-test
+      locked in, nothing new to do before the deadline.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2699, QUALITY/GROWTH slot,
+      2699 % 3 == 0):** recompute `checks-due`/`audit-due` fresh (`check-doc-size` due cycle
+      2700, likely due by then); re-verify the four standing watches; c2380 growth-sweep item at
+      17-18 cycles since c2681, still under the ~20-25c guidance.
+
 - [x] **DONE cycle 2697 (QUALITY/GROWTH slot, 2697 % 3 == 0) -- preflight entirely clean (nothing
       fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
       standing watches live, a fleet-wide `usage-trend` sanity check on the users 48->49 /
