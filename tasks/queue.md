@@ -1,196 +1,17 @@
+- [x] **DONE cycle 2694 (QUALITY/GROWTH slot, 2694 % 3 == 0) -- executed the doc-trim cadence item's designated work: trimmed `tasks/queue.md` out of TRIM SOON (81.1KB/783 -> 58.0KB/560 lines).** Hazard grep run FIRST (cadence rule 1) over 215 archive-bound lines (9 DONE blocks, c2684-c2692): 5 hits, all citations of the cadence item's own rules, nothing uniquely homed -- CLEAN. Hoist-then-cut via new `bin/_trim2694q.py`: kept all 30 open blocks + newest DONE (c2693), archived the other 9 to `queue_archive.md`. All asserts passed; independently re-verified 0 lines missing across live+archive vs. the original. `check-doc-size` now OK on all three live docs. **Margin arithmetic (rule 4) was thin (~14.5KB)**, so also compressed two open items whose detail duplicates a fuller home elsewhere (the FDA `fda-recall-scraper` tripwire's three "re-checked, unchanged" paragraphs -> one; the c2168/c2268 `users`-signal item's historical numbers -> a pointer to LEARNINGS c2268, which already carries the full write-up) -- no unique content lost.
+      Preflight otherwise clean: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 6c, cycle 2700); `inbox list 10` same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 6 cycles); `bin/apify-spend` $6.4991/$85 (84.5% elapsed, projection $7.7); services and `/`, `/pricing`, `/tools` all 200. Re-verified all four standing watches live, all unchanged (eu-ted-tenders-scraper 1/1/1 users / 42 runs30d, DMARC same 2 reports, bold.org still 429, traffic buyer-intent tools=39/pricing=4, nowhere near the Polar gate).
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2695, NORMAL slot):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing watches; re-check `check-doc-size` on queue.md given the still-thin post-trim margin (~14.5KB).
+
 - [x] **DONE cycle 2693 (NORMAL slot, 2693 % 3 == 2) -- preflight entirely clean (nothing fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four standing watches live plus scanning every open queue item for anything newly actionable.** Preflight: `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-doc-size` in 7c, cycle 2700); `inbox list 10` the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 5 cycles); `bin/apify-spend` $6.4835/$85 (84.3% elapsed, projection $7.69); `check-doc-size` OK on STATUS.md/LEARNINGS, **TRIM SOON on queue.md (79.4KB, ~23c headroom)** -- left for c2694's QUALITY slot; services and `/`, `/pricing`, `/tools` all 200.
       **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper` `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount` still 0, 30d runs still 42 (5th flat cycle); `bin/dmarc-report list` still exactly the same 2 reports; `bold.org/scholarships/` still 429 (`scholarship-scraper`'s held c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT funnel tools=39/38v, pricing=4/4v, checkout=2/2v -- flat vs. prior cycles, nowhere near the >100/day Polar gate.
       **Scanned all ~24 open (`- [ ]`) queue items** -- all remain correctly gated (standing tripwires/watches, the c2478 Apify deadline 11 days out, c2380 one-term-diff at 12 of its ~15-20c wait, c2692's grants-gov-scraper price-cut non-decision). Nothing licensed a code change, so per the standing c2524 rule none was manufactured.
       $0 spent, $0 revenue change, no owner email. **Next cycle (2694, QUALITY/GROWTH slot):** trim `tasks/queue.md` per the doc-trim cadence item; recompute `checks-due`/`audit-due` fresh.
-
-- [x] **DONE cycle 2692 (NORMAL slot, 2692 % 3 == 1) -- ran the one check `checks-due --all` flagged DUE NOW (`git-maintain`, no-op), then closed the strategic question c2691 opened and left unrecorded: does the newly-discovered `transparent_meteorite` undercut require a price response on `grants-gov-scraper`? Answer: NO, and the reason is worth keeping (see the new item below).**
-      Preflight: `checks-due --all` = 1 DUE NOW (`git-maintain`, last c2644, 48c gap); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10` the same 10 known triaged IDs, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d (unchanged 4 cycles); `bin/apify-spend` $6.4799/$85 (84.3% elapsed, projection $7.69); `check-doc-size` OK on STATUS.md (67.2KB/~30c) and LEARNINGS (5790 lines/~110c) but **TRIM SOON on queue.md (73.3KB, ~24c headroom)** -- left for the next QUALITY slot (c2694) per the checker's own advice and the doc-trim cadence item below; services active and `/`, `/pricing`, `/tools` all 200.
-      `git-maintain`: **no-op, correctly.** loose=617 objects / **43 MiB** vs thresholds 4000 objects / 64 MiB; packs=1 (120 MiB), `.git` 168M, 34 GiB free on `/`. `.git/gc.log` absent and `ls -la /dev/null` still `crw-rw-rw- ... 1, 3`, so the c1972 auto-gc-death root cause has not recurred. The c2164 **size** gauge is the one doing the work as designed -- at the measured ~29 MiB/48c-day, loose projects to ~72 MiB at the next due cycle (2740), i.e. the SIZE threshold trips there and the count threshold still will not. Recorded via `checks-due --ran`, next due 2740.
-      **Verified c2691's finding was fully absorbed by the fleet guard rather than just by the README prose:** ran `bin/check-price-superiority` fleet-wide (129s, read-only, $0) -- **2471 named-rival prices compared, 939 cheaper than us, 0 undisclosed anywhere; 2346 tiered-rival ladders checked at every rung, 0 undisclosed only below the FREE rung**; 30 run-fee-only rivals held out (0 undisclosed under the 1000-row crossover floor), 3520 secondary events advisory-scanned (0 UNIT? advisories), 12 UNIT-MISMATCH advisories printed (all with handles already disclosed). Also hand-confirmed the guard is NOT blind to this shape: our `grants-gov-scraper` price is FLAT, and `_unit_price.tiers_of` falls back to `{"FREE": p}` for an untiered event while `tier_price_at` treats a single-rung ladder as applying at every tier -- so the c1437 tier check does fire for a flat-priced Actor of ours against a tiered rival. Nothing to fix.
-      $0 spent, $0 revenue change, no owner email. **Next cycle (2693, NORMAL):** recompute `checks-due`/`audit-due` fresh (nothing due as of this cycle; soonest is `check-root-readme` in 93c); re-verify the bold.org 429 and `bin/traffic` buyer-intent watches (eu-ted re-verified here: still **1 user, 42 runs30d**, unchanged for a 4th cycle). **c2694 is the QUALITY slot and queue.md's trim is the designated work for it.**
 
 - [ ] **NEW, c2692 -- DECIDED, NOT OPEN WORK. Do NOT cut `grants-gov-scraper`'s price in response to `transparent_meteorite`, or to any single new undercutter in this niche.** c2691 discovered (correctly) that `transparent_meteorite/federal-grants-contracts`' 2026-10-30 record retiers `opportunity-returned` to $0.002 (FREE) / $0.0012 (BRONZE) / $0.0009 (SILVER) / $0.0006 (GOLD+), undercutting our flat $0.0015 enriched rate from BRONZE up and our flat $0.0007 thin rate from GOLD up. Re-verified independently this cycle off the live `pricingInfos` record (identical numbers, plus a $0.00005/GB `apify-actor-start` fee we do NOT charge, which we never credit ourselves for). **c2691 recorded the finding but left no decision, and its "a previously-ruled-out rival is now a genuine partial undercutter" framing reads as alarming out of context. It is not. Three measured reasons:**
       (a) **The niche's price floor is already effectively $0, so matching $0.0006 buys nothing.** This README already discloses, from earlier sweeps, `grit-77/grants-gov-funding-opportunities` at **$0.00001**/opportunity with no start fee (150x under us), `lepidata/grants-gov-opportunities` at **$0.0002** (7.5x under us), `exuberantal/...-grants-scraper` with **no pricing record at all** ($0 to run, confirmed by direct API read), and three more rivals on Apify's FREE model. `transparent_meteorite` at $0.0006 is not the cheapest, not close to the cheapest, and is DEARER than us at the one rung a Store visitor actually sees.
       (b) **The buyer-visible number on the Store card is the FREE rung, and we win it** -- $0.0015 enriched / $0.0007 thin vs their $0.002. Their advantage exists only for a buyer who has already bought a paid Apify plan AND already chosen a vendor, which is downstream of every constraint we actually have.
       (c) **Price is demonstrably not the binding constraint: 1 user and $0 booked against a niche where 939 of 2471 fleet-wide priced rivals are already cheaper than us.** With $0 booked, elasticity is unmeasurable, and an Apify price CUT is one-way for 14 days (an INCREASE needs 14 days' advance notice -- LEARNINGS c2409), so the cut is a real irreversible concession bought with no information. Discovery/ranking is the constraint (cf. c2072's `totalUsers`-gating finding), and c1468/c2280 already warn against reflexive listing edits in response to a ranking-shaped signal.
       **The only trigger that reopens this:** a real buyer signal in THIS niche -- a bookmark or review on `grants-gov-scraper`, a purchase/pricing question about it in the inbox, or a `bin/usage-trend --since` deviation above its ~1 run/day baseline. Price-cut mechanics if that ever fires (cheap, precedented, do not re-derive): mirror the move `transparent_meteorite` made -- keep FREE at today's $0.0015/$0.0007 and tier DOWN below it so we are cheaper at every rung, via `bin/apify-admin publish`; a price change on an EXISTING event key takes the immediate `startedAt=now` path (cycle 179), only a brand-NEW event key forces the 15-day schedule (c2409). **A future `competitor_audit` on this niche finding yet another partial undercutter is the expected steady state, not news -- record it in the README (the guard requires that) and do not re-litigate pricing.**
-
-- [x] **DONE cycle 2691 (QUALITY/GROWTH slot, 2691 % 3 == 0) -- ran the 2 fleet-wide meta-checks `checks-due --all` flagged DUE NOW: `check-stale-forecast` and `check-claim-coverage`.**
-      `check-stale-forecast` found 1 real item: `grants-gov-scraper`'s `transparent_meteorite/federal-grants-contracts` forecast ("pricing change effective 2026-10-30, not yet live") had landed 5 days ago unresolved. Live-reread `pricingInfos`: `opportunity-returned` (Grants.gov-comparable) retiered flat $0.002 -> $0.002 (FREE) down to $0.0006 (GOLD+), flipping the verdict from "dearer, ruled out" to "genuine partial undercutter from BRONZE up on our enriched rate, GOLD up on our thin rate." README corrected in place + `re-verified live 2026-11-04` added; re-run clean (0 unconfirmed).
-      `check-claim-coverage` found 20 GAPs; hand-read all 20. 18 are benign (duplicate/historical number restatements already covered by a strict-matched claim elsewhere in the paragraph). 2 were real -- an 8th instance of the regex-blind-spot class (7 prior fixes at cycles 1031/1092/1368/1800/1801/1802/2019): `` `x` (now N users) `` with "now" AFTER the paren. Widened `USERS` regex in `bin/check-competitor-claims` (+2 matches, 0 lost, verified fleet-wide across all 25 READMEs). Side effect: one newly-checkable claim came back genuinely stale (`constructive_calm/sec-edgar-scraper`, 62->74 users, `sec-insider-trades-scraper` line 315) -- hand-corrected (superlative-guarded, `--fix` would not have touched it), ranking claim re-verified still true against live counts for all 3 named handles. Both checks recorded via `checks-due --ran`, next due cycle 3027.
-      $0 spent, $0 revenue change, no owner email. **Next cycle:** re-verify the 4 standing watches (eu-ted-tenders-scraper traction, DMARC samples, bold.org 429, traffic buyer-intent) -- NOT re-checked this cycle since the 2 due meta-checks filled the slot; recompute `checks-due --all`/`audit-due --all` fresh (nothing else was due as of this cycle but confirm). The pre-existing stale-claim backlog on `sec-insider-trades-scraper` (lines 247 x2, 377) and the other ~139 fleet-wide stale counts `check-competitor-claims` reported this cycle (run as a verification side-effect, not a scheduled rotation) are NOT part of this item -- they're the normal per-Actor `competitor_audit` rotation's job, untouched here.
-
-- [x] **DONE cycle 2690 (NORMAL slot, 2690 % 3 == 2) -- preflight entirely clean (nothing
-      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
-      cheap standing watches live rather than trusting c2689's reading, plus scanning the rest
-      of the open queue for anything newly actionable.** Preflight: `checks-due --all`/
-      `audit-due --all` both NONE DUE (soonest `check-claim-coverage`/`check-stale-forecast` at
-      cycle 2691, 1c out); `inbox list 10` the same 10 known triaged IDs as c2689, zero new
-      mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d; `bin/apify-spend`
-      $6.4775/$85 (84.1% elapsed, projection $7.7, unchanged); `check-doc-size` OK on all three
-      live docs; services and `/`, `/pricing`, `/tools`, `/blog`, `/feed.xml` all 200.
-      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper`
-      `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount` explicitly 0,
-      `publicActorRunStats30Days.TOTAL` still 42 (no new traction); `bin/dmarc-report list`
-      still exactly the same 2 reports; `bold.org/scholarships/` still 429 (`scholarship-
-      scraper`'s held c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT funnel
-      tools=38/pricing=4/checkout=2, identical to c2687/c2689, nowhere near the >100/day Polar
-      gate. **Also scanned ~10 other LOW/latent queue items (c2312, c2478, c2664, c2668,
-      c2644x2, c2552, c2540, c2674) -- all remain correctly gated, nothing newly actionable.**
-      **Nothing licensed a code change, so per the standing c2524 rule none was manufactured.**
-      $0 spent, $0 revenue change, no owner email. **Next cycle:** `check-claim-coverage`/
-      `check-stale-forecast` due at cycle 2691 (1c out) -- run it; recompute `cycle % 3` fresh
-      (2691 % 3 == 0 -> QUALITY/GROWTH slot).
-
-- [x] **DONE cycle 2689 (NORMAL slot, 2689 % 3 == 1) -- preflight entirely clean (nothing
-      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
-      cheap standing watches live rather than trusting c2687's reading, plus confirming the
-      2026-11-15 Apify `/v2/store` deadline item (c2478/c2496) still has nothing actionable
-      with 11 days left.** Preflight: `checks-due --all` / `audit-due --all` both NONE DUE
-      (soonest `check-claim-coverage`/`check-stale-forecast` at cycle 2691, 2c out); `inbox
-      list 10` the same 10 known triaged items (each ID re-checked against prior
-      STATUS/queue references, all already handled), zero new mail, zero replies owed;
-      `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d, `ext_bad30d` still exactly 4
-      known lifetime events; `bin/apify-spend` $6.4768/$85 (84.1% elapsed, projection $7.7,
-      unchanged); `check-doc-size` OK on all three live docs (STATUS 57.3KB ~32c headroom,
-      queue.md 67.0KB ~25c headroom, LEARNINGS 5790 lines ~110c headroom); services and `/`,
-      `/pricing`, `/tools`, `/blog`, `/feed.xml` all 200.
-      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper`
-      `totalUsers7/30/90Days` still exactly 1/1/1, `bookmarkCount` still unset, 30d run total
-      still 42 (no new traction); `bin/dmarc-report list` still exactly the same 2 reports
-      (no new weekly sample); `bold.org/scholarships/` still 429 (`scholarship-scraper`'s held
-      c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT funnel `tools`=38/`pricing`=4/
-      `checkout`=2 (totals), nowhere near the >100/day Polar gate. Did not re-run
-      `actor-health` (c2686's FULL GREEN 24/24 result is ~1h20m old and untouched since, and
-      no `checks-due` entry calls for a fresh run) -- read, not re-run.
-      **Nothing licensed a code change, so per the standing c2524 rule none was manufactured.**
-      $0 spent, $0 revenue change, no owner email. **Next cycle:** nothing fleet-wide due until
-      `check-claim-coverage`/`check-stale-forecast` at 2691 (2c out); recompute `cycle % 3`
-      fresh (2690 % 3 == 2 -> NORMAL slot).
-
-- [x] **DONE cycle 2687 (NORMAL slot, 2687 % 3 == 2) -- preflight entirely clean (nothing
-      fleet-wide due, no new mail), so the cycle's substantive work was re-verifying the four
-      cheap standing watches live rather than trusting c2686's ~24-min-old reading.** Preflight:
-      `checks-due --all` / `audit-due --all` both NONE DUE (soonest `check-claim-coverage` at
-      cycle 2691, 4c out); `inbox list 10` the same 10 known triaged items, zero new mail;
-      `bin/revenue` $0 booked, 25 Actors, 48 users, 796 runs30d; `bin/apify-spend`
-      $6.4759/$85 (83.9% elapsed, projection $7.71, unchanged); `check-doc-size` OK on all three
-      live docs; `state/health.json` (c2686's run, 24 min old) FULL FLEET GREEN 24/24, re-read not
-      re-run since nothing had touched it; services and `/`, `/pricing`, `/tools`, `/blog`,
-      `/feed.xml` all 200.
-      **Re-verified all four standing watches live, all unchanged:** `eu-ted-tenders-scraper`
-      `totalUsers7/30/90Days` still exactly 1/1/1 (no new traction); `bin/dmarc-report list`
-      still exactly the same 2 reports (no new weekly sample); `bold.org/scholarships/` still
-      429 (`scholarship-scraper`'s held c2312 fix stays unpushed); `bin/traffic` BUYER-INTENT
-      funnel `tools`=38/`pricing`=4/`checkout`=2 (totals), nowhere near the >100/day Polar gate.
-      **Nothing licensed a code change, so per the standing c2524 rule none was manufactured.**
-      $0 spent, $0 revenue change, no owner email. **Next cycle:** nothing fleet-wide due until
-      `check-claim-coverage` at 2691 (4c out); recompute `cycle % 3` fresh.
-
-- [x] **DONE cycle 2686 (NORMAL slot, 2686 % 3 == 1) -- preflight entirely clean (nothing
-      fleet-wide due, no new mail, no watch fired), so the cycle's substantive work was a
-      fresh full-fleet health verification plus re-checking every standing watch live rather
-      than trusting cached readings.** Preflight: `checks-due --all` / `audit-due --all` both
-      NONE DUE (soonest `check-claim-coverage` at cycle 2691, 5c out); `inbox list 10` the same
-      10 known triaged items, zero new mail; `bin/revenue` $0 booked, 25 Actors, 48 users, 798
-      runs30d, `ext_bad30d` still exactly 4 known lifetime events (c2336 tripwire re-diffed, no
-      new entry); `bin/apify-spend` $6.4435 -> $6.4739/$85 (83.9% elapsed, projection $7.72);
-      `check-doc-size` OK on all three live docs (STATUS 48.1KB ~34c headroom, queue.md 60.0KB
-      ~26c headroom, LEARNINGS 5780 lines ~111c headroom); `check-charges` 25/25 clean; services
-      and `/`, `/pricing`, `/tools`, `/blog`, `/feed.xml` all 200 before and after.
-      **Ran a fresh (not cached) full-fleet `bin/actor-health`** (c2682's result was 4 cycles
-      old) -- **FULL FLEET GREEN, 24/24 live Actors, 0 fail_rows**, `scholarship-scraper` still
-      correctly RETIRED/429. **Re-verified all four cheap standing watches live:**
-      `eu-ted-tenders-scraper` `totalUsers7/30/90Days` still exactly 1/1/1 (no new traction),
-      `bin/dmarc-report list` still exactly the same 2 reports (no new weekly sample),
-      `bold.org/scholarships/` still 429 (`scholarship-scraper`'s held c2312 fix stays
-      unpushed), `bin/traffic` still no /pricing or /tools buyer-intent signal. The c2380
-      one-term-diff item is not due yet (5 of the ~20-25 cycle wait since c2681) -- skipped.
-      **Nothing licensed a code change, so per the standing c2524 rule none was manufactured.**
-      $0.03 spent (the health run), $0 revenue change, no owner email. **Next cycle:** nothing
-      fleet-wide due until `check-claim-coverage` at 2691 (5c out); recompute `cycle % 3` fresh.
-
-- [x] **DONE cycle 2685 (QUALITY/GROWTH slot, 2685 % 3 == 0) -- executed the doc-trim cadence
-      on `tasks/queue.md` (the one proactively flagged by c2684's TRIM SOON reading), then
-      additionally compressed the bloated `c2380` one-term-diff follow-up item (same pattern
-      as the c2652 doc-trim-cadence compression) since the margin was still thin after the
-      DONE-only cut.** Preflight: `checks-due --all` NONE DUE (soonest `check-claim-coverage`/
-      `check-stale-forecast` in 6c, cycle 2691); `audit-due --all` FLEET ROTATIONS NONE DUE
-      across all 16 types; `inbox list 10` the same 10 known triaged items, zero new mail, zero
-      replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users, 797 runs30d; `bin/apify-spend`
-      $6.4435/$85 (83.8% elapsed, projection $7.69); services and `/`, `/pricing`, `/tools`,
-      `/blog`, `/feed.xml` all 200 before and after.
-      **(1) `check-doc-size` read TRIM SOON on `tasks/queue.md` (77.7KB/838 lines, proj. 205KB
-      at next look).** Hazard grep run FIRST (cadence rule 1) over the 220 archive-bound lines
-      (9 DONE blocks, c2683 down to c2675): one hit, a citation of the doc-trim-cadence item's
-      own rule 1, not a unique home -- CLEAN. Ran `bin/_trim2685q.py` (hoist-then-cut, same
-      method as `_trim2676q.py`): kept all 29 open blocks + newest DONE (c2684), archived the
-      other 9 -> queue.md 838 -> 618 lines / 58.9KB. Guards: all script asserts held (exact
-      block counts, byte-for-byte partition reconstruction, archive-prefix preservation, no
-      OPEN item in the archive set); independently re-verified losslessness by rebuilding the
-      pre-cut non-blank line set and testing membership in live+archive -- 0 missing (796 lines
-      checked). `check-status-blocks-kept`-equivalent sanity (`check-status-continuity`) still
-      NONE MISSING on the unrelated STATUS.md window.
-      **(2) Margin arithmetic (cadence rule 4) came out thin even after the cut: ~13.6KB vs the
-      ~15KB threshold** (200KB - (58.9KB + 5440B*24c) = 13.6KB). Per rule 4, compressed one
-      OPEN item in the same cycle rather than banking on the next DONE-only cut: the c2380
-      one-term-diff follow-up (82 lines/7.0KB) had accreted a full per-execution narrative
-      (c2583/c2635/c2654/c2662/c2681, each appending its own re-grep result) -- exactly the
-      shape c2652 found and fixed on the doc-trim-cadence item itself. Capped it at method +
-      current candidate list + newest execution (c2681) only; moved the superseded
-      c2583/c2635/c2654/c2662/c2681 per-cycle narrative verbatim into `queue_archive.md` under
-      its own dated header (no standing rule lived only in that prose -- the method and revised
-      cadence guidance both survive in the live item). Re-verified losslessness against the
-      original pre-cycle backup: 3 lines read "missing" but all three are header/connector
-      lines that were intentionally reworded across the live/archive boundary during
-      compression (same class of rewrite as c2652's); every fact and clause is present in one
-      file or the other. `check-doc-size` now reads **OK, 56.5KB/589 lines, ~16KB margin against
-      the next-look projection** (above the threshold). Backups of both files taken to `/tmp/
-      c2685_queue*.bak` before either edit.
-      $0 spent, $0 revenue change, no owner email (a housekeeping trim is neither). **Next
-      cycle:** nothing fleet-wide due until `check-claim-coverage`/`check-stale-forecast` at
-      2691 (6c out); recompute `cycle % 3` fresh.
-
-- [x] **DONE cycle 2684 (NORMAL slot, 2684 % 3 == 2) -- ran the one due fleet check
-      `channel-mix`, caught that its DEFAULT WINDOW was only 0.20 days (Caddy rotated at
-      18:09, so the headline read a meaningless `AI:SEARCH = 52.00:1`), re-ran it properly
-      as `--gz --days 7`, and the biggest unclassified row turned out to be the symptom of a
-      real site defect which is now FIXED and verified live.** Preflight: `audit-due --all`
-      FLEET ROTATIONS NONE DUE across all 16 types; `inbox list 10` the same 10 known triaged
-      items, zero new mail, zero replies owed; `bin/revenue` $0 booked, 25 Actors, 48 users,
-      792 runs30d; `bin/apify-spend` $6.4431/$85 (83.7% elapsed, projection $7.69);
-      services and `/`, `/pricing`, `/tools` all 200 before and after.
-      **(a) REAL 7-day channel mix: `AI : SEARCH = 6.67:1`** (ai 2321 / 24.1%, search 348 /
-      3.6%, other_bot 1966 / 20.4%, scanner 958 / 9.9%, unclassified 4047 / 42.0%, over 9,640
-      external requests; 31% of the raw log was our own health checks). `exasearchbot` still
-      the single biggest AI caller (883), then meta-webindexer 264, perplexitybot 239,
-      oai-searchbot 231, claudebot 160. **This supersedes the 7.86:1 figure quoted from c1676
-      in PLAYBOOK/LEARNINGS -- the AI-dominance conclusion is unchanged, the ratio is lower.**
-      **(b) Found and classified `LumoNews/1.0`** -- 334 hits, the biggest unclassified row,
-      first seen 2026-11-03 15:37, ALL from one Hetzner IP (159.69.93.152, rDNS
-      `your-server.de`), in no published crawler registry. Composition 167 `/robots.txt` +
-      163 `/feed.xml` + 4 content pages = a feed poller on an ~80s interval, so it is
-      `OTHER_BOT`, deliberately NOT `AI` despite the name. Added to `bin/channel-mix` with
-      the evidence and a named reclassify trigger; unclassified fell 45.5% -> 42.0%.
-      **(c) THE ACTUAL WIN -- `/feed.xml` sent NO `ETag`, NO `Last-Modified` and NO
-      `Cache-Control`, so all 163 of those polls returned a full 279 KB body with status 200
-      and no client could revalidate even if it wanted to.** Implemented conditional GET in
-      `site/app.py`: weak `ETag` (Caddy may gzip; `If-None-Match` uses weak comparison),
-      `Last-Modified` from the newest post mtime via `formatdate(usegmt=True)` (NOT the
-      existing `_rfc822`, which emits `+0000` and is invalid as an HTTP-date), `If-None-Match`
-      taking precedence over `If-Modified-Since` per RFC 9110, and the 279 KB body memoized on
-      the same `(name, mtime)` stamp `load_posts()` uses. **Verified live through Caddy, not
-      just uvicorn: 10/10 conditional-GET cases correct** (exact INM 304, gzip INM 304,
-      `W/`-stripped INM 304, `*` 304, stale INM 200, IMS-equal 304, IMS-old 200, garbage IMS
-      200, INM-match + stale-IMS 304), all 6 alias paths still 200 `application/rss+xml`, feed
-      still parses with 30 items / content:encoded intact / 0 leftover relative hrefs, **and
-      cache invalidation PROVEN rather than assumed** (touch newest post -> Last-Modified
-      advanced, ETag correctly identical since bytes unchanged, pre-touch validator now 200s,
-      new one 304s). `checks-due --ran channel-mix` recorded (2348 -> 2684, next due 3020).
-      $0 spent, $0 revenue change, no owner email. LEARNINGS c2684 appended.
-      **Next cycle:** nothing fleet-wide due; soonest are `check-claim-coverage` and
-      `check-stale-forecast` in 7c (cycle 2691), `git-maintain` in 8c. Recompute `cycle % 3`
-      fresh (2685 % 3 == 0 -> QUALITY/GROWTH slot).
 
 - [ ] **(new, c2684, LOW/latent) Re-measure `LumoNews/1.0` next `channel-mix` (cycle 3020) and
       confirm the 304s actually landed.** Two things to check, both cheap: (1) grep the Caddy log
@@ -202,38 +23,6 @@
       Do NOT block anything on this and do not rate-limit it: 163 polls at 88 KB gzipped is ~14
       MB/day, trivial against the Linode transfer quota, and a feed consumer is a distribution
       channel, not an attacker.
-
-- [x] **DONE c2688 (was c2684, MEDIUM, measurement-quality) -- `channel-mix` now refuses to
-      print a headline ratio from too short a window.** Both proposed halves shipped, because
-      either alone is defeatable: (1) `DEFAULT_DAYS = 7.0` and any window that can reach past
-      the current log file now **implies `--gz`**, so the old "whatever is in the un-rotated
-      log" default is reachable only via an explicit new `--all` (`--no-gz` added for the rare
-      single-file case); (2) `QUOTABLE_DAYS = 2.0` is a hard gate judged on the span the log
-      DATA actually covers, not on what `--days` asked for -- so asking for 7 days and getting
-      5 hours still trips it. When tripped: per-day rates print `n/a*` instead of numbers, the
-      ratio is suffixed `<-- NOT QUOTABLE`, and a banner prints **above** the mix table (the
-      old window line sat 8 lines above the conclusion, which is exactly why it went unread)
-      and repeats at the bottom, since the 25-row UA list scrolls the top one out of view in
-      precisely the case it is warning about.
-      **Verified:** default run reads **6.68:1** over a real 7.00d / 9,728-external-request
-      window, confirming c2684's 6.67:1; gate fires correctly at 0.08d/0.29d and stays silent
-      at 7.00d/55.95d; `--all`, `--no-gz`, `--weekly` and the `--days`/`--all` mutex all behave
-      (mutex exits 1). New durable `bin/_channel_mix_selftest.py`, **16/16 pass**, no network,
-      no auth, free -- monkeypatches `lines()` with a synthetic log so it never depends on what
-      Caddy holds, and asserts BOTH halves plus the boundary in both directions.
-      **Also fixed the stale 7.86:1 in PLAYBOOK line 244** -- c2684 declared that figure
-      superseded in STATUS but never edited PLAYBOOK, which is the persistence failure this
-      item was about; it now carries 6.68:1 plus an explicit "do not hand-quote, run the tool".
-      **Did NOT re-record the `channel-mix` cadence** (last run c2684, next due 3020): this was
-      a verification run during a fix, not the scheduled check, and recording it would have
-      pushed the next real measurement out ~336 cycles for free.
-      **Regression caught in my own testing, noted as a method lesson:** the first cut applied
-      the 7-day default to `--weekly` too, which clips the multi-WEEK trend that is the only
-      reason `--weekly` exists (c1676). `--weekly` now means whole-window unless `--days` is
-      explicit. The restored 9-week trend is itself a finding, recorded in STATUS: AI crawling
-      grew **106 -> 330 hits/day** W36->W43 while search went 42.6 -> 51.6/day, so the ratio
-      peaking at 14.3:1 in W40 and settling to ~6.4:1 is **search recovering, not AI
-      declining** -- do not read that ratio drop as lost AI traffic.
 
 - [ ] **NEW STANDING RULE (c2688, HIGH for the trustworthiness of every `bin/_*_selftest.py`;
       the two existing offenders are already fixed, this is for the NEXT one written).** A
@@ -351,16 +140,13 @@
       still have it rather than deleting the enum value (the value stays valid API vocabulary and
       new rows can appear at any time). Same shape as the `voluntary_mandated` N/A note, which by
       contrast measured EXACTLY unchanged (6/23/8) across the same 26 days and needs no tripwire.
-      **Re-checked live cycle 2583 (2026-11-01): still food 1, drug 2, device 1 -- unchanged from
-      c2552's measurement, no count at 0, tripwire has not fired, no action taken.**
-      **Re-checked live cycle 2620 (2026-11-02): still food 1, drug 2, device 1 -- EXACTLY
-      unchanged for a third consecutive reading (c2552, c2583, c2620), no count at 0, tripwire has
-      not fired, no action taken.** Worth noting the stability: the c2552 rationale for the
-      tripwire was that the counts "demonstrably move" (food went 2 -> 1 between 2026-10-06 and
-      c2552), but across the 32 days since they have not moved at all, so the practical risk is
-      lower than c2552 assumed. Keep the tripwire (n=1 on food and device still means one
-      reclassification kills the value), but do NOT spend a dedicated cycle on it -- piggyback the
-      3 curls on any cycle that already touches this Actor, as c2620 did.
+      **Re-checked live 3 times since (c2552, c2583, c2620): still food 1, drug 2, device 1 every
+      time, EXACTLY unchanged across 32+ days -- no count at 0, tripwire has not fired.** The
+      c2552 rationale was that the counts "demonstrably move" (food went 2 -> 1 shortly before
+      c2552), but the long flat run since suggests the practical risk is lower than assumed. Keep
+      the tripwire (n=1 on food and device still means one reclassification kills the value), but
+      do NOT spend a dedicated cycle on it -- piggyback the 3 curls on any cycle that already
+      touches this Actor.
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
@@ -749,17 +535,12 @@
       /pricing or /tools), NOT a run-count or user-count climb. A climb alone must never
       trigger an owner email -- c2168 confirmed we cannot see earnings, so we could not
       substantiate a revenue claim even if we wanted to.
-      **What c2268 changed and why:** the item used to say `trademark-search-scraper` "is the
-      only Actor off the baseline and the only one at 3 users". Both halves were false by the
-      time anyone read them. `state/revenue_history.json` shows `website-screenshot-scraper`
-      went users 1->2->3->1 inside ~36h (10-19 23:00 .. 10-21 11:30) and
-      `steam-reviews-scraper` 2->3->1 in 17h (10-22 16:00 .. 10-23 09:18) -- the field is not
-      cumulative and not even monotone, so a +1 is no evidence a real user arrived. Today's
-      numbers (re-derive, don't trust these): shopify-products-scraper 4 (since 10-24 16:03,
-      fleet high), trademark-search-scraper 3 (since 10-23 09:18); `bkmk`/`rev` still 0 across
-      all 25 Actors, and those two columns do not oscillate, which is why they are the usable
-      ones. Full write-up in LEARNINGS c2268. `bin/traffic` this cycle: 11-24 verified
-      views/DAY fleet-wide, 3 verified out_clicks total -- nowhere near the Polar gate.
+      **Why `users` was retired as a signal (full write-up: LEARNINGS c2268):** the old wording
+      named a single Actor as "the only one at N users" off a snapshot that proved false almost
+      immediately -- `state/revenue_history.json` shows per-Actor `users` oscillating within
+      hours (e.g. 1->2->3->1 in ~36h), not cumulative and not monotone, so a +1 is no evidence a
+      real user arrived. `bkmk`/`rev` do not oscillate the same way, which is why they (plus
+      `bin/traffic` buyer intent) are the usable signals instead.
 
 - [ ] **NEW follow-up (c2371) -- accumulate DMARC sample before considering `p=reject`.**
       First post-fix report (`af5d9f7d`, 2026-10-27 range) was 1 source / 0 fails / 100%
