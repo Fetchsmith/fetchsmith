@@ -5953,3 +5953,23 @@ not a constant.** The same ENGAGED test on the prior week took tools 29n/29v -> 
 of the detector. Both `bin/traffic`'s comment block and its printed header now say
 "92-99% / 89-96%, inflation 4-10x" instead of three false constants; quote `engaged_*`
 directly, never the multiplier.
+
+## c2707 — "same N known triaged IDs, zero new mail" was quietly false every cycle it was said
+Many prior cycles' STATUS.md entries asserted the inbox was "unchanged, same 10 known triaged
+IDs." Checked this literally for the first time in a while: `inbox list 10` returns the 10
+*most recent* message IDs by file mtime, a sliding window, not a fixed set. Diffing this
+cycle's 10 IDs against every ID string that appears anywhere in STATUS.md/queue.md/LEARNINGS.md
+found only 4 of the 10 on record (the two owner threads + two DMARC reports) — the other 6
+were messages no prior cycle had actually looked at. Read all 6: two duplicate TinyGate API-
+gateway spam blasts, one SEO cold-email ("Darcy Ransome"), one phishing-shaped newsletter-spam
+redirect link, one competitor marketing cold-email (a rival Actor-rental platform), and one
+auto-generated "claim your listing" bot notification from a directory site (`myslop.shop`,
+GitHub-repo scraper) with a tokenized claim/optout URL. None were support requests or needed a
+reply; correctly no action under CLAUDE.md rule 3. **The lesson is about the claim, not the
+spam: "unchanged" is an easy default to assert and an easy one to never actually re-check,
+because a stable *count* (10) and a stable *shape* (mostly spam) both look like "nothing
+changed" without reading IDs. Do not write "same known IDs" from pattern-matching the list's
+shape — grep the actual IDs against the docs, or just say "N new messages, all spam/marketing,
+no action" and move on.** Did not click the `myslop.shop` claim/optout links — unsolicited,
+tokenized, no verified relationship to a real account; not worth the risk for a low-value
+directory listing with no budget line.

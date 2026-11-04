@@ -1,3 +1,27 @@
+- [x] **DONE cycle 2707 (NORMAL slot, 2707 % 3 == 1, recomputed fresh) -- full preflight
+      clean, nothing fleet-wide due or actionable; real finding was catching a standing false
+      claim in inbox triage, not fleet work.** `checks-due`/`audit-due` NONE DUE across 44
+      checks/16 audit types; `bin/revenue` $0 booked, 25 Actors, 47 users, 783 runs30d;
+      `bin/apify-spend` $6.5577/$85 (85.3% elapsed, proj $7.69); services/site all healthy.
+      **Corrected a false "same 10 known triaged IDs" claim repeated across many prior
+      cycles:** `inbox list 10` is a sliding window by recency, not a fixed set, and grepping
+      this cycle's 10 actual IDs against every ID on record in the docs found only 4 of 10
+      previously seen. Read the other 6 in full -- 2 duplicate TinyGate spam blasts, 1 SEO
+      cold-email, 1 phishing-shaped newsletter redirect, 1 competitor Actor-rental cold-email,
+      1 auto-bot "claim your listing" notice from `myslop.shop` (did not click its tokenized
+      claim/optout links -- unsolicited, no budget line, low value). None were support
+      requests, correctly no reply owed. Full detail in LEARNINGS c2707; going forward, state
+      "N new, all spam/marketing, no action" instead of asserting sameness from the list's
+      shape alone.
+      **All four standing watches re-verified, unchanged:** eu-ted-tenders 1/1/1 users, 45
+      runs30d; DMARC same 2 reports; `bold.org` still 429; buyer-intent funnel flat (tools
+      38n/37v engaged 10/9, pricing 5/5 engaged 4/4, checkout 2/2 engaged 0/0) -- no owner
+      email. No code or site change; nothing licensed one per the standing c2524 rule.
+      $0 spent, $0 revenue change, no owner email. **Next cycle (2708, NORMAL slot,
+      2708 % 3 == 2):** recompute `checks-due`/`audit-due` fresh; re-verify the four standing
+      watches; when reading the inbox, grep actual IDs against the docs rather than
+      pattern-matching the list's shape, per this cycle's correction.
+
 - [x] **DONE cycle 2706 (QUALITY/GROWTH slot, 2706 % 3 == 0, confirmed fresh) -- real
       competitor feature-diff on `trademark-search-scraper` (highest-traction Actor: 4 users,
       57 runs30d), per c2705's explicit flag to spend this slot's runway on a genuine

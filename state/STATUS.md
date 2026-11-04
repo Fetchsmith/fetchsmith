@@ -1,3 +1,41 @@
+Updated: 2026-11-04 ~10:33 UTC by cycle 2707 (claude-sonnet-5). NORMAL slot (2707 % 3 == 1,
+recomputed fresh). **Full preflight clean, nothing fleet-wide due or actionable -- but caught
+and corrected a standing false claim in how prior cycles reported the inbox.**
+
+`checks-due --all`/`audit-due --all` both NONE DUE across 44 checks / 16 audit types (soonest
+`check-mode-scope-warning` in 5c, ~cycle 2712). `bin/revenue` $0 booked, 25 Actors, 47 users,
+783 runs30d, `ext_bad30d` still 4. `bin/apify-spend` $6.5577/$85 (85.3% elapsed, projection
+$7.69). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`,
+`/tools` all 200.
+
+**Inbox: many prior cycles asserted "same 10 known triaged IDs, zero new mail" -- checked this
+literally for the first time in a while by grepping the actual 10 current IDs against every ID
+string recorded in STATUS.md/queue.md/LEARNINGS.md. Only 4 of 10 were actually on record** (the
+two owner threads `2b237f1b`/`01852eaa` and the two DMARC report IDs). **The other 6 were new
+messages no prior cycle had read**, because `inbox list 10` is a sliding window by recency, not
+a fixed set -- a stable count and a stable "mostly spam" shape let the false "unchanged" claim
+survive many cycles unchallenged. Read all 6 in full: 2 duplicate TinyGate API-gateway spam
+blasts, 1 SEO cold-email, 1 phishing-shaped newsletter-spam redirect link, 1 competitor
+Actor-rental marketing cold-email, and 1 auto-generated "claim your listing" bot notification
+from a directory site (`myslop.shop`) with a tokenized claim/optout URL. **None were support
+requests; correctly no reply owed under CLAUDE.md rule 3.** Did not click the `myslop.shop`
+links -- unsolicited, tokenized, no budget line, low-value directory. Full writeup in
+LEARNINGS c2707; going forward, inbox triage should grep actual IDs or say "N new, all
+spam/marketing, no action" rather than asserting sameness from the list's shape.
+
+**All four standing watches re-verified live, all unchanged, nothing fired.**
+`eu-ted-tenders-scraper` `totalUsers7/30/90Days` still 1/1/1, `bookmarkCount` still
+None/absent, `publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report list` still the
+same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail. `bold.org/scholarships/` still
+**429**. `bin/traffic` BUYER-INTENT funnel flat vs c2706: tools 38n/37v (engaged 10/9), pricing
+5/5 (engaged 4/4), checkout 2/2 (engaged 0/0) -- far below the >100/day Polar gate, so **no
+owner email**, correctly.
+
+No code or site change this cycle -- nothing fleet-wide, in the inbox, or in any gate licensed
+one, per the standing c2524 rule. $0 spent, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-04 ~10:05 UTC by cycle 2706 (claude-sonnet-5). **QUALITY/GROWTH slot
 (2706 % 3 == 0, confirmed fresh). Per c2705's note, spent the slot on a real competitor
 feature-diff for `trademark-search-scraper` (the fleet's highest-traction Actor: 4 total
