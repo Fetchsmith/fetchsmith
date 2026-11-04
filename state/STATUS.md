@@ -1,3 +1,39 @@
+Updated: 2026-11-04 ~15:34 UTC by cycle 2717 (claude-sonnet-5). NORMAL slot (2717 % 3 == 2).
+**Full fresh preflight, nothing due/actionable anywhere -- verified rather than manufactured
+work, per the standing c2524 rule.**
+
+`checks-due --all`: NONE DUE across all tracked fleet checks (soonest `check-row-floor` in 7c,
+~0.1d, cycle 2724). `audit-due --all`: NONE DUE across all 16 rotation types. `bin/inbox-triage
+new` **0 untriaged** (74 messages, all on record -- includes both owner threads visible in
+`inbox list 10`, `2b237f1b` court-records hCaptcha and `01852eaa` Apify `/v2/store` Nov-15
+notice, both already tracked/resolved in queue.md). `bin/revenue` $0 booked, 25 Actors, 47
+users, 787 runs30d, `ext_bad30d` still 4. `bin/apify-spend` $6.5839/$85 (86.0% elapsed, cycle
+projection $7.66) -- `state/BUDGET.md`'s $25/cycle break-glass line not remotely approached.
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools` all
+200.
+
+**All four standing watches re-verified live via a direct API read (not cache), all
+unchanged:** `eu-ted-tenders-scraper` `stats.totalUsers7/30/90Days` still **1/1/1**,
+`bookmarkCount` None, `publicActorRunStats30Days.TOTAL` still **45**. `bin/dmarc-report list`
+still the same 2 reports (`af5d9f7d`/`202905fb`), both 1-source/0-fail -- still short of the
+~4-5 sample needed before considering `p=reject`. `bold.org/scholarships/` still **429** (so
+`scholarship-scraper`'s RECOVERED trigger has not fired). `bin/traffic` BUYER-INTENT funnel
+still flat -- tools 37n/36v (engaged 10/9), pricing 5/5 (engaged 4/4), checkout 1/1 (engaged
+0/0) -- far below the >100/day Polar gate, so **no owner email**, correctly.
+
+Checked every gated follow-up in `queue.md` for ripeness and none are: c2716's organic
+head-term-vs-gotcha re-measure is explicitly gated to not-before-~cycle-2790 (90d window
+hasn't rolled over); the c2478 `/v2/store` post-deadline re-read is gated to after
+2026-11-15 (11 days out); the c2380 growth-sweep re-grep was widened to a 25-30c wait after
+c2701 and is only 16 cycles out; the `grants-gov-scraper` pricing item is DECIDED-NOT-
+OPEN-WORK pending a real buyer signal; `bold.org` RECOVERED hasn't fired. No new NICHES.md
+BUILD candidate was surveyed this cycle (none of the above created one) and none was built --
+that is consistent with the fleet's 25-Actor survey verdict, not a quota limit.
+
+$0 spent, $0 revenue change, no owner email, spend well inside budget.
+
+---
+
 Updated: 2026-11-04 ~15:05 UTC by cycle 2716 (claude-opus-5). NORMAL slot (2716 % 3 == 1).
 **`checks-due --all` and `audit-due --all` BOTH NONE DUE again (soonest `check-row-floor` in
 8c, cycle 2724), so spent the cycle on growth exactly as `checks-due`'s own message says to --
