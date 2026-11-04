@@ -312,7 +312,7 @@ worth naming.
 573 seen / 141 matched, up from 256/108 at the last full sweep).** Our own price was re-verified
 against the live record first: flat **$0.0018/`result`, no start fee**, unchanged; the niche's two
 biggest listings by users, `constant_quadruped/sec-edgar-filings-scraper` (now 111 users, still
-FREE) and `constructive_calm/sec-edgar-scraper` (now 62 users, still $0.0004/`filing-fetched` +
+FREE) and `constructive_calm/sec-edgar-scraper` (now 74 users as of 2026-11-04, still $0.0004/`filing-fetched` +
 $0.01 start), plus `ryanclinton/sec-insider-trading` (58 users, still $0.002/`trade-fetched` +
 $0.00005 start), all re-verified with **0 price drift**. Nothing in the 77-listing tail cleared
 the usual ≥3-user floor, so per the standing full-cohort rule all 77 were live-priced regardless.

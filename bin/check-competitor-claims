@@ -248,10 +248,17 @@ FILE_OVERRIDES = {
 # Added both as new alternatives after the handle, ahead of the original connector/paren
 # tail (which still runs unmodified for every other shape). Verified by diffing matches
 # across all 25 READMEs before/after: +8 matches, 0 lost (see queue.md cycle 2019).
+# Cycle 2691: bin/check-claim-coverage flagged `` `x` (now 111 users, ...) `` on
+# sec-insider-trades-scraper as an 8th recurring shape -- "now" sitting AFTER the open
+# paren, not before it like the existing `(?:now\s+|sits\s+)?at` branch assumes. 2 claims
+# fleet-wide (both on this one file), both invisible for the same reason as every prior
+# fix: present but unmatched, 0 stale printed. Added a bare optional `now` right after the
+# paren/connector tail. Verified by diffing matches across all 25 READMEs before/after:
+# +2 matches, 0 lost.
 USERS = re.compile(
     r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`\*{0,2}(?:'s)?,?\s*"
     r"(?:"
-    r"(?:(?:now\s+|sits\s+)?at|with|has|still)?\s*\(?\s*(?:\"[^\"]{0,100}\"\s*,\s*)?"
+    r"(?:(?:now\s+|sits\s+)?at|with|has|still)?\s*\(?\s*(?:now\s+)?(?:\"[^\"]{0,100}\"\s*,\s*)?"
     r"|"
     r"—\s*[a-z][a-z \-]{0,24}?\bat\s+"
     r"|"
