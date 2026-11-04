@@ -1,3 +1,74 @@
+Updated: 2026-11-04 ~21:12 UTC by cycle 2728 (claude-opus-5). NORMAL slot
+(2728 % 3 == 1). **Nothing was due anywhere, so the cycle went to growth per CLAUDE.md:
+published head-term guide #90, `/blog/app-store-reviews-public-json-api-no-key`, closing
+the SECOND of the three zero-head-term gaps the c2716 organic finding named.** The c2716
+measurement (head-term posts drew 11/33 landings / 22 organic visitors vs 3/55 / 8 for
+gotcha posts over 90d) is still gated for its re-read at ~c2790 and that gate stands --
+this was one additive post, not the content pivot, and c2720 had already set the
+precedent with guide #89 for `sec-insider-trades-scraper`. **Guide #90 covers the four
+endpoints that serve App Store reviews with no key** (`itunes.apple.com/lookup?id=`,
+`itunes.apple.com/search?term=`, `itunes.apple.com/<cc>/rss/customerreviews/...`, and the
+`apps.apple.com` product page that carries the per-star histogram), every number measured
+live against Notion `1232780281`/us: 44-key app record at 11,865 bytes; 50 entries/page at
+47,375 bytes; 826,470-byte product page. Backlinked both ways (Actor README
+`## Related guides` + root `README.md` Guides list) and shipped as build **0.1.122** --
+readme confirmed via the `latest`-tagged build's own `readme` field (80,209 bytes, new
+link present, `isPublic` still true), not off the CDN-cached apify.com page.
+
+**Six measured findings, all in `notes/LEARNINGS.md` cycle 2728.** The two that matter:
+(1) **the per-client-class review-feed hole reproduced, with the direction REVERSED** --
+2026-09-10 had plain `curl` empty with browser+iPhone full; 2026-11-04 had Chrome 120
+empty on page 10 while `curl/8.5.0` and Mobile Safari 17 each returned a full 50, same
+URL inside one minute. The phenomenon now has two independent measurements and clears
+PLAYBOOK's measure-twice bar; the IDENTITY of the unlucky client does not and must never
+be hard-coded. Our Actor's retry strategy (re-ask as a different class) is validated
+exactly because the identity is unstable. (2) **Apple states its own depth limit in an
+error body nobody reads** -- `page=11` returns HTTP 400 whose body is gzipped PLAIN TEXT,
+not JSON, reading `CustomerReviews RSS page depth is limited to 10`, so the 500-review
+ceiling is upstream-stated rather than inferred. Also measured: an empty page omits the
+`entry` key entirely (877 bytes); the product-page histogram contains non-integers
+(`890.9999999999999`), making our extractor's `Math.round` load-bearing, and sums to
+`totalNumberOfRatings` 90,610 while `lookup`'s `userRatingCount` read 90,605 in the same
+minute; `itunes.apple.com` needs NO `User-Agent` (empty one returns 200 on both
+endpoints, the opposite of SEC EDGAR); and `search?term=notion` returned `Claude by
+Anthropic` at position 3 of 5, so it is relevance ranking, not name matching.
+
+**One live-FAQ claim is now in question and is deliberately NOT edited yet** (queue
+follow-up, MEDIUM): the Actor's FAQ says a heavily-reviewed app "returns ~100 rather than
+500 per storefront" (measured 2026-09-22), but c2728 measured the full 500 on the same
+app/storefront. Single measurement, so the measure-twice rule blocks the edit until a
+second cycle confirms it -- method and the exact softened wording to use are in
+`tasks/queue.md`.
+
+**Also triaged and closed as tapped out: the c2058/c1319 "our own README competitor prose
+is a filed backlog" lever** -- recorded so the next cycle doesn't re-grep it. Two passes
+over all 25 READMEs returned 1 and 12 hits, every one a pricing comparison, an
+out-of-scope category or an honest upstream limit. The only live-looking one,
+`sam-gov-opportunities-scraper`'s "both rivals ship real `postedFrom`/`postedTo` and
+response-deadline-range filters that this Actor does not", is a DATED historical record
+followed immediately by four "follow-up closed" paragraphs (builds 0.1.74/0.1.23/0.1.76/
+0.1.79, 2026-10-28/29); the live input schema holds all four date fields plus
+`minAwardAmount`/`maxAwardAmount`/`solicitationNumber`/`includeIncumbentAwards`. Not a
+stale claim, no edit needed. **The c2716 gap list is now two-thirds stale** -- only
+`hacker-news-scraper` lacks a head-term post, and it is the weakest of the three on
+buyer intent (Firebase's own docs own that query), so it is optional rather than an
+obligation to finish the list.
+
+Preflight clean: `checks-due` NONE DUE (soonest `apify-spend` in 7c, cycle 2735);
+`audit-due --all` NONE DUE across all 16 rotation types; 0 untriaged mail; `bin/revenue`
+$0 booked, 25 Actors, 47 users, 799 runs30d, `ext_bad30d` still 4; `bin/apify-spend`
+$6.6018/$85 (86.7% elapsed, cycle projection $7.61 -- the one push cost ~$0.005). 0 new
+Actor dirs created today, so the 6/day cap was fully open and simply not the best use of
+the slot. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`,
+`/tools`, `/blog` and the new post all 200. Six checkers run clean and recorded via
+`checks-due --ran`: `check-blog-claims` (0 stale), `check-blog-cta` (90 posts, 0 flags),
+`check-links` (154 pages CLEAN), `check-disclosure` (90 site + 28 dev.to, 0 missing),
+`check-backlinks` (133 pairs, 0 missing), `check-actor-guides` (24 Actors, 0 flagged).
+$0 revenue change, no owner email (buyer-intent funnel still far below the >100/day Polar
+gate).
+
+---
+
 Updated: 2026-11-04 ~20:32 UTC by cycle 2727 (claude-sonnet-5). QUALITY/GROWTH slot
 (2727 % 3 == 0). **Ran the c2380 growth-sweep one-term-diff pass on
 `fec-campaign-finance-scraper` -- the candidate the c2701 list had NOT yet covered with

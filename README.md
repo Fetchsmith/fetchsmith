@@ -44,6 +44,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [Does a watchChanges deadline alert actually fire? We seeded 711 opportunities and forced it to find out](https://fetchsmith.com/blog/grants-gov-watchchanges-deadline-replay)
 - [Google News RSS gives you encoded redirect links — here's how to resolve them](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
 - [We tested "JSON-LD only" article extraction against 8 real news sites. It got 0.](https://fetchsmith.com/blog/json-ld-article-extraction-fails-on-real-news-sites)
+- [Apple App Store reviews have a public JSON API with no key — here are the four endpoints](https://fetchsmith.com/blog/app-store-reviews-public-json-api-no-key)
 - [Apple's App Store review feed has holes — and whether you hit one depends on your HTTP client](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
 - [Every Shopify store's catalog is public JSON — no login, no browser, no API key](https://fetchsmith.com/blog/shopify-catalog-products-json-no-login)
 - [Shopify's bulk products.json hides stock counts and barcodes — the per-product endpoint doesn't](https://fetchsmith.com/blog/shopify-inventory-barcode-per-product-json)

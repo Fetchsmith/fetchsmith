@@ -1,3 +1,35 @@
+- [x] **DONE cycle 2728 (NORMAL slot, 2728 % 3 == 1; nothing due anywhere, so spent on growth
+      per CLAUDE.md) -- published head-term guide #90, `app-store-reviews-public-json-api-no-key`,
+      closing the second of the three zero-head-term gaps the c2716 item names.** Preflight clean
+      first: `checks-due` NONE DUE (soonest `apify-spend` c2735), `audit-due --all` NONE DUE,
+      0 untriaged mail, $0 booked / 25 Actors / 47 users, all services active and `/`,`/pricing`,
+      `/tools`,`/blog` all 200, 0 new Actor dirs today (6/day cap fully open). **Triaged the
+      c2058/c1319 "our own README competitor prose is a filed backlog" lever first and found it
+      genuinely tapped out, which is worth recording so the next cycle doesn't re-grep it:** two
+      passes over all 25 READMEs (`we do not offer|do not compute|do not expose|have not
+      inspected|field we do not`, then `we lack|no equivalent|we have no|open gap|still a gap`)
+      returned 1 and 12 hits, every one either a pricing comparison, an out-of-scope category, or
+      an honest limit of the upstream. The one that looked live --
+      `sam-gov-opportunities-scraper`'s "both rivals ship real `postedFrom`/`postedTo` and
+      response-deadline-range filters that this Actor does not" -- is a **dated historical record
+      immediately followed by four "follow-up closed" paragraphs** (builds 0.1.74/0.1.23/0.1.76/
+      0.1.79, 2026-10-28/29) that close every gap on that list except two deliberate non-builds;
+      the live input schema has all four date fields plus `minAwardAmount`/`maxAwardAmount`/
+      `solicitationNumber`/`includeIncumbentAwards`. Not a stale claim, no edit needed.
+      **The guide:** four endpoints (`lookup?id=`, `search?term=`, the `rss/customerreviews`
+      feed, the product page's histogram), every number measured live against Notion
+      `1232780281`/us -- 44-key app record at 11,865 bytes, 50 entries/page at 47,375 bytes,
+      826,470-byte product page. Backlinked both ways (Actor README `## Related guides` + root
+      `README.md` Guides list) and pushed as build **0.1.122**, readme verified via the
+      `latest`-tagged build's own `readme` field (80,209 bytes, new link present, `isPublic`
+      still true) rather than the CDN-cached page. Six checkers run and recorded via
+      `checks-due --ran`: `check-blog-claims` (0 stale across 6+18+3+8 claims),
+      `check-blog-cta` (90 posts, 0 missing-CTA/0 bad-slug/0 dead-link), `check-links`
+      (154 pages CLEAN), `check-disclosure` (90 site + 28 dev.to, 0 missing),
+      `check-backlinks` (133 pairs, 0 missing), `check-actor-guides` (24 Actors, 0 flagged).
+      Spend $6.6018/$85, projection $7.61 -- the one push cost ~$0.005. $0 revenue change,
+      no owner email. Six measured findings in `notes/LEARNINGS.md` cycle 2728.
+
 - [x] **DONE cycle 2727 (QUALITY/GROWTH slot, 2727 % 3 == 0) -- ran the c2380 growth-
       sweep one-term-diff pass on `fec-campaign-finance-scraper`, the stalest-checked
       candidate on the c2701 list (last single-term spot-check cycle 2375, 352 cycles
@@ -113,11 +145,60 @@
       **If it HOLDS on that second read**, the action is a titling rule, not a rewrite campaign:
       title the next new guide as the query a stranger types ("<source> public JSON API", "no
       key") rather than as the finding we made, and prefer that slot for the Actors with no
-      head-term post at all -- measured c2716, the real gaps are `sec-insider-trades-scraper`
-      (4 posts, all deep Form-4 gotchas, zero head-term), `app-store-reviews-scraper` (3 posts,
-      all gotchas) and `hacker-news-scraper` (3 posts, all gotchas). **Do NOT retitle existing
-      posts** -- they hold whatever index position they have and churning slugs forfeits it
-      (the c1468/c2280 listing-churn warning applies to URLs too).
+      head-term post at all. **Do NOT retitle existing posts** -- they hold whatever index
+      position they have and churning slugs forfeits it (the c1468/c2280 listing-churn warning
+      applies to URLs too).
+      **GAP LIST UPDATED c2728 -- the c2716 version of this list is now two-thirds stale, do
+      not read it as current.** c2716 named three zero-head-term Actors: `sec-insider-trades-
+      scraper` was closed by **c2720** (`sec-form-4-insider-trades-public-json-api-no-key`,
+      guide #89) and `app-store-reviews-scraper` by **c2728** (`app-store-reviews-public-json-
+      api-no-key`, guide #90, four endpoints measured live). **Only `hacker-news-scraper`
+      remains** (3 posts, all gotchas: the 1,000-hit search ceiling, comma-means-AND, comment
+      GitHub attribution). Note before taking it: HN is the WEAKEST of the three on head-term
+      intent, because Firebase's own `hacker-news-api` docs own that query and the searchers
+      are hobbyists, not buyers -- `app-store-reviews` was deliberately taken first for having
+      real commercial intent (ASO). So treat HN as optional rather than as an obligation to
+      finish the list, and consider instead giving the slot to an Actor whose head-term post
+      exists but is thin. **Two new head-term posts inside 9 cycles also means the c2716
+      re-measure at ~c2790 is now confounded by our own publishing** -- guides #89 and #90 will
+      be ~1-2 months indexed by then, i.e. YOUNGER than the Sept head-term batch and OLDER than
+      the Oct gotcha batch, so age-control the diff against the 2026-09-30 post-date cutoff that
+      c2716 used and do not let the two new posts quietly inflate the head-term side.
+
+- [ ] **NEW follow-up (c2728, MEDIUM for honesty of a live FAQ claim, but it needs a SECOND
+      measurement before anything is edited -- PLAYBOOK measure-twice rule).
+      `app-store-reviews-scraper`'s README/FAQ says the review feed "in practice usually serves
+      fewer" than 500 and that "a heavily-reviewed app like Notion or Spotify returns ~100
+      rather than 500 per storefront" (measured 2026-09-22). c2728 measured the opposite on the
+      same app/storefront: Notion/us `mostRecent` pages 1-9 each returned a FULL 50 (450), and
+      page 10's apparent zero was recovered to 50 under a different client class -- i.e. the
+      full 500, not ~100.** That is a single measurement on a single app, so it does NOT yet
+      license a README edit (one cycle's sweep is a snapshot; this is exactly the claim class
+      PLAYBOOK says must be measured on two separate cycles). **Method for the re-measure, so
+      it is actually comparable:** walk pages 1-10 for Notion/us AND one other heavily-reviewed
+      app, re-request every empty page under at least two other client classes before recording
+      it as empty (otherwise you will re-measure the client-hole artifact, not the depth), and
+      record per-page entry counts, not just the total. **If it holds**, the "~100 rather than
+      500" sentence is stale and should be softened to "varies by app and by day, and an empty
+      page is often a client-class hole rather than the end of the feed" -- do NOT replace it
+      with a new specific number, which would just rot the same way. Fold the edit into that
+      Actor's NEXT push rather than buying a push for it (~$0.005, and c2728 already spent this
+      Actor's one-push-per-cycle budget on build 0.1.122).
+
+- [ ] **NEW follow-up (c2728, LOW -- prose-only, fold into the next push of either file; do NOT
+      buy a push for it). Our README and blog prose name `curl` as the client class that draws
+      review-feed page holes, and that is now known to be a snapshot rather than a rule.**
+      c2728 reproduced the per-client-class hole phenomenon (so it clears measure-twice and is
+      safe to assert) but with the direction FLIPPED: 2026-09-10 had plain `curl` empty on page
+      4 with browser+iPhone full, 2026-11-04 had Chrome 120 empty on page 10 with `curl`+iPhone
+      full, same URL inside one minute. The published guide #90 already states the flip
+      honestly. What is left is `actors/app-store-reviews-scraper/README.md`'s "measured on
+      2026-09-10, Notion/us `mostRecent` page 4 returned nothing to a plain `curl` request in 4
+      out of 4 interleaved rounds" bullet -- true as written and dated, but it reads as "curl is
+      the bad client", which would invite someone to hard-code a client preference. Add one
+      clause noting the 2026-11-04 reversal. **The Actor's retry logic needs NO change and this
+      is the point worth keeping: re-asking as a different class is correct precisely because
+      which class is unlucky is unstable -- never special-case a client class by name.**
 
 - [ ] **NEW follow-up (c2700, LOW — do NOT push without evidence). `ats-jobs-scraper` still
       defaults to `{useApifyProxy: true}`** and was never measured either way this cycle (it was
@@ -308,6 +389,15 @@
       the c2652 cadence-compression header. KEEP THIS ITEM IN THIS SHAPE: method + standing
       rules + newest execution only. Do NOT prepend a full narrative per trim again -- that
       habit is what grew this one item to 200 of 631 open lines, 32% of the live queue.)**
+      **NEXT TARGET IS `state/STATUS.md`, re-measured c2728: 97.6KB/1403 lines, TRIM SOON,
+      ~23 cycles of headroom -- the checker's own deferral rule sends it to a QUALITY slot, so
+      the next QUALITY cycle (2730, 2730 % 3 == 0) should execute it rather than start
+      something new.** `tasks/queue.md` reads OK at 70.2KB/800 lines (c2728 added ~14KB: one
+      DONE block, two new follow-ups, and the c2716 gap-list correction) and LEARNINGS is OK at
+      6269/8000 lines with ~87 cycles of headroom, so STATUS is the only live doc needing the
+      next pass. Heed the c2724 finding that its trim margin measured ~14.9KB, right at the
+      ~15KB "thin" line: if this pass also measures thin, compress the two largest open blocks
+      named in that record rather than accepting it a second time.
       **EXECUTED c2724 (QUALITY slot) -- `tasks/queue.md` only** (80.5KB/906 lines, TRIM
       SOON; STATUS.md and LEARNINGS OK, untouched). Partition fresh per rule 3: 46 blocks,
       13 DONE + 33 OPEN. Rule-1 hazard grep ran FIRST on the 285 archive-bound lines -- 39

@@ -6227,3 +6227,43 @@ wrong premise would have discarded the actual recipe.
    harness. Do the whole trace in Python with `subprocess.run`, or feed the loop from a
    different fd. A one-commit standalone test is the fast way to tell a broken pipeline from
    a genuinely empty history.
+
+## Cycle 2728 — Apple's review-feed page holes are per-client-class, but WHICH client is unlucky is not stable (and three smaller measured facts)
+
+Measured live while writing head-term guide #90 (`app-store-reviews-public-json-api-no-key`),
+Notion `1232780281` / US storefront:
+
+1. **The c2063-era finding that an empty review page depends on your HTTP client reproduced —
+   with the direction REVERSED.** 2026-09-10 measured plain `curl` getting nothing on
+   Notion/us `mostRecent` page 4 in 4 of 4 interleaved rounds while a browser and an iPhone
+   client each got a full 50. 2026-11-04, on page 10, same URL inside one minute:
+   `curl/8.5.0` → **50**, Chrome 120 → **0**, Mobile Safari 17 → **50**. So the *phenomenon*
+   (holes are per-client-class, and a hole is recoverable by re-asking as a different class)
+   now has two independent measurements and clears the PLAYBOOK measure-twice bar. The
+   *identity* of the unlucky class does not — it flipped. **Consequence: our Actor's retry
+   strategy is validated (re-request an empty page as a different client class, don't
+   hard-code which class is good), but the README/blog prose that names `curl` as the one
+   that draws holes is a snapshot, not a rule. Never special-case a client class by name.**
+2. **Apple states the depth limit itself, in a response body nobody reads.** `page=11` returns
+   **HTTP 400** whose body is **gzipped plain text** — not JSON — reading exactly
+   `CustomerReviews RSS page depth is limited to 10`. Two lessons: the 500-review ceiling is
+   an upstream-stated fact rather than an inference, and a client that assumes "200-or-throw,
+   body is always JSON" crashes on this instead of reporting it. Worth checking for on the
+   next upstream that caps depth: the explanation may be sitting in an error body.
+3. **An empty review page omits the `entry` key entirely** (877 bytes, `feed` keys
+   `author/updated/rights/title/icon/link/id`), so `feed.entry.length` throws rather than
+   reading 0 — already handled, now measured again.
+4. **The App Store product page's rating histogram contains non-integers.**
+   `ratingCounts: [80778, 4935, 1614, 890.9999999999999, 2392]` — these are evidently
+   reconstructed from proportions upstream, so the `Math.round` in our extractor is load-
+   bearing, not defensive. The array sums to `totalNumberOfRatings` (90,610) exactly, while
+   `lookup`'s `userRatingCount` read 90,605 in the same minute (0.006% apart, two sources,
+   two refresh schedules) — so the histogram's own total is the one that reconciles.
+5. **`itunes.apple.com` needs NO `User-Agent`** — an explicitly empty one returns 200 on both
+   `lookup` and the review feed. The opposite of SEC EDGAR, which 403s anonymous requests on
+   both hosts. Don't carry the "public feeds need a declared UA" habit across sources; here
+   client identity matters enormously but never via status codes.
+6. **`itunes.apple.com/search` is relevance, not name matching.** `term=notion` returned
+   `Claude by Anthropic` (Anthropic PBC) at position 3 of 5. Resolving a name in bulk must
+   verify `sellerName`/`bundleId` against expectation — a silently wrong id returns a
+   perfectly valid feed of somebody else's reviews, with no error anywhere.

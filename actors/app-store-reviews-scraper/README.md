@@ -720,6 +720,7 @@ Apple exposes the most recent 500 reviews per app per country. For historical ar
 
 ## Related guides
 Engineering write-ups behind this Actor:
+- [Apple App Store reviews have a public JSON API with no key — here are the four endpoints](https://fetchsmith.com/blog/app-store-reviews-public-json-api-no-key) — the four URLs that do the whole job (metadata, name→id search, the review feed, the per-star histogram), each measured live, including the `HTTP 400` body in which Apple states the 10-page depth limit itself.
 - [Apple's review feed has holes, and whether you hit one depends on your HTTP client](https://fetchsmith.com/blog/apple-app-store-reviews-header-fingerprint)
 - [The App Store's per-star ratings breakdown isn't in any of Apple's APIs — it's in the page's JSON blob](https://fetchsmith.com/blog/app-store-per-star-ratings-breakdown)
 - [Four ways an invisible character makes a scraper return zero rows](https://fetchsmith.com/blog/invisible-characters-return-zero-rows)
