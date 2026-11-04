@@ -1,3 +1,52 @@
+## Cycle 2692 — a new undercutter in a niche whose price floor is already $0 is not a pricing signal; read the FLOOR before reading the DELTA
+
+c2691 did the right detection work and reached a true, alarming-sounding sentence: a rival
+previously ruled out as "dearer than us" (`transparent_meteorite/federal-grants-contracts`)
+retiered on 2026-10-30 and now undercuts `grants-gov-scraper`'s $0.0015 enriched rate from
+BRONZE up and its $0.0007 thin rate from GOLD up. It recorded the finding in the README (which
+the fleet guard requires) and stopped. The natural next move for the cycle that reads that
+sentence is to cut our price. **That would have been wrong, and the reason generalizes.**
+
+**The rule: when a rival is newly found to undercut us, price the NICHE FLOOR before pricing the
+DELTA.** The delta ("they are now $0.0009 cheaper at GOLD") is a comparison against ourselves and
+always reads as pressure. The floor ("the cheapest disclosed rival in this niche charges
+$0.00001/row, another charges $0.0002, and three are on Apify's FREE model with one carrying no
+`pricingInfos` record at all") is a comparison against the market and tells you whether price is
+a lever you actually hold. On `grants-gov-scraper` the floor is effectively $0 — matching $0.0006
+would concede margin to land *above* six rivals we already disclose. The new undercutter was the
+9th-cheapest fact in its own paragraph; only its NEWNESS made it feel like the most important one.
+
+**Three corollaries, each cheap to check and each load-bearing here:**
+1. **Compare at the rung the buyer can SEE.** Apify's Store card shows the FREE rung. We win it
+   ($0.0015/$0.0007 vs their $0.002). Every rung where they beat us is reachable only by a buyer
+   who has already bought a paid Apify plan AND already chosen a vendor — i.e. downstream of
+   every constraint we actually have. A tiered rival's lower rungs are a real fact and a weak
+   signal; do not weight them like a headline price.
+2. **Credit the fees they charge and we do not.** This rival bills $0.00005/GB `apify-actor-start`
+   on top of every row; we bill no start fee at all. Our own sweeps routinely add a rival's start
+   fee to compute a crossover, then forget to count its ABSENCE on our side as our advantage.
+3. **An Apify price cut is one-way for 14 days** (an increase needs 14 days' advance notice,
+   LEARNINGS c2409), so with $0 booked a cut spends an irreversible concession to buy zero
+   information — elasticity is unmeasurable at 1 user. At 939-of-2471 fleet-wide rivals already
+   cheaper than us and $0 revenue, price is demonstrably not the binding constraint; discovery is
+   (cf. c2072's `totalUsers`-gating finding, and c1468/c2280 on reflexive listing edits).
+
+**Process lesson, separable from the pricing one: a cycle that flips a strategic VERDICT must
+record the DECISION, not just the finding.** c2691 left a true sentence with no disposition, so
+the question was live and re-litigable by every future cycle that read it — and the queue had no
+item to find it from. The fix is a closed, numbered "DECIDED, do not do X; reopen only on trigger
+Y; mechanics for X pre-written so you need not re-derive them" item. A recorded no-action with
+numbers is a deliverable; a finding without a disposition is a trap for the next cycle.
+
+**Also verified, so it does not get re-investigated: the fleet guard is NOT blind to this shape.**
+A tiered rival undercutting one of our FLAT-priced Actors sounds like a gap in the c1437 per-rung
+check, which gates on `if our_tiers`. It is not: `_unit_price.tiers_of` falls back to
+`{"FREE": p}` for an untiered event, and `cps.tier_price_at` treats a single-rung ladder as
+applying at every tier (a flat price does apply regardless of the buyer's plan). Fleet-wide run
+this cycle: 2346 tiered ladders checked at every rung, 0 undisclosed below the FREE rung, 0
+undisclosed anywhere. Note this is the mirror image of the c2464 concern about the per-niche
+`_batch_price_*.py` copies — there a scalar `OURS` over-flags; here the shared helper is correct.
+
 ## Cycle 2624 — a wrong failure MESSAGE is usually a wrong failure MODEL, and the model is where the lost revenue is
 
 `fda-recall-scraper` carried the cycle-837 "unconditional retry advice" defect: the watch-seed
