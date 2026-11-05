@@ -38,6 +38,40 @@
       (`fantastic-jobs/career-site-job-listing-api` 8067->9166, `jobo.world/ats-jobs-api` 769->890,
       `openclawai` 51->75). Do (a) first -- it is prose, not arithmetic, and needs no live lookup.
       One Actor per cycle, batched into ONE push.
+      **PARTIALLY DONE c2748 -- `app-store-reviews-scraper` is fully CLEAR (all 12 rows, both
+      classes, ONE push, build 0.1.124 verified live via the build's `actorDefinition.readme`).**
+      Covered: the (a) `gh0st1k` delisting (independently re-confirmed: 404 with and without a
+      token, `GET /v2/store?search=gh0st1k` -> `total: 0`, c2740 negative control run first) and
+      all 12 counts -- thewolves 2688->3,153, johnvc 550->647 (not 648; it churned between c2744
+      and today, so re-read rather than trusting the number written in this item), sourabhbgp
+      223->270 (BOTH places, :119 and the ":124 is 223 now" cross-reference), code-node-tools
+      226->252, apihq 32->38, automation-lab 27->32, tagadanar 6->8, lergassy 9->15 (BOTH places,
+      :466 and :653), agentsgearbox 2->1, brisaworks 2->3. `--only app-store-reviews-scraper`
+      now reads **47 claims, 0 stale, 0 unresolvable; 19 paragraphs, 0 undated**; the three
+      PLAYBOOK post-README-edit checks are clean fleet-wide (`check-readme-samples` 0 drift,
+      `check-comparison-breadth` 0 narrow, `check-expired-dates` 0 unresolved).
+      **Two prose fixes that were NOT in this item's scope but were forced by the new numbers --
+      expect the same shape on the next Actor:** (i) :152 said five listings sat "just below
+      `nexgendata`'s 32 users", but apihq at 38 is now ABOVE it, so the phrase needed an explicit
+      *at sweep time*; (ii) :653 justified our Gold+ rate by calling `lergassy` "the single
+      cheapest listing", which the later 2026-10-23 block had already falsified with
+      `apivault_labs` at $0.00002 -- rescoped to "the cheapest listing known at that date" with a
+      pointer, since that paragraph is a dated 2026-10-16 decision record, not a current claim.
+      **STILL OPEN, in the order worth doing (one Actor per cycle, ONE push each):**
+      `court-records-scraper` next -- it is the other class-(a) case (:240
+      `steadfetch/cendoj-jurisprudence-monitor` gone from the Store) and only ~4 counts, so it is
+      the cheapest full clear; then `ats-jobs-scraper` (~22, the big movers at :211/:213 are
+      inside superlative paragraphs and genuinely need hand-reading); then
+      `apple-podcasts-scraper` (~4, includes its own class-(a) line at :222,
+      `barefoot_grade/apple-podcasts-scraper`). Re-read each count live at edit time -- the
+      numbers in this item are c2744's and have already drifted once.
+      **Read the c2748 LEARNINGS entry before doing the two remaining class-(a) lines**: there are
+      two ways to settle a dead handle and they are not equivalent. Keeping the user count
+      adjacent to the handle plus the literal words `gone from the Store` is the fleet-standard
+      `DISCLOSED` path and keeps the handle monitored; moving the count away from the handle (what
+      c2748 did on `gh0st1k`) makes the checker stop parsing it as a claim at all -- truthful, and
+      why the count fell 48->47, but that handle will never be re-checked again. Either way do NOT
+      delete the bullet (house style: annotate the dated record, per `hacker-news-scraper:183`).
 
 - [ ] **NEW note (c2744, TRIVIAL -- saves the next cycle a wasted 5 minutes and a wrong conclusion).**
       `check-competitor-claims` makes one live API call per backticked rival handle and the READMEs

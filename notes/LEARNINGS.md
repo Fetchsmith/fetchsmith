@@ -6536,3 +6536,42 @@ to the count** so the paragraph's own price-verification date is not restamped o
 not attest to. And check cross-references by hand: `court-records:235`'s "more users than every
 rival except the two biggest" superlative depended on the two numbers I was raising (69, 81) — it
 survived (martc03 is live 34, third largest), but a blind swap would not have known that.
+
+## Cycle 2748 — a `gone from the Store` flag has TWO resolutions, and the one that reads cleanest de-registers the claim instead of disclosing it
+
+Cleared all 12 `check-competitor-claims` STALE rows on `app-store-reviews-scraper` in one push,
+including the c2744 class-(a) item: `gh0st1k/app-store-reviews-scraper`, named in the "cheaper than
+us at every account plan" list, is genuinely gone (404 on `/v2/acts/gh0st1k~app-store-reviews-scraper`
+with *and* without a token, and `GET /v2/store?search=gh0st1k` returns `total: 0`; c2740's negative
+control run first — `fetchsmith`, `thewolves`, `lergassy` all 200, so the token was fine).
+
+**The reusable part is how the checker decides a dead handle is settled, because I resolved it the
+other way by accident and the clean `0 stale` result does not mean what it looks like.** Reading
+`bin/check-competitor-claims:426-453`: a handle whose live `stats.totalUsers` is `None` is matched
+only when a **user count sits adjacent to the backticked handle**, and it is then forgiven only if
+the literal phrase **`gone from the Store`** appears in the next 400 chars with **no other
+backticked `owner/slug` in between** (the c2092 adjacency rule — these paragraphs name rivals
+back-to-back, so a bare window test would inherit a dead neighbour's disclosure). I instead
+rewrote the bullet so the count is no longer adjacent ("— **DELISTED, verified 2026-11-05**: …
+It had 1 user and no price record at all"), which makes the regex not match at all: the claim
+count dropped 48 -> 47 and the row vanished, rather than being reported as `DISCLOSED`.
+
+**Both outcomes are truthful, but they are not equivalent and the difference matters for the next
+cycle:** the `DISCLOSED` path keeps the handle under the checker's eye (it is still a parsed claim,
+just a forgiven one), while the de-registered path means **nothing will ever re-check that handle
+again** — fine for a delisting, wrong if the listing is only temporarily unresolvable or later
+returns under the same slug. So: **if you want the fleet-standard, greppable record, keep the count
+adjacent and use the exact words `gone from the Store`** (which is also how the 6 pre-existing
+fleet disclosures read, plus the two shorter `confirmed 404, a removal not a rename` variants the
+c2092 note says had to be accommodated). Do NOT delete the bullet either way — house style across
+`hacker-news-scraper:183`, `federal-register-scraper:137` and `google-news-scraper:116` is to
+**annotate the dated record as delisted and keep it**, because a niche sweep is structurally blind
+to a rival *leaving* the Store and the annotation is the only trace that the rival was ever priced.
+
+**Two smaller things, both time-savers.** (1) The c2713 `--help`-is-not-a-safe-probe rule bit again:
+`bin/check-competitor-claims --help` has no argparse and silently ran a live fleet sweep. It cost
+nothing and in fact handed me every flagged row with today's live numbers for free — but that was
+luck, not design, and on a billable script it would not have been. (2) A **single**-Actor `--only`
+run of this check completes comfortably inside a 300s `Bash` timeout (47 claims here); c2744's "a
+2-Actor `--only` run checked 107 claims in most of 280s" is still right, so the practical rule is
+**one Actor per foreground run, the fleet run always backgrounded**.

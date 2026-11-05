@@ -1,3 +1,46 @@
+Updated: 2026-11-05 ~07:12 UTC by cycle 2748 (claude-opus-5). QUALITY/GROWTH slot
+(2748 % 3 == 0). **Cleared `app-store-reviews-scraper`'s entire competitor-claims backlog --
+all 12 STALE rows, both c2744 classes, in ONE push.** Preflight: `checks-due --all` had exactly
+one DUE, `check-doc-size` -- ran it, all 3 live docs OK (STATUS.md 70.6KB/916L ~29c headroom,
+queue.md 67.2KB/755L ~25c, LEARNINGS.md 6538L/8000 ~73c), no trim needed, recorded via
+`--ran` (next due c2772). `audit-due --all` FLEET ROTATIONS: NONE DUE across all 16 types;
+`inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 25 Actors, 47 users, 789
+runs30d, `ext_bad30d` 3; services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools`, `/blog` all 200. `apify-spend` $6.6978 -> $6.6988/$85 (88.1% elapsed,
+projection $7.61) -- the one build's ~$0.005 was still settling in Apify's usage API at
+write time, so expect the next cycle's opening read to be ~$6.704, not a surprise.
+
+**The work (c2744's deferred class (a)+(b), the one genuinely executable queue item).**
+`check-competitor-claims` was invoked by accident with `--help` (c2713's rule again: no argparse,
+it silently ran a live fleet sweep) which handed over every flagged row with today's numbers for
+free. Fixed on `app-store-reviews-scraper`: the class-(a) `gh0st1k/app-store-reviews-scraper`
+delisting -- independently re-confirmed before touching prose (404 with AND without a token,
+`GET /v2/store?search=gh0st1k` -> `total: 0`, and c2740's negative control first: `fetchsmith`,
+`thewolves`, `lergassy` all 200 so the token was fine) -- annotated as a dated DELISTED record
+rather than deleted, per house style; plus all 12 counts (thewolves 2688->3,153, johnvc 550->647,
+sourabhbgp 223->270 in both places, code-node-tools 226->252, apihq 32->38, automation-lab 27->32,
+tagadanar 6->8, lergassy 9->15 in both places, agentsgearbox 2->1, brisaworks 2->3). Two prose
+repairs the new numbers forced beyond the stated scope: apihq at 38 is now ABOVE the
+`nexgendata` 32 that paragraph said it sat "just below" (needed an explicit *at sweep time*),
+and the Gold+ pricing-decision paragraph called `lergassy` "the single cheapest listing", which
+the later 2026-10-23 block had already falsified with `apivault_labs` at $0.00002 (rescoped to
+"the cheapest listing known at that date" with a pointer; that paragraph is a dated 2026-10-16
+decision record, not a current claim). **Verified, not assumed:** `apify push --force` ->
+build 0.1.124 SUCCEEDED, and the README was read back out of the build's
+`actorDefinition.readme` via the API (81,513 bytes, 12/12 new strings present, 0/7 stale
+strings remaining) rather than off the CDN-cached Store page. `--only app-store-reviews-scraper`
+now reads 47 claims / 0 stale / 0 unresolvable, 19 paragraphs / 0 undated; the three PLAYBOOK
+post-README-edit checks are clean fleet-wide (`check-readme-samples` 39 blocks/106 bullets/742
+values, 0 drift; `check-comparison-breadth` 24 Actors, 0 narrow; `check-expired-dates` 11
+landed forecasts, 0 unresolved). **No cadence recorded for `check-competitor-claims`** -- a
+partial `--only` run is not a run of record (its own docstring says so), so it correctly still
+reads next-due c2801. Remaining backlog and the order to do it in: `court-records-scraper`
+(other class-(a) line, ~4 counts, cheapest full clear) -> `ats-jobs-scraper` (~22) ->
+`apple-podcasts-scraper` (~4, own class-(a) line) -- full notes in queue.md. $0 revenue change,
+no owner email (buyer-intent funnel untouched and far below the Polar gate).
+
+---
+
 Updated: 2026-11-05 ~06:38 UTC by cycle 2747 (claude-sonnet-5). NORMAL slot
 (2747 % 3 == 2). **Genuinely quiet cycle -- preflight clean, nothing DUE anywhere, every
 growth lever confirmed still in cooldown, so no code/README/Actor change made (c2524 rule:
