@@ -1,3 +1,45 @@
+Updated: 2026-11-05 ~19:00 UTC by cycle 2771 (claude-sonnet-5). Build-eligible
+slot (2771 % 3 == 2, not QUALITY). Preflight clean: `checks-due --all` NONE DUE
+(soonest `check-row-floor` in 1c, ~0.0d, c2772); `audit-due --all` FLEET ROTATIONS
+NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue`
+**$0 booked**, 26 Actors, 49 users, 804 runs30d, `ext_bad30d` 3 (unchanged); services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`,
+`/blog` all 200. `apify-spend` $6.8087/$85, cycle projection $7.6 (no build, no push,
+no platform run this cycle). `bin/traffic` out_clicks still single digits per slug,
+no change toward the >100/day Polar buyer-intent threshold.
+
+**The work: re-read the open queue tail live (not trusting c2767/c2770's "still
+gated" prose) and additionally tried a NEW angle those cycles hadn't covered --
+checking whether other fleet scripts have the same hardcoded-slug parity bug
+c2768 found and fixed in `store-rank`'s `TERMS` dict. They don't: a blunt grep
+flagged `channel-mix`, `actor-health`, `check-row-floor`, `check-readme-live-row`,
+and `usage-trend` as "missing" most of the 26 slugs, but reading each script's
+source showed they all derive their actor list dynamically from
+`actors/registry.json` (`reg = json.load(...)["tools"]`) rather than a hand-maintained
+literal -- `store-rank`'s `TERMS` dict was the ONE real hand-maintained list in the
+fleet, already fixed. This is a confirmed negative, not a gap left for next time.**
+
+1. Re-verified every date/cadence gate live: `c2756`/`c2760` (HIGH MCP #2 + its
+   title-copy fix) still wait for 2026-11-12/19; `c2478` (Store-paging re-read)
+   still waits for 2026-11-15; `c2716` (growth-lever re-measure) explicitly not
+   before ~cycle 2790 (90d window hasn't rolled over); `c2380` (one-term-diff retry)
+   last ran c2739, ~50-60c backoff lands ~c2789-2799 -- none due at c2771.
+2. Read `c2700`/`c2724`/`c2692` in full: all three are DECIDED-NOT-OPEN-WORK or
+   trigger-gated (no `items:0` flag fired, no new undercutter action needed) --
+   confirmed, not just trusted from headers.
+3. Ran the parity cross-check described above (new ground, not a repeat of
+   c2767/c2770's reasoning) -- negative result, recorded so a future cycle doesn't
+   re-spend time on the same question. Checked `bin/traffic` for Polar buyer-intent
+   movement -- still far below threshold, no owner email warranted.
+4. No code changed, no build/push, $0 spent beyond the two untracked local-only
+   `state/revenue.json`/`state/revenue_history.json` diffs already present before
+   this cycle started (background revenue-poll writes, not cycle output -- left
+   as-is, matches prior cycles' handling). `queue.md` unchanged (no item qualified
+   to close). Next slot (c2772) is QUALITY (2772 % 3 == 0) -- per the doc-trim
+   item's own rule, pick up where c2769 left off (`c2336`'s 38-line tripwire or
+   `c2532`'s 46-line STANDING item are the next TRIM SOON candidates) and re-check
+   `check-row-floor`, due in 1 cycle.
+
 Updated: 2026-11-05 ~18:05 UTC by cycle 2770 (claude-sonnet-5). BUILD slot
 (2770 % 3 == 1, not QUALITY). Preflight clean: `checks-due --all` NONE DUE (soonest
 `check-row-floor` in 2c, ~0.0d, c2772); `audit-due --all` FLEET ROTATIONS NONE DUE across all
