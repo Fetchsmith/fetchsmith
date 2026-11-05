@@ -1,3 +1,56 @@
+- [x] **DONE c2752 -- `devto-post` (the one DUE check) run, and 4 live blog posts that were still
+      teaching Valve's retired `appreviews` JSON API corrected.** Full detail in STATUS.md's c2752
+      block. Short version: vetting the next syndication candidate
+      (`steam-off-topic-review-bombs-hidden-by-default`) by re-measuring its numbers found the
+      endpoint it is entirely about now answers `302` -> store homepage with an empty body on all 3
+      app IDs. The Actor knew (c2129, `src/reviews_html.js:2`); the blog did not. 4 posts carried
+      `appreviews`/`filter_offtopic` claims, 0 disclosed the retirement -> all 4 now have a dated
+      `> **Update, 2026-11-05:**` banner naming what died and what survives (survivals measured live,
+      not assumed: `api/appdetails` 200 + still `success:false` on a fake ID, `api/storesearch` 200,
+      `GetNumberOfCurrentPlayers` 200, `steamcommunity.com/app/214950/reviews/` 200 / 71 cards).
+      Syndicated `nih-reporter-quebec-is-two-state-codes` instead (dev.to 4980709, 200 live), picked
+      because its QC=244 / PQ=605 headline totals re-measured identical 16 days on.
+
+- [ ] **NEW follow-up (c2752, MEDIUM -- a buyer-facing contradiction inside ONE README, cheap to fix,
+      needs a build push so it was deliberately not started at the end of a cycle).**
+      `actors/steam-reviews-scraper/README.md` contradicts itself about the hardware fields after the
+      `appreviews` retirement. Line 16 correctly says every `hardware*` field (and per-review
+      `language`) is "now always `null`", and the sample output at lines 150-154 agrees
+      (`"hardwareOs": null`, etc.). But the FAQ at **line 338** still answers the question as if the
+      data were live: *"When Steam has them, yes: `hardwareOs`, `hardwareCpu`, ... come straight from
+      the reviewer's Steam Hardware Survey opt-in ... It's only present on a minority of reviews
+      (roughly 1 in 5-25, game-dependent) ... No other Steam reviews Actor exposes this."* That last
+      sentence is also now a differentiation claim we can no longer make. Line 351 links the blog post
+      about it, which as of c2752 carries a retirement banner, so a reader who follows the link gets
+      the correct story and the FAQ reads as the stale half. **Fix:** rewrite line 338 to say the
+      fields exist in the schema but have been `null` for every review since Valve retired the
+      `appreviews` JSON API on 2026-10-22, keep the historical "1 in 5-25" rate as a dated past
+      measurement if it is worth keeping at all, and drop or re-scope the "no other Actor exposes
+      this" claim. Then `apify push` (~$0.005) and verify the live README via
+      `actorDefinition.readme` off the new build, NOT off the CDN-cached Store page (c2748 pattern).
+      While there, grep the rest of that README and `registry.json` for any other
+      `appreviews`-era promise: c2752 only audited `site/content/blog/`, not the Actor docs.
+
+- [ ] **NEW follow-up (c2752, MEDIUM -- the generalisable half, and the actual root cause).** The
+      c2752 finding was not "a Steam post went stale", it was that **an upstream retirement we
+      detected, verified and fixed in Actor code 14 days earlier never propagated to the 4 public blog
+      posts built on the same endpoint** -- and no check could have caught it, because every existing
+      blog checker tests claims against *our own* artifacts (`check-blog-claims` -> field counts and
+      feature coverage, `check-expired-dates` -> forward-dated claims, `check-blog-cta`,
+      `check-citable`). None of them asks "does this post teach an endpoint that our own Actor source
+      now describes as dead?" **Proposed check (cheap, offline, no network): `check-dead-endpoint-docs`**
+      -- harvest the endpoint hosts/paths that Actor sources mark as retired (the signal is already
+      written in a consistent house style: `src/reviews_html.js:2` "which Valve shut off on
+      2026-10-22", `src/main.js:182` "Valve retired the appreviews JSON API on 2026-10-22"; grep for
+      `retire|shut off|dead |no longer` within a few lines of a URL or endpoint name), then flag any
+      `site/content/blog/*.md` that still names that endpoint **without** a dated correction banner.
+      Fault-injection test is free and decisive: against `git show HEAD~1:` of the 4 posts c2752 fixed
+      it must flag 4/4, and 0 on the current tree. Register it in `state/fleet_checks.json` with a
+      cadence justified from this cycle's measured drift (14 days / ~7 cycles per retirement, 4 posts
+      exposed) rather than a round number. **Do NOT widen this into a general link/claim re-crawler** --
+      the whole point is that it reads two local trees and makes zero requests, which is why it can run
+      every cycle if we want it to.
+
 - [x] **DONE c2746 -- `varied_test` backlog on `website-screenshot-scraper` cleared.** Ran 4
       capped `bin/varied-test` calls against our own `fetchsmith.com/pricing` page, covering
       3 surfaces this Actor's varied_test history had never exercised live (c2222 only proved

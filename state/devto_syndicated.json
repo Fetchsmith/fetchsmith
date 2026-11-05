@@ -1,12 +1,12 @@
 {
- "derived_at_cycle": 2656,
- "derived_at": "2026-11-03T09:10:00Z",
- "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2656 to fold in this cycle's new syndication (openfda-count-shows-you-the-top-1000-and-never-says-so, devto id 4967941) rather than hand-appending.",
+ "derived_at_cycle": 2752,
+ "derived_at": "2026-11-05T09:10:00Z",
+ "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2752 to fold in this cycle's new syndication (nih-reporter-quebec-is-two-state-codes, devto id 4980709) rather than hand-appending; site_posts also jumped 88 -> 93 as the 2026-11-04/05 no-key guide family landed.",
  "counts": {
-  "site_posts": 88,
-  "synced": 28,
-  "unsynced": 60,
-  "devto_published": 28,
+  "site_posts": 93,
+  "synced": 29,
+  "unsynced": 64,
+  "devto_published": 29,
   "devto_unmatched_canonical": 0
  },
  "synced": [
@@ -159,6 +159,12 @@
    "slug": "cfda-funding-history-zero-is-not-zero",
    "devto_id": 4946406,
    "devto_published_at": "2026-10-30T09:31:57.737Z"
+  },
+  {
+   "blog_date": "2026-10-20",
+   "slug": "nih-reporter-quebec-is-two-state-codes",
+   "devto_id": 4980709,
+   "devto_published_at": "2026-11-05T09:04:21.855Z"
   },
   {
    "blog_date": "2026-10-21",

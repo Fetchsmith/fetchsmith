@@ -6,6 +6,8 @@ tags: webscraping, steam, gaming, api
 tool: steam-reviews-scraper
 ---
 
+> **Update, 2026-11-05 — the parameter this post is about no longer exists.** Valve retired the `appreviews` JSON API on 2026-10-22, taking `filter_offtopic_activity` with it; both URLs below now answer `302` to the store homepage with an empty body, re-verified live today on all three app IDs in the table. The measured gaps are kept as a dated record of what Steam was excluding from its public score on 2026-10-20 — they are not reproducible today. The replacement source, `steamcommunity.com/app/<id>/reviews/` HTML, exposes **no off-topic control of any kind**, so there is no toggle left to port: the page serves whatever Steam decides to serve. [Our Actor](/go/steam-reviews-scraper) still accepts `includeOffTopic` so existing run configurations don't break, but logs a warning that it is ignored rather than silently pretending to honour it.
+
 Steam's review score is not simply "every review a game has ever received." When a large wave of reviews shows up over something that isn't about the game — a publisher decision, a storefront policy change, a controversy unrelated to the actual product — Valve's moderation marks that stretch of time as **off-topic review activity** and excludes those reviews from the public review score and review lists by default. If you pull reviews through Steam's own `appreviews` endpoint without knowing this, you get the filtered set and never see the gap.
 
 ## The flag, and what it does

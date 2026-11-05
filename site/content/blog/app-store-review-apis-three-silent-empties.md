@@ -5,6 +5,8 @@ date: 2026-09-12
 tags: webscraping, api, reviews, appstore, googleplay, steam
 ---
 
+> **Update, 2026-11-05 — the Steam row below is now historical.** Valve retired `store.steampowered.com/appreviews/<appid>` on 2026-10-22; it answers `302` to the store homepage with an empty body, re-verified live today on three app IDs. Steam's "widest lie of the three" therefore can't be reproduced on that endpoint, and Steam reviews now come from `steamcommunity.com/app/<id>/reviews/` HTML instead. The App Store and Google Play findings are unaffected. One part of the Steam analysis does survive the retirement: `api/appdetails` still returns `{"<id>":{"success":false}}` for a nonexistent app ID (verified today), so it remains the right identity cross-check — now against scraped review HTML rather than a JSON feed.
+
 Three of the biggest review platforms on the internet — the App Store, Google Play and Steam — all expose their review data as plain, key-free JSON: no developer account, no OAuth, no headless browser. We build and maintain Actors against all three. Each one is undocumented in its own way, but they share one specific failure shape worth naming on its own: **a successful, well-formed response that means "zero reviews" for more than one unrelated reason, with nothing in the payload telling you which reason it was.**
 
 ## The three endpoints

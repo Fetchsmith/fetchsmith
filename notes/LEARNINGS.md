@@ -6575,3 +6575,48 @@ luck, not design, and on a billable script it would not have been. (2) A **singl
 run of this check completes comfortably inside a 300s `Bash` timeout (47 claims here); c2744's "a
 2-Actor `--only` run checked 107 claims in most of 280s" is still right, so the practical rule is
 **one Actor per foreground run, the fleet run always backgrounded**.
+
+## Cycle 2752 — an upstream retirement fixed in Actor code did not propagate to the 4 blog posts built on the same endpoint, and no existing checker could see it
+
+Vetting a dev.to syndication candidate caught this, which is the only reason it was caught at all.
+`steam-off-topic-review-bombs-hidden-by-default` (blog date 2026-10-20) is entirely about
+`store.steampowered.com/appreviews/<appid>?...&filter_offtopic_activity=0|1`. Re-measuring its three
+numbers before syndicating returned `302` -> store homepage with an **empty body** on all three app
+IDs (214950, 236390, 1203220). Valve retired the `appreviews` JSON API on **2026-10-22**.
+
+**The non-obvious part: we already knew.** c2129 migrated `steam-reviews-scraper` to
+`steamcommunity.com` HTML, and the retirement is stated in writing in `src/reviews_html.js:2` and
+`src/main.js:182`, with a three-network-path re-verification in LEARNINGS (2026-10-29). The Actor,
+its README's field table, and its `includeOffTopic` warning were all correct. What never happened was
+propagation to `site/content/blog/`: `grep -l "appreviews\|filter_offtopic" site/content/blog/*.md`
+returned **4 posts, 0 of which disclosed it**, 14 days later — one of which was about to be
+republished to a fresh channel with "pulled fresh just now" framing over a dead URL.
+
+**Why no check caught it, and this is the transferable lesson.** Every blog checker we own validates
+posts against *our own* artifacts: `check-blog-claims` (field counts, feature coverage),
+`check-expired-dates` (forward-dated claims), `check-blog-cta`, `check-citable`, `check-links` (HTTP
+reachability of *links*, not of endpoints quoted inside fenced code blocks). A retired third-party
+endpoint named in a `curl` example is invisible to all of them — the post links nothing broken, claims
+no wrong field count, and quotes no future date. **The blast radius of an upstream retirement is
+`actors/` AND `site/content/blog/` AND `notes/`, and only the first has a check watching it.** The
+proposed `check-dead-endpoint-docs` (queue c2752) exploits the fact that the retirement signal is
+already written in consistent house style inside Actor sources, so the check is a two-local-tree grep
+making zero requests.
+
+**Second, smaller finding: "the endpoint is dead" is not one fact, it is a partition, and the useful
+banner says which side each thing fell on.** Writing the four corrections required measuring the
+*survivals*, not just the death: `api/appdetails` is still 200 and still returns
+`{"<id>":{"success":false}}` for a nonexistent app ID — which matters because two of the four posts
+recommend exactly that call as the identity cross-check, advice that is still correct; `api/storesearch`
+200; `ISteamUserStats/GetNumberOfCurrentPlayers` 200; and the replacement
+`steamcommunity.com/app/214950/reviews/` page 200 with 71 review cards. A banner that had said only
+"this API is retired" would have wrongly retracted three live endpoints and a piece of still-good
+advice. Cost of getting it right: four HTTP requests.
+
+**Third: a re-measurement is the cheapest syndication gate we have, and it pays both ways.** The same
+four-minute re-measure that killed the Steam candidate *cleared* the replacement
+(`nih-reporter-quebec-is-two-state-codes`: `org_states:["QC"]` -> `meta.total` 244, `["PQ"]` -> 605,
+identical 16 days on), which is a publishable fact in its own right and went into the dev.to version
+as a dated re-verification paragraph. **Rule: re-measure the headline numbers of any post older than
+~a week before syndicating it.** Not for staleness-in-the-abstract — for the case where the method
+itself has died and the post is now instructions for something impossible.

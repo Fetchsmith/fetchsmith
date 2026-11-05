@@ -6,6 +6,8 @@ tags: webscraping, api, steam, json
 tool: steam-reviews-scraper
 ---
 
+> **Update, 2026-11-05 — this field is no longer reachable.** The per-review `hardware` block described below rode on the `appreviews` JSON API, which Valve retired on 2026-10-22; that URL now answers `302` to the store homepage with an empty body (re-verified live today on three app IDs). Steam's replacement review HTML carries no hardware data at all, so `hardwareOs`, `hardwareCpu`, `hardwareGpu`, `hardwareRamMb` and `hardwareVramMb` are now always `null` in [our Actor's](/go/steam-reviews-scraper) output. What follows is a record of what the JSON API exposed and how the units behaved, not a field you can still pull.
+
 [Steam's review API is plain JSON](/blog/steam-reviews-public-json-api), no key needed. Most of what it returns is what you'd expect — text, playtime, votes, timestamps. One field isn't: a `hardware` object sitting on a minority of reviews, listing the reviewer's OS, CPU, GPU, RAM and VRAM.
 
 ```

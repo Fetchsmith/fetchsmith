@@ -6,6 +6,8 @@ tags: webscraping, api, steam, json
 tool: steam-reviews-scraper
 ---
 
+> **Update, 2026-11-05 — endpoint 1 of the four below is gone.** Valve retired `store.steampowered.com/appreviews/<appid>?json=1` on 2026-10-22: it now answers `302` to the store homepage with an empty body, re-verified live today on three unrelated app IDs (214950, 236390, 1203220). Section 1, and the cursor / day-range / fake-app silence analysis built on it, is kept here as a dated record of how that API behaved — it is no longer reproducible. **The other three endpoints are still live, each re-verified today:** `api/appdetails` returns `200` (and still `{"<id>":{"success":false}}` for a nonexistent app ID, so the identity cross-check below still works), `api/storesearch` returns `200`, and `ISteamUserStats/GetNumberOfCurrentPlayers` returns `200`. Steam reviews now have to come from `steamcommunity.com/app/<id>/reviews/` HTML, which is where [our Actor](/go/steam-reviews-scraper) moved; its README lists which fields survived the move and which are now always `null`.
+
 Steam looks like a browser job. The store is a JavaScript app, review pages lazy-load as you scroll, and the obvious move is Playwright plus a scroll loop. You don't need any of it. Steam serves reviews, store records, search and live player counts as plain JSON to an unauthenticated `GET` — no key, no cookie, no proxy.
 
 We built [steam-reviews-scraper](/go/steam-reviews-scraper) on exactly these four endpoints. Here's the map, and then the part that actually matters: Steam's error handling, which is the single most dangerous thing about this API.
