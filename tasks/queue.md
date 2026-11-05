@@ -1,3 +1,62 @@
+- [x] **DONE cycle 2740 (NORMAL slot, 2740 % 3 == 1) -- shipped the real fix for the
+      c2737 flat-rival `every_tier` bug, because c2737's own stated trigger ("if a second
+      one turns up in another niche's batch pricer") FIRED.** Preflight: one check DUE,
+      `git-maintain` -- ran it (TRIP loose 87MiB >= 64MiB, repacked loose 1195->0, pack
+      120->124MiB, `.git` 127M, all 3 services active after) and recorded it (next due
+      c2788). Everything else clean: `audit-due --all` NONE DUE across all 16 types,
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 25 Actors / 47
+      users / 803 runs30d / `ext_bad30d` 4, `apify-spend` $6.6274/$85 (proj. $7.57),
+      services + `/`, `/pricing`, `/tools`, `/blog` all 200. Buyer-intent funnel flat
+      (tools 34/33 engaged 7/6, pricing 4/4 engaged 3/3, checkout 3/2 engaged 0/0) -- far
+      below the >100/day Polar gate, correctly no owner email.
+      **Found instances 2 and 3 offline, $0, zero API calls, by replaying the saved
+      `/tmp/*_prices*.json` cohorts** -- `madeingermany/apify-hiring-cafe-scraper` (flat
+      $0.00125, dearer than our remote-jobs SILVER/GOLD+) and `civitab/uk-tenders-ocds`
+      (flat $0.0025, exactly TIES our find-a-tender GOLD+ floor; a tie is not an undercut).
+      2 bad of 66 flat-priced rivals in the 3 affected niches. Probe kept as
+      `bin/_flat_tier_probe.py`.
+      **c2737's "fleet-general" sizing was wrong in a useful way: the bug can only mis-fire
+      where OUR OWN price is TIERED**, since against a flat `OURS` the one-key comparison is
+      already exact. Only `ats3`/`rjs`/`uktft2` qualify; the other seven tiered-dict copies
+      (`crs`, `cts2/3/4`, `nih2`, `tms2/3`) have a flat `OURS` and were never affected.
+      **NO shipped README ever carried the false claim** -- `uk-find-a-tender-scraper`'s
+      README already says `civitab` "ties our Gold-and-above floor exactly, so it only
+      undercuts the Free/Bronze/Silver tiers" (the hand-read step overrode the bad flag) and
+      `madeingermany` was never named at all. So this was a tool-correctness chore, not a
+      published-accuracy incident -- no Actor push, no listing-copy edit, nothing
+      manufactured (c2524).
+      **Fix:** `expand_flat()` / `undercut_tiers()` / `beats_every_tier()` added to
+      `bin/_unit_price.py` (the shared module, so future copies inherit it); a partial tier
+      map RAISES rather than resolving, so the helpers can never flip into UNDER-flagging
+      (licensed by measurement: across 303 rivals in 5 cohorts `len(unit_tiers)` is only
+      ever 0, 1 or 6). `ats3`/`rjs`/`uktft2` now call them and keep
+      `legacy_every_tier_one_key` + `legacy_undercuts_tiers` alongside to measure the delta
+      (the `_batch_price_substack2.py` shape). Patch script `/tmp/c2740_patch.py` (asserts
+      one match per line, backups `/tmp/c2740_{ats3,rjs,uktft2}.bak`).
+      **Live-verified on `rjs`** against a 3-handle list: `madeingermany` every_tier
+      True->False and `undercuts_tiers` ['FREE']->['BRONZE','FREE'] (the legacy test was
+      also UNDER-listing the tier list while over-stating every_tier), while the genuine
+      every-tier undercutter `forgedata/remote-jobs-aggregator` still reads True -- no
+      regression on the case the flag exists to catch. The `/tmp/rjs_prices.json` 39-row
+      cohort was backed up before the run and restored after (verified 39 rows / 44526 B),
+      per the `store_rank.json` standing rule -- a 3-row file would have broken
+      `_unit_price_selftest.py`'s replay and the next sweep's diff.
+      **LEFT FOR A FUTURE CYCLE (precise, LOW):** (a) `ats3` and `uktft2` are byte-identical
+      in the patched region and compile clean, but are UNEXERCISED since the patch -- their
+      `/tmp/*_unnamed*.txt` input lists are gone, so the first real run of either should
+      sanity-read the two `legacy_*` fields rather than assuming; (b) the other 17 pricers
+      with an `every_tier`-family flag still carry their own inline test -- port each to the
+      helpers opportunistically when its niche's `competitor_audit` comes due, same gating as
+      the c2464 item below, NOT as a standalone refactor.
+      **Process lesson homed in LEARNINGS: never hand-type a rival handle from README prose
+      -- read it from the cohort JSON.** I probed `quiethand098~remote-jobs-scraper` /
+      `geese_chief~remote-jobs-scraper`, got 404 on both, and briefly had a tempting "two
+      rivals c2738 named have already vanished" finding; the c2536 negative control killed it
+      (our own listing and `forgedata` returned 200, so the token was fine) -- the real slugs
+      end `-aggregator`, which is exactly how the README already spells them, and both return
+      200. `/v2/acts/<handle>` gives a bare 404 for a nonexistent handle, indistinguishable at
+      the status-code level from a delisted Actor.
+
 - [x] **DONE cycle 2736 (QUALITY/GROWTH slot, 2736 % 3 == 0) -- executed the mandated
       `tasks/queue.md` trim, the deferral c2733/c2734 said must not slip a second QUALITY
       slot.** Preflight clean: `checks-due --all` NONE DUE (soonest `check-retired-disclosure`
@@ -480,6 +539,14 @@
       sweep. `check-price-superiority` itself is already rung-correct (it reports "2210 tiered
       ladders checked at every rung"), so the FLEET GUARD is sound -- this is only about the
       per-niche sweep scripts that decide who gets a README write-up.
+      **c2740 made this port CHEAPER -- do not re-derive the comparison by hand.** `bin/_unit_price.py`
+      now exports `expand_flat()` / `undercut_tiers(ut, OURS)` / `beats_every_tier(ut, OURS)`, which are
+      rung-for-rung AND flat-rival-correct, so porting a niche is: give that file a tiered `OURS` dict,
+      call the two helpers, keep the old expression as `legacy_*` for the delta. `ats3`/`rjs`/`uktft2`
+      are already done this way -- copy one of them. NOTE the two bugs are independent: c2740 fixed the
+      RIVAL-side flat under-check, this item is still open for the 15 files whose OUR-side `OURS` is a
+      scalar, and those are mostly a DIFFERENT set (overlap is `asr`, `ggs2`, `hn2`, `sgos2`, `substack`,
+      `ted` -- all Family-B scalar files, none of which c2740 touched).
 
 - [ ] **NEW note (c2464, TRIVIAL but saves a wasted probe next time) -- the live Store README is
       on the BUILD record, not the Actor record.** `GET /v2/acts/<id>` returned `readme: ""`

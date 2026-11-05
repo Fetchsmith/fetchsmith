@@ -498,3 +498,79 @@ def container_mismatch(our_slug, ev_name, ev_title, ev_desc):
         return noun, blob if len(blob) <= 160 else blob[:160].rstrip() + "..."
     return None, (f"only our own unit noun(s) {sorted(ours)} present" if ours
                   else "no container noun recognised")
+
+
+# ---------------------------------------------------------------------------
+# Rung-for-rung comparison against OUR tier ladder (added cycle 2740).
+#
+# WHY. Apify stores a FLAT rival price (one price regardless of the buyer's plan
+# tier) as a tier map with exactly ONE key, which `tiers_of` labels "FREE" because
+# that is the key Apify itself uses. Every `_batch_price_*.py` copy then tested
+#
+#     all(t in OURS and ut[t] < OURS[t] for t in ut)
+#
+# which iterates the RIVAL's keys -- so for a flat rival it compares that single
+# price against OURS["FREE"] alone, our DEAREST rung, and never against the deeper
+# ones. Result: `every_tier: True` for a rival that only undercuts our top tier.
+#
+# Found cycle 2737 (`ardent_fork/ats-job-boards`, flat $0.0008 vs our SILVER
+# $0.00075 / GOLD+ $0.0007) and confirmed as a repeat at cycle 2740 in two further
+# niches off the saved cohorts -- `madeingermany/apify-hiring-cafe-scraper` (flat
+# $0.00125, dearer than our remote-jobs SILVER/GOLD+) and `civitab/uk-tenders-ocds`
+# (flat $0.0025, exactly TIES our find-a-tender GOLD+ floor). That second instance
+# was c2737's own stated trigger for shipping a real fix instead of a note.
+#
+# It can only mis-fire where OUR OWN price is TIERED: against a flat `OURS` ladder
+# the one-key comparison is already exact. Of the ten pricers using the tiered-dict
+# form, only `ats3`, `rjs` and `uktft2` have a tiered `OURS`; the other seven
+# (`crs`, `cts2/3/4`, `nih2`, `tms2/3`) are flat and were never affected.
+#
+# DIRECTION. The old bias OVER-flags a rival (names someone who is not really
+# beating us) -- embarrassing but honest. So these helpers must never flip into
+# UNDER-flagging, which would hide a real undercutter. Hence: a partial tier map
+# (more than one key but not covering our ladder) is NOT silently resolved -- it
+# raises, because no such rival exists today (measured c2740: across 303 rivals in
+# five saved cohorts, len(unit_tiers) is only ever 0, 1 or 6) and a future one
+# deserves a human read, not a guess.
+#
+# Does NOT retrofit any past audit's output -- same rule as the module docstring.
+# Callers keep their legacy flag alongside the corrected one to measure the delta,
+# the shape `_batch_price_substack2.py` established at cycle 2464.
+# ---------------------------------------------------------------------------
+
+def expand_flat(unit_tiers, ours):
+    """Rival tier map widened to OUR ladder's keys, so a comparison is rung-for-rung.
+
+    A one-key map is a FLAT price: it applies at every tier, so it is replicated
+    across all of `ours`. A map that already covers `ours` is returned as-is.
+    """
+    if not unit_tiers:
+        return {}
+    if len(unit_tiers) == 1:
+        v = next(iter(unit_tiers.values()))
+        return {t: v for t in ours}
+    missing = [t for t in ours if t not in unit_tiers]
+    if missing:
+        raise ValueError(
+            f"partial rival tier map {sorted(unit_tiers)} does not cover our ladder "
+            f"{sorted(ours)} (missing {sorted(missing)}) and is not flat -- decide this "
+            "by hand off the raw pricingInfos record; see cycle 2740 note above")
+    return dict(unit_tiers)
+
+
+def undercut_tiers(unit_tiers, ours):
+    """Sorted list of OUR tiers the rival is strictly cheaper than, flat-aware."""
+    e = expand_flat(unit_tiers, ours)
+    return sorted(t for t in ours if t in e and e[t] < ours[t])
+
+
+def beats_every_tier(unit_tiers, ours):
+    """True only if the rival is strictly cheaper at EVERY rung of our ladder.
+
+    A tie (rival == our price at some rung) is NOT an undercut, which is the
+    distinction the old one-key test could not see at all.
+    """
+    if not unit_tiers or not ours:
+        return False
+    e = expand_flat(unit_tiers, ours)
+    return all(t in e and e[t] < ours[t] for t in ours)

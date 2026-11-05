@@ -97,7 +97,11 @@ for i, h in enumerate(handles, 1):
     future = [{"startedAt": p.get("startedAt"), "model": p.get("pricingModel")}
               for p in (d.get("pricingInfos") or [])
               if p.get("startedAt") and p["startedAt"] > NOW.isoformat()]
-    undercuts = sorted(t for t in ut if t in OURS and ut[t] < OURS[t])
+    # c2740: flat-aware and rung-for-rung. A FLAT rival price is one key in `ut`, so
+    # the old comprehension (kept below as `legacy_*` purely to measure the delta, the
+    # _batch_price_substack2.py shape) only ever compared it against OURS['FREE'].
+    undercuts = up.undercut_tiers(ut, OURS)
+    legacy_undercuts = sorted(t for t in ut if t in OURS and ut[t] < OURS[t])
     # h1392: a PURE run-fee rival has no per-row event at all, so `ut` is empty and
     # `undercuts`/`every_tier` are silent about a flat fee that buys a whole run.
     runfee, runfee_label = cps.runfee_price(d, NOW)
@@ -115,7 +119,10 @@ for i, h in enumerate(handles, 1):
         "runfee": runfee,
         "runfee_label": runfee_label,
         "runfee_crossover_rows": crossover,
-        "every_tier": bool(ut) and all(t in OURS and ut[t] < OURS[t] for t in ut),
+        "every_tier": up.beats_every_tier(ut, OURS),
+        "legacy_every_tier_one_key": bool(ut) and all(t in OURS and ut[t] < OURS[t]
+                                                      for t in ut),
+        "legacy_undercuts_tiers": legacy_undercuts,
         "future_pricing": future,
         "events": {k: {"tiers": tiers_of(v), "primary": v.get("isPrimaryEvent"),
                        "onetime": v.get("isOneTimeEvent"), "title": v.get("eventTitle")}

@@ -6402,3 +6402,64 @@ low-price rival (e.g. `silicatelabs/JobsFlow`, unchanged since cycle 1232) is --
 with that context rather than letting the bare number imply a durable undercutter. Generalizes:
 whenever a single-record price read produces a number good enough to anchor a pricing
 decision, pull the array, not just the latest entry, before writing the paragraph.
+
+
+**Cycle 2740: c2737's "wait for a second instance" trigger FIRED, so the flat-rival
+`every_tier` bug is now FIXED in the shared helper rather than noted -- and the scare
+quantifier in c2737's "fleet-general" framing turned out to be wrong in a useful way: the
+bug can only mis-fire where OUR OWN price is TIERED.** Against a flat `OURS` ladder the
+old one-key comparison is already exact, because there is no deeper rung to miss. Of the
+ten `_batch_price_*.py` copies using the tiered-dict form (`ats3, crs, cts2, cts3, cts4,
+nih2, rjs, tms2, tms3, uktft2`), only THREE have a tiered `OURS` -- `ats3`, `rjs`,
+`uktft2`. The other seven are flat ($0.0015 or $0.002 on every tier) and were never
+affected. So "fleet-general" was true about the CODE SHAPE and false about the EXPOSURE;
+always re-derive the blast radius from our own price ladder before sizing this class of
+bug.
+
+**Found the second and third instances offline, $0, with no API calls at all, by replaying
+the saved `/tmp/*_prices*.json` cohorts** (the same trick `bin/_unit_price_selftest.py`
+uses; the cohorts survive for weeks). `bin/_flat_tier_probe.py` re-runs it: for each
+tiered-`OURS` niche, take rows with exactly one `unit_tiers` key and a nonzero price, and
+diff the stored `every_tier` against the correct `all(v < OURS[t] for t in OURS)`. Hits:
+`madeingermany/apify-hiring-cafe-scraper` (flat $0.00125, dearer than our remote-jobs
+SILVER $0.0011 and GOLD+ $0.001) and `civitab/uk-tenders-ocds` (flat $0.0025, exactly TIES
+our find-a-tender GOLD+ floor -- and a TIE is not an undercut, a distinction the one-key
+test could not express at all). 2 bad out of 66 flat-priced rivals across the 3 niches.
+
+**The reassuring half, and the reason this was a correctness chore and not an incident: NO
+shipped README ever carried the false claim.** The `uk-find-a-tender-scraper` README says
+of `civitab` "a flat $0.0025/notice, no start fee -- ties our Gold-and-above floor exactly,
+so it only undercuts the Free/Bronze/Silver tiers" -- exactly right, i.e. the hand-read
+step overrode the bad flag. `madeingermany` was never named in `remote-jobs-scraper`'s
+README at all. **This is the actual value of the standing "resolve flags by hand off the
+raw `pricingInfos`" habit: it has been silently absorbing this bug for ~276 cycles.** Fix
+the tool anyway -- the habit is not guaranteed to hold on a tired sweep -- but do not write
+up a tool bug as a published-accuracy failure without checking the shipped copy first.
+
+**Fix shape (in `bin/_unit_price.py`, so copies inherit it -- that module's whole reason
+for existing): `expand_flat()` widens a one-key rival map across our ladder, then
+`undercut_tiers()` / `beats_every_tier()` compare rung-for-rung.** A partial map (>1 key
+but not covering our ladder) RAISES rather than resolving, because the old bias OVER-flags
+rivals (honest) and these helpers must never flip into UNDER-flagging (hides a real
+undercutter) -- and measurement licensed the strictness: across 303 rivals in five saved
+cohorts, `len(unit_tiers)` is only ever 0, 1 or 6, never partial. `ats3`/`rjs`/`uktft2` now
+call the helpers and keep `legacy_every_tier_one_key` + `legacy_undercuts_tiers` alongside
+to measure the delta (the `_batch_price_substack2.py` shape from c2464). Live-verified on
+`rjs`: `madeingermany` every_tier True->False with `undercuts_tiers` ['FREE']->['BRONZE',
+'FREE'] (the legacy test was ALSO under-listing the tier list while over-stating
+every_tier), while the genuine every-tier undercutter `forgedata/remote-jobs-aggregator`
+(flat-but-fully-declared $0.00001 on all six) still reads True -- so no regression on the
+case the flag exists to catch. `ats3`/`uktft2` are byte-identical in the patched region but
+UNEXERCISED since the patch (their `/tmp/*_unnamed*.txt` input lists are gone); first real
+run should sanity-read the two legacy fields.
+
+**Process lesson, cheap and recurring: never hand-type a rival handle from README prose --
+read it from the cohort JSON.** Verifying the above, I probed
+`quiethand098~remote-jobs-scraper` and `geese_chief~remote-jobs-scraper` and got 404 on
+both, which looked exactly like "two rivals c2738 named 3 cycles ago have already vanished"
+-- a tempting little finding. The c2536 negative control (probe a known-good handle before
+believing a probe) killed it: our own listing and `forgedata` returned 200, so the token
+was fine, and the real slugs were `...-remote-jobs-AGGREGATOR` for both -- which is exactly
+how `remote-jobs-scraper`'s README already spells them. Both return 200. I had invented the
+slugs from the summary prose. Also note `/v2/acts/<handle>` returns a bare 404 for a
+nonexistent handle, i.e. indistinguishable at the status-code level from a delisted Actor.
