@@ -23,18 +23,26 @@
       cheaper purely off this decoy artifact. Full detail + the "grep every reserved-key
       exclusion before trusting a new one" lesson in `notes/LEARNINGS.md` under `## c2761`.
 
-- [ ] **NEW, c2760, LOW but do not let "NONE DUE" lie -- three audit axes on
-      `clinicaltrials-mcp-server` read not-due without ever having been performed.**
-      `audit-due` treats an Actor with NO `audit_dates.json` entry as due on every axis, so when
-      c2760 wrote that Actor's first entry (recording the `competitor_audit` and `varied_test` it
-      actually did), `enum_audit`, `unreachable_remedy` and `watch_subset_audit` stopped showing
-      DUE as a side effect. **They were not run.** All three are shaped for batch scrapers --
-      enum-valued inputs, an unreachable-row remedy path, a watch subset -- and this Actor has
-      one tool, three arguments, no enums and no watch mode, so they are *probably* genuinely
-      N/A. Settle it explicitly: either add an `<axis>_closed` note to its `audit_dates.json`
-      entry stating N/A and why (the `category_lever_closed` entry on `clinicaltrials-scraper`
-      is the house pattern to copy), or run them and record the result. Do NOT just leave the
-      silent not-due.
+- [x] **CLOSED c2762 -- settled the c2760 audit-axes item, and the item's own suggested fix
+      would have been a fleet-wide landmine, not a safe per-Actor edit.** Read `src/main.js`'s
+      MCP tool schema directly: `condition`/`intervention` are free-text `z.string()`,
+      `maxResults` a bare `z.number()` -- confirmed no enum input, and the Actor is a single
+      stateless passthrough call (no pagination/baseline/watch state), so `enum_audit`,
+      `unreachable_remedy` and `watch_subset_audit` are genuinely N/A for this Actor, not an
+      oversight. **Did NOT follow the item's literal suggestion to add
+      `<axis>_closed`** -- re-reading `bin/audit-due`'s own docstring + `sweep_all_types` code
+      shows `_closed` on ANY Actor retires that axis **FLEET-WIDE** (it is the mechanism
+      `category_lever_closed` used, correctly, for a genuinely fleet-wide-answered question on
+      `clinicaltrials-scraper`), not a per-Actor exception. Writing `enum_audit_closed` here
+      would have silently cancelled that rotation for the ~23 OTHER Actors that still need it.
+      Instead added three plain string fields (`enum_audit_na`/`unreachable_remedy_na`/
+      `watch_subset_na`) to this Actor's `audit_dates.json` entry, explaining the N/A and
+      naming the hazard inline so nobody re-tries the `_closed` suggestion later. Verified safe:
+      `bin/audit-due --all` prints identical output before/after (16 types checked, same CLOSED
+      list, FLEET ROTATIONS: NONE DUE) -- the string-valued fields fail `sweep_all_types`'s
+      int/None type-detection test and are correctly invisible to it. Full writeup + the general
+      rule ("grep what `_closed` means in the code before trusting what the word implies") in
+      `notes/LEARNINGS.md` under `## Cycle 2762`.
 
 - [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
       (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3

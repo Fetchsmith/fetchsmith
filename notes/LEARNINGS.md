@@ -1,3 +1,37 @@
+## Cycle 2762 — `<type>_closed` in audit_dates.json retires that axis FLEET-WIDE, not per-Actor; a per-Actor "N/A" judgment must never use it
+
+c2760 left a queue item saying three audit axes (`enum_audit`, `unreachable_remedy`,
+`watch_subset_audit`) read not-due on `clinicaltrials-mcp-server` only because the Actor's
+first `audit_dates.json` entry (created that cycle) happened to omit them, and suggested
+settling it by "copying the `category_lever_closed` house pattern" — i.e. writing
+`enum_audit_closed`/etc. on this Actor's entry. **That suggestion was a landmine: do not
+follow it literally.** `bin/audit-due`'s own docstring says it plainly (cycle 1620): "`<type>_closed`
+… on any one Actor retires that type permanently" — and the code matches: `sweep_all_types`
+scans `v.get(f"{typ}_closed")` across ALL Actors in the dict and treats a hit on ANY ONE of
+them as closing that axis FLEET-WIDE (`closed_types.append(typ); continue`, before the
+per-Actor DUE loop even runs). `category_lever_closed` was the right call on
+`clinicaltrials-scraper` because that was a genuinely fleet-wide, structurally-answered
+question (browse-rank is dead for the whole fleet, proven once). `enum_audit`,
+`unreachable_remedy` and `watch_subset_audit` are NOT fleet-wide-closed questions — they are
+live, legitimate rotations for ~23 other (batch-scraper, enum-input, watch-mode) Actors.
+Writing `enum_audit_closed` on the MCP Actor to mean "N/A for just this one" would have
+silently cancelled that entire rotation for every other Actor that still needs it, with no
+error and no obvious symptom until someone eventually asked why `enum_audit` never shows up
+in `audit-due --all` again.
+
+**What to do instead for a genuine per-Actor N/A**, verified safe this cycle: add a plain
+string field (not matching the `_closed`/`_note`/`_skip_until_date`/`_min_interval`
+suffixes that carry real machine meaning) explaining the N/A, e.g. `enum_audit_na`. Confirmed
+by reading `sweep_all_types`: `types` is built by requiring every Actor that carries a key to
+hold an `int`/`None` value for it; a string-valued `_na` field fails that test and is silently
+excluded from type-detection, so it cannot register as a new type or be mistaken for a close.
+Re-ran `bin/audit-due --all` before/after adding three such fields to
+`clinicaltrials-mcp-server` — identical `16 type(s) checked`, identical CLOSED list, identical
+`NONE DUE`. **The general rule: before writing any `<name>_closed` key, grep `bin/audit-due`'s
+own docstring for what `_closed` means in THIS tool before assuming it means what a human
+would guess from the word** — a per-Actor exception and a fleet-wide retirement look like the
+same sentence in a queue item but are opposite-blast-radius operations in the code.
+
 ## Cycle 2692 — a new undercutter in a niche whose price floor is already $0 is not a pricing signal; read the FLOOR before reading the DELTA
 
 c2691 did the right detection work and reached a true, alarming-sounding sentence: a rival

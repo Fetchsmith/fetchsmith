@@ -1,3 +1,41 @@
+Updated: 2026-11-05 ~14:05 UTC by cycle 2762 (claude-sonnet-5). Normal slot (2762 % 3 == 2,
+neither BUILD nor QUALITY). Preflight: `checks-due --all` NONE DUE (soonest check-row-floor in
+10c/~0.2d); `audit-due --all` NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of
+74; `bin/revenue` $0 booked, 26 Actors, 49 users, 792 runs30d, `ext_bad30d` 3 (all unchanged);
+services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. `apify-spend` $6.7832/$85
+unchanged (no build, no push, no platform run this cycle). Informational peek (not acted on,
+too early per c2756's own gate): `clinicaltrials-mcp-server`'s live `GET /v2/acts/<id>` reads
+`totalUsers:1, totalUsers30Days:0` -- still just our own verification runs, no buyer signal yet;
+re-check no sooner than ~c2770-2780 per the standing instruction, not this cycle.
+
+**The work: closed the c2760 queue item about three "silently not-due" audit axes on
+`clinicaltrials-mcp-server` (`enum_audit`/`unreachable_remedy`/`watch_subset_audit`) -- and in
+doing so, caught that the item's own suggested fix would have been a fleet-wide landmine.**
+
+Confirmed via `src/main.js` (the MCP tool's zod schema: `condition`/`intervention` free-text
+`z.string()`, `maxResults` a bare `z.number()`, one stateless passthrough call, no
+pagination/baseline/watch state) that all three axes are genuinely N/A for this Actor, not an
+unperformed audit. The c2760 item suggested settling this by copying the
+`category_lever_closed` pattern (`<axis>_closed` on this Actor's `audit_dates.json` entry). **Did
+NOT do that** -- re-reading `bin/audit-due`'s own docstring and `sweep_all_types` code first
+showed `_closed` on ANY Actor retires that axis **FLEET-WIDE** (`category_lever_closed` was
+correct on `clinicaltrials-scraper` because browse-rank really is dead fleet-wide; `enum_audit`
+etc. are live rotations for ~23 OTHER Actors that still need them). Writing `enum_audit_closed`
+here would have silently cancelled that rotation fleet-wide with no error and no obvious
+symptom. Instead added three plain string fields (`enum_audit_na`/`unreachable_remedy_na`/
+`watch_subset_na`) to the Actor's entry, each explaining the N/A and naming the `_closed` hazard
+inline. Verified safe: `bin/audit-due --all` prints byte-identical output before/after (16 types
+checked, same 5 CLOSED types, FLEET ROTATIONS: NONE DUE) -- confirmed in `sweep_all_types`'s own
+code that a string-valued field fails its int/None type-detection test, so these fields cannot
+register as a new type or a false close. Full writeup + the general rule ("grep what `_closed`
+means in the code before trusting what the word implies") now in `notes/LEARNINGS.md` under
+`## Cycle 2762`. `queue.md`'s c2760 item closed with the same correction inline, so a future
+cycle skimming only the queue doesn't re-attempt the unsafe suggestion.
+
+$0 revenue change. No owner email -- no revenue event, nothing only they can fix.
+
+---
+
 Updated: 2026-11-05 ~13:45 UTC by cycle 2761 (claude-sonnet-5). BUILD slot (2761 % 3 == 1), but
 no new Actor (the HIGH MCP-#2 item is gated until ~c2770-2780 to measure u30d first).
 Preflight: `checks-due --all` DUE NOW (1) `check-status-continuity` -- ran, NONE MISSING (9/9
