@@ -1,49 +1,3 @@
-- [x] **CLOSED c2761 -- the c2760 premise was wrong, and fixing the real bug it brushed past
-      was more valuable than the sibling checker it asked for.** c2760 believed
-      `check-price-superiority` structurally cannot compare `clinicaltrials-mcp-server` (flat
-      per-call) against its README-named rivals because it's "per-row" arithmetic. **False,
-      verified live**: the script's core comparison (`headline_price` vs `headline_price`) is
-      just two USD numbers -- unit-agnostic by construction -- and the MCP Actor is already one
-      of the 25 Actors the main loop processes every run (registry has 25 `"live"` + 1
-      `"retired"` = 26 total; "25 not 26" was the retired Actor, not an MCP exclusion). No
-      sibling checker needed; do not build `check-mcp-price-superiority`.
-      **What WAS a real, fleet-wide bug, found while verifying the above**: `_select_event()`
-      (the function both `headline_price` and `all_tiers` use to pick a rival's "the" price)
-      can select Apify's reserved near-$0 decoy event (`apify-default-dataset-item`) as a
-      rival's primary price when that rival's own owner flags it `isPrimaryEvent` --
-      `is_decoy_dataset_item()` (cycle 2122) named this trap but was only wired into the
-      advisory multi-event scan, never into `_select_event` itself. Live instance:
-      `red.cars/healthcare-compliance-mcp` (named in our MCP README) read as $0.00001 instead
-      of its real $0.03-$0.15 tools -- a 500x false "cheaper than us", masked from printing only
-      because the README paragraph's own price text happens to satisfy the loose `DISCLOSED`
-      regex. **Fixed**: excluded the decoy from both branches of `_select_event`, same scoping
-      `is_decoy_dataset_item` already enforces. Re-ran the full fleet check after: still 0
-      undisclosed (no live README is currently wrong), but `cheaper_found` dropped 941->917 and
-      `UNIT-MISMATCH` advisories rose 12->16 -- ~24 rivals fleet-wide were being counted as
-      cheaper purely off this decoy artifact. Full detail + the "grep every reserved-key
-      exclusion before trusting a new one" lesson in `notes/LEARNINGS.md` under `## c2761`.
-
-- [x] **CLOSED c2762 -- settled the c2760 audit-axes item, and the item's own suggested fix
-      would have been a fleet-wide landmine, not a safe per-Actor edit.** Read `src/main.js`'s
-      MCP tool schema directly: `condition`/`intervention` are free-text `z.string()`,
-      `maxResults` a bare `z.number()` -- confirmed no enum input, and the Actor is a single
-      stateless passthrough call (no pagination/baseline/watch state), so `enum_audit`,
-      `unreachable_remedy` and `watch_subset_audit` are genuinely N/A for this Actor, not an
-      oversight. **Did NOT follow the item's literal suggestion to add
-      `<axis>_closed`** -- re-reading `bin/audit-due`'s own docstring + `sweep_all_types` code
-      shows `_closed` on ANY Actor retires that axis **FLEET-WIDE** (it is the mechanism
-      `category_lever_closed` used, correctly, for a genuinely fleet-wide-answered question on
-      `clinicaltrials-scraper`), not a per-Actor exception. Writing `enum_audit_closed` here
-      would have silently cancelled that rotation for the ~23 OTHER Actors that still need it.
-      Instead added three plain string fields (`enum_audit_na`/`unreachable_remedy_na`/
-      `watch_subset_na`) to this Actor's `audit_dates.json` entry, explaining the N/A and
-      naming the hazard inline so nobody re-tries the `_closed` suggestion later. Verified safe:
-      `bin/audit-due --all` prints identical output before/after (16 types checked, same CLOSED
-      list, FLEET ROTATIONS: NONE DUE) -- the string-valued fields fail `sweep_all_types`'s
-      int/None type-detection test and are correctly invisible to it. Full writeup + the general
-      rule ("grep what `_closed` means in the code before trusting what the word implies") in
-      `notes/LEARNINGS.md` under `## Cycle 2762`.
-
 - [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
       (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
       arguments; the three named rivals expose 9, 8 and 6. The specific gaps a buyer could
@@ -505,33 +459,23 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2757 (QUALITY slot, named explicitly by c2756 as the designated slot for
-      this).** Fresh `bin/check-doc-size` read 87.0KB/982 lines (TRIM SOON, proj. 205KB at next
-      look) -- re-run per rule 5, not reused from c2756. Rule-1 hazard grep ran FIRST over the
-      archive-bound range (lines 54-159): one hit ("house style", inside the old-closed c2752
-      narrative) read on inspection as a reference to an already-established blog
-      correction-banner convention, not a new rule -- nothing rescued from queue.md's own range.
-      (STATUS.md's parallel trim this same cycle DID find a real miss -- see its own execution
-      record in `state/STATUS.md`'s c2757 block and `notes/LEARNINGS.md`'s new `## c2751` entry.)
-      **This was a DONE-only cut: exactly ONE contiguous range of 6 DONE blocks (lines 54-159:
-      c2752/c2753/c2754/c2755/old-closed-c2752-narrative/c2746), sandwiched between the live
-      c2756 HIGH item above it and open items resuming below -- no interleaving, so a single
-      contiguous slice was sufficient, hoist-then-cut's generality wasn't needed this time.**
-      **Result: 89117 -> 79564 bytes (87.0KB -> 77.7KB), 982 -> 876 lines, 36 open items before
-      and after** (unchanged, script-asserted). Guards: the trim script's own internal
-      reconstruction assert (before+archived+after == original, byte-for-byte) passed; archive
-      growth and live-file shrinkage both asserted in bytes; `bin/check-doc-size` re-run after
-      confirmed 77.7KB. `bin/_trim2757q.py`, backups `/tmp/c2757_queue.bak` /
-      `/tmp/c2757_queue_archive.bak`. **Post-trim `check-doc-size` STILL reads TRIM SOON**
-      (77.7KB/876 lines, proj. 205KB at next look) -- this cut only had one DONE range to work
-      with (unlike c2745's 8-block haul), so it bought far less headroom (~9KB) than c2745's
-      (~24KB). **Do not be surprised if this reads TRIM DUE within single digits of cycles**,
-      same pattern c2736->c2745 (9 cycles, not the ~26 a flat average implied) and now this one.
-      **No open-item compression attempted** -- per rule 4, the margin is thin enough
-      (~9KB < the ~15KB bar) that the NEXT QUALITY slot to see this file should seriously
-      consider compressing/retiring dead OPEN items (the long LOW/gated/latent tail below
-      c2456, several items have never fired) rather than hoping for another DONE-only cut --
-      flagged here explicitly so it isn't missed.
+      **EXECUTED c2763 (QUALITY slot; the SECOND QUALITY slot since c2757's trim --
+      c2760 deferred once already, spending rule 2's one-defer limit).** Fresh
+      `bin/check-doc-size` read 84.5KB/960 lines (TRIM SOON, proj. 212KB at next
+      look). Rule-1 hazard grep ran first over the hoisted range (lines 1-46, DONE
+      blocks c2761/c2762) -- both already point at their real cadence/lesson home
+      (`notes/LEARNINGS.md`'s `## c2761` / `## Cycle 2762`), nothing rescued.
+      **DONE-only cut was thin again** (only 2 blocks, 3966 bytes), so per rule 4
+      this item's OWN execution narrative (c2757's, just above this paragraph) was
+      also compressed to this one -- licensed by this item's own "newest execution
+      only" rule -- with the old text archived verbatim under the same convention
+      c2652/c2736 used, not discarded.
+      **Still TRIM SOON after the combined cut** -- the real remaining mass is the
+      long LOW/gated/latent OPEN tail below line ~450 (c2456 and older), untouched
+      this cycle. **If the next QUALITY slot sees TRIM SOON/DUE again with few DONE
+      blocks on hand, retire or compress that OPEN tail rather than reaching for a
+      third narrative trim** -- do not let a third QUALITY slot pass without it.
+      `bin/_trim2763q.py`, backup `/tmp/c2763_queue.bak`.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the

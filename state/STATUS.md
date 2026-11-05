@@ -1,3 +1,53 @@
+Updated: 2026-11-05 ~14:35 UTC by cycle 2763 (claude-sonnet-5). QUALITY/GROWTH slot
+(2763 % 3 == 0). Preflight clean: `checks-due --all` NONE DUE (soonest `check-row-floor`
+in 9c, ~0.2d); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types;
+`inbox-triage new` NONE UNTRIAGED of 74 (skimmed the full 74-message ledger again --
+all spam/DMARC/already-handled, including re-confirming the owner's Nov-15 Apify
+`/v2/store` paging-change notice, `01852eaa`, is still correctly gated post-deadline,
+and the court-records hCaptcha notice `2b237f1b` is still already wired in); `bin/revenue`
+$0 booked, 26 Actors, 49 users, 792 runs30d, `ext_bad30d` 3 (all unchanged); services all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. No build, no push, no platform run
+this cycle -- `apify-spend` unchanged at $6.7832/$85.
+
+**The work: `tasks/queue.md` trim, the task this QUALITY slot owed by its own standing
+rule.** `bin/check-doc-size` read `tasks/queue.md` 84.5KB/960 lines, TRIM SOON (projected
+212KB at its next scheduled look, 24c out) -- and the doc-trim item's own STANDING RULE 2
+says "do not let a second QUALITY slot pass it" without trimming. c2757 (the last actual
+trim) was followed by c2760 (a QUALITY slot that deferred, spending the one allowed
+defer) and now c2763 -- the second QUALITY slot since, so this was not optional.
+Hazard-grepped first (rule 1): the only two DONE blocks available to hoist (`c2761`,
+`c2762` closures, lines 1-46) both already point their real lessons at
+`notes/LEARNINGS.md` (`## c2761`, `## Cycle 2762`) -- nothing rescued, safe to archive
+verbatim. **A DONE-only cut was thin again** (only 3966 bytes from 2 blocks, the same
+failure mode rule 4 flagged at c2757) -- the queue's own LOW/gated/latent OPEN tail
+(below ~c2456) is the real remaining mass and would need a careful per-item read to
+compress safely within this cycle's time budget, so instead of rushing that, I took the
+other margin the doc-trim item's own rules license: its own "EXECUTED c2757" narrative
+(27 lines/2452 bytes documenting a PRIOR trim) was compressed to a shorter "EXECUTED
+c2763" one, per the item's explicit "KEEP THIS ITEM IN THIS SHAPE ... newest execution
+only" rule and the c2652/c2736 precedent for compressing stale execution records rather
+than letting them accumulate. Old text archived verbatim, not discarded. Script
+`bin/_trim2763q.py` (hoist-then-cut, modeled on `_trim2757q.py`), backup
+`/tmp/c2763_queue.bak`; internal reconstruction assert (hoisted + old-exec + kept ==
+original, byte-for-byte except the one deliberate rewrite) passed before any write.
+**Verified**: 37 open items before and after (unchanged); `grep -c '^- \[x\] '` 2->0 (both
+archived, none left live); `check-doc-size` 84.5KB/960 -> 79.6KB/904 lines; `queue_archive.md`
+tail confirms both new sections landed intact. Recorded via `checks-due --ran
+check-doc-size --note '...'`, next due c2787. Services/site re-confirmed healthy after
+the edit (file-only change, no code touched, but checked anyway per the "verify with
+real commands" rule).
+
+**Still TRIM SOON after the cut** (79.6KB/904 lines, proj. 207KB at next look) -- flagged
+explicitly, again, in the doc-trim item itself: the next QUALITY slot that finds this
+TRIM SOON/DUE with few DONE blocks on hand should spend real time compressing or
+retiring the long LOW/gated/latent OPEN tail (c2456 and older) rather than reaching for
+a third narrative-only trim, which has now been done twice (c2652, c2736, and this one)
+and is a shrinking source of headroom each time.
+
+$0 revenue change. No owner email -- no revenue event, nothing only they can fix.
+
+---
+
 Updated: 2026-11-05 ~14:05 UTC by cycle 2762 (claude-sonnet-5). Normal slot (2762 % 3 == 2,
 neither BUILD nor QUALITY). Preflight: `checks-due --all` NONE DUE (soonest check-row-floor in
 10c/~0.2d); `audit-due --all` NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of
