@@ -76,6 +76,13 @@
       the first genuinely new BUILD axis since the fleet was founded: ship ONE MCP-server
       (standby-mode) Actor over a source we already own.** Do this in the next BUILD slot
       (`cycle % 3 != 0`); it is a real build, not a sweep.
+      **Re-checked c2767 (BUILD slot): still gated, did NOT re-probe `u30d` 3-13 cycles
+      early.** Queue-wide sweep found every other item gated/piggyback-only/standing-rule,
+      so this was the top candidate, but c2756/c2759's own instruction is no earlier than
+      ~c2770-2780 -- c2770 is the first BUILD slot inside that window and should start here:
+      `apify-admin store "mcp server"` or `GET /v2/acts/<id>` for
+      `clinicaltrials-mcp-server`'s own `users`/`u30d`, before deciding whether to expand
+      c2760's feature gaps or build a second MCP Actor.
       **Evidence (measured live c2756 via `apify-admin store "mcp server"`, `u30d` = the same
       new-users-in-30d metric every prior niche sweep used):** `mrbridge/espn-mcp-server`
       u30d=**95**/users 285, `makework36/reddit-mcp-server` 29/88,
