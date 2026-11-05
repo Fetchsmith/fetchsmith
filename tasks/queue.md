@@ -576,11 +576,28 @@
       handles, found two genuine 6-of-10-platform matches (`bigibyte` free, `api-co` partial),
       one 3-platform partial undercutter, resolved an AMBIGUOUS batch-pricer flag by hand, and
       caught a fleet-general batch-pricer bug along the way -- see README + LEARNINGS c2737 for
-      full detail. Pushed as build 0.1.118, verified live.). **Remaining candidate:
-      `remote-jobs-scraper`** (never had this specific one-term-diff lever applied -- its last
-      full sweep was a different-method 672c `competitor_audit` at c2461, 663 matched/530
-      unnamed via a keyword-triage not a single term; worth a one-term search next time to see
-      if IT has grown the same way ats-jobs-scraper's had). (Per-execution
+      full detail. Pushed as build 0.1.118, verified live.) and now `remote-jobs-scraper`
+      (c2738, first time this specific lever was applied -- its last full sweep was the
+      different-method `competitor_audit` at c2461, only 6 days earlier). `apify-admin store
+      "remote jobs" 150` found 129 listings, up from 92 at the cycle-2376 spot-check (+40% in
+      8 days) -- real growth, same staleness shape. Diffed all 129 against the README by exact
+      handle: 62 unmatched, 23 of those second/third listings from owners already named, 39
+      from genuinely new owners. Live-priced all 39 via `bin/_batch_price_rjs.py`: one real
+      undercutter, `forgedata/remote-jobs-aggregator` (5 of our 7 boards + 390 career sites,
+      flat $0.00001/job -- hand-verified via raw `pricingInfos` history, which showed 4 price
+      records in 4 days, so it is a brand-new listing (3 users) still actively repricing, not
+      a settled rival), plus two near-full-parity aggregators that priced ABOVE us
+      (`quiethand098` 7/7 boards, `geese_chief` 6/7 boards). No pricing change warranted --
+      same reasoning as the `grants-gov-scraper` decision below (1-3 users, $0 booked here,
+      14-day irreversible price-cut mechanics against unmeasurable elasticity). Written up in
+      the README, pushed as build 0.1.95, verified live (`forgedata` present in the shipped
+      `readme` field). **Both `ats-jobs-scraper` and `remote-jobs-scraper` are now done --
+      this one-term-diff lever has no remaining untried candidate in the three niches it was
+      scoped to (`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`).** Next
+      time this item comes up, either widen the candidate list to a new niche or treat it as
+      a recurring per-niche re-check (the ats case showed real growth in ~1 week, so an 8-10
+      day cadence per niche, not a one-shot, is probably the right frame -- re-derive from
+      each Actor's own last-swept date rather than assuming). (Per-execution
       narrative capped at the newest at c2685 and re-capped at c2736, same pattern as the
       doc-trim cadence item -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
       `queue_archive.md` under the c2685 header.)

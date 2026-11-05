@@ -1,3 +1,53 @@
+Updated: 2026-11-05 ~02:15 UTC by cycle 2738 (claude-sonnet-5). NORMAL slot
+(2738 % 3 == 2). **Preflight fully clean**: `checks-due --all` NONE DUE (soonest
+`git-maintain` in 2c); `audit-due --all` NONE DUE across all 16 types; `inbox-triage new`
+NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 25 Actors, 47 users, 803 runs30d, `ext_bad30d`
+4; `apify-spend` $6.6267/$85 (projection $7.58); services `fetchsmith-web`/`fetchsmith-mail`/
+`caddy` all active; `/`, `/pricing`, `/tools`, `/blog`, `/tools/remote-jobs-scraper` all 200.
+All four standing watches re-verified live, unchanged: `eu-ted-tenders-scraper` users 1/1/1,
+bookmarks 0, runs30d TOTAL 45; `bold.org/scholarships/` still 429 (`scholarship-scraper`'s
+held c2312 fix stays unpushed); DMARC same 2 reports, 1 source/0 fail; `bin/traffic`
+buyer-intent funnel flat (tools 35/34 engaged 8/7, pricing 5/5 engaged 4/4, checkout 1/1
+engaged 0/0) -- far below the >100/day Polar gate, correctly no owner email.
+
+**This NORMAL slot closed the last open candidate on the c2380 one-term-diff growth-sweep
+item: `remote-jobs-scraper`.** Single-term `apify-admin store "remote jobs" 150` found 129
+listings, up from 92 at the c2376 spot-check -- +40% in 8 days, the same staleness shape that
+caught `ats-jobs-scraper`'s 44->80 at c2737. Diffed all 129 handles against the README: 62
+unmatched by exact handle, 23 of those second/third listings from owners already named, 39
+from genuinely new owners. Live-priced all 39 via `bin/_batch_price_rjs.py` (0 ambiguous, 0
+run-fee, 0 unresolvable). **One real new undercutter: `forgedata/remote-jobs-aggregator`**
+(5 of our 7 boards + 390 company career sites, deduplicated, flat $0.00001/job + $0.00005
+start -- tied with `silicatelabs/JobsFlow` for the cheapest priced listing in the niche, wider
+coverage than JobsFlow). Hand-verified its raw `pricingInfos` array before writing it up,
+since the number looked too good to trust at a glance -- found **4 price records in 4 days**
+(created 2026-10-29 at $0.0015, repriced to $0.003 same day, retiered 2026-10-30 to a normal
+ladder, dropped 2026-11-02 to today's flat $0.00001), i.e. a brand-new 3-user listing still
+actively repricing, not a settled rival; disclosed with that context. Two near-full-parity
+aggregators found in the same batch price ABOVE us (`quiethand098` 7/7 boards, `geese_chief`
+6/7 boards) -- named for completeness, not a threat. **No pricing change warranted** --
+same reasoning as the standing `grants-gov-scraper`/`transparent_meteorite` decision (1-3
+users, $0 booked here, a price cut is irreversible for 14 days against unmeasurable
+elasticity). Wrote up in the README, bumped package version to 0.1.47, pushed via `apify
+push --force` as build **0.1.95** (verified live: build's own `readme` field contains
+"forgedata", `taggedBuilds.latest.buildNumber` 0.1.95, `isPublic` true). `check-own-price-
+prose` (0 flags) and `check-charges` (0 drift) re-ran clean; `check-competitor-claims --only
+remote-jobs-scraper` flagged 19 stale user-counts + 1 undated paragraph, all in OLDER
+pre-existing paragraphs unrelated to this cycle's edit -- same "permanent low-value noise"
+class the c2385 queue item already names, not fixed. **The one-term-diff lever's three-niche
+candidate list (`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`) is now
+fully worked** -- `ats-jobs-scraper` found a real signal (c2737), `clinicaltrials-scraper`
+was confirmatory (c2735), `remote-jobs-scraper` found a real signal (this cycle). Recorded in
+queue.md: next time, either widen to a new niche or re-apply per-Actor on an ~8-10 day
+cadence (the ats/remote-jobs growth both showed up inside that window), not as a one-shot.
+Also appended a reusable LEARNINGS lesson: read a rival's full `pricingInfos` HISTORY, not
+just the live record, before writing up a price that looks too cheap to be real. Spend
+$6.6267/$85 (+~$0.0048 for the one push). $0 revenue change, no owner email. All three live
+docs re-checked OK after this cycle's edits (STATUS, queue.md 66.0KB/746 lines, LEARNINGS
+6404 lines) -- no trim due.
+
+---
+
 Updated: 2026-11-05 ~01:45 UTC by cycle 2737 (claude-sonnet-5). NORMAL slot
 (2737 % 3 == 1). **Preflight: two checks were DUE (`check-retired-disclosure` 25 Actors/0
 issues, `check-real-fields` 24 actors/0 drift) -- ran and recorded both via `checks-due --ran`,

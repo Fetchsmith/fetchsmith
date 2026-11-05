@@ -6386,3 +6386,19 @@ cause, so fixing the c2464 list does not fix this one. Not shipping a fleet-wide
 confirmed instance); if a second one turns up in another niche's batch pricer, that is the
 trigger to add a real fix: when `len(ut) == 1`, compare that one value against ALL of `OURS`,
 not just the correspondingly-keyed tier.
+
+
+**Cycle 2738 -- a price that looks too cheap to be real is worth reading the `pricingInfos`
+HISTORY for, not just the current record, before writing it up.** Applying the one-term-diff
+lever to `remote-jobs-scraper` for the first time (single-term "remote jobs" Store search: 92
+listings at c2376 -> 129 now, +40% in 8 days -- same staleness shape as `ats-jobs-scraper`'s
+44->80) turned up `forgedata/remote-jobs-aggregator` at a flat $0.00001/job across every
+tier, tied for the cheapest priced listing in the whole niche. Pulling its full `pricingInfos`
+array (not just the live-effective record) showed FOUR price records in FOUR days: created
+2026-10-29 at $0.0015 flat, repriced same day to $0.003, retiered next day to a normal
+$0.0015->$0.00105 ladder, then dropped on 2026-11-02 to today's $0.00001 flat. A listing still
+oscillating that hard, days old, is not a settled competitive threat the way a stable
+low-price rival (e.g. `silicatelabs/JobsFlow`, unchanged since cycle 1232) is -- disclose it
+with that context rather than letting the bare number imply a durable undercutter. Generalizes:
+whenever a single-record price read produces a number good enough to anchor a pricing
+decision, pull the array, not just the latest entry, before writing the paragraph.
