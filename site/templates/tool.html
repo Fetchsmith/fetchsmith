@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ t.title }} — FetchSmith{% endblock %}
 {% block desc %}{{ t.summary }}{% endblock %}
-{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}"{% if t.status != 'retired' %}{% if t.apify_price and not checkout_live %},"offers":{"@type":"Offer","price":"{{ t.apify_price.entry | usd }}","priceCurrency":"USD","url":"https://apify.com/{{ apify_user }}/{{ t.slug }}","availability":"https://schema.org/InStock","description":"Pay per result on the Apify Store: ${{ t.apify_price.entry | usd }} per result{% if t.apify_price.floor and t.apify_price.floor != t.apify_price.entry %}, dropping to ${{ t.apify_price.floor | usd }} per result on higher Apify plans{% endif %}. No charge for a run that returns nothing."}{% else %},"offers":{"@type":"Offer","price":"{{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}","priceCurrency":"USD","description":"Pay per result ({{ t.credits_per_result or 1 }} credit{{ '' if (t.credits_per_result or 1) == 1 else 's' }} per result on the Starter pack)"}{% endif %}{% endif %}}</script>{% if t.status == 'retired' %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
+{% block head %}<script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"{{ t.title }}","applicationCategory":"DeveloperApplication","operatingSystem":"Web","description":"{{ t.summary }}","url":"{{ site_url }}/tools/{{ t.slug }}"{% if t.status != 'retired' %}{% if t.mcp %},"offers":{"@type":"Offer","price":"{{ t.apify_price.entry | usd }}","priceCurrency":"USD","url":"https://apify.com/{{ apify_user }}/{{ t.slug }}","availability":"https://schema.org/InStock","description":"Pay per tool call on the Apify Store: ${{ t.apify_price.entry | usd }} per MCP tool call, flat, regardless of how many results that call returns."}{% elif t.apify_price and not checkout_live %},"offers":{"@type":"Offer","price":"{{ t.apify_price.entry | usd }}","priceCurrency":"USD","url":"https://apify.com/{{ apify_user }}/{{ t.slug }}","availability":"https://schema.org/InStock","description":"Pay per result on the Apify Store: ${{ t.apify_price.entry | usd }} per result{% if t.apify_price.floor and t.apify_price.floor != t.apify_price.entry %}, dropping to ${{ t.apify_price.floor | usd }} per result on higher Apify plans{% endif %}. No charge for a run that returns nothing."}{% else %},"offers":{"@type":"Offer","price":"{{ '%.4f' % ((t.credits_per_result or 1) * 0.0025) }}","priceCurrency":"USD","description":"Pay per result ({{ t.credits_per_result or 1 }} credit{{ '' if (t.credits_per_result or 1) == 1 else 's' }} per result on the Starter pack)"}{% endif %}{% endif %}}</script>{% if t.status == 'retired' %}<meta name="robots" content="noindex,follow">{% endif %}{% endblock %}
 {% block body %}
 <div style="padding-top:40px"><p class="muted"><a href="/tools">Tools</a> / {{ t.title }}</p><div class="tool-head"><img class="icon" src="/static/icons/{{ t.slug }}.png" alt="" width="48" height="48"><h1 style="margin:0">{{ t.title }}</h1></div><p class="lead" style="color:var(--ink-2);max-width:720px">{{ t.summary }}</p>{% if t.notice %}<p class="notice warn">⚠ {{ t.notice }}</p>{% endif %}</div>
 <div class="two">
@@ -20,7 +20,12 @@
    intent surface we have. Now: while checkout is closed and the Actor has a public Store
    page, lead with the real Apify API call (Bearer auth verified 200 against
    api.apify.com this cycle) and demote the hosted API to one muted line. #}
-{% if not checkout_live and t.apify_listed != false %}<p class="muted">Pay-per-result on Apify, no FetchSmith account needed. Use your own <a href="https://console.apify.com/settings/integrations" rel="noopener">Apify API token</a>, or hit <strong>Run</strong> on the <a href="/go/{{ t.slug }}" rel="noopener">Store page</a> with no token at all.</p>
+{% if t.mcp %}<p class="muted">This tool runs in Apify Standby mode as an MCP server — point an MCP client (Claude, Cursor, etc.) at the Standby URL below, or call it directly over JSON-RPC. No "Run" step, no dataset to poll.</p>
+<pre><code>curl -X POST "{{ t.standby_url }}/mcp" \
+  -H "Authorization: Bearer YOUR_APIFY_TOKEN" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"{{ t.mcp_tool }}","arguments":{{ t.example_input | tojson if t.example_input else '{}' }}}}'</code></pre>
+<p class="muted">Returns the tool result as MCP content, charged once per call regardless of how many rows come back.</p>
+{% elif not checkout_live and t.apify_listed != false %}<p class="muted">Pay-per-result on Apify, no FetchSmith account needed. Use your own <a href="https://console.apify.com/settings/integrations" rel="noopener">Apify API token</a>, or hit <strong>Run</strong> on the <a href="/go/{{ t.slug }}" rel="noopener">Store page</a> with no token at all.</p>
 <pre><code>curl -X POST "https://api.apify.com/v2/acts/{{ apify_user }}~{{ t.slug }}/run-sync-get-dataset-items?clean=true" \
   -H "Authorization: Bearer YOUR_APIFY_TOKEN" -H "Content-Type: application/json" \
   -d '{{ t.example_input | tojson if t.example_input else '{"maxResults": 20}' }}'</code></pre>
@@ -46,7 +51,10 @@
    $0.0025/result for every tool, against real Apify prices of $0.0001-$0.004 -- i.e. a
    number no buyer could pay, overstated 25x on the cheapest Actors. `apify_price` is
    synced from the live platform record by bin/sync-apify-prices. #}
-{% if ap and not checkout_live %}  <div class="price">${{ ap.entry | usd }} <small>per result</small></div>
+{% if t.mcp %}  <div class="price">${{ ap.entry | usd }} <small>per tool call</small></div>
+  <div class="muted">Flat fee per MCP tool call on Apify, no start fee. Failed calls are free.</div>
+  <a class="btn" href="/go/{{ t.slug }}" rel="noopener">View on Apify Store</a>
+{% elif ap and not checkout_live %}  <div class="price">${{ ap.entry | usd }} <small>per result</small></div>
   <div class="muted">Charged on Apify{% if ap.floor and ap.floor != ap.entry %}, dropping to ${{ ap.floor | usd }} per result on higher Apify plans{% endif %}. Failed runs are free.</div>
   <a class="btn" href="/go/{{ t.slug }}" rel="noopener">Run on Apify Store</a>
   <a class="btn ghost" href="/pricing">Hosted API pricing</a>
@@ -62,7 +70,7 @@
    website-screenshot-scraper sat that way (status live, two dead Run buttons) from cycle 1775,
    when Apify started gating publication past 9 public Actors on owner identity verification. #}
 {% if t.apify_listed != false %}  <div class="muted" style="margin-top:10px">Actor page: <a href="/go/{{ t.slug }}" rel="noopener">apify.com/{{ apify_user }}/{{ t.slug }}</a></div>{% endif %}
-  <ul>{% if not t.browser_based %}<li>HTTP-only, no browser</li>{% endif %}<li>Re-tested nightly</li><li>JSON, CSV or Excel output</li><li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
+  <ul>{% if not t.browser_based %}<li>HTTP-only, no browser</li>{% endif %}{% if t.mcp %}<li>Live MCP tool, JSON content</li>{% else %}<li>Re-tested nightly</li><li>JSON, CSV or Excel output</li>{% endif %}<li><a href="https://github.com/Fetchsmith/fetchsmith/tree/main/actors/{{ t.slug }}" rel="noopener">Source code</a></li></ul>
 {% endif %}
 </aside>
 </div>

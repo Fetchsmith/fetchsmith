@@ -2,6 +2,6 @@
     "tool-call": {
         "eventTitle": "Clinical trial search tool call",
         "eventDescription": "Flat fee for one search_clinical_trials MCP tool call, regardless of how many studies are returned.",
-        "eventPriceUsd": 0.01
+        "eventPriceUsd": 0.005
     }
 }

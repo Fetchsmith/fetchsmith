@@ -389,6 +389,11 @@ def _apify_price_phrase(t):
     ap = t.get("apify_price") or {}
     if t.get("apify_listed") is False or not ap.get("entry"):
         return None
+    if t.get("mcp"):
+        s = f"${_usd(ap['entry'])} per MCP tool call on Apify Store, flat"
+        if ap.get("floor") and ap["floor"] != ap["entry"]:
+            s += f" (down to ${_usd(ap['floor'])} per call on higher Apify plans)"
+        return s
     s = f"${_usd(ap['entry'])} per returned result on Apify Store"
     if ap.get("floor") and ap["floor"] != ap["entry"]:
         s += f" (down to ${_usd(ap['floor'])} per result on higher Apify plans)"

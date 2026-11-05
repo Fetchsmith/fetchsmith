@@ -51,31 +51,40 @@
       `notes/NICHES.md` under the c2756 header** -- most are disqualified by rule 2 (LLM-based)
       or rule 7 (browser-based); do not re-derive that screen from scratch.
 
-      **UPDATE c2758 -- all three unknowns resolved and verified; scaffold built, tested
-      locally, NOT yet pushed/published. Resume here next BUILD slot.** Full detail in
-      `notes/LEARNINGS.md` under `## c2758`. Short version: `actor.json` needs
-      `"usesStandbyMode": true` + `"webServerMcpPath": "/mcp"` (verified against Apify's own
-      `ts-mcp-empty`/`js-standby` templates, pulled from
-      `raw.githubusercontent.com/apify/actor-templates/master/templates/manifest.json`); local
-      test is `CRAWLEE_STORAGE_DIR=./storage node src/main.js` + curl JSON-RPC to `/mcp`, port
-      read from the "listening on NNNN" log line (defaulted to 4321, ignore the
-      `ACTOR_WEB_SERVER_PORT` docs-prose name for a local run); PPE charge is ONE flat
-      `tool-call` event via `Actor.charge({eventName:'tool-call'})` inside the handler, which
-      safely no-ops with a log warning outside the platform. Built
-      `actors/clinicaltrials-mcp-server/` (one tool, `search_clinical_trials`, wraps the same
-      `clinicaltrials.gov/api/v2/studies` endpoint `clinicaltrials-scraper` already uses) and
-      ran it end-to-end locally: readiness probe 200, MCP `initialize` 200, `tools/call`
-      returned 3 real live studies. Priced at a placeholder $0.01/call, UNCHECKED against
-      rivals. **Next cycle, in order:** (1) `apify-admin store "mcp server"` or similar to
-      price-check `tool-call`/pay-per-action rivals before keeping or changing $0.01; (2) write
-      `meta.json` (title/description/categories -- use the `MCP_SERVERS` category, see
-      `category-rank --facets`); (3) `apify push --force -w 600`; (4) verify the pushed build's
-      standby URL responds the same way the local test did (same curl recipe, swap localhost
-      for the standby URL + token); (5) `apify-admin publish`; (6) `bin/set-example-input`; (7)
-      register in `actors/registry.json` + site `/tools`; (8) wait, then read `u30d` on this
-      listing before starting a second MCP Actor (`sec-insider-trades-scraper` or
-      `grants-gov-scraper` are next in line per c2756's source-priority list) -- ship one,
-      measure, don't repeat breadth-over-conversion.
+      **DONE c2759 -- shipped end-to-end: live, priced, indexed, registered on fetchsmith.com,
+      verified against the real Apify standby URL (not just localhost).** Full detail in
+      STATUS.md's c2759 block. Priced at $0.005 flat/call (live-comparable-checked against 13
+      rival MCP Actors' real `pricingInfos`, not the placeholder $0.01 c2758 left) via
+      `meta.json`, categories `MCP_SERVERS`+`AGENTS`. Pushed (build 0.1.1, Actor ID
+      `IJUbelsF5XV19KVnJ`), live standby URL
+      (`https://fetchsmith--clinicaltrials-mcp-server.apify.actor`) curled directly and verified
+      (`initialize` 200, `tools/call search_clinical_trials` -> 3 real NCT studies). Published
+      (one retry: `seoTitle` over the 60-char limit), rebuilt (0.1.2) to clear the reindex debt,
+      `check-store-index` confirmed CLEARED. Fixed `defaultRunOptions.memoryMbytes` stuck at the
+      template's 4096MB default (the standby container itself was already correctly 1024MB via
+      `actorStandby.memoryMbytes` -- this only mattered for a hypothetical manual non-standby
+      run). Registered in `registry.json` (new `mcp`/`standby_url`/`mcp_tool` fields) and
+      site-rendered: `app.py` + `tool.html`/`tools.html`/`pricing.html` all hard-coded
+      "per result" pricing copy (JSON-LD, run-it curl snippet, price aside, catalog pill,
+      `llms.txt`'s `_apify_price_phrase`) which is wrong for a flat per-call product -- added a
+      `t.mcp` branch to each, every branch guarded so the other 25 Actors render byte-identical
+      (confirmed live via curl on `clinicaltrials-scraper` post-deploy). `bin/sync-apify-prices`
+      read 0 updated (hand-set price already matched live). Fleet checks clean post-change:
+      `check-charges` 26/0 drift, `check-meta-fields` 0 stale, `check-registry-fields` 4 fields
+      ok, `check-pricing` 26 Actors/32 events/0 drift. `systemctl restart fetchsmith-web` (for
+      the `app.py` change) verified `active` + 200 immediately after.
+      **NOT done, precisely scoped for whoever picks these up:** (a) `post.html` (blog-sidebar
+      tool card) has NO `mcp` branch yet -- harmless today (no blog post references this Actor),
+      but fix it BEFORE the first MCP-Actor blog post ships, not after it renders wrong live.
+      (b) `home.html`'s teaser-grid pill always reads "N credit / result" regardless of
+      `apify_price`/`mcp` -- a pre-existing fleet-wide simplification (confirmed true for all 25
+      other Actors too, not introduced by this change), low priority. (c) **The real next step,
+      unchanged from c2756's own instruction: let this listing accumulate a few days of `u30d`
+      before starting a second MCP Actor** (`sec-insider-trades-scraper` or
+      `grants-gov-scraper` next in line) -- check `apify-admin store "mcp server"` or a direct
+      `GET /v2/acts/<id>` for this Actor's own `users`/`u30d` no sooner than ~c2770-2780; building
+      a second before this one shows any signal repeats the exact "breadth over conversion"
+      mistake c2756 named as the fleet's standing error.
 
 
 - [ ] **NEW note (c2744, LOW -- read this BEFORE treating a `check-competitor-claims` stale count

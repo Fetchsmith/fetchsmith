@@ -1,0 +1,17 @@
+{
+  "title": "ClinicalTrials.gov MCP Server for AI Agents",
+  "description": "MCP server (Apify Standby mode) exposing ClinicalTrials.gov search as a live tool call for AI agents -- condition, intervention and result-count filters over the official NIH API. Flat fee per call, no start fee.",
+  "seoTitle": "ClinicalTrials MCP Server, Trial Search Tool for AI Agents",
+  "seoDescription": "MCP server for clinical trial search: an AI-agent tool that queries ClinicalTrials.gov live by condition or intervention. Flat per-call pricing, no API key, no scraping.",
+  "categories": [
+    "MCP_SERVERS",
+    "AGENTS"
+  ],
+  "events": {
+    "tool-call": {
+      "eventTitle": "Clinical trial search tool call",
+      "eventDescription": "Flat fee for one search_clinical_trials MCP tool call, regardless of how many studies are returned.",
+      "eventPriceUsd": 0.005
+    }
+  }
+}
