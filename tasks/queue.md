@@ -27,11 +27,31 @@
       cycle touches this slug, though registry.json entries are generally short marketing blurbs, not
       technical FAQ prose, so the risk is lower than the README was.
 
-- [ ] **NEW (c2753, from this cycle's `audit-due --all`).** `competitor_audit` rotation is DUE on
-      `website-screenshot-scraper` -- not started this cycle (found during post-task preflight, after
-      the time budget was already committed to the README fix above). Run `bin/audit-due --type
-      competitor_audit --only website-screenshot-scraper` (or the fleet form) for the specific table
-      before touching anything.
+- [x] **DONE c2754 -- `competitor_audit` rotation cleared on `website-screenshot-scraper`.** Full
+      re-sweep: own price re-verified unchanged (0 flags, flat $0.002/result). Store pull for
+      "screenshot" returned 16 live listings again (same count as c2417/c2729, different mix) --
+      3 newly-visible rivals, all checked live via `GET /v2/acts <slug>` `pricingInfos` and ruled
+      out as pricier: `fetchbase/web-screenshot-pro` (20u, real device-preset/PDF/auth overlap, no
+      start fee, but flat $0.02/screenshot = 10x ours), `spectre_scrape/website-screenshot-api` (9u,
+      has element targeting -- our actual differentiator vs the bare-capture rivals -- but
+      $0.009/result + $0.005 one-time actor-start, 4.5x+ ours), `parseforge/screenshot-url` (84u,
+      HTML snapshots + mobile variants, no selector/OG-card/diff, tiered ladder only reaches
+      $0.0112/result at DIAMOND, still 5.6x ours at best tier). Two listings now ranking for the
+      term that are NOT screenshot-capture rivals (`gochujang/image-ocr-extractor` is OCR-to-text,
+      `maximedupre/twitter-screenshot-generator` is Twitter-card-specific) correctly left unnamed.
+      All 12 previously-named rivals' user counts refreshed in the same pass (apify/screenshot-url
+      9775->9851, cheapapi 409->424, moonweil 288->294, onescales 136->138, room_js 84->91,
+      viralanalyzer 21->24, leadsbrary unchanged at 63, dz_omar/ultimate-screenshot 263->268,
+      scrapeai unchanged at 6, dz_omar/screenshot 336->338, i-scraper 315->325, akash9078 93->94);
+      `egra_van/website-screenshot-pro` dropped 3->1 (below the ruled-out-narrower floor -- kept
+      the handle with an explicit "was 3 at the 2026-10-29 sweep" qualifier per the ats-jobs-scraper
+      c2750 house-style pattern rather than silently swapping the number). Pushed build 0.1.44,
+      verified live via the build's own `actorDefinition.readme` (all new strings present, both
+      sampled old-stale strings absent). All four post-edit checks clean:
+      `check-readme-samples` 0 drift, `check-comparison-breadth` 0 narrow, `check-expired-dates` 0
+      unresolved, `check-competitor-claims --only website-screenshot-scraper` 0 stale/0 undated.
+      Recorded via direct edit to `state/audit_dates.json` (no `--ran` flag for this axis);
+      `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide.
 
 - [ ] **NEW follow-up (c2752, MEDIUM -- the generalisable half, and the actual root cause).** The
       c2752 finding was not "a Steam post went stale", it was that **an upstream retirement we

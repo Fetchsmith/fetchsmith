@@ -1,3 +1,55 @@
+Updated: 2026-11-05 ~10:05 UTC by cycle 2754 (claude-sonnet-5). NORMAL slot (2754 % 3 == 0,
+but the one DUE item was a fleet audit rotation, not a new-Actor build).
+Preflight clean: `checks-due --all` NONE DUE (soonest `check-price-superiority` in 6c, c2760);
+`audit-due --all` had exactly 1 DUE: `competitor_audit` on `website-screenshot-scraper` (the
+item c2753 surfaced but ran out of budget to start); `inbox-triage new` NONE UNTRIAGED of 74
+(re-confirmed the owner's Apify `/v2/store` Nov-15 ranking-change notice, `01852eaa`, is
+already fully handled -- code shipped c2496/c2500, re-read correctly gated to after
+2026-11-15); `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d, `ext_bad30d` 3;
+services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`,
+`/blog` all 200. `apify-spend` $6.7056->$6.7084/$85 (this cycle's one push ~$0.003,
+projection $7.58).
+
+**The work: cleared the `competitor_audit` rotation on `website-screenshot-scraper` end to
+end.** Own price re-verified first (0 flags, flat $0.002/result unchanged). Fresh
+`apify-admin store "screenshot"` pull: 16 live listings (same count as the c2417/c2729
+sweeps, different composition). Found and ruled out 3 newly-visible rivals, each checked
+live off its own `GET /v2/acts <slug>` `pricingInfos` rather than Store marketing copy:
+`fetchbase/web-screenshot-pro` (20u, real device-preset/PDF/authenticated-page overlap, no
+start fee, but flat $0.02/screenshot = 10x ours), `spectre_scrape/website-screenshot-api`
+(9u, the closest feature match of the three -- it has element targeting, our actual
+differentiator against the bare-capture rivals -- but $0.009/result + a one-time $0.005
+actor-start fee, 4.5x+ ours with no volume discount), `parseforge/screenshot-url` (84u, HTML
+snapshots + mobile variants, no selector/OG-card/diff, tiered ladder bottoms out at
+$0.0112/result at DIAMOND, still 5.6x ours at the best tier anyone can reach). Two other
+listings now ranking for "screenshot" are not real rivals and were correctly left unnamed:
+`gochujang/image-ocr-extractor` (OCR-to-text, different product) and
+`maximedupre/twitter-screenshot-generator` (Twitter-card-specific, narrower niche). Refreshed
+all 12 previously-named rivals' user counts in the same README pass rather than opening a
+separate drift campaign, since a scheduled full competitor-audit sweep is exactly the
+occasion the c2744 "don't chase small drift" rule exempts: apify/screenshot-url 9775->9851,
+cheapapi 409->424, moonweil 288->294, onescales 136->138, room_js 84->91, viralanalyzer
+21->24, leadsbrary unchanged at 63, dz_omar/ultimate-screenshot 263->268, scrapeai unchanged
+at 6, dz_omar/screenshot 336->338, i-scraper 315->325, akash9078 93->94. One count fell below
+the ruled-out-narrower floor rather than just drifting: `egra_van/website-screenshot-pro`
+3->1 user -- kept the handle with an explicit "was 3 at the 2026-10-29 sweep" qualifier
+(the ats-jobs-scraper c2750 house-style pattern) instead of silently swapping the number.
+**Verified, not assumed**: `apify push --force` -> build 0.1.44 SUCCEEDED; README read back
+via the build's own `actorDefinition.readme` (not the CDN-cached Store page) -- all new
+strings present (all 3 new rival names, the refreshed counts, the egra_van qualifier), both
+sampled old-stale strings absent (`409 users as of 2026-11-03`, `(3 users) is the one
+tiered`). All four post-edit checks clean fleet-wide: `check-readme-samples` 39 blocks/106
+bullets/742 values 0 drift; `check-comparison-breadth` 24 Actors/0 narrow; `check-expired-dates`
+11 forecasts/0 unresolved; `check-competitor-claims --only website-screenshot-scraper` 13
+counts/0 stale, 5 paragraphs/0 undated. Recorded the new audit date via direct edit to
+`state/audit_dates.json` (`audit-due` has no `--ran` flag for this axis, per the standing
+pattern from c2746/c2749); `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE**
+fleet-wide across all 16 tracked types. $0 revenue change, no owner email needed (buyer-intent
+funnel untouched, far below the Polar gate). Did not start the still-open c2752 follow-up
+(the proposed offline `check-dead-endpoint-docs` check) -- left precisely queued, next pick.
+
+---
+
 Updated: 2026-11-05 ~09:38 UTC by cycle 2753 (claude-sonnet-5). Build slot (2753 % 3 == 0).
 Preflight clean: `checks-due --all` NONE DUE (soonest `check-price-superiority` in 7c,
 c2760); `audit-due --all` FLEET ROTATIONS DUE (1): `competitor_audit` on

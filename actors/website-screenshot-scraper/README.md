@@ -105,9 +105,9 @@ Repeated URLs in one `urls` list are captured and charged once, not once per cop
 
 **Where this sits in the market. Features and pricing verified live 2026-10-19** against each
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
-(9,775 users as of 2026-11-03) only does full-page/viewport PNG or JPEG — no element selector, device presets,
+(9,851 users as of 2026-11-05) only does full-page/viewport PNG or JPEG — no element selector, device presets,
 OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
-`cheapapi/website-screenshot-api` (409 users as of 2026-11-03) and `moonweil/url-screenshot-api` (288 users as of 2026-11-03) both
+`cheapapi/website-screenshot-api` (424 users as of 2026-11-05) and `moonweil/url-screenshot-api` (294 users as of 2026-11-05) both
 already never charge for a failed capture and both support full-page, element and device-preset
 capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
 Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
@@ -123,46 +123,62 @@ live from their own build OpenAPI documents on 2026-10-21, not from Store market
 
 **Competitor audit, verified live 2026-10-22**: a full re-sweep of the Store's `screenshot` listings (21
 candidates, live pricing pulled from each Actor's own `pricingInfos`) found one real new
-undercutter: `onescales/website-screenshot-pro` (136 users) tests across multiple device sizes —
+undercutter: `onescales/website-screenshot-pro` (138 users as of 2026-11-05) tests across multiple device sizes —
 real feature overlap, not a bare screenshotter — and its PAY_PER_EVENT ladder drops to
 **$0.001/result at GOLD and above**, half our flat $0.002, for any buyer doing enough volume to
 reach that tier. Three cheaper-looking listings were checked and ruled out as narrower, not
 undercutting the same product: `room_js/url-screenshot-generator` ($0.001/result + a one-time
-$0.005 start fee, 84 users) and `viralanalyzer/screenshot-url` (flat $0.001/result, 21 users) are
+$0.005 start fee, 91 users as of 2026-11-05) and `viralanalyzer/screenshot-url` (flat $0.001/result, 24 users as of 2026-11-05) are
 both plain full-page/viewport PNG-or-JPEG capture with no element selector, device preset,
 raw-HTML input or PDF — the same gap the free official Actor has, just cheaper; and
-`leadsbrary/screenshot-html-file-from-url` ($0.001/result at GOLD+, 63 users) adds PDF and an
+`leadsbrary/screenshot-html-file-from-url` ($0.001/result at GOLD+, 63 users as of 2026-11-05) adds PDF and an
 HTML-file export but still has no element selector, device preset or diff mode. `cheapapi` and
 `moonweil`'s own prices re-verified unchanged (tiers $0.00089→$0.00061 and flat $0.004
 respectively) — no drift since 2026-10-19.
 
 **Two more rivals surfaced 2026-10-24** by Apify's rental-pricing-deprecation auto-conversion
 (both were FLAT_PRICE_PER_MONTH rentals until 2026-10, invisible to every per-result price
-comparison before that): `dz_omar/ultimate-screenshot` (263 users) has real overlap — 100+
+comparison before that): `dz_omar/ultimate-screenshot` (268 users as of 2026-11-05) has real overlap — 100+
 device presets and, unlike us, video (MP4) and GIF export — but its PAY_PER_EVENT ladder charges
 $0.007/page-capture at its lowest tier down to $0.005 at GOLD and above, 2.5x–3.5x our flat
 $0.002; it's a feature add for buyers who need video/GIF, not a price threat.
-`scrapeai/screenshot-downloader` (6 users, flat $0.00249/result) is a bare full-or-partial PNG/
+`scrapeai/screenshot-downloader` (6 users as of 2026-11-05, flat $0.00249/result) is a bare full-or-partial PNG/
 JPEG capture with no element selector, device preset, raw-HTML input, PDF or diff mode — the
 same narrow gap as the three already-ruled-out listings above, just newly visible. Both
 re-verified live 2026-10-25: user counts and tiered pricing unchanged for each.
 
 **Full re-sweep, verified live 2026-10-29** (16 live `screenshot` Store listings, live `pricingInfos` pulled
 per Actor): four more now-visible rivals, all checked and ruled out, none a price or feature
-threat. `dz_omar/screenshot` (336 users, a second listing from the same seller as
+threat. `dz_omar/screenshot` (338 users as of 2026-11-05, a second listing from the same seller as
 `ultimate-screenshot` above) charges a one-time $0.05→$0.01 startup fee *plus* $0.01→$0.005 per
 capture *plus* a per-30-second memory-time fee — more expensive than `ultimate-screenshot` for a
 narrower feature set (cookie-header auth only, no selector/device-preset/OG-card/diff; we already
-cover cookie auth via our own `cookies`/`headers` inputs). `i-scraper/website-screenshot` (315
-users) is a flat $0.006/result bare PNG/JPG capture — 3x our price with no selector, device
-preset, raw-HTML input, PDF or diff. `akash9078/website-screenshot-generator` (93 users) nets out
+cover cookie auth via our own `cookies`/`headers` inputs). `i-scraper/website-screenshot` (325
+users as of 2026-11-05) is a flat $0.006/result bare PNG/JPG capture — 3x our price with no selector, device
+preset, raw-HTML input, PDF or diff. `akash9078/website-screenshot-generator` (94 users as of 2026-11-05) nets out
 near $0.02/screenshot once its actor-start and per-row fees are added to its $0.01–$0.02
 per-capture tier — pricier than us, same bare-capture feature set. `egra_van/website-screenshot-pro`
-(3 users) is the one tiered ladder cheaper than ours at its top rung ($0.0015/screenshot at
+(1 user as of 2026-11-05, was 3 at the 2026-10-29 sweep) is the one tiered ladder cheaper than ours at its top rung ($0.0015/screenshot at
 GOLD+, +$0.001/PDF) but has no element selector, raw-HTML input, OG-card preset or diff mode —
 the same gap as the already-ruled-out `room_js`/`viralanalyzer`/`leadsbrary` listings, just a
 newer entrant. `cheapapi`, `moonweil` and `onescales` re-verified live, pricing unchanged since
 their last-dated mentions above.
+
+**Full re-sweep, verified live 2026-11-05** (16 live `screenshot` Store listings this time, same
+count as the 2026-10-29 sweep but different composition — `gochujang/image-ocr-extractor` and
+`maximedupre/twitter-screenshot-generator` now rank for the term but are a different product
+each (OCR-to-text, Twitter-card-specific) and are not screenshot-capture rivals, so neither is
+named here). Three newly-visible rivals, all checked and ruled out, none a price or feature
+threat. `fetchbase/web-screenshot-pro` (20 users) has real overlap — device presets, dark mode,
+retina, authenticated pages, PDF — and no start fee, but charges a flat $0.02/screenshot, 10x our
+price. `spectre_scrape/website-screenshot-api` (9 users) is the one with the closest feature
+match — it has element targeting, our actual differentiator against the bare-capture rivals above
+— but charges $0.009/result plus a one-time $0.005 actor-start fee, 4.5x+ our price with no
+volume discount. `parseforge/screenshot-url` (84 users) renders HTML snapshots and mobile
+variants but has no element selector, OG-card preset or diff mode, and its PAY_PER_EVENT ladder
+only reaches $0.0112/result at DIAMOND — still 5.6x ours at the best tier anyone can reach. All
+other previously-named rivals re-verified live this sweep (counts updated above); no pricing
+drift beyond the user-count churn already folded into this paragraph.
 
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
