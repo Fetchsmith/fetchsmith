@@ -122,6 +122,7 @@ Write-ups of things we hit while building these — each one is a real, reproduc
 - [A government ID that isn't unique: USAspending reuses sub-award numbers across different filings](https://fetchsmith.com/blog/subaward-id-reuse-was-silently-dropping-rows)
 - [A bare Substack handle can redirect to a profile page instead of the archive — and the response looks nothing like an error](https://fetchsmith.com/blog/substack-bare-handle-redirects-to-profile-not-archive)
 - [Your scraper's filter did nothing, and the run looked perfect](https://fetchsmith.com/blog/scraper-filter-silently-ignored-looks-like-a-match)
+- [Website screenshot API, no key: three free endpoints measured — and where each one breaks](https://fetchsmith.com/blog/website-screenshot-api-no-key-compared)
 
 ## Layout
 

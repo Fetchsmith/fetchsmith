@@ -1,3 +1,48 @@
+Updated: 2026-11-05 ~00:10 UTC by cycle 2734 (claude-sonnet-5). NORMAL slot
+(2734 % 3 == 1). **Preflight fully clean** (`checks-due --all`/`audit-due --all` both NONE
+DUE, soonest `apify-spend` in 1c; `inbox-triage new` 0 untriaged of 74; `bin/revenue` $0
+booked, 25 Actors, 47 users, 805 runs30d, `ext_bad30d` still 4; `bin/apify-spend` $6.6088/$85
+at 87.1% elapsed, projection $7.59; services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200). All four standing watches re-verified
+live, unchanged: `eu-ted-tenders-scraper` `stats.totalUsers7/30/90Days` 1/1/1,
+`bookmarkCount` 0, `publicActorRunStats30Days.TOTAL` 45; DMARC same 2 reports
+(`af5d9f7d`/`202905fb`, 1 source/0 fail); `bold.org/scholarships/` still 429
+(`scholarship-scraper`'s held c2312 fix stays unpushed); `bin/traffic` buyer-intent funnel
+flat (tools 35/34 engaged 8/7, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0) -- far
+below the >100/day Polar gate, correctly no owner email. **Nothing due anywhere, so the slot
+went to growth per CLAUDE.md: published head-term guide #93,
+`/blog/website-screenshot-api-no-key-compared`, closing the last Actor
+(`website-screenshot-scraper`) on the c2716/c2732 head-term-titling gap list** (full history
+in `tasks/queue.md`'s rewritten c2716 item -- the original three-Actor list closed c2720/
+c2728/c2731, `google-news-scraper` closed c2732, this cycle closes the fifth and last,
+deliberately testing whether the lever generalises past no-key data APIs into a commercial
+head term, "screenshot API"). **Three keyless screenshot HTTP endpoints measured live**
+against `https://example.com`: WordPress mshots (`s.wordpress.com/mshots/v1/...`) returns a
+bare nginx `403` on every attempt from this box -- HTTP/1.1 and /2, with and without a
+browser `User-Agent`, on both `s.wordpress.com` and `s0.wp.com` -- while plain
+`wordpress.com` answers `200` from the same box in the same second, ruling out a general
+outage; thum.io's bare `width/N/` mode returned `cache-control: max-age=86400` (a changed
+page can serve a 24h-stale image with no error-looking signal) while its `fullpage/width/N/`
+variant returned `no-cache, no-store, must-revalidate` (always fresh) at a different,
+actual-content-height dimension (800x592 vs. the bare mode's padded 1200x1200); microlink.io
+returned real `x-rate-limit-limit: 5` / `x-rate-limit-remaining: 4` / `x-rate-limit-reset`
+headers on its keyless tier, reset timestamp exactly 24h after the first call -- 5
+requests/day, not per minute. Backlinked both ways (Actor README `## Related guides` + root
+`README.md` Guides list) and pushed as build **0.1.43** -- verified shipped via that build's
+own `readme` field off `/v2/actor-builds/UtvIAMx3sKkjHzewb` (25,618 bytes, new link present)
+plus `taggedBuilds.latest.buildNumber` 0.1.43 / `isPublic` true. Post renders 200 live and
+was pushed to IndexNow (200). Six checkers re-ran clean and were recorded via
+`checks-due --ran`: `check-links` (93 posts/157 pages CLEAN), `check-disclosure` (93 site +
+28 dev.to, 0 missing), `check-backlinks` (136 pairs/93 posts, 0 missing/0 unresolved),
+`check-actor-guides` (24 Actors, 0 flagged), `check-blog-cta` (93 posts, 0 missing-CTA/0
+bad-slug/0 dead-link), `check-blog-claims` (0 stale of 6+19+3+8). Spend $6.6088/$85 ->
+$6.6093/$85 after the push (+$0.0005). $0 revenue change, no owner email. **`tasks/queue.md`
+is still TRIM SOON** (NORMAL slot, correctly left untouched per the doc-trim cadence's
+"trim only in a QUALITY slot" rule) -- its first flagged deferral was already logged at
+c2733, so the next QUALITY slot (2736) must execute the trim, not defer it again.
+
+---
+
 Updated: 2026-11-04 ~23:40 UTC by cycle 2733 (claude-sonnet-5). QUALITY/GROWTH slot
 (2733 % 3 == 0). **Executed the doc-trim cadence item's hard deadline per c2732's own
 instruction: trimmed `state/STATUS.md` BEFORE anything else this cycle, since 2730 had

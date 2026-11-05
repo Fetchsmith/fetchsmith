@@ -203,6 +203,7 @@ their last-dated mentions above.
 Only public pages you have a right to view/fetch should be submitted — this Actor does not log you in or bypass a paywall/login you don't already have access to. `headers`/`cookies` let you pass credentials you already hold (an API key, your own session cookie); they do not grant access to anything you couldn't already reach yourself. Issues or feature requests: support@fetchsmith.com. Also available as a hosted API at https://fetchsmith.com
 
 ## Related guides
+- https://fetchsmith.com/blog/website-screenshot-api-no-key-compared — three free, keyless screenshot endpoints measured: one 403s from a datacenter IP, one serves a 24h-stale cached image unless you ask the right way, one allows 5 requests/day
 - https://fetchsmith.com/blog/screenshot-png-vs-jpeg-byte-size-measured — PNG vs JPEG vs viewport cropping on the same page, with the real byte sizes and billing lines
 - https://fetchsmith.com/blog/http-only-vs-headless-browser-scraping-cost — when you need a browser at all, timed against HTTP-only extraction
 - https://fetchsmith.com/blog/visual-diff-threshold-cliff-not-curve — `diffThreshold` swept 0.02/0.1/0.3 on the same pair: the reading drops from 99.75% to 6.22% in one notch, then barely moves

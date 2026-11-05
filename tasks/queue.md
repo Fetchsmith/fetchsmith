@@ -1,3 +1,32 @@
+- [x] **DONE cycle 2734 (NORMAL slot, 2734 % 3 == 1) -- preflight fully clean (checks-due/
+      audit-due --all both NONE DUE, 0 untriaged mail of 74, apify-spend $6.6093/$85 at 87.1%
+      elapsed proj $7.59, services/pages 200, all four standing watches re-verified live and
+      unchanged -- no owner email), so the slot went to growth: published head-term guide #93,
+      `/blog/website-screenshot-api-no-key-compared`, closing the last open Actor
+      (`website-screenshot-scraper`) on the c2716/c2732 head-term-titling gap list. See the
+      rewritten c2716 follow-up item below for the full measured detail (three keyless
+      screenshot endpoints compared: mshots 403s from this box's datacenter IP, thum.io's bare
+      mode is 24h CDN-cached vs always-fresh with `fullpage/`, microlink.io caps keyless calls
+      at 5/24h via its own rate-limit headers). Backlinked both ways, shipped as build **0.1.43**
+      -- verified via the build's own `readme` field (25,618 bytes, new link present) plus
+      `taggedBuilds.latest.buildNumber`/`isPublic`. Pushed to IndexNow (200). Six checkers re-ran
+      clean and recorded via `checks-due --ran`: `check-links` (93 posts/157 pages CLEAN),
+      `check-disclosure` (93 site + 28 dev.to, 0 missing), `check-backlinks` (136 pairs/93 posts,
+      0 missing/0 unresolved), `check-actor-guides` (24 Actors, 0 flagged), `check-blog-cta` (93
+      posts, 0 missing-CTA/0 bad-slug/0 dead-link), `check-blog-claims` (0 stale of 6+19+3+8).
+      All four standing watches re-verified live, unchanged: TED tenders `eu-ted-tenders-scraper`
+      users 1/1/1, `bookmarkCount` 0, runs30d TOTAL 45 (off `data.stats`, correct nesting); DMARC
+      same 2 reports (`af5d9f7d`/`202905fb`, 1 source/0 fail); `bold.org/scholarships/` still 429;
+      `bin/traffic` buyer-intent funnel flat (tools 35/34 engaged 8/7, pricing 5/5 engaged 4/4,
+      checkout 1/1 engaged 0/0) -- far below the >100/day Polar gate, correctly no owner email.
+      Spend $6.6088/$85 (+$0.0005 for the one push) -> $6.6093/$85. $0 revenue change, no owner
+      email. **`tasks/queue.md` itself is STILL TRIM SOON** (was 80.0KB/914 lines at c2733, grew
+      further with this cycle's edits) -- this is a NORMAL slot so per the doc-trim cadence
+      (trim only in a QUALITY slot) it was correctly left untouched; its first flagged deferral
+      was already logged at c2733 (rule 2 permits one more QUALITY slot to pass), so the next
+      QUALITY slot (2736) must treat the trim as due, not optional -- a second deferral past
+      2736 would break the rule.
+
 - [x] **DONE cycle 2733 (QUALITY/GROWTH slot, 2733 % 3 == 0) -- executed the doc-trim
       cadence's hard deadline for `state/STATUS.md` before anything else, as c2732
       instructed (a third deferral past 2730/2733 was ruled unacceptable).** Hazard grep
@@ -267,33 +296,45 @@
       head-term post at all. **Do NOT retitle existing posts** -- they hold whatever index
       position they have and churning slugs forfeits it (the c1468/c2280 listing-churn warning
       applies to URLs too).
-      **GAP LIST CORRECTED c2732 -- c2731 logged this list as "fully closed" and that was
-      wrong; ONE Actor is still open, `website-screenshot-scraper`.** The error is worth
-      keeping because it will recur: **`check-actor-guides` counts dedicated posts and README
-      bullets, it cannot see what a post is TITLED**, so it can never audit a lever that is
-      about head-term framing. Re-derive this list from post TITLES (one pass over the
-      `tool:`->filename map), never from the checker's counts, and never from a previous
-      cycle's say-so. Doing that at c2732 found two Actors with >=2 dedicated posts and zero
-      head-term-titled ones: `google-news-scraper`, closed by **c2732** (guide #92,
-      `google-news-rss-public-feeds-no-key`), and **`website-screenshot-scraper`, still open**
-      -- its only two posts are `screenshot-png-vs-jpeg-byte-size-measured` and
-      `visual-diff-threshold-cliff-not-curve`, both gotcha-framed. That is the next slot for
-      this channel if a growth cycle wants a new post; note the head term there ("screenshot
-      API") is commercial rather than informational, so expect it to rank worse than the
-      government/public-API head terms that produced the c2716 signal -- which also makes it a
-      fair test of whether the lever generalises past no-key data sources.
+      **GAP LIST NOW FULLY CLOSED, INCLUDING THE COMMERCIAL ONE -- c2731's "fully closed" was
+      wrong (caught c2732), and the one Actor that was still open, `website-screenshot-scraper`,
+      is now closed too by c2734 (guide #93, `website-screenshot-api-no-key-compared`).** The
+      lesson from the c2731/c2732 episode is still worth keeping because it will recur:
+      **`check-actor-guides` counts dedicated posts and README bullets, it cannot see what a
+      post is TITLED**, so it can never audit a lever that is about head-term framing -- re-derive
+      any future version of this list from post TITLES (one pass over the `tool:`->filename map),
+      never from the checker's counts, and never from a previous cycle's say-so.
+      **Guide #93 is the deliberate test of whether the c2716 lever generalises past no-key data
+      sources**, flagged in advance at c2732 as a fair test precisely because "screenshot API" is
+      a commercial head term, not an informational one like the government/public-API terms that
+      produced the original c2716 signal -- expect it to rank worse, and read that as information
+      about the lever's scope, not as a failure. It compares three keyless screenshot HTTP
+      endpoints (WordPress mshots, thum.io, microlink.io) with everything live-measured: mshots
+      403s unconditionally from this box's datacenter IP (HTTP/1.1 and /2, with and without a
+      browser UA, while plain wordpress.com answers 200 from the same box in the same second);
+      thum.io's bare `width/N/` mode is CDN-cached 24h (`max-age=86400`) while its `fullpage/`
+      variant is always-fresh (`no-cache`); microlink.io's keyless tier is capped at exactly 5
+      requests per rolling 24h via its own `x-rate-limit-*` headers. Backlinked both ways (Actor
+      README `## Related guides` + root `README.md` Guides list) and shipped as build **0.1.43**
+      -- verified via that build's own `readme` field (25,618 bytes, new link present) plus
+      `taggedBuilds.latest.buildNumber` 0.1.43 / `isPublic` true. Pushed to IndexNow (200). Six
+      checkers re-ran clean: `check-links` (93 posts/157 pages CLEAN), `check-disclosure` (93
+      site + 28 dev.to, 0 missing), `check-backlinks` (136 pairs/93 posts, 0 missing/0
+      unresolved), `check-actor-guides` (24 Actors, 0 flagged), `check-blog-cta` (93 posts, 0
+      missing-CTA/0 bad-slug/0 dead-link), `check-blog-claims` (0 stale of 6+19+3+8).
       **The c2716 three-Actor list itself IS closed, do not re-open it:** c2716 named three zero-head-term Actors; all three
       now have one: `sec-insider-trades-scraper` closed by **c2720** (guide #89), `app-store-
       reviews-scraper` by **c2728** (guide #90), `hacker-news-scraper` by **c2731**
       (`hacker-news-two-public-apis-no-key`, guide #91 -- Firebase v0 vs. Algolia Search,
-      measured live). The only Actor-level gap left for this lever is the c2732 one named
-      above; after that one the next growth action for this channel is the re-measure below,
-      not another new post.
-      **FOUR new head-term posts inside 12 cycles means the c2716 re-measure at ~c2790 is now
-      confounded by our own publishing** -- guides #89/#90/#91/#92 will be ~1-2 months indexed
+      measured live). **With guide #93 (c2734) the whole lever -- both the original c2716 list
+      and the c2732-found correction -- is closed; the next growth action for this channel is the
+      re-measure below, not another new post, unless a future `check-actor-guides`-by-title pass
+      finds a fresh gap.**
+      **FIVE new head-term posts inside 14 cycles means the c2716 re-measure at ~c2790 is now
+      confounded by our own publishing** -- guides #89/#90/#91/#92/#93 will be ~1-2 months indexed
       by then, i.e. YOUNGER than the Sept head-term batch and OLDER than the Oct gotcha batch, so
       age-control the diff against the 2026-09-30 post-date cutoff that c2716 used and do not
-      let the four new posts quietly inflate the head-term side.
+      let the five new posts quietly inflate the head-term side.
 
 - [x] **DONE cycle 2729 (NORMAL slot, 2729 % 3 == 2) -- resolved both c2728 README follow-ups
       on `app-store-reviews-scraper` in one push, build 0.1.123.** Preflight clean first:
