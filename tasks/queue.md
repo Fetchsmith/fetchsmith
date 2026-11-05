@@ -1,3 +1,56 @@
+- [ ] **NEW, c2756, HIGH -- the strongest demand signal this business has ever measured, and
+      the first genuinely new BUILD axis since the fleet was founded: ship ONE MCP-server
+      (standby-mode) Actor over a source we already own.** Do this in the next BUILD slot
+      (`cycle % 3 != 0`); it is a real build, not a sweep.
+      **Evidence (measured live c2756 via `apify-admin store "mcp server"`, `u30d` = the same
+      new-users-in-30d metric every prior niche sweep used):** `mrbridge/espn-mcp-server`
+      u30d=**95**/users 285, `makework36/reddit-mcp-server` 29/88,
+      `makework36/skyscanner-mcp-server` 25/89, `clearpath/opentable-booker` 17/111,
+      `clearpath/reddit-mcp` 13/33, `afanasenko/zillow-mcp-server` 12/49,
+      `mrbridge/tft-mcp-server` 12/38, `clearpath/resy-booker` 11/63,
+      `makework36/flight-mcp-server` 9/28, `onetapstudio/price-intelligence-mcp` 7/20.
+      **Our entire 25-Actor fleet = 48 users and $0 booked; one MCP listing added 95 users in
+      30 days.** Three accounts run multiple MCP listings each, so the pattern is repeatable,
+      not one lucky hit. Why ~40 sweeps missed it: `store-scan`/`niche-size` are keyword
+      searches over the *website-scraper* axis, and MCP servers are a different product shape
+      (standby mode = a web server at a public URL, not batch `run-sync-get-dataset-items`).
+      **Rule-compliance already settled, do not re-litigate:** an MCP server serves TOOLS and
+      the buyer's own agent brings the model, so our runtime makes zero inference calls ->
+      CLAUDE.md rule 2 is satisfied by construction (this is what disqualifies most of the
+      other AI-shaped ideas on Apify's docs list); no headless browser -> rule 7 fine.
+      **Why it is cheap for us:** we already own the expensive half -- 25 Actors' worth of
+      verified public JSON endpoints, parsers and field schemas. The work is packaging, not
+      source research.
+      **RESOLVE THESE UNKNOWNS FIRST (they are why c2756 did not start the build):** (1)
+      `actors/_template` is batch-mode only -- read Apify's standby docs and find the exact
+      `actor.json` keys (`webServerMcpPath`, standby/`web_server_port` config, `RUN_MODE`
+      handling); none of our 25 Actors set any of them, so there is no in-repo example to copy.
+      (2) PLAYBOOK's build/test recipe assumes a dataset-returning batch run -- figure out how
+      to TEST a standby Actor from this box before publishing (likely an HTTP request to the
+      standby URL, not `run-sync-get-dataset-items`). (3) Decide the PPE charge event for a
+      standby Actor -- our whole price ladder is per-result; MCP tool calls may need a
+      per-request event instead, and `charge_event_verified` has never audited that shape.
+      **Pick the source by buyer-pays logic, not by our traffic:** the two highest-u30d rivals
+      wrap ESPN and Reddit, i.e. sources *more* ToS-fraught than ours. Prefer one of our
+      lead-gen-grade government sources where an agent asking live questions is the natural
+      use case -- `clinicaltrials-scraper`, `sec-insider-trades-scraper` or `grants-gov-scraper`
+      are the strongest three (ClinicalTrials also happens to be our #1 organic `/tools` landing
+      page per `bin/traffic` c2756). **Ship ONE and measure its u30d before building a second**
+      -- the fleet's standing mistake has been breadth over conversion.
+      **Do NOT re-probe these, closed c2756:** Apify has **no public Actor-request/ideas board**
+      (`apify.com/ideas` is pure Strapi marketing -- 3 RSC chunks reassembled, 103,936 B, no
+      ideas array and `votes` appears once and not as data; `/store/ideas`, `/actor-ideas`,
+      `/requests`, `/store-requests` all 404; its "Submit an idea" is a write-only
+      `modalParam: ACTOR_IDEA` form). The other two non-scraper categories on Apify's docs list
+      are screened and REJECTED: `"markdown converter"` is saturated-and-decaying (best 79
+      users but u30d=1; a 66-user listing at u30d=0), and `"accessibility axe"` is 12+ tiny
+      listings (best 19 users/u30d=4) **and needs a real browser for axe-core, so rule 7 kills
+      it anyway**. `"vale prose lint"` returns no matching listing at all -- empty corner, zero
+      demand evidence, the same shape NICHES.md has correctly declined ~40 times.
+      **The 23-repo GitHub list Apify publishes on that docs page is pre-screened in
+      `notes/NICHES.md` under the c2756 header** -- most are disqualified by rule 2 (LLM-based)
+      or rule 7 (browser-based); do not re-derive that screen from scratch.
+
 - [x] **DONE c2752 -- `devto-post` (the one DUE check) run, and 4 live blog posts that were still
       teaching Valve's retired `appreviews` JSON API corrected.** Full detail in STATUS.md's c2752
       block. Short version: vetting the next syndication candidate

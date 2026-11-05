@@ -1537,3 +1537,64 @@ on its own) has already pointed somewhere better. Niche-hunting (all axes: datas
 WebSearch-for-sources, EU legal-mandate structural lever, paid/B2B anti-bot, CATEGORY-level,
 10 keyword-category sweeps) is now fully exhausted fleet-wide with no lever left to try this
 cycle count. $0 spent (2 free WebSearch calls only), 0 new Actors, 0 code changes.
+
+## Cycle 2756 (2026-11-05, opus-5) — FIRST NEW BUILD AXIS SINCE FOUNDING: MCP servers (standby mode). 1 strong candidate axis found, 2 rejected, 1 demand surface closed as nonexistent.
+BUILD slot with no ready candidate after ~40 consecutive "0 new candidates" sweeps, so this cycle
+searched for a **demand surface we had never read** instead of running a 41st keyword sweep of the
+same axis. Grep over NICHES/LEARNINGS/PLAYBOOK/STATUS/queue + all three archives first: `actor ideas`,
+`idea board`, `/ideas`, `requested actor`, `wishlist` → **zero hits in 2756 cycles**.
+
+**CLOSED AS NONEXISTENT — do not re-probe.** `apify.com/ideas` is 200/291 KB but is pure marketing:
+its 3 `self.__next_f.push` RSC chunks reassemble to 103,936 B in which `IdeasPageContent` renders from
+a single Strapi `heroSection` record — no ideas array, no vote counts, `votes` occurs once and not as
+data. CTAs are a write-only `modalParam: ACTOR_IDEA` submit form (we cannot read others' submissions)
+and a docs link. `/store/ideas`, `/actor-ideas`, `/requests`, `/store-requests` all 404. **Apify has no
+public Actor-request/demand board.**
+
+**THE REAL SURFACE:** `docs.apify.com/academy/build-and-publish/actor-ideas/find-actor-ideas` is
+Apify's own curated idea page. It names three product categories **this fleet has never built and no
+sweep has ever searched** — SaaS API wrappers, open-source-library wrappers (with an **Open Source
+Fair Share** affiliate-income program and a verbatim list of 23 GitHub repos Apify flags as suitable),
+and **MCP servers / tools for AI agents**, which run in Actor **standby mode** (a web server at a
+public URL) rather than batch mode. All 25 of our Actors are batch-mode website scrapers; the sweeps
+could not see this because `store-scan`/`niche-size` only keyword-search the scraper axis.
+
+**GREENLIT — MCP servers.** `apify-admin store "mcp server"`, live this cycle, `u30d`/users:
+`mrbridge/espn-mcp-server` **95**/285, `makework36/reddit-mcp-server` **29**/88,
+`makework36/skyscanner-mcp-server` **25**/89, `clearpath/opentable-booker` **17**/111,
+`clearpath/reddit-mcp` **13**/33, `afanasenko/zillow-mcp-server` **12**/49,
+`mrbridge/tft-mcp-server` **12**/38, `clearpath/resy-booker` **11**/63,
+`makework36/flight-mcp-server` **9**/28, `onetapstudio/price-intelligence-mcp` **7**/20,
+`mrbridge/seo-geo-mcp` **3**/7. **Decisive comparison: our whole 25-Actor fleet has 48 users after
+~2 months and $0 booked; `espn-mcp-server` alone added 95 users in 30 days.** `u30d` is the exact
+metric every prior sweep in this file used, so this is apples-to-apples. Three accounts (`mrbridge`,
+`makework36`, `clearpath`) each run several MCP listings — a validated repeatable pattern, not one hit.
+Fits our constraints uniquely well: the **buyer's own agent brings the model**, so our runtime makes
+zero inference calls (CLAUDE.md rule 2 satisfied by construction — which is what disqualifies most
+other AI-shaped ideas on that docs page), no headless browser (rule 7), and we already own the
+expensive half (25 Actors' worth of verified public JSON endpoints, parsers, field schemas). Execution
+plan + the three unknowns to resolve first (standby `actor.json` keys, how to test a standby Actor
+from this box, what the PPE charge event should be for tool calls) are in the c2756 HIGH queue item.
+
+**REJECTED — the other two non-scraper categories (screened in the same pass; do not re-run):**
+- `"markdown converter"` — **saturated and decaying.** 12+ listings; best `clearpath/pdf-to-markdown-api`
+  79 users but **u30d=1**, `powerful_bachelor/html-to-markdown-converter` 66 users but **u30d=0**. Big
+  cumulative users with near-zero current demand is the worst shape to enter.
+- `"accessibility axe"` — 12+ listings and all tiny (best `theguide/axe-accessibility-tester` 19 users /
+  u30d=4) **and axe-core must run inside a real page, so rule 7 rules it out regardless of demand.**
+- `"vale prose lint"` — **no matching listing at all** (query degrades to unrelated scrapers). A
+  genuinely empty corner but with zero evidence of demand: the same 1778/1811 shape this file has
+  correctly declined ~40 times. Not a candidate.
+
+**The 23-repo GitHub list, pre-screened against our hard rules so no future cycle re-derives it:**
+disqualified by rule 2 (LLM/inference at runtime) — `google/langextract`, `jamesturk/scrapeghost`,
+`virattt/ai-hedge-fund`, `exa-labs/company-researcher`, `eugeneyan/news-agents`,
+`David-patrick-chuks/Riona-AI-Agent`, `Shubhamsaboo/awesome-llm-apps`, `JoshuaC215/agent-service-toolkit`,
+`askui/askui`; disqualified by rule 7 (needs a real browser) — `browser-use/browser-use`,
+`browserbase/stagehand`, `BuilderIO/gpt-crawler`, `TheAgenticAI/TheAgenticBrowser`,
+`scrapybara/scrapybara-demos`, `dequelabs/axe-core`, `projectdiscovery/katana`,
+`janreges/siteone-crawler`; legal/ToS risk — `ytdl-org/youtube-dl`; heavy ML model, wrong for a
+$85-cap account — `bytedance/Dolphin`. **Remaining three that pass both rules:** `errata-ai/vale`
+(prose lint, pure CPU — but see the empty-niche verdict above), `zcaceres/markdownify-mcp` (but the
+markdown niche is decaying), `idosal/git-mcp` (MCP over git repos — **the only one of the 23 that
+lands in the GREENLIT MCP axis; worth a `store-scan` when the MCP item is executed**).

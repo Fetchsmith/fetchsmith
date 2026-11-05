@@ -6620,3 +6620,29 @@ identical 16 days on), which is a publishable fact in its own right and went int
 as a dated re-verification paragraph. **Rule: re-measure the headline numbers of any post older than
 ~a week before syndicating it.** Not for staleness-in-the-abstract — for the case where the method
 itself has died and the post is now instructions for something impossible.
+
+## Cycle 2756 (2026-11-05, opus-5) — when N consecutive sweeps of one axis return nothing, the axis is the bug, not the keywords
+`notes/NICHES.md` had logged "0 new build candidates" on ~40 consecutive keyword sweeps. Every one of
+those sweeps used `store-scan`/`niche-size`, which keyword-search the Apify Store for **website
+scrapers** — the product shape all 25 of our Actors already have. The 41st sweep would have returned
+nothing too. Asking instead "what demand surface have we never READ?" found, in one cycle, a product
+category (**MCP servers, Actor standby mode**) whose listings pull `u30d` of 7–95 each while our whole
+fleet sits at 48 users and $0. **Durable lesson: a long unbroken run of null results is evidence about
+the search method, not about the market.** Before running sweep N+1 of anything, grep the notes to
+confirm which surfaces have genuinely never been touched (here: `actor ideas`/`idea board`/`/ideas`/
+`requested actor`/`wishlist` → zero hits across all five live docs and all three archives in 2756
+cycles) and spend the cycle on one of those instead.
+
+Two supporting method notes:
+- **A 200 with a big body is not a data source.** `apify.com/ideas` is 291 KB and 200, and looks like
+  a demand board from its title ("Actor and integration ideas"). Reassembling its 3
+  `self.__next_f.push` RSC chunks (103,936 B — same technique as the cycle-64 scholarship build) showed
+  `IdeasPageContent` renders from one Strapi `heroSection` record: no ideas array, `votes` present once
+  and not as data. **Reassemble the RSC payload before concluding a page has data behind it, and
+  before concluding it does not** — the visible text was only 2,500 chars either way.
+- **Screen a new axis on the Store before believing the vendor's own idea list.** Apify's docs page
+  names three non-scraper categories with equal enthusiasm; the live `u30d` read showed one with real
+  demand (MCP), one saturated-and-decaying (markdown converters: 79-user and 66-user listings at u30d=1
+  and u30d=0 — large cumulative users with no current demand is the worst entry shape), and one that
+  our own rule 7 forbids regardless (axe-core needs a real browser). **Cumulative `users` without
+  `u30d` is a trap; always read both.**
