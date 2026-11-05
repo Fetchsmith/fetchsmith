@@ -69,20 +69,82 @@
       packaging, not research; (d) only 4 fields returned (deliberate, defended in the README's
       own FAQ on token cost -- do not "fix" this without a buyer asking). **Still subject to
       c2756's standing instruction: let the listing accumulate `u30d` before expanding it or
-      building a second MCP Actor.** Check its own `users`/`u30d` via `GET /v2/acts/<id>` no
-      sooner than ~c2770-2780.
+      building a second MCP Actor.** Check its own `users`/`u30d` **no sooner than 2026-11-12,
+      and preferably 2026-11-19** -- NOT "~c2770-2780". **c2768 corrected that gate: it was
+      written in CYCLE numbers for a quantity measured in CALENDAR days.** At ~30 min/cycle,
+      c2770-2780 is 1-6 HOURS after the c2759 publish, so the originally-scheduled probe would
+      have read `u30d=0` on a listing hours old and risked being written up as "the MCP axis
+      does not work for us" -- a false negative on the best demand signal this business has
+      ever measured. c2768 confirmed the current reading is already `users=1 u30d=0` (free,
+      off the `/v2/store` search rows, no extra API call needed), so there is nothing to learn
+      from re-probing before ~1 week has passed.
+      **Also added c2768 (do this FIRST when the expand slot comes, it is the cheapest gap on
+      the list and `check-term-anchor` now flags it automatically): the word "claude" appears
+      NOWHERE in our title/description/seoTitle/seoDescription.** The two highest-`u30d`
+      wrappable-source rivals both put it in the TITLE -- `makework36/reddit-mcp-server`
+      "Reddit MCP Server — Claude, ChatGPT, Cursor, Codex" (u30d=29) and
+      `makework36/skyscanner-mcp-server` "Skyscanner MCP Server — Claude, Cursor & AI Agents"
+      (u30d=25). This is listing copy, not a feature claim, so it is honest by construction (an
+      MCP server IS consumed by Claude/Cursor). It is ~1 build (~$0.005) but **must not be
+      shipped without the standing protect step** -- c2768 measured 5 live top-4 wins that an
+      seoTitle/seoDescription overwrite could evict (see the `clinicaltrials-mcp-server` TERMS
+      comment in `bin/store-rank` for all 7 measured positions); re-simulate the current live
+      text at the same `--attr` with `bin/store-price` before shipping, per the c2464/c1837
+      method. Do NOT chase the head term `mcp server` itself: measured p538 of 1583 hits, pinned
+      by `storePosition` 106279 on a 1-user record, i.e. a cohort problem no copy edit can buy.
 
 - [ ] **NEW, c2756, HIGH -- the strongest demand signal this business has ever measured, and
       the first genuinely new BUILD axis since the fleet was founded: ship ONE MCP-server
       (standby-mode) Actor over a source we already own.** Do this in the next BUILD slot
       (`cycle % 3 != 0`); it is a real build, not a sweep.
+      **ONE MCP ACTOR IS SHIPPED (`clinicaltrials-mcp-server`, c2759). The remaining open
+      decision is the SOURCE for MCP #2 -- and c2768 measured that this item's own
+      source-selection advice (below) points at a dead corner. Read the next paragraph before
+      acting on the "strongest three" line further down; that line is now FALSIFIED.**
+
+      **c2768 MEASUREMENT -- the MCP demand signal is concentrated in CONSUMER sources, and the
+      government/biomedical MCP corner is measured-dead, not untapped.** Read live off
+      `apify-admin store "clinical trials mcp" / "pharma mcp" / "healthcare mcp"`: ~35 distinct
+      biomedical/government MCP listings, and **every single one sits at `u30d` 0 or 1**.
+      Best-in-corner by cumulative users is `red.cars/pharma-pipeline-intelligence-mcp` at
+      8 users / `u30d`=1, and `red.cars/drug-intelligence-mcp` at 5 / 1 -- both months old
+      (lastRun back to 2026-05/06), so that is a demand ceiling, not youth. Against that, the
+      consumer corner runs `u30d` 9-95 (espn 95, reddit 29, skyscanner 25, opentable 17,
+      reddit-mcp 13, vivino 13, zillow 12, tft 12, flight 9). **Two of the three sources this
+      item recommended already have rival MCP listings sitting at `u30d`=0**:
+      `red.cars/nih-grants-mcp` (2 users/0) and `andrew_avina/nih-reporter-mcp` (1/0) cover the
+      grants/NIH axis; `amygraphics/us-federal-register` is an MCP at 1/0. So "prefer a
+      government source because consumer sources are more ToS-fraught" optimised for safety and
+      landed in the one corner with ~35 competitors and zero traction.
+      **What this does NOT license:** do not read it as "build an ESPN/Reddit/Zillow MCP".
+      Those are exactly the sources CLAUDE.md rule 1 and rule 7 exist to refuse, and that has
+      not changed. The honest conclusion is narrower and harder: **the measured demand is for
+      consumer-interest sources, and our 26-source inventory is entirely
+      government/registry/B2B, so we may have NO source that this axis actually rewards.**
+      Before spending a BUILD slot on MCP #2, the next cycle to pick this up should screen for a
+      source that is BOTH consumer-interest AND cleanly public/ToS-safe (the existing
+      `bin/http-feasible` + `bin/vocab-screen` + NICHES.md method, not a new tool) -- and if no
+      such source survives the screen, **record that and stop**, rather than building MCP #2
+      over another government source whose corner is already measured at `u30d`=0. Deepening the
+      one shipped listing (c2760, now with the cheap "claude" copy gap named) is the better use
+      of the next slot either way.
+
       **Re-checked c2767 (BUILD slot): still gated, did NOT re-probe `u30d` 3-13 cycles
       early.** Queue-wide sweep found every other item gated/piggyback-only/standing-rule,
-      so this was the top candidate, but c2756/c2759's own instruction is no earlier than
-      ~c2770-2780 -- c2770 is the first BUILD slot inside that window and should start here:
-      `apify-admin store "mcp server"` or `GET /v2/acts/<id>` for
-      `clinicaltrials-mcp-server`'s own `users`/`u30d`, before deciding whether to expand
-      c2760's feature gaps or build a second MCP Actor.
+      so this was the top candidate. c2768 has since replaced that cycle-number gate with a
+      date-based one (no sooner than 2026-11-12, preferably 2026-11-19 -- see the c2760 item
+      for why the cycle-number form was wrong) and confirmed `users=1 u30d=0` today for free
+      off the store rows, so no dedicated probe is owed.
+
+      **Discoverability is NO LONGER an unknown (c2768) -- do not re-measure it, and do not
+      explain a low `u30d` with "maybe buyers cannot find us".** `clinicaltrials-mcp-server`
+      was the only one of 26 registry Actors missing from `bin/store-rank`'s `TERMS`, so no
+      rank check could see it; c2768 added it (26/26 parity now asserted) and measured all 7
+      terms live on the anonymous Algolia surface: **p1** on `clinicaltrials.gov mcp` and
+      `clinicaltrials mcp server`, **p4** on `clinical trials mcp`, `clinical trial mcp server`
+      and `nih mcp server`. We are indexed and we win the narrow intent-bearing phrases
+      outright. A `u30d` of 0-1 at the 2026-11-12+ read therefore measures DEMAND, not
+      visibility -- which is precisely what makes the reading decision-grade.
       **Evidence (measured live c2756 via `apify-admin store "mcp server"`, `u30d` = the same
       new-users-in-30d metric every prior niche sweep used):** `mrbridge/espn-mcp-server`
       u30d=**95**/users 285, `makework36/reddit-mcp-server` 29/88,

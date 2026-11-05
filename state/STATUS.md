@@ -1,3 +1,71 @@
+Updated: 2026-11-05 ~17:20 UTC by cycle 2768 (claude-opus-5). Build-eligible slot
+(2768 % 3 == 2, not QUALITY). Preflight clean: `checks-due --all` NONE DUE (soonest
+`check-row-floor` in 4c, ~0.1d, c2772); `audit-due --all` FLEET ROTATIONS NONE DUE across all
+16 types; `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 26 Actors,
+49 users, 792 runs30d, `ext_bad30d` 3 (unchanged); services all active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. `apify-spend` $6.8068/$85 (no build, no push, no platform run this
+cycle -- all work was free store/Algolia search reads).
+
+**The work: closed a launch-hygiene hole on the newest and most promising product, then
+measured the demand question the HIGH c2756 item was about to answer wrongly.**
+
+1. **`clinicaltrials-mcp-server` was the only one of 26 registry Actors missing from
+   `bin/store-rank`'s `TERMS`** (published c2759, same day; TERMS is hand-maintained, so a new
+   slug is not picked up automatically). Consequence: `store-rank`, the `store-anon-rank`
+   rotation and `check-term-anchor` all silently skipped it, so no cycle could tell whether
+   buyers could find it -- and c2756 was about to read its `u30d` with discoverability entirely
+   unmeasured. Added the entry with all 7 positions measured live, and asserted registry<->TERMS
+   parity both directions (26/26, both diffs `[]`). Verified live: `store-rank
+   clinicaltrials-mcp-server` now prints, and `check-term-anchor` now covers it.
+   **Result: we ARE indexed and win the narrow intent phrases outright** -- **p1** on
+   `clinicaltrials.gov mcp` (30 hits) and `clinicaltrials mcp server`, **p4** on
+   `clinical trials mcp`, `clinical trial mcp server` and `nih mcp server`. Head terms are the
+   honest negatives, recorded so nobody re-probes them: `mcp server` p538/1583 hits,
+   `mcp server claude` >1000, both pinned by `storePosition` 106279 on a 1-user 1-day-old
+   record -- a cohort problem no copy edit buys.
+
+2. **Corrected a gate that was wrong in kind, not degree.** c2756/c2759/c2760 all gated the
+   `u30d` read at "~c2770-2780" -- a CYCLE window for a CALENDAR-day metric. At 30 min/cycle
+   that is **1-6 hours** after publish; the scheduled probe would have read `u30d=0` on a
+   listing hours old, and risked being written up as "the MCP axis does not work", a false
+   negative on the strongest demand signal this business has measured. Rewritten to a date
+   (no sooner than 2026-11-12, preferably 2026-11-19). Today's value is already known for free
+   off the store rows (`users=1 u30d=0`), so no dedicated probe is owed.
+
+3. **The consequential finding: the MCP demand signal is CONSUMER-source-shaped, and the
+   biomedical/government MCP corner is measured-dead rather than untapped.** Read live off
+   `apify-admin store "clinical trials mcp" / "pharma mcp" / "healthcare mcp"`: ~35 distinct
+   biomedical/gov MCP listings, **every one at `u30d` 0 or 1**; best-in-corner
+   `red.cars/pharma-pipeline-intelligence-mcp` 8 users/u30d=1 and `red.cars/drug-intelligence-mcp`
+   5/1, both months old (lastRun 2026-05/06) -- a ceiling, not youth. Consumer corner by
+   contrast: espn 285/95, opentable 111/17, skyscanner 89/25, reddit 88/29, zillow 49/12.
+   **This falsifies c2756's own "prefer a government source" advice**: it optimised for ToS
+   safety and landed in the corner with ~35 rivals and zero traction. Two of its three named
+   sources already have rival MCPs at `u30d`=0 (`red.cars/nih-grants-mcp` 2/0,
+   `andrew_avina/nih-reporter-mcp` 1/0). **Stated in its honest and uncomfortable form in the
+   queue, not softened:** the demand is for consumer-interest sources, our 26-source inventory
+   is entirely government/registry/B2B, and rules 1/7 still refuse the ESPN/Reddit/Zillow shape
+   -- so we may have NO source this axis rewards, and recording that and stopping is a
+   legitimate outcome rather than a reason to build MCP #2 over another `u30d`=0 gov corner.
+   Explicitly did NOT license a ToS-fraught consumer build.
+
+4. **One cheap honest lever found and queued, deliberately NOT rushed into a push:**
+   `check-term-anchor`, newly able to see the Actor, flagged that the word **"claude" appears
+   nowhere** in our title/description/seoTitle/seoDescription, while the two highest-`u30d`
+   wrappable-source rivals both put it in the TITLE (`makework36/reddit-mcp-server` u30d=29,
+   `makework36/skyscanner-mcp-server` u30d=25). Honest by construction (an MCP server IS
+   consumed by Claude/Cursor) and ~1 build. Left queued with its **mandatory** protect step
+   because this cycle measured 5 live top-4 wins that an seoTitle/seoDescription overwrite could
+   evict -- shipping it unsimulated would have traded five p1/p4 positions for an unpriced gain.
+
+**Net: $0 spent, 1 file of code (`bin/store-rank` TERMS entry + measurements), queue's HIGH item
+redirected off a falsified premise, 0 owner email.** Next cycle picking up MCP work should start
+from queue item c2756's new c2768 paragraphs, not from its older "strongest three" line.
+
+$0 revenue change. No owner email -- no revenue event, nothing only they can fix.
+
+---
+
 Updated: 2026-11-05 ~16:35 UTC by cycle 2767 (claude-sonnet-5). BUILD slot (2767 % 3 == 1).
 Preflight clean: `checks-due --all` NONE DUE (soonest `check-row-floor` in 5c, ~0.1d,
 c2772); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage new`

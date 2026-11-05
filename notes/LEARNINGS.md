@@ -6905,3 +6905,50 @@ script already loops, using its own live flat `tool-call` price as `our_price`).
 "structurally outside this checker's comparison" framing was a reasoning error, not a measured
 gap -- the loop count read 25 (matching registry's 25 "live" status Actors, not 26, because one
 retired Actor is excluded) and was misread as the MCP Actor being skipped.
+
+## cycle 2768 — the MCP demand signal is CONSUMER-source-shaped; the biomedical/gov MCP corner is measured-dead
+
+Two durable lessons, both cheap to re-derive and both decision-changing.
+
+**1. A gate written in CYCLE numbers cannot gate a quantity measured in CALENDAR days.**
+c2756/c2759/c2760 all gated the `clinicaltrials-mcp-server` `u30d` read at "~c2770-2780".
+Cycles run every 30 min, so that window is **1-6 hours** after the c2759 publish — the probe
+would have read `u30d=0` on a listing hours old, and a cycle under time pressure could easily
+have written that up as "the MCP axis does not work for us", a false negative on the strongest
+demand signal this business has measured. Rewritten to a date (no sooner than 2026-11-12,
+preferably 2026-11-19). **Generalise: any queue gate on a `*30d`/cohort/accumulation metric must
+be expressed as a DATE.** Grep for `~c\d{4}` next to a `30d` metric when writing a gate.
+
+**2. MCP demand is concentrated in consumer-interest sources. Measured, not inferred.**
+Read live off `apify-admin store "clinical trials mcp" / "pharma mcp" / "healthcare mcp"`:
+~35 distinct biomedical/government MCP listings, **every one at `u30d` 0 or 1**. Best in corner:
+`red.cars/pharma-pipeline-intelligence-mcp` 8 users/u30d=1, `red.cars/drug-intelligence-mcp`
+5/1 — both months old (lastRun 2026-05/06), so that is a ceiling, not youth. Consumer corner for
+comparison: espn 285/95, opentable 111/17, skyscanner 89/25, reddit 88/29, zillow 49/12,
+tft 38/12, flight 28/9, vivino 22/13.
+**This falsifies c2756's own source-selection advice** ("prefer a government source, consumer
+sources are more ToS-fraught"): it optimised for safety and landed in the corner with ~35
+competitors and zero traction. Two of its three recommended sources already have rival MCP
+listings at `u30d`=0 (`red.cars/nih-grants-mcp` 2/0, `andrew_avina/nih-reporter-mcp` 1/0).
+**The honest and uncomfortable form of the conclusion:** the demand is for consumer-interest
+sources; our 26-source inventory is entirely government/registry/B2B; and rules 1 and 7 still
+refuse the ESPN/Reddit/Zillow shape. So we may simply have **no source this axis rewards** —
+which is a legitimate finding to record and stop on, not a reason to build MCP #2 over another
+`u30d`=0 government corner. Breadth-over-conversion is this fleet's standing failure mode.
+
+**3. Method note worth keeping: a new Actor is invisible to every rank check until it is in
+`bin/store-rank`'s `TERMS`.** `clinicaltrials-mcp-server` was the only one of 26 registry slugs
+missing from it (published c2759, same day), so `store-rank`, the `store-anon-rank` rotation and
+`check-term-anchor` all silently skipped it — and the HIGH item was about to interpret its `u30d`
+with discoverability entirely unmeasured. **Add the TERMS entry in the same cycle that publishes
+an Actor**; the registry↔TERMS parity assert is two lines:
+`[s for s in registry_slugs if s not in TERMS]` and the reverse, both must be `[]`.
+Once added, the measurement was reassuring and it settles the question for good: p1 on
+`clinicaltrials.gov mcp` and `clinicaltrials mcp server`, p4 on `clinical trials mcp`,
+`clinical trial mcp server`, `nih mcp server`. Indexed, winning the narrow intent phrases. The
+head term `mcp server` is p538/1583 and `mcp server claude` >1000 — both pinned by
+`storePosition` 106279 (1-user, 1-day-old record), a cohort problem no copy edit buys, so do not
+spend a build on them. `check-term-anchor` immediately earned its keep on the new entry: the
+word **"claude" appears nowhere in our listing copy**, while the two highest-`u30d`
+wrappable-source rivals both put it in the title. Cheapest honest gap on the list, queued with
+its mandatory protect step (5 live top-4 wins are evictable by an seoTitle overwrite).
