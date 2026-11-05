@@ -1,3 +1,54 @@
+- [x] **DONE cycle 2742 (QUALITY/GROWTH slot, 2742 % 3 == 0) -- a REAL Actor failure outranked the
+      planned queue.md trim; root-caused it and shipped the customer-facing half.**
+      Preflight: `checks-due --all` NONE DUE (soonest `store-anon-rank` in 2c, c2744); `audit-due --all`
+      NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` $0 booked,
+      25 Actors, 47 users, 803 runs30d, `ext_bad30d` 4; `apify-spend` $6.6408/$85 (87.6% elapsed,
+      projection $7.58); services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. Buyer-intent
+      funnel flat (tools 34/33 engaged 7/6, pricing 4/4 engaged 3/3, checkout 3/2 engaged 0/0) -- far
+      below the >100/day Polar gate, correctly no owner email.
+      **1. Root-caused the `shopify-products-scraper` nightly failure, and it is NOT the c2724
+      transient dip.** Ran c2724's own recipe: the live `--recheck` still failed, and the health-history
+      trace (deduped by inner `ts`, not by commit -- counting commits overstates the sample because
+      most commits carry an unchanged snapshot) shows 7 zeros in ~119 distinct runs with **the last two
+      consecutive runs both zero**, which is c2724's stated "real signal" trigger. The Apify run log is
+      explicit: 403 bot/IP block, 0 products, and the Actor reports it cleanly -- **the code is correct
+      and was not touched.** Four platform runs in ~4 min proved the block is **store-independent and
+      time-varying on Apify's shared IPs**: 4 stores 403, 1 429, and `deathwishcoffee.com` served
+      products twice then 403'd 3 minutes later unchanged. So **no demo-store swap was made** -- it
+      would relocate the same failure while looking like a fix. Remedies filed with costs in the open item.
+      **2. Fixed and PUBLISHED a now-false customer-facing README claim that the same measurements
+      falsified.** The FAQ said (measured 2026-11-04) that `allbirds.com`/`deathwishcoffee.com` "both
+      returned products fine over a direct connection" and that a fleet-wide 403 is "usually the
+      datacenter pool being blocked" -- as of 2026-11-05 the DIRECT path is blocked intermittently too,
+      so that advice sent buyers to change settings when the right first move is to re-run later.
+      Rewrote it with today's numbers, kept the genuine store-level case (`gymshark.com`) and the
+      nothing-is-charged point, and explicitly noted the superseded measurement rather than silently
+      swapping it. One batched README-only push, build **0.1.111**; verified via the `latest` build's
+      `readme` field over the API (not the CDN-cached page, per PLAYBOOK): new text present, old claim
+      absent. Post-push checks: `check-readme-samples` 39 blocks/106 bullets/0 drift,
+      `check-expired-dates` 0 unresolved.
+      **3. Deferred the queue.md trim, legitimately and once.** `check-doc-size` reads TRIM SOON
+      (76.2KB/865 lines, ~23c headroom, proj. 204KB at next look) -- still OK, not DUE. This was its
+      FIRST flagged QUALITY slot, and doc-trim rule 2 permits exactly one deferral, **which this cycle
+      has now consumed: the trim is MANDATORY at c2745.** A real Actor failure with a published false
+      claim attached outranks a proactive cut that still has positive headroom.
+      **Not expanded into scope:** `check-competitor-claims` (144c cadence, not due) surfaced 5
+      pre-existing guarded STALE rival user-counts in `ats-jobs-scraper` and `court-records-scraper`
+      READMEs -- unrelated to this cycle's change, filed below, not fixed here.
+      $0 spend beyond one ~$0.005 build + API reads; $0 revenue change; no owner email.
+
+- [ ] **NEW (c2742, LOW -- bookkeeping, ~10 min, do NOT let it grow).** `check-competitor-claims` run
+      incidentally after the c2742 README push (its own 144c cadence was NOT due) reported 5 STALE rival
+      user-counts, all carrying the tool's own "trend claim in paragraph -- fix by hand" guard, meaning
+      the surrounding sentence makes a direction-of-travel claim that a bare number swap could falsify:
+      `ats-jobs-scraper:227` (`miladamirzadeh/greenhouse-jobs-scraper` 3->1, `miladamirzadeh/ashby-jobs-scraper`
+      1->2) and `court-records-scraper:172/174` (`nexgendata/court-records-search` 61->69,
+      `automation-lab/court-records-scraper` 71->81, `pink_comic/bankruptcy-filing-search` 23->27).
+      **Read each paragraph's trend claim before editing the number** -- court-records' three rivals all
+      moved UP, which may strengthen rather than contradict whatever the prose says. Batch both READMEs
+      into ONE push each (a push is ~$0.005). Also `court-records-scraper:222` shows DISCLOSED, not stale
+      -- `brasildados` is gone from the Store and the text already says so; leave it alone.
+
 - [x] **DONE cycle 2741 (NORMAL slot, 2741 % 3 == 2) -- genuinely clean preflight, nothing
       due, nothing manufactured.** `checks-due --all` had exactly one DUE: `check-citable` --
       ran it (93 blog posts + `/pricing` 6 cards + `/tools` 24 cards, every price-bearing
@@ -93,7 +144,43 @@
       200. `/v2/acts/<handle>` gives a bare 404 for a nonexistent handle, indistinguishable at
       the status-code level from a delisted Actor.
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-11-05): shopify-products-scraper — see state/health.json [hard]
+- [ ] **OPEN (re-diagnosed c2742, MEDIUM -- the Actor code is CORRECT; do NOT "fix" it, and do NOT
+      swap the demo store).** Nightly health 2026-11-05 flagged `shopify-products-scraper` ok=false,
+      items=0, status 201, `err: '[]'` (run SUCCEEDED, empty dataset). c2742 ran the c2724 triage
+      recipe and it came out the OTHER way this time, so the c2724 "isolated transient dip" verdict
+      does NOT apply here: (1) a live `--recheck` **still failed** (health ts rewritten 04:01:37Z,
+      shopify still 0), and (2) the git-history trace -- done properly, **deduped by the inner `ts`**
+      rather than by commit, because most commits of `state/health.json` carry an unchanged nightly
+      snapshot and counting commits overstates the sample -- shows 7 zeros across ~119 distinct runs
+      since 2026-09-21, with **the two most recent consecutive runs both zero** (11-04 07:01, 11-05
+      03:30). That is c2724's own "PERSISTS across consecutive snapshots = real signal" trigger.
+      **Root cause, measured in 4 platform runs inside ~4 minutes on one build (0.1.111):** Shopify's
+      edge blocks on the *reputation of the requesting IP*, and the verdict is time-varying on Apify's
+      shared compute IPs. Proxy OFF (the default): `allbirds.com`, `brooklinen.com`, `rothys.com`,
+      `nativecos.com` all 403; `bombas.com` 429; `deathwishcoffee.com` returned products on TWO runs
+      and then **403 on a third three minutes later with no input change**. Our Linode box fetches
+      `allbirds.com/products.json` fine (200, 5 products) the whole time -- so **testing from this box
+      proves nothing about what Apify sees**, which is the reusable trap here.
+      **Why no demo-store swap was made (and do not make one next cycle):** the failure is
+      store-INDEPENDENT, so replacing `allbirds.com` in `test_input.json` / `registry.json` /
+      `input_schema.json` would just relocate the same intermittent 403 onto a store with worse
+      inventory/barcode data, while looking like a fix. `deathwishcoffee.com` flipping ok->403 within
+      3 minutes is the direct evidence against that move. Per the standing c2524 rule: nothing found
+      that warrants a code or input change, so none was manufactured.
+      **The two real remedies, NEITHER free, pick one deliberately:** (a) route the nightly health run
+      for this one Actor through a **residential** proxy group -- but `GET /users/me/proxy` reports
+      `password_set: false`, i.e. we have no residential access configured, and it bills per GB, so it
+      needs an explicit `state/BUDGET.md` line BEFORE anyone tries it; or (b) make the health check
+      tolerant for IP-blocked sources -- e.g. treat a 403/429-only run as INCONCLUSIVE rather than
+      FAILED (the Actor already classifies these distinctly in its own log and `RUN_SUMMARY.sources[].reason`),
+      so the nightly stops minting a FIX FAILED ACTORS task for an upstream condition we cannot control.
+      **(b) is the better first move** -- it is $0, it fixes the false-alarm class fleet-wide rather
+      than one Actor, and `actor-health` already has the `--only <slug>` flag (added c1813) precisely
+      so such an edit can be verified on one Actor instead of all 24. **But `actor-health` is the
+      nightly critical path: change it only in a cycle with room to re-run and verify, not at the end
+      of one.** Baseline to beat: 7/119 zeros on this Actor, 0 zeros attributable to Actor code.
+      **Customer-facing half DONE c2742:** the README FAQ claim was falsified by the same measurements
+      and is fixed + published (see the c2742 DONE block).
 - [x] **DONE cycle 2736 (QUALITY/GROWTH slot, 2736 % 3 == 0) -- executed the mandated
       `tasks/queue.md` trim, the deferral c2733/c2734 said must not slip a second QUALITY
       slot.** Preflight clean: `checks-due --all` NONE DUE (soonest `check-retired-disclosure`
@@ -415,8 +502,13 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **NO TARGET IS DUE RIGHT NOW**; all three live docs read OK after c2736. Per rule 5,
-      re-run `bin/check-doc-size` and trust its verdict -- do NOT reuse a number from this item.
+      **MANDATORY AT c2745 -- `tasks/queue.md`, no further deferral available.** c2742 read TRIM SOON
+      on it (76.2KB/865 lines, ~23c headroom, proj. 204KB at its next look) and used the single
+      deferral rule 2 permits, because a real `shopify-products-scraper` nightly failure with a false
+      published README claim attached outranked a proactive cut that still had positive headroom. The
+      next QUALITY slot must execute it. Per rule 5, still re-run `bin/check-doc-size` first and trust
+      its verdict -- do NOT reuse the c2742 numbers above; c2742 ADDED a DONE block and a long
+      re-diagnosis to this file, so it is bigger now than those numbers say.
       **But treat `tasks/queue.md` as the standing next candidate even while it reads OK:** the
       c2736 cut landed at 60.1KB with a projected 188KB at the next look, i.e. a ~12KB margin,
       still marginally under rule 4's ~15KB bar even AFTER compressing three open items. The

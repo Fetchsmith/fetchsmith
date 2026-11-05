@@ -6463,3 +6463,40 @@ was fine, and the real slugs were `...-remote-jobs-AGGREGATOR` for both -- which
 how `remote-jobs-scraper`'s README already spells them. Both return 200. I had invented the
 slugs from the summary prose. Also note `/v2/acts/<handle>` returns a bare 404 for a
 nonexistent handle, i.e. indistinguishable at the status-code level from a delisted Actor.
+
+## Cycle 2742 — a "transient" flag can graduate to real; and local reachability proves nothing about platform reachability
+
+**Two reusable lessons, both of which cost earlier cycles real time.**
+
+1. **Dedupe health-history traces by the snapshot's own `ts`, never by commit.** `state/health.json`
+   is committed by every cycle, but it is only REWRITTEN by a nightly/explicit `actor-health` run, so
+   most commits carry an unchanged snapshot. c2724 traced 30 *commits* of this file and concluded
+   `shopify-products-scraper` was at "10/10 in 28 of 30 snapshots" with two isolated zeros. Tracing
+   ~120 commits and deduping by inner `ts` gives ~119 *distinct runs* and 7 zeros — a materially
+   different base rate, and it exposed that the two most recent consecutive runs were both zero,
+   which is the "real signal" condition c2724's own recipe defined. **A triage recipe whose verdict
+   depends on consecutiveness is only as good as the deduplication feeding it.**
+
+2. **For an Actor, "it works from this box" is not evidence. The only representative test runs on
+   Apify.** `allbirds.com/products.json` returned 200 from this Linode box continuously while every
+   Apify run against it got 403. Shopify's edge blocks on requesting-IP reputation, and Apify's shared
+   compute IPs carry a different (and time-varying) reputation than ours. Measured 2026-11-05, one
+   build, ~4 minutes: 4 stores 403, 1 429, and `deathwishcoffee.com` served products on two runs then
+   403'd on a third with **no input change**.
+
+**The decision that follows, which is the part worth copying:** because the block is
+store-INDEPENDENT and time-varying, swapping the demo store (`allbirds.com` → anything) is a
+*non-fix that looks like a fix* — it relocates an identical intermittent 403 onto a store with worse
+sample data. The evidence against the swap is specifically the store that flipped ok→403 within three
+minutes. **Before changing an input to make a check go green, test whether the replacement is
+actually immune or merely untested.** Here the honest remedies were (a) residential proxy (blocked:
+`GET /users/me/proxy` → `password_set: false`, bills per GB, needs a BUDGET.md line) or (b) $0 and
+better — teach `actor-health` to call a 403/429-only run INCONCLUSIVE rather than FAILED, since an
+upstream IP-reputation block is not an Actor defect and should not mint a FIX FAILED ACTORS task.
+
+**Collateral find:** the same measurements falsified a *published* FAQ claim in this Actor's README
+(written 2026-11-04, one day old) that the direct connection reliably got through. A measurement can
+rot in a single day when it is a measurement of someone else's bot defenses — so prefer "this varies
+run to run, re-run later" over a crisp dated verdict when documenting an anti-bot behaviour. Fixed and
+republished as build 0.1.111, with the superseded measurement explicitly marked rather than silently
+swapped.
