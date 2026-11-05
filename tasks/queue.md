@@ -1,11 +1,20 @@
-- [ ] **NEW task (c2745, from `audit-due --all`'s real rotation backlog -- pick up in the next
-      QUALITY/GROWTH slot that has room for it). `varied_test` is DUE on `website-screenshot-scraper`**
-      (last run c2408, 337c ago against the 336c/7d base interval). Per PLAYBOOK, re-run the
-      platform test with varied inputs (different URL, viewport/fullPage options, device
-      emulation) and check for drift vs. the last recorded result; fix anything real, record the
-      run via the audit tool either way. This was surfaced but NOT run at c2744 or c2745 (both
-      cycles spent their QUALITY-slot budget elsewhere -- c2744 on stale rival counts, c2745 on
-      the mandatory `tasks/queue.md` trim below).
+- [x] **DONE c2746 -- `varied_test` backlog on `website-screenshot-scraper` cleared.** Ran 4
+      capped `bin/varied-test` calls against our own `fetchsmith.com/pricing` page, covering
+      3 surfaces this Actor's varied_test history had never exercised live (c2222 only proved
+      `waitForSelector`'s error path, c2408 only proved zero/partial-row status messages):
+      devicePreset (desktop vs iphone), the `selector` crop field, and the `selector`-absent
+      error path. Results: desktop fullPage 470945 bytes; iphone fullPage 1932470 bytes --
+      correctly LARGER than desktop despite the narrower 390px viewport, because iPhone's 3x
+      deviceScaleFactor and the taller mobile reflow dominate; `selector:".packs"` crop 31783
+      bytes (far smaller, confirms crop-before-fullPage priority); nonexistent selector ->
+      `success:false`, `byteSize:null`, timeout error, `chargedEventCounts {result:0}` -- a
+      clean uncharged error row exactly as the schema promises, not a blank/partial capture.
+      All 3 successful rows charged exactly once (`{result:1}` each, confirmed via
+      `GET /v2/actor-runs/<id>`), spend delta $6.6607->$6.6619 (~$0.0012, 3 compute-only rows).
+      **0 defects found -- no code or README change.** Recorded via direct edit to
+      `state/audit_dates.json` (`audit-due` itself is read-only, no `--ran` flag for this axis);
+      `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide. Full note in
+      `state/audit_dates.json`'s `varied_test_note` for this slug.
 
 - [ ] **NEW note (c2744, LOW -- read this BEFORE treating a `check-competitor-claims` stale count
       as news, which is the mistake I started to make this cycle).** The c2742 item's "5 STALE"

@@ -1,3 +1,42 @@
+Updated: 2026-11-05 ~06:10 UTC by cycle 2746 (claude-sonnet-5). NORMAL slot
+(2746 % 3 == 1). **Preflight clean, then cleared the one real fleet backlog item.**
+`checks-due --all` NONE DUE (soonest `check-doc-size` in 2c, c2748); `audit-due --all` had
+exactly one real backlog entry, `varied_test` DUE on `website-screenshot-scraper` (338c
+overdue against its 336c/7d base interval) -- ran it (see below), now FLEET ROTATIONS: NONE
+DUE fleet-wide. `inbox-triage new` NONE UNTRIAGED of 74 (spot-checked the 2 owner-forwarded
+threads and the 5 newest spam/noise rows individually -- all already correctly dispositioned,
+nothing owed a reply); `bin/revenue` $0 booked, 25 Actors, 47 users, 789 runs30d, `ext_bad30d`
+3; `apify-spend` $6.6607 -> $6.6619/$85 (+$0.0012, 3 compute-only test rows, 87.9% elapsed,
+projection $7.58); services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools`, `/blog` all 200. All four standing watches re-verified live, unchanged:
+`eu-ted-tenders-scraper` users 1/1/1, bookmarks 0, runs30d TOTAL 46; `bold.org/scholarships/`
+still 429 (`scholarship-scraper`'s held c2312 fix stays unpushed, correctly untouched);
+`bin/traffic` buyer-intent funnel flat (pricing 4/4 engaged 3/3, checkout 3/2 engaged 0/0) --
+far below the >100/day Polar gate, correctly no owner email.
+
+**The varied_test.** Last run on this Actor was c2408 (zero/partial-row status messages) and
+c2222 before that (`waitForSelector` field's absent-element error path) -- neither ever
+touched `devicePreset`, the separate `selector` crop field, or `colorScheme`, so those were
+genuinely untested live surface, not a re-check. Ran 4 capped `bin/varied-test` calls against
+our own `fetchsmith.com/pricing` page (safe, we own it): (A) `devicePreset:"desktop"`
+fullPage -> 470945 bytes; (B) `devicePreset:"iphone"` fullPage -> 1932470 bytes, correctly
+LARGER than desktop despite the narrower 390px CSS width -- iPhone's 3x `deviceScaleFactor`
+plus a taller mobile reflow dominate, confirming the preset genuinely reaches the capture
+pipeline rather than being silently dropped; (C) `selector:".packs"` with `fullPage:true`
+also set -> 31783 bytes, far smaller, confirms crop-to-element correctly takes priority over
+fullPage per the schema; (D) `selector:".nonexistent-element-xyz123"` -> `success:false`,
+`byteSize:null`, timeout error, **`chargedEventCounts {result:0}`** -- a clean uncharged error
+row exactly as documented, not a blank/partial capture. The 3 successful rows each charged
+exactly once (`{result:1}`, confirmed via `GET /v2/actor-runs/<id>`, not inferred from the
+aggregate spend delta). **0 defects found -- no code or README change**, per the standing
+c2524 no-manufactured-work rule (a clean pass is a valid outcome, not a reason to invent a
+fix). Recorded by direct edit to `state/audit_dates.json` (`bin/audit-due` has no `--ran`/
+`--record` flag for this axis, unlike `bin/checks-due`); re-ran `audit-due --all` after and
+confirmed FLEET ROTATIONS: NONE DUE. `tasks/queue.md`'s c2745 item for this backlog marked
+`[x]` DONE with the same detail. $0.0012 spend, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-05 ~05:55 UTC by cycle 2745 (claude-sonnet-5). QUALITY/GROWTH slot
 (2745 % 3 == 0). **Executed the `tasks/queue.md` trim that c2742 flagged MANDATORY for this
 slot (its one permitted deferral was already spent).** Preflight clean: `checks-due --all`
