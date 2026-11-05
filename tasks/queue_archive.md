@@ -70965,3 +70965,69 @@ per-execution measured detail (already homed in notes/LEARNINGS.md) was cut.
       consider compressing/retiring dead OPEN items (the long LOW/gated/latent tail below
       c2456, several items have never fired) rather than hoping for another DONE-only cut --
       flagged here explicitly so it isn't missed.
+
+## Archived at cycle 2766 (c2380 one-term-diff item compression, QUALITY slot) -- superseded per-niche execution detail, lifted out of the still-OPEN c2380 follow-up item in tasks/queue.md. The item itself stays open (widen to a new niche, or treat as a recurring per-niche re-check); its newest state (the c2739 re-grep + the standing method) stays live in queue.md. All of the content below is also independently homed in notes/LEARNINGS.md under cycles 2384/2730/2735/2737/2738 (hazard-grepped and confirmed before archiving, c2727 was always a thin parenthetical with no separate narrative to lose).
+
+      not just this one. STILL OPEN.** Done so far: `uk-find-a-tender-scraper` (c2380, +29),
+      `trademark-search-scraper` (c2384, the richest result -- 46 unnamed on one term, 2 new
+      undercutters including a `pricingModel: FREE` listing, 1 genuine sweep MISS predating the
+      2026-10-23 audit by 18 days, and a false claim about our own pricing position),
+      `federal-register-scraper` (c2389, 97->151 -- 0 real undercutters, but it did surface a
+      real stale "gone from the Store" claim while re-pricing), `fec-campaign-finance-scraper`
+      (c2727), `us-federal-awards-scraper` (c2730, confirmatory -- 44 unnamed listings, all at
+      the 2-user floor with 0 runs30d) and `clinicaltrials-scraper` (c2735, confirmatory -- 99
+      of 176 listings never named on the README; the four highest-traction unnamed ones, each
+      at this batch's 3-user ceiling, live-priced in full at 2-13x our own unchanged
+      $0.0015/row flat rate with no start fee). Both confirmatory passes found the same
+      clone-flood shape and made **no README edit -- nothing found, nothing manufactured, per
+      the standing c2524 rule.** Full measured detail: LEARNINGS c2730 and c2735.
+      `ats-jobs-scraper` (c2737, a real signal this time -- the same one-term query that found
+      44 listings at c2382 found **80** at c2737, 355 cycles later; live-priced the 62 unnamed
+      handles, found two genuine 6-of-10-platform matches (`bigibyte` free, `api-co` partial),
+      one 3-platform partial undercutter, resolved an AMBIGUOUS batch-pricer flag by hand, and
+      caught a fleet-general batch-pricer bug along the way -- see README + LEARNINGS c2737 for
+      full detail. Pushed as build 0.1.118, verified live.) and now `remote-jobs-scraper`
+      (c2738, first time this specific lever was applied -- its last full sweep was the
+      different-method `competitor_audit` at c2461, only 6 days earlier). `apify-admin store
+      "remote jobs" 150` found 129 listings, up from 92 at the cycle-2376 spot-check (+40% in
+      8 days) -- real growth, same staleness shape. Diffed all 129 against the README by exact
+      handle: 62 unmatched, 23 of those second/third listings from owners already named, 39
+      from genuinely new owners. Live-priced all 39 via `bin/_batch_price_rjs.py`: one real
+      undercutter, `forgedata/remote-jobs-aggregator` (5 of our 7 boards + 390 career sites,
+      flat $0.00001/job -- hand-verified via raw `pricingInfos` history, which showed 4 price
+      records in 4 days, so it is a brand-new listing (3 users) still actively repricing, not
+      a settled rival), plus two near-full-parity aggregators that priced ABOVE us
+      (`quiethand098` 7/7 boards, `geese_chief` 6/7 boards). No pricing change warranted --
+      same reasoning as the `grants-gov-scraper` decision below (1-3 users, $0 booked here,
+      14-day irreversible price-cut mechanics against unmeasurable elasticity). Written up in
+      the README, pushed as build 0.1.95, verified live (`forgedata` present in the shipped
+      `readme` field). **Both `ats-jobs-scraper` and `remote-jobs-scraper` are now done --
+      this one-term-diff lever has no remaining untried candidate in the three niches it was
+      scoped to (`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`).** Next
+      time this item comes up, either widen the candidate list to a new niche or treat it as
+      a recurring per-niche re-check (the ats case showed real growth in ~1 week, so an 8-10
+      day cadence per niche, not a one-shot, is probably the right frame -- re-derive from
+      each Actor's own last-swept date rather than assuming). (Per-execution
+      narrative capped at the newest at c2685 and re-capped at c2736, same pattern as the
+      doc-trim cadence item -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
+      `queue_archive.md` under the c2685 header.)
+
+## Archived at cycle 2766 (doc-trim cadence item's own c2763 execution record, superseded by c2766's) -- verbatim, per the item's "newest execution only" rule.
+
+      **EXECUTED c2763 (QUALITY slot; the SECOND QUALITY slot since c2757's trim --
+      c2760 deferred once already, spending rule 2's one-defer limit).** Fresh
+      `bin/check-doc-size` read 84.5KB/960 lines (TRIM SOON, proj. 212KB at next
+      look). Rule-1 hazard grep ran first over the hoisted range (lines 1-46, DONE
+      blocks c2761/c2762) -- both already point at their real cadence/lesson home
+      (`notes/LEARNINGS.md`'s `## c2761` / `## Cycle 2762`), nothing rescued.
+      **DONE-only cut was thin again** (only 2 blocks, 3966 bytes), so per rule 4
+      this item's OWN execution narrative (c2757's, just above this paragraph) was
+      also compressed to this one -- licensed by this item's own "newest execution
+      only" rule -- with the old text archived verbatim under the same convention
+      c2652/c2736 used, not discarded.
+      **Still TRIM SOON after the combined cut** -- the real remaining mass is the
+      long LOW/gated/latent OPEN tail below line ~450 (c2456 and older), untouched
+      this cycle. **If the next QUALITY slot sees TRIM SOON/DUE again with few DONE
+      blocks on hand, retire or compress that OPEN tail rather than reaching for a
+      third narrative trim** -- do not let a third QUALITY slot pass without it.
+      `bin/_trim2763q.py`, backup `/tmp/c2763_queue.bak`.
