@@ -1,3 +1,45 @@
+Updated: 2026-11-05 ~00:35 UTC by cycle 2735 (claude-sonnet-5). NORMAL slot
+(2735 % 3 == 2). **Preflight clean**: `audit-due --all` NONE DUE across all 16 types;
+`inbox-triage new` 0 untriaged of 74 -- re-read both owner-forwarded threads in full this
+cycle rather than trusting the "on record" tag: `2b237f1b` (CourtListener hCaptcha token
+for `court-records-scraper`) was wired in and verified live at cycle 2362, not still open;
+`01852eaa` (Apify's `/v2/store` Nov-15 ranking-change notice) has its code half already
+shipped (c2496/c2500) with the post-deadline re-read correctly gated to after
+2026-11-15 (10 days out, not yet ripe). `bin/revenue` $0 booked, 25 Actors, 47 users,
+803 runs30d, `ext_bad30d` 4. `checks-due --all`: `apify-spend` was the one DUE check (44
+tracked, 48 cycles/day) -- ran it live ($6.6149/$85, 87.2% elapsed, projection $7.59) and
+recorded via `checks-due --ran`, next due cycle 2831. Services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`, `/blog`
+all 200. All four standing watches re-verified live: `eu-ted-tenders-scraper`
+(`fetchsmith~eu-ted-tenders-scraper`) `stats.totalUsers7/30/90Days` 1/1/1, `bookmarkCount`
+0, `publicActorRunStats30Days.TOTAL` 45; `bold.org/scholarships/` still 429
+(`scholarship-scraper`'s held c2312 fix stays unpushed); DMARC unchanged (no new reports in
+inbox since the last recorded pair); `bin/traffic` buyer-intent funnel flat (tools 35/34
+engaged 8/7, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0) -- far below the >100/day
+Polar gate, correctly no owner email. **With the c2716 head-term-titling gap list fully
+closed (c2734) and nothing else DUE, this NORMAL slot went to the next open growth-sweep
+lever: the c2380 one-term-diff competitor pass on `clinicaltrials-scraper`** (candidates
+`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`, picked the one whose
+documented full-cohort sweep was oldest, cycle 1472 / 2026-10-09). `apify-admin store
+"clinicaltrials" 200` -> 176 listings matched, 99 never named on the README. Rather than
+sampling, live-priced the four highest-traction unnamed listings (each at 3 users, the
+ceiling of this unnamed batch -- every other one of the 99 sits at the 2-user floor with
+`runs30d=0`, the same clone-flood shape c2730 found in `us-federal-awards-scraper`) off
+each Actor's own `pricingInfos` record (API path needs the `username~actor-slug` form, not
+`username/actor-slug` -- the first attempt silently returned `None` for every field until
+corrected): `ponderable_hydrometer/clinicaltrials-scraper` $0.005/row + $0.00005 start,
+`moving_beacon-owner1/clinicaltrials-gov-search-scraper` $0.01/row + $0.00005 start,
+`flintglade/clinical-study-change-ledger` $0.02/`study-check` event + $0.00005 start,
+`azureblue/clinical-trials-scraper` $0.008/row flat -- all 2-13x our own rate, which
+re-verified unchanged at a flat $0.0015/row with no start fee. **No new undercutter, no
+README edit** -- nothing found, nothing manufactured, per the standing c2524 rule. Full
+detail in `tasks/queue.md`'s rewritten c2380 item; candidate list for the next pass
+narrowed to `ats-jobs-scraper`/`remote-jobs-scraper`. Spend $6.6149/$85 (no push this
+cycle -- confirmatory sweep only, $0 beyond normal API reads). $0 revenue change, no owner
+email.
+
+---
+
 Updated: 2026-11-05 ~00:10 UTC by cycle 2734 (claude-sonnet-5). NORMAL slot
 (2734 % 3 == 1). **Preflight fully clean** (`checks-due --all`/`audit-due --all` both NONE
 DUE, soonest `apify-spend` in 1c; `inbox-triage new` 0 untriaged of 74; `bin/revenue` $0

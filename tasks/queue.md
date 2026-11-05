@@ -1,3 +1,28 @@
+- [x] **DONE cycle 2735 (NORMAL slot, 2735 % 3 == 2) -- preflight clean (`audit-due --all`
+      NONE DUE; 0 untriaged mail of 74 -- re-read the two owner-forwarded threads
+      (`2b237f1b` court-records CourtListener token, `01852eaa` the `/v2/store` Nov-15
+      ranking change) in full and confirmed both are stale/already-handled: the token was
+      wired in and verified at cycle 2362, and the Store API change's code half shipped at
+      c2496/c2500 with its post-deadline re-read correctly gated to after 2026-11-15, 10
+      days out; `bin/revenue` $0 booked, 25 Actors, 47 users, 803 runs30d, `ext_bad30d` 4;
+      `apify-spend` was the one DUE check (soonest in the 44-tool fleet-check table) --
+      ran it ($6.6149/$85, 87.2% elapsed, projection $7.59) and recorded via `checks-due
+      --ran`, next due cycle 2831; services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+      active; `/`, `/pricing`, `/tools`, `/blog` all 200. All four standing watches
+      re-verified live: `eu-ted-tenders-scraper` users 1/1/1, `bookmarkCount` 0, runs30d
+      TOTAL 45; `bold.org/scholarships/` still 429; DMARC unchanged; `bin/traffic`
+      buyer-intent funnel flat (tools 35/34 engaged 8/7, pricing 5/5 engaged 4/4, checkout
+      1/1 engaged 0/0) -- far below the >100/day Polar gate, correctly no owner email.**
+      With the c2716 head-term gap list closed (c2734) and no other checker/audit DUE, this
+      NORMAL slot went to the next open growth-sweep item instead: the c2380 one-term-diff
+      pass on `clinicaltrials-scraper` (see that item's own rewritten entry below for the
+      full measured detail -- `apify-admin store "clinicaltrials" 200` -> 176 listings, 99
+      unnamed, the four highest-traction (3-user) unnamed listings all live-priced dearer
+      than our unchanged $0.0015/row flat rate, no new undercutter, no README edit).
+      **Narrowed the candidate list for next time to `ats-jobs-scraper` and
+      `remote-jobs-scraper`.** Spend $6.6149/$85 (no push this cycle, no code/content
+      shipped -- a confirmatory sweep only). $0 revenue change, no owner email.
+
 - [x] **DONE cycle 2734 (NORMAL slot, 2734 % 3 == 1) -- preflight fully clean (checks-due/
       audit-due --all both NONE DUE, 0 untriaged mail of 74, apify-spend $6.6093/$85 at 87.1%
       elapsed proj $7.59, services/pages 200, all four standing watches re-verified live and
@@ -795,10 +820,21 @@
 
 - [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
       not just this one. STILL OPEN, but `trademark-search-scraper` (c2384),
-      `federal-register-scraper` (c2389), `fec-campaign-finance-scraper` (c2727) and now
+      `federal-register-scraper` (c2389), `fec-campaign-finance-scraper` (c2727),
       `us-federal-awards-scraper` (c2730, confirmatory -- 44 unnamed listings, all 2-user
-      floor clones, no real undercutter) are DONE -- pick a different candidate from
-      `ats-jobs-scraper`, `clinicaltrials-scraper`, `remote-jobs-scraper`.** (Per-
+      floor clones, no real undercutter) and now `clinicaltrials-scraper` (c2735,
+      confirmatory -- `apify-admin store "clinicaltrials" 200` returned 176 listings, 99
+      never named on the README; the four highest-traction unnamed listings, each at the
+      3-user ceiling of this batch, were live-priced in full via each Actor's own
+      `pricingInfos` record: `ponderable_hydrometer/clinicaltrials-scraper` $0.005/row +
+      $0.00005 start, `moving_beacon-owner1/clinicaltrials-gov-search-scraper` $0.01/row +
+      $0.00005 start, `flintglade/clinical-study-change-ledger` $0.02/`study-check` event +
+      $0.00005 start, `azureblue/clinical-trials-scraper` $0.008/row flat -- all 2-13x our
+      own unchanged $0.0015/row, no start fee. Every other unnamed listing sits at the
+      2-user floor with `runs30d=0`, same clone-flood shape the c2730 us-federal-awards
+      pass found. No README edit made -- nothing found, nothing manufactured, per the
+      standing c2524 rule) are DONE -- pick a different candidate from `ats-jobs-scraper`,
+      `remote-jobs-scraper`.** (Per-
       execution narrative capped at the newest at c2685 doc-trim, same pattern as the doc-trim
       cadence item at c2652 -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
       `queue_archive.md` under the c2685 header.)
