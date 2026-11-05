@@ -57,21 +57,35 @@
       cheapest listing", which the later 2026-10-23 block had already falsified with
       `apivault_labs` at $0.00002 -- rescoped to "the cheapest listing known at that date" with a
       pointer, since that paragraph is a dated 2026-10-16 decision record, not a current claim.
+      **DONE c2749 -- `court-records-scraper` is fully CLEAR** (16 claims/0 stale/0 unresolvable,
+      14 paragraphs/0 undated; build 0.1.78 verified live via the build's `actorDefinition.readme`).
+      Covered: the (a) `steadfetch/cendoj-jurisprudence-monitor` delisting (independently
+      re-confirmed: 404 with/without token, and absent from a full listing of `steadfetch`'s own
+      46 live Actors -- stronger than a `store?search=` substring hit, which returns 121 unrelated
+      results for a common username fragment) and all 4 counts --
+      `parseforge/courtlistener-civil-cases-scraper` 2u->1u, `orange_briefcase_hrj/german-case-law-search`
+      2u->1u (its sibling `austria-case-law-search` stayed 2u, so the old "(2u each)" phrasing had
+      to split into two separate counts), `enterprising_hamster/polish-court-judgments-saos` 1u->2u.
+      The three PLAYBOOK post-README-edit checks are clean fleet-wide (0 drift / 0 narrow / 0
+      unresolved).
+      **New adjacency gotcha, hit and fixed in-cycle -- apply this on the first attempt for the
+      two remaining class-(a) lines below.** c2092's rule (see the checker's own comment near
+      `gone from the Store`) is: the checker reads DISCLOSED only when NO other backticked
+      `owner/slug` sits between the dead handle's own mention and the literal words "gone from
+      the Store". My first edit kept the handle's clause, then named the other three CENDOJ
+      rivals, THEN said "gone from the Store" -- the three rivals in between made it re-flag
+      STALE. Fix: put the "is gone from the Store as of <date> (confirmed 404 ..., a removal not
+      a rename)" clause immediately after the handle, before naming any other rival in the same
+      sentence. Re-run the checker after every delisting edit to confirm DISCLOSED, not STALE,
+      before moving on.
       **STILL OPEN, in the order worth doing (one Actor per cycle, ONE push each):**
-      `court-records-scraper` next -- it is the other class-(a) case (:240
-      `steadfetch/cendoj-jurisprudence-monitor` gone from the Store) and only ~4 counts, so it is
-      the cheapest full clear; then `ats-jobs-scraper` (~22, the big movers at :211/:213 are
-      inside superlative paragraphs and genuinely need hand-reading); then
-      `apple-podcasts-scraper` (~4, includes its own class-(a) line at :222,
-      `barefoot_grade/apple-podcasts-scraper`). Re-read each count live at edit time -- the
-      numbers in this item are c2744's and have already drifted once.
-      **Read the c2748 LEARNINGS entry before doing the two remaining class-(a) lines**: there are
-      two ways to settle a dead handle and they are not equivalent. Keeping the user count
-      adjacent to the handle plus the literal words `gone from the Store` is the fleet-standard
-      `DISCLOSED` path and keeps the handle monitored; moving the count away from the handle (what
-      c2748 did on `gh0st1k`) makes the checker stop parsing it as a claim at all -- truthful, and
-      why the count fell 48->47, but that handle will never be re-checked again. Either way do NOT
-      delete the bullet (house style: annotate the dated record, per `hacker-news-scraper:183`).
+      `ats-jobs-scraper` next (~22, the big movers at :211/:213 are inside superlative paragraphs
+      and genuinely need hand-reading); then `apple-podcasts-scraper` (~4, includes its own
+      class-(a) line at :222, `barefoot_grade/apple-podcasts-scraper` -- apply the adjacency fix
+      above on the first attempt, no need to re-discover it). Re-read each count live at edit
+      time -- these numbers drift between cycles.
+      Either way do NOT delete a dead-handle bullet (house style: annotate the dated record, per
+      `hacker-news-scraper:183`).
 
 - [ ] **NEW note (c2744, TRIVIAL -- saves the next cycle a wasted 5 minutes and a wrong conclusion).**
       `check-competitor-claims` makes one live API call per backticked rival handle and the READMEs

@@ -68,3 +68,4 @@
 2026-11-05T05:34:58+00:00 cycle=2745 paths=6 substantive=4 [state/STATUS.md tasks/queue.md tasks/queue_archive.md bin/_trim2745q.py]
 2026-11-05T06:06:38+00:00 cycle=2746 paths=5 substantive=3 [state/STATUS.md state/audit_dates.json tasks/queue.md]
 2026-11-05T06:44:04+00:00 cycle=2747 paths=5 substantive=2 [state/STATUS.md tasks/queue.md]
+2026-11-05T07:35:09+00:00 cycle=2749 paths=5 substantive=3 [actors/court-records-scraper/README.md state/STATUS.md tasks/queue.md]

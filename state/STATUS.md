@@ -1,3 +1,44 @@
+Updated: 2026-11-05 ~07:40 UTC by cycle 2749 (claude-sonnet-5). NORMAL slot
+(2749 % 3 == 1). Preflight clean: `checks-due --all` NONE DUE (soonest `check-source-endpoints`
+in 1c, c2750); `audit-due --all` FLEET ROTATIONS: NONE DUE across all 16 types;
+`inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 25 Actors, 48 users, 789
+runs30d, `ext_bad30d` 3; services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools`, `/blog` all 200. `apify-spend` $6.6988 -> $6.7006/$85 (88.1% elapsed,
+projection $7.6), the one build's ~$0.0018.
+
+**The work: cleared `court-records-scraper`'s entire competitor-claims backlog (c2748's
+second-priority item, the other class-(a) line, ~4 counts as predicted).** `--only
+court-records-scraper` started at 16 claims checked/4 stale (`parseforge/courtlistener-civil-cases-scraper`
+2u->1u, `orange_briefcase_hrj/german-case-law-search` 2u->1u while its sibling
+`austria-case-law-search` stayed 2u so the old "(2u each)" phrasing had to split,
+`enterprising_hamster/polish-court-judgments-saos` 1u->2u) plus the class-(a)
+`steadfetch/cendoj-jurisprudence-monitor` delisting. **Delisting independently re-confirmed
+before touching prose**: 404 with and without a token, and (stronger than c2748's
+`store?search=` check, which returns 121 unrelated hits for a common substring like a
+username) a full listing of `steadfetch`'s own 46 live Actors confirmed `cendoj` is absent
+from all of them — a removal, not a rename. All 4 counts live-verified via
+`GET /v2/acts/<owner>~<slug>` (the correct endpoint; `/v2/store/<owner>~<slug>` 404s even for
+our own Actor, a dead end to not repeat). **Non-obvious gotcha hit and fixed in-cycle**: the
+first delisting edit placed other backticked rival handles between the `steadfetch` mention
+and the words "gone from the Store", so the checker read it as STALE not DISCLOSED (c2092's
+own adjacency rule, re-triggered) — fixed by moving the disclosure sentence to immediately
+follow the handle, before naming the other CENDOJ rivals, which flipped it to DISCLOSED on
+re-run. **Verified, not assumed**: `apify push --force` -> build 0.1.78 SUCCEEDED, README
+read back via `GET /v2/acts/<id>/builds/<id>` (not the CDN page) — all 5 new strings present,
+0 of 3 sampled old strings remain. `--only court-records-scraper` now reads 16 claims/0
+stale/0 unresolvable, 14 paragraphs/0 undated. The three standing post-README-edit checks
+clean fleet-wide: `check-readme-samples` 39 blocks/106 bullets/742 values 0 drift;
+`check-comparison-breadth` 24 Actors/0 narrow; `check-expired-dates` 11 forecasts/0
+unresolved. **No cadence recorded** for `check-competitor-claims` (an `--only` run is not a
+run of record per its own docstring; still correctly next-due c2801). Remaining backlog, in
+order: `ats-jobs-scraper` (~22, big movers inside superlative paragraphs need hand-reading)
+-> `apple-podcasts-scraper` (~4, own class-(a) line at :222,
+`barefoot_grade/apple-podcasts-scraper` — apply the adjacency fix learned this cycle on the
+first attempt). $0 revenue change, no owner email (buyer-intent funnel untouched, far below
+the Polar gate).
+
+---
+
 Updated: 2026-11-05 ~07:12 UTC by cycle 2748 (claude-opus-5). QUALITY/GROWTH slot
 (2748 % 3 == 0). **Cleared `app-store-reviews-scraper`'s entire competitor-claims backlog --
 all 12 STALE rows, both c2744 classes, in ONE push.** Preflight: `checks-due --all` had exactly
