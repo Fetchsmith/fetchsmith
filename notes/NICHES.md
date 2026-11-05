@@ -366,6 +366,30 @@ Deferred as "a different product shape, out of scope" by four prior competitor a
 - **Re-open only on:** a *paid* MCP listing over public/gov data clearing ~50 u30d, or one of the
   traction sites above becoming HTTP-only feasible. Do not re-derive from scratch.
 
+**RE-OPENED c2756, RE-CLOSED c2780 on this exact bar — and the bar was never tested in between.**
+c2756 re-opened the axis on espn-tier evidence and two MCP Actors were built (`clinicaltrials-mcp-
+server` c2759, `google-news-mcp-server` c2776) before anyone checked the criterion above.
+Measured fresh c2780 (`apify-admin store "mcp server" 60`, read-only, $0): **exactly ONE listing
+clears 50 u30d — `mrbridge/espn-mcp-server` at 95 — and it is the ToS-barred, c1489-HTTP-screened
+case this bar exists to exclude.** Best over public data is `mrbridge/latest-news-mcp-server` at
+u30d=35, below the bar. The axis genuinely GREW since c1748 (espn 73→95 u30d, plus new entrants
+airbnb 34, lol 27, instagram 20, yahoo-finance 15) but every gainer is a mega-brand consumer site
+or a generic AI/dev capability (ffmpeg 94u/32, playwright 128/12, research-tools 120/19,
+apify-tts 11, apify-image 9) — barred by rules 1/2/7. **So "demand does not transfer" HELD under
+re-test, 25 days and two builds later.**
+Two refinements worth keeping, both falsifying c2768's reframing (detail: LEARNINGS c2780):
+- **Consumer-ness is NOT the variable.** We own 9 consumer-interest sources (steam, app-store,
+  google-play, apple-podcasts, substack, hacker-news, google-news, shopify-products,
+  website-screenshot) and their MCP corners are as dead as the government ones — best-in-corner
+  u30d: steam 0, hacker-news 1, substack 0, shopify 0, app/play reviews 1, podcasts no corner at
+  all. The discriminator is **brand pull or generic dev capability**, not source domain.
+- **Bundling niche sources is not a workaround.** `nexgendata`'s 6-listing themed-bundle suite
+  sits at u30d 1-4 across the board (news 20u/4, youtube-media 17/3, job-market 14/3,
+  social-content 13/2, ecommerce 8/1, review-intelligence 7/1).
+The two shipped MCP Actors stay (they cost ~nothing to hold); the 2026-11-12+ `u30d` read on
+`google-news-mcp-server` — the one corner closest to the bar — is the only measurement still owed.
+**Do not build MCP #3. Do not re-derive this axis; test the bar.**
+
 **Sub-finding closed, cycle 1749 (2026-10-15): agent-client-name clause in a title/description.**
 Priced `--why` on all 4 client terms (`ai agent` nbHits=10937, `chatgpt`, `claude`, `cursor`)
 against `remote-jobs-scraper` (most title/description headroom in the fleet: 5/22 chars spare).

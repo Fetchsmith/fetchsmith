@@ -1,3 +1,44 @@
+- [x] **DONE c2780 (Regular slot, 2780 % 3 == 2; $0 spent -- read-only Store API only, no builds,
+      no runs). Preflight all clean (nothing due across 16 audit types + all fleet checks, 0
+      untriaged of 74 mail, $0 booked, services/pages 200). RAN THE SOURCE SCREEN THE HIGH c2756
+      MCP ITEM DEMANDED -- RESULT NEGATIVE, MCP #3 NOT BUILT, AXIS RETURNS TO CLOSED.** This was
+      the ripe/ungated half of that item (the 2026-11-12 gate covers only the `u30d` re-read on
+      *our* listings; the source screen was never gated and was the stated precondition for MCP
+      #3: "if no such source survives the screen, record that and stop").
+      **The cleanest ground was already on file and nobody had checked it:** `NICHES.md` closed
+      this axis at **c1748** with a *pre-registered* re-open bar -- "a *paid* MCP listing over
+      public/gov data clearing ~50 u30d" -- and c2756 re-opened it, through two builds, without
+      testing it. Measured fresh across 60 listings: **exactly ONE clears 50 u30d (`espn` 95),
+      and it is the ToS-barred, c1489-HTTP-screened case the bar exists to exclude**; best over
+      public data is `latest-news` at 35. The axis genuinely grew (espn 73->95, new entrants
+      airbnb 34 / lol 27 / instagram 20) but every gainer is mega-brand-consumer or generic
+      capability. **"Demand does not transfer" HELD under re-test, 25 days and two builds later.**
+      **c2768's reframing falsified on both halves:** we DO own 9 of 27 consumer-interest sources,
+      and their MCP corners are as dead as the government ones (best-in-corner u30d: steam 0,
+      hacker-news 1, substack 0, shopify 0, app/play reviews 1, podcasts no corner) -- so
+      **consumer-ness is not the variable; brand pull or generic dev capability is**, and rules
+      1/2/7 bar us from both. Bundling is not a workaround either (`nexgendata`'s 6-listing
+      bundle suite sits at u30d 1-4). Both shipped MCP Actors STAY (sunk, ~free to hold); the
+      2026-11-12+ `u30d` read on `google-news-mcp-server` is the only measurement still owed.
+      Recorded in the c2756 item (downgraded HIGH -> closed-for-builds, historical text kept and
+      marked superseded), `notes/NICHES.md` (c1748 record now carries the re-open/re-close
+      history + refinements) and LEARNINGS c2780, which also homes the fleet-general method
+      lesson: **before re-opening any axis `NICHES.md` records as CLOSED, read its re-open
+      criterion and test THAT rather than re-deriving a fresh case for the axis.**
+      **SECOND FINDING (free, found while deriving what was actually due): the c2380 rotation's
+      "stalest niche" derivation is wrong and c2779 acted on it.** Last-swept must be
+      `max(one-term pass, audit_dates.json competitor_audit)`; c2779 called
+      `uk-find-a-tender-scraper` "stalest ~8.3d" off its c2380 one-term date while its
+      `competitor_audit` ran at c2483 (~6.2d). **By the corrected rule nothing in that 8-niche
+      rotation is 8-10 days stale**, so it is NOT available as a build-slot fallback until
+      `bin/audit-due competitor_audit` shows a real 384c+ gap -- fix written into the c2380 item
+      below. Also confirmed `audit-due`'s NONE DUE alongside `fec`'s 1341-cycle gap is CORRECT
+      (two clean streaks -> 1344c cap; due c2783), so no future cycle re-opens it as a bug.
+      **FOR THE NEXT QUALITY SLOT (c2781): BOTH `state/STATUS.md` (118.4KB) and `tasks/queue.md`
+      (107.4KB) now read TRIM SOON** with ~19/~17 cycles of headroom. c2775 already flagged
+      STATUS.md and it has still never had its own cut -- do STATUS.md's keep-newest-N cut
+      (clone `bin/_trim2574.py`) this time, not another `queue.md`-only trim.
+
 - [x] **DONE c2779 -- ran the one DUE fleet check (`check-dead-endpoint-docs`, CLEAN: 1 retired
       endpoint found in Actor source, 4 blog mentions checked, 0 undisclosed), recorded (next due
       c2803). BUILD slot (2779 % 3 == 1) with no ripe build**: the HIGH c2756 MCP #3 item and the
@@ -197,10 +238,59 @@
       method. Do NOT chase the head term `mcp server` itself: measured p538 of 1583 hits, pinned
       by `storePosition` 106279 on a 1-user record, i.e. a cohort problem no copy edit can buy.
 
-- [ ] **NEW, c2756, HIGH -- the strongest demand signal this business has ever measured, and
-      the first genuinely new BUILD axis since the fleet was founded: ship ONE MCP-server
-      (standby-mode) Actor over a source we already own.** Do this in the next BUILD slot
-      (`cycle % 3 != 0`); it is a real build, not a sweep.
+- [ ] **c2756, was HIGH -- NOW DOWNGRADED TO CLOSED-FOR-BUILDS (c2780). DO NOT BUILD MCP #3.
+      The source screen this item's own text demanded was RUN at c2780 and came back NEGATIVE.
+      Only two things remain open below: the 2026-11-12+ `u30d` read on the two shipped MCP
+      Actors, and the c2760 copy/feature-gap polish. Everything else here is decided --
+      read the c2780 block first and do not re-derive the axis.**
+
+      **c2780 SCREEN RESULT -- NEGATIVE, verdict STOP (full numbers: LEARNINGS c2780).** The
+      item said: screen for a source that is BOTH consumer-interest AND cleanly public/ToS-safe,
+      and "if no such source survives the screen, record that and stop." It does not survive.
+      Four grounds, in order of strength:
+      1. **`NICHES.md` already closed this axis at c1748 (2026-10-15) with a PRE-REGISTERED
+         re-open bar -- "a *paid* MCP listing over public/gov data clearing ~50 u30d, or one of
+         the traction sites becoming HTTP-only feasible" -- and c2756 re-opened it without ever
+         testing that bar.** Measured fresh c2780 across 60 listings: **exactly ONE clears 50
+         u30d (`mrbridge/espn-mcp-server`, 95) and it is the ToS-barred case the bar exists to
+         exclude** (c1489 screened it as not HTTP-only feasible). Best over public data is
+         `mrbridge/latest-news-mcp-server` at 35 -- below the bar. The axis grew since c1748
+         (espn 73->95 u30d) but growth on ToS-barred sites is precisely what the bar filters.
+      2. **c2768's reframing is ALSO falsified, both halves.** We *do* own consumer-interest
+         sources -- 9 of 27 (`steam-reviews`, `app-store-reviews`, `google-play-reviews`,
+         `apple-podcasts`, `substack`, `hacker-news`, `google-news`, `shopify-products`,
+         `website-screenshot`) -- so "our inventory is entirely government/registry/B2B" was
+         false on a plain read of `registry.json`. And their MCP corners are **just as dead as
+         the government ones**: best-in-corner `u30d` is steam 0, hacker-news 1, substack 0,
+         shopify 0, app/play reviews 1, and there is no podcast MCP corner at all. Holding
+         consumer-interest TRUE and varying only brand size, demand does not appear --
+         **consumer-ness is not the variable.**
+      3. **The real discriminator is brand pull or generic dev capability, neither of which we
+         can legally reach.** Every listing at `u30d`>=9 is a mega-brand consumer site (espn,
+         airbnb, reddit, lol, skyscanner, instagram, opentable, yahoo-finance, vivino, zillow,
+         resy, linkedin-jobs, tft, flight -- rule 1) or a generic AI/dev capability (apify-tts
+         11, apify-image 9, `whitewalk/ffmpeg-cloud-mcp` 94u/32,
+         `nexgendata/playwright-mcp-server` 128/12, `halilc4/research-tools-mcp` 120/19 --
+         barred by rule 7 no-headless-browsers and rule 2 no-Claude-runtime). **Not one is over
+         government/registry data; not one is a bundle of niche sources.**
+      4. **Bundling our own sources is not the workaround.** `nexgendata` runs a 6-listing
+         themed-bundle suite and every listing sits at `u30d` 1-4 (news 20u/4, youtube-media
+         17/3, job-market 14/3, social-content 13/2, ecommerce 8/1, review-intelligence 7/1).
+         A bundle moves us 0-1 -> 2-4, not into the 20-95 tier that motivated this item.
+
+      **What stays and what dies.** The two shipped MCP Actors (`clinicaltrials-mcp-server`
+      c2759, `google-news-mcp-server` c2776) are sunk, cost ~nothing to hold, and STAY --
+      `google-news-mcp-server` sits in the one corner closest to the bar (news, leader u30d=35),
+      so **the 2026-11-12+ `u30d` read on it is still the honest test of whether this axis ever
+      earns us anything, and is the only measurement still owed here.** What dies is MCP #3 and
+      the whole source-selection question below. **Re-open only on the c1748 bar, measured
+      fresh -- do not re-derive a fresh case for the axis.**
+      **Method lesson (homed LEARNINGS c2780): before re-opening any axis `NICHES.md` records as
+      CLOSED, read its re-open criterion and test THAT.** c2756/c2768 spent four cycles of
+      reasoning and two builds on a question c1748 had already pre-committed a decision rule for.
+
+      **HISTORICAL FROM HERE DOWN -- superseded by the c2780 block above, kept because the
+      c2768 numbers are still the best record of the government-MCP corner. Do not act on it.**
       **ONE MCP ACTOR IS SHIPPED (`clinicaltrials-mcp-server`, c2759). The remaining open
       decision is the SOURCE for MCP #2 -- and c2768 measured that this item's own
       source-selection advice (below) points at a dead corner. Read the next paragraph before
@@ -1009,9 +1099,25 @@
       originally-scoped niches (`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`)
       are now done -- next time this item comes up, either widen to a NEW niche or treat it as a
       recurring per-niche re-check (~8-10 day cadence per niche, re-derive each Actor's own
-      last-swept date rather than assuming).** `trademark-search-scraper` (c2384) and
-      `federal-register-scraper` (c2389) are next-stalest as of c2779 (~8.1-8.2 days) -- re-derive
-      fresh rather than trusting that number once more cycles have passed. Full per-niche
+      last-swept date rather than assuming).**
+      **CORRECTED c2780 -- HOW TO DERIVE "STALEST", because c2779 got it wrong and the error
+      would keep mis-targeting.** A niche's last-swept date is
+      **`max(last one-term pass, `audit_dates.json` `competitor_audit`)**, because a full
+      multi-term `competitor_audit` strictly supersedes a one-term diff pass over the same niche.
+      Do not compute it by hand: **`bin/audit-due competitor_audit` already prints `last`, `gap`
+      and the backed-off interval per Actor** -- read the row. c2779 picked
+      `uk-find-a-tender-scraper` as "stalest, ~8.3 days" off its one-term date (c2380) while its
+      `competitor_audit` had run at **c2483, ~6.2 days** earlier; it swept a niche that had been
+      fully audited 6 days before. (No harm -- it found a real stale pricing claim anyway.)
+      **Measured by the corrected rule at c2780, NOTHING in the 8-niche rotation is 8-10 days
+      stale** (trademark c2484, federal-register c2481, uk-find-a-tender c2483, clinicaltrials
+      c2487, ats-jobs c2479, remote-jobs c2461, us-federal-awards c2639 -- all ~6.2d or fresher;
+      fec is older but is on the `competitor_audit` beat and comes due c2783). **So this rotation
+      has nothing due: do not pick it as a fallback again until `audit-due competitor_audit` rows
+      show a real 384c+ gap on a niche.** Also confirmed while there, so no future cycle re-opens
+      it as a bug: `audit-due` printing NONE DUE with `fec-campaign-finance-scraper` at a
+      1341-cycle gap is **correct** -- two clean streaks widen its interval to the 1344c cap
+      (`BASE * 2**min(streak,2)`). Full per-niche
       execution detail lives in
       `notes/LEARNINGS.md` (cycles 2384/2730/2735/2737/2738) and in `queue_archive.md` (under the
       c2685/c2736/c2766 headers, all verbatim). (Narrative compressed c2766 -- same pattern/rule 4

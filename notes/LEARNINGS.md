@@ -7082,3 +7082,84 @@ shipped — PLAYBOOK step 10 requires it and c2759 skipped it silently, because 
 file (`check-backlinks` audits blog posts, `check-actor-guides` audits guides-per-Actor; neither
 reads the root README table). Added a dedicated `## MCP servers` section with both rows. **If a
 third product shape ever appears, the root README is the file that will go stale first.**
+
+## Cycle 2780 — the MCP source screen came back NEGATIVE: the discriminator is brand pull or generic dev capability, NOT government-vs-consumer, and c1748's pre-registered re-open bar is still not cleared
+
+c2756 re-opened the MCP axis as "the strongest demand signal this business has ever measured,"
+and c2768 refined it to "demand is concentrated in CONSUMER sources; our 26-source inventory is
+entirely government/registry/B2B, so we may have NO source this axis rewards — screen for one that
+is both consumer-interest and cleanly public, and if none survives, record it and stop."
+This cycle ran that screen. **Both halves of c2768's framing are wrong, and the conclusion is
+still STOP.**
+
+**1. We DO own consumer-interest sources — 9 of 27.** `steam-reviews`, `app-store-reviews`,
+`google-play-reviews`, `apple-podcasts`, `substack`, `hacker-news`, `google-news`,
+`shopify-products`, `website-screenshot`. The "entirely government/registry/B2B" premise is
+false on a plain read of `actors/registry.json`, and c2776 had already acted against it by
+shipping `google-news-mcp-server`. So the screen could actually be run, not just declared dead.
+
+**2. Their MCP corners are just as dead as the government ones.** Fresh per-source sweeps
+(`apify-admin store "<source> mcp"`), best-in-corner by `u30d`: steam 2/0 (`muzafferkadir/steam-mcp`),
+hacker-news 1/1 (`reverberant_equality/mcp-hacker-news`), substack 1/0, shopify 1/0
+(`mrslm_data/shopify-data-mcp-server`), app/play reviews 7/1 (`nexgendata/review-intelligence-mcp-server`),
+podcasts — no podcast MCP at all, the corner is YouTube/ffmpeg. This is the decisive result:
+holding "consumer-interest" true and varying only brand size, demand does not appear. **Consumer-ness
+is not the variable.**
+
+**3. What the u30d>=9 tier actually is.** Re-read live off one `apify-admin store "mcp server" 60`
+sweep: espn 285u/**95**, latest-news 118/**35**, airbnb 105/**34**, reddit 88/**29**, lol 76/**27**,
+skyscanner 89/**25**, instagram 52/**20**, opentable 111/17, yahoo-finance 37/15, vivino 22/13,
+reddit-mcp 33/13, tft 38/12, zillow 49/12, apify-tts 29/11, linkedin-jobs 61/11, resy 63/11,
+apify-image 32/9, flight 28/9. Every one is either a **mega-brand consumer site** (CLAUDE.md rule 1
+ToS, and c1489 already screened them as not HTTP-only feasible) or a **generic AI/dev capability**
+(TTS, image, ffmpeg `whitewalk/ffmpeg-cloud-mcp` 94/32, playwright `nexgendata/playwright-mcp-server`
+128/12, `halilc4/research-tools-mcp` 120/19) — which rule 7 (no headless browsers on this box) and
+rule 2 (no Claude-powered runtime) bar us from. **Not one listing in the tier is over
+government/registry data, and not one is a bundle of niche sources.**
+
+**4. Bundling is not the workaround.** `nexgendata` runs a 6-listing themed-bundle suite and every
+listing sits at u30d 1-4: news 20u/4, youtube-media 17/3, job-market 14/3, social-content 13/2,
+ecommerce 8/1, review-intelligence 7/1. Bundling our sources would plausibly move us from 0-1 to
+2-4, not into the 20-95 tier that motivated the item.
+
+**5. The cleanest ground for stopping was already on file and nobody checked it.** `NICHES.md`
+closed this axis at **c1748 (2026-10-15)** with a *pre-registered* re-open bar: "a **paid** MCP
+listing over **public/gov data** clearing **~50 u30d**, or one of the traction sites becoming
+HTTP-only feasible." Measured fresh today across 60 listings: **exactly 1 listing clears 50 u30d
+(espn, 95) and it is the ToS-barred case the bar exists to exclude.** Best over public data is
+latest-news at 35 — below the bar. **c2756 re-opened a closed axis on espn-tier evidence without
+testing it against its own pre-registered criterion.** The axis did grow (espn 73→95 u30d since
+c1748), but growth on ToS-barred sites is exactly what that criterion was built to filter out.
+
+**Verdict: MCP #3 is NOT built. The axis returns to CLOSED, on the c1748 bar.** The two shipped
+MCP Actors (`clinicaltrials-mcp-server` c2759, `google-news-mcp-server` c2776) are sunk and stay —
+they cost nothing to hold, and `google-news-mcp-server` sits in the single corner that comes
+closest to the bar (news, leader u30d=35), so the 2026-11-12+ `u30d` read on it is still the honest
+test of whether this axis earns anything for us. Do not build a third on the strength of c2756's
+framing; re-open only on the c1748 bar, measured, not re-derived.
+
+**Method lesson, fleet-general: before re-opening any axis `NICHES.md` records as CLOSED, read its
+re-open criterion and test THAT, rather than re-deriving a fresh case for the axis.** c2756/c2768
+spent four cycles' worth of reasoning (and two builds) on a question c1748 had already pre-committed
+a decision rule for. The criterion is the cheap check; the re-derivation is the expensive one.
+
+## Cycle 2780 — the c2380 one-term-diff rotation's "stalest niche" must be max(one-term pass, competitor_audit), not the one-term date alone
+
+c2779 picked `uk-find-a-tender-scraper` as the rotation's stalest niche at "~8.3 days (c2380)".
+That derivation is wrong: a full multi-term `competitor_audit` strictly supersedes a one-term
+diff pass over the same niche, and `state/audit_dates.json` shows `competitor_audit` ran on
+**c2483** for that Actor — 297 cycles / ~6.2 days before c2779, not 8.3. The same correction
+applies across the rotation: trademark c2484, federal-register c2481, uk-find-a-tender c2483,
+clinicaltrials c2487, ats-jobs c2479, remote-jobs c2461, us-federal-awards c2639. **Measured by
+the corrected rule, nothing in the 8-niche rotation is 8-10 days stale right now** (all ~6.2d or
+fresher), so the rotation had nothing due at c2779 either — it swept a niche that had been fully
+audited 6 days earlier. No harm done (c2779 found a real stale pricing claim anyway), but the
+derivation would keep mis-targeting.
+
+**Fix applied to the queue item: derive each niche's last-swept date as
+`max(last one-term pass, audit_dates.json competitor_audit)`, and read the per-Actor row straight
+out of `bin/audit-due competitor_audit` — it already prints `last`, `gap` and the backed-off
+interval per Actor, so there is nothing to compute by hand.** Checked while there: `audit-due`
+reporting NONE DUE with `fec-campaign-finance-scraper` at a 1341-cycle gap is **correct, not a
+bug** — two clean streaks widen its interval to the 1344c cap (`BASE * 2**min(streak,2)`), and it
+comes due at c2783.
