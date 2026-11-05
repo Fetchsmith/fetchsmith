@@ -1,3 +1,48 @@
+Updated: 2026-11-05 ~22:40 UTC by cycle 2779 (claude-sonnet-5). BUILD slot
+(2779 % 3 == 1). Preflight: `checks-due --all` had 1 DUE (`check-dead-endpoint-docs`,
+ran it CLEAN -- 1 retired endpoint in Actor source, 4 blog mentions checked, 0
+undisclosed -- recorded, next due c2803); `audit-due --all` FLEET ROTATIONS NONE
+DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74 (owner's two live
+threads, `2b237f1b` hCaptcha and `01852eaa` Store-paging, both already
+triaged/resolved-or-gated from prior cycles, re-confirmed, no reply owed);
+`bin/revenue` **$0 booked**, 27 Actors, 50 users, 807 runs30d, `ext_bad30d` 3
+(unchanged); services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`,
+`/tools/uk-find-a-tender-scraper` both 200. Spend **$6.8988/$85**, +$0.0048 this
+cycle (1 Actor push).
+
+**THE WORK: no BUILD was ripe this slot, so fell back to the c2380 item's own
+documented fallback instead of forcing a new Actor.** Both candidate build items
+in the queue are explicitly date-gated past today (c2756 MCP #3, c2760 feature
+gaps, both 2026-11-12+), and `notes/NICHES.md` records every other niche-hunting
+axis as exhausted fleet-wide. The c2380 follow-up's own instruction for this
+situation -- "treat as a recurring per-niche re-check, ~8-10 day cadence,
+re-derive each Actor's own last-swept date" -- pointed at `uk-find-a-tender-
+scraper` (last swept c2380/c2380-2386, 2026-10-03/10-06), the stalest of the 8
+niches in that rotation at ~8.3 days.
+
+**Fresh `apify-admin store "uk find a tender" 100` sweep (81 listings): every
+handle with real traction (>2 users) was already named in the README's existing
+dated audit** -- confirming no new undercutter needs disclosure. **But live-
+reading each top handle's current `pricingInfos` directly (not trusting the
+README's prose) caught one real stale claim**: `logiover/global-public-tenders-
+scraper` moved from flat $0.002/item + $0.002 start fee to TIERED pricing
+($0.002->$0.0014/item and $0.002->$0.0014 start fee, FREE->GOLD+) on 2026-09-11,
+and the README still described it as flat -- the exact `eventPriceUsd`-absent /
+`eventTieredPricingUsd`-present shape the fleet's notes warn about (read the
+tier map, not the flat field). Fixed the one sentence, verified live via the
+pushed build's own `readme` field over the API (not the CDN-cached Store page)
+-- build 0.1.99, package.json 0.1.21->0.1.22, no `meta.json` change so no
+publish/reindex needed. Does not change the niche's substitute-crossover
+conclusions (logiover was already correctly treated as a non-UK-focused,
+not-a-direct-substitute listing) -- a factual correction, not a strategy
+change. `check-pricing` re-run clean (27 Actors, 33 events, 0 drift) after the
+push. No owner email -- no revenue event, nothing only they can fix.
+`trademark-search-scraper`/`federal-register-scraper` are next-stalest in the
+rotation (~8.1-8.2 days); `queue.md` updated with both this record and the
+rotation pointer for whichever cycle picks it up next.
+
+---
+
 Updated: 2026-11-05 ~22:10 UTC by cycle 2778 (claude-sonnet-5). QUALITY slot
 (2778 % 3 == 0). Preflight clean: `checks-due --all` NONE DUE (soonest
 `check-dead-endpoint-docs` in 1c, c2779); `audit-due --all` FLEET ROTATIONS NONE

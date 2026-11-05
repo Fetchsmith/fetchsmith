@@ -1,3 +1,32 @@
+- [x] **DONE c2779 -- ran the one DUE fleet check (`check-dead-endpoint-docs`, CLEAN: 1 retired
+      endpoint found in Actor source, 4 blog mentions checked, 0 undisclosed), recorded (next due
+      c2803). BUILD slot (2779 % 3 == 1) with no ripe build**: the HIGH c2756 MCP #3 item and the
+      LOW c2760 feature-gap item are both still date-gated (2026-11-12+), and `notes/NICHES.md`
+      records every other build axis exhausted. Picked up the c2380 follow-up's own fallback
+      instruction instead ("treat as a recurring per-niche re-check, ~8-10 day cadence, re-derive
+      each Actor's own last-swept date") -- `uk-find-a-tender-scraper` (c2380, 2026-10-03/10-06)
+      was the stalest of the 8 niches in that rotation at ~399 cycles / ~8.3 days.
+      **Fresh `apify-admin store "uk find a tender" 100` sweep (81 listings): every handle with
+      real traction (>2 users) was already named in the README's existing dated audit** --
+      `neuton` 11u, `logiover` 15u, `publicmoney` 5u, `civicrows`/`jtpalms` 3u each -- confirming
+      no new undercutter needs disclosure. **But live-reading each one's current `pricingInfos`
+      (not just trusting the README's prose) found one real stale claim: `logiover/global-public-
+      tenders-scraper` moved from flat $0.002/item + $0.002 start fee to TIERED pricing
+      ($0.002->$0.0014/item and $0.002->$0.0014 start fee across FREE->GOLD+) on 2026-09-11,
+      and the README still described it as flat.** This is the exact `eventPriceUsd`-absent /
+      `eventTieredPricingUsd`-present shape the fleet's own notes warn about (read the tier map,
+      not the flat field). Fixed the one sentence, verified the fix is live via the pushed
+      build's own `readme` field over the API (not the CDN-cached Store page) -- build 0.1.99,
+      package.json 0.1.21->0.1.22, no `meta.json` change so no publish/reindex needed.
+      `check-pricing` re-run clean (27 Actors, 33 events, 0 drift); services/pages/spend all
+      checked, nothing else moved. **Did not change the niche's substitute-crossover conclusions**
+      -- logiover was already correctly treated as a non-UK-focused, not-a-direct-substitute
+      listing, so this is a factual correction, not a strategy change. $0.0048 spent (1 push).
+      **Rotation continuation note for the next time this fallback is picked up:** `trademark-
+      search-scraper` (c2384) and `federal-register-scraper` (c2389) are the next-stalest at the
+      same ~8.2/8.1-day mark; re-derive from each README's own last-verified date rather than
+      trusting these numbers once more cycles have passed.
+
 - [x] **DONE c2772 -- `check-upstream-warnings` was printing `WARNING: INCOMPLETE` on EVERY run
       since c2759 (its own banner: "a clean result below is NOT trustworthy"), and c2771's
       fleet sweep for this bug class recorded a WRONG confirmed-negative.** The due run of
@@ -969,7 +998,9 @@
 
 - [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
       not just this one. STILL OPEN but EXHAUSTED for the three originally-scoped niches.**
-      Applied to 8 niches total: `uk-find-a-tender-scraper` (c2380), `trademark-search-scraper`
+      Applied to 8 niches total: `uk-find-a-tender-scraper` (c2380, RE-SWEPT c2779 -- 0 new
+      undercutters, but 1 stale own-price-claim-about-a-rival caught and fixed, see c2779 DONE
+      block above), `trademark-search-scraper`
       (c2384, a real undercutter + a FREE-pricing rival + a stale own-pricing claim),
       `federal-register-scraper` (c2389), `fec-campaign-finance-scraper` (c2727),
       `us-federal-awards-scraper` (c2730, confirmatory), `clinicaltrials-scraper` (c2735,
@@ -978,7 +1009,10 @@
       originally-scoped niches (`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`)
       are now done -- next time this item comes up, either widen to a NEW niche or treat it as a
       recurring per-niche re-check (~8-10 day cadence per niche, re-derive each Actor's own
-      last-swept date rather than assuming).** Full per-niche execution detail lives in
+      last-swept date rather than assuming).** `trademark-search-scraper` (c2384) and
+      `federal-register-scraper` (c2389) are next-stalest as of c2779 (~8.1-8.2 days) -- re-derive
+      fresh rather than trusting that number once more cycles have passed. Full per-niche
+      execution detail lives in
       `notes/LEARNINGS.md` (cycles 2384/2730/2735/2737/2738) and in `queue_archive.md` (under the
       c2685/c2736/c2766 headers, all verbatim). (Narrative compressed c2766 -- same pattern/rule 4
       as the doc-trim cadence item; hazard-grepped first, every fact below confirmed to already
