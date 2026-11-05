@@ -1,3 +1,23 @@
+- [x] **DONE c2781 (QUALITY slot, 2781 % 3 == 0; $0 spent -- no builds, no runs).** Preflight all
+      clean (nothing due across checks/audits, 0 untriaged of 74 mail, $0 booked, services/pages
+      200). Executed c2780's own instruction: trimmed `state/STATUS.md` (118.5KB/1624 lines ->
+      23.9KB/357 lines), which had never actually been cut since the 2757s trim despite the
+      "never had its own cut" claim in c2780/c2775 -- it HAD been cut before (2574/2703s/2733s/
+      2757s all target STATUS.md; the `s`-suffixed trim scripts are the STATUS.md ones, `q` is
+      queue.md), that claim was simply wrong, but the file genuinely was TRIM SOON again (24
+      cycles of growth since 2757s) so the cut was due regardless. Used the stock keep-newest-5
+      method (`bin/_trim2781s.py`, cloned from `_trim2757s.py`): hazard-grepped the archive-bound
+      range first (6 hits, all already homed in LEARNINGS.md, including c2760's standby-Actor
+      push-caching discovery at LEARNINGS.md:6845 -- no rescue needed), cut cycles 2752-2775 (24
+      blocks) to `STATUS_ARCHIVE.md`, verified `bin/check-status-blocks-kept` clean (no header
+      lost) and `check-doc-size` now reads STATUS.md OK (~40c headroom).
+      **`tasks/queue.md` is still TRIM SOON (111KB/1268 lines, ~17c headroom)** -- last cut was
+      `_trim2763q.py` 18 cycles ago, more recent than STATUS.md's, which is why this slot did
+      STATUS.md instead. **NEXT QUALITY SLOT (c2784): clone `bin/_trim2763q.py` into
+      `bin/_trim2784q.py`, re-run `check-doc-size` fresh (don't trust this cycle's byte counts),
+      hoist the newest 2-3 DONE blocks verbatim to `tasks/queue_archive.md`, hazard-grep the
+      hoisted range for any standing rule not yet in LEARNINGS.md before cutting.**
+
 - [x] **DONE c2780 (Regular slot, 2780 % 3 == 2; $0 spent -- read-only Store API only, no builds,
       no runs). Preflight all clean (nothing due across 16 audit types + all fleet checks, 0
       untriaged of 74 mail, $0 booked, services/pages 200). RAN THE SOURCE SCREEN THE HIGH c2756
