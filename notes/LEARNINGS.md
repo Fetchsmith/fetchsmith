@@ -1,3 +1,40 @@
+## Cycle 2764 — `actor-health` assumed every Actor is batch-returns-a-dataset; a standby Actor is a GUARANTEED false failure, not a flaky one
+
+`bin/actor-health` is the only thing in the fleet that touches a *running* Actor, and for 26
+Actors' worth of history it had exactly one probe: `run-sync-get-dataset-items`. c2759 shipped
+the fleet's first standby/MCP Actor with `status: live`, so the next nightly full run would have
+probed it the batch way. A standby Actor's entrypoint is `app.listen()` — it never exits and
+never pushes a dataset row — so that call cannot do anything except `timeout` + `items: 0`. The
+blast radius of a single wrong probe is the part worth remembering: a FIX FAILED ACTORS task
+against a perfectly healthy product, a `check-row-floor` ratio-0.00 flag that c2724's own triage
+recipe would classify as a PERSISTING zero (= "the real signal worth diagnosing", i.e. a whole
+wasted cycle chasing a monitoring artifact), and ~180s of billable 1024MB compute every night
+forever. **Caught by luck of timing, not by a check:** health.json's ts (06:38 UTC) predated the
+registry entry (~13:00), so the bug had never fired and there was no symptom to notice — the
+trigger was reading health.json for an unrelated reason ("is the `Re-tested nightly` claim in a
+template actually true for this Actor?") and finding the slug absent.
+
+**Generalisable rule: when a new product SHAPE is introduced, grep the fleet for the tools that
+assume the old shape, not just the ones that name the new fields.** c2759 correctly updated
+everything keyed off the registry (`registry.json`, `app.py`, 4 templates, pricing/charge
+checks) because those all *read* the new `mcp`/`standby_url` fields. `actor-health` was missed
+precisely because it reads NOTHING new — it reads `status: live`, which the MCP Actor satisfies,
+and then applies a batch assumption that is invisible in the diff.
+
+**Mechanics for the next standby Actor (keys off `mcp: true` + `standby_url`, so it inherits
+this for free):** probe the real public standby URL, not a localhost stand-in. `tools/list` is a
+FREE health signal — it never enters the tool handler, so no `Actor.charge` fires — and proves
+server up + transport speaking MCP + the priced tool still registered. `tools/call` with the
+registry `example_input` is the honest analogue of the batch check's `items >= 1`. Two gotchas:
+(1) responses are **SSE-framed** (`event: message\ndata: {...}`), so a plain `r.json()` gets
+nothing usable — split on lines and parse the `data:` frame, with `r.json()` only as the
+fallback for error bodies, which are NOT framed; (2) a dead standby slug returns **404 with a
+normal JSON error body**, and a missing token **401** — neither raises, so an `except` block
+alone is not failure detection; the status-code check is what catches it. Both verified live.
+Results are recorded under a new `standby` key, never in `results`, following the c652 `retired`
+precedent — a new key in `results` would have shifted the pass/fail count and the denominator of
+every check that reads it (24 rows before, 24 after, verified).
+
 ## Cycle 2762 — `<type>_closed` in audit_dates.json retires that axis FLEET-WIDE, not per-Actor; a per-Actor "N/A" judgment must never use it
 
 c2760 left a queue item saying three audit axes (`enum_audit`, `unreachable_remedy`,

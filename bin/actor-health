@@ -53,6 +53,14 @@ if "--only" in sys.argv:
 report = {"ts": int(time.time()), "results": {}}
 for t in reg:
     if t.get("status") not in ("live", "beta"): continue
+    # A standby-mode Actor (registry `mcp: true`, added cycle 2759) must NEVER be probed with
+    # run-sync-get-dataset-items: its entrypoint is `app.listen()`, so it never exits and never
+    # pushes a dataset row. The call is therefore a GUARANTEED `timeout` + `items: 0` -- a false
+    # FIX FAILED ACTORS task against a healthy product, a `check-row-floor` ratio-0.00 flag, and
+    # ~180s of billable compute, every night. Probed over MCP below instead (cycle 2764: caught
+    # before the first nightly run that would have included it -- health.json ts 06:38 predates
+    # the registry entry, so this had never actually fired yet).
+    if t.get("mcp"): continue
     slug = t["slug"]; p = f"/root/agent/actors/{slug}/test_input.json"
     inp = json.load(open(p)) if os.path.exists(p) else t.get("example_input", {"maxResults": 5})
     inp = {**inp, "maxResults": min(int(inp.get("maxResults", 5)), 10)}
@@ -78,6 +86,78 @@ for t in reg:
     except Exception as e:
         report["results"][slug] = {"ok": False, "items": 0, "fail_rows": 0, "err": str(e)[:200]}
     print(slug, report["results"][slug])
+
+# Standby-mode (MCP) Actors, cycle 2764. The batch loop skips them for the reason documented
+# there, which would otherwise leave our only non-batch product with NO monitoring at all: a
+# dead standby URL is invisible to every other fleet check (they read the registry and the
+# platform record, not the running server). Two JSON-RPC calls over the real public standby URL
+# -- the same surface a buyer's MCP client hits, not a localhost stand-in:
+#   tools/list  -- server up, transport speaking MCP, the priced tool still registered (FREE:
+#                  it does not enter the tool handler, so no `Actor.charge` fires)
+#   tools/call  -- the end-to-end analogue of the batch check's `items >= 1`: upstream API
+#                  reachable AND our parser still returning rows with the documented fields
+# Recorded under "standby", NOT in report["results"] -- the same containment the `retired`
+# probe below uses, so it cannot shift the pass/fail count, open a FIX task, or move
+# `check-row-floor`'s denominator (24 batch rows before this change, 24 after; verified).
+# FOLLOW-UP left in queue.md: wire a standby failure into the FIX-task path deliberately.
+# Responses are SSE-framed (`event: message\ndata: {...}`), so the JSON needs unwrapping.
+def _mcp_rpc(url, token, method, params=None):
+    body = {"jsonrpc": "2.0", "id": 1, "method": method}
+    if params is not None:
+        body["params"] = params
+    r = httpx.post(f"{url}/mcp", params={"token": token}, json=body, timeout=120,
+                   headers={"Accept": "application/json, text/event-stream"})
+    payload = None
+    for ln in r.text.splitlines():
+        if ln.startswith("data:"):
+            try:
+                payload = json.loads(ln[5:].strip())
+            except Exception:
+                payload = None
+            break
+    if payload is None:
+        try:
+            payload = r.json()
+        except Exception:
+            payload = None
+    return r.status_code, payload
+
+report["standby"] = {}
+for t in reg:
+    if not t.get("mcp") or t.get("status") not in ("live", "beta"): continue
+    slug = t["slug"]; url = t.get("standby_url")
+    if not url:
+        report["standby"][slug] = {"ok": False, "err": "no standby_url in registry.json"}
+        print("standby:", slug, report["standby"][slug]); continue
+    rec = {"ok": False, "url": url, "list_status": None, "tool_listed": False,
+           "call_status": None, "rows": 0, "sample_keys": [], "err": None}
+    try:
+        rec["list_status"], payload = _mcp_rpc(url, T, "tools/list")
+        names = [x.get("name") for x in ((payload or {}).get("result", {}) or {}).get("tools", [])]
+        rec["tool_listed"] = t.get("mcp_tool") in names
+        inp = t.get("example_input") or {}
+        rec["call_status"], payload = _mcp_rpc(url, T, "tools/call",
+                                               {"name": t.get("mcp_tool"), "arguments": inp})
+        result = ((payload or {}).get("result") or {})
+        rows = []
+        for c in result.get("content", []):
+            if c.get("type") == "text":
+                try:
+                    parsed = json.loads(c.get("text") or "")
+                except Exception:
+                    continue
+                rows = parsed if isinstance(parsed, list) else [parsed]
+        rec["rows"] = len(rows)
+        rec["sample_keys"] = list(rows[0].keys())[:8] if rows and isinstance(rows[0], dict) else []
+        rec["ok"] = (rec["list_status"] < 300 and rec["tool_listed"]
+                     and rec["call_status"] < 300 and not result.get("isError") and rec["rows"] >= 1)
+        if not rec["ok"]:
+            rec["err"] = json.dumps(payload)[:200]
+    except Exception as e:
+        rec["err"] = str(e)[:200]
+    report["standby"][slug] = rec
+    print("standby:", slug, "ok=", rec["ok"], "list=", rec["list_status"],
+          "tool_listed=", rec["tool_listed"], "call=", rec["call_status"], "rows=", rec["rows"])
 
 if only:
     sys.exit(0)

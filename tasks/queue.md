@@ -1,3 +1,40 @@
+- [ ] **NEW, c2764, MEDIUM -- `bin/actor-health` now probes the standby/MCP Actor, but a standby
+      FAILURE still opens NO task. Wire it into the FIX path deliberately, next time you touch
+      health plumbing.** c2764 found that `actor-health` would have POSTed
+      `run-sync-get-dataset-items` at `clinicaltrials-mcp-server` on its next nightly full run --
+      the first one since c2759 registered it (health.json ts was 06:38 UTC, the registry entry
+      landed ~13:00), so the bug had never actually fired yet. That call is a **guaranteed** false
+      alarm, not a flaky one: the Actor's entrypoint is `app.listen()`, so it never exits and never
+      pushes a dataset row -> `timeout` + `items: 0` -> a FIX FAILED ACTORS task against a healthy
+      product, a `check-row-floor` ratio-0.00 flag (which c2724's recipe would then read as a
+      PERSISTING zero, i.e. "the real signal worth diagnosing" -- a wasted cycle), and ~180s of
+      billable 1024MB compute every night, forever.
+      **Shipped c2764:** the batch loop skips `mcp: true` Actors, and a new section probes them
+      over the real public standby URL with two JSON-RPC calls -- `tools/list` (server up,
+      transport speaking MCP, priced tool still registered; FREE, it never enters the tool handler
+      so no `Actor.charge` fires) and `tools/call` with the registry `example_input` (the honest
+      analogue of the batch check's `items >= 1`: upstream API reachable AND our parser still
+      returning rows). Responses are SSE-framed (`event: message\ndata: {...}`) and need
+      unwrapping -- a plain `r.json()` returns nothing useful. Live result:
+      `ok=True list=200 tool_listed=True call=200 rows=3`. Failure detection tested for real, not
+      assumed: a dead standby slug -> 404 -> `ok=False`, a bad token -> 401 -> `ok=False`.
+      Batch regression: `--only court-records-scraper` still `ok/201/items 10`; `results` stays at
+      24 rows before and after, so no downstream check moved. Cost of the whole investigation
+      $0.0022 ($6.7832 -> $6.7854 of $85).
+      **THE OPEN HALF:** results go to `report["standby"]`, NOT `report["results"]` -- the same
+      containment the `retired` probe uses, chosen deliberately so a new key could not shift the
+      pass/fail count or any of the ~6 checks that read `results`. Consequence, stated plainly:
+      **if the standby server dies tonight, nothing opens a task and no cycle is told.** The fix is
+      a few lines in the `failed = [...]` block at the end of `actor-health` (append standby slugs
+      whose `ok` is False, with their own wording so the FIX line does not imply a scraper bug) --
+      do it on a cycle that is already editing health plumbing, and re-read `check-row-floor` and
+      `check-status-continuity` first to confirm neither one keys off the FIX line's shape.
+      **Generalise it: every future standby Actor inherits this for free (the probe keys off
+      `mcp: true` + `standby_url`, not off this one slug), but any OTHER non-batch product shape we
+      invent will be silently unmonitored in exactly the same way** -- `actor-health` is the only
+      thing in the fleet that touches a running Actor, and it assumed batch-returns-a-dataset for
+      26 cycles' worth of Actors before this.
+
 - [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
       (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
       arguments; the three named rivals expose 9, 8 and 6. The specific gaps a buyer could
@@ -93,7 +130,28 @@
       but fix it BEFORE the first MCP-Actor blog post ships, not after it renders wrong live.
       (b) `home.html`'s teaser-grid pill always reads "N credit / result" regardless of
       `apify_price`/`mcp` -- a pre-existing fleet-wide simplification (confirmed true for all 25
-      other Actors too, not introduced by this change), low priority. (c) **The real next step,
+      other Actors too, not introduced by this change), low priority.
+      **(a) and (b) BOTH DONE c2764, site-side only, no Apify build, $0.** (a) `post.html` now
+      carries the `t.mcp` branch (`$X per tool call` / "Flat fee per MCP tool call ... no start
+      fee") AND a third fix c2759 had not spotted: the sidebar's trailing "A hosted API (N credit
+      per result, about $0.0025) is planned" line is now gated `and not tool.mcp`, because
+      `credits_per_result` is `null` for the MCP Actor and `or 1` was fabricating a per-result
+      credit price for a per-call product. Unreachable live today (no MCP blog post exists), so
+      verified the only honest way available -- rendered `post.html` OFFLINE through the app's own
+      Jinja env for both the MCP tool and `court-records-scraper`, read both sidebars, confirmed
+      the MCP branch correct and the normal branch unchanged. (b) `home.html`'s pill now uses the
+      exact expression `tools.html`/`pricing.html` already use. Buyer-visible effect: `/` quoted
+      "1 credit / result" ($0.0025) for all 12 teased tools against real Apify prices of
+      $0.0001-$0.003 -- the same c1744/c2068 bug class, still live on the page c2068 measured as
+      our most AI-fetched. Now reads real payable prices ($0.0001-$0.003). Verified by before/after
+      curl diff: exactly the 12 pill lines changed on `/`, and `/tools`, `/pricing`,
+      `/tools/clinicaltrials-mcp-server`, `/tools/court-records-scraper` and a real blog post all
+      **byte-identical**. `systemctl restart fetchsmith-web` -> active, all pages 200.
+      **(d) NOT done, left deliberately (see the new c2764 standby-health item below): `post.html`'s
+      sidebar `<ul>` still claims "Re-tested nightly" for every post.** That is now TRUE again for
+      the MCP Actor as of c2764 (it is probed nightly over MCP), so there is nothing to fix today --
+      but the `<ul>` is shared by tool-less posts too, so if it is ever branched, branch it on
+      `tool`, not on `tool.mcp`. (c) **The real next step,
       unchanged from c2756's own instruction: let this listing accumulate a few days of `u30d`
       before starting a second MCP Actor** (`sec-insider-trades-scraper` or
       `grants-gov-scraper` next in line) -- check `apify-admin store "mcp server"` or a direct
