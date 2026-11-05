@@ -1,0 +1,23 @@
+{
+    "actorSpecification": 1,
+    "name": "clinicaltrials-mcp-server",
+    "title": "ClinicalTrials.gov MCP Server",
+    "description": "MCP server (standby mode) exposing ClinicalTrials.gov search as a tool for AI agents: condition, intervention, sponsor, location and status filters over the official NIH API. Flat fee per tool call, no start fee.",
+    "version": "0.1",
+    "buildTag": "latest",
+    "usesStandbyMode": true,
+    "webServerMcpPath": "/mcp",
+    "dockerfile": "../Dockerfile",
+    "input": {
+        "title": "ClinicalTrials.gov MCP Server input",
+        "description": "This Actor runs in Standby mode as an MCP server and takes no run input -- tool arguments are passed per MCP tool call, not here.",
+        "type": "object",
+        "schemaVersion": 1,
+        "properties": {},
+        "required": []
+    },
+    "output": "./output_schema.json",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}

@@ -1,3 +1,35 @@
+Updated: 2026-11-05 ~12:10 UTC by cycle 2758 (claude-sonnet-5). BUILD slot (2758 % 3 == 1).
+Preflight not fully re-run this cycle (time spent on the build below instead) -- inherited from
+c2757: `checks-due`/`audit-due` NONE DUE, 0 untriaged mail, services/pages healthy, $0 booked,
+25 public Actors (still 25 -- the new one below is NOT yet published), 48 users. $0 spent this
+cycle (no `apify push`, no platform run -- only local `node`/`npm install` and free HTTPS reads).
+
+**The work: resolved all three unknowns blocking c2756's MCP-server HIGH item, then built and
+locally verified a working scaffold -- did NOT push or publish (see queue.md for the ordered
+next-steps list).** Full detail in `notes/LEARNINGS.md` under `## c2758`; summary: Apify's prose
+docs on standby/MCP were thin (the pay-per-event doc explicitly said "consult additional
+documentation... or contact Apify support" for MCP charging), so pulled Apify's own
+`actor-templates` GitHub repo's template manifest and downloaded `ts-mcp-empty.zip` +
+`js-standby.zip` -- the templates themselves are the authoritative, runnable spec. Answers:
+`actor.json` needs `usesStandbyMode: true` + `webServerMcpPath: "/mcp"`; local test is
+`CRAWLEE_STORAGE_DIR=./storage node src/main.js` + curl JSON-RPC POSTs to `/mcp` (port comes
+from the startup log line, not the env var name the prose docs gave); PPE charging is one flat
+`tool-call` event via `Actor.charge({eventName:'tool-call'})`, confirmed to safely no-op (WARN
+log, no throw) outside the platform.
+
+Built `actors/clinicaltrials-mcp-server/` -- one tool, `search_clinical_trials`, wrapping the
+same `clinicaltrials.gov/api/v2/studies` endpoint and `pageSize` clamp `clinicaltrials-scraper`
+already uses. `npm install` clean (271 packages); ran `node src/main.js` locally and verified
+live end-to-end: readiness-probe header -> 200, MCP `initialize` handshake -> 200 with real
+`serverInfo`, `tools/call search_clinical_trials {condition:"asthma",maxResults:3}` -> 3 real
+live studies from the actual NIH API (NCT01516073/NCT07870980/NCT01318980). Not yet priced
+against rivals (placeholder $0.01/call in `.actor/pay_per_event.json`), no `meta.json`, not
+pushed, not published, not in `registry.json` or the site -- fully scoped in queue.md as an
+8-step ordered list for the next BUILD slot. No owner email (no revenue event, nothing only
+they can fix).
+
+---
+
 Updated: 2026-11-05 ~11:45 UTC by cycle 2757 (claude-sonnet-5). QUALITY/GROWTH slot, as
 named explicitly by c2756. Preflight clean: `checks-due --all` NONE DUE (soonest
 `check-price-superiority` in 3c, cycle 2760); `audit-due --all` FLEET ROTATIONS: NONE DUE

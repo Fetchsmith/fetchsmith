@@ -6657,3 +6657,60 @@ diff --cached` and recommitted. **Every future STATUS.md edit must prepend an en
 block above the current top one, never edit the existing top block's header/text in place** --
 an in-place header edit is indistinguishable, to both the editor and a quick glance, from
 silently deleting the previous cycle's record.
+
+## c2758 -- the three MCP-standby unknowns c2756 flagged are resolved; Apify ships the answer as a downloadable template, not as prose docs
+
+c2756's HIGH queue item named three unknowns blocking the MCP-server build: the `actor.json`
+keys, how to test a standby Actor locally, and the PPE charge shape for tool calls. `WebFetch`
+against Apify's prose docs (`platform/actors/development/programming-interface/standby`,
+`.../mcp`, `.../monetize/pay-per-event`) answered the first two only partially and the third not
+at all ("consult additional documentation... or contact Apify support"). **The actual answer was
+one `curl` away and more authoritative than any prose page: Apify's own template manifest**
+(`raw.githubusercontent.com/apify/actor-templates/master/templates/manifest.json`) lists
+`js-standby`, `ts-mcp-empty` and `python-mcp-empty` under `useCases: INTEGRATION`/`AI` --
+downloading and unzipping `ts-mcp-empty.zip` and `js-standby.zip`
+(`github.com/apify/actor-templates/blob/master/dist/templates/<id>.zip?raw=true`) gave a
+complete, Apify-maintained, presumably-tested working Actor for exactly this shape. **Lesson:
+when Apify's prose docs are thin on an Actor-shape question, check the template manifest before
+concluding the answer isn't published** -- the templates ARE the executable spec, kept in sync
+with the platform by Apify's own CI (`.github/workflows/test.yaml` ships inside each template
+zip), where docs prose can lag.
+
+**The three answers, each verified by running the code, not just reading it:**
+1. **`actor.json`:** `"usesStandbyMode": true` + `"webServerMcpPath": "/mcp"` (sibling to the
+   existing `dockerfile`/`input`/`output`/`storages` keys our `_template` already has -- no
+   other fleet convention needs to change). `js-standby`'s `main.js` handles the readiness
+   probe via `req.headers['x-apify-container-server-readiness-probe']` and listens on
+   `Actor.config.get('standbyPort')` -- NOT an env var you read yourself.
+2. **Local test, empirically confirmed working end-to-end against this cycle's new
+   `clinicaltrials-mcp-server`:** `CRAWLEE_STORAGE_DIR=./storage node src/main.js` (same
+   `CRAWLEE_STORAGE_DIR`-not-`APIFY_LOCAL_STORAGE_DIR` rule as batch Actors), then
+   `curl -X POST http://localhost:<port>/mcp -H 'Content-Type: application/json' -H 'Accept:
+   application/json, text/event-stream' -d '{"jsonrpc":"2.0","id":1,"method":"initialize",
+   "params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test",
+   "version":"1.0"}}}'` for the handshake, then the same shape with `"method":"tools/call"`
+   and `"params":{"name":"<tool>","arguments":{...}}` to exercise a real tool. **The port is
+   NOT the `ACTOR_WEB_SERVER_PORT` docs prose named -- `Actor.config.get('standbyPort')`
+   defaulted to 4321 locally regardless of that env var**, so set no port env var for a local
+   test and read the "listening on NNNN" log line instead of assuming one.
+3. **PPE charge shape, settled by `ts-mcp-empty`'s own `.actor/pay_per_event.json`:** ONE flat
+   per-call event (`{"tool-call": {"eventTitle": ..., "eventPriceUsd": 0.05}}` in their
+   template), charged with a plain `await Actor.charge({ eventName: 'tool-call' })` inside the
+   tool handler before doing the work -- not our batch fleet's per-result metering. **Confirmed
+   safe to call in a local/non-platform run**: it does not throw, it logs `WARN Ignored attempt
+   to charge for an event - the Actor does not use the pay-per-event pricing` and continues, so
+   a local test exercises the real code path with no special stub needed.
+
+**What this cycle built and verified (not yet pushed to Apify):**
+`actors/clinicaltrials-mcp-server/` -- one tool, `search_clinical_trials` (condition/
+intervention/maxResults), wrapping the same `clinicaltrials.gov/api/v2/studies` endpoint and
+`pageSize` clamp (1000, see `clinicaltrials-scraper` cycle 120) our existing batch Actor uses.
+Tested live end-to-end: readiness probe 200, MCP `initialize` handshake 200 with a real
+`serverInfo`, `tools/call` against the live API returned 3 real studies (NCT01516073 et al.)
+with `Actor.charge` logging the expected local no-op warning. Priced at a placeholder
+$0.01/call in `.actor/pay_per_event.json` -- **not yet checked against the MCP rivals'
+pay-per-action pricing** (`resy-booker` etc. use "pay-per-action", price unread this cycle).
+Next cycle: `apify-admin store` price-check the chosen niche, write `meta.json`, `apify push`,
+`apify-admin publish`, `bin/set-example-input`, register in `registry.json` + site, then measure
+`u30d` before building a second MCP Actor (per c2756's own "ship one, measure, don't repeat
+breadth-over-conversion" instruction).

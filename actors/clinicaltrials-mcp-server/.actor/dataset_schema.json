@@ -1,0 +1,27 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "nctId": { "type": ["string", "null"], "title": "NCT ID" },
+      "title": { "type": ["string", "null"], "title": "Title" },
+      "status": { "type": ["string", "null"], "title": "Status" },
+      "url": { "type": ["string", "null"], "title": "URL" }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": { "fields": ["nctId", "title", "status", "url"] },
+      "display": {
+        "component": "table",
+        "properties": {
+          "nctId": { "label": "NCT ID" },
+          "title": { "label": "Title" },
+          "status": { "label": "Status" },
+          "url": { "label": "URL", "format": "link" }
+        }
+      }
+    }
+  }
+}
