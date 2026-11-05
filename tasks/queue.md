@@ -571,7 +571,16 @@
       $0.0015/row flat rate with no start fee). Both confirmatory passes found the same
       clone-flood shape and made **no README edit -- nothing found, nothing manufactured, per
       the standing c2524 rule.** Full measured detail: LEARNINGS c2730 and c2735.
-      **Remaining candidates: `ats-jobs-scraper`, `remote-jobs-scraper`.** (Per-execution
+      `ats-jobs-scraper` (c2737, a real signal this time -- the same one-term query that found
+      44 listings at c2382 found **80** at c2737, 355 cycles later; live-priced the 62 unnamed
+      handles, found two genuine 6-of-10-platform matches (`bigibyte` free, `api-co` partial),
+      one 3-platform partial undercutter, resolved an AMBIGUOUS batch-pricer flag by hand, and
+      caught a fleet-general batch-pricer bug along the way -- see README + LEARNINGS c2737 for
+      full detail. Pushed as build 0.1.118, verified live.). **Remaining candidate:
+      `remote-jobs-scraper`** (never had this specific one-term-diff lever applied -- its last
+      full sweep was a different-method 672c `competitor_audit` at c2461, 663 matched/530
+      unnamed via a keyword-triage not a single term; worth a one-term search next time to see
+      if IT has grown the same way ats-jobs-scraper's had). (Per-execution
       narrative capped at the newest at c2685 and re-capped at c2736, same pattern as the
       doc-trim cadence item -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
       `queue_archive.md` under the c2685 header.)

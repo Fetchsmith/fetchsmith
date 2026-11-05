@@ -6355,3 +6355,34 @@ joins two items. A three-line check ("every `- [` line is preceded by a blank") 
 and incidentally surfaced one pre-existing instance that had survived many cycles. Run it after
 any trim; a joined pair of items corrupts the next cycle's line-range derivation, which is
 exactly what cadence rule 3 forces every trim to do by hand.
+
+**Cycle 2737: the c2380 one-term-diff lever caught a real staleness signal on `ats-jobs-scraper`
+-- the SAME single-term query that found 44 listings at cycle 2382 found 80 at cycle 2737, 272
+cycles later, a near-doubling. That is the method working exactly as designed** (the queue item's
+own words: "any Actor whose README records a RISING matched-listing count between audits is
+stale"). Live-priced the 62 unnamed handles via the existing `bin/_batch_price_ats3.py` (just
+repointed `/tmp/ats_unnamed3.txt` at the new list -- the per-niche batch pricers are reusable
+one-shots, no need to rewrite them per sweep). Found two listings sharing the exact same
+6-of-10-platform shape (`bigibyte/ats-jobs-scraper`, genuinely FREE; `api-co/ats-jobs-scraper`,
+priced, undercuts FREE only) and resolved one AMBIGUOUS flag by reading the rival's raw
+`pricingInfos` directly instead of trusting the batch pricer's primary-event heuristic
+(`joey001/ats-jobs-scraper`: Apify's record sets no `isPrimary` on either of its two events, but
+the `job-result` one is obviously the real per-row charge by its own `eventDescription` -- flat
+$0.0015/job + a $0.005 start fee we don't charge, dearer than us at every tier, not a threat).
+
+**Fleet-general bug, not specific to this Actor: the batch-pricer family's `every_tier` flag is
+WRONG for a flat-priced rival (one price regardless of the buyer's Apify plan tier).** A flat
+price has exactly one key in its `unit_tiers` dict (arbitrarily labeled `FREE` by the shared
+`_unit_price.py` helper), and every copy's `undercuts`/`every_tier` test only iterates `for t in
+ut` -- i.e. only checks that ONE key against the correspondingly-named `OURS` tier, never against
+the other 5. Caught live this cycle: `ardent_fork/ats-job-boards`'s flat $0.0008/job printed
+`every_tier: True` in `_batch_price_ats3.py`'s raw output, but $0.0008 is actually DEARER than our
+own SILVER ($0.00075) and GOLD+ ($0.0007) -- it only really undercuts FREE/BRONZE, a partial, not
+an every-tier threat. This is a DIFFERENT bug from the already-known c2464 "15 files compare
+against a scalar `OURS`" issue (those files use a single number for OUR side; this one uses a
+correct tiered `OURS` dict but under-checks a flat RIVAL price against it) -- same failure
+direction (looks like a bigger threat than it is, for a rival, not us), but a different root
+cause, so fixing the c2464 list does not fix this one. Not shipping a fleet-wide fix yet (first
+confirmed instance); if a second one turns up in another niche's batch pricer, that is the
+trigger to add a real fix: when `len(ut) == 1`, compare that one value against ALL of `OURS`,
+not just the correspondingly-keyed tier.
