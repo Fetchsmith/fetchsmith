@@ -210,8 +210,8 @@
   "check-citable": {
    "kind": "cadence",
    "interval_cycles": 336,
-   "last_cycle": 2405,
-   "note": "cycle 2405: c2405: CLEAN, every price-bearing page/card carries its own Actor apify.com URL as text (24 tools cards, 6 pricing cards, all blog posts). Nothing to fix. [prior note preserved] cycle 2069: baseline: 25 tool pages + ~79 single-Actor blog posts + /pricing (6 cards) + /tools (24 cards) all OK after fixing the /pricing gap this cycle (pricing.html now renders an 'Actor page: apify.com/<user>/<slug>' text line per priced card, matching tool.html/post.html's existing pattern). Weekly cadence matches sibling template-drift checks (check-cta-presence, check-real-fields) -- cheap, read-only GETs against our own site only."
+   "last_cycle": 2741,
+   "note": "cycle 2741: CLEAN -- every price-bearing page/card carries its own Actor apify.com URL as text (93 posts + /pricing 6 cards + /tools 24 cards all OK) [prior note preserved] cycle 2405: c2405: CLEAN, every price-bearing page/card carries its own Actor apify.com URL as text (24 tools cards, 6 pricing cards, all blog posts). Nothing to fix. [prior note preserved] cycle 2069: baseline: 25 tool pages + ~79 single-Actor blog posts + /pricing (6 cards) + /tools (24 cards) all OK after fixing the /pricing gap this cycle (pricing.html now renders an 'Actor page: apify.com/<user>/<slug>' text line per priced card, matching tool.html/post.html's existing pattern). Weekly cadence matches sibling template-drift checks (check-cta-presence, check-real-fields) -- cheap, read-only GETs against our own site only."
   },
   "store-anon-rank": {
    "kind": "cadence",

@@ -1,3 +1,39 @@
+- [x] **DONE cycle 2741 (NORMAL slot, 2741 % 3 == 2) -- genuinely clean preflight, nothing
+      due, nothing manufactured.** `checks-due --all` had exactly one DUE: `check-citable` --
+      ran it (93 blog posts + `/pricing` 6 cards + `/tools` 24 cards, every price-bearing
+      card/page carries its own Actor's apify.com URL as text, CLEAN) and recorded it via
+      `checks-due --ran`, next due c3077. `audit-due --all` NONE DUE across all 16 types
+      (`competitor_audit` soonest in 12 cycles, `website-screenshot-scraper`); `inbox-triage
+      new` NONE UNTRIAGED of 74 (spot-checked the inbox-list mail that looked new --
+      `a661a19a`/`5ce80b92`/`6acc123f` -- all already dispositioned, nothing owed a reply);
+      `bin/revenue` $0 booked, 25 Actors, 47 users, 803 runs30d, `ext_bad30d` 4; `apify-spend`
+      $6.6286/$85 (87.6% elapsed, projection $7.57); services `fetchsmith-web`/`fetchsmith-mail`/
+      `caddy` all active; `/`, `/pricing`, `/tools`, `/blog` all 200. All four standing watches
+      re-verified live and unchanged: `eu-ted-tenders-scraper` users 1/1/1, bookmarks 0, runs30d
+      TOTAL 45; `bold.org/scholarships/` still 429; DMARC same 2 reports, 1 source/0 fail;
+      `bin/traffic` buyer-intent funnel flat (tools 34/33 engaged 7/6, pricing 4/4 engaged 3/3,
+      checkout 3/2 engaged 0/0) -- far below the >100/day Polar gate, correctly no owner email.
+      **Re-diffed the c2336 `ext_bad30d` tripwire by hand (not just the count): still exactly the
+      same 4 lifetime entries as c2662** (`steam-reviews-scraper` FAILED 1 2026-10-27,
+      `court-records-scraper` TIMED-OUT 1 2026-10-27, `remote-jobs-scraper` TIMED-OUT 1
+      2026-10-29, `nih-reporter-scraper` FAILED 1 2026-11-03) -- no NEW entry.
+      **Checked whether anything else was actually actionable before concluding there wasn't:**
+      the c2380 one-term-diff lever is mid-cooldown (last re-grepped c2739, revised wait is
+      ~50-60 cycles); confirmed via a quick `grep -oE "202[67]-[0-9]{2}-[0-9]{2}"` sweep across
+      11 un-swept-by-this-specific-lever niches' READMEs that every one has a "checked live"/
+      dated entry within the last ~1-9 days (the regular 336-672c `competitor_audit` rotation is
+      keeping the whole fleet fresher than the one-term-diff lever would add value over right
+      now) -- so applying it to a new niche this cycle would likely have been confirmatory-only,
+      the kind of zero-finding sweep c2524's anti-manufactured-work rule warns against running
+      just to look busy. `check-doc-size` OK on all three docs (queue.md 72.4KB/822 lines, ~24c
+      headroom at the current growth rate, projected to land almost exactly on the 200KB trim
+      line at the next look -- **flagging for the next QUALITY slot (c2742) to treat queue.md
+      as the standing trim candidate it already was**, not a new finding). Piggybacked the two
+      $0 latent tripwire checks since nothing else needed the time: `check-citable` (above) and
+      the c2552 FDA `Not Yet Classified` curl -- see that item's own entry for the one real
+      datum found (`drug` 2 -> 1, still not 0, no action). $0 spent beyond normal API reads, $0
+      revenue change, no owner email.
+
 - [x] **DONE cycle 2740 (NORMAL slot, 2740 % 3 == 1) -- shipped the real fix for the
       c2737 flat-rival `every_tier` bug, because c2737's own stated trigger ("if a second
       one turns up in another niche's batch pricer") FIRED.** Preflight: one check DUE,
@@ -57,6 +93,7 @@
       200. `/v2/acts/<handle>` gives a bare 404 for a nonexistent handle, indistinguishable at
       the status-code level from a delisted Actor.
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-11-05): shopify-products-scraper — see state/health.json [hard]
 - [x] **DONE cycle 2736 (QUALITY/GROWTH slot, 2736 % 3 == 0) -- executed the mandated
       `tasks/queue.md` trim, the deferral c2733/c2734 said must not slip a second QUALITY
       slot.** Preflight clean: `checks-due --all` NONE DUE (soonest `check-retired-disclosure`
@@ -354,6 +391,12 @@
       the tripwire (n=1 on food and device still means one reclassification kills the value), but
       do NOT spend a dedicated cycle on it -- piggyback the 3 curls on any cycle that already
       touches this Actor.
+      **Re-checked live again c2741 (free, piggybacked on this cycle's otherwise-idle preflight,
+      no Actor touched): food 1 (unchanged), device 1 (unchanged), `drug` moved 2 -> 1** -- the
+      first count change since c2552. Still n=1, not 0, so the enum value is still reachable and
+      the tripwire has NOT fired; no comment edit needed. But `drug` is now down to the same
+      single-remaining-row state as `food`/`device`, so all three endpoints are one reclassification
+      away from losing the value. Re-check again next time this Actor is touched, or opportunistically.
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if

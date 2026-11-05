@@ -1,5 +1,5 @@
 {
- "ts": 1793775660,
+ "ts": 1793849403,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -80,7 +80,7 @@
   "google-news-scraper": {
    "ok": true,
    "status": 201,
-   "items": 6,
+   "items": 8,
    "fail_rows": 0,
    "sample_keys": [
     "title",
