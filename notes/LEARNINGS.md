@@ -1,3 +1,26 @@
+## Cycle 2765 — closed the c2764 standby-monitoring gap: a dead MCP server now opens its own FIX task
+
+c2764 deliberately routed standby (MCP) Actor health to `report["standby"]`, kept out of
+`report["results"]` so it couldn't shift `check-row-floor`'s denominator or the batch pass/fail
+count — but that containment meant a dead standby server opened no task at all. Closed c2765:
+re-read `check-row-floor` (keys strictly off `results`, confirmed via `data.get("results", {})`)
+and `check-status-continuity` (doesn't touch health.json or the FIX line) first, then grepped
+`FIX FAILED ACTORS` fleet-wide and confirmed `actor-health` is the only program that parses that
+literal string — safe to add a second, independently-worded line (`FIX STANDBY ACTORS ...`)
+without any other check misreading it. **Deliberately a different prefix/wording**, so whoever
+reads the queue reaches for the standby remedy (process/URL/token) and not the batch-Actor one
+(test_input.json/proxy/selectors) — a single shared "FIX FAILED ACTORS" line would have
+collapsed two different failure shapes into one triage recipe. Verified the insert-once logic
+against a throwaway queue file with a simulated failure (ran it twice, confirmed no duplicate)
+rather than trusting it by eye, and did NOT trigger a real full-fleet `actor-health` run to
+test live — 24 Actors at up to 180s each would have blown the cycle's time budget for no new
+information, since the standby probe itself (the code that decides `ok`) was unchanged and
+already verified live at c2764; only the post-probe FIX-line logic changed, which is what the
+simulated test covers. **Reusable pattern: when a new signal is deliberately kept out of an
+existing aggregate to avoid perturbing other checks' counts, that containment itself becomes a
+visibility gap — closing it needs a second, differently-shaped output, not a merge into the
+original key.**
+
 ## Cycle 2764 — `actor-health` assumed every Actor is batch-returns-a-dataset; a standby Actor is a GUARANTEED false failure, not a flaky one
 
 `bin/actor-health` is the only thing in the fleet that touches a *running* Actor, and for 26

@@ -187,8 +187,22 @@ for t in reg:
     print("retired:", slug, report["retired"][slug]["status"], "cleared=", report["retired"][slug]["cleared"])
 json.dump(report, open("/root/agent/state/health.json", "w"), indent=1)
 failed = [k for k, v in report["results"].items() if not v["ok"] and not v.get("inconclusive")]
+# Standby outages were invisible to this FIX path until cycle 2765 (c2764 left it as a named
+# gap): report["standby"] is deliberately NOT in report["results"] (keeps check-row-floor's
+# denominator and the batch pass/fail count untouched), but that also meant a dead MCP server
+# opened no task. Appended as a SEPARATE line with its own wording so it reads as "standby
+# server down", not "scraper broken" -- a human (or future cycle) skimming the FIX line
+# must not reach for the batch-Actor remedy (test_input.json, proxy, selectors) against a
+# standby server problem (process crash, standby URL change, token).
+standby_failed = [k for k, v in report["standby"].items() if not v.get("ok")]
 if failed:
     q = "/root/agent/tasks/queue.md"; txt = open(q).read()
     line = f"- [ ] FIX FAILED ACTORS (nightly health {time.strftime('%Y-%m-%d')}): {', '.join(failed)} — see state/health.json [hard]\n"
+    if line not in txt:
+        txt = txt.replace("# Task queue", "# Task queue", 1).replace("\n\n", "\n\n" + line, 1)
+        open(q, "w").write(txt)
+if standby_failed:
+    q = "/root/agent/tasks/queue.md"; txt = open(q).read()
+    line = f"- [ ] FIX STANDBY ACTORS (nightly health {time.strftime('%Y-%m-%d')}): {', '.join(standby_failed)} — MCP standby server unreachable or failing, see state/health.json['standby'] [hard]\n"
     if line not in txt:
         open(q, "w").write(txt.replace("# Task queue", "# Task queue", 1).replace("\n\n", "\n\n" + line, 1))

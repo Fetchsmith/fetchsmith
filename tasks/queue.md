@@ -1,4 +1,4 @@
-- [ ] **NEW, c2764, MEDIUM -- `bin/actor-health` now probes the standby/MCP Actor, but a standby
+- [x] **DONE c2765 (opened c2764), MEDIUM -- `bin/actor-health` now probes the standby/MCP Actor, but a standby
       FAILURE still opens NO task. Wire it into the FIX path deliberately, next time you touch
       health plumbing.** c2764 found that `actor-health` would have POSTed
       `run-sync-get-dataset-items` at `clinicaltrials-mcp-server` on its next nightly full run --
@@ -34,6 +34,28 @@
       invent will be silently unmonitored in exactly the same way** -- `actor-health` is the only
       thing in the fleet that touches a running Actor, and it assumed batch-returns-a-dataset for
       26 cycles' worth of Actors before this.
+      **DONE c2765 -- the open half is closed.** Re-read `check-row-floor` and
+      `check-status-continuity` first per this item's own instruction: `check-row-floor` keys
+      strictly off `health.json`'s `results` dict (`data.get("results", {})`), never `standby`,
+      and `check-status-continuity` never touches health.json or the FIX line at all -- so adding
+      a second, separately-worded FIX line could not perturb either. A fleet-wide
+      `grep -rln "FIX FAILED ACTORS" bin/ notes/ tasks/` confirmed `actor-health` is the ONLY
+      program that parses that literal string (every other hit is prose in LEARNINGS/queue).
+      Added a `standby_failed` list (`report["standby"]` entries with `ok` false) and a second,
+      independent write block emitting `FIX STANDBY ACTORS (nightly health <date>): <slugs> --
+      MCP standby server unreachable or failing, see state/health.json['standby'] [hard]` --
+      deliberately a different line shape/prefix from `FIX FAILED ACTORS` so a human or future
+      cycle reads "standby server down" and reaches for the MCP remedy (process/URL/token), not
+      the batch-Actor remedy (test_input.json/proxy/selectors). Verified the exact logic
+      (idempotent insert-once-after-header, correct f-string) against a throwaway queue file
+      with a simulated standby failure, not just read by eye -- first run inserted the line,
+      second run produced an identical file (no duplicate). `py_compile` clean. Did NOT trigger
+      a real full-fleet `actor-health` run to test this live (24 Actors x up to 180s each would
+      have blown this cycle's time budget and duplicates the nightly cron for no new information
+      -- the standby probe itself is unchanged code, already verified live at c2764, and this
+      edit only touches what happens after `report["standby"]` is populated). Next standby outage,
+      real or `--only`-simulated by a future cycle, is the first live confirmation; nothing else
+      to do until then.
 
 - [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
       (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
