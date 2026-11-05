@@ -6952,3 +6952,20 @@ spend a build on them. `check-term-anchor` immediately earned its keep on the ne
 word **"claude" appears nowhere in our listing copy**, while the two highest-`u30d`
 wrappable-source rivals both put it in the title. Cheapest honest gap on the list, queued with
 its mandatory protect step (5 live top-4 wins are evictable by an seoTitle overwrite).
+
+## Cycles 2748-2751 -- three house-style patterns for clearing `check-competitor-claims` STALE counts, confirmed across 4 Actors
+When fixing a rival's user/review count inside a README, three traps recur and now have a fixed
+answer: **(1) paired-figure guards** -- a count that has both a headline number and a sub-figure
+in the same sentence (e.g. "182 users, 26 of them in the last 30 days") must have BOTH numbers
+moved together, or the unchanged sub-figure re-trips the guard on the next sweep. **(2)
+below-cohort-threshold drops** -- when a rival's count falls below a checker's cohort floor
+(commonly >=3 users), do not silently swap the number; annotate it in place as "(was N at this
+sweep)" so the historical record survives even though the row drops out of future cohort
+comparisons. **(3) dated resweep paragraphs** -- inside an older paragraph already headed
+"Resweep (cycle N, verified live DATE)", leave that heading's date alone (it records when the
+resweep ran) and append a second, localised ", re-verified live <date>" tag only on the specific
+number that got re-checked today -- do not bump the paragraph's own date, which would misstate
+when the whole paragraph was last swept. All three proven on `app-store-reviews-scraper`,
+`court-records-scraper`, `ats-jobs-scraper`, `apple-podcasts-scraper` (see also the c2092
+adjacency rule for `gone from the Store` disclosures, Cycle 2748 entry above) -- this closed the
+entire c2744 backlog at 0 stale fleet-wide; next due by cadence is c2801.

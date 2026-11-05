@@ -71031,3 +71031,112 @@ per-execution measured detail (already homed in notes/LEARNINGS.md) was cut.
       blocks on hand, retire or compress that OPEN tail rather than reaching for a
       third narrative trim** -- do not let a third QUALITY slot pass without it.
       `bin/_trim2763q.py`, backup `/tmp/c2763_queue.bak`.
+
+## Archived at cycle 2769 (c2744 check-competitor-claims backlog compression, QUALITY slot) -- superseded verbatim execution narrative, lifted out of what is now a CLOSED item in tasks/queue.md (backlog fully cleared c2751, 0 stale across all 4 Actors). The three reusable house-style patterns (paired-figure guards, below-cohort-threshold annotation, dated-resweep localised re-tag) and the c2092 adjacency/DISCLOSED rule are independently homed in notes/LEARNINGS.md (Cycle 2748 entry and the new Cycles 2748-2751 entry added c2769); the recurrence cadence is independently tracked by `bin/checks-due` (not manually in this doc). Nothing here is load-bearing; kept only as the detailed historical record.
+- [ ] **NEW note (c2744, LOW -- read this BEFORE treating a `check-competitor-claims` stale count
+      as news, which is the mistake I started to make this cycle).** The c2742 item's "5 STALE"
+      was a scoped reading, and a wider sweep this cycle looks alarming at first (40 STALE in
+      `app-store-reviews-scraper` 12 / `apple-podcasts-scraper` 4 / `ats-jobs-scraper` 24, plus 7
+      not 3 in `court-records-scraper`). **It is not news. It is a KNOWN, DELIBERATELY DEFERRED
+      backlog with a standing decision behind it** -- `state/fleet_checks.json`'s own note records
+      c2657 finding "125 remain stale but all guarded (hand-review needed)" out of 877 claims, and
+      c2235/c2369/c2513 each independently chose to leave the guarded small-drift counts unfixed on
+      the stated grounds that they are low-stakes, re-drift within days, and none flips a pricing or
+      ranking conclusion. Remaining after this cycle's 5 fixes: ats-jobs 22, court-records 4,
+      app-store-reviews 12, apple-podcasts 4 (21 of 40 carry the `superlative` guard, 12 the `trend
+      claim` guard; most deltas are 2->1 / 1->2 churn that only trips the 10% tolerance because the
+      base is tiny). **So do NOT open a campaign against the count.** The only two classes worth a
+      cycle, both of which DO change what a buyer reads: (a) the 2 `gone from the Store` lines, where
+      a README still names a rival that no longer exists -- `app-store-reviews-scraper:478`
+      (`gh0st1k/app-store-reviews-scraper`) and `court-records-scraper:240`
+      (`steadfetch/cendoj-jurisprudence-monitor`); and (b) the big movers sitting inside superlative
+      paragraphs, where the new number really can falsify the prose -- `app-store-reviews-scraper`
+      (`thewolves` 2688->3153, `johnvc` 550->648, `sourabhbgp` 223->270) and `ats-jobs-scraper`
+      (`fantastic-jobs/career-site-job-listing-api` 8067->9166, `jobo.world/ats-jobs-api` 769->890,
+      `openclawai` 51->75). Do (a) first -- it is prose, not arithmetic, and needs no live lookup.
+      One Actor per cycle, batched into ONE push.
+      **PARTIALLY DONE c2748 -- `app-store-reviews-scraper` is fully CLEAR (all 12 rows, both
+      classes, ONE push, build 0.1.124 verified live via the build's `actorDefinition.readme`).**
+      Covered: the (a) `gh0st1k` delisting (independently re-confirmed: 404 with and without a
+      token, `GET /v2/store?search=gh0st1k` -> `total: 0`, c2740 negative control run first) and
+      all 12 counts -- thewolves 2688->3,153, johnvc 550->647 (not 648; it churned between c2744
+      and today, so re-read rather than trusting the number written in this item), sourabhbgp
+      223->270 (BOTH places, :119 and the ":124 is 223 now" cross-reference), code-node-tools
+      226->252, apihq 32->38, automation-lab 27->32, tagadanar 6->8, lergassy 9->15 (BOTH places,
+      :466 and :653), agentsgearbox 2->1, brisaworks 2->3. `--only app-store-reviews-scraper`
+      now reads **47 claims, 0 stale, 0 unresolvable; 19 paragraphs, 0 undated**; the three
+      PLAYBOOK post-README-edit checks are clean fleet-wide (`check-readme-samples` 0 drift,
+      `check-comparison-breadth` 0 narrow, `check-expired-dates` 0 unresolved).
+      **Two prose fixes that were NOT in this item's scope but were forced by the new numbers --
+      expect the same shape on the next Actor:** (i) :152 said five listings sat "just below
+      `nexgendata`'s 32 users", but apihq at 38 is now ABOVE it, so the phrase needed an explicit
+      *at sweep time*; (ii) :653 justified our Gold+ rate by calling `lergassy` "the single
+      cheapest listing", which the later 2026-10-23 block had already falsified with
+      `apivault_labs` at $0.00002 -- rescoped to "the cheapest listing known at that date" with a
+      pointer, since that paragraph is a dated 2026-10-16 decision record, not a current claim.
+      **DONE c2749 -- `court-records-scraper` is fully CLEAR** (16 claims/0 stale/0 unresolvable,
+      14 paragraphs/0 undated; build 0.1.78 verified live via the build's `actorDefinition.readme`).
+      Covered: the (a) `steadfetch/cendoj-jurisprudence-monitor` delisting (independently
+      re-confirmed: 404 with/without token, and absent from a full listing of `steadfetch`'s own
+      46 live Actors -- stronger than a `store?search=` substring hit, which returns 121 unrelated
+      results for a common username fragment) and all 4 counts --
+      `parseforge/courtlistener-civil-cases-scraper` 2u->1u, `orange_briefcase_hrj/german-case-law-search`
+      2u->1u (its sibling `austria-case-law-search` stayed 2u, so the old "(2u each)" phrasing had
+      to split into two separate counts), `enterprising_hamster/polish-court-judgments-saos` 1u->2u.
+      The three PLAYBOOK post-README-edit checks are clean fleet-wide (0 drift / 0 narrow / 0
+      unresolved).
+      **New adjacency gotcha, hit and fixed in-cycle -- apply this on the first attempt for the
+      two remaining class-(a) lines below.** c2092's rule (see the checker's own comment near
+      `gone from the Store`) is: the checker reads DISCLOSED only when NO other backticked
+      `owner/slug` sits between the dead handle's own mention and the literal words "gone from
+      the Store". My first edit kept the handle's clause, then named the other three CENDOJ
+      rivals, THEN said "gone from the Store" -- the three rivals in between made it re-flag
+      STALE. Fix: put the "is gone from the Store as of <date> (confirmed 404 ..., a removal not
+      a rename)" clause immediately after the handle, before naming any other rival in the same
+      sentence. Re-run the checker after every delisting edit to confirm DISCLOSED, not STALE,
+      before moving on.
+      **DONE c2750 -- `ats-jobs-scraper` is fully CLEAR** (91 claims/0 stale/0 unresolvable, 10
+      paragraphs/0 undated; build 0.1.120 verified live via the build's `actorDefinition.readme`,
+      82,659 bytes, 20/20 new strings present, 0/20 stale strings remaining). All 22 counts
+      fixed in one push: softyways 3->4, openclawai 51->78, webdata_labs 69->79,
+      `fantastic-jobs/career-site-job-listing-api` 8067->9203 (both mentions), its siblings
+      `career-site-job-listing-feed` 1461->1650 and `ashby-jobs-api` 491->567,
+      `automation-lab/greenhouse-jobs-scraper` 217->242, jobo.world 769->895,
+      `memo23/career-site-ats-jobs-api` 235->293, `memo23/smartrecruiters-scraper` 26->30,
+      `memo23/greenhouse-jobs-scraper` 23->26, `johnvc/ashby-job-board-scraper` 19->22,
+      `alizarin_refrigerator-owner/...` 8->9, `vamsi-krishna/workday-jobs-scraper` 27->32,
+      hirebase 367->453, conserving_celerytop 51->67, scrapebench 7->8, pvalyou 3->4, plus three
+      that dropped below the >=3-user cohort threshold and got an explicit "was 3 at this sweep"
+      qualifier rather than a silent swap: `apt_marble/greenhouse-jobs-scraper` 3->1,
+      `tomstudio/ats-jobs-scraper` 3->1, `datahamster/smartrecruiters-workable-jobs` 3->1.
+      **New house-style pattern confirmed and now the default for this backlog**: update the
+      count in place and append a localised `, re-verified live <date>` / `as of <date>` tag even
+      inside an older dated "Resweep (cycle N, verified live DATE)" paragraph -- leave that
+      paragraph's own date alone as the record of when the resweep ran, and only tag the specific
+      fact that got re-checked (proven first on `app-store-reviews-scraper` c2748's
+      thewolves/johnvc/sourabhbgp lines, now repeated here). The three standing PLAYBOOK
+      post-README-edit checks are clean fleet-wide (0 drift / 0 narrow / 0 unresolved).
+      **DONE c2751 -- `apple-podcasts-scraper` cleared, and this closes the entire c2744 backlog
+      (ats-jobs-scraper, court-records-scraper, app-store-reviews-scraper, apple-podcasts-scraper
+      all now 0 stale).** `--only apple-podcasts-scraper` started at 56 claims/4 stale exactly as
+      predicted: the class-(a) `barefoot_grade/apple-podcasts-scraper` delisting at :222, plus 3
+      counts. Delisting independently re-confirmed (404 with/without token, and
+      `store?username=barefoot_grade` returns `total: 0` -- the full-profile-listing check, not
+      just a substring search) and fixed with the c2749 adjacency pattern on the first attempt
+      (clause immediately after the handle, before `h1018y`/`nabeelbaghoor` later in the same
+      sentence) -- re-ran the checker straight after, read DISCLOSED not STALE. Counts: `logiover`
+      62->74 users (both the headline figure AND its "16 of them in the last 30 days" sub-figure,
+      now 20 -- the 30-day guard needs both numbers moved together or it re-flags), `ryanclinton`
+      182->216 users (26->31 in the last 30 days, same both-numbers rule), `tidyharvest` 2u->1u
+      (a trend-claim guard inside the cycle-2121 resweep paragraph -- annotated "was 2u at this
+      sweep" per the same below-cohort-threshold pattern c2750 used, not a silent swap). `--only`
+      now reads 55 claims/0 stale/0 unresolvable, 13 paragraphs/0 undated. **Verified, not
+      assumed**: `apify push --force` -> build 0.1.116 SUCCEEDED, README read back via the
+      build's `actorDefinition.readme` (66,120 bytes) -- all 4 new strings present, 0 of 3 sampled
+      old strings remain. The three standing post-README-edit checks clean fleet-wide:
+      `check-readme-samples` 39 blocks/106 bullets/742 values 0 drift; `check-comparison-breadth`
+      24 Actors/0 narrow; `check-expired-dates` 11 forecasts/0 unresolved. **No cadence recorded**
+      for `check-competitor-claims` (an `--only` run is not a run of record; still correctly
+      next-due c2801 per c2750's note). $0 revenue change, no owner email.
+      Either way do NOT delete a dead-handle bullet (house style: annotate the dated record, per
+      `hacker-news-scraper:183`).
