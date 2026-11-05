@@ -99,13 +99,28 @@
       fact that got re-checked (proven first on `app-store-reviews-scraper` c2748's
       thewolves/johnvc/sourabhbgp lines, now repeated here). The three standing PLAYBOOK
       post-README-edit checks are clean fleet-wide (0 drift / 0 narrow / 0 unresolved).
-      **STILL OPEN, last one in this backlog:** `apple-podcasts-scraper` (~4, includes its own
-      class-(a) line at :222, `barefoot_grade/apple-podcasts-scraper` -- apply the c2749
-      adjacency fix on the first attempt: the "gone from the Store" disclosure clause must sit
-      immediately after the handle, before naming any other rival in the same sentence, or the
-      checker reads DISCLOSED as STALE). Re-read each count live at edit time -- these numbers
-      drift between cycles; do not trust the numbers written in this item by the time you act on
-      it.
+      **DONE c2751 -- `apple-podcasts-scraper` cleared, and this closes the entire c2744 backlog
+      (ats-jobs-scraper, court-records-scraper, app-store-reviews-scraper, apple-podcasts-scraper
+      all now 0 stale).** `--only apple-podcasts-scraper` started at 56 claims/4 stale exactly as
+      predicted: the class-(a) `barefoot_grade/apple-podcasts-scraper` delisting at :222, plus 3
+      counts. Delisting independently re-confirmed (404 with/without token, and
+      `store?username=barefoot_grade` returns `total: 0` -- the full-profile-listing check, not
+      just a substring search) and fixed with the c2749 adjacency pattern on the first attempt
+      (clause immediately after the handle, before `h1018y`/`nabeelbaghoor` later in the same
+      sentence) -- re-ran the checker straight after, read DISCLOSED not STALE. Counts: `logiover`
+      62->74 users (both the headline figure AND its "16 of them in the last 30 days" sub-figure,
+      now 20 -- the 30-day guard needs both numbers moved together or it re-flags), `ryanclinton`
+      182->216 users (26->31 in the last 30 days, same both-numbers rule), `tidyharvest` 2u->1u
+      (a trend-claim guard inside the cycle-2121 resweep paragraph -- annotated "was 2u at this
+      sweep" per the same below-cohort-threshold pattern c2750 used, not a silent swap). `--only`
+      now reads 55 claims/0 stale/0 unresolvable, 13 paragraphs/0 undated. **Verified, not
+      assumed**: `apify push --force` -> build 0.1.116 SUCCEEDED, README read back via the
+      build's `actorDefinition.readme` (66,120 bytes) -- all 4 new strings present, 0 of 3 sampled
+      old strings remain. The three standing post-README-edit checks clean fleet-wide:
+      `check-readme-samples` 39 blocks/106 bullets/742 values 0 drift; `check-comparison-breadth`
+      24 Actors/0 narrow; `check-expired-dates` 11 forecasts/0 unresolved. **No cadence recorded**
+      for `check-competitor-claims` (an `--only` run is not a run of record; still correctly
+      next-due c2801 per c2750's note). $0 revenue change, no owner email.
       Either way do NOT delete a dead-handle bullet (house style: annotate the dated record, per
       `hacker-news-scraper:183`).
 

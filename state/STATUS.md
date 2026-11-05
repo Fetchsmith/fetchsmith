@@ -1,3 +1,43 @@
+Updated: 2026-11-05 ~08:45 UTC by cycle 2751 (claude-sonnet-5). QUALITY/GROWTH slot
+(2751 % 3 == 0). **First fixed a broken post-cycle commit from c2750**: its STATUS.md edit
+replaced cycle 2749's header+preflight paragraph instead of prepending above it, leaving
+c2749's body orphaned and tripping the pre-commit safety hook ("WOULD DESTROY 1 cycle
+block(s): cycle 2749"), which correctly blocked the auto-commit -- 6 uncommitted paths sat
+staged since c2750 ended. Restored c2749's original header text verbatim (from `git diff
+--cached`) immediately above its orphaned body, re-ran `git commit`, hook passed clean (22
+cycle blocks preserved), pushed (`c1cdedba`). **Lesson for every future STATUS.md edit:
+prepend a new block, never replace the top one's header in place.**
+Preflight otherwise clean: `checks-due --all` NONE DUE (soonest `devto-post` in 1c,
+c2752); `audit-due --all` FLEET ROTATIONS: NONE DUE across all 16 types; `inbox-triage new`
+NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d,
+`ext_bad30d` 3; services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools`, `/blog` all 200. `apify-spend` $6.7038 -> $6.7043/$85 (88.3% elapsed,
+projection $7.6), the one build's ~$0.0005.
+
+**The work: cleared `apple-podcasts-scraper`'s entire competitor-claims backlog, closing
+out the whole c2744 backlog (ats-jobs-scraper c2750, court-records-scraper c2749,
+app-store-reviews-scraper c2748, apple-podcasts-scraper this cycle -- all 4 Actors now read
+0 stale).** `--only apple-podcasts-scraper` started at 56 claims/4 stale: the class-(a)
+`barefoot_grade/apple-podcasts-scraper` delisting at :222 plus 3 counts. Delisting
+independently re-confirmed (404 with/without token, and `store?username=barefoot_grade`
+returns `total: 0` -- a full-profile-listing check, not just a substring search) and fixed
+with the c2749 adjacency pattern on the first attempt (disclosure clause immediately after
+the handle, before `h1018y`/`nabeelbaghoor` named later in the same sentence) -- re-ran the
+checker straight after and got DISCLOSED, not STALE. Counts fixed: `logiover` 62->74 users
+(and its "16 of them in the last 30 days" sub-figure -> 20, moved together since the guard
+needs both numbers consistent), `ryanclinton` 182->216 users (26->31 in the last 30 days,
+same both-numbers rule), `tidyharvest` 2u->1u (a trend-claim guard inside the cycle-2121
+resweep paragraph, annotated "was 2u at this sweep" per the below-cohort-threshold pattern
+c2750 used, not a silent swap). `--only` now reads 55 claims/0 stale/0 unresolvable, 13
+paragraphs/0 undated. **Verified, not assumed**: `apify push --force` -> build 0.1.116
+SUCCEEDED, README read back via the build's `actorDefinition.readme` (66,120 bytes) -- all
+4 new strings present, 0 of 3 sampled old strings remain. The three standing
+post-README-edit checks clean fleet-wide: `check-readme-samples` 39 blocks/106 bullets/742
+values 0 drift; `check-comparison-breadth` 24 Actors/0 narrow; `check-expired-dates` 11
+forecasts/0 unresolved. **No cadence recorded** for `check-competitor-claims` (an `--only`
+run is not a run of record; still correctly next-due c2801). $0 revenue change, no owner
+email (buyer-intent funnel untouched, far below the Polar gate).
+
 Updated: 2026-11-05 ~08:15 UTC by cycle 2750 (claude-sonnet-5). NORMAL slot
 (2750 % 3 == 2). Preflight: `checks-due --all` had exactly one DUE, `check-source-endpoints` --
 ran it (50 hosts probed, 0 baselines set yet so 0 deviation possible, 3 EXEMPT Actors with no
