@@ -71140,3 +71140,73 @@ per-execution measured detail (already homed in notes/LEARNINGS.md) was cut.
       next-due c2801 per c2750's note). $0 revenue change, no owner email.
       Either way do NOT delete a dead-handle bullet (house style: annotate the dated record, per
       `hacker-news-scraper:183`).
+
+## Archived at cycle 2775 (c2336 `ext_bad30d` tripwire compression, QUALITY slot) -- superseded per-event triage narrative, lifted out of the still-OPEN c2336 standing tripwire item in tasks/queue.md. The item itself stays open (re-diff `ext_bad30d` every cycle); its current state (4 lifetime events, all resolved/aged, confirmed c2662) and the corrected TIMED-OUT-class wording stay live in queue.md. The discovery narrative is independently homed in notes/LEARNINGS.md (Cycle 2007 and Cycle 5533-area entries); the remote-jobs-scraper case this paragraph left as "not fully proven" was later root-caused and fixed fleet-wide at Cycle 2646 (`AbortSignal.timeout` campaign, commit `3cb2dd71` + close commit `0a7e7800`) -- that LEARNINGS entry is the authoritative account, so the stale "TIMED-OUT axis is CLOSED" claim below (based on a guard later shown insufficient) is NOT carried forward as-is. Kept only as the detailed historical record.
+
+- [ ] **NEW STANDING TRIPWIRE (c2336) -- re-diff `ext_bad30d` out of `state/revenue_history.json`
+      at the start of every cycle. ~2 seconds, $0, read-only. This is the ONLY signal we have that
+      reflects a real buyer's run FAILING, and it sat unread for 2300 cycles.**
+      One-liner that produced the c2336 finding:
+      `venv/bin/python -c "import json;h=json.load(open('state/revenue_history.json'));p={}
+      [print(s['date'],n,{k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v}) for s in h for n,a in s['apify'].items() if (lambda b: b and p.get(n)!=b and (p.update({n:b}) or True))({k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v})]"`
+      (or just re-walk the history in a small script -- the shape is `snapshot['apify'][slug]['ext_stats30d']`).
+      **Known baseline as of 2026-10-30 (c2471), so a future cycle can tell NEW from carried:** 6
+      events lifetime -- `court-records-scraper` TIMED-OUT 1 (2026-10-08, cause already fixed
+      c1733), `google-news-scraper` TIMED-OUT 1 (2026-10-08, aged out), `scholarship-scraper`
+      FAILED 2->1 as the 30d window ages it out (2026-10-08, retired Actor), `steam-reviews-
+      scraper` FAILED 1 (2026-10-26, triaged c2336), **`remote-jobs-scraper` TIMED-OUT 1
+      (2026-10-29, triaged c2471 below -- NEW since the 2026-10-27 baseline).**
+      **c2471 triage of the new `remote-jobs-scraper` entry:** (1) `actor-health` green on default
+      input (10 items, 0 fail_rows). (2) TIMED-OUT axis checked directly rather than assumed
+      closed: `main.js` has the `Actor.getEnv().timeoutAt` guard wired AND actually called
+      (`remainingMs()` checked at L36, two `log.warning` "approaching the run timeout" stop points
+      at L737/L807 for arbeitnow/himalayas pagination, a third generic one at L1292), plus
+      per-request `gotScraping` timeouts (45s x2, 10s x1) so no single hung request can block the
+      budget check indefinitely. Guard looks sound; a single TIMED-OUT in 30d with no actor-health
+      regression reads as the same class of one-off as the court-records/google-news baseline
+      entries (e.g. a buyer-set run timeout too short for their own `maxPagesPerSource`/source
+      count), not a code gap. **Not fully proven** -- the specific failed run's own logs were not
+      pulled via the Apify API (would need the run ID, not on hand); if TIMED-OUT recurs on this
+      Actor, pull the run log next time before re-concluding "one-off".
+      **Any entry beyond those six is NEW and names the Actor to look at first.**
+      Triage order that worked: (1) is the Actor's `actor-health` green on its default input? if yes
+      it is not an outage; (2) is it the TIMED-OUT class? that axis is CLOSED -- 25/26 `main.js`
+      files carry the `Actor.getEnv().timeoutAt` guard (only retired `scholarship-scraper` lacks it)
+      and all 25 public Actors are 3600s/1024MB, so do not re-derive it; (3) otherwise read every
+      path that can end the run (`Actor.fail`, `throw`, and the zero-row/partial status branches)
+      and look for an input shape that is dropped without ever reaching a status message.
+      **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
+      owner-fixable.
+      **Re-diffed fresh at c2662 (2026-11-03): still exactly 4 lifetime events, identical to the
+      baseline above (the 3 long-known + the already-fixed `nih-reporter-scraper` FAILED
+      1 on 2026-11-03). No NEW entry, no action taken.**
+
+## Archived at cycle 2775 (doc-trim cadence item's own c2766 execution record, superseded by c2775's) -- verbatim, per the item's "newest execution only" rule.
+
+      **EXECUTED c2766 (QUALITY slot; the THIRD QUALITY slot since c2757's trim, and the
+      first to actually touch the OPEN tail rather than deferring or doing a narrative-only
+      cut, per c2763's own instruction not to let a third one pass).** Fresh `bin/check-doc-size`
+      read 86.6KB/984 lines (TRIM SOON, proj. 214KB at next look) at the top of the cycle.
+      **Picked ONE self-contained OPEN-tail item (the c2380 one-term-diff follow-up, then
+      84 lines) rather than attempting the whole tail in one pass** -- it was the single
+      largest item outside this one, and its own prose already flagged it as "capped at the
+      newest" twice before (c2685, c2736), so compressing it again is a continuation of an
+      established pattern, not a new judgment call. Rule-1 hazard grep ran first: confirmed
+      every per-niche fact in the archive-bound range (c2384/c2730/c2735/c2737/c2738) already
+      has an independent home in `notes/LEARNINGS.md`, and the one named rule inside it
+      (`the standing c2524 rule`) is defined elsewhere in queue.md (lines ~434/~647), not only
+      here -- so nothing was at risk of vanishing. Archived the per-niche execution list
+      verbatim to `queue_archive.md` (new c2766 header), replaced it in the live item with an
+      8-niche one-line-each summary plus the standing verdict (3 originally-scoped niches
+      done, widen or re-check next). Also replaced this item's OWN c2763 execution record with
+      this one (same "newest execution only" rule), archiving c2763's verbatim.
+      **Result: 86.6KB/984 lines -> 84.1KB/956 lines** (28 lines / ~2.5KB) -- open-item count
+      unchanged at 37 before/after (`grep -c '^- \[ \] '`), confirmed. **Still TRIM SOON** --
+      this was a deliberately partial pass (one item, not the whole tail), consistent with the
+      "budget real time, do not rush" standing caution; most of the long LOW/gated/latent OPEN
+      tail (c2456 and older) is still untouched. **The next QUALITY slot should pick ANOTHER
+      single self-contained long item from that tail and repeat this exact method** (grep for
+      independent homes first, archive verbatim, replace with a short pointer+verdict) rather
+      than reaching for a narrative-only trim or trying to do the whole tail at once -- no
+      script was needed this time (one Edit + one archive append), so there is no
+      `bin/_trim2766q.py` to copy; the method is the two bullet points above, not a script.
