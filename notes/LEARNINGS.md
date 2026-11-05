@@ -6778,3 +6778,36 @@ to an agent, so the buyer pays and never learns their question was never asked. 
 any source whose API treats "no filter" as "give me everything" needs an explicit
 at-least-one-filter guard in an MCP tool, because unlike a batch run there is no input schema
 `required` array to enforce it for you.
+
+## c2761
+`check-price-superiority`'s `_select_event()` had the SAME blind spot cycle 1385 already found
+and half-fixed for a DIFFERENT Apify reserved key. Cycle 1385 learned that `apify-actor-start`
+(the reserved start-fee key) can be mistakenly flagged `isPrimaryEvent` by a rival's own owner,
+and excluded it from the primary-event branch. Cycle 2122 later named a SECOND reserved key with
+the same failure mode -- `apify-default-dataset-item` (`DECOY_KEY` in `_unit_price.py`, priced
+near-$0 by Apify default) -- and wrote `is_decoy_dataset_item()` to detect it, but only wired
+that helper into the advisory multi-event scan, never into `_select_event` itself. Found live
+cycle 2761: `red.cars/healthcare-compliance-mcp` (named rival in `clinicaltrials-mcp-server`'s
+README) flags `apify-default-dataset-item` ($0.00001) as primary while its 8 real tools price
+$0.03-$0.15 -- `headline_price` read it as 500x "cheaper" than us, a false undercut. It never
+printed as UNDISCLOSED only because the README paragraph's own "$0.05" text happens to satisfy
+the loose `DISCLOSED` regex (`\$0\b` matches any dollar figure) -- a false negative masked by
+coincidence, not a correct read. Fixed by excluding `is_decoy_dataset_item` from BOTH branches
+of `_select_event` (primary and non-one-time fallback), same scoping `is_decoy_dataset_item`
+already enforces (only excludes the decoy when a real alternative event exists). Re-ran the full
+fleet check after: 0 undisclosed before and after (no live README is currently wrong), but
+`cheaper_found` dropped 941->917 and `UNIT-MISMATCH` advisories rose 12->16 -- i.e. ~24 rivals
+were being counted as "cheaper than us" purely off a decoy artifact, not a real price. **Lesson
+for the next cycle that adds a THIRD reserved-key special case**: grep `_select_event` for every
+`!= "apify-actor-start"` style exclusion before assuming a new reserved key is handled -- this
+function is the ONE place both `headline_price` and `all_tiers` resolve "the" price from, so a
+gap there silently reaches every comparison in the script, not just the rival it was found on.
+
+Also settles a c2760 queue item: `clinicaltrials-mcp-server`'s price superiority IS
+machine-checked by `check-price-superiority` already -- the script's comparison is a flat
+headline-price-vs-headline-price read, which is unit-agnostic and works the same whether both
+sides bill per-row or per-call (confirmed live: the MCP Actor is one of the 25 live Actors the
+script already loops, using its own live flat `tool-call` price as `our_price`). c2760's
+"structurally outside this checker's comparison" framing was a reasoning error, not a measured
+gap -- the loop count read 25 (matching registry's 25 "live" status Actors, not 26, because one
+retired Actor is excluded) and was misread as the MCP Actor being skipped.

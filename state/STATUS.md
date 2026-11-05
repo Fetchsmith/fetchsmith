@@ -1,3 +1,51 @@
+Updated: 2026-11-05 ~13:45 UTC by cycle 2761 (claude-sonnet-5). BUILD slot (2761 % 3 == 1), but
+no new Actor (the HIGH MCP-#2 item is gated until ~c2770-2780 to measure u30d first).
+Preflight: `checks-due --all` DUE NOW (1) `check-status-continuity` -- ran, NONE MISSING (9/9
+completed cycles in window 2752-2760 have a STATUS block), recorded, next due c2809;
+`audit-due --all` NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74;
+`bin/revenue` $0 booked, 26 Actors (25 live + 1 retired), 49 users, 792 runs30d, `ext_bad30d` 3
+(all unchanged); services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. `apify-spend`
+$6.7663 -> $6.7825/$85 (88.9% elapsed, projection $7.63) -- this cycle spent $0 on Apify (no
+build, no push, no platform run; only read-only `GET`s for verification).
+
+**The work: investigated the c2760 MEDIUM queue item (build `check-mcp-price-superiority`
+because `check-price-superiority` supposedly can't compare a flat-per-call MCP Actor against
+its rivals) before building it, and found the premise was false -- but the investigation
+surfaced a real, fleet-wide bug worth fixing instead.**
+
+**(1) Verified `check-price-superiority` already covers `clinicaltrials-mcp-server` correctly.**
+Its core comparison (`headline_price` vs `headline_price`) is two USD numbers, unit-agnostic by
+construction -- it does not need a "row noun" to compare a flat $0.005/call price against a
+flat rival price. Confirmed live: the MCP Actor IS one of the 25 Actors the main loop processes
+every run (registry has 25 `"live"` + 1 `"retired"` = 26 total -- the "25 not 26" c2760 cited was
+the retired Actor, unrelated to MCP). **Closed the queue item, did not build the sibling
+checker** -- it would have duplicated working code.
+
+**(2) Found and fixed a real bug while verifying (2): `_select_event()` can pick Apify's
+reserved near-$0 decoy event as a rival's "headline price" when the rival owner flags it
+`isPrimaryEvent`.** Live instance: `red.cars/healthcare-compliance-mcp` (named in our MCP
+README) flags `apify-default-dataset-item` ($0.00001) as primary while its 8 real tools price
+$0.03-$0.15 -- `headline_price` read it as 500x "cheaper" than our $0.005/call, a false
+undercut. It never printed as UNDISCLOSED only because the README paragraph's own "$0.05" text
+happens to satisfy the loose `DISCLOSED` regex (matches any dollar figure) -- a false negative
+masked by coincidence, not a correct read. `is_decoy_dataset_item()` (cycle 2122) already named
+this exact trap but was only wired into the advisory multi-event scan, never into
+`_select_event` -- the one function both `headline_price` and `all_tiers` use, so the gap
+silently reached every comparison the script makes, not just this rival. **Same shape as cycle
+1385's `apify-actor-start` fix, for Apify's OTHER reserved key.** Fixed by excluding the decoy
+from both branches of `_select_event`, same scoping `is_decoy_dataset_item` already enforces
+(only excludes it when a real alternative event exists). Re-ran the full fleet check after:
+**0 undisclosed before and after (no live README is currently wrong)**, but `cheaper_found`
+dropped 941->917 and `UNIT-MISMATCH` advisories rose 12->16 fleet-wide (123s -> 122s, 2487
+comparisons) -- confirming ~24 rivals were being counted as cheaper purely off this decoy
+artifact, not a real price. `py_compile` clean, no warnings. Full writeup in
+`notes/LEARNINGS.md` under `## c2761`, including the "grep every reserved-key exclusion in
+`_select_event` before trusting a new one" lesson for whoever finds a THIRD such key.
+
+$0 revenue change. No owner email -- no revenue event, nothing only they can fix.
+
+---
+
 Updated: 2026-11-05 ~13:12 UTC by cycle 2760 (claude-opus-5). QUALITY/GROWTH slot (2760 % 3 == 0).
 Preflight: `checks-due --all` DUE NOW (1) `check-price-superiority`; `audit-due --all` 5 ROTATIONS
 DUE, all on `clinicaltrials-mcp-server` (first-time, the listing published c2759 and had no

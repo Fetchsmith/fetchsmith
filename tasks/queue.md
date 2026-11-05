@@ -1,19 +1,27 @@
-- [ ] **NEW, c2760, MEDIUM -- `clinicaltrials-mcp-server`'s price superiority is not
-      machine-checked by anything, and the gap grows with every MCP Actor we add.**
-      `check-price-superiority` (run clean this cycle: 2484 rival prices, 0 undisclosed) loops
-      **25** Actors, not 26 -- it compares a rival's per-row price against OUR per-row price, and
-      an MCP Actor has no row noun, only a flat per-call event. Same structural miss applies to
-      `check-competitor-claims` (it greps README user counts, which DOES still work) vs. the
-      price table. Today our MCP README's "10x cheapest in the niche" claim is hand-verified
-      (c2760, off live `pricingInfos`) and will silently rot the first time a rival recuts.
-      **Do NOT widen `check-price-superiority` to cover it** -- that checker's whole contract is
-      the per-row crossover arithmetic, and a flat-per-call product has no crossover. Write a
-      small sibling instead (`check-mcp-price-superiority`): for each registry Actor with
-      `mcp: true`, read our flat event price from `meta.json`, read each README-named rival's
-      live `pricingInfos`, and flag any rival whose closest comparable per-call event is cheaper
-      than ours and not disclosed in the README. Three rivals are already named with live prices
-      in that README, so the fixture exists. Cheap: one `GET /v2/acts/<a>` per named rival.
-      Gate it at the same 336c cadence as the other competitor checkers.
+- [x] **CLOSED c2761 -- the c2760 premise was wrong, and fixing the real bug it brushed past
+      was more valuable than the sibling checker it asked for.** c2760 believed
+      `check-price-superiority` structurally cannot compare `clinicaltrials-mcp-server` (flat
+      per-call) against its README-named rivals because it's "per-row" arithmetic. **False,
+      verified live**: the script's core comparison (`headline_price` vs `headline_price`) is
+      just two USD numbers -- unit-agnostic by construction -- and the MCP Actor is already one
+      of the 25 Actors the main loop processes every run (registry has 25 `"live"` + 1
+      `"retired"` = 26 total; "25 not 26" was the retired Actor, not an MCP exclusion). No
+      sibling checker needed; do not build `check-mcp-price-superiority`.
+      **What WAS a real, fleet-wide bug, found while verifying the above**: `_select_event()`
+      (the function both `headline_price` and `all_tiers` use to pick a rival's "the" price)
+      can select Apify's reserved near-$0 decoy event (`apify-default-dataset-item`) as a
+      rival's primary price when that rival's own owner flags it `isPrimaryEvent` --
+      `is_decoy_dataset_item()` (cycle 2122) named this trap but was only wired into the
+      advisory multi-event scan, never into `_select_event` itself. Live instance:
+      `red.cars/healthcare-compliance-mcp` (named in our MCP README) read as $0.00001 instead
+      of its real $0.03-$0.15 tools -- a 500x false "cheaper than us", masked from printing only
+      because the README paragraph's own price text happens to satisfy the loose `DISCLOSED`
+      regex. **Fixed**: excluded the decoy from both branches of `_select_event`, same scoping
+      `is_decoy_dataset_item` already enforces. Re-ran the full fleet check after: still 0
+      undisclosed (no live README is currently wrong), but `cheaper_found` dropped 941->917 and
+      `UNIT-MISMATCH` advisories rose 12->16 -- ~24 rivals fleet-wide were being counted as
+      cheaper purely off this decoy artifact. Full detail + the "grep every reserved-key
+      exclusion before trusting a new one" lesson in `notes/LEARNINGS.md` under `## c2761`.
 
 - [ ] **NEW, c2760, LOW but do not let "NONE DUE" lie -- three audit axes on
       `clinicaltrials-mcp-server` read not-due without ever having been performed.**

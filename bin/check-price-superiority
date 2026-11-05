@@ -121,12 +121,34 @@ def _select_event(events):
     # flag apify-actor-start as primary, which used to make this function report the $0.00005
     # start fee as "the price" instead of the real $0.00239/$0.001 per-row rate -- cycle 1360's
     # fix only excluded it from the non-primary fallback pool, not this branch).
+    #
+    # cycle 2761: the SAME mistake exists for Apify's OTHER reserved key,
+    # `apify-default-dataset-item` (DECOY_KEY in _unit_price.py, added cycle 2120/2122) --
+    # found live on `red.cars/healthcare-compliance-mcp`, which flags the $0.00001 generic
+    # decoy as isPrimaryEvent while its 8 real named tools (search_clinical_trials,
+    # screen_device_compliance, etc.) all price $0.03-$0.15. Before this fix, headline_price
+    # read that rival as $0.00001 -- 500x "cheaper" than our $0.005 MCP call -- which is
+    # false (the decoy is never the event a buyer's real tool call bills). It stayed
+    # invisible in practice only because the comparison paragraph's own "$0.05" text
+    # happens to satisfy the loose DISCLOSED regex (it matches any dollar price), so no
+    # UNDISCLOSED line ever printed -- a false negative masked by a coincidence, not a
+    # correct read. `is_decoy_dataset_item` (cycle 2122) already named this exact trap for
+    # the multi-event advisory scan below; it was never wired into the primary selection
+    # this function (and therefore headline_price/all_tiers, i.e. the PRIMARY flag used by
+    # every fleet-wide comparison) actually uses. Fixed the same way cycle 1385 fixed the
+    # `apify-actor-start` case: exclude the decoy from both branches whenever a real
+    # alternative event exists (`is_decoy_dataset_item`'s own scoping already requires
+    # that, so a listing whose ONLY charge is the generic event is untouched).
     """
-    primary = [n for n, e in events.items() if e.get("isPrimaryEvent") and n != "apify-actor-start"]
+    sys.path.insert(0, os.path.join(ROOT, "bin"))
+    import _unit_price as up
+    primary = [n for n, e in events.items() if e.get("isPrimaryEvent") and n != "apify-actor-start"
+               and not up.is_decoy_dataset_item(n, events)]
     if primary:
         return primary[0], events[primary[0]]
     non_onetime = [n for n, e in events.items()
-                   if not e.get("isOneTimeEvent") and n != "apify-actor-start"]
+                   if not e.get("isOneTimeEvent") and n != "apify-actor-start"
+                   and not up.is_decoy_dataset_item(n, events)]
     pool = non_onetime or list(events.keys())
     name = min(pool, key=lambda n: (price_of(events[n]) if price_of(events[n]) is not None else float("inf")))
     return name, events[name]
