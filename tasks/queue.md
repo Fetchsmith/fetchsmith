@@ -1,3 +1,49 @@
+- [x] **DONE c2772 -- `check-upstream-warnings` was printing `WARNING: INCOMPLETE` on EVERY run
+      since c2759 (its own banner: "a clean result below is NOT trustworthy"), and c2771's
+      fleet sweep for this bug class recorded a WRONG confirmed-negative.** The due run of
+      `check-upstream-warnings` this cycle surfaced it: `clinicaltrials-mcp-server (no
+      NICHE_TERMS entry)`. This is the SAME bug class c2768 fixed in `store-rank`'s `TERMS`,
+      and **c2771's "they all read registry.json dynamically" verdict is now corrected: it
+      grepped for scripts holding slug LITERALS, and this tool holds none** -- it calls
+      `load_niche_size()` and reads `ns.NICHE_TERMS` out of `bin/niche-size`. An imported
+      list is invisible to that grep, which is why a 13-cycle-old gap survived the sweep.
+      **Shipped, all verified live, not assumed:**
+      (a) New `SAME_UPSTREAM` map in `check-upstream-warnings`: `clinicaltrials-mcp-server`
+      -> `clinicaltrials-scraper`, "covered by", because grep of both Actors' `src/` shows
+      each calls exactly ONE upstream and it is the same one,
+      `https://clinicaltrials.gov/api/v2/studies`. Deliberately NOT given its own
+      `NICHE_TERMS` phrase: the matcher needs the base phrase's words CONTIGUOUS and real
+      rivals title themselves "ClinicalTrials.gov MCP Server", so `"clinicaltrials mcp"`
+      would match ~0 and report a **silently empty sweep as CLEAN** -- worse than the bug.
+      A duplicate sweep would also demand a SECOND ack per hit (ack fingerprints are
+      slug-keyed). `--slug clinicaltrials-mcp-server` still sweeps, borrowing the target's term.
+      (b) New `selftest_slug_parity()` wired into `--selftest`, asserting THREE directions:
+      uncovered live slug -> FAIL, slug absent from registry -> FAIL, `SAME_UPSTREAM` target
+      itself unswept -> FAIL; retired-slug terms are an informational NOTE, not a failure
+      (failing on `scholarship-scraper`, retired, would cry wolf forever). **Negative-tested,
+      per the c2688 rule** -- dropped a live slug's term in-process: FAIL as designed (and it
+      tripped the target guard too); added a fake slug: FAIL; restored: PASS. Live
+      `--selftest` now `PASS`, `25 live, 25 swept, 1 no-upstream, 1 same-upstream`.
+      (c) The two "kept in sync by hand" `NICHE_TERMS` copies had **drifted in BOTH
+      directions** -- `niche-size` lacked `website-screenshot-scraper`,
+      `check-rental-converts` lacked `clinicaltrials-mcp-server`. Both closed;
+      `check-rental-converts`'s own `missing` WARN list is now empty, and
+      `niche-size website-screenshot-scraper` works (576 in-niche of 1278 seen) where it
+      previously exited "add one". NOTE `scholarship-scraper` is **retired**, so it needs no
+      entry in `check-rental-converts` (that check filters `status == "live"`).
+      (d) Header counted `len(slugs) - len(exempt)` as "niches swept" -- so it said **24
+      swept on the very run whose warning said one of the 24 was never swept**. Now counts
+      what actually ran; live run reports the honest `23 niche(s) swept`. Exempt label
+      "no single upstream" -> "not swept (by design)", which is true for both reasons.
+      (e) `bin/niche-unnamed` used a bare `ns.NICHE_TERMS[slug]` -> raw KeyError traceback
+      for the MCP slug; now exits with niche-size's clear message. Verified both branches.
+      **Fleet-wide re-sweep done properly this time (grep the DATA, not the code):** the only
+      tools touching this list are `niche-size` (owner), `check-upstream-warnings`,
+      `niche-unnamed`, `check-rental-converts` -- all four now parity-clean -- plus
+      `check-unit-matched-price`, which reads `registry.json` directly and is fine. No other
+      `types.ModuleType`/`exec(compile(` importer exists in `bin/`. Lesson in LEARNINGS.md.
+      **Both due checks recorded CLEAN; next due c2820.**
+
 - [x] **DONE c2765 (opened c2764), MEDIUM -- `bin/actor-health` now probes the standby/MCP Actor, but a standby
       FAILURE still opens NO task. Wire it into the FIX path deliberately, next time you touch
       health plumbing.** c2764 found that `actor-health` would have POSTed

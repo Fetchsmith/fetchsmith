@@ -279,11 +279,67 @@ NO_UPSTREAM = {
                                   "its 'upstream' is the open web, not one API",
 }
 
+# Live Actors that share their ENTIRE upstream with another live Actor already swept here.
+# This check is per-UPSTREAM, not per-slug: sweeping the same niche twice under a second
+# slug label would re-report every hit and demand a SECOND ack (the ack fingerprint is
+# keyed on slug), so a duplicate sweep makes the ack list drift instead of adding coverage.
+# Added c2772, when `clinicaltrials-mcp-server` (registered c2759) tripped the INCOMPLETE
+# warning on every run because it has no NICHE_TERMS entry of its own. Verified by grep,
+# not assumed: both Actors' src/ call exactly one upstream, `https://clinicaltrials.gov/
+# api/v2/studies`, so `clinicaltrials-scraper`'s "clinicaltrials" sweep already covers it.
+# Do NOT instead give such a slug its own NICHE_TERMS phrase unless its upstream really
+# differs -- an MCP-corner phrase like "clinicaltrials mcp" would also have swept ~0
+# in-niche listings here (the matcher needs the two words CONTIGUOUS, and the rival
+# listings title themselves "ClinicalTrials.gov MCP Server"), i.e. a silently empty
+# sweep reported as CLEAN, which is strictly worse than the honest warning it replaced.
+SAME_UPSTREAM = {
+    "clinicaltrials-mcp-server": ("clinicaltrials-scraper", "same single upstream "
+                                  "https://clinicaltrials.gov/api/v2/studies"),
+}
+
 
 def live_slugs():
     reg = json.load(open(f"{ROOT}/actors/registry.json"))["tools"]
     return [t["slug"] for t in reg
             if t.get("status") == "live" and t["slug"] not in NO_UPSTREAM]
+
+
+def selftest_slug_parity():
+    """Every live slug must be swept, exempt, or covered -- asserted BOTH directions.
+
+    c2768 fixed this exact bug class in `store-rank`'s hand-maintained TERMS dict and
+    c2771 swept the fleet for more instances, but its grep only looked for scripts
+    holding a slug LITERAL and so missed this one: the list lives in `niche-size` and is
+    reached through an import, which is why a 13-cycle-old gap was still live at c2772.
+    """
+    ns = load_niche_size()
+    reg = json.load(open(f"{ROOT}/actors/registry.json"))["tools"]
+    live = {t["slug"] for t in reg if t.get("status") == "live"}
+    known = {t["slug"] for t in reg}
+    covered = set(ns.NICHE_TERMS) | set(NO_UPSTREAM) | set(SAME_UPSTREAM)
+    uncovered = sorted(live - covered)            # the c2759-c2772 bug: a real blind spot
+    dangling = sorted(covered - known)            # slug renamed or deleted: config rot
+    retired = sorted(covered & (known - live))    # harmless history, NOT a failure
+    bad_target = sorted(s for s, (tgt, _) in SAME_UPSTREAM.items()
+                        if tgt not in ns.NICHE_TERMS)
+    print(f"selftest: slug parity -- {len(live)} live, {len(ns.NICHE_TERMS)} swept, "
+          f"{len(NO_UPSTREAM)} no-upstream, {len(SAME_UPSTREAM)} same-upstream")
+    if uncovered:
+        print(f"  FAIL uncovered live slug(s): {uncovered}", file=sys.stderr)
+    if dangling:
+        print(f"  FAIL slug(s) listed here but absent from registry.json: {dangling}",
+              file=sys.stderr)
+    if bad_target:
+        print(f"  FAIL SAME_UPSTREAM points at an unswept slug: {bad_target}",
+              file=sys.stderr)
+    # Deliberately informational, not a failure: a retired Actor keeps its NICHE_TERMS
+    # phrase so `niche-size <slug>` still works on historical niches, and failing on it
+    # would make this selftest cry wolf forever -- the exact mode NO_UPSTREAM warns about.
+    if retired:
+        print(f"  note: term kept for retired slug(s) (harmless): {retired}")
+    ok = not (uncovered or dangling or bad_target)
+    print(f"  parity both directions: {ok}")
+    return ok
 
 
 def selftest_acks():
@@ -341,7 +397,8 @@ def selftest():
     print(f"  dated 2026-10-22 extracted from its copy: {got_date}")
     print(f"  false-positive budget (<=3 flagged of 106): {ok_fp}")
     ok_ack = selftest_acks()
-    if ok_tp and ok_fp and got_date and ok_ack:
+    ok_parity = selftest_slug_parity()
+    if ok_tp and ok_fp and got_date and ok_ack and ok_parity:
         print("selftest: PASS")
         return 0
     print("selftest: FAIL", file=sys.stderr)
@@ -379,16 +436,31 @@ def main():
     slugs = [a.slug] if a.slug else live_slugs()
     report, own_notes, failed, n_seen, n_matched = [], [], [], 0, 0
 
+    # Counted explicitly rather than derived as len(slugs) - len(exempt): that form
+    # silently counted a slug whose term FAILED as "swept" (c2772 -- it reported "24
+    # niche(s) swept" on the very run whose own warning line said one of the 24 had not
+    # been swept at all), and `failed` holds slug:term pairs so it cannot be len()'d here.
+    n_swept = 0
     exempt = []
     for slug in slugs:
         if slug in NO_UPSTREAM:  # reachable only via an explicit --slug
             exempt.append(f"{slug}: {NO_UPSTREAM[slug]}")
             continue
+        if slug in SAME_UPSTREAM:
+            tgt, why = SAME_UPSTREAM[slug]
+            if not a.slug:  # batch run: the target's own sweep already covers it
+                exempt.append(f"{slug}: covered by {tgt} ({why})")
+                continue
+            # An explicit --slug probe should still sweep SOMETHING rather than report
+            # "no NICHE_TERMS entry": borrow the term the shared upstream is swept under.
+            print(f"note: {slug} shares its upstream with {tgt}; sweeping {tgt}'s term")
+            slug = tgt
         base = ns.NICHE_TERMS.get(slug)
         if not base:
             failed.append(f"{slug} (no NICHE_TERMS entry)")
             continue
         terms = (ns.TERM_VARIANTS.get(slug) or ns.auto_variants(base)) if a.full else [base]
+        n_swept += 1
         seen = {}
         for term in terms:
             try:
@@ -453,10 +525,10 @@ def main():
         return 1 if report else 0
 
     mode = "full multi-term" if a.full else "base-term"
-    print(f"check-upstream-warnings: {len(slugs) - len(exempt)} niche(s) swept, {mode}, "
+    print(f"check-upstream-warnings: {n_swept} niche(s) swept, {mode}, "
           f"{n_seen} listings seen / {n_matched} in-niche, {today}")
     for e in exempt:
-        print(f"  exempt (no single upstream) -- {e}")
+        print(f"  not swept (by design) -- {e}")
     if failed:
         print(f"  WARNING: INCOMPLETE -- {len(failed)} query/queries failed, a clean "
               f"result below is NOT trustworthy: {'; '.join(failed[:6])}", file=sys.stderr)

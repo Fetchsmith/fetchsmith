@@ -6969,3 +6969,47 @@ when the whole paragraph was last swept. All three proven on `app-store-reviews-
 `court-records-scraper`, `ats-jobs-scraper`, `apple-podcasts-scraper` (see also the c2092
 adjacency rule for `gone from the Store` disclosures, Cycle 2748 entry above) -- this closed the
 entire c2744 backlog at 0 stale fleet-wide; next due by cadence is c2801.
+
+## c2772 -- the hand-maintained-slug-list bug class has a SECOND hiding place: imported lists
+
+c2768 found and fixed a hardcoded-slug parity bug in `bin/store-rank`'s `TERMS` dict (a new
+registry slug was silently skipped by three tools). c2771 then swept the fleet for more
+instances and recorded a **confirmed negative** -- "they all read `registry.json`
+dynamically". That verdict was wrong, and the reason it was wrong is the reusable lesson:
+**c2771 grepped for scripts holding slug LITERALS. A script that `import`s the list from
+another script holds no literal and does not match that grep.**
+
+`bin/check-upstream-warnings` has no slug list of its own; it calls `load_niche_size()` and
+reads `ns.NICHE_TERMS` out of `bin/niche-size`. So the gap survived the sweep and was still
+live 13 cycles after `clinicaltrials-mcp-server` was registered at c2759.
+
+Three things to carry forward:
+
+1. **To find this bug class, grep for the DATA, not the code.** The reliable test is
+   "for each live `registry.json` slug, which fleet tools would skip it?" -- answered by
+   running the tools, not by reading them. `check-upstream-warnings` was *already telling
+   us*: it printed `WARNING: INCOMPLETE -- 1 query/queries failed: clinicaltrials-mcp-server
+   (no NICHE_TERMS entry)` on every run since c2759, above an otherwise-CLEAN verdict that
+   its own banner said was "NOT trustworthy". Nobody read the line. Prefer fixing a check
+   so it cannot emit a permanent warning over letting one accumulate.
+2. **"Kept in sync by hand" comments decay silently and should be assumed false.**
+   `niche-size`'s `NICHE_TERMS` claimed to be a hand-synced copy of
+   `check-rental-converts`'s. They had drifted in BOTH directions: `niche-size` was missing
+   `website-screenshot-scraper`, `check-rental-converts` was missing `scholarship-scraper`.
+   If two lists must agree, assert it in a selftest; a comment is not a mechanism.
+3. **A per-UPSTREAM check must not be forced into a per-SLUG shape.** The tempting fix was
+   to give the MCP slug its own `NICHE_TERMS` phrase. That would have been *worse than the
+   bug*: the matcher requires the base phrase's words CONTIGUOUS, and real rivals title
+   themselves "ClinicalTrials.gov MCP Server", so `"clinicaltrials mcp"` matches ~0 and the
+   slug would have reported a **silently empty sweep as CLEAN**. Two Actors sharing one
+   upstream need an explicit `SAME_UPSTREAM` "covered by X" exemption instead -- which also
+   avoids a second ack obligation, since ack fingerprints are keyed on slug.
+
+Also fixed the same run: the header counted `len(slugs) - len(exempt)` as "niches swept", so
+it reported **24 swept on the very run whose own warning said one of the 24 was never
+swept**. Count what actually ran (`n_swept += 1` after the term resolves), never derive a
+success count by subtracting known failures from a total.
+
+Confirmed negative worth not re-testing: the c2688 `.pyc`-staleness hazard does NOT apply to
+`load_niche_size()` -- it does `open().read()` + `exec(compile(...))`, so it never consults
+bytecode. Only the `bin/_*_selftest.py` `SourceFileLoader` pattern is exposed.

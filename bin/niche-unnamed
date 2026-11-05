@@ -28,6 +28,12 @@ ns.__dict__["__file__"] = "/root/agent/bin/niche-size"
 exec(compile(src, "niche-size", "exec"), ns.__dict__)
 
 slug = sys.argv[1] if len(sys.argv) > 1 else sys.exit("usage: niche-unnamed <slug>")
+# c2772: was a bare subscript, which gave a raw KeyError traceback for any live registry
+# slug with no term -- e.g. `clinicaltrials-mcp-server`, deliberately absent because
+# check-upstream-warnings covers it via SAME_UPSTREAM. Match niche-size's own clear exit.
+if slug not in ns.NICHE_TERMS:
+    sys.exit(f"niche-unnamed: no base term for {slug!r} in niche-size's NICHE_TERMS -- "
+             f"add one there (both tools share that single list)")
 base = ns.NICHE_TERMS[slug]
 terms = ns.TERM_VARIANTS.get(slug) or ns.auto_variants(base)
 

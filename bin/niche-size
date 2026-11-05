@@ -95,6 +95,12 @@ NICHE_TERMS = {
     "remote-jobs-scraper": "remote jobs",
     "sec-insider-trades-scraper": "sec insider trading",
     "scholarship-scraper": "scholarship",
+    # Added c2772 to make the "kept in sync by hand" claim above TRUE again -- it had
+    # silently become false: this copy was missing website-screenshot-scraper while
+    # check-rental-converts' copy was missing scholarship-scraper, i.e. the two lists had
+    # drifted in BOTH directions. `check-upstream-warnings` exempts this slug by name
+    # (NO_UPSTREAM) so it never noticed; `niche-size <slug>` would just exit "add one".
+    "website-screenshot-scraper": "screenshot",
 }
 
 # Hand-curated, previously-validated multi-term lists. Promote a niche here once

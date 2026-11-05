@@ -105,6 +105,14 @@ NICHE_TERMS = {
     "remote-jobs-scraper": "remote jobs",
     "sec-insider-trades-scraper": "sec insider trading",
     "website-screenshot-scraper": "screenshot",
+    # Added c2772, closing a real coverage hole this check was WARNing about on every run
+    # ("no NICHE_TERMS search term for: ... -- not swept"). Unlike check-upstream-warnings
+    # (which exempts this slug as sharing clinicaltrials.gov with clinicaltrials-scraper),
+    # this sweep is per-PRICING-niche, not per-upstream, so the MCP slug earns its own term
+    # here: a rental-converted MCP rival is a distinct listing this check exists to find.
+    # Safe to overlap -- pass 2's `seen` set dedupes by handle, so a listing both terms
+    # surface is still read exactly once, under whichever niche comes first.
+    "clinicaltrials-mcp-server": "clinicaltrials mcp",
 }
 
 
