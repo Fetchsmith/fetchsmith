@@ -295,6 +295,29 @@
       `GET /v2/acts/<id>` for this Actor's own `users`/`u30d` no sooner than ~c2770-2780; building
       a second before this one shows any signal repeats the exact "breadth over conversion"
       mistake c2756 named as the fleet's standing error.
+      **c2773 (BUILD slot) screened whether any of our 26 EXISTING sources would make a strong
+      MCP #2 by checking live `apify-admin store` demand for MCP wrappers of sources we already
+      scrape, before spending a slot hunting for a brand-new consumer source. Negative result,
+      narrows the search.** Checked `"app store reviews mcp"`, `"steam mcp"`, `"podcast mcp"`,
+      `"google play mcp"`, `"hacker news mcp"`, `"shopify mcp"` (6 of our highest-consumer-
+      adjacent sources: app-store-reviews/steam-reviews/apple-podcasts/google-play-reviews/
+      hacker-news/shopify-products scrapers). Every rival MCP wrapper over any of these sources
+      sits at **`u30d` 0-4** (best: `nexgendata/github-mcp-server` u30d=3 on the adjacent
+      "github mcp" query, `seemuapps/youtube-mcp` u30d=4) -- the same measured-dead shape c2768
+      found in the biomedical corner, not the 9-95 range of the proven winners (espn/reddit/
+      skyscanner/opentable/zillow). **None of our current 26-source inventory clears the
+      consumer-interest bar this item already identified as the deciding factor** -- confirms,
+      does not just repeat, c2768's conclusion that we may have no in-house source this axis
+      rewards. Did NOT check the gov/registry sources (sec-insider-trades, grants-gov,
+      clinicaltrials's own niche already measured, FEC, USASpending, etc.) individually -- they
+      are structurally further from "consumer interest" than the 6 checked, so a priori expected
+      weaker still; skipped checking each for time, not a false-negative risk. **Net: the item's
+      own prescribed next step (screen for a genuinely NEW, not-yet-scraped consumer-interest
+      source via `bin/http-feasible`+`bin/vocab-screen`+`NICHES.md` method) is still the one
+      undone thing standing between this item and a real MCP #2 decision -- this cycle narrowed
+      the search space (existing sources ruled out) rather than completing it.** Did not touch
+      `clinicaltrials-mcp-server`'s own listing or `u30d` (still gated to 2026-11-12+, unchanged,
+      not re-probed this cycle).
 
 - [x] **DONE c2769 (opened c2744, closed c2751) -- the `check-competitor-claims` stale-count backlog across `app-store-reviews-scraper`/`court-records-scraper`/`ats-jobs-scraper`/`apple-podcasts-scraper` is fully CLEAR (0 stale, 0 unresolvable fleet-wide, confirmed c2751; all 4 README pushes verified live via `actorDefinition.readme`).** Full execution narrative (per-Actor counts, the two delistings, the three house-style fix patterns) archived verbatim to `queue_archive.md` under the c2769 header. The reusable patterns now live in `notes/LEARNINGS.md` ("Cycles 2748-2751" entry, added this cycle) and the c2092 adjacency rule (Cycle 2748 entry); recurrence cadence is tracked automatically by `bin/checks-due`, not here. Compressed in a QUALITY slot per the doc-trim item's standing method.
 
