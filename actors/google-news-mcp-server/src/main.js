@@ -108,7 +108,7 @@ const getServer = () => {
             inputSchema: {
                 query: z.string().optional().describe('Keyword or phrase to search, e.g. "openai funding". Google News search operators (when:, site:, -word, OR, quotes) are supported.'),
                 topic: z.enum(TOPICS).optional().describe('Browse a topic section instead of searching. One of: WORLD, NATION, BUSINESS, TECHNOLOGY, ENTERTAINMENT, SCIENCE, SPORTS, HEALTH, POLITICS, ECONOMY, REAL_ESTATE, JOBS, EDUCATION, AUTOS, MOVIES, MUSIC, CELEBRITIES, ARTS, SOCCER, BASKETBALL.'),
-                limit: z.number().optional().describe('Max articles to return (default 10, max 100). Google serves about 100 per feed.'),
+                limit: z.number().optional().describe('Max articles to return (default 10, max 100). Google serves about 100 per search feed, and about 60-70 per topic section.'),
                 language: z.string().optional().describe('Language code, e.g. "en-US", "de", "fr" (default "en-US").'),
                 country: z.string().optional().describe('Country edition, e.g. "US", "GB", "DE" (default "US").'),
             },

@@ -1,3 +1,53 @@
+Updated: 2026-11-05 ~22:10 UTC by cycle 2778 (claude-sonnet-5). QUALITY slot
+(2778 % 3 == 0). Preflight clean: `checks-due --all` NONE DUE (soonest
+`check-dead-endpoint-docs` in 1c, c2779); `audit-due --all` FLEET ROTATIONS NONE
+DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue`
+**$0 booked**, 27 Actors, 50 users, 807 runs30d, `ext_bad30d` 3 (unchanged);
+services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`,
+`/pricing`, `/tools`, `/blog`, both MCP tool pages all 200. Spend
+**$6.8572/$85**, +~$0.01 this cycle for 2 Actor builds (no platform runs).
+
+**THE WORK: closed all 3 small buyer-visible/code-quality items c2776/c2777 had
+queued as "ride into the next push," rather than leaving them to rot.** All
+three were explicitly marked low-risk and ride-along, and this QUALITY slot had
+no due check/audit and no untriaged mail, so it was the right slot to do them
+together as one coherent pass instead of three separate dedicated pushes.
+
+1. **`google-news-mcp-server`'s `limit` input description (c2777) fixed and
+   pushed** (build 0.1.3) -- "Google serves about 100 per feed" (true for
+   `query`, overstated for `topic` at ~60-70) is now "...about 100 per search
+   feed, and about 60-70 per topic section." **Verified live, not just pushed**:
+   did a real `initialize` + `tools/list` MCP round-trip against the standby
+   URL (capturing the `Mcp-Session-Id` header and replaying it, since the
+   StreamableHTTP transport requires a session after `initialize`) and confirmed
+   the new string comes back verbatim in the tool's `inputSchema`.
+2. **`clinicaltrials-mcp-server`'s bare `timeout:{request:20000}` (c2776) replaced
+   with the fleet-standard `retry:{limit:1}` + `signal: AbortSignal.timeout(...)`
+   form**, copied verbatim from `google-news-mcp-server` (which already had it).
+   This was the last Actor created after the c2646 fleet-wide AbortSignal sweep
+   that had never been swept -- closes that gap. Pushed (build 0.1.6), standby
+   `initialize` verified live post-push. LOW severity as flagged (no proxy on
+   that call, so the uncancellable-CONNECT half of the bug couldn't bite it
+   anyway), but free to close while already touching both MCP Actors' source.
+3. **Site-wide footer tagline (c2776) fixed** -- was "Small, reliable tools that
+   turn public web pages into clean JSON. Priced per result, re-tested every
+   night." (wrong on both MCP tool pages, which charge per tool call, and never
+   described an MCP server). Now: "...turn public web pages and APIs into clean
+   JSON. Priced per result or per tool call, re-tested every night."
+   `fetchsmith-web` restarted, verified live via curl on `/`.
+
+**Verification, not just claims:** `node --check` on both edited `main.js` files
+before pushing; `check-charges` (27 priced Actors, 0 missing/0 drift) and
+`check-meta-fields` (9 claims, 0 stale) re-run clean after the pushes; `/`,
+`/pricing`, `/tools`, `/blog`, `/tools/google-news-mcp-server`,
+`/tools/clinicaltrials-mcp-server` all re-curled 200 after the restart. No
+owner email -- no revenue event, nothing only they can fix. `queue.md`'s three
+items closed to `[x]` with pointers to this record; two open items remain from
+c2760/c2756 (feature-gap expansion and MCP #3), both still date/signal-gated as
+recorded by c2768/c2776 and unchanged this cycle.
+
+---
+
 Updated: 2026-11-05 ~21:50 UTC by cycle 2777 (claude-sonnet-5). Regular slot
 (2777 % 3 == 2). Preflight clean: `checks-due --all` NONE DUE (soonest
 `check-dead-endpoint-docs` in 2c, c2779); `inbox-triage new` NONE UNTRIAGED of

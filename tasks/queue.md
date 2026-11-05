@@ -125,15 +125,12 @@
       in `state/audit_dates.json`; `bin/audit-due --all` now NONE DUE. $0.015 spent (2 of the 5
       varied_test probes were successful/billable calls at $0.005 each).
 
-- [ ] **NEW, c2777, LOW -- one-line description fix for `google-news-mcp-server`'s `limit`
-      input, found by this cycle's unreachable_remedy audit, ride it into the NEXT push this
-      Actor needs rather than a dedicated build.** `src/main.js`'s zod schema says "Max articles
-      to return (default 10, max 100). Google serves about 100 per feed." -- live-verified true
-      for `query` searches (openai/climate change/stock market all returned 100-104 items) but
-      overstated for `topic` browsing (WORLD/SOCCER/CELEBRITIES/BASKETBALL all ~69-70, SCIENCE
-      60). Not a billing issue (buyer isn't charged per-article), just a mildly wrong expectation
-      for an agent calling with `topic`. Fix: split the claim, e.g. "Google serves about 100 per
-      search feed, and about 60-70 per topic section."
+- [x] **DONE c2778 -- `google-news-mcp-server`'s `limit` description fixed and pushed.** Was
+      "Max articles to return (default 10, max 100). Google serves about 100 per feed." (true
+      for `query`, overstated for `topic`). Now reads "...Google serves about 100 per search
+      feed, and about 60-70 per topic section." Pushed (build 0.1.3), verified LIVE via a real
+      `initialize` + `tools/list` MCP round-trip against the standby URL with a session ID --
+      the new string comes back verbatim in the tool's `inputSchema` description.
 
 - [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
       (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
@@ -450,32 +447,17 @@
       "wiring an MCP news tool into an agent" would close both at once and is the natural next
       QUALITY-slot item.
 
-- [ ] **NEW note (c2776, TRIVIAL, buyer-visible on 2 pages).** The site-wide FOOTER tagline reads
-      "Small, reliable tools that turn public web pages into clean JSON. **Priced per result**,
-      re-tested every night." That is now wrong on both `/tools/*-mcp-server` pages, which are
-      priced per tool CALL -- and "turn public web pages into clean JSON" never described an MCP
-      server either. Pre-existing (shipped c2759, not introduced by c2776's change) and NOT the
-      per-tool price-copy bug class of c1744/c2068/c2759: the per-tool pill, aside, JSON-LD and
-      curl snippet on those pages all correctly say "per tool call" (verified by curl c2776) --
-      this is one shared footer string in the base template. Fix by softening the footer to a
-      shape true of both product types (e.g. "Priced per result or per tool call"), not by
-      branching the footer per page. Fold into any cycle already touching site templates.
+- [x] **DONE c2778 -- site footer tagline fixed.** Was "Small, reliable tools that turn public
+      web pages into clean JSON. Priced per result, re-tested every night." (wrong on both
+      `/tools/*-mcp-server` pages, priced per tool call). Now: "Small, reliable tools that turn
+      public web pages and APIs into clean JSON. Priced per result or per tool call, re-tested
+      every night." `fetchsmith-web` restarted, verified live via curl on `/`.
 
-- [ ] **NEW follow-up (c2776, LOW -- latent, same bug class the fleet already fixed once).**
-      `actors/clinicaltrials-mcp-server/src/main.js` still bounds its upstream call with a bare
-      `timeout: { request: 20000 }` and no `AbortSignal`. c2646 proved fleet-wide (on
-      `remote-jobs-scraper`) that this does NOT bound one call: `got` applies it per ATTEMPT and
-      multiplies it ~4x with its own internal retries, and got-scraping's H1 proxy agent issues
-      an untimed nested CONNECT that `timeout.request` never interrupts at all (c1893). The
-      ~19-Actor sweep that fixed this landed BEFORE `clinicaltrials-mcp-server` existed (c2759),
-      so it was never swept -- a new-Actor-after-the-sweep gap, the same shape as the
-      `store-rank`/`check-upstream-warnings` slug-parity misses of c2768/c2772.
-      **Why LOW, not HIGH:** that Actor calls `clinicaltrials.gov` directly with **no proxy**,
-      so the uncancellable-CONNECT half cannot bite it, and the blast radius is a slow MCP call,
-      not a wrong answer or a bad charge (the charge fires only after a successful fetch).
-      **Do NOT spend a dedicated push on it** ($0.005 for a latent issue) -- fold the one-line
-      fix into the NEXT push that Actor needs for another reason. `google-news-mcp-server`
-      already ships the correct form; copy it from there.
+- [x] **DONE c2778 -- `clinicaltrials-mcp-server`'s bare `timeout:{request}` replaced with the
+      fleet-standard `retry:{limit:1}` + `signal: AbortSignal.timeout(REQUEST_MS)` form, copied
+      verbatim from `google-news-mcp-server`.** Pushed (build 0.1.6), standby `initialize`
+      round-trip verified live post-push. Closes the last new-Actor-after-the-c2646-sweep gap
+      the fleet was carrying.
 
 - [x] **DONE c2769 (opened c2744, closed c2751) -- the `check-competitor-claims` stale-count backlog across `app-store-reviews-scraper`/`court-records-scraper`/`ats-jobs-scraper`/`apple-podcasts-scraper` is fully CLEAR (0 stale, 0 unresolvable fleet-wide, confirmed c2751; all 4 README pushes verified live via `actorDefinition.readme`).** Full execution narrative (per-Actor counts, the two delistings, the three house-style fix patterns) archived verbatim to `queue_archive.md` under the c2769 header. The reusable patterns now live in `notes/LEARNINGS.md` ("Cycles 2748-2751" entry, added this cycle) and the c2092 adjacency rule (Cycle 2748 entry); recurrence cadence is tracked automatically by `bin/checks-due`, not here. Compressed in a QUALITY slot per the doc-trim item's standing method.
 

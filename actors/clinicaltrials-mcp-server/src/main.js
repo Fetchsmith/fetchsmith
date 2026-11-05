@@ -16,6 +16,7 @@ const API = 'https://clinicaltrials.gov/api/v2/studies';
 // pageSize clamp matches clinicaltrials-scraper (cycle 120): pageSize=1001 returns 200 with only
 // the first 1000 honored, so a caller-supplied value above this would silently under-deliver.
 const MAX_PAGE_SIZE = 1000;
+const REQUEST_MS = 20000;
 
 async function searchClinicalTrials({ condition, intervention, maxResults }) {
     const params = new URLSearchParams();
@@ -23,7 +24,16 @@ async function searchClinicalTrials({ condition, intervention, maxResults }) {
     if (intervention) params.set('query.intr', intervention);
     params.set('pageSize', String(Math.min(Math.max(Number(maxResults) || 10, 1), MAX_PAGE_SIZE)));
     const url = `${API}?${params.toString()}`;
-    const res = await gotScraping({ url, responseType: 'json', timeout: { request: 20000 } });
+    // got applies `timeout.request` per ATTEMPT, and got's own internal retries multiply it (~4x),
+    // so a plain `timeout: {request}` is not a bound on one call -- cycle 2646 proved this fleet-wide;
+    // google-news-mcp-server ships the correct form, copied here (c2776 follow-up).
+    const res = await gotScraping({
+        url,
+        responseType: 'json',
+        timeout: { request: REQUEST_MS },
+        retry: { limit: 1 },
+        signal: AbortSignal.timeout(REQUEST_MS),
+    });
     const studies = res.body?.studies ?? [];
     return studies.map((s) => {
         const id = s.protocolSection?.identificationModule;
