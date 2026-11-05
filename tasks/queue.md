@@ -1,3 +1,48 @@
+- [ ] **NEW, c2760, MEDIUM -- `clinicaltrials-mcp-server`'s price superiority is not
+      machine-checked by anything, and the gap grows with every MCP Actor we add.**
+      `check-price-superiority` (run clean this cycle: 2484 rival prices, 0 undisclosed) loops
+      **25** Actors, not 26 -- it compares a rival's per-row price against OUR per-row price, and
+      an MCP Actor has no row noun, only a flat per-call event. Same structural miss applies to
+      `check-competitor-claims` (it greps README user counts, which DOES still work) vs. the
+      price table. Today our MCP README's "10x cheapest in the niche" claim is hand-verified
+      (c2760, off live `pricingInfos`) and will silently rot the first time a rival recuts.
+      **Do NOT widen `check-price-superiority` to cover it** -- that checker's whole contract is
+      the per-row crossover arithmetic, and a flat-per-call product has no crossover. Write a
+      small sibling instead (`check-mcp-price-superiority`): for each registry Actor with
+      `mcp: true`, read our flat event price from `meta.json`, read each README-named rival's
+      live `pricingInfos`, and flag any rival whose closest comparable per-call event is cheaper
+      than ours and not disclosed in the README. Three rivals are already named with live prices
+      in that README, so the fixture exists. Cheap: one `GET /v2/acts/<a>` per named rival.
+      Gate it at the same 336c cadence as the other competitor checkers.
+
+- [ ] **NEW, c2760, LOW but do not let "NONE DUE" lie -- three audit axes on
+      `clinicaltrials-mcp-server` read not-due without ever having been performed.**
+      `audit-due` treats an Actor with NO `audit_dates.json` entry as due on every axis, so when
+      c2760 wrote that Actor's first entry (recording the `competitor_audit` and `varied_test` it
+      actually did), `enum_audit`, `unreachable_remedy` and `watch_subset_audit` stopped showing
+      DUE as a side effect. **They were not run.** All three are shaped for batch scrapers --
+      enum-valued inputs, an unreachable-row remedy path, a watch subset -- and this Actor has
+      one tool, three arguments, no enums and no watch mode, so they are *probably* genuinely
+      N/A. Settle it explicitly: either add an `<axis>_closed` note to its `audit_dates.json`
+      entry stating N/A and why (the `category_lever_closed` entry on `clinicaltrials-scraper`
+      is the house pattern to copy), or run them and record the result. Do NOT just leave the
+      silent not-due.
+
+- [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
+      (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
+      arguments; the three named rivals expose 9, 8 and 6. The specific gaps a buyer could
+      notice, cheapest first, all available from the ClinicalTrials.gov API v2 we already call:
+      (a) no status/phase filter (`query.cond` + `query.intr` only -- `filter.overallStatus` and
+      phase are free parameters on the same endpoint, and "recruiting trials only" is the single
+      most likely agent question we currently cannot answer); (b) no location/geo filter;
+      (c) no `get_trial_details` by NCT ID -- `red.cars/healthcare-compliance-mcp` charges $0.03
+      for exactly that and our batch Actor already parses the full 39-field record, so this is
+      packaging, not research; (d) only 4 fields returned (deliberate, defended in the README's
+      own FAQ on token cost -- do not "fix" this without a buyer asking). **Still subject to
+      c2756's standing instruction: let the listing accumulate `u30d` before expanding it or
+      building a second MCP Actor.** Check its own `users`/`u30d` via `GET /v2/acts/<id>` no
+      sooner than ~c2770-2780.
+
 - [ ] **NEW, c2756, HIGH -- the strongest demand signal this business has ever measured, and
       the first genuinely new BUILD axis since the fleet was founded: ship ONE MCP-server
       (standby-mode) Actor over a source we already own.** Do this in the next BUILD slot

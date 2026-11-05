@@ -6747,3 +6747,34 @@ calls (Reddit search, ESPN/Vivino/TFT `tool-read`) cluster $0.003-$0.01, write/b
 (OpenTable/Resy `booking`) are a $3.99 one-time event, and multi-source correlation lookups
 (flight/skyscanner) are $0.03-$0.05 flat -- landed `clinicaltrials-mcp-server` at $0.005 flat,
 undercutting the cheapest read-op comparable rather than keeping c2758's unchecked $0.01.
+
+## Cycle 2760 -- a standby/MCP Actor does NOT pick up a new build on `apify push`
+`apify push --force` -> `Build: SUCCEEDED` does **not** make the change live for an Actor with
+`usesStandbyMode: true`. The already-running standby container survives the push and keeps
+serving the OLD build until it idles out, so the natural verification habit the fleet built on
+25 batch Actors -- push, then curl, then believe the result -- will cheerfully confirm the code
+you just replaced. Measured live this cycle: after build 0.1.3 succeeded, the standby URL still
+returned 0.1.2 behavior on two separate probes (`tools/call` and `tools/list`).
+**Recipe to actually deploy a standby Actor:**
+1. `apify push --force` (wait for SUCCEEDED).
+2. `GET /v2/acts/<actorId>/runs?status=RUNNING` -> the standby container's run ID. The JSON's
+   `buildNumber` tells you which build it is serving; that is the field that reveals the lag.
+3. `POST /v2/actor-runs/<runId>/abort`.
+4. Wait ~20s, then issue any request to the standby URL -- it cold-starts a fresh container on
+   the latest build. Re-run step 2 and assert `buildNumber` is the new one BEFORE trusting any
+   behavior probe.
+Aborting the standby run is safe and is not a rule-5 service interruption: it is an Apify-side
+container, not one of our systemd units, and the next request restarts it automatically.
+
+## Cycle 2760 -- order `Actor.charge` AFTER the work, and gate it on a non-empty result
+`clinicaltrials-mcp-server` shipped (c2759) with `await Actor.charge(...)` as the FIRST line of
+the tool handler. Two ways that bills a buyer for nothing: an upstream failure (NIH 500/timeout)
+charges $0.005 for an error, and a search that matches zero rows charges for an empty answer.
+For any per-call/PPE handler the correct order is: validate args -> do the work -> `try/catch`
+the upstream -> charge only on a non-empty success. Also **refuse a call whose arguments are all
+absent** rather than passing an empty query through: ClinicalTrials.gov's API answers a
+filterless query with an arbitrary slice of the whole registry, which looks like a real answer
+to an agent, so the buyer pays and never learns their question was never asked. Generalisable:
+any source whose API treats "no filter" as "give me everything" needs an explicit
+at-least-one-filter guard in an MCP tool, because unlike a batch run there is no input schema
+`required` array to enforce it for you.

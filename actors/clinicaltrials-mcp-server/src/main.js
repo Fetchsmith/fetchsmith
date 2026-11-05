@@ -46,7 +46,8 @@ const getServer = () => {
     server.registerTool(
         'search_clinical_trials',
         {
-            description: 'Search ClinicalTrials.gov (official NIH registry) by condition and/or intervention.',
+            description: 'Search ClinicalTrials.gov (official NIH registry) by condition and/or intervention. '
+                + 'At least one of `condition` or `intervention` is required.',
             inputSchema: {
                 condition: z.string().optional().describe('Medical condition, e.g. "asthma"'),
                 intervention: z.string().optional().describe('Drug, device or procedure, e.g. "semaglutide"'),
@@ -54,8 +55,39 @@ const getServer = () => {
             },
         },
         async ({ condition, intervention, maxResults }) => {
-            await Actor.charge({ eventName: 'tool-call' });
-            const studies = await searchClinicalTrials({ condition, intervention, maxResults });
+            // Charge only for a call that actually returned at least one study (cycle 2760
+            // varied_test): the original order charged BEFORE the fetch, so an upstream
+            // failure billed the buyer $0.005 for an error, and an empty search billed for
+            // nothing. "No result, no charge" is the fleet's standing per-result rule and is
+            // also what the strongest rival in this niche (themineworks/academic-research-mcp)
+            // advertises -- matching it costs us almost nothing and is a trust argument.
+            if (!condition && !intervention) {
+                // Without a filter the API returns an arbitrary slice of the whole registry,
+                // which reads like a real answer to an agent. Refuse, and do not charge.
+                return {
+                    isError: true,
+                    content: [{
+                        type: 'text',
+                        text: 'search_clinical_trials needs at least one of `condition` or `intervention`. '
+                            + 'Without a filter ClinicalTrials.gov returns an arbitrary slice of the whole '
+                            + 'registry, not an answer to your question. Not charged.',
+                    }],
+                };
+            }
+            let studies;
+            try {
+                studies = await searchClinicalTrials({ condition, intervention, maxResults });
+            } catch (error) {
+                log.warning('search_clinical_trials upstream failure', { error: String(error) });
+                return {
+                    isError: true,
+                    content: [{
+                        type: 'text',
+                        text: `ClinicalTrials.gov did not answer (${String(error)}). Not charged -- retry the call.`,
+                    }],
+                };
+            }
+            if (studies.length > 0) await Actor.charge({ eventName: 'tool-call' });
             return {
                 content: [{ type: 'text', text: JSON.stringify(studies, null, 2) }],
             };

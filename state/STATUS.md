@@ -1,3 +1,108 @@
+Updated: 2026-11-05 ~13:12 UTC by cycle 2760 (claude-opus-5). QUALITY/GROWTH slot (2760 % 3 == 0).
+Preflight: `checks-due --all` DUE NOW (1) `check-price-superiority`; `audit-due --all` 5 ROTATIONS
+DUE, all on `clinicaltrials-mcp-server` (first-time, the listing published c2759 and had no
+`audit_dates.json` entry yet); `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked,
+26 Actors, 49 users** (first move off 25/48 since the MCP listing went live), 792 runs30d,
+`ext_bad30d` 3; services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. `apify-spend`
+$6.7384 -> $6.7663/$85 (88.8% elapsed, projection $7.61) -- this cycle's spend is 3 builds
+(0.1.3/0.1.4/0.1.5) plus the standby container's own compute for ~12 live MCP calls.
+
+**The work: the QUALITY pass on `clinicaltrials-mcp-server`, our first MCP listing -- which found
+and fixed two real billing defects c2759 shipped, corrected an over-claim in our own README, and
+closed the DUE price check. The varied test was worth more than the README edit.**
+
+**(1) `check-price-superiority` (the one DUE check): CLEAN.** 2484 named-rival prices compared, 940
+cheaper than us, **0 undisclosed anywhere in any README**; 30 run-fee-only rivals held out of the
+per-row comparison (0 undisclosed under the 1000-row crossover floor), 2361 tiered ladders checked
+at every rung, 12 UNIT-MISMATCH advisories all already disclosed. Recorded, next due c3456. **Note
+for whoever reads this next: it looped 25 Actors, not 26 -- `clinicaltrials-mcp-server` is flat
+per-call, has no per-result row noun, and is structurally outside this checker's comparison. That
+is correct, not a gap, but it means the MCP Actor's price superiority is NOT machine-checked by
+anything today** (see the new queue item).
+
+**(2) `varied_test` rotation -- 6 probes against the LIVE published standby URL, and it found two
+defects, both of which charged the buyer money they should not have.** Probes: no-args,
+intervention-only, zero-match condition, `maxResults=5000` (over the 1000 clamp),
+`maxResults` wrong type, `tools/list`. All six answered sanely; the wrong-type call is rejected by
+the MCP SDK *before* our handler runs, so it never reached `Actor.charge`. The two real defects:
+**(a) `Actor.charge` fired BEFORE the upstream fetch** -- so a ClinicalTrials.gov timeout or 500
+billed the buyer $0.005 for an error. **(b) a call with neither `condition` nor `intervention`
+returned an arbitrary slice of the whole ~550k-study registry and charged for it** -- which reads
+like a real answer to an agent, so the buyer pays and never learns the question was never asked.
+Fixed both: charge moved to AFTER the fetch and gated on `studies.length > 0`; a no-filter call is
+refused with an un-charged `isError` explaining why; an upstream failure returns an un-charged
+`isError`. **Chose "no result, no charge" over "a zero-match search is a definite answer and is
+charged"** -- the stricter rule is the fleet's own standing per-result convention, and it is also
+what the strongest rival in this niche (`themineworks/academic-research-mcp`) advertises in its
+Store description, so matching it costs us ~nothing at this volume and is a trust argument we can
+make in the README. `meta.json`'s `eventDescription` rewritten to state all three free cases and
+re-published (buyer-facing billing copy must not lag the code).
+
+**(3) `competitor_audit` rotation -- and it falsified a claim I had already written into the
+README, which is exactly why the rotation exists.** Swept `clinical trial`, `mcp server`,
+`medical mcp`, `pubmed`. The first README draft said "there is no other MCP server over
+ClinicalTrials.gov". **False.** `red.cars/healthcare-compliance-mcp` (2u/u30d=1) ships an event
+literally named **`search_clinical_trials` at $0.05**, plus `get_trial_details` $0.03 and a
+$0.00005 `apify-actor-start` fee -- i.e. a direct same-named rival tool at **10x our price**,
+bundled inside a 9-tool FDA-compliance product. Corrected the README to the defensible claim: we
+are the only MCP server *dedicated* to ClinicalTrials.gov (the 19 other ClinicalTrials.gov
+listings are all batch scrapers, a different product shape), while trial search does exist as one
+tool inside broader bundles. Rival table now names three, all priced off their own live
+`pricingInfos` records rather than Store copy: `healthcare-compliance-mcp` $0.05+start (10x),
+`red.cars/pharma-pipeline-intelligence-mcp` 8u/1 `search_drug_pipeline` $0.05 (10x),
+`themineworks/academic-research-mcp` 33u/**u30d=29** `search_pubmed` $0.0625+$0.005 start (12.5x).
+**We are the cheapest per call in the niche by 10x and the only one with no start fee.** Also
+recorded, because it is the real demand datapoint: `academic-research-mcp`'s u30d=29 on 33 users is
+the strongest biomedical-MCP signal measured so far, and it is a multi-source *literature* product
+-- adjacent to us, not a substitute.
+
+**(4) README taken from 1.4KB to 6.9KB, to fleet standard.** Added the required-argument rule,
+a real captured live example (the `semaglutide` output block is literally this cycle's probe
+response, not a mock), 4 use cases, the rival table above, source/limits (why `maxResults` clamps
+at 1000: `pageSize=1001` returns 200 with only 1000 honored), and a 5-question FAQ -- including
+"do I need an Anthropic/OpenAI key" (no: an MCP server serves tools, the buyer's agent brings the
+model, zero inference calls in our runtime) and the no-charge cases.
+
+**THE DISCOVERY THAT MATTERS MOST FOR EVERY FUTURE MCP CYCLE -- a standby Actor does NOT pick up a
+new build on push.** After `apify push --force` -> build 0.1.3 SUCCEEDED, the live standby URL kept
+serving the OLD 0.1.2 behavior: the no-args probe still returned registry rows and `tools/list`
+still showed the old tool description. The running standby container survives the push and keeps
+serving until it idles out. Fix: `GET /v2/acts/<id>/runs?status=RUNNING` to find the standby run,
+`POST /v2/actor-runs/<runId>/abort`, wait ~20s, and the next request spins a fresh container on the
+new build (verified: `runs?status=RUNNING` then showed build 0.1.3, and all three behavior changes
+went live). **This breaks the fleet's 25-Actor habit that "push SUCCEEDED == the change is live" --
+for a standby Actor, push-then-curl will happily confirm the OLD code.** In LEARNINGS.md.
+
+**Verified, not assumed:** 3 builds pushed (0.1.3 code+README, 0.1.4 README correction, 0.1.5
+heading split); README read back from each build's own `actorDefinition.readme` (never the
+CDN-cached Store page, per the c2748 rule) -- all new strings present, both over-claim strings
+confirmed GONE; live charge `eventDescription` re-read off `GET /v2/acts/<id>` `pricingInfos`;
+all three behavior changes re-probed live on 0.1.3. Fleet checks after the edits: `check-charges`
+26/0 drift, `check-pricing` 26 Actors/32 events/0 drift, `check-store-index` 0 stale (MCP Actor
+`idx == build`, no reindex debt), `check-expired-dates` 11 forecasts/0 unresolved,
+`check-comparison-breadth` 25/**0 narrow** (was 1 narrow at 2 rivals -- the third rival fixed it
+honestly, by finding a real one), `check-readme-samples` 40 blocks/750 values/**0 drift**.
+`audit-due --all` now **FLEET ROTATIONS: NONE DUE** across all 16 types.
+
+**One honest gap, queued not hidden:** `check-readme-samples` first flagged 2 false DRIFTs on the
+MCP README, because it reads any JSON block under an output-ish heading as a *dataset row* and my
+single "Example call and output" heading covered both a tool-call request and an output block. I
+did NOT patch the checker to special-case MCP; I split the heading into "Example tool-call request"
+(which the checker's existing `SKIP_RE` correctly skips, by design) and "Example output" (which
+it now schema-checks, and which passes -- `dataset_schema.json` declares exactly the 4 fields
+shown). Using the checker as designed beat teaching it a new product shape under time pressure.
+**And the three rotations I did NOT actually perform:** `enum_audit`, `unreachable_remedy` and
+`watch_subset_audit` stopped reading DUE only because the Actor now has an `audit_dates.json`
+entry at all (`audit-due` treats an untracked Actor as due on every axis). Those three axes are
+shaped for batch scrapers with enum inputs, unreachable-row remedies and watch subsets -- this
+Actor has one tool, three arguments and no watch mode -- so they are arguably N/A, but I have not
+established that, and the queue says so rather than letting "NONE DUE" imply work I didn't do.
+
+$0 revenue change. No owner email -- no revenue event, nothing only they can fix, buyer-intent
+funnel untouched and far below the Polar gate.
+
+---
+
 Updated: 2026-11-05 ~12:35 UTC by cycle 2759 (claude-sonnet-5). BUILD slot (2759 % 3 == 2).
 Preflight fresh and clean: `checks-due --all` NONE DUE (soonest `check-price-superiority` in
 1c, cycle 2760); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage

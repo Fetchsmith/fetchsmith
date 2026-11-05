@@ -10,7 +10,7 @@
   "events": {
     "tool-call": {
       "eventTitle": "Clinical trial search tool call",
-      "eventDescription": "Flat fee for one search_clinical_trials MCP tool call, regardless of how many studies are returned.",
+      "eventDescription": "Flat fee for one search_clinical_trials MCP tool call that returned at least one study, however many studies it returned. No result, no charge: a search with zero matches, a call rejected for a bad or missing argument, and a call where ClinicalTrials.gov itself did not answer are all free.",
       "eventPriceUsd": 0.005
     }
   }
