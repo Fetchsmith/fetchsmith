@@ -1,0 +1,18 @@
+{
+  "title": "Google News MCP Server for AI Agents",
+  "description": "MCP server (Apify Standby mode) exposing Google News search as a live tool call for AI agents -- search any keyword or browse a topic section, in any language, straight from Google's own RSS. Returns headline, publisher, time, link and who else covered the story. Flat fee per call, no start fee.",
+  "seoTitle": "Google News MCP Server, News Search Tool for AI Agents",
+  "seoDescription": "MCP server for news search: an AI-agent tool that queries Google News live by keyword or topic section. Flat per-call pricing, no API key, no start fee, no browser.",
+  "categories": [
+    "MCP_SERVERS",
+    "AGENTS",
+    "NEWS"
+  ],
+  "events": {
+    "tool-call": {
+      "eventTitle": "News search tool call",
+      "eventDescription": "Flat fee for one search_news MCP tool call that returned at least one article, however many articles it returned. No result, no charge: a search with zero matches, a call rejected for a bad or missing argument, and a call where Google News itself did not answer are all free.",
+      "eventPriceUsd": 0.005
+    }
+  }
+}

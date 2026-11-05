@@ -1,0 +1,23 @@
+{
+    "name": "google-news-mcp-server",
+    "version": "0.1.0",
+    "type": "module",
+    "description": "MCP server (Apify Standby mode) exposing Google News search as a tool for AI agents.",
+    "engines": {
+        "node": ">=22"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.17.5",
+        "express": "^5.1.0",
+        "cors": "^2.8.5",
+        "zod": "^3.25.76",
+        "apify": "^3.7.0",
+        "got-scraping": "^4.0.0",
+        "cheerio": "^1.0.0"
+    },
+    "scripts": {
+        "start": "node ./src/main.js"
+    },
+    "author": "FetchSmith",
+    "license": "ISC"
+}

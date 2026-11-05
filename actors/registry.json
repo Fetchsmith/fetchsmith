@@ -1626,6 +1626,35 @@
       }
     },
     {
+      "slug": "google-news-mcp-server",
+      "title": "Google News MCP Server for AI Agents",
+      "summary": "MCP server (Apify Standby mode) exposing Google News search as a live tool call for an AI agent: keyword search with Google's own operators, or any of 20 topic sections, in any language edition. Flat fee per call, no start fee. For full article text and resolved publisher URLs in bulk, use google-news-scraper.",
+      "status": "live",
+      "mcp": true,
+      "mcp_tool": "search_news",
+      "standby_url": "https://fetchsmith--google-news-mcp-server.apify.actor",
+      "apify_actor_id": "FJV2ULlz2QxI6u541",
+      "memory_mb": 1024,
+      "example_input": {
+        "query": "openai",
+        "limit": 3
+      },
+      "output_fields": [
+        "title",
+        "publisher",
+        "publisherDomain",
+        "url",
+        "publishedAt",
+        "relatedCoverage"
+      ],
+      "apify_price": {
+        "event": "tool-call",
+        "shape": "flat",
+        "entry": 0.005,
+        "floor": 0.005
+      }
+    },
+    {
       "slug": "clinicaltrials-scraper",
       "title": "ClinicalTrials.gov Scraper \u2013 Patient Recruitment & NCT IDs",
       "summary": "Scrape ClinicalTrials.gov's official NIH API: condition, intervention, sponsor, location, facility and lead-sponsor filters, plus six date windows (start, completion, first-posted, results). Optional one-row-per-site mode for site-selection buyers. Eligibility-age bounds accept months, weeks or days as well as whole years, so neonatal and paediatric searches land. No contact people, phones or emails shipped, ever. Optional watchLabel mode returns only studies new since your last run, so a schedule becomes a trial alert; add watchChanges to also catch status changes, protocol/enrollment updates and completion-date slips on studies you already got.",

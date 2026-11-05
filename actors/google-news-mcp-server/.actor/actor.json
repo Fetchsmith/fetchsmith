@@ -1,0 +1,23 @@
+{
+    "actorSpecification": 1,
+    "name": "google-news-mcp-server",
+    "title": "Google News MCP Server for AI Agents",
+    "description": "MCP server (Apify Standby mode) exposing Google News search as a live tool call for AI agents -- search any keyword or browse a topic section, in any language, straight from Google's own RSS. Returns headline, publisher, time, link and who else covered the story. Flat fee per call, no start fee.",
+    "version": "0.1",
+    "buildTag": "latest",
+    "usesStandbyMode": true,
+    "webServerMcpPath": "/mcp",
+    "dockerfile": "../Dockerfile",
+    "input": {
+        "title": "Google News MCP Server input",
+        "description": "This Actor runs in Standby mode as an MCP server and takes no run input -- tool arguments are passed per MCP tool call, not here.",
+        "type": "object",
+        "schemaVersion": 1,
+        "properties": {},
+        "required": []
+    },
+    "output": "./output_schema.json",
+    "storages": {
+        "dataset": "./dataset_schema.json"
+    }
+}

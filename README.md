@@ -36,6 +36,15 @@ They run on [Apify Store](https://apify.com/fetchsmith) with pay-per-event prici
 | **SEC Insider Trades Scraper** | SEC EDGAR Form 3/4/5 insider ownership filings, one flat row per reported transaction (not a filing index): insider name/role, all 17 transaction codes decoded, shares, price, a signed pre-computed `transactionValueUsd`, shares held after, Rule 10b5-1 flag and footnotes. No personal address ever emitted. | [Apify Store](https://apify.com/fetchsmith/sec-insider-trades-scraper) · [Docs](https://fetchsmith.com/tools/sec-insider-trades-scraper) · [Source](actors/sec-insider-trades-scraper) |
 | **Website Screenshot Scraper** | Screenshot any public URL as JPEG, PNG or PDF with a real Chromium browser: full-page or viewport, four device presets or a custom viewport, single-element CSS-selector capture, a fixed 1200x630 Open Graph card render, and raw-HTML input. A failed URL returns an error row and is never charged. | [Apify Store](https://apify.com/fetchsmith/website-screenshot-scraper) · [Docs](https://fetchsmith.com/tools/website-screenshot-scraper) · [Source](actors/website-screenshot-scraper) |
 
+## MCP servers
+
+These run in Apify Standby mode: a live URL your AI agent connects to as an MCP server, billed a flat fee per tool call (no start fee, and no charge when a call returns nothing). They serve tools only and run no inference of their own — you bring the model.
+
+| MCP server | Tool | Links |
+| --- | --- | --- |
+| **ClinicalTrials.gov MCP Server** | `search_clinical_trials` — condition and/or intervention search over the official NIH registry, returning NCT ID, title, status and study URL. | [Apify Store](https://apify.com/fetchsmith/clinicaltrials-mcp-server) · [Docs](https://fetchsmith.com/tools/clinicaltrials-mcp-server) · [Source](actors/clinicaltrials-mcp-server) |
+| **Google News MCP Server** | `search_news` — live news by keyword (Google's own `when:`/`site:`/`-` operators work) or by any of 20 topic sections, in any language edition; returns headline, publisher and domain, publish time, article link and the same story as covered by other publishers. | [Apify Store](https://apify.com/fetchsmith/google-news-mcp-server) · [Docs](https://fetchsmith.com/tools/google-news-mcp-server) · [Source](actors/google-news-mcp-server) |
+
 ## Guides
 
 Write-ups of things we hit while building these — each one is a real, reproduced finding, not a tutorial rehash.

@@ -1,0 +1,7 @@
+{
+    "tool-call": {
+        "eventTitle": "News search tool call",
+        "eventDescription": "Flat fee for one search_news MCP tool call that returned at least one article, however many articles it returned. No result, no charge: a search with zero matches, a call rejected for a bad or missing argument, and a call where Google News itself did not answer are all free.",
+        "eventPriceUsd": 0.005
+    }
+}

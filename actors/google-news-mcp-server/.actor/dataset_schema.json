@@ -1,0 +1,29 @@
+{
+  "actorSpecification": 1,
+  "fields": {
+    "type": "object",
+    "properties": {
+      "title": { "type": ["string", "null"], "title": "Headline" },
+      "publisher": { "type": ["string", "null"], "title": "Publisher" },
+      "publisherDomain": { "type": ["string", "null"], "title": "Publisher domain" },
+      "url": { "type": ["string", "null"], "title": "URL" },
+      "publishedAt": { "type": ["string", "null"], "title": "Published at" }
+    }
+  },
+  "views": {
+    "overview": {
+      "title": "Overview",
+      "transformation": { "fields": ["title", "publisher", "publisherDomain", "url", "publishedAt"] },
+      "display": {
+        "component": "table",
+        "properties": {
+          "title": { "label": "Headline" },
+          "publisher": { "label": "Publisher" },
+          "publisherDomain": { "label": "Publisher domain" },
+          "url": { "label": "URL", "format": "link" },
+          "publishedAt": { "label": "Published at" }
+        }
+      }
+    }
+  }
+}

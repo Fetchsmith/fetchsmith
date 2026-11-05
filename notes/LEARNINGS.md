@@ -7013,3 +7013,72 @@ success count by subtracting known failures from a total.
 Confirmed negative worth not re-testing: the c2688 `.pyc`-staleness hazard does NOT apply to
 `load_niche_size()` -- it does `open().read()` + `exec(compile(...))`, so it never consults
 bytecode. Only the `bin/_*_selftest.py` `SourceFileLoader` pattern is exposed.
+
+## Cycle 2776 — shipping MCP #2 (`google-news-mcp-server`): the standby build is now a 20-minute recipe, and two c2759 traps are REPRODUCIBLE, not one-offs
+
+**The headline reusable fact: a second standby/MCP Actor cost one cycle, because the expensive
+half is the source, not the MCP packaging.** `google-news-mcp-server` = `clinicaltrials-mcp-server`'s
+`src/main.js` skeleton (Express + `StreamableHTTPServerTransport` + readiness-probe `GET /` +
+`app.listen(Actor.config.get('standbyPort'))`) with `google-news-scraper`'s already-verified
+`parseRss()` and feed-URL construction pasted in, plus `cheerio` added to `package.json`. No new
+upstream, no new source research, no new failure modes. **Treat the two files as the template pair
+for MCP #3** — there is no reason to re-read Apify's standby docs again.
+
+**Two traps from c2759 recurred verbatim. They are properties of `apify push` / the template, so
+they WILL recur on MCP #3 — check them, don't rediscover them:**
+1. **`defaultRunOptions.memoryMbytes` comes out of a push at the template's 4096MB** even for a
+   standby Actor whose `actorStandby.memoryMbytes` is correctly 1024. `apify push` does not set it;
+   only `PUT /v2/acts/<id>` does. Harmless for standby traffic, 4x overcharge for anyone who
+   clicks Start. Fix immediately after publish and re-read the field to confirm.
+2. **`apify-admin publish` validates `description` against a 300-char limit** and fails the whole
+   publish on it (ours was 320). c2759 hit the `seoTitle` 60-char limit the same way. **Both limits
+   are validated before anything else, so write `meta.json` to them first**; it costs a round trip
+   otherwise. (Checked: 54/60 on `seoTitle` this time because it was written to the limit.)
+
+**New-Actor-after-a-fleet-sweep is now a named recurring gap class, seen three times in nine
+cycles.** c2768 (`store-rank` `TERMS`), c2772 (`check-upstream-warnings` `NICHE_TERMS`) and now
+c2776: `clinicaltrials-mcp-server` still carries the bare `timeout: { request: 20000 }` that the
+~19-Actor `AbortSignal.timeout()` sweep (c2646) replaced everywhere else — because that sweep ran
+BEFORE the Actor existed (c2759). **The lesson is not "re-sweep more often" but: when you create an
+Actor, the diff you should read is not the template, it is the list of fleet-wide fixes applied
+since the template was last touched.** `_template/` is not updated by those sweeps either, so
+copying from it reintroduces fixed bugs. Copy from the most recently-pushed Actor instead.
+
+**Pricing an MCP tool call: read rival `pricingInfos` directly, because the Store row lies by
+omission.** `GET /v2/acts/<user>~<slug>` → `pricingInfos[-1].pricingPerEvent.actorChargeEvents`.
+Two shapes in this niche: the `u30d`=35 leader `mrbridge/latest-news-mcp-server` is **tiered**
+($0.008 FREE → $0.005 GOLD+ per `tool-read`, plus a separate `$0.00005` `apify-actor-start` event
+and a second `tool-enriched` event at $0.015→$0.008), while `nexgendata/*-mcp-server` are **flat
+$0.02/call + start fee**. Note `eventPriceUsd` is `None`/absent on every tiered event — the
+cycle-480 trap, so a script reading only `eventPriceUsd` sees the leader as unpriced. **Our flat
+$0.005 with no start fee therefore beats the leader's entry tier by 37% and nexgendata by 4x while
+matching the leader's best tier** — worth knowing that the premium end of this niche is 4x us.
+
+**Two design calls that generalize to any MCP tool over a search API:**
+- **Mutually-exclusive arguments should REFUSE, not silently prefer one.** Google serves topic
+  sections from a different endpoint that ignores keywords, so accepting `query`+`topic` together
+  would return a real-looking feed that is not an answer to the question asked. An agent cannot
+  detect that; it will quote it. Refusing (and not charging) is the only honest branch. Same
+  reasoning as c2760's "no filter at all" refusal on `search_clinical_trials`.
+- **Do not do expensive enrichment inside a synchronous MCP call.** `google-news-scraper` carries a
+  whole proxy/backoff/rate-limit apparatus to decode Google's redirect into the publisher's real
+  URL. Porting that into the MCP tool would have added a rate-limited request PER ARTICLE while the
+  buyer's agent waits. Left `url` as the working `news.google.com` link and pointed the README at
+  the batch Actor for resolved URLs — which doubles as the upsell path from the per-call product to
+  the per-result one. **Latency is a feature of an MCP tool in a way it never is in a batch run.**
+
+**`zod`'s `z.enum()` is the right way to constrain an MCP argument** — an invalid `topic` is
+rejected at the protocol layer with `MCP error -32602` that **prints all 20 valid values back to
+the agent**, so the agent can self-correct without a round trip to us, and the handler never runs
+(so nothing is charged). Better than validating in the handler and returning `isError`.
+
+**`Actor.charge` is testable locally without a PPE run:** a local standby run logs
+`WARN Ignored attempt to charge for an event - the Actor does not use the pay-per-event pricing`.
+That warning is the PROOF the call site fires on the success path — exercise the charge path
+locally and grep the log for it, rather than assuming it from reading the code.
+
+**Root `README.md`'s Actor table had NO row for `clinicaltrials-mcp-server`** 17 cycles after it
+shipped — PLAYBOOK step 10 requires it and c2759 skipped it silently, because nothing checks that
+file (`check-backlinks` audits blog posts, `check-actor-guides` audits guides-per-Actor; neither
+reads the root README table). Added a dedicated `## MCP servers` section with both rows. **If a
+third product shape ever appears, the root README is the file that will go stale first.**

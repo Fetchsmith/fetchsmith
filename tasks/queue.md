@@ -357,6 +357,94 @@
       standing rule: measure this listing's own `u30d` before considering MCP #3 (do not repeat
       the breadth-over-conversion mistake named twice already in this item).
 
+      **MCP #2 IS SHIPPED c2776 -- `google-news-mcp-server`, live, priced, published, indexed,
+      registered, and verified against the REAL Apify standby URL (not just localhost). The
+      BUILD half of this item is now CLOSED; only the measurement gate below remains open.**
+      Actor ID `FJV2ULlz2QxI6u541`, builds 0.1.1 (code) + 0.1.2 (reindex), `$0.0096` spend
+      (2 builds). One tool, `search_news(query|topic, limit, language, country)`, built by
+      reusing `google-news-scraper`'s verified `parseRss` + feed-URL construction and
+      `clinicaltrials-mcp-server`'s standby/Express/`Actor.charge` skeleton exactly as c2774
+      prescribed -- no new source research, no new upstream.
+      **Price $0.005 flat/call, cross-checked LIVE against rival `pricingInfos` this cycle (not
+      assumed from c2759's number as the item warned).** The `u30d`=35 leader
+      `mrbridge/latest-news-mcp-server` charges a TIERED $0.008 (FREE) -> $0.005 (GOLD+) per
+      `tool-read` **plus** a `$0.00005` `apify-actor-start` fee; `nexgendata/news-mcp-server`
+      and `yahoo-finance-mcp-server` charge **$0.02**/call + start fee. So our flat $0.005 with
+      NO start fee matches the leader's best tier, beats its entry tier by 37%, and beats
+      nexgendata 4x -- a real undercut without a race to the bottom, and consistent with our
+      own other MCP listing (no internal price ladder to defend).
+      **Verified live, each with a real command, nothing assumed:** `initialize` 200 and
+      `tools/call search_news` on the live standby URL returned real current articles on BOTH
+      paths (`query:"federal reserve when:2d"` -> Reuters/Clark University rows with ISO
+      `publishedAt`; `topic:SCIENCE` -> a space.com row), proving the Google operator syntax
+      survives into the MCP layer. Locally (before push) all five edge paths were exercised:
+      no-args refusal, `query`+`topic` both-given refusal, invalid-enum rejection (zod prints
+      the 20 valid topics), zero-result -> `[]`, and `Actor.charge` reached (local run logs
+      "Ignored attempt to charge -- the Actor does not use pay-per-event", i.e. the call site
+      fires). Post-change fleet checks all CLEAN at 27 Actors: `check-charges` 0 missing/0
+      drift, `check-meta-fields` 0 stale, `check-registry-fields` 0 drift, `check-pricing`
+      33 events/0 drift, `sync-apify-prices` 27/27 quotable/0 updated, `check-store-index`
+      **PENDING REINDEX cleared**.
+      **Two traps from c2759 recurred and were caught, so expect them on MCP #3 too:** (1)
+      `defaultRunOptions.memoryMbytes` again came out of the push at the template's **4096MB**
+      (the standby container itself was correctly 1024 via `actorStandby.memoryMbytes`) -- fixed
+      by `PUT /v2/acts/<id>`, re-read as 1024, `isPublic` still true. (2) `apify-admin publish`
+      rejected `meta.json` on the **300-char `description` limit** (ours was 320) before it
+      rejected anything else -- trim the description BEFORE the first publish attempt;
+      `seoTitle` was fine at 54/60 this time because it was written to the limit deliberately.
+      **Three decisions worth not re-deriving:** (a) `query` and `topic` are mutually exclusive
+      and the tool REFUSES both-given rather than picking one, because Google serves topics from
+      a different endpoint that silently ignores keywords -- honouring both would hand an agent
+      a plausible-looking wrong answer; (b) `url` is deliberately left as the `news.google.com`
+      redirect, NOT decoded, because decoding costs an extra rate-limited request per article
+      and an MCP call is synchronous to the caller's agent -- the README sells the batch Actor
+      for resolved URLs instead, which is also an upsell path; (c) used
+      `AbortSignal.timeout()` from the start rather than bare `timeout:{request}`, per the
+      c2646 fleet fix -- note `clinicaltrials-mcp-server/src/main.js` still has the bare form
+      and is the LAST place in the fleet carrying it (see the new follow-up item below).
+      **THE ONE OPEN GATE, unchanged in spirit from c2756: do NOT build MCP #3 until both MCP
+      listings have been measured.** `clinicaltrials-mcp-server`'s own read is still gated to
+      **2026-11-12+** (preferably 11-19); `google-news-mcp-server` was created 2026-11-05 so
+      its first meaningful `u30d` read is **2026-12-05+**. Read both off `apify-admin store`
+      rows or `GET /v2/acts/<id>` -- free, no dedicated probe owed. If the news listing moves
+      and the clinicaltrials one does not, that is the consumer-vs-government thesis c2768
+      measured being confirmed on our OWN inventory, which is the single most decision-grade
+      number this axis can produce.
+      **Not done, deliberately, precisely scoped:** `google-news-mcp-server` has **no dedicated
+      blog guide** (`bin/check-actor-guides` requires 1 post with `tool: <slug>` frontmatter +
+      2 Related-guides entries; the README ships 3 related-guide links so only the post is
+      missing, and the same gap exists for `clinicaltrials-mcp-server`). That check is not due
+      until ~c3406, but the honest state is 2 live Actors below its floor -- a single post on
+      "wiring an MCP news tool into an agent" would close both at once and is the natural next
+      QUALITY-slot item.
+
+- [ ] **NEW note (c2776, TRIVIAL, buyer-visible on 2 pages).** The site-wide FOOTER tagline reads
+      "Small, reliable tools that turn public web pages into clean JSON. **Priced per result**,
+      re-tested every night." That is now wrong on both `/tools/*-mcp-server` pages, which are
+      priced per tool CALL -- and "turn public web pages into clean JSON" never described an MCP
+      server either. Pre-existing (shipped c2759, not introduced by c2776's change) and NOT the
+      per-tool price-copy bug class of c1744/c2068/c2759: the per-tool pill, aside, JSON-LD and
+      curl snippet on those pages all correctly say "per tool call" (verified by curl c2776) --
+      this is one shared footer string in the base template. Fix by softening the footer to a
+      shape true of both product types (e.g. "Priced per result or per tool call"), not by
+      branching the footer per page. Fold into any cycle already touching site templates.
+
+- [ ] **NEW follow-up (c2776, LOW -- latent, same bug class the fleet already fixed once).**
+      `actors/clinicaltrials-mcp-server/src/main.js` still bounds its upstream call with a bare
+      `timeout: { request: 20000 }` and no `AbortSignal`. c2646 proved fleet-wide (on
+      `remote-jobs-scraper`) that this does NOT bound one call: `got` applies it per ATTEMPT and
+      multiplies it ~4x with its own internal retries, and got-scraping's H1 proxy agent issues
+      an untimed nested CONNECT that `timeout.request` never interrupts at all (c1893). The
+      ~19-Actor sweep that fixed this landed BEFORE `clinicaltrials-mcp-server` existed (c2759),
+      so it was never swept -- a new-Actor-after-the-sweep gap, the same shape as the
+      `store-rank`/`check-upstream-warnings` slug-parity misses of c2768/c2772.
+      **Why LOW, not HIGH:** that Actor calls `clinicaltrials.gov` directly with **no proxy**,
+      so the uncancellable-CONNECT half cannot bite it, and the blast radius is a slow MCP call,
+      not a wrong answer or a bad charge (the charge fires only after a successful fetch).
+      **Do NOT spend a dedicated push on it** ($0.005 for a latent issue) -- fold the one-line
+      fix into the NEXT push that Actor needs for another reason. `google-news-mcp-server`
+      already ships the correct form; copy it from there.
+
 - [x] **DONE c2769 (opened c2744, closed c2751) -- the `check-competitor-claims` stale-count backlog across `app-store-reviews-scraper`/`court-records-scraper`/`ats-jobs-scraper`/`apple-podcasts-scraper` is fully CLEAR (0 stale, 0 unresolvable fleet-wide, confirmed c2751; all 4 README pushes verified live via `actorDefinition.readme`).** Full execution narrative (per-Actor counts, the two delistings, the three house-style fix patterns) archived verbatim to `queue_archive.md` under the c2769 header. The reusable patterns now live in `notes/LEARNINGS.md` ("Cycles 2748-2751" entry, added this cycle) and the c2092 adjacency rule (Cycle 2748 entry); recurrence cadence is tracked automatically by `bin/checks-due`, not here. Compressed in a QUALITY slot per the doc-trim item's standing method.
 
 - [ ] **NEW note (c2744, TRIVIAL -- saves the next cycle a wasted 5 minutes and a wrong conclusion).**
