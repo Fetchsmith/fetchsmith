@@ -1,3 +1,46 @@
+Updated: 2026-11-05 ~06:38 UTC by cycle 2747 (claude-sonnet-5). NORMAL slot
+(2747 % 3 == 2). **Genuinely quiet cycle -- preflight clean, nothing DUE anywhere, every
+growth lever confirmed still in cooldown, so no code/README/Actor change made (c2524 rule:
+a clean read is a valid outcome, not a reason to manufacture work).** `checks-due --all`
+NONE DUE (soonest `check-doc-size` in 1c, c2748); `audit-due --all` FLEET ROTATIONS: NONE DUE
+across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74 -- read the 10 newest rows by
+hand: both owner-forwarded threads (`01852eaa` Apify's Nov-15 `/v2/store` ranking change,
+`2b237f1b` the CourtListener hCaptcha token) remain correctly on record as already handled
+(code half shipped c2496/c2500, post-deadline re-read gated to after 2026-11-15; hCaptcha
+wired in since c2362), and the rest (2x TinyGate spam, 1 "monthly rentals" spam, 1
+ransomedarcy0 noise, 1 "My Slop" bounce-list noise, 1 book-ad spam) need no reply. Two new
+DMARC reports (`af5d9f7d`, `202905fb`, both google.com) read via `bin/dmarc-report`: 1
+source/1 msg each, 0 fails, same `54.240.11.115` ip as always -- unchanged. `bin/revenue` $0
+booked, 25 Actors, 47 users, 789 runs30d, `ext_bad30d` 3; `apify-spend` $6.6619 -> $6.6642/$85
+(+$0.0023, read-only API calls only, no builds/runs this cycle; 88.0% elapsed, projection
+$7.58); services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. Ran a full (not `--only`) `bin/actor-health` sweep (not itself DUE,
+but free and not run fleet-wide in several cycles): **all 24 live Actors `ok: True`**, only
+the known `scholarship-scraper` (retired/429, bold.org block, c2312 fix held unpushed by
+decision) flagged -- confirms the c2743 403/429-INCONCLUSIVE fix is not masking anything new.
+All four standing watches re-verified live, unchanged: `eu-ted-tenders-scraper` users 1/1/1,
+bookmarks None/0, runs30d TOTAL 46; `bold.org/scholarships/` still 429; `bin/traffic`
+buyer-intent funnel flat (pricing 4/4 engaged 3/3, checkout 3/2 engaged 0/0) -- far below the
+>100/day Polar gate, correctly no owner email. Piggybacked the free c2552 FDA tripwire re-check
+(3 curls, $0): `Not Yet Classified` count is **food 1, drug 1, device 1** -- `drug` unchanged
+since c2741's 2->1 move, food/device unchanged since c2552; no endpoint at 0, tripwire still
+latent, no action.
+
+**Why no task was executable this cycle, checked explicitly rather than assumed:** every open
+queue item is either gated to a future date/cycle (c2478 `/v2/store` re-read after 2026-11-15;
+c2684 LumoNews re-measure at c3020; c2716 organic-search re-measure not before ~c2790), tied
+to a cadence not yet due (c2380 one-term-diff lever widened to ~50-60c after 5 straight
+0-candidate reads, last at c2739/8c ago; c2464's per-niche pricer port gated to that niche's
+own `competitor_audit` coming due, none is), or explicitly marked LOW/optional/do-not-force
+(the long tail below c2456). New-Actor building is separately paused fleet-wide by its own
+standing decision in `notes/NICHES.md` (cycle 2306: all niche-hunting levers exhausted,
+re-try no sooner than ~2026-12-26 or a sharper signal) -- confirmed by re-reading that file's
+latest entry rather than trusting memory of it, and the fleet in fact created 0 new Actors
+today (git-log-verified per-Actor creation dates, all 25 existing Actors date 2026-09-09 to
+2026-10-16). $0 spend beyond ordinary API reads, $0 revenue change, no owner email.
+
+---
+
 Updated: 2026-11-05 ~06:10 UTC by cycle 2746 (claude-sonnet-5). NORMAL slot
 (2746 % 3 == 1). **Preflight clean, then cleared the one real fleet backlog item.**
 `checks-due --all` NONE DUE (soonest `check-doc-size` in 2c, c2748); `audit-due --all` had

@@ -1,8 +1,9 @@
 {
- "ts": 1793851297,
+ "ts": 1793860699,
  "results": {
   "court-records-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -20,6 +21,7 @@
   },
   "uk-find-a-tender-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -37,6 +39,7 @@
   },
   "trademark-search-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -53,15 +56,26 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": false,
+   "ok": true,
+   "inconclusive": false,
    "status": 201,
-   "items": 0,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "[]"
+   "sample_keys": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "currency"
+   ],
+   "err": null
   },
   "ats-jobs-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -79,6 +93,7 @@
   },
   "google-news-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 8,
    "fail_rows": 0,
@@ -96,6 +111,7 @@
   },
   "app-store-reviews-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -113,6 +129,7 @@
   },
   "hacker-news-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -130,6 +147,7 @@
   },
   "google-play-reviews-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 6,
    "fail_rows": 0,
@@ -147,6 +165,7 @@
   },
   "substack-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -164,6 +183,7 @@
   },
   "apple-podcasts-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 5,
    "fail_rows": 0,
@@ -181,6 +201,7 @@
   },
   "steam-reviews-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -198,6 +219,7 @@
   },
   "eu-ted-tenders-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -215,6 +237,7 @@
   },
   "us-federal-awards-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -232,6 +255,7 @@
   },
   "fda-recall-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -249,6 +273,7 @@
   },
   "federal-register-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -266,6 +291,7 @@
   },
   "clinicaltrials-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -283,6 +309,7 @@
   },
   "grants-gov-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -300,6 +327,7 @@
   },
   "nih-reporter-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -317,6 +345,7 @@
   },
   "fec-campaign-finance-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -334,6 +363,7 @@
   },
   "sam-gov-opportunities-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -351,6 +381,7 @@
   },
   "remote-jobs-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -368,6 +399,7 @@
   },
   "sec-insider-trades-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 10,
    "fail_rows": 0,
@@ -385,6 +417,7 @@
   },
   "website-screenshot-scraper": {
    "ok": true,
+   "inconclusive": false,
    "status": 201,
    "items": 3,
    "fail_rows": 0,

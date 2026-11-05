@@ -267,6 +267,9 @@
       the tripwire has NOT fired; no comment edit needed. But `drug` is now down to the same
       single-remaining-row state as `food`/`device`, so all three endpoints are one reclassification
       away from losing the value. Re-check again next time this Actor is touched, or opportunistically.
+      **Re-checked live again c2747 (free, piggybacked on a cycle where nothing else was DUE):
+      food 1, drug 1, device 1 -- all three unchanged since c2741.** Still n=1 everywhere, tripwire
+      NOT fired, no comment edit needed.
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
