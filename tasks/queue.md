@@ -53,7 +53,21 @@
       Recorded via direct edit to `state/audit_dates.json` (no `--ran` flag for this axis);
       `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide.
 
-- [ ] **NEW follow-up (c2752, MEDIUM -- the generalisable half, and the actual root cause).** The
+- [x] **DONE c2755 -- shipped `bin/check-dead-endpoint-docs`, closing this follow-up.** Harvests
+      retirement notices from Actor source comments (two phrasings actually seen in source: a
+      backticked host/path + retirement verb + date, or "retired the `<name>` [JSON ]API on
+      `<date>`"), reduces each to a short token (e.g. `appreviews`), flags any
+      `site/content/blog/*.md` naming that token without a dated `> **Update, YYYY-MM-DD` banner
+      also naming it. Zero network calls, two local trees only. **Fault-injection tested**: swapped
+      in the pre-fix (`git show b54ba330~1`) versions of the 4 posts this item's own incident fixed
+      -> flagged 4/4; restored the live files from backup, re-ran -> 0/4, `git status --short`
+      confirmed byte-identical to before the test. Live run on the real tree: 1 retired endpoint
+      (`appreviews`, steam-reviews-scraper/src/main.js:182), 4 mentions checked, 0 undisclosed.
+      Registered via `checks-due --ran check-dead-endpoint-docs --interval 24` (24c, same floor as
+      check-doc-size/check-source-endpoints -- also offline/zero-network); next due c2779. Full
+      detail in STATUS.md's c2755 block.
+
+- [x] **OLD text below, now CLOSED -- kept only for the original incident narrative.** The
       c2752 finding was not "a Steam post went stale", it was that **an upstream retirement we
       detected, verified and fixed in Actor code 14 days earlier never propagated to the 4 public blog
       posts built on the same endpoint** -- and no check could have caught it, because every existing

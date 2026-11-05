@@ -1,3 +1,55 @@
+Updated: 2026-11-05 ~10:35 UTC by cycle 2755 (claude-sonnet-5). Preflight clean:
+`checks-due --all` NONE DUE (soonest `check-price-superiority` in 5c); `audit-due --all`
+FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74
+(re-read the owner's `2b237f1b` CourtListener hCaptcha-token reply while triaging --
+confirmed via STATUS grep it was already wired into `court-records-scraper` and
+verified live at cycle 2362, so correctly on record as closed, not new work); `bin/revenue`
+$0 booked, 25 Actors, 48 users, 789 runs30d, `ext_bad30d` 3; services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`, `/blog`
+all 200. `apify-spend` $6.7084->$6.713/$85 (no build or platform run this cycle --
+the work below is offline tooling only; projection $7.58 unchanged).
+
+**The work: built and shipped `bin/check-dead-endpoint-docs`, closing the c2752 MEDIUM
+follow-up (queue.md) -- the generalisable half of the Steam `appreviews` incident, and
+the only queue item that was both unblocked and not a pure repeat of a prior cycle's
+backlog-clearing pattern.** The gap c2752 found: an upstream endpoint retirement
+(Valve's `appreviews` JSON API, 2026-10-22) was detected and fixed in Actor code the
+same day, but sat undisclosed in 4 live blog posts for 14 days because every existing
+blog checker (`check-blog-claims`, `check-expired-dates`, `check-blog-cta`,
+`check-citable`) tests posts against our OWN current artifacts, and none of them asks
+"does this post name an endpoint our own source now calls dead?". New check: harvests
+retirement notices from Actor source comments via two phrasings actually seen in the
+source (a backticked host/path followed by a retirement verb and date; or "`retired
+the <name> [JSON ]API on <date>`"), reduces each hit to a short identifying token
+(e.g. `appreviews`), then flags any `site/content/blog/*.md` that names that token
+without a `> **Update, YYYY-MM-DD` banner line that also names it -- the exact
+disclosure convention c2752 established. Zero network calls, reads two local trees
+only, so it is cheap enough to run every cycle (confirmed timing: well under 1s).
+**Fault-injection tested, not just run clean once**: swapped in `git show
+b54ba330~1:<path>` (the pre-fix versions of the 4 posts c2752 corrected) for all 4
+files, ran the check (4/4 flagged, exact match to c2752's finding), then restored the
+live files from a backup copy and re-ran (0/4 flagged) -- `git status --short`
+confirmed the working tree was byte-identical to before the test (no diff on the 4
+restored files, only the new untracked tool). Live run on the real tree: 1 retired
+endpoint found (`appreviews`, dated 2026-10-22, sourced from
+`actors/steam-reviews-scraper/src/main.js:182`), 4 blog mentions checked, 0
+undisclosed -- all 4 of c2752's fixes still carry their banner. Registered in
+`state/fleet_checks.json` via `checks-due --ran check-dead-endpoint-docs --interval 24`
+(24c / twice-daily, the same floor as `check-doc-size`/`check-source-endpoints` --
+also offline/zero-network, so there is no cost reason to let an undisclosed dead
+endpoint sit longer than those do); `checks-due --all` now shows it tracked (45 tools)
+and not due again until c2779. **Deliberately did NOT widen scope**: did not add a
+`.ts` glob (no TypeScript Actor sources exist yet), did not try to generalize the
+retirement-phrasing regex beyond the two forms actually observed in source (adding a
+third speculative phrasing now would be guessing, not harvesting), and did not touch
+`check-expired-dates` even though it shares the DATE/paragraph machinery -- the two
+checks answer different questions (forward-dated claims vs. dead-endpoint disclosure)
+and merging them would make either one harder to reason about for a marginal line
+count. $0 revenue change, no owner email needed (buyer-intent funnel untouched, far
+below the Polar gate).
+
+---
+
 Updated: 2026-11-05 ~10:05 UTC by cycle 2754 (claude-sonnet-5). NORMAL slot (2754 % 3 == 0,
 but the one DUE item was a fleet audit rotation, not a new-Actor build).
 Preflight clean: `checks-due --all` NONE DUE (soonest `check-price-superiority` in 6c, c2760);

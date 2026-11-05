@@ -1,0 +1,105 @@
+#!/root/agent/venv/bin/python
+"""Flag a blog post that still teaches an endpoint our OWN Actor source already
+marks as retired, with no dated correction banner (follow-up filed c2752, queue.md).
+
+Why this exists: c2752 found 4 LIVE blog posts still teaching
+`store.steampowered.com/appreviews` 14 days after `steam-reviews-scraper` migrated
+away from it and said so in writing (`src/reviews_html.js:2`, `src/main.js:182`).
+Every existing blog checker (`check-blog-claims`, `check-expired-dates`,
+`check-blog-cta`, `check-citable`) tests posts against OUR OWN current artifacts
+(field counts, feature coverage, forward-dated claims) -- none of them asks "does
+this post name an endpoint that our own Actor source calls dead?". This check closes
+that gap, reading two local trees only (actors/*/src, site/content/blog) and making
+zero network requests, so it is cheap enough to run every cycle.
+
+Method: grep Actor source comments for the house retirement style -- a retirement
+verb (retired/shut off/shut down/no longer exists|works|available|supported) within
+one sentence of an endpoint name and a YYYY-MM-DD date, in either of the two phrasings
+seen so far ("`host/path` ..., which X shut off on DATE" / "X retired the <name> ...
+API on DATE"). Reduce each hit to a short identifying TOKEN (the last real path
+segment, or the bare name before "API") so "appreviews" is the thing searched for,
+not the whole URL. Then flag any site/content/blog/*.md that contains that token in
+its body but has no `> **Update, YYYY-MM-DD` banner line that also names the token --
+the established house style for disclosing a dead dependency (see c2752's 4 fixes).
+
+Fault-injection tested (c2755): against `git show HEAD~5:<path>` for the 4 posts
+c2752 fixed (pre-fix, no banner), this flags 4/4; against the current tree it flags
+0 -- see worker notes for the exact commands run.
+"""
+import glob
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+RETIRE_VERB = r"(?:retir\w+|shut off|shut down|no longer (?:exists?|works?|available|supported))"
+DATE = r"(\d{4}-\d{2}-\d{2})"
+
+# Phrasing A: a backticked host/path, then the retirement verb within a short span, then a date.
+PHRASE_URL = re.compile(
+    r"`([a-zA-Z0-9][\w.\-]*\.[a-z]{2,}(?:/[^`]*)?)`[^.\n]{0,60}?" + RETIRE_VERB + r"[^.\n]{0,40}?" + DATE,
+)
+# Phrasing B: "<verb> the <name> [JSON ]API on <date>" -- the bare-identifier form.
+PHRASE_BARE = re.compile(
+    RETIRE_VERB + r"\s+the\s+`?([a-zA-Z_][\w-]*)`?\s+(?:JSON\s+)?API[^.\n]{0,40}?" + DATE,
+    re.I,
+)
+
+BANNER_LINE = re.compile(r"^>\s*\*\*Update,?\s*\d{4}-\d{2}-\d{2}.*$", re.M)
+
+
+def token_from_url(url):
+    """Reduce a backticked host/path to its last real (non-placeholder, non-query) segment."""
+    path = url.split("?", 1)[0]
+    parts = [p for p in path.split("/") if p and "<" not in p]
+    return parts[-1] if len(parts) > 1 else None  # parts[0] alone is just the host
+
+
+def harvest_dead_endpoints():
+    """token (lowercased) -> (date, source file:line) for every retirement notice found
+    in Actor source comments."""
+    found = {}
+    for path in sorted(glob.glob(os.path.join(ROOT, "actors/*/src/*.js"))):
+        rel = os.path.relpath(path, ROOT)
+        text = open(path, encoding="utf-8", errors="replace").read()
+        for m in PHRASE_URL.finditer(text):
+            tok = token_from_url(m.group(1))
+            date = m.group(2)
+            if tok and len(tok) >= 4:
+                line = text.count("\n", 0, m.start()) + 1
+                found.setdefault(tok.lower(), (date, f"{rel}:{line}"))
+        for m in PHRASE_BARE.finditer(text):
+            tok, date = m.group(1), m.group(2)
+            if tok and len(tok) >= 4:
+                line = text.count("\n", 0, m.start()) + 1
+                found.setdefault(tok.lower(), (date, f"{rel}:{line}"))
+    return found
+
+
+def blog_posts():
+    return sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md")))
+
+
+dead = harvest_dead_endpoints()
+checked = flagged = 0
+for tok, (retired_on, src) in sorted(dead.items()):
+    tok_re = re.compile(r"\b" + re.escape(tok) + r"\b", re.I)
+    for path in blog_posts():
+        rel = os.path.relpath(path, ROOT)
+        body = open(path, encoding="utf-8", errors="replace").read()
+        if not tok_re.search(body):
+            continue
+        checked += 1
+        disclosed = any(tok_re.search(b.group()) for b in BANNER_LINE.finditer(body))
+        if disclosed:
+            continue
+        flagged += 1
+        print(
+            f"DEAD-ENDPOINT {rel}  names `{tok}` (retired {retired_on}, per {src}) "
+            f"with no dated Update banner naming it"
+        )
+
+print(f"check-dead-endpoint-docs: {len(dead)} retired endpoint(s) found in Actor source, "
+      f"{checked} blog mention(s) checked, {flagged} undisclosed")
+sys.exit(1 if flagged else 0)
