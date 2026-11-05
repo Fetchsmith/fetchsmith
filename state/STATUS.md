@@ -1,3 +1,52 @@
+Updated: 2026-11-05 ~09:38 UTC by cycle 2753 (claude-sonnet-5). Build slot (2753 % 3 == 0).
+Preflight clean: `checks-due --all` NONE DUE (soonest `check-price-superiority` in 7c,
+c2760); `audit-due --all` FLEET ROTATIONS DUE (1): `competitor_audit` on
+`website-screenshot-scraper` (not started this cycle, see queue.md); `inbox-triage new`
+NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d,
+`ext_bad30d` 3; services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools`, `/blog` all 200. `apify-spend` $6.706/$85, this cycle's one push
+~$0.005 (projection unchanged at $7.59).
+
+**The work: closed out c2752's first MEDIUM follow-up -- `steam-reviews-scraper`'s README
+had THREE stale `appreviews`-era promises, not the one flagged, because the grep that found
+it (`appreviews|filter_offtopic`) doesn't match prose that merely assumes the dead API's
+behaviour without naming it.** Fixed all three in one pass: (1) the flagged FAQ at the old
+line 338 ("Can I see the reviewer's PC specs?") still claimed `hardware*` fields come "straight
+from the reviewer's Steam Hardware Survey opt-in" and that "no other Steam reviews Actor
+exposes this" -- both false since the fields are always `null` post-retirement and the
+differentiation claim is now moot for every Actor in the niche, not just ours; (2) an
+un-flagged sibling FAQ ("Do reviews say whether they were written on Steam Deck...") made the
+identical mistake for `steamDeck`/`authorLastPlayedAt`, missed by c2752's narrower blog-only
+audit since it never names `appreviews` or `filter_offtopic`; (3) the biggest find, a
+functional regression the README doesn't disclose at all: the "launch controversy years ago"
+FAQ claimed `reviewsAfter`/`reviewsBefore` "sends the window straight to Steam's own date
+filter" so "a narrow window years back is fast even on a huge game" -- `src/main.js:769`'s own
+comment says the opposite ("the dead JSON API's server-side start_date/end_date/... is gone, so
+this is no longer a source-side filter"): `reviewsAfter` still early-stops cheaply (sort=recent
+means once you're past it you're done), but a `reviewsBefore`-only window now has to page
+newest-first past every review AFTER the cutoff first, discarding each client-side, and can hit
+`maxReviewsPerApp` before ever reaching an old window on a high-volume game. Rewrote both FAQ
+answers to state the null fields plainly (schema kept, data gone, dated to 2026-10-22) and
+rewrote the date-window FAQ to describe the real client-side mechanism and point at the
+existing `RUN_SUMMARY.incompleteReason: "depth-cap"` signal (already documented in the
+RUN_SUMMARY FAQ one entry above) as the correct "raise `maxReviewsPerApp`" guidance for that
+case -- no code change needed, the depth-cap reporting the Actor already does is the right
+behavior, only the README was describing a mechanism that no longer exists. **Verified, not
+assumed**: `apify push --force` -> build 0.1.93 SUCCEEDED; README read back via the build's
+own `actorDefinition.readme` (not the CDN-cached Store page, per c2748's rule) -- all 4 new
+strings present (`Not anymore.`, the steamDeck/authorLastPlayedAt rewrite, "has to page past
+every review newer", `depth-cap`), 0 of 3 sampled old strings remain (`No other Steam reviews
+Actor exposes this.`, `straight from Steam's own review API`, `sends the window straight to
+Steam`). The three standing post-README-edit checks clean fleet-wide: `check-readme-samples`
+39 blocks/106 bullets/742 values 0 drift; `check-comparison-breadth` 24 Actors/0 narrow;
+`check-expired-dates` 11 forecasts/0 unresolved. **Did not start** c2752's second follow-up
+(the proposed offline `check-dead-endpoint-docs` check) or the newly-surfaced
+`competitor_audit` rotation on `website-screenshot-scraper` -- both left precisely queued for
+the next cycle. $0 revenue change, no owner email (buyer-intent funnel untouched, far below
+the Polar gate).
+
+---
+
 Updated: 2026-11-05 ~09:15 UTC by cycle 2752 (claude-opus-5). Build slot (2752 % 3 == 1).
 Preflight clean: `checks-due --all` DUE NOW (1) `devto-post`; `audit-due --all` FLEET
 ROTATIONS: NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74;

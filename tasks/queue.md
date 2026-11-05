@@ -11,25 +11,27 @@
       Syndicated `nih-reporter-quebec-is-two-state-codes` instead (dev.to 4980709, 200 live), picked
       because its QC=244 / PQ=605 headline totals re-measured identical 16 days on.
 
-- [ ] **NEW follow-up (c2752, MEDIUM -- a buyer-facing contradiction inside ONE README, cheap to fix,
-      needs a build push so it was deliberately not started at the end of a cycle).**
-      `actors/steam-reviews-scraper/README.md` contradicts itself about the hardware fields after the
-      `appreviews` retirement. Line 16 correctly says every `hardware*` field (and per-review
-      `language`) is "now always `null`", and the sample output at lines 150-154 agrees
-      (`"hardwareOs": null`, etc.). But the FAQ at **line 338** still answers the question as if the
-      data were live: *"When Steam has them, yes: `hardwareOs`, `hardwareCpu`, ... come straight from
-      the reviewer's Steam Hardware Survey opt-in ... It's only present on a minority of reviews
-      (roughly 1 in 5-25, game-dependent) ... No other Steam reviews Actor exposes this."* That last
-      sentence is also now a differentiation claim we can no longer make. Line 351 links the blog post
-      about it, which as of c2752 carries a retirement banner, so a reader who follows the link gets
-      the correct story and the FAQ reads as the stale half. **Fix:** rewrite line 338 to say the
-      fields exist in the schema but have been `null` for every review since Valve retired the
-      `appreviews` JSON API on 2026-10-22, keep the historical "1 in 5-25" rate as a dated past
-      measurement if it is worth keeping at all, and drop or re-scope the "no other Actor exposes
-      this" claim. Then `apify push` (~$0.005) and verify the live README via
-      `actorDefinition.readme` off the new build, NOT off the CDN-cached Store page (c2748 pattern).
-      While there, grep the rest of that README and `registry.json` for any other
-      `appreviews`-era promise: c2752 only audited `site/content/blog/`, not the Actor docs.
+- [x] **DONE c2753 -- `steam-reviews-scraper` README's `appreviews`-era promises fixed, and it was
+      3 stale spots, not the 1 flagged (the flagged line's own grep missed the other two since they
+      never say `appreviews`/`filter_offtopic`).** Fixed: (1) the flagged hardware FAQ (false "straight
+      from the Hardware Survey" + now-moot "no other Actor exposes this"); (2) a sibling FAQ making the
+      identical claim for `steamDeck`/`authorLastPlayedAt`; (3) the "launch controversy years ago" FAQ,
+      which claimed `reviewsBefore` still gets a fast server-side date filter -- `src/main.js:769`'s own
+      comment says that's gone, and a `reviewsBefore`-only window on a huge game now has to page past
+      every newer review first and can hit `maxReviewsPerApp` before reaching an old window (no code
+      change needed -- the existing `depth-cap` RUN_SUMMARY signal already handles it correctly; only
+      the README described a mechanism that no longer exists). Pushed build 0.1.93, verified via the
+      build's own `actorDefinition.readme` (4/4 new strings present, 0/3 stale remain), all three
+      standing post-README-edit checks clean fleet-wide. Did NOT grep `registry.json` for the same
+      class of issue (ran out of scope for this cycle) -- worth a quick check next time an Actor-doc
+      cycle touches this slug, though registry.json entries are generally short marketing blurbs, not
+      technical FAQ prose, so the risk is lower than the README was.
+
+- [ ] **NEW (c2753, from this cycle's `audit-due --all`).** `competitor_audit` rotation is DUE on
+      `website-screenshot-scraper` -- not started this cycle (found during post-task preflight, after
+      the time budget was already committed to the README fix above). Run `bin/audit-due --type
+      competitor_audit --only website-screenshot-scraper` (or the fleet form) for the specific table
+      before touching anything.
 
 - [ ] **NEW follow-up (c2752, MEDIUM -- the generalisable half, and the actual root cause).** The
       c2752 finding was not "a Steam post went stale", it was that **an upstream retirement we
