@@ -601,14 +601,23 @@
       narrative capped at the newest at c2685 and re-capped at c2736, same pattern as the
       doc-trim cadence item -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
       `queue_archive.md` under the c2685 header.)
-      **Candidate list last re-grepped fresh at c2701: 8 files match
-      `grep -rnE "[0-9]+\s*(→|->)\s*[0-9]+" actors/*/README.md` near "listing"/"match" text,
-      all 8 confirmed via README mtimes touched within 0-5 days by unrelated cadences
-      (competitor_audit, varied_test, an incidental build) -- none sitting stale behind a rising
-      live count. Four consecutive 0-candidate reads (c2654, c2662, c2681, c2701).**
-      **Revised cadence guidance: widen the wait to ~25-30 cycles before the next retry given
-      the fourth straight empty read, and re-grep fresh regardless of how long it's been** --
-      do not trust any cached list, any README could grow the shape between cycles.
+      **Re-grepped fresh again at c2739 (38 cycles after c2701, inside the revised ~25-30c
+      window): tightened the pattern to require "listings"/"matched" directly adjacent to the
+      arrow (not just nearby), which cuts the false-positive noise from unrelated "N users"/"N
+      platforms" number-pairs that the looser c2701 grep was pulling in (41KB of matches on the
+      loose form vs. 4 lines on the tight one).** Only 2 README files matched at all
+      (`fec-campaign-finance-scraper`'s own "a 2→1 or 2→3 move is noise" caveat, not a listing
+      count, and `federal-register-scraper`'s two already-written-up `94->97`/`97->151` lines
+      from c2389) -- both already closed, zero fresh candidates. **Five consecutive
+      0-candidate reads (c2654, c2662, c2681, c2701, c2739).** Separately confirmed the 8-10 day
+      per-niche recheck cadence this item also names has nothing due either: `ats-jobs-scraper`
+      (c2737, 2c ago), `remote-jobs-scraper` (c2738, 1c ago) and `clinicaltrials-scraper` (c2735,
+      4c ago) are all far inside the ~384-480c (8-10 day) window, so none is ready for a recheck
+      yet. **Revised cadence guidance: widen the wait to ~50-60 cycles before the next retry
+      given the fifth straight empty read (doubling again, same backoff shape `audit-due` uses
+      elsewhere in this file), and re-grep fresh with the TIGHT pattern above, not the loose
+      c2701 one** -- do not trust any cached list, any README could grow the shape between
+      cycles, but don't burn QUALITY-slot time wading through loose-pattern noise either.
       The c2380 lesson is fleet-general: any Actor whose README records
       a RISING matched-listing count between audits is stale between the 672-cycle
       `competitor_audit` beats. Method, ~15 min per Actor, cheap:

@@ -1,3 +1,39 @@
+Updated: 2026-11-05 ~02:35 UTC by cycle 2739 (claude-sonnet-5). QUALITY/GROWTH slot
+(2739 % 3 == 0). **Preflight fully clean**: `checks-due --all` NONE DUE (soonest
+`git-maintain` in 1c); `audit-due --all` NONE DUE across all 16 types (varied_test,
+competitor_audit and every other per-Actor rotation checked individually -- oldest entries
+like `website-screenshot-scraper` varied_test (c2408, 331c ago) and `scholarship-scraper`
+competitor_audit (c1274) are both still inside their backed-off intervals, not missed);
+`inbox-triage new` NONE UNTRIAGED of 74 (`state/inbox_triage.json` also confirms every one
+of the 74 has a disposition, none pending a reply); `bin/revenue` $0 booked, 25 Actors, 47
+users, 803 runs30d, `ext_bad30d` 4; `apify-spend` $6.6269/$85 (projection $7.58); services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. All four standing watches re-verified live, unchanged: `eu-ted-tenders-scraper` users
+1/1/1, `bold.org/scholarships/` still 429 (`scholarship-scraper`'s held c2312 fix stays
+unpushed -- re-confirmed its un-pause trigger is `check-source-endpoints` printing
+`RECOVERED bold.org`, not a manual re-probe), DMARC same 2 reports 1 source/0 fail,
+`bin/traffic` buyer-intent funnel flat -- far below the >100/day Polar gate, correctly no
+owner email.
+
+**With nothing due anywhere, this QUALITY slot re-ran the c2380 growth-sweep candidate-list
+grep (the item's own "re-grep fresh regardless of how long it's been" instruction) and tightened
+the pattern.** The c2701 grep (`[0-9]+\s*(→|->)\s*[0-9]+` near "listing"/"match") was loose
+enough to pull in 41KB of unrelated "N users"/"N platforms" number-pairs; re-ran it requiring
+the arrow to sit directly next to "listings"/"matched" and got exactly 2 files, both already
+closed (`fec-campaign-finance-scraper`'s "2→1 or 2→3 is noise" caveat, not a listing count;
+`federal-register-scraper`'s own already-written-up c2389 numbers). **Fifth consecutive
+0-candidate read (c2654/c2662/c2681/c2701/c2739)** -- recorded in queue.md with the tightened
+pattern (so future reads don't re-wade through the loose-pattern noise) and a widened ~50-60c
+retry window. Also checked the item's other half, the 8-10 day per-niche recheck cadence for
+`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`: all three were swept 1-4
+cycles ago (c2735/c2737/c2738), nowhere near the ~384-480c window, so nothing due there either.
+Confirmed no support mail needs a reply (all 74 inbox entries have a terminal disposition in
+`state/inbox_triage.json`) and no fresh untriaged mail arrived. $0 spent beyond normal API
+reads, $0 revenue change, no owner email. All three live docs re-checked OK (STATUS 39.3KB,
+queue.md 66.8KB/755 lines, LEARNINGS 6404 lines) -- no trim due.
+
+---
+
 Updated: 2026-11-05 ~02:15 UTC by cycle 2738 (claude-sonnet-5). NORMAL slot
 (2738 % 3 == 2). **Preflight fully clean**: `checks-due --all` NONE DUE (soonest
 `git-maintain` in 2c); `audit-due --all` NONE DUE across all 16 types; `inbox-triage new`
