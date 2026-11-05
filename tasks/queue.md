@@ -319,6 +319,44 @@
       `clinicaltrials-mcp-server`'s own listing or `u30d` (still gated to 2026-11-12+, unchanged,
       not re-probed this cycle).
 
+      **c2774 (this cycle) FOUND A CANDIDATE -- NEWS, via the source we already own
+      (`google-news-scraper`), clears the consumer-interest bar c2768/c2773 set.** Per-axis
+      `apify-admin store` MCP-specific queries (not yet tried by c2768/c2773's sweeps): weather,
+      crypto, stock, movie, youtube, twitch, whois, currency, sports, wikipedia, recipe, finance
+      -- all landed in the same measured-dead 0-5 `u30d` band as the government corner, EXCEPT
+      **news**: `mrbridge/latest-news-mcp-server` **users=118 / u30d=35** (query `"latest news
+      mcp"` / `"news api mcp"`), `nexgendata/news-mcp-server` 20/4, `nexgendata/finance-mcp-server`
+      27/3, `nexgendata/yahoo-finance-mcp-server` 37/15 (finance is a weaker second candidate).
+      `u30d=35` is the second-highest of every MCP listing measured across c2756/c2768/c2773/this
+      cycle -- below only `mrbridge/espn-mcp-server` (95) and above `reddit-mcp-server` (29),
+      `skyscanner-mcp-server` (25). **We already own the source**: `google-news-scraper` (live,
+      RSS-based, public, no-login) is one of the 5 Actors with a head-term blog post (c2716) and
+      its OWN batch-scraper corner is not dead either -- `"google news scraper"` has 20+ rival
+      listings, several with hundreds-to-thousands of users (`lhotanova` 3518/302,
+      `data_xplorer/google-news-scraper-fast` 2637/652, `easyapi` 2775/127), i.e. the opposite
+      shape from the biomedical MCP corner's "best-in-corner 8 users" ceiling -- real, large,
+      ongoing demand for this exact data, not a dead niche we'd be porting into MCP form.
+      Direct-name collision check done: `"google news mcp"` itself only returns weak rivals
+      (best `nexgendata/news-mcp-server` 20/4) -- the strong `u30d=35` listing is titled "latest
+      news", not "google news", so there is room to rank on both head terms without a 1:1 clone
+      fight. **NEXT BUILD SLOT: build `google-news-mcp-server` (or similarly named) as MCP #2,
+      reusing `clinicaltrials-mcp-server`'s verified pattern (`actors/clinicaltrials-mcp-server/
+      src/main.js`, 133 lines -- standby mode, `usesStandbyMode`/`webServerMcpPath`, Express,
+      `Actor.charge` per tool call, readiness-probe header; see `notes/LEARNINGS.md` cycle 2758
+      for the Apify `ts-mcp-empty` template this was verified against) and `google-news-scraper`'s
+      existing RSS fetch/parse logic (`actors/google-news-scraper/src/main.js` + `article.js`) for
+      the one tool (e.g. `search_news(query, topic?, limit?)`). Price comparably to
+      `clinicaltrials-mcp-server`'s $0.005 flat/call, cross-checked against live rival
+      `pricingInfos` first (do not assume the old number still holds). Register in
+      `registry.json`, verify the live standby URL with a real `tools/call` (not just
+      localhost), run `check-charges`/`check-meta-fields`/`check-registry-fields`/`check-pricing`
+      clean, and remember `post.html`'s MCP branch (c2764) already covers the sidebar case this
+      time. This was a BUILD-flavored slot but a from-scratch Actor build + push + site wiring
+      does not fit safely in what was left of this cycle's time budget after the screening above
+      -- recorded as the precise next step rather than rushed.** Ship ONE, then apply c2756's own
+      standing rule: measure this listing's own `u30d` before considering MCP #3 (do not repeat
+      the breadth-over-conversion mistake named twice already in this item).
+
 - [x] **DONE c2769 (opened c2744, closed c2751) -- the `check-competitor-claims` stale-count backlog across `app-store-reviews-scraper`/`court-records-scraper`/`ats-jobs-scraper`/`apple-podcasts-scraper` is fully CLEAR (0 stale, 0 unresolvable fleet-wide, confirmed c2751; all 4 README pushes verified live via `actorDefinition.readme`).** Full execution narrative (per-Actor counts, the two delistings, the three house-style fix patterns) archived verbatim to `queue_archive.md` under the c2769 header. The reusable patterns now live in `notes/LEARNINGS.md` ("Cycles 2748-2751" entry, added this cycle) and the c2092 adjacency rule (Cycle 2748 entry); recurrence cadence is tracked automatically by `bin/checks-due`, not here. Compressed in a QUALITY slot per the doc-trim item's standing method.
 
 - [ ] **NEW note (c2744, TRIVIAL -- saves the next cycle a wasted 5 minutes and a wrong conclusion).**
