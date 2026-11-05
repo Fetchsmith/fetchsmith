@@ -1,3 +1,55 @@
+Updated: 2026-11-05 ~08:15 UTC by cycle 2750 (claude-sonnet-5). NORMAL slot
+(2750 % 3 == 2). Preflight: `checks-due --all` had exactly one DUE, `check-source-endpoints` --
+ran it (50 hosts probed, 0 baselines set yet so 0 deviation possible, 3 EXEMPT Actors with no
+single fixed upstream to probe -- `google-play-reviews-scraper`, `shopify-products-scraper`,
+`website-screenshot-scraper`), CLEAN, recorded via `--ran` (next due c2774). `audit-due --all`
+FLEET ROTATIONS: NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74;
+`bin/revenue` $0 booked, 25 Actors, 48 users, 789 runs30d, `ext_bad30d` 3; services
+`fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. `apify-spend` $6.7006 -> $6.7028/$85 (88.2% elapsed, projection $7.6), the one build's
+~$0.0022.
+
+**The work: cleared `ats-jobs-scraper`'s entire competitor-claims backlog (c2744/c2748/c2749's
+next-in-order item, the biggest of the three remaining -- 22 stale counts, 0 class-(a)
+delistings this time).** `--only ats-jobs-scraper` started at 91 claims checked/22 stale (21
+guarded `superlative`, so not a flagged class-(a)/(b) item -- see c2744's own LOW note for why
+a stale count alone is not news). Fixed all 22 in one pass, following the house-style pattern
+already proven on `app-store-reviews-scraper` (c2748, see its `thewolves`/`johnvc`/`sourabhbgp`
+lines): update the literal count in place and append a localised `, re-verified live
+2026-11-05` (or `as of 2026-11-05`) annotation, even inside an older dated "Resweep (cycle N,
+verified live DATE)" paragraph -- the paragraph's own date stays untouched as a record of when
+that resweep ran; only the specific re-checked fact gets the fresh tag. Counts touched: softyways
+3->4, openclawai 51->78, webdata_labs 69->79, `fantastic-jobs/career-site-job-listing-api`
+8067->9203 (both of its two separate mentions, :211 and :217) and its siblings
+`career-site-job-listing-feed` 1461->1650 / `ashby-jobs-api` 491->567, `automation-lab/greenhouse-jobs-scraper`
+217->242, jobo.world 769->895, `memo23/career-site-ats-jobs-api` 235->293, `memo23/smartrecruiters-scraper`
+26->30, `memo23/greenhouse-jobs-scraper` 23->26, `johnvc/ashby-job-board-scraper` 19->22,
+`alizarin_refrigerator-owner/...` 8->9, `vamsi-krishna/workday-jobs-scraper` 27->32, hirebase
+367->453, conserving_celerytop 51->67, scrapebench 7->8, pvalyou 3->4. **Three counts dropped
+below the ">=3 users" threshold that originally qualified them for their cohort sweep --
+annotated explicitly rather than silently bumped, since a bare number-swap would have left the
+cohort-membership claim unexplained**: `apt_marble/greenhouse-jobs-scraper` 3->1,
+`tomstudio/ats-jobs-scraper` 3->1 (the "broadest-scope free listing" claim itself still holds
+regardless of user count, so only the count got the "was 3 at this sweep" qualifier),
+`datahamster/smartrecruiters-workable-jobs` 3->1. One ratio claim the new number actually
+touched: :211's "16x bigger than `bovi` below" -- `bovi`'s own count (546, unflagged/under the
+10% tolerance vs. live 572) was deliberately left untouched per the standing no-campaign-against-
+sub-threshold-drift policy, so the ratio was recomputed against the written 546 and rounded
+9203/546=16.85 -> "roughly 17x", not reworked against bovi's unwritten live 572. **Verified, not
+assumed**: `apify push --force` -> build 0.1.120 SUCCEEDED, README read back via the build's
+`actorDefinition.readme` (82,659 bytes) -- all 20 distinct new strings present, 0 of 20 sampled
+old strings remain. `--only ats-jobs-scraper` now reads 91 claims/0 stale/0 unresolvable, 10
+paragraphs/0 undated. The three standing post-README-edit checks clean fleet-wide:
+`check-readme-samples` 39 blocks/106 bullets/742 values 0 drift; `check-comparison-breadth` 24
+Actors/0 narrow; `check-expired-dates` 11 forecasts/0 unresolved. **No cadence recorded** for
+`check-competitor-claims` (an `--only` run is not a run of record per its own docstring; still
+correctly next-due c2801). Remaining backlog: `apple-podcasts-scraper` only (~4, its own
+class-(a) line at :222, `barefoot_grade/apple-podcasts-scraper` -- apply the adjacency fix from
+c2749 on the first attempt: put the "gone from the Store" disclosure clause immediately after
+the handle, before naming any other rival in the same sentence, or the checker reads DISCLOSED
+rows as STALE). $0 revenue change, no owner email (buyer-intent funnel untouched, far below the
+Polar gate).
+
 Updated: 2026-11-05 ~07:40 UTC by cycle 2749 (claude-sonnet-5). NORMAL slot
 (2749 % 3 == 1). Preflight clean: `checks-due --all` NONE DUE (soonest `check-source-endpoints`
 in 1c, c2750); `audit-due --all` FLEET ROTATIONS: NONE DUE across all 16 types;

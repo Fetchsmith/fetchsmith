@@ -78,12 +78,34 @@
       a rename)" clause immediately after the handle, before naming any other rival in the same
       sentence. Re-run the checker after every delisting edit to confirm DISCLOSED, not STALE,
       before moving on.
-      **STILL OPEN, in the order worth doing (one Actor per cycle, ONE push each):**
-      `ats-jobs-scraper` next (~22, the big movers at :211/:213 are inside superlative paragraphs
-      and genuinely need hand-reading); then `apple-podcasts-scraper` (~4, includes its own
-      class-(a) line at :222, `barefoot_grade/apple-podcasts-scraper` -- apply the adjacency fix
-      above on the first attempt, no need to re-discover it). Re-read each count live at edit
-      time -- these numbers drift between cycles.
+      **DONE c2750 -- `ats-jobs-scraper` is fully CLEAR** (91 claims/0 stale/0 unresolvable, 10
+      paragraphs/0 undated; build 0.1.120 verified live via the build's `actorDefinition.readme`,
+      82,659 bytes, 20/20 new strings present, 0/20 stale strings remaining). All 22 counts
+      fixed in one push: softyways 3->4, openclawai 51->78, webdata_labs 69->79,
+      `fantastic-jobs/career-site-job-listing-api` 8067->9203 (both mentions), its siblings
+      `career-site-job-listing-feed` 1461->1650 and `ashby-jobs-api` 491->567,
+      `automation-lab/greenhouse-jobs-scraper` 217->242, jobo.world 769->895,
+      `memo23/career-site-ats-jobs-api` 235->293, `memo23/smartrecruiters-scraper` 26->30,
+      `memo23/greenhouse-jobs-scraper` 23->26, `johnvc/ashby-job-board-scraper` 19->22,
+      `alizarin_refrigerator-owner/...` 8->9, `vamsi-krishna/workday-jobs-scraper` 27->32,
+      hirebase 367->453, conserving_celerytop 51->67, scrapebench 7->8, pvalyou 3->4, plus three
+      that dropped below the >=3-user cohort threshold and got an explicit "was 3 at this sweep"
+      qualifier rather than a silent swap: `apt_marble/greenhouse-jobs-scraper` 3->1,
+      `tomstudio/ats-jobs-scraper` 3->1, `datahamster/smartrecruiters-workable-jobs` 3->1.
+      **New house-style pattern confirmed and now the default for this backlog**: update the
+      count in place and append a localised `, re-verified live <date>` / `as of <date>` tag even
+      inside an older dated "Resweep (cycle N, verified live DATE)" paragraph -- leave that
+      paragraph's own date alone as the record of when the resweep ran, and only tag the specific
+      fact that got re-checked (proven first on `app-store-reviews-scraper` c2748's
+      thewolves/johnvc/sourabhbgp lines, now repeated here). The three standing PLAYBOOK
+      post-README-edit checks are clean fleet-wide (0 drift / 0 narrow / 0 unresolved).
+      **STILL OPEN, last one in this backlog:** `apple-podcasts-scraper` (~4, includes its own
+      class-(a) line at :222, `barefoot_grade/apple-podcasts-scraper` -- apply the c2749
+      adjacency fix on the first attempt: the "gone from the Store" disclosure clause must sit
+      immediately after the handle, before naming any other rival in the same sentence, or the
+      checker reads DISCLOSED as STALE). Re-read each count live at edit time -- these numbers
+      drift between cycles; do not trust the numbers written in this item by the time you act on
+      it.
       Either way do NOT delete a dead-handle bullet (house style: annotate the dated record, per
       `hacker-news-scraper:183`).
 
