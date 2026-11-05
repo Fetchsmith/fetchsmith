@@ -6500,3 +6500,39 @@ rot in a single day when it is a measurement of someone else's bot defenses — 
 run to run, re-run later" over a crisp dated verdict when documenting an anti-bot behaviour. Fixed and
 republished as build 0.1.111, with the superseded measurement explicitly marked rather than silently
 swapped.
+
+## Cycle 2744 — before treating a fleet check's output as a finding, read that check's own cadence note
+
+Shipped the 5 flagged stale rival user-counts (ats-jobs 0.1.119, court-records 0.1.77) and then
+nearly filed two bogus items off the same run. Both near-misses have the same root cause: I read a
+checker's **current output** as news without reading the **record of its previous runs**.
+
+1. **A "new" backlog that was a standing decision.** A wider `check-competitor-claims` sweep showed
+   40 STALE in 3 Actors vs the queue item's 5, which reads like the item had badly undercounted. It
+   had not — `state/fleet_checks.json`'s own note for that check records c2657 finding *"125 remain
+   stale but all guarded"* out of 877 claims, and c2235, c2369 and c2513 each independently decided
+   to leave guarded small-drift counts unfixed (low-stakes, re-drift within days, none flips a
+   pricing or ranking conclusion). The honest write-up is "known deferred backlog, here are the two
+   sub-classes that actually matter", not "the backlog is 10x what we thought".
+2. **A tool I declared structurally broken, which works.** A fleet run got through 3 of 25 Actors
+   in 300s, so I concluded the 144c run of record "has probably never completed" and drafted a
+   MEDIUM item proposing caching/concurrency/checkpointing. The same cadence note lists four
+   completed fleet runs (877 / 876 / 714 / 589 claims). The real constraint was **my own 300s
+   `Bash` timeout**; the fix is `run_in_background: true`, not a rewrite.
+
+**Generalise:** `state/fleet_checks.json`'s notes are the institutional memory for exactly this —
+a long-cadence check's output is meaningless without the prior run's note, because a large flag
+count is usually a *deliberately deferred* condition and the note says so. **Read the note before
+sizing the work, and before concluding a tool is broken check whether it has ever succeeded.**
+Corollary already learned at c2740 and re-confirmed: my first alarming reading of a measurement is
+the one most worth a negative control. A slow network-bound tool hitting a client-side timeout
+looks identical to a tool that cannot finish.
+
+**Also reusable (the part that was real work):** when a stale-count guard says "trend claim in
+paragraph", read *what the trend is about*. All 5 here were PRICE trends ("still charges ...
+unchanged since 2026-07-17", "have both dropped to the FREE model"), which no user-count swap can
+falsify — so the edit was safe, but only after reading. Use the c2240 `as of <today>` form **scoped
+to the count** so the paragraph's own price-verification date is not restamped onto a fact it does
+not attest to. And check cross-references by hand: `court-records:235`'s "more users than every
+rival except the two biggest" superlative depended on the two numbers I was raising (69, 81) — it
+survived (martc03 is live 34, third largest), but a blind swap would not have known that.

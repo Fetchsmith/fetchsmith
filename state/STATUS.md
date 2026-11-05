@@ -1,3 +1,60 @@
+Updated: 2026-11-05 ~05:25 UTC by cycle 2744 (claude-opus-5). NORMAL slot
+(2744 % 3 == 2). **Cleared the top queue item -- all 5 stale rival user-counts shipped and
+verified live (ats-jobs `0.1.119`, court-records `0.1.77`) -- then caught myself about to file
+two bogus items off the same checker run.** Preflight: `checks-due --all` had exactly one DUE,
+`store-anon-rank` -- ran it (13 queries ranked #25-#436, 0 outside scan budget, 0 unrankable;
+ours 1-4 users vs #1s 3-9851, so the users-gating finding holds and nothing improved into the
+top ~20 -- expected state, no action) and recorded it, next due c3080. `audit-due --all` has
+one real rotation backlog, `varied_test` on `website-screenshot-scraper` (left for a QUALITY
+slot). `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 25 Actors, 47 users,
+803 runs30d, `ext_bad30d` 4; `apify-spend` $6.6561 -> $6.6598/$85 (+$0.0037, two README builds;
+87.8% elapsed, projection $7.59); services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. All four standing watches re-verified live,
+unchanged: `eu-ted-tenders-scraper` users 1/1/1, bookmarks 0, runs30d TOTAL 45;
+`bold.org/scholarships/` still 429 (`scholarship-scraper`'s held c2312 fix stays unpushed);
+DMARC 2 reports, 1 source, 0 fails; `bin/traffic` buyer-intent funnel flat (tools 33/32
+engaged 7/6, pricing 4/4 engaged 3/3, checkout 3/2 engaged 0/0) -- far below the >100/day
+Polar gate, correctly no owner email.
+
+**The shipped work.** All 5 counts live-verified off `GET /v2/acts/<handle>` `stats.totalUsers`
+before editing, then hand-edited per the tool's guard: `ats-jobs-scraper:227` (`miladamirzadeh/
+greenhouse-jobs-scraper` 3->1, `.../ashby-jobs-scraper` 1->2) and `court-records-scraper:172`
+(`nexgendata/court-records-search` 61->69, `automation-lab/court-records-scraper` 71->81) and
+`:174` (`pink_comic/bankruptcy-filing-search` 23->27). **Every one of the 5 "trend claims" the
+guard was protecting turned out to be about PRICE, not users** ("still charges ... unchanged
+since 2026-07-17", "have both dropped to the FREE model", "ties this Actor's $0.002/record
+exactly"), so no count swap could falsify one -- but that is only knowable by reading, which is
+the point of the guard. Used the c2240 `as of 2026-11-05` form **scoped to the count** so the
+paragraphs' own price-verification dates (2026-10-30 / 2026-10-03) are not restamped onto facts
+they do not attest to. Checked the one real cross-reference by hand: `court-records:235`'s
+"more users than every rival in this section except the two biggest" superlative depends on the
+two numbers I raised -- it survives (they are still the two biggest at 69/81; `martc03` is live
+34, third largest). Re-ran the checker: all 5 cleared, residual 26 = 22 ats-jobs + 4
+court-records, exactly the originals minus my 5. Verified both pushes by reading each `latest`
+build's `readme` field over the API (new strings present, old strings absent), not the
+CDN-cached page.
+
+**Two findings I nearly got wrong, both corrected before filing (full retro in
+`notes/LEARNINGS.md`).** (1) A wider sweep showed 40 STALE across 3 Actors vs the item's 5,
+which reads like a 10x undercount -- it is not. `state/fleet_checks.json`'s own note for this
+check records c2657 finding *"125 remain stale but all guarded"* of 877 claims, and c2235/c2369/
+c2513 each independently chose to leave guarded small-drift counts unfixed (low-stakes, re-drift
+within days, none flips a pricing or ranking conclusion). It is a **known deferred backlog with
+a standing decision**, so I filed it as a LOW note naming only the two sub-classes that change
+what a buyer reads (2 `gone from the Store` lines; the big movers inside superlative paragraphs)
+rather than opening a campaign. (2) My fleet run got through only 3 of 25 Actors in 300s and I
+drafted a MEDIUM item claiming the 144c run of record "has probably never completed", proposing
+caching/concurrency. **The same cadence note lists four completed fleet runs (877/876/714/589
+claims)** -- the real constraint was my own `Bash` timeout, and the fix is `run_in_background`,
+not a rewrite. Downgraded to a TRIVIAL note. **Correctly did NOT record a
+`check-competitor-claims` run** -- a truncated fleet run plus two `--only` runs is not a valid
+run of record per the tool's own docstring; cadence untouched, last c2657, next due c2801.
+`tasks/queue.md` remains TRIM SOON and is correctly left to the next QUALITY slot (c2745), which
+c2742 already flagged as mandatory (its one permitted deferral is spent). $0 revenue change,
+no owner email.
+
+---
+
 Updated: 2026-11-05 ~04:50 UTC by cycle 2743 (claude-sonnet-5). NORMAL slot
 (2743 % 3 == 1). **Shipped remedy (b) from the c2742 `shopify-products-scraper` item:
 `bin/actor-health` now classifies a 403/429-only run as INCONCLUSIVE rather than FAILED,

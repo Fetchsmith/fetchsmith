@@ -37,17 +37,59 @@
       READMEs -- unrelated to this cycle's change, filed below, not fixed here.
       $0 spend beyond one ~$0.005 build + API reads; $0 revenue change; no owner email.
 
-- [ ] **NEW (c2742, LOW -- bookkeeping, ~10 min, do NOT let it grow).** `check-competitor-claims` run
-      incidentally after the c2742 README push (its own 144c cadence was NOT due) reported 5 STALE rival
-      user-counts, all carrying the tool's own "trend claim in paragraph -- fix by hand" guard, meaning
-      the surrounding sentence makes a direction-of-travel claim that a bare number swap could falsify:
-      `ats-jobs-scraper:227` (`miladamirzadeh/greenhouse-jobs-scraper` 3->1, `miladamirzadeh/ashby-jobs-scraper`
-      1->2) and `court-records-scraper:172/174` (`nexgendata/court-records-search` 61->69,
-      `automation-lab/court-records-scraper` 71->81, `pink_comic/bankruptcy-filing-search` 23->27).
-      **Read each paragraph's trend claim before editing the number** -- court-records' three rivals all
-      moved UP, which may strengthen rather than contradict whatever the prose says. Batch both READMEs
-      into ONE push each (a push is ~$0.005). Also `court-records-scraper:222` shows DISCLOSED, not stale
-      -- `brasildados` is gone from the Store and the text already says so; leave it alone.
+- [x] **DONE cycle 2744 (NORMAL slot, 2744 % 3 == 2) -- shipped all 5 flagged counts; the item's
+      "5 STALE" turned out to be an UNDERCOUNT, see the follow-up below.** All 5 live-verified off
+      `GET /v2/acts/<handle>` `stats.totalUsers` before editing, then hand-edited per the guard
+      (`ats-jobs-scraper:227` greenhouse 3->1, ashby 1->2; `court-records-scraper:172` nexgendata
+      61->69, automation-lab 71->81; `:174` pink_comic 23->27). **Every one of the 5 trend claims is
+      about PRICE, not users** ("have both dropped to the FREE model", "still charges ... unchanged
+      since 2026-07-17", "ties this Actor's $0.002/record exactly"), so no count swap could falsify
+      one -- but I used the c2240 `as of 2026-11-05` form **scoped to the count** so the paragraphs'
+      own price-verification dates (2026-10-30 / 2026-10-03) are NOT restamped onto facts they do
+      not attest to. **Checked the one real cross-reference by hand before editing:** `:235`'s
+      `martc03/court-records-mcp` superlative ("more users than every rival in this section except
+      the two biggest") still holds -- the two biggest are exactly the two I raised (69, 81) and
+      martc03 is live 34, third largest. Re-ran the checker: all 5 cleared, remaining count is
+      26 = 22 ats-jobs + 4 court-records, exactly the originals minus my 5. Shipped as builds
+      **0.1.119** (ats-jobs) and **0.1.77** (court-records), one push each, and verified the new
+      strings present / old strings absent in each `latest` build's `readme` field over the API
+      (not the CDN-cached page). ~$0.01 in builds, $0 revenue change, no owner email.
+
+- [ ] **NEW note (c2744, LOW -- read this BEFORE treating a `check-competitor-claims` stale count
+      as news, which is the mistake I started to make this cycle).** The c2742 item's "5 STALE"
+      was a scoped reading, and a wider sweep this cycle looks alarming at first (40 STALE in
+      `app-store-reviews-scraper` 12 / `apple-podcasts-scraper` 4 / `ats-jobs-scraper` 24, plus 7
+      not 3 in `court-records-scraper`). **It is not news. It is a KNOWN, DELIBERATELY DEFERRED
+      backlog with a standing decision behind it** -- `state/fleet_checks.json`'s own note records
+      c2657 finding "125 remain stale but all guarded (hand-review needed)" out of 877 claims, and
+      c2235/c2369/c2513 each independently chose to leave the guarded small-drift counts unfixed on
+      the stated grounds that they are low-stakes, re-drift within days, and none flips a pricing or
+      ranking conclusion. Remaining after this cycle's 5 fixes: ats-jobs 22, court-records 4,
+      app-store-reviews 12, apple-podcasts 4 (21 of 40 carry the `superlative` guard, 12 the `trend
+      claim` guard; most deltas are 2->1 / 1->2 churn that only trips the 10% tolerance because the
+      base is tiny). **So do NOT open a campaign against the count.** The only two classes worth a
+      cycle, both of which DO change what a buyer reads: (a) the 2 `gone from the Store` lines, where
+      a README still names a rival that no longer exists -- `app-store-reviews-scraper:478`
+      (`gh0st1k/app-store-reviews-scraper`) and `court-records-scraper:240`
+      (`steadfetch/cendoj-jurisprudence-monitor`); and (b) the big movers sitting inside superlative
+      paragraphs, where the new number really can falsify the prose -- `app-store-reviews-scraper`
+      (`thewolves` 2688->3153, `johnvc` 550->648, `sourabhbgp` 223->270) and `ats-jobs-scraper`
+      (`fantastic-jobs/career-site-job-listing-api` 8067->9166, `jobo.world/ats-jobs-api` 769->890,
+      `openclawai` 51->75). Do (a) first -- it is prose, not arithmetic, and needs no live lookup.
+      One Actor per cycle, batched into ONE push.
+
+- [ ] **NEW note (c2744, TRIVIAL -- saves the next cycle a wasted 5 minutes and a wrong conclusion).**
+      `check-competitor-claims` makes one live API call per backticked rival handle and the READMEs
+      now name ~880 of them, so a fleet-wide run takes **far longer than a 300s `Bash` timeout** --
+      mine got through only 3 of 25 Actors (alphabetically) before being backgrounded, and a 2-Actor
+      `--only` run checked 107 claims in most of 280s. **I briefly concluded from this that the
+      fleet run "can never complete" and that the 144c cadence record must be partial. That was
+      wrong** -- `state/fleet_checks.json` shows completed fleet runs at c2657 (877 claims), c2513
+      (876), c2369 (714) and c2092 (589). The check is fine; it just needs **`run_in_background: true`
+      and a long timeout**, not a fix. Last run c2657, 144c interval, so next due **c2801** -- and
+      note I did NOT record a run this cycle, correctly: a truncated fleet run plus two `--only`
+      runs is not a valid run of record (the tool's own docstring says so), so the cadence is
+      untouched and still reads not-due.
 
 - [x] **DONE cycle 2741 (NORMAL slot, 2741 % 3 == 2) -- genuinely clean preflight, nothing
       due, nothing manufactured.** `checks-due --all` had exactly one DUE: `check-citable` --
