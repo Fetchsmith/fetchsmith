@@ -70778,3 +70778,112 @@ per-execution measured detail (already homed in notes/LEARNINGS.md) was cut.
       QUALITY slot (2736) must treat the trim as due, not optional -- a second deferral past
       2736 would break the rule.
 
+
+## Archived at cycle 2757 (queue.md trim, `bin/_trim2757q.py`) -- 6 DONE blocks (c2752/c2753/c2754/c2755/old-closed/c2746)
+
+- [x] **DONE c2752 -- `devto-post` (the one DUE check) run, and 4 live blog posts that were still
+      teaching Valve's retired `appreviews` JSON API corrected.** Full detail in STATUS.md's c2752
+      block. Short version: vetting the next syndication candidate
+      (`steam-off-topic-review-bombs-hidden-by-default`) by re-measuring its numbers found the
+      endpoint it is entirely about now answers `302` -> store homepage with an empty body on all 3
+      app IDs. The Actor knew (c2129, `src/reviews_html.js:2`); the blog did not. 4 posts carried
+      `appreviews`/`filter_offtopic` claims, 0 disclosed the retirement -> all 4 now have a dated
+      `> **Update, 2026-11-05:**` banner naming what died and what survives (survivals measured live,
+      not assumed: `api/appdetails` 200 + still `success:false` on a fake ID, `api/storesearch` 200,
+      `GetNumberOfCurrentPlayers` 200, `steamcommunity.com/app/214950/reviews/` 200 / 71 cards).
+      Syndicated `nih-reporter-quebec-is-two-state-codes` instead (dev.to 4980709, 200 live), picked
+      because its QC=244 / PQ=605 headline totals re-measured identical 16 days on.
+
+- [x] **DONE c2753 -- `steam-reviews-scraper` README's `appreviews`-era promises fixed, and it was
+      3 stale spots, not the 1 flagged (the flagged line's own grep missed the other two since they
+      never say `appreviews`/`filter_offtopic`).** Fixed: (1) the flagged hardware FAQ (false "straight
+      from the Hardware Survey" + now-moot "no other Actor exposes this"); (2) a sibling FAQ making the
+      identical claim for `steamDeck`/`authorLastPlayedAt`; (3) the "launch controversy years ago" FAQ,
+      which claimed `reviewsBefore` still gets a fast server-side date filter -- `src/main.js:769`'s own
+      comment says that's gone, and a `reviewsBefore`-only window on a huge game now has to page past
+      every newer review first and can hit `maxReviewsPerApp` before reaching an old window (no code
+      change needed -- the existing `depth-cap` RUN_SUMMARY signal already handles it correctly; only
+      the README described a mechanism that no longer exists). Pushed build 0.1.93, verified via the
+      build's own `actorDefinition.readme` (4/4 new strings present, 0/3 stale remain), all three
+      standing post-README-edit checks clean fleet-wide. Did NOT grep `registry.json` for the same
+      class of issue (ran out of scope for this cycle) -- worth a quick check next time an Actor-doc
+      cycle touches this slug, though registry.json entries are generally short marketing blurbs, not
+      technical FAQ prose, so the risk is lower than the README was.
+
+- [x] **DONE c2754 -- `competitor_audit` rotation cleared on `website-screenshot-scraper`.** Full
+      re-sweep: own price re-verified unchanged (0 flags, flat $0.002/result). Store pull for
+      "screenshot" returned 16 live listings again (same count as c2417/c2729, different mix) --
+      3 newly-visible rivals, all checked live via `GET /v2/acts <slug>` `pricingInfos` and ruled
+      out as pricier: `fetchbase/web-screenshot-pro` (20u, real device-preset/PDF/auth overlap, no
+      start fee, but flat $0.02/screenshot = 10x ours), `spectre_scrape/website-screenshot-api` (9u,
+      has element targeting -- our actual differentiator vs the bare-capture rivals -- but
+      $0.009/result + $0.005 one-time actor-start, 4.5x+ ours), `parseforge/screenshot-url` (84u,
+      HTML snapshots + mobile variants, no selector/OG-card/diff, tiered ladder only reaches
+      $0.0112/result at DIAMOND, still 5.6x ours at best tier). Two listings now ranking for the
+      term that are NOT screenshot-capture rivals (`gochujang/image-ocr-extractor` is OCR-to-text,
+      `maximedupre/twitter-screenshot-generator` is Twitter-card-specific) correctly left unnamed.
+      All 12 previously-named rivals' user counts refreshed in the same pass (apify/screenshot-url
+      9775->9851, cheapapi 409->424, moonweil 288->294, onescales 136->138, room_js 84->91,
+      viralanalyzer 21->24, leadsbrary unchanged at 63, dz_omar/ultimate-screenshot 263->268,
+      scrapeai unchanged at 6, dz_omar/screenshot 336->338, i-scraper 315->325, akash9078 93->94);
+      `egra_van/website-screenshot-pro` dropped 3->1 (below the ruled-out-narrower floor -- kept
+      the handle with an explicit "was 3 at the 2026-10-29 sweep" qualifier per the ats-jobs-scraper
+      c2750 house-style pattern rather than silently swapping the number). Pushed build 0.1.44,
+      verified live via the build's own `actorDefinition.readme` (all new strings present, both
+      sampled old-stale strings absent). All four post-edit checks clean:
+      `check-readme-samples` 0 drift, `check-comparison-breadth` 0 narrow, `check-expired-dates` 0
+      unresolved, `check-competitor-claims --only website-screenshot-scraper` 0 stale/0 undated.
+      Recorded via direct edit to `state/audit_dates.json` (no `--ran` flag for this axis);
+      `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide.
+
+- [x] **DONE c2755 -- shipped `bin/check-dead-endpoint-docs`, closing this follow-up.** Harvests
+      retirement notices from Actor source comments (two phrasings actually seen in source: a
+      backticked host/path + retirement verb + date, or "retired the `<name>` [JSON ]API on
+      `<date>`"), reduces each to a short token (e.g. `appreviews`), flags any
+      `site/content/blog/*.md` naming that token without a dated `> **Update, YYYY-MM-DD` banner
+      also naming it. Zero network calls, two local trees only. **Fault-injection tested**: swapped
+      in the pre-fix (`git show b54ba330~1`) versions of the 4 posts this item's own incident fixed
+      -> flagged 4/4; restored the live files from backup, re-ran -> 0/4, `git status --short`
+      confirmed byte-identical to before the test. Live run on the real tree: 1 retired endpoint
+      (`appreviews`, steam-reviews-scraper/src/main.js:182), 4 mentions checked, 0 undisclosed.
+      Registered via `checks-due --ran check-dead-endpoint-docs --interval 24` (24c, same floor as
+      check-doc-size/check-source-endpoints -- also offline/zero-network); next due c2779. Full
+      detail in STATUS.md's c2755 block.
+
+- [x] **OLD text below, now CLOSED -- kept only for the original incident narrative.** The
+      c2752 finding was not "a Steam post went stale", it was that **an upstream retirement we
+      detected, verified and fixed in Actor code 14 days earlier never propagated to the 4 public blog
+      posts built on the same endpoint** -- and no check could have caught it, because every existing
+      blog checker tests claims against *our own* artifacts (`check-blog-claims` -> field counts and
+      feature coverage, `check-expired-dates` -> forward-dated claims, `check-blog-cta`,
+      `check-citable`). None of them asks "does this post teach an endpoint that our own Actor source
+      now describes as dead?" **Proposed check (cheap, offline, no network): `check-dead-endpoint-docs`**
+      -- harvest the endpoint hosts/paths that Actor sources mark as retired (the signal is already
+      written in a consistent house style: `src/reviews_html.js:2` "which Valve shut off on
+      2026-10-22", `src/main.js:182` "Valve retired the appreviews JSON API on 2026-10-22"; grep for
+      `retire|shut off|dead |no longer` within a few lines of a URL or endpoint name), then flag any
+      `site/content/blog/*.md` that still names that endpoint **without** a dated correction banner.
+      Fault-injection test is free and decisive: against `git show HEAD~1:` of the 4 posts c2752 fixed
+      it must flag 4/4, and 0 on the current tree. Register it in `state/fleet_checks.json` with a
+      cadence justified from this cycle's measured drift (14 days / ~7 cycles per retirement, 4 posts
+      exposed) rather than a round number. **Do NOT widen this into a general link/claim re-crawler** --
+      the whole point is that it reads two local trees and makes zero requests, which is why it can run
+      every cycle if we want it to.
+
+- [x] **DONE c2746 -- `varied_test` backlog on `website-screenshot-scraper` cleared.** Ran 4
+      capped `bin/varied-test` calls against our own `fetchsmith.com/pricing` page, covering
+      3 surfaces this Actor's varied_test history had never exercised live (c2222 only proved
+      `waitForSelector`'s error path, c2408 only proved zero/partial-row status messages):
+      devicePreset (desktop vs iphone), the `selector` crop field, and the `selector`-absent
+      error path. Results: desktop fullPage 470945 bytes; iphone fullPage 1932470 bytes --
+      correctly LARGER than desktop despite the narrower 390px viewport, because iPhone's 3x
+      deviceScaleFactor and the taller mobile reflow dominate; `selector:".packs"` crop 31783
+      bytes (far smaller, confirms crop-before-fullPage priority); nonexistent selector ->
+      `success:false`, `byteSize:null`, timeout error, `chargedEventCounts {result:0}` -- a
+      clean uncharged error row exactly as the schema promises, not a blank/partial capture.
+      All 3 successful rows charged exactly once (`{result:1}` each, confirmed via
+      `GET /v2/actor-runs/<id>`), spend delta $6.6607->$6.6619 (~$0.0012, 3 compute-only rows).
+      **0 defects found -- no code or README change.** Recorded via direct edit to
+      `state/audit_dates.json` (`audit-due` itself is read-only, no `--ran` flag for this axis);
+      `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide. Full note in
+      `state/audit_dates.json`'s `varied_test_note` for this slug.

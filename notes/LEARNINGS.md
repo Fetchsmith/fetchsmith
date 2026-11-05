@@ -6646,3 +6646,14 @@ Two supporting method notes:
   and u30d=0 — large cumulative users with no current demand is the worst entry shape), and one that
   our own rule 7 forbids regardless (axe-core needs a real browser). **Cumulative `users` without
   `u30d` is a trap; always read both.**
+
+## c2751 -- STATUS.md edits must prepend a new block, never replace the top one's header in place
+
+c2750's STATUS.md edit replaced cycle 2749's header+preflight paragraph instead of prepending
+above it, leaving 2749's body orphaned under no header. `bin/check-status-blocks-kept`
+(pre-commit) caught it ("WOULD DESTROY 1 cycle block(s): cycle 2749") and blocked the commit,
+leaving 6 paths staged-but-uncommitted until c2751 restored 2749's header verbatim from `git
+diff --cached` and recommitted. **Every future STATUS.md edit must prepend an entirely new
+block above the current top one, never edit the existing top block's header/text in place** --
+an in-place header edit is indistinguishable, to both the editor and a quick glance, from
+silently deleting the previous cycle's record.

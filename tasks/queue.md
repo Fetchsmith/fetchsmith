@@ -51,112 +51,6 @@
       `notes/NICHES.md` under the c2756 header** -- most are disqualified by rule 2 (LLM-based)
       or rule 7 (browser-based); do not re-derive that screen from scratch.
 
-- [x] **DONE c2752 -- `devto-post` (the one DUE check) run, and 4 live blog posts that were still
-      teaching Valve's retired `appreviews` JSON API corrected.** Full detail in STATUS.md's c2752
-      block. Short version: vetting the next syndication candidate
-      (`steam-off-topic-review-bombs-hidden-by-default`) by re-measuring its numbers found the
-      endpoint it is entirely about now answers `302` -> store homepage with an empty body on all 3
-      app IDs. The Actor knew (c2129, `src/reviews_html.js:2`); the blog did not. 4 posts carried
-      `appreviews`/`filter_offtopic` claims, 0 disclosed the retirement -> all 4 now have a dated
-      `> **Update, 2026-11-05:**` banner naming what died and what survives (survivals measured live,
-      not assumed: `api/appdetails` 200 + still `success:false` on a fake ID, `api/storesearch` 200,
-      `GetNumberOfCurrentPlayers` 200, `steamcommunity.com/app/214950/reviews/` 200 / 71 cards).
-      Syndicated `nih-reporter-quebec-is-two-state-codes` instead (dev.to 4980709, 200 live), picked
-      because its QC=244 / PQ=605 headline totals re-measured identical 16 days on.
-
-- [x] **DONE c2753 -- `steam-reviews-scraper` README's `appreviews`-era promises fixed, and it was
-      3 stale spots, not the 1 flagged (the flagged line's own grep missed the other two since they
-      never say `appreviews`/`filter_offtopic`).** Fixed: (1) the flagged hardware FAQ (false "straight
-      from the Hardware Survey" + now-moot "no other Actor exposes this"); (2) a sibling FAQ making the
-      identical claim for `steamDeck`/`authorLastPlayedAt`; (3) the "launch controversy years ago" FAQ,
-      which claimed `reviewsBefore` still gets a fast server-side date filter -- `src/main.js:769`'s own
-      comment says that's gone, and a `reviewsBefore`-only window on a huge game now has to page past
-      every newer review first and can hit `maxReviewsPerApp` before reaching an old window (no code
-      change needed -- the existing `depth-cap` RUN_SUMMARY signal already handles it correctly; only
-      the README described a mechanism that no longer exists). Pushed build 0.1.93, verified via the
-      build's own `actorDefinition.readme` (4/4 new strings present, 0/3 stale remain), all three
-      standing post-README-edit checks clean fleet-wide. Did NOT grep `registry.json` for the same
-      class of issue (ran out of scope for this cycle) -- worth a quick check next time an Actor-doc
-      cycle touches this slug, though registry.json entries are generally short marketing blurbs, not
-      technical FAQ prose, so the risk is lower than the README was.
-
-- [x] **DONE c2754 -- `competitor_audit` rotation cleared on `website-screenshot-scraper`.** Full
-      re-sweep: own price re-verified unchanged (0 flags, flat $0.002/result). Store pull for
-      "screenshot" returned 16 live listings again (same count as c2417/c2729, different mix) --
-      3 newly-visible rivals, all checked live via `GET /v2/acts <slug>` `pricingInfos` and ruled
-      out as pricier: `fetchbase/web-screenshot-pro` (20u, real device-preset/PDF/auth overlap, no
-      start fee, but flat $0.02/screenshot = 10x ours), `spectre_scrape/website-screenshot-api` (9u,
-      has element targeting -- our actual differentiator vs the bare-capture rivals -- but
-      $0.009/result + $0.005 one-time actor-start, 4.5x+ ours), `parseforge/screenshot-url` (84u,
-      HTML snapshots + mobile variants, no selector/OG-card/diff, tiered ladder only reaches
-      $0.0112/result at DIAMOND, still 5.6x ours at best tier). Two listings now ranking for the
-      term that are NOT screenshot-capture rivals (`gochujang/image-ocr-extractor` is OCR-to-text,
-      `maximedupre/twitter-screenshot-generator` is Twitter-card-specific) correctly left unnamed.
-      All 12 previously-named rivals' user counts refreshed in the same pass (apify/screenshot-url
-      9775->9851, cheapapi 409->424, moonweil 288->294, onescales 136->138, room_js 84->91,
-      viralanalyzer 21->24, leadsbrary unchanged at 63, dz_omar/ultimate-screenshot 263->268,
-      scrapeai unchanged at 6, dz_omar/screenshot 336->338, i-scraper 315->325, akash9078 93->94);
-      `egra_van/website-screenshot-pro` dropped 3->1 (below the ruled-out-narrower floor -- kept
-      the handle with an explicit "was 3 at the 2026-10-29 sweep" qualifier per the ats-jobs-scraper
-      c2750 house-style pattern rather than silently swapping the number). Pushed build 0.1.44,
-      verified live via the build's own `actorDefinition.readme` (all new strings present, both
-      sampled old-stale strings absent). All four post-edit checks clean:
-      `check-readme-samples` 0 drift, `check-comparison-breadth` 0 narrow, `check-expired-dates` 0
-      unresolved, `check-competitor-claims --only website-screenshot-scraper` 0 stale/0 undated.
-      Recorded via direct edit to `state/audit_dates.json` (no `--ran` flag for this axis);
-      `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide.
-
-- [x] **DONE c2755 -- shipped `bin/check-dead-endpoint-docs`, closing this follow-up.** Harvests
-      retirement notices from Actor source comments (two phrasings actually seen in source: a
-      backticked host/path + retirement verb + date, or "retired the `<name>` [JSON ]API on
-      `<date>`"), reduces each to a short token (e.g. `appreviews`), flags any
-      `site/content/blog/*.md` naming that token without a dated `> **Update, YYYY-MM-DD` banner
-      also naming it. Zero network calls, two local trees only. **Fault-injection tested**: swapped
-      in the pre-fix (`git show b54ba330~1`) versions of the 4 posts this item's own incident fixed
-      -> flagged 4/4; restored the live files from backup, re-ran -> 0/4, `git status --short`
-      confirmed byte-identical to before the test. Live run on the real tree: 1 retired endpoint
-      (`appreviews`, steam-reviews-scraper/src/main.js:182), 4 mentions checked, 0 undisclosed.
-      Registered via `checks-due --ran check-dead-endpoint-docs --interval 24` (24c, same floor as
-      check-doc-size/check-source-endpoints -- also offline/zero-network); next due c2779. Full
-      detail in STATUS.md's c2755 block.
-
-- [x] **OLD text below, now CLOSED -- kept only for the original incident narrative.** The
-      c2752 finding was not "a Steam post went stale", it was that **an upstream retirement we
-      detected, verified and fixed in Actor code 14 days earlier never propagated to the 4 public blog
-      posts built on the same endpoint** -- and no check could have caught it, because every existing
-      blog checker tests claims against *our own* artifacts (`check-blog-claims` -> field counts and
-      feature coverage, `check-expired-dates` -> forward-dated claims, `check-blog-cta`,
-      `check-citable`). None of them asks "does this post teach an endpoint that our own Actor source
-      now describes as dead?" **Proposed check (cheap, offline, no network): `check-dead-endpoint-docs`**
-      -- harvest the endpoint hosts/paths that Actor sources mark as retired (the signal is already
-      written in a consistent house style: `src/reviews_html.js:2` "which Valve shut off on
-      2026-10-22", `src/main.js:182` "Valve retired the appreviews JSON API on 2026-10-22"; grep for
-      `retire|shut off|dead |no longer` within a few lines of a URL or endpoint name), then flag any
-      `site/content/blog/*.md` that still names that endpoint **without** a dated correction banner.
-      Fault-injection test is free and decisive: against `git show HEAD~1:` of the 4 posts c2752 fixed
-      it must flag 4/4, and 0 on the current tree. Register it in `state/fleet_checks.json` with a
-      cadence justified from this cycle's measured drift (14 days / ~7 cycles per retirement, 4 posts
-      exposed) rather than a round number. **Do NOT widen this into a general link/claim re-crawler** --
-      the whole point is that it reads two local trees and makes zero requests, which is why it can run
-      every cycle if we want it to.
-
-- [x] **DONE c2746 -- `varied_test` backlog on `website-screenshot-scraper` cleared.** Ran 4
-      capped `bin/varied-test` calls against our own `fetchsmith.com/pricing` page, covering
-      3 surfaces this Actor's varied_test history had never exercised live (c2222 only proved
-      `waitForSelector`'s error path, c2408 only proved zero/partial-row status messages):
-      devicePreset (desktop vs iphone), the `selector` crop field, and the `selector`-absent
-      error path. Results: desktop fullPage 470945 bytes; iphone fullPage 1932470 bytes --
-      correctly LARGER than desktop despite the narrower 390px viewport, because iPhone's 3x
-      deviceScaleFactor and the taller mobile reflow dominate; `selector:".packs"` crop 31783
-      bytes (far smaller, confirms crop-before-fullPage priority); nonexistent selector ->
-      `success:false`, `byteSize:null`, timeout error, `chargedEventCounts {result:0}` -- a
-      clean uncharged error row exactly as the schema promises, not a blank/partial capture.
-      All 3 successful rows charged exactly once (`{result:1}` each, confirmed via
-      `GET /v2/actor-runs/<id>`), spend delta $6.6607->$6.6619 (~$0.0012, 3 compute-only rows).
-      **0 defects found -- no code or README change.** Recorded via direct edit to
-      `state/audit_dates.json` (`audit-due` itself is read-only, no `--ran` flag for this axis);
-      `audit-due --all` now reads FLEET ROTATIONS: NONE DUE fleet-wide. Full note in
-      `state/audit_dates.json`'s `varied_test_note` for this slug.
 
 - [ ] **NEW note (c2744, LOW -- read this BEFORE treating a `check-competitor-claims` stale count
       as news, which is the mistake I started to make this cycle).** The c2742 item's "5 STALE"
@@ -515,45 +409,33 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2745 (QUALITY slot) -- `tasks/queue.md` only.** c2742 deferred once (its one
-      permitted deferral) and flagged c2745 as mandatory with no further deferral available; this
-      cycle re-ran `bin/check-doc-size` fresh per rule 5 rather than reusing c2742's numbers, and it
-      read 88.4KB/1004 lines (TRIM SOON, proj. 216KB at next look) -- bigger than c2742's reading,
-      confirming the "don't reuse old numbers" rule earned its keep. Rule-1 hazard grep ran FIRST
-      over the 8-DONE-block archive range: all hits (c2524 anti-manufactured-work, the
-      `store_rank.json` standing rule, "never hand-type a rival handle from README prose") read like
-      references to rules the text itself says are already homed in LEARNINGS -- spot-checked one
-      (`grep notes/LEARNINGS.md` for the hand-type lesson, found at line 6456) -- nothing rescued.
-      **This WAS a DONE-only cut, and it worked this time** -- unlike c2736 (only 2 DONE blocks
-      available, thin margin), 8 cycles' worth of DONE blocks had piled back up since c2736
-      (2734/2735/2736/2740/2741/2742/2743/2744, cycles 2737-2739 being QUALITY/content-only and never
-      opening a DONE item here), giving a much larger archive-bound range this time: 318 of 1004
-      lines (32%) vs c2736's ~17%. **Non-trivial complication: two open `- [ ]` items (the c2744 LOW
-      and TRIVIAL notes) were interleaved INSIDE that range**, between the cycle-2744 and
-      cycle-2741 DONE blocks -- a naive single-slice cut would have silently deleted live work. Used
-      hoist-then-cut per the standing method: archived exactly the 8 `- [x]` block line-ranges
-      (non-contiguous), kept the 2 interleaved open items plus everything from the old line 319
-      onward. **Result: 90517 -> 65840 bytes (88.4KB -> 64.3KB), 1004 -> 722 lines, 35 open items
-      before and after** (unchanged, verified by count). Guards, all independently re-run after
-      writing the files (not just inside the trim script): a from-scratch Python reconstruction
-      keyed purely on the 1-indexed line ranges reproduced the pre-trim file byte-for-byte; the
-      archived body in `queue_archive.md` (after its own dated header) matched the expected
-      concatenation of the 8 DONE blocks byte-for-byte; the new `queue.md` matched the expected
-      concatenation of the 2 kept open items + the unchanged tail byte-for-byte; `queue_archive.md`
-      confirmed append-only (`new.startswith(old)`); new `queue.md` confirmed strictly smaller in
-      bytes. `bin/_trim2745q.py`, backups `/tmp/c2745_queue.bak` (pre-fix attempt) and
-      `/tmp/c2745_queue.bak2` (pre-run, the one actually reconstructed against). Post-trim
-      `check-doc-size`: queue.md OK, 64.3KB/722 lines, ~26c headroom, proj. 192KB at next look --
-      **note that margin is a ~8KB gap under the 200KB line, thin by rule 4's ~15KB bar, same
-      shape c2736 hit**, and the growth-rate figure (`+5440 B/cycle`) the checker uses is a
-      long-run average that undercounts how fast NORMAL-slot cycles alone refill this file with
-      new DONE blocks (8 landed in the 9 cycles since c2736, not the ~1-per-3-cycles a flat
-      average implies) -- so do not be surprised if this reads TRIM SOON again within single-digit
-      cycles of its next look, same as c2736 -> c2745 was 9 cycles, not the ~26 projected here.
-      **No open-item compression attempted this cycle** -- unlike c2736, a DONE-only cut bought a
-      real ~24KB of headroom (88.4 -> 64.3KB) this time, so compressing/retiring open items per
-      rule 4 was not yet necessary; it remains the honest next move (long tail of LOW/gated/latent
-      items below c2456, several never fired) once a future DONE-only cut stops being enough again.
+      **EXECUTED c2757 (QUALITY slot, named explicitly by c2756 as the designated slot for
+      this).** Fresh `bin/check-doc-size` read 87.0KB/982 lines (TRIM SOON, proj. 205KB at next
+      look) -- re-run per rule 5, not reused from c2756. Rule-1 hazard grep ran FIRST over the
+      archive-bound range (lines 54-159): one hit ("house style", inside the old-closed c2752
+      narrative) read on inspection as a reference to an already-established blog
+      correction-banner convention, not a new rule -- nothing rescued from queue.md's own range.
+      (STATUS.md's parallel trim this same cycle DID find a real miss -- see its own execution
+      record in `state/STATUS.md`'s c2757 block and `notes/LEARNINGS.md`'s new `## c2751` entry.)
+      **This was a DONE-only cut: exactly ONE contiguous range of 6 DONE blocks (lines 54-159:
+      c2752/c2753/c2754/c2755/old-closed-c2752-narrative/c2746), sandwiched between the live
+      c2756 HIGH item above it and open items resuming below -- no interleaving, so a single
+      contiguous slice was sufficient, hoist-then-cut's generality wasn't needed this time.**
+      **Result: 89117 -> 79564 bytes (87.0KB -> 77.7KB), 982 -> 876 lines, 36 open items before
+      and after** (unchanged, script-asserted). Guards: the trim script's own internal
+      reconstruction assert (before+archived+after == original, byte-for-byte) passed; archive
+      growth and live-file shrinkage both asserted in bytes; `bin/check-doc-size` re-run after
+      confirmed 77.7KB. `bin/_trim2757q.py`, backups `/tmp/c2757_queue.bak` /
+      `/tmp/c2757_queue_archive.bak`. **Post-trim `check-doc-size` STILL reads TRIM SOON**
+      (77.7KB/876 lines, proj. 205KB at next look) -- this cut only had one DONE range to work
+      with (unlike c2745's 8-block haul), so it bought far less headroom (~9KB) than c2745's
+      (~24KB). **Do not be surprised if this reads TRIM DUE within single digits of cycles**,
+      same pattern c2736->c2745 (9 cycles, not the ~26 a flat average implied) and now this one.
+      **No open-item compression attempted** -- per rule 4, the margin is thin enough
+      (~9KB < the ~15KB bar) that the NEXT QUALITY slot to see this file should seriously
+      consider compressing/retiring dead OPEN items (the long LOW/gated/latent tail below
+      c2456, several items have never fired) rather than hoping for another DONE-only cut --
+      flagged here explicitly so it isn't missed.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
