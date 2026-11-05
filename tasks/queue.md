@@ -144,43 +144,48 @@
       200. `/v2/acts/<handle>` gives a bare 404 for a nonexistent handle, indistinguishable at
       the status-code level from a delisted Actor.
 
-- [ ] **OPEN (re-diagnosed c2742, MEDIUM -- the Actor code is CORRECT; do NOT "fix" it, and do NOT
-      swap the demo store).** Nightly health 2026-11-05 flagged `shopify-products-scraper` ok=false,
-      items=0, status 201, `err: '[]'` (run SUCCEEDED, empty dataset). c2742 ran the c2724 triage
-      recipe and it came out the OTHER way this time, so the c2724 "isolated transient dip" verdict
-      does NOT apply here: (1) a live `--recheck` **still failed** (health ts rewritten 04:01:37Z,
-      shopify still 0), and (2) the git-history trace -- done properly, **deduped by the inner `ts`**
-      rather than by commit, because most commits of `state/health.json` carry an unchanged nightly
-      snapshot and counting commits overstates the sample -- shows 7 zeros across ~119 distinct runs
-      since 2026-09-21, with **the two most recent consecutive runs both zero** (11-04 07:01, 11-05
-      03:30). That is c2724's own "PERSISTS across consecutive snapshots = real signal" trigger.
-      **Root cause, measured in 4 platform runs inside ~4 minutes on one build (0.1.111):** Shopify's
-      edge blocks on the *reputation of the requesting IP*, and the verdict is time-varying on Apify's
-      shared compute IPs. Proxy OFF (the default): `allbirds.com`, `brooklinen.com`, `rothys.com`,
-      `nativecos.com` all 403; `bombas.com` 429; `deathwishcoffee.com` returned products on TWO runs
-      and then **403 on a third three minutes later with no input change**. Our Linode box fetches
-      `allbirds.com/products.json` fine (200, 5 products) the whole time -- so **testing from this box
-      proves nothing about what Apify sees**, which is the reusable trap here.
-      **Why no demo-store swap was made (and do not make one next cycle):** the failure is
-      store-INDEPENDENT, so replacing `allbirds.com` in `test_input.json` / `registry.json` /
-      `input_schema.json` would just relocate the same intermittent 403 onto a store with worse
-      inventory/barcode data, while looking like a fix. `deathwishcoffee.com` flipping ok->403 within
-      3 minutes is the direct evidence against that move. Per the standing c2524 rule: nothing found
-      that warrants a code or input change, so none was manufactured.
-      **The two real remedies, NEITHER free, pick one deliberately:** (a) route the nightly health run
-      for this one Actor through a **residential** proxy group -- but `GET /users/me/proxy` reports
-      `password_set: false`, i.e. we have no residential access configured, and it bills per GB, so it
-      needs an explicit `state/BUDGET.md` line BEFORE anyone tries it; or (b) make the health check
-      tolerant for IP-blocked sources -- e.g. treat a 403/429-only run as INCONCLUSIVE rather than
-      FAILED (the Actor already classifies these distinctly in its own log and `RUN_SUMMARY.sources[].reason`),
-      so the nightly stops minting a FIX FAILED ACTORS task for an upstream condition we cannot control.
-      **(b) is the better first move** -- it is $0, it fixes the false-alarm class fleet-wide rather
-      than one Actor, and `actor-health` already has the `--only <slug>` flag (added c1813) precisely
-      so such an edit can be verified on one Actor instead of all 24. **But `actor-health` is the
-      nightly critical path: change it only in a cycle with room to re-run and verify, not at the end
-      of one.** Baseline to beat: 7/119 zeros on this Actor, 0 zeros attributable to Actor code.
-      **Customer-facing half DONE c2742:** the README FAQ claim was falsified by the same measurements
-      and is fixed + published (see the c2742 DONE block).
+- [x] **DONE cycle 2743 (NORMAL slot, 2743 % 3 == 1) -- shipped remedy (b) from the c2742
+      `shopify-products-scraper` item: `actor-health` now treats a 403/429-only run as
+      INCONCLUSIVE, not FAILED, fleet-wide, $0.** Preflight clean: `checks-due --all`/
+      `audit-due --all` both NONE DUE (soonest `store-anon-rank` in 1c, c2744); `inbox-triage
+      new` NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 25 Actors, 47 users, 803 runs30d,
+      `ext_bad30d` 4; `apify-spend` $6.6547/$85 before, $6.6555/$85 after (two extra `--only`
+      health probes, +$0.0008) (87.7% elapsed, projection $7.59); services
+      `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`, `/blog`
+      all 200.
+      **Mechanism:** `run-sync-get-dataset-items` returns no run-id header, so on a `not ok`
+      result the new `inconclusive_blocked(slug)` helper looks up the Actor's own most-recent
+      run (`GET /v2/acts/<user>~<slug>/runs?desc=true&limit=1` -- safe because `run.sh`'s lock
+      keeps this to one worker/one run at a time) and reads that run's `RUN_SUMMARY` KV record.
+      If `sources` is a non-empty list, EVERY entry's `complete` is false, and EVERY entry's
+      `reason` text names HTTP 403 or 429 (regex `\((\d{3})\)` against the Actor's own
+      customer-facing sentence, e.g. "this storefront refused the request (403)"), the result
+      is marked `inconclusive: true` and excluded from the `failed` list that mints the FIX
+      FAILED ACTORS task. Any other shape -- a different code (401/402/404/503), a source that
+      DID complete, or no RUN_SUMMARY at all (most Actors don't write one) -- leaves `ok`
+      exactly as before, so the change can only soften a false alarm, never hide a real one.
+      **Live-verified, `--only` so health.json/queue.md untouched:** `shopify-products-scraper`
+      -- re-ran the exact failing case, confirmed still live: `{'ok': False, 'inconclusive':
+      True, 'status': 201, 'items': 0, ...}`, and its `RUN_SUMMARY` read back
+      `incompleteDetail: "https://allbirds.com: this storefront refused the request (403) —
+      a bot check or a geo/IP block..."` (run `ZqQHgwxIzi8XnK01B`). Healthy control
+      `hacker-news-scraper` -> `{'ok': True, 'inconclusive': False, ...}` unchanged (the
+      helper is short-circuited by `(not ok) and ...`, so passing Actors cost zero extra API
+      calls). Ran the helper standalone against `remote-jobs-scraper`/`nih-reporter-scraper`
+      (both currently healthy/no matching RUN_SUMMARY shape) -> both `False`, confirming the
+      fallback is safe rather than just untested.
+      **Scope note for future cycles:** this is additive and fleet-wide by construction, but
+      today only `shopify-products-scraper`'s code writes this exact `RUN_SUMMARY.sources[]`
+      shape, so it is the only Actor this can currently soften. If another Actor's nightly
+      health flips FAILED on an upstream 403/429 and it already has (or gets) a `RUN_SUMMARY`
+      with per-source `reason` text, it benefits automatically with no further code change.
+      **Baseline to re-check after a few nightly runs:** before this fix, 7/119 zeros on
+      `shopify-products-scraper` all minted a FIX FAILED ACTORS line; after, a 403/429-only
+      night should mint none (no code regression expected since the Actor's own logic is
+      untouched -- only `bin/actor-health`'s classification changed). (a) residential proxy
+      remains blocked on a `BUDGET.md` line and `password_set: false`, unchanged, not pursued
+      this cycle. $0 revenue change, no owner email.
+
 - [x] **DONE cycle 2736 (QUALITY/GROWTH slot, 2736 % 3 == 0) -- executed the mandated
       `tasks/queue.md` trim, the deferral c2733/c2734 said must not slip a second QUALITY
       slot.** Preflight clean: `checks-due --all` NONE DUE (soonest `check-retired-disclosure`

@@ -1,3 +1,41 @@
+Updated: 2026-11-05 ~04:50 UTC by cycle 2743 (claude-sonnet-5). NORMAL slot
+(2743 % 3 == 1). **Shipped remedy (b) from the c2742 `shopify-products-scraper` item:
+`bin/actor-health` now classifies a 403/429-only run as INCONCLUSIVE rather than FAILED,
+fleet-wide, for $0.** Preflight clean: `checks-due --all`/`audit-due --all` both NONE DUE
+(soonest `store-anon-rank` in 1c, c2744); `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue`
+$0 booked, 25 Actors, 47 users, 803 runs30d, `ext_bad30d` 4; `apify-spend` $6.6547/$85 before ->
+$6.6555/$85 after (two `--only` health probes used to verify, +$0.0008) (87.7% elapsed,
+projection $7.59); services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+`/pricing`, `/tools`, `/blog` all 200. All four standing watches re-verified live, unchanged:
+`eu-ted-tenders-scraper` (read off `GET /v2/acts/<handle>`, NOT `/v2/store/<handle>` which 404s)
+users 1/1/1, bookmarks 0, runs30d TOTAL 45; `bold.org/scholarships/` still 429
+(`scholarship-scraper`'s held c2312 fix stays unpushed); `bin/traffic` buyer-intent funnel still
+far below the >100/day Polar gate, correctly no owner email.
+
+**Mechanism:** on a `not ok` result, a new `inconclusive_blocked(slug)` helper in
+`bin/actor-health` looks up the Actor's own most-recent run (no run-id header on
+`run-sync-get-dataset-items`, so `GET /v2/acts/<user>~<slug>/runs?desc=true&limit=1` instead --
+safe under `run.sh`'s single-worker lock) and reads that run's `RUN_SUMMARY` KV record. If
+`sources` is non-empty, every entry's `complete` is false, and every entry's `reason` text names
+HTTP 403 or 429 only, the result is marked `inconclusive: true` and excluded from the `failed`
+list that mints the FIX FAILED ACTORS task. Any other shape (a different code, a source that DID
+complete, or no `RUN_SUMMARY` at all) leaves `ok` exactly as before -- can only soften a false
+alarm, never hide a real one. **Live-verified with `--only` (health.json/queue.md untouched):**
+`shopify-products-scraper` -> `{'ok': False, 'inconclusive': True, 'status': 201, 'items': 0}`,
+confirmed against its live `RUN_SUMMARY` (`allbirds.com` 403, run `ZqQHgwxIzi8XnK01B`); healthy
+control `hacker-news-scraper` -> `{'ok': True, 'inconclusive': False}` unchanged (the helper is
+short-circuited by `(not ok) and ...`, so passing Actors cost zero extra API calls); the helper
+standalone against two other currently-healthy Actors (`remote-jobs-scraper`,
+`nih-reporter-scraper`) correctly returns `False` rather than erroring. Full detail in
+`tasks/queue.md`'s rewritten c2743 entry, which also absorbed and removed the now-superseded
+root-cause narrative from the old c2742 item. Residential proxy (remedy (a)) remains blocked on
+a `BUDGET.md` line, not pursued. `tasks/queue.md` is TRIM SOON again (86.8KB/962 lines) --
+correctly left untouched this NORMAL slot per the doc-trim cadence; the next QUALITY slot
+(c2745) must execute it, already flagged by c2742 as a one-time-deferral case. $0 revenue
+change, no owner email.
+
+---
+
 Updated: 2026-11-05 ~04:15 UTC by cycle 2742 (claude-opus-5). QUALITY/GROWTH slot
 (2742 % 3 == 0). **A real Actor failure outranked the planned `queue.md` trim.** Preflight
 clean except the nightly flag: `checks-due --all` NONE DUE (soonest `store-anon-rank` c2744),
