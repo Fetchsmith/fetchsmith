@@ -70057,3 +70057,438 @@ current "next cycle" pointer). Verbatim, no content changed.
       **Scanned all ~24 open (`- [ ]`) queue items** -- all remain correctly gated (standing tripwires/watches, the c2478 Apify deadline 11 days out, c2380 one-term-diff at 12 of its ~15-20c wait, c2692's grants-gov-scraper price-cut non-decision). Nothing licensed a code change, so per the standing c2524 rule none was manufactured.
       $0 spent, $0 revenue change, no owner email. **Next cycle (2694, QUALITY/GROWTH slot):** trim `tasks/queue.md` per the doc-trim cadence item; recompute `checks-due`/`audit-due` fresh.
 
+
+## Archived at cycle 2736 (queue.md trim, `bin/_trim2736q.py`)
+
+Older completed DONE blocks (cycles 2733, 2732, 2731, 2730, 2728, 2727,
+2726, 2725, 2724, 2723, and the interleaved 2729). The cycle-2735 and
+cycle-2734 DONE blocks stay live in queue.md. Verbatim, no content changed.
+
+Also recorded here for provenance, since the c2736 trim COMPRESSED three
+open items in place rather than archiving them (cadence rule 4 -- a
+DONE-only cut left a ~6KB margin): the pre-compression text of the c2716
+head-term-lever item, the doc-trim cadence item's header + c2733 STATUS.md
+execution record, and the c2380 one-term-diff sweep header follow. Their
+instructions, gates and baselines were all retained in the live file; only
+per-execution measured detail (already homed in notes/LEARNINGS.md) was cut.
+
+### Pre-c2736 text of the three compressed open items (verbatim)
+
+- [x] **DONE cycle 2733 (QUALITY/GROWTH slot, 2733 % 3 == 0) -- executed the doc-trim
+      cadence's hard deadline for `state/STATUS.md` before anything else, as c2732
+      instructed (a third deferral past 2730/2733 was ruled unacceptable).** Hazard grep
+      (cadence rule 1) run first over the archive-bound range; the one line that read like
+      a standing rule outside its own narrative (c2712's `new < old` byte-assert rule) was
+      confirmed already homed at `notes/LEARNINGS.md:6014`, so nothing needed rescuing.
+      Ran `bin/_trim2733s.py` (stock keep-newest-5 cut): **108.9KB/1552 lines -> 16.5KB/220
+      lines**, kept cycles 2728-2732 live, archived 2698-2727 (1332 lines) verbatim to
+      `state/STATUS_ARCHIVE.md`. Verified lossless by independent reconstruction
+      (keep+archived-body == pre-trim file, byte-for-byte); `bin/check-status-blocks-kept`
+      OK (no block destroyed, all 35 headers present); `bin/check-status-continuity` NONE
+      MISSING. Backups at `/tmp/c2733_*.bak`. Rest of preflight clean: `checks-due`/
+      `audit-due --all` both NONE DUE, 0 untriaged mail (74), $0 booked, spend $6.6081/$85
+      (87.0% elapsed, proj $7.59), services/pages 200, all four standing watches
+      re-verified live and unchanged (TED 1/1/1 users + 0 bookmarks + 45 runs30d, DMARC
+      same 2 reports 1-source/0-fail, bold.org still 429, buyer-intent funnel flat tools
+      35/34 engaged 8/7, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0) -- far below
+      the Polar gate, no owner email. **`tasks/queue.md` itself is back to TRIM SOON
+      (80.0KB/914 lines, ~23c headroom) but was left untouched this cycle per the cadence
+      item's own note (trimmed only 8 cycles ago at c2724) -- re-run `check-doc-size` fresh
+      at the next QUALITY slot (2736) and trim queue.md then if it still reads TRIM SOON;
+      do not reuse these numbers, re-derive the partition fresh per cadence rule 3.** $0
+      spent beyond normal API reads, $0 revenue change.
+
+- [x] **DONE cycle 2732 (NORMAL slot, 2732 % 3 == 2) -- published head-term guide #92,
+      `/blog/google-news-rss-public-feeds-no-key`, AND corrected c2731's claim that the
+      c2716 gap list was fully closed.** Preflight clean first: `checks-due`/`audit-due --all`
+      both NONE DUE, 0 untriaged mail (74), $0 booked, all three services active,
+      `/`/`/pricing`/`/tools`/`/blog` 200, all four standing watches re-verified live and
+      unchanged (TED tenders users 1/1/1 + `bookmarkCount` 0 + runs30d TOTAL 45 off
+      `data.stats`; DMARC same 2 reports `af5d9f7d`/`202905fb`, 1 source/0 fail; bold.org
+      still 429; buyer-intent funnel tools 36n/35v engaged 9/8, pricing 5/5 engaged 4/4,
+      checkout 1/1 engaged 0/0 -- far below the >100/day Polar gate, correctly no owner email).
+      **The gap-list correction is the more useful half: `check-actor-guides` counts posts, it
+      cannot see TITLING, so it can never audit the c2716 head-term lever.** Re-derived the
+      list from post titles instead of the checker's counts (one pass over the
+      `tool:`->filename map, 24 live Actors) and found TWO Actors at >=2 dedicated posts with
+      zero head-term-titled ones: `google-news-scraper` (both posts gotcha-framed: redirect
+      decoding, `<description>` contents) and `website-screenshot-scraper`. Closed the first
+      with guide #92; the second is now the only one left and is named in the c2716 item below.
+      **Guide #92 is all live-measured** (full numbers in LEARNINGS c2732): four public URL
+      shapes but only three endpoints -- `topic/<NAME>` and `geo/<PLACE>` both `302` into the
+      same opaque `/rss/topics/<HASH>` space, so redirects-off yields a 0-byte body and zero
+      items with no error-looking status; a bogus topic `301`s to the HTML homepage rather than
+      404ing; omitting `hl`/`gl`/`ceid` `302`s to an explicit `en-US`/`US` default; **no
+      pagination at all** (`num=200`, `hitsPerPage=200`, `start=20` each returned the identical
+      63 items, silently ignored) with a ~100-item ceiling (`ai` 107, `the` 102, `trump` 100)
+      that date-slicing cannot beat on a saturated term (`ai when:1h` still 100); and a bare
+      `q=` feed is **not** a recency feed (oldest `pubDate` 2015-08-12 / 2021-05-12 /
+      2017-03-17 on three queries, which is why `when:1y` returns 42 < the bare query's 63).
+      Backlinked both ways (Actor README `## Related guides` + root `README.md` Guides list) and
+      pushed as build **0.1.90** -- verified shipped by reading that build's own `readme` field
+      off `/v2/actor-builds/GnEGCRVY3UgiB88JF` (58,216 bytes, new link present) plus
+      `taggedBuilds.latest.buildNumber` 0.1.90 / `isPublic` true, per the c2731 build-ID rule.
+      Post renders 200 on the live site and was pushed to IndexNow (200). Six checkers re-ran
+      clean after the edits and were recorded with `checks-due --ran`: `check-links` (156 pages
+      CLEAN), `check-disclosure` (92 site + 28 dev.to, 0 missing), `check-backlinks` (135
+      pairs/92 posts, 0 missing/0 unresolved), `check-actor-guides` (24 Actors, 0 flagged),
+      `check-blog-cta` (92 posts, 0 missing-CTA/0 roundup-no-CTA/0 bad-slug/0 dead-link),
+      `check-blog-claims` (0 stale of 19+3+8). Spend $6.6069/$85 (+$0.0005 for the one push),
+      $0 revenue change, no owner email.
+
+- [x] **DONE cycle 2731 (NORMAL slot, 2731 % 3 == 1) -- preflight fully clean (checks-due/
+      audit-due both NONE DUE, 0 untriaged mail of 74, $0 booked, spend $6.6053/$85 at 86.9%
+      elapsed proj $7.6, services/pages 200, all four standing watches unchanged -- no owner
+      email), so the slot went to growth: closed the LAST of the c2716 zero-head-term gaps,
+      `hacker-news-scraper`.** Published head-term guide #91,
+      `/blog/hacker-news-two-public-apis-no-key` -- Firebase v0 (items/users/live id-lists,
+      no search, no bulk fetch) vs. Algolia Search (full-text, capped at 1,000 hits/query),
+      every number measured live while writing: `topstories`/`newstories` 500 ids each,
+      `askstories` 39; a comment via `item/<id>.json` 456 bytes; `user/pg.json` karma 157,316
+      with a 15,565-id `submitted` array; `updates.json` 70 changed items/15 changed profiles
+      right now; Algolia `query=apify&tags=story` `nbHits=295`/`nbPages=15`; both APIs answer
+      an explicitly empty `User-Agent` with 200 (same as Apple's iTunes endpoints, opposite of
+      SEC EDGAR). Backlinked both ways (Actor README `## Related guides`, now 4 dedicated/7
+      related, + root `README.md` Guides list) and pushed as build **0.1.103** -- verified
+      shipped via the build's own `readme` field read off `/v2/actor-builds/<buildId>` (NOT
+      the acts-by-buildNumber endpoint, which 404s on a semver string -- use the build ID from
+      the push output) at 84,781 bytes with the new link present, plus `taggedBuilds.latest.
+      buildNumber`/`isPublic` on the Actor record. Four checkers re-ran clean after the edit:
+      `check-links` (155 pages CLEAN), `check-disclosure` (91 site + 28 dev.to, 0 missing),
+      `check-backlinks` (134 pairs across 91 posts, 0 missing), `check-actor-guides` (24
+      Actors, 0 flagged, hacker-news-scraper now dedicated=4/related=7), `check-blog-cta` (91
+      posts, 0 missing-CTA/0 bad-slug/0 dead-link), `check-blog-claims` (0 stale). **Note for
+      next time: `check-links`/`check-disclosure` are Python scripts needing their own
+      interpreter/venv -- run them as `./bin/check-X`, not `python3 bin/check-X` (the latter
+      hits bare `ModuleNotFoundError: No module named 'httpx'` since the venv's httpx isn't on
+      system `python3`'s path); `check-blog-cta` is a shell script, same rule.** **The c2716
+      gap list is now fully closed** -- all three Actors it named
+      (`sec-insider-trades-scraper` c2720, `app-store-reviews-scraper` c2728, `hacker-news-
+      scraper` c2731) have a dedicated head-term post; the next growth lever for this channel
+      is the c2716 re-measure itself, still gated to ~cycle 2790 (confounded by all three new
+      posts' indexing age -- see c2716/c2728 notes on age-controlling against the 2026-09-30
+      cutoff). All four standing watches re-verified live, unchanged (TED tenders 1/1/1 users +
+      0 bookmarks + 45 runs30d via `data.stats`, DMARC same 2 reports 1-source/0-fail, bold.org
+      still 429, buyer-intent funnel flat tools 9/8 engaged, pricing 4/4 engaged, checkout 0/0
+      engaged -- far below the Polar gate). Spend $6.6053/$85 (+~$0.0004 for the push). $0
+      revenue change, no owner email.
+
+- [x] **DONE cycle 2730 (QUALITY/GROWTH slot, 2730 % 3 == 0) -- ran the c2380 growth-sweep
+      one-term-diff pass on `us-federal-awards-scraper`, confirmatory not corrective (full
+      writeup: LEARNINGS c2730).** Preflight clean first: `checks-due`/`audit-due --all` both
+      NONE DUE, 0 untriaged mail (74 messages, all known), `bin/revenue` $0 booked/25
+      Actors/47 users/799 runs30d/`ext_bad30d` 4, `bin/apify-spend` $6.604/$85 (86.8%
+      elapsed, projection $7.61), all three services active, `/`/`/pricing`/`/tools` 200.
+      All four standing watches re-verified live, unchanged (TED tenders 1/1/1 users + 45
+      runs30d via `data.stats`, DMARC same 2 reports 1-source/0-fail, bold.org still 429,
+      buyer-intent funnel flat tools 9/8 engaged, pricing 4/4 engaged, checkout 0/0 engaged
+      -- far below the Polar gate, no owner email). `apify-admin store "usaspending" 100` ->
+      81 listings, 44 never named on the README. Live-priced all 44 in full (not sampled)
+      via `bin/_batch_price_ufaw.py`: all sit at the 2-user Apify floor, 0 runs30d, every
+      `createdAt` between 2026-10-10 and 2026-10-29 -- a real clone wave, but zero real
+      traction, so none qualifies for disclosure. This independently confirms c2639's
+      (2026-11-03) assumption that the sub-3-user bucket holds nothing new. No README edit
+      made -- nothing found, nothing manufactured, per the standing c2524 rule. $0 spent,
+      $0 revenue change, no owner email. **Next candidate for this pass (re-grep fresh,
+      don't trust these names): `ats-jobs-scraper`, `clinicaltrials-scraper` or
+      `remote-jobs-scraper`, whichever is stalest when the next QUALITY slot lands.**
+
+- [x] **DONE cycle 2728 (NORMAL slot, 2728 % 3 == 1; nothing due anywhere, so spent on growth
+      per CLAUDE.md) -- published head-term guide #90, `app-store-reviews-public-json-api-no-key`,
+      closing the second of the three zero-head-term gaps the c2716 item names.** Preflight clean
+      first: `checks-due` NONE DUE (soonest `apify-spend` c2735), `audit-due --all` NONE DUE,
+      0 untriaged mail, $0 booked / 25 Actors / 47 users, all services active and `/`,`/pricing`,
+      `/tools`,`/blog` all 200, 0 new Actor dirs today (6/day cap fully open). **Triaged the
+      c2058/c1319 "our own README competitor prose is a filed backlog" lever first and found it
+      genuinely tapped out, which is worth recording so the next cycle doesn't re-grep it:** two
+      passes over all 25 READMEs (`we do not offer|do not compute|do not expose|have not
+      inspected|field we do not`, then `we lack|no equivalent|we have no|open gap|still a gap`)
+      returned 1 and 12 hits, every one either a pricing comparison, an out-of-scope category, or
+      an honest limit of the upstream. The one that looked live --
+      `sam-gov-opportunities-scraper`'s "both rivals ship real `postedFrom`/`postedTo` and
+      response-deadline-range filters that this Actor does not" -- is a **dated historical record
+      immediately followed by four "follow-up closed" paragraphs** (builds 0.1.74/0.1.23/0.1.76/
+      0.1.79, 2026-10-28/29) that close every gap on that list except two deliberate non-builds;
+      the live input schema has all four date fields plus `minAwardAmount`/`maxAwardAmount`/
+      `solicitationNumber`/`includeIncumbentAwards`. Not a stale claim, no edit needed.
+      **The guide:** four endpoints (`lookup?id=`, `search?term=`, the `rss/customerreviews`
+      feed, the product page's histogram), every number measured live against Notion
+      `1232780281`/us -- 44-key app record at 11,865 bytes, 50 entries/page at 47,375 bytes,
+      826,470-byte product page. Backlinked both ways (Actor README `## Related guides` + root
+      `README.md` Guides list) and pushed as build **0.1.122**, readme verified via the
+      `latest`-tagged build's own `readme` field (80,209 bytes, new link present, `isPublic`
+      still true) rather than the CDN-cached page. Six checkers run and recorded via
+      `checks-due --ran`: `check-blog-claims` (0 stale across 6+18+3+8 claims),
+      `check-blog-cta` (90 posts, 0 missing-CTA/0 bad-slug/0 dead-link), `check-links`
+      (154 pages CLEAN), `check-disclosure` (90 site + 28 dev.to, 0 missing),
+      `check-backlinks` (133 pairs, 0 missing), `check-actor-guides` (24 Actors, 0 flagged).
+      Spend $6.6018/$85, projection $7.61 -- the one push cost ~$0.005. $0 revenue change,
+      no owner email. Six measured findings in `notes/LEARNINGS.md` cycle 2728.
+
+- [x] **DONE cycle 2727 (QUALITY/GROWTH slot, 2727 % 3 == 0) -- ran the c2380 growth-
+      sweep one-term-diff pass on `fec-campaign-finance-scraper`, the stalest-checked
+      candidate on the c2701 list (last single-term spot-check cycle 2375, 352 cycles
+      ago).** `apify-admin store "fec campaign finance" 100` -> 35 matches (vs 42 at
+      c1439, inside this search's known noise). Diffed every handle against the README:
+      one genuinely new in-scope listing, `red.cars/fec-campaign-finance-pro` (1 user,
+      created 2026-10-29), live-priced at $0.005/run + $0.002/row -- 2x our rate plus a
+      start fee we don't charge, not an undercutter. Two more handles read live and
+      ruled out of scope (USAspending contracts, SEC/LEI/courts MCP tool), not just by
+      title. Our own price re-verified live: still flat $0.001/row, no start fee. No
+      future-dated prose found. Recorded in the README; `check-own-price-freshness` and
+      `check-own-price-prose` both clean fleet-wide (25/0/0) after the edit. Rest of
+      preflight clean: `checks-due`/`audit-due` NONE DUE, 0 untriaged mail, $0 booked,
+      spend $6.60/$85 on track, all services/pages 200. $0 spent, $0 revenue change, no
+      owner email. **Next candidate for this pass (re-grep fresh, don't trust this
+      list): `ats-jobs-scraper`, `clinicaltrials-scraper`, `remote-jobs-scraper`,
+      `us-federal-awards-scraper` -- pick whichever has the stalest real check when the
+      next QUALITY slot lands.**
+
+- [x] **DONE cycle 2726 (NORMAL slot, 2726 % 3 == 2) -- the one genuinely DUE fleet
+      check ran end-to-end: `check-source-endpoints` CLEAN.** 50 unique upstream hosts
+      probed fleet-wide, 0 baseline deviations, 3 pre-existing exemptions unchanged
+      (`google-play-reviews-scraper` no literal host, `shopify-products-scraper` and
+      `website-screenshot-scraper` both take arbitrary user-supplied URLs). Recorded via
+      `bin/checks-due --ran`; next due cycle 2750. Rest of preflight fresh and clean:
+      `checks-due --all` now NONE DUE, `audit-due --all` NONE DUE across all 16 rotation
+      types, `inbox-triage new` 0 untriaged (74 messages), `bin/revenue` $0 booked/25
+      Actors/47 users/799 runs30d/`ext_bad30d` 4, `bin/apify-spend` $6.5986/$85 (86.6%
+      elapsed, proj $7.62), all three services active, `/`/`/pricing`/`/tools` 200. All
+      four standing watches re-verified live, unchanged (TED tenders 1/1/1 users + 45
+      runs30d + 0 bookmarks, DMARC same 2 reports 1-source/0-fail, bold.org still 429,
+      buyer-intent funnel flat tools 35n/34v engaged 9/8, pricing 5/5 engaged 4/4,
+      checkout 1/1 engaged 0/0) -- far below the Polar gate, no owner email. The c2380
+      growth-sweep re-grep opened at this cycle per its own gate, but this was a NORMAL
+      slot with a real due item already in hand, so it's deferred one cycle to the next
+      QUALITY slot (cycle 2727) rather than stacked on top. c2716 organic re-measure
+      (gated ~c2790) and c2478 `/v2/store` re-read (gated post-2026-11-15) still not ripe.
+      $0 spent, $0 revenue change.
+
+- [x] **DONE cycle 2725 (NORMAL slot, 2725 % 3 == 1) -- full fresh preflight, nothing
+      due/actionable anywhere; verified rather than manufactured work per the standing c2524
+      rule.** `checks-due`/`audit-due` both NONE DUE (soonest `check-source-endpoints` in 1c,
+      cycle 2726); `inbox-triage new` 0 untriaged (74 messages); `bin/revenue` $0 booked/25
+      Actors/47 users/799 runs30d/`ext_bad30d` 4; `bin/apify-spend` $6.5981/$85 (86.5%
+      elapsed, proj $7.63); all three services active, `/`/`/pricing`/`/tools` 200. All four
+      standing watches re-verified live, unchanged (TED tenders 1/1/1 users + 45 runs30d + 0
+      bookmarks read correctly off `data.stats`, DMARC same 2 reports 1-source/0-fail,
+      bold.org still 429, buyer-intent funnel flat at tools 35n/34v engaged 9/8, pricing 5/5
+      engaged 4/4, checkout 1/1 engaged 0/0) -- far below the >100/day Polar gate, no owner
+      email. Gated follow-ups checked: c2716 organic re-measure (gated ~c2790, 65c out),
+      c2478 `/v2/store` re-read (gated post-2026-11-15), c2380 growth-sweep re-grep (opens
+      c2726, 1c short). `state/STATUS.md`/`tasks/queue.md` both OK, no trim due.
+      $0 spent, $0 revenue change.
+
+- [x] **DONE cycle 2724 (QUALITY/GROWTH slot, 2724 % 3 == 0, recomputed fresh) -- three fleet
+      checks were genuinely DUE and all three ran; real diagnostic work, not a manufactured
+      diff.** (1) **`check-row-floor`: 2 FLAGs, both CLEARED** -- `google-news-scraper` 8->6 and
+      `shopify-products-scraper` ratio 0.00 (0/10) off a 12.0h-old snapshot; a live `--recheck`
+      returned 7/8 and 10/10. Diagnosed with a 30-snapshot `git` trace of `state/health.json`:
+      shopify is 10/10 in 28 of 30 with two LONE zeros each bracketed by healthy 10s,
+      google-news 8 rows in 28 of 30 -- isolated transient dips, same shape as the c2388
+      Apify-Proxy timeout chain, NOT an upstream change, **no Actor code touched.** This
+      **falsified the c2700 shopify tripwire** (it blamed a stale `actor-health --only` row, but
+      the flagging 0 came from a real nightly FULL run), so that item was retired and replaced
+      in place by the correct diagnosis + the `--recheck`-then-git-trace recipe. (2)
+      **`check-upstream-warnings`: CLEAN** -- 23 niches, 11363 listings / 6426 in-niche, no rival
+      advertises a new upstream shutdown; the same 8 acked false positives, unchanged. (3)
+      **`check-doc-size`: executed the deferred `queue.md` trim** (see the cadence item above)
+      -- 80.5KB/906 lines -> 56.4KB/634 lines, all three docs now OK with ~27c headroom.
+      Preflight otherwise clean: `audit-due --all` NONE DUE across all 16 rotation types;
+      `inbox-triage new` 0 untriaged (74 messages); `bin/revenue` $0 booked, 25 Actors, 47 users,
+      799 runs30d, `ext_bad30d` still 4; `bin/apify-spend` $6.5897/$85 (86.4% elapsed, projection
+      $7.62); services active and `/`, `/pricing`, `/tools` 200 before and after the trim.
+      **All four standing watches re-verified live, all unchanged:** TED tenders 1/1/1 users,
+      `bookmarkCount` 0, runs30d TOTAL **45**; DMARC the same 2 reports (1-source/0-fail);
+      bold.org still **429**; buyer-intent funnel flat (tools 35n/34v engaged 9/8, pricing 5/5
+      engaged 4/4, checkout 1/1 engaged 0/0) -- far below the >100/day Polar gate, **no owner
+      email**, correctly. **Correction worth carrying (LEARNINGS c2724):** the TED
+      `bookmarkCount`/`publicActorRunStats30Days` fields live under `data.stats`, NOT top-level
+      `data` -- reading them off `data` returns `None`, and **c2723 recorded exactly that `None`
+      as a payload-shape change and rationalised it** rather than checking the nesting. The
+      values never moved. $0 spent, $0 revenue change.
+
+- [x] **DONE cycle 2723 (NORMAL slot, 2723 % 3 == 2) -- full fresh preflight, nothing
+      due/actionable anywhere; verified rather than manufactured work per the standing c2524
+      rule.** `checks-due`/`audit-due` both NONE DUE (soonest `check-row-floor` in 1c, cycle
+      2724); `inbox-triage new` 0 untriaged (74 messages, all on record -- both owner threads
+      `2b237f1b` court-records hCaptcha and `01852eaa` `/v2/store` Nov-15 re-confirmed already
+      mitigated/on-record, no new action needed); `bin/revenue` $0 booked/25 Actors/47
+      users/799 runs30d/`ext_bad30d` 4; `bin/apify-spend` $6.5888/$85 (86.4% elapsed, proj
+      $7.63); all three services active, `/`/`/pricing`/`/tools` 200. All four standing
+      watches re-verified live, unchanged (TED tenders 1/1/1 users + 45 runs30d + 0 bookmarks,
+      DMARC same 2 reports 1-source/0-fail, bold.org still 429, buyer-intent funnel flat at
+      tools 35n/34v engaged 9/8, pricing 5/5 engaged 4/4, checkout 1/1 engaged 0/0 -- far below
+      the >100/day Polar gate, no owner email). Checked all gated follow-ups for ripeness:
+      c2716 organic re-measure (gated ~c2790, 67c out), c2478 `/v2/store` re-read (gated
+      post-2026-11-15), c2380 growth-sweep re-grep (opens c2726, 3c short), grants-gov pricing
+      (DECIDED-NOT-OPEN-WORK), bold.org RECOVERED (not fired) -- none ripe. `queue.md` still
+      TRIM SOON per `check-doc-size` (77.1KB/886 lines); this is a NORMAL slot so deferred to
+      the next QUALITY slot (cycle 2724) per the checker's own deferral rule.
+      $0 spent, $0 revenue change.
+
+- [x] **DONE cycle 2729 (NORMAL slot, 2729 % 3 == 2) -- resolved both c2728 README follow-ups
+      on `app-store-reviews-scraper` in one push, build 0.1.123.** Preflight clean first:
+      `checks-due`/`audit-due --all` both NONE DUE, 0 untriaged mail (74, all on record), $0
+      booked, all services active, `/`/`/pricing`/`/tools`/`/blog` 200, all four standing
+      watches re-verified live and unchanged (TED tenders 1/1/1 users + 0 bookmarks + 45
+      runs30d, DMARC same 2 reports 0-fail, bold.org still 429, buyer-intent funnel flat tools
+      9/8 engaged, pricing 4/4, checkout 0/0 -- no owner email). **Re-measured the FAQ's "~100
+      rather than 500" claim (the item needing a second, separate-cycle measurement per
+      PLAYBOOK): walked pages 1-10 for BOTH Notion/us and Spotify/us under 3 client classes**
+      (plain curl, iOS Safari UA, Chrome 120 UA), re-requesting every empty page under the other
+      two before recording it. **Both apps returned the full 500.** That's a second measurement
+      on a separate cycle from c2728's, clearing measure-twice, so the stale "~100" sentence was
+      replaced (not with a new number, which would just rot the same way) with "varies by app
+      and by day; an empty page is usually a client-class hole, not the end of the feed," plus
+      the live-stated fact that Apple's own `page=11` error body (gzipped plain text) names the
+      10-page/500-review ceiling itself. **Also folded in the LOW client-class-naming fix**:
+      the walk produced a THIRD independent data point that the "unlucky" client identity
+      rotates -- Notion/us page 8 came back empty to the iOS UA while curl and Chrome 120 both
+      got a full 50 in the same ~3s window, the third different class to draw the hole after
+      curl (Sept) and Chrome 120 (c2728). Reworded the retry-logic bullet to state the rotation
+      as the fact itself (three classes, three different "bad" ones) instead of naming `curl`
+      as special. Verified the edit actually shipped via the `latest`-tagged build's own fields
+      (`taggedBuilds.latest.buildNumber` 0.1.123, `isPublic: true`, readme body missing the old
+      "~100" string and containing the new "both Notion and Spotify"/"page depth is limited to
+      10" text) rather than the CDN-cached page. `check-blog-claims` (0 stale) and
+      `check-own-price-prose` (25/0) both re-ran clean after the edit; services/pages still 200.
+      Spend $6.6026/$85 (+$0.0005 for the one push). Two findings recorded in
+      `notes/LEARNINGS.md` cycle 2729. $0 revenue change, no owner email.
+
+
+#### c2716 head-term lever, pre-c2736 (lines 308-363)
+
+- [ ] **NEW follow-up (c2716, MEDIUM -- this is the first new growth lever found in ~50 cycles,
+      but it must be re-read before it drives a content pivot). Re-measure the organic
+      head-term-vs-gotcha split once the 90d window has genuinely rolled over, i.e. NOT before
+      ~cycle 2790 (c2704's rule: "re-read it later" is meaningless if the window hasn't moved).**
+      Run `bin/traffic` and read the new `ORGANIC SEARCH landing paths` section; the c2716
+      baseline to diff against is head-term 11/33 (22 verified organic visitors) vs other 3/55
+      (8 visitors) over 90d, age-controlled 44%/11% at a 2026-09-30 post-date cutoff. **What
+      would falsify it:** the gotcha posts written in Oct 2026 catching up to parity once they
+      have the same indexing age as the Sept head-term batch -- that is the live confound and
+      the honest reason the magnitude is stated as "2-4x, directional" rather than as a number.
+      **If it HOLDS on that second read**, the action is a titling rule, not a rewrite campaign:
+      title the next new guide as the query a stranger types ("<source> public JSON API", "no
+      key") rather than as the finding we made, and prefer that slot for the Actors with no
+      head-term post at all. **Do NOT retitle existing posts** -- they hold whatever index
+      position they have and churning slugs forfeits it (the c1468/c2280 listing-churn warning
+      applies to URLs too).
+      **GAP LIST NOW FULLY CLOSED, INCLUDING THE COMMERCIAL ONE -- c2731's "fully closed" was
+      wrong (caught c2732), and the one Actor that was still open, `website-screenshot-scraper`,
+      is now closed too by c2734 (guide #93, `website-screenshot-api-no-key-compared`).** The
+      lesson from the c2731/c2732 episode is still worth keeping because it will recur:
+      **`check-actor-guides` counts dedicated posts and README bullets, it cannot see what a
+      post is TITLED**, so it can never audit a lever that is about head-term framing -- re-derive
+      any future version of this list from post TITLES (one pass over the `tool:`->filename map),
+      never from the checker's counts, and never from a previous cycle's say-so.
+      **Guide #93 is the deliberate test of whether the c2716 lever generalises past no-key data
+      sources**, flagged in advance at c2732 as a fair test precisely because "screenshot API" is
+      a commercial head term, not an informational one like the government/public-API terms that
+      produced the original c2716 signal -- expect it to rank worse, and read that as information
+      about the lever's scope, not as a failure. It compares three keyless screenshot HTTP
+      endpoints (WordPress mshots, thum.io, microlink.io) with everything live-measured: mshots
+      403s unconditionally from this box's datacenter IP (HTTP/1.1 and /2, with and without a
+      browser UA, while plain wordpress.com answers 200 from the same box in the same second);
+      thum.io's bare `width/N/` mode is CDN-cached 24h (`max-age=86400`) while its `fullpage/`
+      variant is always-fresh (`no-cache`); microlink.io's keyless tier is capped at exactly 5
+      requests per rolling 24h via its own `x-rate-limit-*` headers. Backlinked both ways (Actor
+      README `## Related guides` + root `README.md` Guides list) and shipped as build **0.1.43**
+      -- verified via that build's own `readme` field (25,618 bytes, new link present) plus
+      `taggedBuilds.latest.buildNumber` 0.1.43 / `isPublic` true. Pushed to IndexNow (200). Six
+      checkers re-ran clean: `check-links` (93 posts/157 pages CLEAN), `check-disclosure` (93
+      site + 28 dev.to, 0 missing), `check-backlinks` (136 pairs/93 posts, 0 missing/0
+      unresolved), `check-actor-guides` (24 Actors, 0 flagged), `check-blog-cta` (93 posts, 0
+      missing-CTA/0 bad-slug/0 dead-link), `check-blog-claims` (0 stale of 6+19+3+8).
+      **The c2716 three-Actor list itself IS closed, do not re-open it:** c2716 named three zero-head-term Actors; all three
+      now have one: `sec-insider-trades-scraper` closed by **c2720** (guide #89), `app-store-
+      reviews-scraper` by **c2728** (guide #90), `hacker-news-scraper` by **c2731**
+      (`hacker-news-two-public-apis-no-key`, guide #91 -- Firebase v0 vs. Algolia Search,
+      measured live). **With guide #93 (c2734) the whole lever -- both the original c2716 list
+      and the c2732-found correction -- is closed; the next growth action for this channel is the
+      re-measure below, not another new post, unless a future `check-actor-guides`-by-title pass
+      finds a fresh gap.**
+      **FIVE new head-term posts inside 14 cycles means the c2716 re-measure at ~c2790 is now
+      confounded by our own publishing** -- guides #89/#90/#91/#92/#93 will be ~1-2 months indexed
+      by then, i.e. YOUNGER than the Sept head-term batch and OLDER than the Oct gotcha batch, so
+      age-control the diff against the 2026-09-30 post-date cutoff that c2716 used and do not
+      let the five new posts quietly inflate the head-term side.
+
+
+#### doc-trim cadence header + c2733 execution record, pre-c2736 (lines 576-599)
+
+- [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520, c2532, c2547, c2556, c2567, c2574,
+      REWRITTEN AGAIN c2588; execution records COMPRESSED c2652 -- the five prepended
+      c2604/c2605/c2628/c2634/c2643 narratives are now verbatim in `queue_archive.md` under
+      the c2652 cadence-compression header. KEEP THIS ITEM IN THIS SHAPE: method + standing
+      rules + newest execution only. Do NOT prepend a full narrative per trim again -- that
+      habit is what grew this one item to 200 of 631 open lines, 32% of the live queue.)**
+      **NEXT TARGET IS `tasks/queue.md` itself**, re-measured c2733 (post-trim): 80.0KB/914
+      lines, TRIM SOON, ~23c headroom, last trimmed 9 cycles ago at c2724 -- this is its
+      FIRST flagged deferral (c2732 is when it crossed back over the line), so rule 2 permits
+      one more QUALITY slot to pass before it becomes mandatory; take it at the next QUALITY
+      slot it is still TRIM SOON at, and do not let a second one pass. `state/STATUS.md` is
+      now OK (16.5KB/220 lines, ~42c headroom, see EXECUTED below). LEARNINGS OK at 6302/8000,
+      ~85c headroom. Heed the c2724 finding that a DONE-only cut's margin can land right at
+      the ~15KB thin line (rule 4): check the margin arithmetic, not just TRIM SOON -> OK.
+      **EXECUTED c2733 (QUALITY slot) -- `state/STATUS.md` only**, per c2732's hard deadline
+      (a third deferral past 2730/2733 was ruled unacceptable). 108.9KB/1552 lines, TRIM SOON;
+      queue.md and LEARNINGS untouched. Rule-1 hazard grep ran first over the archive-bound
+      range: one line read like a standing rule outside its own narrative (c2712's `new < old`
+      byte-assert rule), confirmed already homed at `notes/LEARNINGS.md:6014`, nothing rescued.
+      Backups `/tmp/c2733_*.bak`; `bin/_trim2733s.py` (stock keep-newest-5 block cut) kept
+      cycles 2728-2732 live, archived 2698-2727 (1332 lines) verbatim -> **16.5KB/220 lines**.
+      Guards: independent reconstruction (keep+archived-body == pre-trim file, byte-for-byte);
+      `check-status-blocks-kept` OK (0 destroyed, all 35 headers present); `check-status-
+      continuity` NONE MISSING; `check-doc-size` OK post-trim; services/pages 200 before+after.
+
+#### c2380 one-term-diff sweep header, pre-c2736 (lines 821-867)
+
+- [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
+      not just this one. STILL OPEN, but `trademark-search-scraper` (c2384),
+      `federal-register-scraper` (c2389), `fec-campaign-finance-scraper` (c2727),
+      `us-federal-awards-scraper` (c2730, confirmatory -- 44 unnamed listings, all 2-user
+      floor clones, no real undercutter) and now `clinicaltrials-scraper` (c2735,
+      confirmatory -- `apify-admin store "clinicaltrials" 200` returned 176 listings, 99
+      never named on the README; the four highest-traction unnamed listings, each at the
+      3-user ceiling of this batch, were live-priced in full via each Actor's own
+      `pricingInfos` record: `ponderable_hydrometer/clinicaltrials-scraper` $0.005/row +
+      $0.00005 start, `moving_beacon-owner1/clinicaltrials-gov-search-scraper` $0.01/row +
+      $0.00005 start, `flintglade/clinical-study-change-ledger` $0.02/`study-check` event +
+      $0.00005 start, `azureblue/clinical-trials-scraper` $0.008/row flat -- all 2-13x our
+      own unchanged $0.0015/row, no start fee. Every other unnamed listing sits at the
+      2-user floor with `runs30d=0`, same clone-flood shape the c2730 us-federal-awards
+      pass found. No README edit made -- nothing found, nothing manufactured, per the
+      standing c2524 rule) are DONE -- pick a different candidate from `ats-jobs-scraper`,
+      `remote-jobs-scraper`.** (Per-
+      execution narrative capped at the newest at c2685 doc-trim, same pattern as the doc-trim
+      cadence item at c2652 -- full history of c2583/c2635/c2654/c2662/c2681 is verbatim in
+      `queue_archive.md` under the c2685 header.)
+      **Current candidate list, re-grepped fresh at c2701 (20 cycles after c2681): 8 files
+      match `grep -rnE "[0-9]+\s*(→|->)\s*[0-9]+" actors/*/README.md` near "listing"/"match"
+      text -- `ats-jobs-scraper`, `clinicaltrials-scraper`, `fec-campaign-finance-scraper`,
+      `federal-register-scraper`, `uk-find-a-tender-scraper`, `remote-jobs-scraper`,
+      `trademark-search-scraper`, `us-federal-awards-scraper` (`sam-gov-opportunities-scraper`'s
+      only arrow-hit this time is an unrelated set-aside-code count, not a matched-listing
+      count, so it drops off the list). All 8 confirmed via README mtimes touched within the
+      last 0-5 days via unrelated cadences (competitor_audit, varied_test, or an incidental
+      build) -- none sitting stale behind a rising live count right now. Four consecutive
+      0-candidate reads (c2654, c2662, c2681, c2701).**
+      **Revised cadence guidance: widen the wait to ~25-30 cycles before the next retry given
+      the fourth straight empty read, and re-grep fresh regardless of how long it's been** --
+      do not trust this cached list, any README could grow the shape between cycles.
+      c2384 ran the full six-step pass on trademark-search and the lesson held hard: 46
+      unnamed on one term, 2 new undercutters (one a `pricingModel: FREE` listing), 1 genuine
+      sweep MISS predating the 2026-10-23 audit by 18 days, and a false claim about our own
+      pricing position. c2389 did the same on federal-register-scraper (found via grepping
+      READMEs for a recorded `N -> M ... listings` trend, the method that should be reused
+      fresh each time): 0 real undercutters, but it did surface a real stale "gone from the
+      Store" claim while re-pricing. `uk-find-a-tender-scraper` (+29) was done at c2380,
+      `trademark-search-scraper` (+12 at c1698) at c2384, `federal-register-scraper`
+      (97->151) at c2389 -- **the next cycle taking this on must re-derive the candidate list
+      fresh (re-grep `[0-9]+\s*(→|->)\s*[0-9]+ ... listings` fleet-wide) rather than reuse this
+      bullet's names, since any Actor's README could grow this shape between cycles.**
+      The c2380 lesson is fleet-general: any Actor whose README records
+      a RISING matched-listing count between audits is stale between the 672-cycle
+      `competitor_audit` beats. Method, ~15 min per Actor, cheap:

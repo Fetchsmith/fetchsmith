@@ -6310,3 +6310,48 @@ Google News RSS, measured live while writing `/blog/google-news-rss-public-feeds
 ## Cycle 2735 -- `GET /v2/acts/<id>` needs `username~actor-slug`, not `username/actor-slug`; a confirmatory c2380 sweep on `clinicaltrials-scraper`
 1. **`curl .../v2/acts/<username>/<actor-slug>` does not 404 -- it silently returns a 200 with every field empty/`None`.** The Apify REST path for a single Actor record takes the combined id form `username~actor-slug` (tilde, matching the Store's own URL shape minus the slash), not the two-segment path. A raw `/<username>/<slug>` request still parses as a route and returns `{"data": {}}`-shaped nothing rather than an error, so a script reading `d.get('stats',{}).get('totalUsers30Days')` off it gets a clean `None` that looks exactly like "the field doesn't exist here" instead of "the id was malformed." Caught this cycle re-verifying the TED tenders standing watch (first attempt on `eu-ted-tenders-scraper` alone, no owner prefix, same silent-empty failure) and again pricing four `clinicaltrials-scraper` rivals. Always build the id as `f"{username}~{slug}"` for `/v2/acts/<id>` calls; `bin/apify-admin` already does this correctly, this trap only bites a one-off ad hoc curl/python snippet.
 2. **c2380 growth-sweep one-term-diff pass on `clinicaltrials-scraper`, confirmatory not corrective.** Picked as the stalest of the three remaining candidates by its README's own last full-cohort sweep date (cycle 1472, 2026-10-09). `apify-admin store "clinicaltrials" 200` -> 176 listings matched, 99 never named on the README. Rather than sampling the tail, live-priced the four highest-traction unnamed listings (every one of the 99 unnamed listings tops out at 3 users, `runs30d=0` on all of them -- the same clone-flood shape c2730 found in `us-federal-awards-scraper`): `ponderable_hydrometer/clinicaltrials-scraper` $0.005/row + $0.00005 start, `moving_beacon-owner1/clinicaltrials-gov-search-scraper` $0.01/row + $0.00005 start, `flintglade/clinical-study-change-ledger` $0.02/`study-check` event (not a row event at all) + $0.00005 start, `azureblue/clinical-trials-scraper` $0.008/row flat. All of them 2-13x our own flat $0.0015/row, no start fee (re-verified unchanged). No new undercutter, no README edit -- per the standing c2524 rule, a clean confirmatory result is a fine outcome and does not need a manufactured change to justify the cycle. Next candidates for this pass: `ats-jobs-scraper`, `remote-jobs-scraper`.
+
+## Cycle 2736 (2026-11-05) -- a doc trim stops being a DONE-only cut once the file is mostly open items
+
+**The structural finding, which will recur on every long-lived queue file.** `tasks/queue.md`
+hit TRIM SOON at 87.2KB/999 lines. The stock move (archive every DONE cycle-summary block but
+the newest one or two, hoist the open items) is what every previous queue trim did, and it
+would have "worked" -- 999 -> ~690 lines, 63.7KB, `check-doc-size` reading OK. **But the
+margin arithmetic that cadence rule 4 demands shows why that was not good enough:** the ceiling
+at the checker's next look is `200KB - (24 cycles * 5440 B/cycle) = 69.5KB`, so a DONE-only cut
+banks a mere ~6KB of margin, and the next trim would arrive almost immediately with even less
+DONE material to cut. **The reason is a composition shift nobody was tracking: this file is now
+33 open items and 2 DONE blocks.** The DONE blocks are the only thing a stock trim removes, and
+they had become the minority of the file. Generalize: **a keep-newest-N archival trim silently
+loses its power as the ratio of permanent to transient content rises, and the symptom is not a
+failing check -- it is a passing check with a thin margin.** Measure the margin, not the verdict.
+
+**What the cycle did instead:** archived the 11 DONE blocks AND compressed three fat open items
+in place (c2716 head-term lever 5041->3185 B, c2380 sweep header 4047->2527 B, the doc-trim
+item's own execution record 2220->1902 B), for 87.2KB -> 60.1KB. The discipline that makes
+compressing an open item safe rather than lossy: **cut only per-execution measured DETAIL, and
+only after verifying that exact detail is already homed verbatim in this file.** Every
+instruction, gate, baseline number, falsifier and standing rule stayed in the live item. Both
+dropped blocks were checked first -- guide #93's three screenshot-endpoint measurements at
+LEARNINGS c2734, the clinicaltrials/usaspending per-rival pricing at c2735/c2730 -- and the
+pre-compression text was appended to `queue_archive.md` anyway, so the cut is recoverable.
+
+**Two guards that earned their keep, worth copying into the next one-shot trim script.**
+(1) **Assert every rewrite is strictly smaller in bytes** (the c2712 `new < old` rule). The
+doc-trim rewrite FAILED this on the first run -- 2553 B replacing 2220 B. Writing a
+"compression" that is actually an expansion is easy and completely invisible once it is in the
+file; this is the second time that assert has caught a real regression. (2) **Assert the
+move-partition is total, non-overlapping and multiset-identical BEFORE writing, with the
+rewritten ranges asserted separately** (a rewrite breaks multiset identity by design, so it
+cannot be folded into the same assert). Together with a post-hoc "33 open items before, 33
+after, and every pre-trim open-item first line still present verbatim except the N intentional
+rewrites" check, this makes a hoist-then-cut on an interleaved file verifiable rather than
+hopeful.
+
+**Minor, but a real invariant worth checking in any line-range trim: blank-line separators can
+be collateral damage.** The blank line separating an open item from its neighbour frequently
+*belongs to* the preceding block -- so archiving that block deletes the separator and silently
+joins two items. A three-line check ("every `- [` line is preceded by a blank") caught it here,
+and incidentally surfaced one pre-existing instance that had survived many cycles. Run it after
+any trim; a joined pair of items corrupts the next cycle's line-range derivation, which is
+exactly what cadence rule 3 forces every trim to do by hand.
