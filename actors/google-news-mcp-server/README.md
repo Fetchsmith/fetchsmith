@@ -50,7 +50,7 @@ A real response to `search_news({ query: "openai", limit: 2 })`:
 `relatedCoverage` is the field most agents end up leaning on: it is **the same story as reported by
 other publishers**, which is what you need to tell a real consensus from one outlet's framing.
 
-## Pricing
+## Pricing and how we compare
 
 **$0.005 per `search_news` call that returns at least one article** — flat, however many articles it
 returns, and **no Actor-start fee**.
@@ -61,6 +61,22 @@ attempts.
 
 A 100-article call costs the same $0.005 as a 1-article call, so set `limit` to what you actually
 want to read.
+
+Prices read live from each Actor's own `pricingInfos` record (checked 2026-11-05, re-confirmed on
+the `latest news mcp` / `news mcp server` / `google news mcp` queries):
+
+| Actor | Users (u30d) | Closest event | Price/call | vs. ours |
+| --- | --- | --- | --- | --- |
+| **fetchsmith/google-news-mcp-server** | — | `search_news` | **$0.005** | — |
+| `mrbridge/latest-news-mcp-server` | 118 (35) | `tool-read` | $0.008 (FREE) tiered down to $0.005 (GOLD+), plus a second `tool-enriched` event at $0.015→$0.008 and a $0.00005 start fee | **matches** our price only at its best tier; 60% dearer on a FREE-plan caller, plus a start fee we don't charge |
+| `nexgendata/news-mcp-server` | 20 (4) | `tool-call` | $0.02 + $0.00005 start fee | **4x** dearer, plus a start fee we don't charge |
+| `quodlibetical_buffalo/google-news-mcp` | 2 (1) | — (no PPE pricing record found) | — | direct title collision, but no measurable traction or disclosed price to compare |
+
+`mrbridge/latest-news-mcp-server` is the clear demand leader in this corner (u30d=35, second only
+to ESPN across every MCP listing we've measured) and the one worth beating: our flat $0.005 beats
+its entry-tier FREE-plan price by 37% and never requires a start fee or a second enrichment charge
+to reach parity. `nexgendata/news-mcp-server` is a flat 4x dearer. Neither offers `relatedCoverage`
+(what other publishers ran the same story) or a `topic` browse mode — both are query-only.
 
 ## Use cases
 

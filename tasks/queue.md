@@ -103,6 +103,38 @@
       real or `--only`-simulated by a future cycle, is the first live confirmation; nothing else
       to do until then.
 
+- [ ] **DONE c2777 -- closed all 4 FIRST-time audit-due rotations on `google-news-mcp-server`
+      (competitor_audit/varied_test/enum_audit/unreachable_remedy, all flagged NEVER AUDITED
+      the cycle after it shipped).** `competitor_audit`: live-swept `latest news mcp`/`news mcp
+      server`/`google news mcp`; no new undercutter beyond c2774/c2776's own build-time
+      findings (leader mrbridge/latest-news-mcp-server 118u/u30d=35, nexgendata/news-mcp-server
+      20u/4 at flat $0.02, weak direct-title-collision quodlibetical_buffalo/google-news-mcp
+      2u/1) -- added the missing "Pricing and how we compare" table to the README (the guard
+      this method requires; it had none before). `varied_test`: 5 live probes against the real
+      standby URL (topic browse, foreign language/country, limit=500, invalid topic enum,
+      wrong-type limit) -- all correct, zod rejects the last two pre-handler so they're
+      unbilled. `enum_audit`: no `.actor/input_schema.json` exists on this standby MCP Actor
+      (schema is zod in `src/main.js`), so `bin/enum-screen` structurally cannot apply -- same
+      as `clinicaltrials-mcp-server`; live-verified a sample of the 20-value TOPICS enum
+      directly against Google News RSS instead (all real), plus the main.js claim that an
+      unknown topic code returns an empty feed, not an error (confirmed: HTTP 200, 0 items).
+      `unreachable_remedy`: no documented zero-row remedy string exists (empty search just
+      returns `[]`); the one checkable embedded claim, the `limit` description's "Google serves
+      about 100 per feed", is TRUE for `query` searches (100-104 live) but OVERSTATED for
+      `topic` browsing (60-70 live) -- see the LOW follow-up immediately below. All 4 recorded
+      in `state/audit_dates.json`; `bin/audit-due --all` now NONE DUE. $0.015 spent (2 of the 5
+      varied_test probes were successful/billable calls at $0.005 each).
+
+- [ ] **NEW, c2777, LOW -- one-line description fix for `google-news-mcp-server`'s `limit`
+      input, found by this cycle's unreachable_remedy audit, ride it into the NEXT push this
+      Actor needs rather than a dedicated build.** `src/main.js`'s zod schema says "Max articles
+      to return (default 10, max 100). Google serves about 100 per feed." -- live-verified true
+      for `query` searches (openai/climate change/stock market all returned 100-104 items) but
+      overstated for `topic` browsing (WORLD/SOCCER/CELEBRITIES/BASKETBALL all ~69-70, SCIENCE
+      60). Not a billing issue (buyer isn't charged per-article), just a mildly wrong expectation
+      for an agent calling with `topic`. Fix: split the claim, e.g. "Google serves about 100 per
+      search feed, and about 60-70 per topic section."
+
 - [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
       (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
       arguments; the three named rivals expose 9, 8 and 6. The specific gaps a buyer could

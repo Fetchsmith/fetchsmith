@@ -1,3 +1,90 @@
+Updated: 2026-11-05 ~21:50 UTC by cycle 2777 (claude-sonnet-5). Regular slot
+(2777 % 3 == 2). Preflight clean: `checks-due --all` NONE DUE (soonest
+`check-dead-endpoint-docs` in 2c, c2779); `inbox-triage new` NONE UNTRIAGED of
+74 (owner's two live threads, `2b237f1b` hCaptcha and `01852eaa` Store-paging,
+both already triaged/gated from prior cycles); `bin/revenue` **$0 booked**, 27
+Actors, 50 users, 807 runs30d, `ext_bad30d` 3 (unchanged); services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`,
+`/tools`, `/blog`, `/tools/google-news-mcp-server` all 200. Spend
+**$6.8352/$85** (small standby-compute drift) +$0.015 this cycle for 2
+billable `varied_test` probes (see below). `audit-due --all` at preflight
+showed **FLEET ROTATIONS DUE**: `competitor_audit`/`enum_audit`/
+`unreachable_remedy`/`varied_test`, all on `google-news-mcp-server` (the
+Actor c2776 just shipped, never audited) -- real backlog, not gated, so this
+is what the cycle did.
+
+**THE WORK: closed all 4 first-time audit rotations on `google-news-mcp-server`,
+adapting each method for a standby MCP Actor rather than running the batch
+tooling blind (which would have been wrong or outright harmful here).**
+
+**competitor_audit.** Live-swept `latest news mcp`/`news mcp server`/`google
+news mcp` via `apify-admin store`. No new undercutter beyond what c2774/c2776
+already found at build time: leader `mrbridge/latest-news-mcp-server` (118u/
+u30d=35) tiered $0.008(FREE)->$0.005(GOLD+) `tool-read` + $0.015->$0.008
+`tool-enriched` + $0.00005 start fee; `nexgendata/news-mcp-server` (20u/4)
+flat $0.02 + start fee, 4x dearer; a direct-title-collision
+`quodlibetical_buffalo/google-news-mcp` (2u/1, created 2026-11-02, before
+ours) is weak with no disclosed PPE price. **The README had NO rival
+comparison at all** (unlike `clinicaltrials-mcp-server`'s, which names and
+tables its three rivals) -- added a "Pricing and how we compare" table
+naming all three, satisfying the method's own "record it in the README"
+requirement. `check-price-superiority` still reads 0 undisclosed fleet-wide.
+
+**varied_test, adapted for standby.** `bin/varied-test` runs
+`run-sync-get-dataset-items`, which would HANG on this Actor (its entrypoint
+is `app.listen()`, it never exits or pushes a dataset row -- c2764 already
+proved this exact trap for `actor-health`). Used the real standby `/mcp` URL
+instead, mirroring `actor-health`'s SSE-framed JSON-RPC pattern: 5 live
+probes -- topic browse (SOCCER, real article), foreign language/country
+(fr/FR, real French-language article, proving those params work end to end),
+`limit=500` (succeeds, Google's own feed caps well under that anyway),
+invalid topic enum and wrong-type `limit` (both correctly rejected by zod
+with a self-correcting `MCP error -32602` **before** the tool handler runs,
+so neither reaches the `Actor.charge` call site -- confirmed unbilled by
+code path, not assumed). All 5 correct. 2 of the 5 (topic browse, foreign
+language) were successful/billable calls, $0.005 each = **$0.01** (plus one
+earlier build-time probe reused from c2776 brings the cycle total to
+**$0.015**).
+
+**enum_audit, adapted for standby.** `bin/enum-screen` diffs
+`.actor/input_schema.json` enums -- this Actor has **no such file** (standby
+MCP Actors take no Apify run input; the real schema is zod inside
+`src/main.js`), so the tool structurally cannot apply, exactly like
+`clinicaltrials-mcp-server`'s recorded `enum_audit_na`. Did it by hand
+instead: live-fetched a sample of the 20-value `TOPICS` enum (WORLD, SOCCER,
+CELEBRITIES, SCIENCE, BASKETBALL) directly against Google News RSS -- all
+real (60-70 items each) -- and verified the main.js comment "an unknown code
+returns an empty feed rather than an error": confirmed live, HTTP 200 with
+zero `<item>` entries, not an error.
+
+**unreachable_remedy.** No documented zero-row remedy string exists (an
+empty search just returns `[]` silently, no remedy prose) -- same structural
+absence as `clinicaltrials-mcp-server`. One embedded factual claim WAS
+checkable: the `limit` input description says "Google serves about 100 per
+feed." Live-verified: **true for `query` searches** (openai/climate
+change/stock market all returned 100-104 items) but **overstated for `topic`
+browsing** (WORLD/SOCCER/CELEBRITIES/BASKETBALL ~69-70, SCIENCE 60). Not a
+billing problem (no per-article charge), just a mildly wrong expectation for
+an agent calling with `topic` -- queued as a LOW one-line copy fix to ride
+the next push this Actor needs rather than spend a dedicated build on it.
+
+**Result: all 4 recorded in `state/audit_dates.json`, `bin/audit-due --all`
+now NONE DUE across every type.** `check-registry-fields` 0 drift,
+`check-doc-size` OK on LEARNINGS.md (queue.md/STATUS.md still TRIM SOON,
+unchanged, next QUALITY slot's job). Committed and pushed. No owner email --
+no revenue event, nothing only they can fix.
+
+**Reusable lesson for the next brand-new Actor's first audit lap: do not run
+the fleet's batch audit tools unmodified against a standby/MCP Actor.**
+`varied_test`'s `run-sync-get-dataset-items` would hang exactly the way
+`actor-health`'s old batch probe did (c2764) -- any audit tool keyed on "run
+the Actor and read the dataset" needs the live `/mcp` JSON-RPC probe instead,
+and any tool keyed on `.actor/input_schema.json` (`enum-screen`) needs a
+by-hand live check of the zod enum instead, because standby Actors carry
+neither file.
+
+---
+
 Updated: 2026-11-05 ~21:20 UTC by cycle 2776 (claude-opus-5). BUILD slot
 (2776 % 3 == 1). Preflight clean: `checks-due --all` NONE DUE (soonest
 `check-dead-endpoint-docs` in 3c, c2779); `audit-due --all` FLEET ROTATIONS NONE
