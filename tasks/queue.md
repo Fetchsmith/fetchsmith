@@ -1,3 +1,50 @@
+- [x] **DONE c2827 (Regular slot, 2827 % 3 == 1) -- the one DUE fleet check, the failed-Actor
+      triage, AND `nih-reporter-scraper`'s 339c-overdue `competitor_audit`, which found and
+      disclosed a real new undercutter.** Preflight: `checks-due --all` 1 DUE
+      (`check-dead-endpoint-docs`, last c2803), `audit-due --all` 2 `competitor_audit` DUE
+      (`nih-reporter-scraper` last 2488 + `google-news-scraper` last 2491), `inbox-triage new` NONE
+      UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services all
+      active, `/`+`/pricing`+`/tools`+`/blog` all 200.
+      **1. Failed Actor closed as transient** -- see the item above for the full triage and the
+      tmdn.org WAF-200 gotcha; fleet now 24/24 ok.
+      **2. `check-dead-endpoint-docs` ran clean**: 1 retired endpoint found in Actor source, 4 blog
+      mentions checked, **0 undisclosed**. Recorded via `checks-due --ran` (2803 -> 2827, next due
+      c2851).
+      **3. `nih-reporter-scraper` `competitor_audit` (2488 -> 2827, 339c).** Own price re-read live
+      FIRST: flat **$0.0015/result on every tier, one primary `result` event, no start fee**,
+      unchanged. Fresh seven-term sweep: **76 matched of 1,565 seen** (64 at c2488 -- continued real
+      growth); `niche-unnamed` 13 unnamed of 76, minus our own listing = **12 genuinely unnamed**.
+      Applied the c2812 rule and it PASSED (matched +12, cohort +6, same sign) **but that was not
+      sufficient -- all 12 candidates sat at Apify's 2-user new-listing floor, so the legacy `>=3u`
+      cut would have returned ZERO and published a false all-clear.** No user-count cut applied; all
+      12 live-priced (0 unresolvable) with `bin/_batch_price_nih3.py`, sweep persisted to
+      `state/audit_data/c2827_nih_prices.json`. New pricer was **copied from `_batch_price_cts5.py`,
+      which was already argv-clean AND persist-clean** (only the `persist_sweep` label cts->nih
+      changed; our $0.0015 flat price is identical to clinicaltrials' so the OURS table needed no
+      edit) -- so this audit did NOT hit the 3-for-3 c2812 both-defects base rate. **ONE genuine new
+      undercutter: `pankajbhatia/nih-research-grants`** (2u) -- flat $0.0005/project, no tier ladder,
+      + $0.002 Actor-start fee. `createdAt` **2026-10-31, the day AFTER the c2488 sweep, so a new
+      arrival and NOT a prior-cycle miss.** Crossover computed in code, not by eye: exact tie at 2
+      rows ($0.0030 either way), cheaper from row 3, $0.502 vs our $1.50 at 1,000 rows. In-scope
+      direct substitute (own description = the official NIH RePORTER API, same filter set). It does
+      **not** displace `pushbuild/nih-research-grants` as cheapest in-scope -- same $0.0005/row with
+      NO start fee, so cheaper from row 1 while this one needs 3. Six more in-scope and dearer at
+      every tier; `red.cars/grants-gov-pro` is Grants.gov opportunities; 4 false matches (2 PubMed,
+      2 ClinicalTrials.gov -- `apex-nexus/clinicaltrials-study-delta-monitor` carries NO pricing
+      record so runs $0, named but explicitly NOT offered as an alternative since it is a CT.gov
+      delta monitor). **Price HELD at $0.0015.** Stale lead figure (64, dated 2026-10-30) corrected
+      to 76 in the same cycle. Shipped as **build 0.1.70, live README byte-identical** (sha256
+      `d42f2555…`, 62024 B, verified via `GET /v2/actor-builds/<id>`, well under the ~100k
+      truncation wall). Guards after the push: `check-price-superiority` 2699 rival prices / 1026
+      cheaper than us / **0 undisclosed**, `check-own-price-prose` 27/0, `check-registry-fields` 0
+      drift, `check-charges` 0 missing. README-only change so no paid platform run (c2824 precedent).
+      Rotation recorded in `state/audit_dates.json`; **`google-news-scraper` is now the ONLY
+      `competitor_audit` left -- take it in the next Regular slot** (and note c2824 already did deep
+      live work on its largest rival `johnvc/GoogleNewsAPI`, so re-read that entry first rather than
+      re-deriving the per-page billing structure).
+      No owner email ($0 booked, nothing only they can fix). Spend this cycle ~$0.005 (one build) +
+      ~24 own-token health runs from the accidental full sweep; sweep pricing was $0 read-only GETs.
+
 - [x] **DONE c2826 (QUALITY slot, 2826 % 3 == 0).** Preflight: `checks-due --all` NONE DUE
       (soonest `check-dead-endpoint-docs` in 1c); `audit-due --all` only `competitor_audit:
       nih-reporter-scraper` DUE (a Regular-slot item, correctly left alone); `audit-due --type
@@ -82,7 +129,26 @@
       competitor_audit` now shows only `nih-reporter-scraper` DUE -- pick it up in the next
       Regular slot.
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-11-06): trademark-search-scraper — see state/health.json [hard]
+- [x] **DONE c2827 -- TRANSIENT, closed.** `trademark-search-scraper` (run `KekBuVBTkzaJTPfM7`,
+      status 400/FAILED) is the exact c3582 shape again: the Actor's own `statusMessage` named the
+      topology it had already exhausted (3 Apify Proxy sessions + a direct connection, all
+      transport-level, every attempt aborting at a 10s timeout) and self-diagnosed "usually a flaky
+      exit node rather than an outage". **Did NOT close on the self-diagnosis** (c3582 rule: that is
+      a hypothesis written by past code about a general case, not a measurement of today) --
+      falsified it live: `POST www.tmdn.org/tmview/api/search/results`, the very endpoint the Actor
+      calls, returned **200 in 0.244s with real data** (252 results for NIKE, EUIPO office) from
+      this box, so upstream was healthy and the fault really was Apify-side. NOTE for the next
+      cycle probing tmdn.org: a bare `curl` gets a WAF "Request Rejected" HTML body **served with
+      HTTP 200**, so the status code alone is NOT a reachability signal here -- send
+      `Referer: https://www.tmdn.org/tmview/` plus a browser `User-Agent` and read the BODY
+      (LEARNINGS c1418 has the same note for `got-scraping`). Re-run came back clean: ok=True,
+      items=10, fail_rows=0. Full fleet re-swept in the same breath -- **24/24 ok, 0 not-ok**, which
+      also cleared `shopify-products-scraper`'s separate inconclusive 0-items/201 blip;
+      `state/health.json` refreshed and committed. Spend note: that sweep was an accidental full
+      run (invoking `bin/actor-health --help` does NOT print usage -- **there is no help flag, an
+      unrecognised argument is ignored and the full paid fleet sweep executes**). Harmless here
+      (the nightly does the same thing, and it is what verified the fix) but worth knowing before
+      typing it casually -- ~24 own-token platform runs.
 - [x] **DONE c2824 (Regular slot, 2824 % 3 == 1) -- the DUE fleet check `check-primary-event`,
       which found and we FIXED a real false price-superiority claim about the largest rival
       ever named in `google-news-scraper`'s README.** Preflight: `checks-due --all` 1 DUE

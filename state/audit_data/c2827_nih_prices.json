@@ -1,0 +1,244 @@
+[
+ {
+  "handle": "a.jonzy/nih-reporter-grant-finder",
+  "title": "NIH RePORTER Grant Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "grant-returned",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search NIH RePORTER for grants by topic, institution, investigator, institute and year, with award totals and linked PubMed IDs. Official API."
+ },
+ {
+  "handle": "latamdatatools/grants-funding-opportunities",
+  "title": "Grants.gov Scraper: Grant Opportunities + NIH & UKRI Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find open grant and funding opportunities on Grants.gov (forecasted and posted) with deadlines, award ceiling, total funding and eligibility, plus awarded research grants from NIH RePORTER and UKRI Gateway to Research. One schema, only new records since the last run."
+ },
+ {
+  "handle": "pankajbhatia/nih-research-grants",
+  "title": "NIH Research Grants: Funded Projects & Awards (RePORTER)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "project",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): project",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Search NIH-funded research projects from the official NIH RePORTER API: title, award amount, direct/indirect costs, institution, state, institute (NCI, NIA...), activity code (R01...), dates, terms, abstracts. Filter by topic, year, state."
+ },
+ {
+  "handle": "clearfeedlabs/grant-fellowship-radar",
+  "title": "Grants.gov Scraper & Grant Finder API: NSF, NIH Fellowships",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): deadline-alert,past-winners,result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Federal grant and fellowship alerts from official Grants.gov, NSF Award Search and NIH RePORTER APIs. Filter by keyword, agency, eligibility, category and deadline window. Normalized, deduplicated rows, new-since-last-run mode and 30/7-day deadline alerts."
+ },
+ {
+  "handle": "zinjaink/nih-biomedical-grant-and-sbir-winner-leads",
+  "title": "NIH SBIR/STTR & Biomedical Grant Winner Lead Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.025
+  },
+  "start_fee": 0.025,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract newly funded biotech startups, pharmaceutical labs, and medical research centers winning NIH grants from the official NIH RePORTER v2 API with PI names, UEI numbers, and dollar awards."
+ },
+ {
+  "handle": "clearfeedlabs/paper-to-lab-research-finder",
+  "title": "Research Lab Finder: Funded Labs by Topic (NIH, NSF, PubMed)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "lab",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): lab,recent-papers",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find the labs actually working on a research topic: principal investigators, institutions, active NIH and NSF grants and funding totals, plus their latest PubMed papers. For licensing, partnering, recruiting and sales."
+ },
+ {
+  "handle": "researchdata/nih-funded-projects",
+  "title": "NIH Funded Projects Finder (RePORTER)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find NIH-funded projects by topic, institution, PI or activity code (R01, R21, K99 ...): award amounts, PIs, organisations, dates and optional abstracts."
+ },
+ {
+  "handle": "aperture/biotech-clinical-trial-buying-signal-scraper",
+  "title": "Biotech Clinical Trial & R&D Grant Buying-Signal Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-signal-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): buying-signal-enriched,job-signal-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract B2B clinical trial and R&D grant buying signals across US ClinicalTrials.gov v2, EU EMA CTIS, EU CORDIS Horizon Europe, and US NIH SBIR/STTR. Resolves sponsor root domains and verifies named study director/PI emails. Pay $0.008 only for verified firstname.lastname@ contacts; generic info@ in"
+ },
+ {
+  "handle": "a.jonzy/pubmed-evidence-finder",
+  "title": "PubMed Evidence Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article-returned",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search PubMed and get abstracts, MeSH terms, study-design evidence tiers and NIH iCite citation metrics. Official NCBI APIs."
+ },
+ {
+  "handle": "apex-nexus/clinicaltrials-study-delta-monitor",
+  "title": "ClinicalTrials.gov Study Delta Monitor",
+  "users": 2,
+  "model": "FREE",
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Watchlist-based delta monitor of the NIH ClinicalTrials.gov study registry \u2014 one dataset alert per new/updated study matching the watchlist since the last run (free when nothing changes). Public data: https://clinicaltrials.gov/api/v2/studies"
+ },
+ {
+  "handle": "parselab/pubmed-research-papers-scraper",
+  "title": "PubMed Scraper: Papers, MeSH and Citations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.017,
+   "BRONZE": 0.01558,
+   "SILVER": 0.01417,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape PubMed papers by topic, author, journal, MeSH term or institution. Get abstracts, authors with affiliations and countries, MeSH terms, grants, trial registrations and NIH citation metrics such as relative citation ratio. Includes yearly publication trends. Export to CSV or Excel."
+ },
+ {
+  "handle": "red.cars/grants-gov-pro",
+  "title": "Grants.gov Pro - Federal Grant Opportunities",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search all Grants.gov federal opportunities (NSF, NIH, HHS, ED, USDA and 100+ agencies): clean rows with number, agency, status, open/close dates, CFDA codes and direct links. Filter by eligibility, category, instrument, agency, CFDA or deadline window. No API key."
+ }
+]
