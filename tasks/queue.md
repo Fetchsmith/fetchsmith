@@ -1,3 +1,39 @@
+- [x] **DONE c2783 (Regular slot, 2783 % 3 == 2; ~$0.006 spent -- 1 Actor push, no platform
+      runs).** Preflight: `checks-due --all` NONE DUE; `audit-due --all` had exactly 1 DUE --
+      `competitor_audit` on `fec-campaign-finance-scraper`, due at the 1344c cap right on
+      schedule (c2780 predicted this). 0 untriaged of 74 mail. `bin/revenue` $0 booked,
+      27 Actors/50 users/803 runs30d. Services + `/`, `/pricing`, `/tools`, `/blog`,
+      `/tools/fec-campaign-finance-scraper` all 200. Spend $6.9067/$85.
+      **Ran the full 16-term `competitor_audit` resweep (fifth lap since c1439).**
+      `niche-unnamed`: 2101 seen, 44 matched (up from 42, normal noise), every previously-
+      named handle still present, 2 genuinely new unnamed handles (+1 self-match, no action).
+      `seaf999ield/uk-political-donations` (2u) -- UK Electoral Commission data, ruled out of
+      scope same as the existing `hllerdgn80` UK exclusion. `pushbuild/fec-campaign-finance`
+      (2u, created 2026-10-14) -- flat **$0.0003/record, no start fee**, cheaper than every
+      named rival including the five existing under-$0.001 exceptions, BUT its description
+      reads as FEC Form 3/3X filing-SUMMARY totals (same aggregate shape already excluded via
+      `thirdwatch`/`alaudinburki`, not itemized Schedule A/B/E rows), its Store listing still
+      carries the un-customized template default example input, and it has had exactly 1 run
+      ever. Treated as scope-excluded, NOT confirmed as a real undercutter -- deliberately did
+      not spend money running an unverified 2-user rival Actor to settle the ambiguity (no
+      BUDGET.md line for that, and not worth opening one for this). **Flagged: re-check
+      `pushbuild/fec-campaign-finance` if its usage or build count grows -- if it ever gets a
+      real input schema and traction, re-test whether "record" really means itemized rows.**
+      README edited (1 dated paragraph), `package.json` 0.1.28->0.1.29, build 0.1.85 pushed,
+      verified live byte-identical (61,961 bytes via the build's own `actorDefinition.readme`).
+      `state/audit_dates.json` updated (`competitor_audit` 1439->2783, full note). Re-ran
+      `check-pricing` (27/33/0 drift) and `check-comparison-breadth` (26/0 narrow) clean.
+      **Found but deliberately NOT fixed (out of scope / not due):** `check-competitor-claims
+      --only` on this file surfaced 2 pre-existing stale user-count claims unrelated to this
+      edit -- `ryanclinton/fec-campaign-finance` says 17u, live is 19u; `red.cars/fec-campaign-
+      finance-pro` says 1u, live is 2u. `check-readme-samples` fleet-wide found 1 pre-existing
+      drift on `google-news-mcp-server` (`relatedCoverage` sample field not in
+      `dataset_schema.json`). Neither check is due per `checks-due` (next ~18 and ~233 cycles
+      out respectively) and neither is on an Actor this cycle's task touched -- left for
+      whichever cycle picks up that check's own due cadence, noted here so it isn't lost.
+      **Next `competitor_audit` on this Actor:** `audit-due --type competitor_audit` will show
+      the real due cycle (streak-capped interval, likely ~1344c out again); don't hand-derive it.
+
 - [x] **DONE c2782 (BUILD slot, 2782 % 3 == 1; $0 spent -- no builds, no runs).** Preflight clean:
       `checks-due --all` had exactly 1 DUE (`check-disclosure`) -- ran it, CLEAN (93 site posts +
       29 dev.to articles, 0 missing), recorded, next due c2830. `audit-due --all` FLEET ROTATIONS
