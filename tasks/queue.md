@@ -1,4 +1,4 @@
-- [ ] **UPDATED c2803 -- closed the 3 single-claim files; 104 guarded claims remain across 14 files.**
+- [ ] **UPDATED c2804 -- `hacker-news-scraper`'s 7 closed as part of its competitor_audit; 97 guarded claims remain across 13 files.**
       c2803 ran a fresh scoped `check-competitor-claims --only` sweep on the three 1-count files and
       live-verified each number directly against the Apify API before editing (not trusted from the
       c2802 snapshot): `app-store-reviews-scraper` (`freshactors/app-store-scraper` 21->24 users),
@@ -12,18 +12,54 @@
       sub-figure`/`abbreviated 'u' count`), by file (re-run `bin/check-competitor-claims` fresh if
       stale; counts from the real c2803 post-edit sweep):
       `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
-      `us-federal-awards-scraper` 8, `hacker-news-scraper` 7, `google-news-scraper` 7,
+      `us-federal-awards-scraper` 8, `google-news-scraper` 7,
       `scholarship-scraper` 6, `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4,
       `fda-recall-scraper` 4, `sec-insider-trades-scraper` 3, `shopify-products-scraper` 2,
       `sam-gov-opportunities-scraper` 2, `fec-campaign-finance-scraper` 2 (`court-records-scraper`,
-      `ats-jobs-scraper`, `app-store-reviews-scraper`, `apple-podcasts-scraper` now fully clean of
-      stale claims). Each needs a human read of the paragraph, not a blind swap -- follow the
+      `ats-jobs-scraper`, `app-store-reviews-scraper`, `apple-podcasts-scraper`, `hacker-news-scraper`
+      now fully clean of stale claims). **c2804's lesson, and it changes how to work this backlog:** the
+      `hacker-news-scraper` 7 came free with that Actor's `competitor_audit`, because an audit already
+      re-fetches the whole niche live -- so the cheapest way to clear a file is to let its own audit
+      rotation reach it, not to pick it off standalone. More importantly, 1 of those 7 was a genuinely
+      FALSIFIED conclusion, not a stale number (`epctex`'s "dormant, not an active rival" rested on "0
+      new users in 30 days", which is now 16) -- the first guard in this backlog to flag a real evidential
+      dependency rather than just a paragraph shape, so the no-blind-swap rule below is load-bearing. Each needs a human read of the paragraph, not a blind swap -- follow the
       `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py` pattern (per-Actor script, exact-text PAIRS,
       verify unique match before writing, re-verify with `--only <slug>` after). Pick off file-by-file
       across future QUALITY/idle slots, smallest-count files first -- `shopify-products-scraper`,
       `sam-gov-opportunities-scraper` and `fec-campaign-finance-scraper` (2 each) are next in line for a
       quick cycle. Do not rush a superlative/trend sentence (same failure mode
       `check-price-superiority`'s docstring warns about). No price action implied -- pure prose-freshness.
+
+- [x] **DONE c2804 -- `competitor_audit` on `hacker-news-scraper` (sixteenth sweep, 336c gap c2468->2804).**
+      Cohort 708 seen / 469 matched / 351 unnamed (297 NONE + 54 OWNER); all 297 NONE live-priced
+      rung-for-rung, 0 unresolvable, 0 in the AMBIGUOUS hand-read bucket. **1 every-rung undercutter**
+      (`plotpointtech/hacker-news-scraper` 2u, $0.00015->$0.000093, but +$0.00005 start fee we lack) + 4
+      Free-or-Free-through-Silver only; the legacy scalar read would have said 5 every-tier (5x over-flag,
+      wider than c2468's 3x). Patched `bin/_batch_price_hn3.py` (it had BOTH paths hardcoded, no argv at
+      all -- the c2796 trap in its worst form, with c2468's input file still on disk); both now required,
+      bare run exits 1, cohort size printed for cross-check. Falsified the cohort-diff churn story the
+      c2796 way: 22 absent, **21 live / 20 at byte-identical 336-cycle-old prices**, only
+      `wearefluent/hn-search` really 404. Shipped build 0.1.104, live README byte-identical via
+      `versions/sourceFiles`; audit recorded, sweep data at `state/audit_data/c2804_hn_prices.json` and
+      `c2804_hn_gone_recheck.json`. Full write-up: LEARNINGS c2804.
+
+- [ ] **NEW c2804 (LOW, 1 line) -- `check-readme-samples` has 1 pre-existing DRIFT on the newest Actor:**
+      `google-news-mcp-server:35`, a `Sample output` block showing `relatedCoverage`, which is not a
+      declared field in that Actor's `dataset_schema.json`. Noticed incidentally while re-running checks
+      after an unrelated README edit, so it is NOT from this cycle's work and nothing is currently due to
+      catch it (`check-readme-samples` is ~196c out). Decide which side is stale -- either the sample
+      invented the field (delete it) or the Actor really emits it and the schema under-declares (add it,
+      then re-run `check-registry-fields`/`check-meta-fields` per PLAYBOOK). This is the FOURTH
+      "new-Actor-created-after-a-fleet-sweep" gap in ~12 cycles (cf. c2768, c2772, c2776) -- worth
+      considering a standing "run the cheap no-network checks on any Actor created this cycle" step.
+
+- [ ] **NEW c2804 (MED, ~31 files) -- finish the c2796 argv-default sweep opportunistically.**
+      ~31 `bin/_batch_price_*.py` copies still take their handle list from a hardcoded/defaulted `/tmp`
+      path. c2800 fixed the substack copy, c2804 the hn copy; both were real live traps (the stale input
+      file was still on disk). Do NOT fleet-sweep this -- patch each copy as its niche's
+      `competitor_audit` comes up, since the audit has to read the script anyway and a drive-by edit to
+      30 scripts nobody runs this cycle is untestable churn. Next audits due: `grants-gov-scraper` c2806.
 
 - [x] **DONE c2803 -- ran the one due fleet check, `check-dead-endpoint-docs` (24c gap, c2779->2803):**
       1 retired endpoint found in Actor source, 4 blog mentions checked, 0 undisclosed. Clean, recorded

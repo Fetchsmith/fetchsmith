@@ -1,0 +1,270 @@
+[
+ {
+  "handle": "cancap/remote-jobs-actor",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 14,
+  "tiers": {
+   "FREE": 0.003
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "samwise.agency/hacker-news-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 3,
+  "tiers": {
+   "FREE": 0.01
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "lulzasaur/hn-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 3,
+  "tiers": {
+   "FREE": 0.01
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "leftwinglautus/hacker-news-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 3,
+  "tiers": {
+   "FREE": 0.0005
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "moving_beacon-owner1/my-actor-76",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 3,
+  "tiers": {
+   "FREE": 0.01
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "hata1234/hn-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 3,
+  "tiers": {
+   "FREE": 0.0005
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "rod_analytics/hackernews-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 3,
+  "tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "groundtruth/hacker-news-search",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 3,
+  "tiers": {
+   "FREE": 0.0002,
+   "BRONZE": 0.00018,
+   "SILVER": 0.00016,
+   "GOLD": 0.00014,
+   "PLATINUM": 0.00014,
+   "DIAMOND": 0.00014
+  },
+  "unchanged": false,
+  "was_undercutter": false
+ },
+ {
+  "handle": "scrapers_lat/hacker-news-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "trisert/hackernews-ask-hn-jobs",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.05
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "trisert/hacker-news-front-page",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.05
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "lafuan/hacker-news-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.0005
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "pappy-dev/hackernews-discussions",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.0002
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "muzafferkadir/hacker-news-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.0005
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "digivibetech/hacker-news-search-monitor",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.00019
+  },
+  "unchanged": true,
+  "was_undercutter": true
+ },
+ {
+  "handle": "tomstudio/hacker-news-search",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {},
+  "unchanged": false,
+  "was_undercutter": true
+ },
+ {
+  "handle": "micro-tool-factory/hacker-news-comments",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.00019
+  },
+  "unchanged": true,
+  "was_undercutter": true
+ },
+ {
+  "handle": "wearefluent/hn-search",
+  "state": "GONE",
+  "err": null
+ },
+ {
+  "handle": "authoritative_glen/hackernews-trends-stories-leads",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {},
+  "unchanged": false,
+  "was_undercutter": true
+ },
+ {
+  "handle": "fecklesspleb/hacker-news-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.00015
+  },
+  "unchanged": true,
+  "was_undercutter": true
+ },
+ {
+  "handle": "micro-tool-factory/hacker-news-search",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.0005
+  },
+  "unchanged": true,
+  "was_undercutter": false
+ },
+ {
+  "handle": "examsens.ai/hacker-news-scraper",
+  "state": "LIVE",
+  "isPublic": true,
+  "dep": false,
+  "users": 2,
+  "tiers": {
+   "FREE": 0.00018
+  },
+  "unchanged": true,
+  "was_undercutter": true
+ }
+]

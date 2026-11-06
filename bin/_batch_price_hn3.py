@@ -22,8 +22,15 @@ Our live price, re-verified live at the top of this cycle (unchanged since 2026-
 so unchanged since the last audit at cycle 2132), single recurring event:
   result   FREE 0.0002 / BRONZE 0.00017 / SILVER 0.00013 / GOLD+ 0.0001, no start fee.
 
-Input:  /tmp/hn_unnamed_handles.txt (the NONE section of bin/niche-unnamed)
-Output: /tmp/hn_prices3.json  +  state/audit_data/c<cycle>_hn_prices.json (c2149 mandate)
+Input:  argv[1] -- REQUIRED path to the NONE section of a FRESH bin/niche-unnamed run.
+Output: argv[2] -- REQUIRED  +  state/audit_data/c<cycle>_hn_prices.json (c2149 mandate)
+
+c2804: both paths were hardcoded to /tmp/hn_unnamed_handles.txt and /tmp/hn_prices3.json
+with NO argv override, which is exactly the c2796 anti-stale-cohort trap -- and the c2468
+input file was still on disk (9521 B, Oct 30), so a bare re-run would have silently
+re-priced a 336-cycle-old cohort behind the same confident banner. Both are now required
+arguments; a bare run exits 1. Cross-check the cohort size printed here against
+bin/niche-unnamed's own "N unnamed of M matched" line before trusting any verdict.
 """
 import datetime
 import importlib.machinery
@@ -74,7 +81,14 @@ def rung_cmp(ut, our):
             "every_rung": bool(compared) and not dearer}
 
 
-handles = [l.strip() for l in open("/tmp/hn_unnamed_handles.txt") if l.strip()]
+if len(sys.argv) < 3:
+    sys.exit("usage: _batch_price_hn3.py <fresh-handles-file> <out.json>\n"
+             "  BOTH required on purpose (c2804): a hardcoded default silently re-prices a "
+             "stale cohort. Regenerate with `bin/niche-unnamed hacker-news-scraper`.")
+HANDLES_FILE, OUT_FILE = sys.argv[1], sys.argv[2]
+handles = [l.strip() for l in open(HANDLES_FILE) if l.strip()]
+print(f"cohort: {len(handles)} handle(s) from {HANDLES_FILE} -- cross-check this count "
+      f"against niche-unnamed's own NONE count", file=sys.stderr)
 out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
@@ -121,7 +135,7 @@ for i, h in enumerate(handles, 1):
         print(f"  ...{i}/{len(handles)}", file=sys.stderr)
 
 json.dump({"our_result_ladder": OUR_RESULT, "listings": out},
-          open("/tmp/hn_prices3.json", "w"), indent=1)
+          open(OUT_FILE, "w"), indent=1)
 up.persist_sweep("hn", out)   # c2149 mandate -- hn2 and substack2 both still skip this
 
 err = [o for o in out if o.get("error")]
@@ -130,7 +144,7 @@ ev = [o for o in out if o.get("cmp_vs_result", {}).get("every_rung")]
 some = [o for o in out if o.get("cmp_vs_result", {}).get("cheaper_at")
         and not o["cmp_vs_result"]["every_rung"]]
 lg = [o for o in out if o.get("legacy_every_tier_vs_our_FREE")]
-print(f"priced {len(out)} -> /tmp/hn_prices3.json ({len(err)} unresolvable, {len(rf)} pure run-fee)")
+print(f"priced {len(out)} -> {OUT_FILE} ({len(err)} unresolvable, {len(rf)} pure run-fee)")
 print(f"every-rung undercutters (rung-for-rung): {len(ev)}   "
       f"legacy scalar-vs-our-FREE would have said: {len(lg)}")
 print(f"some-rung-only undercutters: {len(some)}")

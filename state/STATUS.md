@@ -1,3 +1,80 @@
+Updated: 2026-11-06 UTC by cycle 2804 (claude-opus-5). Regular slot (2804 % 3 == 2).
+Preflight: `checks-due --all` **NONE DUE** (soonest `check-mode-scope-warning` in 4c).
+`audit-due --all` had exactly **1 real backlog item -- `competitor_audit` on
+`hacker-news-scraper`** (336c gap, last c2468); ran it end to end (below) and it is now
+recorded, so that rotation reads NONE DUE again (next: `grants-gov-scraper` c2806).
+`inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` **$0 booked**, 27 Actors, 50 users,
+795 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`,
+`/pricing`, `/tools`, `/blog` all 200. Spend **~$7.19/$85**, **~$0.02 this cycle** (330
+read-only API fetches + 1 build, no platform runs). No owner email (no revenue event,
+nothing only they can fix).
+
+**THE WORK: `hacker-news-scraper`'s sixteenth `competitor_audit`.** Cohort 708 listings
+seen / 469 matching the niche / 351 not yet named (297 NONE + 54 OWNER) -- real growth of
+42 matched over c2468's 646/427/317. Live-priced all 297 NONE rung-for-rung: **0
+unresolvable, 0 in the AMBIGUOUS hand-read bucket** (all 297 on `PAY_PER_EVENT`, a first
+for this niche). **1 every-rung undercutter** -- `plotpointtech/hacker-news-scraper` (2u,
+$0.00015 Free -> $0.000093 Gold+) and it is not even a clean undercut, since it adds a
+$0.00005 start fee we do not charge -- plus **4 Free-only / Free-through-Silver** ones, all
+at 2 users, all carrying a start fee. The legacy scalar-vs-our-FREE read would have
+reported **5** every-tier undercutters: a **5x over-flag**, wider than c2468's 3x. Our own
+price re-verified live first and unchanged since 2026-09-26 ($0.0002 / $0.00017 / $0.00013
+/ $0.0001 Gold+, no start fee); `check-own-price-freshness` and `check-own-price-prose`
+both 27 Actors / 0 flags.
+
+**The finding is methodological, and it is the THIRD recurrence of the c2796 shape.** The
+cohort set-difference said **22 of c2468's 274 handles were gone, including all 6 of that
+sweep's undercutters** -- a clean, decision-shaped "the undercutting field turned over
+completely." Re-fetched all 22 individually: **21 are LIVE, `isPublic` true, `isDeprecated`
+false, and 20 of the 21 are priced byte-identically to 336 cycles ago.** Only
+`wearefluent/hn-search` is genuinely 404 -- and `wearefluent` was also the single genuine
+404 in c2796's steam sweep, so one owner is deleting listings across niches while nobody
+else moves. Running total across three niches: **45 of 47 re-fetches have falsified the
+churn reading.** Two of the 21 also exposed a trap inside the re-fetch step itself: they
+came back with an empty ladder (reads as "unresolvable noise") when they are in fact
+`pricingInfos: null` -- genuinely $0, the two cheapest rivals in the niche.
+
+**And this script WAS the c2796 trap, in its worst form.** `bin/_batch_price_hn3.py` had
+*both* its input and output paths hardcoded with **no argv override at all**, and c2468's
+input file was still on disk (9521 B, Oct 30) -- a bare re-run would have re-priced a
+336-cycle-old cohort behind a normal banner. Both are now required args (bare run exits 1)
+and it prints its cohort size for the mandatory cross-check against `niche-unnamed`'s own
+count. That cross-check paid off immediately on an unexpected failure: it read **303 vs
+297** because six HN rivals now advertise a per-1,000 price **in their Store title**
+(`$0.15/1K` ... `$4/1K`) and a bare `owner/slug` regex matched those fragments.
+
+**Shipped on the README:** the sixteenth-sweep block, plus **all 7** of this file's guarded
+stale rival user-count claims closed (it was the 3rd-largest file in the 104-item c2802
+backlog; **97 now remain across 13 files**). Every number re-fetched live rather than taken
+from the checker's snapshot. One was **falsified, not stale**: `epctex`'s "a dormant
+2021-era listing, not an active rival" rested on "**0 new users in the last 30 days**",
+which is now **16** -- a blind 176->202 swap would have left a conclusion its own evidence
+no longer supports, so it was reworded to separate the two legs (stale *codebase*, still
+drawing installs on name recognition). Build **0.1.104** pushed; live README verified
+**byte-identical** to local via `versions/sourceFiles`; `check-competitor-claims --only`
+after: 57 claims, **0 stale**.
+
+**Niche read worth carrying forward:** across the 297, the largest listing has **10**
+lifetime users, the median **2**, and **227 of 297 sit at exactly 2** -- and all 5
+undercutters are 2-user listings. The cheap end of this niche is almost entirely
+near-zero-traction, so competitive pressure here is on **discovery and feature surface, not
+price**. One rival (`groundtruth/hacker-news-search`) moved from flat to a tiered ladder
+that ties us at Free and sits *above* us at every paid rung -- the second listing here to
+copy our ladder shape at a higher level.
+
+**Blockers: none.** Flags for next cycle (both in `queue.md`): (a) `check-readme-samples`
+has 1 pre-existing DRIFT on `google-news-mcp-server:35` (`relatedCoverage` undeclared) --
+the 4th "new-Actor-created-after-a-fleet-sweep" gap in ~12 cycles, nothing due to catch it
+for ~196c; (b) ~31 other `_batch_price_*.py` copies still carry the argv-default trap, to
+be patched opportunistically as each niche's audit comes up, NOT in a fleet sweep.
+**`queue.md` is TRIM SOON again (86.9KB/997 lines) and c2805 is a QUALITY slot (2805 % 3 ==
+0) -- trim it there**; `check-doc-size` warns the next look will read TRIM DUE regardless.
+Standing: $0 revenue after 2804 cycles; Polar checkout deferred by owner decision; MCP #3
+gated on dates (clinicaltrials 2026-11-12+, google-news 2026-12-05+); niche-hunting on
+cooldown to ~2026-12-26.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2803 (claude-sonnet-5). Regular slot (2803 %
 3 == 1). Preflight: `checks-due --all` had exactly 1 DUE -- `check-dead-
 endpoint-docs` (24c gap, last 2779) -- ran it: 1 retired endpoint in Actor

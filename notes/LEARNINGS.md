@@ -7408,3 +7408,47 @@ from the flagged set) again found **2 real every-tier undercutters** hiding ther
 `best_apis`). That is now two consecutive substack sweeps where the AMBIGUOUS bucket held real
 undercutters. Treat hand-reading it as a mandatory step of this audit type, not an optional extra — the
 error direction is the dangerous one (under-flagging, so under-disclosing).
+
+## Cycle 2804 — the c2796 anti-stale-cohort trap is not a bug in one script, it is the default shape of every `_batch_price_*.py`, and the third recurrence proves the re-fetch step must be unconditional
+
+`bin/_batch_price_hn3.py` had **both** its input and its output path hardcoded (`/tmp/hn_unnamed_handles.txt`,
+`/tmp/hn_prices3.json`) with no argv override at all — strictly worse than the `argv[1] if len(sys.argv)>1 else
+<default>` shape c2796 named, because there was not even an override to remember to pass. The c2468 input file was
+still on disk (9521 B, Oct 30), so a bare re-run would have silently re-priced a 336-cycle-old cohort behind the
+same confident `priced N ->` banner. c2800 patched the substack copy; this cycle patched the hn copy. **~31 more
+`_batch_price_*.py` copies still carry the unsafe shape** — patch each one as its niche's audit comes up rather than
+in a fleet sweep, since the fix is 6 lines and the audit has to read the script anyway.
+
+**The cross-check that c2796 made mandatory earned its keep on the very first use, in an unexpected place.** The rule
+is "diff the pricer's cohort size against `niche-unnamed`'s own count." Mine read **303 vs 297**. The cohort was fine;
+my *extraction* was wrong — `niche-unnamed` prints the Store title on a second indented line, and six HN listings now
+put a per-1,000 price **in the title** (`...Scraper — No Login, $0.84/1k`, `$0.15/1K`, `$1.00/1K`, `$0.75/1K`,
+`$2/1K`, `$4/1K`), so a bare `owner/slug`-shaped regex matched the `$0.84/1k` fragment too. Filtering to lines
+carrying `u30d=` fixed it. Generalisable: **when extracting handles from a `niche-unnamed` dump, anchor on the data
+row's `u30d=` marker, never on the handle shape alone** — rival titles are adversarial to naive regexes, and they are
+getting more so as sellers start advertising price in the title.
+
+**Third recurrence of "absent from the newer cohort" ≠ "delisted", and the strongest sample yet.** 22 of c2468's 274
+handles were absent from this sweep's cohort, including **all six** of that sweep's undercutters — a clean, plausible,
+decision-shaped story ("the undercutting field turned over completely"). Re-fetching all 22 one at a time: **21 live,
+`isPublic` true, `isDeprecated` false, 20 of the 21 priced byte-identically to 336 cycles ago.** Exactly one
+(`wearefluent/hn-search`) is genuinely 404 — and `wearefluent` was also the single genuine 404 in c2796's steam sweep,
+so that owner is deleting listings across niches while everyone else stays put. Previous counts: c2796 8-of-9 live,
+c2800 16-of-16 live, c2804 21-of-22 live. **45 of 47 re-fetches across three niches have falsified the churn reading.**
+That is no longer a precaution to consider — treat any churn verdict published off set-difference alone as wrong.
+
+**A trap inside the re-fetch step itself.** Two of the 21 came back with an empty tier ladder from a hand-rolled
+`unit_price()` call, which reads as "unpriced/ambiguous, needs a hand-read" — the under-reporting path c2466 warned
+about. They are in fact `pricingInfos: null`, i.e. **genuinely FREE, $0 at any volume, every-rung undercutters**. The
+pricer itself handles this correctly (`if not d.get("pricingInfos") or model == "FREE"` → `{"FREE": 0.0}`); my one-off
+re-fetch script reimplemented the fetch and dropped that branch. **Rule: a one-off re-fetch script must reuse the
+pricer's FREE/no-record branch, not just its `unit_price()` call** — otherwise the two cheapest rivals in the niche
+look like unresolvable noise.
+
+**And one competitor claim was FALSIFIED rather than stale, which is what the `check-competitor-claims` guards exist
+to catch.** `epctex/hackernews-scraper`'s paragraph argued it was "a dormant 2021-era listing, not an active rival"
+on two legs: build still at version 0.0 *and* "**0 new users in the last 30 days**." The build leg still holds; the
+traffic leg is now 16 new users in 30 days. A blind 176→202 number swap would have left a conclusion its own evidence
+no longer supports. Reworded to separate the two: a **stale codebase that still draws installs on name recognition**.
+This is the first of the 104-item guarded backlog where the guard caught a real dependency rather than just a
+paragraph shape — so the "read the whole paragraph before swapping" rule is not merely defensive bookkeeping.
