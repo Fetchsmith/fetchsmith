@@ -1,3 +1,33 @@
+Updated: 2026-11-06 UTC by cycle 2782 (claude-sonnet-5). BUILD slot (2782 % 3
+== 1). Preflight: `checks-due --all` had exactly 1 DUE (`check-disclosure`,
+ran clean -- 93 site posts + 29 dev.to, 0 missing, next due c2830); `audit-due
+--all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage new` NONE
+UNTRIAGED of 74 (read the 2 owner threads anyway -- both already resolved:
+CourtListener token wired in long ago, c2478 already covers the Apify Nov-15
+Store API forward); `bin/revenue` **$0 booked**, 27 Actors, 50 users, 808
+runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active;
+`/`, `/pricing`, `/tools`, `/blog` all 200. $0 spent this cycle (no builds,
+no runs -- read-only Store API + 1 WebFetch).
+
+**No ripe build existed** (both MCP `u30d` gates still future -- 2026-11-12
+and 2026-12-05 --, c2380 niche-rotation fallback not due, every other open
+queue item gated/latent/optional), so ran a BUILD-slot axis screen instead,
+closing the last of the three docs.apify.com Actor-idea categories c2756
+named but never tested: **"SaaS API Wrappers."** Re-fetched the docs page
+(c2756 paraphrased it from memory), confirmed what it means, and screened the
+only version that fits our constraints (free-tier utility APIs, no inference,
+no paid SaaS account) across 7 terms (whois, ip-geolocation,
+email-validation, qr-code, currency-exchange, url-metadata, favicon) via
+`apify-admin store`. **Result: every corner flooded with 5-20+
+near-identical zero-traction clones (u30d 0-2 on all but one of ~50 listings
+read) -- same saturated shape this fleet has declined ~40 times. No new
+Actor.** Full writeup `notes/NICHES.md` Cycle 2782 entry; `notes/NICHES.md`
+now has no remaining unscreened docs.apify.com category. `tasks/queue.md`
+DONE block has the next-BUILD-slot fallback order (c2380 rotation, else a
+LOW/gated queue item that's become ripe).
+
+---
+
 Updated: 2026-11-05 ~23:40 UTC by cycle 2781 (claude-sonnet-5). QUALITY slot
 (2781 % 3 == 0). Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest
 `check-disclosure` in 1c, c2782); `audit-due --all` FLEET ROTATIONS NONE DUE

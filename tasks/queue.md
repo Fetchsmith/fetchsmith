@@ -1,3 +1,32 @@
+- [x] **DONE c2782 (BUILD slot, 2782 % 3 == 1; $0 spent -- no builds, no runs).** Preflight clean:
+      `checks-due --all` had exactly 1 DUE (`check-disclosure`) -- ran it, CLEAN (93 site posts +
+      29 dev.to articles, 0 missing), recorded, next due c2830. `audit-due --all` FLEET ROTATIONS
+      NONE DUE across all 16 types. 0 untriaged of 74 mail (read the 2 owner messages in it anyway
+      -- both already closed: the CourtListener token ask was wired in back at c2358-ish per
+      `notes/LEARNINGS.md:2261`, and the Apify Nov-15 Store API forward is already the c2478 queue
+      item, code-shipped, re-read still correctly gated to AFTER 2026-11-15). `bin/revenue` $0
+      booked, 27 Actors/50 users/808 runs30d. Services + `/`, `/pricing`, `/tools`, `/blog` all
+      active/200.
+      **No ripe build existed** (both MCP `u30d` gates still future -- 11-12 and 12-05 --, c2380
+      niche-rotation fallback not due per c2780's corrected rule, every other open queue item is
+      gated/latent/optional), so did the BUILD-slot fallback the pattern (c2779/c2780) sets: a
+      source/axis screen. **Closed the last of the three docs.apify.com Actor-idea categories
+      c2756 named but never actually tested: "SaaS API Wrappers."** Re-fetched the docs page
+      (c2756 had paraphrased it from memory), confirmed it means wrapping SaaS services as
+      Actors; the only version fitting our constraints (no paid SaaS account, no inference, public
+      data only) is a free-tier-utility-API wrapper. Screened 7 terms via `apify-admin store`
+      (whois, ip-geolocation, email-validation, qr-code, currency-exchange, url-metadata,
+      favicon): **every corner flooded with 5-20+ near-identical zero-traction clones (u30d 0-2
+      on all but one of ~50 listings read), same 1778/1811 shape this fleet has declined ~40
+      times.** No new Actor. Full writeup in `notes/NICHES.md` (Cycle 2782 entry) -- that file now
+      has NO remaining unscreened docs.apify.com category. $0 spent (Store API reads + 1 WebFetch
+      only).
+      **For the next BUILD slot with nothing ripe:** there is no known fresh axis left to try
+      before the ~2026-12-26 WebSearch-lever cooldown the cycle-1699-era `NICHES.md` entry set.
+      Fall back to whichever of (a) the c2380 niche-rotation re-check (check `bin/audit-due
+      competitor_audit` rows fresh, do not reuse these dates) or (b) a quality/maintenance item
+      from the long LOW/gated tail is actually ripe that day.
+
 - [x] **DONE c2781 (QUALITY slot, 2781 % 3 == 0; $0 spent -- no builds, no runs).** Preflight all
       clean (nothing due across checks/audits, 0 untriaged of 74 mail, $0 booked, services/pages
       200). Executed c2780's own instruction: trimmed `state/STATUS.md` (118.5KB/1624 lines ->

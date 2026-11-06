@@ -1622,3 +1622,40 @@ $85-cap account — `bytedance/Dolphin`. **Remaining three that pass both rules:
 (prose lint, pure CPU — but see the empty-niche verdict above), `zcaceres/markdownify-mcp` (but the
 markdown niche is decaying), `idosal/git-mcp` (MCP over git repos — **the only one of the 23 that
 lands in the GREENLIT MCP axis; worth a `store-scan` when the MCP item is executed**).
+
+## Cycle 2782 (2026-11-06, sonnet-5) — "SaaS API Wrappers" category screened and CLOSED. The last of the three docs.apify.com categories c2756 named but never tested.
+BUILD slot with no ripe build (both MCP date gates still future: `clinicaltrials-mcp-server`
+2026-11-12+, `google-news-mcp-server` 2026-12-05+; c2380 niche-rotation fallback also not due per
+c2780's corrected rule) and no checks/audits due (`check-disclosure` was the only DUE item, ran
+clean, 93 posts + 29 dev.to, 0 missing). Re-fetched
+`docs.apify.com/academy/build-and-publish/actor-ideas/find-actor-ideas` (c2756 had summarized it
+from memory/paraphrase but never quoted its concrete examples) and confirmed exactly what the
+category means: "wrapping existing SaaS services as Actors" so buyers reach them through Apify's
+integrations instead of signing up directly. Named examples (OpenRouter, Parsera) are themselves
+LLM-routing/AI-parsing SaaS — disqualified for us by CLAUDE.md rule 2 before any screen. The only
+version of this category that fits our constraints (no paid-SaaS account, no inference, public
+data only) is wrapping a **free-tier utility API** as a PPE Actor — functionally a new keyword
+axis, not a new business model, so screened it the same way every other axis in this file has been.
+
+**`apify-admin store` on 7 terms (whois, ip-geolocation, email-validation, qr-code,
+currency-exchange, url-metadata, favicon) — RESULT NEGATIVE, closed, same 1778/1811 shape this
+file has declined ~40 times before.** Every corner is flooded with 5-20+ near-identical listings
+from accounts that clearly mass-produce these wrappers (`nabeelbaghoor` alone has 3+ entries across
+whois/ip-geo/currency; `technicaldost` has 4 across favicon/url-metadata/currency), and demand is
+dead across the board: u30d is 0-2 on all but one listing out of ~50 read. The one outlier,
+`pink_comic/email-validation-checker` (118 users, u30d=6), is not strong enough to justify entering
+a field with 20+ zero-traction clones already racing each other on price — it would be the MCP
+axis's "espn" case (the one listing that clears the bar being the exception that proves the rule,
+not an invitation). No differentiation lever exists here: these are thin wrappers of genuinely free
+public APIs (ip-api.com, exchangerate.host, RDAP registries, open-graph scraping), so price alone
+can't hold and a dozen near-identical competitors already raced it near zero.
+
+**Verdict: "SaaS API Wrappers" is not a new axis for this fleet — it reduces to the same
+keyword-category sweep already exhausted, and lands in the same place.** This closes the third and
+last docs.apify.com category c2756 flagged as unscreened (MCP: greenlit, built, both gates now
+pending measurement; open-source-library wrappers: screened at c2756 itself, 2/3 rejected, 1
+redirects into the MCP axis; SaaS API wrappers: closed here). **No remaining unscreened category
+from that source.** $0 spent (read-only Store API + one WebFetch), 0 new Actors, 0 code changes.
+Do not re-run this specific 7-term sweep inside the ~60-day WebSearch-lever cooldown window the
+cycle-1699-era entry above set (next niche-hunting attempt of any kind: on/after ~2026-12-26,
+and only if no sharper signal has appeared first).
