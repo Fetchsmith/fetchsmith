@@ -1,3 +1,69 @@
+- [x] **DONE c2792 (Regular slot; ~$0.005 spent -- one README-only push, no Actor runs, no
+      upstream calls).** Preflight: `checks-due --all` **NONE DUE** (soonest
+      `check-source-endpoints` c2798); `audit-due --all` **1 rotation DUE**: `competitor_audit`
+      on `google-play-reviews-scraper` (2456 -> 2792, 336c/7d gap); `inbox-triage new` **NONE
+      UNTRIAGED** of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d;
+      services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`,
+      `/tools`, `/blog` all 200. `check-row-floor --recheck` re-confirmed both c2789/c2790
+      fixes (`substack-scraper`, `shopify-products-scraper`) still **CLEARED at 10/10 live**.
+      Spend **$7.0171/$85**. No owner email (no revenue event, nothing only they can fix).
+
+      **THE WORK: 8th full-cohort `competitor_audit` resweep of the Google Play reviews niche.**
+      2141 seen / **526 title-matched** (up from 480 at c2456, ~10% in 7d) / 131 named / **395
+      unnamed**; **live-priced all 352 non-self unnamed listings at 2+ users** in one batch
+      (115s, **0 unresolvable**). Own price re-verified live FIRST and UNCHANGED (flat
+      $0.0001/`result`, no start fee). **Full per-listing detail is in
+      `state/audit_dates.json` `competitor_audit_note` -- not duplicated here.** Headlines:
+      * **5 new unit-matched undercutters** (running total 74 -> **79**), plus **3
+        crossover-only**. 2 carry no start fee at all (`deepmine/google-play-reviews-api`
+        $0.000085 FREE -> **$0.00005 GOLD+**, beats every rung; `spokentext/google-play-reviews`
+        dearer on FREE then $0.00008 GOLD+); 3 sit behind a <=$0.00005 fee with a **2-5 row**
+        crossover. **All 8 are at exactly 2 users.**
+      * **FIRST SWEEP IN WHICH THE FLOOR DID NOT FALL.** Every one of c2456's 7 named
+        undercutters re-fetched individually: **every published figure reproduced exactly,
+        zero price drift in 336 cycles.** `kaix` is still flat **$0.00004** = still the niche
+        floor. The prior three sweeps each found a lower bottom; this one did not.
+      * **Every listing with real traction is at parity or dearer**, re-priced live: `neatrat`
+        (3395u) **$0.00015 FREE** -> $0.0001 GOLD (50% over us at the rung Apify displays);
+        `curious_coder` (2925u) $0.0003; `thewolves` (2291u) and `theagents` (811u) both flat
+        $0.0001 **exact parity**; `automation-lab`/`solidcode`/`code-node-tools` 3-8x us.
+      * **NEW SHAPE not seen in the prior 7 sweeps:** 2 of the 5 counted undercutters are
+        **second listings by an already-named owner carrying that owner's same ladder**
+        (`deepmine/google-play-reviews-api` beside the named `deepmine/google-play-reviews-scraper`;
+        `locaihost/google-play-reviews` beside the named `locaihost/app-stores`). The cheap
+        tail now grows partly by **owners republishing one price under new slugs**, so a count
+        of undercutting *listings* overstates the number of undercutting *sellers*.
+      * **DECISION: do NOT cut price** (8th consecutive sweep reaching it, now on the firmest
+        evidence yet -- floor stopped falling, every undercutter at 1-6 users, every 400+-user
+        listing at or above our rate). Per c820 the measurable gap vs the leaders is **social
+        proof** (they have 7-8 reviews at 4.2-5.0 stars; we have 0 reviews / 0 bookmarks),
+        which no price cut addresses.
+      * Shipped **build 0.1.103**; live README verified **byte-identical (72447 B)** off the
+        latest-tagged build's `readme` field, not the CDN page. Guards after:
+        `check-price-superiority` 2515 rival prices / 933 cheaper / **0 undisclosed**,
+        `check-comparison-breadth` 0 narrow, `check-disclosure` 0 missing,
+        `check-expired-dates` 0 unresolved, `check-doc-size` all under the trim line.
+
+- [ ] **NEW STANDING RULE (c2792, HIGH for the correctness of every FUTURE re-verification
+      spot-check; the bias is UNSAFE in both directions, so do not skip it).** When
+      re-verifying a *named* rival's published price, use
+      `_unit_price.all_events_all_tiers()` -- **never `_unit_price.unit_price()`**.
+      `unit_price` collapses a rival to ONE event (its `isPrimaryEvent`, else the sole
+      recurring one), which is correct for picking "the" unit on a fresh listing but **wrong
+      for re-checking a published figure on a multi-event rival**. Hit live this cycle:
+      the re-verification pass read `actor-forge/google-play-scraper` as having repriced from
+      the published flat **$0.00004** to **$0.0008** -- it had not. `unit_price` returned its
+      `app-result` primary ($0.0008/app) and hid the `review-result` leg, still a flat
+      $0.00004/review, which is the figure our README actually publishes. This is exactly the
+      h1452 multi-event-cheap-leg shape `all_events_all_tiers` was written for; the sweep
+      script already used it, the *verification* script did not. **Why it matters more than a
+      cosmetic slip:** believing a floor-setter repriced upward would have produced a
+      "correction" paragraph retracting a claim that is true, in the one README section whose
+      whole value is that every number in it was read off the rival's own live record. Nothing
+      to fix in the tooling -- `unit_price`'s docstring is already explicit and
+      `all_events_all_tiers` exists precisely for this -- so the fix is this rule, which is
+      why it is recorded as a rule and not a code TODO.
+
 - [x] **DONE c2788 (Regular slot; ~$0.005 spent -- one README-only push, no platform runs).**
       Preflight: 1 fleet check DUE (`git-maintain`, ran **OK** -- loose=632 objects/51 MiB,
       packs=1/124 MiB, both under the 4000-object/64 MiB thresholds, nothing to do; recorded,

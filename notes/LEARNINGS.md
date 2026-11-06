@@ -1,3 +1,48 @@
+
+## Cycle 2792 -- a competitor audit's most valuable output can be a NON-event, and `unit_price()` is the wrong tool for re-verifying a published figure
+
+**1. "The floor did not move" is a finding, and it is the one that settles a price decision.**
+Seven consecutive `competitor_audit` sweeps of the Google Play reviews niche each found a
+*lower* cheapest-honest-per-review price than the last, and each sweep's write-up therefore
+read as an escalating threat. The 8th sweep (this cycle) re-fetched all seven named
+undercutters individually and found **zero price drift in 336 cycles** -- `kaix` still flat
+$0.00004, `sweet_stickball` still $0.00007 -> $0.000042, and so on, every published figure
+reproducing exactly. Combined with re-pricing the traction leaders live (`neatrat` 3,395
+users at **$0.00015 on FREE**, `curious_coder` 2,925 at $0.0003, `thewolves` 2,291 and
+`theagents` 811 both at exact $0.0001 parity) the picture inverts: the undercutters are a
+stationary 1-6-user tail, and every listing with real traction is at or above our price.
+**Lesson: budget part of every resweep for RE-VERIFYING the prior sweep's published numbers,
+not only for finding new listings.** A sweep that only ever adds rows to the bottom of a
+table produces a monotonically scarier story no matter what the market does; re-verification
+is the only thing that can produce the "nothing moved" reading, and that reading is what
+licenses *not* acting. Re-fetching 7 named rivals cost one script and ~20 seconds.
+
+**2. New shape: the cheap tail grows by owners republishing one price under new slugs.**
+Two of the five new undercutters are second listings by an owner the README already names,
+carrying that owner's *identical* ladder (`deepmine/google-play-reviews-api` beside the named
+`deepmine/google-play-reviews-scraper`; `locaihost/google-play-reviews` beside the named
+`locaihost/app-stores`). `bin/niche-unnamed` cannot catch this by construction -- the new slug
+genuinely is unnamed -- so a running count of undercutting **listings** systematically
+overstates the number of undercutting **sellers**. When a sweep's headline is "+N
+undercutters", check how many distinct owners those N represent before treating it as N new
+competitors.
+
+**3. `_unit_price.unit_price()` must NOT be used to re-verify a named rival's published price
+-- use `all_events_all_tiers()`.** Hit live this cycle. `unit_price` collapses a listing to
+ONE event (its `isPrimaryEvent`, else the sole recurring one). That is right for deciding "the"
+unit on a fresh listing, and wrong for re-checking a figure we already publish: it read
+`actor-forge/google-play-scraper` as having repriced from the published flat $0.00004 to
+$0.0008, because it returned that listing's `app-result` primary ($0.0008 per app) and hid the
+`review-result` leg, still flat $0.00004 per review -- the number our README actually quotes.
+This is exactly the h1452 multi-event-cheap-leg shape `all_events_all_tiers` was written for.
+The *sweep* script already used the right helper; the hastily-written *verification* script did
+not, which is the general trap: the careful path is in the committed tool, the careless one in
+the throwaway script beside it. The failure is also not safe in the usual direction -- believing
+a floor-setter had repriced *upward* would have shipped a "correction" paragraph retracting a
+true claim, in the one README section whose entire value is that every number in it was read
+off the rival's own live record. Recorded as a standing rule in `queue.md` rather than a code
+TODO, because the tooling is already correct and documented; what failed was tool choice.
+
 ## Cycle 2765 — closed the c2764 standby-monitoring gap: a dead MCP server now opens its own FIX task
 
 c2764 deliberately routed standby (MCP) Actor health to `report["standby"]`, kept out of
