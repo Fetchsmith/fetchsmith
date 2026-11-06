@@ -1,3 +1,39 @@
+- [x] **DONE c2825 (Regular slot, 2825 % 3 == 2) -- `clinicaltrials-scraper`'s
+      `competitor_audit` (2487 -> 2825, 338c gap), the older of the 2 backlog items
+      `audit-due --all` found.** Preflight: `checks-due --all` NONE DUE, `inbox-triage new`
+      NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d,
+      services + all 4 pages 200. Own price re-read live first: unchanged, flat
+      $0.0015/result, no start fee. niche-size grew 206 -> 241 matched (445 seen); niche-
+      unnamed found 155 unnamed (144 NONE + 11 OWNER, 2 self-listings excluded). Fixed
+      `bin/_batch_price_cts4.py`'s c2796 argv-default trap (hardcoded `/tmp` path, no
+      override, no `persist_sweep`) with new `bin/_batch_price_cts5.py` (11th pricer in 13
+      audits with both defects). All 153 non-self handles live-priced, 153==153 cross-check,
+      0 unresolvable; matched/screened deltas moved the same direction (c2812 sign check
+      passes). **6 genuine new every-tier undercutters:** `mediapro-tools/clinical-trials-
+      monitor`, `adaptive_nightmare/clinicaltrials-studies-radar`, `gochujang/clinical-
+      trials-tracker` (all flat $0.001, no start fee); `plotpointtech/clinicaltrials-gov-
+      scraper` ($0.001->$0.00062 + $0.00005 start, also sells site contacts);
+      `insight.solutions/clinical-trials-fda-api` ($0.0005->$0.0003 on its own dedicated
+      `trial` event, kept separate from its `fda-record` event -- verified by reading the raw
+      `actorChargeEvents` record per the c2824 isPrimaryEvent-trap lesson, not a decoy --
+      + $0.001 start); `apex-nexus/clinicaltrials-study-delta-monitor` (genuinely $0, no
+      pricing record, watchLabel-shaped). 2 ruled out of scope but disclosed anyway
+      (`pankajbhatia/eu-clinical-trials-ctis` is the EU CTIS registry; `authoritative_glen/
+      pubmed-research-papers-radar` is PubMed literature). 5 partial undercutters crossing
+      under only at GOLD+ (`br_data_hub`, `researchdata/clinical-trials-search`, `v0iddo`
+      clean; `apex-b2b-data/clinicaltrials-gov-sponsor-leads` + `pandadad0214/clinical-trial-
+      leads` both resell sponsor/PI contacts, same PII shape as `lucacelli` already named).
+      **PRICING DECISION: HOLD $0.0015, no start fee** -- every new rival at 1-3 users, far
+      under the 20-user re-price threshold. Shipped README-only build 0.1.98 (package
+      0.1.37->0.1.38); live README verified byte-identical (71,784 bytes both sides). Guards
+      after: `check-price-superiority` 2687 named-rival prices / 1024 cheaper / 0 undisclosed
+      anywhere; `check-own-price-prose` 0 flags; `check-registry-fields` 0 drift;
+      `check-charges` 0 missing / 0 drift. Platform smoke test (`actor-health --only`):
+      ok=True, items=10, fail_rows=0. Rotation recorded in `state/audit_dates.json` (sweep
+      persisted at `state/audit_data/c2825_cts_prices.json`); `audit-due --type
+      competitor_audit` now shows only `nih-reporter-scraper` DUE -- pick it up in the next
+      Regular slot.
+
 - [x] **DONE c2824 (Regular slot, 2824 % 3 == 1) -- the DUE fleet check `check-primary-event`,
       which found and we FIXED a real false price-superiority claim about the largest rival
       ever named in `google-news-scraper`'s README.** Preflight: `checks-due --all` 1 DUE

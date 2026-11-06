@@ -1,0 +1,3163 @@
+[
+ {
+  "handle": "azureblue/clinical-trials-scraper",
+  "title": "ClinicalTrials.gov Scraper \u2014 Trial Pipeline for Pharma",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape ClinicalTrials.gov for clinical studies by condition and status. Returns NCT ID, title, phase, sponsor, enrollment count, start date, and direct URL."
+ },
+ {
+  "handle": "moving_beacon-owner1/clinicaltrials-gov-search-scraper",
+  "title": "ClinicalTrials.gov Search Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Searches ClinicalTrials.gov for studies matching any keyword query and returns structured trial data including NCT ID, conditions, phases, sponsor, status, interventions, enrollment, and study dates."
+ },
+ {
+  "handle": "ponderable_hydrometer/clinicaltrials-scraper",
+  "title": "ClinicalTrials.gov Scraper \u2014 Studies & Trials",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov (500k+ studies) by condition, drug, sponsor or status. Structured data: phase, enrollment, sponsor, locations. Official free API, no key."
+ },
+ {
+  "handle": "flintglade/clinical-study-change-ledger",
+  "title": "Clinical Study Change Ledger",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-check",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-check",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Monitor ClinicalTrials.gov study records and emit deterministic, evidence-linked change ledgers with baseline comparison, administrative-field controls, and reproducible artifact hashes."
+ },
+ {
+  "handle": "night111/clinical-trial-landscape-monitor",
+  "title": "Clinical Trial Landscape Monitor",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "actionable-insight",
+  "unit_tiers": {
+   "FREE": 0.00816,
+   "BRONZE": 0.007344,
+   "SILVER": 0.006528,
+   "GOLD": 0.005712,
+   "PLATINUM": 0.005712,
+   "DIAMOND": 0.005712
+  },
+  "start_fee": 4e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actionable-insight",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Turn business entity records into ranked, evidence-backed actionable business signals."
+ },
+ {
+  "handle": "pankajbhatia/eu-clinical-trials-ctis",
+  "title": "EU Clinical Trials Search (CTIS): Trials, Sponsors & Phases",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Search clinical trials authorised in the EU/EEA from the public CTIS portal (EMA): trial number, title, conditions, products, phase, sponsor, countries and sites, enrolment, endpoints and decision dates. Filter by topic."
+ },
+ {
+  "handle": "straightforward_hydra/clinicaltrials-gov-scraper",
+  "title": "ClinicalTrials.gov Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and export clinical trial records from the official ClinicalTrials.gov API v2. No API key."
+ },
+ {
+  "handle": "splendorous_astrolabe_xs9/clinicaltrials-change-monitor",
+  "title": "ClinicalTrials.gov Change Monitor - Trial Diff Feed",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Change-detection feed for ClinicalTrials.gov: new trials, status flips (Recruiting to Terminated), new sites and PIs, enrollment changes. The diff, not another snapshot."
+ },
+ {
+  "handle": "zentrafoundry/clinicaltrials-protocol-amendment-watcher",
+  "title": "ClinicalTrials.gov Update Watcher",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): changed-study,dataset-processed,enriched-record,protocol-watchlist-scan,record-saved,result-delivered",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Live CT.gov studies with a last-update date. Not a protocol PDF diff and not a medical conclusion. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/clinicaltrials-site-activation-tracker",
+  "title": "ClinicalTrials.gov Site Tracker",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-site-scan",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,record-saved,trial-site-delta,trial-site-scan",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Recruiting CT.gov studies with named facilities. Snapshot of listed sites, not an activation event log. $0.01."
+ },
+ {
+  "handle": "thoob/clinical-trials-feed",
+  "title": "Clinical Trials Scraper: ClinicalTrials.gov Studies",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Enter filters, get clean, flat clinical trials records from the official ClinicalTrials.gov v2 API. Filter by condition, sponsor, status, phase, and country, with a what-changed-since-last-run mode. Billed only per delivered record."
+ },
+ {
+  "handle": "taroyamada/clinical-trials-pipeline-monitor",
+  "title": "ClinicalTrials.gov Sponsor Pipeline Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track trial pipelines. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 sponsor query + 1 study \u2248 USD 0.01\u20130.03/query): https://console.apify.com/actors/ilwTFNMXGliZ2hAsQ/input"
+ },
+ {
+  "handle": "rejoiceful_xaphoon/clinicaltrials-studies",
+  "title": "ClinicalTrials.gov Study Search: Sponsors, Phases, Sites",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": ""
+ },
+ {
+  "handle": "bepolabs/clinical-trials",
+  "title": "ClinicalTrials.gov Scraper: clinical trial studies and results",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.0096
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov by condition, drug, sponsor or location: clinical trials with status, phase, enrollment, sites and outcomes as JSON or CSV."
+ },
+ {
+  "handle": "gettingtechnicl/clinicaltrials-studies",
+  "title": "ClinicalTrials.gov Studies (API v2) - Data Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract record data from ClinicalTrials.gov Studies (API v2) via its official public JSON API. Search by full name, organization class, brief title and export 68 structured fields per record as JSON, CSV or Excel - reliable, with no fragile HTML scraping."
+ },
+ {
+  "handle": "se7enmethod/clinical-trials-search",
+  "title": "ClinicalTrials.gov Study Search & NCT Lookup",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov studies by condition, intervention, sponsor or keyword, or look up NCT IDs in bulk. Returns status, phase, sponsor, enrollment, dates, eligibility, contacts and sites. Free official API v2."
+ },
+ {
+  "handle": "kawsar/clinicaltrials-gov-scraper",
+  "title": "Clinicaltrials Gov Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape ClinicalTrials.gov studies by condition, sponsor, status, or NCT ID. Retrieve comprehensive protocol details, trial sites, and contacts, and easily export your data to CSV, JSON, or Excel."
+ },
+ {
+  "handle": "pankajbhatia/clinicaltrials-gov-scraper",
+  "title": "ClinicalTrials.gov Scraper: Clinical Trials Search & Export",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and export clinical trials from ClinicalTrials.gov by condition, drug, sponsor, location, phase and status. Get NCT ID, title, phase, sponsor, enrollment, dates, eligibility, outcomes and sites. Official API."
+ },
+ {
+  "handle": "anyxsolutions/clinicaltrials-scraper",
+  "title": "ClinicalTrials.gov Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045,
+   "BRONZE": 0.00383,
+   "SILVER": 0.00317,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape clinical trials from ClinicalTrials.gov by search, filtered search link or NCT number: titles, status, phases, conditions, interventions, sponsors, enrollment, key dates, eligibility, outcomes, trial sites with coordinates, contacts and PubMed references. Clean JSON, no login, no API key."
+ },
+ {
+  "handle": "titan_coder/clinical-trials-status-change-delta",
+  "title": "ClinicalTrials.gov Protocol & Phase Status Delta (Save 90%)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-update-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-update-delivered",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Biotech investment & clinical intelligence radar tracking protocol phase updates, trial terminations, recruitment changes, and new study postings on ClinicalTrials.gov."
+ },
+ {
+  "handle": "peerless_columbine/clinical-trial-sponsor-site-export",
+  "title": "ClinicalTrials.gov Scraper | Sponsors & Research Sites",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Export ClinicalTrials.gov study records with sponsors, eligibility, outcomes, available contacts, complete nested locations and explicit source dates."
+ },
+ {
+  "handle": "mediapro-tools/clinical-trials-monitor",
+  "title": "ClinicalTrials.gov Search & Monitor (Official API v2)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Search and monitor ClinicalTrials.gov through its official API. No login. Export JSON/CSV/Excel. Pay only per result."
+ },
+ {
+  "handle": "noniner/clinicaltrials-intelligence",
+  "title": "Clinical Trials Intelligence \u2014 ClinicalTrials.gov + AI",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "query-analyzed",
+  "unit_tiers": {
+   "FREE": 0.15,
+   "BRONZE": 0.1185,
+   "SILVER": 0.087,
+   "GOLD": 0.066,
+   "PLATINUM": 0.066,
+   "DIAMOND": 0.066
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): query-analyzed",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search clinical trials from the official ClinicalTrials.gov registry by condition, drug, sponsor or keyword \u2014 phases, status, enrollment, sponsors and outcomes \u2014 with an AI read on the research landscape. For pharma, biotech, investors and CROs."
+ },
+ {
+  "handle": "pj_pai/clinical-trials-search",
+  "title": "ClinicalTrials.gov Search (Trials, Sponsors, Sites, Contacts)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": ""
+ },
+ {
+  "handle": "devsolal/clinical-trials-search",
+  "title": "ClinicalTrials.gov Search: Trials by Condition, Drug, Location",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-returned",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": ""
+ },
+ {
+  "handle": "frankycheese/clinical-trial-change",
+  "title": "ClinicalTrials.gov Material Change Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clinical-trial-new",
+  "unit_tiers": {
+   "FREE": 0.25
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-trial-correction,clinical-trial-new",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Monitor ClinicalTrials.gov for first-seen recruiting studies (NEW_TRIAL) and later material record changes (SOURCE_CORRECTION), with exact study links, replay suppression, and bounded charges."
+ },
+ {
+  "handle": "beerkaydgn/clinicaltrials-biotech-sponsors-leads-scraper",
+  "title": "ClinicalTrials Biotech Sponsors, Emails & Phones Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.024
+  },
+  "start_fee": 0.2,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "\ud83d\udc3e Bruno the Biotech Bison! Extract active clinical trials from ClinicalTrials.gov with Biotech sponsors, direct emails, and phones."
+ },
+ {
+  "handle": "opentenders/clinicaltrials-scraper",
+  "title": "ClinicalTrials.gov API & Scraper \u2013 Trials by Sponsor, Phase",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "ClinicalTrials.gov API scraper (v2): clinical trials by condition, intervention, sponsor, location, status, phase and update date. Flat rows with sponsor, enrollment, dates, eligibility, sites and data date. Pharma pipeline monitoring. From $3 per 1,000. Source: ClinicalTrials.gov (U.S. NLM)."
+ },
+ {
+  "handle": "nonstop_poacher/store-clinical-trials-monitor",
+  "title": "ClinicalTrials.gov Study Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Studies from the official ClinicalTrials.gov API v2 for a condition, phase and status, returning only the studies whose status, phase, enrollment or last update changed since your last run."
+ },
+ {
+  "handle": "rbbscrap/fast-clinicaltrials-scraper",
+  "title": "Fast ClinicalTrials Scraper \u2014 Drug Studies Pipeline",
+  "users": 2,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "no recurring event -- one-time/start-fee only",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-08T19:54:04.236Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "desc": "Ultra-fast ClinicalTrials.gov scraper powered by modern v2 API. Extract global clinical drug studies, biotech pipelines, trial phases (Phase 1-4), recruiting statuses, lead sponsors, medical conditions, experimental drugs, and investigator contacts on 256MB RAM."
+ },
+ {
+  "handle": "br_data_hub/clinical-trials-tracker",
+  "title": "Clinical Trials Tracker, from ClinicalTrials.gov data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search public ClinicalTrials.gov data by condition, drug, sponsor, phase, status and country, and track what changed since the last run: new trials, status changes and date changes."
+ },
+ {
+  "handle": "flyingnimbus/clinical-trials-search",
+  "title": "ClinicalTrials.gov Search API \ud83d\udcb0$2/1k",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search the ClinicalTrials.gov registry by condition, drug, sponsor, location, status and phase and get clean, flat records. Useful for biotech competitive intelligence, patient recruitment, medical writing and market research."
+ },
+ {
+  "handle": "afkdigital/newapi41-clinicaltrials-recruiting-study-contacts",
+  "title": "ClinicalTrials.gov Recruiting Trials & Study Contacts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-result",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract recruiting industry-sponsored ClinicalTrials.gov studies, sponsors and study contacts. Filter condition, phase and country; export JSON/CSV. Research use; no email marketing."
+ },
+ {
+  "handle": "moment-data/clinical-trials-new-studies-feed",
+  "title": "ClinicalTrials.gov Feed: New Trials, Status Changes & Results",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Daily feed of new clinical trials from the official ClinicalTrials.gov API (public domain), plus status changes (recruiting, completed, terminated, withdrawn) and newly posted results. Filter by condition, drug, sponsor, sponsor class, phase, country. No contact data."
+ },
+ {
+  "handle": "steadfetch/clinicaltrials-gov-extractor",
+  "title": "ClinicalTrials.gov Scraper (Clinical Trial Data JSON)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "ClinicalTrials.gov trial records as JSON: NCT ID, title, status, conditions, interventions and phases when provided, enrollment, dates, sponsor, locations. Filter: condition, intervention, status, phase or date window. Registry metadata only - no participant data. For trial-landscape research."
+ },
+ {
+  "handle": "transparent_meteorite/clinical-trials-new-studies-tracker",
+  "title": "ClinicalTrials.gov New Studies Tracker: New Clinical Trials",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-result",
+  "unit_tiers": {
+   "FREE": 0.0019
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "ClinicalTrials.gov new studies tracker: get newly registered clinical trials from the free ClinicalTrials.gov API with NCT id, title, sponsor, phase, status, conditions, interventions, enrollment, dates, countries and an opportunity score, plus an optional sponsor rollup. No login."
+ },
+ {
+  "handle": "brightish_ascent/clinicaltrials-study-monitor",
+  "title": "ClinicalTrials.gov Study Monitor & Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Unofficial; not affiliated with NIH/NLM. Search and monitor clinical studies from the official ClinicalTrials.gov API by condition, drug, sponsor, status, phase, location and dates. Only-new results plus status, recruiting and results-posted changes. Not medical advice."
+ },
+ {
+  "handle": "lathewright/clinical-trials-search",
+  "title": "ClinicalTrials.gov Search API: Studies by Condition & Drug",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Returns clinical studies from the official ClinicalTrials.gov API v2 by condition, drug, sponsor, status, phase, location and update date: design, enrollment, dates, eligibility, outcomes and sites. No key. For biotech, CROs, investors and AI agents."
+ },
+ {
+  "handle": "invaluable_rondeau/clinicaltrials-gov-scraper",
+  "title": "ClinicalTrials.gov Scraper \u2014 Biotech Trials & PI Emails",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "certificate-checked",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): certificate-checked",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract clinical studies from ClinicalTrials.gov API v2. Captures NCT ID, trial status, phase, lead biotech sponsor, conditions, interventions & Principal Investigator / Central Contact emails & phones."
+ },
+ {
+  "handle": "winterlock/clinicaltrials-scraper",
+  "title": "ClinicalTrials.gov Scraper: Studies, Sponsors & Sites",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search every clinical study on ClinicalTrials.gov by condition, intervention, sponsor, location, phase or status. Flattens the nested study record into one clean row. Official NIH API, no key, no login, no scraping."
+ },
+ {
+  "handle": "scarlet_sheet/clinicaltrials-gov-scraper",
+  "title": "ClinicalTrials.gov Study Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract clinical trials from the official ClinicalTrials.gov v2 API by condition, intervention, sponsor, location and status. Flat, analysis-ready rows with phases, enrollment, sites and sponsor data."
+ },
+ {
+  "handle": "keepable_injera/clinical-trials-monitor",
+  "title": "ClinicalTrials.gov Study Monitor (new & status changes)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find and monitor clinical studies from the ClinicalTrials.gov API v2 by condition, term, sponsor and status, with onlyNew change detection for new trials, status changes and posted results. Source: ClinicalTrials.gov; data processing date included. Unofficial; not affiliated with NLM or NIH."
+ },
+ {
+  "handle": "titan_coder/clinicaltrials-biopharma-pipeline-radar",
+  "title": "ClinicalTrials.gov Pharma & Biotech Trials Radar (Save 90%)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clinical-trial-milestone-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-trial-milestone-delivered",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Sub-second biopharma intelligence radar tracking new Phase 1-3 clinical trials, drug candidate study protocols, completion milestones, and sponsor updates on ClinicalTrials.gov."
+ },
+ {
+  "handle": "dataandbeyond/clinical-trials",
+  "title": "ClinicalTrials.gov API: Clinical Trials Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov by condition, intervention, sponsor, location, phase, status or NCT ID. One flat record per trial."
+ },
+ {
+  "handle": "betteratoms/clinicaltrials-gov-monitor",
+  "title": "ClinicalTrials.gov Scraper & New Trials Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and monitor ClinicalTrials.gov by condition, sponsor, phase, status and date range. Monitor mode returns only trials that are new or updated since your last run. Official API v2, no start fee."
+ },
+ {
+  "handle": "b2b-quant-apis/us-clinical-trials-biotech-radar",
+  "title": "US ClinicalTrials.gov Biotech & Pharma Study Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clinical-trial-extracted",
+  "unit_tiers": {
+   "FREE": 0.04
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-trial-extracted",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "B2B clinical trials intelligence and biotech sponsor lead generator powered by the official U.S. NIH ClinicalTrials.gov API v2. Extracts recruiting studies, pharma sponsors, phases, drug interventions, enrollment counts, and site contacts with LLM-ready Markdown briefs."
+ },
+ {
+  "handle": "zhucl1006/clinicaltrials-gov-search",
+  "title": "ClinicalTrials.gov Search - Studies, Sponsors, Sites & Status",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov via the official API v2: filter by condition, drug, sponsor, location, phase, status and update date. Get sponsor, enrollment, dates, sites, countries and study contacts as clean JSON. For pharma BD, CROs, investors and site recruiters. No key."
+ },
+ {
+  "handle": "groundplanes/clinicaltrials-recruiting-sites",
+  "title": "ClinicalTrials.gov Scraper: Recruiting Trial Sites & Sponsors",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Recruiting clinical trials from the ClinicalTrials.gov API v2, one row per recruiting site: sponsor, phase, condition, intervention, facility and city/state, newest updates first. Filter by condition, sponsor, phase, country, state and site status. Published contacts optional."
+ },
+ {
+  "handle": "adaptive_nightmare/clinical-trials-radar",
+  "title": "ClinicalTrials.gov Medical Studies Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract ClinicalTrials.gov Medical Studies data in clean JSON or CSV. Query by condition, status, maxStudies for records, engagement metrics, and metadata. Export datasets, run via API or Python/Node.js SDK, schedule runs, or integrate with webhooks with zero proxy fees."
+ },
+ {
+  "handle": "radiant_opuntia/clinical-trials-alerts",
+  "title": "ClinicalTrials.gov Scraper: New Clinical Trial Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and monitor clinical trials from ClinicalTrials.gov, the official US registry. Filter by condition, drug, sponsor, phase, status and country. Flat JSON with sponsor, sites, contacts and enrollment. 'Only new' mode for daily new-trial alerts. No API key."
+ },
+ {
+  "handle": "brightpath-data/clinicaltrials-gov-search",
+  "title": "ClinicalTrials.gov Search Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Market researchers, CROs and investors tracking a drug, condition or sponsor get flat, structured ClinicalTrials.gov study records instead of parsing the site by hand."
+ },
+ {
+  "handle": "parselab/nih-clinical-trials-scraper",
+  "title": "ClinicalTrials.gov Studies Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.025,
+   "BRONZE": 0.02292,
+   "SILVER": 0.02083,
+   "GOLD": 0.01875,
+   "PLATINUM": 0.01875,
+   "DIAMOND": 0.01875
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov studies by condition, drug, sponsor, phase, status or country. Get study design, eligibility, outcomes, sites and contacts, plus adverse event counts and the most reported adverse event terms for completed trials that have posted results. Export to CSV or Excel."
+ },
+ {
+  "handle": "insight.solutions/clinical-trials-fda-api",
+  "title": "Clinical Trials & FDA API \u2014 ClinicalTrials.gov + openFDA",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.0005,
+   "SILVER": 0.0004,
+   "GOLD": 0.0003,
+   "PLATINUM": 0.0003,
+   "DIAMOND": 0.0003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fda-record,trial",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Query ClinicalTrials.gov v2 and openFDA from one Actor. Search 600,000+ registered studies by condition, drug, sponsor, phase, status or location, and get FDA drug and device recalls, labels, NDC entries, approvals, 510(k) clearances and adverse-event reports for the same drug. No API key."
+ },
+ {
+  "handle": "captainhandsome/clinical-trials-search",
+  "title": "Clinical Trials API - ClinicalTrials.gov Search & Data Export",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.00035,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov by condition, intervention, sponsor or status and pull clinical trial data into flat rows: NCT ID, status, phase, enrollment, sponsor, dates and locations. Ready for CSV, JSON or AI agent workflows, with no API key."
+ },
+ {
+  "handle": "eliai/clinical-trials-scraper",
+  "title": "ClinicalTrials.gov Scraper - Trials by Condition or Drug",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-scraped",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Searches ClinicalTrials.gov by condition or term, with status, phase and country filters. Returns one JSON row per trial with NCT id, status, phases, enrollment, conditions, interventions, sponsor, countries and eligibility. For biotech analysts, pharma BD teams and medical writers."
+ },
+ {
+  "handle": "dalbian/clinical-trials-search",
+  "title": "ClinicalTrials.gov Search \u2014 Trials, Sponsors and Sites",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search-run",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): search-run,trial-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search the US registry of clinical studies by condition, drug, sponsor, phase, status and country, and get back flat rows: title, sponsor, phase, enrollment, eligibility, primary outcome and the recruiting sites. Public NIH data, no key."
+ },
+ {
+  "handle": "sourcerow/clinical-trials",
+  "title": "Clinical Trials \u2014 ClinicalTrials.gov Registry",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search clinical trials by condition, sponsor or NCT number \u2014 phase, status, enrolment, interventions, eligibility and sites, flattened from eight nested modules into one row per study."
+ },
+ {
+  "handle": "preservable_mocha/clinical-trials-aggregator",
+  "title": "Clinical Trials Aggregator (ClinicalTrials.gov)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov and get clean, unified JSON: status, phase, sponsor, conditions, enrollment, countries. Keyless official open data."
+ },
+ {
+  "handle": "oneshotventure/trials-watch",
+  "title": "ClinicalTrials.gov Watch \u2014 New Trials by Condition & Sponsor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scheduled change feed of newly posted ClinicalTrials.gov studies."
+ },
+ {
+  "handle": "foxlabs/clinical-trial-sponsor-data",
+  "title": "Pharma & Biotech Pipeline Data \u2014 Clinical Trials by Sponsor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Pull clinical trials for any sponsor company from ClinicalTrials.gov. Returns NCT ID, study title, phase, status, conditions, interventions, enrolment, start and completion dates, lead sponsor, collaborators and study locations."
+ },
+ {
+  "handle": "technicaldost/clinicaltrials-nct-status-monitor",
+  "title": "ClinicalTrials.gov NCT Status Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Re-check caller-owned NCT IDs for overall status, enrollment, sponsor and last-update changes from the public ClinicalTrials.gov API v2. Built for scheduled clinops watchlists, not a trial dump. You only pay for successful checks you receive."
+ },
+ {
+  "handle": "frenchdatalab/clinical-trials-search",
+  "title": "ClinicalTrials.gov Search: Trials, Sponsors & Sites",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): site,study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search the official ClinicalTrials.gov registry (600,000+ studies): condition, drug, sponsor, phase, status, country, city or distance, new trials. One row per study or per trial site with facility, location and contacts. Official US Government data."
+ },
+ {
+  "handle": "offerastudio/clinicaltrials-change-monitor",
+  "title": "Clinical Trials Change Monitor: Status & Updates",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-returned",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track changes to ClinicalTrials.gov studies with the official API: overall status and why stopped, phase, enrollment, primary completion date, locations added or removed, results posted, sponsors and arms. Monitor mode returns only what changed; recent-updates mode lists the latest updates."
+ },
+ {
+  "handle": "bakos_bence/clinicaltrials-watch",
+  "title": "ClinicalTrials.gov Study Watch",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0099,
+   "BRONZE": 0.008247,
+   "SILVER": 0.006603,
+   "GOLD": 0.00495,
+   "PLATINUM": 0.00495,
+   "DIAMOND": 0.00495
+  },
+  "start_fee": 0.003,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Watch ClinicalTrials.gov via the official API v2 \u2014 titles, NCT IDs, status, sponsors, and start dates for a query or condition. Schedule competitor and pipeline monitors. Unofficial; not affiliated with NIH."
+ },
+ {
+  "handle": "northpine-studio/clinical-trials-search",
+  "title": "Clinical Trials Scraper & API: ClinicalTrials.gov Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov by condition, drug, sponsor, status, phase or country; flat analysis-ready rows. Official NLM API, no personal contact data."
+ },
+ {
+  "handle": "talcoe/clinicaltrials-gov",
+  "title": "ClinicalTrials.gov Trials Scraper with Sites and Contacts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov by condition, sponsor, location, recruitment status and phase, and get each trial with sponsor, eligibility, recruiting sites and contacts, priced per result."
+ },
+ {
+  "handle": "grit-77/clinicaltrials-studies-scraper",
+  "title": "ClinicalTrials.gov Studies Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "ClinicalTrials.gov studies scraper for condition, intervention and NCT ID searches. Export trial status, sponsors, eligibility, interventions and study locations as JSON."
+ },
+ {
+  "handle": "kdhan/clinicaltrials-gov-search",
+  "title": "ClinicalTrials.gov Search (Official API)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0026,
+   "GOLD": 0.0022,
+   "PLATINUM": 0.0022,
+   "DIAMOND": 0.0022
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and export clinical trials from the official ClinicalTrials.gov API v2. No API key needed. Public domain U.S. government data. Filter by condition, intervention, sponsor, location, status, and phase."
+ },
+ {
+  "handle": "apex-b2b-data/clinicaltrials-gov-sponsor-leads",
+  "title": "ClinicalTrials.gov Biotech Sponsor & PI Contact Leads Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract verified clinical trial sponsors, biotechnology companies, lead principal investigators (PIs), and central trial contacts (direct emails & phone numbers) from the official ClinicalTrials.gov REST API v2. Filter by disease condition, trial phase, recruitment status, and industry vs academic s"
+ },
+ {
+  "handle": "adaptive_nightmare/clinicaltrials-studies-radar",
+  "title": "ClinicalTrials.gov Medical Studies & Research Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Extract public NIH ClinicalTrials.gov clinical research studies, NCT IDs, brief summaries, conditions, and trial phases in clean JSON or CSV. Query by medical condition or keyword. Export datasets or integrate with APIs without proxy fees."
+ },
+ {
+  "handle": "cheerful_term/clinical-trials",
+  "title": "ClinicalTrials.gov Study Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov studies by condition, intervention, sponsor, location and status: NCT ID, titles, status, phases, enrollment, start and completion dates, sponsor and collaborators, sites, and summary."
+ },
+ {
+  "handle": "researchdata/clinical-trials-search",
+  "title": "Clinical Trials Search (ClinicalTrials.gov)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov by condition, intervention, sponsor, location or free text and get flat rows: status, phases, enrollment, sponsor, dates, countries, site count, results flag."
+ },
+ {
+  "handle": "private_image_hg9/clinical-trials-search",
+  "title": "ClinicalTrials.gov Search: Studies, Phases, Sponsors & Status",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search 500K+ studies on ClinicalTrials.gov by condition, drug, sponsor, phase, status, location and date through the official API. Clean rows with phase, enrollment, sponsor, key dates, countries and results flag. New-or-updated-only mode for daily monitoring."
+ },
+ {
+  "handle": "clearfeedlabs/clinical-trial-tracker",
+  "title": "ClinicalTrials.gov Scraper & Trial Change Tracker: PubMed + FDA",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-alert,fda-status,publications,trial",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track clinical trials from the official ClinicalTrials.gov API v2: status changes, completion-date slips, results posted, new trials. Optional add-ons: linked PubMed papers and FDA approval status (openFDA). Clean rows, no contact PII."
+ },
+ {
+  "handle": "plotpointtech/clinicaltrials-gov-scraper",
+  "title": "ClinicalTrials.gov Scraper - Studies, Sites & Contacts $1/1K",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00085,
+   "SILVER": 0.00075,
+   "GOLD": 0.00062,
+   "PLATINUM": 0.00062,
+   "DIAMOND": 0.00062
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Export clinical trials from the official ClinicalTrials.gov API by condition, drug, sponsor, phase, status and location: sponsors, dates, enrollment, eligibility, sites and published contacts. One row per study or per site. $1 per 1,000."
+ },
+ {
+  "handle": "apex-nexus/clinicaltrials-study-delta-monitor",
+  "title": "ClinicalTrials.gov Study Delta Monitor",
+  "users": 2,
+  "model": "FREE",
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Watchlist-based delta monitor of the NIH ClinicalTrials.gov study registry \u2014 one dataset alert per new/updated study matching the watchlist since the last run (free when nothing changes). Public data: https://clinicaltrials.gov/api/v2/studies"
+ },
+ {
+  "handle": "calculating_kitchen_h0b/clinical-trials-tracker",
+  "title": "ClinicalTrials.gov Study Tracker",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clinical-study",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and monitor clinical trials from ClinicalTrials.gov: sponsors, phases, status, conditions, interventions, enrollment, dates, eligibility, outcomes and recruiting sites. Filter by condition, drug, sponsor, location or recent updates. Official API, no key."
+ },
+ {
+  "handle": "mehdad-datalabs/clinical-trials-biotech-catalyst-cro-b2b-lead-scraper",
+  "title": "ClinicalTrials.gov Phase 1-3 Biotech Catalyst & B2B Lead API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clinical-trial-extracted",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-trial-extracted",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract live ClinicalTrials.gov Phase 1, 2 & 3 studies into clean JSON/CSV. Get Pharma & Biotech Sponsors, Primary Completion Catalyst Dates, Conditions, Drug Interventions, Patient Enrollment & Study Director B2B Contact Emails/Phones. Built for CRO lead generation, n8n & MCP AI agents."
+ },
+ {
+  "handle": "nexus-scrapers/clinical-trials-search",
+  "title": "ClinicalTrials.gov Scraper: Search Clinical Trials by Drug",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov, the official registry of clinical studies, by condition, drug or intervention, sponsor, location, phase and recruitment status. One flat record per trial with dates, enrollment, sponsors, sites, eligibility and outcomes. Official API v2, no key. JSON, CSV or Excel."
+ },
+ {
+  "handle": "seemuapps/clinicaltrials-scraper",
+  "title": "Clinical Trials Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and extract clinical trials by condition, drug, sponsor, or location, status, phase, eligibility, enrollment, and sites from ClinicalTrials.gov."
+ },
+ {
+  "handle": "automation_studio/clinicaltrials-biotech-leads",
+  "title": "TrialLead AI \u2014 Clinical Trials & Biotech PI Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.0035,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Real-time clinical trial intelligence, lead Principal Investigators (PIs), biotech sponsors, and direct contact emails from ClinicalTrials.gov. High-value leads for recruiters, CROs, and life-science investors."
+ },
+ {
+  "handle": "skootle/clinical-trials-intel",
+  "title": "Clinical Trials Scraper & Pharma Pipeline Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape ClinicalTrials.gov by drug, disease, sponsor, phase, or location. Get normalized trial records, recruiting sites, and pharma pipeline intelligence for competitive research."
+ },
+ {
+  "handle": "hereditary_model/clinical-trial-monitor",
+  "title": "Clinical Trial Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-returned",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): term-digest,trial-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Finds clinical trials matching your condition or keyword from ClinicalTrials.gov, scored by how active and recent they are."
+ },
+ {
+  "handle": "zinin/clinical-trials-monitor",
+  "title": "Clinical Trials Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.00475,
+   "DIAMOND": 0.004,
+   "FREE": 0.005,
+   "GOLD": 0.00425,
+   "PLATINUM": 0.0041,
+   "SILVER": 0.0045
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Retrieve up to 100 ClinicalTrials.gov studies for up to 25 condition, drug, or sponsor queries. Delivered rows include NCT ID, status, phase, sponsor, dates, source link, confidence, gaps, and billing. No-match and failure rows are free; registry data is not medical advice or proof of efficacy."
+ },
+ {
+  "handle": "constructive_calm/clinical-trials-fda-scraper",
+  "title": "Clinical Trials & FDA Pipeline Intelligence Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "pipeline-aggregated",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): adverse-event-fetched,ai-summary-generated,change-detected,device-clearance-fetched,drug-approval-fetched,pipeline-aggregated,recall-fetched,shortage-fetched,trial-details-fetched,trial-fetched",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Unified clinical-trial + FDA intelligence: trial search, drug approvals, 510(k) and PMA device clearances, adverse events, recalls, drug shortages, and a sponsor-pipeline rollup. Built on official ClinicalTrials.gov v2 + OpenFDA APIs. Zero anti-bot. Optional Gemini AI summaries."
+ },
+ {
+  "handle": "scrapemint/clinical-catalyst-pipeline",
+  "title": "Clinical Catalyst Radar for Biotech",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "cat_watch",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cat_catalyst,cat_signal,cat_watch",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "For each biotech company, correlates clinical pipeline progress (ClinicalTrials.gov) and research momentum (PubMed) with open-market insider buying (SEC Form 4), scores convergence 0 to 100, and tiers companies catalyst, clinical lead, insider lead, or watch. An advancing asset plus insiders buying."
+ },
+ {
+  "handle": "nexgendata/fda-pharma-catalyst-pipeline",
+  "title": "FDA Pharma Pipeline Tracker \u2014 Milestone Data API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "pharma-record",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): pharma-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track biotech catalysts: clinical-trial readouts, FDA drug approvals, and recalls in one feed from official ClinicalTrials.gov + openFDA data. For pharma intelligence and biotech investors."
+ },
+ {
+  "handle": "flamelit_arowana/clinical-trials-finder",
+  "title": "Clinical Trials Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 2,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Searches and retrieves clinical trial data from ClinicalTrials.gov API v2. Free \u2014 no API key required."
+ },
+ {
+  "handle": "ninja.dev/clinical-trials-fda-drugs-recalls",
+  "title": "Clinical Trials + FDA Drug Data & Recalls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): drug-profile,recall,trial",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov by condition, drug, sponsor, phase, status and location, get FDA drug profiles (label, boxed warning, adverse event counts, top reactions, recalls) and FDA recalls for drugs, devices and food. Official U.S. government APIs, clean JSON, no login."
+ },
+ {
+  "handle": "smartmoney-data/biotech-catalyst-calendar",
+  "title": "Biotech Catalyst Calendar - PDUFA Dates, Trial Readouts & FDA",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "catalyst",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): catalyst",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Biotech catalysts per ticker: Phase 2/3 trial readout dates from ClinicalTrials.gov, FDA approvals from openFDA and PDUFA / advisory committee dates from SEC 8-K press releases, in one dated calendar. No API keys."
+ },
+ {
+  "handle": "centorprat/clinical-trials-intelligence",
+  "title": "Clinical Trials Intelligence: Landscape Brief & Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "landscape-brief",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.019,
+   "SILVER": 0.018,
+   "GOLD": 0.017,
+   "PLATINUM": 0.017,
+   "DIAMOND": 0.017
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): landscape-brief,trial-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Give it conditions, drugs or sponsors. For each it queries ClinicalTrials.gov and composes ONE landscape brief: counts by phase and status, recruiting-now, top sponsors, interventions and countries, median enrollment and recent starts. Keyless and agent-callable."
+ },
+ {
+  "handle": "kestrel/clinical-trials-search",
+  "title": "Clinical Trials Search - Studies, Sponsors & \u4e34\u5e8a\u8bd5\u9a8c",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search clinical trials on ClinicalTrials.gov by query and recruitment status. Rows: NCT ID, title, sponsor, conditions, phase, enrollment, eligibility, locations and public study contacts. Free country/text filters; exclude known IDs or content hashes for repeat-run research. \u4e34\u5e8a\u8bd5\u9a8c\u3002"
+ },
+ {
+  "handle": "zinjaink/biotech-clinical-trial-sponsor-leads",
+  "title": "Biotech & Pharma Clinical Trial Sponsor Lead Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.025
+  },
+  "start_fee": 0.025,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract active Biotech, Pharma, and MedTech clinical trial sponsors with direct Central Contact emails, phone numbers, Principal Investigators, trial phase, and therapeutic area from the ClinicalTrials.gov v2 API."
+ },
+ {
+  "handle": "miacx/clinical-trials-fda",
+  "title": "Clinical Trials & FDA Drug Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "Record",
+  "unit_tiers": {
+   "FREE": 0.0018
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): Record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov studies and FDA drug labels, recalls or adverse-event reaction counts. Get structured records from public government APIs."
+ },
+ {
+  "handle": "frankycheese/clinical-trial-site-openings",
+  "title": "Clinical Trial Site Opportunity Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-fit-recent-match",
+  "unit_tiers": {
+   "FREE": 0.18
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-fit-recent-match,trial-fit-source-correction",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find newly recruiting ClinicalTrials.gov studies that match your site's therapeutic areas and geography. Get sponsor, eligibility, contact, location, and exact study evidence with replay-safe bounded charges."
+ },
+ {
+  "handle": "jetlaunch/biomedical-regulatory-data",
+  "title": "Clinical Trials and FDA Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-record",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): approval-record,label-record,study-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov studies and look up FDA drug labels, drug approvals and 510(k) device clearances from official public APIs."
+ },
+ {
+  "handle": "informed_almandine_vzb/clinical-trials-openfda-biotech-scraper",
+  "title": "Clinical Trials + FDA Data in One Dataset, No API Key",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "biotech-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): biotech-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "ClinicalTrials.gov studies plus openFDA drug approvals, 510(k) device clearances, and recalls, in one dataset with no API key needed. A test run returned 20 records of each type (80 total)."
+ },
+ {
+  "handle": "seaf999ield/biotech-catalyst-tracker",
+  "title": "Biotech Catalyst Tracker: FDA & MHRA Approvals, Trials, AdComs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "event-row",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): event-row",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Biotech and pharma catalysts from official public sources: FDA approvals and CRLs (openFDA), FDA approval news, FDA advisory committee calendar, MHRA UK authorisations and ClinicalTrials.gov results and status changes. Company and condition filters, tickers."
+ },
+ {
+  "handle": "arched_friend/clinical-trial-monitor",
+  "title": "Clinical Trial Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-returned",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track clinical trials on ClinicalTrials.gov by condition, sponsor, drug or location. Returns phase, status, enrollment, sites and sponsor for every study, and flags new trials, status changes and posted results since your last run."
+ },
+ {
+  "handle": "gochujang/clinical-trials-tracker",
+  "title": "Clinical Trials Tracker \u2014 Phase, Status, Sponsor Filter",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-fetched",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-fetched",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Track and monitor clinical trials from ClinicalTrials.gov. Filter by condition, sponsor, phase, status. Returns structured data with enrollment, dates, and status changes. Alternative to IQVIA/Citeline ($20k+/year). No API key required."
+ },
+ {
+  "handle": "prixodik/clinical-trials-recruitment-monitor",
+  "title": "Clinical Trial Sponsor & Recruitment Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track sponsor-specific clinical studies and recruitment status changes from ClinicalTrials.gov."
+ },
+ {
+  "handle": "recordsdata/clinical-trials-scraper",
+  "title": "Clinical Trials Scraper: Studies, Sites & Results",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-record",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.0144,
+   "SILVER": 0.0132,
+   "GOLD": 0.012,
+   "PLATINUM": 0.012,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-contacts,study-locations,study-outcomes,study-record,study-references,study-results",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape ClinicalTrials.gov studies by condition, drug, sponsor, location, status and phase. Get enrollment, every trial site, outcome measures, publications, posted results and adverse events per arm. Export CSV, Excel, JSON or XML. No login or API key. 600K+ studies."
+ },
+ {
+  "handle": "sapphire_headwind/clinical-trial-results-table-qa",
+  "title": "Clinical Trial Results Table QA",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audit-completed",
+  "unit_tiers": {
+   "FREE": 0.25
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audit-completed",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Audit normalized ClinicalTrials.gov-style study and outcome CSVs before joins, analysis or delivery. Detect invalid NCT IDs, duplicate keys, broken joins, missing fields and malformed dates. No scraping, AI, repairs or clinical accuracy claims."
+ },
+ {
+  "handle": "sweet-orb/pharma-regulatory-intelligence",
+  "title": "Pharma Regulatory Intelligence \u2014 FDA, EMA & Clinical Trials",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "call",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): call",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search FDA drug approvals and recalls, EMA medicines and ClinicalTrials.gov trials by therapeutic area. Get sponsor organisations, phases, indications, statuses and source links. No personal data."
+ },
+ {
+  "handle": "a.jonzy/clinical-trial-matcher",
+  "title": "Clinical Trial Matcher",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-returned",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search ClinicalTrials.gov for parsed eligibility lists, age and sex limit checks and open sites. Registry data, not medical advice. Official API."
+ },
+ {
+  "handle": "pandadad0214/clinical-trial-leads",
+  "title": "Clinical Trial Leads: Sponsors, Sites & Contacts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-returned",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find clinical trials by condition, drug, sponsor, phase, status and location from the official ClinicalTrials.gov API: sponsor, phase, enrollment, dates, central contacts, investigators and every study site with contacts. Excel and CSV."
+ },
+ {
+  "handle": "researchdata/clinical-evidence-digest",
+  "title": "Clinical Evidence Digest \u2013 Published Trial Results",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-summarized",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-summarized",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Which completed trials actually published results? Recent Phase 2-4 trials from ClinicalTrials.gov (obesity, addiction, cancer, HIV, infections or custom), linked to PubMed papers, with primary endpoint results, evidence status and a Markdown digest per area."
+ },
+ {
+  "handle": "aperture/biotech-clinical-trial-buying-signal-scraper",
+  "title": "Biotech Clinical Trial & R&D Grant Buying-Signal Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-signal-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): buying-signal-enriched,job-signal-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract B2B clinical trial and R&D grant buying signals across US ClinicalTrials.gov v2, EU EMA CTIS, EU CORDIS Horizon Europe, and US NIH SBIR/STTR. Resolves sponsor root domains and verifies named study director/PI emails. Pay $0.008 only for verified firstname.lastname@ contacts; generic info@ in"
+ },
+ {
+  "handle": "stefano_seggio/global-corporate-patent-intelligence",
+  "title": "Corporate & Patent Intelligence - PTAB, EPO, Registers",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "patent-proceeding",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-record,patent-proceeding,sg-entity-new,sg-entity-updated,watchlist-hit",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Patent disputes and company registers in one Actor: USPTO PTAB trials and EPO opposition watch (your own API keys), ClinicalTrials.gov and FDA Orange Book, Singapore ACRA and the UAE ADGM register. Receive only new or changed records."
+ },
+ {
+  "handle": "zinjaink/clinical-trial-recruiting-site-and-investigator-leads",
+  "title": "Clinical Trial Recruiting Site & Investigator Contact Leads",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.025
+  },
+  "start_fee": 0.025,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract actively recruiting clinical trial hospital sites, central study contacts, direct coordinator emails, and phone numbers from the official ClinicalTrials.gov v2 API."
+ },
+ {
+  "handle": "taroyamada/biomedical-trial-literature-evidence-report",
+  "title": "PubMed Clinical Trials Evidence Gap Report",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "biomedical-evidence-row",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): biomedical-evidence-export,biomedical-evidence-report,biomedical-evidence-row,evidence-gap-alert",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Link biomedical trials and literature. Open Input \u2192 leave defaults \u2192 Start (1 NCT watch + emitRawRows \u2248 USD 0.008/row): https://console.apify.com/actors/0U83sXHpYOMk5d4dC/input From USD 0.008."
+ },
+ {
+  "handle": "taroyamada/clinical-trials-fda-watch-monitor",
+  "title": "Clinical Trial & FDA Signal Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-trial-alert",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fda-signal-alert,new-trial-alert,pipeline-watch-report,raw-record-row,trial-status-change-alert,watch-export-generated",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track FDA trials. Open Input \u2192 leave defaults \u2192 Start (1 drug/condition watch + 1 result \u2248 USD 0.01\u20130.03/watch): https://console.apify.com/actors/9VLejs3ylu5187D3X/input From USD 0.01."
+ },
+ {
+  "handle": "datapilot/clinical-trials-protocol-scraper",
+  "title": "Clinical Trials Protocol Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "scraped-result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): scraped-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Collect study ID, title, status, lead sponsor, summary, and direct study links. Supports status filtering, pagination, custom result limits, retry handling, and Apify Residential Proxy for reliable data collection."
+ },
+ {
+  "handle": "strange_code/gene-target-dossier",
+  "title": "Gene Target Dossier: NCBI, UniProt, PubMed & Trials",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "gene-dossier",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,gene-dossier,publication-row,trial-row",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "One clean record per gene: official name, summary, protein function, localization, disease links, publication volume, latest papers and clinical trials, joined from four public databases in one run."
+ },
+ {
+  "handle": "robinworld/fda-clinical-trials-biotech-catalyst",
+  "title": "FDA Clinical Trials Phase 3 & Biotech Catalyst Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Real-time clinical trial tracker monitoring FDA Phase 3 completions, PDUFA dates, and biotech stock catalysts before market open."
+ },
+ {
+  "handle": "nexgensignal/eu-clinical-trial-ctis-records",
+  "title": "EU Clinical Trials (CTIS) - Trial Registry",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "ctis_trial_record",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.045,
+   "SILVER": 0.04,
+   "GOLD": 0.0335,
+   "PLATINUM": 0.0335,
+   "DIAMOND": 0.0335
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ctis_trial_record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "EU clinical trials from CTIS (EMA), searchable by medical condition, status (e.g. recruiting), country, phase and sponsor: EU CT number, title, status, sponsor organisation, phase, countries, conditions, decision date. No contact persons. Pay per record."
+ },
+ {
+  "handle": "unrivaled_fortress/fda-drug-approvals-trials-monitor",
+  "title": "\u26a1 FDA Drug Approvals, NDAs & Clinical Trial Phase Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "\u26a1 FDA Drug Approvals, NDAs & Clinical Trial Phase Radar"
+ },
+ {
+  "handle": "fetchfinch/clinical-trials-search",
+  "title": "Clinical Trial Data Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search clinical trial data by condition, intervention, recruitment status, phase, location or NCT ID. Export study details, eligibility, sponsors, outcomes and trial sites as structured JSON or CSV."
+ },
+ {
+  "handle": "aperture/b2b-buying-signal-icp-aggregator",
+  "title": "Hiring Signal B2B & Multi-Signal ICP Scorer (Jobs & Funding)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "icp-lead-scored",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): icp-lead-scored,icp-multi-signal-enriched",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Merge and score 5D B2B buying signals (hiring, startup funding, public contract awards, executive changes, and biotech clinical trials/grants) across US, UK, EU & APAC in under 1 second. Deduplicates by company domain and generates outreach hooks for Clay. Pay $0.009 strictly for verified named emai"
+ },
+ {
+  "handle": "gochujang/pubmed-papers-tracker",
+  "title": "PubMed Medical Papers Tracker",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "paper-fetched",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): paper-fetched",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search PubMed medical literature via NCBI E-utilities API (no API key required). Filter by date range, article type (Clinical Trial, Review, Meta-Analysis), and keywords. Returns title, abstract, authors, journal, DOI, MeSH terms, and open-access status. Ideal for drug and disease research."
+ },
+ {
+  "handle": "aperture/global-b2b-signal-suite-unlimited",
+  "title": "Global 5D B2B Buying-Signal Suite & Agency Hub (10 Markets)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "icp-lead-scored",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): icp-lead-scored,icp-multi-signal-enriched",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "All-in-one 5D B2B buying-intent orchestrator merging hiring, startup funding, public contract awards, executive changes, and biotech clinical trials/grants across 10 markets into deduplicated 0-100 ICP-scored leads with verified named emails."
+ },
+ {
+  "handle": "authoritative_glen/pubmed-research-papers-radar",
+  "title": "PubMed Scraper: Medical Papers, Clinical Studies & Abstracts",
+  "users": 2,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Scrape research papers, clinical trials, and medical literature from PubMed (NCBI). Search keywords, journals, or MeSH terms with abstracts, authors, DOI, and PMC full-text links. Zero login, AI & MCP compatible."
+ },
+ {
+  "handle": "solidcode/clinicaltrials-gov-scraper",
+  "title": "ClinicalTrials.gov Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0028,
+   "SILVER": 0.00265,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "[\ud83d\udcb0 $2.50 / 1K] Extract clinical trials from ClinicalTrials.gov: titles, conditions, interventions, sponsors, status, phase, eligibility, locations, dates, and results. Search by condition, treatment, sponsor, or location."
+ },
+ {
+  "handle": "andrew_avina/clinicaltrials-intelligence-mcp",
+  "title": "ClinicalTrials Intelligence MCP \u2014 450K+ Studies",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search, filter, and analyze 450,000+ clinical trials from ClinicalTrials.gov via a Model Context Protocol (MCP) server. This Apify Actor exposes structured clinical trial data to AI assistants (Claude, GPT-4, Cursor), research pipelines, and compliance systems \u2014 no API key or ..."
+ },
+ {
+  "handle": "v0iddo/clinicaltrials-updates-tracker",
+  "title": "ClinicalTrials.gov Scraper: Trial Updates by Query",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial_extracted",
+  "unit_tiers": {
+   "FREE": 0.00191,
+   "BRONZE": 0.001719,
+   "SILVER": 0.001528,
+   "GOLD": 0.001337,
+   "PLATINUM": 0.001337,
+   "DIAMOND": 0.001337
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial_extracted",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Pull recently-updated ClinicalTrials.gov studies matching a query. One clean row per trial: NCT id, title, status, phases, sponsor, conditions, key dates, locations, study URL. Filter on lastUpdatePostDate for cron-friendly daily watchers. Source: ClinicalTrials.gov v2 API (public, no auth)."
+ },
+ {
+  "handle": "northlab/bio-finance-trial-monitor",
+  "title": "Longevity Trial Readouts (ClinicalTrials.gov) \u2192 Stock Tickers",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-result",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Clinical trial catalyst calendar for longevity biotech: which ClinicalTrials.gov studies read out, and when. 9 topics with sponsor type, stock ticker and primary completion date. Structured JSON + HTML viewer, callable as an MCP tool by AI agents."
+ },
+ {
+  "handle": "tugelbay/clinical-trials-api",
+  "title": "ClinicalTrials.gov API \u2014 Clinical Study Data",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-result",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search the official ClinicalTrials.gov API and export current, normalized clinical study records without recruitment contacts or email data."
+ },
+ {
+  "handle": "jdepablos/clinical-trials-watch",
+  "title": "Clinical Trials Watch: New & Updated Studies (Official API)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "query-scan",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,query-scan",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track clinical trials by condition, sponsor or free term: new and updated studies with phase, status, enrollment, interventions, countries and sites, as clean JSON from the official ClinicalTrials.gov API. Built for biotech BD, investors, CROs and AI agents."
+ },
+ {
+  "handle": "lulzasaur/clinicaltrials-scraper",
+  "title": "ClinicalTrials.gov Scraper - Clinical Studies",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and extract clinical trial data from ClinicalTrials.gov. Get study details, status, sponsors, conditions, interventions, eligibility, locations, and enrollment info."
+ },
+ {
+  "handle": "wintersworks/clinical-trials-search-monitor",
+  "title": "Clinical Trial Search & Monitor (ClinicalTrials.gov)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Clinical trial search on ClinicalTrials.gov by condition, drug, sponsor, location, status or phase. Output: flat trial records with eligibility, outcomes, sites and contacts. Monitor mode returns only new clinical trials and updates, for alerts. $2 per 1,000 trials."
+ },
+ {
+  "handle": "tacps126/clinical-trials",
+  "title": "Clinical Trials Scraper: ClinicalTrials.gov Studies & Sites",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00285,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Clinical trials from ClinicalTrials.gov by condition, drug, sponsor, location, status, phase and sponsor type: dates, enrollment, design, interventions, eligibility, central contacts (name, phone, email) and sites. New-study alerts."
+ },
+ {
+  "handle": "acer_quant_ai/clinicaltrials-biotech-leads-mcp",
+  "title": "NIH ClinicalTrials.gov v2 Biotech & Contacts Scraper MCP",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract clinical trials, pharma sponsors, study phases, and direct investigator contact emails/phones from the official NIH ClinicalTrials.gov REST API v2."
+ },
+ {
+  "handle": "neverempty/clinical-trials-scraper",
+  "title": "ClinicalTrials.gov Scraper & API - Trials by Condition & Phase",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-returned",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.00728,
+   "SILVER": 0.00656,
+   "GOLD": 0.00584,
+   "PLATINUM": 0.00584,
+   "DIAMOND": 0.00584
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "For pharma intelligence, site feasibility and RAG pipelines: trials from the official ClinicalTrials.gov v2 API, flattened from 12 nested modules, each start date labelled day, month or year. The registry holds 602,104 studies; a phase 2, 3 and 4 search returns 51,862 here, 2,597 naively"
+ },
+ {
+  "handle": "synthetic.ia/clinicaltrials-api",
+  "title": "ClinicalTrials.gov API \u2014 clinical studies search (no key)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-query",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.003,
+   "SILVER": 0.0025,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-query",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search 500k+ clinical studies by condition, intervention, sponsor, location and status, and fetch full study detail by NCT id (summary, eligibility, outcomes, sponsor, locations). Official ClinicalTrials.gov v2 data. Clean HTTP API + MCP, no key. Pay per query."
+ },
+ {
+  "handle": "spotless_studios/clinical-trials-scraper",
+  "title": "ClinicalTrials.gov Scraper \u2014 Biotech Sponsors, PI Emails, Ph",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item_scraped",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item_scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract clinical studies from the official ClinicalTrials.gov REST API v2. Captures NCT ID, study title, recruitment status, clinical phase, target conditions, drug/device interventions, lead biotech/pharma sponsors, enrollment counts, Principal Investigator (PI) names, and direct central/site"
+ },
+ {
+  "handle": "scrapemint/pubmed-clinical-trials-intelligence",
+  "title": "Pharma Research & Clinical Trial Monitor",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial_row",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial_row",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Pull PubMed papers and ClinicalTrials.gov studies at scale. PMIDs, DOIs, abstracts, MeSH terms, NCT IDs, phases, sponsors, enrollment, primary outcomes, results. One row per record. Pay per row."
+ },
+ {
+  "handle": "george.the.developer/clinical-trial-investigator-intel",
+  "title": "Clinical Trial Investigator and Site Intelligence",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "site-fit-score",
+  "unit_tiers": {
+   "FREE": 0.5,
+   "BRONZE": 0.5,
+   "SILVER": 0.45,
+   "GOLD": 0.4,
+   "PLATINUM": 0.4,
+   "DIAMOND": 0.4
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,investigator,site-fit-score",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find enriched clinical trial investigators and deterministic site-fit scores from ClinicalTrials.gov, NPI, OpenPayments, and PubMed data."
+ },
+ {
+  "handle": "hanamira/clinical-trials-search",
+  "title": "Clinical Trials Search",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search and extract clinical trial data from ClinicalTrials.gov. Find active trials by condition, intervention, sponsor, or location. Get study details, eligibility criteria, and contact information."
+ },
+ {
+  "handle": "unrivaled_fortress/clinical-trials-finder",
+  "title": "Clinical Trials Scraper - Studies, Phases & Sponsors",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.00225,
+   "GOLD": 0.00195,
+   "PLATINUM": 0.00195,
+   "DIAMOND": 0.00195
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find and extract clinical trial information: study titles, phases, conditions, sponsors, enrollment and status from ClinicalTrials.gov. For researchers and pharma. Pay per result. Try free \u2014 no API key, instant results."
+ },
+ {
+  "handle": "datapilot/clinical-trial-aggregator-scraper",
+  "title": "Clinical Trial  Aggregator Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "scraped-result",
+  "unit_tiers": {
+   "FREE": 0.0035,
+   "BRONZE": 0.00317,
+   "SILVER": 0.00283,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): scraped-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Clinical Trial Scraper collects research studies from ClinicalTrials.gov using keyword and country filters. It extracts status, phase, sponsor, dates, and results, then outputs structured data via Apify. Ideal for medical research and analytics"
+ },
+ {
+  "handle": "tributarydata/drug-safety-mcp",
+  "title": "Drug & Product Safety MCP Server",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tool-call",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tool-call",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Official FDA recalls, drug labelling, adverse event reports and ClinicalTrials.gov studies as MCP tools for AI agents. Every answer cites its source."
+ },
+ {
+  "handle": "church_of_loujess/pharma-fda-clinical-trials-mcp",
+  "title": "Pharma, FDA & Clinical Trials MCP \u2014 Claude, ChatGPT, Cursor",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mcp-tool-call",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.035,
+   "SILVER": 0.028,
+   "GOLD": 0.024,
+   "PLATINUM": 0.024,
+   "DIAMOND": 0.024
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): mcp-tool-call",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Zero-key Pharma, Biotech & Regulatory Intelligence MCP Server over Streamable HTTP. 5 live tools across ClinicalTrials.gov v2, OpenFDA (approvals, FAERS adverse events, recalls), and NCBI PubMed. Built for Claude Desktop, Cursor, ChatGPT, Codex & AI Agents in 128MB RAM."
+ },
+ {
+  "handle": "mrbridge/clinical-pharma-mcp",
+  "title": "Clinical Trials and Drug Data MCP Server",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tool-read",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00433,
+   "SILVER": 0.00367,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 3e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tool-action,tool-read",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Clinical trial, drug label and chemistry data for Claude, ChatGPT and Cursor: one MCP server, 13 read-only tools. Search studies and posted results, count adverse event reports, check U.S. recalls, shortages and approvals, and compare compounds. For research, not medical advice."
+ },
+ {
+  "handle": "titan_coder/health-safety-compliance-hub",
+  "title": "Health, Pharma & Safety Compliance Hub",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bulk-item-scraped,check-performed,record-delivered,report-delivered",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Unified intelligence hub for 32 health, FDA recalls, pharma clinical trials, EPA environmental violations and OSHA workplace safety compliance monitors. Radar modules establish a free baseline on the 1st run and emit delta events from the 2nd run onwards."
+ },
+ {
+  "handle": "red.cars/pharma-pipeline-intelligence-mcp",
+  "title": "Pharma Pipeline Intelligence MCP \u2014 AI Agent Drug Pipeline Data",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search_drug_pipeline",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): analyze_competitive_landscape,assess_literature_momentum,compare_regulatory_pathways,detect_adverse_event_signals,generate_pipeline_threat_report,monitor_drug_recalls,search_drug_pipeline,track_patent_exclusivity",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Track drug candidates through clinical trial phases. One tool call for AI agent pharmaceutical competitive intelligence."
+ },
+ {
+  "handle": "parseforge/clinical-trial-multi-source-scraper",
+  "title": "Clinical Trial Multi-Source Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.020202,
+   "SILVER": 0.019446,
+   "GOLD": 0.01869,
+   "PLATINUM": 0.016821,
+   "DIAMOND": 0.014952
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrapes clinical trial records from ClinicalTrials.gov, WHO ICTRP, OpenFDA, and ClinVar. Returns each trial as a flat row with registry ID, phase, status, enrollment, and eligibility criteria."
+ },
+ {
+  "handle": "scrapers_lat/clinicaltrials-gov-scraper",
+  "title": "ClinicalTrials.gov Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape clinical trials from the official ClinicalTrials.gov registry: NCT id, title, status, phase, conditions, interventions, sponsor, enrollment, dates, eligibility, locations, contacts and outcomes. Filter by condition, status, sponsor. JSON/CSV/Excel."
+ },
+ {
+  "handle": "litezero/clinical-trials-biomarker-phase-scraper",
+  "title": "ClinicalTrials Biomarker Targets & Phase Completion Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item-scraped",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract clinical research trials by targeted biomarker, disease indication, study phase, lead sponsor, and primary completion dates from ClinicalTrials.gov."
+ },
+ {
+  "handle": "red.cars/clinicaltrials-scraper-pro",
+  "title": "ClinicalTrials.gov Scraper Pro",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search the ClinicalTrials.gov registry by condition, drug, phase, sponsor or status. Per-trial JSON records with sites, enrollment and dates."
+ },
+ {
+  "handle": "cynix_dev/pharma-biotech-pack",
+  "title": "Pharma / Biotech Pack \u2014 FDA, ClinicalTrials, Genetics",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Map a therapeutic area, compound, or gene in one pull \u2014 pulling from the official US government and open biomedical APIs: FDA drug labels (openFDA), ClinicalTrials.gov studies, and MedlinePlus / NCBI Gene summaries."
+ },
+ {
+  "handle": "parseforge/eu-clinical-trials-register-scraper",
+  "title": "EU Clinical Trials Register Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrapes clinical trial records from the EU Clinical Trials Register by keyword and status. Returns each trial as a flat row with title, sponsor, conditions, and phases."
+ },
+ {
+  "handle": "parseforge/euctr-ema-trials-scraper",
+  "title": "EU Clinical Trials EMA CTIS Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0085,
+   "BRONZE": 0.00817,
+   "SILVER": 0.00783,
+   "GOLD": 0.0075,
+   "PLATINUM": 0.00675,
+   "DIAMOND": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrapes EU clinical trials from the EMA CTIS register by search term, status, or phase. Returns each trial as a flat row with title, sponsor, condition, status, and phase."
+ },
+ {
+  "handle": "parseforge/eu-compliance-pack-scraper",
+  "title": "EU Compliance Pack Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Queries five EU compliance sources in parallel from a single keyword: EU sanctions list, EUR-Lex legislation, EBA credit institutions, clinical trials register, and MEP financial disclosures. Returns each document as a flat row with source, title, and full text."
+ }
+]

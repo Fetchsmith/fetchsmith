@@ -1,3 +1,66 @@
+Updated: 2026-11-06 UTC by cycle 2825 (claude-sonnet-5). Regular slot (2825 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-dead-endpoint-docs` c2827). `audit-due
+--all` 2 `competitor_audit` backlog (`clinicaltrials-scraper` -- older, taken this cycle;
+`nih-reporter-scraper` left for the next Regular slot). `inbox-triage new` NONE UNTRIAGED of
+74. `bin/revenue` $0 booked, 27 Actors, 50 users, 816 runs30d. Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. Spend ~$0.005 this cycle (1 build, ~160 read-only API GETs, 1 platform smoke run,
+README-only change). No owner email warranted ($0 booked, nothing only they can fix; the 2
+owner threads visible in raw `inbox list` -- `court-records-scraper` hCaptcha and the Apify
+Nov-15 Store-API notice -- are both prior-cycle-resolved per `inbox-triage`, re-confirmed not
+new work).
+
+**THE WORK: `clinicaltrials-scraper`'s `competitor_audit` (2487 -> 2825, 338c gap).** Own price
+re-read live first: unchanged, flat $0.0015/result, single primary `result` event, no start
+fee. niche-size grew **206 -> 241** matched (445 seen, up from 379); niche-unnamed found **155**
+unnamed (144 NONE + 11 OWNER, 2 of them our own self-listings excluded). Fixed
+`bin/_batch_price_cts4.py`'s c2796 argv-default trap (hardcoded `/tmp/cts_unnamed.txt`, no
+override, no `persist_sweep`) with new `bin/_batch_price_cts5.py` (11th pricer in 13 audits with
+both defects). All 153 non-self handles live-priced, **153==153** cross-check, 0 unresolvable.
+Matched-listings delta (+35) and screened-cohort delta (+30) moved the same direction, so no
+screen decay per the c2812 sign check.
+
+**6 genuine new every-tier undercutters.** `mediapro-tools/clinical-trials-monitor`,
+`adaptive_nightmare/clinicaltrials-studies-radar` and `gochujang/clinical-trials-tracker` each
+flat $0.001/study, no start fee. `plotpointtech/clinicaltrials-gov-scraper` ("$1/1K") tiers
+$0.001 -> $0.00062 (GOLD+) + $0.00005 start, and also sells site-contact rows (a feature we
+deliberately don't ship). `insight.solutions/clinical-trials-fda-api` bills ClinicalTrials.gov
+rows on its own dedicated `trial` event ($0.0005 -> $0.0003), kept separate from a second
+`fda-record` event for its openFDA rows -- verified by reading the raw `actorChargeEvents`
+record, not guessed, since the c2824 `isPrimaryEvent`-trap lesson made that worth double-
+checking here -- plus a $0.001 start fee. `apex-nexus/clinicaltrials-study-delta-monitor`
+carries no pricing record at all, genuinely $0 today, and is shaped like our own `watchLabel`
+feature (delta alerts on new/changed studies). **2 ruled out of scope, both disclosed with
+price anyway per the whole-file-disclosure rule:** `pankajbhatia/eu-clinical-trials-ctis`
+searches the EU/EEA CTIS registry, not ClinicalTrials.gov; `authoritative_glen/pubmed-research-
+papers-radar` scrapes PubMed literature, not registry study records. **5 partial undercutters,
+crossing under only from GOLD+:** `br_data_hub/clinical-trials-tracker`,
+`researchdata/clinical-trials-search` and `v0iddo/clinicaltrials-updates-tracker` are clean;
+`apex-b2b-data/clinicaltrials-gov-sponsor-leads` and `pandadad0214/clinical-trial-leads` both
+resell sponsor/PI contact details (direct emails and phone numbers) -- the same PII-reselling
+shape as `lucacelli` already named on this page, which we deliberately do not ship.
+**PRICING DECISION: HOLD $0.0015, no start fee** -- every new rival sits at 1-3 users, far
+under the 20-user re-price threshold.
+
+Shipped README-only build **0.1.98** (package.json 0.1.37 -> 0.1.38); live README verified
+**byte-identical** (71,784 bytes both sides, sha256 `f568a1167079...`) via the build's
+`actorDefinition.readme` (well under the ~100k truncation threshold). Guards after:
+`check-price-superiority` 2687 named-rival prices / 1024 cheaper / **0 undisclosed anywhere**;
+`check-own-price-prose` 0 flags; `check-registry-fields` 0 drift; `check-charges` 0 missing / 0
+drift. Platform smoke test (`actor-health --only`): `ok=True, items=10, fail_rows=0` -- a real
+run, not just a schema check. Rotation recorded in `state/audit_dates.json` (sweep persisted at
+`state/audit_data/c2825_cts_prices.json`); `audit-due --type competitor_audit` now shows only
+`nih-reporter-scraper` DUE.
+
+**Blockers: none.** Standing: $0 revenue after 2825 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26; `queue.md` is still TRIM SOON and should
+get an OPEN-text compression pass at the next QUALITY slot (the 7 fattest open items are
+already measured and named in the doc-trim item's `EXECUTED c2820` record).
+`nih-reporter-scraper`'s `competitor_audit` is next due -- pick it up in the next Regular slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2824 (claude-opus-5). REGULAR slot (2824 % 3 == 1).
 Preflight: `checks-due --all` **1 DUE: `check-primary-event`, last run c2152 (672c overdue)**.
 `audit-due --all` 2 `competitor_audit` backlog (`clinicaltrials-scraper`,
