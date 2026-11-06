@@ -1,3 +1,64 @@
+Updated: 2026-11-06 UTC by cycle 2801 (claude-sonnet-5). Regular slot (2801 %
+3 == 2). Preflight: `checks-due --all` had exactly 1 DUE -- `check-competitor-
+claims` (144c gap, last 2657) -- ran it end to end (below). `audit-due --all`
+FLEET ROTATIONS NONE DUE across all 16 types. `inbox-triage new` NONE
+UNTRIAGED of 74 (checked: both owner threads are already-answered/no-action
+per prior cycles' full reads, no new mail). `bin/revenue` **$0 booked**, 27
+Actors, 50 users, 795 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/
+`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all 200. `check-doc-
+size`: queue.md TRIM SOON by projection (82.2KB/944 lines, ~22c headroom) --
+not due this Regular slot, left for the next QUALITY slot per the doc-trim
+item's own standing rule. $0 spent this cycle (one fleet-wide read-only
+`check-competitor-claims` sweep, no Actor runs, no builds). No owner email
+(no revenue event, nothing only they can fix).
+
+**THE WORK: ran the one due fleet check, `check-competitor-claims`, 144
+cycles since last run (c2657).** Backgrounded with a long timeout per the
+c2744 note (one live API call per backticked rival handle, ~880 handles
+fleet-wide, exceeds a 300s foreground `Bash` call). Result: **914 competitor
+user-count claims checked, 124 stale, 0 unresolvable; 260 comparison
+paragraphs checked, 1 undated.** This matches c2800's informal 124-stale
+reading exactly -- no drift between the two reads, confirming it's a real,
+stable backlog rather than a fluke of one run.
+
+**Fixed the 4 claims that were safe to text-swap in one cycle (plain
+"(N users)" phrases, no surrounding superlative/trend/sub-figure needing a
+reword):** `app-store-reviews-scraper` (`euroscrape/app-reviews` 1→2,
+`apivault_labs/app-store-reviews-scraper` 2→3), `shopify-products-scraper`
+(`clearpath/shop-by-shopify-product-scraper` 130→149), `trademark-search-
+scraper` (`automation-lab/euipo-tmview-trademarks-scraper` 66→76). Each
+edit verified by exact-match-count-1 before writing (no silent partial
+replace), then re-checked live with `--only <slug>` after: all 3 files now
+read 0 stale on those specific claims, 0 regressions on the untouched
+claims in the same files. Recorded the run: `bin/checks-due --ran
+check-competitor-claims` (next due c2945).
+
+**120 stale claims remain, deliberately NOT rushed this cycle.** 107 of
+them carry the tool's own guard (superlative/trend/30-day-sub-figure/
+abbreviated-u-count) meaning the number sits inside a comparative sentence
+that may need a reword, not a blind swap -- exactly the shape that produced
+real mistakes in past cycles when rushed (see `notes/PLAYBOOK.md`'s
+`check-competitor-claims` entry). 13 more are unguarded but weren't reached
+for time (5 on `google-news-scraper`, 3 on `google-play-reviews-scraper`,
+2 on `eu-ted-tenders-scraper`, 1 each on `remote-jobs-scraper`/`sam-gov-
+opportunities-scraper`/`court-records-scraper` -- several of these are
+"gone from the Store" delistings needing a disclosure sentence, not a
+number swap). Full per-file breakdown and the recommended per-Actor-script
+approach (same pattern as `bin/_refresh_claims_gn.py`/`_refresh_claims_
+sub.py`) left in `tasks/queue.md`'s new c2801 item for future QUALITY/idle
+slots to pick off in chunks.
+
+**Checked the two other recurring open loops, nothing new to add:**
+`state/health.json` ts unchanged (1793952155, still the c2800 reading --
+no new nightly run landed yet); `bin/traffic 30` still shows no Polar-gate
+buyer-intent signal, consistent with every prior read.
+
+**Blockers: none.** Standing: $0 revenue after 2801 cycles; Polar checkout
+deferred by owner decision; MCP #3 closed-for-builds; niche-hunting on
+cooldown to ~2026-12-26.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2800 (claude-opus-5). Regular slot (2800 % 3
 == 1). Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims`
 in 1c, c2801); `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0

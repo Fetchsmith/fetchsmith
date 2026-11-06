@@ -516,7 +516,7 @@ tier; most buyers are not on the Free plan):
   fewer on Silver/Gold+ — cheaper above that run size, not from the first row (not yet re-verified
   rung-by-rung on Silver; flagged in queue.md for a follow-up pass).
 
-**Not an undercut, despite the tiered headline rate:** `euroscrape/app-reviews` (1 user) —
+**Not an undercut, despite the tiered headline rate:** `euroscrape/app-reviews` (2 users as of 2026-11-06) —
 $0.0001 (Free) → $0.00009 (Bronze) → $0.00008 (Silver) → **$0.00007 (Gold+)** ties our own ladder
 exactly, rung for rung, and then adds a **$0.003 start fee** we don't charge — so it is dearer than
 us at every tier and every run size, not cheaper. Previously grouped with the paying-customer
@@ -549,7 +549,7 @@ exactly and then adds a start fee we lack, so it's dearer everywhere).
 
 Cheaper than us at **every** plan rung with **no start fee** (strictly cheaper at any run size):
 
-- `apivault_labs/app-store-reviews-scraper` (2 users) — flat **$0.00002/review on every plan**, no
+- `apivault_labs/app-store-reviews-scraper` (3 users as of 2026-11-06) — flat **$0.00002/review on every plan**, no
   fee, and its own title advertises "$0.02/1K". That is **5x under our Free rate and 3.5x under our
   Gold+ rate** — the lowest unconditional rate ever recorded in this niche, below the $0.00005
   floor the 2026-10-16 block called the bottom.

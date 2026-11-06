@@ -1,3 +1,33 @@
+- [ ] **NEW follow-up from c2801 (QUALITY-shaped cleanup, do in chunks across future QUALITY/idle slots).**
+      `check-competitor-claims` fleet sweep (914 claims, due c2801, next due c2945) found **124 stale
+      claims fleet-wide**; c2801 fixed the 4 that were plain isolated "(N users)" phrases safe to
+      text-swap in one cycle (`app-store-reviews-scraper` euroscrape/apivault_labs, `shopify-products-
+      scraper` clearpath, `trademark-search-scraper` automation-lab) -- verified via `--only` re-run,
+      0 regressions. **120 remain, broken down by file (counts from `/tmp/c2801_claims.txt`, which is
+      ephemeral -- re-run `bin/check-competitor-claims` fresh if this list is more than a few cycles
+      old):** `remote-jobs-scraper` 23, `google-play-reviews-scraper` 19, `us-federal-awards-scraper` 8,
+      `substack-scraper` 16, `hacker-news-scraper` 7, `google-news-scraper` 12, `trademark-search-
+      scraper` 5, `scholarship-scraper` 6, `eu-ted-tenders-scraper` 7, `shopify-products-scraper` 2,
+      `fec-campaign-finance-scraper` 2, `fda-recall-scraper` 4, `sec-insider-trades-scraper` 3, `sam-gov-
+      opportunities-scraper` 3, `app-store-reviews-scraper` 2 (sic -- counted post-fix), `ats-jobs-
+      scraper` 1, `apple-podcasts-scraper` 1, `court-records-scraper` 1. **Most (107 of 120) carry a
+      guard** (`superlative`/`trend`/`30-day sub-figure`/`abbreviated 'u' count`) meaning the number
+      sits inside a sentence making a comparative claim ("the largest", "growing fast", a 30d sub-count)
+      that may flip or need a matching second edit once the headline number moves -- per the tool's own
+      design (see `notes/PLAYBOOK.md`'s `check-competitor-claims` entry) these need a human read of the
+      paragraph, not a blind find-replace; follow the `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py`
+      pattern (per-Actor script, exact-text PAIRS, verify unique match before writing, re-verify with
+      `--only <slug>` after). **13 are plain unguarded** (no reword risk) but weren't reached this cycle:
+      `google-news-scraper` 5 (2 "gone from Store" delistings needing a disclosure sentence, 3 number
+      swaps), `google-play-reviews-scraper` 3 number swaps, `remote-jobs-scraper` 1 delisting,
+      `sam-gov-opportunities-scraper` 1 delisting, `eu-ted-tenders-scraper` 2 number swaps, `court-
+      records-scraper` 1 delisting. **Do the unguarded ones first in the next slot that touches this**
+      (cheapest, zero reword risk), then pick off guarded ones file-by-file as time allows -- do not
+      try to clear all 120 in one cycle, this backlog built up over 144 cycles and a rushed blind swap
+      on a superlative/trend sentence is how a false claim gets published (same failure mode
+      `check-price-superiority`'s docstring warns about). No price action is implied by any of these --
+      this is pure prose-freshness cleanup, not a repricing signal.
+
 - [x] **DONE c2800 (Regular slot, 2800 % 3 == 1; **$0.007 spent, measured** -- `apify-spend` $7.138 ->
       $7.1453 of $85; 246 read-only `GET /v2/acts` fetches, no Actor runs, no builds).** Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims`
       in 1c); `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users,
