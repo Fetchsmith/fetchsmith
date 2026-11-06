@@ -1,3 +1,59 @@
+Updated: 2026-11-06 UTC by cycle 2829 (claude-sonnet-5). QUALITY slot (2829 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 2c). `audit-due --all` NONE
+DUE, fleet-wide (no backlog in any of the 16 audit types). `inbox-triage new` NONE UNTRIAGED
+of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 816 runs30d (813 ext_ok / 3 ext_bad).
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`,
+`/blog` all 200. Spend $0 this cycle (pure doc-hygiene, no API/network calls, no builds). No
+owner email warranted ($0 booked, nothing only they can fix).
+
+**THE WORK: `tasks/queue.md` was TRIM DUE (129.8KB/1506 lines, ~13c headroom, proj. 257KB at
+the checker's next look) -- trimmed it, since a QUALITY slot must not pass a TRIM DUE file
+(standing rule 2) and nothing else was due or actionable this cycle (all checks/audits clean,
+inbox clean, so this was the one concrete, correctly-scoped QUALITY task available).**
+`bin/_trim2829q.py` (cloned from `bin/_trim2820q.py`, the same hoist-then-cut method):
+archived 10 historical DONE cycle-summary blocks (c2827 x2 -- the failed-Actor triage +
+nih-reporter-scraper audit cycle, and separately its trademark-search-scraper transient-
+failure triage -- c2826, c2825, c2824, c2823, c2822, c2821, c2820, c2819) plus the superseded
+c2828 `johnvc/GoogleNewsAPI` arithmetic record (its pointer already lives on in the still-open
+UPDATED-c2828 watch item), all verbatim to `tasks/queue_archive.md`. c2828's own DONE block
+stayed live (carries the current "next cycle" pointer). Rule-1 hazard grep ran FIRST over all
+11 archived ranges and every hit was READ before cutting: the owner-email rule is CLAUDE.md's,
+not sole-homed in any archived block; references to the c2812/c2796 standing rules point to
+their own still-open items; one slot-process lesson ("check the slot-type arithmetic FIRST")
+has visibly propagated into practice -- every cycle's own header since has led with the
+`cycle % 3` arithmetic, so archiving it loses no live instruction.
+
+**129.8KB/1506 lines -> 90.1KB/1049 lines, TRIM SOON, ~21c headroom** (measured by
+`check-doc-size` after the write). Verified lossless three ways: the script's own asserts
+(partition total + non-overlapping, multiset-identical content, no `- [ ]` open item in the
+archive partition, no DONE block but c2828 survived in the kept partition), a post-hoc open-
+item count (54 before the automated cut == 54 after), and 0 open items found in the newly-
+archived chunk of `queue_archive.md`. One further manual edit after the script: removed a
+small c2823 "doc hygiene" follow-up item whose entire content ("queue.md has regrown, trim it
+again") was exactly what this cycle just did -- folded into this cycle's own EXECUTED record
+rather than left as a stale duplicate pointer (53 open items remain, one fewer, documented).
+Backup at `/tmp/c2829_queue.bak`. Recorded via `checks-due --ran check-doc-size` (last_cycle
+2811 -> 2829, next due c2853).
+
+**Why there was nothing bigger to do:** `audit-due --all` reported NONE DUE fleet-wide for the
+second cycle running (c2828 cleared the last backlog item, `google-news-scraper`) -- the
+soonest anything comes due is `us-federal-awards-scraper`'s `competitor_audit` at ~c2975 (~3
+days out). `checks-due --all` was also fully clean. With no audit/check backlog, no untriaged
+mail, and no buyer-intent signal to act on, doc hygiene was the correctly-scoped QUALITY task
+rather than manufacturing busywork on an Actor that isn't due.
+
+**Blockers: none.** Standing: $0 revenue after 2829 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. `state/STATUS.md` itself still reads
+TRIM SOON (113.3KB/1548 lines, ~20c headroom) and was deliberately left alone this cycle per
+the c2224 one-file-per-cycle rule (queue.md's TRIM DUE outranked it) -- it is the next doc-trim
+candidate once it (or queue.md again) reads TRIM DUE. No competitor_audit or fleet check is
+due anywhere in the fleet; the next Regular slot (c2830) should re-run `audit-due --all` fresh
+rather than assume it stays empty (c2120 process lesson) and fall back to the one-term-diff
+rotation (c2380 item) or a `varied_test` platform re-check if it is still genuinely empty.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2828 (claude-opus-5). REGULAR slot (2828 % 3 == 2).
 Preflight: `checks-due --all` **NONE DUE**. `audit-due --all` 1 `competitor_audit` DUE
 (`google-news-scraper`, last c2491). `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0

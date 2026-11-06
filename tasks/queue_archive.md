@@ -73176,3 +73176,486 @@ item in queue.md, replaced by cycle 2817's own record (see queue.md). Verbatim b
       post-cut vs a ~69KB clearance target), so budget time for an OPEN-text compression
       pass too, same as c2808/c2811 did. Backups: `/tmp/c2817_learnings.bak`,
       `/tmp/c2817_learnings_archive.bak`.
+
+
+## Archived by cycle 2829 (doc-trim cadence; tasks/queue.md 129.8KB/1506 lines,
+## TRIM DUE per bin/check-doc-size). 10 historical DONE cycle-summary blocks
+## (c2827 x2, c2826, c2825, c2824, c2823, c2822, c2821, c2820, c2819) plus the
+## superseded c2828 johnvc/GoogleNewsAPI arithmetic record, all verbatim and in
+## original source order. c2828's DONE block stayed live (newest, carries the
+## current pointer). No open `- [ ]` item was archived -- asserted by
+## bin/_trim2829q.py, which also asserted the kept/archived partition total,
+## non-overlapping and multiset-identical to the pre-trim file.
+
+- [x] **DONE c2827 (Regular slot, 2827 % 3 == 1) -- the one DUE fleet check, the failed-Actor
+      triage, AND `nih-reporter-scraper`'s 339c-overdue `competitor_audit`, which found and
+      disclosed a real new undercutter.** Preflight: `checks-due --all` 1 DUE
+      (`check-dead-endpoint-docs`, last c2803), `audit-due --all` 2 `competitor_audit` DUE
+      (`nih-reporter-scraper` last 2488 + `google-news-scraper` last 2491), `inbox-triage new` NONE
+      UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services all
+      active, `/`+`/pricing`+`/tools`+`/blog` all 200.
+      **1. Failed Actor closed as transient** -- see the item above for the full triage and the
+      tmdn.org WAF-200 gotcha; fleet now 24/24 ok.
+      **2. `check-dead-endpoint-docs` ran clean**: 1 retired endpoint found in Actor source, 4 blog
+      mentions checked, **0 undisclosed**. Recorded via `checks-due --ran` (2803 -> 2827, next due
+      c2851).
+      **3. `nih-reporter-scraper` `competitor_audit` (2488 -> 2827, 339c).** Own price re-read live
+      FIRST: flat **$0.0015/result on every tier, one primary `result` event, no start fee**,
+      unchanged. Fresh seven-term sweep: **76 matched of 1,565 seen** (64 at c2488 -- continued real
+      growth); `niche-unnamed` 13 unnamed of 76, minus our own listing = **12 genuinely unnamed**.
+      Applied the c2812 rule and it PASSED (matched +12, cohort +6, same sign) **but that was not
+      sufficient -- all 12 candidates sat at Apify's 2-user new-listing floor, so the legacy `>=3u`
+      cut would have returned ZERO and published a false all-clear.** No user-count cut applied; all
+      12 live-priced (0 unresolvable) with `bin/_batch_price_nih3.py`, sweep persisted to
+      `state/audit_data/c2827_nih_prices.json`. New pricer was **copied from `_batch_price_cts5.py`,
+      which was already argv-clean AND persist-clean** (only the `persist_sweep` label cts->nih
+      changed; our $0.0015 flat price is identical to clinicaltrials' so the OURS table needed no
+      edit) -- so this audit did NOT hit the 3-for-3 c2812 both-defects base rate. **ONE genuine new
+      undercutter: `pankajbhatia/nih-research-grants`** (2u) -- flat $0.0005/project, no tier ladder,
+      + $0.002 Actor-start fee. `createdAt` **2026-10-31, the day AFTER the c2488 sweep, so a new
+      arrival and NOT a prior-cycle miss.** Crossover computed in code, not by eye: exact tie at 2
+      rows ($0.0030 either way), cheaper from row 3, $0.502 vs our $1.50 at 1,000 rows. In-scope
+      direct substitute (own description = the official NIH RePORTER API, same filter set). It does
+      **not** displace `pushbuild/nih-research-grants` as cheapest in-scope -- same $0.0005/row with
+      NO start fee, so cheaper from row 1 while this one needs 3. Six more in-scope and dearer at
+      every tier; `red.cars/grants-gov-pro` is Grants.gov opportunities; 4 false matches (2 PubMed,
+      2 ClinicalTrials.gov -- `apex-nexus/clinicaltrials-study-delta-monitor` carries NO pricing
+      record so runs $0, named but explicitly NOT offered as an alternative since it is a CT.gov
+      delta monitor). **Price HELD at $0.0015.** Stale lead figure (64, dated 2026-10-30) corrected
+      to 76 in the same cycle. Shipped as **build 0.1.70, live README byte-identical** (sha256
+      `d42f2555…`, 62024 B, verified via `GET /v2/actor-builds/<id>`, well under the ~100k
+      truncation wall). Guards after the push: `check-price-superiority` 2699 rival prices / 1026
+      cheaper than us / **0 undisclosed**, `check-own-price-prose` 27/0, `check-registry-fields` 0
+      drift, `check-charges` 0 missing. README-only change so no paid platform run (c2824 precedent).
+      Rotation recorded in `state/audit_dates.json`; **`google-news-scraper` is now the ONLY
+      `competitor_audit` left -- take it in the next Regular slot** (and note c2824 already did deep
+      live work on its largest rival `johnvc/GoogleNewsAPI`, so re-read that entry first rather than
+      re-deriving the per-page billing structure).
+      No owner email ($0 booked, nothing only they can fix). Spend this cycle ~$0.005 (one build) +
+      ~24 own-token health runs from the accidental full sweep; sweep pricing was $0 read-only GETs.
+
+- [x] **DONE c2826 (QUALITY slot, 2826 % 3 == 0).** Preflight: `checks-due --all` NONE DUE
+      (soonest `check-dead-endpoint-docs` in 1c); `audit-due --all` only `competitor_audit:
+      nih-reporter-scraper` DUE (a Regular-slot item, correctly left alone); `audit-due --type
+      varied_test --all` also checked directly (NONE DUE, soonest `hacker-news-scraper` in 72c)
+      since CLAUDE.md's "re-run platform tests on 2-3 Actors" QUALITY instruction and the
+      interval-gated rotation can disagree -- confirmed they don't this cycle, oldest
+      `trademark-search-scraper`/`us-federal-awards-scraper` (last c2559) still inside the
+      336c floor. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors,
+      50 users, 816 runs30d. Services + all 4 pages 200.
+      **THE WORK: closed the devto-comments/check-disclosure QUALITY checklist items that
+      c2823's slot-mislabel left untouched for 2 cycles (c2824/c2825 were both Regular).**
+      `bin/devto-comments`: 16 inbound comments, 1 genuinely unanswered --
+      `refaeldakar` on article 4967941 (openFDA count= truncation post), a concrete technical
+      suggestion: promote the window-sums-to-`meta.results.total` additivity check from a
+      one-off blog-post proof into something that runs on every scheduled pull, since a window
+      itself crossing 1,000 buckets fails silently. Checked honestly before replying: grepped
+      `bin/*.py` for any existing additivity/`meta.results.total` check -- **none exists**, so
+      replied via the standard `PUT /api/articles/<id>` Reader-note pattern (fetched
+      `body_markdown` first, sent full body back) **crediting the gap rather than claiming it's
+      already covered**; confirmed live (body contains the reply) and re-ran `devto-comments` ->
+      0 unanswered. `bin/check-disclosure`: 95 site posts + 29 dev.to articles, 0 missing.
+      Recorded both via `checks-due --ran` (devto-comments last_cycle 2709->2826, next due
+      c2970; check-disclosure 2782->2826, next due c2874) -- neither had actually lapsed past
+      its own registered cadence, but running them closes the specific c2823 follow-up by name.
+      **Deferred, not urgent:** `check-doc-size` shows both `state/STATUS.md` (97.5KB/1337
+      lines, ~23c headroom) and `tasks/queue.md` (111.4KB/1294 lines, ~17c headroom) TRIM SOON,
+      both projected to cross TRIM DUE before the checker's next scheduled look (24c) -- not
+      touched this cycle (time budget went to the comment-reply instead; a doc-size trim this
+      size needs a full cycle to do losslessly, same reasoning past QUALITY slots have used).
+      **Flag for the next QUALITY slot: do the proactive trim on BOTH files (cycle 2220's
+      standing advice) before either reads TRIM DUE** -- queue.md's interleaved DONE/open-item
+      structure (DONE blocks and open items alternate, not grouped) makes a clean hoist harder
+      than the old `_trim2820q.py` contiguous-block pattern assumed; read the file structure
+      fresh rather than reusing that script blind. Site-copy pass also still not done this
+      cycle (3rd checklist item from c2823's note) -- no untriaged mail and no buyer-intent
+      signal in `bin/traffic` to react to, so there was no concrete copy change to make; not
+      treating this as a backlog item unless a future traffic/mail signal gives one shape.
+      **NEW follow-up (c2826, LOW): wire the additivity check (window-sums-to-total) into a
+      recurring check**, per the dev.to reply's own admission -- no Actor currently validates
+      this live, only checked once by hand in October for the blog post. Shape: a small script
+      reading one openFDA `count=` aggregation's windowed sums against its unwindowed total,
+      on the same cadence class as `check-row-floor` (nightly-snapshot-gated, not per-cycle).
+      Not urgent (no buyer-facing claim rests on it today) -- fold into `fda-recall-scraper`'s
+      next `competitor_audit` or a dedicated QUALITY slot. Spend ~$0 this cycle (2 read-only
+      dev.to API calls, 1 PUT, no Apify calls). No owner email warranted ($0 booked, nothing
+      only they can fix). `nih-reporter-scraper`'s `competitor_audit` is next due -- pick it up
+      in the next Regular slot.
+
+- [x] **DONE c2825 (Regular slot, 2825 % 3 == 2) -- `clinicaltrials-scraper`'s
+      `competitor_audit` (2487 -> 2825, 338c gap), the older of the 2 backlog items
+      `audit-due --all` found.** Preflight: `checks-due --all` NONE DUE, `inbox-triage new`
+      NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d,
+      services + all 4 pages 200. Own price re-read live first: unchanged, flat
+      $0.0015/result, no start fee. niche-size grew 206 -> 241 matched (445 seen); niche-
+      unnamed found 155 unnamed (144 NONE + 11 OWNER, 2 self-listings excluded). Fixed
+      `bin/_batch_price_cts4.py`'s c2796 argv-default trap (hardcoded `/tmp` path, no
+      override, no `persist_sweep`) with new `bin/_batch_price_cts5.py` (11th pricer in 13
+      audits with both defects). All 153 non-self handles live-priced, 153==153 cross-check,
+      0 unresolvable; matched/screened deltas moved the same direction (c2812 sign check
+      passes). **6 genuine new every-tier undercutters:** `mediapro-tools/clinical-trials-
+      monitor`, `adaptive_nightmare/clinicaltrials-studies-radar`, `gochujang/clinical-
+      trials-tracker` (all flat $0.001, no start fee); `plotpointtech/clinicaltrials-gov-
+      scraper` ($0.001->$0.00062 + $0.00005 start, also sells site contacts);
+      `insight.solutions/clinical-trials-fda-api` ($0.0005->$0.0003 on its own dedicated
+      `trial` event, kept separate from its `fda-record` event -- verified by reading the raw
+      `actorChargeEvents` record per the c2824 isPrimaryEvent-trap lesson, not a decoy --
+      + $0.001 start); `apex-nexus/clinicaltrials-study-delta-monitor` (genuinely $0, no
+      pricing record, watchLabel-shaped). 2 ruled out of scope but disclosed anyway
+      (`pankajbhatia/eu-clinical-trials-ctis` is the EU CTIS registry; `authoritative_glen/
+      pubmed-research-papers-radar` is PubMed literature). 5 partial undercutters crossing
+      under only at GOLD+ (`br_data_hub`, `researchdata/clinical-trials-search`, `v0iddo`
+      clean; `apex-b2b-data/clinicaltrials-gov-sponsor-leads` + `pandadad0214/clinical-trial-
+      leads` both resell sponsor/PI contacts, same PII shape as `lucacelli` already named).
+      **PRICING DECISION: HOLD $0.0015, no start fee** -- every new rival at 1-3 users, far
+      under the 20-user re-price threshold. Shipped README-only build 0.1.98 (package
+      0.1.37->0.1.38); live README verified byte-identical (71,784 bytes both sides). Guards
+      after: `check-price-superiority` 2687 named-rival prices / 1024 cheaper / 0 undisclosed
+      anywhere; `check-own-price-prose` 0 flags; `check-registry-fields` 0 drift;
+      `check-charges` 0 missing / 0 drift. Platform smoke test (`actor-health --only`):
+      ok=True, items=10, fail_rows=0. Rotation recorded in `state/audit_dates.json` (sweep
+      persisted at `state/audit_data/c2825_cts_prices.json`); `audit-due --type
+      competitor_audit` now shows only `nih-reporter-scraper` DUE -- pick it up in the next
+      Regular slot.
+
+- [x] **DONE c2827 -- TRANSIENT, closed.** `trademark-search-scraper` (run `KekBuVBTkzaJTPfM7`,
+      status 400/FAILED) is the exact c3582 shape again: the Actor's own `statusMessage` named the
+      topology it had already exhausted (3 Apify Proxy sessions + a direct connection, all
+      transport-level, every attempt aborting at a 10s timeout) and self-diagnosed "usually a flaky
+      exit node rather than an outage". **Did NOT close on the self-diagnosis** (c3582 rule: that is
+      a hypothesis written by past code about a general case, not a measurement of today) --
+      falsified it live: `POST www.tmdn.org/tmview/api/search/results`, the very endpoint the Actor
+      calls, returned **200 in 0.244s with real data** (252 results for NIKE, EUIPO office) from
+      this box, so upstream was healthy and the fault really was Apify-side. NOTE for the next
+      cycle probing tmdn.org: a bare `curl` gets a WAF "Request Rejected" HTML body **served with
+      HTTP 200**, so the status code alone is NOT a reachability signal here -- send
+      `Referer: https://www.tmdn.org/tmview/` plus a browser `User-Agent` and read the BODY
+      (LEARNINGS c1418 has the same note for `got-scraping`). Re-run came back clean: ok=True,
+      items=10, fail_rows=0. Full fleet re-swept in the same breath -- **24/24 ok, 0 not-ok**, which
+      also cleared `shopify-products-scraper`'s separate inconclusive 0-items/201 blip;
+      `state/health.json` refreshed and committed. Spend note: that sweep was an accidental full
+      run (invoking `bin/actor-health --help` does NOT print usage -- **there is no help flag, an
+      unrecognised argument is ignored and the full paid fleet sweep executes**). Harmless here
+      (the nightly does the same thing, and it is what verified the fix) but worth knowing before
+      typing it casually -- ~24 own-token platform runs.
+- [x] **DONE c2824 (Regular slot, 2824 % 3 == 1) -- the DUE fleet check `check-primary-event`,
+      which found and we FIXED a real false price-superiority claim about the largest rival
+      ever named in `google-news-scraper`'s README.** Preflight: `checks-due --all` 1 DUE
+      (`check-primary-event`, last run c2152), `audit-due --all` 2 `competitor_audit` backlog
+      (`clinicaltrials-scraper`, `nih-reporter-scraper` -- NEXT TARGET for the next Regular
+      slot, take `clinicaltrials-scraper` first, it is the older), `inbox-triage new` NONE
+      UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services
+      all active, `/`+`/pricing`+`/tools`+`/blog` all 200. **Chose the due check over the audit
+      backlog deliberately: the check was 672 cycles overdue and is the one guard built for the
+      `isPrimaryEvent` display-hint trap that `check-price-superiority` is blind to by
+      construction.** 1871 rivals checked, 101 flagged, 3 NEEDS REVIEW -- all 3 read by hand
+      against live `pricingInfos` AND each rival's live README (fetched via
+      `GET /v2/acts/<h>/builds/default`, whose `readme` field is populated even though the
+      `/v2/store` list item's is empty -- worth knowing, no other bin helper does this).
+      **THE REAL ONE: `johnvc/GoogleNewsAPI`, 114 users.** Its Store badge reads from a
+      $0.00001 `apify-default-dataset-item` flagged `isPrimaryEvent` and labelled "Platform
+      accounting charge", but since **2026-10-13** (owner reason: "Lower prices: our data costs
+      dropped, so per-page and per-run fees are cut") the charge that matters is
+      `page_processed`, tiered $0.008 / $0.00792 / $0.0078408 / $0.00776239 (GOLD+) **per
+      results PAGE**, plus a $0.002 one-time `setup` per run (once per run even with many
+      `queries`) and $0.00001/GB start. One dataset row == one PAGE, not one article -- its own
+      README says so verbatim ("Lite returned one row per article. This API returns one row per
+      results page with a `news_results` array") and states page yields of "10 to 25 articles"
+      on page 1, "about 10" after. Arithmetic verified in a scratch script, not by eye: at 10
+      articles on one page it costs $0.00981 at GOLD+ vs our $0.010, and $0.01005 at FREE vs
+      our $0.020; crossover ~5 articles/run at FREE and ~9.81 at GOLD+; per-article range
+      $0.00039 (25 on one page, GOLD+) to $0.001005 (thin 10-article page, FREE). So the c2806
+      sweep sentence "none of which undercut this Actor; all price from $0.0025 to $0.15/article
+      with no tier dropping below our $0.001 GOLD+ rate" was **false as of 2026-10-13** (it was
+      true when written on 2026-10-06 -- a stale claim, not a wrong one). Own price re-read live
+      FIRST per the standing rule: unchanged, $0.002 FREE / $0.0018 / $0.0015 / $0.001 GOLD+,
+      single `result` event, no start fee, no future-dated record.
+      **Fix shipped:** corrected that sentence in place with a pointer, and added a full dated
+      `isPrimaryEvent` re-check paragraph set at the end of the competitor section giving the
+      structure, the arithmetic, the crossovers, the feature gaps, and -- the honest part --
+      **the one place we are still the cheaper buy: we bill per article RETURNED, they bill per
+      page FETCHED, so a filtered query keeping 2 of a page's articles costs $0.01 there and
+      $0.002-$0.004 here, and every `excludeWords`/`excludeSites`/`publishedAfter` filter widens
+      that.** Price HELD at $0.002->$0.001 explicitly on differentiation, with the README now
+      saying so in those words rather than implying price superiority. Shipped as build
+      **0.1.92**, live README verified **byte-identical** (sha256 febd1a12a2b97f9d, 63368 B) and
+      spot-checked for the 4 key strings. **Also withdrew a second stale claim found in the same
+      sentence:** `johnvc/google-news-lite-api` (quoted at $0.002->$0.001941, "still above us")
+      is **owner-deprecated with Apify's FREE pricing model since 2026-10-27**, i.e. $0/article.
+      The other 2 NEEDS REVIEW flags are permanent non-gaps (see the new c2824 follow-up below).
+      Guards after the push: `check-primary-event` 99 disclosed / 2 needs-review (was 98/3),
+      `check-own-price-prose` 0 flags, `check-registry-fields` 0 drift, `check-charges` 0
+      missing / 0 drift. `sync-apify-prices` deliberately NOT run -- our own price did not
+      change. Check recorded: last_cycle 2152 -> 2824, next due c3496. Spend this cycle ~$0.005
+      (1 build + ~1900 read-only API GETs, no platform run -- a README-only change, no code
+      diff). No owner email ($0 booked, nothing only they can fix).
+
+- [x] **DONE c2823 (QUALITY slot by rotation, 2823 % 3 == 0 -- picked up as if Regular;
+      see STATUS.md for the honest slot-mislabel note) -- `court-records-scraper`'s
+      `competitor_audit` (2485 -> 2823, 338c gap), the `NEXT TARGET` c2822 left; one of 2
+      real backlog items `audit-due --all` found fleet-wide (`clinicaltrials-scraper` left
+      for the next Regular slot).** Preflight: `checks-due --all` NONE DUE, `inbox-triage
+      new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816
+      runs30d, services + all 4 pages 200. **Fixed `bin/_batch_price_crs.py`'s c2796
+      argv-default trap (hardcoded `/tmp` paths, no override, no `persist_sweep`) --
+      replaced by `bin/_batch_price_crs2.py` on the `_batch_price_tms4.py` pattern (10th
+      pricer in 12 audits with both defects).** Own price re-read live first: unchanged,
+      flat $0.002/result, no start fee. Niche grew **160 -> 179** matched (6,837 seen),
+      **78** unnamed (21 NONE + 57 OWNER incl. self). All 77 non-self handles live-priced,
+      **77==77** cross-check, 0 unresolvable. **24 below our floor, split three ways.**
+      3 genuinely new: `rbbscrap/courtlistener-docket-scraper` (2u, in-scope CourtListener
+      PACER dockets, every tier $0.0016->$0.0011, no start fee -- a fresh listing under a
+      new slug, the earlier `rbbscrap/fast-courtlistener-docket-scraper` confirmed gone
+      2026-11-06); `exuberantal/findlaw-justia-lawyer-law-firm-directory-scraper` (2u, flat
+      $0.00075/row but bundles FindLaw/Justia lawyer-directory rows with CourtListener
+      docket rows in one event -- a bundle, not a pure substitute, same vendor/shape as
+      `trademark-search-scraper`'s `exuberantal` finding at c2822); `hipersoft/cendoj-
+      scraper` (1u, a DIFFERENT Actor from the already-named `hipersoft/courtlistener-
+      scraper` -- a further Spanish CENDOJ rival, out of scope on jurisdiction). A new
+      vendor, `legaltech`, shipped 15 single-country case-law tools in one batch (Denmark,
+      UK, 4 German state portals, Austria, Netherlands, 2 Italian courts, Finland, Sweden,
+      Switzerland, 2 Portuguese courts) -- all 2u, flat ~$0.001/record + $0.01-0.03 start,
+      all out of scope on jurisdiction. The remaining 6 below-floor handles were already
+      covered by an owner named above (`brasildados` due-diligence, `jungle_synthesizer`
+      CURIA/Rechtspraak-NL, `wildorigins`/`hllerdgn80` UK, `precious_bathmat` Spain). The
+      other 53 of 77 are dearer or a different product outright (5 NONE handles priced for
+      the first time, all dearer/off-product: `automatic/brazil-datajud-scraper`,
+      `itsadry/judicatura-sentencias-ecuador`, `insight.solutions/litigation-signals-api`
+      [SEC-filing signals, not a court search], `davidcondrey/wl-legal-cite-verifier`
+      [citation checker over supplied text], `lienintel/allegheny-county-pa-tax-liens`
+      [one PA county, not CourtListener]). **PRICING DECISION: HOLD $0.002, no start fee**
+      -- every new undercutter sits at 1-2 users, far under the 20-user re-price
+      threshold. Shipped README-only build **0.1.80** (package.json 0.1.26 -> 0.1.27);
+      live README verified byte-identical (77,246 bytes both sides) via `versions/0.1
+      sourceFiles`. Guards after: fleet `check-price-superiority` 2672 named-rival prices
+      / 1015 cheaper / **0 undisclosed anywhere**; `check-charges` 1/0/0;
+      `check-registry-fields` 0 drift; `check-own-price-prose` 27/0. Platform smoke test
+      (`apify call` with `test_input.json`): SUCCEEDED, 12 rows delivered over 2 pages, a
+      real run. Rotation recorded in `state/audit_dates.json` (sweep persisted at
+      `state/audit_data/c2823_crs_prices.json`); `audit-due --type competitor_audit` now
+      shows only `clinicaltrials-scraper` DUE. Spend ~$0.005 this cycle (1 build, ~80
+      read-only API fetches, 1 platform run). No owner email warranted ($0 booked, nothing
+      only they can fix). **Slot-process note (do not repeat): this cycle picked an
+      `audit-due` competitor_audit item before checking 2823 % 3 == 0 -- it was actually a
+      QUALITY slot. The work itself fits the QUALITY description (competitor
+      feature/price comparison) so it was kept rather than discarded, but
+      `bin/devto-comments`, `bin/check-disclosure` and a site-copy pass were NOT run this
+      cycle and should be the first things the next QUALITY slot does, not skipped a
+      second time. Also: check the slot-type arithmetic FIRST, before reading
+      `audit-due`'s backlog table, on every future cycle.**
+
+- [x] **SUPERSEDED c2828 by the UPDATED johnvc watch at the top of this file -- re-read live at
+      c2828's audit, byte-identical, neither trigger fired. Kept for the arithmetic only.**
+      `johnvc/GoogleNewsAPI` (114u) is now the largest confirmed undercutter in the google-news
+      niche and the only one whose model is **per results PAGE**, not per article -- $0.008 (FREE)
+      / $0.00792 / $0.0078408 / $0.00776239 (GOLD+) per page of 10-25 articles, plus $0.002
+      one-time `setup` per run and $0.00001/GB start, in effect since 2026-10-13. Verified
+      arithmetic (c2824): cheaper than us past ~5 articles/run at FREE and ~10 at GOLD+, landing
+      $0.00039-$0.001/article. **We held price at $0.002->$0.001 on differentiation, not on price
+      superiority** (it has no topic/section codes, no `rssUrls`, no site/word filters, no full
+      article text, no related coverage, no ticker extraction, no leaked-date-window protection,
+      and emits one row per page). Re-read its `pricingInfos` next audit: if it drops the setup
+      fee or adds topic/section browsing, the differentiation argument weakens and a real
+      re-price decision is due. Its sibling `johnvc/google-news-lite-api` is owner-deprecated +
+      FREE model since 2026-10-27 and is no longer a live rival.
+
+- [x] **DONE c2822 (Regular slot, 2822 % 3 == 2) -- `trademark-search-scraper`'s `competitor_audit`
+      (2484 -> 2822, 338c gap), the `NEXT TARGET` c2821 left; one of 2 real backlog items
+      `audit-due --all` found fleet-wide (`court-records-scraper` left for the next Regular
+      slot).** Preflight: `checks-due --all` **1 DUE** (`check-source-endpoints`) -- ran it, 1
+      transient DEVIATION (`rss.marketingtools.apple.com` ReadTimeout), re-probed live twice
+      (general connectivity fine, same host 200 in 1.6s on retry), re-ran CLEAN, recorded.
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users,
+      services + all 4 pages 200. **Fixed `bin/_batch_price_tms3.py`'s c2796 argv-default trap
+      (hardcoded `/tmp` paths, no override, no `persist_sweep`) -- replaced by
+      `bin/_batch_price_tms4.py` on the `_batch_price_sgos3.py` pattern (9th pricer in 11 audits
+      with both defects).** Own price re-read live first: unchanged, flat $0.002/result, no
+      start fee. Niche grew **154 -> 172** matched (2514 seen), **21** unnamed (17 NONE + 4
+      OWNER); 4 ruled OUT OF SCOPE on their own description (textile-fiber-label-checker and an
+      ImportYeti customs-profile scraper, no trademark data; an Oregon **state** registry, which
+      TMview's 81-office list cannot reach -- one US slot, the federal USPTO register, no state
+      slot; an RDAP domain-availability checker). Remaining 17 all live-priced, **17==17** cohort
+      cross-check. **One genuine new undercutter:** `exuberantal/euipo-uspto-trademark-brand-
+      owner-scraper`, flat $0.00075/row (62.5% cheaper), no start fee -- also bills patent/IP-
+      assignee and federal-IP-notice rows outside our scope, so a bundle not a pure register
+      match; 2 users. 16 others dearer or an exact tie: `red.cars/tmview-trademarks-pro` (also
+      TMview-based) and `plainrecordlabs/cancelled-us-trademarks` both tie our $0.002 flat
+      exactly (not undercutters); the sweep's Mexico/Brazil listings (`jpmendes/mexico-
+      trademark-search-impi`, `latsouth/brazil-trademark-filings`) are both dearer than
+      searching those same offices here despite being genuinely in TMview's `MX`/`BR` scope.
+      **PRICING DECISION: HOLD $0.002, no start fee** -- the one undercutter sits at 2 users,
+      far under the 20-user re-price threshold, and it is a multi-data-type bundle, not a scope
+      match. Shipped build **0.1.97** (package.json 0.1.28 -> 0.1.29); live README verified
+      byte-identical (88,008 bytes both sides) via `versions/sourceFiles`. Guards after: fleet
+      `check-price-superiority` 2664 named-rival prices / 1012 cheaper / **0 undisclosed
+      anywhere**; `check-charges` 27/0/0; `check-registry-fields` 0 drift; `check-own-price-
+      prose` 27/0. Platform smoke test (`actor-health --only`): `ok=True, items=10,
+      fail_rows=0`, a real run. Rotation recorded in `state/audit_dates.json` (sweep persisted
+      at `state/audit_data/c2822_tms_prices.json`); `audit-due --type competitor_audit` now
+      shows only `court-records-scraper` DUE. Spend ~$0.005 this cycle (1 build, ~20 read-only
+      API fetches, 1 platform health run, ~5 curl probes). No owner email warranted ($0 booked,
+      nothing only they can fix).**
+
+- [x] **DONE c2821 (Regular slot, 2821 % 3 == 1) -- `uk-find-a-tender-scraper`'s `competitor_audit`
+      (2483 -> 2821, 338c gap), the `NEXT TARGET` c2820 left; one of 3 real backlog items
+      `audit-due --all` found fleet-wide (`trademark-search-scraper`/`court-records-scraper` left
+      for upcoming Regular slots).** Preflight: `checks-due --all` NONE DUE, `inbox-triage new`
+      NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services
+      + all 4 pages 200. **Fixed `bin/_batch_price_uktft2.py`'s c2796 argv-default trap (hardcoded
+      `/tmp` paths, no override, no `persist_sweep`) -- replaced by `bin/_batch_price_uktft3.py`
+      on the `_batch_price_sgos3.py` pattern (8th pricer in 10 audits with both defects).** Own
+      price re-read live first: unchanged, tiered $0.003 (FREE) -> $0.0025 (GOLD+), no start fee.
+      Niche grew **207 -> 244** matched (1753 seen), **95** unnamed (89 NONE + 6 OWNER, 1 self).
+      All 94 non-self handles live-priced, **95==95** cohort cross-check. **9 genuine every-tier
+      undercutters, 2 resolved by hand after the automated pass flagged them AMBIGUOUS** (multiple
+      recurring events, no owner primary flag -- read off the raw `actorChargeEvents` record):
+      `mrtrelock/public-tenders-scraper` and `fecklesspleb/eu-uk-public-tenders` (TED+FTS+CF, flat
+      $0.002/notice, no fee, ~76/126-row crossover), `coherent_edelweiss/uk-public-tenders-
+      contracts-finder` (generic lead-enricher template, empty description but live/public/not-
+      deprecated, primary event $0.002/record), `delfielectronics/uk-public-tenders` (hand-
+      resolved -- `notice` event $0.002 flat + $0.001/source-day + $0.00005 start, ~77/129-row
+      crossover), `siteverdict/siteverdict-uk-contract-awards` (hand-resolved, award-only scope,
+      `notice` $0.002 flat no fee, ~76/126-row crossover), `aperture/eu-uk-procurement-award-
+      signal-scraper` (UK+France BOAMP+EU TED lead-gen product -- headline $0.008/award is an
+      OPTIONAL verified-contact upsell; owner-flagged PRIMARY event is $0.002/award with a free
+      role-email fallback, ~75/125-row crossover), `insight.solutions/public-tenders-api`
+      (TED+FTS+CF bundle, tiered $0.0006->$0.00036 + $0.001 start, ~32/30-row crossover),
+      `automatic/uk-procurement-tenders-scraper` (dual-portal FTS+CF, our exact scope, flat
+      $0.0015 + $0.005 start, ~53/68-row crossover), `pankajbhatia/uk-find-a-tender-notices`
+      (FTS-only sibling of the already-named `pankajbhatia/uk-contracts-finder-scraper`,
+      re-verified live under its own handle per the c2475 lesson -- flat $0.0005 + $0.002 start,
+      cheapest per-row rate this sweep, ~31/32-row crossover). All 9 sit at 2 users. **PRICING
+      DECISION: HOLD $0.003 -> $0.0025** -- far under the 20-user re-price threshold, and this
+      niche has already disclosed cheaper dual/multi-portal rivals from earlier sweeps without
+      ever moving the price. Shipped build **0.1.101** (package.json 0.1.23 -> 0.1.24); live
+      README verified byte-identical (93,322 bytes both sides) via `versions/sourceFiles`. Guards
+      after: fleet `check-price-superiority` 2654 named-rival prices / 1009 cheaper / **0
+      undisclosed anywhere**; `check-charges` 1/0/0; `check-registry-fields` 0 drift; `check-own-
+      price-prose` 27/0. Platform smoke test (`actor-health --only`): `ok=True, items=10,
+      fail_rows=0`, a real run. Rotation recorded in `state/audit_dates.json`; `audit-due --type
+      competitor_audit` now shows only `trademark-search-scraper` (NEXT TARGET) and
+      `court-records-scraper` DUE. Spend ~$0.005 this cycle (1 build, ~190 read-only API fetches,
+      1 platform health run). No owner email warranted ($0 booked, nothing only they can fix).**
+
+- [x] **DONE c2820 (QUALITY slot, 2820 % 3 == 0) -- ran the 2 DUE checks, FIXED a silently
+      incomplete checker, and executed the deferred `queue.md` trim.** Preflight: `checks-due
+      --all` **2 DUE** (`check-row-floor`, `check-upstream-warnings`), `inbox-triage new` NONE
+      UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 814 runs30d (811 ok,
+      3 bad), services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active, `/`, `/pricing`,
+      `/tools`, `/blog` all 200. No owner email warranted ($0 booked, nothing only they can fix).
+      **(1) `check-row-floor` -- 1 FLAG, CLEARED, no code touched.** `uk-find-a-tender-scraper`
+      read ratio 0.00 (0/10 rows) on the 2.9h-old nightly snapshot. Per the checker's own
+      advice, re-ran it live with `--recheck` BEFORE diagnosing anything: **CLEARED at 10/10
+      rows.** A transient nightly blip, not an outage and not a weak input -- nothing to fix.
+      (Worth noting this is the Actor whose `competitor_audit` is the next Regular slot's
+      target, so its upstream being healthy is already confirmed for that cycle.)
+      **(2) `check-upstream-warnings` -- was SILENTLY INCOMPLETE fleet-wide; FIXED.** First run
+      printed `WARNING: INCOMPLETE -- 1 query/queries failed ... google-news-mcp-server (no
+      NICHE_TERMS entry)`, i.e. a CLEAN verdict that was explicitly not trustworthy; its own
+      `--selftest` confirmed `FAIL uncovered live slug(s): ['google-news-mcp-server']`, so the
+      slug-parity guard c2772 built was working and just had not been run since the MCP server
+      went live. Fixed exactly as c2772 fixed `clinicaltrials-mcp-server`: added the slug to
+      `SAME_UPSTREAM` -> `google-news-scraper`, **verified by grep of both `src/` trees rather
+      than assumed** -- the MCP server calls exactly two upstreams (`news.google.com/rss/search`
+      and `/rss/headlines/section/topic/`) and BOTH are already inside `google-news-scraper`'s
+      larger set, so it is a strict SUBSET, not mere overlap, and the existing "google news"
+      sweep covers every route it can be hurt by. Deliberately did NOT give it its own
+      `NICHE_TERMS` phrase: "google news mcp" needs the words CONTIGUOUS and rivals title
+      themselves "Google News MCP Server", so it would have swept ~0 in-niche listings and
+      reported a silently EMPTY sweep as CLEAN -- strictly worse than the honest warning, the
+      exact trap c2772 wrote down. After: `--selftest` **PASS** (parity both directions, 26
+      live / 25 swept / 1 no-upstream / 2 same-upstream), real run **CLEAN +8 acked, exit 0,
+      no INCOMPLETE line**, 23 niches / 11583 listings seen / 6638 in-niche. Both checks
+      recorded via `checks-due --ran` (next due c2868).
+      **(3) The deferred `queue.md` trim -- DONE** (118.0KB/1340 lines -> 86.5KB/1002 lines).
+      Full method, hazard-grep findings, verification and the measured candidate list for the
+      next QUALITY slot are in the `doc-trim cadence` item's `EXECUTED c2820` record below;
+      not duplicated here (that item's standing shape).
+
+- [x] **DONE c2819 (Regular slot, 2819 % 3 == 2) -- `sam-gov-opportunities-scraper`'s
+      `competitor_audit` (2482 -> 2819, 337c gap), one of 2 real backlog items `audit-due --all`
+      found fleet-wide (the other, `uk-find-a-tender-scraper`, left for the next Regular slot).
+      Preflight: `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue`
+      $0 booked / 27 Actors / 50 users / 807 runs30d, services + all 4 pages 200. **Fixed
+      `bin/_batch_price_sgos2.py`'s c2796 argv-default trap (hardcoded `/tmp` paths, no override,
+      no `persist_sweep`) -- replaced by `bin/_batch_price_sgos3.py` on the `_batch_price_fedreg2.py`
+      pattern (7th pricer in 9 audits with both defects).** Own price re-read live first: flat
+      $0.0015/row, no start fee, unchanged. Niche grew **278 -> 313** matched (2239 seen),
+      **207** unnamed (189 NONE + 18 OWNER). All 189 NONE handles live-priced, **189==189**
+      cross-check, 0 unresolvable, 2 AMBIGUOUS hand-read (both ruled dearer: `withgrokbot/
+      contract-alerts` digest/match events $0.05/$0.01, `delfielectronics/us-federal-opportunities`
+      opportunity/extract $0.002/$0.01). All 18 OWNER handles re-priced live under their own
+      handles per the c2475 lesson -- 17/18 dearer, 1 (`shipsatnight/govcon-opportunity-change-
+      monitor`) a genuine new undercutter despite sharing a vendor name with an already-named-
+      dearer listing. **8 new disclosures:** `pushbuild/sam-gov-opportunities` (2u, flat
+      $0.0003/row, no start fee -- the standout, one fifth of our rate at every volume),
+      `shipsatnight/govcon-opportunity-change-monitor` (2u, $0.0012 + $0.00005 start -- under us
+      at every realistic volume), `hanielazevedo/samgov-contract-opportunities` (2u, ties SILVER
+      $0.0015, undercuts GOLD+ to $0.0012), `automatic/sam-gov-opportunities-scraper` (2u, $0.001
+      + $0.005 start, crossover ~row 10), `tidydata69/sam-gov-opportunities` (1u, same shape,
+      needs buyer's own SAM.gov API key), `mmdincer/sam-gov-opportunities-monitor` (1u, undercuts
+      GOLD+ only to $0.0014, needs buyer's own GSA API key), `insight.solutions/federal-contracts-
+      grants-api` (2u, 4-source bundle -- SAM.gov + Grants.gov + USAspending + lobbying, each its
+      own event -- SAM.gov-comparable `opportunity` event undercuts GOLD+ to $0.0012),
+      `deepaksheoran172/sam-gov-opportunity-monitor` (2u, no live pricing record -- $0 today,
+      though its own description advertises an unscheduled future "$0.003/record" PPE plan not
+      yet in `pricingInfos` -- re-read at the next audit rather than assuming it stays free).
+      **3 ruled out by scope, not price (each also disclosed as cheaper, for the record, to
+      satisfy the whole-file `DISCLOSED` regex):** `deepaksheoran172/state-and-local-rfp-
+      aggregator` (2u, free, state/local procurement -- not federal SAM.gov), `apex-b2b-data/
+      grants-gov-federal-funding-opportunities` (2u, tapers to $0.00105/row from GOLD) and
+      `pj_pai/grants-gov-opportunities` (1u, $0.001/opportunity) -- both Grants.gov tools, this
+      Actor's sibling `grants-gov-scraper`'s niche, same distinction already drawn for
+      `automation-lab`/`soilair`. **PRICING DECISION: HOLD $0.0015** -- all 8 new undercutters sit
+      at 1-2 users, far under the 20-user re-price threshold, and the niche's established leaders
+      (`jungle_synthesizer` 171u, `fortuitous_pirate` 129u, `scrapesage` 64u) already undercut us
+      without having moved the price. Shipped README-only build (package 0.1.30 -> 0.1.32, 2
+      builds -- the first push's scope-ruled-out paragraph tripped `check-price-superiority`'s
+      whole-file `DISCLOSED` regex since "ruled out by scope, not price" carries none of its
+      cheap/undercut/lower/$0 trigger words; fixed by adding each handle's own price-vs-ours
+      alongside the scope ruling, the same pattern this README already uses for `amygraphics`,
+      re-pushed as build 0.1.90); live README verified byte-identical (119,093 bytes both sides)
+      via `versions/sourceFiles` (this README exceeds the `actor-builds` readme-field truncation
+      limit, ~100k chars, per the PLAYBOOK caveat -- `versions/sourceFiles` is the only reliable
+      verification path for this one and `remote-jobs-scraper`). Guards after: fleet
+      `check-price-superiority` 2645 named-rival prices / 1000 cheaper / **0 undisclosed
+      anywhere**; `check-charges` 27/0/0; `check-registry-fields` 0 drift. **Platform smoke test**
+      (`keyword: "solar", maxResults: 3`): 3 real rows returned with full field shape, confirming
+      the build still works end-to-end. Rotation recorded in `state/audit_dates.json` (persisted
+      sweep at `state/audit_data/c2819_sgos_prices.json`), `audit-due --type competitor_audit` now
+      shows only `uk-find-a-tender-scraper` DUE. Spend ~$0.01 this cycle (2 builds, ~210 read-only
+      API fetches, 1 platform run). No owner email warranted ($0 booked, nothing only they can
+      fix).**
+
+      **EXECUTED c2820 (QUALITY slot, 2820 % 3 == 0).** Fresh read: `tasks/queue.md`
+      **TRIM SOON** (115.2KB/1340 lines, ~16c headroom, proj. 243KB at the next look in 24c),
+      `state/STATUS.md` **OK** (68.9KB/963 lines, ~30c), `notes/LEARNINGS.md` **OK** (5237
+      lines, ~138c -- trimmed at c2817). Only queue.md touched, per the c2224 one-file rule.
+      c2817 deferred this file to do LEARNINGS.md (TRIM DUE outranks SOON); standing rule 2
+      says a second QUALITY slot must not pass it, so this slot executed it.
+      **tasks/queue.md -- DONE.** `bin/_trim2820q.py` (cloned from `bin/_trim2588q.py`)
+      hoist-then-cut: archived 11 historical DONE blocks (c2818, c2817, c2816, c2813, c2815,
+      c2812, c2814, c2811, c2810, c2808, c2807 -- c2819's kept live per standing precedent,
+      it carries the current pointer) plus this item's own superseded `EXECUTED c2817`
+      narrative, all verbatim to `queue_archive.md`. Rule-1 hazard grep ran FIRST over all 12
+      ranges and every hit was READ: all narrative about rules homed elsewhere and still live
+      (the c2812 + c2796 audit standing rules and the MCP-#3 decision are their own KEPT open
+      items; checks-due/audit-due cadences live in those tools' state; dev.to in PLAYBOOK).
+      The one hit that read like a sole-home instruction -- the c2812 `fda-recall-scraper`
+      "do not reopen HOLD $0.0035 -> $0.0024" -- was checked and is not: a HOLD is no action,
+      the price lives in the Actor's pricing config, and it is recorded in STATUS.md +
+      LEARNINGS.md. **118.0KB/1340 lines -> 86.5KB/1002 lines**, ~21c headroom (measured by
+      `check-doc-size` after the write, not predicted).
+      Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
+      content, no `- [ ]` open item in the archive partition, no DONE block but c2819 kept,
+      rewrite asserted separately). Backup: `/tmp/c2820_queue.bak`.
+      **Margin arithmetic (rule 4), stated honestly:** 86.5KB still misses the ~69KB clearance
+      target (200KB - 5440 B/c * 24c), so the NEXT QUALITY slot will likely still read TRIM
+      SOON and should budget an OPEN-text compression pass. The fattest open items are measured
+      and named here so that slot does not re-derive them: the c2380 one-term-diff follow-up
+      (4350B), the c2532 STANDING status-layers item (4086B), the UPDATED-c2809 three-Actor
+      item (3893B), the c2811-merged MCP item (3757B), the c2552 tripwire (3507B), the c2692
+      `grants-gov-scraper` DECIDED item (3276B -- a decision record, not open work, so it is
+      an archive candidate ONLY after confirming the HOLD is homed elsewhere), and the c2478
+      Store-API item (3250B, deadline 2026-11-15 -- read before touching). Re-derive line
+      numbers fresh per rule 3; the byte sizes are stable enough to prioritize by.
