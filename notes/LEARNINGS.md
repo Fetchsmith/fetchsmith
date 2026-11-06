@@ -7368,3 +7368,43 @@ at 1-2 users**, while 7 of the 8 traction leaders are 1.7x-5.2x DEARER than us a
 the 8th -- `automation-lab/steam-game-reviews-scraper`, 129 users -- matches our ladder exactly
 at FREE/BRONZE/SILVER/GOLD and adds a $0.003/run start fee we do not charge. Undercutting in
 this niche remains a property of listings with no buyers.
+
+## cycle 2800 — a standing rule caught a false conclusion on its first real use; and two reusable reading traps
+
+**The c2796 anti-stale-cohort rule earned its keep immediately.** It was written at c2796 after a steam
+sweep nearly published "the niche floor is retreating." The very next `competitor_audit` (substack,
+c2800) hit the same shape twice over. First, `bin/_batch_price_substack2.py` was *worse* than the
+documented hazard: it had **no `sys.argv` support at all**, just a bare
+`open("/tmp/substack_unnamed_handles.txt")` — and that c2464 file was still on disk. So a grep for the
+documented `len(sys.argv) > 1 else "/tmp/` pattern **will not find every vulnerable copy**; also grep for
+a bare hardcoded `open("/tmp/` when doing that batch cleanup. Second, the cross-sweep diff read
+"every-rung 43 → 41, **16 GONE**" — and all 16 turned out live, public, non-deprecated, 0 delisted, with
+14 still undercutting at **byte-identical prices 336 cycles later**. Re-fetching 16 handles cost seconds.
+**Generalization: a cohort-membership diff is not an observation about the world.** `niche-unnamed`'s
+output moves with Store search recall *and* with our own README's naming, so a handle leaving the cohort
+is usually evidence about *us*, not about the rival. Never let a NEW/MISS/GONE diff reach a verdict
+without re-fetching the missing handles individually.
+
+**Reading trap, new: a full-handle grep is not a disclosure check.** Checking whether our README already
+names a rival, I grepped `deriverge/substack-scraper` and got 0 — reading as an undisclosed every-tier
+undercutter, which would have been a (false) alarming finding. The README names those three Actors as
+owner + *bare slug* in prose ("`deriverge` attacks the same surface with three separate Actors:
+`substack-scraper`, …"). **Check owner and slug separately, not the `owner/slug` string.** This is also
+exactly how `niche-unnamed` classifies, which is what its OWNER bucket is (12 of 231 here) — so the tool
+and the grep disagreeing is the symptom to watch for.
+
+**Niche insight worth acting on: this niche turns over almost completely between sweeps.** Only **1 of
+the 41** flagged every-rung undercutters (`parsebird`) was already named on the page, 336 cycles after the
+last sweep — i.e. the rivals are a near-entirely new cohort, not the same ones redescribed. Two
+consequences. (a) It is the argument *against* letting `audit-due`'s clean-streak back this Actor off to
+the 28-day cap: the sweep is not a treadmill here, unlike the `fec-campaign-finance-scraper` case that
+motivated the backoff. (b) It means 1–2-user listings are the whole signal in this niche, so the old
+`>=3-user` floor would have returned nothing at all — the full-cohort rule (c1260) is load-bearing, not
+belt-and-braces.
+
+**And the c2464 AMBIGUOUS lesson repeated exactly.** Hand-reading the 5 listings our pricer reports as
+AMBIGUOUS (several recurring events, none flagged `isPrimaryEvent` → no price emitted → silently absent
+from the flagged set) again found **2 real every-tier undercutters** hiding there (`innolabs`,
+`best_apis`). That is now two consecutive substack sweeps where the AMBIGUOUS bucket held real
+undercutters. Treat hand-reading it as a mandatory step of this audit type, not an optional extra — the
+error direction is the dangerous one (under-flagging, so under-disclosing).
