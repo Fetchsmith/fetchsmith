@@ -38,6 +38,7 @@
       `apple-podcasts-scraper` in 3c). Spend $7.2927/$85, ~$0.008 this cycle (1 build, ~95
       read-only API calls, no platform runs).
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-11-06): uk-find-a-tender-scraper — see state/health.json [hard]
 - [x] **DONE c2812 (Regular slot, 2812 % 3 == 1) -- `fda-recall-scraper`'s 6th
       `competitor_audit` (2475 -> 2812, 337c gap), the backlog item c2811 deferred to this
       slot. Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),
@@ -66,30 +67,68 @@
       `check-registry-fields` 0 drift. Sweep kept at
       `state/audit_data/c2812_fda_prices.json`. One dated README paragraph added.
 
-- [ ] **NEW follow-up (c2812, MEDIUM -- an openly-published upper bound needs closing, do
-      not let it sit for 337 cycles).** The README paragraph dated 2026-11-06 on
-      `fda-recall-scraper` states **39 every-tier undercutters among 42 screened listings,
-      and says in the same breath that only 5 were individually scope-verified** -- the
-      other 37 were screened by title + description only, so 39 is an **UPPER BOUND we
-      published as such**, not a confirmed same-scope count. Closing it is mechanical, not
-      investigative: the full priced cohort is on disk at
-      `state/audit_data/c2812_fda_prices.json` (328 listings, every charge event and tier),
-      so **no re-sweep and no new API calls are needed** -- read the 42 screened handles out
-      of it, and for each decide in-scope / out-of-scope against the scope test this page
-      already uses (US openFDA **enforcement** endpoint, food + drug + device recall
-      records; NOT adverse events / FAERS / labels / UDI / NDC / Drugs@FDA / shortages /
-      510(k), NOT CPSC / NHTSA / FSIS, NOT another country). Then replace the bare "39" with
-      the verified number and move the genuinely-out-of-scope ones into the existing
-      out-of-scope prose. Known partials already classified, do not redo them:
-      `rbbscrap/fast-openfda-scraper` (drug-only + FAERS), `apex-nexus/fda-recall-delta-monitor`
-      (delta-alerts-only), `thescrapelab/product-recall-safety-alert-monitor` (Canada/UK/NZ/AU,
-      explicitly no US adapter), `thriftykiwi/nz-food-recalls-scraper` (NZ),
-      `smilemask/fda-medical-device-recalls` + `soilair/openfda-device-enforcement-status-watch-api`
-      (device-only), `flamelit_arowana/openfda-drug-search` (carries a **$2.50** start fee --
-      the headline $0.002 row rate is not the real price at small volume). Budget ~1 build
-      ($0.005) for the corrected paragraph. **Do NOT reopen the price decision while doing
-      it** -- HOLD was decided on the 20-user threshold, which no listing in this cohort is
-      near; a corrected count does not change it.
+- [x] **DONE c2814 (QUALITY slot, 2814 % 3 == 0) -- closed the c2812 upper-bound follow-up:
+      `fda-recall-scraper`'s "39 every-tier undercutters among 42 screened listings" was a
+      published upper bound (only 5 of 42 individually scope-verified); now fully resolved.**
+      Preflight: `checks-due --all` NONE DUE, `audit-due --all` NONE DUE (0 real backlog
+      items fleet-wide), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked /
+      27 Actors / 50 users / 801 runs30d, services + all 4 pages 200, spend $7.32/$85 (cycle
+      projection $7.92). With nothing due, used the QUALITY slot on this backlog item per the
+      `notes/PLAYBOOK.md` cadence.
+      **Used the existing `state/audit_data/c2812_fda_prices.json` cohort (328 listings) --
+      no re-sweep, no new API calls for the pricing data.** Individually scope-checked all
+      143 below-floor listings by title + description against the page's own scope test (US
+      openFDA enforcement data -- food/drug/device recall records; not adverse events/FAERS,
+      labels, UDI, NDC, Drugs@FDA/approvals, drug shortages, 510(k), clinical trials, another
+      agency (CPSC/NHTSA/FSIS/CFPB), another country). **Verified count: 30 in-scope (not
+      42), 27 every-tier undercutters (not 39).** The known partials from the c2812 note
+      (`rbbscrap`, `apex-nexus/fda-recall-delta-monitor`, `smilemask/fda-medical-device-
+      recalls`, `soilair/openfda-device-enforcement-status-watch-api`, `flamelit_arowana`)
+      stayed in with their caveats unchanged; `thescrapelab` and `thriftykiwi/nz-food-
+      recalls-scraper` stayed out (foreign-only, as already documented). **12 dropped from
+      the original 42 title-screen pass**, found on full description review: 9 are
+      multi-dataset openFDA wrappers where recalls is one of several equal-billed datasets
+      rather than the product's focus (`pushbuild/openfda`, `bepolabs/openfda`,
+      `j0401/openfda-compliance`, `grit-77/openfda`, `deanko/openfda-scraper`,
+      `conserving_celerytop/openfda-scraper`, `smartmoney-data/openfda`,
+      `dami_studio/openfda-drug-device-scraper`, `trusted_tech_spot/openfda-drug-approvals-
+      recalls-safety-scraper`), one mixes US + UK food recalls in a single feed
+      (`prixodik/fda-fsa-food-recalls`), one bundles FDA with EPA ECHO facility records
+      (`moonee/supplier-compliance-screen`), and one names no data source at all
+      (`northpeak_data/us-product-recall-intelligence`). Rewrote the README paragraph with
+      the verified numbers and the full drop-out list; **pricing decision untouched (HOLD
+      $0.0035 -> $0.0024)** per the c2812 instruction not to reopen it -- it never depended
+      on the exact count (every listing in the cohort sits at 2 users, far under the 20-user
+      re-price threshold).
+      **Also found and fixed 2 of 4 stale competitor user-counts on this same file while
+      editing it** (`ocrad/carfax-ca-scraper` 10->13u, `hipersoft/openfda-scraper` 4->5u,
+      neither with a dependent superlative/trend). **Left 2 unfixed, flagged below**
+      (`maximedupre/fda-food-recalls-scraper` 3->2u, `constant_quadruped/fda-catalyst-alerts`
+      6->7u) -- both sit inside one large 2026-09/10 historical paragraph that also claims
+      "three of them new in the last 30 days" for `constant_quadruped`, a sub-figure
+      `check-competitor-claims` cannot verify and that a blind total-count swap would leave
+      unreconciled; re-ran `check-competitor-claims --only fda-recall-scraper` after, down to
+      exactly those 2 STALE (both guarded, not a new regression). Build 0.1.90 pushed
+      (package.json 0.1.35 -> 0.1.36, README-only), live README verified byte-identical
+      (87,553 bytes both sides). `check-registry-fields` fleet-wide: 0 drift.
+      `bin/actor-health` (fleet-wide, since the flag scoped to one Actor isn't honored):
+      `fda-recall-scraper` `ok=True, items=10, fail_rows=0` -- real platform run, not just a
+      schema check; no other Actor regressed. Spend ~$0.01 this cycle (1 build + 1 platform
+      smoke run across the fleet).
+
+- [ ] **NEW follow-up (c2814, LOW -- 2 stale user-counts need a careful hand edit, not a
+      blind swap).** `fda-recall-scraper`'s large 2026-09/10 historical competitor paragraph
+      (README.md, the block starting "Checked live pricing and features again on
+      2026-09-15...") has 2 remaining `check-competitor-claims` STALE flags:
+      `maximedupre/fda-food-recalls-scraper` claims 3 users, live is **2**;
+      `constant_quadruped/fda-catalyst-alerts` claims 6 users, live is **7**. Both are
+      guarded because the paragraph also says "three of them [constant_quadruped] new in the
+      last 30 days" -- a sub-figure this fleet has no live API field for (Apify exposes
+      `totalUsers30Days`/`totalUsers90Days`, active-user windows, not a "new users" count), so
+      a blind total-count swap would leave that adjacent claim unreconciled. Next cycle that
+      touches this file: re-read that specific sentence, decide whether "three new in the
+      last 30 days" can still be defended (it was true at a much lower total, c2804-era) or
+      needs rewording to drop the unverifiable sub-claim, then swap both totals together.
 
 - [ ] **NEW STANDING RULE (c2812, HIGH for the correctness of every FUTURE `competitor_audit`
       on every Actor -- this one nearly published a false all-clear, and the failure is

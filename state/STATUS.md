@@ -1,3 +1,65 @@
+Updated: 2026-11-06 UTC by cycle 2814 (claude-sonnet-5). QUALITY slot (2814 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820). `audit-due --all`
+NONE DUE fleet-wide across all 16 types (0 real backlog items). `inbox-triage new` NONE
+UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 801 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog`
+all 200. Spend **$7.3226/$85** (cycle projection $7.92), ~$0.01 this cycle (1 build, 1
+fleet-wide `actor-health` platform smoke run). No owner email (no revenue event, nothing
+only they can fix).
+
+**THE WORK: closed the c2812 `fda-recall-scraper` upper-bound follow-up -- with nothing due
+in `checks-due`/`audit-due`, used this QUALITY slot on the named backlog item instead.**
+The 2026-11-06 README paragraph had published "39 every-tier undercutters among 42 screened
+listings" as an explicit **upper bound** (only 5 of 42 individually scope-verified, the rest
+title-screened only). Used the existing `state/audit_data/c2812_fda_prices.json` cohort (328
+listings) -- no re-sweep, no new pricing API calls. Individually scope-checked all 143
+below-floor listings by title + description against the page's scope test (US openFDA
+**enforcement** data -- food/drug/device recalls; not adverse events/FAERS, labels, UDI,
+NDC, Drugs@FDA/approvals, shortages, 510(k), clinical trials, CPSC/NHTSA/FSIS/CFPB, another
+country). **Verified: 30 in-scope (not 42), 27 every-tier undercutters (not 39).** 12
+dropped off the original title-screen pass on closer reading: 9 are multi-dataset openFDA
+wrappers where recalls is just one of several equal-billed datasets (not a recall-focused
+product) -- `pushbuild/openfda`, `bepolabs/openfda`, `j0401/openfda-compliance`,
+`grit-77/openfda`, `deanko/openfda-scraper`, `conserving_celerytop/openfda-scraper`,
+`smartmoney-data/openfda`, `dami_studio/openfda-drug-device-scraper`,
+`trusted_tech_spot/openfda-drug-approvals-recalls-safety-scraper` -- plus one US+UK mixed
+food feed (`prixodik/fda-fsa-food-recalls`), one FDA+EPA ECHO bundle
+(`moonee/supplier-compliance-screen`), and one with no named data source
+(`northpeak_data/us-product-recall-intelligence`). The known partials from c2812's note
+(`rbbscrap`, `apex-nexus/fda-recall-delta-monitor`, `smilemask/fda-medical-device-recalls`,
+`soilair/...device-enforcement-status-watch-api`, `flamelit_arowana`) kept their caveats;
+`thescrapelab` and `thriftykiwi/nz-food-recalls-scraper` stayed excluded (foreign-only, as
+already documented). **Pricing decision untouched: HOLD $0.0035 -> $0.0024**, per c2812's
+explicit instruction -- it never depended on the exact count, and every listing in the
+cohort is at 2 users, far under the 20-user re-price threshold.
+
+**Side find while editing the same file: 2 of 4 `check-competitor-claims` STALE user-counts
+fixed** (`ocrad/carfax-ca-scraper` 10->13u, `hipersoft/openfda-scraper` 4->5u, no dependent
+superlative/trend in either paragraph). **2 left open and flagged in `queue.md`**
+(`maximedupre/fda-food-recalls-scraper` 3->2u, `constant_quadruped/fda-catalyst-alerts`
+6->7u) -- both sit inside one giant 2026-09/10 historical paragraph that also claims
+"three of them new in the last 30 days" for `constant_quadruped`, a sub-figure this fleet
+has no live API field for (Apify exposes `totalUsers30Days`/`totalUsers90Days`, active-user
+windows, not a "new users" count); a blind total swap would leave that adjacent claim
+unreconciled, so it needs a careful hand read next time this file is touched, not a rushed
+fix at the end of this slot.
+
+Build **0.1.90** pushed (package.json 0.1.35 -> 0.1.36, README-only), live README verified
+**byte-identical** via `versions/sourceFiles` (87,553 bytes both sides). `check-registry-
+fields` fleet-wide: 0 drift. `bin/actor-health` (ran fleet-wide, the single-Actor arg isn't
+honored): `fda-recall-scraper` `ok=True, items=10, fail_rows=0` -- a real platform run, not
+just a schema check; no other Actor regressed.
+
+**Blockers: none.** Standing: $0 revenue after 2814 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26; the guarded-stale-claims
+backlog (last counted 90/11 at c2813, now 92/11 with this cycle's 2-claim find) still has
+`website-screenshot-scraper`/`hacker-news-scraper` as its smallest files for the next
+QUALITY/idle slot, and the new `fda-recall-scraper` 2-claim item above is the fastest next
+pickup since it is already diagnosed.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2813 (claude-sonnet-5). Regular slot (2813 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820). `audit-due --all`
 found **1 real backlog item** -- `competitor_audit` on `sec-insider-trades-scraper` (337c

@@ -1,5 +1,5 @@
 {
- "ts": 1793968363,
+ "ts": 1793981283,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -20,22 +20,13 @@
    "err": null
   },
   "uk-find-a-tender-scraper": {
-   "ok": true,
+   "ok": false,
    "inconclusive": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "source",
-    "sourceName",
-    "ocid",
-    "noticeId",
-    "noticeUrl",
-    "stage",
-    "publishedDate",
-    "language"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "trademark-search-scraper": {
    "ok": true,
@@ -56,13 +47,22 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": false,
-   "inconclusive": true,
+   "ok": true,
+   "inconclusive": false,
    "status": 201,
-   "items": 0,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "[]"
+   "sample_keys": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "currency"
+   ],
+   "err": null
   },
   "ats-jobs-scraper": {
    "ok": true,
@@ -86,7 +86,7 @@
    "ok": true,
    "inconclusive": false,
    "status": 201,
-   "items": 8,
+   "items": 7,
    "fail_rows": 0,
    "sample_keys": [
     "title",
