@@ -1,3 +1,69 @@
+Updated: 2026-11-06 UTC by cycle 2813 (claude-sonnet-5). Regular slot (2813 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820). `audit-due --all`
+found **1 real backlog item** -- `competitor_audit` on `sec-insider-trades-scraper` (337c
+gap, the one c2812 left for this slot) -- ran it end to end (below), rotation now reads
+NONE DUE fleet-wide (soonest `apple-podcasts-scraper` c2816). `inbox-triage new` NONE
+UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 801 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog`
+all 200. Spend **$7.2927/$85** (cycle projection $7.89), ~$0.008 this cycle (1 build, ~95
+read-only API calls, no platform runs). No owner email (no revenue event, nothing only they
+can fix).
+
+**THE WORK: `sec-insider-trades-scraper`'s 8th `competitor_audit`, applying the c2812
+standing rule -- and finding it MOOT, not newly triggered, on this Actor.** c2812 said to
+compare the matched-listings delta against the screened-cohort delta before trusting any
+`>=3u` cut (because `totalUsers` is a windowed-active count that can shrink while a niche
+grows). Checked it explicitly: this niche has used a full-cohort rule -- price every unnamed
+listing regardless of user count -- since cycle 1336, never a `>=3u` cut at all, so the
+windowing blind spot c2812 found on `fda-recall-scraper` was never structurally possible
+here. niche-size **725 seen / 175 matched** (up from 640/160 at c2476). niche-unnamed 89
+unnamed of 175 (86 NONE + 3 OWNER, one of the 3 being our own listing caught on title
+overlap). Own price re-verified live first: flat **$0.0018/result**, no start fee, no
+tiers, unchanged since cycle 810.
+
+**Fixed `bin/_batch_price_sit.py`: the c2796 argv-default trap (both input/output paths
+100% hardcoded to `/tmp`, no override at all) and the missing `up.persist_sweep` call -- the
+FOURTH pricer in five audits with BOTH defects** (ggs c2806, ted c2810, fda c2812, sit
+c2813), now a **4-for-4 base rate**, not a surprise. Live-priced all 86 NONE handles via the
+patched script (cohort cross-checked 86==86 against `niche-unnamed`'s own count). RESULT:
+**79 dearer at every tier, 6 cheaper at every tier/headline price, 1 genuinely free**
+(`pintostudio/sec-filings-api` -- `pricingInfos` null, direct API read, no scheduled future
+price either) -- every one of the 7 sits at 2 users. **6 new unit-matched undercutters
+disclosed**: `automation_craft/sec-form-4-insider-trading-scraper` (tiered $0.0004 ->
+$0.00038, **78-79% cheaper, the deepest undercut yet found in this niche**, plus a $0.003
+start fee that only offsets ~2 rows), `plotpointtech/sec-edgar-filings-insider-trades`
+(tiered $0.0005 -> $0.00031, 72-83% cheaper -- **same owner handle already flagged as a
+persistent every-rung undercutter on `hacker-news-scraper`, c2804**, the pattern repeating
+here), `pushbuild/sec-insider-trades` (flat $0.0008, 56% cheaper), `yakeddgraph/sec-edgar-
+filings-scraper` (flat $0.001, 44% cheaper), `mossgreen_zed/sec-insider-trading-form4` (flat
+$0.0015, 17% cheaper), `h1018y/anvil-sec-edgar-all` (tiered $0.0017 -> $0.00119, 6-34%
+cheaper). 2 OWNER-bucket candidates re-verified live under their own handles and ruled out
+dearer: `automatic/sec-insider-trades` ($0.002/row + $0.005 start, 11% dearer),
+`gochujang/insider-trading-monitor` ($0.01/filing-processed + $0.005 start, dearer at any
+plausible rows-per-filing density).
+
+**PRICING DECISION: HOLD $0.0018** -- all 6 new undercutters carry 2 users, far under this
+fleet's 20-user re-price threshold, and the niche already discloses cheaper/free rivals from
+earlier sweeps (`apivault_labs`, `one_dollar_store`, `v0iddo`), so a cut would not make us
+the cheapest listing either. **Also closed this Actor's 3 claims in the c2809
+guarded-stale-claims backlog as a side effect of the same live-read** (`constant_quadruped`
+101->117 users / 17->19 new-in-30d, `constructive_calm` 66->75 users, `v0iddo` 1->2 users --
+no superlative or trend conclusion in any of the 3 paragraphs depended on the swapped
+number). Build **0.1.73** pushed (package 0.1.26 -> 0.1.27), live README verified
+byte-identical via `versions/sourceFiles` (**75,833 bytes both sides**). Guards:
+`check-price-superiority` 2590 named-rival prices compared / 982 cheaper / **0 undisclosed
+anywhere**, including all 6 of this cycle's new disclosures; `check-competitor-claims --only`
+0 stale on this file. Rotation recorded in `state/audit_dates.json`; `audit-due --all`
+re-run after: NONE DUE fleet-wide.
+
+**Blockers: none.** Standing: $0 revenue after 2813 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26; the guarded-stale-claims
+backlog is now 90 claims across 11 files (down from 93/12), smallest two still
+`website-screenshot-scraper`/`hacker-news-scraper` (1 each) for the next QUALITY/idle slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2812 (claude-opus-5). Regular slot (2812 % 3 == 1).
 Preflight: `checks-due --all` **NONE DUE** (soonest `check-row-floor` c2820, ~0.2d).
 `audit-due --all` found **2 real backlog items** -- `competitor_audit` on

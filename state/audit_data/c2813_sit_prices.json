@@ -1,0 +1,5430 @@
+[
+ {
+  "handle": "kuroshio-data/sec-form4-insider-trades-tracker",
+  "title": "SEC Insider Trades Tracker (Form 4, EDGAR)",
+  "users": 3,
+  "price": 0.02,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.01,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.02,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Who is buying and selling shares of US-listed companies? Tracks SEC Form 4 insider trading filings straight from EDGAR: insider name and role, ticker, buy/sell, shares, price, dollar value, and a 10b5-1 plan flag, as clean English JSON. Free public SEC data, no API key needed.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.01
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.02,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-07-30T05:43:47.174Z"
+ },
+ {
+  "handle": "claudethegoat/us-material-events-monitor",
+  "title": "US Market Events Scraper (FDA, SEC, Contracts, Insiders)",
+  "users": 3,
+  "price": 0.005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Unified daily feed of FDA drug approvals (NDA/BLA only, no generics), SEC 8-K material-event filings, $1M+ federal contract awards from USAspending.gov, and Form 4 insider buy/sell transactions from OpenInsider. One normalized JSON schema across all four high-signal US public-data sources.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-05-22T08:48:44.853Z"
+ },
+ {
+  "handle": "kaz_kakyo/sec-filing-alerts",
+  "title": "SEC EDGAR Filings API \u2014 8-K Alerts & Form 4 Insider Trades",
+  "users": 3,
+  "price": 0.005,
+  "label": "filing-alert",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing-alert",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing-alert": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "SEC Filing Alerts \u2014 8-K & Form 4 Watchlist"
+   },
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "SEC EDGAR scraper and scheduled filings alert feed for a watchlist of tickers/CIKs. Classifies 8-K items to human labels and digests Form 4 insider trades (who, buy/sell, shares, price, $ value, post-holding) into clean JSON. Free official SEC data, no key.",
+  "raw_events": {
+   "filing-alert": {
+    "eventTitle": "SEC Filing Alerts \u2014 8-K & Form 4 Watchlist",
+    "eventDescription": "Monitor SEC EDGAR 8-K and Form 4 insider filings for a ticker/CIK watchlist. Get classified 8-K item labels and parsed Form 4 digests (who, shares, $, role) as structured JSON. Free official SEC API \u2014 no key, no proxy. Built for scheduled runs.",
+    "isOneTimeEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.004
+     }
+    },
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   }
+  },
+  "tiered": {
+   "filing-alert": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.004
+    }
+   },
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-10-10T15:53:21.858Z"
+ },
+ {
+  "handle": "cancap/sec-edgar-insider-alerts",
+  "title": "SEC Insider Trading & 8-K Alerts (Form 4 Tracker)",
+  "users": 2,
+  "price": 0.005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track insider buying and selling (SEC Form 4) and 8-K material events (M&A, earnings, CEO/CFO changes) for any US stock or the whole market. Official SEC EDGAR data, one row per trade, filter by deal size. One click, no API key. Schedule daily alerts.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-06-23T09:16:26.901Z"
+ },
+ {
+  "handle": "skootle/sec-form4-insider-trades",
+  "title": "\ud83d\udcc8 SEC Insider Trading Scraper",
+  "users": 2,
+  "price": 0.006,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.005,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.006,
+    "primary": true,
+    "onetime": null,
+    "title": "Transaction record"
+   }
+  },
+  "desc": "Turn raw SEC Form 4 filings into alert-ready insider trades. Search by ticker, company, insider, CIK, or date. Get one row per trade with shares, price, value, role, decoded action, and precomputed cluster signals. Export, run via API, schedule, or integrate with other tools.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.005
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Transaction record",
+    "eventDescription": "Charged per Form 4 transaction row written to the dataset. Cluster signals are free byproducts.",
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.006
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.003
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.006
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.003
+    }
+   }
+  },
+  "startedAt": "2026-05-12T21:27:32.138Z"
+ },
+ {
+  "handle": "sfoln/sec-insider-trading",
+  "title": "SEC Insider Trading Tracker \u2013 Form 4",
+  "users": 2,
+  "price": 0.002,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "insider-transaction": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider transaction"
+   },
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Insider trades from SEC Form 4 and Form 5 filings: one row per transaction with the insider's name and role, date, transaction code, shares, price, value, holdings after and 10b5-1 flag. By company ticker, CIK or name, or for all companies. $2 per 1,000 transactions.",
+  "raw_events": {
+   "insider-transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One transaction reported on SEC Form 4 or 5: insider, role, date, code, shares, price, value, holdings after.",
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.002
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.002
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0019
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0018
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0018
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0018
+     }
+    },
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05,
+    "isOneTimeEvent": true
+   }
+  },
+  "tiered": {
+   "insider-transaction": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.002
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.002
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0019
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0018
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0018
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0018
+    }
+   },
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-11-02T05:27:59.955Z"
+ },
+ {
+  "handle": "mossgreen_zed/sec-insider-trading-form4",
+  "title": "SEC Insider Trading Tracker (Form 4) - Insider Buys & Sells API",
+  "users": 2,
+  "price": 0.0015,
+  "label": "transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "transaction": {
+    "usd": 0.0015,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider transaction"
+   }
+  },
+  "desc": "Track insider buying and selling from official SEC EDGAR Form 4 filings. By ticker, CIK or market-wide by date. One clean row per trade: insider, role, buy/sell, shares, price, $ value, holdings after, 10b5-1 flag. No API key. $1.50 per 1,000 transactions.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One Form 4 transaction row (after your filters)",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.0015,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "transaction": null
+  },
+  "startedAt": "2026-10-30T19:10:56.496Z"
+ },
+ {
+  "handle": "actose/sec-edgar-insider-trades-13f",
+  "title": "SEC Insider Trading API: Form 4, 13F Holdings, Funds",
+  "users": 2,
+  "price": 0.002,
+  "label": "result",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "result": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Insider trades (SEC Form 4) and 13F fund holdings as clean rows: insider, role, code, shares, price, value, CUSIP, portfolio weight, QoQ changes. Only-new mode. No API key, no login. MCP-ready for AI agents. Pay per result, errors free. $2 per 1,000 results",
+  "raw_events": {
+   "result": {
+    "eventTitle": "Result",
+    "eventDescription": "One delivered row: a Form 4 insider transaction or a 13F fund position. Nothing is charged for errors, unknown tickers or filtered-out rows.",
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.002
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0019
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0018
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0017
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0017
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0017
+     }
+    }
+   }
+  },
+  "tiered": {
+   "result": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.002
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0019
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0018
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0017
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0017
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0017
+    }
+   }
+  },
+  "startedAt": "2026-11-05T08:47:58.026Z"
+ },
+ {
+  "handle": "automation_studio/insider-whale-tracker",
+  "title": "InsiderWhale AI - SEC Insider Trading & Whale Alerts (Form 4)",
+  "users": 2,
+  "price": 0.005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "Verified SEC Filing & Transaction Alert"
+   }
+  },
+  "desc": "Real-time SEC EDGAR Form 4 insider trading scraper. Detects CEO/CFO cluster buys, open-market whale transactions, and dispatches instant webhook alerts.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Verified SEC Filing & Transaction Alert",
+    "eventDescription": "Institutional or insider transaction alert with executive details, transaction size, and entity data.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0035
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.003
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0035
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.003
+    }
+   }
+  },
+  "startedAt": "2026-09-24T12:53:04.899Z"
+ },
+ {
+  "handle": "zaden/sec-insider-trading-tracker",
+  "title": "SEC Insider Trading Tracker",
+  "users": 2,
+  "price": 0.01,
+  "label": "ticker-scanned",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ticker-scanned",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "ticker-scanned": {
+    "usd": 0.01,
+    "primary": true,
+    "onetime": false,
+    "title": "Ticker scanned"
+   }
+  },
+  "desc": "Track SEC Form 4 insider buy/sell transactions for any stock watchlist, straight from EDGAR. Flags notable trades and cluster insider-buying signals other tools miss.",
+  "raw_events": {
+   "ticker-scanned": {
+    "eventTitle": "Ticker scanned",
+    "eventDescription": "Charged once per ticker checked for recent SEC Form 4 insider transactions, regardless of how many transactions were found.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "ticker-scanned": null
+  },
+  "startedAt": "2026-10-14T20:30:36.462Z"
+ },
+ {
+  "handle": "tuhin/sec-insider-trading-tracker",
+  "title": "SEC Insider Trading Tracker (Form 4)",
+  "users": 2,
+  "price": 0.005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track the latest SEC Form 4 insider transactions \u2014 open-market buys and sells by company officers, directors and 10% owners \u2014 from EDGAR public data.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-08-31T18:57:23.514Z"
+ },
+ {
+  "handle": "dmodify/dmodify-sec-insider-transactions",
+  "title": "SEC Insider Trading Data Scraper | Forms 3, 4, 5 API",
+  "users": 2,
+  "price": 0.005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract audit-grade SEC insider transaction data Forms, 4, with full source provenance, schema versioning, and QA checks. Extract real-time insider trading data from SEC EDGAR. Get  insider names, shares traded, and prices. Download as clean JSON or CSV.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-03T07:21:31.154Z"
+ },
+ {
+  "handle": "accountable_eel/sec-insider-trading-alerts",
+  "title": "SEC Insider Trading Alerts: Form 4 Buys & Sells",
+  "users": 2,
+  "price": 0.005,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.002,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "insider-transaction": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider transaction returned"
+   }
+  },
+  "desc": "Get every insider buy or sell (SEC Form 4) for a list of tickers or the whole market, filtered by role (CEO and CFO insider buys), type and size (purchases over $100k), with cluster detection. Alerts to Slack, Discord or Telegram when filed. Export insider transactions to Google Sheets or n8n.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.002
+   },
+   "insider-transaction": {
+    "eventTitle": "Insider transaction returned",
+    "eventDescription": "Charged once per Form 4 insider transaction returned. Searches with no matches and monitoring runs with nothing new are never charged.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.00425
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.00325
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0025
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0025
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0025
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "insider-transaction": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.00425
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.00325
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0025
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0025
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0025
+    }
+   }
+  },
+  "startedAt": "2026-10-18T23:33:02.621Z"
+ },
+ {
+  "handle": "kdhan/sec-insider-trading-form4",
+  "title": "SEC Insider Trading (Form 4) \u2014 Official Source",
+  "users": 2,
+  "price": 0.003,
+  "label": "result-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.005,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Result item"
+   }
+  },
+  "desc": "Real insider transactions parsed from SEC Form 4 filings: who bought or sold, their role, the date, share count, price per share and resulting stake. Filter by transaction type. Official SEC endpoints only, no API key, public domain U.S. government data.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.003
+     }
+    }
+   },
+   "result-item": {
+    "eventTitle": "Result item",
+    "eventDescription": "One row returned - an insider transaction from an SEC Form 4 filing.",
+    "isOneTimeEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0026
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0022
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0022
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0022
+     }
+    },
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.003
+    }
+   },
+   "result-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0026
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0022
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0022
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0022
+    }
+   }
+  },
+  "startedAt": "2026-09-28T05:57:55.608Z"
+ },
+ {
+  "handle": "parselab/sec-insider-trading-scraper",
+  "title": "SEC Insider Trading Scraper: Form 4 Buys and Sells",
+  "users": 2,
+  "price": 0.022,
+  "label": "result-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "usd": 0.022,
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Track insider buying and selling from SEC Form 4 filings by ticker or across all companies. Get every transaction with insider role, shares, price, value, holdings change, 10b5-1 plan flag and days to file. Company summaries show net buying, unique buyers and cluster buying.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   },
+   "result-item": {
+    "eventTitle": "Result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.022
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.02017
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.01833
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0165
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0165
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0165
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "result-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.022
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.02017
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.01833
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0165
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0165
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0165
+    }
+   }
+  },
+  "startedAt": "2026-09-29T22:53:47.197Z"
+ },
+ {
+  "handle": "bosco_labs/sec-insider-trades",
+  "title": "SEC Insider Trading API (Form 4): stock transactions since 2006",
+  "users": 2,
+  "price": 0.0018,
+  "label": "transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cluster-signal,transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "transaction": {
+    "usd": 0.0018,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider transaction"
+   },
+   "cluster-signal": {
+    "usd": 0.02,
+    "primary": null,
+    "onetime": false,
+    "title": "Cluster signal"
+   }
+  },
+  "desc": "Insider trading data from SEC Form 4: every insider stock transaction (buy or sell) by directors, officers and 10% owners, from official EDGAR filings, 2006 to today. Filter by ticker, CIK, transaction code, role, value and date; adds cluster-buy and cluster-sell signals.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One Form 4 insider transaction row (purchase, sale or other code).",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.0018,
+    "isPrimaryEvent": true
+   },
+   "cluster-signal": {
+    "eventTitle": "Cluster signal",
+    "eventDescription": "One cluster-buy or cluster-sell signal: 2+ insiders trading the same company within the window.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.02
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "transaction": null,
+   "cluster-signal": null
+  },
+  "startedAt": "2026-11-05T17:08:17.641Z"
+ },
+ {
+  "handle": "lepone31/sec-edgar-insider-trading",
+  "title": "SEC EDGAR Insider Trading & Whales Tracker",
+  "users": 2,
+  "price": 0.005,
+  "label": "filing",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": null,
+    "title": "SEC Filing or Insider Trade"
+   }
+  },
+  "desc": "Live CEO, CFO & Director insider stock purchases (Form 4), breaking material 8-K filings and hedge fund whale holdings across 10,000+ US public companies (NVDA, TSLA, AAPL).",
+  "raw_events": {
+   "filing": {
+    "eventTitle": "SEC Filing or Insider Trade",
+    "eventDescription": "Charged per normalized SEC filing or Form 4 insider transaction extracted with executive details, share volume and USD value.",
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "filing": null
+  },
+  "startedAt": "2026-11-02T18:06:34.891Z"
+ },
+ {
+  "handle": "pohjastudio/sec-form4-insider-trading-scraper",
+  "title": "SEC Form 4 Insider Trading Scraper",
+  "users": 2,
+  "price": 0.005,
+  "label": "transaction-scraped",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction-scraped",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.02,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "transaction-scraped": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider transaction scraped"
+   }
+  },
+  "desc": "Scrape SEC Form 4 insider transactions with the signal separated from the noise: open-market buys and sells classified apart from grants, vesting and option exercises.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventPriceUsd": 0.02,
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event)."
+   },
+   "transaction-scraped": {
+    "eventPriceUsd": 0.005,
+    "eventTitle": "Insider transaction scraped",
+    "eventDescription": "Charged for each insider transaction delivered to the dataset.",
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "transaction-scraped": null
+  },
+  "startedAt": "2026-08-23T15:21:47.890Z"
+ },
+ {
+  "handle": "groupoject/sec-insider-trading-tracker",
+  "title": "Insider Trading Tracker - SEC Form 4 Insider Buys & Sells",
+  "users": 2,
+  "price": 0.0025,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.0025,
+    "primary": true,
+    "onetime": false,
+    "title": "Trade"
+   }
+  },
+  "desc": "Insider trading tracker for SEC Form 4 filings: every insider buy and sell from EDGAR across the market, by ticker or by insider. Price, value, holdings change, 10b5-1 plan flag, derivatives, footnotes and cluster-buy signals. Schedule it for new-trade alerts.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Trade",
+    "eventDescription": "One trade saved to the default dataset. Errors and summaries are never charged.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.0025
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0023
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0021
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0019
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0019
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0019
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.0025
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0023
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0021
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0019
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0019
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0019
+    }
+   }
+  },
+  "startedAt": "2026-10-28T18:21:23.969Z"
+ },
+ {
+  "handle": "unrivaled_fortress/sec-edgar-insider-trading-form4",
+  "title": "\u26a1 SEC Form 4 Real-Time Insider Trading Radar",
+  "users": 2,
+  "price": 0.0035,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.0001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.0035,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract official SEC EDGAR Form 4 insider trading transactions, stock purchases, sales, and option exercises for public companies in real-time. Built for quant funds & traders.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.0001
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single extracted item in default dataset.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.0035
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.00297
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.00263
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.00228
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.00228
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.00228
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.0035
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.00297
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.00263
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.00228
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.00228
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.00228
+    }
+   }
+  },
+  "startedAt": "2026-09-19T20:08:56.000Z"
+ },
+ {
+  "handle": "flyingnimbus/sec-insider-trades",
+  "title": "SEC Insider Trades (Form 4) - Buys & Sells \ud83d\udcb0$2/1k",
+  "users": 2,
+  "price": 0.002,
+  "label": "transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "transaction": {
+    "usd": 0.002,
+    "primary": null,
+    "onetime": null,
+    "title": "Insider transaction"
+   }
+  },
+  "desc": "Daily SEC Form 4 insider buys and sells parsed into clean rows: insider, role, ticker, shares, price and total value. Filter by ticker, code and size.",
+  "raw_events": {
+   "transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One Form 4 transaction row saved to the dataset. Runs with no matches are free.",
+    "eventPriceUsd": 0.002
+   }
+  },
+  "tiered": {
+   "transaction": null
+  },
+  "startedAt": "2026-10-29T21:38:05.649Z"
+ },
+ {
+  "handle": "andok/sec-insider-trades",
+  "title": "SEC Insider Trades | Form 4 Buys & Sells by Ticker",
+  "users": 2,
+  "price": 0.003,
+  "label": "transaction-extracted",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction-extracted",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.01,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "transaction-extracted": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider Transaction"
+   }
+  },
+  "desc": "Extract SEC EDGAR Form 4 insider transactions by ticker: who bought or sold, shares, price, value, role, 10b5-1 flag, cluster-buy summary. $0.003/transaction + $0.01 start.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.01
+   },
+   "transaction-extracted": {
+    "eventTitle": "Insider Transaction",
+    "eventDescription": "Charged per insider transaction row delivered to the dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "transaction-extracted": null
+  },
+  "startedAt": "2026-10-20T06:52:39.089Z"
+ },
+ {
+  "handle": "peak-app-rd/sec-insider-transactions",
+  "title": "SEC Insider Transactions (Form 4)",
+  "users": 2,
+  "price": 0.003,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "insider-transaction": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider transaction"
+   }
+  },
+  "desc": "Ticker or CIK in, every insider purchase, sale, award, exercise and gift reported on SEC Forms 4 and 5 out, one row per transaction, with owners, roles, 10b5-1 flag and footnotes.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "insider-transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One insider trade from an SEC Form 4 filing: insider, role, transaction code, shares, price and holdings after",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "insider-transaction": null
+  },
+  "startedAt": "2026-09-28T23:21:14.322Z"
+ },
+ {
+  "handle": "deanko/sec-insider-13f-scraper",
+  "title": "SEC Form 4 Insider Trading & 13F Holdings Scraper",
+  "users": 2,
+  "price": 0.002,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Track SEC Form 4 insider trading (buys, sells, options) and 13F hedge fund holdings with quarterly changes. Official EDGAR data, no API key.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.002,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-17T11:34:10.951Z"
+ },
+ {
+  "handle": "cprussin/sec-form-4-insider-trades",
+  "title": "SEC Form 4 Insider Trading Scraper: Insider Buys & Sells",
+  "users": 2,
+  "price": 0.005,
+  "label": "filing",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": null,
+    "title": "Form 4 filing"
+   },
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Every SEC Form 4 insider trade from EDGAR, as a daily feed or per ticker: insider, role and title, transaction code (purchase, sale, grant, exercise), shares, price, value, holdings after, 10b5-1 flag. Filter by code, role and size. $5 per 1,000 filings.",
+  "raw_events": {
+   "filing": {
+    "eventTitle": "Form 4 filing",
+    "eventDescription": "One SEC Form 4 insider-trading filing written to the dataset.",
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05
+   }
+  },
+  "tiered": {
+   "filing": null,
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-10-29T18:26:08.698Z"
+ },
+ {
+  "handle": "clever_firebox/sec-form4-insider-trades",
+  "title": "SEC Form 4 Insider Trading Tracker (EDGAR)",
+  "users": 2,
+  "price": 0.002,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider transaction row"
+   }
+  },
+  "desc": "Insider buys and sells from SEC Form 4 filings on EDGAR, one row per transaction: ticker, insider, role, code, shares, price, value, holdings after, 10b5-1 flag. Latest feed, date range or tickers; filters and new-only alerts.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05,
+    "isOneTimeEvent": true
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Insider transaction row",
+    "eventDescription": "One Form 4 transaction row in the default dataset.",
+    "eventPriceUsd": 0.002,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-19T21:49:13.153Z"
+ },
+ {
+  "handle": "monriah-studio/sec-form4-insider-trades",
+  "title": "SEC Form 4 Insider Trading Scraper",
+  "users": 2,
+  "price": 0.0025,
+  "label": "result",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "usd": 0.0025,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider trade result"
+   }
+  },
+  "desc": "Insider trading data from official SEC EDGAR Form 4 filings. Enter tickers or CIKs and get one row per insider buy, sell, grant or exercise: insider, role, code, shares, price, value and holdings. Change detection for daily alerts. No login, no proxy.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "result": {
+    "eventTitle": "Insider trade result",
+    "eventDescription": "One parsed Form 4 insider transaction written to the dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.0025,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "result": null
+  },
+  "startedAt": "2026-10-19T17:16:06.677Z"
+ },
+ {
+  "handle": "frankycheese/insider-trade-delta",
+  "title": "SEC Form 4 Insider Trading Watchlist",
+  "users": 2,
+  "price": 0.25,
+  "label": "insider-trade-new",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-trade-correction,insider-trade-new",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "insider-trade-new": {
+    "usd": 0.25,
+    "primary": true,
+    "onetime": false,
+    "title": "New insider trade filing"
+   },
+   "insider-trade-correction": {
+    "usd": 0.05,
+    "primary": false,
+    "onetime": false,
+    "title": "Insider trade source correction"
+   }
+  },
+  "desc": "Monitor official SEC Form 4 filings by ticker or CIK. Receive new matching filings or source corrections with trade details, exact filing links, replay suppression, and bounded event charges.",
+  "raw_events": {
+   "insider-trade-new": {
+    "eventTitle": "New insider trade filing",
+    "eventDescription": "One newly seen SEC Form 4 insider trade filing matching an explicit ticker or CIK watch term.",
+    "eventPriceUsd": 0.25,
+    "isPrimaryEvent": true,
+    "isOneTimeEvent": false
+   },
+   "insider-trade-correction": {
+    "eventTitle": "Insider trade source correction",
+    "eventDescription": "One material correction to a previously observed Form 4 filing that still matches the watchlist.",
+    "eventPriceUsd": 0.05,
+    "isPrimaryEvent": false,
+    "isOneTimeEvent": false
+   }
+  },
+  "tiered": {
+   "insider-trade-new": null,
+   "insider-trade-correction": null
+  },
+  "startedAt": "2026-10-21T18:20:22.968Z"
+ },
+ {
+  "handle": "radiant_opuntia/sec-form4-insider-alerts",
+  "title": "SEC Form 4 Insider Trading Tracker: Insider Buys & Sells API",
+  "users": 2,
+  "price": 0.003,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Daily SEC Form 4 insider trading data from official EDGAR filings: who bought or sold, ticker, shares, price, total value, role (CEO, CFO, director, 10% owner), 10b5-1 flag. Filter by ticker, buys/sells, minimum value and role. 'Only new' mode for insider buying alerts.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-23T12:12:23.063Z"
+ },
+ {
+  "handle": "b2b-quant-apis/us-sec-edgar-filings-insider-radar",
+  "title": "US SEC EDGAR Filings & Insider Trading Radar (10-K/8-K/Form 4)",
+  "users": 2,
+  "price": 0.04,
+  "label": "sec-filing-analyzed",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): sec-filing-analyzed",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "sec-filing-analyzed": {
+    "usd": 0.04,
+    "primary": null,
+    "onetime": null,
+    "title": "SEC EDGAR Filing & Governance Audited"
+   }
+  },
+  "desc": "Extracts and audits official U.S. SEC EDGAR corporate filings (10-K, 10-Q, 8-K, Form 4 Insider Trading) via data.sec.gov. Calculates governance risk scores (0-100) and generates Markdown legal/financial briefs for M&A, hedge funds, and AI RAG agents.",
+  "raw_events": {
+   "sec-filing-analyzed": {
+    "eventTitle": "SEC EDGAR Filing & Governance Audited",
+    "eventDescription": "Charged per U.S. SEC EDGAR filing (10-K, 10-Q, 8-K, Form 4) extracted, scored, and summarized.",
+    "eventPriceUsd": 0.04
+   }
+  },
+  "tiered": {
+   "sec-filing-analyzed": null
+  },
+  "startedAt": "2026-10-22T19:13:41.224Z"
+ },
+ {
+  "handle": "robinworld/sec-edgar-wsb-quant-radar",
+  "title": "SEC Form 4 Insider Trading Scraper \u2013 WallStreetBets Alpha",
+  "users": 2,
+  "price": 0.0035,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.0035,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes real-time SEC EDGAR Form 4 corporate insider purchases combined with Reddit WallStreetBets social sentiment for hedge funds and quant traders.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.0035,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-09-08T11:37:13.583Z"
+ },
+ {
+  "handle": "automation_craft/sec-form-4-insider-trading-scraper",
+  "title": "SEC Form 4 Insider Trading Scraper: Buys & Sells",
+  "users": 2,
+  "price": 0.0004,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-holding,insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.003,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "insider-transaction": {
+    "usd": 0.0004,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider transaction"
+   },
+   "insider-holding": {
+    "usd": 0.0004,
+    "primary": false,
+    "onetime": false,
+    "title": "Insider holding"
+   }
+  },
+  "desc": "Pull SEC Form 4 insider trades by ticker, CIK, insider name or the whole market, back to 2003, no login or API key: 100 rows in 19 seconds. Each row is one transaction line: code, shares, price, value, holding after, roles, footnotes, Rule 10b5-1 flag. JSON or CSV, pay per row.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.003
+   },
+   "insider-transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One line of a Form 4 or Form 5 transaction table delivered as a row: insider, roles, code, date, shares, price, value, holding after, footnotes and the Rule 10b5-1 flag. Status rows, summaries and misses are free.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.0004
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0004
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.00039
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.00038
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.00038
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.00038
+     }
+    }
+   },
+   "insider-holding": {
+    "eventTitle": "Insider holding",
+    "eventDescription": "One holding line delivered as a row: a Form 3 position, or a Form 4 or 5 holding line when holding rows are asked for. Status rows, summaries and misses are free.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.0004
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0004
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.00039
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.00038
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.00038
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.00038
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "insider-transaction": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.0004
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0004
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.00039
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.00038
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.00038
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.00038
+    }
+   },
+   "insider-holding": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.0004
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0004
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.00039
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.00038
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.00038
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.00038
+    }
+   }
+  },
+  "startedAt": "2026-11-02T07:14:19.399Z"
+ },
+ {
+  "handle": "mehdad-datalabs/sec-form-4-insider-trading-scraper-xml-parser-api",
+  "title": "SEC Form 4 Insider Trading Scraper & XML Parser API",
+  "users": 2,
+  "price": 0.005,
+  "label": "transaction-extracted",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction-extracted",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.01,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "transaction-extracted": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "Extracted Insider Transaction"
+   }
+  },
+  "desc": "Extract real-time SEC EDGAR Form 4 insider trading filings and parse raw XML into clean JSON, CSV, or Excel. Track CEO, CFO, Director & 10% Owner open-market stock purchases (P) and sales (S), exact share counts, prices, and total dollar values. Built for n8n, Make & MCP AI agents.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.01
+   },
+   "transaction-extracted": {
+    "eventTitle": "Extracted Insider Transaction",
+    "eventDescription": "Charged for each parsed insider trading transaction row extracted from SEC Form 4 XML.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "transaction-extracted": null
+  },
+  "startedAt": "2026-11-03T05:15:57.643Z"
+ },
+ {
+  "handle": "clearfeedlabs/form4-insider-trades",
+  "title": "SEC Form 4 Insider Trading Tracker & Scraper API",
+  "users": 2,
+  "price": 0.002,
+  "label": "trade",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cluster-alert,trade",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "trade": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider trade"
+   },
+   "cluster-alert": {
+    "usd": 0.01,
+    "primary": null,
+    "onetime": null,
+    "title": "Cluster-buy alert"
+   }
+  },
+  "desc": "Insider buys and sells from official SEC EDGAR Form 4 filings: one row per trade with ticker, insider role, code, shares, price, value, 10b5-1 flag, late-filing flag and cluster-buy alerts. Incremental: pay only for new trades.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05
+   },
+   "trade": {
+    "eventTitle": "Insider trade",
+    "eventDescription": "Each insider transaction row returned. In since-last-run mode, filings processed earlier with the same state key are never charged again.",
+    "eventPriceUsd": 0.002,
+    "isPrimaryEvent": true
+   },
+   "cluster-alert": {
+    "eventTitle": "Cluster-buy alert",
+    "eventDescription": "Charged per cluster alert: several distinct insiders buying the same issuer within the window.",
+    "eventPriceUsd": 0.01
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "trade": null,
+   "cluster-alert": null
+  },
+  "startedAt": "2026-11-02T00:14:54.895Z"
+ },
+ {
+  "handle": "cybermax/sec-insider-tracker",
+  "title": "Insider Trading Tracker: SEC Form 4 API \u2014 Insidewell",
+  "users": 2,
+  "price": 0.004,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cluster-signal,insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "insider-transaction": {
+    "usd": 0.004,
+    "primary": null,
+    "onetime": null,
+    "title": "Insider transaction"
+   },
+   "cluster-signal": {
+    "usd": 0.015,
+    "primary": null,
+    "onetime": null,
+    "title": "Cluster buy signal"
+   }
+  },
+  "desc": "See which insiders just bought or sold their own stock. SEC Form 4 insider trading tracker and API: open-market trades from EDGAR as clean JSON for your watchlist or the whole market, cluster-buy flags and daily new-trade alerts. Public data, not advice. $0.004 per trade.",
+  "raw_events": {
+   "insider-transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One parsed Form 4 insider buy or sell transaction returned.",
+    "eventPriceUsd": 0.004
+   },
+   "cluster-signal": {
+    "eventTitle": "Cluster buy signal",
+    "eventDescription": "Bonus charge when a transaction is flagged as part of a cluster buy (2+ insiders buying the same company within the cluster window).",
+    "eventPriceUsd": 0.015
+   }
+  },
+  "tiered": {
+   "insider-transaction": null,
+   "cluster-signal": null
+  },
+  "startedAt": "2026-09-23T06:42:53.000Z"
+ },
+ {
+  "handle": "pushbuild/sec-insider-trades",
+  "title": "SEC Form 4 Insider Trades",
+  "users": 2,
+  "price": 0.0008,
+  "label": "record",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "record": {
+    "usd": 0.0008,
+    "primary": null,
+    "onetime": null,
+    "title": "Transaction"
+   }
+  },
+  "desc": "Insider buys, sales, option exercises and grants from SEC Form 4 filings, with filing timestamps. Insider name, role, transaction code, shares, price, value and holdings after. Filter by company, code, date and minimum value.",
+  "raw_events": {
+   "record": {
+    "eventTitle": "Transaction",
+    "eventDescription": "Charged per insider transaction returned.",
+    "eventPriceUsd": 0.0008
+   }
+  },
+  "tiered": {
+   "record": null
+  },
+  "startedAt": "2026-11-02T00:45:07.411Z"
+ },
+ {
+  "handle": "edgar-tools/sec-form4-insider-buys",
+  "title": "SEC Form 4 Insider Buys & Cluster Buying Detector",
+  "users": 2,
+  "price": 0.003,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "insider-transaction": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider transaction"
+   }
+  },
+  "desc": "Track insider purchases from official SEC Form 4 filings. Filters to real open-market buys and flags cluster buying \u2014 several insiders buying at once.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "insider-transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "Charged for each insider transaction returned after your filters.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "insider-transaction": null
+  },
+  "startedAt": "2026-10-16T18:04:11.135Z"
+ },
+ {
+  "handle": "alaudinburki/insider-trading-monitor",
+  "title": "Insider Trading Monitor \u2014 SEC Form 4, Signal Only",
+  "users": 2,
+  "price": 0.003,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.0001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Open-market insider purchases and sales for a company, from free official SEC Form 4 filings. Filters out routine RSU vesting and tax-withholding noise by default, leaving only voluntary trades an insider made with their own money.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.0001
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-09-03T17:37:49.612Z"
+ },
+ {
+  "handle": "smartmoney-data/sec-insider-trades-tracker",
+  "title": "Insider Trading API - SEC Form 4 Buys & Sells",
+  "users": 2,
+  "price": 0.003,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "insider-transaction": {
+    "usd": 0.003,
+    "primary": null,
+    "onetime": null,
+    "title": "Insider transaction"
+   }
+  },
+  "desc": "Insider trading data from SEC Form 4 filings: CEO, CFO, director and 10% owner buys and sells for any ticker or the whole market, with dollar value, role, % holding change and Rule 10b5-1 plan flag. Official EDGAR data, pay per result.",
+  "raw_events": {
+   "insider-transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One insider transaction returned from a Form 4 filing.",
+    "eventPriceUsd": 0.003
+   }
+  },
+  "tiered": {
+   "insider-transaction": null
+  },
+  "startedAt": "2026-09-26T04:50:12.451Z"
+ },
+ {
+  "handle": "agent_muse/sec-insider-monitor",
+  "title": "SEC Insider Monitor \u2014 Form 4 insider trading tracker",
+  "users": 2,
+  "price": 0.003,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.02,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Track insider buying and selling at US public companies, straight from SEC EDGAR Form 4 filings. Follow any tickers \u2014 see who traded, how many shares, at what price and the total dollar value, with links to the official filing. No API key needed.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.02
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-09-25T02:02:33.000Z"
+ },
+ {
+  "handle": "se7enmethod/sec-form4-insider-trades",
+  "title": "SEC Form 4 Insider Trades by Ticker",
+  "users": 2,
+  "price": 0.002,
+  "label": "result",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "result": {
+    "usd": 0.002,
+    "primary": null,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Get insider buys, sells, grants and option exercises from official SEC Form 4 filings for any list of tickers or CIKs. Returns insider name, role, transaction code, shares, price, value and holdings after. Free official SEC EDGAR data.",
+  "raw_events": {
+   "result": {
+    "eventTitle": "Result",
+    "eventDescription": "One found record returned to the dataset",
+    "eventPriceUsd": 0.002
+   }
+  },
+  "tiered": {
+   "result": null
+  },
+  "startedAt": "2026-10-17T12:31:21.435Z"
+ },
+ {
+  "handle": "offgrid-labs/sec-edgar-filings-insider",
+  "title": "SEC EDGAR Scraper - Filings, Form 4 Insider Trades & XBRL",
+  "users": 2,
+  "price": 0.003,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing,financial-fact,insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing": {
+    "usd": 0.0005,
+    "primary": null,
+    "onetime": null,
+    "title": "Filing"
+   },
+   "insider-transaction": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider transaction"
+   },
+   "financial-fact": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": null,
+    "title": "Financial facts"
+   },
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "SEC EDGAR scraper for any US-listed company: SEC filings (10-K, 10-Q, 8-K, S-1 and more), Form 4 insider trading transactions parsed into per-trade rows with insider role, shares, price and dollar value, and XBRL key financials - official SEC APIs, no key. From $0.50 per 1,000 filings.",
+  "raw_events": {
+   "filing": {
+    "eventTitle": "Filing",
+    "eventDescription": "One SEC filing row (10-K, 10-Q, 8-K, Form 4, S-1...) saved to the dataset.",
+    "eventPriceUsd": 0.0005
+   },
+   "insider-transaction": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One parsed Form 3/4/5 insider transaction or holding row (insider, role, shares, price, value) saved to the dataset.",
+    "isPrimaryEvent": true,
+    "eventPriceUsd": 0.003
+   },
+   "financial-fact": {
+    "eventTitle": "Financial facts",
+    "eventDescription": "One XBRL key-financials row (revenue, net income, EPS, assets, cash...) per company saved to the dataset.",
+    "eventPriceUsd": 0.001
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05
+   }
+  },
+  "tiered": {
+   "filing": null,
+   "insider-transaction": null,
+   "financial-fact": null,
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-11-03T04:30:54.095Z"
+ },
+ {
+  "handle": "hereditary_model/insider-trading-signal-feed",
+  "title": "Insider Trading Signal Feed",
+  "users": 2,
+  "price": 0.02,
+  "label": "insider-transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cluster-alert,insider-transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "actor-start": {
+    "usd": 0.01,
+    "primary": null,
+    "onetime": true,
+    "title": "Run started"
+   },
+   "insider-transaction": {
+    "usd": 0.02,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider transaction returned"
+   },
+   "cluster-alert": {
+    "usd": 0.15,
+    "primary": null,
+    "onetime": null,
+    "title": "Cluster-buying alert"
+   }
+  },
+  "desc": "Pulls SEC Form 4 insider transactions for your tickers and flags cluster buying, scored for signal strength.",
+  "raw_events": {
+   "actor-start": {
+    "eventTitle": "Run started",
+    "eventDescription": "Flat fee charged once when the run starts, covering SEC lookups and setup.",
+    "eventPriceUsd": 0.01,
+    "isOneTimeEvent": true
+   },
+   "insider-transaction": {
+    "eventTitle": "Insider transaction returned",
+    "eventDescription": "Charged for each qualifying insider transaction (above your minimum value) returned in the dataset.",
+    "eventPriceUsd": 0.02,
+    "isPrimaryEvent": true
+   },
+   "cluster-alert": {
+    "eventTitle": "Cluster-buying alert",
+    "eventDescription": "Charged once per ticker when enough distinct insiders buy within the lookback window to trigger a cluster alert.",
+    "eventPriceUsd": 0.15
+   }
+  },
+  "tiered": {
+   "actor-start": null,
+   "insider-transaction": null,
+   "cluster-alert": null
+  },
+  "startedAt": "2026-08-16T19:25:44.850Z"
+ },
+ {
+  "handle": "seemuapps/sec-edgar-scraper",
+  "title": "SEC EDGAR Filings Scraper \u2014 10-K, 10-Q, 8-K, Insider Form 4",
+  "users": 2,
+  "price": 0.004,
+  "label": "filing",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "filing": {
+    "usd": 0.004,
+    "primary": true,
+    "onetime": false,
+    "title": "SEC filing"
+   }
+  },
+  "desc": "Scrape SEC filings for any US public company by ticker or CIK. 10-K annual reports, 10-Q quarterly reports, 8-K material events, Form 4 insider trades, S-1 IPO prospectuses, and more. Direct PDF/HTML links included.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "filing": {
+    "eventTitle": "SEC filing",
+    "eventDescription": "One SEC filing.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.004,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "filing": null
+  },
+  "startedAt": "2026-05-18T01:35:51.384Z"
+ },
+ {
+  "handle": "trendlab/sec-edgar-scraper",
+  "title": "SEC EDGAR Scraper",
+  "users": 2,
+  "price": 0.005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "Company processed"
+   },
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Get SEC EDGAR data for any US public company: filings, financial statements (XBRL), and insider trades. Clean, AI-ready JSON. No API key needed.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "Company processed",
+    "eventDescription": "One company fully processed (profile, filings, XBRL financials, insider transactions)",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": null,
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-07-07T08:41:52.157Z"
+ },
+ {
+  "handle": "gouda_studios/sec-edgar-filings-feed",
+  "title": "SEC EDGAR Filings Feed: 8-K, 10-K, 10-Q, Form 4, Form D, S-1",
+  "users": 2,
+  "price": 0.002,
+  "label": "filing",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": false,
+    "title": "Filing"
+   },
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Monitor SEC EDGAR filings by ticker or CIK, including 8-K, 10-Q, 10-K, Form 4 insider trades, Form D and S-1. Each result has the company, form type, filing date and document links. Only-new mode turns it into an alert feed for investors, research and AI agents.",
+  "raw_events": {
+   "filing": {
+    "eventTitle": "Filing",
+    "eventDescription": "Charged for each filing returned.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.002,
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   }
+  },
+  "tiered": {
+   "filing": null,
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-10-16T19:57:48.443Z"
+ },
+ {
+  "handle": "tudorlane/us-company-filings",
+  "title": "SEC EDGAR API: US Company Filings, Financials & Insiders",
+  "users": 2,
+  "price": 0.005,
+  "label": "lookup",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): lookup",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "lookup": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "Lookup"
+   }
+  },
+  "desc": "Official SEC EDGAR data for AI agents: company lookup by ticker/CIK/name, profile, 10-K/10-Q/8-K/S-1/13F filings with links, XBRL financials, Form 4 insider trades.",
+  "raw_events": {
+   "lookup": {
+    "eventTitle": "Lookup",
+    "eventDescription": "One SEC company result",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "lookup": null
+  },
+  "startedAt": "2026-10-21T11:53:25.614Z"
+ },
+ {
+  "handle": "recordsdata/sec-edgar-filings-scraper",
+  "title": "SEC EDGAR Filings Scraper - 10-K, 10-Q, Insider Trades",
+  "users": 2,
+  "price": 0.015,
+  "label": "filing-record",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing-record,financial-fact-record,insider-transaction-record,peer-benchmark-record,search-hit-record",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing-record": {
+    "usd": 0.015,
+    "primary": true,
+    "onetime": null,
+    "title": "Filing record"
+   },
+   "insider-transaction-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": null,
+    "title": "Insider transaction"
+   },
+   "financial-fact-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": null,
+    "title": "Financial fact"
+   },
+   "search-hit-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": null,
+    "title": "Full-text search hit"
+   },
+   "peer-benchmark-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": null,
+    "title": "Peer benchmark record"
+   }
+  },
+  "desc": "Scrape SEC EDGAR filings (10-K, 10-Q, 8-K), parsed Form 3/4/5 insider trades, XBRL financial facts, peer benchmarks and full-text search for any public company. Export to CSV, Excel, JSON. No login or API key needed. Pay per result, filing rows from $0.015 each.",
+  "raw_events": {
+   "filing-record": {
+    "eventTitle": "Filing record",
+    "eventDescription": "One SEC filing: company, form type, filing date, accession number, document URL.",
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.015
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.01425
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0135
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.01275
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.01275
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.01275
+     }
+    }
+   },
+   "insider-transaction-record": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One parsed transaction from a Form 3/4/5: reporting owner, transaction code, shares, price.",
+    "isPrimaryEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.01
+     }
+    }
+   },
+   "financial-fact-record": {
+    "eventTitle": "Financial fact",
+    "eventDescription": "One XBRL financial concept's full time series for a company (revenue, net income, assets, etc.).",
+    "isPrimaryEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.01
+     }
+    }
+   },
+   "search-hit-record": {
+    "eventTitle": "Full-text search hit",
+    "eventDescription": "One filing matching a full-text search query, across all SEC filers.",
+    "isPrimaryEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.01
+     }
+    }
+   },
+   "peer-benchmark-record": {
+    "eventTitle": "Peer benchmark record",
+    "eventDescription": "One real peer company's reported value for the same financial concept in the same fiscal year (SEC XBRL Frames API).",
+    "isPrimaryEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.01
+     }
+    }
+   }
+  },
+  "tiered": {
+   "filing-record": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.015
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.01425
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0135
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.01275
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.01275
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.01275
+    }
+   },
+   "insider-transaction-record": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.01
+    }
+   },
+   "financial-fact-record": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.01
+    }
+   },
+   "search-hit-record": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.01
+    }
+   },
+   "peer-benchmark-record": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.01
+    }
+   }
+  },
+  "startedAt": "2026-10-01T14:37:40.377Z"
+ },
+ {
+  "handle": "maged120/sec-edgar-scraper",
+  "title": "SEC EDGAR Scraper",
+  "users": 2,
+  "price": 0.015,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.015,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Get SEC EDGAR data for any US-listed company: filings (10-K, 10-Q, 8-K), insider trades from Form 4, annual financials and company profiles.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.015
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.008
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.007
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.005
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.005
+     }
+    },
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.015
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.008
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.007
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.005
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.005
+    }
+   },
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-10-03T10:55:30.674Z"
+ },
+ {
+  "handle": "chimerical_quicklime/sec-filings-monitor",
+  "title": "SEC EDGAR Filings Monitor \u2014 8-K, Form 4, 13D Alerts, No Login",
+  "users": 2,
+  "price": 0.02,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.005,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.02,
+    "primary": null,
+    "onetime": null,
+    "title": "Filing alert"
+   }
+  },
+  "desc": "Watch companies (tickers or CIKs) or full-text keywords on SEC EDGAR and get only NEW filings since the last run: 8-K items, Form 4 insider trades with shares and price, 13D/13G, 10-K/Q, S-1. Hourly schedule. No login or API key. MCP-ready. $20 per 1,000 alerts.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 0.005
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Filing alert",
+    "eventDescription": "Charged per new filing emitted",
+    "eventPriceUsd": 0.02
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-09-28T00:00:00.000Z"
+ },
+ {
+  "handle": "cheerful_term/sec-insider-trades",
+  "title": "SEC Form 4 Insider Trades",
+  "users": 2,
+  "price": 0.004,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.004,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider transaction"
+   }
+  },
+  "desc": "Insider buys and sells from SEC Form 4 filings for any ticker: insider name and role, transaction date, code (open-market purchase, sale, grant, option exercise), shares, price, dollar value, holdings after, and a link to the filing.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "One Form 4 transaction line returned",
+    "eventPriceUsd": 0.004,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-11-04T01:32:23.754Z"
+ },
+ {
+  "handle": "usta/sec-form4-insider-transactions",
+  "title": "SEC Form 4 Insider Transaction Scraper",
+  "users": 2,
+  "price": 0.01,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.01,
+    "primary": true,
+    "onetime": false,
+    "title": "Result row"
+   }
+  },
+  "desc": "Every SEC Form 4 insider stock transaction in a date window: one row per trade, with the officer/director/10%-owner's name and role, the company, the exact date, shares, price, and SEC transaction code. Parsed live from each filing's own EDGAR XML document.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "Result row",
+    "eventDescription": "One row in the results table. Nothing else is charged; there is no start fee.",
+    "eventPriceUsd": 0.01,
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-09-15T22:31:05.515Z"
+ },
+ {
+  "handle": "axery/tipranks-stock-signals",
+  "title": "TipRanks Analyst, Insider & Smart Score Scraper",
+  "users": 2,
+  "price": 0.002,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.005,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": null,
+    "title": "Scraped Stock Signal"
+   }
+  },
+  "desc": "Scrape TipRanks stock signals: Wall Street analyst consensus (Buy/Hold/Sell), average price targets, hedge fund sentiment, insider trading & 1-10 Smart Score.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventPriceUsd": 0.005,
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Scraped Stock Signal",
+    "eventPriceUsd": 0.002,
+    "eventDescription": "Charged per scraped stock ticker with complete Smart Score, consensus, price targets & insider trades",
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-14T19:52:55.928Z"
+ },
+ {
+  "handle": "skillmerc/sec-filing-alerts",
+  "title": "SEC Filing Alerts - 8-K, Form 4, 13D & 10-K Monitor",
+  "users": 2,
+  "price": 0.01,
+  "label": "alert",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): alert",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "alert": {
+    "usd": 0.01,
+    "primary": true,
+    "onetime": false,
+    "title": "Alert"
+   }
+  },
+  "desc": "Get alerted when your tickers file with the SEC: 8-K items, Form 4 insider trades, 13D/13G, 10-K, 10-Q, S-1. Runs on a schedule, sends to Slack or a webhook, $0.01 per new filing.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   },
+   "alert": {
+    "eventTitle": "Alert",
+    "eventDescription": "One change detected and written to the dataset (and pushed to your webhook or Slack if configured).",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.009
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.008
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.007
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.007
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.007
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "alert": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.009
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.008
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.007
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.007
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.007
+    }
+   }
+  },
+  "startedAt": "2026-10-12T01:49:48.800Z"
+ },
+ {
+  "handle": "fortuitous_pirate/sec-form4-insider-scraper",
+  "title": "SEC Form4 Insider Scraper \u2014 No Login, $12.5/1k",
+  "users": 2,
+  "price": 0.015625,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.015625,
+    "primary": null,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Track corporate insider buying and selling activity from SEC Form 4 filings. Search by company name or insider name to find executive stock transactions, director purchases, and officer sales. Real-time data from SEC EDGAR \u2014 no. No login or cookies. MCP-ready for AI agents. $12.5 per 1,000 records.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.015625
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-11-03T00:00:00.000Z"
+ },
+ {
+  "handle": "knobby_woodworker_aig/sec-edgar-8k-form4-13d-monitor",
+  "title": "SEC 8-K, Form 4 Insider & 13D/13G Monitor (EDGAR Official)",
+  "users": 2,
+  "price": 0.002,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": null,
+    "title": "SEC filing row"
+   }
+  },
+  "desc": "Daily feed of SEC 8-K events (decoded item codes, high-impact tags), Form 4 insider trades (open-market buys/sells in $, 10b5-1 flag, cluster buying) and 13D/13G stakes (% owned, activist flag). Ticker, SIC, exchange and filing-velocity enrichment. Only-new mode.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "SEC filing row",
+    "eventDescription": "One enriched 8-K event, Form 4 insider trade or 13D/13G stake (ticker, SIC, exchange, tags) in the default dataset.",
+    "eventPriceUsd": 0.002,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-31T14:50:58.750Z"
+ },
+ {
+  "handle": "bakos_bence/sec-form4-insider-sells",
+  "title": "SEC Form 4 Insider Large Sells",
+  "users": 2,
+  "price": 0.00249,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.01,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.00249,
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Rank recent SEC Form 4 open-market insider sells by dollar value: officer and director name, ticker, shares, price, USD value, 10b5-1 flag, and EDGAR links. Official EDGAR/EFTS. Unofficial; not affiliated with the SEC.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.003
+     }
+    }
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Result",
+    "eventDescription": "Each row saved to the default dataset.",
+    "isOneTimeEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.00249
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.002074
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.001661
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.001245
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.001245
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.001245
+     }
+    },
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.003
+    }
+   },
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.00249
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.002074
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.001661
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.001245
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.001245
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.001245
+    }
+   }
+  },
+  "startedAt": "2026-10-21T19:58:11.155Z"
+ },
+ {
+  "handle": "glaciological_huddle/form4-insider-watch",
+  "title": "Form 4 Insider Trades Watch: Buys & Sells",
+  "users": 2,
+  "price": 0.003,
+  "label": "transaction",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.005,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "transaction": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": null,
+    "title": "Insider transaction row"
+   }
+  },
+  "desc": "Daily insider buys and sells from public Form 4 filings: one flat row per transaction with insider, role, shares, price, value and 10b5-1 flag. New-only mode.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 0.005
+   },
+   "transaction": {
+    "eventTitle": "Insider transaction row",
+    "eventDescription": "One Form 4 transaction delivered to the dataset.",
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "transaction": null
+  },
+  "startedAt": "2026-10-22T05:14:16.017Z"
+ },
+ {
+  "handle": "groundplanes/sec-form4-insider-purchases",
+  "title": "SEC Form 4 Insider Trades Scraper - Purchases and Sales",
+  "users": 2,
+  "price": 0.003,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.003,
+    "primary": null,
+    "onetime": null,
+    "title": "Insider transaction"
+   }
+  },
+  "desc": "Insider purchases (default) and sales from SEC Form 4 filings on EDGAR, newest first: issuer, ticker, insider name and role, shares, VWAP price, total value, shares owned after and cluster count. Filter by code, 10b5-1 plans, value and ticker. Data only, not advice.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Insider transaction",
+    "eventDescription": "Each Form 4 insider transaction row returned",
+    "eventPriceUsd": 0.003
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-25T04:04:43.605Z"
+ },
+ {
+  "handle": "captainhandsome/sec-form-4-insider-transactions",
+  "title": "SEC Form 4 Insider Transactions - EDGAR Ownership Data",
+  "users": 2,
+  "price": 0.004,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.004,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "usd": 0.0005,
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Export structured insider ownership transactions from official SEC Form 4 and 4/A XML filings by ticker or CIK, including reporting-owner relationships, shares, prices, codes, holdings, derivatives, and source links.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0036
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0032
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0028
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0028
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0028
+     }
+    }
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "isPrimaryEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.0005
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.00045
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0004
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.00035
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.00035
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.00035
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0036
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0032
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0028
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0028
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0028
+    }
+   },
+   "apify-actor-start": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.0005
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.00045
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0004
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.00035
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.00035
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.00035
+    }
+   }
+  },
+  "startedAt": "2026-09-15T16:33:08.930Z"
+ },
+ {
+  "handle": "plotpointtech/sec-edgar-filings-insider-trades",
+  "title": "SEC EDGAR Scraper - Filings, Form 4 Insider Trades $0.50/1K",
+  "users": 2,
+  "price": 0.0005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.0005,
+    "primary": true,
+    "onetime": false,
+    "title": "Result row"
+   }
+  },
+  "desc": "SEC EDGAR data from the official SEC APIs: company filings (10-K, 10-Q, 8-K) with document links, full-text search, Form 4 insider trades with shares, price and holdings, and XBRL financials. $0.50 per 1,000 results.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Result row",
+    "eventDescription": "One filing, insider transaction, search hit or financial fact returned to your dataset.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.0005
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.000425
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.000375
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.00031
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.00031
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.00031
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.0005
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.000425
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.000375
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.00031
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.00031
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.00031
+    }
+   }
+  },
+  "startedAt": "2026-11-04T19:39:48.000Z"
+ },
+ {
+  "handle": "sheshinmcfly/sec-edgar-scraper",
+  "title": "SEC EDGAR Scraper",
+  "users": 2,
+  "price": 0.005,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Extract SEC EDGAR data with no API key: filings with links and 8-K items, Form 4 insider trades, key financials (latest or 10-year history), 13F holdings with manager details and quarter-over-quarter changes, full-text search across all filings, and cross-company XBRL frames.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Result",
+    "eventDescription": "Single result in the default dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-06-16T01:37:13.105Z"
+ },
+ {
+  "handle": "birds-nest-data/sec-edgar-filings",
+  "title": "EDGAR Filings & Insider Trades Scraper by Birds Nest Data",
+  "users": 2,
+  "price": 0.004,
+  "label": "result",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "result": {
+    "usd": 0.004,
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Pull SEC EDGAR filings (10-K, 10-Q, 8-K) and Form 4 insider trades as JSON or CSV. An easy way to use SEC EDGAR data without writing API code. Filter by ticker, CIK, form and date.",
+  "raw_events": {
+   "result": {
+    "eventTitle": "Result",
+    "eventDescription": "One SEC filing or Form 4 transaction row saved to the dataset.",
+    "eventPriceUsd": 0.004,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "result": null
+  },
+  "startedAt": "2026-10-18T06:55:59.961Z"
+ },
+ {
+  "handle": "locaihost/sec-edgar",
+  "title": "SEC EDGAR Scraper (Financials, Filings, Form 4, No API Key)",
+  "users": 2,
+  "price": 0.002,
+  "label": "record",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "record": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": false,
+    "title": "Record"
+   }
+  },
+  "desc": "Get SEC EDGAR data by ticker, CIK or company name: quarterly and annual revenue, net income, EPS, free cash flow and debt from XBRL; 10-K, 10-Q and 8-K filings with 8-K items in words; Form 4 insider trades by role. Only new filings since your last run. No API key. $2 per 1,000 records.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 5e-05
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 5e-05
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 5e-05
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 5e-05
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 5e-05
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 5e-05
+     }
+    }
+   },
+   "record": {
+    "eventTitle": "Record",
+    "eventDescription": "One fundamentals period, filing or insider trade returned to your dataset.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.002
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.002
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0015
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0011
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0011
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0011
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": {
+    "FREE": {
+     "tieredEventPriceUsd": 5e-05
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 5e-05
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 5e-05
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 5e-05
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 5e-05
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 5e-05
+    }
+   },
+   "record": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.002
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.002
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0015
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0011
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0011
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0011
+    }
+   }
+  },
+  "startedAt": "2026-10-18T07:19:22.000Z"
+ },
+ {
+  "handle": "larkmoor/sec-edgar-filings",
+  "title": "SEC EDGAR Filings Monitor (8-K, 10-K, S-1, Form D, 13F)",
+  "users": 2,
+  "price": 0.002,
+  "label": "filing",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": null,
+    "title": "Filing returned"
+   },
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "New SEC filings as they land, from the official EDGAR APIs: pick form types (8-K events, 10-K/10-Q, S-1 IPOs, Form D fundraising, 13F holdings, Form 4 insiders), a date range, full-text search and a ticker watch list.",
+  "raw_events": {
+   "filing": {
+    "eventTitle": "Filing returned",
+    "eventDescription": "Filing returned",
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.002
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0019
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0018
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0017
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0017
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0017
+     }
+    },
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   }
+  },
+  "tiered": {
+   "filing": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.002
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0019
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0018
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0017
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0017
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0017
+    }
+   },
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-10-18T03:01:24.711Z"
+ },
+ {
+  "handle": "spotless_studios/sec-edgar-filings-scraper",
+  "title": "SEC EDGAR Filings Scraper \u2014 Form D Raises, 13F Holdings, 10-",
+  "users": 2,
+  "price": 0.003,
+  "label": "item_scraped",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item_scraped",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "item_scraped": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": null,
+    "title": "SEC EDGAR Filing Extracted"
+   }
+  },
+  "desc": "Search and extract corporate filings from the official SEC EDGAR Full-Text Search API (EFTS). Monitor Form D startup venture raises, 13F-HR institutional hedge fund holdings, 10-K/10-Q reports, 8-K material events, and Form 4 insider transactions with CIK, tickers, SIC codes, and direct SEC doc",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05
+   },
+   "item_scraped": {
+    "eventTitle": "SEC EDGAR Filing Extracted",
+    "eventDescription": "Charged per SEC EDGAR filing extracted with company CIK, ticker, form metadata, location, and direct filing URLs.",
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "item_scraped": null
+  },
+  "startedAt": "2026-10-29T09:22:06.890Z"
+ },
+ {
+  "handle": "h1018y/anvil-sec-edgar-all",
+  "title": "SEC Edgar Filings Scraper: Insider Buys, Sells & 10b5-1",
+  "users": 2,
+  "price": 0.0017,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.0017,
+    "primary": null,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrapes SEC Edgar filings for Form 4 insider trades by ticker. Every row has insider, role, shares, price, dollar value, a 10b5-1 plan flag and the share of holdings traded, so you can filter real open-market buys fast.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "Result",
+    "eventDescription": "One result item written to the dataset",
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.0017
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.00153
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.00136
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.00119
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.00119
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.00119
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.0017
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.00153
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.00136
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.00119
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.00119
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.00119
+    }
+   }
+  },
+  "startedAt": "2026-11-02T12:50:35.533Z"
+ },
+ {
+  "handle": "fernandosord/sec-edgar-api",
+  "title": "SEC EDGAR API: Filings, Financials, Insider Trades",
+  "users": 2,
+  "price": 0.003,
+  "label": "company",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company,filing-text,financial-row,holding-row,insider-trade,new-filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "company": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Company"
+   },
+   "financial-row": {
+    "usd": 0.002,
+    "primary": null,
+    "onetime": false,
+    "title": "Financial row"
+   },
+   "insider-trade": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": false,
+    "title": "Insider trade"
+   },
+   "holding-row": {
+    "usd": 0.0005,
+    "primary": null,
+    "onetime": false,
+    "title": "13F holding"
+   },
+   "filing-text": {
+    "usd": 0.01,
+    "primary": null,
+    "onetime": false,
+    "title": "Filing text"
+   },
+   "new-filing": {
+    "usd": 0.003,
+    "primary": null,
+    "onetime": false,
+    "title": "New filing"
+   }
+  },
+  "desc": "Get SEC EDGAR data as clean rows: company profiles and filings, XBRL financials per fiscal year or quarter, Form 4 insider trades, 13F fund holdings, 10-K/10-Q sections as text, and alerts for new filings. Official sec.gov sources, no API key.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   },
+   "company": {
+    "eventTitle": "Company",
+    "eventDescription": "One company row: SEC profile plus its matching filings list.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   },
+   "financial-row": {
+    "eventTitle": "Financial row",
+    "eventDescription": "One fiscal-period row of standardized financials, or one raw XBRL fact row.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.002
+   },
+   "insider-trade": {
+    "eventTitle": "Insider trade",
+    "eventDescription": "One Form 4 insider transaction.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.001
+   },
+   "holding-row": {
+    "eventTitle": "13F holding",
+    "eventDescription": "One position from a 13F institutional holdings report.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.0005
+   },
+   "filing-text": {
+    "eventTitle": "Filing text",
+    "eventDescription": "One filing document or one 10-K/10-Q section converted to clean text.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01
+   },
+   "new-filing": {
+    "eventTitle": "New filing",
+    "eventDescription": "One filing that is new since the last run in watch mode. Filings already returned are free.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.003
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "company": null,
+   "financial-row": null,
+   "insider-trade": null,
+   "holding-row": null,
+   "filing-text": null,
+   "new-filing": null
+  },
+  "startedAt": "2026-10-25T23:26:12.662Z"
+ },
+ {
+  "handle": "zhucl1006/sec-edgar-filings-search-monitor",
+  "title": "SEC EDGAR Full-Text Search & Filings Monitor - 8-K, 10-K",
+  "users": 2,
+  "price": 0.002,
+  "label": "sec-filing",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): sec-filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "sec-filing": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": false,
+    "title": "Result item"
+   }
+  },
+  "desc": "Search the full text of all SEC EDGAR filings since 2001 by keyword, form type and date, and get the latest filings of any company by ticker or CIK (8-K, 10-K, 10-Q, Form 4 insider trades, S-1...). Official SEC APIs, clean JSON with document links.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "sec-filing": {
+    "eventTitle": "Result item",
+    "eventDescription": "Result item",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.002,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "sec-filing": null
+  },
+  "startedAt": "2026-10-22T02:23:21.877Z"
+ },
+ {
+  "handle": "domnicshadowuae/us-company-financials-sec",
+  "title": "US Stock Financials & SEC Filings (EDGAR) by Ticker",
+  "users": 2,
+  "price": 0.003,
+  "label": "result",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "result": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": null,
+    "title": "Result row"
+   }
+  },
+  "desc": "Reported revenue, net income, EPS, cash flow, free cash flow, debt, equity and margins for any US-listed company from official SEC 10-K/10-Q XBRL data, annual or quarterly. Or list latest EDGAR filings (10-K, 8-K, Form 4 insider trades) with links. Bulk tickers, no API key.",
+  "raw_events": {
+   "result": {
+    "eventTitle": "Result row",
+    "eventDescription": "One company period of financial statements, or one filing",
+    "eventPriceUsd": 0.003,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "result": null
+  },
+  "startedAt": "2026-10-20T12:05:16.462Z"
+ },
+ {
+  "handle": "inovaflow/sec-filings-scraper",
+  "title": "SEC Filings Scraper \u2014 EDGAR 8-K, 10-K & Earnings Feed",
+  "users": 2,
+  "price": 0.002,
+  "label": "filing",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing": {
+    "usd": 0.002,
+    "primary": true,
+    "onetime": false,
+    "title": "Filing"
+   },
+   "apify-actor-start": {
+    "usd": 0.005,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "SEC EDGAR filings as a clean, typed feed: 8-K material events with the Ex-99.1 earnings press release, 10-K / 10-Q risk factors and MD&A, S-1, Form 4 insider trades, 13D/G stakes \u2014 one row per filing, verbatim section text, optional XBRL financials, new-since-last-run delta.",
+  "raw_events": {
+   "filing": {
+    "eventTitle": "Filing",
+    "eventDescription": "One SEC EDGAR filing delivered to your dataset \u2014 typed by form and 8-K item, with the key sections extracted verbatim and optional XBRL facts. Duplicate/already-seen filings and empty runs are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.002,
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.005
+   }
+  },
+  "tiered": {
+   "filing": null,
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-10-13T14:54:01.671Z"
+ },
+ {
+  "handle": "changefeeds/sec-edgar-filing-watch",
+  "title": "SEC EDGAR Filings Monitor: New Form 4, 8-K, 10-K & 13D",
+  "users": 2,
+  "price": 0.002,
+  "label": "company-checked",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-checked,filing-returned",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "company-checked": {
+    "usd": 0.002,
+    "primary": null,
+    "onetime": null,
+    "title": "Company checked"
+   },
+   "filing-returned": {
+    "usd": 0.002,
+    "primary": null,
+    "onetime": null,
+    "title": "Filing returned"
+   }
+  },
+  "desc": "Watch tickers or CIKs on SEC EDGAR and get every filing that is new since your last run: Form 4 insider trades, 8-Ks with item codes, 10-K/10-Q, 13D/G, S-1, each with a sec.gov link. $2 per 1,000 filings plus $0.002 per company; no API key.",
+  "raw_events": {
+   "company-checked": {
+    "eventTitle": "Company checked",
+    "eventDescription": "One company fetched from EDGAR and compared with the previous run. Companies that are not found, invalid or fail to load are not charged.",
+    "eventPriceUsd": 0.002
+   },
+   "filing-returned": {
+    "eventTitle": "Filing returned",
+    "eventDescription": "One filing row written to the dataset as a change (baseline on the first run, new afterwards). Companies that did not gain filings cost only the company check.",
+    "eventPriceUsd": 0.002
+   }
+  },
+  "tiered": {
+   "company-checked": null,
+   "filing-returned": null
+  },
+  "startedAt": "2026-10-23T03:54:35.033Z"
+ },
+ {
+  "handle": "yakeddgraph/sec-edgar-filings-scraper",
+  "title": "SEC EDGAR 10-K, 10-Q & 8-K Company Filings Scraper [$1/1K]",
+  "users": 2,
+  "price": 0.001,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 1e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.001,
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract official US SEC EDGAR regulatory filings (10-K annual reports, 10-Q quarterly financials, 8-K current events, Form 4 insider trades) with direct SEC.gov document links via the official EDGAR API. Powered by YakeddGraph.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 1e-05
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Verified result item in dataset.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.001,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-11-04T17:37:50.089Z"
+ },
+ {
+  "handle": "pintostudio/sec-filings-api",
+  "title": "SEC Filings API: Insider Trades, 13F, 8-K, Form D",
+  "users": 2,
+  "price": 0.0,
+  "label": "no pricing record -- free to run",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "model": null,
+  "events": {},
+  "desc": "Standby REST API for SEC EDGAR: Form 4 insider trades, 13F holdings and quarter-over-quarter changes, 8-K events, Form D funding rounds, full-text search and XBRL financials as clean JSON. 23 endpoints. Support: Telegram @pintoflow",
+  "raw_events": {},
+  "tiered": {},
+  "startedAt": null
+ },
+ {
+  "handle": "devsolal/edgar-insider-13f",
+  "title": "SEC EDGAR Insider Trades (Form 4) & 13F Holdings",
+  "users": 2,
+  "price": 0.0036,
+  "label": "record-returned",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record-returned",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "record-returned": {
+    "usd": 0.0036,
+    "primary": null,
+    "onetime": null,
+    "title": "Record returned"
+   }
+  },
+  "desc": "",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 5e-05
+   },
+   "record-returned": {
+    "eventTitle": "Record returned",
+    "eventDescription": "One insider transaction (Form 4) or one 13F holding returned as a flat dataset row. Unknown tickers/CIKs, filings with no parseable transactions and failed upstream requests are not charged.",
+    "eventPriceUsd": 0.0036
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "record-returned": null
+  },
+  "startedAt": "2026-10-28T12:05:06.756Z"
+ },
+ {
+  "handle": "scrapercompany/sec-edgar-scraper",
+  "title": "SEC EDGAR Scraper - Filings, Financials, Insider Trades, 13F",
+  "users": 2,
+  "price": 0.003,
+  "label": "sec-lookup",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): earnings-calendar,sec-financials,sec-holdings,sec-insider-trades,sec-lookup,sec-private-placements,sec-search",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "sec-lookup": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Company or filings lookup"
+   },
+   "sec-financials": {
+    "usd": 0.004,
+    "primary": null,
+    "onetime": false,
+    "title": "Financial statements"
+   },
+   "sec-search": {
+    "usd": 0.004,
+    "primary": null,
+    "onetime": false,
+    "title": "Full-text search page"
+   },
+   "sec-insider-trades": {
+    "usd": 0.006,
+    "primary": null,
+    "onetime": false,
+    "title": "Insider trades"
+   },
+   "sec-holdings": {
+    "usd": 0.006,
+    "primary": null,
+    "onetime": false,
+    "title": "13F holdings"
+   },
+   "sec-private-placements": {
+    "usd": 0.006,
+    "primary": null,
+    "onetime": false,
+    "title": "Private placements"
+   },
+   "earnings-calendar": {
+    "usd": 0.004,
+    "primary": null,
+    "onetime": false,
+    "title": "Earnings calendar day"
+   }
+  },
+  "desc": "Scrape SEC EDGAR: company filings and profiles, financial statements (revenue, profit, cash flow, EPS), insider trades (Form 4), 13F holdings with quarterly changes, Form D private placements, full-text search and the earnings calendar. By ticker, CIK or keyword. Made by ScraperCompany.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "sec-lookup": {
+    "eventTitle": "Company or filings lookup",
+    "eventDescription": "One company search, or one company's profile and recent filings. No match is free.",
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.00285
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0027
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.00255
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.00255
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.00255
+     }
+    },
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true
+   },
+   "sec-financials": {
+    "eventTitle": "Financial statements",
+    "eventDescription": "One company's revenue, profit, cash flow and balance-sheet figures from its XBRL filings.",
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0038
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0036
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0034
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0034
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0034
+     }
+    },
+    "isOneTimeEvent": false
+   },
+   "sec-search": {
+    "eventTitle": "Full-text search page",
+    "eventDescription": "One page of EDGAR full-text search hits. No hits is free.",
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0038
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0036
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0034
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0034
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0034
+     }
+    },
+    "isOneTimeEvent": false
+   },
+   "sec-insider-trades": {
+    "eventTitle": "Insider trades",
+    "eventDescription": "One company's insider buys and sales (Form 4), read from its recent filings.",
+    "eventPriceUsd": 0.006,
+    "isOneTimeEvent": false
+   },
+   "sec-holdings": {
+    "eventTitle": "13F holdings",
+    "eventDescription": "One investment manager's 13F portfolio for a quarter, optionally compared with the quarter before.",
+    "eventPriceUsd": 0.006,
+    "isOneTimeEvent": false
+   },
+   "sec-private-placements": {
+    "eventTitle": "Private placements",
+    "eventDescription": "Form D private raises matching a keyword, industry or date range.",
+    "eventPriceUsd": 0.006,
+    "isOneTimeEvent": false
+   },
+   "earnings-calendar": {
+    "eventTitle": "Earnings calendar day",
+    "eventDescription": "Every company reporting earnings on one day, with EPS forecast and market cap.",
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.004
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0038
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0036
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0034
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0034
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0034
+     }
+    },
+    "isOneTimeEvent": false
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "sec-lookup": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.00285
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0027
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.00255
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.00255
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.00255
+    }
+   },
+   "sec-financials": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0038
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0036
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0034
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0034
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0034
+    }
+   },
+   "sec-search": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0038
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0036
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0034
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0034
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0034
+    }
+   },
+   "sec-insider-trades": null,
+   "sec-holdings": null,
+   "sec-private-placements": null,
+   "earnings-calendar": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.004
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0038
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0036
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0034
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0034
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0034
+    }
+   }
+  },
+  "startedAt": "2026-11-02T05:07:46.946Z"
+ },
+ {
+  "handle": "snappytools/sec-edgar-filings-monitor",
+  "title": "SEC EDGAR Filings & Insider Trades Monitor",
+  "users": 2,
+  "price": 0.0021,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-default-dataset-item": {
+    "usd": 0.0021,
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "This Actor monitors the official, public SEC EDGAR submissions API (data.sec.gov) for filings by the companies you choose. Provide stock tickers or CIK numbers and the Actor resolves them through the SEC public ticker file, downloads each company's recent submission history, filters by form type.",
+  "raw_events": {
+   "apify-default-dataset-item": {
+    "eventTitle": "Result",
+    "eventDescription": "Charged for each result written to the default dataset. No start fee; runs with no results cost nothing.",
+    "eventPriceUsd": 0.0021,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-10-28T13:04:52.337Z"
+ },
+ {
+  "handle": "nabeelbaghoor/stock-market-fundamentals-data-api",
+  "title": "Stock Market Data API - Prices, Fundamentals, News, Intrinio",
+  "users": 2,
+  "price": 0.005,
+  "label": "price-record",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): financial-record,news-record,price-record,profile-record,reference-record",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "price-record": {
+    "usd": 0.005,
+    "primary": true,
+    "onetime": false,
+    "title": "Price or data tag value returned"
+   },
+   "financial-record": {
+    "usd": 0.005,
+    "primary": false,
+    "onetime": false,
+    "title": "Financial statement row returned"
+   },
+   "news-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": false,
+    "title": "News article returned"
+   },
+   "reference-record": {
+    "usd": 0.005,
+    "primary": false,
+    "onetime": false,
+    "title": "Reference record returned"
+   },
+   "profile-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": false,
+    "title": "Profile, IPO or insider filing returned"
+   }
+  },
+  "desc": "Pull stock prices (end of day and realtime), standardized financial statements, fundamentals, market cap and ratio history, company profiles, news, SEC filings, IPOs and insider transactions from the Intrinio API into a dataset. Read only. Bring your own Intrinio API key.",
+  "raw_events": {
+   "price-record": {
+    "eventTitle": "Price or data tag value returned",
+    "eventDescription": "Charged once for each end-of-day price bar (open, high, low, close, volume, adjusted values, dividend and split data), realtime price, or dated value of a data tag such as market cap or a valuation ratio. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": true
+   },
+   "financial-record": {
+    "eventTitle": "Financial statement row returned",
+    "eventDescription": "Charged once for each standardized financial statement line item (data tag, value, unit, parent and period) or each fundamental (statement period with fiscal year, period and filing date). Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": false
+   },
+   "news-record": {
+    "eventTitle": "News article returned",
+    "eventDescription": "Charged once for each news article with title, summary, URL, source, publication date, companies, topics and, where the source provides it, sentiment and business relevance. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": false
+   },
+   "reference-record": {
+    "eventTitle": "Reference record returned",
+    "eventDescription": "Charged once for each company summary from the company list or search, security of a company, or SEC filing. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": false
+   },
+   "profile-record": {
+    "eventTitle": "Profile, IPO or insider filing returned",
+    "eventDescription": "Charged once for each full company profile (description, CEO, address, sector, industry, employees, CIK, LEI and data coverage dates), IPO record, or insider transaction filing with its transactions. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": false
+   }
+  },
+  "tiered": {
+   "price-record": null,
+   "financial-record": null,
+   "news-record": null,
+   "reference-record": null,
+   "profile-record": null
+  },
+  "startedAt": "2026-10-04T21:06:24.761Z"
+ },
+ {
+  "handle": "taroyamada/sec-insider-transaction-intelligence",
+  "title": "SEC Insider Transaction Scraper",
+  "users": 2,
+  "price": 0.004,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.004,
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Track SEC Form 3, 4, and 5 transactions. Open Input \u2192 leave defaults \u2192 Start (1 SEC Form 4 transaction \u2248 USD 0.004/row): https://console.apify.com/actors/w1ZPxDdumsEAYOm9Q/input From USD 4/1k.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.001
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "result",
+    "eventDescription": "Single result in the default dataset.",
+    "eventPriceUsd": 0.004,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "apify-default-dataset-item": null
+  },
+  "startedAt": "2026-05-18T00:00:00.000Z"
+ },
+ {
+  "handle": "goobertje/eu-insider-trading-scanner",
+  "title": "EU Insider Trading Scanner (AFM Directors' Dealings)",
+  "users": 2,
+  "price": 0.01,
+  "label": "transaction-scraped",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction-scraped",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "transaction-scraped": {
+    "usd": 0.01,
+    "primary": true,
+    "onetime": false,
+    "title": "Transaction scraped"
+   }
+  },
+  "desc": "Read managers' transactions (MAR Art. 19) from the Dutch AFM register, convert values to EUR, and score open-market buys with a documented 0-100 heuristic and cluster detection. Covers AFM-supervised issuers only. Not investment advice.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   },
+   "transaction-scraped": {
+    "eventTitle": "Transaction scraped",
+    "eventDescription": "One insider transaction returned",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": true
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "transaction-scraped": null
+  },
+  "startedAt": "2026-10-19T08:22:55.452Z"
+ },
+ {
+  "handle": "nabeelbaghoor/options-flow-dark-pool-api",
+  "title": "Options Flow API - Unusual Whales Flow Alerts, Dark Pool, GEX",
+  "users": 2,
+  "price": 0.01,
+  "label": "flow-alert-record",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): disclosure-record,flow-alert-record,option-contract-record,series-record,trade-record",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "flow-alert-record": {
+    "usd": 0.01,
+    "primary": true,
+    "onetime": false,
+    "title": "Options flow alert returned"
+   },
+   "option-contract-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": false,
+    "title": "Option contract returned"
+   },
+   "trade-record": {
+    "usd": 0.005,
+    "primary": false,
+    "onetime": false,
+    "title": "Option or dark pool print returned"
+   },
+   "series-record": {
+    "usd": 0.005,
+    "primary": false,
+    "onetime": false,
+    "title": "Series point returned"
+   },
+   "disclosure-record": {
+    "usd": 0.01,
+    "primary": false,
+    "onetime": false,
+    "title": "Congress or insider trade returned"
+   }
+  },
+  "desc": "Pull unusual options flow alerts, unusual options activity, the option trades tape, hottest chains, option chains with greeks, gamma exposure (GEX), IV rank, max pain, dark pool prints, market tide, congress and insider trades from the Unusual Whales API into a dataset. Bring your own API key.",
+  "raw_events": {
+   "flow-alert-record": {
+    "eventTitle": "Options flow alert returned",
+    "eventDescription": "Charged once for each flow alert with its contract, alert rule, total premium, size, trade count, volume, open interest, volume to open interest ratio, ask and bid side premium, sweep, floor and multi-leg flags, underlying price and greeks. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": true
+   },
+   "option-contract-record": {
+    "eventTitle": "Option contract returned",
+    "eventDescription": "Charged once for each option contract from unusual activity, the hottest chains screener or an option chain, with volume by side, premium, open interest, prices, implied volatility and, for chains, NBBO quotes and greeks. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": false
+   },
+   "trade-record": {
+    "eventTitle": "Option or dark pool print returned",
+    "eventDescription": "Charged once for each individual option trade or dark pool print with time, price, size, premium, NBBO and, for options, greeks, implied volatility, side volumes and tags. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": false
+   },
+   "series-record": {
+    "eventTitle": "Series point returned",
+    "eventDescription": "Charged once for each day, strike, expiry or interval of greek exposure, spot GEX, IV rank, max pain, options volume, market tide or an option contract's daily history. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.005,
+    "isPrimaryEvent": false
+   },
+   "disclosure-record": {
+    "eventTitle": "Congress or insider trade returned",
+    "eventDescription": "Charged once for each congressional trade report or SEC insider transaction with the person, ticker, transaction and filing dates, type, amount or value, and role. Requests that return nothing are never charged.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": false
+   }
+  },
+  "tiered": {
+   "flow-alert-record": null,
+   "option-contract-record": null,
+   "trade-record": null,
+   "series-record": null,
+   "disclosure-record": null
+  },
+  "startedAt": "2026-10-08T04:05:09.568Z"
+ },
+ {
+  "handle": "shelvick/sec-insider-trades",
+  "title": "SEC Insider Trades: EDGAR Form 4 Filings, Insider Transactions",
+  "users": 1,
+  "price": 0.01,
+  "label": "filing-parsed",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing-parsed",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "filing-parsed": {
+    "usd": 0.01,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider filing parsed"
+   },
+   "apify-actor-start": {
+    "usd": 5e-05,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "SEC insider trades from EDGAR Form 4 filings as JSON: insider trading data by ticker or CIK. Who traded (officer, director, 10% owner), insider buying and insider selling, grants, exercises, shares, price, value, shares held after, dates. Also Form 3 and Form 5. Parsed from public SEC data.",
+  "raw_events": {
+   "filing-parsed": {
+    "eventTitle": "Insider filing parsed",
+    "eventDescription": "Charged once per insider filing successfully fetched and parsed, after that record is pushed to the dataset. Covers ticker-to-CIK resolution, EDGAR filing-history lookup, ownership-XML retrieval, and deterministic transaction normalization. Never charged for companies that fail to resolve or filings that cannot be retrieved or parsed.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.01
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0095
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.009
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0085
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0085
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0085
+     }
+    }
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 5e-05
+   }
+  },
+  "tiered": {
+   "filing-parsed": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.01
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0095
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.009
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0085
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0085
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0085
+    }
+   },
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-06-16T22:24:58.000Z"
+ },
+ {
+  "handle": "glitchbound/sec-filings-scraper",
+  "title": "SEC Filings Scraper: EDGAR 10-K, 13F, Form 4 & Full-Text",
+  "users": 1,
+  "price": 0.003,
+  "label": "result",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "result": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Filing"
+   },
+   "apify-actor-start": {
+    "usd": 0.0013,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "SEC EDGAR scraper for company filings by ticker or CIK: 10-K filings, 10-Q, 8-K, insider trades (Form 4), Form D and 13F filings, with document URLs. Plus XBRL financials (revenue, net income, assets, EPS) and EDGAR full text search across every filing since 2001.",
+  "raw_events": {
+   "result": {
+    "eventTitle": "Filing",
+    "eventDescription": "One filing, fiscal year of financials or search hit",
+    "isOneTimeEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0024
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0019
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0015
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0012
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.001
+     }
+    },
+    "isPrimaryEvent": true
+   },
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.0013
+   }
+  },
+  "tiered": {
+   "result": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0024
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0019
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0015
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0012
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.001
+    }
+   },
+   "apify-actor-start": null
+  },
+  "startedAt": "2026-08-04T08:12:21.255Z"
+ },
+ {
+  "handle": "nexgenwatch/us-sec-form4-insider-transaction-watch",
+  "title": "SEC Form 4 Insider Transactions Scraper",
+  "users": 1,
+  "price": 0.025,
+  "label": "transaction-delta",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): source-check,transaction-delta",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.02,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "source-check": {
+    "usd": 0.1,
+    "primary": false,
+    "onetime": null,
+    "title": "Source check"
+   },
+   "transaction-delta": {
+    "usd": 0.025,
+    "primary": true,
+    "onetime": null,
+    "title": "Transaction delta"
+   }
+  },
+  "desc": "Scrape SEC Form 4 insider transactions: insider, company, transaction type, shares, price and date. Every run returns the current records as a dataset. Optional watch mode returns only what changed since your last run. Pay per result.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "eventPriceUsd": 0.02,
+    "isOneTimeEvent": true
+   },
+   "source-check": {
+    "eventTitle": "Source check",
+    "eventDescription": "Charged once per run after the source enumeration terminates, seed and genuine-zero runs included. Receipts are never billed.",
+    "isPrimaryEvent": false,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.1
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.09
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.08
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.067
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.067
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.067
+     }
+    }
+   },
+   "transaction-delta": {
+    "eventTitle": "Transaction delta",
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.025
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0225
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.02
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.017
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.017
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.017
+     }
+    },
+    "eventDescription": "Charged once per emitted change delta. Seed runs, no-change runs and snapshot runs charge nothing here."
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "source-check": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.1
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.09
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.08
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.067
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.067
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.067
+    }
+   },
+   "transaction-delta": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.025
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0225
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.02
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.017
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.017
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.017
+    }
+   }
+  },
+  "startedAt": "2026-08-26T21:28:23.358Z"
+ },
+ {
+  "handle": "yadroo/sec-form4-insider-trades",
+  "title": "SEC Form 4 Insider Trades by Ticker: Shares, Price, Holdings",
+  "users": 1,
+  "price": 0.003,
+  "label": "apify-default-dataset-item",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.001,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "usd": 0.003,
+    "primary": true,
+    "onetime": false,
+    "title": "Insider transaction row"
+   }
+  },
+  "desc": "Corporate insider buys and sells parsed out of SEC EDGAR Form 4 filings, one row per transaction: insider name and role, transaction code, date, shares, price per share, dollar value, shares held afterwards, option and RSU detail and Rule 10b5-1 flag. By ticker, issuer CIK or insider CIK.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.001
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.001
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.001
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.001
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.001
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.001
+     }
+    }
+   },
+   "apify-default-dataset-item": {
+    "eventTitle": "Insider transaction row",
+    "eventDescription": "One line of a Form 4 filing written to the dataset: a reported insider transaction - or, when holding lines are switched on, a reported position - with the issuer, the reporting owner and their role, the transaction code, share count, price, value and the links to the filing on EDGAR.",
+    "isOneTimeEvent": false,
+    "isPrimaryEvent": true,
+    "eventTieredPricingUsd": {
+     "FREE": {
+      "tieredEventPriceUsd": 0.003
+     },
+     "BRONZE": {
+      "tieredEventPriceUsd": 0.0027
+     },
+     "SILVER": {
+      "tieredEventPriceUsd": 0.0024
+     },
+     "GOLD": {
+      "tieredEventPriceUsd": 0.0021
+     },
+     "PLATINUM": {
+      "tieredEventPriceUsd": 0.0021
+     },
+     "DIAMOND": {
+      "tieredEventPriceUsd": 0.0021
+     }
+    }
+   }
+  },
+  "tiered": {
+   "apify-actor-start": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.001
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.001
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.001
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.001
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.001
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.001
+    }
+   },
+   "apify-default-dataset-item": {
+    "FREE": {
+     "tieredEventPriceUsd": 0.003
+    },
+    "BRONZE": {
+     "tieredEventPriceUsd": 0.0027
+    },
+    "SILVER": {
+     "tieredEventPriceUsd": 0.0024
+    },
+    "GOLD": {
+     "tieredEventPriceUsd": 0.0021
+    },
+    "PLATINUM": {
+     "tieredEventPriceUsd": 0.0021
+    },
+    "DIAMOND": {
+     "tieredEventPriceUsd": 0.0021
+    }
+   }
+  },
+  "startedAt": "2026-10-06T23:22:58.525Z"
+ },
+ {
+  "handle": "gazidev/sec-edgar-mcp",
+  "title": "SEC EDGAR MCP Server & API \u2013 Filings, XBRL, Insider Trades",
+  "users": 1,
+  "price": 0.01,
+  "label": "tool-call",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-tool-call,tool-call",
+  "model": "PAY_PER_EVENT",
+  "events": {
+   "apify-actor-start": {
+    "usd": 0.0005,
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tool-call": {
+    "usd": 0.01,
+    "primary": true,
+    "onetime": false,
+    "title": "Data tool call"
+   },
+   "document-tool-call": {
+    "usd": 0.02,
+    "primary": null,
+    "onetime": false,
+    "title": "Document tool call"
+   }
+  },
+  "desc": "MCP server for official SEC EDGAR data: XBRL financial statements, 10-K/10-Q/8-K filings, full-text search, section reader (risk factors, MD&A), cross-company metric screens and Form 4 insider trades. Works with Claude, Cursor, ChatGPT and any MCP client.",
+  "raw_events": {
+   "apify-actor-start": {
+    "eventTitle": "Actor Start",
+    "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+    "isOneTimeEvent": true,
+    "eventPriceUsd": 0.0005
+   },
+   "tool-call": {
+    "eventTitle": "Data tool call",
+    "eventDescription": "Successful data tool call (search, filings, financials, XBRL, screener).",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.01,
+    "isPrimaryEvent": true
+   },
+   "document-tool-call": {
+    "eventTitle": "Document tool call",
+    "eventDescription": "Successful read_filing or get_insider_transactions call.",
+    "isOneTimeEvent": false,
+    "eventPriceUsd": 0.02
+   }
+  },
+  "tiered": {
+   "apify-actor-start": null,
+   "tool-call": null,
+   "document-tool-call": null
+  },
+  "startedAt": "2026-09-27T00:22:52.755Z"
+ }
+]

@@ -1,3 +1,43 @@
+- [x] **DONE c2813 (Regular slot, 2813 % 3 == 2) -- `sec-insider-trades-scraper`'s 8th
+      `competitor_audit` (2476 -> 2813, 337c gap), the only real backlog item `audit-due --all`
+      found. Preflight: `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 74,
+      `bin/revenue` $0 booked / 27 Actors / 50 users / 801 runs30d, services + all 4 pages 200.**
+      **Checked the c2812 standing rule (compare matched-listings delta vs screened-cohort delta
+      before trusting a cut) and it was MOOT here, not a new finding:** this niche has run a
+      full-cohort rule (price every unnamed listing regardless of user count) since cycle 1336,
+      never a `>=3u` cut, so the windowing blind spot c2812 found on `fda-recall-scraper` was
+      never structurally possible on this Actor. niche-size 725 seen / 175 matched (up from
+      640/160). niche-unnamed 89 unnamed (86 NONE + 3 OWNER, one being our own listing on title
+      overlap). Own price re-verified live first: flat $0.0018/result, unchanged since cycle 810.
+      **Fixed `bin/_batch_price_sit.py`'s c2796 argv-default trap (hardcoded `/tmp` paths, no
+      override) and missing `persist_sweep` call -- the FOURTH pricer in five audits with both
+      defects (ggs c2806, ted c2810, fda c2812, sit c2813), now a 4-for-4 base rate.** Live-priced
+      all 86 NONE handles (86==86 cross-check): **79 dearer at every tier, 6 cheaper at every
+      tier/headline, 1 genuinely free** (`pintostudio/sec-filings-api`, `pricingInfos` null, no
+      scheduled future price) -- all 7 at 2 users. **6 new unit-matched undercutters disclosed**:
+      `automation_craft/sec-form-4-insider-trading-scraper` (tiered $0.0004->$0.00038, 78-79%
+      cheaper, deepest yet in this niche), `plotpointtech/sec-edgar-filings-insider-trades`
+      (tiered $0.0005->$0.00031, 72-83% cheaper -- same owner already flagged as a persistent
+      every-rung undercutter on `hacker-news-scraper` c2804), `pushbuild/sec-insider-trades`
+      (flat $0.0008, 56% cheaper), `yakeddgraph/sec-edgar-filings-scraper` (flat $0.001, 44%
+      cheaper), `mossgreen_zed/sec-insider-trading-form4` (flat $0.0015, 17% cheaper),
+      `h1018y/anvil-sec-edgar-all` (tiered $0.0017->$0.00119, 6-34% cheaper). 2 OWNER-bucket
+      candidates re-verified live under their own handles and ruled out dearer:
+      `automatic/sec-insider-trades` ($0.002/row+$0.005 start) and
+      `gochujang/insider-trading-monitor` ($0.01/filing-processed+$0.005 start).
+      **PRICING DECISION: HOLD $0.0018** -- all 6 new undercutters sit at 2 users, far under the
+      20-user re-price threshold, and the niche already discloses cheaper/free rivals from
+      earlier sweeps, so a cut would not make us cheapest either. **Also closed this Actor's 3
+      claims in the c2809 guarded-stale-claims backlog as a side effect of the same live-read**
+      (`constant_quadruped` 101->117u/17->19 new-in-30d, `constructive_calm` 66->75u, `v0iddo`
+      1->2u -- no superlative depended on the swapped numbers). Build 0.1.73 pushed (package
+      0.1.26->0.1.27), live README verified byte-identical (75,833 bytes both sides). Guards:
+      `check-price-superiority` 2590 named rivals / 982 cheaper / 0 undisclosed anywhere;
+      `check-competitor-claims --only` 0 stale on this file. Rotation recorded in
+      `state/audit_dates.json`, `audit-due --all` now reads NONE DUE fleet-wide (soonest
+      `apple-podcasts-scraper` in 3c). Spend $7.2927/$85, ~$0.008 this cycle (1 build, ~95
+      read-only API calls, no platform runs).
+
 - [x] **DONE c2812 (Regular slot, 2812 % 3 == 1) -- `fda-recall-scraper`'s 6th
       `competitor_audit` (2475 -> 2812, 337c gap), the backlog item c2811 deferred to this
       slot. Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),
@@ -188,15 +228,17 @@
       build per Actor (3 pushes, package.json patch-bumped 0.1.25->26 / 0.1.29->30 / 0.1.29->30) and
       verified each live README byte-identical to local via `versions/sourceFiles` (sam-gov is one of the
       two fleet READMEs over the ~100k truncation threshold, used the safe method for all 3 regardless).
-      **93 remain, all carrying a guard**, by file (fresh c2809 full-sweep counts):
+      **90 remain, all carrying a guard**, by file (c2809 full-sweep counts, minus the 3
+      `sec-insider-trades-scraper` closed for free by its own c2813 `competitor_audit` per the
+      lesson below -- exactly the mechanism it describes):
       `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
       `us-federal-awards-scraper` 8, `google-news-scraper` 7, `scholarship-scraper` 6,
       `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4, `fda-recall-scraper` 4,
-      `sec-insider-trades-scraper` 3, `website-screenshot-scraper` 1, `hacker-news-scraper` 1 (new drift
+      `website-screenshot-scraper` 1, `hacker-news-scraper` 1 (new drift
       since c2804 closed it fully -- confirms claims keep going stale between audits, not just a one-time
       backlog). (`court-records-scraper`, `ats-jobs-scraper`, `app-store-reviews-scraper`,
       `apple-podcasts-scraper`, `shopify-products-scraper`, `sam-gov-opportunities-scraper`,
-      `fec-campaign-finance-scraper` now fully clean.) **Next up, smallest first:**
+      `fec-campaign-finance-scraper`, `sec-insider-trades-scraper` now fully clean.) **Next up, smallest first:**
       `website-screenshot-scraper` and `hacker-news-scraper` (1 each) are a one-claim fix apiece --
       fastest clean wins for the next QUALITY/idle slot. Each needs a human read of the paragraph, not a
       blind swap -- follow the `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py` pattern (per-Actor
@@ -648,6 +690,13 @@
          this item).
       5. **Do NOT quote a target cycle number for the next trim.** Re-run `bin/check-doc-size`
          and trust its verdict.
+      **c2813 flag (Regular slot, did not act per rule 2):** `check-doc-size` run off-cycle this
+      slot (not actually due) found `notes/LEARNINGS.md` now reads **TRIM DUE** (7553/8000
+      lines, proj. 8033 at next look -- the first of the three docs to cross from SOON to DUE),
+      while `state/STATUS.md` is OK (42.8KB/605L) and `tasks/queue.md` is TRIM SOON (90.9KB/1058L,
+      proj. 218KB). Next QUALITY slot should prioritize `bin/_trim2550.py`'s pattern (oldest
+      contiguous chronological body, never the newest-first highlights block) on LEARNINGS.md
+      first, since DUE outranks SOON.
       **Method:** copy `bin/_trim2588q.py` (queue.md, hoist-then-cut, newest one-shot and the one
       to clone) / `bin/_trim2574.py` (STATUS.md, stock keep-newest-5 block cut, same pattern as
       `bin/_trim2532.py`) / `bin/_trim2550.py` (LEARNINGS.md, oldest-contiguous-body

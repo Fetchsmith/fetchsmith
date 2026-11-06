@@ -244,7 +244,7 @@ says so explicitly when the filters removed everything.
 
 Among listings that specialize in parsed insider-trading output, `ryanclinton` (58 users, `ryanclinton/sec-insider-trading`) remains the biggest, charging $0.002 per trade plus a small Actor-start fee — we're ~10% cheaper per row with no start fee at all. Their listing markets "behavioural insider-trading signal classification" (cluster-buy/regime-shift detection) over a 140+ field output schema; the extra fields we sampled at launch (cycle 810) read as speculative/AI-generated Store-listing padding (`signalGenome`, `manipulationResistance`, `institutionalNarrative`) rather than values a buyer could actually trust, so we did not copy them. This Actor instead differentiates on data fidelity: all 20 SEC transaction codes decoded (not just the common ones), a signed pre-computed USD value, the 10b5-1 plan flag normalized across its four real on-the-wire spellings (measured across 210 filings — see Related guides), and `sinceDate` that follows EDGAR's older paginated filing index instead of stopping at the ~12-month inlined window every other Actor in this niche appears to read from. Re-verified against their live pricing and stats 2026-10-03 — still 52 users at $0.002 per trade plus a $0.00005 Actor-start fee, unchanged since cycle 810's original audit.
 
-**By raw user count, several generic multi-filing-type EDGAR scrapers are now bigger than any insider-trading specialist, including `ryanclinton`** — a 97-match, 7-term Store sweep, checked live 2026-10-03 (promoted into `bin/niche-size`'s `TERM_VARIANTS` this cycle; the single-term auto-sweep had returned only 15), surfaced them. `constant_quadruped/sec-edgar-filings-scraper` (101 users, 17 new in the last 30 days — the fastest-growing listing in this entire comparison) is on Apify's **FREE pricing model ($0/row)** and lists "insider trades" among 100+ fields across 10-K/10-Q/8-K/Form 4 filings; `constructive_calm/sec-edgar-scraper` (66 users as of 2026-10-25) charges $0.0004 per **filing** fetched (10-K, 8-K, Form 4, 13F, etc. all the same price) plus a $0.01 start fee. Neither beats us on an apples-to-apples basis: both charge **per filing fetched, not per transaction parsed** — exactly the baseline this README's first "Why this one" bullet already describes, now named and priced. Stated as a **break-even ratio** rather than a single converted figure (re-verified live 2026-10-07: $0.0004 flat on its primary `filing-fetched` event, no tiers, 0 drift), `constructive_calm`'s $0.0004/filing beats our $0.0018/transaction once a filing carries more than **0.22** transactions — a break-even *below* 1.0, so on the per-row rate alone it is cheaper per transaction-equivalent at any filing density, not just for multi-transaction filers like Apple. Its **$0.01 Actor-start fee** is the real offset: a run costs $0.01 + $0.0004/filing against our $0.0018/transaction with no start fee, so for a single-transaction issuer we are cheaper on any run returning fewer than **~8** rows, and it only pulls ahead on larger batches. Neither decodes transaction codes, signs the USD value, or normalizes the 10b5-1 flag, and a buyer still has to parse the raw filing index or XML themselves to get a trade out of it. `constant_quadruped`'s $0 is unbeatable on sticker price regardless. Two more of the same class, dearer than us either way: `benthepythondev/sec-edgar-filings-intelligence` (20 users, $0.029 FREE → $0.0203 Diamond per filing row plus AI scoring) and `crawlerbros/sec-edgar-scraper` ($0.005 start + $0.002 FREE → $0.001 Diamond per filing row — a *different* listing from the already-named `crawlerbros/open-insider-scraper` below).
+**By raw user count, several generic multi-filing-type EDGAR scrapers are now bigger than any insider-trading specialist, including `ryanclinton`** — a 97-match, 7-term Store sweep, checked live 2026-10-03 (promoted into `bin/niche-size`'s `TERM_VARIANTS` this cycle; the single-term auto-sweep had returned only 15), surfaced them. `constant_quadruped/sec-edgar-filings-scraper` (117 users, 19 new in the last 30 days — the fastest-growing listing in this entire comparison) is on Apify's **FREE pricing model ($0/row)** and lists "insider trades" among 100+ fields across 10-K/10-Q/8-K/Form 4 filings; `constructive_calm/sec-edgar-scraper` (75 users as of 2026-11-06) charges $0.0004 per **filing** fetched (10-K, 8-K, Form 4, 13F, etc. all the same price) plus a $0.01 start fee. Neither beats us on an apples-to-apples basis: both charge **per filing fetched, not per transaction parsed** — exactly the baseline this README's first "Why this one" bullet already describes, now named and priced. Stated as a **break-even ratio** rather than a single converted figure (re-verified live 2026-10-07: $0.0004 flat on its primary `filing-fetched` event, no tiers, 0 drift), `constructive_calm`'s $0.0004/filing beats our $0.0018/transaction once a filing carries more than **0.22** transactions — a break-even *below* 1.0, so on the per-row rate alone it is cheaper per transaction-equivalent at any filing density, not just for multi-transaction filers like Apple. Its **$0.01 Actor-start fee** is the real offset: a run costs $0.01 + $0.0004/filing against our $0.0018/transaction with no start fee, so for a single-transaction issuer we are cheaper on any run returning fewer than **~8** rows, and it only pulls ahead on larger batches. Neither decodes transaction codes, signs the USD value, or normalizes the 10b5-1 flag, and a buyer still has to parse the raw filing index or XML themselves to get a trade out of it. `constant_quadruped`'s $0 is unbeatable on sticker price regardless. Two more of the same class, dearer than us either way: `benthepythondev/sec-edgar-filings-intelligence` (20 users, $0.029 FREE → $0.0203 Diamond per filing row plus AI scoring) and `crawlerbros/sec-edgar-scraper` ($0.005 start + $0.002 FREE → $0.001 Diamond per filing row — a *different* listing from the already-named `crawlerbros/open-insider-scraper` below).
 
 Against the Form 4 niche's **established, non-tiered** specialists this is still the cheapest per-row listing by a wide margin, re-checked live 2026-10-02 against each rival's current pricing record with no drift from the previous audit (for the tiered and parity-priced specialists that do match or beat it, see the two paragraphs below): `scrapemint/sec-form4-insider-tracker` charges $0.025 per filing row, `scrapers_lat/sec-form4-insider-trades-scraper` $0.012 down to $0.0102 on the higher plans, and `parseforge/sec-form4-scraper` $0.04999 down to $0.03749 plus a $0.005 start fee — 6x to 28x this Actor's $0.0018. The honest comparison is on filters rather than price: `scrapemint` is the one competitor with a comparable, non-speculative feature list, and the code / minimum-value / role filters above exist because it had them and this Actor did not.
 
@@ -374,7 +374,7 @@ match of our own output, naming role, date, shares, price, value, shares-held-af
 and the filing link, with transaction-code/date/value filters; the start fee is the whole offset, so
 stated as a break-even: a run costs $0.001 + $0.001N against our $0.0018N, which means **we are
 cheaper only on runs returning a single row** and it pulls ahead from row 2 onward); and
-`v0iddo/sec-form4-insider-trades` (1 user, tiered per `transaction_extracted` — $0.0017 FREE,
+`v0iddo/sec-form4-insider-trades` (2 users, tiered per `transaction_extracted` — $0.0017 FREE,
 $0.00153 BRONZE, $0.00136 SILVER, $0.00119 GOLD/PLATINUM/DIAMOND — **cheaper than us at every single
 tier**, from 6% at FREE to 34% at Gold and above, on a one-row-per-transaction output with insider,
 role, code, shares, price, value and the filing XML link).
@@ -422,6 +422,54 @@ each was re-priced live under its own handle rather than assumed covered by the 
 `texxupport/public-records-mcp-server` ($0.01/`tool-call`) and `nexgendata/france-amf-insider-trades`
 ($0.1/`declaration-record` — France's AMF, a different regulator). All sit **5.5x to 55x dearer** than
 our rate, so none is a price exposure under any reading of its scope.
+
+**Eighth full-cohort resweep (86 unnamed listings, checked live 2026-11-06 — the niche has grown to
+725 seen / 175 matched, up from 640/160 at the last full sweep).** Our own price was re-verified
+against the live platform record first: still flat **$0.0018/`result`, no start fee, no tier
+ladder**, unchanged since cycle 810. All 86 were live-priced event-by-event via the (now
+argv-driven) `bin/_batch_price_sit.py` per the standing full-cohort rule, cohort size cross-checked
+against `niche-unnamed`'s own count before trusting the run (86 == 86): **79 dearer at every tier,
+6 cheaper at every tier/headline price, 1 genuinely free.** Every one of the 7 sits at 2 users —
+the niche's growth since the last sweep is still almost entirely at the floor, same as every prior
+sweep. Two further candidates matched on an already-named owner's handle (`automatic/sec-insider-trades`,
+$0.002/row + $0.005 start — 11% dearer; `gochujang/insider-trading-monitor`, $0.01/`filing-processed`
++ $0.005 start — dearer at any plausible rows-per-filing density) were re-verified live under their
+own handles rather than assumed covered; both rule out on price. **HOLD $0.0018** — all 6
+new undercutters sit at 2 users, far under this fleet's 20-user re-price threshold, and the
+niche already discloses cheaper/free rivals from earlier sweeps (`apivault_labs`, `one_dollar_store`,
+`v0iddo`), so a cut would not make us the cheapest listing either.
+
+**Six genuine new unit-matched (per-transaction) undercutters, the deepest yet found in this
+niche:** `automation_craft/sec-form-4-insider-trading-scraper` (2 users, **tiered $0.0004 FREE →
+$0.00038 DIAMOND** on an event literally titled "Insider transaction" — **78%-79% cheaper than us
+at every tier** — plus a $0.003 Actor-start fee that only offsets the gap for the first ~2 rows of
+a run; it ships both transaction and holding rows as separate $0.0004 events, back to 2003, by
+ticker/CIK/insider); `plotpointtech/sec-edgar-filings-insider-trades` (2 users, tiered **$0.0005
+FREE → $0.00031 DIAMOND** on its one per-row event, "Result row" — **72%-83% cheaper at every
+tier** — plus a negligible $0.00005 start fee; the same owner handle this fleet has already flagged
+as a persistent every-rung undercutter on `hacker-news-scraper`, c2804, repeating the pattern here);
+`pushbuild/sec-insider-trades` (2 users, flat **$0.0008** on an event titled "Transaction", no start
+fee — **56% cheaper**, one row per transaction: insider, role, code, shares, price, value, holdings);
+`yakeddgraph/sec-edgar-filings-scraper` (2 users, flat **$0.001** per result row, a $0.00001 start
+fee — **44% cheaper**, though its own title/description centers on 10-K/10-Q/8-K filings with Form 4
+insider trades as one of several outputs, so the per-row unit may not always be a transaction);
+`mossgreen_zed/sec-insider-trading-form4` (2 users, flat **$0.0015** on its primary "Insider
+transaction" event, no start fee — **17% cheaper**, by ticker/CIK/market-wide by date, one row per
+trade with role, buy/sell, shares, price, value and holdings-after); `h1018y/anvil-sec-edgar-all`
+(2 users, tiered **$0.0017 FREE → $0.00119 DIAMOND** on its one "Result" event, no start fee —
+**6%-34% cheaper**, narrowest at the FREE tier but real at every rung — by ticker, with a 10b5-1
+plan flag and holdings-share-traded field).
+
+**One is genuinely free to run, confirmed live with no scheduled future price:**
+`pintostudio/sec-filings-api` (2 users) has **no pricing record on the live Actor at all**
+(`pricingInfos` is `null`, direct API read, and no entry with a future `startedAt` exists either) —
+a real unmonetized standby API covering Form 4 insider trades, 13F holdings, 8-K events and Form D
+funding rounds across 23 endpoints, the same free-model shape `constant_quadruped` and
+`trusted_tech_spot` already represent in this niche.
+
+The remaining 79 of the 86 are dearer at every tier or out of scope (generic multi-source finance/
+EDGAR wrappers, non-comparable bundled units, or a different regulator) — the same ruling every
+prior sweep has given this shape.
 
 ## Notes on the source
 
