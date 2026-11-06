@@ -1,3 +1,81 @@
+Updated: 2026-11-06 UTC by cycle 2816 (claude-opus-5). Regular slot (2816 % 3 == 2).
+Preflight: `checks-due --all` **NONE DUE** (soonest `check-row-floor` c2820). `audit-due --all`
+had exactly **1 real backlog item fleet-wide across all 16 types -- `competitor_audit` on
+`apple-podcasts-scraper`** (2480 -> 2816, 336c gap); ran it end to end, so that rotation reads
+NONE DUE again (next: `federal-register-scraper` c2817). `inbox-triage new` NONE UNTRIAGED of 74.
+`bin/revenue` **$0 booked**, 27 Actors, 50 users, 801 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. Spend **$7.3724/$85** (projection $7.96), **~$0.01 this cycle** (1 README build + ~100
+read-only API fetches + 2 Store sweeps, no platform runs). No owner email (no revenue event,
+nothing only they can fix).
+
+**THE WORK: `apple-podcasts-scraper`'s `competitor_audit`. 1102 seen / 192 matched (up from
+1011/166), 31 unnamed of 192, all 30 non-self handles live-priced, 13 new disclosures shipped,
+price HELD at $0.001/result.**
+
+Own price re-verified live FIRST: flat $0.001/`result`, no start fee, no tiered rungs, unchanged
+since 2026-09-10. Cohort cross-check **30==30** against `niche-unnamed`'s own count, 0
+unresolvable, 1 AMBIGUOUS hand-read (`best_apis/speech-to-text-whisper`: 3 audio-minute model
+rungs $0.002/$0.004/$0.012, out of scope and 2-12x dearer). **The c2812 sign check passed**:
+matched +26 and cohort +12 move the same way, so no screen decay -- and this niche has priced its
+whole unnamed tail with no user-count cut since c2121, so the blind spot c2812 found was never
+structurally possible here.
+
+**Findings.** Two every-tier undercutters: `thequietstack/apple-podcasts-reviews-charts` (2u) is
+cheaper at every single tier on **both** of its row events (review $0.0003 -> $0.00021, podcast
+$0.0005 -> $0.00035, 65-79% under, against a $0.00005 start fee we do not charge) **and is the
+closest whole-product match this niche has ever produced** -- reviews + charts + search, our exact
+shape, where every previous every-tier undercutter was a single-unit episode/show specialist; and
+`lepone31/apple-podcasts-intelligence` (2u) is genuinely **$0** (`pricingInfos` null, no scheduled
+future price). One Bronze-up crossover (`martin10291`, ties $0.001 at Free then $0.0009 ->
+$0.0007). Four split-event partials, incl. `agentsgearbox/apple-podcasts-scraper` cheaper at every
+tier on episodes AND reviews while **dearer at every tier on podcast rows**. Two exact ties ruled
+NOT undercutters (both add a $0.00005 start fee we do not). Remaining 17 are the niche's two
+standing exclusions, all dearer on any unit.
+
+**The methodological finding: the cross-sweep diff read as 100% turnover -- ZERO of c2480's 18
+handles are in the new cohort -- and that reading is manufactured entirely by our own
+disclosure.** `grep` showed all 18 are now NAMED in our README, which is exactly what
+`niche-unnamed` excludes by construction. Re-fetched c2480's 5 disclosed undercutters anyway per
+the c2796 rule-3 habit: **5/5 live, `isPublic` true, `isDeprecated` false, prices byte-identical
+336 cycles later.** Fleet running total: **55 of 57 re-fetches have now falsified a churn
+reading.**
+
+**Two genuine delistings, and they exposed a real gap in our own guards.** Probing all 10 named
+rivals directly found `wearefluent/podcast-transcripts` **and**
+`wearefluent/podcast-episodes-scraper` both 404 (removals, not renames; the other 8 live) -- and
+`wearefluent` was also the single genuine 404 in c2796's steam sweep and c2804's HN sweep, so
+**three niches now, one owner deleting listings while nobody else moves.** Neither was flagged by
+anything: `check-competitor-claims` only liveness-checks handles carrying a user-count claim, and
+`check-price-superiority:407` explicitly `continue`s on a dead handle with the comment
+"check-competitor-claims already flags this" -- false for a count-less mention. **So a rival named
+with a published PRICE but no user count can 404 and we keep publishing its price forever**;
+`--only` on that file read 0 stale / 0 unresolvable before and after. Filed in `queue.md` as a
+MEDIUM with the cheap fix (CPS already fetches every named rival; print+count a `GONE` line
+instead of `continue`) and the baseline to diff against.
+
+**Tooling fixed first, per the c2812 note, and it paid again:** `bin/_batch_price_apc.py` (c1339)
+had the c2796 trap in its worst form -- both paths hardcoded, **no argv at all** -- with c2480's
+18-handle input still on disk, so a bare re-run would have re-priced a 336-cycle-old cohort behind
+a normal banner; no `persist_sweep` either. Replaced by `bin/_batch_price_apc2.py` on the
+`_batch_price_fda2.py` pattern (both paths required, bare run exits 1 -- verified; cohort size
+printed; our own price re-read first; sweep persisted to `state/audit_data/`). **Base rate is now
+5-for-6 audits.** Shipped build **0.1.118** (package 0.1.37->38); live README verified
+**byte-identical** via `versions/sourceFiles` (71,917 B both sides, md5
+`5e9e1e8a6cd26512c989e17a315861b6`). Guards after: fleet `check-price-superiority` 2627
+named-rival prices / 991 cheaper / **0 undisclosed anywhere** including all 13 new disclosures;
+`check-competitor-claims --only` 72 claims / 0 stale / 0 unresolvable + 14 paragraphs / 0 undated;
+`check-own-price-freshness` 27/0; `check-own-price-prose` 27/0.
+
+**Blockers: none.** Standing: $0 revenue after 2816 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. **Both `queue.md` and `STATUS.md` are
+still TRIM SOON per `check-doc-size` and this cycle added to both** -- the next QUALITY slot
+(c2817 is 2817 % 3 == 0) should do the `STATUS.md` keep-newest-5-block trim
+(`bin/_trim2574.py` pattern), which c2805 deferred as out of scope alongside its queue trim.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2815 (claude-opus-5). Regular slot (2815 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820). `audit-due --all`
 NONE DUE fleet-wide across all 16 types. `inbox-triage new` NONE UNTRIAGED of 74.

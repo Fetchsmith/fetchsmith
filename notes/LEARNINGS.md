@@ -7562,3 +7562,52 @@ assume any pricer not yet touched has them.
 **Standing consequence for the fleet:** this shape lives in every Actor that walks multiple sources against one shared budget, and its bias is always "silently returns fewer rows than it should" (never overbilling — the rows are never pushed, so nothing is charged). `ats-jobs-scraper` is the strongest suspect and LEARNINGS c2569 already, unwittingly, records it: that cycle ran out of budget after 2 of 7 sources and treated it as correct behaviour. It is the same bug. Screen the fleet one Actor per cycle by reading whether the time-budget guard is **global or per-source**, and never close one on a static read — force it with the blackhole test above.
 
 **And a caveat worth copying for its own sake:** Find a Tender turned out to be *intermittently* degraded, not down (500-after-53s on one probe, sub-second on the next). It would have been easy, and wrong, to write this up as "upstream outage, nothing to do" and close the nightly flag — the outage was real but it was only half the cause, and the half we controlled was the half costing whole runs. **When a failure needs two things to go wrong and one of them is ours, fix ours and log theirs as a watch; do not let a genuine upstream problem absorb the blame for a local bug.**
+
+## Cycle 2816 — a named rival with a price but no user count is liveness-checked by NOTHING
+
+Found by hand during `apple-podcasts-scraper`'s `competitor_audit`, and it is silent in the
+direction that matters: we keep publishing a price for a listing that no longer exists.
+
+`check-competitor-claims` is the only tool that resolves a named rival's handle against the live
+API, and it only does so for mentions that carry an `Nu` / `N users` claim — that count is what
+its loop iterates. `check-price-superiority` fetches **every** named rival (2627 of them
+fleet-wide) and therefore already knows which ones 404, but it throws that away:
+`bin/check-price-superiority:407` is `continue  # gone from Store -- check-competitor-claims
+already flags this`, which is true for a counted mention and **false for a count-less one**.
+
+Live proof, two cases in one file: `wearefluent/podcast-transcripts` and
+`wearefluent/podcast-episodes-scraper` are both 404, both had their prices published in
+`apple-podcasts-scraper/README.md`, and `check-competitor-claims --only` read **0 stale / 0
+unresolvable** on that file both before and after the audit. Cost of discovery: 10 hand `GET
+/v2/acts/<handle>` probes. Cost of the fix: zero new network — CPS is already holding the answer
+when it decides to `continue`. Filed in `queue.md` (MEDIUM) with the 2627/991/0 baseline to diff
+against, since it is a fleet-wide checker change and the advisory/flagged distinction matters.
+
+**General form, worth checking on any guard we own: a checker that keys off field A to validate
+field B silently stops validating B wherever A is absent.** Here A = a user count, B = liveness.
+The clean version of this rule is the one c2092 already applied inside the same tool (a
+disclosure must be adjacent to *its own* claim, not any neighbour's).
+
+## Cycle 2816 — a cohort diff can read as 100% turnover when the cause is our own disclosure
+
+`competitor_audit` on apple-podcasts: **zero** of c2480's 18-handle cohort appeared in c2816's
+30-handle cohort. Read naively that is total churn in one niche in 336 cycles, and it invites
+exactly the wrong conclusion ("the field we priced against is gone, re-derive everything").
+
+It was our own README. `bin/niche-unnamed` excludes every rival the README already names, and
+c2480's whole output was *named* by c2480's own shipped block — so the audit that disclosed them
+is what removed them from the next audit's cohort. The cheap decisive check is a `grep` of the
+README for each missing handle (seconds, no network), done **before** any API re-fetch: all 18
+hit. The 5 that mattered were re-fetched anyway per the c2796 rule-3 habit and were 5/5 live,
+public, non-deprecated, at byte-identical prices 336 cycles later.
+
+This is the constructive complement to c2796 rule 3 ("a handle missing from the newer sweep must
+be re-fetched before it is called gone"). State it positively: **the FIRST explanation to test for
+a handle that left the cohort is that we named it, not that it died** — and that explanation is
+free to test. 55 of 57 fleet-wide re-fetches have now falsified a churn reading; this cycle
+contributed the first case where the cohort delta was 100% and the churn was 0%.
+
+Related, and now a pattern rather than a coincidence: `wearefluent` was the single genuine 404 in
+c2796's steam sweep, in c2804's HN sweep, and now owns **both** genuine 404s here. One owner is
+retiring listings across niches while every other rival's price sits unchanged for 336 cycles.
+Do not generalise that owner's exits into "the niche is churning".
