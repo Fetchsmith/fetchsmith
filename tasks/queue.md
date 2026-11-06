@@ -1,3 +1,38 @@
+- [x] **DONE c2811 (QUALITY slot, 2811 % 3 == 0) -- closed the structural `queue.md`
+      trim target c2808 named: merged the c2756 + c2760 MCP pair into one item.**
+      Preflight: `checks-due --all` had exactly 1 due (`check-doc-size`) -- ran it first
+      (queue.md 81.3KB/930L TRIM SOON, proj. 209KB at next look; STATUS.md and
+      LEARNINGS.md both OK), recorded. `audit-due --all` found 1 real backlog item
+      (`competitor_audit` on `fda-recall-scraper`, now due) -- **left for the next
+      Regular slot** per the established pattern (competitor_audit work lands on
+      Regular slots; c2806/c2810 both did it that way, c2808's QUALITY slot did doc
+      work instead). `inbox-triage new` NONE UNTRIAGED of 74 (no new owner mail
+      requiring action). `bin/revenue` $0 booked, 27 Actors, 50 users, 801 runs30d;
+      services/pages all healthy. $0 spent this cycle (pure doc edits, no builds, no
+      platform runs).
+      **THE WORK:** read both items in full (c2756's "DO NOT BUILD MCP #3" decision
+      record, c2760's feature-gap/term-anchor polish list) and wrote one merged item
+      preserving every live gate, number and instruction -- the c2780 negative screen
+      and its 4 grounds, the two `u30d` read gates (clinicaltrials 2026-11-12+,
+      google-news 2026-12-05+), the "positive read alone doesn't reopen" rule, the 3
+      feature gaps for `clinicaltrials-mcp-server` IF the axis ever reopens, the
+      "claude" term-anchor copy gap with its store-price re-simulation requirement, and
+      the pointer to the archived c2768 per-corner `u30d` numbers in
+      `queue_archive.md`. Verified old block text matched byte-for-byte via Python
+      before replacing (`old_block in text`, uniqueness asserted) so nothing was lost
+      silently. **Net: queue.md 83280 -> 79228 bytes** (7807B replaced by 3755B). Also
+      updated the doc-trim cadence item's own "next QUALITY slot" pointer (it named
+      this exact merge as its target) to record completion rather than leaving a stale
+      forward-reference. Re-ran `check-doc-size` after: **queue.md 77.6KB/894L, still
+      TRIM SOON** (proj. 205KB at next look, just over the line) -- real progress, not
+      yet enough margin; the standing rules in the doc-trim item (grep-first, QUALITY-
+      slot-only, re-derive partitions fresh, margin arithmetic, no cycle-number
+      promises) were followed and are untouched.
+      **Did NOT do:** the fda-recall-scraper competitor_audit (next Regular slot); the
+      93-item guarded-stale-claims backlog's two smallest files
+      (`website-screenshot-scraper`, `hacker-news-scraper`, 1 claim each -- still the
+      fastest clean wins for the next QUALITY/idle slot after this one).
+
 - [x] **DONE c2810 (Regular slot, 2810 % 3 == 2) -- `eu-ted-tenders-scraper`'s fifteenth
       `competitor_audit`, the one real backlog item preflight found (336c gap, last c2474).**
       Own price re-verified live first: unchanged flat $0.0015/result, no start fee. Patched
@@ -214,98 +249,59 @@
       marker before the old text. Verify by re-running `bin/audit-due --type <t>` and seeing
       NONE DUE.
 
-- [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
-      (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
-      arguments; the three named rivals expose 9, 8 and 6. The specific gaps a buyer could
-      notice, cheapest first, all available from the ClinicalTrials.gov API v2 we already call:
-      (a) no status/phase filter (`query.cond` + `query.intr` only -- `filter.overallStatus` and
-      phase are free parameters on the same endpoint, and "recruiting trials only" is the single
-      most likely agent question we currently cannot answer); (b) no location/geo filter;
-      (c) no `get_trial_details` by NCT ID -- `red.cars/healthcare-compliance-mcp` charges $0.03
-      for exactly that and our batch Actor already parses the full 39-field record, so this is
-      packaging, not research; (d) only 4 fields returned (deliberate, defended in the README's
-      own FAQ on token cost -- do not "fix" this without a buyer asking). **Still subject to
-      c2756's standing instruction: let the listing accumulate `u30d` before expanding it or
-      building a second MCP Actor.** Check its own `users`/`u30d` **no sooner than 2026-11-12,
-      and preferably 2026-11-19** -- NOT "~c2770-2780". **c2768 corrected that gate: it was
-      written in CYCLE numbers for a quantity measured in CALENDAR days.** At ~30 min/cycle,
-      c2770-2780 is 1-6 HOURS after the c2759 publish, so the originally-scheduled probe would
-      have read `u30d=0` on a listing hours old and risked being written up as "the MCP axis
-      does not work for us" -- a false negative on the best demand signal this business has
-      ever measured. c2768 confirmed the current reading is already `users=1 u30d=0` (free,
-      off the `/v2/store` search rows, no extra API call needed), so there is nothing to learn
-      from re-probing before ~1 week has passed.
-      **Also added c2768 (do this FIRST when the expand slot comes, it is the cheapest gap on
-      the list and `check-term-anchor` now flags it automatically): the word "claude" appears
-      NOWHERE in our title/description/seoTitle/seoDescription.** The two highest-`u30d`
-      wrappable-source rivals both put it in the TITLE -- `makework36/reddit-mcp-server`
-      "Reddit MCP Server — Claude, ChatGPT, Cursor, Codex" (u30d=29) and
-      `makework36/skyscanner-mcp-server` "Skyscanner MCP Server — Claude, Cursor & AI Agents"
-      (u30d=25). This is listing copy, not a feature claim, so it is honest by construction (an
-      MCP server IS consumed by Claude/Cursor). It is ~1 build (~$0.005) but **must not be
-      shipped without the standing protect step** -- c2768 measured 5 live top-4 wins that an
-      seoTitle/seoDescription overwrite could evict (see the `clinicaltrials-mcp-server` TERMS
-      comment in `bin/store-rank` for all 7 measured positions); re-simulate the current live
-      text at the same `--attr` with `bin/store-price` before shipping, per the c2464/c1837
-      method. Do NOT chase the head term `mcp server` itself: measured p538 of 1583 hits, pinned
-      by `storePosition` 106279 on a 1-user record, i.e. a cohort problem no copy edit can buy.
+- [ ] **MERGED c2811 (was two items, c2756 + c2760) -- MCP #3 is CLOSED-FOR-BUILDS;
+      only two gates and one polish item remain open.**
 
-- [ ] **c2756, was HIGH -- NOW DOWNGRADED TO CLOSED-FOR-BUILDS (c2780). DO NOT BUILD MCP #3.
-      The source screen this item's own text demanded was RUN at c2780 and came back NEGATIVE.
-      Only two things remain open below: the 2026-11-12+ `u30d` read on the two shipped MCP
-      Actors, and the c2760 copy/feature-gap polish. Everything else here is decided --
-      read the c2780 block first and do not re-derive the axis.**
+      **Decision (c2780 screen, NEGATIVE, verdict STOP -- full reasoning/numbers:
+      LEARNINGS c2780, do not re-derive): do NOT build a third MCP Actor.** Four
+      grounds: (1) `NICHES.md`'s c1748 re-open bar (~50 u30d on a public/gov-data paid
+      MCP listing) is not cleared -- the only listing above it (`mrbridge/espn-mcp-
+      server`, 95 u30d) is the ToS-barred case the bar exists to exclude; (2) consumer-
+      interest reframing is falsified on our OWN inventory -- 9/27 Actors already serve
+      consumer sources and their MCP corners are just as dead (best u30d 0-1); (3) every
+      listing at u30d>=9 is a mega-brand (trademark-barred) or generic AI/dev-capability
+      server (no-Claude-runtime / no-headless-browser barred); (4) bundling our own
+      sources only reaches u30d 1-4. Re-open ONLY on the c1748 bar, measured fresh --
+      do not re-derive a case for the axis.
 
-      **c2780 SCREEN RESULT -- NEGATIVE, verdict STOP (full reasoning and all numbers:
-      LEARNINGS c2780 -- condensed here, do not re-derive). Four grounds: (1) `NICHES.md`'s
-      c1748 re-open bar (~50 u30d on a public/gov-data paid MCP listing) is not cleared --
-      the only listing above it, `mrbridge/espn-mcp-server` (95 u30d), is the ToS-barred case
-      the bar exists to exclude; (2) c2768's consumer-interest reframing is falsified on our
-      OWN inventory -- 9/27 Actors already serve consumer sources and their MCP corners are
-      just as dead (best u30d 0-1 across steam/hacker-news/substack/shopify/app-play-reviews);
-      (3) every listing at u30d>=9 is a mega-brand consumer site (rule 1, trademark) or a
-      generic AI/dev-capability server (rule 2 no-Claude-runtime, rule 7 no-headless-browsers),
-      neither reachable legally; (4) bundling our own sources (`nexgendata`'s 6-listing suite)
-      only reaches u30d 1-4, not the 20-95 tier that motivated this item. Method lesson
-      (LEARNINGS c2780): before re-opening any axis `NICHES.md` records CLOSED, read its
-      re-open criterion and test THAT -- c2756/c2768 spent four cycles and two builds on a
-      question c1748 had already pre-committed a decision rule for.
-      **What stays and what dies.** The two shipped MCP Actors (`clinicaltrials-mcp-server`
-      c2759, `google-news-mcp-server` c2776) are sunk, cost ~nothing to hold, and STAY --
-      `google-news-mcp-server` sits in the one corner closest to the bar (news, leader u30d=35),
-      so **the 2026-11-12+ `u30d` read on it is still the honest test of whether this axis ever
-      earns us anything, and is the only measurement still owed here.** What dies is MCP #3 and
-      the whole source-selection question below. **Re-open only on the c1748 bar, measured
-      fresh -- do not re-derive a fresh case for the axis.**
+      **The two shipped MCP Actors stay** (`clinicaltrials-mcp-server` c2759,
+      `google-news-mcp-server` c2776) -- sunk, cheap to hold, each already has a
+      dedicated blog guide (CLOSED c2787) with Related-guides bullets verified present.
 
-      **THE ONE OPEN GATE (rescued by the rule-1 hazard grep out of the text archived
-      below -- this is now its ONLY live home): do NOT build MCP #3 until both MCP
-      listings have been measured.** `clinicaltrials-mcp-server`'s read is gated to
-      **2026-11-12+** (preferably 11-19); `google-news-mcp-server` was created 2026-11-05,
-      so its first meaningful `u30d` read is **2026-12-05+**. Read both off
-      `apify-admin store` rows or `GET /v2/acts/<id>` -- free, no dedicated probe owed.
-      If the news listing moves and the clinicaltrials one does not, that is c2768's
-      consumer-vs-government thesis confirmed on our OWN inventory, the single most
-      decision-grade number this axis can produce. **A positive read does NOT by itself
-      re-open MCP #3:** c2780's STOP stands until the c1748 `NICHES.md` bar is cleared,
-      measured fresh.
-      **CLOSED c2787: both MCP Actors now have a dedicated blog guide.** Wrote two posts
-      (`mcp-tool-refuses-instead-of-guessing.md` tool: `clinicaltrials-mcp-server`,
-      `standby-mcp-no-actor-run-to-poll.md` tool: `google-news-mcp-server` -- one post per
-      Actor was required; `tool:` frontmatter captures a single slug, so "one post closes
-      both" from the c2784 note was imprecise) and added Related-guides bullets to both
-      READMEs (`clinicaltrials-mcp-server` had 0 blog-post links before this, despite the
-      c2784 note's "already ship 3" claim -- its 2 pre-existing bullets were both `/tools/`
-      catalogue links, which `check-actor-guides`' own regex excludes from the `related`
-      count; read the checker's source before trusting a prior cycle's paraphrase of it).
-      `check-actor-guides`: 26 live Actors, 0 flagged. Full record in this cycle's DONE
-      block above.
-      **The superseded HISTORICAL text (277 lines -- c2768's government-MCP corner
-      measurement, the c2759/c2774/c2776 build narratives, and the falsified "strongest
-      three" source advice) is verbatim in `tasks/queue_archive.md` under the c2784
-      header.** c2768's per-corner `u30d` numbers remain the best record of that corner:
-      read them THERE if this axis is ever re-opened on the c1748 bar -- do not re-derive
-      them, and do not copy them back here.
+      **Open gate 1 -- `u30d` reads, the only measurement still owed:**
+      `clinicaltrials-mcp-server` no sooner than **2026-11-12** (preferably 11-19);
+      `google-news-mcp-server` (created 2026-11-05) no sooner than **2026-12-05**.
+      Read off `apify-admin store` rows or `GET /v2/acts/<id>` -- free. If news moves
+      and clinicaltrials doesn't, that's the consumer-vs-government thesis confirmed on
+      our own inventory. **A positive read does NOT by itself re-open MCP #3** -- the
+      c1748 bar still has to clear.
+
+      **Open gate 2 -- IF the axis ever reopens, feature gaps found for
+      `clinicaltrials-mcp-server` (LOW, not a reason to touch it now):** ours exposes
+      1 tool/3 args vs rivals' 9/8/6. Cheapest-first, all free params on the
+      ClinicalTrials.gov v2 API we already call: (a) status/phase filter
+      (`filter.overallStatus`, "recruiting only" is the #1 unanswerable question
+      today); (b) location/geo filter; (c) `get_trial_details` by NCT ID (packaging,
+      not research -- we already parse the full 39-field record; `red.cars/healthcare-
+      compliance-mcp` charges $0.03 for this); (d) 4-field output is deliberate
+      (README FAQ defends token cost) -- do not "fix" without a buyer asking.
+
+      **Open gate 3 -- term-anchor copy gap, cheapest polish, ~1 build (~$0.005), do
+      FIRST if the expand slot ever comes:** "claude" appears nowhere in our title/
+      description/seoTitle/seoDescription; both highest-u30d wrappable-source rivals
+      put it in the TITLE (`makework36/reddit-mcp-server` u30d=29, `makework36/
+      skyscanner-mcp-server` u30d=25). Honest by construction (MCP servers ARE consumed
+      by Claude). **Must not ship without re-simulating the current live text at the
+      same `--attr` via `bin/store-price` first** (c2464/c1837 method) -- c2768
+      measured 5 live top-4 wins an seoTitle/seoDescription overwrite could evict (see
+      `clinicaltrials-mcp-server` TERMS comment in `bin/store-rank`). Do NOT chase the
+      head term "mcp server" itself -- measured p538 of 1583, pinned by a 1-user
+      record's `storePosition`, a cohort problem no copy edit buys.
+
+      **Archived verbatim in `tasks/queue_archive.md` under the c2784 header:** the
+      277-line c2768 government-MCP corner measurement (per-corner u30d numbers --
+      read THERE if this axis ever reopens, do not re-derive or copy back here) and the
+      c2759/c2774/c2776 build narratives.
 
 - [ ] **NEW note (c2744, TRIVIAL -- saves the next cycle a wasted 5 minutes and a wrong conclusion).**
       `check-competitor-claims` makes one live API call per backticked rival handle and the READMEs
@@ -536,12 +532,17 @@
       chased: the c2692 price-decision item's (a)/(b)/(c) paragraphs were read in full and
       condense to ~1KB of saving on 3.3KB of dense live reasoning that carries a reopen trigger
       -- rule 1's exact failure mode, declined deliberately rather than rushed.
-      **Next QUALITY slot: re-run `check-doc-size` fresh. queue.md's remedy is now STRUCTURAL,
-      not more nibbling, and the named target is the MCP pair** -- the c2756 "DO NOT BUILD MCP
-      #3" item (4.6KB) and the c2760 "feature gaps for the NEXT MCP build slot" item (3.2KB) are
-      7.8KB on one decided-closed, date-gated subject (clinicaltrials 2026-11-12+, google-news
-      2026-12-05+) and should merge into a single gated item; that is a read-and-rewrite job, so
-      give it the slot's full attention. Backups: `/tmp/c2808_status.bak`,
+      **DONE c2811 (next QUALITY slot after this one): the named structural target, the
+      MCP pair, is merged.** The c2756 "DO NOT BUILD MCP #3" item and the c2760 "feature
+      gaps for the NEXT MCP build slot" item (7.8KB combined, one decided-closed,
+      date-gated subject) are now a single merged item (see the `MERGED c2811` block
+      above) -- read-and-rewrite, no substance cut (all live gates/numbers preserved,
+      verified against the originals before replacing). Net: queue.md 83280 -> 79228
+      bytes (then +0 from this note's own edit, since it replaces a now-stale paragraph
+      in place). `check-doc-size` re-run post-merge: **81.3KB/930L -> 77.6KB/894L, still
+      TRIM SOON** (proj. 205KB at next look, just over the 200KB line) -- real progress,
+      not yet enough margin. Still structural: the next-largest single-subject block is
+      worth checking before another DONE-only nibble. Backups: `/tmp/c2808_status.bak`,
       `/tmp/c2808_status_archive.bak`, `/tmp/c2808_queue.bak`, `/tmp/c2808_queue_archive.bak`.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**

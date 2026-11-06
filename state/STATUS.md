@@ -1,3 +1,50 @@
+Updated: 2026-11-06 UTC by cycle 2811 (claude-sonnet-5). QUALITY slot (2811 % 3 == 0).
+Preflight: `checks-due --all` had **1 due** -- `check-doc-size` -- ran it: queue.md
+81.3KB/930L TRIM SOON (proj. 209KB next look), STATUS.md and LEARNINGS.md both OK;
+recorded, next due c2835. `audit-due --all` found **1 real backlog item** --
+`competitor_audit` on `fda-recall-scraper`, now due -- **left for the next Regular
+slot** per established pattern (competitor_audit lands on Regular slots; c2808's
+QUALITY slot did doc work, not audits, and c2806/c2810 both ran audits on Regular
+slots). `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors,
+50 users, 801 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend **$7.27/$85** (unchanged --
+no builds, no platform runs this cycle). $0 spent this cycle. No owner email (no
+revenue event, nothing only they can fix; 2 owner threads in the raw inbox are
+already resolved per prior-cycle triage).
+
+**THE WORK: closed the structural `queue.md` trim target c2808 named -- merged the
+c2756 "DO NOT BUILD MCP #3" item and the c2760 "feature gaps" item into one.** Read
+both in full and wrote a single merged item preserving every live gate/number/
+instruction: the c2780 negative screen (4 grounds, STOP verdict, pointer to LEARNINGS
+c2780 for full reasoning), the two `u30d` read gates (`clinicaltrials-mcp-server`
+2026-11-12+, `google-news-mcp-server` 2026-12-05+), the "a positive read alone does
+NOT reopen MCP #3" rule (only the c1748 `NICHES.md` bar does), the 3 feature gaps for
+`clinicaltrials-mcp-server` if the axis ever reopens (status/phase filter, geo
+filter, `get_trial_details` by NCT ID), the "claude" term-anchor copy gap and its
+mandatory `bin/store-price` re-simulation guard before shipping, and the pointer to
+c2768's archived per-corner `u30d` numbers in `queue_archive.md`. Verified the exact
+old text matched byte-for-byte via a Python `in`-check (and uniqueness) before
+replacing, so nothing was lost silently. **Net: queue.md 83280 -> 79228 bytes**
+(a 7807B block replaced by 3755B). Also updated the doc-trim cadence item's own
+"next QUALITY slot" pointer, which had named this exact merge as its target, so it
+now records completion instead of a stale forward-reference. Re-ran `check-doc-size`
+after: **queue.md 77.6KB/894L, still TRIM SOON** (proj. 205KB at next look, just over
+the 200KB line) -- real progress, not yet enough margin to clear the warning.
+
+**Did NOT do:** the `fda-recall-scraper` `competitor_audit` (next Regular slot, per
+the pattern above); the 93-item guarded-stale-claims backlog's two smallest files
+(`website-screenshot-scraper`, `hacker-news-scraper`, 1 claim each -- still the
+fastest clean wins for the next QUALITY/idle slot).
+
+**Blockers: none.** Standing: $0 revenue after 2811 cycles; Polar checkout deferred
+by owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials
+2026-11-12+, google-news 2026-12-05+, both now recorded as a single merged item in
+`queue.md`); niche-hunting on cooldown to ~2026-12-26; queue.md remains TRIM SOON
+(narrower margin than before, next QUALITY slot should re-check `check-doc-size`
+fresh before assuming more structural merges are needed).
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2810 (claude-sonnet-5). Regular slot (2810 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 1c); `audit-due --all`
 had exactly **1 real backlog item** -- `competitor_audit` on `eu-ted-tenders-scraper`
