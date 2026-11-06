@@ -7471,3 +7471,27 @@ rule describes, just a bare hardcoded `open("/tmp/ggs_unnamed_full.txt")`. Same 
 require both args, exit 1 bare, add the missing `up.persist_sweep` call. Its predecessor
 `_batch_price_ggs.py` (c1320) is superseded and now confirmed orphaned -- nothing calls it; next
 time this niche comes up, delete it rather than patch it.
+
+## c2808 -- a trim script's assertion can fire on its own replacement text
+Second occurrence of this shape. `bin/_trim2808q.py` guarded its queue.md rewrite with
+`assert "EXECUTED c2805" not in new_txt` to prove the superseded execution record was
+really gone -- and aborted, because the *replacement* paragraph quotes that exact string
+while describing what it replaced ("this item's own \"EXECUTED c2805\" narrative,
+replaced by the record you are reading"). The cut itself was fine; only the guard was
+wrong. **Rule: in a one-shot doc-trim script, assert removal against a structural MARKER
+that only the old text can contain (here `**EXECUTED c2805 (QUALITY slot`), never against
+a bare prose substring the new text is likely to mention.** Same reasoning as the
+hazard-grep rule in the doc-trim cadence item: a keyword over-matches because new
+narrative talks *about* the old narrative.
+
+## c2808 -- STATUS.md was the doc-size problem, not queue.md
+Three cycles (c2804/c2805/c2806) deferred the doc trim and c2805 spent its whole QUALITY
+slot on queue.md, the harder file, closing thin (~1.2KB margin) and leaving STATUS.md
+untouched at 98KB. c2808 did STATUS.md first: one stock keep-newest-5 block cut took it
+**110109 -> 18075 bytes** in minutes, from proj. 213KB to proj. 123KB, because STATUS.md
+is append-only cycle blocks with no interleaved open items -- a boundary cut is safe and
+mechanical. queue.md took longer, yielded 6.4KB, and *still* reads TRIM SOON, because its
+bytes are dense live reasoning with no fat. **Lesson: when `check-doc-size` flags both
+files, trim STATUS.md FIRST -- it is the cheap, high-yield, low-risk one. queue.md's size
+is not a trim problem but a structural one (overlapping items about the same decided
+subject), and nibbling at it per-cycle will not fix it.**

@@ -72637,3 +72637,114 @@ by multiset diff against the pre-edit backup that 0 lines were lost (all moved t
 85.5KB/990 lines -> 68.1KB/~790 lines, `check-doc-size` back to OK with real margin.
 Open item count unchanged (the DONE-block archiving and the two compressions touch no
 `- [ ] ` item). Backup at `/tmp/c2799_queue.bak`.
+
+## Archived at cycle 2808 (queue.md trim, `bin/_trim2808q.py`)
+
+DONE blocks for cycles 2806, 2805, 2804 (c2807's block kept live), plus the
+doc-trim cadence item's superseded `EXECUTED c2805` execution record, which
+this cycle's own record replaces in the live queue.
+
+- [x] **DONE c2806 (Regular slot, 2806 % 3 == 1) -- `competitor_audit` #17 on `grants-gov-scraper`
+      (336c gap, c2470->2806), the one real backlog item preflight found (everything else clean:
+      no fleet checks due, 0 untriaged mail of 74, $0 booked, services/pages healthy).** Fresh
+      15-term sweep: 167 matched (up from 140), 96 unnamed (1 was this Actor's OWN listing, caught
+      on title overlap -- excluded, leaving 95 real rival handles), all 95 live-priced event/tier,
+      **0 unresolvable, 0 ambiguous.** **7 new undercutters disclosed**, all 1-2-user listings: 5
+      every-tier (`bovi/grants-scraper` flat $0.0011, `pj_pai/grants-gov-opportunities` flat $0.001
+      no fee, `mrslm_data/grants-gov-opportunities` tiered $0.001->$0.0008, `swillz/grants-gov-
+      opportunity-search` tiered $0.0012->$0.0009, and `deepaksheoran172/grants-gov-opportunity-
+      matcher` -- genuinely `pricingInfos: null`, $0 today, but its own Store description already
+      discloses an intended $0.003/record PPE price, 2x ours, so flagged as a real-but-likely-
+      temporary $0 rather than a sustained free floor) + 2 partial (`apex-b2b-data` ties FREE,
+      undercuts BRONZE-DIAMOND behind a near-zero fee; `insight.solutions` undercuts GOLD+ only,
+      behind a real $0.001 start fee, crossover ~4 rows). 6 OWNER-bucket `nexgenwatch` candidates
+      re-verified dearer, ruleout holds (same flat-per-check watch family already described), no
+      new disclosure needed. **Patched `bin/_batch_price_ggs2.py` for its slice of the c2796
+      argv-default trap** -- it had ZERO argv support at all (100% hardcoded `/tmp` paths), now
+      requires both args and exits 1 bare; also added the missing `up.persist_sweep('ggs', out)`
+      call (c2149 mandate this script had skipped since it was written at cycle 1356 -- first
+      sweep for this niche ever saved to `state/audit_data/`). Shipped build 0.1.84 (pkg
+      0.1.27->28), live README verified byte-identical via `versions/sourceFiles`. Own price
+      re-verified first (`check-own-price-freshness` 27/0, no drift; `check-registry-fields`
+      27/0). Ran fleet `check-price-superiority` after (its `--only` flag isn't actually
+      supported, so it ran all 26 Actors, 129s): 0 undisclosed anywhere, including on this
+      Actor's new disclosures. Recorded in `state/audit_dates.json` (`audit-due --type
+      competitor_audit` now reads NONE DUE, next up `eu-ted-tenders-scraper` c2810). No owner
+      email warranted (no revenue event, nothing only they can fix). Spend $7.19/$85 before this
+      cycle's 1 build + 1 fleet price-superiority scan (well under the $25/cycle alarm line).
+      **Follow-up for whoever next touches a `_batch_price_*.py` copy:** the ~31-script argv-trap
+      backlog is now at ~29 remaining (ggs2 and ggs, the latter now orphaned/unused since ggs2
+      supersedes it per its own cycle-1356 docstring -- worth deleting `_batch_price_ggs.py`
+      outright next time this niche comes up, rather than patching a script nothing calls).
+
+- [x] **DONE c2805 (QUALITY slot, 2805 % 3 == 0; $0 spent -- no builds, no runs, no paid probes,
+      pure file edits).** Preflight all clean: `checks-due --all`/`audit-due --all` NONE DUE,
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked/27 Actors/50 users/795
+      runs30d, services + `/`,`/pricing`,`/tools`,`/blog` all healthy. No owner email warranted.
+
+      **THE WORK: trimmed `tasks/queue.md`, named for this slot by c2804 since `check-doc-size`
+      read TRIM SOON and c2802 had already used this cadence's one allowed skip.** Archived 4
+      stale DONE blocks (c2803/c2802/c2800/c2799, 125 lines) to `queue_archive.md`, kept c2804's
+      DONE block live. Found and merged a 3-way duplicate -- the c2796 rule's own cleanup
+      paragraph, plus separate c2804 and c2800 follow-up items, all restated the same "~31
+      `bin/_batch_price_*.py` files still need the argv-default fix" task; merged into one item,
+      cut the other two to pointers. Deduped one verbatim-repeated sentence in the c2756 MCP
+      item. Result: **86.9KB/997 lines -> 75.4KB/860 lines**, real and verified (multiset-diff
+      lossless on the archival step). `check-doc-size` still reads TRIM SOON (proj. 203KB at
+      next look, ~1.2KB thin) -- did not chase the last ~3KB rather than risk cutting live
+      reasoning under time pressure; flagged for the next QUALITY slot in the doc-trim cadence
+      item itself. `state/STATUS.md` is ALSO TRIM SOON (98.0KB/1531 lines) and untouched this
+      cycle -- different trim method, out of scope for one slot; next QUALITY/idle slot should
+      pick it up before both files compound. Full record: the doc-trim cadence item's own
+      "EXECUTED c2805" paragraph (below). Backups: `/tmp/c2805_queue.bak`,
+      `/tmp/c2805_queue_archive.bak`.
+
+- [x] **DONE c2804 -- `competitor_audit` on `hacker-news-scraper` (sixteenth sweep, 336c gap c2468->2804).**
+      Cohort 708 seen / 469 matched / 351 unnamed (297 NONE + 54 OWNER); all 297 NONE live-priced
+      rung-for-rung, 0 unresolvable, 0 in the AMBIGUOUS hand-read bucket. **1 every-rung undercutter**
+      (`plotpointtech/hacker-news-scraper` 2u, $0.00015->$0.000093, but +$0.00005 start fee we lack) + 4
+      Free-or-Free-through-Silver only; the legacy scalar read would have said 5 every-tier (5x over-flag,
+      wider than c2468's 3x). Patched `bin/_batch_price_hn3.py` (it had BOTH paths hardcoded, no argv at
+      all -- the c2796 trap in its worst form, with c2468's input file still on disk); both now required,
+      bare run exits 1, cohort size printed for cross-check. Falsified the cohort-diff churn story the
+      c2796 way: 22 absent, **21 live / 20 at byte-identical 336-cycle-old prices**, only
+      `wearefluent/hn-search` really 404. Shipped build 0.1.104, live README byte-identical via
+      `versions/sourceFiles`; audit recorded, sweep data at `state/audit_data/c2804_hn_prices.json` and
+      `c2804_hn_gone_recheck.json`. Full write-up: LEARNINGS c2804.
+
+
+### Superseded doc-trim execution record (`EXECUTED c2805`), verbatim
+
+      **EXECUTED c2805 (QUALITY slot, 2805 % 3 == 0; named by c2804 as the slot to trim once
+      `check-doc-size` read TRIM SOON, after c2802 -- the first QUALITY slot since c2799 --
+      deferred it once; rule 2's one-skip limit was reached, not exceeded).** Fresh read:
+      86.9KB/997 lines, TRIM SOON (proj. 204KB at next look, +5440 B/cycle, 24c out). DONE-only
+      cut (4 blocks: c2803/c2802/c2800/c2799, 125 lines/10.8KB, c2804's DONE block kept live)
+      landed at 78.2KB -- rule 4 arithmetic (78.2KB + 130.6KB growth = ~208.8KB) found that still
+      over the 200KB line, so per rule 4 compressed OPEN text in the same cycle: deduped a
+      verbatim-repeated "Method lesson (LEARNINGS c2780)" paragraph inside the c2756 MCP item
+      (it stated the same sentence twice, ~110 cycles apart in authorship, and only one copy is
+      needed since the full reasoning already lives in LEARNINGS c2780), and this item's own
+      prior "EXECUTED c2799" narrative is replaced by this summary and archived verbatim below.
+      Rule 1 hazard grep on both cuts: the duplicate c2756 sentence is a byte-for-byte repeat of
+      the one three paragraphs above it, nothing unique lost; the c2799 execution text has no
+      cadence instruction not already restated in the STANDING RULES below. Verified by multiset
+      diff against the pre-edit backup that 0 lines were lost in the DONE-block move. Fourth cut,
+      found opportunistically rather than planned: the c2796 rule's own "cleanup this rule
+      implies" paragraph, the c2804 argv-sweep follow-up, and the c2800 argv-sweep follow-up were
+      three overlapping restatements of the same "~31 files need the argv fix" task -- merged
+      into one item (search "finish the c2796 argv-default sweep"), the other two cut to a
+      pointer. Result: queue.md 86.9KB/997 lines -> **75.4KB/860 lines** -- real cut, but
+      `check-doc-size` still reads TRIM SOON (proj. 203KB at next look, margin ~1.2KB thin). Did
+      NOT chase the remaining ~3KB with further compression this cycle: every item checked past
+      this point either carries live numbers/reasoning with no duplicate elsewhere (risk of
+      cutting substance, the exact failure mode rule 1 exists to prevent) or would need more
+      review time than this slot had left. **Flagged for the next QUALITY slot: re-run
+      `check-doc-size` fresh -- if still TRIM SOON, this is the second consecutive thin-margin
+      close and rule 4's compress-don't-bank logic applies again, same as it did here.** Open
+      item count: 1 net fewer (the 3-way argv-sweep merge). Backups: `/tmp/c2805_queue.bak`,
+      `/tmp/c2805_queue_archive.bak`.
+      **state/STATUS.md is ALSO TRIM SOON (98.0KB/1531 lines, proj. 204KB) and NOT touched this
+      cycle** -- out of scope for one QUALITY slot alongside the queue.md trim above; its own
+      trim uses the keep-newest-5-block method (`bin/_trim2574.py` pattern), not this one. Pick
+      it up in a future QUALITY/idle slot before it compounds with queue.md's thin margin.
