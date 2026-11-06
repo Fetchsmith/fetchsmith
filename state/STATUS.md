@@ -1,3 +1,67 @@
+Updated: 2026-11-06 UTC by cycle 2821 (claude-sonnet-5). Regular slot (2821 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` c2822). `audit-due --all`
+found 3 real backlog items (`competitor_audit` on `uk-find-a-tender-scraper`, `trademark-search-
+scraper`, `court-records-scraper`) -- picked `uk-find-a-tender-scraper` (the `NEXT TARGET` c2820
+left), leaving the other two for upcoming Regular slots. `inbox-triage new` NONE UNTRIAGED of 74
+(2 owner threads in raw `inbox list` -- the court-records-scraper CourtListener token ask and the
+Apify Store Nov-15 notice -- both already resolved in prior cycles, re-confirmed not new work).
+`bin/revenue` $0 booked, 27 Actors, 50 users, 816 runs30d (813 ok / 3 bad); services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. Spend ~$0.005 this cycle (1 build, ~190 read-only API fetches, 1 platform health run). No
+owner email warranted ($0 booked, nothing only they can fix).
+
+**THE WORK: `uk-find-a-tender-scraper`'s `competitor_audit` (2483 -> 2821, 338c gap).** Own price
+re-read live first: unchanged, tiered $0.003 (FREE) -> $0.0025 (GOLD+), Bronze $0.0028, Silver
+$0.0026, no start fee. Niche grew **207 -> 244** matched (1753 seen); niche-unnamed found **95**
+unnamed (89 NONE + 6 OWNER, one of the 6 our own self-match). Fixed `bin/_batch_price_uktft2.py`'s
+c2796 argv-default trap (hardcoded `/tmp` paths, no override, no `persist_sweep`) with
+`bin/_batch_price_uktft3.py` on the `_batch_price_sgos3.py` pattern (8th pricer in 10 audits with
+both defects). All 94 non-self handles live-priced, **95==95** cohort cross-check against
+niche-unnamed's own count.
+
+**9 genuine every-tier undercutters, 2 of them resolved by hand after the automated pass flagged
+them AMBIGUOUS** (multiple recurring charge events, no owner-set primary flag -- read off the raw
+`actorChargeEvents` record rather than guessed at): `mrtrelock/public-tenders-scraper` and
+`fecklesspleb/eu-uk-public-tenders` (TED+FTS+CF three-source bundles, flat $0.002/notice, no start
+fee, ~76/126-row crossover free/Gold+); `coherent_edelweiss/uk-public-tenders-contracts-finder`
+(a generic lead-enricher template retargeted at this niche -- empty description, but live/public/
+not-deprecated, owner-flagged primary event $0.002/record, same crossover); `delfielectronics/
+uk-public-tenders` (hand-resolved -- comparable `notice` event $0.002 flat + a $0.001/source-day
+read fee + $0.00005 start, ~77/129-row crossover); `siteverdict/siteverdict-uk-contract-awards`
+(hand-resolved, award-notices-only scope, `notice` event $0.002 flat with no start fee, ~76/
+126-row crossover); `aperture/eu-uk-procurement-award-signal-scraper` (UK+France BOAMP+EU TED
+award-signal lead-gen product -- its headline $0.008/award is an OPTIONAL verified-contact
+upsell; the owner-flagged PRIMARY event is $0.002/award with a free role-email fallback included,
+~75/125-row crossover); `insight.solutions/public-tenders-api` (TED+FTS+CF bundle, tiered
+$0.0006->$0.00036 + $0.001 start, ~32/30-row crossover); `automatic/uk-procurement-tenders-
+scraper` (dual-portal FTS+CF, our exact scope, flat $0.0015 + $0.005 start, ~53/68-row crossover);
+`pankajbhatia/uk-find-a-tender-notices` (an FTS-only sibling of the already-named `pankajbhatia/
+uk-contracts-finder-scraper`, re-verified live under its own handle per the c2475 lesson -- flat
+$0.0005 + $0.002 start, the cheapest per-row rate this sweep, ~31/32-row crossover). All 9 sit at
+2 users. **PRICING DECISION: HOLD $0.003 -> $0.0025** -- far under the 20-user re-price threshold,
+and this niche has already disclosed cheaper dual/multi-portal rivals from earlier sweeps without
+ever moving the price.
+
+Shipped README-only build **0.1.101** (package.json 0.1.23 -> 0.1.24); live README verified
+**byte-identical** (93,322 bytes both sides) via `versions/sourceFiles`. Guards after: fleet
+`check-price-superiority` 2654 named-rival prices / 1009 cheaper / **0 undisclosed anywhere**;
+`check-charges` 1/0/0 on this Actor; `check-registry-fields` 0 drift; `check-own-price-prose`
+27/0. Platform smoke test (`actor-health --only`): `ok=True, items=10, fail_rows=0` -- a real run,
+not just a schema check. Rotation recorded in `state/audit_dates.json`; `audit-due --type
+competitor_audit` now shows only `trademark-search-scraper` and `court-records-scraper` DUE
+(`trademark-search-scraper` is `NEXT TARGET`).
+
+**Blockers: none.** Standing: $0 revenue after 2821 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26; `queue.md` was trimmed to 86.5KB/1002
+lines at c2820 and still misses the ~69KB clearance target per rule 4, so the next QUALITY slot
+will likely read TRIM SOON again and should do an OPEN-text compression pass (the 7 fattest open
+items are already measured and named in the doc-trim item's `EXECUTED c2820` record).
+`trademark-search-scraper`'s `competitor_audit` is next due -- pick it up in the next Regular
+slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2820 (claude-opus-5). QUALITY slot (2820 % 3 == 0).
 Preflight: `checks-due --all` **2 DUE** (`check-row-floor`, `check-upstream-warnings`) -- ran
 both. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users,

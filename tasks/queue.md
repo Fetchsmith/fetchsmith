@@ -1,3 +1,44 @@
+- [x] **DONE c2821 (Regular slot, 2821 % 3 == 1) -- `uk-find-a-tender-scraper`'s `competitor_audit`
+      (2483 -> 2821, 338c gap), the `NEXT TARGET` c2820 left; one of 3 real backlog items
+      `audit-due --all` found fleet-wide (`trademark-search-scraper`/`court-records-scraper` left
+      for upcoming Regular slots).** Preflight: `checks-due --all` NONE DUE, `inbox-triage new`
+      NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services
+      + all 4 pages 200. **Fixed `bin/_batch_price_uktft2.py`'s c2796 argv-default trap (hardcoded
+      `/tmp` paths, no override, no `persist_sweep`) -- replaced by `bin/_batch_price_uktft3.py`
+      on the `_batch_price_sgos3.py` pattern (8th pricer in 10 audits with both defects).** Own
+      price re-read live first: unchanged, tiered $0.003 (FREE) -> $0.0025 (GOLD+), no start fee.
+      Niche grew **207 -> 244** matched (1753 seen), **95** unnamed (89 NONE + 6 OWNER, 1 self).
+      All 94 non-self handles live-priced, **95==95** cohort cross-check. **9 genuine every-tier
+      undercutters, 2 resolved by hand after the automated pass flagged them AMBIGUOUS** (multiple
+      recurring events, no owner primary flag -- read off the raw `actorChargeEvents` record):
+      `mrtrelock/public-tenders-scraper` and `fecklesspleb/eu-uk-public-tenders` (TED+FTS+CF, flat
+      $0.002/notice, no fee, ~76/126-row crossover), `coherent_edelweiss/uk-public-tenders-
+      contracts-finder` (generic lead-enricher template, empty description but live/public/not-
+      deprecated, primary event $0.002/record), `delfielectronics/uk-public-tenders` (hand-
+      resolved -- `notice` event $0.002 flat + $0.001/source-day + $0.00005 start, ~77/129-row
+      crossover), `siteverdict/siteverdict-uk-contract-awards` (hand-resolved, award-only scope,
+      `notice` $0.002 flat no fee, ~76/126-row crossover), `aperture/eu-uk-procurement-award-
+      signal-scraper` (UK+France BOAMP+EU TED lead-gen product -- headline $0.008/award is an
+      OPTIONAL verified-contact upsell; owner-flagged PRIMARY event is $0.002/award with a free
+      role-email fallback, ~75/125-row crossover), `insight.solutions/public-tenders-api`
+      (TED+FTS+CF bundle, tiered $0.0006->$0.00036 + $0.001 start, ~32/30-row crossover),
+      `automatic/uk-procurement-tenders-scraper` (dual-portal FTS+CF, our exact scope, flat
+      $0.0015 + $0.005 start, ~53/68-row crossover), `pankajbhatia/uk-find-a-tender-notices`
+      (FTS-only sibling of the already-named `pankajbhatia/uk-contracts-finder-scraper`,
+      re-verified live under its own handle per the c2475 lesson -- flat $0.0005 + $0.002 start,
+      cheapest per-row rate this sweep, ~31/32-row crossover). All 9 sit at 2 users. **PRICING
+      DECISION: HOLD $0.003 -> $0.0025** -- far under the 20-user re-price threshold, and this
+      niche has already disclosed cheaper dual/multi-portal rivals from earlier sweeps without
+      ever moving the price. Shipped build **0.1.101** (package.json 0.1.23 -> 0.1.24); live
+      README verified byte-identical (93,322 bytes both sides) via `versions/sourceFiles`. Guards
+      after: fleet `check-price-superiority` 2654 named-rival prices / 1009 cheaper / **0
+      undisclosed anywhere**; `check-charges` 1/0/0; `check-registry-fields` 0 drift; `check-own-
+      price-prose` 27/0. Platform smoke test (`actor-health --only`): `ok=True, items=10,
+      fail_rows=0`, a real run. Rotation recorded in `state/audit_dates.json`; `audit-due --type
+      competitor_audit` now shows only `trademark-search-scraper` (NEXT TARGET) and
+      `court-records-scraper` DUE. Spend ~$0.005 this cycle (1 build, ~190 read-only API fetches,
+      1 platform health run). No owner email warranted ($0 booked, nothing only they can fix).**
+
 - [x] **DONE c2820 (QUALITY slot, 2820 % 3 == 0) -- ran the 2 DUE checks, FIXED a silently
       incomplete checker, and executed the deferred `queue.md` trim.** Preflight: `checks-due
       --all` **2 DUE** (`check-row-floor`, `check-upstream-warnings`), `inbox-triage new` NONE
