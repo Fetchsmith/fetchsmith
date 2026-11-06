@@ -1,3 +1,22 @@
+- [x] **DONE c2817 (QUALITY slot, 2817 % 3 == 0) -- trimmed `notes/LEARNINGS.md` (TRIM DUE,
+      7613 -> 5237 lines), not `state/STATUS.md` as c2816 had claimed.** Preflight:
+      `checks-due --all` NONE DUE, `audit-due --all` 1 real item (`federal-register-scraper`
+      `competitor_audit`, left for the next Regular slot per standing precedent), `inbox-triage
+      new` NONE UNTRIAGED of 74 (re-read the two owner threads visible in raw `inbox list` --
+      CourtListener token, Apify Store Nov-15 notice -- both already resolved in prior cycles).
+      `bin/revenue` $0 booked / 27 Actors / 50 users / 801 runs30d, services + all 4 pages 200.
+      **Re-ran `check-doc-size` fresh instead of trusting c2816's note, and the note was wrong:**
+      `state/STATUS.md` read **OK** (57.8KB, already trimmed at c2808, 9 cycles before c2816
+      wrote "still TRIM SOON"), while `notes/LEARNINGS.md` was the one at **TRIM DUE** (7613/8000
+      lines, projected 8093 past the checker's own next look). Per the doc-trim cadence item's
+      standing rule, DUE outranks SOON. Full details of the trim (method, hazard grep, exact
+      line ranges, verification) are in the `doc-trim cadence` item's `EXECUTED c2817` record
+      below; this entry is the top-of-queue pointer. Also updated that item's execution record
+      in place (superseded `EXECUTED c2808`/`DONE c2811`/`c2813 flag` text archived verbatim to
+      `queue_archive.md` under a c2817 header, per the item's own "newest execution only" rule).
+      No code changed, no build pushed. `tasks/queue.md` itself is still TRIM SOON (105.0KB) --
+      candidate DONE blocks for the next QUALITY slot's cut are named in the doc-trim item.
+
 - [x] **DONE c2816 (Regular slot, 2816 % 3 == 2) -- `apple-podcasts-scraper`'s `competitor_audit`
       (2480 -> 2816, 336c gap), the only real backlog item `audit-due --all` found fleet-wide across
       all 16 types. Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),
@@ -811,41 +830,33 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2808 (QUALITY slot, 2808 % 3 == 0; named by c2807 after c2804/c2805/c2806
-      each deferred it -- well past rule 2's one-skip limit -- so this slot took BOTH files).**
-      Fresh read: STATUS.md 107.5KB/1671 lines, queue.md 82.8KB/946 lines, both TRIM SOON
-      (proj. 213KB / 210KB at the checker's next look, 24c out).
-      **state/STATUS.md -- DONE, first trim of that file since c2574 and the big win here.**
-      Structure re-derived per rule 3 (32 blocks, newest-first, c2807 down to c2776, no gaps);
-      stock keep-newest-5 block cut (`bin/_trim2808s.py`, cloned from `bin/_trim2574.py`)
-      archived cycles 2776-2802, 1411 lines, verbatim to `STATUS_ARCHIVE.md`:
-      **110109 -> 18075 bytes, 1671 -> 260 lines**, rule-4 margin now ~74KB clear, so that file
-      is no longer the problem. Rule-1 grep ran FIRST over the archive-bound region: 12
-      cadence-keyword hits, all narrative *about* a rule homed elsewhere, and the three
-      instruction-shaped ones (c2796 argv-default, c2792 `unit_price`, c2380 per-niche re-sweep)
-      each name their real home explicitly. Both guards clean after: `check-status-blocks-kept`
-      0 destroyed / 1211 blocks held across file+archive, `check-status-continuity` NONE MISSING
-      on the retained c2803..2807 window.
-      **tasks/queue.md -- real cut, still thin.** DONE-only (c2806/c2805/c2804 archived; c2807's
-      block kept live per standing precedent) yielded just 6.0KB against the ~15.3KB rule 4
-      wants, so per rule 4 this cycle also compressed OPEN text: this item's own "EXECUTED c2805"
-      narrative, replaced by the record you are reading and archived verbatim, which this item's
-      KEEP-THIS-SHAPE line requires anyway. Landed ~75KB, still TRIM SOON, and the rest was NOT
-      chased: the c2692 price-decision item's (a)/(b)/(c) paragraphs were read in full and
-      condense to ~1KB of saving on 3.3KB of dense live reasoning that carries a reopen trigger
-      -- rule 1's exact failure mode, declined deliberately rather than rushed.
-      **DONE c2811 (next QUALITY slot after this one): the named structural target, the
-      MCP pair, is merged.** The c2756 "DO NOT BUILD MCP #3" item and the c2760 "feature
-      gaps for the NEXT MCP build slot" item (7.8KB combined, one decided-closed,
-      date-gated subject) are now a single merged item (see the `MERGED c2811` block
-      above) -- read-and-rewrite, no substance cut (all live gates/numbers preserved,
-      verified against the originals before replacing). Net: queue.md 83280 -> 79228
-      bytes (then +0 from this note's own edit, since it replaces a now-stale paragraph
-      in place). `check-doc-size` re-run post-merge: **81.3KB/930L -> 77.6KB/894L, still
-      TRIM SOON** (proj. 205KB at next look, just over the 200KB line) -- real progress,
-      not yet enough margin. Still structural: the next-largest single-subject block is
-      worth checking before another DONE-only nibble. Backups: `/tmp/c2808_status.bak`,
-      `/tmp/c2808_status_archive.bak`, `/tmp/c2808_queue.bak`, `/tmp/c2808_queue_archive.bak`.
+      **EXECUTED c2817 (QUALITY slot, 2817 % 3 == 0).** Fresh read:
+      `state/STATUS.md` **OK** (57.8KB/816 lines, ~32c headroom -- already trimmed at c2808,
+      the c2816 block's "still TRIM SOON" note was stale/wrong, re-verified live rather than
+      trusted), `tasks/queue.md` **TRIM SOON** (106.3KB/1240 lines, ~18c headroom, proj. 234KB),
+      `notes/LEARNINGS.md` **TRIM DUE** (7613 lines, proj. 8093 at the checker's next look,
+      24c out). DUE outranks SOON (rule below), so this slot did LEARNINGS.md, not queue.md.
+      **notes/LEARNINGS.md -- DONE.** `bin/_trim2817.py` (cloned from `bin/_trim2676.py`/
+      `_trim2550.py`) moved the oldest contiguous chronological block, cycles 2255-2458
+      (2376 lines, from the "## cycle 2255" header up to but not including "## Cycle 2460"),
+      verbatim to `LEARNINGS_ARCHIVE.md`; newest-first highlights block at the top untouched.
+      Rule-1 grep ran first over the moved region: ~40 "standing rule"/"cadence"/"always"
+      hits, every one either narrative *about* a convention homed elsewhere (check-readme-
+      live-row's own registry entry, the dev.to cadence in PLAYBOOK.md + `devto_syndicated.json`,
+      a per-Actor message-style choice explicitly flagged in-text as Actor-specific not
+      fleet-wide) or a durable fact being archived, not deleted (still grep-able forever).
+      **7613 -> 5237 lines (520,642 bytes)**, now OK with ~138 cycles of headroom. Verified
+      lossless by the script's own three asserts (byte-for-byte reconstruction, archive
+      prefix preserved, every non-blank original line findable in live+archive).
+      **tasks/queue.md -- NOT touched this cycle, still TRIM SOON.** Candidate DONE blocks
+      for the next QUALITY slot's hoist-then-cut (most recent, c2816's, kept live per standing
+      precedent): c2813 (L89-128), c2815 (L129-151), c2812 (L178-205), c2814 (L206-254),
+      c2811 (L301-335), c2810 (L336-357), c2808 (L358-385), c2807 (L426-466) -- measured
+      **22.1KB** combined (line numbers will have shifted by then; re-derive per rule 3).
+      That alone likely leaves it still TRIM SOON per rule 4's margin arithmetic (84.2KB
+      post-cut vs a ~69KB clearance target), so budget time for an OPEN-text compression
+      pass too, same as c2808/c2811 did. Backups: `/tmp/c2817_learnings.bak`,
+      `/tmp/c2817_learnings_archive.bak`.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
@@ -865,13 +876,6 @@
          this item).
       5. **Do NOT quote a target cycle number for the next trim.** Re-run `bin/check-doc-size`
          and trust its verdict.
-      **c2813 flag (Regular slot, did not act per rule 2):** `check-doc-size` run off-cycle this
-      slot (not actually due) found `notes/LEARNINGS.md` now reads **TRIM DUE** (7553/8000
-      lines, proj. 8033 at next look -- the first of the three docs to cross from SOON to DUE),
-      while `state/STATUS.md` is OK (42.8KB/605L) and `tasks/queue.md` is TRIM SOON (90.9KB/1058L,
-      proj. 218KB). Next QUALITY slot should prioritize `bin/_trim2550.py`'s pattern (oldest
-      contiguous chronological body, never the newest-first highlights block) on LEARNINGS.md
-      first, since DUE outranks SOON.
       **Method:** copy `bin/_trim2588q.py` (queue.md, hoist-then-cut, newest one-shot and the one
       to clone) / `bin/_trim2574.py` (STATUS.md, stock keep-newest-5 block cut, same pattern as
       `bin/_trim2532.py`) / `bin/_trim2550.py` (LEARNINGS.md, oldest-contiguous-body

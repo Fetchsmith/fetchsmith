@@ -1,3 +1,53 @@
+Updated: 2026-11-06 UTC by cycle 2817 (claude-sonnet-5). QUALITY slot (2817 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820). `audit-due --all`
+1 real backlog item (`competitor_audit` on `federal-register-scraper`) -- left for the next
+Regular slot per standing precedent (QUALITY slots do doc/quality work, not fleet audits).
+`inbox-triage new` NONE UNTRIAGED of 74 -- re-read the two owner threads directly (the
+CourtListener token and the Apify Store Nov-15 ranking-change notice) since they looked live
+in a raw `inbox list`; both were already resolved in prior cycles (token wired c2362, Store
+paging already hardened + self-tested) and re-confirmed, not new work. `bin/revenue` $0
+booked, 27 Actors, 50 users, 801 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/
+`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend unchanged this cycle
+(~$0, no platform runs, no builds -- pure doc maintenance). No owner email warranted.
+
+**THE WORK: ran `check-doc-size` fresh rather than trusting c2816's claim, and the claim was
+wrong.** c2816 said both `state/STATUS.md` and `tasks/queue.md` were TRIM SOON and handed this
+slot the STATUS.md trim. Live re-check found `STATUS.md` actually **OK** (57.8KB/816 lines,
+~32c headroom -- it was already trimmed at c2808, 9 cycles before c2816's note) and
+`notes/LEARNINGS.md` was the one in **TRIM DUE** (7613/8000 lines, projected 8093 at the
+checker's next scheduled look, 24c out) while `queue.md` was TRIM SOON (106.3KB). Per the
+doc-trim cadence item's own standing precedent, DUE outranks SOON, so this cycle trimmed
+`notes/LEARNINGS.md`, not `STATUS.md`.
+
+**`bin/_trim2817.py`** (cloned from `_trim2676.py`/`_trim2550.py`'s oldest-contiguous-
+chronological-block method) moved cycles 2255-2458 (2376 lines) verbatim from the live file
+to `LEARNINGS_ARCHIVE.md`, leaving the newest-first highlights block at the top untouched.
+Rule-1 hazard grep ran first over the moved region (~40 "standing rule"/"cadence"/"always"
+hits); every one was either narrative about a convention homed elsewhere or a durable fact
+now archived rather than deleted (still searchable in `LEARNINGS_ARCHIVE.md`). Verified
+lossless by the script's own three asserts: byte-for-byte head+moved+tail reconstruction of
+the original, the pre-existing archive preserved as a byte-identical prefix, and every
+non-blank original line findable in live+archive afterward. **Result: 7613 -> 5237 lines
+(520,642 bytes), now OK with ~138 cycles of headroom.** `check-doc-size` re-run clean after:
+STATUS.md OK, LEARNINGS.md OK, only `queue.md` still TRIM SOON (105.0KB/1225 lines, ~18c
+headroom) -- not touched this cycle; flagged for the next QUALITY slot in `queue.md`'s
+doc-trim cadence item with the 8 candidate DONE blocks (~22.1KB) already measured and named,
+plus the margin-arithmetic warning that a DONE-only cut likely won't be enough on its own.
+
+Updated the `doc-trim cadence` item in `queue.md` itself to record this execution in place
+of the superseded `EXECUTED c2808`/`DONE c2811`/stale `c2813 flag` text (archived verbatim to
+`queue_archive.md` under a new c2817 header), per that item's own "newest execution only"
+rule. No code changed, no Actor touched, no build pushed -- pure doc maintenance. Backups at
+`/tmp/c2817_learnings.bak`, `/tmp/c2817_learnings_archive.bak`.
+
+**Blockers: none.** Standing: $0 revenue after 2817 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26. `federal-register-
+scraper`'s `competitor_audit` is next due (the one real backlog item preflight found) --
+pick it up in the next Regular slot. `tasks/queue.md` is still TRIM SOON, next QUALITY slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2816 (claude-opus-5). Regular slot (2816 % 3 == 2).
 Preflight: `checks-due --all` **NONE DUE** (soonest `check-row-floor` c2820). `audit-due --all`
 had exactly **1 real backlog item fleet-wide across all 16 types -- `competitor_audit` on
