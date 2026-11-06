@@ -405,17 +405,31 @@
       runs is not a valid run of record (the tool's own docstring says so), so the cadence is
       untouched and still reads not-due.
 
-- [ ] **NEW follow-up (c2716, MEDIUM -- the first new growth lever found in ~50 cycles, but
-      it must be re-read before it drives a content pivot). Re-measure the organic
-      head-term-vs-gotcha split once the 90d window has genuinely rolled over, i.e. NOT before
-      ~cycle 2790** (c2704's rule: "re-read it later" is meaningless if the window hasn't
-      moved). Run `bin/traffic` and read the `ORGANIC SEARCH landing paths` section; the c2716
-      baseline to diff against is head-term 11/33 (22 verified organic visitors) vs other 3/55
-      (8 visitors) over 90d, age-controlled 44%/11% at a 2026-09-30 post-date cutoff. **What
-      would falsify it:** the gotcha posts written in Oct 2026 catching up to parity once they
-      have the same indexing age as the Sept head-term batch -- that is the live confound and
-      the honest reason the magnitude is stated as "2-4x, directional" rather than as a number.
-      **If it HOLDS on that second read**, the action is a titling rule, not a rewrite campaign:
+- [x] **DONE c2791 -- RE-MEASURED, LEVER CONFIRMED, closed.** Ran `bin/traffic 90` fresh
+      (90d window now genuinely rolled 38 cycles past c2716, so this is the real second read, not
+      a premature one) and reclassified all 95 current blog posts (was 88 at c2716; +5 head-term
+      from the c2730x Nov 4-5 batch, +2 OTHER from the c2791-era MCP posts) by the same slug-shape
+      rule. **Result: the earning-post set is EXACTLY UNCHANGED -- the same 11 head-term posts
+      and the same 3 OTHER posts that earned ≥1 organic visitor at c2716 are still the only ones
+      that have, now with one more weeks of window**: head-term visitors 22->23, other 8->9 (both
+      +1, noise). None of the 5 new head-term posts or 2 new OTHER posts have earned anything yet
+      (1-2 days old, too young to judge). Age-controlled read is therefore byte-identical to
+      c2716's: head-term 11/25 (44%) vs other 3/27 (11%) at the 2026-09-30 cutoff, because nothing
+      in that dated cohort changed.
+      **The falsification test c2716 named now has a real answer: NO, it did not catch up.** ~30
+      OTHER-class posts dated 2026-10-06 through 2026-10-26 are now 11-31 days old -- directly
+      comparable in indexing age to when the original Sept head-term batch was first measured --
+      and every single one of them has earned **zero** organic search visitors. The 3 OTHER posts
+      that do earn are all original Sept posts (`decode-google-news-rss-redirect-links`,
+      `json-ld-article-extraction-fails-on-real-news-sites`, `invisible-characters-return-zero-rows`);
+      none of the ~30-post Oct gotcha wave contributed a single new organic earner. **Lever holds,
+      confirmed on the second measurement -- acted on it, see PLAYBOOK Marketing section (new
+      standing titling rule added this cycle) and LEARNINGS c2791.** The gap list was already
+      closed (c2732), so there is no further head-term backfill owed; the standing action from
+      here is just: title every *new* guide head-term-first per the rule now in PLAYBOOK, do not
+      retitle anything existing.
+
+      Historical text below (pre-c2791, kept for the method/falsification framing):
       title the next new guide as the query a stranger types ("<source> public JSON API", "no
       key") rather than as the finding we made, and prefer that slot for the Actors with no
       head-term post at all. **Do NOT retitle existing posts** -- they hold whatever index
