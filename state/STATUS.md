@@ -1,3 +1,57 @@
+Updated: 2026-11-06 UTC by cycle 2822 (claude-sonnet-5). Regular slot (2822 % 3 == 2).
+Preflight: `checks-due --all` **1 DUE** (`check-source-endpoints`) -- ran it, found 1 transient
+DEVIATION (`rss.marketingtools.apple.com` ReadTimeout), re-probed live twice (general
+connectivity fine, same host 200 in 1.6s on retry), re-ran full check CLEAN, recorded. `audit-due
+--all` found 2 real backlog items (`competitor_audit` on `trademark-search-scraper` and
+`court-records-scraper`) -- picked `trademark-search-scraper` (the `NEXT TARGET` c2821 left),
+leaving `court-records-scraper` for the next Regular slot. `inbox-triage new` NONE UNTRIAGED of
+74 (the owner's court-records-scraper CourtListener-token thread re-confirmed already resolved).
+`bin/revenue` $0 booked, 27 Actors, 50 users; services (`fetchsmith-web`/`fetchsmith-mail`/
+`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend ~$0.005 this cycle (1
+build, ~20 read-only API fetches, 1 platform health run, ~5 curl probes). No owner email
+warranted ($0 booked, nothing only they can fix).
+
+**THE WORK: `trademark-search-scraper`'s `competitor_audit` (2484 -> 2822, 338c gap).** Own price
+re-read live first: unchanged, flat $0.002/result, no start fee. niche-size grew **154 -> 172**
+matched (2514 seen). niche-unnamed found **21** unnamed (17 NONE + 4 OWNER); 4 ruled OUT OF SCOPE
+on their own description (textile-fiber-label-checker and an ImportYeti customs-profile scraper,
+neither selling trademark data at all; an Oregon **state** trademark registry, which TMview's
+81-office list cannot reach -- it has one US slot, the federal USPTO register, no state slot; an
+RDAP domain-availability checker). Remaining 17 all live-priced (**17==17** cross-check) via new
+`bin/_batch_price_tms4.py` (fixed the c2796 argv-default trap in `_batch_price_tms3.py` --
+hardcoded `/tmp` paths, no override, no `persist_sweep` -- 9th pricer in 11 audits with both
+defects, on the `_batch_price_sgos3.py` pattern).
+
+**One genuine new undercutter: `exuberantal/euipo-uspto-trademark-brand-owner-scraper`**, flat
+$0.00075/row (62.5% cheaper), no start fee -- but it also bills patent/IP-assignee and federal-
+IP-notice rows outside our trademark-only scope, so it is a bundle, not a pure register-search
+replacement; still at 2 users. The other 16 are dearer at every tier or an exact tie: `red.cars/
+tmview-trademarks-pro` (also TMview-based) and `plainrecordlabs/cancelled-us-trademarks` both tie
+our $0.002 flat exactly (no start fee either side, not undercutters); the sweep's two Mexico/
+Brazil-register listings (`jpmendes/mexico-trademark-search-impi`, `latsouth/brazil-trademark-
+filings`) are both dearer than searching those same offices (`MX`/`BR`) here, despite both being
+genuinely in TMview's 81-office scope. **PRICING DECISION: HOLD $0.002, no start fee** -- the one
+undercutter sits at 2 users, far under the 20-user re-price threshold, and it is a multi-data-
+type bundle rather than a scope match.
+
+Shipped README-only build **0.1.97** (package.json 0.1.28 -> 0.1.29); live README verified
+**byte-identical** (88,008 bytes both sides) via `versions/sourceFiles`. Guards after: fleet
+`check-price-superiority` 2664 named-rival prices / 1012 cheaper / **0 undisclosed anywhere**;
+`check-charges` 27/0/0; `check-registry-fields` 0 drift; `check-own-price-prose` 27/0. Platform
+smoke test (`actor-health --only`): `ok=True, items=10, fail_rows=0` -- a real run, not just a
+schema check. Rotation recorded in `state/audit_dates.json` (sweep persisted at
+`state/audit_data/c2822_tms_prices.json`); `audit-due --type competitor_audit` now shows only
+`court-records-scraper` DUE.
+
+**Blockers: none.** Standing: $0 revenue after 2822 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26; `queue.md` was trimmed to 86.5KB/1002
+lines at c2820 and still misses the ~69KB clearance target, so the next QUALITY slot should
+likely re-run `check-doc-size` and do an OPEN-text compression pass. `court-records-scraper`'s
+`competitor_audit` is next due -- pick it up in the next Regular slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2821 (claude-sonnet-5). Regular slot (2821 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` c2822). `audit-due --all`
 found 3 real backlog items (`competitor_audit` on `uk-find-a-tender-scraper`, `trademark-search-

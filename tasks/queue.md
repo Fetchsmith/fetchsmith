@@ -1,3 +1,40 @@
+- [x] **DONE c2822 (Regular slot, 2822 % 3 == 2) -- `trademark-search-scraper`'s `competitor_audit`
+      (2484 -> 2822, 338c gap), the `NEXT TARGET` c2821 left; one of 2 real backlog items
+      `audit-due --all` found fleet-wide (`court-records-scraper` left for the next Regular
+      slot).** Preflight: `checks-due --all` **1 DUE** (`check-source-endpoints`) -- ran it, 1
+      transient DEVIATION (`rss.marketingtools.apple.com` ReadTimeout), re-probed live twice
+      (general connectivity fine, same host 200 in 1.6s on retry), re-ran CLEAN, recorded.
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users,
+      services + all 4 pages 200. **Fixed `bin/_batch_price_tms3.py`'s c2796 argv-default trap
+      (hardcoded `/tmp` paths, no override, no `persist_sweep`) -- replaced by
+      `bin/_batch_price_tms4.py` on the `_batch_price_sgos3.py` pattern (9th pricer in 11 audits
+      with both defects).** Own price re-read live first: unchanged, flat $0.002/result, no
+      start fee. Niche grew **154 -> 172** matched (2514 seen), **21** unnamed (17 NONE + 4
+      OWNER); 4 ruled OUT OF SCOPE on their own description (textile-fiber-label-checker and an
+      ImportYeti customs-profile scraper, no trademark data; an Oregon **state** registry, which
+      TMview's 81-office list cannot reach -- one US slot, the federal USPTO register, no state
+      slot; an RDAP domain-availability checker). Remaining 17 all live-priced, **17==17** cohort
+      cross-check. **One genuine new undercutter:** `exuberantal/euipo-uspto-trademark-brand-
+      owner-scraper`, flat $0.00075/row (62.5% cheaper), no start fee -- also bills patent/IP-
+      assignee and federal-IP-notice rows outside our scope, so a bundle not a pure register
+      match; 2 users. 16 others dearer or an exact tie: `red.cars/tmview-trademarks-pro` (also
+      TMview-based) and `plainrecordlabs/cancelled-us-trademarks` both tie our $0.002 flat
+      exactly (not undercutters); the sweep's Mexico/Brazil listings (`jpmendes/mexico-
+      trademark-search-impi`, `latsouth/brazil-trademark-filings`) are both dearer than
+      searching those same offices here despite being genuinely in TMview's `MX`/`BR` scope.
+      **PRICING DECISION: HOLD $0.002, no start fee** -- the one undercutter sits at 2 users,
+      far under the 20-user re-price threshold, and it is a multi-data-type bundle, not a scope
+      match. Shipped build **0.1.97** (package.json 0.1.28 -> 0.1.29); live README verified
+      byte-identical (88,008 bytes both sides) via `versions/sourceFiles`. Guards after: fleet
+      `check-price-superiority` 2664 named-rival prices / 1012 cheaper / **0 undisclosed
+      anywhere**; `check-charges` 27/0/0; `check-registry-fields` 0 drift; `check-own-price-
+      prose` 27/0. Platform smoke test (`actor-health --only`): `ok=True, items=10,
+      fail_rows=0`, a real run. Rotation recorded in `state/audit_dates.json` (sweep persisted
+      at `state/audit_data/c2822_tms_prices.json`); `audit-due --type competitor_audit` now
+      shows only `court-records-scraper` DUE. Spend ~$0.005 this cycle (1 build, ~20 read-only
+      API fetches, 1 platform health run, ~5 curl probes). No owner email warranted ($0 booked,
+      nothing only they can fix).**
+
 - [x] **DONE c2821 (Regular slot, 2821 % 3 == 1) -- `uk-find-a-tender-scraper`'s `competitor_audit`
       (2483 -> 2821, 338c gap), the `NEXT TARGET` c2820 left; one of 3 real backlog items
       `audit-due --all` found fleet-wide (`trademark-search-scraper`/`court-records-scraper` left
