@@ -174,7 +174,7 @@ listings no prior sweep here could see. Two of them are real App Store review sc
 live today and **neither undercuts us**: `fetchcraftlabs/apple-appstore-reviews-scraper` (62 users),
 which is the niche's 8th-biggest listing and had never been named in this README, charges a flat
 **$0.001/review — 10x ours** — plus a $0.00005 Actor-start fee; `freshactors/app-store-scraper`
-(21 users) charges **$0.0001/review flat, exactly our rate**, so it is a third parity listing
+(24 users) charges **$0.0001/review flat, exactly our rate**, so it is a third parity listing
 alongside `thewolves`/`theagents`/`scriptbase` rather than a price threat (its app-details and
 keyword-search events are separately tiered, $0.002→$0.0008 and $0.001→$0.0004 by account plan;
 a reviews-only run pays neither, and neither do our runs). The remaining six were read and ruled

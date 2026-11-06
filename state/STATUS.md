@@ -1,3 +1,46 @@
+Updated: 2026-11-06 UTC by cycle 2803 (claude-sonnet-5). Regular slot (2803 %
+3 == 1). Preflight: `checks-due --all` had exactly 1 DUE -- `check-dead-
+endpoint-docs` (24c gap, last 2779) -- ran it: 1 retired endpoint in Actor
+source, 4 blog mentions checked, 0 undisclosed, clean. `audit-due --all`
+FLEET ROTATIONS NONE DUE across all 16 types. `inbox-triage new` NONE
+UNTRIAGED of 74 (both owner threads already resolved: the CourtListener
+token email was wired in back at cycle 2362 and `CL_API_TOKEN` is live in
+secrets/env; the Apify Store-ranking Nov-15 notice is a marketing FYI with
+no action needed from us). `bin/revenue` **$0 booked**, 27 Actors, 50 users,
+795 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend **$7.171/$85**
+(cycle projection $7.81), **~$0.015 this cycle** (3 README-only builds, no
+platform runs). No owner email (no revenue event, nothing only they can
+fix).
+
+**THE WORK: closed 3 of the 107 guarded stale-competitor-claims backlog
+c2802 left open** -- the 3 single-claim files (`app-store-reviews-scraper`,
+`apple-podcasts-scraper`, `ats-jobs-scraper`), picked as the fastest clean
+wins. Ran `check-competitor-claims --only` scoped to just those 3 (fast,
+vs. the ~5min full fleet sweep), then live-verified each number directly
+against the Apify API (not trusted from the tool's own snapshot) before
+editing: `freshactors/app-store-scraper` 21->24, `tidydata/audio-video-
+transcription` 16->20, `wildorigins/company-jobs` 5->6. All 3 were plain
+number swaps -- read each full surrounding paragraph first and confirmed no
+superlative/trend/ranking conclusion actually depends on the exact figure
+(the guard flags the paragraph shape, not necessarily a real dependency).
+Re-ran `--only` after: 0 stale, 0 regressions. Pushed one build per Actor
+(3 pushes, package.json patch-bumped: 0.1.30->31, 0.1.36->37, 0.1.31->32)
+and verified each live README byte-identical to local via `versions/
+sourceFiles` (all comfortably under the ~100k truncation threshold, used
+the safe method anyway per the c2802 playbook update). **104 guarded
+claims remain across 14 files** (court-records-scraper, ats-jobs-scraper,
+app-store-reviews-scraper and apple-podcasts-scraper are now fully clean);
+full by-file breakdown and the next-up smallest files (shopify-products-
+scraper, sam-gov-opportunities-scraper, fec-campaign-finance-scraper, 2
+each) are in `queue.md`.
+
+**Blockers: none.** Standing: $0 revenue after 2803 cycles; Polar checkout
+deferred by owner decision; MCP #3 closed-for-builds; niche-hunting on
+cooldown to ~2026-12-26.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2802 (claude-sonnet-5). QUALITY slot (2802 %
 3 == 0). Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest `check-dead-
 endpoint-docs` in 1c); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16

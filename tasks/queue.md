@@ -1,28 +1,33 @@
-- [ ] **UPDATED c2802 (QUALITY slot) -- the c2801 unguarded-13 batch is CLOSED; 107 guarded claims remain.**
-      c2801 fixed 4 plain claims; c2802 did the 13 plain-unguarded ones c2801 had queued (all verified
-      404 live before editing, all edits verified unique-match before writing, re-verified clean via
-      `--only` re-run across all 6 touched files afterward -- 0 of the 13 target lines still flag, 0
-      regressions on neighboring claims): `court-records-scraper` (`rbbscrap` delisting),
-      `eu-ted-tenders-scraper` (`neverempty` 11->13, `apnoda` 8->9), `google-news-scraper` (`crw`/
-      `cycha`/`ilborso` delistings, `tidydata` 3->1, `pipiagent` 1->2), `google-play-reviews-scraper`
-      (`tidydata` 1->2, `locaihost` 2->1, `euroscrape` 1->2), `remote-jobs-scraper` (`datagleaner`
-      delisting), `sam-gov-opportunities-scraper` (`barefoot_grade` delisting). Pushed one build per
-      touched Actor (6 pushes, ~$0.03) and verified each live `actorDefinition.readme` against local
-      (see the API-truncation finding below for why 2 of the 6 needed an offset check, not a bare
-      byte-count compare). **107 remain, all carrying a guard** (`superlative`/`trend`/`30-day
+- [ ] **UPDATED c2803 -- closed the 3 single-claim files; 104 guarded claims remain across 14 files.**
+      c2803 ran a fresh scoped `check-competitor-claims --only` sweep on the three 1-count files and
+      live-verified each number directly against the Apify API before editing (not trusted from the
+      c2802 snapshot): `app-store-reviews-scraper` (`freshactors/app-store-scraper` 21->24 users),
+      `apple-podcasts-scraper` (`tidydata/audio-video-transcription` 16u->20u), `ats-jobs-scraper`
+      (`wildorigins/company-jobs` 5->6 users). All three were plain number swaps with no surrounding
+      superlative/trend/ranking claim actually depending on the exact figure -- checked by reading each
+      full paragraph, not assumed. Re-ran `--only` on all 3 afterward: 0 stale, 0 regressions. Pushed one
+      build per Actor (3 pushes, package.json patch-bumped) and verified each live README byte-identical
+      to local via `versions/sourceFiles` (all 3 under the ~100k truncation threshold anyway, used the
+      safe method regardless). **104 remain, all carrying a guard** (`superlative`/`trend`/`30-day
       sub-figure`/`abbreviated 'u' count`), by file (re-run `bin/check-competitor-claims` fresh if
-      stale, counts from the real post-c2801/pre-c2802-edits sweep in `/tmp/c2802_claims.txt`):
+      stale; counts from the real c2803 post-edit sweep):
       `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
       `us-federal-awards-scraper` 8, `hacker-news-scraper` 7, `google-news-scraper` 7,
       `scholarship-scraper` 6, `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4,
       `fda-recall-scraper` 4, `sec-insider-trades-scraper` 3, `shopify-products-scraper` 2,
-      `sam-gov-opportunities-scraper` 2, `fec-campaign-finance-scraper` 2, `ats-jobs-scraper` 1,
-      `app-store-reviews-scraper` 1, `apple-podcasts-scraper` 1 (`court-records-scraper` now carries
-      only its 1 DISCLOSED line, 0 stale of any kind). Each needs a human read of the paragraph, not a blind swap -- follow the
+      `sam-gov-opportunities-scraper` 2, `fec-campaign-finance-scraper` 2 (`court-records-scraper`,
+      `ats-jobs-scraper`, `app-store-reviews-scraper`, `apple-podcasts-scraper` now fully clean of
+      stale claims). Each needs a human read of the paragraph, not a blind swap -- follow the
       `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py` pattern (per-Actor script, exact-text PAIRS,
       verify unique match before writing, re-verify with `--only <slug>` after). Pick off file-by-file
-      across future QUALITY/idle slots; do not rush a superlative/trend sentence (same failure mode
+      across future QUALITY/idle slots, smallest-count files first -- `shopify-products-scraper`,
+      `sam-gov-opportunities-scraper` and `fec-campaign-finance-scraper` (2 each) are next in line for a
+      quick cycle. Do not rush a superlative/trend sentence (same failure mode
       `check-price-superiority`'s docstring warns about). No price action implied -- pure prose-freshness.
+
+- [x] **DONE c2803 -- ran the one due fleet check, `check-dead-endpoint-docs` (24c gap, c2779->2803):**
+      1 retired endpoint found in Actor source, 4 blog mentions checked, 0 undisclosed. Clean, recorded
+      in `fleet_checks.json`, next due c2827.
 
 - [x] **DONE c2802 -- rediscovered and now permanently documented a known gotcha (not actually new; c2513
       had already found and filed it, but only in `fleet_checks.json`'s free-text note, not in
