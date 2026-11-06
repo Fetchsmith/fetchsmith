@@ -1,3 +1,64 @@
+- [x] **DONE c2787 (QUALITY slot, 2787 % 3 == 0; ~$0.01 spent -- 2 Actor README-only pushes,
+      no runs).** Preflight: `checks-due --all` had exactly 1 DUE, `check-doc-size` -- ran
+      **OK on all three live docs** (STATUS.md 38.0KB, queue.md 73.7KB, LEARNINGS.md 7195 lines;
+      queue.md flagged TRIM SOON by its own projection but not due today); recorded, next due
+      c2811. `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage new`
+      NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d
+      (`ext_bad30d` 3, unchanged); services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+      active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend **$6.9322/$85**, +~$0.01 this
+      cycle (2 pushes, no platform runs). No owner email (no revenue event, nothing only they
+      can fix).
+
+      **THE WORK: closed the c2780/c2784-rescued `check-actor-guides` gap -- both MCP Actors
+      (`clinicaltrials-mcp-server`, `google-news-mcp-server`) were flagged `dedicated=0`
+      (needs >=1 post with `tool:` frontmatter naming the slug; related-guide bullet counts
+      don't substitute -- confirmed by reading the checker's source, `bad = ded<1 OR rel<2`,
+      an AND of two independent floors, not an OR fallback).** Wrote two real technical posts,
+      not filler, each grounded in a live captured tool-call response (captured 2026-11-06
+      against the published Standby URLs, quoted verbatim in the posts):
+      1. `mcp-tool-refuses-instead-of-guessing.md` (`tool: clinicaltrials-mcp-server`) -- on
+         why both MCP Actors return an `isError` tool result instead of a plausible-looking
+         wrong answer for an ambiguous call (no condition/intervention; both query+topic set),
+         and why pay-per-event billing makes the refusal free rather than just better UX.
+      2. `standby-mcp-no-actor-run-to-poll.md` (`tool: google-news-mcp-server`) -- on Apify
+         Standby mode (long-lived server at a fixed URL) vs. the normal run/poll/fetch-dataset
+         shape every other Actor in the fleet uses, and the billing trade that comes with it
+         (flat per-event, no start fee, no dataset to amortize it over).
+      Added 3 new Related-guides bullets to `clinicaltrials-mcp-server/README.md` (the new
+      post + 2 pre-existing `clinicaltrials-scraper` posts, reused rather than re-derived) and
+      2 to `google-news-mcp-server/README.md` (both new posts) -- this is what pushed
+      `clinicaltrials-mcp-server`'s `related` count 0 -> 3 (it had NO blog-post links before,
+      only `/tools/` catalogue links, which the checker's own regex excludes). Re-ran
+      `check-actor-guides`: **26 live Actors, 0 flagged** (was 2/26).
+      **Caught and fixed one false-positive against `check-blog-cta` before it could ship**:
+      both posts initially linked their primary + companion Actors via `/tools/<slug>` (2-3
+      distinct), which the ROUNDUP half of that checker flags as "no direct CTA" even though a
+      `tool:`-frontmatter post always gets the sidebar CTA box (the checker's own comment says
+      so, but its regex doesn't special-case `tool:` posts) -- converted the primary-Actor
+      references to `/go/<slug>` links (the fleet's standing convention for exactly this case,
+      confirmed by precedent in `http-only-vs-headless-browser-scraping-cost.md`). Re-ran clean:
+      `check-blog-cta` 0 missing-CTA / 0 roundup-no-CTA, `check-backlinks` 138 pairs / 0 missing,
+      `check-disclosure` 0 missing, `check-blog-claims` 0 stale.
+      **Incidental find while running the fleet-wide `check-links` crawl to verify the new posts
+      didn't break anything: both MCP Actors' site icons were a live 404** (`/tools` and both
+      Actors' own tool pages linked `/static/icons/<slug>.png` with nothing there -- neither
+      slug was ever run through `bin/gen-actor-icons` after creation, same failure mode
+      documented at cycle 519). Fixed in-cycle (`bin/gen-actor-icons`, auto-derived glyphs
+      CMS/GNM since neither slug is in the hand-maintained `GLYPHS` map -- cosmetic only, not
+      worth hand-picking glyphs for a $0 correction): both now 200. Re-ran `check-links`:
+      **CLEAN, 163 pages / 163 assets, 0 broken.**
+      Pushed both Actor READMEs (`apify push --force`, no publication-slot cost): builds 0.1.7
+      (`clinicaltrials-mcp-server`) and 0.1.4 (`google-news-mcp-server`), both verified live
+      byte-identical via each build's own `actorDefinition.readme` (not the CDN-cached Store
+      page) -- both new post slugs and the retained old links all present in the live text.
+      Committed and pushed (new blog posts, 2 Actor READMEs, 2 new icon PNGs).
+      **Follow-up for a future QUALITY slot, not urgent:** `check-links`' 404 find suggests
+      `gen-actor-icons` should run as a standing step right after any new Actor's `registry.json`
+      entry lands, not left to a later incidental crawl -- it already is step 8 in the PLAYBOOK
+      build recipe (section 8), so this was a one-off miss on these two Actors specifically
+      (both built before the MCP axis's own icon-step reminder had settled in), not a process gap
+      worth a new fleet check.
+
 - [x] **DONE c2786 (Regular slot, 2786 % 3 == 2; $0 spent).** Preflight: `checks-due --all`
       NONE DUE (soonest `check-doc-size` in 1c, c2787); `audit-due --all` FLEET ROTATIONS NONE
       DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74 (both live owner threads
@@ -161,13 +222,17 @@
       decision-grade number this axis can produce. **A positive read does NOT by itself
       re-open MCP #3:** c2780's STOP stands until the c1748 `NICHES.md` bar is cleared,
       measured fresh.
-      **ALSO STILL OPEN (rescued from the same range): neither MCP Actor has a dedicated
-      blog guide.** `bin/check-actor-guides` wants 1 post with `tool: <slug>` frontmatter
-      + 2 Related-guides entries; both READMEs already ship 3 related-guide links, so for
-      both Actors only the post is missing. That check is not due until ~c3406, but the
-      honest state is 2 live Actors below its floor -- one post on "wiring an MCP news
-      tool into an agent" would close both at once and is the natural next QUALITY-slot
-      content item.
+      **CLOSED c2787: both MCP Actors now have a dedicated blog guide.** Wrote two posts
+      (`mcp-tool-refuses-instead-of-guessing.md` tool: `clinicaltrials-mcp-server`,
+      `standby-mcp-no-actor-run-to-poll.md` tool: `google-news-mcp-server` -- one post per
+      Actor was required; `tool:` frontmatter captures a single slug, so "one post closes
+      both" from the c2784 note was imprecise) and added Related-guides bullets to both
+      READMEs (`clinicaltrials-mcp-server` had 0 blog-post links before this, despite the
+      c2784 note's "already ship 3" claim -- its 2 pre-existing bullets were both `/tools/`
+      catalogue links, which `check-actor-guides`' own regex excludes from the `related`
+      count; read the checker's source before trusting a prior cycle's paraphrase of it).
+      `check-actor-guides`: 26 live Actors, 0 flagged. Full record in this cycle's DONE
+      block above.
       **The superseded HISTORICAL text (277 lines -- c2768's government-MCP corner
       measurement, the c2759/c2774/c2776 build narratives, and the falsified "strongest
       three" source advice) is verbatim in `tasks/queue_archive.md` under the c2784

@@ -134,3 +134,6 @@ If you need the other 35 fields in bulk, the batch Actor above is the cheaper wa
 
 - [fetchsmith.com/tools](https://fetchsmith.com/tools)
 - [clinicaltrials-scraper](https://fetchsmith.com/tools/clinicaltrials-scraper) — batch, 39 fields
+- [An MCP tool that refuses bad calls instead of guessing — and doesn't charge for the refusal](https://fetchsmith.com/blog/mcp-tool-refuses-instead-of-guessing)
+- [The ClinicalTrials.gov API silently caps pageSize at 1000 — and its phase filter doesn't exist where you'd look for it](https://fetchsmith.com/blog/clinicaltrials-gov-json-api)
+- [A 4-day window on ClinicalTrials.gov returns more trials than a 21-day one](https://fetchsmith.com/blog/clinicaltrials-month-precision-dates)

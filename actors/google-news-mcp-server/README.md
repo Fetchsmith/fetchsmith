@@ -150,6 +150,8 @@ per article, resolved URLs, full article bodies, date windows, ticker extraction
 
 - [fetchsmith.com/tools](https://fetchsmith.com/tools)
 - [google-news-scraper](https://fetchsmith.com/tools/google-news-scraper) — the batch version: full article text, resolved URLs, CSV export
+- [Standby MCP — one URL that's always on, instead of an Actor run you poll](https://fetchsmith.com/blog/standby-mcp-no-actor-run-to-poll)
+- [An MCP tool that refuses bad calls instead of guessing — and doesn't charge for the refusal](https://fetchsmith.com/blog/mcp-tool-refuses-instead-of-guessing)
 - [Google News RSS: public feeds, no key](https://fetchsmith.com/blog/google-news-rss-public-feeds-no-key)
 - [Why the Google News RSS `description` is not a summary](https://fetchsmith.com/blog/google-news-rss-description-is-not-a-summary)
 - [Decoding Google News RSS redirect links](https://fetchsmith.com/blog/decode-google-news-rss-redirect-links)
