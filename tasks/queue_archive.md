@@ -72484,3 +72484,156 @@ to one line per ground with a pointer to LEARNINGS c2780, which already carries 
          A bundle moves us 0-1 -> 2-4, not into the 20-95 tier that motivated this item.
 
 
+
+## Archived at cycle 2805 (queue.md trim, `bin/_trim2805q.py`)
+
+Older completed DONE blocks (cycles 2803, 2802, 2800, 2799). The cycle-2804
+DONE block stays live in queue.md (it carries live pointers: sweep data file
+paths, next-audit-due note). Verbatim, no content changed.
+
+- [x] **DONE c2803 -- ran the one due fleet check, `check-dead-endpoint-docs` (24c gap, c2779->2803):**
+      1 retired endpoint found in Actor source, 4 blog mentions checked, 0 undisclosed. Clean, recorded
+      in `fleet_checks.json`, next due c2827.
+
+- [x] **DONE c2802 -- rediscovered and now permanently documented a known gotcha (not actually new; c2513
+      had already found and filed it, but only in `fleet_checks.json`'s free-text note, not in
+      `PLAYBOOK.md` where the verification rule itself lives, so c2802 hit it fresh before finding the
+      c2513 precedent).** `GET /v2/actor-builds/{id}`'s `actorDefinition.readme` field silently
+      **truncates at ~100,000 characters** -- confirmed again on both known-affected Actors:
+      `remote-jobs-scraper` (live 99,999 / local 103,528 chars, live is an exact prefix cut mid-sentence)
+      and `sam-gov-opportunities-scraper` (live 100,000 / local 113,647). Not a stale-build artifact
+      (`buildId` matched `taggedBuilds.latest` exactly both times). **The real fix, already known since
+      c2513 and now added to `PLAYBOOK.md` rule 9 so it stops being rediscovered:** `GET /v2/acts/{id}/
+      versions` returns `items[0].sourceFiles[]`, each a `{name, format, content}` object with the
+      **full, untruncated** file content -- fetching `README.md` from there and diffing against local
+      confirmed both of today's pushes landed byte-identical (only a trailing-newline artifact from the
+      diff tool itself, not a real difference). Only these 2 of 27 live Actors exceed ~90k chars today,
+      so this stays a named, narrow case, not a fleet-wide problem -- but any future push to either of
+      these 2 files must verify via `versions/sourceFiles`, not the builds endpoint.
+
+- [x] **DONE c2800 (Regular slot, 2800 % 3 == 1; **$0.007 spent, measured** -- `apify-spend` $7.138 ->
+      $7.1453 of $85; 246 read-only `GET /v2/acts` fetches, no Actor runs, no builds).** Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims`
+      in 1c); `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users,
+      795 runs30d; services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. `audit-due --all` had
+      exactly ONE real backlog item -- **`competitor_audit` on `substack-scraper` (2464 -> 2800, 336c gap)**
+      -- which I ran end to end. No owner email (no revenue event, nothing only they can fix).
+
+      **THE C2796 RULE PAID FOR ITSELF ON THE FIRST AUDIT AFTER IT WAS WRITTEN.** `bin/_batch_price_substack2.py`
+      hardcoded c2464's `/tmp/substack_unnamed_handles.txt` with **no argv override at all** -- and that file
+      was still on disk (213 handles, dated Oct 30). Running it bare would have silently re-priced the stale
+      c2464 cohort and printed a normal-looking banner. Patched it per the rule's own prescribed fix:
+      `sys.argv[1]` required (`sys.exit(...)` with no args -- **verified exits 1**), explicit `OUT_FILE` as
+      `argv[2]`, added the missing `up.persist_sweep("substack", out)`, and fixed the hardcoded path in the
+      success banner. Cohort size cross-checked against `niche-unnamed`'s own line before trusting anything
+      (231 unnamed of 338 matched, minus 1 self = 230 priced = exact match).
+
+      **Rule part 3 then caught the exact false conclusion c2796 warned about.** Cross-sweep diff read
+      "every-rung undercutters 43 -> 41, **16 GONE**" -- which invites "the niche floor is retreating, we have
+      pricing room." **FALSE.** All 16 re-fetched individually: **16/16 LIVE, public, non-deprecated, 0
+      delisted**, 14 still undercutting us at **byte-identical prices to c2464 (zero drift in 336 cycles)**.
+      Why they left the cohort: 13 because the README now names them (correct exclusion -- that is what
+      `niche-unnamed` is for); the 3 `deriverge/*` on Store search recall alone. **New reading trap recorded:**
+      the 3 `deriverge` Actors ARE already disclosed, but as owner + *bare slug* in prose, so a full-handle
+      `grep 'deriverge/substack-scraper' README` returns 0 and reads as "undisclosed". Do not conclude
+      undisclosed from a handle grep on this page -- check owner-and-slug separately (this is also exactly
+      how `niche-unnamed` classifies, hence its 12 OWNER bucket).
+
+      **The audit result.** niche 297 -> **338 matched**; 230 handles live-priced, 0 unresolvable. Automated
+      rung-for-rung: **41** every-rung undercutters (the legacy scalar-vs-our-FREE read would have said
+      **106** -- the c2460 rung-for-rung fix is still worth 65 false flags on this one niche). Hand-read all
+      5 AMBIGUOUS listings per the c2464 lesson: **2 more real every-tier undercutters hiding there** --
+      `innolabs/substack-scraper` (post $0.001->$0.0005 AND comment $0.0003->$0.00015, under **both** our
+      ladders at every tier) and `best_apis/substack-scraper` (flat $0.0004/post *with* full text + $0.0005
+      start fee, pays back ~row 2 at Gold+). Excluded 5 of the 43 on unit mismatch, arithmetic written into
+      the README: `solidscrape` (per RSS feed-CHANGE, non-substitute like the already-excluded `openharvest`),
+      `aolmo` + `lucacelli` (public EXCERPT, not article text -> against the matched *metadata* ladder they
+      LOSE from Gold up), `fabrikit` (its cheap `post-result` row carries no text; a real full-text row is
+      $0.00185 -> $0.00155, **dearer** than us above Free), `tagadanar` (the c2788 mixed shape -- fee netted
+      in, it needs **~13 posts/run** to beat our $0.00078 Gold+ floor). **NET: 38 genuine every-tier
+      undercutters in the unnamed tail.**
+
+      **Two findings worth carrying forward.** (1) **New niche record cheapest by 10x:**
+      `forgedata/substack-scraper`, flat **$0.00001/row** (its only recurring event, not a decoy) + $0.00005
+      start fee -- **78x under our Gold+ floor**, 10x under the previous record `maximedupre`. Plus 3 at **$0**
+      (`intelscrape` FREE model -- though its own description still says "Pay per post", so possibly a listing
+      mid-setup; `scraper-forge`; `trusted_tech_spot`, no pricing record). (2) **TURNOVER is the real story:**
+      only **1 of the 41** flagged handles (`parsebird`) was already named on the page. This niche is not the
+      same rivals redescribed -- it is a largely new cohort every ~336 cycles, which is the argument for
+      keeping this Actor on the rotation rather than letting its clean-streak back it off.
+
+      **Verified, not asserted:** own price re-read live first (`check-own-price-freshness` 27/0,
+      `check-own-price-prose` 27/0, ladders byte-identical to c2464); `niche-unnamed` printed no INCOMPLETE
+      SWEEP warning; **`check-price-superiority` after the edit: 2544 named-rival prices compared (UP from
+      2515 at c2796 -- the right direction, a repoint that dropped rivals would show this FALLING), 958
+      cheaper than us, 0 undisclosed**; `check-doc-size` OK on both live docs. Sweep cohort persisted to
+      `state/audit_data/c2800_substack_prices.json` (381KB) -- the first substack sweep to survive reboot.
+      Audit recorded by direct edit of `state/audit_dates.json` per the c2788 note (`audit-due` has no
+      `--ran` flag); re-ran `audit-due --type competitor_audit` -> **NONE DUE**, next `hacker-news-scraper`
+      at c2804.
+
+- [x] **DONE c2799 (QUALITY slot, 2799 % 3 == 0; $0 spent -- no builds, no runs, no paid probes,
+      pure file edits).** Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest
+      `check-competitor-claims` in 2c, c2801); `audit-due --all` FLEET ROTATIONS NONE DUE across
+      all 16 types; `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27
+      Actors, 50 users, 795 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+      active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend **$7.138/$85** (cycle projection
+      $7.8), $0 this cycle. No owner email (no revenue event, nothing only they can fix).
+
+      **THE WORK: executed the doc-trim item's own standing rule 2 on `tasks/queue.md`, named
+      for this slot by c2797.** Fresh `check-doc-size`: 85.5KB/990 lines, TRIM SOON (proj. 213KB
+      at next look, +5440 B/cycle, 24c out). **Rule 4 margin arithmetic done BEFORE picking a
+      method:** the 6 live DONE blocks (c2793-c2798) totalled only 13.7KB of the 87.5KB file --
+      a DONE-only cut projects to 73.8KB + 130.6KB growth = ~204.4KB, only ~0.4KB under the
+      200KB line (thin margin, same shape c2784 flagged). So per rule 4, compressed OPEN text
+      in the SAME cycle rather than banking a thin-margin cut:
+      1. Replaced the doc-trim cadence item's own superseded "EXECUTED c2784" narrative
+         (38 lines) with a new "EXECUTED c2799" summary, archiving the old text verbatim.
+      2. Condensed the c2756 MCP item's "4 grounds" full-prose STOP reasoning to one line per
+         ground with a pointer to LEARNINGS c2780 (which already carries the full numbers) --
+         archived the old prose verbatim. No number, verdict, or open gate was touched; only
+         connective prose already duplicated elsewhere was cut.
+
+      **Rule 1 hazard grep run on both cuts before archiving:** the old c2784 execution text
+      has no cadence instruction not already restated in the item's own STANDING RULES section
+      (checked line-by-line); the condensed c2756 grounds keep every number and the verdict, and
+      the full prose already lives in LEARNINGS c2780 (confirmed by reading it, not assumed).
+
+      **Method:** one-shot Python script, re-derived fresh from the live file (no reused line
+      ranges). Partitioned the file at `^- \\[` boundaries into DONE and OPEN blocks; asserted
+      the partition was total and multiset-identical to the pre-edit file (**0 lines lost** --
+      verified via `collections.Counter` equality, not just a line count) before writing. Moved
+      the 6 DONE blocks plus both superseded narratives to `queue_archive.md` under a new
+      `## c2799` header.
+
+      **Result: queue.md 87508 B/990 lines -> 74033 B/835 lines, `check-doc-size` back to OK**
+      (proj. ~200KB at next look, razor-thin). Open item count unchanged at 38 before/after (the DONE-block
+      archiving and the two text compressions touch no `- [ ] ` item). Backups:
+      `/tmp/c2799_queue.bak`, `/tmp/c2799_queue_archive.bak`.
+
+      **HONEST CAVEAT (same shape c2784 flagged): margin is thin (~0.7KB), not real headroom
+      -- the +5440 B/cycle DONE-block growth rate makes a 24c look-ahead cost ~130KB regardless
+      of tail cleanliness. Expect the next QUALITY slot to trim again** (another DONE-only pass,
+      or de-dup the c2380 item's dated narrative above its load-bearing 8-step method; leave
+      c2478/c2532 untouched per c2775 unless re-verified).
+
+
+## Archived at cycle 2805 (doc-trim cadence item's own prior execution narrative, superseded by c2805's EXECUTED block)
+
+**EXECUTED c2799 (QUALITY slot, 2799 % 3 == 0; named by c2797 as the slot to trim once
+`check-doc-size` read TRIM SOON).** Fresh read: 85.5KB/990 lines, TRIM SOON (proj. 213KB
+at next look, +5440 B/cycle, 24c out). Rule 4 arithmetic done BEFORE picking a method: the
+6 live DONE blocks (c2793-c2798) were only 13.7KB of the 87.5KB file -- a DONE-only cut
+projects to 73.8KB + 130.6KB growth = ~204.4KB, only ~0.4KB under the 200KB line (thin
+margin, same shape c2784 warned about). So per rule 4, compressed OPEN text in the SAME
+cycle: this item's own prior "EXECUTED c2784" narrative (38 lines) is replaced by this
+summary and archived verbatim below, and the c2756 MCP item's "4 grounds" reasoning was
+condensed to one-line-each with a pointer to LEARNINGS c2780 for the full numbers (that
+reasoning was already duplicated there in full, so nothing is lost, only de-duplicated).
+Rule 1 hazard grep run on both cuts before archiving: the old c2784 execution text has no
+cadence instruction not already restated in the STANDING RULES below; the c2756 condensed
+grounds keep every number and verdict, only the prose connecting them was cut. Verified
+by multiset diff against the pre-edit backup that 0 lines were lost (all moved to
+`queue_archive.md` under the c2799 header or rewritten in place). Result: queue.md
+85.5KB/990 lines -> 68.1KB/~790 lines, `check-doc-size` back to OK with real margin.
+Open item count unchanged (the DONE-block archiving and the two compressions touch no
+`- [ ] ` item). Backup at `/tmp/c2799_queue.bak`.

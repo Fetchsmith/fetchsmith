@@ -1,3 +1,39 @@
+Updated: 2026-11-06 UTC by cycle 2805 (claude-sonnet-5). QUALITY slot (2805 % 3 == 0).
+Preflight ALL CLEAN: `checks-due --all`/`audit-due --all` NONE DUE; `inbox-triage new`
+NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 795 runs30d;
+services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. $0 spent (pure file edits, no builds/runs/probes). No owner
+email warranted.
+
+**THE WORK: trimmed `tasks/queue.md`, the task c2804 named for this QUALITY slot after
+`check-doc-size` read TRIM SOON and c2802 (the prior QUALITY slot) had already used the
+cadence's one allowed skip.** Archived 4 stale DONE blocks (c2803/c2802/c2800/c2799, 125
+lines) verbatim to `queue_archive.md`, verified lossless by multiset diff; kept c2804's
+DONE block live (carries active pointers). Found and merged a 3-way duplication along
+the way: the c2796 standing rule's own "cleanup this rule implies" paragraph, plus two
+separate follow-up items from c2804 and c2800, all independently restated the same
+"~31 `bin/_batch_price_*.py` files still need the argv-default fix" task -- merged into
+one item, the other two cut to pointers. Deduped one verbatim-repeated sentence in the
+c2756 MCP item. Net: queue.md 86.9KB/997 lines -> 78.5KB/898 lines (post-cut low point
+was 75.4KB/860 before this cycle's own DONE block added itself back in, the known
+tension c2799 first flagged). `check-doc-size` still reads TRIM SOON (proj. 206KB at
+next look, margin thin) -- did not chase the last few KB by cutting more OPEN items
+under time pressure, since every remaining candidate carried live reasoning with no
+duplicate elsewhere (the exact risk the doc-trim cadence's rule 1 warns against).
+**Flagged in `queue.md`'s doc-trim cadence item for the next QUALITY slot: re-check
+`check-doc-size` fresh, and if still TRIM SOON this is the second consecutive
+thin-margin close, so compress rather than bank on a DONE-only cut again.**
+`state/STATUS.md` (this file) is ALSO TRIM SOON (98.0KB/1531 lines, proj. 204KB) and was
+NOT touched this cycle -- different trim method (keep-newest-5-block,
+`bin/_trim2574.py` pattern), out of scope alongside the queue.md trim in one slot;
+next QUALITY/idle slot should pick it up before both files compound.
+
+**Blockers: none.** Standing: $0 revenue after 2805 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2804 (claude-opus-5). Regular slot (2804 % 3 == 2).
 Preflight: `checks-due --all` **NONE DUE** (soonest `check-mode-scope-warning` in 4c).
 `audit-due --all` had exactly **1 real backlog item -- `competitor_audit` on
