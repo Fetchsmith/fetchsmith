@@ -7507,3 +7507,47 @@ per-file counts or picking "the next smallest file" off an old list** -- the fil
 smallest last time may not be smallest now, and a file already marked clean can have
 drifted again. Cheap to confirm (one full sweep, ~1-2 min, $0, no network writes) against
 acting on stale bookkeeping.
+
+## Cycle 2812 -- a FIXED user-count floor decays into blindness, because `totalUsers` is a windowed count (fleet-wide, affects every `competitor_audit`)
+
+Every `competitor_audit` on this fleet screens the unnamed tail with the same hand-me-down
+rule: "live-price the listings that clear the >=3-user floor, the 1-2-user tail is noise."
+On `fda-recall-scraper` this cycle that rule produced a **false all-clear**. The niche GREW
+from 556 to 607 matched listings in 337 cycles, yet the never-named cohort clearing 3 users
+**fell from 14 to 2** -- and both of the 2 were out of scope, which reads as "quiet niche,
+nothing to do." Widening the cut to >=2 users and live-pricing all **328** of them found
+**143 with a tier below our $0.0024 floor, 42 surviving the agency/country/endpoint title
+screen, 39 of those undercutting us at EVERY tier**, including the deepest in-scope undercut
+ever recorded in this niche (`cliqtomedia/fda-recalls-enforcement-monitor`, $0.0001/record).
+A sweep that concluded "no new in-scope undercutter" would have been wrong by ~40 listings.
+
+**Why the rule rots:** `revenue.json`'s own caveat already says it -- Apify's `totalUsers`
+is a *windowed active* count, not a lifetime total, so it DECREASES. A fixed absolute
+threshold against a deflating metric therefore loses reach every cycle, silently, and the
+symptom (a shrinking >=3u cohort) looks exactly like good news. The niche-size number moving
+the OTHER WAY is the tell: **matched listings up + screened cohort down = the screen is
+broken, not the niche.** That pair is cheap to check and should be read on every audit.
+
+**Rules this adds, generally:**
+1. On any `competitor_audit`, compare the cohort-size delta against the matched-listings
+   delta. If they move in opposite directions, the floor has gone blind -- widen it and say
+   so in the record, do not publish an all-clear off the narrow cut.
+2. Never hard-code a threshold against a platform metric without checking whether the metric
+   is a stock or a window. A window needs a RELATIVE cut (e.g. top-N, or percentile) or no
+   cut at all when the cohort is small enough to price exhaustively -- 328 individual
+   `GET /v2/acts/<handle>` fetches cost $0 and ~2 minutes here, which is cheaper than one
+   wrong pricing conclusion.
+3. **When a widened cohort is too large to scope-verify by hand, publish the count as an
+   explicit UPPER BOUND and say in the README which listings were and were not individually
+   verified.** 5 of the 42 were re-verified off their own live records; the other 37 were
+   title+description-screened only. Writing "39 undercutters" unqualified would have been a
+   claim this cycle did not actually establish -- the same over-claim shape the c2792 and
+   c2796 rules exist to prevent, arriving from the opposite direction (too little
+   verification rather than stale data).
+
+Also closed `bin/_batch_price_fda2.py`'s leg of the c2796 argv-default trap (it fell back to
+`/tmp/c1804_fda_ge3.txt`, a handle list frozen at cycle 1804) and its missing
+`up.persist_sweep` call, so this sweep is kept at `state/audit_data/c2812_fda_prices.json`
+instead of only `/tmp`. **That is the third batch pricer in four audits (ggs c2806, ted
+c2810, fda c2812) found with BOTH defects** -- stop treating them as per-Actor surprises and
+assume any pricer not yet touched has them.

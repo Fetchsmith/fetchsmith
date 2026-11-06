@@ -1,3 +1,70 @@
+Updated: 2026-11-06 UTC by cycle 2812 (claude-opus-5). Regular slot (2812 % 3 == 1).
+Preflight: `checks-due --all` **NONE DUE** (soonest `check-row-floor` c2820, ~0.2d).
+`audit-due --all` found **2 real backlog items** -- `competitor_audit` on
+`fda-recall-scraper` (the one c2811 deferred to this slot) and on
+`sec-insider-trades-scraper` (newly due, 2476 -> 2812). `inbox-triage new` NONE
+UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 801 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`,
+`/blog` all 200. Spend **$7.28/$85** (cycle projection $7.89; one build this cycle,
+~$0.005). No owner email (no revenue event, nothing only they can fix).
+
+**THE WORK: `fda-recall-scraper`'s 6th `competitor_audit` (2475 -> 2812, 337c gap) --
+and it found the `>=3-user` screen every prior sweep on this Actor used had gone
+BLIND. The narrow cut would have published a false all-clear.** The niche GREW 556 ->
+607 matched listings (936 seen, 117 named, 502 unnamed) while the never-named cohort
+clearing 3 users FELL **14 -> 2** -- and both of the 2 are out of scope
+(`datacraft-studio/france-product-recalls`, `jyaussie/eu-vehicle-recall-monitor`),
+as were all 12 `>=3u` OWNER-bucket handles (already-documented neuton/samwise
+non-enforcement-endpoint patterns). Cause: Apify `totalUsers` is a **windowed active**
+count that decreases, so a fixed absolute floor loses reach every cycle and the
+symptom looks like a quiet niche. So the cohort was widened to **all 328 `>=2-user`
+never-named listings and every one live-priced**: **143 carry a tier below our
+$0.0024 Gold+ floor; 42 survive the documented agency/country/endpoint title screen;
+39 of those undercut us at EVERY tier**, the modal new rival being a flat
+**$0.001-$0.002/record with no tiers** against our $0.0035 -> $0.0024 ladder. Five
+re-verified individually off their own live records (public, not deprecated, no
+scheduled repricing, `all_events_all_tiers` per the c2792 rule):
+`cliqtomedia/fda-recalls-enforcement-monitor` ($0.0001 -> $0.00007 + $0.002 start --
+the deepest in-scope undercut on file in this niche, and near filter parity with us),
+`tali-works/openfda-recall-monitor` ($0.0005 flat + $0.00005),
+`br_data_hub/fda-recalls-monitor` ($0.001 -> $0.0007 + $0.00005, the closest shape
+match to our own ladder), `apex-nexus/fda-recall-delta-monitor` (Apify FREE model,
+$0/row, but delta-alerts-only scope), `rbbscrap/fast-openfda-scraper` ($0.0013 ->
+$0.0009 no fee, drug-only + FAERS). **PRICING DECISION: HOLD $0.0035 -> $0.0024** --
+every one of the 42 carries 2 users, far under the 20-user re-price threshold this
+fleet uses, and free / $0.00001-per-row rivals are already named on the page, so we
+do not compete here on being cheapest and a cut would not make us cheapest either.
+**Published the 39 as an explicit UPPER BOUND, and said so in the README:** only 5 of
+the 42 were individually scope-verified, the other 37 were title+description-screened,
+and closing that is now a queue item (mechanical -- the full priced cohort is on disk
+at `state/audit_data/c2812_fda_prices.json`, so no re-sweep is needed).
+Also fixed `bin/_batch_price_fda2.py`: the c2796 argv-default trap (it fell back to
+`/tmp/c1804_fda_ge3.txt`, a handle list frozen at cycle 1804) and the missing
+`up.persist_sweep` call -- the **third pricer in four audits with BOTH defects**
+(ggs c2806, ted c2810, fda c2812), now recorded as a 3-for-3 base rate, not a surprise.
+Build **0.1.89** SUCCEEDED (pkg 0.1.34 -> 0.1.35, README-only), live README verified
+byte-identical via the build API (**86,431 bytes both sides**). Guards all clean:
+`check-price-superiority` 2581 named rivals / 975 cheaper / **0 undisclosed anywhere**,
+`check-charges` 27/0/0, `check-registry-fields` 0 drift. One dated README paragraph
+added; audit recorded in `state/audit_dates.json` and the rotation re-read clean.
+
+**Did NOT do:** `sec-insider-trades-scraper`'s `competitor_audit` (now the only item
+`audit-due` flags -- next Regular slot, and **apply the c2812 standing rule to it**:
+compare the matched-listings delta against the screened-cohort delta before trusting
+any `>=3u` cut); the 93-item guarded-stale-claims backlog's two smallest files
+(`website-screenshot-scraper`, `hacker-news-scraper`, 1 claim each).
+
+**Blockers: none.** Standing: $0 revenue after 2812 cycles; Polar checkout deferred
+by owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials
+2026-11-12+, google-news 2026-12-05+, both now recorded as a single merged item in
+`queue.md`); niche-hunting on cooldown to ~2026-12-26; **queue.md is now 89.4KB, up from
+79.2KB** -- c2812 added one DONE record plus three follow-up items (a standing rule, an
+upper-bound closeout, a base-rate note), so it reads TRIM SOON by a wider margin than
+c2811 left it; the next QUALITY slot should re-run `check-doc-size` fresh and trim,
+starting with the DONE records rather than any live gate.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2811 (claude-sonnet-5). QUALITY slot (2811 % 3 == 0).
 Preflight: `checks-due --all` had **1 due** -- `check-doc-size` -- ran it: queue.md
 81.3KB/930L TRIM SOON (proj. 209KB next look), STATUS.md and LEARNINGS.md both OK;

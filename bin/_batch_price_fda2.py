@@ -41,8 +41,10 @@ H = {"Authorization": "Bearer " + cps.token()}
 API = "https://api.apify.com/v2"
 NOW = datetime.datetime.now(datetime.timezone.utc)
 
-HANDLES_FILE = sys.argv[1] if len(sys.argv) > 1 else "/tmp/c1804_fda_ge3.txt"
-OUT_FILE = sys.argv[2] if len(sys.argv) > 2 else "/tmp/c1804_fda_prices.json"
+if len(sys.argv) < 3:
+    sys.exit("usage: _batch_price_fda2.py <handles-file> <out-file> -- "
+             "pass an explicit fresh niche-unnamed handle list, see queue.md c2796")
+HANDLES_FILE, OUT_FILE = sys.argv[1], sys.argv[2]
 OURS_HANDLE = "fetchsmith/fda-recall-scraper"
 
 # --- re-verify OUR live price before comparing anything to it ---
@@ -59,6 +61,8 @@ print(f"our live price: tiers={_ot} entry={OURS_ENTRY} floor={OURS_FLOOR} "
       f"event={_ok} start_fee={_ofee}", file=sys.stderr)
 
 handles = [l.strip() for l in open(HANDLES_FILE) if l.strip()]
+print(f"cohort: {len(handles)} handle(s) from {HANDLES_FILE} -- cross-check this count "
+      f"against niche-unnamed's own '--- N unnamed of M matched ---' line", file=sys.stderr)
 out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
@@ -107,7 +111,8 @@ for i, h in enumerate(handles, 1):
         print(f"  ...{i}/{len(handles)}", file=sys.stderr)
 
 json.dump(out, open(OUT_FILE, "w"), indent=1)
-amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
+up.persist_sweep("fda", out)
+amb =[o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
 rf = [o for o in out if o.get("runfee")]
 bf = [o for o in out if o.get("below_floor")]
 print(f"priced {len(out)} listings -> {OUT_FILE} "
