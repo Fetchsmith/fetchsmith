@@ -198,8 +198,8 @@
   "check-unit-matched-price": {
    "kind": "cadence",
    "interval_cycles": 720,
-   "last_cycle": 2064,
-   "note": "cycle 2064: c2064: interval staggered 672->720 for the same reason as check-price-superiority (spread the three rival-pricing sweeps across separate cycles). Drift basis unchanged. [prior note preserved] cycle 2064: c2064: FIRST tracked entry. Ran clean (94s): 23 Actors in scope, 884 unit-matched multi-event rival comparisons, 377 cheaper than us, 0 undisclosed anywhere in the README. Sibling of check-price-superiority/check-primary-event and likewise had no trigger (docstring references only). 672c (~14d), same justification."
+   "last_cycle": 2784,
+   "note": "cycle 2784: clean: 23 Actors in scope, 1162 unit-matched multi-event rival comparisons, 529 cheaper than us, 0 undisclosed anywhere in any README [prior note preserved] cycle 2064: c2064: interval staggered 672->720 for the same reason as check-price-superiority (spread the three rival-pricing sweeps across separate cycles). Drift basis unchanged. [prior note preserved] cycle 2064: c2064: FIRST tracked entry. Ran clean (94s): 23 Actors in scope, 884 unit-matched multi-event rival comparisons, 377 cheaper than us, 0 undisclosed anywhere in the README. Sibling of check-price-superiority/check-primary-event and likewise had no trigger (docstring references only). 672c (~14d), same justification."
   },
   "check-real-fields": {
    "kind": "cadence",

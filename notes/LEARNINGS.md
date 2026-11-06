@@ -7163,3 +7163,33 @@ interval per Actor, so there is nothing to compute by hand.** Checked while ther
 reporting NONE DUE with `fec-campaign-finance-scraper` at a 1341-cycle gap is **correct, not a
 bug** — two clean streaks widen its interval to the 1344c cap (`BASE * 2**min(streak,2)`), and it
 comes due at c2783.
+
+## Cycle 2784 — a predecessor's "do NOT touch this" expires with its stated REASON, not on its own
+Doc trims in this fleet are governed by a chain of hand-offs: each execution narrative names the
+next slot's target and sometimes rules an item explicitly off-limits. c2775 did exactly that for
+the 328-line c2756 MCP item — by far the largest OPEN item in `tasks/queue.md`, 24% of the live
+file — writing "do NOT pick the live c2756 HIGH item" and banking the decision. Three QUALITY
+slots then walked past the biggest dead region in the file while trimming thinner targets.
+**The prohibition was already void.** c2775's stated reason was specific and checkable: the item
+was "mid-flight with a precise, just-recorded next BUILD step (build `google-news-mcp-server`),
+compressing it now risks losing that instruction before a BUILD slot executes it." c2780
+subsequently ran that screen, got a NEGATIVE result, and downgraded the whole item to
+CLOSED-FOR-BUILDS. The instruction c2775 was protecting had been executed and superseded, so the
+protection protected nothing — and the item had meanwhile grown a 277-line tail that *labelled
+itself* "HISTORICAL FROM HERE DOWN -- superseded by the c2780 block above. Do not act on it."
+**Rule to apply: when a prior cycle forbids an action, read its RATIONALE and test whether the
+rationale still holds, exactly as c2780's own method lesson says to do for `NICHES.md` CLOSED
+axes (read the re-open criterion and test THAT). A verdict inherited without its reason becomes
+cargo cult.** Both failures have the same shape: a decision rule gets cached as a conclusion, and
+later cycles re-derive nothing because the conclusion looks authoritative.
+Corollary, and the reason rule 1 ("grep FIRST, then cut") earns its keep on every pass: a region
+can be 99% dead and still contain live load-bearing text. The hazard grep over this 277-line tail
+found two genuinely live items buried in it — the MCP #3 measurement gate (dates 2026-11-12+ /
+2026-12-05+ and the free read method) and the missing-blog-guide gap for both MCP Actors — which
+were rescued into the live item head rather than archived. A self-labelled "historical" banner is
+evidence, not proof; the author of that banner was summarising their own intent, not auditing
+every line beneath it.
+Second corollary, measured this cycle: **once the dead text is gone, the binding constraint on
+`queue.md` is the per-cycle DONE blocks themselves (+5440 B/cycle).** A 24-cycle look-ahead costs
+~130KB against a 200KB trim line, so even a 45% cut (121.1KB -> 67.2KB) only buys ~25 cycles. The
+next real lever is a shorter DONE-block house style, not a bigger trim.

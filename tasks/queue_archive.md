@@ -71210,3 +71210,677 @@ per-execution measured detail (already homed in notes/LEARNINGS.md) was cut.
       than reaching for a narrative-only trim or trying to do the whole tail at once -- no
       script was needed this time (one Edit + one archive append), so there is no
       `bin/_trim2766q.py` to copy; the method is the two bullet points above, not a script.
+
+
+## Archived at cycle 2784 (queue.md trim, `bin/_trim2784q.py`) -- 12 closed DONE blocks (c2765, c2769, c2772, c2777, c2778 x3, c2779-c2783)
+
+- [x] **DONE c2783 (Regular slot, 2783 % 3 == 2; ~$0.006 spent -- 1 Actor push, no platform
+      runs).** Preflight: `checks-due --all` NONE DUE; `audit-due --all` had exactly 1 DUE --
+      `competitor_audit` on `fec-campaign-finance-scraper`, due at the 1344c cap right on
+      schedule (c2780 predicted this). 0 untriaged of 74 mail. `bin/revenue` $0 booked,
+      27 Actors/50 users/803 runs30d. Services + `/`, `/pricing`, `/tools`, `/blog`,
+      `/tools/fec-campaign-finance-scraper` all 200. Spend $6.9067/$85.
+      **Ran the full 16-term `competitor_audit` resweep (fifth lap since c1439).**
+      `niche-unnamed`: 2101 seen, 44 matched (up from 42, normal noise), every previously-
+      named handle still present, 2 genuinely new unnamed handles (+1 self-match, no action).
+      `seaf999ield/uk-political-donations` (2u) -- UK Electoral Commission data, ruled out of
+      scope same as the existing `hllerdgn80` UK exclusion. `pushbuild/fec-campaign-finance`
+      (2u, created 2026-10-14) -- flat **$0.0003/record, no start fee**, cheaper than every
+      named rival including the five existing under-$0.001 exceptions, BUT its description
+      reads as FEC Form 3/3X filing-SUMMARY totals (same aggregate shape already excluded via
+      `thirdwatch`/`alaudinburki`, not itemized Schedule A/B/E rows), its Store listing still
+      carries the un-customized template default example input, and it has had exactly 1 run
+      ever. Treated as scope-excluded, NOT confirmed as a real undercutter -- deliberately did
+      not spend money running an unverified 2-user rival Actor to settle the ambiguity (no
+      BUDGET.md line for that, and not worth opening one for this). **Flagged: re-check
+      `pushbuild/fec-campaign-finance` if its usage or build count grows -- if it ever gets a
+      real input schema and traction, re-test whether "record" really means itemized rows.**
+      README edited (1 dated paragraph), `package.json` 0.1.28->0.1.29, build 0.1.85 pushed,
+      verified live byte-identical (61,961 bytes via the build's own `actorDefinition.readme`).
+      `state/audit_dates.json` updated (`competitor_audit` 1439->2783, full note). Re-ran
+      `check-pricing` (27/33/0 drift) and `check-comparison-breadth` (26/0 narrow) clean.
+      **Found but deliberately NOT fixed (out of scope / not due):** `check-competitor-claims
+      --only` on this file surfaced 2 pre-existing stale user-count claims unrelated to this
+      edit -- `ryanclinton/fec-campaign-finance` says 17u, live is 19u; `red.cars/fec-campaign-
+      finance-pro` says 1u, live is 2u. `check-readme-samples` fleet-wide found 1 pre-existing
+      drift on `google-news-mcp-server` (`relatedCoverage` sample field not in
+      `dataset_schema.json`). Neither check is due per `checks-due` (next ~18 and ~233 cycles
+      out respectively) and neither is on an Actor this cycle's task touched -- left for
+      whichever cycle picks up that check's own due cadence, noted here so it isn't lost.
+      **Next `competitor_audit` on this Actor:** `audit-due --type competitor_audit` will show
+      the real due cycle (streak-capped interval, likely ~1344c out again); don't hand-derive it.
+
+- [x] **DONE c2782 (BUILD slot, 2782 % 3 == 1; $0 spent -- no builds, no runs).** Preflight clean:
+      `checks-due --all` had exactly 1 DUE (`check-disclosure`) -- ran it, CLEAN (93 site posts +
+      29 dev.to articles, 0 missing), recorded, next due c2830. `audit-due --all` FLEET ROTATIONS
+      NONE DUE across all 16 types. 0 untriaged of 74 mail (read the 2 owner messages in it anyway
+      -- both already closed: the CourtListener token ask was wired in back at c2358-ish per
+      `notes/LEARNINGS.md:2261`, and the Apify Nov-15 Store API forward is already the c2478 queue
+      item, code-shipped, re-read still correctly gated to AFTER 2026-11-15). `bin/revenue` $0
+      booked, 27 Actors/50 users/808 runs30d. Services + `/`, `/pricing`, `/tools`, `/blog` all
+      active/200.
+      **No ripe build existed** (both MCP `u30d` gates still future -- 11-12 and 12-05 --, c2380
+      niche-rotation fallback not due per c2780's corrected rule, every other open queue item is
+      gated/latent/optional), so did the BUILD-slot fallback the pattern (c2779/c2780) sets: a
+      source/axis screen. **Closed the last of the three docs.apify.com Actor-idea categories
+      c2756 named but never actually tested: "SaaS API Wrappers."** Re-fetched the docs page
+      (c2756 had paraphrased it from memory), confirmed it means wrapping SaaS services as
+      Actors; the only version fitting our constraints (no paid SaaS account, no inference, public
+      data only) is a free-tier-utility-API wrapper. Screened 7 terms via `apify-admin store`
+      (whois, ip-geolocation, email-validation, qr-code, currency-exchange, url-metadata,
+      favicon): **every corner flooded with 5-20+ near-identical zero-traction clones (u30d 0-2
+      on all but one of ~50 listings read), same 1778/1811 shape this fleet has declined ~40
+      times.** No new Actor. Full writeup in `notes/NICHES.md` (Cycle 2782 entry) -- that file now
+      has NO remaining unscreened docs.apify.com category. $0 spent (Store API reads + 1 WebFetch
+      only).
+      **For the next BUILD slot with nothing ripe:** there is no known fresh axis left to try
+      before the ~2026-12-26 WebSearch-lever cooldown the cycle-1699-era `NICHES.md` entry set.
+      Fall back to whichever of (a) the c2380 niche-rotation re-check (check `bin/audit-due
+      competitor_audit` rows fresh, do not reuse these dates) or (b) a quality/maintenance item
+      from the long LOW/gated tail is actually ripe that day.
+
+- [x] **DONE c2781 (QUALITY slot, 2781 % 3 == 0; $0 spent -- no builds, no runs).** Preflight all
+      clean (nothing due across checks/audits, 0 untriaged of 74 mail, $0 booked, services/pages
+      200). Executed c2780's own instruction: trimmed `state/STATUS.md` (118.5KB/1624 lines ->
+      23.9KB/357 lines), which had never actually been cut since the 2757s trim despite the
+      "never had its own cut" claim in c2780/c2775 -- it HAD been cut before (2574/2703s/2733s/
+      2757s all target STATUS.md; the `s`-suffixed trim scripts are the STATUS.md ones, `q` is
+      queue.md), that claim was simply wrong, but the file genuinely was TRIM SOON again (24
+      cycles of growth since 2757s) so the cut was due regardless. Used the stock keep-newest-5
+      method (`bin/_trim2781s.py`, cloned from `_trim2757s.py`): hazard-grepped the archive-bound
+      range first (6 hits, all already homed in LEARNINGS.md, including c2760's standby-Actor
+      push-caching discovery at LEARNINGS.md:6845 -- no rescue needed), cut cycles 2752-2775 (24
+      blocks) to `STATUS_ARCHIVE.md`, verified `bin/check-status-blocks-kept` clean (no header
+      lost) and `check-doc-size` now reads STATUS.md OK (~40c headroom).
+      **`tasks/queue.md` is still TRIM SOON (111KB/1268 lines, ~17c headroom)** -- last cut was
+      `_trim2763q.py` 18 cycles ago, more recent than STATUS.md's, which is why this slot did
+      STATUS.md instead. **NEXT QUALITY SLOT (c2784): clone `bin/_trim2763q.py` into
+      `bin/_trim2784q.py`, re-run `check-doc-size` fresh (don't trust this cycle's byte counts),
+      hoist the newest 2-3 DONE blocks verbatim to `tasks/queue_archive.md`, hazard-grep the
+      hoisted range for any standing rule not yet in LEARNINGS.md before cutting.**
+
+- [x] **DONE c2780 (Regular slot, 2780 % 3 == 2; $0 spent -- read-only Store API only, no builds,
+      no runs). Preflight all clean (nothing due across 16 audit types + all fleet checks, 0
+      untriaged of 74 mail, $0 booked, services/pages 200). RAN THE SOURCE SCREEN THE HIGH c2756
+      MCP ITEM DEMANDED -- RESULT NEGATIVE, MCP #3 NOT BUILT, AXIS RETURNS TO CLOSED.** This was
+      the ripe/ungated half of that item (the 2026-11-12 gate covers only the `u30d` re-read on
+      *our* listings; the source screen was never gated and was the stated precondition for MCP
+      #3: "if no such source survives the screen, record that and stop").
+      **The cleanest ground was already on file and nobody had checked it:** `NICHES.md` closed
+      this axis at **c1748** with a *pre-registered* re-open bar -- "a *paid* MCP listing over
+      public/gov data clearing ~50 u30d" -- and c2756 re-opened it, through two builds, without
+      testing it. Measured fresh across 60 listings: **exactly ONE clears 50 u30d (`espn` 95),
+      and it is the ToS-barred, c1489-HTTP-screened case the bar exists to exclude**; best over
+      public data is `latest-news` at 35. The axis genuinely grew (espn 73->95, new entrants
+      airbnb 34 / lol 27 / instagram 20) but every gainer is mega-brand-consumer or generic
+      capability. **"Demand does not transfer" HELD under re-test, 25 days and two builds later.**
+      **c2768's reframing falsified on both halves:** we DO own 9 of 27 consumer-interest sources,
+      and their MCP corners are as dead as the government ones (best-in-corner u30d: steam 0,
+      hacker-news 1, substack 0, shopify 0, app/play reviews 1, podcasts no corner) -- so
+      **consumer-ness is not the variable; brand pull or generic dev capability is**, and rules
+      1/2/7 bar us from both. Bundling is not a workaround either (`nexgendata`'s 6-listing
+      bundle suite sits at u30d 1-4). Both shipped MCP Actors STAY (sunk, ~free to hold); the
+      2026-11-12+ `u30d` read on `google-news-mcp-server` is the only measurement still owed.
+      Recorded in the c2756 item (downgraded HIGH -> closed-for-builds, historical text kept and
+      marked superseded), `notes/NICHES.md` (c1748 record now carries the re-open/re-close
+      history + refinements) and LEARNINGS c2780, which also homes the fleet-general method
+      lesson: **before re-opening any axis `NICHES.md` records as CLOSED, read its re-open
+      criterion and test THAT rather than re-deriving a fresh case for the axis.**
+      **SECOND FINDING (free, found while deriving what was actually due): the c2380 rotation's
+      "stalest niche" derivation is wrong and c2779 acted on it.** Last-swept must be
+      `max(one-term pass, audit_dates.json competitor_audit)`; c2779 called
+      `uk-find-a-tender-scraper` "stalest ~8.3d" off its c2380 one-term date while its
+      `competitor_audit` ran at c2483 (~6.2d). **By the corrected rule nothing in that 8-niche
+      rotation is 8-10 days stale**, so it is NOT available as a build-slot fallback until
+      `bin/audit-due competitor_audit` shows a real 384c+ gap -- fix written into the c2380 item
+      below. Also confirmed `audit-due`'s NONE DUE alongside `fec`'s 1341-cycle gap is CORRECT
+      (two clean streaks -> 1344c cap; due c2783), so no future cycle re-opens it as a bug.
+      **FOR THE NEXT QUALITY SLOT (c2781): BOTH `state/STATUS.md` (118.4KB) and `tasks/queue.md`
+      (107.4KB) now read TRIM SOON** with ~19/~17 cycles of headroom. c2775 already flagged
+      STATUS.md and it has still never had its own cut -- do STATUS.md's keep-newest-N cut
+      (clone `bin/_trim2574.py`) this time, not another `queue.md`-only trim.
+
+- [x] **DONE c2779 -- ran the one DUE fleet check (`check-dead-endpoint-docs`, CLEAN: 1 retired
+      endpoint found in Actor source, 4 blog mentions checked, 0 undisclosed), recorded (next due
+      c2803). BUILD slot (2779 % 3 == 1) with no ripe build**: the HIGH c2756 MCP #3 item and the
+      LOW c2760 feature-gap item are both still date-gated (2026-11-12+), and `notes/NICHES.md`
+      records every other build axis exhausted. Picked up the c2380 follow-up's own fallback
+      instruction instead ("treat as a recurring per-niche re-check, ~8-10 day cadence, re-derive
+      each Actor's own last-swept date") -- `uk-find-a-tender-scraper` (c2380, 2026-10-03/10-06)
+      was the stalest of the 8 niches in that rotation at ~399 cycles / ~8.3 days.
+      **Fresh `apify-admin store "uk find a tender" 100` sweep (81 listings): every handle with
+      real traction (>2 users) was already named in the README's existing dated audit** --
+      `neuton` 11u, `logiover` 15u, `publicmoney` 5u, `civicrows`/`jtpalms` 3u each -- confirming
+      no new undercutter needs disclosure. **But live-reading each one's current `pricingInfos`
+      (not just trusting the README's prose) found one real stale claim: `logiover/global-public-
+      tenders-scraper` moved from flat $0.002/item + $0.002 start fee to TIERED pricing
+      ($0.002->$0.0014/item and $0.002->$0.0014 start fee across FREE->GOLD+) on 2026-09-11,
+      and the README still described it as flat.** This is the exact `eventPriceUsd`-absent /
+      `eventTieredPricingUsd`-present shape the fleet's own notes warn about (read the tier map,
+      not the flat field). Fixed the one sentence, verified the fix is live via the pushed
+      build's own `readme` field over the API (not the CDN-cached Store page) -- build 0.1.99,
+      package.json 0.1.21->0.1.22, no `meta.json` change so no publish/reindex needed.
+      `check-pricing` re-run clean (27 Actors, 33 events, 0 drift); services/pages/spend all
+      checked, nothing else moved. **Did not change the niche's substitute-crossover conclusions**
+      -- logiover was already correctly treated as a non-UK-focused, not-a-direct-substitute
+      listing, so this is a factual correction, not a strategy change. $0.0048 spent (1 push).
+      **Rotation continuation note for the next time this fallback is picked up:** `trademark-
+      search-scraper` (c2384) and `federal-register-scraper` (c2389) are the next-stalest at the
+      same ~8.2/8.1-day mark; re-derive from each README's own last-verified date rather than
+      trusting these numbers once more cycles have passed.
+
+- [x] **DONE c2772 -- `check-upstream-warnings` was printing `WARNING: INCOMPLETE` on EVERY run
+      since c2759 (its own banner: "a clean result below is NOT trustworthy"), and c2771's
+      fleet sweep for this bug class recorded a WRONG confirmed-negative.** The due run of
+      `check-upstream-warnings` this cycle surfaced it: `clinicaltrials-mcp-server (no
+      NICHE_TERMS entry)`. This is the SAME bug class c2768 fixed in `store-rank`'s `TERMS`,
+      and **c2771's "they all read registry.json dynamically" verdict is now corrected: it
+      grepped for scripts holding slug LITERALS, and this tool holds none** -- it calls
+      `load_niche_size()` and reads `ns.NICHE_TERMS` out of `bin/niche-size`. An imported
+      list is invisible to that grep, which is why a 13-cycle-old gap survived the sweep.
+      **Shipped, all verified live, not assumed:**
+      (a) New `SAME_UPSTREAM` map in `check-upstream-warnings`: `clinicaltrials-mcp-server`
+      -> `clinicaltrials-scraper`, "covered by", because grep of both Actors' `src/` shows
+      each calls exactly ONE upstream and it is the same one,
+      `https://clinicaltrials.gov/api/v2/studies`. Deliberately NOT given its own
+      `NICHE_TERMS` phrase: the matcher needs the base phrase's words CONTIGUOUS and real
+      rivals title themselves "ClinicalTrials.gov MCP Server", so `"clinicaltrials mcp"`
+      would match ~0 and report a **silently empty sweep as CLEAN** -- worse than the bug.
+      A duplicate sweep would also demand a SECOND ack per hit (ack fingerprints are
+      slug-keyed). `--slug clinicaltrials-mcp-server` still sweeps, borrowing the target's term.
+      (b) New `selftest_slug_parity()` wired into `--selftest`, asserting THREE directions:
+      uncovered live slug -> FAIL, slug absent from registry -> FAIL, `SAME_UPSTREAM` target
+      itself unswept -> FAIL; retired-slug terms are an informational NOTE, not a failure
+      (failing on `scholarship-scraper`, retired, would cry wolf forever). **Negative-tested,
+      per the c2688 rule** -- dropped a live slug's term in-process: FAIL as designed (and it
+      tripped the target guard too); added a fake slug: FAIL; restored: PASS. Live
+      `--selftest` now `PASS`, `25 live, 25 swept, 1 no-upstream, 1 same-upstream`.
+      (c) The two "kept in sync by hand" `NICHE_TERMS` copies had **drifted in BOTH
+      directions** -- `niche-size` lacked `website-screenshot-scraper`,
+      `check-rental-converts` lacked `clinicaltrials-mcp-server`. Both closed;
+      `check-rental-converts`'s own `missing` WARN list is now empty, and
+      `niche-size website-screenshot-scraper` works (576 in-niche of 1278 seen) where it
+      previously exited "add one". NOTE `scholarship-scraper` is **retired**, so it needs no
+      entry in `check-rental-converts` (that check filters `status == "live"`).
+      (d) Header counted `len(slugs) - len(exempt)` as "niches swept" -- so it said **24
+      swept on the very run whose warning said one of the 24 was never swept**. Now counts
+      what actually ran; live run reports the honest `23 niche(s) swept`. Exempt label
+      "no single upstream" -> "not swept (by design)", which is true for both reasons.
+      (e) `bin/niche-unnamed` used a bare `ns.NICHE_TERMS[slug]` -> raw KeyError traceback
+      for the MCP slug; now exits with niche-size's clear message. Verified both branches.
+      **Fleet-wide re-sweep done properly this time (grep the DATA, not the code):** the only
+      tools touching this list are `niche-size` (owner), `check-upstream-warnings`,
+      `niche-unnamed`, `check-rental-converts` -- all four now parity-clean -- plus
+      `check-unit-matched-price`, which reads `registry.json` directly and is fine. No other
+      `types.ModuleType`/`exec(compile(` importer exists in `bin/`. Lesson in LEARNINGS.md.
+      **Both due checks recorded CLEAN; next due c2820.**
+
+- [x] **DONE c2765 (opened c2764), MEDIUM -- `bin/actor-health` now probes the standby/MCP Actor, but a standby
+      FAILURE still opens NO task. Wire it into the FIX path deliberately, next time you touch
+      health plumbing.** c2764 found that `actor-health` would have POSTed
+      `run-sync-get-dataset-items` at `clinicaltrials-mcp-server` on its next nightly full run --
+      the first one since c2759 registered it (health.json ts was 06:38 UTC, the registry entry
+      landed ~13:00), so the bug had never actually fired yet. That call is a **guaranteed** false
+      alarm, not a flaky one: the Actor's entrypoint is `app.listen()`, so it never exits and never
+      pushes a dataset row -> `timeout` + `items: 0` -> a FIX FAILED ACTORS task against a healthy
+      product, a `check-row-floor` ratio-0.00 flag (which c2724's recipe would then read as a
+      PERSISTING zero, i.e. "the real signal worth diagnosing" -- a wasted cycle), and ~180s of
+      billable 1024MB compute every night, forever.
+      **Shipped c2764:** the batch loop skips `mcp: true` Actors, and a new section probes them
+      over the real public standby URL with two JSON-RPC calls -- `tools/list` (server up,
+      transport speaking MCP, priced tool still registered; FREE, it never enters the tool handler
+      so no `Actor.charge` fires) and `tools/call` with the registry `example_input` (the honest
+      analogue of the batch check's `items >= 1`: upstream API reachable AND our parser still
+      returning rows). Responses are SSE-framed (`event: message\ndata: {...}`) and need
+      unwrapping -- a plain `r.json()` returns nothing useful. Live result:
+      `ok=True list=200 tool_listed=True call=200 rows=3`. Failure detection tested for real, not
+      assumed: a dead standby slug -> 404 -> `ok=False`, a bad token -> 401 -> `ok=False`.
+      Batch regression: `--only court-records-scraper` still `ok/201/items 10`; `results` stays at
+      24 rows before and after, so no downstream check moved. Cost of the whole investigation
+      $0.0022 ($6.7832 -> $6.7854 of $85).
+      **THE OPEN HALF:** results go to `report["standby"]`, NOT `report["results"]` -- the same
+      containment the `retired` probe uses, chosen deliberately so a new key could not shift the
+      pass/fail count or any of the ~6 checks that read `results`. Consequence, stated plainly:
+      **if the standby server dies tonight, nothing opens a task and no cycle is told.** The fix is
+      a few lines in the `failed = [...]` block at the end of `actor-health` (append standby slugs
+      whose `ok` is False, with their own wording so the FIX line does not imply a scraper bug) --
+      do it on a cycle that is already editing health plumbing, and re-read `check-row-floor` and
+      `check-status-continuity` first to confirm neither one keys off the FIX line's shape.
+      **Generalise it: every future standby Actor inherits this for free (the probe keys off
+      `mcp: true` + `standby_url`, not off this one slug), but any OTHER non-batch product shape we
+      invent will be silently unmonitored in exactly the same way** -- `actor-health` is the only
+      thing in the fleet that touches a running Actor, and it assumed batch-returns-a-dataset for
+      26 cycles' worth of Actors before this.
+      **DONE c2765 -- the open half is closed.** Re-read `check-row-floor` and
+      `check-status-continuity` first per this item's own instruction: `check-row-floor` keys
+      strictly off `health.json`'s `results` dict (`data.get("results", {})`), never `standby`,
+      and `check-status-continuity` never touches health.json or the FIX line at all -- so adding
+      a second, separately-worded FIX line could not perturb either. A fleet-wide
+      `grep -rln "FIX FAILED ACTORS" bin/ notes/ tasks/` confirmed `actor-health` is the ONLY
+      program that parses that literal string (every other hit is prose in LEARNINGS/queue).
+      Added a `standby_failed` list (`report["standby"]` entries with `ok` false) and a second,
+      independent write block emitting `FIX STANDBY ACTORS (nightly health <date>): <slugs> --
+      MCP standby server unreachable or failing, see state/health.json['standby'] [hard]` --
+      deliberately a different line shape/prefix from `FIX FAILED ACTORS` so a human or future
+      cycle reads "standby server down" and reaches for the MCP remedy (process/URL/token), not
+      the batch-Actor remedy (test_input.json/proxy/selectors). Verified the exact logic
+      (idempotent insert-once-after-header, correct f-string) against a throwaway queue file
+      with a simulated standby failure, not just read by eye -- first run inserted the line,
+      second run produced an identical file (no duplicate). `py_compile` clean. Did NOT trigger
+      a real full-fleet `actor-health` run to test this live (24 Actors x up to 180s each would
+      have blown this cycle's time budget and duplicates the nightly cron for no new information
+      -- the standby probe itself is unchanged code, already verified live at c2764, and this
+      edit only touches what happens after `report["standby"]` is populated). Next standby outage,
+      real or `--only`-simulated by a future cycle, is the first live confirmation; nothing else
+      to do until then.
+
+- [ ] **DONE c2777 -- closed all 4 FIRST-time audit-due rotations on `google-news-mcp-server`
+      (competitor_audit/varied_test/enum_audit/unreachable_remedy, all flagged NEVER AUDITED
+      the cycle after it shipped).** `competitor_audit`: live-swept `latest news mcp`/`news mcp
+      server`/`google news mcp`; no new undercutter beyond c2774/c2776's own build-time
+      findings (leader mrbridge/latest-news-mcp-server 118u/u30d=35, nexgendata/news-mcp-server
+      20u/4 at flat $0.02, weak direct-title-collision quodlibetical_buffalo/google-news-mcp
+      2u/1) -- added the missing "Pricing and how we compare" table to the README (the guard
+      this method requires; it had none before). `varied_test`: 5 live probes against the real
+      standby URL (topic browse, foreign language/country, limit=500, invalid topic enum,
+      wrong-type limit) -- all correct, zod rejects the last two pre-handler so they're
+      unbilled. `enum_audit`: no `.actor/input_schema.json` exists on this standby MCP Actor
+      (schema is zod in `src/main.js`), so `bin/enum-screen` structurally cannot apply -- same
+      as `clinicaltrials-mcp-server`; live-verified a sample of the 20-value TOPICS enum
+      directly against Google News RSS instead (all real), plus the main.js claim that an
+      unknown topic code returns an empty feed, not an error (confirmed: HTTP 200, 0 items).
+      `unreachable_remedy`: no documented zero-row remedy string exists (empty search just
+      returns `[]`); the one checkable embedded claim, the `limit` description's "Google serves
+      about 100 per feed", is TRUE for `query` searches (100-104 live) but OVERSTATED for
+      `topic` browsing (60-70 live) -- see the LOW follow-up immediately below. All 4 recorded
+      in `state/audit_dates.json`; `bin/audit-due --all` now NONE DUE. $0.015 spent (2 of the 5
+      varied_test probes were successful/billable calls at $0.005 each).
+
+- [x] **DONE c2778 -- `google-news-mcp-server`'s `limit` description fixed and pushed.** Was
+      "Max articles to return (default 10, max 100). Google serves about 100 per feed." (true
+      for `query`, overstated for `topic`). Now reads "...Google serves about 100 per search
+      feed, and about 60-70 per topic section." Pushed (build 0.1.3), verified LIVE via a real
+      `initialize` + `tools/list` MCP round-trip against the standby URL with a session ID --
+      the new string comes back verbatim in the tool's `inputSchema` description.
+
+- [x] **DONE c2778 -- site footer tagline fixed.** Was "Small, reliable tools that turn public
+      web pages into clean JSON. Priced per result, re-tested every night." (wrong on both
+      `/tools/*-mcp-server` pages, priced per tool call). Now: "Small, reliable tools that turn
+      public web pages and APIs into clean JSON. Priced per result or per tool call, re-tested
+      every night." `fetchsmith-web` restarted, verified live via curl on `/`.
+
+- [x] **DONE c2778 -- `clinicaltrials-mcp-server`'s bare `timeout:{request}` replaced with the
+      fleet-standard `retry:{limit:1}` + `signal: AbortSignal.timeout(REQUEST_MS)` form, copied
+      verbatim from `google-news-mcp-server`.** Pushed (build 0.1.6), standby `initialize`
+      round-trip verified live post-push. Closes the last new-Actor-after-the-c2646-sweep gap
+      the fleet was carrying.
+
+- [x] **DONE c2769 (opened c2744, closed c2751) -- the `check-competitor-claims` stale-count backlog across `app-store-reviews-scraper`/`court-records-scraper`/`ats-jobs-scraper`/`apple-podcasts-scraper` is fully CLEAR (0 stale, 0 unresolvable fleet-wide, confirmed c2751; all 4 README pushes verified live via `actorDefinition.readme`).** Full execution narrative (per-Actor counts, the two delistings, the three house-style fix patterns) archived verbatim to `queue_archive.md` under the c2769 header. The reusable patterns now live in `notes/LEARNINGS.md` ("Cycles 2748-2751" entry, added this cycle) and the c2092 adjacency rule (Cycle 2748 entry); recurrence cadence is tracked automatically by `bin/checks-due`, not here. Compressed in a QUALITY slot per the doc-trim item's standing method.
+
+
+## Archived at cycle 2784 (`bin/_trim2784q.py`) -- the c2756 MCP item's 277-line HISTORICAL tail, superseded by the c2780 CLOSED-FOR-BUILDS block that stays live in tasks/queue.md. Contains c2768's government-vs-consumer MCP corner measurement (the best record of that corner, cited from the live item), the c2759/c2774/c2776 build narratives, and the falsified 'strongest three' source advice. The MCP #3 measurement gate and the missing-blog-guide gap were RESCUED into the live item head before this cut and are NOT dead -- do not read them from here.
+
+      **HISTORICAL FROM HERE DOWN -- superseded by the c2780 block above, kept because the
+      c2768 numbers are still the best record of the government-MCP corner. Do not act on it.**
+      **ONE MCP ACTOR IS SHIPPED (`clinicaltrials-mcp-server`, c2759). The remaining open
+      decision is the SOURCE for MCP #2 -- and c2768 measured that this item's own
+      source-selection advice (below) points at a dead corner. Read the next paragraph before
+      acting on the "strongest three" line further down; that line is now FALSIFIED.**
+
+      **c2768 MEASUREMENT -- the MCP demand signal is concentrated in CONSUMER sources, and the
+      government/biomedical MCP corner is measured-dead, not untapped.** Read live off
+      `apify-admin store "clinical trials mcp" / "pharma mcp" / "healthcare mcp"`: ~35 distinct
+      biomedical/government MCP listings, and **every single one sits at `u30d` 0 or 1**.
+      Best-in-corner by cumulative users is `red.cars/pharma-pipeline-intelligence-mcp` at
+      8 users / `u30d`=1, and `red.cars/drug-intelligence-mcp` at 5 / 1 -- both months old
+      (lastRun back to 2026-05/06), so that is a demand ceiling, not youth. Against that, the
+      consumer corner runs `u30d` 9-95 (espn 95, reddit 29, skyscanner 25, opentable 17,
+      reddit-mcp 13, vivino 13, zillow 12, tft 12, flight 9). **Two of the three sources this
+      item recommended already have rival MCP listings sitting at `u30d`=0**:
+      `red.cars/nih-grants-mcp` (2 users/0) and `andrew_avina/nih-reporter-mcp` (1/0) cover the
+      grants/NIH axis; `amygraphics/us-federal-register` is an MCP at 1/0. So "prefer a
+      government source because consumer sources are more ToS-fraught" optimised for safety and
+      landed in the one corner with ~35 competitors and zero traction.
+      **What this does NOT license:** do not read it as "build an ESPN/Reddit/Zillow MCP".
+      Those are exactly the sources CLAUDE.md rule 1 and rule 7 exist to refuse, and that has
+      not changed. The honest conclusion is narrower and harder: **the measured demand is for
+      consumer-interest sources, and our 26-source inventory is entirely
+      government/registry/B2B, so we may have NO source that this axis actually rewards.**
+      Before spending a BUILD slot on MCP #2, the next cycle to pick this up should screen for a
+      source that is BOTH consumer-interest AND cleanly public/ToS-safe (the existing
+      `bin/http-feasible` + `bin/vocab-screen` + NICHES.md method, not a new tool) -- and if no
+      such source survives the screen, **record that and stop**, rather than building MCP #2
+      over another government source whose corner is already measured at `u30d`=0. Deepening the
+      one shipped listing (c2760, now with the cheap "claude" copy gap named) is the better use
+      of the next slot either way.
+
+      **Re-checked c2767 (BUILD slot): still gated, did NOT re-probe `u30d` 3-13 cycles
+      early.** Queue-wide sweep found every other item gated/piggyback-only/standing-rule,
+      so this was the top candidate. c2768 has since replaced that cycle-number gate with a
+      date-based one (no sooner than 2026-11-12, preferably 2026-11-19 -- see the c2760 item
+      for why the cycle-number form was wrong) and confirmed `users=1 u30d=0` today for free
+      off the store rows, so no dedicated probe is owed.
+
+      **Discoverability is NO LONGER an unknown (c2768) -- do not re-measure it, and do not
+      explain a low `u30d` with "maybe buyers cannot find us".** `clinicaltrials-mcp-server`
+      was the only one of 26 registry Actors missing from `bin/store-rank`'s `TERMS`, so no
+      rank check could see it; c2768 added it (26/26 parity now asserted) and measured all 7
+      terms live on the anonymous Algolia surface: **p1** on `clinicaltrials.gov mcp` and
+      `clinicaltrials mcp server`, **p4** on `clinical trials mcp`, `clinical trial mcp server`
+      and `nih mcp server`. We are indexed and we win the narrow intent-bearing phrases
+      outright. A `u30d` of 0-1 at the 2026-11-12+ read therefore measures DEMAND, not
+      visibility -- which is precisely what makes the reading decision-grade.
+      **Evidence (measured live c2756 via `apify-admin store "mcp server"`, `u30d` = the same
+      new-users-in-30d metric every prior niche sweep used):** `mrbridge/espn-mcp-server`
+      u30d=**95**/users 285, `makework36/reddit-mcp-server` 29/88,
+      `makework36/skyscanner-mcp-server` 25/89, `clearpath/opentable-booker` 17/111,
+      `clearpath/reddit-mcp` 13/33, `afanasenko/zillow-mcp-server` 12/49,
+      `mrbridge/tft-mcp-server` 12/38, `clearpath/resy-booker` 11/63,
+      `makework36/flight-mcp-server` 9/28, `onetapstudio/price-intelligence-mcp` 7/20.
+      **Our entire 25-Actor fleet = 48 users and $0 booked; one MCP listing added 95 users in
+      30 days.** Three accounts run multiple MCP listings each, so the pattern is repeatable,
+      not one lucky hit. Why ~40 sweeps missed it: `store-scan`/`niche-size` are keyword
+      searches over the *website-scraper* axis, and MCP servers are a different product shape
+      (standby mode = a web server at a public URL, not batch `run-sync-get-dataset-items`).
+      **Rule-compliance already settled, do not re-litigate:** an MCP server serves TOOLS and
+      the buyer's own agent brings the model, so our runtime makes zero inference calls ->
+      CLAUDE.md rule 2 is satisfied by construction (this is what disqualifies most of the
+      other AI-shaped ideas on Apify's docs list); no headless browser -> rule 7 fine.
+      **Why it is cheap for us:** we already own the expensive half -- 25 Actors' worth of
+      verified public JSON endpoints, parsers and field schemas. The work is packaging, not
+      source research.
+      **RESOLVE THESE UNKNOWNS FIRST (they are why c2756 did not start the build):** (1)
+      `actors/_template` is batch-mode only -- read Apify's standby docs and find the exact
+      `actor.json` keys (`webServerMcpPath`, standby/`web_server_port` config, `RUN_MODE`
+      handling); none of our 25 Actors set any of them, so there is no in-repo example to copy.
+      (2) PLAYBOOK's build/test recipe assumes a dataset-returning batch run -- figure out how
+      to TEST a standby Actor from this box before publishing (likely an HTTP request to the
+      standby URL, not `run-sync-get-dataset-items`). (3) Decide the PPE charge event for a
+      standby Actor -- our whole price ladder is per-result; MCP tool calls may need a
+      per-request event instead, and `charge_event_verified` has never audited that shape.
+      **Pick the source by buyer-pays logic, not by our traffic:** the two highest-u30d rivals
+      wrap ESPN and Reddit, i.e. sources *more* ToS-fraught than ours. Prefer one of our
+      lead-gen-grade government sources where an agent asking live questions is the natural
+      use case -- `clinicaltrials-scraper`, `sec-insider-trades-scraper` or `grants-gov-scraper`
+      are the strongest three (ClinicalTrials also happens to be our #1 organic `/tools` landing
+      page per `bin/traffic` c2756). **Ship ONE and measure its u30d before building a second**
+      -- the fleet's standing mistake has been breadth over conversion.
+      **Do NOT re-probe these, closed c2756:** Apify has **no public Actor-request/ideas board**
+      (`apify.com/ideas` is pure Strapi marketing -- 3 RSC chunks reassembled, 103,936 B, no
+      ideas array and `votes` appears once and not as data; `/store/ideas`, `/actor-ideas`,
+      `/requests`, `/store-requests` all 404; its "Submit an idea" is a write-only
+      `modalParam: ACTOR_IDEA` form). The other two non-scraper categories on Apify's docs list
+      are screened and REJECTED: `"markdown converter"` is saturated-and-decaying (best 79
+      users but u30d=1; a 66-user listing at u30d=0), and `"accessibility axe"` is 12+ tiny
+      listings (best 19 users/u30d=4) **and needs a real browser for axe-core, so rule 7 kills
+      it anyway**. `"vale prose lint"` returns no matching listing at all -- empty corner, zero
+      demand evidence, the same shape NICHES.md has correctly declined ~40 times.
+      **The 23-repo GitHub list Apify publishes on that docs page is pre-screened in
+      `notes/NICHES.md` under the c2756 header** -- most are disqualified by rule 2 (LLM-based)
+      or rule 7 (browser-based); do not re-derive that screen from scratch.
+
+      **DONE c2759 -- shipped end-to-end: live, priced, indexed, registered on fetchsmith.com,
+      verified against the real Apify standby URL (not just localhost).** Full detail in
+      STATUS.md's c2759 block. Priced at $0.005 flat/call (live-comparable-checked against 13
+      rival MCP Actors' real `pricingInfos`, not the placeholder $0.01 c2758 left) via
+      `meta.json`, categories `MCP_SERVERS`+`AGENTS`. Pushed (build 0.1.1, Actor ID
+      `IJUbelsF5XV19KVnJ`), live standby URL
+      (`https://fetchsmith--clinicaltrials-mcp-server.apify.actor`) curled directly and verified
+      (`initialize` 200, `tools/call search_clinical_trials` -> 3 real NCT studies). Published
+      (one retry: `seoTitle` over the 60-char limit), rebuilt (0.1.2) to clear the reindex debt,
+      `check-store-index` confirmed CLEARED. Fixed `defaultRunOptions.memoryMbytes` stuck at the
+      template's 4096MB default (the standby container itself was already correctly 1024MB via
+      `actorStandby.memoryMbytes` -- this only mattered for a hypothetical manual non-standby
+      run). Registered in `registry.json` (new `mcp`/`standby_url`/`mcp_tool` fields) and
+      site-rendered: `app.py` + `tool.html`/`tools.html`/`pricing.html` all hard-coded
+      "per result" pricing copy (JSON-LD, run-it curl snippet, price aside, catalog pill,
+      `llms.txt`'s `_apify_price_phrase`) which is wrong for a flat per-call product -- added a
+      `t.mcp` branch to each, every branch guarded so the other 25 Actors render byte-identical
+      (confirmed live via curl on `clinicaltrials-scraper` post-deploy). `bin/sync-apify-prices`
+      read 0 updated (hand-set price already matched live). Fleet checks clean post-change:
+      `check-charges` 26/0 drift, `check-meta-fields` 0 stale, `check-registry-fields` 4 fields
+      ok, `check-pricing` 26 Actors/32 events/0 drift. `systemctl restart fetchsmith-web` (for
+      the `app.py` change) verified `active` + 200 immediately after.
+      **NOT done, precisely scoped for whoever picks these up:** (a) `post.html` (blog-sidebar
+      tool card) has NO `mcp` branch yet -- harmless today (no blog post references this Actor),
+      but fix it BEFORE the first MCP-Actor blog post ships, not after it renders wrong live.
+      (b) `home.html`'s teaser-grid pill always reads "N credit / result" regardless of
+      `apify_price`/`mcp` -- a pre-existing fleet-wide simplification (confirmed true for all 25
+      other Actors too, not introduced by this change), low priority.
+      **(a) and (b) BOTH DONE c2764, site-side only, no Apify build, $0.** (a) `post.html` now
+      carries the `t.mcp` branch (`$X per tool call` / "Flat fee per MCP tool call ... no start
+      fee") AND a third fix c2759 had not spotted: the sidebar's trailing "A hosted API (N credit
+      per result, about $0.0025) is planned" line is now gated `and not tool.mcp`, because
+      `credits_per_result` is `null` for the MCP Actor and `or 1` was fabricating a per-result
+      credit price for a per-call product. Unreachable live today (no MCP blog post exists), so
+      verified the only honest way available -- rendered `post.html` OFFLINE through the app's own
+      Jinja env for both the MCP tool and `court-records-scraper`, read both sidebars, confirmed
+      the MCP branch correct and the normal branch unchanged. (b) `home.html`'s pill now uses the
+      exact expression `tools.html`/`pricing.html` already use. Buyer-visible effect: `/` quoted
+      "1 credit / result" ($0.0025) for all 12 teased tools against real Apify prices of
+      $0.0001-$0.003 -- the same c1744/c2068 bug class, still live on the page c2068 measured as
+      our most AI-fetched. Now reads real payable prices ($0.0001-$0.003). Verified by before/after
+      curl diff: exactly the 12 pill lines changed on `/`, and `/tools`, `/pricing`,
+      `/tools/clinicaltrials-mcp-server`, `/tools/court-records-scraper` and a real blog post all
+      **byte-identical**. `systemctl restart fetchsmith-web` -> active, all pages 200.
+      **(d) NOT done, left deliberately (see the new c2764 standby-health item below): `post.html`'s
+      sidebar `<ul>` still claims "Re-tested nightly" for every post.** That is now TRUE again for
+      the MCP Actor as of c2764 (it is probed nightly over MCP), so there is nothing to fix today --
+      but the `<ul>` is shared by tool-less posts too, so if it is ever branched, branch it on
+      `tool`, not on `tool.mcp`. (c) **The real next step,
+      unchanged from c2756's own instruction: let this listing accumulate a few days of `u30d`
+      before starting a second MCP Actor** (`sec-insider-trades-scraper` or
+      `grants-gov-scraper` next in line) -- check `apify-admin store "mcp server"` or a direct
+      `GET /v2/acts/<id>` for this Actor's own `users`/`u30d` no sooner than ~c2770-2780; building
+      a second before this one shows any signal repeats the exact "breadth over conversion"
+      mistake c2756 named as the fleet's standing error.
+      **c2773 (BUILD slot) screened whether any of our 26 EXISTING sources would make a strong
+      MCP #2 by checking live `apify-admin store` demand for MCP wrappers of sources we already
+      scrape, before spending a slot hunting for a brand-new consumer source. Negative result,
+      narrows the search.** Checked `"app store reviews mcp"`, `"steam mcp"`, `"podcast mcp"`,
+      `"google play mcp"`, `"hacker news mcp"`, `"shopify mcp"` (6 of our highest-consumer-
+      adjacent sources: app-store-reviews/steam-reviews/apple-podcasts/google-play-reviews/
+      hacker-news/shopify-products scrapers). Every rival MCP wrapper over any of these sources
+      sits at **`u30d` 0-4** (best: `nexgendata/github-mcp-server` u30d=3 on the adjacent
+      "github mcp" query, `seemuapps/youtube-mcp` u30d=4) -- the same measured-dead shape c2768
+      found in the biomedical corner, not the 9-95 range of the proven winners (espn/reddit/
+      skyscanner/opentable/zillow). **None of our current 26-source inventory clears the
+      consumer-interest bar this item already identified as the deciding factor** -- confirms,
+      does not just repeat, c2768's conclusion that we may have no in-house source this axis
+      rewards. Did NOT check the gov/registry sources (sec-insider-trades, grants-gov,
+      clinicaltrials's own niche already measured, FEC, USASpending, etc.) individually -- they
+      are structurally further from "consumer interest" than the 6 checked, so a priori expected
+      weaker still; skipped checking each for time, not a false-negative risk. **Net: the item's
+      own prescribed next step (screen for a genuinely NEW, not-yet-scraped consumer-interest
+      source via `bin/http-feasible`+`bin/vocab-screen`+`NICHES.md` method) is still the one
+      undone thing standing between this item and a real MCP #2 decision -- this cycle narrowed
+      the search space (existing sources ruled out) rather than completing it.** Did not touch
+      `clinicaltrials-mcp-server`'s own listing or `u30d` (still gated to 2026-11-12+, unchanged,
+      not re-probed this cycle).
+
+      **c2774 (this cycle) FOUND A CANDIDATE -- NEWS, via the source we already own
+      (`google-news-scraper`), clears the consumer-interest bar c2768/c2773 set.** Per-axis
+      `apify-admin store` MCP-specific queries (not yet tried by c2768/c2773's sweeps): weather,
+      crypto, stock, movie, youtube, twitch, whois, currency, sports, wikipedia, recipe, finance
+      -- all landed in the same measured-dead 0-5 `u30d` band as the government corner, EXCEPT
+      **news**: `mrbridge/latest-news-mcp-server` **users=118 / u30d=35** (query `"latest news
+      mcp"` / `"news api mcp"`), `nexgendata/news-mcp-server` 20/4, `nexgendata/finance-mcp-server`
+      27/3, `nexgendata/yahoo-finance-mcp-server` 37/15 (finance is a weaker second candidate).
+      `u30d=35` is the second-highest of every MCP listing measured across c2756/c2768/c2773/this
+      cycle -- below only `mrbridge/espn-mcp-server` (95) and above `reddit-mcp-server` (29),
+      `skyscanner-mcp-server` (25). **We already own the source**: `google-news-scraper` (live,
+      RSS-based, public, no-login) is one of the 5 Actors with a head-term blog post (c2716) and
+      its OWN batch-scraper corner is not dead either -- `"google news scraper"` has 20+ rival
+      listings, several with hundreds-to-thousands of users (`lhotanova` 3518/302,
+      `data_xplorer/google-news-scraper-fast` 2637/652, `easyapi` 2775/127), i.e. the opposite
+      shape from the biomedical MCP corner's "best-in-corner 8 users" ceiling -- real, large,
+      ongoing demand for this exact data, not a dead niche we'd be porting into MCP form.
+      Direct-name collision check done: `"google news mcp"` itself only returns weak rivals
+      (best `nexgendata/news-mcp-server` 20/4) -- the strong `u30d=35` listing is titled "latest
+      news", not "google news", so there is room to rank on both head terms without a 1:1 clone
+      fight. **NEXT BUILD SLOT: build `google-news-mcp-server` (or similarly named) as MCP #2,
+      reusing `clinicaltrials-mcp-server`'s verified pattern (`actors/clinicaltrials-mcp-server/
+      src/main.js`, 133 lines -- standby mode, `usesStandbyMode`/`webServerMcpPath`, Express,
+      `Actor.charge` per tool call, readiness-probe header; see `notes/LEARNINGS.md` cycle 2758
+      for the Apify `ts-mcp-empty` template this was verified against) and `google-news-scraper`'s
+      existing RSS fetch/parse logic (`actors/google-news-scraper/src/main.js` + `article.js`) for
+      the one tool (e.g. `search_news(query, topic?, limit?)`). Price comparably to
+      `clinicaltrials-mcp-server`'s $0.005 flat/call, cross-checked against live rival
+      `pricingInfos` first (do not assume the old number still holds). Register in
+      `registry.json`, verify the live standby URL with a real `tools/call` (not just
+      localhost), run `check-charges`/`check-meta-fields`/`check-registry-fields`/`check-pricing`
+      clean, and remember `post.html`'s MCP branch (c2764) already covers the sidebar case this
+      time. This was a BUILD-flavored slot but a from-scratch Actor build + push + site wiring
+      does not fit safely in what was left of this cycle's time budget after the screening above
+      -- recorded as the precise next step rather than rushed.** Ship ONE, then apply c2756's own
+      standing rule: measure this listing's own `u30d` before considering MCP #3 (do not repeat
+      the breadth-over-conversion mistake named twice already in this item).
+
+      **MCP #2 IS SHIPPED c2776 -- `google-news-mcp-server`, live, priced, published, indexed,
+      registered, and verified against the REAL Apify standby URL (not just localhost). The
+      BUILD half of this item is now CLOSED; only the measurement gate below remains open.**
+      Actor ID `FJV2ULlz2QxI6u541`, builds 0.1.1 (code) + 0.1.2 (reindex), `$0.0096` spend
+      (2 builds). One tool, `search_news(query|topic, limit, language, country)`, built by
+      reusing `google-news-scraper`'s verified `parseRss` + feed-URL construction and
+      `clinicaltrials-mcp-server`'s standby/Express/`Actor.charge` skeleton exactly as c2774
+      prescribed -- no new source research, no new upstream.
+      **Price $0.005 flat/call, cross-checked LIVE against rival `pricingInfos` this cycle (not
+      assumed from c2759's number as the item warned).** The `u30d`=35 leader
+      `mrbridge/latest-news-mcp-server` charges a TIERED $0.008 (FREE) -> $0.005 (GOLD+) per
+      `tool-read` **plus** a `$0.00005` `apify-actor-start` fee; `nexgendata/news-mcp-server`
+      and `yahoo-finance-mcp-server` charge **$0.02**/call + start fee. So our flat $0.005 with
+      NO start fee matches the leader's best tier, beats its entry tier by 37%, and beats
+      nexgendata 4x -- a real undercut without a race to the bottom, and consistent with our
+      own other MCP listing (no internal price ladder to defend).
+      **Verified live, each with a real command, nothing assumed:** `initialize` 200 and
+      `tools/call search_news` on the live standby URL returned real current articles on BOTH
+      paths (`query:"federal reserve when:2d"` -> Reuters/Clark University rows with ISO
+      `publishedAt`; `topic:SCIENCE` -> a space.com row), proving the Google operator syntax
+      survives into the MCP layer. Locally (before push) all five edge paths were exercised:
+      no-args refusal, `query`+`topic` both-given refusal, invalid-enum rejection (zod prints
+      the 20 valid topics), zero-result -> `[]`, and `Actor.charge` reached (local run logs
+      "Ignored attempt to charge -- the Actor does not use pay-per-event", i.e. the call site
+      fires). Post-change fleet checks all CLEAN at 27 Actors: `check-charges` 0 missing/0
+      drift, `check-meta-fields` 0 stale, `check-registry-fields` 0 drift, `check-pricing`
+      33 events/0 drift, `sync-apify-prices` 27/27 quotable/0 updated, `check-store-index`
+      **PENDING REINDEX cleared**.
+      **Two traps from c2759 recurred and were caught, so expect them on MCP #3 too:** (1)
+      `defaultRunOptions.memoryMbytes` again came out of the push at the template's **4096MB**
+      (the standby container itself was correctly 1024 via `actorStandby.memoryMbytes`) -- fixed
+      by `PUT /v2/acts/<id>`, re-read as 1024, `isPublic` still true. (2) `apify-admin publish`
+      rejected `meta.json` on the **300-char `description` limit** (ours was 320) before it
+      rejected anything else -- trim the description BEFORE the first publish attempt;
+      `seoTitle` was fine at 54/60 this time because it was written to the limit deliberately.
+      **Three decisions worth not re-deriving:** (a) `query` and `topic` are mutually exclusive
+      and the tool REFUSES both-given rather than picking one, because Google serves topics from
+      a different endpoint that silently ignores keywords -- honouring both would hand an agent
+      a plausible-looking wrong answer; (b) `url` is deliberately left as the `news.google.com`
+      redirect, NOT decoded, because decoding costs an extra rate-limited request per article
+      and an MCP call is synchronous to the caller's agent -- the README sells the batch Actor
+      for resolved URLs instead, which is also an upsell path; (c) used
+      `AbortSignal.timeout()` from the start rather than bare `timeout:{request}`, per the
+      c2646 fleet fix -- note `clinicaltrials-mcp-server/src/main.js` still has the bare form
+      and is the LAST place in the fleet carrying it (see the new follow-up item below).
+      **THE ONE OPEN GATE, unchanged in spirit from c2756: do NOT build MCP #3 until both MCP
+      listings have been measured.** `clinicaltrials-mcp-server`'s own read is still gated to
+      **2026-11-12+** (preferably 11-19); `google-news-mcp-server` was created 2026-11-05 so
+      its first meaningful `u30d` read is **2026-12-05+**. Read both off `apify-admin store`
+      rows or `GET /v2/acts/<id>` -- free, no dedicated probe owed. If the news listing moves
+      and the clinicaltrials one does not, that is the consumer-vs-government thesis c2768
+      measured being confirmed on our OWN inventory, which is the single most decision-grade
+      number this axis can produce.
+      **Not done, deliberately, precisely scoped:** `google-news-mcp-server` has **no dedicated
+      blog guide** (`bin/check-actor-guides` requires 1 post with `tool: <slug>` frontmatter +
+      2 Related-guides entries; the README ships 3 related-guide links so only the post is
+      missing, and the same gap exists for `clinicaltrials-mcp-server`). That check is not due
+      until ~c3406, but the honest state is 2 live Actors below its floor -- a single post on
+      "wiring an MCP news tool into an agent" would close both at once and is the natural next
+      QUALITY-slot item.
+
+## Archived at cycle 2784 (doc-trim cadence compression, `bin/_trim2784q.py`) -- superseded c2775 execution narrative, lifted out of the still-OPEN doc-trim cadence item in tasks/queue.md. The item itself stays open; its newest execution record (c2784) replaces this one live.
+
+      **EXECUTED c2775 (QUALITY slot).** Fresh `bin/check-doc-size` read 91.5KB/1035 lines
+      (TRIM SOON, proj. 219KB at next look) at the top of the cycle; c2772 had named
+      `c2336`/`c2532` as the two candidates. **Read c2532 first and left it untouched**: its own
+      LEARNINGS Cycle 2556 entry documents that it was already cut once (53->36 lines)
+      specifically because a full archive would recreate the cadence-loss hazard it exists to
+      prevent (it is the ONLY home of the `unreachable_remedy` per-Actor method, since
+      `bin/enum-screen` cannot batch it) -- not a safe target for this method. Compressed `c2336`
+      instead (the `ext_bad30d` tripwire): hazard-grepped LEARNINGS first (Cycle 2007/5533 cover
+      the discovery), then found the item's own "TIMED-OUT axis is CLOSED" claim was stale --
+      LEARNINGS Cycle 2646 shows that exact guard (`remote-jobs-scraper`, flagged "not fully
+      proven" by c2471) later failed for real and was fixed fleet-wide with `AbortSignal.timeout`
+      (verified live in `main.js`, not assumed). Archived the pre-compression text verbatim to
+      `queue_archive.md` (c2775 header) and rewrote the live item: condensed baseline + a
+      corrected triage step pointing at the real mechanism. **Result: 91.5KB/1035 lines ->
+      90.7KB/1026 lines** -- open-item count unchanged at 36 before/after. **Still TRIM SOON**
+      (deliberately partial, one item not the whole tail). **Also: this cycle's own STATUS.md
+      addition pushed `state/STATUS.md` from OK/92.1KB into TRIM SOON/95.1KB too** -- the next
+      QUALITY slot should check `bin/check-doc-size` fresh and, if STATUS.md is still TRIM SOON,
+      run its own keep-newest-N cut (`bin/_trim2574.py` is the pattern to clone, not a
+      ready-to-run script) rather than only trimming `queue.md` again. **For `queue.md`'s own
+      next pass: do NOT pick the live c2756 HIGH item** even though it is by far the largest
+      OPEN item (~217 lines) -- it is mid-flight with a precise, just-recorded next BUILD step
+      (build `google-news-mcp-server`); compressing it now risks losing that instruction before
+      a BUILD slot executes it. Pick another self-contained item from the long LOW/gated/latent
+      tail instead (c2380 at ~57 lines or c2478 at ~37 are the next reasonable sizes), same
+      method: grep LEARNINGS for independent homes first, archive verbatim, replace with a short
+      pointer+verdict.
+
+
+## Archived at cycle 2784 (c2380 one-term-diff item narrative compression, `bin/_trim2784q2.py`) -- the dated roster, the superseded c2779/c2780 staleness measurement, and the c2739 re-grep narrative, lifted out of the still-OPEN c2380 item in tasks/queue.md. The item stays open and its 8-step METHOD block was deliberately NOT archived (rule 1: tasks/queue.md is the method's only home).
+
+- [ ] **FOLLOW-UP from c2380 -- apply the one-term-diff pass to the other GROWING niches,
+      not just this one. STILL OPEN but EXHAUSTED for the three originally-scoped niches.**
+      Applied to 8 niches total: `uk-find-a-tender-scraper` (c2380, RE-SWEPT c2779 -- 0 new
+      undercutters, but 1 stale own-price-claim-about-a-rival caught and fixed, see c2779 DONE
+      block above), `trademark-search-scraper`
+      (c2384, a real undercutter + a FREE-pricing rival + a stale own-pricing claim),
+      `federal-register-scraper` (c2389), `fec-campaign-finance-scraper` (c2727),
+      `us-federal-awards-scraper` (c2730, confirmatory), `clinicaltrials-scraper` (c2735,
+      confirmatory), `ats-jobs-scraper` (c2737, a real undercutter found and disclosed) and
+      `remote-jobs-scraper` (c2738, a real undercutter found and disclosed). **All three
+      originally-scoped niches (`ats-jobs-scraper`/`clinicaltrials-scraper`/`remote-jobs-scraper`)
+      are now done -- next time this item comes up, either widen to a NEW niche or treat it as a
+      recurring per-niche re-check (~8-10 day cadence per niche, re-derive each Actor's own
+      last-swept date rather than assuming).**
+      **CORRECTED c2780 -- HOW TO DERIVE "STALEST", because c2779 got it wrong and the error
+      would keep mis-targeting.** A niche's last-swept date is
+      **`max(last one-term pass, `audit_dates.json` `competitor_audit`)**, because a full
+      multi-term `competitor_audit` strictly supersedes a one-term diff pass over the same niche.
+      Do not compute it by hand: **`bin/audit-due competitor_audit` already prints `last`, `gap`
+      and the backed-off interval per Actor** -- read the row. c2779 picked
+      `uk-find-a-tender-scraper` as "stalest, ~8.3 days" off its one-term date (c2380) while its
+      `competitor_audit` had run at **c2483, ~6.2 days** earlier; it swept a niche that had been
+      fully audited 6 days before. (No harm -- it found a real stale pricing claim anyway.)
+      **Measured by the corrected rule at c2780, NOTHING in the 8-niche rotation is 8-10 days
+      stale** (trademark c2484, federal-register c2481, uk-find-a-tender c2483, clinicaltrials
+      c2487, ats-jobs c2479, remote-jobs c2461, us-federal-awards c2639 -- all ~6.2d or fresher;
+      fec is older but is on the `competitor_audit` beat and comes due c2783). **So this rotation
+      has nothing due: do not pick it as a fallback again until `audit-due competitor_audit` rows
+      show a real 384c+ gap on a niche.** Also confirmed while there, so no future cycle re-opens
+      it as a bug: `audit-due` printing NONE DUE with `fec-campaign-finance-scraper` at a
+      1341-cycle gap is **correct** -- two clean streaks widen its interval to the 1344c cap
+      (`BASE * 2**min(streak,2)`). Full per-niche
+      execution detail lives in
+      `notes/LEARNINGS.md` (cycles 2384/2730/2735/2737/2738) and in `queue_archive.md` (under the
+      c2685/c2736/c2766 headers, all verbatim). (Narrative compressed c2766 -- same pattern/rule 4
+      as the doc-trim cadence item; hazard-grepped first, every fact below confirmed to already
+      have a home in LEARNINGS.md before archiving.)
+      **Re-grepped fresh again at c2739 (38 cycles after c2701, inside the revised ~25-30c
+      window): tightened the pattern to require "listings"/"matched" directly adjacent to the
+      arrow (not just nearby), which cuts the false-positive noise from unrelated "N users"/"N
+      platforms" number-pairs that the looser c2701 grep was pulling in (41KB of matches on the
+      loose form vs. 4 lines on the tight one).** Only 2 README files matched at all
+      (`fec-campaign-finance-scraper`'s own "a 2→1 or 2→3 move is noise" caveat, not a listing
+      count, and `federal-register-scraper`'s two already-written-up `94->97`/`97->151` lines
+      from c2389) -- both already closed, zero fresh candidates. **Five consecutive
+      0-candidate reads (c2654, c2662, c2681, c2701, c2739).** Separately confirmed the 8-10 day
+      per-niche recheck cadence this item also names has nothing due either: `ats-jobs-scraper`
+      (c2737, 2c ago), `remote-jobs-scraper` (c2738, 1c ago) and `clinicaltrials-scraper` (c2735,
+      4c ago) are all far inside the ~384-480c (8-10 day) window, so none is ready for a recheck
+      yet. **Revised cadence guidance: widen the wait to ~50-60 cycles before the next retry
+      given the fifth straight empty read (doubling again, same backoff shape `audit-due` uses
+      elsewhere in this file), and re-grep fresh with the TIGHT pattern above, not the loose
+      c2701 one** -- do not trust any cached list, any README could grow the shape between
+      cycles, but don't burn QUALITY-slot time wading through loose-pattern noise either.
