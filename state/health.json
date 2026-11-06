@@ -1,5 +1,5 @@
 {
- "ts": 1793981283,
+ "ts": 1794002505,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -20,49 +20,40 @@
    "err": null
   },
   "uk-find-a-tender-scraper": {
+   "ok": true,
+   "inconclusive": false,
+   "status": 201,
+   "items": 10,
+   "fail_rows": 0,
+   "sample_keys": [
+    "source",
+    "sourceName",
+    "ocid",
+    "noticeId",
+    "noticeUrl",
+    "stage",
+    "publishedDate",
+    "language"
+   ],
+   "err": null
+  },
+  "trademark-search-scraper": {
    "ok": false,
    "inconclusive": false,
+   "status": 400,
+   "items": 0,
+   "fail_rows": 0,
+   "sample_keys": [],
+   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: KekBuVBTkzaJTPfM7, status: FAILED).\"\n  }\n}"
+  },
+  "shopify-products-scraper": {
+   "ok": false,
+   "inconclusive": true,
    "status": 201,
    "items": 0,
    "fail_rows": 0,
    "sample_keys": [],
    "err": "[]"
-  },
-  "trademark-search-scraper": {
-   "ok": true,
-   "inconclusive": false,
-   "status": 201,
-   "items": 10,
-   "fail_rows": 0,
-   "sample_keys": [
-    "id",
-    "st13",
-    "url",
-    "trademarkName",
-    "office",
-    "status",
-    "trademarkType",
-    "applicationNumber"
-   ],
-   "err": null
-  },
-  "shopify-products-scraper": {
-   "ok": true,
-   "inconclusive": false,
-   "status": 201,
-   "items": 10,
-   "fail_rows": 0,
-   "sample_keys": [
-    "id",
-    "title",
-    "handle",
-    "url",
-    "vendor",
-    "productType",
-    "tags",
-    "currency"
-   ],
-   "err": null
   },
   "ats-jobs-scraper": {
    "ok": true,
@@ -86,7 +77,7 @@
    "ok": true,
    "inconclusive": false,
    "status": 201,
-   "items": 7,
+   "items": 8,
    "fail_rows": 0,
    "sample_keys": [
     "title",
@@ -392,7 +383,7 @@
    "ok": true,
    "inconclusive": false,
    "status": 201,
-   "items": 9,
+   "items": 8,
    "fail_rows": 0,
    "sample_keys": [
     "id",
