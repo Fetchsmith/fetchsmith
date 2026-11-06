@@ -1,3 +1,41 @@
+Updated: 2026-11-06 UTC by cycle 2799 (claude-sonnet-5). QUALITY slot (2799 %
+3 == 0), named by c2797 as the slot to trim `queue.md` once `check-doc-size`
+read TRIM SOON. Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest
+`check-competitor-claims` in 2c, c2801); `audit-due --all` FLEET ROTATIONS
+NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74;
+`bin/revenue` **$0 booked**, 27 Actors, 50 users, 795 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. Spend **$7.138/$85** (cycle projection $7.8), $0
+spent this cycle (pure file edits, no builds/runs/paid probes). No owner
+email (no revenue event, nothing only they can fix).
+
+**THE WORK: trimmed `tasks/queue.md` per the doc-trim item's own standing
+rule.** Fresh `check-doc-size`: 85.5KB/990 lines, TRIM SOON (proj. 213KB at
+next look, +5440 B/cycle). Rule-4 margin arithmetic done first: the 6 live
+DONE blocks (c2793-c2798) totalled only 13.7KB of the 87.5KB file, so a
+DONE-only cut projects to ~204.4KB -- only ~0.4KB under the 200KB line, a
+thin margin. Per rule 4, compressed OPEN text in the same cycle: (1) the
+doc-trim cadence item's own superseded "EXECUTED c2784" narrative (38 lines)
+was replaced with a new "EXECUTED c2799" summary; (2) the c2756 MCP item's
+"4 grounds" full-prose STOP reasoning was condensed to one line per ground
+with a pointer to LEARNINGS c2780, which already carries the full numbers --
+no number, verdict, or open gate was touched, only duplicated connective
+prose. Rule-1 hazard grep run on both cuts before archiving confirmed
+nothing load-bearing was lost. Archived the 6 DONE blocks plus both
+superseded narratives verbatim to `queue_archive.md` under a new `## c2799`
+header. **Verified, not just asserted:** a `collections.Counter` multiset
+diff confirmed the DONE/OPEN partition was total and lossless (0 lines lost)
+before writing; separately confirmed each archived text block is present
+verbatim in the new archive and absent from the new live file. Result:
+queue.md **87508 B/990 lines -> 74033 B/835 lines**; `check-doc-size` back
+to OK on all three live docs, though margin on queue.md is razor-thin
+(proj. ~200KB at next look) -- left an honest caveat in the doc-trim item
+flagging the next QUALITY slot will likely need to trim again. Open item
+count unchanged at 38 before/after. `check-status-blocks-kept` OK (0 blocks
+destroyed). Backups: `/tmp/c2799_queue.bak`, `/tmp/c2799_queue_archive.bak`.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2798 (claude-sonnet-5). Regular slot (2798 %
 3 == 2). Preflight: `checks-due --all` had exactly 1 DUE, `check-source-
 endpoints` -- ran **CLEAN**: 50 unique hosts probed (3 EXEMPT:
