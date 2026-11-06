@@ -1,0 +1,3488 @@
+[
+ {
+  "handle": "exuberantal/findlaw-justia-lawyer-law-firm-directory-scraper",
+  "title": "FindLaw & Justia US Lawyer Directory \u2014 $0.75/1K",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00075
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Scraped Result Item"
+   }
+  },
+  "desc": "Extract US attorneys, law firms, practice areas, phone numbers, websites, and federal court docket records from FindLaw and CourtListener / Justia legal databases."
+ },
+ {
+  "handle": "automatic/brazil-datajud-scraper",
+  "title": "Brazil DataJud Court Case Metadata",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Court case"
+   }
+  },
+  "desc": "Search Brazilian public court case metadata across tribunal indices. Filter CNJ case numbers, class, subjects and filing dates; export normalized court metadata and optional latest movements."
+ },
+ {
+  "handle": "itsadry/judicatura-sentencias-ecuador",
+  "title": "Ecuador Judicial Records (Sentencias) Lookup",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Record result"
+   }
+  },
+  "desc": "Look up the individual judicial records of a person in Ecuador's Funci\u00f3n Judicial by c\u00e9dula or RUC: criminal proceedings, offence, court, province and dates."
+ },
+ {
+  "handle": "legaltech/domsdatabasen",
+  "title": "Domsdatabasen - Danish Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Danish court judgments in the official Domsdatabasen: boolean search, ECLI, final/appealed status, related cases across instances, full text."
+ },
+ {
+  "handle": "insight.solutions/litigation-signals-api",
+  "title": "Litigation Signals API \u2014 Lawsuits, Settlements & Investigations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "signal",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.004,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,document,signal",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.001,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run started"
+   },
+   "signal": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.004,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Litigation signal"
+   },
+   "document": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.001,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Document read"
+   }
+  },
+  "desc": "Who is being sued, settling or investigated: one row per legal matter per public company, from SEC 10-K, 10-Q and 8-K disclosures, press wires and SEC, FTC, CFPB and DOJ notices, with type, status, court, case number and amount. Individuals redacted. No key."
+ },
+ {
+  "handle": "davidcondrey/wl-legal-cite-verifier",
+  "title": "Legal citation and quotation verifier (US case law)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "agent-call",
+  "unit_tiers": {
+   "FREE": 1.88
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): agent-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "agent-call": {
+    "tiers": {
+     "FREE": 1.88
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Legal citation and quotation verifier (US case law) run"
+   }
+  },
+  "desc": "Extracts US reporter citations from a brief (U.S., S. Ct., L. Ed., F., F.2d, F.3d, F.4th, F. Supp., state and regional reporters) and checks each against Harvard's Caselaw Access Project and, when the operator has configured a token, the CourtListener Citation Lookup API.\u2026"
+ },
+ {
+  "handle": "legaltech/find-case-law-uk",
+  "title": "Find Case Law - UK Case Law Search (The National Archives)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search UK judgments (UKSC, Privy Council, Court of Appeal, High Court, tribunals) via The National Archives Find Case Law API: neutral citation, judges, PDF."
+ },
+ {
+  "handle": "legaltech/gesetze-bayern",
+  "title": "Bavaria Case Law Search (gesetze-bayern.de)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Bavarian court decisions on the official gesetze-bayern.de portal, including search by applied statute (e.g. BGB \u00a7 536): Leitsatz, keywords, Tenor."
+ },
+ {
+  "handle": "legaltech/tribunal-constitucional-pt",
+  "title": "Portuguese Constitutional Court - Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.03,
+     "SILVER": 0.02,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search decisions of the Portuguese Constitutional Court by text, chamber, proceeding type, reporting judge and date, with operative part and full text."
+ },
+ {
+  "handle": "legaltech/rechtsprechung-niedersachsen",
+  "title": "Lower Saxony Case Law Search (NI-VORIS)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Lower Saxony court decisions in the official NI-VORIS system: ECLI, applied statutes, headnote, operative part and full text."
+ },
+ {
+  "handle": "legaltech/gerichtsentscheidungen-brandenburg",
+  "title": "Brandenburg Case Law Search (Entscheidungsdatenbank)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.03,
+     "SILVER": 0.02,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search decisions of Brandenburg and joint Berlin-Brandenburg courts in the official decision database: ECLI, procedural history, Tenor, full text."
+ },
+ {
+  "handle": "legaltech/ris-austria",
+  "title": "RIS Austria - Austrian Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Austrian case law (OGH, VfGH, VwGH, BVwG, LVwG, DSB\u2026) via the official RIS open data API: legal principles, operative part, cited statutes, PDF."
+ },
+ {
+  "handle": "legaltech/rechtspraak",
+  "title": "Rechtspraak - Dutch Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Dutch court decisions via the official Rechtspraak Open Data API: filters by court and area of law, summary, relations between instances, full text."
+ },
+ {
+  "handle": "legaltech/corte-costituzionale",
+  "title": "Italian Constitutional Court - Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.03,
+     "SILVER": 0.02,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search 20,000+ Italian Constitutional Court decisions (1956-present) from official open data: boolean search, massime, operative part, constitutional articles invoked."
+ },
+ {
+  "handle": "legaltech/nrwe",
+  "title": "NRWE - North Rhine-Westphalia Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search case law of all North Rhine-Westphalia courts in the official NRWE database: ECLI, headnotes, operative part, lower-court decision, full text."
+ },
+ {
+  "handle": "legaltech/finlex",
+  "title": "Finlex - Finnish Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Finnish case law (KKO, KHO, courts of appeal, administrative and special courts) published in Finlex: keywords, ECLI, doctrinal summary, full text."
+ },
+ {
+  "handle": "legaltech/domstol-se",
+  "title": "Swedish Case Law Search (R\u00e4ttspraxis, Domstolsverket)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Swedish case law (HD, HFD, courts of appeal, Labour Court\u2026) via the official r\u00e4ttspraxis API: summaries, statutes by SFS number, preparatory works."
+ },
+ {
+  "handle": "legaltech/giustizia-amministrativa",
+  "title": "Italian Administrative Case Law - Consiglio di Stato and TAR",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search judgments of the Italian Consiglio di Stato, CGA Sicilia and the 29 TAR (official OpenGA open data) with outcome, operative part and reporting judge."
+ },
+ {
+  "handle": "legaltech/bger",
+  "title": "Swiss Federal Supreme Court - Case Law Search (BGer / TF)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Swiss Federal Supreme Court judgments since 2000 and leading BGE/ATF decisions in German, French or Italian: Regeste, operative part, full text."
+ },
+ {
+  "handle": "lienintel/allegheny-county-pa-tax-liens",
+  "title": "Allegheny County PA Tax Liens: Dockets, Amounts & Assignees",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Allegheny County, Pennsylvania tax liens from court records: docket, filing date, tax year, lien type, amount, assignee, municipality, parcel and satisfied status. Filter by assignee, parcel, municipality, date and amount."
+ },
+ {
+  "handle": "legaltech/dgsi",
+  "title": "DGSI - Portuguese Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Portuguese case law (STJ, STA, Courts of Appeal, TCA, Tribunal dos Conflitos) in the official DGSI databases: headnotes (sum\u00e1rio), descriptors, outcome and full text."
+ },
+ {
+  "handle": "jungle_synthesizer/brazil-jusbrasil-court-scraper",
+  "title": "Brazil Court Scraper - Lawyer Caseloads & Case Tracking",
+  "users": 59,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-16T04:05:19.871Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Track Brazilian court cases three ways: by a lawyer's OAB registration, by process number, or by case-law keyword. Returns parties, counsel with OAB, procedural class, judging body, filing date and dated movements. Built for tracking active and ongoing cases, including matters with no ruling yet."
+ },
+ {
+  "handle": "brasildados/cnpj-lawsuits-check",
+  "title": "Brazil CNPJ Legal Processes Scraper Lawsuits & Litigation Risk",
+  "users": 37,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.35,
+   "BRONZE": 0.3,
+   "SILVER": 0.25,
+   "GOLD": 0.2,
+   "PLATINUM": 0.2,
+   "DIAMOND": 0.2
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.35,
+     "BRONZE": 0.3,
+     "SILVER": 0.25,
+     "GOLD": 0.2,
+     "PLATINUM": 0.2,
+     "DIAMOND": 0.2
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Per Tax ID (Company) lookup"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Brazilian company lawsuit risk summary by CNPJ, with aggregated statistics for due diligence, batch screening, API workflows and scheduled monitoring. Structured results support downloads and integrations. | Resumo de risco litigioso por CNPJ para triagem e dilig\u00eancia."
+ },
+ {
+  "handle": "codingfrontend/ecourts-party-case-scraper",
+  "title": "eCourts Party Case Scraper",
+  "users": 26,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00399
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00399
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Search court cases by party name on Indian eCourts services. Supports fetching states, districts, complexes, and establishments."
+ },
+ {
+  "handle": "codingfrontend/ecourts-advocate-case-scraper",
+  "title": "eCourts Advocate Case Scraper",
+  "users": 12,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00399
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00399
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Search court cases by advocate name or bar code on Indian eCourts services. Supports fetching states, districts, complexes, and establishments."
+ },
+ {
+  "handle": "brasildados/processos-judiciais-socios",
+  "title": "Processos Judiciais dos S\u00f3cios (QSA) - Scraper",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "processos-judiciais-socios",
+  "unit_tiers": {
+   "FREE": 0.4
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): processos-judiciais-socios",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "processos-judiciais-socios": {
+    "tiers": {
+     "FREE": 0.4
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Por CNPJ consultado"
+   }
+  },
+  "desc": "Processos judiciais dos s\u00f3cios das empresas consolidado por CNPJ: total, pap\u00e9is e distribui\u00e7\u00f5es, como indicador de risco da empresa. | Company-level aggregate of the owners' (QSA) lawsuit distribution by CNPJ. No individual identification."
+ },
+ {
+  "handle": "parseforge/brazil-cnj-court-scraper",
+  "title": "Brazil CNJ Court Cases Scraper",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes Brazilian court cases from the CNJ DataJud index. Filter by tribunal, case number, or class name. Returns each case as a flat row."
+ },
+ {
+  "handle": "brasildados/cnpj-lawsuits-detail",
+  "title": "Brazil CNPJ Legal Processes Detail - Individual Lawsuits",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "cnpj-lawsuits-detail-process",
+  "unit_tiers": {
+   "FREE": 0.2
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cnpj-lawsuits-detail-process",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "cnpj-lawsuits-detail-process": {
+    "tiers": {
+     "FREE": 0.2
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Per lawsuit found"
+   }
+  },
+  "desc": "Individual lawsuit records by CNPJ, including case number, court, subject, status, value, dates and parties for due diligence, credit analysis, legal research, API workflows and scheduled monitoring. | Processos individuais por CNPJ para dilig\u00eancia, cr\u00e9dito, pesquisa jur\u00eddica, API e monitoramento."
+ },
+ {
+  "handle": "brasildados/cnpj-due-diligence-report",
+  "title": "Brazil CNPJ Due Diligence Report - Company Background Check",
+  "users": 7,
+  "model": "FREE",
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {},
+  "desc": "Due diligence dossier per Brazilian CNPJ, by email: registration, owners, lawsuits, government debts and sanctions/PEP. Vendor vetting, KYC, credit. $2.00 per dossier. | Dossi\u00ea de due diligence por CNPJ por e-mail: cadastro, s\u00f3cios, processos, d\u00edvidas e san\u00e7\u00f5es/PEP. US$ 2,00 por dossi\u00ea."
+ },
+ {
+  "handle": "jungle_synthesizer/eur-lex-eu-legislation-scraper",
+  "title": "EUR-Lex Scraper - EU Regulations, Directives & Case Law",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-16T04:05:44.191Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Scrape EUR-Lex for EU legislation: regulations, directives, decisions, judgments, treaties. Returns CELEX IDs, ELI URIs, EuroVoc subjects, amendment tree, legal basis, national transpositions, and full-text URLs. Built for LegalTech, compliance teams, and AI training pipelines."
+ },
+ {
+  "handle": "jungle_synthesizer/curia-eu-court-of-justice-judgment-scraper",
+  "title": "CURIA EU Court of Justice Judgment Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-16T04:06:06.033Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Scrapes CJEU case law from the official CURIA juris search \u2014 judgments, Advocate-General opinions, and orders with ECLI/CELEX identifiers, parties, and full-text/PDF links."
+ },
+ {
+  "handle": "wildorigins/uk-case-law-search-monitor",
+  "title": "UK Case Law Search and Monitor",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00085,
+   "SILVER": 0.0007,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0005,
+   "DIAMOND": 0.0004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.0007,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0005,
+     "DIAMOND": 0.0004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Judgment"
+   }
+  },
+  "desc": "\ud83c\udff7\ufe0f From $0.60 / 1K | Search and monitor UK court judgments from Find Case Law. Filter by court, party, judge and date, and export full citations, neutral citations and judgment links."
+ },
+ {
+  "handle": "nocodeventure/rechtspraak-uitspraken-rechtbank-scraper",
+  "title": "Rechtspraak Uitspraken Rechtbank Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.003,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.2,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,rechtspraak-document,rechtspraak-search,retry-event",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.004,
+     "SILVER": 0.003,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   },
+   "rechtspraak-document": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.004,
+     "SILVER": 0.003,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Rechtspraak document"
+   },
+   "rechtspraak-search": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.004,
+     "SILVER": 0.003,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Rechtspraak search"
+   },
+   "retry-event": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Retry event"
+   },
+   "event-proxy": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Proxy event"
+   },
+   "event-proxy-group": {
+    "tiers": {
+     "FREE": 0.2
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Proxy group"
+   }
+  },
+  "desc": "Scrape Dutch case law (Nederlandse jurisprudentie) from the official Rechtspraak database at uitspraken.rechtspraak.nl. Search by keywords, filter by court, legal area, procedure type, and dates\u2014then export uitspraken, metadata, and full judgment text to JSON in your Apify dataset."
+ },
+ {
+  "handle": "ponderable_hydrometer/courtlistener-scraper",
+  "title": "CourtListener Scraper \u2014 US Case Law",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-16T08:03:42.000Z",
+    "model": "FREE"
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search US court opinions and case law from CourtListener (Free Law Project) \u2014 case name, court, date, docket, citation and judge. Free, optional key for higher limits."
+ },
+ {
+  "handle": "jungle_synthesizer/uk-bailii-court-judgments-scraper",
+  "title": "UK Court Judgments Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Scrapes UK court judgments from The National Archives Find Case Law. Returns neutral citation, court, judges, parties, date, and full judgment text. Covers ~370,000 judgments from UKSC, EWCA, EWHC, and Tribunals since 2003."
+ },
+ {
+  "handle": "parseforge/courtlistener-bankruptcy-scraper",
+  "title": "CourtListener Bankruptcy Scraper - Dockets by Chapter",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00387,
+   "SILVER": 0.00375,
+   "GOLD": 0.00362,
+   "PLATINUM": 0.00362,
+   "DIAMOND": 0.00362
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-12T00:48:01.681Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00387,
+     "SILVER": 0.00375,
+     "GOLD": 0.00362,
+     "PLATINUM": 0.00362,
+     "DIAMOND": 0.00362
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US bankruptcy dockets from CourtListener's RECAP archive by chapter, court, debtor, trustee and date, with judges and filings. Export to CSV, JSON, Excel or XML."
+ },
+ {
+  "handle": "klyve1/france-case-law",
+  "title": "French Case Law Search (Judilibre, Cour de cassation)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "decision",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): decision,full-text",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "decision": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Decision returned"
+   },
+   "full-text": {
+    "tiers": {
+     "FREE": 0.007
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Full text add-on"
+   }
+  },
+  "desc": "Search French court decisions from the official Judilibre open data: Cour de cassation, cours d'appel, tribunaux judiciaires and commercial courts. Full text, summary, ECLI, solution, legal grounds. No PISTE account needed. MCP-ready for legal AI agents."
+ },
+ {
+  "handle": "oblanceolate_mandola/court-opinions-search",
+  "title": "Court Opinions Search \u2014 US Case Law to JSON",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Court opinions scraper & API: search US case law by keyword for case name, court, date and citation count as JSON. For legal and due-diligence AI agents."
+ },
+ {
+  "handle": "moving_beacon-owner1/pacer-rss-docket-monitor",
+  "title": "PACER RSS Docket Monitor",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00999
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00999
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Monitor the latest PACER federal court docket entries across multiple courts. Filter by case numbers or keywords, deduplicate results across runs, and receive only new docket updates with parsed entry details and timestamps."
+ },
+ {
+  "handle": "jungle_synthesizer/indian-kanoon-case-law-scraper",
+  "title": "Indian Kanoon Case Law Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024000000000000002,
+   "PLATINUM": 0.0024000000000000002,
+   "DIAMOND": 0.0024000000000000002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record,orbtop-actor-start",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "orbtop-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024000000000000002,
+     "PLATINUM": 0.0024000000000000002,
+     "DIAMOND": 0.0024000000000000002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Search India's largest free case-law and legislation index by keyword. Get structured judgment metadata: court, citation, decision date, bench, full text, and citation counts for legal research and litigation analysis."
+ },
+ {
+  "handle": "parseforge/courtlistener-dockets-scraper",
+  "title": "CourtListener State Court Dockets Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.01321,
+   "BRONZE": 0.01279,
+   "SILVER": 0.01237,
+   "GOLD": 0.01195,
+   "PLATINUM": 0.01076,
+   "DIAMOND": 0.00956
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.01321,
+     "BRONZE": 0.01279,
+     "SILVER": 0.01237,
+     "GOLD": 0.01195,
+     "PLATINUM": 0.01076,
+     "DIAMOND": 0.00956
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape state court dockets from CourtListener by keyword or browse the latest filings. Returns case name, docket number, jurisdiction, date filed, and status. No API key required."
+ },
+ {
+  "handle": "xtracto/courtlistener-opinions",
+  "title": "CourtListener Case Law Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004445,
+   "SILVER": 0.00389,
+   "GOLD": 0.003335,
+   "PLATINUM": 0.003335,
+   "DIAMOND": 0.003335
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.004445,
+     "SILVER": 0.00389,
+     "GOLD": 0.003335,
+     "PLATINUM": 0.003335,
+     "DIAMOND": 0.003335
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search US court opinions, RECAP dockets and oral arguments from CourtListener: case name, court, docket number, judges, citations, filing dates and opinion snippets. Free public API."
+ },
+ {
+  "handle": "technicaldost/courtlistener-legal-monitor",
+  "title": "CourtListener Legal Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Legal search result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Searches CourtListener and returns court opinions and dockets as structured records: case name, court, date filed, text snippet and link. Input: a search query. Schedule it to monitor new litigation on any topic or company."
+ },
+ {
+  "handle": "parseforge/pacer-court-locator-scraper",
+  "title": "Federal Court Locator Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.011,
+   "BRONZE": 0.01008,
+   "SILVER": 0.00917,
+   "GOLD": 0.00825,
+   "PLATINUM": 0.007425,
+   "DIAMOND": 0.0066
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.011,
+     "BRONZE": 0.01008,
+     "SILVER": 0.00917,
+     "GOLD": 0.00825,
+     "PLATINUM": 0.007425,
+     "DIAMOND": 0.0066
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Item"
+   }
+  },
+  "desc": "Scrapes the federal court directory from the Court Listener API. Returns each court as a flat row with jurisdiction, PACER code, and contact fields."
+ },
+ {
+  "handle": "rbbscrap/courtlistener-docket-scraper",
+  "title": "Fast CourtListener Scraper \u2014 PACER Federal Dockets",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0016,
+   "BRONZE": 0.0014,
+   "SILVER": 0.0013,
+   "GOLD": 0.0011,
+   "PLATINUM": 0.0011,
+   "DIAMOND": 0.0011
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0016,
+     "BRONZE": 0.0014,
+     "SILVER": 0.0013,
+     "GOLD": 0.0011,
+     "PLATINUM": 0.0011,
+     "DIAMOND": 0.0011
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Court docket / federal legal entry extracted"
+   }
+  },
+  "desc": "Ultra-fast federal court docket and PACER RECAP legal intelligence scraper. Search case names, docket numbers, federal courts, judges, plaintiffs, defendants, and legal filings with zero browser bloat on 256MB RAM."
+ },
+ {
+  "handle": "taroyamada/courtlistener-public-docket-opinion-watch-scraper",
+  "title": "CourtListener Scraper \u2014 Dockets, Opinions & Watch",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "CourtListener scraper: track public dockets and opinions. Open Input \u2192 leave defaults \u2192 Start (1 CourtListener query + 1 opinion \u2248 USD 0.01\u20130.03/query): https://console.apify.com/actors/rr10v3tQxzevL9Dmv/input From USD 0.01."
+ },
+ {
+  "handle": "scrapers_lat/courtlistener-scraper",
+  "title": "CourtListener Court Cases & Opinions Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,details,full_text,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.007385,
+     "SILVER": 0.006769,
+     "GOLD": 0.006154,
+     "PLATINUM": 0.006154,
+     "DIAMOND": 0.006154
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "details": {
+    "tiers": {
+     "FREE": 0.009231,
+     "BRONZE": 0.008615,
+     "SILVER": 0.008,
+     "GOLD": 0.007385,
+     "PLATINUM": 0.007385,
+     "DIAMOND": 0.007385
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Detail record"
+   },
+   "full_text": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Full opinion text"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI case summary"
+   },
+   "ai_extract": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.015,
+     "SILVER": 0.015,
+     "GOLD": 0.015,
+     "PLATINUM": 0.015,
+     "DIAMOND": 0.015
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI structured extract"
+   }
+  },
+  "desc": "Scrape US court cases, opinions and dockets: case name, court, date filed, docket number, citations, judges and opinion text. Search by keyword, court and date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "parseforge/court-listener-opinions-scraper",
+  "title": "CourtListener Opinions Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes court opinions from CourtListener's public feeds by court. Returns each opinion as a flat row with full text and metadata."
+ },
+ {
+  "handle": "parseforge/courtlistener-rss-scraper",
+  "title": "CourtListener RSS Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes federal court filings from CourtListener RSS feeds by court ID. Returns each filing as a flat row with docket number, court, case name, and filing date."
+ },
+ {
+  "handle": "zentrafoundry/courtlistener-litigation-intelligence-v2",
+  "title": "CourtListener Opinion Search v2",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "CourtListener v4 opinions for \u201cpatent infringement\u201d. v1 Try is antitrust. Not a docket dump. $0.01."
+ },
+ {
+  "handle": "precious_bathmat/cendoj-case-law-search",
+  "title": "Spanish Case Law Search: CENDOJ Rulings & Jurisprudencia",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "ruling",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ruling,search-report",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "ruling": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Ruling"
+   },
+   "search-report": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Search report"
+   }
+  },
+  "desc": "Search Spanish court rulings in CENDOJ (jurisprudencia): Supreme Court, Audiencia Nacional, TSJ, Audiencias Provinciales and first-instance courts. ROJ, ECLI, court, judge, date, summary, link. Plus a case-law report per search. No login."
+ },
+ {
+  "handle": "jungle_synthesizer/rechtspraak-nl-dutch-case-law-scraper",
+  "title": "Dutch Case Law Database \u2014 Rechtspraak Court Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record,orbtop-actor-start",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "orbtop-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Every published Dutch court judgment, from rechtbanken through the Hoge Raad and Raad van State, with full text, case metadata and the citation graph between related judgments. Pulled from Rechtspraak's open-data feed, ECLI by ECLI."
+ },
+ {
+  "handle": "fortuitous_pirate/courtlistener-court-opinions-data",
+  "title": "Courtlistener Court Opinions Data \u2014 No Login, $12.5/1k",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0125
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0125
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Courtlistener Court Opinions Data. No login or cookies. MCP-ready for AI agents. $12.5 per 1,000 records."
+ },
+ {
+  "handle": "parseforge/courtlistener-oral-arguments-scraper",
+  "title": "CourtListener Oral Arguments Scraper - Court Audio",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00387,
+   "SILVER": 0.00375,
+   "GOLD": 0.00362,
+   "PLATINUM": 0.003258,
+   "DIAMOND": 0.002896
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00387,
+     "SILVER": 0.00375,
+     "GOLD": 0.00362,
+     "PLATINUM": 0.003258,
+     "DIAMOND": 0.002896
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US courtroom oral argument recordings from CourtListener by court, judge, date and case, with MP3 links and transcripts. Export to CSV, JSON, Excel or XML."
+ },
+ {
+  "handle": "hllerdgn80/uk-court-judgments-watchdog",
+  "title": "UK Court Judgments Watchdog",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 1e-05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Watch England & Wales court and tribunal judgments the moment they publish \u2014 by company/person name, by court, or by date range. Uses Find Case Law, The National Archives' free, keyless official feed. No login, no scraping."
+ },
+ {
+  "handle": "fortuitous_pirate/courtlistener-monitor",
+  "title": "CourtListener Legal Case Monitor \u2014 No Login, $5/1k",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "CourtListener Legal Case Monitor. No login or cookies. MCP-ready for AI agents. $5 per 1,000 records."
+ },
+ {
+  "handle": "parseforge/courtlistener-scraper",
+  "title": "CourtListener Opinions Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00387,
+   "SILVER": 0.00375,
+   "GOLD": 0.00362,
+   "PLATINUM": 0.003258,
+   "DIAMOND": 0.002896
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00387,
+     "SILVER": 0.00375,
+     "GOLD": 0.00362,
+     "PLATINUM": 0.003258,
+     "DIAMOND": 0.002896
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US court opinions from CourtListener by search query or as a live feed of the latest rulings. Returns each opinion with its case metadata, citation, court, and judge in a flat row."
+ },
+ {
+  "handle": "autofacts/courtlistener-scraper",
+  "title": "CourtListener Scraper: Opinions, Dockets & Full Text",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opinion-fulltext",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): light-item,opinion-fulltext",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "opinion-fulltext": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opinion with full text"
+   },
+   "light-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Metadata item"
+   }
+  },
+  "desc": "Scrape CourtListener US court opinions with full text, dockets, oral arguments, judges, citations, and RAG-ready chunks for legal research and AI. Bring your own CourtListener API token if you have one."
+ },
+ {
+  "handle": "skootle/courtlistener-federal-dockets",
+  "title": "\u2696 CourtListener Docket Monitor",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.007,
+   "BRONZE": 0.005,
+   "SILVER": 0.004,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.007,
+     "BRONZE": 0.005,
+     "SILVER": 0.004,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Docket record"
+   }
+  },
+  "desc": "Stop checking PACER by hand. Scrape and monitor federal dockets by party, court, filing date, or nature of suit. Get case names, docket numbers, judges, parties, attorneys, status, ISO dates, and direct links. Export, run via API, schedule, or integrate with other tools."
+ },
+ {
+  "handle": "haketa/courtlistener-scraper",
+  "title": "CourtListener Scraper \u2014 US Case Law & Opinions",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0035,
+   "SILVER": 0.0033,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.0033,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search US case law and court opinions (plus judges, oral arguments, dockets) by keyword, court and date. Case name, court, date filed, citations, docket, judges and status. Powered by CourtListener. Keyless, no anti-bot."
+ },
+ {
+  "handle": "parselab/courtlistener-case-law-scraper",
+  "title": "CourtListener Case Law Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.055,
+   "BRONZE": 0.05042,
+   "SILVER": 0.04583,
+   "GOLD": 0.04125,
+   "PLATINUM": 0.04125,
+   "DIAMOND": 0.04125
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "tiers": {
+     "FREE": 0.055,
+     "BRONZE": 0.05042,
+     "SILVER": 0.04583,
+     "GOLD": 0.04125,
+     "PLATINUM": 0.04125,
+     "DIAMOND": 0.04125
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Search millions of US court opinions, federal dockets, judges and courts on CourtListener. Get case names, citations, judges, parties, attorneys, docket numbers, filing dates and download links. Filter by keyword, court and date range, then export the results to CSV or Excel."
+ },
+ {
+  "handle": "parseforge/courtlistener-citation-scraper",
+  "title": "CourtListener Citation Scraper - Case Law Citation Graph",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00387,
+   "SILVER": 0.00375,
+   "GOLD": 0.00362,
+   "PLATINUM": 0.003258,
+   "DIAMOND": 0.002896
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00387,
+     "SILVER": 0.00375,
+     "GOLD": 0.00362,
+     "PLATINUM": 0.003258,
+     "DIAMOND": 0.002896
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US court opinions from CourtListener with every reporter citation, times-cited counts and the citation graph. Export to CSV, JSON, Excel or XML."
+ },
+ {
+  "handle": "zentrafoundry/courtlistener-litigation-intelligence",
+  "title": "CourtListener Opinion Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "case-match",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): case-match,change-alert,dataset-processed,enriched-record,query-processed,record-saved",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "change-alert": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Report Generated"
+   },
+   "case-match": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Case Match"
+   },
+   "query-processed": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Query Processed"
+   },
+   "dataset-processed": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Successful dataset run"
+   },
+   "record-saved": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Saved result"
+   },
+   "enriched-record": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Enriched result"
+   }
+  },
+  "desc": "Public CourtListener v4 opinion search. Try is antitrust. Not a full docket dump and not legal advice. $0.01."
+ },
+ {
+  "handle": "parseforge/courtlistener-creditor-committee-scraper",
+  "title": "CourtListener Creditor Committee Scraper - Chapter 11",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00484,
+   "SILVER": 0.00469,
+   "GOLD": 0.00453,
+   "PLATINUM": 0.004077,
+   "DIAMOND": 0.003624
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00484,
+     "SILVER": 0.00469,
+     "GOLD": 0.00453,
+     "PLATINUM": 0.004077,
+     "DIAMOND": 0.003624
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Find chapter 11 cases with an official creditors committee in CourtListener RECAP, with the appointment entry and counsel. Export to CSV, Excel, JSON or XML."
+ },
+ {
+  "handle": "parseforge/courtlistener-judge-analytics-scraper",
+  "title": "CourtListener Judge Analytics Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00484,
+   "SILVER": 0.00469,
+   "GOLD": 0.00453,
+   "PLATINUM": 0.00453,
+   "DIAMOND": 0.00453
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00484,
+     "SILVER": 0.00469,
+     "GOLD": 0.00453,
+     "PLATINUM": 0.00453,
+     "DIAMOND": 0.00453
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Judge analytics from CourtListener: opinions authored, cases assigned, nature of suit mix, tenure and appointer, one row per judge. Export to CSV, JSON, Excel or XML."
+ },
+ {
+  "handle": "devilscrapes/courtlistener-court-opinions-scraper",
+  "title": "CourtListener Court Opinions Scraper \u2014 Free Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-scraped",
+  "unit_tiers": {
+   "BRONZE": 0.0048,
+   "DIAMOND": 0.0044,
+   "FREE": 0.005,
+   "GOLD": 0.0044,
+   "PLATINUM": 0.0044,
+   "SILVER": 0.0046
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-scraped": {
+    "tiers": {
+     "BRONZE": 0.0048,
+     "DIAMOND": 0.0044,
+     "FREE": 0.005,
+     "GOLD": 0.0044,
+     "PLATINUM": 0.0044,
+     "SILVER": 0.0046
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result scraped"
+   }
+  },
+  "desc": "Search 240,000+ U.S. court opinions on CourtListener's free, keyless full-text API and export clean, paginated case-law rows \u2014 case name, court, filing date, citations, cite count, and a direct opinion URL. No API key, no PACER account, no docket-reseller subscription."
+ },
+ {
+  "handle": "dltik/legifrance-jurisprudence-scraper",
+  "title": "Legifrance Jurisprudence Scraper: French Case Law API (DILA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "decision-result",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): decision-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "decision-result": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "French jurisprudence decision"
+   }
+  },
+  "desc": "Search French case law via the official Legifrance / PISTE API: Cour de cassation, Conseil d'Etat, CAA, TA. Decision text, ECLI, articles cites, jurisprudences citees, formations, solutions. Avocats, legal-tech, litigation analytics. $8/1K."
+ },
+ {
+  "handle": "klyve1/france-administrative-case-law",
+  "title": "French Administrative Case Law (Conseil d'\u00c9tat, CAA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "decision",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): decision,full-text",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "decision": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "decision"
+   },
+   "full-text": {
+    "tiers": {
+     "FREE": 0.007
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "full-text"
+   }
+  },
+  "desc": "Search French administrative court decisions (Conseil d'\u00c9tat, cours administratives d'appel, tribunaux administratifs) from the official L\u00e9gifrance CETAT base: urban planning, public procurement, civil service, tax, immigration, environment. Summaries, keywords, full text. No API key needed."
+ },
+ {
+  "handle": "klyve1/french-legal-mcp",
+  "title": "French Legal Data MCP Server (Case Law + IDCC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "law-article",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): agreement-search,case-law-search,decision-fetch,idcc-lookup,law-article,law-search",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "case-law-search": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "case-law-search"
+   },
+   "decision-fetch": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "decision-fetch"
+   },
+   "idcc-lookup": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "idcc-lookup"
+   },
+   "law-article": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "law-article"
+   },
+   "law-search": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "law-search"
+   },
+   "agreement-search": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "agreement-search"
+   }
+  },
+  "desc": "MCP server for AI agents: search French case law (Judilibre, Cour de cassation and appeal courts), read full decisions, and find any company's collective agreement (IDCC). Official open data, pay per tool call, no API keys to manage."
+ },
+ {
+  "handle": "unrivaled_fortress/wcag-accessibility-lawsuit-risk-scanner",
+  "title": "\u267f WCAG Accessibility Lawsuit-Risk Scanner (ADA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00425,
+     "SILVER": 0.00375,
+     "GOLD": 0.00325,
+     "PLATINUM": 0.00325,
+     "DIAMOND": 0.00325
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Audit any site for WCAG 2.2 AA risks: missing alt text, unlabeled forms, missing lang, keyboard traps and ARIA gaps. accessiBe alternative ($490-$5,940/yr) with real code findings, not overlays."
+ },
+ {
+  "handle": "parseforge/courtlistener-party-scraper",
+  "title": "CourtListener Litigation Party & Counsel Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00387,
+   "SILVER": 0.00375,
+   "GOLD": 0.00362,
+   "PLATINUM": 0.003258,
+   "DIAMOND": 0.002896
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00387,
+     "SILVER": 0.00375,
+     "GOLD": 0.00362,
+     "PLATINUM": 0.003258,
+     "DIAMOND": 0.002896
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape litigation parties and their counsel from CourtListener RECAP: one row per party, with law firms, attorneys, judge and case. Export to CSV, JSON, Excel or XML."
+ },
+ {
+  "handle": "moving_beacon-owner1/courtlistener-opinions-scraper",
+  "title": "CourtListener Opinions Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape US court opinions and legal records from CourtListener using full-text search queries. Extract case names, courts, filing dates, docket numbers, citations, and opinion URLs with support for opinions, RECAP records, oral arguments, and people searches."
+ },
+ {
+  "handle": "recordsdata/datajud-scraper",
+  "title": "DataJud Scraper - Brazil Court Cases & Processos (CNJ API)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "process-record",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.01733,
+   "SILVER": 0.016,
+   "GOLD": 0.01547,
+   "PLATINUM": 0.01547,
+   "DIAMOND": 0.01547
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): movement-record,process-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "process-record": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.01733,
+     "SILVER": 0.016,
+     "GOLD": 0.01547,
+     "PLATINUM": 0.01547,
+     "DIAMOND": 0.01547
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Process record"
+   },
+   "movement-record": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Movement record"
+   }
+  },
+  "desc": "Scrape Brazil's official DataJud (CNJ) API for judicial processes across 91 federal, state, labor, electoral and military courts. Look up by CNJ process number, class or judging unit, or pull recent activity with movement history. Export CSV, Excel, JSON. No login or API key."
+ },
+ {
+  "handle": "chrisp1211/courtlistener-scraper-max",
+  "title": "CourtListener Legal Opinions & Dockets Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "record": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Record"
+   }
+  },
+  "desc": "Scrape US legal opinions, dockets and judges from CourtListener. Search case law by keyword and court. Returns case name, court, date, citation and snippet. Optional token raises limits. Pay per result; empty runs free."
+ },
+ {
+  "handle": "parseforge/courtlistener-attorney-profiles-scraper",
+  "title": "CourtListener Attorney Profiles Scraper - Judges & Counsel",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00387,
+   "SILVER": 0.00375,
+   "GOLD": 0.00362,
+   "PLATINUM": 0.003258,
+   "DIAMOND": 0.002896
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00387,
+     "SILVER": 0.00375,
+     "GOLD": 0.00362,
+     "PLATINUM": 0.003258,
+     "DIAMOND": 0.002896
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape attorney and judge profiles from CourtListener's judicial database by name, court, law school, appointer and party. Export to CSV, JSON, Excel or XML."
+ },
+ {
+  "handle": "parseforge/courtlistener-adversary-scraper",
+  "title": "CourtListener Adversary Proceedings Scraper - Bankruptcy",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00387,
+   "SILVER": 0.00375,
+   "GOLD": 0.00362,
+   "PLATINUM": 0.00362,
+   "DIAMOND": 0.00362
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00387,
+     "SILVER": 0.00375,
+     "GOLD": 0.00362,
+     "PLATINUM": 0.00362,
+     "DIAMOND": 0.00362
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape bankruptcy adversary proceedings from CourtListener RECAP by nature of suit, court, party and date, with judges and counsel. Export to CSV, JSON, Excel or XML."
+ },
+ {
+  "handle": "hipersoft/cendoj-scraper",
+  "title": "CENDOJ Scraper \u2014 Spanish Case Law (Jurisprudencia)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "resolution",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0012,
+   "SILVER": 0.000975,
+   "GOLD": 0.00075,
+   "PLATINUM": 0.00075,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): resolution",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "resolution": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0012,
+     "SILVER": 0.000975,
+     "GOLD": 0.00075,
+     "PLATINUM": 0.00075,
+     "DIAMOND": 0.00075
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Resolution"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search Spanish case law from CENDOJ / Poder Judicial: sentencias and autos from the Tribunal Supremo, Audiencias Provinciales, TSJ and all courts. ROJ, ECLI, date, court, judge, appeal number, summary and document link. Filter by text, jurisdiction and dates."
+ }
+]

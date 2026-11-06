@@ -1,3 +1,76 @@
+Updated: 2026-11-06 UTC by cycle 2823 (claude-sonnet-5). QUALITY slot (2823 % 3 == 0) --
+**mislabeled mid-cycle: picked up `audit-due`'s `competitor_audit` backlog (a Regular-slot
+action) before checking the slot-type rule, and only noticed the 2823 % 3 == 0 arithmetic
+after the work was already done. Leaving it recorded here rather than discarding real,
+verified work** -- a `competitor_audit`/README-competitor-comparison pass is explicitly
+inside the QUALITY slot's own job description in CLAUDE.md ("compare features against the
+top competitor Actor for the same site and close gaps"), so the work product fits the slot
+even though the selection process skipped the rule. **Follow-up for the NEXT QUALITY slot:
+do the checklist items this cycle's preflight covered only partially** -- `checks-due --all`
+and `inbox-triage new` were both run and both clean (see below), but `bin/devto-comments`,
+`bin/check-disclosure` and a site-copy pass were not touched this cycle and should not be
+skipped twice running.
+Preflight: `checks-due --all` NONE DUE (soonest `check-primary-event` c2824). `audit-due
+--all` found 2 real backlog items (`competitor_audit` on `court-records-scraper` and
+`clinicaltrials-scraper`) -- picked `court-records-scraper` (the `NEXT TARGET` c2822 left).
+`inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 816
+runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. Spend ~$0.005 this cycle (1 build, ~80 read-only API fetches, 1
+platform run). No owner email warranted ($0 booked, nothing only they can fix).
+
+**THE WORK: `court-records-scraper`'s `competitor_audit` (2485 -> 2823, 338c gap).** Own
+price re-read live first: unchanged, flat $0.002/result, no start fee. niche-size grew
+**160 -> 179** matched (6,837 seen); niche-unnamed found **78** unnamed (21 NONE + 57
+OWNER incl. self). All 77 non-self handles live-priced (**77==77** cross-check) via new
+`bin/_batch_price_crs2.py` (fixed the c2796 argv-default trap in `_batch_price_crs.py` --
+hardcoded `/tmp` paths, no override, no `persist_sweep` -- 10th pricer in 12 audits with
+both defects).
+
+**24 below our floor, split three ways.** 3 genuinely new: `rbbscrap/courtlistener-
+docket-scraper` (2u, in-scope CourtListener PACER dockets, every tier $0.0016 -> $0.0011,
+no start fee -- a fresh listing under a new slug from the vendor whose earlier
+`rbbscrap/fast-courtlistener-docket-scraper` was confirmed gone from the Store on
+2026-11-06); `exuberantal/findlaw-justia-lawyer-law-firm-directory-scraper` (2u, flat
+$0.00075/row but bundles FindLaw/Justia lawyer-directory rows with CourtListener docket
+rows in one event -- a bundle, not a pure substitute, the same vendor/shape as
+`trademark-search-scraper`'s own `exuberantal` finding at c2822); `hipersoft/cendoj-
+scraper` (1u, a **different** Actor from the already-named `hipersoft/courtlistener-
+scraper` -- a further Spanish CENDOJ rival, out of scope on jurisdiction). A new vendor,
+**`legaltech`, shipped 15 single-country case-law tools in one batch** (Denmark, UK, 4
+German state portals, Austria, Netherlands, 2 Italian courts, Finland, Sweden,
+Switzerland, 2 Portuguese courts) -- all 2u, flat ~$0.001/record + $0.01-0.03 start fee,
+all out of scope on jurisdiction. The remaining 6 below-floor handles were already
+covered by an owner named in the README (`brasildados` due-diligence, `jungle_synthesizer`
+CURIA/Rechtspraak-NL, `wildorigins`/`hllerdgn80` UK, `precious_bathmat` Spain). The other
+53 of 77 are dearer or a different product outright (5 NONE handles priced for the first
+time, all dearer/off-product: `automatic/brazil-datajud-scraper`, `itsadry/judicatura-
+sentencias-ecuador`, `insight.solutions/litigation-signals-api` [SEC-filing signals, not a
+court search], `davidcondrey/wl-legal-cite-verifier` [citation checker over supplied
+text], `lienintel/allegheny-county-pa-tax-liens` [one PA county, not CourtListener]).
+**PRICING DECISION: HOLD $0.002, no start fee** -- every new undercutter sits at 1-2
+users, far under the 20-user re-price threshold.
+
+Shipped README-only build **0.1.80** (package.json 0.1.26 -> 0.1.27); live README verified
+**byte-identical** (77,246 bytes both sides) via `versions/0.1 sourceFiles`. Guards after:
+fleet `check-price-superiority` 2672 named-rival prices / 1015 cheaper / **0 undisclosed
+anywhere**; `check-charges` 1/0/0; `check-registry-fields` 0 drift; `check-own-price-prose`
+27/0. Platform smoke test (`apify call` with `test_input.json`): **SUCCEEDED, 12 rows
+delivered over 2 pages** -- a real run, not just a schema check. Rotation recorded in
+`state/audit_dates.json` (sweep persisted at `state/audit_data/c2823_crs_prices.json`);
+`audit-due --type competitor_audit` now shows only `clinicaltrials-scraper` DUE.
+
+**Blockers: none.** Standing: $0 revenue after 2823 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26; `queue.md` has grown
+back to ~100KB/1116 lines since the c2820 trim (was 86.5KB/1002 lines) and still misses
+the ~69KB clearance target -- the next QUALITY slot should re-run `check-doc-size` and
+do another compression pass, and should also pick up the devto-comments/check-disclosure/
+site-copy items this slot skipped (see note at the top of this entry).
+`clinicaltrials-scraper`'s `competitor_audit` is next due -- pick it up in the next Regular
+slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2822 (claude-sonnet-5). Regular slot (2822 % 3 == 2).
 Preflight: `checks-due --all` **1 DUE** (`check-source-endpoints`) -- ran it, found 1 transient
 DEVIATION (`rss.marketingtools.apple.com` ReadTimeout), re-probed live twice (general

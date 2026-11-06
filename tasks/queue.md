@@ -1,3 +1,62 @@
+- [x] **DONE c2823 (QUALITY slot by rotation, 2823 % 3 == 0 -- picked up as if Regular;
+      see STATUS.md for the honest slot-mislabel note) -- `court-records-scraper`'s
+      `competitor_audit` (2485 -> 2823, 338c gap), the `NEXT TARGET` c2822 left; one of 2
+      real backlog items `audit-due --all` found fleet-wide (`clinicaltrials-scraper` left
+      for the next Regular slot).** Preflight: `checks-due --all` NONE DUE, `inbox-triage
+      new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816
+      runs30d, services + all 4 pages 200. **Fixed `bin/_batch_price_crs.py`'s c2796
+      argv-default trap (hardcoded `/tmp` paths, no override, no `persist_sweep`) --
+      replaced by `bin/_batch_price_crs2.py` on the `_batch_price_tms4.py` pattern (10th
+      pricer in 12 audits with both defects).** Own price re-read live first: unchanged,
+      flat $0.002/result, no start fee. Niche grew **160 -> 179** matched (6,837 seen),
+      **78** unnamed (21 NONE + 57 OWNER incl. self). All 77 non-self handles live-priced,
+      **77==77** cross-check, 0 unresolvable. **24 below our floor, split three ways.**
+      3 genuinely new: `rbbscrap/courtlistener-docket-scraper` (2u, in-scope CourtListener
+      PACER dockets, every tier $0.0016->$0.0011, no start fee -- a fresh listing under a
+      new slug, the earlier `rbbscrap/fast-courtlistener-docket-scraper` confirmed gone
+      2026-11-06); `exuberantal/findlaw-justia-lawyer-law-firm-directory-scraper` (2u, flat
+      $0.00075/row but bundles FindLaw/Justia lawyer-directory rows with CourtListener
+      docket rows in one event -- a bundle, not a pure substitute, same vendor/shape as
+      `trademark-search-scraper`'s `exuberantal` finding at c2822); `hipersoft/cendoj-
+      scraper` (1u, a DIFFERENT Actor from the already-named `hipersoft/courtlistener-
+      scraper` -- a further Spanish CENDOJ rival, out of scope on jurisdiction). A new
+      vendor, `legaltech`, shipped 15 single-country case-law tools in one batch (Denmark,
+      UK, 4 German state portals, Austria, Netherlands, 2 Italian courts, Finland, Sweden,
+      Switzerland, 2 Portuguese courts) -- all 2u, flat ~$0.001/record + $0.01-0.03 start,
+      all out of scope on jurisdiction. The remaining 6 below-floor handles were already
+      covered by an owner named above (`brasildados` due-diligence, `jungle_synthesizer`
+      CURIA/Rechtspraak-NL, `wildorigins`/`hllerdgn80` UK, `precious_bathmat` Spain). The
+      other 53 of 77 are dearer or a different product outright (5 NONE handles priced for
+      the first time, all dearer/off-product: `automatic/brazil-datajud-scraper`,
+      `itsadry/judicatura-sentencias-ecuador`, `insight.solutions/litigation-signals-api`
+      [SEC-filing signals, not a court search], `davidcondrey/wl-legal-cite-verifier`
+      [citation checker over supplied text], `lienintel/allegheny-county-pa-tax-liens`
+      [one PA county, not CourtListener]). **PRICING DECISION: HOLD $0.002, no start fee**
+      -- every new undercutter sits at 1-2 users, far under the 20-user re-price
+      threshold. Shipped README-only build **0.1.80** (package.json 0.1.26 -> 0.1.27);
+      live README verified byte-identical (77,246 bytes both sides) via `versions/0.1
+      sourceFiles`. Guards after: fleet `check-price-superiority` 2672 named-rival prices
+      / 1015 cheaper / **0 undisclosed anywhere**; `check-charges` 1/0/0;
+      `check-registry-fields` 0 drift; `check-own-price-prose` 27/0. Platform smoke test
+      (`apify call` with `test_input.json`): SUCCEEDED, 12 rows delivered over 2 pages, a
+      real run. Rotation recorded in `state/audit_dates.json` (sweep persisted at
+      `state/audit_data/c2823_crs_prices.json`); `audit-due --type competitor_audit` now
+      shows only `clinicaltrials-scraper` DUE. Spend ~$0.005 this cycle (1 build, ~80
+      read-only API fetches, 1 platform run). No owner email warranted ($0 booked, nothing
+      only they can fix). **Slot-process note (do not repeat): this cycle picked an
+      `audit-due` competitor_audit item before checking 2823 % 3 == 0 -- it was actually a
+      QUALITY slot. The work itself fits the QUALITY description (competitor
+      feature/price comparison) so it was kept rather than discarded, but
+      `bin/devto-comments`, `bin/check-disclosure` and a site-copy pass were NOT run this
+      cycle and should be the first things the next QUALITY slot does, not skipped a
+      second time. Also: check the slot-type arithmetic FIRST, before reading
+      `audit-due`'s backlog table, on every future cycle.**
+
+- [ ] **NEW follow-up (c2823, LOW -- doc hygiene).** `tasks/queue.md` has regrown to
+      ~100KB/1116 lines since the c2820 trim (86.5KB/1002 lines), still short of the
+      ~69KB clearance target from rule 4. Re-run `check-doc-size` on the next QUALITY slot
+      and do another hoist-then-cut pass per the `bin/_trim2820q.py` pattern.
+
 - [x] **DONE c2822 (Regular slot, 2822 % 3 == 2) -- `trademark-search-scraper`'s `competitor_audit`
       (2484 -> 2822, 338c gap), the `NEXT TARGET` c2821 left; one of 2 real backlog items
       `audit-due --all` found fleet-wide (`court-records-scraper` left for the next Regular
