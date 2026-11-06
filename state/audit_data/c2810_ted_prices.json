@@ -1,0 +1,768 @@
+[
+ {
+  "handle": "taroyamada/procurement-intel-actor",
+  "title": "TED, SAM.gov & Grants.gov Scraper \u2014 Bid Alerts",
+  "users": 20,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,procurement-opportunity-export,procurement-summary-report",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Procurement opportunity or alert row"
+   },
+   "procurement-summary-report": {
+    "tiers": {
+     "FREE": 5
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Procurement summary report"
+   },
+   "procurement-opportunity-export": {
+    "tiers": {
+     "FREE": 7
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Procurement opportunity export"
+   }
+  },
+  "desc": "One row per public tender from EU TED (add Grants.gov or SAM.gov when enabled): title, buyer, country, value, deadline and notice link. Keyword / CPV / NAICS filters. TED needs no key; SAM uses your free SAM key."
+ },
+ {
+  "handle": "fixandfocus/licitaciones-espana",
+  "title": "Spain public tenders (PLACSP) to JSON | Licitaciones Espa\u00f1a",
+  "users": 10,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "licitacion",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): licitacion",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "licitacion": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Licitaci\u00f3n"
+   }
+  },
+  "desc": "Spanish public procurement tenders from the official PLACSP feed as clean JSON, filtered by CPV, province (NUTS), value, contract type, status and keywords. Licitaciones de la Plataforma de Contrataci\u00f3n del Sector P\u00fablico en JSON limpio."
+ },
+ {
+  "handle": "flarewow/bzp-monitor-pl",
+  "title": "Poland Public Tenders Scraper \u2013 Przetargi BZP & e-Zam\u00f3wienia",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-notice-detected",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.008,
+   "SILVER": 0.006,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-price-enriched,details-enriched,full-text-searched,new-notice-detected,notice-awarded,notice-changed",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "new-notice-detected": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.008,
+     "SILVER": 0.006,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Nowe pasuj\u0105ce og\u0142oszenie"
+   },
+   "notice-changed": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.008,
+     "SILVER": 0.006,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Zmiana istniej\u0105cego og\u0142oszenia"
+   },
+   "notice-awarded": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.01,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Rozstrzygni\u0119cie post\u0119powania"
+   },
+   "details-enriched": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.002,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Szczeg\u00f3\u0142y z og\u0142oszenia (PDF)"
+   },
+   "award-price-enriched": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.006,
+     "SILVER": 0.005,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Cena umowy z rozstrzygni\u0119cia"
+   },
+   "full-text-searched": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.002,
+     "SILVER": 0.002,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Przeszukanie pe\u0142nej tre\u015bci og\u0142oszenia"
+   }
+  },
+  "desc": "\ud83c\uddf5\ud83c\uddf1 Monitor przetarg\u00f3w i zam\u00f3wie\u0144 publicznych z oficjalnego BZP. Nowe post\u0119powania, rozstrzygni\u0119cia, ceny um\u00f3w, kryteria oceny. Filtry CPV, wojew\u00f3dztwo, NIP. Pay-per-event od 12 z\u0142/mc."
+ },
+ {
+  "handle": "zentrafoundry/dach-cctv-security-systems-tender-feed",
+  "title": "DACH CCTV and Alarm Tender Feed",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): qualified-tender,result-delivered",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "qualified-tender": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "qualified-tender"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "Live TED notices for DE/AT/CH CCTV, alarms and access control. Keyword/CPV, not a security classifier. $0.02 / notice."
+ },
+ {
+  "handle": "viniman27/brazil-gov-it-opportunities",
+  "title": "Brazil Gov IT Opportunities Monitor",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.15
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Qualified tender opportunity"
+   }
+  },
+  "desc": "Find Brazilian PNCP public procurement opportunities related to IT/software, enrich them with items and edital/TR/ETP evidence, and output a clean scored dataset."
+ },
+ {
+  "handle": "olican/public-tenders-government-contracts-scraper",
+  "title": "Public Tenders & Government Contracts Scraper \u2014 Spain EU LATAM",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): search",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "search": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "B\u00fasqueda de licitaciones"
+   }
+  },
+  "desc": "Scrape public tenders, government contracts and procurement opportunities from Spain (PLACE), EU (TED) and Colombia (SECOP II) in real time. MCP-native tool for AI agents. Filter by keywords, budget, CPV/UNSPSC and jurisdiction. Ideal for B2G sales teams, procurement, and legal AI agents."
+ },
+ {
+  "handle": "nordic_open_data/dk-public-tenders",
+  "title": "Danish Public Tenders (TED): Udbud Alerts by CPV & Keyword",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,tender-notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "tender-notice": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tender notice"
+   }
+  },
+  "desc": "Danish public tenders (udbud) from the official EU TED API: buyer, CPV, value, deadline, link. CPV/keyword filters and daily only-new alerts."
+ },
+ {
+  "handle": "monkey.d.scraping/italian-public-contracts-scraper",
+  "title": "(ANAC) Italian Public Contracts & Tenders Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search-started",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): contract-returned,search-started,supplier-search",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "search-started": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Search started"
+   },
+   "supplier-search": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Supplier history search"
+   },
+   "contract-returned": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Contract returned"
+   }
+  },
+  "desc": "Search Italian public procurement by supplier VAT, contracting authority, CIG, CPV, province, date and value. Export available tenders, awards and winning suppliers from official ANAC data, with provenance and freshness information."
+ },
+ {
+  "handle": "mfapitools/licitaciones-feed",
+  "title": "Licitaciones Feed \u2014 Buenos Aires Government Tenders Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-matched",
+  "unit_tiers": {
+   "FREE": 0.007
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-matched,tender-new",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "tender-matched": {
+    "tiers": {
+     "FREE": 0.007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender Matched"
+   },
+   "tender-new": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "New Tender Detected"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "CABA-only public procurement / licitaciones scraper over Buenos Aires Compras (BAC) open-data CSV. Two modes: query (search with filters) and sync (return new tenders since last run). CC-BY-4.0 licensed data. Honest about ~7-17 week data lag."
+ },
+ {
+  "handle": "jesusarsan/licitaciones-junta-andalucia",
+  "title": "Licitaciones Junta de Andaluc\u00eda | Contrataci\u00f3n P\u00fablica",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "resultado",
+  "unit_tiers": {
+   "FREE": 5e-05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): resultado",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "resultado": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "inicio-ejecucion": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Validated run"
+   }
+  },
+  "desc": "Extrae licitaciones, contratos menores y adjudicaciones de la Junta de Andaluc\u00eda. M\u00e1s de 912.000 expedientes de 553 organismos y 8 provincias, con importes, adjudicatarios, fechas y enlaces. Spanish public procurement / tenders dataset for Andalusia."
+ },
+ {
+  "handle": "fluxopronto/portugal-public-tenders",
+  "title": "Portugal Public Tenders (Portal BASE)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-result",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-result": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender result"
+   }
+  },
+  "desc": "Portuguese public tender notices from the official Portal BASE open data (IMPIC, dados.gov.pt), updated weekly. Only tenders still open for bids by default. Filter by CPV, buyer (name or NIF), base price, procedure and deadline. Links to tender documents."
+ },
+ {
+  "handle": "fluxopronto/portugal-public-contracts",
+  "title": "Portugal Public Contracts (Portal BASE)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "contract-result",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): contract-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "contract-result": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Contract result"
+   }
+  },
+  "desc": "Search and export Portuguese public contracts from the official Portal BASE open data (IMPIC, dados.gov.pt). Filter by contracting authority or supplier (name or NIF), CPV, procedure type, dates, value and year. Clean JSON/CSV/Excel with ISO dates, euro amounts and separate NIFs."
+ },
+ {
+  "handle": "eesti/eu-tenders-scraper",
+  "title": "EU Tenders Scraper (TED)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-found",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-found",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-found": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender Found"
+   }
+  },
+  "desc": "Search official EU public procurement tenders via the TED Search API by keyword, CPV code, country, or publication date. $0.01/tender + $0.02 start."
+ },
+ {
+  "handle": "donjuan_mime/prozorro-scraper",
+  "title": "Prozorro Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   }
+  },
+  "desc": "Scrape Ukrainian public tenders from Prozorro (ProZorro): buyers, EDRPOU, CPV, expected value, bids, winners, contracts. Search by keyword or filters."
+ },
+ {
+  "handle": "colbyham/ted-tenders-monitor",
+  "title": "EU Tenders Monitor (TED official API)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-14T23:54:06.310Z",
+    "model": "FREE"
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "notice": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "New tender notice"
+   }
+  },
+  "desc": "Weekly EU tender alert for bid consultants: new TED calls for tender filtered by CPV code, country and title keywords, one clean row per notice with buyer, deadline, value and link. Official TED API, no scraping. You pay only for notices you have not seen before."
+ },
+ {
+  "handle": "civicrows/uk-find-a-tender-notices",
+  "title": "UK Find a Tender Notices \u2014 Official OCDS API",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Public procurement notices from the UK Find a Tender service (the Central Digital Platform), normalised to flat rows. Organisation-level data only."
+ },
+ {
+  "handle": "civicrows/uk-contracts-finder-notices",
+  "title": "UK Contracts Finder Notices \u2014 Official OCDS API",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Below-threshold and legacy UK public procurement notices from Contracts Finder, normalised to the same flat rows as the Find a Tender Actor. Organisation-level data only."
+ },
+ {
+  "handle": "bluewither/my-actor",
+  "title": "Spain Public Procurement Tenders (PLACSP)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.0055,
+   "SILVER": 0.0049,
+   "GOLD": 0.0044,
+   "PLATINUM": 0.0044,
+   "DIAMOND": 0.0044
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.0055,
+     "SILVER": 0.0049,
+     "GOLD": 0.0044,
+     "PLATINUM": 0.0044,
+     "DIAMOND": 0.0044
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Licitaciones p\u00fablicas de Espa\u00f1a (PLACSP) en datos estructurados: objeto, importe, organismo, CPV, estado y plazos, con enlace directo. Exportaci\u00f3n diaria en JSON, CSV o Excel desde contrataciondelestado.es. Spanish government tenders and public procurement data."
+ }
+]

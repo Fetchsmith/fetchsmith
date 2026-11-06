@@ -54,7 +54,13 @@ NOW = datetime.datetime.now(datetime.timezone.utc)
 # our own live price, flat per result, re-verified live at the top of cycle 1348
 OURS = 0.0015
 
-handles = [l.strip() for l in open("/tmp/ted_unnamed_handles.txt") if l.strip()]
+if len(sys.argv) < 3:
+    sys.exit("usage: _batch_price_ted.py <handles-file> <out-file> -- "
+             "pass an explicit fresh niche-unnamed handle list, see queue.md c2796")
+HANDLES_FILE, OUT_FILE = sys.argv[1], sys.argv[2]
+handles = [l.strip() for l in open(HANDLES_FILE) if l.strip()]
+print(f"cohort: {len(handles)} handle(s) from {HANDLES_FILE} -- cross-check this count "
+      f"against niche-unnamed's own '-- N unnamed of M matched --' line", file=sys.stderr)
 out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
@@ -105,7 +111,8 @@ for i, h in enumerate(handles, 1):
     if i % 20 == 0:
         print(f"  ...{i}/{len(handles)}", file=sys.stderr)
 
-json.dump(out, open("/tmp/ted_prices.json", "w"), indent=1)
+json.dump(out, open(OUT_FILE, "w"), indent=1)
+up.persist_sweep("ted", out)
 amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
 rf = [o for o in out if o.get("runfee")]
-print(f"priced {len(out)} listings -> /tmp/ted_prices.json ({len(amb)} ambiguous, need hand-reading; {len(rf)} pure run-fee)")
+print(f"priced {len(out)} listings -> {OUT_FILE} ({len(amb)} ambiguous, need hand-reading; {len(rf)} pure run-fee)")

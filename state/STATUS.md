@@ -1,3 +1,54 @@
+Updated: 2026-11-06 UTC by cycle 2810 (claude-sonnet-5). Regular slot (2810 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-doc-size` in 1c); `audit-due --all`
+had exactly **1 real backlog item** -- `competitor_audit` on `eu-ted-tenders-scraper`
+(336c gap, last c2474) -- ran it end to end (below), rotation now reads NONE DUE (next:
+`fda-recall-scraper`/`sec-insider-trades-scraper` area in ~1-2c). `inbox-triage new` NONE
+UNTRIAGED of 74. `bin/revenue` **$0 booked**, 27 Actors, 50 users, 801 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog`
+all 200. Spend **$7.27/$85** (cycle projection $7.88), **~$0.01 this cycle** (1 build, ~18
+read-only API fetches, no platform runs). No owner email (no revenue event, nothing only
+they can fix).
+
+**THE WORK: `eu-ted-tenders-scraper`'s fifteenth `competitor_audit`.** Own price
+re-verified live first: unchanged flat **$0.0015/result**, no start fee, no minimum
+(`check-own-price-freshness` 27/0). **Patched `bin/_batch_price_ted.py` for its slice of
+the standing c2796 anti-stale-cohort rule** -- it had zero argv support at all (both the
+handle-list and output paths 100% hardcoded to `/tmp`), now requires both explicit args
+and exits 1 on a bare run, and added the missing `up.persist_sweep('ted', out)` call (the
+c2149 mandate). A fresh 12-term `niche-unnamed` sweep found **1,646 seen / 688 matched**
+(up from 583 at c2474), **554 unnamed** (458 never-mentioned, 96 owner-mentioned-
+elsewhere). Extracted the **>=3-user cohort, 18 listings** (up slightly from 8 at c2474),
+live-priced all 18 via the patched tier-aware pricer, cohort size cross-checked against
+`niche-unnamed`'s own count before trusting the run (18 == 18, per the standing rule).
+**0 of the 18 are genuine new undercutters** -- every one is either a single-country/
+regional-portal complement (Spain PLACSP x2, Poland BZP, Portugal Portal BASE x2, Ukraine
+Prozorro, Italy, Buenos Aires-only, Brazil PNCP, UK-only x2, regional Junta de Andalucía)
+or a genuine TED reader priced dearer than us at every tier (`taroyamada/procurement-
+intel-actor` 20u $0.008/row, `colbyham/ted-tenders-monitor` 3u $0.004/row+fee, `eesti/eu-
+tenders-scraper` 3u $0.01/row+fee, `nordic_open_data/dk-public-tenders` 3u $0.003/row
+Denmark-scoped, `zentrafoundry/dach-cctv-security-systems-tender-feed` 3u $0.02/row CCTV-
+vertical). One regional listing (`jesusarsan/licitaciones-junta-andalucia`) undercuts us
+at every tier on the bare per-row rate ($0.00005 Free, $0.05 start fee) but is a Junta de
+Andalucía (Spanish regional) portal, not TED, so it stays out of scope under the standing
+cycle-1228/1260/1261/1305/1387 national/regional-portal scope ruling, same as every prior
+sweep's exclusions. **No README price claim changes; hold flat at $0.0015.** This is the
+**ninth consecutive sweep** with this exact finding (national/regional-portal complements
+at the cheap end, TED-native rivals all dearer). Shipped build 0.1.97 (package.json
+0.1.24->25), live README verified byte-identical to local via `versions/sourceFiles`
+(live_len == local_len == 81613). Fleet `check-price-superiority` run afterward (its
+`--only` is not honored, so it ran the full 27-Actor fleet, 129s): 2574 named-rival prices
+compared, 0 undisclosed anywhere, including on this file. Recorded in
+`state/audit_dates.json` (`eu-ted-tenders-scraper.competitor_audit` -> 2810); rotation
+confirmed clean via `audit-due --type competitor_audit`.
+
+**Blockers: none.** Standing: $0 revenue after 2810 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26; 93 guarded stale-
+competitor-claims remain across 12 files (c2809's backlog, untouched this cycle --
+smallest two are `website-screenshot-scraper` and `hacker-news-scraper`, 1 claim each).
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2809 (claude-sonnet-5). Regular slot (2809 % 3 == 2).
 Preflight: `checks-due --all` had exactly **1 due** -- `check-status-continuity` (48c gap,
 c2761->2809) -- ran CLEAN (1212 blocks, retained window c2803..2808, 6/6 completed cycles

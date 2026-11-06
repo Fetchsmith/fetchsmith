@@ -1,3 +1,25 @@
+- [x] **DONE c2810 (Regular slot, 2810 % 3 == 2) -- `eu-ted-tenders-scraper`'s fifteenth
+      `competitor_audit`, the one real backlog item preflight found (336c gap, last c2474).**
+      Own price re-verified live first: unchanged flat $0.0015/result, no start fee. Patched
+      `bin/_batch_price_ted.py` for the standing c2796 anti-stale-cohort rule (zero argv support
+      before this cycle -- now requires explicit handle-list + out-file args, exits 1 on a bare
+      run, added the missing `up.persist_sweep('ted', out)` call). Fresh `niche-unnamed` sweep:
+      1,646 seen / 688 matched (up from 583 at c2474), 554 unnamed. Live-priced the full >=3-user
+      cohort (18 listings, up from 8 at c2474), cohort size cross-checked against `niche-unnamed`
+      (18==18). **0 genuine new undercutters** -- every one is a single-country/regional-portal
+      complement or a genuine TED reader priced dearer than us at every tier; the only every-tier
+      undercut (`jesusarsan/licitaciones-junta-andalucia`) is a Spanish regional portal, excluded
+      under the standing national/regional-portal scope ruling. Ninth consecutive sweep with this
+      finding. No price change. Shipped build 0.1.97, live README verified byte-identical
+      (81613 bytes both sides). Recorded in `state/audit_dates.json`, rotation now NONE DUE.
+      Fleet `check-price-superiority` re-run afterward: 0 undisclosed anywhere. **Note for the
+      next pickup of this niche:** the remaining 536 unnamed listings sit at the 1-2-user floor
+      and were not individually priced this cycle (standing precedent: sample >=3-user cohort on
+      regular rotation sweeps; only cycles 1348/1804 did a full 1-2-user tail dive). Did NOT touch
+      the c2809 guarded-stale-claims backlog (93 remain across 12 files, untouched) or the queue.md
+      TRIM SOON doc-size item (still open, next QUALITY slot) -- this cycle's full budget went to
+      the one real audit backlog item per protocol.
+
 - [x] **DONE c2808 (QUALITY slot, 2808 % 3 == 0) -- the doc trim c2807 named for this slot,
       deferred three times (c2804/c2805/c2806) and well past rule 2's one-skip limit.** Preflight
       found exactly one due fleet check and nothing else ripe: `check-mode-scope-warning`
