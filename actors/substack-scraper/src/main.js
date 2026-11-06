@@ -1,6 +1,8 @@
 // Substack Scraper — HTTP-only, pay-per-event.
 // Uses Substack's public JSON endpoints (no login, no headless browser):
-//   GET <pub>/api/v1/archive?sort=new&offset=&limit=      -> post list (metadata only, no body)
+//   GET <pub>/api/v1/archive?sort=new&cursor=&limit=      -> {posts, nextCursor} (metadata only,
+//                                                            no body); cursor paging since 2026-11,
+//                                                            `offset` now 400s (cycle 2789)
 //   GET <pub>/api/v1/archive?sort=new&search=<q>&...      -> in-publication search
 //   GET <pub>/api/v1/posts/<slug>                          -> single post incl. body_html
 //   GET <pub>/api/v1/post/<id>/comments?all_comments=true  -> comment tree
@@ -200,6 +202,16 @@ async function getJson(url) {
     followRedirect: true, // <handle>.substack.com often 301s to a custom domain
     headers: { accept: 'application/json' },
   });
+  if (res.statusCode >= 400) {
+    // got-scraping sets throwHttpErrors:false by default, so a 4xx/5xx response lands here as
+    // a normal return (its JSON error body parsed like any other), not a caught exception --
+    // every caller below already has a try/catch around getJson expecting one. Without this,
+    // an API error response reads downstream as valid-but-empty data instead of broken (cycle
+    // 2789 FIX FAILED ACTORS: Substack's archive endpoint 400s on any `offset` param after its
+    // 2026-11 offset->cursor pagination change, and this silently turned every run into "0
+    // items, publication may be empty" with no warning at all).
+    throw new Error(`HTTP ${res.statusCode} from ${url}: ${JSON.stringify(res.body).slice(0, 200)}`);
+  }
   return res.body;
 }
 
@@ -542,12 +554,13 @@ async function handlePost(post, origin, preloadedDetail = null) {
 // audienceFilter/contentType/date/engagement filters excluded all of them) | 'error' (archive request failed).
 async function scrapePublication(origin) {
   log.info(`Publication: ${origin}${searchQuery ? ` (search: "${searchQuery}")` : ''}`);
-  let offset = 0;
+  let cursor = null;
+  let page = 0; // diagnostics only, pagination itself is cursor-driven (see below)
   let seen = 0;
-  // Keep at 50 or below. Substack honours `limit` only loosely: at offset 0 any limit from 25 to 50
-  // comes back truncated to 23 items (verified cycle 1048 on 3 publications), and `limit=100`
-  // degenerates to a single item — so raising this to "fewer round trips" would instead paginate one
-  // post at a time. The `offset += posts.length` below is what keeps paging correct regardless.
+  // Keep at 50 or below. Substack honours `limit` only loosely: any limit from 25 to 50
+  // comes back truncated to 23 items on the first page (verified cycle 1048 on 3 publications),
+  // and `limit=100` degenerates to a single item — so raising this to "fewer round trips" would
+  // instead paginate one post at a time.
   const pageSize = 50;
   const pushedBefore = pushed;
   const excludedBefore = excludedByFilters;
@@ -556,34 +569,42 @@ async function scrapePublication(origin) {
     const url = new URL(`${origin}/api/v1/archive`);
     url.searchParams.set('sort', 'new');
     if (searchQuery) url.searchParams.set('search', searchQuery);
-    url.searchParams.set('offset', String(offset));
+    // Substack moved this endpoint from offset-based paging + a bare array to cursor-based
+    // paging + { posts, nextCursor } (observed live 2026-11-06) and now rejects ANY `offset`
+    // param, including `offset=0`, with a 400 -- see getJson's status check above for why that
+    // used to be invisible. Omit the param entirely on page 1; only send it once Substack has
+    // handed one back.
+    if (cursor) url.searchParams.set('cursor', cursor);
     url.searchParams.set('limit', String(Math.min(pageSize, maxPostsPerPublication - seen)));
-    let posts;
+    let body;
     try {
-      posts = await getJson(url.toString());
+      body = await getJson(url.toString());
     } catch (e) {
       const landedOnProfile = /^https:\/\/substack\.com\/@/.test(e.response?.url ?? '');
       if (landedOnProfile) {
         log.warning(
-          `Archive request failed for ${origin} (offset ${offset}): redirected to a Substack `
+          `Archive request failed for ${origin} (page ${page}): redirected to a Substack `
           + `profile page (${e.response.url}) instead of the archive — this publication's bare `
           + 'handle no longer resolves to its own archive; find its real custom domain or '
           + '"<handle>.substack.com" homepage URL and pass that instead.',
         );
         profileRedirected.push(origin);
       } else {
-        log.warning(`Archive request failed for ${origin} (offset ${offset}): ${e.message}`);
+        log.warning(`Archive request failed for ${origin} (page ${page}): ${e.message}`);
       }
       requestFailed = true;
       break;
     }
+    const posts = body?.posts;
     if (!Array.isArray(posts) || !posts.length) break;
     for (const post of posts) {
       seen += 1;
       if (!(await handlePost(post, origin))) return pushed > pushedBefore ? 'ok' : 'filtered';
       if (seen >= maxPostsPerPublication) break;
     }
-    offset += posts.length;
+    if (!body.nextCursor) break;
+    cursor = body.nextCursor;
+    page += 1;
   }
   if (requestFailed && seen === 0) return 'error';
   if (seen === 0) return 'empty';

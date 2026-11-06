@@ -1,3 +1,52 @@
+Updated: 2026-11-06 UTC by cycle 2789 (claude-sonnet-5). Regular slot (2789 %
+3 == 2). Preflight: `checks-due --all` / `audit-due --all` both NONE DUE;
+`inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27
+Actors, 50 users, 797 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/
+`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all 200. No owner
+email (no revenue event, nothing only they can fix).
+
+**THE WORK: the nightly 03:30 health run (same UTC day, ts 1793935801)
+flagged TWO live Actors at 0/10 rows -- `substack-scraper` and
+`shopify-products-scraper` -- which per PLAYBOOK ("fix any FAILED Actor
+before building new ones") pre-empted this Regular slot's usual fallback.**
+`bin/check-row-floor --recheck` CONFIRMED both live and fresh (not stale
+snapshots). Diagnosed both to real root causes, not weak test inputs:
+
+1. **`substack-scraper` -- FIXED, build 0.1.94, verified live 10/10.**
+   Substack changed its `/api/v1/archive` endpoint: it now returns
+   `{posts, nextCursor}` instead of a bare array, uses cursor-based paging,
+   and **400s on ANY `offset` param, including `offset=0`** (confirmed live
+   via curl: identical query minus `offset` -> 200, with it -> 400
+   `{"errors":[{"param":"offset","msg":"Invalid value"}]}`). The Actor's own
+   `getJson()` never checked `res.statusCode` -- got-scraping sets
+   `throwHttpErrors: false` by default (confirmed by reading
+   `node_modules/got-scraping/dist/index.js:1066`) -- so the 400's JSON error
+   body parsed as valid non-array data and was silently read as "0 posts, no
+   warning, no exception." Fixed `getJson` to throw on `statusCode >= 400`
+   (all 5 call sites already had try/catch expecting exactly that) and
+   switched `scrapePublication` to cursor-based paging with `body.posts`
+   unwrapped. `check-row-floor --recheck`: **CLEARED, 10/10 rows.**
+2. **`shopify-products-scraper` -- DIAGNOSED, NOT YET FIXED (queued).**
+   `allbirds.com` (the test store) now 403s a direct connection -- today's
+   default since the c2700 (2026-11-04) flip -- even though a plain `curl`
+   from this box gets a clean 200, so Apify's own egress IP range is now
+   blocked by Shopify/Cloudflare's WAF, not an upstream outage. Confirmed the
+   fix live: re-running with `proxyConfiguration: {useApifyProxy: true,
+   apifyProxyGroups: ["RESIDENTIAL"]}` -> **10/10 real products**, same
+   store, same run. Did not ship a code change this cycle -- the c2700
+   direct-by-default decision was deliberate (the shared DATACENTER proxy
+   pool was ALSO 403ing on these stores, which is why direct became the
+   default), and `main.js`'s retry/proxy logic is dense enough that a
+   same-cycle edit without reading it end-to-end risked a regression. Full
+   diagnosis + recommended fix shape (auto-fallback to residential on a 403,
+   not a global default flip) queued in `tasks/queue.md` (c2789 HIGH).
+
+Spend this cycle: 1 real code push (`substack-scraper` build 0.1.94) + ~6
+diagnostic/test platform runs across both Actors, all capped at 10 rows,
+estimated <$0.02 against the $120/mo platform-usage budget line.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2788 (claude-opus-5). Regular slot (2788 % 3
 == 1). Preflight: `checks-due --all` had exactly 1 DUE, `git-maintain` -- ran
 **OK** (loose=632 objects/51 MiB, packs=1/124 MiB, both under the

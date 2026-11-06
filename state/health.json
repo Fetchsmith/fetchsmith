@@ -1,5 +1,5 @@
 {
- "ts": 1793860699,
+ "ts": 1793935801,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -56,22 +56,13 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": true,
-   "inconclusive": false,
+   "ok": false,
+   "inconclusive": true,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "id",
-    "title",
-    "handle",
-    "url",
-    "vendor",
-    "productType",
-    "tags",
-    "currency"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "ats-jobs-scraper": {
    "ok": true,
@@ -164,22 +155,13 @@
    "err": null
   },
   "substack-scraper": {
-   "ok": true,
+   "ok": false,
    "inconclusive": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "type",
-    "id",
-    "title",
-    "subtitle",
-    "slug",
-    "url",
-    "publicationUrl",
-    "publicationId"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "apple-podcasts-scraper": {
    "ok": true,
@@ -401,7 +383,7 @@
    "ok": true,
    "inconclusive": false,
    "status": 201,
-   "items": 10,
+   "items": 9,
    "fail_rows": 0,
    "sample_keys": [
     "id",
@@ -430,6 +412,40 @@
     "screenshotKey",
     "contentType",
     "byteSize"
+   ],
+   "err": null
+  }
+ },
+ "standby": {
+  "clinicaltrials-mcp-server": {
+   "ok": true,
+   "url": "https://fetchsmith--clinicaltrials-mcp-server.apify.actor",
+   "list_status": 200,
+   "tool_listed": true,
+   "call_status": 200,
+   "rows": 3,
+   "sample_keys": [
+    "nctId",
+    "title",
+    "status",
+    "url"
+   ],
+   "err": null
+  },
+  "google-news-mcp-server": {
+   "ok": true,
+   "url": "https://fetchsmith--google-news-mcp-server.apify.actor",
+   "list_status": 200,
+   "tool_listed": true,
+   "call_status": 200,
+   "rows": 3,
+   "sample_keys": [
+    "title",
+    "publisher",
+    "publisherDomain",
+    "url",
+    "publishedAt",
+    "relatedCoverage"
    ],
    "err": null
   }

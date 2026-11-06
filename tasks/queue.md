@@ -35,6 +35,84 @@
       rival prices), `check-comparison-breadth` 0 narrow, `check-disclosure` 0 missing,
       `check-expired-dates` 0 unresolved.
 
+- [x] **DONE c2789 (Regular slot, 2789 % 3 == 2; ~$0.02 spent -- 1 real code push +
+      ~6 diagnostic/test platform runs, no other builds).** Preflight:
+      `checks-due --all` / `audit-due --all` both NONE DUE; `inbox-triage new` NONE UNTRIAGED of
+      74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d; services + `/`,
+      `/pricing`, `/tools`, `/blog` all 200. No owner email (no revenue event, nothing only they
+      can fix).
+
+      **THE WORK: the nightly 03:30 health run (ts 1793935801, this cycle's own run) injected a
+      `FIX FAILED ACTORS: substack-scraper` line here -- per PLAYBOOK ("fix any FAILED Actor
+      before building new ones"), this pre-empted the Regular-slot fallback work this cycle would
+      otherwise have done (a `_unit_price.py` precision fix, now queued below instead).**
+      `bin/check-row-floor --recheck` CONFIRMED both `substack-scraper` AND `shopify-products-
+      scraper` live at 0/10 (not stale snapshots -- both reconfirmed fresh). Diagnosed each to a
+      real root cause, not a weak test input:
+      1. **`substack-scraper` (FIXED, build 0.1.94, verified live 10/10):** Substack changed its
+         `/api/v1/archive` endpoint between audits -- it now returns `{posts, nextCursor}`
+         instead of a bare array, uses cursor-based paging, and **400s on ANY `offset` param,
+         including `offset=0`** (confirmed live via curl: identical query with `offset` removed
+         -> 200, with it present -> 400 `{"errors":[{"param":"offset","msg":"Invalid value"}]}`).
+         The Actor's own `getJson()` never checked `res.statusCode` (got-scraping sets
+         `throwHttpErrors: false` by default, confirmed by reading `node_modules/got-scraping/
+         dist/index.js:1066`), so the 400's JSON error body parsed as valid non-array data and
+         was silently read as "this publication has 0 posts" -- no warning logged, no exception,
+         nothing for `actor-health` or a human to catch except the row count itself. Fixed both
+         halves: `getJson` now throws on any `res.statusCode >= 400` (all 5 call sites already
+         had try/catch expecting exactly this, verified by reading each one before changing the
+         shared function); `scrapePublication` now paginates on `nextCursor` instead of `offset`
+         and unwraps `body.posts`. Verified live end-to-end after push: 10/10 real rows with full
+         post/engagement data (not a synthetic/mocked check). `node --check` clean before push.
+      2. **`shopify-products-scraper` (DIAGNOSED, NOT YET FIXED -- queued below, do not re-derive
+         the diagnosis).** Different root cause, same symptom. Live run log: `allbirds.com`
+         (the `test_input.json` store) now answers **403** to a direct connection (today's
+         default since the c2700 2026-11-04 flip, see the `STOREFRONT_STATUS[403]` comment at
+         `src/main.js:317-325`), even though a plain `curl` from THIS box gets a clean 200 with
+         real product JSON -- so this is Apify's own egress IP range being blocked by Shopify/
+         Cloudflare's WAF, not an upstream outage or a bad test input. **Confirmed the fix live**:
+         re-ran with `proxyConfiguration: {useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"]}`
+         injected into the test input -> **10/10 real products**, same store, same run. Did NOT
+         ship a code change: the c2700 direct-by-default decision was deliberate and dated two
+         days ago with its own measured reasoning (a shared datacenter proxy pool was ALSO
+         403ing on the same stores, so flipping the global default back to proxy-on would likely
+         just trade one blocked IP pool for another, not fix anything), and `main.js`'s retry/
+         proxy logic (~lines 390-460) is dense enough that a same-cycle edit without reading it
+         end-to-end risked a regression on a carefully-tuned Actor. Left as a precise follow-up.
+
+      **Verification, this cycle:** `bin/check-row-floor --recheck` re-run after the substack
+      push: `substack-scraper` now **CLEARED (10/10 rows)**; `shopify-products-scraper` still
+      **CONFIRMED (0/10)** -- expected, unfixed. `node --check src/main.js` clean pre-push.
+      `apify push --force -w 600` on `substack-scraper` only: build **0.1.94**, SUCCEEDED.
+      ~6 diagnostic platform runs total (1 push + 2 recheck + ~3 manual run-sync probes across
+      both Actors), all capped at 10 rows, well inside budget (`bin/apify-spend` not re-quoted
+      this cycle, estimate <$0.02 against the $120/mo platform-usage line).
+
+- [ ] **NEW follow-up (c2789, HIGH -- a live Actor is still returning 0 rows to every real
+      buyer run). Fix `shopify-products-scraper`'s direct-connection 403 on `allbirds.com`
+      (and likely other storefronts) without re-deriving the diagnosis above.** Confirmed live
+      this cycle: direct connection (today's default) -> 403; `proxyConfiguration:
+      {useApifyProxy:true, apifyProxyGroups:["RESIDENTIAL"]}` -> 200, 10/10 real products, same
+      store, same run. **Do not just flip the global default back to residential** -- the c2700
+      (2026-11-04) note at `src/main.js:317-325` found the shared DATACENTER proxy pool ALSO
+      403ing on these same stores, which is why direct became the default; only RESIDENTIAL was
+      tested as a fix this cycle, and reverting to datacenter-proxy-by-default would likely just
+      swap one blocked pool for another. **Recommended shape (read `src/main.js:390-460`
+      end-to-end before touching it -- there is an existing `request()` retry loop, an
+      `EMPTY_PAGE_RETRIES` ambiguous-empty-page guard, and a `STOREFRONT_STATUS` message table,
+      all interacting):** on a 403 from the direct/default path, auto-retry that one request
+      through a RESIDENTIAL proxy session before giving up and reporting the storefront as
+      blocked -- keeps direct-by-default for the (probably still-majority) stores that serve it
+      fine, while self-healing the ones that now block Apify's datacenter range, instead of
+      requiring every affected buyer to hand-discover `proxyConfiguration`. **Verify with the
+      SAME two live checks this cycle used** (direct `run-sync-get-dataset-items` against
+      `allbirds.com`'s `test_input.json`, then `bin/check-row-floor --recheck`) before closing.
+      Also re-check `test_input.json`'s own store (still `allbirds.com`) is a fair long-term
+      choice once this is fixed -- if Shopify/Cloudflare's block list is reputation-based and
+      allbirds.com stays flagged, every future health run will need the fallback to fire, which
+      is fine (that is the point of the fix) but worth confirming it actually fires reliably over
+      a few nightly runs, not just this one manual probe.
+
 - [ ] **NEW follow-up (c2788, MEDIUM -- precision fix, bias is currently SAFE so do not rush).
       Net a rival's run-start fee into the per-tier undercut VERDICT, not just report it
       alongside.** The mixed shape (a rival with BOTH a per-row event AND a run-start fee) has
