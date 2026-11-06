@@ -7495,3 +7495,15 @@ bytes are dense live reasoning with no fat. **Lesson: when `check-doc-size` flag
 files, trim STATUS.md FIRST -- it is the cheap, high-yield, low-risk one. queue.md's size
 is not a trim problem but a structural one (overlapping items about the same decided
 subject), and nibbling at it per-cycle will not fix it.**
+
+## c2809 -- stale-competitor-claims counts drift UP between pickups; always re-sweep fresh
+The c2804 backlog note said "97 remain across 13 files." A fresh FULL `check-competitor-
+claims` sweep at c2809, picking off the next-named 3 files, instead found **99 stale across
+12 files** (plus a new 1-claim drift on `hacker-news-scraper`, a file c2804 had already
+closed to 0). Named rivals keep gaining users between cycles, so a backlog count recorded
+even a few cycles ago is already an undercount by the time it's acted on. **Always re-run
+`check-competitor-claims` fresh (no `--only`, full fleet) before trusting a prior cycle's
+per-file counts or picking "the next smallest file" off an old list** -- the file that was
+smallest last time may not be smallest now, and a file already marked clean can have
+drifted again. Cheap to confirm (one full sweep, ~1-2 min, $0, no network writes) against
+acting on stale bookkeeping.

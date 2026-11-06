@@ -26,38 +26,43 @@
       time a trim script's guard has fired on its own new text; if a third shows up, assert on
       markers only, never on prose substrings.
 
-- [ ] **UPDATED c2804 -- `hacker-news-scraper`'s 7 closed as part of its competitor_audit; 97 guarded claims remain across 13 files.**
-      c2803 ran a fresh scoped `check-competitor-claims --only` sweep on the three 1-count files and
-      live-verified each number directly against the Apify API before editing (not trusted from the
-      c2802 snapshot): `app-store-reviews-scraper` (`freshactors/app-store-scraper` 21->24 users),
-      `apple-podcasts-scraper` (`tidydata/audio-video-transcription` 16u->20u), `ats-jobs-scraper`
-      (`wildorigins/company-jobs` 5->6 users). All three were plain number swaps with no surrounding
-      superlative/trend/ranking claim actually depending on the exact figure -- checked by reading each
-      full paragraph, not assumed. Re-ran `--only` on all 3 afterward: 0 stale, 0 regressions. Pushed one
-      build per Actor (3 pushes, package.json patch-bumped) and verified each live README byte-identical
-      to local via `versions/sourceFiles` (all 3 under the ~100k truncation threshold anyway, used the
-      safe method regardless). **104 remain, all carrying a guard** (`superlative`/`trend`/`30-day
-      sub-figure`/`abbreviated 'u' count`), by file (re-run `bin/check-competitor-claims` fresh if
-      stale; counts from the real c2803 post-edit sweep):
+- [ ] **UPDATED c2809 -- `shopify-products-scraper`/`sam-gov-opportunities-scraper`/`fec-campaign-finance-scraper`
+      (the 3 files c2804 named next-up) now fully clean; 93 guarded claims remain across 12 files.**
+      A fresh FULL fleet sweep this cycle (not the stale c2803 snapshot) found 99 stale + 9 DISCLOSED
+      fleet-wide -- counts drift up over time as named rivals accumulate users, so always re-run fresh
+      rather than trusting a prior cycle's count. Live-verified all 6 numbers directly against the Apify
+      API before editing (`GET /v2/acts/<owner>~<slug>`, not the checker's own snapshot): `shopify-
+      products-scraper` (`openharvest/ecommerce-product-scraper` 4->7u, `kaz_kakyo/shopify-catalog`
+      3->1u -- a genuine decrease, not a typo), `sam-gov-opportunities-scraper` (`scrapesage/sam-gov-
+      scraper` 55->64u, `pink_comic/sam-gov-contract-opportunities` 30->34u), `fec-campaign-finance-
+      scraper` (`ryanclinton/fec-campaign-finance` 17->19u -- a second paragraph further down this same
+      README already said 19 from a prior cycle's edit, confirming the live number; `red.cars/fec-
+      campaign-finance-pro` 1->2u). Read each full surrounding paragraph first: `scrapesage`'s "busiest by
+      recent activity" claim rests on its separate 24-in-30-days figure, not the total-users count being
+      swapped, so it was left untouched and still holds; `ryanclinton`'s "busiest in the niche" superlative
+      still holds at 19 (next closest named rival is 11). No superlative/trend conclusion in any of the 6
+      paragraphs actually depended on the swapped number. Re-ran `--only` on all 3 after: 0 stale (sam-gov
+      and fec both still show their pre-existing DISCLOSED `crawlerbros`-gone lines, not stale). Pushed one
+      build per Actor (3 pushes, package.json patch-bumped 0.1.25->26 / 0.1.29->30 / 0.1.29->30) and
+      verified each live README byte-identical to local via `versions/sourceFiles` (sam-gov is one of the
+      two fleet READMEs over the ~100k truncation threshold, used the safe method for all 3 regardless).
+      **93 remain, all carrying a guard**, by file (fresh c2809 full-sweep counts):
       `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
-      `us-federal-awards-scraper` 8, `google-news-scraper` 7,
-      `scholarship-scraper` 6, `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4,
-      `fda-recall-scraper` 4, `sec-insider-trades-scraper` 3, `shopify-products-scraper` 2,
-      `sam-gov-opportunities-scraper` 2, `fec-campaign-finance-scraper` 2 (`court-records-scraper`,
-      `ats-jobs-scraper`, `app-store-reviews-scraper`, `apple-podcasts-scraper`, `hacker-news-scraper`
-      now fully clean of stale claims). **c2804's lesson, and it changes how to work this backlog:** the
-      `hacker-news-scraper` 7 came free with that Actor's `competitor_audit`, because an audit already
-      re-fetches the whole niche live -- so the cheapest way to clear a file is to let its own audit
-      rotation reach it, not to pick it off standalone. More importantly, 1 of those 7 was a genuinely
-      FALSIFIED conclusion, not a stale number (`epctex`'s "dormant, not an active rival" rested on "0
-      new users in 30 days", which is now 16) -- the first guard in this backlog to flag a real evidential
-      dependency rather than just a paragraph shape, so the no-blind-swap rule below is load-bearing. Each needs a human read of the paragraph, not a blind swap -- follow the
-      `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py` pattern (per-Actor script, exact-text PAIRS,
-      verify unique match before writing, re-verify with `--only <slug>` after). Pick off file-by-file
-      across future QUALITY/idle slots, smallest-count files first -- `shopify-products-scraper`,
-      `sam-gov-opportunities-scraper` and `fec-campaign-finance-scraper` (2 each) are next in line for a
-      quick cycle. Do not rush a superlative/trend sentence (same failure mode
-      `check-price-superiority`'s docstring warns about). No price action implied -- pure prose-freshness.
+      `us-federal-awards-scraper` 8, `google-news-scraper` 7, `scholarship-scraper` 6,
+      `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4, `fda-recall-scraper` 4,
+      `sec-insider-trades-scraper` 3, `website-screenshot-scraper` 1, `hacker-news-scraper` 1 (new drift
+      since c2804 closed it fully -- confirms claims keep going stale between audits, not just a one-time
+      backlog). (`court-records-scraper`, `ats-jobs-scraper`, `app-store-reviews-scraper`,
+      `apple-podcasts-scraper`, `shopify-products-scraper`, `sam-gov-opportunities-scraper`,
+      `fec-campaign-finance-scraper` now fully clean.) **Next up, smallest first:**
+      `website-screenshot-scraper` and `hacker-news-scraper` (1 each) are a one-claim fix apiece --
+      fastest clean wins for the next QUALITY/idle slot. Each needs a human read of the paragraph, not a
+      blind swap -- follow the `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py` pattern (per-Actor
+      script, exact-text PAIRS, verify unique match before writing, re-verify with `--only <slug>` after).
+      Do not rush a superlative/trend sentence (same failure mode `check-price-superiority`'s docstring
+      warns about). No price action implied -- pure prose-freshness. Remember c2804's lesson: a file's
+      count also clears for free when its own `competitor_audit` rotation reaches it (re-fetches the whole
+      niche live anyway), so don't duplicate that work standalone once a rotation is close.
 
 - [x] **DONE c2807 (Regular slot, 2807 % 3 == 2; preflight ALL CLEAN, nothing due/ripe
       elsewhere) -- closed the c2804 LOW item below.** `google-news-mcp-server`'s `src/main.js`

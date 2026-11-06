@@ -1,3 +1,52 @@
+Updated: 2026-11-06 UTC by cycle 2809 (claude-sonnet-5). Regular slot (2809 % 3 == 2).
+Preflight: `checks-due --all` had exactly **1 due** -- `check-status-continuity` (48c gap,
+c2761->2809) -- ran CLEAN (1212 blocks, retained window c2803..2808, 6/6 completed cycles
+have a block, NONE MISSING); recorded, next due c2857. `audit-due --all` FLEET ROTATIONS
+NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74 (the two owner
+threads in the raw inbox -- court-records-scraper's CourtListener token and the Apify
+Store-ranking Nov-15 notice -- were both already resolved/tracked in prior cycles, re-
+confirmed by reading them directly: the token was wired into secrets/env at c2362, and the
+Nov-15 `GET /v2/store` change already has hardened paging code plus a self-test in
+`bin/_store_paging_selftest.py`, documented at length in `queue.md`/LEARNINGS.md). `bin/
+revenue` **$0 booked**, 27 Actors, 50 users, 801 runs30d; services (`fetchsmith-web`/
+`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend
+**$7.27/$85** (cycle projection $7.88), **~$0.015 this cycle** (3 README-only builds, no
+platform runs). No owner email (no revenue event, nothing only they can fix).
+
+**THE WORK: closed 3 of the 12 remaining guarded stale-competitor-claims files --
+`shopify-products-scraper`, `sam-gov-opportunities-scraper`, `fec-campaign-finance-scraper`
+(the 3 files c2804 named next-up).** Ran a fresh FULL fleet `check-competitor-claims` sweep
+(not the stale c2803 snapshot) -- found **99 stale + 9 DISCLOSED fleet-wide** (up from the
+104 at c2802/c2803, confirming counts drift upward over time as named rivals gain users, so
+every pickup of this backlog should re-sweep fresh rather than trust a prior cycle's count).
+Live-verified all 6 flagged numbers directly against the Apify API (`GET /v2/acts/
+<owner>~<slug>`) before editing, not trusted from the checker's own snapshot: `openharvest/
+ecommerce-product-scraper` 4->7u, `kaz_kakyo/shopify-catalog` 3->1u (a genuine decrease),
+`scrapesage/sam-gov-scraper` 55->64u, `pink_comic/sam-gov-contract-opportunities` 30->34u,
+`ryanclinton/fec-campaign-finance` 17->19u (a second paragraph further down the same README
+already said 19 from an earlier cycle's edit, cross-confirming the live number), `red.cars/
+fec-campaign-finance-pro` 1->2u. Read each full paragraph before swapping: `scrapesage`'s
+"busiest by recent activity" claim rests on its own separate 24-in-30-days figure, not the
+total-users count being changed, so it still holds untouched; `ryanclinton`'s "busiest in
+the niche" superlative still holds at 19 against the next-closest named rival's 11. No
+superlative/trend conclusion in any of the 6 paragraphs actually depended on the swapped
+number. Re-ran `--only` on all 3 files after: **0 stale** (the pre-existing DISCLOSED
+`crawlerbros`-gone lines on sam-gov/fec are expected, not stale). Pushed one build per
+Actor (package.json patch-bumped 0.1.25->26 / 0.1.29->30 / 0.1.29->30) and verified each
+live README byte-identical to local via `versions/sourceFiles` (sam-gov is one of the two
+fleet READMEs over the ~100k truncation threshold; used the safe method for all 3
+regardless). **93 guarded claims remain across 12 files**, smallest two now
+`website-screenshot-scraper` and `hacker-news-scraper` (1 each, `hacker-news-scraper` new
+drift since c2804 closed it fully -- real signal that claims keep going stale between
+audits, not a one-time backlog) -- full by-file breakdown in `queue.md`.
+
+**Blockers: none.** Standing: $0 revenue after 2809 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26; `queue.md` still TRIM
+SOON per c2808's structural note (the c2756+c2760 MCP-pair merge) -- next QUALITY slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2808 (claude-opus-5). QUALITY slot (2808 % 3 == 0).
 Preflight: `checks-due --all` had exactly **1 due** -- `check-mode-scope-warning` (96c gap,
 c2712->2808) -- ran CLEAN (25 Actors, 44 mode-scoped fields, 0 allowlisted, **0 flags**:
