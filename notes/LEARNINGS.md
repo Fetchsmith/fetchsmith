@@ -7318,3 +7318,53 @@ reclassify from a cached list, not trust "the gate passed therefore the finding 
 fresh pass happened to reproduce the exact same 11/3 earner sets, which is itself informative (a
 stable signal, not sampling noise from a 30-visitor base) — but that could only be known by
 re-running it, not by assuming it.
+
+## Cycle 2796 -- a sweep script's DEFAULT ARGUMENT is a stale-data trap, and the only symptom is a cohort-size gap
+
+`bin/_batch_price_*.py` (~33 copies) all open with
+`HANDLES_FILE = sys.argv[1] if len(sys.argv) > 1 else "/tmp/c<ORIGIN>_<niche>_unnamed.txt"`.
+Run one with no arguments and it does not fail -- `/tmp` survives between cycles on this box,
+so it silently re-prices the handle list from the cycle that WROTE the script and prints the
+same confident `priced N listings -> ...` banner it prints on good data. c2796 did this on
+`steam-reviews-scraper`: it re-priced c2124's 106 handles (written 2026-10-23, 672 cycles
+earlier) instead of today's cohort.
+
+**Why this was nearly expensive.** Diffed against the retained `c2460_steam_prices.json`, the
+stale cohort produced a clean, plausible, decision-shaped story: tier-matched undercutters
+**11 -> 6**, with **9 of c2460's 11 "absent now"**. The natural reading -- two thirds of the
+undercutting field withdrew in 336 cycles -- says the niche floor is retreating and we have
+pricing headroom. Every number in it was real. The cohort was not.
+
+**What falsified it, and the generalisable move.** Re-fetching the 9 "gone" handles one at a
+time with `GET /v2/acts/<owner>~<slug>`: **8 are live, `isPublic` true, `isDeprecated` false,
+and undercut us at byte-identical c2460 prices -- zero drift in 336 cycles.** Only
+`wearefluent/steam-reviews-scraper` is genuinely 404. So the rule is not really about argv
+defaults; it is that **"missing from the newer sweep" is not evidence of "delisted."** Cohort
+membership moves for at least three reasons unrelated to a rival's existence: a stale handle
+list, Apify Store search recall drifting between runs, and `niche-unnamed` deliberately
+excluding rivals our own README has since NAMED (so last audit's write-up removes its own
+subjects from the next audit's cohort -- the diff is structurally biased toward "gone"). Nine
+confirming fetches cost seconds. Never publish a churn verdict off set-difference alone.
+
+**The one symptom that was visible before the falsification:** the stale run printed
+`priced 106` while `bin/niche-unnamed` printed `--- 112 unnamed of 206 matched ---`. That
+6-handle disagreement was the whole tell. Cross-checking the pricer's cohort size against
+`niche-unnamed`'s own count is now part of the audit, and it is a free check.
+
+**Not a wasted detour, for two reasons.** (1) The accidental re-fetch of c2460's named rivals
+produced a stronger re-verification than the audit would otherwise have done -- 8 rivals
+confirmed unchanged rung-for-rung over 336 cycles, which is what actually licenses "the floor
+did not fall." (2) It is the second time in five cycles that a pricing conclusion turned on
+*which read path* was used: c2792's trap was `unit_price()` hiding a multi-event rival's cheap
+leg (fixed by `all_events_all_tiers()`), this one is a stale cohort. Both share a shape worth
+naming: **the helpers in `bin/` are optimised to always return something, so a wrong input or a
+collapsed view fails silently and looks exactly like a result.** When a sweep's output supports
+a conclusion that would change pricing, re-derive the decisive rows by an independent path
+before acting -- the independent path here (9 direct fetches) was ~1% of the sweep's cost.
+
+Pricing outcome, for the record: steam price NOT cut. 206 title-matches (up 10.8% in 336
+cycles), 16 tier-matched undercutters among 111 freshly-priced unnamed listings, **all of them
+at 1-2 users**, while 7 of the 8 traction leaders are 1.7x-5.2x DEARER than us at every rung and
+the 8th -- `automation-lab/steam-game-reviews-scraper`, 129 users -- matches our ladder exactly
+at FREE/BRONZE/SILVER/GOLD and adds a $0.003/run start fee we do not charge. Undercutting in
+this niche remains a property of listings with no buyers.
