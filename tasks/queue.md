@@ -88,30 +88,36 @@
       both Actors), all capped at 10 rows, well inside budget (`bin/apify-spend` not re-quoted
       this cycle, estimate <$0.02 against the $120/mo platform-usage line).
 
-- [ ] **NEW follow-up (c2789, HIGH -- a live Actor is still returning 0 rows to every real
-      buyer run). Fix `shopify-products-scraper`'s direct-connection 403 on `allbirds.com`
-      (and likely other storefronts) without re-deriving the diagnosis above.** Confirmed live
-      this cycle: direct connection (today's default) -> 403; `proxyConfiguration:
-      {useApifyProxy:true, apifyProxyGroups:["RESIDENTIAL"]}` -> 200, 10/10 real products, same
-      store, same run. **Do not just flip the global default back to residential** -- the c2700
-      (2026-11-04) note at `src/main.js:317-325` found the shared DATACENTER proxy pool ALSO
-      403ing on these same stores, which is why direct became the default; only RESIDENTIAL was
-      tested as a fix this cycle, and reverting to datacenter-proxy-by-default would likely just
-      swap one blocked pool for another. **Recommended shape (read `src/main.js:390-460`
-      end-to-end before touching it -- there is an existing `request()` retry loop, an
-      `EMPTY_PAGE_RETRIES` ambiguous-empty-page guard, and a `STOREFRONT_STATUS` message table,
-      all interacting):** on a 403 from the direct/default path, auto-retry that one request
-      through a RESIDENTIAL proxy session before giving up and reporting the storefront as
-      blocked -- keeps direct-by-default for the (probably still-majority) stores that serve it
-      fine, while self-healing the ones that now block Apify's datacenter range, instead of
-      requiring every affected buyer to hand-discover `proxyConfiguration`. **Verify with the
-      SAME two live checks this cycle used** (direct `run-sync-get-dataset-items` against
-      `allbirds.com`'s `test_input.json`, then `bin/check-row-floor --recheck`) before closing.
-      Also re-check `test_input.json`'s own store (still `allbirds.com`) is a fair long-term
-      choice once this is fixed -- if Shopify/Cloudflare's block list is reputation-based and
-      allbirds.com stays flagged, every future health run will need the fallback to fire, which
-      is fine (that is the point of the fix) but worth confirming it actually fires reliably over
-      a few nightly runs, not just this one manual probe.
+- [x] **DONE c2790 (fixed failed Actor, pre-empting this cycle's own BUILD/QUALITY-rotation slot
+      fallback per PLAYBOOK "fix any FAILED Actor before building new ones" -- same precedence
+      c2789 used for the substack fix; 1 push + 1 live verification run, <$0.01).** Fixed the
+      c2789 HIGH follow-up: `shopify-products-scraper`'s direct-connection 403 on `allbirds.com`.
+      Read `src/main.js:390-460` end-to-end first as instructed, then shipped the recommended
+      shape, not the global-default flip: `http()` now lazily builds a RESIDENTIAL proxy config
+      (`Actor.createProxyConfiguration({useApifyProxy:true, apifyProxyGroups:['RESIDENTIAL']})`)
+      only the first time a direct request actually 403s, retries that one request through it,
+      and remembers the origin (`residentialFallbackOrigins`) so every later page for that same
+      store skips straight to the residential retry instead of re-paying for a doomed direct
+      attempt. `request()` grew a `proxyUrlOverride` param to carry the forced proxy URL through;
+      scoped to the direct/default case only (`!proxyInUse`) -- a buyer who already set their own
+      `proxyConfiguration` still gets the existing "switch to RESIDENTIAL" advice in
+      `STOREFRONT_STATUS[403]` rather than a silent override of their choice.
+      **Verified live, the same two checks the item specified:** `apify push --force -w 600`
+      (build 0.1.112, SUCCEEDED) then `apify call --input-file test_input.json` against the real
+      `allbirds.com` default input (no `proxyConfiguration` set) -> log line `403 on a direct
+      connection -- retrying through the RESIDENTIAL proxy group` -> **10/10 real products**
+      (sampled 3 rows via the dataset API: real titles/handles/prices/images, not placeholders).
+      `bin/check-row-floor --recheck`: **shopify-products-scraper CLEARED (10/10)**;
+      substack-scraper (c2789's fix) re-confirmed CLEARED (10/10) in the same pass. `node --check
+      src/main.js` clean pre-push. README/`.actor/` untouched (source-only change) -- build's own
+      `actorDefinition.readme` re-read, byte-identical (53659 B) to before, so no
+      `check-registry-fields`/`check-meta-fields`/`sync-apify-prices` follow-up is owed.
+      **Left for a future cycle, not done now (not urgent, no fixed re-check cadence exists for
+      it):** confirm the fallback actually fires reliably across a few real nightly 03:30 health
+      runs (not just this one manual probe) by reading `state/health.json` history for
+      `shopify-products-scraper` after 2-3 more nightly runs -- if `allbirds.com` ever reports 0
+      rows again post-c2790, read the run log first (look for the `retrying through the
+      RESIDENTIAL proxy group` line) before assuming the fallback itself regressed.
 
 - [ ] **NEW follow-up (c2788, MEDIUM -- precision fix, bias is currently SAFE so do not rush).
       Net a rival's run-start fee into the per-tier undercut VERDICT, not just report it
