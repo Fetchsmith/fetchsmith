@@ -1,32 +1,44 @@
-- [ ] **NEW follow-up from c2801 (QUALITY-shaped cleanup, do in chunks across future QUALITY/idle slots).**
-      `check-competitor-claims` fleet sweep (914 claims, due c2801, next due c2945) found **124 stale
-      claims fleet-wide**; c2801 fixed the 4 that were plain isolated "(N users)" phrases safe to
-      text-swap in one cycle (`app-store-reviews-scraper` euroscrape/apivault_labs, `shopify-products-
-      scraper` clearpath, `trademark-search-scraper` automation-lab) -- verified via `--only` re-run,
-      0 regressions. **120 remain, broken down by file (counts from `/tmp/c2801_claims.txt`, which is
-      ephemeral -- re-run `bin/check-competitor-claims` fresh if this list is more than a few cycles
-      old):** `remote-jobs-scraper` 23, `google-play-reviews-scraper` 19, `us-federal-awards-scraper` 8,
-      `substack-scraper` 16, `hacker-news-scraper` 7, `google-news-scraper` 12, `trademark-search-
-      scraper` 5, `scholarship-scraper` 6, `eu-ted-tenders-scraper` 7, `shopify-products-scraper` 2,
-      `fec-campaign-finance-scraper` 2, `fda-recall-scraper` 4, `sec-insider-trades-scraper` 3, `sam-gov-
-      opportunities-scraper` 3, `app-store-reviews-scraper` 2 (sic -- counted post-fix), `ats-jobs-
-      scraper` 1, `apple-podcasts-scraper` 1, `court-records-scraper` 1. **Most (107 of 120) carry a
-      guard** (`superlative`/`trend`/`30-day sub-figure`/`abbreviated 'u' count`) meaning the number
-      sits inside a sentence making a comparative claim ("the largest", "growing fast", a 30d sub-count)
-      that may flip or need a matching second edit once the headline number moves -- per the tool's own
-      design (see `notes/PLAYBOOK.md`'s `check-competitor-claims` entry) these need a human read of the
-      paragraph, not a blind find-replace; follow the `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py`
-      pattern (per-Actor script, exact-text PAIRS, verify unique match before writing, re-verify with
-      `--only <slug>` after). **13 are plain unguarded** (no reword risk) but weren't reached this cycle:
-      `google-news-scraper` 5 (2 "gone from Store" delistings needing a disclosure sentence, 3 number
-      swaps), `google-play-reviews-scraper` 3 number swaps, `remote-jobs-scraper` 1 delisting,
-      `sam-gov-opportunities-scraper` 1 delisting, `eu-ted-tenders-scraper` 2 number swaps, `court-
-      records-scraper` 1 delisting. **Do the unguarded ones first in the next slot that touches this**
-      (cheapest, zero reword risk), then pick off guarded ones file-by-file as time allows -- do not
-      try to clear all 120 in one cycle, this backlog built up over 144 cycles and a rushed blind swap
-      on a superlative/trend sentence is how a false claim gets published (same failure mode
-      `check-price-superiority`'s docstring warns about). No price action is implied by any of these --
-      this is pure prose-freshness cleanup, not a repricing signal.
+- [ ] **UPDATED c2802 (QUALITY slot) -- the c2801 unguarded-13 batch is CLOSED; 107 guarded claims remain.**
+      c2801 fixed 4 plain claims; c2802 did the 13 plain-unguarded ones c2801 had queued (all verified
+      404 live before editing, all edits verified unique-match before writing, re-verified clean via
+      `--only` re-run across all 6 touched files afterward -- 0 of the 13 target lines still flag, 0
+      regressions on neighboring claims): `court-records-scraper` (`rbbscrap` delisting),
+      `eu-ted-tenders-scraper` (`neverempty` 11->13, `apnoda` 8->9), `google-news-scraper` (`crw`/
+      `cycha`/`ilborso` delistings, `tidydata` 3->1, `pipiagent` 1->2), `google-play-reviews-scraper`
+      (`tidydata` 1->2, `locaihost` 2->1, `euroscrape` 1->2), `remote-jobs-scraper` (`datagleaner`
+      delisting), `sam-gov-opportunities-scraper` (`barefoot_grade` delisting). Pushed one build per
+      touched Actor (6 pushes, ~$0.03) and verified each live `actorDefinition.readme` against local
+      (see the API-truncation finding below for why 2 of the 6 needed an offset check, not a bare
+      byte-count compare). **107 remain, all carrying a guard** (`superlative`/`trend`/`30-day
+      sub-figure`/`abbreviated 'u' count`), by file (re-run `bin/check-competitor-claims` fresh if
+      stale, counts from the real post-c2801/pre-c2802-edits sweep in `/tmp/c2802_claims.txt`):
+      `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
+      `us-federal-awards-scraper` 8, `hacker-news-scraper` 7, `google-news-scraper` 7,
+      `scholarship-scraper` 6, `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4,
+      `fda-recall-scraper` 4, `sec-insider-trades-scraper` 3, `shopify-products-scraper` 2,
+      `sam-gov-opportunities-scraper` 2, `fec-campaign-finance-scraper` 2, `ats-jobs-scraper` 1,
+      `app-store-reviews-scraper` 1, `apple-podcasts-scraper` 1 (`court-records-scraper` now carries
+      only its 1 DISCLOSED line, 0 stale of any kind). Each needs a human read of the paragraph, not a blind swap -- follow the
+      `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py` pattern (per-Actor script, exact-text PAIRS,
+      verify unique match before writing, re-verify with `--only <slug>` after). Pick off file-by-file
+      across future QUALITY/idle slots; do not rush a superlative/trend sentence (same failure mode
+      `check-price-superiority`'s docstring warns about). No price action implied -- pure prose-freshness.
+
+- [x] **DONE c2802 -- rediscovered and now permanently documented a known gotcha (not actually new; c2513
+      had already found and filed it, but only in `fleet_checks.json`'s free-text note, not in
+      `PLAYBOOK.md` where the verification rule itself lives, so c2802 hit it fresh before finding the
+      c2513 precedent).** `GET /v2/actor-builds/{id}`'s `actorDefinition.readme` field silently
+      **truncates at ~100,000 characters** -- confirmed again on both known-affected Actors:
+      `remote-jobs-scraper` (live 99,999 / local 103,528 chars, live is an exact prefix cut mid-sentence)
+      and `sam-gov-opportunities-scraper` (live 100,000 / local 113,647). Not a stale-build artifact
+      (`buildId` matched `taggedBuilds.latest` exactly both times). **The real fix, already known since
+      c2513 and now added to `PLAYBOOK.md` rule 9 so it stops being rediscovered:** `GET /v2/acts/{id}/
+      versions` returns `items[0].sourceFiles[]`, each a `{name, format, content}` object with the
+      **full, untruncated** file content -- fetching `README.md` from there and diffing against local
+      confirmed both of today's pushes landed byte-identical (only a trailing-newline artifact from the
+      diff tool itself, not a real difference). Only these 2 of 27 live Actors exceed ~90k chars today,
+      so this stays a named, narrow case, not a fleet-wide problem -- but any future push to either of
+      these 2 files must verify via `versions/sourceFiles`, not the builds endpoint.
 
 - [x] **DONE c2800 (Regular slot, 2800 % 3 == 1; **$0.007 spent, measured** -- `apify-spend` $7.138 ->
       $7.1453 of $85; 246 read-only `GET /v2/acts` fetches, no Actor runs, no builds).** Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims`

@@ -1,3 +1,51 @@
+Updated: 2026-11-06 UTC by cycle 2802 (claude-sonnet-5). QUALITY slot (2802 %
+3 == 0). Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest `check-dead-
+endpoint-docs` in 1c); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16
+types; `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27
+Actors, 50 users, 795 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/
+`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend
+**$7.159/$85** (cycle projection $7.81), **~$0.03 this cycle** (6 README-only
+builds, no platform runs). No owner email (no revenue event, nothing only they
+can fix).
+
+**THE WORK: closed the c2801 "13 unguarded stale claims" follow-up in full.**
+`check-competitor-claims` (not due this cycle, so ran scoped re-checks via
+`--only` rather than a fresh full fleet sweep) confirmed and fixed all 13:
+3 number-swaps + 1 delisting on `google-play-reviews-scraper`/`court-records-
+scraper`, 2 number-swaps on `eu-ted-tenders-scraper`, 3 delistings + 2 number-
+swaps on `google-news-scraper`, 1 delisting each on `remote-jobs-scraper` and
+`sam-gov-opportunities-scraper`. Every delisted handle (`rbbscrap`, `crw`,
+`cycha`, `ilborso`, `datagleaner`, `barefoot_grade`) re-confirmed live 404 via
+the API before editing (not trusted from the stale `/tmp` list); every number
+swap verified unique-match before writing. Re-ran `check-competitor-claims
+--only` across all 6 touched files afterward: 0 of the 13 target lines still
+flag, 0 regressions on neighboring claims in the same files. **107 guarded
+claims remain** (superlative/trend/30-day-subfigure needing a hand reword),
+broken down by file in `queue.md`'s updated c2802 item for future QUALITY/idle
+slots to pick off in chunks -- this backlog built up over 144 cycles and
+should not be rushed in one.
+
+Pushed one build per touched Actor (6 pushes, `court-records-scraper` 0.1.79,
+`eu-ted-tenders-scraper` 0.1.96, `google-news-scraper` 0.1.91, `google-play-
+reviews-scraper` 0.1.104, `remote-jobs-scraper` 0.1.96, `sam-gov-
+opportunities-scraper` 0.1.87) and verified each live. **Along the way,
+rediscovered a known-but-undocumented gotcha**: the live-readme verification
+method (`GET /v2/actor-builds/{id}`) truncates at ~100,000 chars, which bit
+`remote-jobs-scraper` and `sam-gov-opportunities-scraper` (both over that size)
+-- c2513 had found this exact thing but only filed it in `fleet_checks.json`
+prose, not in `PLAYBOOK.md` where the verification rule itself lives, so it
+got rediscovered instead of recalled. Fixed properly this time: added the
+caveat and the real fix (`GET /v2/acts/{id}/versions` -> `sourceFiles[]` ->
+full untruncated content) to `PLAYBOOK.md` rule 9 directly. Re-verified both
+pushes via that method: byte-identical to local (only a trailing-newline
+diff-tool artifact, not a real difference).
+
+**Blockers: none.** Standing: $0 revenue after 2802 cycles; Polar checkout
+deferred by owner decision; MCP #3 closed-for-builds; niche-hunting on
+cooldown to ~2026-12-26.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2801 (claude-sonnet-5). Regular slot (2801 %
 3 == 2). Preflight: `checks-due --all` had exactly 1 DUE -- `check-competitor-
 claims` (144c gap, last 2657) -- ran it end to end (below). `audit-due --all`
