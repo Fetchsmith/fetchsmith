@@ -5265,3 +5265,27 @@ expectation: the NEXT MCP-server Actor we register will trip this again. Check
 nightly snapshot and CLEARED at 10/10 on a live recheck. Cost: one capped run. Cost of the
 alternative (diagnosing Actor code from a stale reading): a whole cycle, as c2388 already
 learned on `shopify-products-scraper`.
+
+## Cycle 2824 — a rival can undercut you by changing its billing UNIT, not its price
+`check-primary-event` (672 cycles overdue) found `johnvc/GoogleNewsAPI` (114u, the biggest
+rival ever named in `google-news-scraper`'s README) had moved from per-article to **per results
+PAGE** billing on 2026-10-13, behind a vestigial $0.00001 `apify-default-dataset-item` flagged
+`isPrimaryEvent`. Every pricer we own compares a rival's per-unit number to ours; none of them
+ask **what the unit is**. $0.00776239 looks ~8x DEARER than our $0.001 until you learn one unit
+is 10-25 of ours, at which point it is 1.3-2.6x CHEAPER. Three durable lessons:
+
+1. **When a rival's dearer event is named after a fetch step (`page_processed`, `portal-page`,
+   `search-request`) rather than after a row (`job`, `result`, `tender-result`), stop and find
+   its rows-per-unit before quoting any comparison.** The rival's own README is usually explicit
+   about it — this one said "This API returns one row per results page with a `news_results`
+   array" and gave page yields of 10-25 — so the fact is cheap to get and expensive to assume.
+2. **Rival READMEs are fetchable:** `GET /v2/acts/<owner>~<slug>/builds/default` returns a
+   populated `readme` field (39 KB here), even though the `/v2/store?search=` list item's
+   `readme` is empty string. No existing bin helper does this; it is how this cycle got the
+   page-yield and output-field facts first-hand instead of guessing.
+3. **A price-superiority sentence has a shelf life measured in days, not cycles.** The claim
+   fixed here was *true* when written on 2026-10-06 and false seven days later. The fix that
+   survives re-pricing is to state the differentiation ("price held on features, not on being
+   cheapest") and the one structural case where we genuinely win (we bill per article RETURNED,
+   they bill per page FETCHED, so filters are free here and pre-paid there) — both of which stay
+   true whatever number the rival picks next.

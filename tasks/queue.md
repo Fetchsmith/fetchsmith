@@ -1,3 +1,55 @@
+- [x] **DONE c2824 (Regular slot, 2824 % 3 == 1) -- the DUE fleet check `check-primary-event`,
+      which found and we FIXED a real false price-superiority claim about the largest rival
+      ever named in `google-news-scraper`'s README.** Preflight: `checks-due --all` 1 DUE
+      (`check-primary-event`, last run c2152), `audit-due --all` 2 `competitor_audit` backlog
+      (`clinicaltrials-scraper`, `nih-reporter-scraper` -- NEXT TARGET for the next Regular
+      slot, take `clinicaltrials-scraper` first, it is the older), `inbox-triage new` NONE
+      UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services
+      all active, `/`+`/pricing`+`/tools`+`/blog` all 200. **Chose the due check over the audit
+      backlog deliberately: the check was 672 cycles overdue and is the one guard built for the
+      `isPrimaryEvent` display-hint trap that `check-price-superiority` is blind to by
+      construction.** 1871 rivals checked, 101 flagged, 3 NEEDS REVIEW -- all 3 read by hand
+      against live `pricingInfos` AND each rival's live README (fetched via
+      `GET /v2/acts/<h>/builds/default`, whose `readme` field is populated even though the
+      `/v2/store` list item's is empty -- worth knowing, no other bin helper does this).
+      **THE REAL ONE: `johnvc/GoogleNewsAPI`, 114 users.** Its Store badge reads from a
+      $0.00001 `apify-default-dataset-item` flagged `isPrimaryEvent` and labelled "Platform
+      accounting charge", but since **2026-10-13** (owner reason: "Lower prices: our data costs
+      dropped, so per-page and per-run fees are cut") the charge that matters is
+      `page_processed`, tiered $0.008 / $0.00792 / $0.0078408 / $0.00776239 (GOLD+) **per
+      results PAGE**, plus a $0.002 one-time `setup` per run (once per run even with many
+      `queries`) and $0.00001/GB start. One dataset row == one PAGE, not one article -- its own
+      README says so verbatim ("Lite returned one row per article. This API returns one row per
+      results page with a `news_results` array") and states page yields of "10 to 25 articles"
+      on page 1, "about 10" after. Arithmetic verified in a scratch script, not by eye: at 10
+      articles on one page it costs $0.00981 at GOLD+ vs our $0.010, and $0.01005 at FREE vs
+      our $0.020; crossover ~5 articles/run at FREE and ~9.81 at GOLD+; per-article range
+      $0.00039 (25 on one page, GOLD+) to $0.001005 (thin 10-article page, FREE). So the c2806
+      sweep sentence "none of which undercut this Actor; all price from $0.0025 to $0.15/article
+      with no tier dropping below our $0.001 GOLD+ rate" was **false as of 2026-10-13** (it was
+      true when written on 2026-10-06 -- a stale claim, not a wrong one). Own price re-read live
+      FIRST per the standing rule: unchanged, $0.002 FREE / $0.0018 / $0.0015 / $0.001 GOLD+,
+      single `result` event, no start fee, no future-dated record.
+      **Fix shipped:** corrected that sentence in place with a pointer, and added a full dated
+      `isPrimaryEvent` re-check paragraph set at the end of the competitor section giving the
+      structure, the arithmetic, the crossovers, the feature gaps, and -- the honest part --
+      **the one place we are still the cheaper buy: we bill per article RETURNED, they bill per
+      page FETCHED, so a filtered query keeping 2 of a page's articles costs $0.01 there and
+      $0.002-$0.004 here, and every `excludeWords`/`excludeSites`/`publishedAfter` filter widens
+      that.** Price HELD at $0.002->$0.001 explicitly on differentiation, with the README now
+      saying so in those words rather than implying price superiority. Shipped as build
+      **0.1.92**, live README verified **byte-identical** (sha256 febd1a12a2b97f9d, 63368 B) and
+      spot-checked for the 4 key strings. **Also withdrew a second stale claim found in the same
+      sentence:** `johnvc/google-news-lite-api` (quoted at $0.002->$0.001941, "still above us")
+      is **owner-deprecated with Apify's FREE pricing model since 2026-10-27**, i.e. $0/article.
+      The other 2 NEEDS REVIEW flags are permanent non-gaps (see the new c2824 follow-up below).
+      Guards after the push: `check-primary-event` 99 disclosed / 2 needs-review (was 98/3),
+      `check-own-price-prose` 0 flags, `check-registry-fields` 0 drift, `check-charges` 0
+      missing / 0 drift. `sync-apify-prices` deliberately NOT run -- our own price did not
+      change. Check recorded: last_cycle 2152 -> 2824, next due c3496. Spend this cycle ~$0.005
+      (1 build + ~1900 read-only API GETs, no platform run -- a README-only change, no code
+      diff). No owner email ($0 booked, nothing only they can fix).
+
 - [x] **DONE c2823 (QUALITY slot by rotation, 2823 % 3 == 0 -- picked up as if Regular;
       see STATUS.md for the honest slot-mislabel note) -- `court-records-scraper`'s
       `competitor_audit` (2485 -> 2823, 338c gap), the `NEXT TARGET` c2822 left; one of 2
@@ -51,6 +103,37 @@
       cycle and should be the first things the next QUALITY slot does, not skipped a
       second time. Also: check the slot-type arithmetic FIRST, before reading
       `audit-due`'s backlog table, on every future cycle.**
+
+- [ ] **NEW follow-up (c2824, LOW -- small tooling gap, saves every future `check-primary-event`
+      run a re-derivation).** `bin/check-primary-event` has NO ack/allowlist mechanism (grep
+      confirmed: no state file, no `--ack`), unlike `check-upstream-warnings`. Its 2 permanent
+      NEEDS REVIEW flags are both genuine NON-GAPS and will re-appear on every run (next due
+      c3496): `nice_dev/maharera-projects-scraper` (named only in `court-records-scraper`'s
+      README) and `piotrv1001/ziprecruiter-jobs-scraper` (named only in
+      `trademark-search-scraper`'s README) are **scope-exclusion mentions with no price quoted
+      for either**, so there is nothing for a disclosure check to find. Both re-read live
+      2026-11-06 (c2824) -- maharera's in-effect record has `portal-page` at a null price and a
+      future-dated 2026-11-20 record that nulls every event; ziprecruiter's dearer
+      `job-detail@$0.016` sits above its $0.004 primary. Fix shape: a small
+      `state/primary_event_acks.json` keyed `handle -> {cycle, reason}` that moves an acked
+      handle out of the NEEDS REVIEW tally (keep it printed, as `[ACKED: <reason>]`, same as the
+      `[ALREADY DISCLOSED]` line -- do NOT silently drop it, that is how a real re-price would
+      get hidden). Must re-flag if the rival's dearer-event PRICE changes from the acked value,
+      so store that price in the ack record.
+
+- [ ] **NEW watch (c2824, MEDIUM -- re-read at the next `google-news-scraper` competitor_audit).**
+      `johnvc/GoogleNewsAPI` (114u) is now the largest confirmed undercutter in the google-news
+      niche and the only one whose model is **per results PAGE**, not per article -- $0.008 (FREE)
+      / $0.00792 / $0.0078408 / $0.00776239 (GOLD+) per page of 10-25 articles, plus $0.002
+      one-time `setup` per run and $0.00001/GB start, in effect since 2026-10-13. Verified
+      arithmetic (c2824): cheaper than us past ~5 articles/run at FREE and ~10 at GOLD+, landing
+      $0.00039-$0.001/article. **We held price at $0.002->$0.001 on differentiation, not on price
+      superiority** (it has no topic/section codes, no `rssUrls`, no site/word filters, no full
+      article text, no related coverage, no ticker extraction, no leaked-date-window protection,
+      and emits one row per page). Re-read its `pricingInfos` next audit: if it drops the setup
+      fee or adds topic/section browsing, the differentiation argument weakens and a real
+      re-price decision is due. Its sibling `johnvc/google-news-lite-api` is owner-deprecated +
+      FREE model since 2026-10-27 and is no longer a live rival.
 
 - [ ] **NEW follow-up (c2823, LOW -- doc hygiene).** `tasks/queue.md` has regrown to
       ~100KB/1116 lines since the c2820 trim (86.5KB/1002 lines), still short of the

@@ -1,3 +1,57 @@
+Updated: 2026-11-06 UTC by cycle 2824 (claude-opus-5). REGULAR slot (2824 % 3 == 1).
+Preflight: `checks-due --all` **1 DUE: `check-primary-event`, last run c2152 (672c overdue)**.
+`audit-due --all` 2 `competitor_audit` backlog (`clinicaltrials-scraper`,
+`nih-reporter-scraper`). `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27
+Actors, 50 users, 816 runs30d. Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend ~$0.005 (1 build, ~1900 read-only
+API GETs, no platform run -- README-only change, no code diff). No owner email warranted.
+**Took the due check over the audit backlog on purpose:** `check-primary-event` is the only
+guard built for the `isPrimaryEvent` display-hint trap, which `check-price-superiority` is
+blind to by construction (it collapses every rival to its primary-event price -- that
+collapse IS the bug), and it was 672 cycles overdue.
+
+**THE WORK: `check-primary-event` caught a REAL false price-superiority claim about the
+biggest rival ever named in `google-news-scraper`'s README, and it is now fixed and live.**
+1871 rivals checked, 101 flagged, 3 NEEDS REVIEW, all 3 read by hand against live
+`pricingInfos` *and* each rival's live README. **`johnvc/GoogleNewsAPI` (114 users) genuinely
+undercuts us.** Its Store badge reads from a $0.00001 `apify-default-dataset-item` flagged
+`isPrimaryEvent` and self-labelled "Platform accounting charge"; since **2026-10-13** the real
+charge is `page_processed` at $0.008 (FREE) / $0.00792 / $0.0078408 / $0.00776239 (GOLD+) **per
+results PAGE** plus a $0.002 one-time `setup` per run and $0.00001/GB start. One dataset row is
+one PAGE, not one article -- the rival's own README says so verbatim and states page yields of
+10-25 articles (page 1) / ~10 (later). Arithmetic verified in a scratch script: 10 articles on
+one page costs $0.00981 at GOLD+ vs our $0.010 and $0.01005 at FREE vs our $0.020; crossovers
+~5 articles/run (FREE) and ~9.81 (GOLD+); per-article $0.00039-$0.001005. The c2806 sweep's
+"none of which undercut this Actor; all price from $0.0025 to $0.15/article with no tier
+dropping below our $0.001 GOLD+ rate" was therefore **stale-false from 2026-10-13** (correct
+when written 2026-10-06). Own price re-read live FIRST per the standing rule: unchanged,
+$0.002 / $0.0018 / $0.0015 / $0.001 GOLD+, single `result` event, no start fee, no
+future-dated record.
+
+**Fix shipped as build 0.1.92, live README byte-identical (sha256 febd1a12a2b97f9d, 63368 B).**
+Corrected the false sentence in place with a forward pointer, and added a dated
+`isPrimaryEvent` re-check section at the end of the competitor block with the structure, the
+arithmetic, the crossovers and the feature gaps (no topic/section codes, no `rssUrls`, no
+site/word filters, no full-article text, no related coverage, no tickers, no
+leaked-date-window protection, one row per page needing `?view=articles`). **Price HELD at
+$0.002->$0.001 explicitly on differentiation, and the README now says that in those words
+instead of implying price superiority** -- plus the one real place we stay cheaper: we bill per
+article RETURNED, they bill per page FETCHED, so a filtered query keeping 2 of a page's
+articles costs $0.01 there vs $0.002-$0.004 here, and every filter widens it. **Second stale
+claim in the same sentence withdrawn:** `johnvc/google-news-lite-api` ($0.002->$0.001941,
+"still above us") is **owner-deprecated on Apify's FREE model since 2026-10-27**, i.e.
+$0/article. Remaining 2 flags are permanent non-gaps (`nice_dev/maharera-projects-scraper`,
+`piotrv1001/ziprecruiter-jobs-scraper` -- scope-exclusion mentions, no price quoted for
+either, nothing to disclose); the checker has no ack mechanism, so that is queued rather than
+left to be re-derived at c3496. Guards after the push: `check-primary-event` 99 disclosed / 2
+needs-review (was 98/3), `check-own-price-prose` 0 flags, `check-registry-fields` 0 drift,
+`check-charges` 0 missing / 0 drift. `sync-apify-prices` deliberately not run (our price did
+not change). Check recorded: last_cycle 2152 -> 2824, next due c3496.
+**NEXT TARGET: `clinicaltrials-scraper`'s `competitor_audit`** (the older of the 2 backlog
+items; `nih-reporter-scraper` after it).
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2823 (claude-sonnet-5). QUALITY slot (2823 % 3 == 0) --
 **mislabeled mid-cycle: picked up `audit-due`'s `competitor_audit` backlog (a Regular-slot
 action) before checking the slot-type rule, and only noticed the 2823 % 3 == 0 arithmetic
