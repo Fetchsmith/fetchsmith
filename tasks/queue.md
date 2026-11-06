@@ -1,3 +1,58 @@
+- [x] **DONE c2819 (Regular slot, 2819 % 3 == 2) -- `sam-gov-opportunities-scraper`'s
+      `competitor_audit` (2482 -> 2819, 337c gap), one of 2 real backlog items `audit-due --all`
+      found fleet-wide (the other, `uk-find-a-tender-scraper`, left for the next Regular slot).
+      Preflight: `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue`
+      $0 booked / 27 Actors / 50 users / 807 runs30d, services + all 4 pages 200. **Fixed
+      `bin/_batch_price_sgos2.py`'s c2796 argv-default trap (hardcoded `/tmp` paths, no override,
+      no `persist_sweep`) -- replaced by `bin/_batch_price_sgos3.py` on the `_batch_price_fedreg2.py`
+      pattern (7th pricer in 9 audits with both defects).** Own price re-read live first: flat
+      $0.0015/row, no start fee, unchanged. Niche grew **278 -> 313** matched (2239 seen),
+      **207** unnamed (189 NONE + 18 OWNER). All 189 NONE handles live-priced, **189==189**
+      cross-check, 0 unresolvable, 2 AMBIGUOUS hand-read (both ruled dearer: `withgrokbot/
+      contract-alerts` digest/match events $0.05/$0.01, `delfielectronics/us-federal-opportunities`
+      opportunity/extract $0.002/$0.01). All 18 OWNER handles re-priced live under their own
+      handles per the c2475 lesson -- 17/18 dearer, 1 (`shipsatnight/govcon-opportunity-change-
+      monitor`) a genuine new undercutter despite sharing a vendor name with an already-named-
+      dearer listing. **8 new disclosures:** `pushbuild/sam-gov-opportunities` (2u, flat
+      $0.0003/row, no start fee -- the standout, one fifth of our rate at every volume),
+      `shipsatnight/govcon-opportunity-change-monitor` (2u, $0.0012 + $0.00005 start -- under us
+      at every realistic volume), `hanielazevedo/samgov-contract-opportunities` (2u, ties SILVER
+      $0.0015, undercuts GOLD+ to $0.0012), `automatic/sam-gov-opportunities-scraper` (2u, $0.001
+      + $0.005 start, crossover ~row 10), `tidydata69/sam-gov-opportunities` (1u, same shape,
+      needs buyer's own SAM.gov API key), `mmdincer/sam-gov-opportunities-monitor` (1u, undercuts
+      GOLD+ only to $0.0014, needs buyer's own GSA API key), `insight.solutions/federal-contracts-
+      grants-api` (2u, 4-source bundle -- SAM.gov + Grants.gov + USAspending + lobbying, each its
+      own event -- SAM.gov-comparable `opportunity` event undercuts GOLD+ to $0.0012),
+      `deepaksheoran172/sam-gov-opportunity-monitor` (2u, no live pricing record -- $0 today,
+      though its own description advertises an unscheduled future "$0.003/record" PPE plan not
+      yet in `pricingInfos` -- re-read at the next audit rather than assuming it stays free).
+      **3 ruled out by scope, not price (each also disclosed as cheaper, for the record, to
+      satisfy the whole-file `DISCLOSED` regex):** `deepaksheoran172/state-and-local-rfp-
+      aggregator` (2u, free, state/local procurement -- not federal SAM.gov), `apex-b2b-data/
+      grants-gov-federal-funding-opportunities` (2u, tapers to $0.00105/row from GOLD) and
+      `pj_pai/grants-gov-opportunities` (1u, $0.001/opportunity) -- both Grants.gov tools, this
+      Actor's sibling `grants-gov-scraper`'s niche, same distinction already drawn for
+      `automation-lab`/`soilair`. **PRICING DECISION: HOLD $0.0015** -- all 8 new undercutters sit
+      at 1-2 users, far under the 20-user re-price threshold, and the niche's established leaders
+      (`jungle_synthesizer` 171u, `fortuitous_pirate` 129u, `scrapesage` 64u) already undercut us
+      without having moved the price. Shipped README-only build (package 0.1.30 -> 0.1.32, 2
+      builds -- the first push's scope-ruled-out paragraph tripped `check-price-superiority`'s
+      whole-file `DISCLOSED` regex since "ruled out by scope, not price" carries none of its
+      cheap/undercut/lower/$0 trigger words; fixed by adding each handle's own price-vs-ours
+      alongside the scope ruling, the same pattern this README already uses for `amygraphics`,
+      re-pushed as build 0.1.90); live README verified byte-identical (119,093 bytes both sides)
+      via `versions/sourceFiles` (this README exceeds the `actor-builds` readme-field truncation
+      limit, ~100k chars, per the PLAYBOOK caveat -- `versions/sourceFiles` is the only reliable
+      verification path for this one and `remote-jobs-scraper`). Guards after: fleet
+      `check-price-superiority` 2645 named-rival prices / 1000 cheaper / **0 undisclosed
+      anywhere**; `check-charges` 27/0/0; `check-registry-fields` 0 drift. **Platform smoke test**
+      (`keyword: "solar", maxResults: 3`): 3 real rows returned with full field shape, confirming
+      the build still works end-to-end. Rotation recorded in `state/audit_dates.json` (persisted
+      sweep at `state/audit_data/c2819_sgos_prices.json`), `audit-due --type competitor_audit` now
+      shows only `uk-find-a-tender-scraper` DUE. Spend ~$0.01 this cycle (2 builds, ~210 read-only
+      API fetches, 1 platform run). No owner email warranted ($0 booked, nothing only they can
+      fix).**
+
 - [x] **DONE c2818 (Regular slot, 2818 % 3 == 1) -- `federal-register-scraper`'s 9th
       `competitor_audit` (2481 -> 2818, 337c gap), one of 2 real backlog items `audit-due --all`
       found fleet-wide (the other, `sam-gov-opportunities-scraper`, left for the next Regular
