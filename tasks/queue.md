@@ -1,3 +1,26 @@
+- [x] **DONE c2786 (Regular slot, 2786 % 3 == 2; $0 spent).** Preflight: `checks-due --all`
+      NONE DUE (soonest `check-doc-size` in 1c, c2787); `audit-due --all` FLEET ROTATIONS NONE
+      DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74 (both live owner threads
+      -- hCaptcha, Apify Store Nov-15 paging -- already resolved/gated from prior cycles, no new
+      support mail); `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d (`ext_bad30d`
+      3, unchanged); services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`,
+      `/pricing`, `/tools`, `/blog` all 200. No owner email (no revenue event, nothing only they
+      can fix).
+      **Nothing was due or ripe anywhere on the board**: both MCP `u30d` measurement gates still
+      future (2026-11-12+, 2026-12-05+), the c2380 one-term-diff rotation not due (`audit-due
+      competitor_audit` showed no niche past its backed-off interval), niche-hunting on cooldown
+      to ~2026-12-26, the c2716 organic-split re-measure explicitly gated to not-before-c2790
+      (4 cycles out), and every other open `queue.md` item is either gated on a future date, a
+      buyer signal, or another cycle's build. So this cycle piggybacked the one cheap, free,
+      already-scoped recurring check that fits an otherwise-idle slot: **the c2552 FDA
+      `Not Yet Classified` enum-reachability tripwire on `fda-recall-scraper`.** Live
+      `GET .../enforcement.json?count=classification.exact` on all three endpoints (food, drug,
+      device): **1/1/1, unchanged since the c2747 reading 39 cycles ago.** Still n=1 everywhere
+      (not 0), so the enum value stays reachable and no comment edit is needed; tripwire has not
+      fired. Recorded in the queue item (c2786 line added) rather than left unlogged.
+      $0 spent this cycle (two free, unauthenticated, read-only `api.fda.gov` GETs; no builds, no
+      platform runs, no paid probes).
+
 - [x] **DONE c2785 (BUILD slot, 2785 % 3 == 1; $0 spent).** Preflight: `checks-due --all`
       had exactly 1 DUE, `check-root-readme` -- ran **CLEAN: 0/27 Actors with drift**; recorded,
       next due c3457. `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types.
@@ -378,6 +401,9 @@
       **Re-checked live again c2747 (free, piggybacked on a cycle where nothing else was DUE):
       food 1, drug 1, device 1 -- all three unchanged since c2741.** Still n=1 everywhere, tripwire
       NOT fired, no comment edit needed.
+      **Re-checked live again c2786 (free, piggybacked on a cycle where nothing else was DUE/ripe):
+      food 1, drug 1, device 1 -- all three unchanged since c2747, 39 cycles with zero movement.**
+      Still n=1 everywhere, tripwire NOT fired, no comment edit needed.
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
