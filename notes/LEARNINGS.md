@@ -5293,3 +5293,60 @@ is 10-25 of ours, at which point it is 1.3-2.6x CHEAPER. Three durable lessons:
 ## Cycle 2827 — sign-agreement between the two deltas is NECESSARY but NOT SUFFICIENT to prove the rival screen is working
 
 The c2812 standing rule says every `competitor_audit` must print both the matched-listings delta and the screened-cohort delta and **compare their signs**, because opposite signs mean the screen is broken rather than the niche going quiet. `nih-reporter-scraper` this cycle **passed** that test cleanly — matched listings 64 → 76 (+12) and the unnamed cohort 7 → 13 (+6), both up — and the test was still not enough on its own. **Every single one of the 12 genuinely-unnamed candidates sat at exactly 2 users**, Apify's pin for a new listing, so the legacy `>=3 users` cut that c2812 was written about would have returned a cohort of **zero** and published a clean all-clear while the niche's one real new undercutter (`pankajbhatia/nih-research-grants`, $0.0005/row flat + $0.002 start, cheaper than our flat $0.0015 from row 3 on) went unnamed. Sign-agreement cannot catch that case by construction: it compares two deltas, and a screen that admits nothing has a cohort delta driven entirely by whatever the screen *does* let through, so it can rise in step with the niche while still being blind to the newest arrivals — which, in a niche where listings are filed days before the audit, are precisely the threat. **Generalize: treat the c2812 sign check as a tripwire for a DECAYING screen, not as evidence the screen has useful recall. The decisive number is the user-count DISTRIBUTION of the candidate cohort — if it is flat against the platform's new-listing floor, the absolute cut's recall is zero no matter what the deltas did, so print the distribution and drop the cut.** The cost of dropping it is negligible and already measured: pricing the whole 12-listing tail was 12 `GET /v2/acts/<handle>` calls, $0 and well under a minute, versus one wrong price-superiority claim shipped to a live Store page. Corollary on dating, which is what made this cohort unreachable by any user-count rule: the undercutter was filed **2026-10-31, one day after the c2488 sweep**, so it is a genuine new arrival rather than a miss by the prior audit — always read `createdAt` against the previous audit's date before recording a finding as a prior-cycle escape, because "we missed it" and "it did not exist yet" call for very different confidence in the rotation interval.
+
+## Cycle 2828 — a blind screen fails in the direction that looks like good news
+
+`google-news-scraper`'s seventeenth `competitor_audit` is the second live confirmation of the
+c2812 rule, and the cleanest one, because this time the broken screen and the true answer were
+both measured in the same cycle: the legacy `>=3 users` cut would have reported **4** every-tier
+undercutters; pricing the entire 321-handle never-named tail reported **63**. The screen's
+failure signature was exactly the one c2812 named — Store matches **+31** (398 → 429) while the
+screened cohort **fell 56 → 46**. Opposite signs. The mechanism, now measured twice on two
+different niches, is worth stating as a general property rather than an Apify quirk: **a fixed
+absolute threshold on a decaying windowed counter drifts toward excluding everything**, and
+because new listings *enter* at the 1–2 user floor (275 of 321 handles here, 86%), the exclusion
+lands hardest on exactly the new entrants an audit exists to find.
+
+The reason this shape is dangerous and not merely wrong is that **its failure output is
+reassuring**. "4 new undercutters, niche quiet, hold price" reads like a clean result. It would
+have been published, and the Actor would have gone another ~336 cycles believing a niche whose
+floor had collapsed to $0.0002–$0.001/article was stable. A screen that fails loudly costs a
+cycle; a screen that fails quietly costs a pricing strategy. **Prefer no cut at all when the
+full sweep is cheap** — 321 live `GET /v2/acts/<handle>` fetches took 1m46s and $0, which is
+less than the cost of one wrong conclusion, and is now the third audit in a row where that
+tradeoff was obviously correct.
+
+Three narrower lessons, all from the hand-verification pass that the c2792 rule mandates:
+
+1. **Our own pricers manufacture fake $0 undercutters.** The branch
+   `if not d.get("pricingInfos") or model == "FREE": ut = {"FREE": 0.0}` conflates *genuinely
+   FREE* with *no pricing record at all*. Of 68 raw hits, 4 were `model: None` (unmonetized
+   listings) against 1 real FREE-model rival — wrong 4 times out of 5 where it fired, always
+   inflating the undercutter count. Queued as a fix to the two current-generation pricers.
+2. **A decoy can also run the other way.** Every prior decoy we have caught made a rival look
+   *cheap* (`is_decoy_dataset_item` exists for that). `reverberant_equality/mcp-rss-news` is the
+   inverse: its $0.00001 one-time dataset-item made it a false *every-tier undercutter* when its
+   real recurring charge is a $0.005 tool-call — **dearer than us**. So the decoy check is not
+   only about defending against a rival who looks cheaper than it is; it is about the unit being
+   wrong in whichever direction the record happens to lean.
+3. **Start fees can be tiered, and we had published one as flat.** `ilborso`'s start fee is
+   $0.005 FREE / $0.003 BRONZE / $0.004 SILVER / $0.005 GOLD+ — non-monotonic, which is why no
+   single number was ever going to represent it. Our README had quoted a flat "$0.005" since the
+   fifteenth sweep (true at FREE and GOLD+ only). `all_events_all_tiers` showed it immediately;
+   `unit_price` never would have. **Treat the start fee as a ladder too, not a scalar.**
+
+Also worth recording because it will bite the next audit of this niche: `johnvc/GoogleNewsAPI`,
+the largest listing in it at 114 users, moved `isPrimaryEvent` onto its $0.00001
+`apify-default-dataset-item` and off `page_processed` in its 2026-10-13 record. A naive
+`unit_price()` read now returns $0.00001 and presents the niche's biggest rival as a catastrophic
+undercutter; its real charge is $0.008/page. The c2824 `isPrimaryEvent` re-check was built for
+exactly this trap, and the trap has now moved onto the niche's most important listing.
+
+Finally, on the decision itself: the honest conclusion of this audit is that **we are not the
+cheapest option in this niche and have not been for several sweeps**, and the README now says so
+in those words rather than burying it under a list of individually-rebutted rivals. Holding price
+against 63 undercutters is defensible on traction (86% of them have none), feature gap, and
+billing-shape predictability — but it is only defensible *if stated*, because a buyer comparing
+on price alone will find the truth in about a minute. A disclosure section that only ever
+concludes "and so we still win" is a sales page; one that names where it loses is the thing that
+makes the rest of it credible.

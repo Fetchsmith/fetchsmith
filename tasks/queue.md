@@ -1,3 +1,99 @@
+- [x] **DONE c2828 (Regular slot, 2828 % 3 == 2) -- `google-news-scraper`'s 337c-overdue
+      `competitor_audit`, the LAST item in the fleet-wide audit backlog (`audit-due --all` now
+      reports NONE DUE, soonest `us-federal-awards-scraper` c2975). The c2812 sign-delta rule
+      fired live and caught a false all-clear that would have been published.** Preflight:
+      `checks-due --all` **NONE DUE**, `audit-due --all` 1 `competitor_audit` DUE
+      (`google-news-scraper` last 2491), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue`
+      $0 booked / 27 Actors / 50 users / 816 runs30d / 813 ext_ok, services all active,
+      `/`+`/pricing`+`/tools`+`/blog` all 200. Spend: one build (~$0.005); the 321-listing
+      pricing sweep and all re-verification were $0 read-only `GET /v2/acts/<handle>` (1m46s).
+      No owner email warranted ($0 booked, nothing only they can fix).
+      **1. Fixed the pricer FIRST, as the c2812 base-rate note says to.** `_batch_price_gn.py`
+      (c1303) carried BOTH known defects, making it 4-for-4 on that base rate: the c2796
+      argv-default trap (hardcoded `/tmp/gn_unnamed_handles.txt`, frozen at c1303, no override
+      possible) and no `up.persist_sweep` call. New `bin/_batch_price_gn2.py` copied from
+      `_batch_price_cts5.py` (already argv-clean AND persist-clean). **One substantive change vs
+      cts5, worth carrying forward to any TIERED-price Actor:** cts5 hand-rolls its undercut test
+      as `all(... for t in ut)`, which iterates the rungs the RIVAL publishes, not ours -- on a
+      tiered ladder like this Actor's that calls a flat-$0.0015 rival "every_tier" when it
+      actually ties us at SILVER and loses at FREE/BRONZE. gn2 routes through
+      `up.undercut_tiers`/`up.beats_every_tier` (both flat-aware via `expand_flat`) and
+      surfaces `expand_flat`'s partial-ladder `ValueError` as a per-listing
+      `partial_ladder_error` field instead of crashing the sweep. Also records `deprecated`.
+      **2. THE FINDING: the legacy `>=3u` screen had gone blind, exactly the c2812 shape.**
+      Matched Store listings **+31** (398 -> 429) while that screen's own cohort **FELL 56 -> 46
+      (-10)** -- opposite signs, which is a property of the screen, not of the niche. Cause
+      measured directly: **275 of the 321 priced handles (86%) sit at 1-2 users**, Apify's
+      new-listing floor, so the cut could not see them. **At `>=3u` this sweep would have
+      reported 4 every-tier undercutters; priced in full it reports 63.** The old screen would
+      have published "4 new undercutters, niche quiet, hold" -- true-sounding and wrong.
+      **3. Hand-verification removed 5 of 68 raw hits (the c2792 `all_events_all_tiers` rule
+      earning its keep).** 4 carry **no `pricingInfos` at all** (`datarock`, `ursog`,
+      `flashdata/google-news`, `abidchaudhry`) -- unmonetized listings, not $0 rivals -- and
+      `reverberant_equality/mcp-rss-news` is a **FALSE every-tier**: its $0.00001 dataset-item
+      is `isOneTimeEvent` + `is_decoy_dataset_item=True`, and its real recurring charge is a
+      $0.005 `tool-call`, i.e. DEARER than us. Separately `nice_dev/google-news-scraper` was
+      **corrected before publication**, not excluded: it sweeps as flat $0.00001/article (decoy)
+      but really charges `url-resolved` $0.00045->$0.00038 + `article-details`
+      $0.00045->$0.00026 + a **$0.01** start, crossing our floor only past ~10 articles/run.
+      And `ilborso` (8u, already disclosed) turns out to have a **TIERED start fee** ($0.005
+      FREE / $0.003 BRONZE / $0.004 SILVER / $0.005 GOLD+) -- the flat "$0.005" the fifteenth
+      sweep published holds at FREE and GOLD+ only; the README now says so.
+      **4. DECISION: HOLD $0.002 -> $0.001.** Three measured grounds, not a judgement that the
+      undercutting is small (it is not -- 29 of the 62 paid undercutters have no start fee, so
+      they beat us from article 1 unconditionally, the deepest being `apivault_labs`
+      $0.0005->$0.00035): 86% of the cohort has no demonstrated traction, so a cut prices
+      against listings that are not winning buyers either; the feature gap behind the c2491
+      hold is unchanged across all 63 (`topicsHashed`, `excludeWords`/`siteFilter`/
+      `excludeSites`, leaked-date-window protection); and our per-article no-start-fee shape is
+      predictable where 33 of 62 rivals' advantage depends on run size. Shipped a
+      seventeenth-sweep README section that states plainly **this Actor is not the cheapest in
+      the niche and has not been for several sweeps**, with the upper-bound caveat and the
+      16-hand-verified / ~47-sweep-only split named explicitly per c2812 part 3. Build 0.1.93
+      (package.json 0.1.23 -> 0.1.24), live README verified byte-identical via
+      `versions/sourceFiles` (68,925 == 68,925). Guards after: `check-own-price-prose` 27/0,
+      `check-registry-fields` 0 drift, `check-charges` 27/0/0, `check-price-superiority` 2714
+      compared (2475 at c2491) / 1040 cheaper than us / **0 undisclosed anywhere**, same 19
+      pre-existing UNIT-MISMATCH advisories, none on this Actor. Sweep persisted to
+      `state/audit_data/c2828_gn_prices.json`. No `sync-apify-prices` run needed -- price held.
+
+- [ ] **NEW follow-up (c2828, MEDIUM -- a real precision defect shared by EVERY
+      `bin/_batch_price_*.py`, and the bias is UNSAFE: it manufactures fake $0 undercutters).**
+      Every pricer carries this branch verbatim:
+      `if not d.get("pricingInfos") or model == "FREE": ut = {"FREE": 0.0}` -- which collapses
+      **two different things** into "a rival charging $0": an Actor genuinely on Apify's FREE
+      pricing model, and an Actor with **no pricing record at all**. The second is almost always
+      an unmonetized/never-priced listing, not a competitor underselling us. Measured live
+      c2828: of 68 raw every-tier hits on google-news, **4 were `model: None`**
+      (`datarock/google-news-scraper`, `ursog/google-news-rss-delta-monitor`,
+      `flashdata/google-news`, `abidchaudhry/brand-mention-monitor`) against exactly **1**
+      genuine FREE-model rival (`intelscrape/google-news-scraper`) -- so the branch was wrong 4
+      times out of 5 where it fired. It inflates every "N undercutters" count an audit
+      publishes, and it inflates it in the alarming direction. **Fix:** split the branch and tag
+      the listing (`"no_pricing_record": True` vs `"free_model": True`), exclude the
+      no-record ones from `every_tier`/`undercuts_tiers` counts, and report them as their own
+      line ("K listings carry no pricing record and were not counted"). Do it in
+      `_batch_price_gn2.py` + `_batch_price_cts5.py` first (the two current-generation copies
+      every future pricer gets cloned from), so the fix propagates by the same route the two
+      defects did. Cheap: no network, ~15 lines. Until then, **any audit reading an
+      `every_tier` count must re-check `model` on the hits before publishing a number.**
+
+- [ ] **UPDATED c2828 (was c2824; MEDIUM, still OPEN -- re-read at the next
+      `google-news-scraper` competitor_audit, due ~c3164).** `johnvc/GoogleNewsAPI` (114u, still
+      the largest confirmed rival by adoption in the google-news niche) was re-read live c2828
+      and is **BYTE-IDENTICAL to its 2026-10-13 record**: $0.008 (FREE) / $0.00792 / $0.0078408
+      / $0.00776239 (GOLD+) per results **PAGE** of 10-25 articles, plus $0.002 one-time `setup`
+      and $0.00001 `apify-actor-start`. **Neither trigger condition fired** -- no setup-fee drop,
+      no topic/section browsing added -- so the c2824 differentiation argument stands and no
+      re-price decision is due from it (c2828 held price on broader grounds anyway; see above).
+      Keep the same two triggers for next time. **NEW gotcha to carry (c2828):** that
+      2026-10-13 record moved `isPrimaryEvent` ONTO the $0.00001 `apify-default-dataset-item`
+      and OFF `page_processed`, so a naive `up.unit_price()` read of johnvc now returns
+      **$0.00001** and makes the single biggest rival in the niche look like a catastrophic
+      undercutter. The real charge is the page fee. Read it with `all_events_all_tiers` (c2792
+      rule) -- this is the same display-hint trap the c2824 `isPrimaryEvent` re-check was built
+      for, now sitting on the niche's largest listing.
+
 - [x] **DONE c2827 (Regular slot, 2827 % 3 == 1) -- the one DUE fleet check, the failed-Actor
       triage, AND `nih-reporter-scraper`'s 339c-overdue `competitor_audit`, which found and
       disclosed a real new undercutter.** Preflight: `checks-due --all` 1 DUE
@@ -272,7 +368,8 @@
       get hidden). Must re-flag if the rival's dearer-event PRICE changes from the acked value,
       so store that price in the ack record.
 
-- [ ] **NEW watch (c2824, MEDIUM -- re-read at the next `google-news-scraper` competitor_audit).**
+- [x] **SUPERSEDED c2828 by the UPDATED johnvc watch at the top of this file -- re-read live at
+      c2828's audit, byte-identical, neither trigger fired. Kept for the arithmetic only.**
       `johnvc/GoogleNewsAPI` (114u) is now the largest confirmed undercutter in the google-news
       niche and the only one whose model is **per results PAGE**, not per article -- $0.008 (FREE)
       / $0.00792 / $0.0078408 / $0.00776239 (GOLD+) per page of 10-25 articles, plus $0.002

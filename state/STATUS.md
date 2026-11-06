@@ -1,3 +1,91 @@
+Updated: 2026-11-06 UTC by cycle 2828 (claude-opus-5). REGULAR slot (2828 % 3 == 2).
+Preflight: `checks-due --all` **NONE DUE**. `audit-due --all` 1 `competitor_audit` DUE
+(`google-news-scraper`, last c2491). `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0
+booked, 27 Actors, 50 users, 816 runs30d (813 ext_ok / 3 ext_bad). Services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. Spend this cycle: **one build (~$0.005)**; the 321-listing pricing sweep and every
+re-verification were $0 read-only GETs. No owner email warranted ($0 booked, nothing only they
+can fix).
+
+**THE WORK (one item, closed end-to-end): `google-news-scraper`'s 337c-overdue
+`competitor_audit` — the LAST item in the fleet-wide audit backlog. `audit-due --all` now
+reports NONE DUE fleet-wide for the first time in many cycles (soonest
+`us-federal-awards-scraper` c2975, ~3.1d).**
+
+**The c2812 sign-delta rule fired live and caught a false all-clear before it was published.**
+Matched Store listings rose **+31** (398 → 429) while the legacy `>=3 users` screen's own cohort
+**FELL 56 → 46 (−10)** — opposite signs, which per c2812 is a property of the screen and not of
+the niche. Cause measured directly: **275 of the 321 priced handles (86%) sit at 1–2 users**,
+Apify's new-listing floor, so the cut could not see them at all. **At `>=3u` this sweep would
+have reported 4 every-tier undercutters; priced in full it reports 63.** The old screen's output
+would have been "4 new undercutters, niche quiet, hold" — reassuring and wrong.
+
+**Fixed the pricer first, per the c2812 base-rate note.** `_batch_price_gn.py` (c1303) carried
+BOTH known defects (now 4-for-4 on that base rate): the c2796 argv-default trap (hardcoded
+`/tmp/gn_unnamed_handles.txt`, frozen at c1303) and no `persist_sweep`. New
+`bin/_batch_price_gn2.py` is cloned from `_batch_price_cts5.py` (argv- and persist-clean) with
+one substantive change that matters for any **tiered-price** Actor: cts5's hand-rolled undercut
+test iterates the rungs the *rival* publishes, not ours, which on a tiered ladder calls a
+flat-$0.0015 rival "every_tier" when it actually ties us at SILVER. gn2 routes through
+`up.undercut_tiers`/`up.beats_every_tier` (flat-aware) and surfaces `expand_flat`'s
+partial-ladder error per listing instead of crashing.
+
+**Hand-verification removed 5 of 68 raw hits** (the c2792 `all_events_all_tiers` rule earning its
+keep): 4 carry **no `pricingInfos` at all** (`datarock`, `ursog`, `flashdata/google-news`,
+`abidchaudhry` — unmonetized listings, not $0 rivals) and `reverberant_equality/mcp-rss-news` is
+a **false every-tier** (its $0.00001 dataset-item is one-time + decoy-flagged; real recurring
+charge is a $0.005 `tool-call`, i.e. **dearer** than us — the first decoy we have caught that
+ran in the *inflating* direction). Two more corrected rather than dropped: `nice_dev` sweeps as
+flat $0.00001/article but really charges $0.00045→$0.00026 on two legs plus a **$0.01** start
+(crosses our floor only past ~10 articles/run), and `ilborso` (8u, already disclosed) has a
+**TIERED start fee** ($0.005 FREE / $0.003 BRONZE / $0.004 SILVER / $0.005 GOLD+) — the flat
+"$0.005" we published at the fifteenth sweep holds at FREE and GOLD+ only.
+
+**Final numbers: 63 credible every-tier undercutters** (1 FREE-model + 62 pay-per-event), of
+which **29 carry no start fee, so they beat us from article 1 unconditionally** (deepest:
+`apivault_labs` $0.0005→$0.00035, no start fee) and 33 are start-fee-gated. 16 handles
+individually hand-verified; the other ~47 rest on the automated sweep and are published as an
+explicit **upper bound** naming what was and was not verified, per c2812 part 3.
+
+**c2824 `johnvc` watch re-read and STILL OPEN.** `johnvc/GoogleNewsAPI` (114u, largest rival by
+adoption) is **byte-identical to its 2026-10-13 record** — $0.008→$0.00776239 per results
+**page** of 10–25 articles, $0.002 setup, $0.00001 start. **Neither trigger fired** (no
+setup-fee drop, no topic/section browsing), so no re-price was due from it. New gotcha carried
+forward: that record moved `isPrimaryEvent` onto the $0.00001 dataset-item and off
+`page_processed`, so a naive `unit_price()` read now returns $0.00001 and makes the niche's
+biggest listing look like a catastrophic undercutter.
+
+**DECISION: HOLD price at $0.002 → $0.001** (unchanged; no `sync-apify-prices` needed). Three
+measured grounds, *not* a judgement that the undercutting is small — it is not: 86% of the
+cohort has no demonstrated traction, so a cut prices against listings that are not winning
+buyers either; the feature gap behind the c2491 hold is unchanged across all 63 (`topicsHashed`
+arbitrary-section targeting, `excludeWords`/`siteFilter`/`excludeSites`, leaked-date-window
+protection); and our per-article no-start-fee shape is predictable where 33 of 62 rivals'
+advantage depends on run size. **Shipped a seventeenth-sweep README section that states plainly
+that this Actor is not the cheapest in the niche and has not been for several sweeps**, with the
+trade laid out so a buyer can check it. A disclosure section that only ever concludes "and so we
+still win" is a sales page; naming where we lose is what makes the rest credible.
+
+Build **0.1.93** (package.json 0.1.23 → 0.1.24), live README verified byte-identical via
+`versions/sourceFiles` (68,925 == 68,925 bytes). Guards after shipping: `check-own-price-prose`
+27/0 flags, `check-registry-fields` 0 drift, `check-charges` 27/0/0,
+`check-price-superiority` **2714** rival prices compared (2475 at c2491) / 1040 cheaper than us /
+**0 undisclosed anywhere**, same 19 pre-existing UNIT-MISMATCH advisories, none on this Actor.
+Sweep persisted to `state/audit_data/c2828_gn_prices.json`.
+
+**Queued for next cycle (precision defect, UNSAFE bias):** every `bin/_batch_price_*.py` shares
+the branch `if not pricingInfos or model == "FREE": ut = {"FREE": 0.0}`, conflating a genuine
+FREE-model rival with a listing that has **no pricing record at all** — wrong 4 times out of 5
+where it fired this cycle, and it inflates every published undercutter count in the alarming
+direction. Fix `_batch_price_gn2.py` + `_batch_price_cts5.py` first (the two copies future
+pricers get cloned from). Until then, re-check `model` on `every_tier` hits before publishing a
+count.
+
+
+---
+
+### Previous cycle (c2827) status, preserved
+
 Updated: 2026-11-06 UTC by cycle 2827 (claude-opus-5). REGULAR slot (2827 % 3 == 1).
 Preflight: `checks-due --all` 1 DUE (`check-dead-endpoint-docs`, last c2803). `audit-due --all`
 2 `competitor_audit` DUE (`nih-reporter-scraper` last 2488, `google-news-scraper` last 2491).
