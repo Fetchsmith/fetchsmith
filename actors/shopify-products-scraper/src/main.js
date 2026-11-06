@@ -338,6 +338,28 @@ try {
 } catch (e) {
   log.warning(`Proxy unavailable (${e.message}) — continuing with a direct connection.`);
 }
+// As of 2026-11-0{4,6} Shopify/Cloudflare's WAF has started 403ing the direct connection itself
+// on some storefronts (allbirds.com measured live), not just the shared datacenter proxy pool —
+// so the "direct by default" fix above no longer self-heals those stores on its own. Rather than
+// flip the global default again (the datacenter pool 403s too, per the comment above, so that
+// would just trade one blocked IP for another), lazily build a RESIDENTIAL proxy config ONLY the
+// first time a direct request actually 403s, and reuse it — paid for only by the stores that need
+// it, never by the (still-majority) stores direct serves fine. Scoped to the default/direct case
+// only: when the buyer already set their own proxyConfiguration (`proxyInUse`), the 403 advice
+// above already tells them to switch groups themselves rather than silently overriding their choice.
+let residentialProxyConfigPromise = null;
+async function residentialProxyUrlFor(sessionId) {
+  if (!residentialProxyConfigPromise) {
+    residentialProxyConfigPromise = Actor.createProxyConfiguration({ useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'] })
+      .catch((e) => { log.warning(`Residential proxy fallback unavailable (${e.message}).`); return null; });
+  }
+  const pc = await residentialProxyConfigPromise;
+  return pc ? pc.newUrl(sessionId) : undefined;
+}
+// Origins confirmed this run to 403 a direct connection — once known, every further request to
+// that origin goes straight to the residential retry instead of paying for a doomed direct
+// attempt first (a blocked origin blocks every page of that store, not just the first).
+const residentialFallbackOrigins = new Set();
 
 // Many stores x many pages is strictly sequential (each request up to 40s + 2 retries), so a run
 // can approach the platform timeout with stores still queued. A hard kill there returns nothing
@@ -385,7 +407,9 @@ async function pushResult(item) {
 // including got's internal retries, so no single call can outlive the run (same defect class fixed
 // on google-news-scraper c712, substack-scraper c713, apple-podcasts-scraper c714, ats-jobs-scraper c715).
 const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop instead
-const request = async (url, headers) => {
+// `proxyUrlOverride` lets a caller force a specific proxy URL (the residential fallback) instead
+// of the run's configured `proxyUrlFor()` — undefined means "use the normal default".
+const request = async (url, headers, proxyUrlOverride) => {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     const left = remainingMs();
@@ -401,7 +425,7 @@ const request = async (url, headers) => {
       // proxy agent issues that tunnel as its own untimed, uncancellable nested http(s).request()
       // (cycle 1893 repro on trademark-search-scraper). AbortSignal tears the socket down
       // externally instead, so it still fires.
-      return await gotScraping({ url, timeout: { request: perRequest }, retry: { limit: retryLimit }, proxyUrl: await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers }, signal: AbortSignal.timeout(perRequest) });
+      return await gotScraping({ url, timeout: { request: perRequest }, retry: { limit: retryLimit }, proxyUrl: proxyUrlOverride !== undefined ? proxyUrlOverride : await proxyUrlFor(), headers: { accept: 'application/json,text/html', ...headers }, signal: AbortSignal.timeout(perRequest) });
     } catch (e) {
       lastErr = e;
       if (attempt < 3 && remainingMs() > MIN_REQUEST_MS) {
@@ -413,8 +437,29 @@ const request = async (url, headers) => {
   throw lastErr;
 };
 const http = async (url) => {
-  try { return await request(url, { 'accept-language': '' }); }
-  catch (e) { return request(url, {}); } // a store that rejects the empty header still gets served, just without sale prices
+  const origin = new URL(url).origin;
+  // Already confirmed this run that `origin` 403s a direct connection — skip straight to the
+  // residential retry instead of paying for a doomed direct attempt on every subsequent page.
+  const forcedProxyUrl = (!proxyInUse && residentialFallbackOrigins.has(origin)) ? await residentialProxyUrlFor() : undefined;
+  const res = await (async () => {
+    try { return await request(url, { 'accept-language': '' }, forcedProxyUrl); }
+    catch (e) { return request(url, {}, forcedProxyUrl); } // a store that rejects the empty header still gets served, just without sale prices
+  })();
+  // got-scraping doesn't throw on 4xx (see throwIfStorefrontError below), so a 403 shows up as a
+  // normal response here, not an exception — safe to inspect res.statusCode directly. Only
+  // self-heal the default/direct case; a buyer-configured proxy already gets its own "switch
+  // groups" advice in STOREFRONT_STATUS[403] instead of a silent override of their choice.
+  if (res.statusCode === 403 && !proxyInUse && forcedProxyUrl === undefined) {
+    const residentialUrl = await residentialProxyUrlFor();
+    if (residentialUrl) {
+      log.warning(`${origin}: 403 on a direct connection — retrying through the RESIDENTIAL proxy group (and routing the rest of this store's requests through it too).`);
+      residentialFallbackOrigins.add(origin);
+      try {
+        return await request(url, { 'accept-language': '' }, residentialUrl);
+      } catch (e) { /* residential attempt failed at the network level — fall through to the original 403 so the buyer gets the real reason */ }
+    }
+  }
+  return res;
 };
 const textOf = (html) => (html ? cheerio.load(html).text().replace(/\s+/g, ' ').trim() : null);
 
