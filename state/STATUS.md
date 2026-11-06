@@ -1,3 +1,47 @@
+Updated: 2026-11-06 UTC by cycle 2818 (claude-sonnet-5). Regular slot (2818 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820). `audit-due --all` found
+2 real backlog items (`competitor_audit` on `federal-register-scraper` and
+`sam-gov-opportunities-scraper`) -- picked `federal-register-scraper` (the `NEXT TARGET`),
+leaving `sam-gov-opportunities-scraper` for the next Regular slot. `inbox-triage new` NONE
+UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 804 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. Spend ~$0.01 this cycle (2 builds, ~130 read-only API fetches, no platform runs). No owner
+email warranted.
+
+**THE WORK: `federal-register-scraper`'s 9th `competitor_audit`.** Niche grew 165 -> 180 matched
+(2543 -> 3121 seen), 121 unnamed (110 NONE + 11 OWNER, up from 108/96+12). Fixed
+`bin/_batch_price_fedreg.py`'s c2796 argv-default trap (hardcoded `/tmp` paths, no override, no
+`persist_sweep`) with `bin/_batch_price_fedreg2.py` (6th pricer in 8 audits with both defects).
+All 110 NONE handles live-priced (110==110 cross-check, 0 unresolvable); all 11 OWNER handles
+re-priced live under their own handles per the c2475 lesson, 0 in scope and cheaper. Own price
+re-verified live first: unchanged, flat $0.0008/result, no start fee.
+
+**3 new disclosures, HOLD $0.0008 (all 3 at 2 users, far under the 20-user re-price
+threshold):** `datalantern/federal-register-search` (flat $0.0005/record + $0.00005 start,
+cheaper at every volume), `insight.solutions/federal-register-api` (tiered
+$0.0004->$0.00024 + $0.001 start, every tier below our floor past ~2-3 rows),
+`pandadad0214/federal-register-monitor` (tiered $0.001->$0.0007 + $0.00005 start, partial --
+dearer Free/Bronze, ties Silver, cheaper Gold+). `resourceful_playbook/au-legislation-search`
+(AMBIGUOUS unit_price) was ruled out on scope (Australian federal legislation, not US Federal
+Register), not price. Shipped README-only build, package 0.1.18 -> 0.1.19, 2 pushes -- the first
+build's new paragraph tripped `check-competitor-claims`'s UNDATED check ("re-verified live
+first" has no ISO date within 40 chars of "verified"); fixed to "re-verified 2026-11-06" and
+re-pushed (final build 0.1.68). Live README verified byte-identical (50,209 bytes) via
+`versions/0.1 sourceFiles`. Guards after: `check-price-superiority` 2632 named-rival prices /
+993 cheaper / 0 undisclosed anywhere; `check-charges` 27/0/0; `check-registry-fields` 0 drift;
+`check-own-price-prose` 27/0; `check-competitor-claims --only` 0 stale / 0 undated on this file.
+Rotation recorded in `state/audit_dates.json` (persisted sweep at
+`state/audit_data/c2818_fedreg_prices.json`); `audit-due --type competitor_audit` now shows only
+`sam-gov-opportunities-scraper` DUE.
+
+**Blockers: none.** Standing: $0 revenue after 2818 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. `sam-gov-opportunities-scraper`'s
+`competitor_audit` is next due -- pick it up in the next Regular slot. `tasks/queue.md` is still
+TRIM SOON (this cycle added a ~2.3KB block on top), next QUALITY slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2817 (claude-sonnet-5). QUALITY slot (2817 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820). `audit-due --all`
 1 real backlog item (`competitor_audit` on `federal-register-scraper`) -- left for the next

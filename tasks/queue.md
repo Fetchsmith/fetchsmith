@@ -1,3 +1,44 @@
+- [x] **DONE c2818 (Regular slot, 2818 % 3 == 1) -- `federal-register-scraper`'s 9th
+      `competitor_audit` (2481 -> 2818, 337c gap), one of 2 real backlog items `audit-due --all`
+      found fleet-wide (the other, `sam-gov-opportunities-scraper`, left for the next Regular
+      slot).** Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users /
+      804 runs30d, services + all 4 pages 200. **Fixed `bin/_batch_price_fedreg.py`'s c2796
+      argv-default trap (hardcoded `/tmp` paths, no override, no `persist_sweep`) -- replaced by
+      `bin/_batch_price_fedreg2.py` on the `_batch_price_apc2.py` pattern (6th pricer in 8 audits
+      with both defects).** Fresh niche-size/niche-unnamed: niche grew **165 -> 180** matched
+      (2543 -> 3121 seen), **121** unnamed (**110** NONE + 11 OWNER, up from 108/96+12). All 110
+      NONE handles live-priced, **110==110** cross-check against `niche-unnamed`'s own count, 0
+      unresolvable; all 11 OWNER handles also re-priced live under their own handles per the
+      c2475 lesson -- 0 in scope and cheaper (`malonestar`'s 4 EPA/FWS screeners and
+      `nexgenwatch`'s 2 MCP servers are single-vertical US-regulatory tools, not Federal Register
+      products; `jungle_synthesizer/bravsearch-brak-de-lawyer-register-scraper` is a German
+      lawyer registry). Own price re-verified live first: unchanged, flat $0.0008/result, no
+      start fee. **3 new disclosures:** `datalantern/federal-register-search` (2u, flat
+      $0.0005/record + $0.00005 start -- cheaper than us at every volume, FederalRegister.gov
+      metadata search only), `insight.solutions/federal-register-api` (2u, tiered
+      $0.0004->$0.00024 + $0.001 start -- every tier below our floor past ~2-3 rows, same
+      no-API-key scope as us incl. Public Inspection), `pandadad0214/federal-register-monitor`
+      (2u, tiered $0.001->$0.0007 + $0.00005 start -- dearer Free/Bronze, ties Silver, cheaper
+      Gold+, same partial-undercutter shape as `scrapesage`/`hipersoft`/`conserving_celerytop`/
+      `tidyharvest` already named above it). `resourceful_playbook/au-legislation-search` (2u,
+      AMBIGUOUS unit_price -- 2 recurring events, no primary flag) ruled out on **scope**, not
+      price: Australian federal legislation, not the US Federal Register -- the ambiguity never
+      needed resolving. **PRICING DECISION: HOLD $0.0008** -- all 3 new undercutters sit at 2
+      users, far under the 20-user re-price threshold, and the niche already discloses cheaper/
+      free rivals from earlier passes. Shipped README-only build (package 0.1.18 -> 0.1.19, 2
+      builds -- the first push's new paragraph tripped `check-competitor-claims`'s UNDATED check
+      since "re-verified live first" has no ISO date within 40 chars of "verified"; fixed to
+      "re-verified 2026-11-06" and re-pushed, build 0.1.68); live README verified byte-identical
+      (50,209 bytes both sides) via `versions/0.1 sourceFiles`. Guards after: `check-price-
+      superiority` 2632 named-rival prices / 993 cheaper / 0 undisclosed anywhere; `check-charges`
+      27/0/0; `check-registry-fields` 0 drift; `check-own-price-prose` 27/0; `check-competitor-
+      claims --only` 0 stale / 0 undated on this file. Rotation recorded in `state/
+      audit_dates.json` (persisted sweep at `state/audit_data/c2818_fedreg_prices.json`),
+      `audit-due --type competitor_audit` now shows only `sam-gov-opportunities-scraper` DUE.
+      Spend ~$0.01 this cycle (2 builds, ~130 read-only API fetches, no platform runs). No owner
+      email warranted ($0 booked, nothing only they can fix).
+
 - [x] **DONE c2817 (QUALITY slot, 2817 % 3 == 0) -- trimmed `notes/LEARNINGS.md` (TRIM DUE,
       7613 -> 5237 lines), not `state/STATUS.md` as c2816 had claimed.** Preflight:
       `checks-due --all` NONE DUE, `audit-due --all` 1 real item (`federal-register-scraper`

@@ -1,0 +1,448 @@
+[
+ {
+  "handle": "fetchsmith/federal-register-scraper",
+  "title": "Federal Register \u2013 Proposed Rules Scraper & Public Inspection",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result item"
+   }
+  },
+  "desc": "Scrape the US Federal Register from its regulatory data API: rules, proposed rules, notices and presidential documents. 37 flat fields incl. comment-close deadline, EO 12866 significance, RIN and CFR refs. Also reads the Public Inspection desk \u2014 a rule 1-3 days before it publishes. No start fee."
+ },
+ {
+  "handle": "rustic_soybean/regulatory-impact-api",
+  "title": "Federal Register Regulatory Impact API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Regulatory impact result"
+   }
+  },
+  "desc": "Search Federal Register rules, proposed rules, and notices by keyword, agency, and date. Get structured publication details and regulatory impact information to monitor policy changes, assess potential effects on your industry, and support compliance or market research."
+ },
+ {
+  "handle": "malonestar/epa-nonattainment-air-permit-screener",
+  "title": "EPA Nonattainment Air Permit Screener \u2014 NSR/PSD Siting Risk",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0064,
+   "SILVER": 0.0056,
+   "GOLD": 0.0044,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.0064,
+     "SILVER": 0.0056,
+     "GOLD": 0.0044,
+     "PLATINUM": 0.0032,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "EPA nonattainment air-permit screener. Batch point-in-polygon check of coordinates against 11 EPA Clean Air Act NAAQS pollutant standards: returns nonattainment/maintenance status, area name, classification (Marginal-Extreme), Federal Register citation, and NSR/PSD permitting-risk flag per site."
+ },
+ {
+  "handle": "nexgensignal/brazil-cnpj-company-lookup",
+  "title": "Brazil CNPJ Lookup \u2014 Receita Federal Company Data, Bulk",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company_record",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.045,
+   "SILVER": 0.04,
+   "GOLD": 0.0335,
+   "PLATINUM": 0.0335,
+   "DIAMOND": 0.0335
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company_record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "company_record": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.045,
+     "SILVER": 0.04,
+     "GOLD": 0.0335,
+     "PLATINUM": 0.0335,
+     "DIAMOND": 0.0335
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Company record"
+   }
+  },
+  "desc": "Look up Brazilian companies by CNPJ in bulk, or search the Receita Federal register by state, CNAE, municipality or legal nature: status, activities, address, capital, Simples/MEI, tax regime, company partners. No key. Part of NexGen Signal \u2014 data tools and official-source data products"
+ },
+ {
+  "handle": "malonestar/uflpa-entity-list-monitor",
+  "title": "UFLPA Entity List Screener & Delta Tracker \u2014 DHS",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0096,
+   "SILVER": 0.0084,
+   "GOLD": 0.0066,
+   "PLATINUM": 0.0048,
+   "DIAMOND": 0.0036
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.0096,
+     "SILVER": 0.0084,
+     "GOLD": 0.0066,
+     "PLATINUM": 0.0048,
+     "DIAMOND": 0.0036
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "UFLPA screening result"
+   }
+  },
+  "desc": "Screen suppliers against the official DHS UFLPA Entity List \u2014 the forced-labor import ban. Every barred entity by statutory sub-list with aliases, effective dates and source Federal Register notices, plus a delta mode that flags additions since your last run. Keyless and correctness-first."
+ },
+ {
+  "handle": "nexgenwatch/federal-rule-impact-mcp",
+  "title": "Federal Register MCP Server \u2014 Regulatory Changes by Industry",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mcp-tool-call",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): mcp-tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "mcp-tool-call": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   }
+  },
+  "desc": "A Federal Register MCP server that answers 'what regulatory changes affect this industry': search and retrieve final rules, proposed rules and notices by CFR title, agency, keyword and date. For Claude, Cursor and any MCP client. Pay per tool call."
+ },
+ {
+  "handle": "nexgenwatch/federal-award-counterparty-mcp",
+  "title": "Federal Contractors MCP Server \u2014 USAspending Award History",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mcp-tool-call",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): mcp-tool-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "mcp-tool-call": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tool call"
+   }
+  },
+  "desc": "A USAspending MCP server for questions about federal contractors and other award recipients: who won awards from an agency, one organisation's award history, and who that recipient is on the federal register. For Claude, Cursor and any MCP client. Pay per tool call."
+ },
+ {
+  "handle": "nexgendata/faa-airworthiness-directives-nasa-asrs-aviation-safety",
+  "title": "FAA Airworthiness Directives + NASA ASRS Safety API",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "aviation-safety-record",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): aviation-safety-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "aviation-safety-record": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Aviation safety record"
+   }
+  },
+  "desc": "Joined feed of FAA Airworthiness Directives (Federal Register / DRS) and NASA ASRS aviation-safety reports per aircraft make + model. Severity-tagged, Emergency-AD flagged. For aviation insurance underwriters, aircraft buyers/sellers, safety analysts, plaintiff counsel, fleet management."
+ },
+ {
+  "handle": "malonestar/epa-sole-source-aquifer-screener",
+  "title": "EPA Sole Source Aquifer Screener \u2014 SDWA 1424(e) Review",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.0048,
+   "SILVER": 0.0042,
+   "GOLD": 0.0033,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.0048,
+     "SILVER": 0.0042,
+     "GOLD": 0.0033,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "EPA Sole Source Aquifer screener. Batch point-in-polygon check of coordinates against EPA Sole Source Aquifers: returns whether each point is in an SSA, the aquifer name, project-review-area type (recharge vs streamflow source zone), Federal Register citation and EPA region for SDWA 1424(e) review."
+ },
+ {
+  "handle": "malonestar/fws-critical-habitat-screener",
+  "title": "FWS Critical Habitat Screener \u2014 ESA Section 7 Site Check",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.008,
+   "SILVER": 0.007,
+   "GOLD": 0.0055,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.008,
+     "SILVER": 0.007,
+     "GOLD": 0.0055,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Check coordinates against live USFWS Critical Habitat polygons. Per point: in/near designated habitat, species, Final vs Proposed status, Federal Register citation, ESA Section 7 consultation flag. MCP-ready. $0.01 per asset check."
+ },
+ {
+  "handle": "jungle_synthesizer/bravsearch-brak-de-lawyer-register-scraper",
+  "title": "BRAK German Lawyer Register Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Extract attorney profiles \u2014 name, firm, address, bar chamber, and admission date \u2014 from BRAK bravsearch, Germany's official federal register of every admitted Rechtsanwalt/Rechtsanw\u00e4ltin."
+ }
+]
