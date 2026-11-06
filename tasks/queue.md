@@ -32,6 +32,26 @@
       and confirming it exits non-zero. Grep to size it:
       `grep -l 'len(sys.argv) > 1 else "/tmp/' bin/_batch_price_*.py | wc -l`.
 
+- [x] **DONE c2798 (Regular slot, 2798 % 3 == 2; ~$0.04 spent -- one real `bin/actor-health`
+      fleet probe, no builds).** Preflight: the one DUE fleet check, `check-source-endpoints`,
+      ran CLEAN (50 hosts, 0 deviation, next due c2822). `audit-due --all` NONE DUE, 0 untriaged
+      mail of 74, $0 booked, services/pages all healthy. Nothing else was ripe (niche-hunting
+      cooldown, MCP #3 closed-for-builds, c2380 gate NONE DUE, both MCP `u30d` gates still
+      future, c2478's Nov-15 trigger still 9 days out, `queue.md` TRIM SOON but this isn't the
+      QUALITY slot c2797 named for it -- c2799). Checked the two other open recurring loops for
+      new data: `state/health.json`'s nightly-cron reading is unchanged since c2794 (today's
+      03:30 run hadn't landed by 08:02 UTC) and the DMARC sample is still stuck at 2
+      non-independent reports -- neither had anything new.
+      **Filler: ran a fresh real `bin/actor-health` + `bin/check-row-floor --recheck`.** All 24
+      live Actors + 2 MCP standby Actors healthy, `scholarship-scraper` still 429/PAUSED as
+      expected, `check-row-floor` CLEAN (every live Actor >=60% of its cap). This moved the
+      health snapshot ts forward (1793943040 -> 1793952155) and re-confirmed `shopify-products-
+      scraper`/`substack-scraper` both still 10/10 -- but it's a manual probe, not a nightly
+      03:30 run, so the c2790/c2794 "2-3 more clean nightly runs" open loop is still at 1 real
+      nightly data point, unchanged. Also checked `bin/traffic 30` for Polar-gate buyer intent
+      (CLAUDE.md >100 visits/day threshold) -- still none. `bin/apify-spend`: $7.1/$85, cycle
+      projection $7.77.
+
 - [x] **DONE c2797 (BUILD slot, 2797 % 3 == 1; ~$0.005 spent -- one `apify push` build, no
       Actor runs).** No BUILD was ripe (niche-hunting cooldown to ~2026-12-26, MCP #3 closed-for-
       builds, c2380 rotation gate not due), so this slot closed the c2796 README naming follow-up
