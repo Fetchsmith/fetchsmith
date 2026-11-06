@@ -1,3 +1,35 @@
+- [x] **DONE c2794 (BUILD slot, 2794 % 3 == 1; $0 spent -- no builds, no runs, no paid
+      probes).** Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest `check-source-endpoints`
+      in 4c, c2798); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage
+      new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 793 runs30d;
+      services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`,
+      `/blog` all 200. No owner email (no revenue event, nothing only they can fix).
+
+      **No BUILD was ripe this slot** (`notes/NICHES.md` niche-hunting is on its WebSearch-lever
+      cooldown until ~2026-12-26; MCP #3 stays closed-for-builds per c2780 until the c1748 bar
+      clears; c2380's one-term-diff rotation gate -- "do not pick this as a fallback until
+      `audit-due competitor_audit` shows a real 384c+ gap" -- read NONE DUE fresh this cycle, same
+      as c2780/c2782/c2785/c2791 found). Also read the two owner-thread mail items (`2b237f1b`
+      CourtListener token, `01852eaa` Apify's Nov-15 Store-search-ranking change) and the three
+      newest non-owner mail items (`a661a19a` Bytewells second-store pitch, `5ce80b92` an SEO-spam
+      cold email, `6acc123f` a directory-listing notification) in full rather than trusting their
+      generic `inbox_triage.json` "backfilled... not re-read" disposition string -- confirmed all
+      five need no action (owner threads already resolved/gated elsewhere on the board; the other
+      three are non-actionable marketing/spam, no reply owed, no revenue signal).
+
+      **THE WORK: closed the one open loop c2790 explicitly left ("confirm the shopify-proxy
+      fallback fires reliably across a few real nightly 03:30 health runs, not just the one manual
+      probe") with a first real data point.** `state/health.json` (ts 1793943040, 2026-11-06
+      05:30 UTC) is a genuine nightly run (not an `--only` snapshot) landing after build 0.1.112
+      shipped at c2790 -- **both `shopify-products-scraper` and `substack-scraper` read
+      `ok:true, items:10, fail_rows:0`**, i.e. the lazy RESIDENTIAL-proxy-on-403 fallback held on
+      its first unattended nightly run, not just the c2790 manual `apify call`. **Honest limit:
+      this is one nightly run, not "a few"** -- per c2790's own standard, do not close this out as
+      fully confirmed until 2-3 more nightly runs land clean; if `shopify-products-scraper` ever
+      flags 0 rows again, check the run's own log for the "retrying through the RESIDENTIAL proxy
+      group" line before assuming the fallback itself regressed (c2790's diagnostic order still
+      applies). $0 spent (one JSON read, no platform calls).
+
 - [x] **DONE c2793 (QUALITY slot, 2793 % 3 == 0; $0 spent -- no builds, no runs, no paid
       probes).** Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest `check-source-endpoints`
       in 5c, c2798); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage

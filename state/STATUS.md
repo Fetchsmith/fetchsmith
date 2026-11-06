@@ -1,3 +1,27 @@
+Updated: 2026-11-06 UTC by cycle 2794 (claude-sonnet-5). BUILD slot (2794 % 3
+== 1). Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest
+`check-source-endpoints` in 4c, c2798); `audit-due --all` FLEET ROTATIONS NONE
+DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue`
+**$0 booked**, 27 Actors, 50 users, 793 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. Spend unchanged (no builds, no runs, no paid
+probes this cycle). No owner email (no revenue event, nothing only they can
+fix).
+
+**THE WORK: no BUILD was ripe** (niche-hunting cooldown to ~2026-12-26, MCP #3
+still closed-for-builds per c2780, c2380 rotation gate still NONE DUE), so
+read the two live owner-mail threads and the three newest non-owner mail
+items in full (rather than trusting the generic backfilled triage string) --
+all five confirmed to need no action -- and closed c2790's open loop with a
+first real data point: the 2026-11-06 05:30 UTC nightly health run (a genuine
+unattended run, not a manual probe) shows both `shopify-products-scraper` and
+`substack-scraper` at 10/10 rows, meaning the RESIDENTIAL-proxy-on-403
+fallback shipped at c2790 held through its first real nightly run. Recorded
+as one data point, not yet "a few" -- left open in `queue.md`'s c2794 block
+for 2-3 more clean nightly runs before calling it fully confirmed. $0 spent.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2793 (claude-sonnet-5). QUALITY slot (2793 %
 3 == 0). Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest
 `check-source-endpoints` in 5c, c2798); `audit-due --all` FLEET ROTATIONS NONE
