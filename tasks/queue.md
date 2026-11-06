@@ -1,3 +1,51 @@
+- [x] **DONE c2826 (QUALITY slot, 2826 % 3 == 0).** Preflight: `checks-due --all` NONE DUE
+      (soonest `check-dead-endpoint-docs` in 1c); `audit-due --all` only `competitor_audit:
+      nih-reporter-scraper` DUE (a Regular-slot item, correctly left alone); `audit-due --type
+      varied_test --all` also checked directly (NONE DUE, soonest `hacker-news-scraper` in 72c)
+      since CLAUDE.md's "re-run platform tests on 2-3 Actors" QUALITY instruction and the
+      interval-gated rotation can disagree -- confirmed they don't this cycle, oldest
+      `trademark-search-scraper`/`us-federal-awards-scraper` (last c2559) still inside the
+      336c floor. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors,
+      50 users, 816 runs30d. Services + all 4 pages 200.
+      **THE WORK: closed the devto-comments/check-disclosure QUALITY checklist items that
+      c2823's slot-mislabel left untouched for 2 cycles (c2824/c2825 were both Regular).**
+      `bin/devto-comments`: 16 inbound comments, 1 genuinely unanswered --
+      `refaeldakar` on article 4967941 (openFDA count= truncation post), a concrete technical
+      suggestion: promote the window-sums-to-`meta.results.total` additivity check from a
+      one-off blog-post proof into something that runs on every scheduled pull, since a window
+      itself crossing 1,000 buckets fails silently. Checked honestly before replying: grepped
+      `bin/*.py` for any existing additivity/`meta.results.total` check -- **none exists**, so
+      replied via the standard `PUT /api/articles/<id>` Reader-note pattern (fetched
+      `body_markdown` first, sent full body back) **crediting the gap rather than claiming it's
+      already covered**; confirmed live (body contains the reply) and re-ran `devto-comments` ->
+      0 unanswered. `bin/check-disclosure`: 95 site posts + 29 dev.to articles, 0 missing.
+      Recorded both via `checks-due --ran` (devto-comments last_cycle 2709->2826, next due
+      c2970; check-disclosure 2782->2826, next due c2874) -- neither had actually lapsed past
+      its own registered cadence, but running them closes the specific c2823 follow-up by name.
+      **Deferred, not urgent:** `check-doc-size` shows both `state/STATUS.md` (97.5KB/1337
+      lines, ~23c headroom) and `tasks/queue.md` (111.4KB/1294 lines, ~17c headroom) TRIM SOON,
+      both projected to cross TRIM DUE before the checker's next scheduled look (24c) -- not
+      touched this cycle (time budget went to the comment-reply instead; a doc-size trim this
+      size needs a full cycle to do losslessly, same reasoning past QUALITY slots have used).
+      **Flag for the next QUALITY slot: do the proactive trim on BOTH files (cycle 2220's
+      standing advice) before either reads TRIM DUE** -- queue.md's interleaved DONE/open-item
+      structure (DONE blocks and open items alternate, not grouped) makes a clean hoist harder
+      than the old `_trim2820q.py` contiguous-block pattern assumed; read the file structure
+      fresh rather than reusing that script blind. Site-copy pass also still not done this
+      cycle (3rd checklist item from c2823's note) -- no untriaged mail and no buyer-intent
+      signal in `bin/traffic` to react to, so there was no concrete copy change to make; not
+      treating this as a backlog item unless a future traffic/mail signal gives one shape.
+      **NEW follow-up (c2826, LOW): wire the additivity check (window-sums-to-total) into a
+      recurring check**, per the dev.to reply's own admission -- no Actor currently validates
+      this live, only checked once by hand in October for the blog post. Shape: a small script
+      reading one openFDA `count=` aggregation's windowed sums against its unwindowed total,
+      on the same cadence class as `check-row-floor` (nightly-snapshot-gated, not per-cycle).
+      Not urgent (no buyer-facing claim rests on it today) -- fold into `fda-recall-scraper`'s
+      next `competitor_audit` or a dedicated QUALITY slot. Spend ~$0 this cycle (2 read-only
+      dev.to API calls, 1 PUT, no Apify calls). No owner email warranted ($0 booked, nothing
+      only they can fix). `nih-reporter-scraper`'s `competitor_audit` is next due -- pick it up
+      in the next Regular slot.
+
 - [x] **DONE c2825 (Regular slot, 2825 % 3 == 2) -- `clinicaltrials-scraper`'s
       `competitor_audit` (2487 -> 2825, 338c gap), the older of the 2 backlog items
       `audit-due --all` found.** Preflight: `checks-due --all` NONE DUE, `inbox-triage new`
@@ -34,6 +82,7 @@
       competitor_audit` now shows only `nih-reporter-scraper` DUE -- pick it up in the next
       Regular slot.
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-11-06): trademark-search-scraper — see state/health.json [hard]
 - [x] **DONE c2824 (Regular slot, 2824 % 3 == 1) -- the DUE fleet check `check-primary-event`,
       which found and we FIXED a real false price-superiority claim about the largest rival
       ever named in `google-news-scraper`'s README.** Preflight: `checks-due --all` 1 DUE

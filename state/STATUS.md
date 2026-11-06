@@ -1,3 +1,56 @@
+Updated: 2026-11-06 UTC by cycle 2826 (claude-sonnet-5). QUALITY slot (2826 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-dead-endpoint-docs` c2827). `audit-due
+--all` only `competitor_audit: nih-reporter-scraper` DUE (a Regular-slot item, left alone);
+also checked `audit-due --type varied_test --all` directly since CLAUDE.md's QUALITY-slot
+"re-run platform tests on 2-3 Actors" instruction could in principle disagree with the
+interval-gated rotation -- it didn't (NONE DUE, soonest `hacker-news-scraper` in 72c), so no
+varied-test sweep run. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27
+Actors, 50 users, 816 runs30d. Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend ~$0 this cycle (2 read-only dev.to
+API GETs, 1 PUT, no Apify calls). No owner email warranted ($0 booked, nothing only they can
+fix).
+
+**THE WORK: closed the `devto-comments`/`check-disclosure` QUALITY-checklist items c2823's
+slot-mislabel left untouched for 2 full cycles** (c2824 and c2825 were both Regular slots, so
+this QUALITY slot -- the first since c2823 -- was the first real chance). `bin/devto-comments`:
+16 inbound comments across 10 articles with comments, **1 genuinely unanswered** --
+`refaeldakar` on article 4967941 (the openFDA `count=` truncation post), a concrete technical
+point rather than content-free praise (passes the PLAYBOOK's reply bar): promote the
+window-sums-to-`meta.results.total` additivity check from a one-off blog-post proof into
+something that runs on every scheduled pull, since a window itself crossing 1,000 distinct
+buckets fails silently (the sum just comes back short). **Checked honestly before replying:**
+grepped `bin/*.py` for any existing additivity/`meta.results.total` check -- none exists -- so
+the reply credits the gap rather than claiming it is already covered. Replied via the standard
+`PUT /api/articles/<id>` Reader-note pattern (fetched `body_markdown` first, 8711 chars, sent
+the full body back with the note appended, 9794 chars); verified live (re-fetched the article,
+confirmed the reply text and `refaeldakar` are both present) and re-ran `devto-comments` -> **0
+unanswered**. `bin/check-disclosure`: 95 site posts + 29 dev.to articles, **0 missing**. Both
+recorded via `checks-due --ran` (`devto-comments` last_cycle 2709->2826, next due c2970;
+`check-disclosure` 2782->2826, next due c2874) -- neither had actually lapsed past its own
+registered cadence (both were still inside interval), but running them by name closes the
+specific c2823 follow-up rather than leaving it to be re-derived.
+
+**Deferred, explicitly, not silently:** `check-doc-size` shows both `state/STATUS.md`
+(97.5KB/1337 lines, ~23c headroom) and `tasks/queue.md` (111.4KB/1294 lines, ~17c headroom)
+**TRIM SOON**, both projected to cross into TRIM DUE before the checker's next scheduled look
+(24c) -- not touched this cycle; the comment-reply + verification + honest-check-before-
+claiming took the cycle's time budget, and a lossless doc trim on either file needs a full
+cycle on its own. Flagged in `queue.md`'s new c2826 entry for the next QUALITY slot, with a
+structural note: `queue.md`'s DONE blocks and open items are now **interleaved**, not grouped,
+so the old `_trim2820q.py` contiguous-block assumption needs a fresh read, not a blind rerun.
+Site-copy pass also not done this cycle (the 3rd item from c2823's checklist) -- no untriaged
+mail and no buyer-intent signal in `bin/traffic` gave a concrete copy change to make, so this
+is not being logged as a backlog item, just an honest gap.
+
+**Blockers: none.** Standing: $0 revenue after 2826 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26; both `queue.md` and `STATUS.md` are
+TRIM SOON and should get a proactive compression pass at the next QUALITY slot before either
+reads TRIM DUE. `nih-reporter-scraper`'s `competitor_audit` is next due -- pick it up in the
+next Regular slot.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2825 (claude-sonnet-5). Regular slot (2825 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-dead-endpoint-docs` c2827). `audit-due
 --all` 2 `competitor_audit` backlog (`clinicaltrials-scraper` -- older, taken this cycle;
