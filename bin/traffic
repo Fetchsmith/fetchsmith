@@ -174,7 +174,16 @@ OC_NOTBOT="$OC_UA NOT LIKE '%bot%' AND $OC_UA NOT LIKE '%crawl%' AND $OC_UA NOT 
 # measurement window (~cycle 2420): a repeat of this sweep during that window would
 # have been misread as a huge conversion lift.
 OC_SWEEPER="json_extract(payload,'\$.vid') IN (SELECT json_extract(payload,'\$.vid') FROM events WHERE kind='out_click' AND json_extract(payload,'\$.vid') IS NOT NULL GROUP BY json_extract(payload,'\$.vid') HAVING count(*) > 8)"
-OC_VERIFIED="$OC_UA IS NOT NULL AND $OC_NOTBOT AND json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits) AND NOT ($OC_SWEEPER)"
+# Cycle 2785: mirrors PV_UA_ROTATOR (c2644) on the out_click side, closing the gap c2644
+# flagged but deferred for lack of sample ('ip' had 1 out_click row then; now 291). Same
+# blind spot applies here for the same reason: OC_SWEEPER needs >8 hits on ONE vid, but
+# vid = sha256(salt|day|ip|ua), so a UA-rotating scanner gets a fresh vid per click and
+# is invisible to it. Checked the live 291-row sample for same-(ip,ts) bursts with
+# >=3 distinct UAs before shipping: ZERO found, so this is a no-op today, same
+# future-proofing posture as c2644's pageviews version -- verified by diffing full
+# `bin/traffic` output before/after (see queue.md c2785 for the diff command).
+OC_UA_ROTATOR="json_extract(payload,'\$.vid') IN (SELECT json_extract(e1.payload,'\$.vid') FROM events e1 JOIN (SELECT json_extract(payload,'\$.ip') ip, ts FROM events WHERE kind='out_click' AND json_extract(payload,'\$.ip') IS NOT NULL GROUP BY ip, ts HAVING count(DISTINCT json_extract(payload,'\$.ua')) >= 3) b ON json_extract(e1.payload,'\$.ip') = b.ip AND e1.ts = b.ts WHERE e1.kind='out_click')"
+OC_VERIFIED="$OC_UA IS NOT NULL AND $OC_NOTBOT AND json_extract(payload,'\$.vid') IN (SELECT vid FROM asset_hits) AND NOT ($OC_SWEEPER) AND NOT ($OC_UA_ROTATOR)"
 
 echo "== outbound clicks to Apify (events kind=out_click, added cycle 1509 -- /go/<slug>"
 echo "   redirect+log; replaces blog/tool CTAs that used to link straight to apify.com"

@@ -1,3 +1,14 @@
+- [x] **DONE c2785 (BUILD slot, 2785 % 3 == 1; $0 spent).** Preflight: `checks-due --all`
+      had exactly 1 DUE, `check-root-readme` -- ran **CLEAN: 0/27 Actors with drift**; recorded,
+      next due c3457. `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types.
+      `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` **$0 booked**, 27 Actors, 50 users,
+      797 runs30d (`ext_bad30d` 3, unchanged). Services + `/`, `/pricing`, `/tools`, `/blog` all
+      200. No owner email (no revenue event, nothing only they can fix).
+      **No BUILD was ripe** (both MCP gates future, c2380 rotation not due, niche-hunting on
+      cooldown to ~2026-12-26), so shipped the c2644 out_click `OC_UA_ROTATOR` follow-up instead
+      (full record below, item now closed) -- a free, scoped, verified-no-op fix rather than
+      forcing a build or idling the slot.
+
 - [x] **DONE c2784 (QUALITY slot, 2784 % 3 == 0; $0 spent -- no builds, no runs, no paid
       probes).** Preflight: `checks-due --all` had exactly 1 DUE, `check-unit-matched-price`
       (predicted by c2783) -- **ran CLEAN: 23 Actors in scope, 2553 live Actor records fetched,
@@ -328,18 +339,13 @@
       hashing the /24 instead of the /32 (and note that widening the hash input also widens the
       UA-rotator blind spot above, so the two must be re-tuned together).
 
-- [ ] **NEW follow-up (c2644, LOW, blocked on sample size) -- mirror `PV_UA_ROTATOR` on the
-      out_click side once `ip` data exists there.** The same UA-rotation blind spot applies to
-      `OC_SWEEPER` for exactly the same reason (it groups by `$.vid`, and a UA-rotating scanner
-      gets one vid per click), so `OC_VERIFIED` has the identical single-point-of-failure on its
-      `asset_hits` half. NOT shipped this cycle because **only 1 `out_click` row carries an `ip`
-      key so far** (the 02:05:02 OAI-SearchBot row, ip `74.7.228.253`) -- that is not a sample,
-      and c2642's own standing guidance is to write the clause only once one exists. When
-      revisiting: `sqlite3 data/fetchsmith.db "SELECT COUNT(*) FROM events WHERE kind LIKE
-      'out_click%' AND payload LIKE '%\"ip\"%'"`; with a few dozen rows, port the same
-      one-second / >=3-distinct-UA test over `json_extract(payload,'$.ip')` and
-      `json_extract(payload,'$.ua')`, and verify it is a no-op on ship the same way c2644 did
-      (diff full `bin/traffic` output against `git show HEAD:bin/traffic`).
+- [x] **DONE c2785 (BUILD slot, no build ripe -- fell back to this) -- mirrored `PV_UA_ROTATOR`
+      on the out_click side as `OC_UA_ROTATOR` in `bin/traffic`.** Sample had grown to **291**
+      `out_click` rows carrying `ip` (was 1 at c2644); a live same-`(ip,ts)`/`>=3-distinct-UA`
+      query found **zero** bursts, so this ships as a no-op today, same future-proofing posture
+      as c2644's pageviews version. **Verified no-op, not just claimed:** `bin/traffic 30` output
+      diffed byte-identical before/after the edit; `bash -n bin/traffic` clean. Folded into
+      `OC_VERIFIED` alongside `OC_SWEEPER`. Committed. No owner email -- no revenue event.
 
 - [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
       `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not

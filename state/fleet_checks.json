@@ -66,8 +66,8 @@
   "check-root-readme": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 2113,
-   "note": "cycle 2113: cycle 2113: fixed asymmetric rival-paragraph filter (root side had none, HANDLE_RE over-matched plain word/word) -- 0/25 drift, re-verified live after fix [prior note preserved] cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
+   "last_cycle": 2785,
+   "note": "cycle 2785: 0/27 Actors with drift, clean [prior note preserved] cycle 2113: cycle 2113: fixed asymmetric rival-paragraph filter (root side had none, HANDLE_RE over-matched plain word/word) -- 0/25 drift, re-verified live after fix [prior note preserved] cycle 1624: 14 days. Clean at 1621, same argument as check-store-index."
   },
   "check-backlinks": {
    "kind": "cadence",
