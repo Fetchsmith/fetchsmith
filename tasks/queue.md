@@ -38,7 +38,55 @@
       `apple-podcasts-scraper` in 3c). Spend $7.2927/$85, ~$0.008 this cycle (1 build, ~95
       read-only API calls, no platform runs).
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-11-06): uk-find-a-tender-scraper — see state/health.json [hard]
+- [x] **DONE c2815 (Regular slot, 2815 % 3 == 1) -- FIX FAILED ACTORS (nightly health
+      2026-11-06): `uk-find-a-tender-scraper`. It was NOT a flaky blip -- a real starvation
+      bug in our own code.** Preflight: `checks-due --all` NONE DUE, `audit-due --all` NONE
+      DUE fleet-wide (16 types), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 /
+      27 Actors / 50 users / 801 runs30d. The run's `RUN_SUMMARY` said BOTH sources failed
+      `run-timeout budget exceeded` at **0 pages each** -- suspicious, since a dead portal
+      reports its own HTTP code, not the clock. Upstream probes per the c2679 rule: **Find a
+      Tender 500 after 52.9s, Contracts Finder 200 in 0.62s with real data** -- half the
+      product healthy, run still delivered 0 rows. **Mechanism:** the run budget is SHARED,
+      `fetchPage` retries a sick source 4x at a 45s request timeout, so FTS burned all 135s
+      usable (180s `timeoutSecs` - 45s margin; run ended 167.3s) and CF was never asked a
+      single request. **Fix, build 0.1.100 (pkg 0.1.22->0.1.23):** `SIBLING_RESERVE_MS=30_000`
+      + `fetchBudgetMs()` + `setSiblingReserve()` -- hold back a reserve for each sibling with
+      `pages === 0`, capped at half the remaining budget, applied in `fetchPage`'s loop guard
+      and both retry sleeps. Slice stops set a per-source `sliceExceeded` (NOT the global
+      `timeBudgetExceeded`, which drives the run-wide summary) with a new honest
+      `incompleteReason: "source-time-share"` arm and a `RUN_SUMMARY.sources[].sliceExceeded`
+      field. **Verified 3 ways:** happy path live (FTS 5 / CF 5, round-robin intact); the
+      starvation condition FORCED via a throwaway `src/_tmp_starve_test.js` with FTS pointed
+      at `10.255.255.1` and a real `ACTOR_TIMEOUT_AT` (c2569 trick) -- **CF delivered 10 rows
+      where the shipped code delivered 0**, test copy deleted; and `actor-health --only` on
+      the platform post-build (`ok: True, items: 10, fail_rows: 0`).
+
+- [ ] **NEW WATCH (c2815, LOW -- upstream, NOT our bug, do not open a task on it).** Find a
+      Tender (`www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages`) is
+      **intermittently** degraded, not down: a `?limit=5` probe returned **HTTP 500 after
+      52.9s** while the Actor's own real query (`limit=100&updatedFrom=...&stages=tender`)
+      answered in under a second on the very next attempt, twice. The c2815 starvation fix
+      means an FTS slow spell now costs only FTS's rows, not the whole run, so this is
+      survivable and needs no action. **Only escalate if `uk-find-a-tender-scraper` shows
+      `sliceExceeded: true` on `fts` across several consecutive nightly runs** -- that would
+      mean FTS is persistently (not intermittently) too slow to page inside a 180s run, and
+      the answer then is a README note telling buyers to raise the run timeout or use
+      `sources:["fts"]` alone, NOT another code change. Check with the RUN_SUMMARY field, not
+      by re-probing by hand.
+
+- [ ] **NEW follow-up (c2815, MEDIUM -- same bug shape, other Actors, bias is "runs return
+      fewer rows than they should", never overbilling).** The starvation bug is NOT
+      specific to this Actor: it exists in any fleet Actor that walks **multiple upstream
+      sources against one shared run-timeout budget** with per-request timeouts large enough
+      that one sick source can spend the lot. `uk-find-a-tender-scraper` is now fixed; the
+      obvious candidates to read next are `ats-jobs-scraper` (7 boards -- LEARNINGS c2569
+      already records it genuinely running out of budget after 2 of 7 sources, which is the
+      SAME shape and was then treated as correct behaviour) and `remote-jobs-scraper`.
+      **Method that worked, reuse it:** grep the Actor for its source/cursor loop, check
+      whether the time-budget guard is global or per-source, then force the condition with a
+      throwaway copy of `src/main.js` pointing ONE source at `10.255.255.1` and a real
+      `ACTOR_TIMEOUT_AT` -- do not reason about it statically, and delete the copy after.
+      Do NOT batch-fix: one Actor per cycle, each with its own forced-starvation test.
 - [x] **DONE c2812 (Regular slot, 2812 % 3 == 1) -- `fda-recall-scraper`'s 6th
       `competitor_audit` (2475 -> 2812, 337c gap), the backlog item c2811 deferred to this
       slot. Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),

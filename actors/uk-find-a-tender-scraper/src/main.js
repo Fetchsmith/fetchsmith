@@ -34,6 +34,27 @@ function remainingMs() { return timeoutAt == null ? Infinity : timeoutAt - Date.
 function timeBudgetOk() { return remainingMs() > 0; }
 let timeBudgetExceeded = false;
 
+// Cycle 2815: the run budget above is shared by every selected portal, and `fetchPage` below
+// retries a dead one four times at a 45s request timeout each. On a default 180s run that is
+// the WHOLE budget, so a single unreachable portal could starve a perfectly healthy sibling
+// that had not been fetched even once -- measured live: Find a Tender was answering 500 after
+// ~53s, FTS burned all 180s on its own retries, and Contracts Finder (200 in 0.6s, data
+// sitting right there) was never asked, turning a half-good run into a 0-row run. So hold back
+// a reserve for each sibling that has not yet fetched a single page, and stop the current
+// source once it has spent down to that reserve. Deliberately scoped to NOT-YET-TRIED siblings
+// only: once every source has a page in hand, round-robin already shares the feed fairly and
+// the last source left paging should get the full remainder rather than a permanent handicap.
+const SIBLING_RESERVE_MS = 30_000;
+let siblingReserveMs = 0;
+function fetchBudgetMs() { return remainingMs() - siblingReserveMs; }
+function setSiblingReserve(cursors, current) {
+    const untried = cursors.filter((c) => c !== current && !c.done && !c.failed && c.pages === 0).length;
+    // Never let the reserve claim more than half of what is actually left: on a short run (or a
+    // long first source) a big raw reserve would starve the CURRENT source instead, which is the
+    // same bug pointed the other way.
+    siblingReserveMs = Math.min(untried * SIBLING_RESERVE_MS, Math.max(remainingMs(), 0) / 2);
+}
+
 function uniqStrings(arr) {
     return Array.from(new Set((arr ?? []).filter(Boolean)));
 }
@@ -785,9 +806,19 @@ const RATE_WINDOW_MS = 60_000;
 async function fetchPage(pageUrl, source) {
     const { requestTimes, rateMax } = source;
     for (let attempt = 1; attempt <= 4; attempt += 1) {
-        if (!timeBudgetOk()) {
-            timeBudgetExceeded = true;
-            source.lastError = 'run-timeout budget exceeded';
+        if (fetchBudgetMs() <= 0) {
+            // Two different stops wear the same check. Only the first is a real run-wide
+            // timeout; the second means this source spent its share and the clock still has
+            // room for a sibling that has not been tried yet, so the global flag must stay
+            // OFF or that sibling's own stop would be mislabelled (and the run summary would
+            // blame the clock for a portal outage).
+            if (!timeBudgetOk()) {
+                timeBudgetExceeded = true;
+                source.lastError = 'run-timeout budget exceeded';
+            } else {
+                source.sliceExceeded = true;
+                source.lastError = 'stopped early to leave run time for the other portal';
+            }
             return null;
         }
         const now = Date.now();
@@ -797,9 +828,14 @@ async function fetchPage(pageUrl, source) {
             // Unlike the retry sleeps below, this one must NOT be shortened to fit the budget:
             // waking early here would fire a request that breaks the portal's published rate
             // limit. If the wait no longer fits, stop this source cleanly instead.
-            if (waitMs > remainingMs()) {
-                timeBudgetExceeded = true;
-                source.lastError = 'run-timeout budget exceeded';
+            if (waitMs > fetchBudgetMs()) {
+                if (!timeBudgetOk()) {
+                    timeBudgetExceeded = true;
+                    source.lastError = 'run-timeout budget exceeded';
+                } else {
+                    source.sliceExceeded = true;
+                    source.lastError = 'stopped early to leave run time for the other portal';
+                }
                 return null;
             }
             log.info(`Self-throttling ${source.label} to stay under its rate limit: waiting ${Math.ceil(waitMs / 1000)}s`);
@@ -822,7 +858,7 @@ async function fetchPage(pageUrl, source) {
             // a status code — without this catch it crashes the whole run instead of retrying like
             // a 429/5xx does, even though the same backoff is exactly as valid here.
             const waitS = attempt * 10;
-            const waitMs = Math.min(waitS * 1000, Math.max(remainingMs(), 0));
+            const waitMs = Math.min(waitS * 1000, Math.max(fetchBudgetMs(), 0));
             log.warning(`${source.label} request failed (${err.message}); retrying in ${Math.round(waitMs / 1000)}s (${attempt}/4).`);
             await sleep(waitMs);
             continue;
@@ -834,7 +870,7 @@ async function fetchPage(pageUrl, source) {
             // let it sleep past this run's own timeout. Same exposure closed on every other Actor
             // in the timeout-guard rollout.
             const retryAfter = Number(resp.headers['retry-after']) || 120;
-            const waitMs = Math.min((retryAfter + 2) * 1000, Math.max(remainingMs(), 0));
+            const waitMs = Math.min((retryAfter + 2) * 1000, Math.max(fetchBudgetMs(), 0));
             log.warning(`Rate-limited by ${source.label} (429). Waiting ${Math.round(waitMs / 1000)}s before retry ${attempt}/4.`);
             await sleep(waitMs);
             continue;
@@ -975,7 +1011,18 @@ async function fillBuffer(c) {
             c.url = null;
             // A clock-caused stop must not be reported as the PORTAL failing: the advice a buyer
             // can act on is "raise the run timeout / narrow the query", not "the portal is down".
-            if (timeBudgetExceeded) {
+            if (c.source.sliceExceeded) {
+                // Not the run clock and not (necessarily) a dead portal: this source was cut
+                // off deliberately so an untouched sibling could still be fetched. Say so, or a
+                // buyer reads "ran out of time" and raises a timeout that was never the limit.
+                markIncomplete(
+                    'source-time-share',
+                    `${c.source.label} was slow or unreachable and was stopped after ${c.pages} page(s) so the other `
+                    + `portal could still be searched (${c.source.lastError ?? 'unknown error'}); its notices are missing `
+                    + `from this run, and "0 from ${c.source.label}" here does NOT mean it had none — re-run with `
+                    + `sources:["${c.key}"] alone, or raise the run timeout, to give it the whole budget`,
+                );
+            } else if (timeBudgetExceeded) {
                 markIncomplete(
                     'time-budget',
                     `the run ran out of time after ${c.pages} page(s) with ${c.source.label} still paging; `
@@ -1019,7 +1066,9 @@ while (keepGoing && cursors.some((c) => !c.done) && (seeding ? watchSeen.size < 
     for (const c of cursors) {
         if (c.done || !keepGoing) continue;
         if (seeding ? watchSeen.size >= SEED_CAP : pushed >= maxResults) continue;
-        if (!c.buffer.length) await fillBuffer(c);
+        // Recomputed per call, not once: as soon as a sibling lands its first page it stops
+        // being "untried" and the reserve shrinks to 0, handing the remainder back.
+        if (!c.buffer.length) { setSiblingReserve(cursors, c); await fillBuffer(c); siblingReserveMs = 0; }
         if (c.done || !c.buffer.length) continue;
 
         const release = c.buffer.shift();
@@ -1309,6 +1358,10 @@ const runSummary = {
         // `delivered: 0` means "unknown", not "this portal had nothing".
         exhausted: c.exhausted,
         failed: c.failed,
+        // TRUE when this source was cut off to protect a sibling's share of the run budget
+        // (cycle 2815), which is a different triage story from a portal that genuinely died:
+        // the data is probably still there, this run just did not have time to reach it.
+        sliceExceeded: c.source.sliceExceeded === true,
         lastError: c.source.lastError ?? null,
     }])),
     sourcesRequested: sources,
