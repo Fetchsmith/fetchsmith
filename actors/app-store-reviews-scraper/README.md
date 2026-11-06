@@ -662,6 +662,80 @@ publish call trying to separate those three tiers again. `apify-admin publish` +
 both re-verified clean against this live record; `registry.json`'s `apify_price` now reads
 `{shape: tiered, entry: 0.0001, floor: 0.00007}`.
 
+**Seventh full-tail resweep, verified live 2026-11-06 ~03:30 UTC (cycle 2788, 672 cycles / 14 days
+after the sixth).** 2,137 distinct listings seen, **385 title-match** this niche (up from 308 at
+2026-10-23 — still growing, ~25% in 14 days), 136 already named here, **277 unnamed**. Live-priced
+**all 230 unnamed listings at 2+ users** in one batch (0 unresolvable, 3 ambiguous, all 3 resolved
+by hand below). Our own side re-verified live and **unchanged**: tiered $0.0001 Free / $0.00009
+Bronze / $0.00008 Silver / $0.00007 Gold+ per review, no start fee, in force since 2026-10-16.
+
+**Six listings undercut us at every account tier, from the first review, with no fee to amortize:**
+
+- `forgedata/app-store-reviews-scraper` — flat **$0.00001/review** at every tier (plus a trivial
+  $0.00005 run-start fee that pays for itself before the first review). This is **the new floor of
+  the niche**: 10x under our Free rate, 7x under our Gold+ rate, and *half* the $0.00002 that
+  `apivault_labs` set in the 2026-10-23 block above. Apple-App-Store-only, so squarely in scope.
+  Created 2026-10-28, repriced twice since (last 2026-11-02); 2 users, 26 runs.
+- `sweet_stickball/app-store-reviews-scraper` — $0.00007 Free → $0.000042 Gold+, **30–40% under us
+  at every rung**, no fee. Created 2026-10-21 and priced 2026-10-22, i.e. **a genuine miss by the
+  sixth resweep** (which ran 2026-10-23) rather than a new entrant. 2 users, 51 runs.
+- `v0iddo/app-store-reviews-tracker` — $0.00009 Free → $0.000063 Gold+, a flat **10% under us at
+  every rung**, no fee. The one to actually watch: **231 runs**, far more traction than any other
+  listing in this cohort. Created 2026-06-02 but repriced four times since the sixth resweep (last
+  2026-11-01), so it undercuts us only as of that reprice.
+- `zkill3r/app-store-reviews-scraper` — $0.00009 Free → $0.00006 Gold+, 10–14% under, no fee.
+  New entrant 2026-10-28; 2 users, 18 runs.
+- `rel8ble/app-reviews-scraper` — flat **$0.00004/review**, 60% under our Free rate (crossover is
+  under 2 reviews once its $0.00005 fee is counted). Google Play + App Store in one dataset.
+  Created 2026-09-24 but **repriced 2026-11-04**, after the sixth resweep. 4 users, 51 runs.
+- `ctriolab/appstore-scraper` — $0.00008 Free → $0.00006 Gold+; with its $0.00005 fee it turns
+  cheaper than us past 3 reviews (Free) to 6 reviews (Gold+). Repriced 2026-10-28; 3 users, 85 runs.
+
+**Three more undercut us only on part of the ladder**, and we are the cheaper option on the rest —
+stated per-tier because an unqualified "they are cheaper" would be false for most of our buyers:
+`green_trousers/app-store-reviews` and `runix/apple-app-store-reviews-feed` both sit at a flat
+$0.00008 (under us on Free/Bronze, tied at Silver, **dearer than our $0.00007 at Gold+**), and
+`locaihost/app-store-reviews` runs the mirror shape ($0.0001 Free/Bronze = parity, then $0.000075
+Silver / $0.000055 Gold+, so it wins only above Silver).
+
+**One apparent undercutter is false, and the fee arithmetic is the whole story.**
+`rowfeed/app-reviews-scraper` advertises $0.00006/review — 40% under our Free rate — but charges a
+**$0.006 run-start fee**, which is 60 reviews at our Free rate. It only turns cheaper than us past
+**151 reviews** on Free, 201 on Bronze, 301 on Silver and **601 on Gold+**; below those volumes we
+are cheaper. Its own description concedes the amortized figure ("about $0.10 per 1,000 reviews"),
+which is parity with our Free rate, not an undercut. This is the same shape as `hyperbach` in the
+2026-10-23 block, and the same tooling gap: `rowfeed`'s start event is not flagged
+`isOneTimeEvent`, so an automated per-row comparison reads it as a plain across-the-board
+undercutter and silently drops the fee. Every per-run-fee listing in this niche still has to be
+resolved by hand.
+
+**Three listings are on Apify's FREE model with no pricing record at all** — `$0` per review to the
+buyer, the most aggressive price here by definition: `tomstudio/app-store-reviews-scraper`,
+`intelscrape/app-store-reviews-scraper` and `scraper-forge/app-store-play-store-reviews`. All three
+have **zero charge events**, i.e. they are unmonetized listings where the buyer pays Apify platform
+usage directly rather than the developer a per-review rate, so the comparison is not like-for-like;
+all three are also at 2 users and none carries a future-dated price record that would turn it paid.
+Named anyway rather than dropped, because "no pricing record" is exactly the empty-looking shape
+that hides the cheapest listing in a niche.
+
+**The three ambiguous listings all resolve to NOT undercutters**, and all three are premium
+report-style products rather than reviews datasets: `tanlabs/app-store-review-insights`
+($0.0003/review + $0.02/app-report), `psgameplay121/app-review-insights` ($0.0002/review +
+$0.02/app-report) and `innolabs/app-reviews-scraper` ($0.0003 → $0.00015/review plus $0.001 →
+$0.0005/app). Each has two recurring events with neither flagged primary, which is why an automated
+read calls them ambiguous; read by hand, the cheapest per-review rate among them ($0.00015 at Gold+)
+is still **more than twice** our Gold+ rate. Scope-excluded this pass:
+`thequietstack/shopify-app-store-reviews` (Shopify App Store merchant reviews, a different source
+from Apple's App Store, same exclusion applied to the other Shopify listings named above).
+
+**We are not cutting price in response to this, and the reason is the measurement, not inertia.**
+Across seven resweeps this niche has produced a continuous stream of new listings priced at or below
+the current floor — the floor has gone $0.00005 → $0.00002 → $0.00001 in three audits — while every
+one of this pass's undercutters sits at 2–4 users, and the single highest-traction one
+(`v0iddo`, 231 runs) undercuts by only 10%. Matching a floor that halves every fortnight is a race
+to zero against listings with no track record; our tiered ladder already takes every paying tier
+below the old flat rate. Read every figure in this README against the timestamp on its own block.
+
 ## Never silently returns an empty result
 Apple's public review feed is full of holes. For one app in one storefront, page 1 can be empty while pages 2 and 7 return a full 50 reviews each; an app can be completely empty under `mostRecent` and have hundreds under `mostHelpful`; and coverage differs per storefront. Most scrapers stop at the first empty page and hand you an empty dataset with a green "succeeded" run. This one:
 

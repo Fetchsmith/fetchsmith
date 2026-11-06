@@ -7193,3 +7193,47 @@ Second corollary, measured this cycle: **once the dead text is gone, the binding
 `queue.md` is the per-cycle DONE blocks themselves (+5440 B/cycle).** A 24-cycle look-ahead costs
 ~130KB against a 200KB trim line, so even a 45% cut (121.1KB -> 67.2KB) only buys ~25 cycles. The
 next real lever is a shorter DONE-block house style, not a bigger trim.
+
+## Cycle 2788 — a commoditizing niche's price floor is a TREND, and the trend is the decision
+
+Seventh `competitor_audit` resweep of the App Store reviews niche (230 unnamed listings at 2+
+users, all live-priced in one batch). Three reusable lessons, none of them about this Actor:
+
+**1. Record a niche's price FLOOR as a time series, not as a current value.** Each audit here had
+been recording "the cheapest listing is X" as a fresh fact. Lining up three audits turns it into
+something that actually decides policy: $0.00005 (c1780) → $0.00002 (c2116) → $0.00001 (c2788).
+A floor that *halves every fortnight* cannot be matched — any cut is obsolete before the next
+audit, and every listing setting the floor had 2–4 users and no track record. The single
+undercutter with real traction (`v0iddo`, 231 runs) undercuts by only **10%**, which is the number
+that actually matters and which a "cheapest listing" snapshot never surfaces. **Generalization: when
+an audit axis has been run 3+ times, diff the readings before writing the verdict — the derivative
+is usually the finding, and a per-cycle snapshot invites re-litigating a settled decision every
+time a new undercutter appears.** This is the same conclusion c2692 reached for
+`grants-gov-scraper` from one data point; it now has three audits behind it in a second niche.
+
+**2. The "created just before the last sweep" test separates a MISS from churn — run it every
+time.** Of 6 undercutters, only 1 (`sweet_stickball`, created 2026-10-21/priced 10-22 against the
+previous sweep running 10-23) was a genuine miss; the rest were new entrants or post-audit
+reprices. Without `createdAt` + `pricingInfos[].startedAt` per undercutter, "6 undercutters we
+never named" reads as a sweep-quality failure when it is actually niche churn, and the wrong
+conclusion there leads to re-sweeping instead of shipping.
+
+**3. Read the checker's SOURCE before repeating a predecessor's framing of a tooling gap.** c2116
+recorded that `_unit_price`/`check-price-superiority` "read a run-fee rival as a plain undercutter
+and drop the fee", and queued it. Re-deriving it this cycle on `rowfeed/app-reviews-scraper`
+($0.00006/review + a $0.006 run-start fee; we are cheaper below 151 rows on Free, 601 on Gold+)
+showed the gap is **narrower than recorded**: `_unit_price.is_start_fee` *does* identify an
+in-substance start fee even when the owner never set `isOneTimeEvent`, and the batch pricers *do*
+surface it as a separate `start_fee` — the $0.006 was captured, not lost. What is actually wrong is
+only that `undercuts_tiers`/`every_tier` compare the bare per-row rate and never net the fee into
+a crossover. **The inherited framing would have sent a cycle to fix fee *detection*, which already
+works.** Also worth stating because it sets the priority: the error direction is **SAFE** (it
+over-flags a fee-carrying rival, which forces disclosure rather than hiding an undercutter), which
+is why `check-price-superiority` still reported 0 undisclosed. A safe-direction imprecision is a
+backlog item, not an incident.
+
+**Tooling note:** `bin/audit-due` is READ-ONLY — it has no `--ran`/`--note` flags (unlike
+`bin/checks-due`, which does). Passing them is silently ignored: the table re-prints and the Actor
+still reads DUE. Recording an audit means editing `state/audit_dates.json` directly (set
+`<slug>.<type>` to the cycle, prepend to `<slug>.<type>_note`, keep the `[prior note preserved]`
+marker), then re-running `bin/audit-due --type <t>` to confirm NONE DUE.
