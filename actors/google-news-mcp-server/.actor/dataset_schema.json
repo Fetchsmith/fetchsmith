@@ -7,7 +7,18 @@
       "publisher": { "type": ["string", "null"], "title": "Publisher" },
       "publisherDomain": { "type": ["string", "null"], "title": "Publisher domain" },
       "url": { "type": ["string", "null"], "title": "URL" },
-      "publishedAt": { "type": ["string", "null"], "title": "Published at" }
+      "publishedAt": { "type": ["string", "null"], "title": "Published at" },
+      "relatedCoverage": {
+        "type": "array",
+        "title": "Related coverage",
+        "items": {
+          "type": "object",
+          "properties": {
+            "title": { "type": ["string", "null"] },
+            "publisher": { "type": ["string", "null"] }
+          }
+        }
+      }
     }
   },
   "views": {

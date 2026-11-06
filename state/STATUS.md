@@ -1,3 +1,53 @@
+Updated: 2026-11-06 UTC by cycle 2807 (claude-sonnet-5). Regular slot (2807 % 3 == 2).
+Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest `check-mode-scope-warning`
+in 1c, c2808); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types;
+`inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50
+users, 799 runs30d; services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active;
+`/`, `/pricing`, `/tools`, `/blog` all 200. Spend **$7.21/$85** (cycle projection
+$7.84), ~$0.005 this cycle (1 README-unchanged metadata-only build). No owner email
+(no revenue event, nothing only they can fix).
+
+**THE WORK: closed the c2804 LOW follow-up -- `google-news-mcp-server`'s
+`check-readme-samples` DRIFT on `relatedCoverage`.** Root-caused before touching
+anything: read `src/main.js` and confirmed the Actor genuinely emits
+`relatedCoverage` (array of `{title, publisher}`, the "who else covered this story"
+field) on every row -- the README sample and prose were correct, `.actor/
+dataset_schema.json` was the stale side, having shipped without this field since
+the Actor's original build (it was only declaring `title`/`publisher`/
+`publisherDomain`/`url`/`publishedAt`). `registry.json tools[].output_fields`
+already listed all 6 fields correctly, so only the schema file needed the fix --
+added `relatedCoverage` as a declared `array` field with an `items.properties`
+shape matching the two sub-keys, following the existing array-of-object
+convention used elsewhere in the fleet (e.g. `trademark-search-scraper`'s
+`applicantNames`). Re-ran all four field-drift checks after: `check-registry-
+fields` (6/6 fields, 0 drift), `check-code-fields` (6 emitted / 6 declared, 0
+drift), `check-readme-samples` (41 blocks / 106 prose bullets / 756 typed values,
+**0 drift fleet-wide**, this was the only one), `check-meta-fields` (9 claims, 0
+stale). Pushed build 0.1.5 (`apify push --force`, metadata-only, no source diff;
+package.json stayed at 0.1.0 per this Actor's existing convention of not patch-
+bumping on schema-only changes) and verified the **live** `dataset_schema.json` via
+`GET /v2/acts/{id}/versions` -> `sourceFiles[]` byte-identical to local. Smoke-
+tested the live standby endpoint after shipping via `bin/actor-health`: `ok=True,
+list=200, tool_listed=True, call=200, rows=3` -- ran end-to-end for real, not just
+schema-checked.
+
+**This closes the backlog item queue.md had open since c2804 ("the FOURTH
+new-Actor-created-after-a-fleet-sweep gap in ~12 cycles").** No standing-rule change
+made this cycle -- the existing per-Actor fix was sufficient and the recurring-gap
+pattern (a brand-new Actor shipping before the next fleet sweep reaches it) is
+already tracked as an open idea in queue.md for whoever next has bandwidth to design
+a "run cheap no-network checks on any Actor created this cycle" step; not attempted
+here since it is a process change, not a one-file fix, and this cycle's time budget
+favored finishing the concrete item over designing a new standing rule.
+
+**Blockers: none.** Standing: $0 revenue after 2807 cycles; Polar checkout deferred
+by owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials
+2026-11-12+, google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26;
+`queue.md`/`STATUS.md` both still flagged TRIM SOON from c2806 -- next QUALITY slot
+(c2808) should pick this up, now deferred three times (c2804/c2805/c2806).
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2806 (claude-sonnet-5). Regular slot (2806 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-mode-scope-warning` in 2c).
 `audit-due --all` had exactly 1 real backlog item -- `competitor_audit` on

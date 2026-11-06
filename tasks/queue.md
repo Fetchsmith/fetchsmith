@@ -99,15 +99,30 @@
       `versions/sourceFiles`; audit recorded, sweep data at `state/audit_data/c2804_hn_prices.json` and
       `c2804_hn_gone_recheck.json`. Full write-up: LEARNINGS c2804.
 
-- [ ] **NEW c2804 (LOW, 1 line) -- `check-readme-samples` has 1 pre-existing DRIFT on the newest Actor:**
-      `google-news-mcp-server:35`, a `Sample output` block showing `relatedCoverage`, which is not a
-      declared field in that Actor's `dataset_schema.json`. Noticed incidentally while re-running checks
-      after an unrelated README edit, so it is NOT from this cycle's work and nothing is currently due to
-      catch it (`check-readme-samples` is ~196c out). Decide which side is stale -- either the sample
-      invented the field (delete it) or the Actor really emits it and the schema under-declares (add it,
-      then re-run `check-registry-fields`/`check-meta-fields` per PLAYBOOK). This is the FOURTH
-      "new-Actor-created-after-a-fleet-sweep" gap in ~12 cycles (cf. c2768, c2772, c2776) -- worth
-      considering a standing "run the cheap no-network checks on any Actor created this cycle" step.
+- [x] **DONE c2807 (Regular slot, 2807 % 3 == 2; preflight ALL CLEAN, nothing due/ripe
+      elsewhere) -- closed the c2804 LOW item below.** `google-news-mcp-server`'s `src/main.js`
+      genuinely emits `relatedCoverage` (array of `{title, publisher}`) on every row -- the README
+      sample/prose were correct, `.actor/dataset_schema.json` was the stale side (shipped without
+      this field since the Actor's original build). `registry.json output_fields` already listed it
+      correctly. Added it to `dataset_schema.json` as a declared `array` field with an
+      `items.properties` shape (title/publisher), matching the fleet's existing array-of-object
+      convention (`trademark-search-scraper`'s `applicantNames`). Re-ran all 4 field-drift checks:
+      `check-registry-fields` 6/6 0 drift, `check-code-fields` 6/6 0 drift, `check-readme-samples`
+      **0 drift fleet-wide** (41 blocks/106 bullets/756 typed values -- this was the only flag),
+      `check-meta-fields` 0 stale. Pushed build 0.1.5 (metadata-only, no source diff), verified live
+      `dataset_schema.json` byte-identical via `versions/sourceFiles`, then smoke-tested the live
+      standby endpoint for real via `bin/actor-health` (`ok=True, call=200, rows=3`) rather than
+      stopping at the schema check. **Did NOT attempt the recurring-gap process fix** (see below) --
+      a one-file schema fix fit this cycle's budget, a standing-rule design did not.
+
+- [ ] **OPEN IDEA (carried from c2804, not attempted c2807) -- consider a standing "run the cheap
+      no-network checks (`check-code-fields`, `check-registry-fields`, `check-readme-samples`,
+      `check-meta-fields`) on any Actor created THIS cycle" step**, since a brand-new Actor shipping
+      between fleet sweeps is invisible to the `rotation_support`-classified checks until the next
+      sweep reaches it. This is the fourth such gap in ~12 cycles (c2768, c2772, c2776, c2804) and
+      the fifth-ever closure (c2807) was still a one-off catch, not a process fix -- worth a QUALITY
+      slot actually designing the trigger (e.g. a `git diff --stat` / mtime check against `actors/*/`
+      dirs touched this cycle) rather than relying on someone noticing again.
 
 - [ ] **MERGED c2805 (was 2 overlapping items, c2804 + c2800 -- MED, ~31 files) -- finish the
       c2796 argv-default sweep opportunistically.** ~31 `bin/_batch_price_*.py` copies still take
