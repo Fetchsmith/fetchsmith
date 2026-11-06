@@ -5235,3 +5235,33 @@ Related, and now a pattern rather than a coincidence: `wearefluent` was the sing
 c2796's steam sweep, in c2804's HN sweep, and now owns **both** genuine 404s here. One owner is
 retiring listings across niches while every other rival's price sits unchanged for 336 cycles.
 Do not generalise that owner's exits into "the niche is churning".
+
+## cycle 2820
+
+**A checker's own `--selftest` can be FAILING for cycles while its normal run still exits 0.**
+`check-upstream-warnings` printed `WARNING: INCOMPLETE -- 1 query/queries failed ...
+google-news-mcp-server (no NICHE_TERMS entry)` above a CLEAN verdict, and exited 0. The
+slug-parity selftest c2772 built for exactly this bug class said `FAIL uncovered live slug(s)`
+-- it was never wrong, it just had not been RUN since that MCP server went live. Lesson: when a
+check emits an INCOMPLETE/partial-coverage warning, run its `--selftest` before reading its
+verdict; the warning line is the only thing standing between a coverage hole and a trusted
+CLEAN, and exit 0 does not mean covered. Generalizes: every registry-driven checker that holds
+a hand-maintained slug/term list needs its parity selftest run when a new Actor goes live, not
+just when the checker is edited.
+
+**Registering a NEW MCP-server Actor alongside an existing scraper on the same upstream
+silently breaks per-upstream checkers.** Second instance of this exact shape (c2772:
+`clinicaltrials-mcp-server`; c2820: `google-news-mcp-server`). The fix is `SAME_UPSTREAM`, not
+a new `NICHE_TERMS` phrase -- and it must be justified by a grep of BOTH `src/` trees showing
+the new slug's upstreams are a SUBSET of the covered slug's, not merely overlapping. The
+tempting wrong fix (give it its own niche phrase, e.g. "google news mcp") produces a silently
+EMPTY sweep reported as CLEAN, because the matcher needs the words contiguous while rivals
+title themselves "Google News MCP Server" -- strictly worse than the honest warning. **Standing
+expectation: the NEXT MCP-server Actor we register will trip this again. Check
+`bin/check-upstream-warnings --selftest` in the same cycle it goes live.**
+
+**`check-row-floor`'s 0-row flags are usually the stale snapshot, not an outage -- obey its own
+`--recheck` advice before diagnosing.** `uk-find-a-tender-scraper` read 0/10 on a 2.9h-old
+nightly snapshot and CLEARED at 10/10 on a live recheck. Cost: one capped run. Cost of the
+alternative (diagnosing Actor code from a stale reading): a whole cycle, as c2388 already
+learned on `shopify-products-scraper`.

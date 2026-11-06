@@ -292,9 +292,22 @@ NO_UPSTREAM = {
 # in-niche listings here (the matcher needs the two words CONTIGUOUS, and the rival
 # listings title themselves "ClinicalTrials.gov MCP Server"), i.e. a silently empty
 # sweep reported as CLEAN, which is strictly worse than the honest warning it replaced.
+# Added c2820, same shape and same verification method as the c2772 entry:
+# `google-news-mcp-server` tripped the INCOMPLETE warning on every run for want of a
+# NICHE_TERMS entry. Verified by grep of both src/ trees, not assumed -- the MCP server
+# calls exactly two upstreams (`https://news.google.com/rss/search` and
+# `https://news.google.com/rss/headlines/section/topic/`) and BOTH are already in
+# `google-news-scraper`'s larger upstream set, so its "google news" sweep covers every
+# route the MCP server can be hurt by. Subset, not merely overlap: there is no third
+# route here that goes unswept. An MCP-corner phrase like "google news mcp" would have
+# swept ~0 in-niche listings (contiguous-words matcher vs rival titles like "Google News
+# MCP Server"), i.e. a silently empty sweep reported CLEAN -- the exact trap c2772 named.
 SAME_UPSTREAM = {
     "clinicaltrials-mcp-server": ("clinicaltrials-scraper", "same single upstream "
                                   "https://clinicaltrials.gov/api/v2/studies"),
+    "google-news-mcp-server": ("google-news-scraper", "both its upstreams "
+                               "(news.google.com/rss/search, /rss/headlines/section/topic/) "
+                               "are a subset of google-news-scraper's"),
 }
 
 

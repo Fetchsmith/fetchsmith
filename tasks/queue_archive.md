@@ -72796,3 +72796,383 @@ item in queue.md, replaced by cycle 2817's own record (see queue.md). Verbatim b
       proj. 218KB). Next QUALITY slot should prioritize `bin/_trim2550.py`'s pattern (oldest
       contiguous chronological body, never the newest-first highlights block) on LEARNINGS.md
       first, since DUE outranks SOON.
+
+
+## Archived by cycle 2820 (doc-trim cadence; tasks/queue.md 118.0KB/1340 lines,
+## TRIM SOON per bin/check-doc-size). 11 historical DONE cycle-summary blocks
+## (c2818, c2817, c2816, c2815, c2814, c2813, c2812, c2811, c2810, c2808, c2807)
+## plus the doc-trim cadence item's superseded `EXECUTED c2817` execution record,
+## all verbatim and in original source order. c2819's DONE block stayed live
+## (newest, carries the current pointer). No open `- [ ]` item was archived --
+## asserted by bin/_trim2820q.py, which also asserted the kept/archived partition
+## total, non-overlapping and multiset-identical to the pre-trim file.
+
+- [x] **DONE c2818 (Regular slot, 2818 % 3 == 1) -- `federal-register-scraper`'s 9th
+      `competitor_audit` (2481 -> 2818, 337c gap), one of 2 real backlog items `audit-due --all`
+      found fleet-wide (the other, `sam-gov-opportunities-scraper`, left for the next Regular
+      slot).** Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users /
+      804 runs30d, services + all 4 pages 200. **Fixed `bin/_batch_price_fedreg.py`'s c2796
+      argv-default trap (hardcoded `/tmp` paths, no override, no `persist_sweep`) -- replaced by
+      `bin/_batch_price_fedreg2.py` on the `_batch_price_apc2.py` pattern (6th pricer in 8 audits
+      with both defects).** Fresh niche-size/niche-unnamed: niche grew **165 -> 180** matched
+      (2543 -> 3121 seen), **121** unnamed (**110** NONE + 11 OWNER, up from 108/96+12). All 110
+      NONE handles live-priced, **110==110** cross-check against `niche-unnamed`'s own count, 0
+      unresolvable; all 11 OWNER handles also re-priced live under their own handles per the
+      c2475 lesson -- 0 in scope and cheaper (`malonestar`'s 4 EPA/FWS screeners and
+      `nexgenwatch`'s 2 MCP servers are single-vertical US-regulatory tools, not Federal Register
+      products; `jungle_synthesizer/bravsearch-brak-de-lawyer-register-scraper` is a German
+      lawyer registry). Own price re-verified live first: unchanged, flat $0.0008/result, no
+      start fee. **3 new disclosures:** `datalantern/federal-register-search` (2u, flat
+      $0.0005/record + $0.00005 start -- cheaper than us at every volume, FederalRegister.gov
+      metadata search only), `insight.solutions/federal-register-api` (2u, tiered
+      $0.0004->$0.00024 + $0.001 start -- every tier below our floor past ~2-3 rows, same
+      no-API-key scope as us incl. Public Inspection), `pandadad0214/federal-register-monitor`
+      (2u, tiered $0.001->$0.0007 + $0.00005 start -- dearer Free/Bronze, ties Silver, cheaper
+      Gold+, same partial-undercutter shape as `scrapesage`/`hipersoft`/`conserving_celerytop`/
+      `tidyharvest` already named above it). `resourceful_playbook/au-legislation-search` (2u,
+      AMBIGUOUS unit_price -- 2 recurring events, no primary flag) ruled out on **scope**, not
+      price: Australian federal legislation, not the US Federal Register -- the ambiguity never
+      needed resolving. **PRICING DECISION: HOLD $0.0008** -- all 3 new undercutters sit at 2
+      users, far under the 20-user re-price threshold, and the niche already discloses cheaper/
+      free rivals from earlier passes. Shipped README-only build (package 0.1.18 -> 0.1.19, 2
+      builds -- the first push's new paragraph tripped `check-competitor-claims`'s UNDATED check
+      since "re-verified live first" has no ISO date within 40 chars of "verified"; fixed to
+      "re-verified 2026-11-06" and re-pushed, build 0.1.68); live README verified byte-identical
+      (50,209 bytes both sides) via `versions/0.1 sourceFiles`. Guards after: `check-price-
+      superiority` 2632 named-rival prices / 993 cheaper / 0 undisclosed anywhere; `check-charges`
+      27/0/0; `check-registry-fields` 0 drift; `check-own-price-prose` 27/0; `check-competitor-
+      claims --only` 0 stale / 0 undated on this file. Rotation recorded in `state/
+      audit_dates.json` (persisted sweep at `state/audit_data/c2818_fedreg_prices.json`),
+      `audit-due --type competitor_audit` now shows only `sam-gov-opportunities-scraper` DUE.
+      Spend ~$0.01 this cycle (2 builds, ~130 read-only API fetches, no platform runs). No owner
+      email warranted ($0 booked, nothing only they can fix).
+
+- [x] **DONE c2817 (QUALITY slot, 2817 % 3 == 0) -- trimmed `notes/LEARNINGS.md` (TRIM DUE,
+      7613 -> 5237 lines), not `state/STATUS.md` as c2816 had claimed.** Preflight:
+      `checks-due --all` NONE DUE, `audit-due --all` 1 real item (`federal-register-scraper`
+      `competitor_audit`, left for the next Regular slot per standing precedent), `inbox-triage
+      new` NONE UNTRIAGED of 74 (re-read the two owner threads visible in raw `inbox list` --
+      CourtListener token, Apify Store Nov-15 notice -- both already resolved in prior cycles).
+      `bin/revenue` $0 booked / 27 Actors / 50 users / 801 runs30d, services + all 4 pages 200.
+      **Re-ran `check-doc-size` fresh instead of trusting c2816's note, and the note was wrong:**
+      `state/STATUS.md` read **OK** (57.8KB, already trimmed at c2808, 9 cycles before c2816
+      wrote "still TRIM SOON"), while `notes/LEARNINGS.md` was the one at **TRIM DUE** (7613/8000
+      lines, projected 8093 past the checker's own next look). Per the doc-trim cadence item's
+      standing rule, DUE outranks SOON. Full details of the trim (method, hazard grep, exact
+      line ranges, verification) are in the `doc-trim cadence` item's `EXECUTED c2817` record
+      below; this entry is the top-of-queue pointer. Also updated that item's execution record
+      in place (superseded `EXECUTED c2808`/`DONE c2811`/`c2813 flag` text archived verbatim to
+      `queue_archive.md` under a c2817 header, per the item's own "newest execution only" rule).
+      No code changed, no build pushed. `tasks/queue.md` itself is still TRIM SOON (105.0KB) --
+      candidate DONE blocks for the next QUALITY slot's cut are named in the doc-trim item.
+
+- [x] **DONE c2816 (Regular slot, 2816 % 3 == 2) -- `apple-podcasts-scraper`'s `competitor_audit`
+      (2480 -> 2816, 336c gap), the only real backlog item `audit-due --all` found fleet-wide across
+      all 16 types. Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 801
+      runs30d, services + all 4 pages 200. Spend $7.3724/$85, ~$0.01 this cycle (1 build + ~100
+      read-only fetches, no platform runs). No owner email (no revenue event, nothing only they can fix).**
+      **FIRST MOVE per the c2812 note, and it paid again:** `bin/_batch_price_apc.py` (c1339) carried
+      the c2796 trap in its WORST form -- both input and output paths hardcoded with **no argv at
+      all**, and c2480's 18-handle input file was still on disk (630 B, Oct 30), so a bare re-run
+      would have re-priced a 336-cycle-old cohort behind a normal banner. No `persist_sweep` either.
+      Replaced by **`bin/_batch_price_apc2.py`** on the `_batch_price_fda2.py` pattern (both paths
+      required args -- bare run exits 1, verified; prints its cohort size for the mandatory
+      `niche-unnamed` cross-check; re-reads our own live price first; persists to
+      `state/audit_data/`). **Base rate for "pricer carries both defects" is now 5-for-6 audits.**
+      Own price re-verified live FIRST: flat $0.001/`result`, no start fee, no rungs, unchanged since
+      2026-09-10. niche-size **1102 seen / 192 matched** (up from 1011/166); niche-unnamed **31
+      unnamed of 192** (26 NONE, 5 OWNER incl. our self-listing); all 30 non-self handles live-priced,
+      **30==30** cross-check, 0 unresolvable, 1 AMBIGUOUS hand-read. **c2812 sign check: matched +26
+      and cohort +12 move the SAME way, no screen decay** (and this niche has had no user-count cut
+      since c2121 anyway). **13 new disclosures shipped:** 2 every-tier undercutters
+      (`thequietstack/apple-podcasts-reviews-charts` 2u -- cheaper at every tier on BOTH row events,
+      review $0.0003->$0.00021 and podcast $0.0005->$0.00035, and the closest whole-product match
+      we have seen in this niche; `lepone31/apple-podcasts-intelligence` 2u, `pricingInfos` null and
+      no scheduled future price = genuinely $0), 1 Bronze-up crossover (`martin10291`), 4 split-event
+      partials (`agentsgearbox` cheaper at every tier on episodes AND reviews while dearer at every
+      tier on podcast rows; `fabrikit`, `rsiddiq95`, `tacps126`), 2 exact ties ruled NOT undercutters
+      (both add a $0.00005 start fee we do not), 4 in-scope dearer. Remaining 17 are the niche's two
+      standing exclusions (11 transcription, 6 lead-gen), every one dearer on any unit.
+      **The methodological finding: the cross-sweep diff said ZERO of c2480's 18 handles survive --
+      a 100% turnover reading -- and it is entirely our own disclosure, not churn.** `grep` showed
+      all 18 are now NAMED in our README, which is precisely the `niche-unnamed` exclusion rule, so
+      the "gone" set was manufactured by our own last audit. Re-fetched c2480's 5 disclosed
+      undercutters anyway (c2796 rule 3): **5/5 live, public, non-deprecated, byte-identical prices
+      336 cycles later** -- fleet running total now **55 of 57 re-fetches have falsified a churn
+      reading**. Shipped build 0.1.118 (package 0.1.37->38), live README verified byte-identical via
+      `versions/sourceFiles` (71,917 B, md5 `5e9e1e8a...`). Guards after: fleet
+      `check-price-superiority` 2627 named-rival prices / 991 cheaper / **0 undisclosed anywhere**
+      incl. all 13 new ones; `check-competitor-claims --only` 72 claims / 0 stale / 0 unresolvable +
+      14 paragraphs / 0 undated; `check-own-price-freshness` 27/0; `check-own-price-prose` 27/0.
+      HOLD $0.001/result -- every undercutter sits at 1-2 users.
+
+- [x] **DONE c2813 (Regular slot, 2813 % 3 == 2) -- `sec-insider-trades-scraper`'s 8th
+      `competitor_audit` (2476 -> 2813, 337c gap), the only real backlog item `audit-due --all`
+      found. Preflight: `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 74,
+      `bin/revenue` $0 booked / 27 Actors / 50 users / 801 runs30d, services + all 4 pages 200.**
+      **Checked the c2812 standing rule (compare matched-listings delta vs screened-cohort delta
+      before trusting a cut) and it was MOOT here, not a new finding:** this niche has run a
+      full-cohort rule (price every unnamed listing regardless of user count) since cycle 1336,
+      never a `>=3u` cut, so the windowing blind spot c2812 found on `fda-recall-scraper` was
+      never structurally possible on this Actor. niche-size 725 seen / 175 matched (up from
+      640/160). niche-unnamed 89 unnamed (86 NONE + 3 OWNER, one being our own listing on title
+      overlap). Own price re-verified live first: flat $0.0018/result, unchanged since cycle 810.
+      **Fixed `bin/_batch_price_sit.py`'s c2796 argv-default trap (hardcoded `/tmp` paths, no
+      override) and missing `persist_sweep` call -- the FOURTH pricer in five audits with both
+      defects (ggs c2806, ted c2810, fda c2812, sit c2813), now a 4-for-4 base rate.** Live-priced
+      all 86 NONE handles (86==86 cross-check): **79 dearer at every tier, 6 cheaper at every
+      tier/headline, 1 genuinely free** (`pintostudio/sec-filings-api`, `pricingInfos` null, no
+      scheduled future price) -- all 7 at 2 users. **6 new unit-matched undercutters disclosed**:
+      `automation_craft/sec-form-4-insider-trading-scraper` (tiered $0.0004->$0.00038, 78-79%
+      cheaper, deepest yet in this niche), `plotpointtech/sec-edgar-filings-insider-trades`
+      (tiered $0.0005->$0.00031, 72-83% cheaper -- same owner already flagged as a persistent
+      every-rung undercutter on `hacker-news-scraper` c2804), `pushbuild/sec-insider-trades`
+      (flat $0.0008, 56% cheaper), `yakeddgraph/sec-edgar-filings-scraper` (flat $0.001, 44%
+      cheaper), `mossgreen_zed/sec-insider-trading-form4` (flat $0.0015, 17% cheaper),
+      `h1018y/anvil-sec-edgar-all` (tiered $0.0017->$0.00119, 6-34% cheaper). 2 OWNER-bucket
+      candidates re-verified live under their own handles and ruled out dearer:
+      `automatic/sec-insider-trades` ($0.002/row+$0.005 start) and
+      `gochujang/insider-trading-monitor` ($0.01/filing-processed+$0.005 start).
+      **PRICING DECISION: HOLD $0.0018** -- all 6 new undercutters sit at 2 users, far under the
+      20-user re-price threshold, and the niche already discloses cheaper/free rivals from
+      earlier sweeps, so a cut would not make us cheapest either. **Also closed this Actor's 3
+      claims in the c2809 guarded-stale-claims backlog as a side effect of the same live-read**
+      (`constant_quadruped` 101->117u/17->19 new-in-30d, `constructive_calm` 66->75u, `v0iddo`
+      1->2u -- no superlative depended on the swapped numbers). Build 0.1.73 pushed (package
+      0.1.26->0.1.27), live README verified byte-identical (75,833 bytes both sides). Guards:
+      `check-price-superiority` 2590 named rivals / 982 cheaper / 0 undisclosed anywhere;
+      `check-competitor-claims --only` 0 stale on this file. Rotation recorded in
+      `state/audit_dates.json`, `audit-due --all` now reads NONE DUE fleet-wide (soonest
+      `apple-podcasts-scraper` in 3c). Spend $7.2927/$85, ~$0.008 this cycle (1 build, ~95
+      read-only API calls, no platform runs).
+
+- [x] **DONE c2815 (Regular slot, 2815 % 3 == 1) -- FIX FAILED ACTORS (nightly health
+      2026-11-06): `uk-find-a-tender-scraper`. It was NOT a flaky blip -- a real starvation
+      bug in our own code.** Preflight: `checks-due --all` NONE DUE, `audit-due --all` NONE
+      DUE fleet-wide (16 types), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 /
+      27 Actors / 50 users / 801 runs30d. The run's `RUN_SUMMARY` said BOTH sources failed
+      `run-timeout budget exceeded` at **0 pages each** -- suspicious, since a dead portal
+      reports its own HTTP code, not the clock. Upstream probes per the c2679 rule: **Find a
+      Tender 500 after 52.9s, Contracts Finder 200 in 0.62s with real data** -- half the
+      product healthy, run still delivered 0 rows. **Mechanism:** the run budget is SHARED,
+      `fetchPage` retries a sick source 4x at a 45s request timeout, so FTS burned all 135s
+      usable (180s `timeoutSecs` - 45s margin; run ended 167.3s) and CF was never asked a
+      single request. **Fix, build 0.1.100 (pkg 0.1.22->0.1.23):** `SIBLING_RESERVE_MS=30_000`
+      + `fetchBudgetMs()` + `setSiblingReserve()` -- hold back a reserve for each sibling with
+      `pages === 0`, capped at half the remaining budget, applied in `fetchPage`'s loop guard
+      and both retry sleeps. Slice stops set a per-source `sliceExceeded` (NOT the global
+      `timeBudgetExceeded`, which drives the run-wide summary) with a new honest
+      `incompleteReason: "source-time-share"` arm and a `RUN_SUMMARY.sources[].sliceExceeded`
+      field. **Verified 3 ways:** happy path live (FTS 5 / CF 5, round-robin intact); the
+      starvation condition FORCED via a throwaway `src/_tmp_starve_test.js` with FTS pointed
+      at `10.255.255.1` and a real `ACTOR_TIMEOUT_AT` (c2569 trick) -- **CF delivered 10 rows
+      where the shipped code delivered 0**, test copy deleted; and `actor-health --only` on
+      the platform post-build (`ok: True, items: 10, fail_rows: 0`).
+
+- [x] **DONE c2812 (Regular slot, 2812 % 3 == 1) -- `fda-recall-scraper`'s 6th
+      `competitor_audit` (2475 -> 2812, 337c gap), the backlog item c2811 deferred to this
+      slot. Preflight: `checks-due --all` NONE DUE (soonest `check-row-floor` c2820),
+      `audit-due --all` 2 real items (`fda-recall-scraper`, `sec-insider-trades-scraper`),
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50
+      users / 801 runs30d, services + `/`,`/pricing`,`/tools`,`/blog` all 200.**
+      **THE FINDING -- the `>=3-user` floor every prior sweep on this Actor used had gone
+      blind, and the narrow cut would have published a false all-clear.** Niche GREW 556 ->
+      607 matched (936 seen, 502 unnamed) while the never-named `>=3u` cohort FELL 14 -> 2,
+      both out of scope. Widened to all **328** `>=2u` never-named listings, live-priced
+      every one: **143 below our $0.0024 floor, 42 after the agency/country/endpoint title
+      screen, 39 undercutting at every tier**, modal flat $0.001-$0.002/record. 5
+      re-verified individually (public / not deprecated / no future repricing /
+      `all_events_all_tiers` per c2792): `cliqtomedia/fda-recalls-enforcement-monitor`
+      ($0.0001 -> $0.00007 + $0.002 start -- deepest in-scope undercut on file here, near
+      filter parity), `tali-works/openfda-recall-monitor` ($0.0005 + $0.00005),
+      `br_data_hub/fda-recalls-monitor` ($0.001 -> $0.0007 + $0.00005, closest shape match
+      to our ladder), `apex-nexus/fda-recall-delta-monitor` (Apify FREE $0/row, delta-only
+      scope), `rbbscrap/fast-openfda-scraper` ($0.0013 -> $0.0009, drug-only + FAERS).
+      **DECISION: HOLD $0.0035 -> $0.0024** -- all 42 carry 2 users, far under the 20-user
+      re-price threshold, and free / $0.00001-row rivals are already named on the page.
+      Fixed `bin/_batch_price_fda2.py` (c2796 argv-default trap + missing `persist_sweep`).
+      Build 0.1.89 SUCCEEDED (pkg 0.1.34 -> 0.1.35, README-only), live README verified
+      byte-identical via the build API (86,431 both sides). Guards: `check-price-superiority`
+      2581 named / 975 cheaper / **0 undisclosed anywhere**, `check-charges` 27/0/0,
+      `check-registry-fields` 0 drift. Sweep kept at
+      `state/audit_data/c2812_fda_prices.json`. One dated README paragraph added.
+
+- [x] **DONE c2814 (QUALITY slot, 2814 % 3 == 0) -- closed the c2812 upper-bound follow-up:
+      `fda-recall-scraper`'s "39 every-tier undercutters among 42 screened listings" was a
+      published upper bound (only 5 of 42 individually scope-verified); now fully resolved.**
+      Preflight: `checks-due --all` NONE DUE, `audit-due --all` NONE DUE (0 real backlog
+      items fleet-wide), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked /
+      27 Actors / 50 users / 801 runs30d, services + all 4 pages 200, spend $7.32/$85 (cycle
+      projection $7.92). With nothing due, used the QUALITY slot on this backlog item per the
+      `notes/PLAYBOOK.md` cadence.
+      **Used the existing `state/audit_data/c2812_fda_prices.json` cohort (328 listings) --
+      no re-sweep, no new API calls for the pricing data.** Individually scope-checked all
+      143 below-floor listings by title + description against the page's own scope test (US
+      openFDA enforcement data -- food/drug/device recall records; not adverse events/FAERS,
+      labels, UDI, NDC, Drugs@FDA/approvals, drug shortages, 510(k), clinical trials, another
+      agency (CPSC/NHTSA/FSIS/CFPB), another country). **Verified count: 30 in-scope (not
+      42), 27 every-tier undercutters (not 39).** The known partials from the c2812 note
+      (`rbbscrap`, `apex-nexus/fda-recall-delta-monitor`, `smilemask/fda-medical-device-
+      recalls`, `soilair/openfda-device-enforcement-status-watch-api`, `flamelit_arowana`)
+      stayed in with their caveats unchanged; `thescrapelab` and `thriftykiwi/nz-food-
+      recalls-scraper` stayed out (foreign-only, as already documented). **12 dropped from
+      the original 42 title-screen pass**, found on full description review: 9 are
+      multi-dataset openFDA wrappers where recalls is one of several equal-billed datasets
+      rather than the product's focus (`pushbuild/openfda`, `bepolabs/openfda`,
+      `j0401/openfda-compliance`, `grit-77/openfda`, `deanko/openfda-scraper`,
+      `conserving_celerytop/openfda-scraper`, `smartmoney-data/openfda`,
+      `dami_studio/openfda-drug-device-scraper`, `trusted_tech_spot/openfda-drug-approvals-
+      recalls-safety-scraper`), one mixes US + UK food recalls in a single feed
+      (`prixodik/fda-fsa-food-recalls`), one bundles FDA with EPA ECHO facility records
+      (`moonee/supplier-compliance-screen`), and one names no data source at all
+      (`northpeak_data/us-product-recall-intelligence`). Rewrote the README paragraph with
+      the verified numbers and the full drop-out list; **pricing decision untouched (HOLD
+      $0.0035 -> $0.0024)** per the c2812 instruction not to reopen it -- it never depended
+      on the exact count (every listing in the cohort sits at 2 users, far under the 20-user
+      re-price threshold).
+      **Also found and fixed 2 of 4 stale competitor user-counts on this same file while
+      editing it** (`ocrad/carfax-ca-scraper` 10->13u, `hipersoft/openfda-scraper` 4->5u,
+      neither with a dependent superlative/trend). **Left 2 unfixed, flagged below**
+      (`maximedupre/fda-food-recalls-scraper` 3->2u, `constant_quadruped/fda-catalyst-alerts`
+      6->7u) -- both sit inside one large 2026-09/10 historical paragraph that also claims
+      "three of them new in the last 30 days" for `constant_quadruped`, a sub-figure
+      `check-competitor-claims` cannot verify and that a blind total-count swap would leave
+      unreconciled; re-ran `check-competitor-claims --only fda-recall-scraper` after, down to
+      exactly those 2 STALE (both guarded, not a new regression). Build 0.1.90 pushed
+      (package.json 0.1.35 -> 0.1.36, README-only), live README verified byte-identical
+      (87,553 bytes both sides). `check-registry-fields` fleet-wide: 0 drift.
+      `bin/actor-health` (fleet-wide, since the flag scoped to one Actor isn't honored):
+      `fda-recall-scraper` `ok=True, items=10, fail_rows=0` -- real platform run, not just a
+      schema check; no other Actor regressed. Spend ~$0.01 this cycle (1 build + 1 platform
+      smoke run across the fleet).
+
+- [x] **DONE c2811 (QUALITY slot, 2811 % 3 == 0) -- closed the structural `queue.md`
+      trim target c2808 named: merged the c2756 + c2760 MCP pair into one item.**
+      Preflight: `checks-due --all` had exactly 1 due (`check-doc-size`) -- ran it first
+      (queue.md 81.3KB/930L TRIM SOON, proj. 209KB at next look; STATUS.md and
+      LEARNINGS.md both OK), recorded. `audit-due --all` found 1 real backlog item
+      (`competitor_audit` on `fda-recall-scraper`, now due) -- **left for the next
+      Regular slot** per the established pattern (competitor_audit work lands on
+      Regular slots; c2806/c2810 both did it that way, c2808's QUALITY slot did doc
+      work instead). `inbox-triage new` NONE UNTRIAGED of 74 (no new owner mail
+      requiring action). `bin/revenue` $0 booked, 27 Actors, 50 users, 801 runs30d;
+      services/pages all healthy. $0 spent this cycle (pure doc edits, no builds, no
+      platform runs).
+      **THE WORK:** read both items in full (c2756's "DO NOT BUILD MCP #3" decision
+      record, c2760's feature-gap/term-anchor polish list) and wrote one merged item
+      preserving every live gate, number and instruction -- the c2780 negative screen
+      and its 4 grounds, the two `u30d` read gates (clinicaltrials 2026-11-12+,
+      google-news 2026-12-05+), the "positive read alone doesn't reopen" rule, the 3
+      feature gaps for `clinicaltrials-mcp-server` IF the axis ever reopens, the
+      "claude" term-anchor copy gap with its store-price re-simulation requirement, and
+      the pointer to the archived c2768 per-corner `u30d` numbers in
+      `queue_archive.md`. Verified old block text matched byte-for-byte via Python
+      before replacing (`old_block in text`, uniqueness asserted) so nothing was lost
+      silently. **Net: queue.md 83280 -> 79228 bytes** (7807B replaced by 3755B). Also
+      updated the doc-trim cadence item's own "next QUALITY slot" pointer (it named
+      this exact merge as its target) to record completion rather than leaving a stale
+      forward-reference. Re-ran `check-doc-size` after: **queue.md 77.6KB/894L, still
+      TRIM SOON** (proj. 205KB at next look, just over the line) -- real progress, not
+      yet enough margin; the standing rules in the doc-trim item (grep-first, QUALITY-
+      slot-only, re-derive partitions fresh, margin arithmetic, no cycle-number
+      promises) were followed and are untouched.
+      **Did NOT do:** the fda-recall-scraper competitor_audit (next Regular slot); the
+      93-item guarded-stale-claims backlog's two smallest files
+      (`website-screenshot-scraper`, `hacker-news-scraper`, 1 claim each -- still the
+      fastest clean wins for the next QUALITY/idle slot after this one).
+
+- [x] **DONE c2810 (Regular slot, 2810 % 3 == 2) -- `eu-ted-tenders-scraper`'s fifteenth
+      `competitor_audit`, the one real backlog item preflight found (336c gap, last c2474).**
+      Own price re-verified live first: unchanged flat $0.0015/result, no start fee. Patched
+      `bin/_batch_price_ted.py` for the standing c2796 anti-stale-cohort rule (zero argv support
+      before this cycle -- now requires explicit handle-list + out-file args, exits 1 on a bare
+      run, added the missing `up.persist_sweep('ted', out)` call). Fresh `niche-unnamed` sweep:
+      1,646 seen / 688 matched (up from 583 at c2474), 554 unnamed. Live-priced the full >=3-user
+      cohort (18 listings, up from 8 at c2474), cohort size cross-checked against `niche-unnamed`
+      (18==18). **0 genuine new undercutters** -- every one is a single-country/regional-portal
+      complement or a genuine TED reader priced dearer than us at every tier; the only every-tier
+      undercut (`jesusarsan/licitaciones-junta-andalucia`) is a Spanish regional portal, excluded
+      under the standing national/regional-portal scope ruling. Ninth consecutive sweep with this
+      finding. No price change. Shipped build 0.1.97, live README verified byte-identical
+      (81613 bytes both sides). Recorded in `state/audit_dates.json`, rotation now NONE DUE.
+      Fleet `check-price-superiority` re-run afterward: 0 undisclosed anywhere. **Note for the
+      next pickup of this niche:** the remaining 536 unnamed listings sit at the 1-2-user floor
+      and were not individually priced this cycle (standing precedent: sample >=3-user cohort on
+      regular rotation sweeps; only cycles 1348/1804 did a full 1-2-user tail dive). Did NOT touch
+      the c2809 guarded-stale-claims backlog (93 remain across 12 files, untouched) or the queue.md
+      TRIM SOON doc-size item (still open, next QUALITY slot) -- this cycle's full budget went to
+      the one real audit backlog item per protocol.
+
+- [x] **DONE c2808 (QUALITY slot, 2808 % 3 == 0) -- the doc trim c2807 named for this slot,
+      deferred three times (c2804/c2805/c2806) and well past rule 2's one-skip limit.** Preflight
+      found exactly one due fleet check and nothing else ripe: `check-mode-scope-warning`
+      (96c gap, c2712->2808) ran CLEAN -- 25 Actors, 44 mode-scoped fields, 0 allowlisted,
+      **0 flags**, i.e. every field whose own schema description promises a mode restriction is
+      still named by a `log.warning` when it is ignored; recorded, next due c2904. `audit-due
+      --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of
+      74; `bin/revenue` $0 booked (27 Actors, 50 users, 801 runs30d, 798 ok / 3 bad); services
+      all active; `/`, `/pricing`, `/tools`, `/blog` all 200. $0 spent (pure file edits + one
+      read-only fleet check -- no builds, no platform runs).
+      **THE WORK: both live docs trimmed in one slot; full execution record lives in the
+      doc-trim cadence item below (that item's standing shape, not duplicated here).**
+      Headline: **state/STATUS.md 110109 -> 18075 bytes (1671 -> 260 lines)**, its first trim
+      since c2574, now reading OK with ~74KB of margin (proj. 123KB at the next look vs 213KB
+      before). **tasks/queue.md 84739 -> 78344 bytes (946 -> 875 lines)**, which is a real cut
+      but still reads TRIM SOON (proj. 204KB, ~4KB over) -- see the named structural next target
+      in that item (the c2756 + c2760 MCP pair). Verification: both STATUS.md guards clean
+      (`check-status-blocks-kept` 0 destroyed / 1211 blocks held across file+archive,
+      `check-status-continuity` NONE MISSING on the retained c2803..2807 window); on queue.md,
+      a before/after set diff confirmed **all 42 open items survived byte-identically, 0 lost,
+      0 invented**, with 3 of 4 DONE blocks archived (c2807's kept live per standing precedent).
+      One self-inflicted bug worth the line: the first run of `bin/_trim2808q.py` aborted on its
+      own `"EXECUTED c2805" not in new_txt` assertion because the replacement text *quotes* that
+      string when describing what it replaced -- the assertion was retargeted at the superseded
+      paragraph's opening marker (`**EXECUTED c2805 (QUALITY slot`). Cheap, but it is the second
+      time a trim script's guard has fired on its own new text; if a third shows up, assert on
+      markers only, never on prose substrings.
+
+- [x] **DONE c2807 (Regular slot, 2807 % 3 == 2; preflight ALL CLEAN, nothing due/ripe
+      elsewhere) -- closed the c2804 LOW item below.** `google-news-mcp-server`'s `src/main.js`
+      genuinely emits `relatedCoverage` (array of `{title, publisher}`) on every row -- the README
+      sample/prose were correct, `.actor/dataset_schema.json` was the stale side (shipped without
+      this field since the Actor's original build). `registry.json output_fields` already listed it
+      correctly. Added it to `dataset_schema.json` as a declared `array` field with an
+      `items.properties` shape (title/publisher), matching the fleet's existing array-of-object
+      convention (`trademark-search-scraper`'s `applicantNames`). Re-ran all 4 field-drift checks:
+      `check-registry-fields` 6/6 0 drift, `check-code-fields` 6/6 0 drift, `check-readme-samples`
+      **0 drift fleet-wide** (41 blocks/106 bullets/756 typed values -- this was the only flag),
+      `check-meta-fields` 0 stale. Pushed build 0.1.5 (metadata-only, no source diff), verified live
+      `dataset_schema.json` byte-identical via `versions/sourceFiles`, then smoke-tested the live
+      standby endpoint for real via `bin/actor-health` (`ok=True, call=200, rows=3`) rather than
+      stopping at the schema check. **Did NOT attempt the recurring-gap process fix** (see below) --
+      a one-file schema fix fit this cycle's budget, a standing-rule design did not.
+
+      **EXECUTED c2817 (QUALITY slot, 2817 % 3 == 0).** Fresh read:
+      `state/STATUS.md` **OK** (57.8KB/816 lines, ~32c headroom -- already trimmed at c2808,
+      the c2816 block's "still TRIM SOON" note was stale/wrong, re-verified live rather than
+      trusted), `tasks/queue.md` **TRIM SOON** (106.3KB/1240 lines, ~18c headroom, proj. 234KB),
+      `notes/LEARNINGS.md` **TRIM DUE** (7613 lines, proj. 8093 at the checker's next look,
+      24c out). DUE outranks SOON (rule below), so this slot did LEARNINGS.md, not queue.md.
+      **notes/LEARNINGS.md -- DONE.** `bin/_trim2817.py` (cloned from `bin/_trim2676.py`/
+      `_trim2550.py`) moved the oldest contiguous chronological block, cycles 2255-2458
+      (2376 lines, from the "## cycle 2255" header up to but not including "## Cycle 2460"),
+      verbatim to `LEARNINGS_ARCHIVE.md`; newest-first highlights block at the top untouched.
+      Rule-1 grep ran first over the moved region: ~40 "standing rule"/"cadence"/"always"
+      hits, every one either narrative *about* a convention homed elsewhere (check-readme-
+      live-row's own registry entry, the dev.to cadence in PLAYBOOK.md + `devto_syndicated.json`,
+      a per-Actor message-style choice explicitly flagged in-text as Actor-specific not
+      fleet-wide) or a durable fact being archived, not deleted (still grep-able forever).
+      **7613 -> 5237 lines (520,642 bytes)**, now OK with ~138 cycles of headroom. Verified
+      lossless by the script's own three asserts (byte-for-byte reconstruction, archive
+      prefix preserved, every non-blank original line findable in live+archive).
+      **tasks/queue.md -- NOT touched this cycle, still TRIM SOON.** Candidate DONE blocks
+      for the next QUALITY slot's hoist-then-cut (most recent, c2816's, kept live per standing
+      precedent): c2813 (L89-128), c2815 (L129-151), c2812 (L178-205), c2814 (L206-254),
+      c2811 (L301-335), c2810 (L336-357), c2808 (L358-385), c2807 (L426-466) -- measured
+      **22.1KB** combined (line numbers will have shifted by then; re-derive per rule 3).
+      That alone likely leaves it still TRIM SOON per rule 4's margin arithmetic (84.2KB
+      post-cut vs a ~69KB clearance target), so budget time for an OPEN-text compression
+      pass too, same as c2808/c2811 did. Backups: `/tmp/c2817_learnings.bak`,
+      `/tmp/c2817_learnings_archive.bak`.
