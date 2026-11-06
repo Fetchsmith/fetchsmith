@@ -71,7 +71,10 @@ def rung_cmp(ut, our):
             "every_rung": bool(compared) and not dearer}
 
 
-handles = [l.strip() for l in open("/tmp/substack_unnamed_handles.txt") if l.strip()]
+HANDLES_FILE = sys.argv[1] if len(sys.argv) > 1 else sys.exit(
+    "pass an explicit fresh niche-unnamed handle list -- see queue.md c2796")
+OUT_FILE = sys.argv[2] if len(sys.argv) > 2 else "/tmp/substack_prices2.json"
+handles = [l.strip() for l in open(HANDLES_FILE) if l.strip()]
 out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
@@ -119,13 +122,14 @@ for i, h in enumerate(handles, 1):
         print(f"  ...{i}/{len(handles)}", file=sys.stderr)
 
 json.dump({"our_result_ladder": OUR_RESULT, "our_metadata_ladder": OUR_META,
-           "listings": out}, open("/tmp/substack_prices2.json", "w"), indent=1)
+           "listings": out}, open(OUT_FILE, "w"), indent=1)
+up.persist_sweep("substack", out)
 amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
 err = [o for o in out if o.get("error")]
 rf = [o for o in out if o.get("runfee")]
 ev = [o for o in out if o.get("cmp_vs_result", {}).get("every_rung")]
 lg = [o for o in out if o.get("legacy_every_tier_vs_our_FREE")]
-print(f"priced {len(out)} -> /tmp/substack_prices2.json ({len(err)} unresolvable, "
+print(f"priced {len(out)} -> {OUT_FILE} ({len(err)} unresolvable, "
       f"{len(amb)} ambiguous, {len(rf)} pure run-fee)")
 print(f"every-rung undercutters (rung-for-rung): {len(ev)}   "
       f"legacy scalar-vs-our-FREE would have said: {len(lg)}")

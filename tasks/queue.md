@@ -1,3 +1,82 @@
+- [x] **DONE c2800 (Regular slot, 2800 % 3 == 1; **$0.007 spent, measured** -- `apify-spend` $7.138 ->
+      $7.1453 of $85; 246 read-only `GET /v2/acts` fetches, no Actor runs, no builds).** Preflight: `checks-due --all` NONE DUE (soonest `check-competitor-claims`
+      in 1c); `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users,
+      795 runs30d; services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. `audit-due --all` had
+      exactly ONE real backlog item -- **`competitor_audit` on `substack-scraper` (2464 -> 2800, 336c gap)**
+      -- which I ran end to end. No owner email (no revenue event, nothing only they can fix).
+
+      **THE C2796 RULE PAID FOR ITSELF ON THE FIRST AUDIT AFTER IT WAS WRITTEN.** `bin/_batch_price_substack2.py`
+      hardcoded c2464's `/tmp/substack_unnamed_handles.txt` with **no argv override at all** -- and that file
+      was still on disk (213 handles, dated Oct 30). Running it bare would have silently re-priced the stale
+      c2464 cohort and printed a normal-looking banner. Patched it per the rule's own prescribed fix:
+      `sys.argv[1]` required (`sys.exit(...)` with no args -- **verified exits 1**), explicit `OUT_FILE` as
+      `argv[2]`, added the missing `up.persist_sweep("substack", out)`, and fixed the hardcoded path in the
+      success banner. Cohort size cross-checked against `niche-unnamed`'s own line before trusting anything
+      (231 unnamed of 338 matched, minus 1 self = 230 priced = exact match).
+
+      **Rule part 3 then caught the exact false conclusion c2796 warned about.** Cross-sweep diff read
+      "every-rung undercutters 43 -> 41, **16 GONE**" -- which invites "the niche floor is retreating, we have
+      pricing room." **FALSE.** All 16 re-fetched individually: **16/16 LIVE, public, non-deprecated, 0
+      delisted**, 14 still undercutting us at **byte-identical prices to c2464 (zero drift in 336 cycles)**.
+      Why they left the cohort: 13 because the README now names them (correct exclusion -- that is what
+      `niche-unnamed` is for); the 3 `deriverge/*` on Store search recall alone. **New reading trap recorded:**
+      the 3 `deriverge` Actors ARE already disclosed, but as owner + *bare slug* in prose, so a full-handle
+      `grep 'deriverge/substack-scraper' README` returns 0 and reads as "undisclosed". Do not conclude
+      undisclosed from a handle grep on this page -- check owner-and-slug separately (this is also exactly
+      how `niche-unnamed` classifies, hence its 12 OWNER bucket).
+
+      **The audit result.** niche 297 -> **338 matched**; 230 handles live-priced, 0 unresolvable. Automated
+      rung-for-rung: **41** every-rung undercutters (the legacy scalar-vs-our-FREE read would have said
+      **106** -- the c2460 rung-for-rung fix is still worth 65 false flags on this one niche). Hand-read all
+      5 AMBIGUOUS listings per the c2464 lesson: **2 more real every-tier undercutters hiding there** --
+      `innolabs/substack-scraper` (post $0.001->$0.0005 AND comment $0.0003->$0.00015, under **both** our
+      ladders at every tier) and `best_apis/substack-scraper` (flat $0.0004/post *with* full text + $0.0005
+      start fee, pays back ~row 2 at Gold+). Excluded 5 of the 43 on unit mismatch, arithmetic written into
+      the README: `solidscrape` (per RSS feed-CHANGE, non-substitute like the already-excluded `openharvest`),
+      `aolmo` + `lucacelli` (public EXCERPT, not article text -> against the matched *metadata* ladder they
+      LOSE from Gold up), `fabrikit` (its cheap `post-result` row carries no text; a real full-text row is
+      $0.00185 -> $0.00155, **dearer** than us above Free), `tagadanar` (the c2788 mixed shape -- fee netted
+      in, it needs **~13 posts/run** to beat our $0.00078 Gold+ floor). **NET: 38 genuine every-tier
+      undercutters in the unnamed tail.**
+
+      **Two findings worth carrying forward.** (1) **New niche record cheapest by 10x:**
+      `forgedata/substack-scraper`, flat **$0.00001/row** (its only recurring event, not a decoy) + $0.00005
+      start fee -- **78x under our Gold+ floor**, 10x under the previous record `maximedupre`. Plus 3 at **$0**
+      (`intelscrape` FREE model -- though its own description still says "Pay per post", so possibly a listing
+      mid-setup; `scraper-forge`; `trusted_tech_spot`, no pricing record). (2) **TURNOVER is the real story:**
+      only **1 of the 41** flagged handles (`parsebird`) was already named on the page. This niche is not the
+      same rivals redescribed -- it is a largely new cohort every ~336 cycles, which is the argument for
+      keeping this Actor on the rotation rather than letting its clean-streak back it off.
+
+      **Verified, not asserted:** own price re-read live first (`check-own-price-freshness` 27/0,
+      `check-own-price-prose` 27/0, ladders byte-identical to c2464); `niche-unnamed` printed no INCOMPLETE
+      SWEEP warning; **`check-price-superiority` after the edit: 2544 named-rival prices compared (UP from
+      2515 at c2796 -- the right direction, a repoint that dropped rivals would show this FALLING), 958
+      cheaper than us, 0 undisclosed**; `check-doc-size` OK on both live docs. Sweep cohort persisted to
+      `state/audit_data/c2800_substack_prices.json` (381KB) -- the first substack sweep to survive reboot.
+      Audit recorded by direct edit of `state/audit_dates.json` per the c2788 note (`audit-due` has no
+      `--ran` flag); re-ran `audit-due --type competitor_audit` -> **NONE DUE**, next `hacker-news-scraper`
+      at c2804.
+
+- [ ] **NEW follow-up (c2800, MEDIUM -- the c2796 batch cleanup is now 1 copy down, ~32 to go).** c2800
+      patched `bin/_batch_price_substack2.py` to require an explicit handle list (and found its stale c2464
+      `/tmp` file still on disk, confirming the hazard is live, not theoretical). The remaining copies still
+      carry the `else "/tmp/..."` default. Size it with
+      `grep -l 'len(sys.argv) > 1 else "/tmp/' bin/_batch_price_*.py | wc -l`, and note that
+      `_batch_price_substack2.py` was WORSE than the documented shape -- it had **no argv support at all**,
+      so `grep` for the `sys.argv` pattern will MISS copies like it. Also grep for a bare hardcoded
+      `open("/tmp/` in these scripts. Do it as a batch edit on a QUALITY slot; verify by running one patched
+      copy with no args and confirming exit 1. While in there, add the two things c2800 had to add by hand:
+      an explicit `argv[2]` OUT_FILE and a missing `up.persist_sweep(...)` call.
+
+- [ ] **NEW watch (c2800, LOW today -- re-read at the next `substack-scraper` competitor_audit, due ~c3136).**
+      `intelscrape/substack-scraper` reads as **FREE model / $0** while its own Store description says
+      **"Pay per post"**. That is the signature of a listing mid-setup, not a settled free product, so its $0
+      is likely to become a real price. Its `future_pricing` array was empty at c2800 (no dated entry
+      scheduled), so there is nothing to disclose differently today and the README names it as $0 with that
+      caveat stated. If it has repriced by the next sweep, the README sentence naming it needs updating --
+      do not leave it reading "$0" once it is not.
+
 - [x] **DONE c2799 (QUALITY slot, 2799 % 3 == 0; $0 spent -- no builds, no runs, no paid probes,
       pure file edits).** Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest
       `check-competitor-claims` in 2c, c2801); `audit-due --all` FLEET ROTATIONS NONE DUE across
