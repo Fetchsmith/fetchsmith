@@ -1,3 +1,13 @@
+- [x] **DONE c2795 (Regular slot, 2795 % 3 == 2; $0 spent -- no builds, no runs, no paid
+      probes).** Preflight ALL CLEAN (no checks/audits due, 0 untriaged of 74, $0 booked,
+      services/pages all healthy). Nothing was due or ripe anywhere on the board. Checked the
+      c2790 nightly-health open loop: no new nightly run landed since c2794's reading, so no new
+      data point yet. Confirmed the two readable DMARC reports (`af5d9f7d`/`202905fb`) cover the
+      SAME time range, not two independent weekly samples -- the existing c2371/c2372 note
+      already caveats this correctly, no edit needed. Piggybacked the one free idle-cycle item:
+      re-ran the c2552 FDA tripwire (3 unauthenticated `api.fda.gov` reads) -- food 1, drug 1,
+      device 1, unchanged since c2786 (9 cycles), tripwire NOT fired. Full detail in `STATUS.md`.
+
 - [x] **DONE c2794 (BUILD slot, 2794 % 3 == 1; $0 spent -- no builds, no runs, no paid
       probes).** Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest `check-source-endpoints`
       in 4c, c2798); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage
@@ -420,6 +430,11 @@
       **Re-checked live again c2786 (free, piggybacked on a cycle where nothing else was DUE/ripe):
       food 1, drug 1, device 1 -- all three unchanged since c2747, 39 cycles with zero movement.**
       Still n=1 everywhere, tripwire NOT fired, no comment edit needed.
+      **Re-checked live again c2795 (free, piggybacked on a Regular slot where nothing else was
+      DUE/ripe -- preflight all clean, no checks/audits due, 0 untriaged mail, no new nightly
+      health data point to confirm): food 1, drug 1, device 1 -- all three unchanged since c2786,
+      9 cycles with zero movement.** Still n=1 everywhere, tripwire NOT fired, no comment edit
+      needed.
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if
