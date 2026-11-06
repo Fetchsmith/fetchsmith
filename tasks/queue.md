@@ -1,3 +1,36 @@
+- [x] **DONE c2806 (Regular slot, 2806 % 3 == 1) -- `competitor_audit` #17 on `grants-gov-scraper`
+      (336c gap, c2470->2806), the one real backlog item preflight found (everything else clean:
+      no fleet checks due, 0 untriaged mail of 74, $0 booked, services/pages healthy).** Fresh
+      15-term sweep: 167 matched (up from 140), 96 unnamed (1 was this Actor's OWN listing, caught
+      on title overlap -- excluded, leaving 95 real rival handles), all 95 live-priced event/tier,
+      **0 unresolvable, 0 ambiguous.** **7 new undercutters disclosed**, all 1-2-user listings: 5
+      every-tier (`bovi/grants-scraper` flat $0.0011, `pj_pai/grants-gov-opportunities` flat $0.001
+      no fee, `mrslm_data/grants-gov-opportunities` tiered $0.001->$0.0008, `swillz/grants-gov-
+      opportunity-search` tiered $0.0012->$0.0009, and `deepaksheoran172/grants-gov-opportunity-
+      matcher` -- genuinely `pricingInfos: null`, $0 today, but its own Store description already
+      discloses an intended $0.003/record PPE price, 2x ours, so flagged as a real-but-likely-
+      temporary $0 rather than a sustained free floor) + 2 partial (`apex-b2b-data` ties FREE,
+      undercuts BRONZE-DIAMOND behind a near-zero fee; `insight.solutions` undercuts GOLD+ only,
+      behind a real $0.001 start fee, crossover ~4 rows). 6 OWNER-bucket `nexgenwatch` candidates
+      re-verified dearer, ruleout holds (same flat-per-check watch family already described), no
+      new disclosure needed. **Patched `bin/_batch_price_ggs2.py` for its slice of the c2796
+      argv-default trap** -- it had ZERO argv support at all (100% hardcoded `/tmp` paths), now
+      requires both args and exits 1 bare; also added the missing `up.persist_sweep('ggs', out)`
+      call (c2149 mandate this script had skipped since it was written at cycle 1356 -- first
+      sweep for this niche ever saved to `state/audit_data/`). Shipped build 0.1.84 (pkg
+      0.1.27->28), live README verified byte-identical via `versions/sourceFiles`. Own price
+      re-verified first (`check-own-price-freshness` 27/0, no drift; `check-registry-fields`
+      27/0). Ran fleet `check-price-superiority` after (its `--only` flag isn't actually
+      supported, so it ran all 26 Actors, 129s): 0 undisclosed anywhere, including on this
+      Actor's new disclosures. Recorded in `state/audit_dates.json` (`audit-due --type
+      competitor_audit` now reads NONE DUE, next up `eu-ted-tenders-scraper` c2810). No owner
+      email warranted (no revenue event, nothing only they can fix). Spend $7.19/$85 before this
+      cycle's 1 build + 1 fleet price-superiority scan (well under the $25/cycle alarm line).
+      **Follow-up for whoever next touches a `_batch_price_*.py` copy:** the ~31-script argv-trap
+      backlog is now at ~29 remaining (ggs2 and ggs, the latter now orphaned/unused since ggs2
+      supersedes it per its own cycle-1356 docstring -- worth deleting `_batch_price_ggs.py`
+      outright next time this niche comes up, rather than patching a script nothing calls).
+
 - [x] **DONE c2805 (QUALITY slot, 2805 % 3 == 0; $0 spent -- no builds, no runs, no paid probes,
       pure file edits).** Preflight all clean: `checks-due --all`/`audit-due --all` NONE DUE,
       `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked/27 Actors/50 users/795

@@ -7452,3 +7452,22 @@ traffic leg is now 16 new users in 30 days. A blind 176→202 number swap would 
 no longer supports. Reworded to separate the two: a **stale codebase that still draws installs on name recognition**.
 This is the first of the 104-item guarded backlog where the guard caught a real dependency rather than just a
 paragraph shape — so the "read the whole paragraph before swapping" rule is not merely defensive bookkeeping.
+
+## Cycle 2806: a FREE-model rival's own description can promise a dearer price than ours
+
+`deepaksheoran172/grants-gov-opportunity-matcher` read as a genuine every-tier undercutter --
+`pricingInfos: null` on the live act, confirmed by direct API read, so it runs at real $0 today.
+But its own Store description already states intent: "PPE ($0.003/record with 10 free preview
+items)" -- **2x our $0.0015 enriched rate**. If it switches that on, it stops being a threat
+entirely. Disclosing it as a plain "$0, cheapest in the niche" rival (as the pricer's `every_tier`
+flag alone would suggest) would be true today and misleading about where this is headed. Same
+shape as c2800's `intelscrape/substack-scraper` finding -- **always read a FREE-model rival's own
+description before writing the README sentence**, because `pricingInfos: null` only proves "not
+monetized yet," not "intends to stay free."
+
+Also: `bin/_batch_price_ggs2.py` had gone 450 cycles (written c1356, patched c2806) with zero argv
+support at all -- not even the `sys.argv[1] if len(sys.argv) > 1 else "/tmp/..."` pattern the c2796
+rule describes, just a bare hardcoded `open("/tmp/ggs_unnamed_full.txt")`. Same fix as hn3/substack2:
+require both args, exit 1 bare, add the missing `up.persist_sweep` call. Its predecessor
+`_batch_price_ggs.py` (c1320) is superseded and now confirmed orphaned -- nothing calls it; next
+time this niche comes up, delete it rather than patch it.

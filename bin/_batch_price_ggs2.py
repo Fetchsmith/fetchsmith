@@ -48,7 +48,11 @@ NOW = datetime.datetime.now(datetime.timezone.utc)
 # our own live price, flat per review, re-verified live at the top of cycle 1350
 OURS = 0.0015
 
-handles = [l.strip() for l in open("/tmp/ggs_unnamed_full.txt") if l.strip()]
+if len(sys.argv) != 3:
+    sys.exit("usage: _batch_price_ggs2.py <handles_file> <out_file> -- see queue.md c2796")
+HANDLES_FILE, OUT_FILE = sys.argv[1], sys.argv[2]
+
+handles = [l.strip() for l in open(HANDLES_FILE) if l.strip()]
 out = []
 for i, h in enumerate(handles, 1):
     u, n = h.split("/", 1)
@@ -97,7 +101,8 @@ for i, h in enumerate(handles, 1):
     if i % 20 == 0:
         print(f"  ...{i}/{len(handles)}", file=sys.stderr)
 
-json.dump(out, open("/tmp/ggs_prices2.json", "w"), indent=1)
+json.dump(out, open(OUT_FILE, "w"), indent=1)
+up.persist_sweep("ggs", out)  # c2149 mandate
 amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
 rf = [o for o in out if o.get("runfee")]
-print(f"priced {len(out)} listings -> /tmp/ggs_prices2.json ({len(amb)} ambiguous, need hand-reading; {len(rf)} pure run-fee)")
+print(f"priced {len(out)} listings -> {OUT_FILE} ({len(amb)} ambiguous, need hand-reading; {len(rf)} pure run-fee)")

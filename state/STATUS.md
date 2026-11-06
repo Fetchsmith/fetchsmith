@@ -1,3 +1,57 @@
+Updated: 2026-11-06 UTC by cycle 2806 (claude-sonnet-5). Regular slot (2806 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-mode-scope-warning` in 2c).
+`audit-due --all` had exactly 1 real backlog item -- `competitor_audit` on
+`grants-gov-scraper` (336c gap, last c2470) -- ran it end to end (below), rotation now
+reads NONE DUE (next: `eu-ted-tenders-scraper` c2810). `inbox-triage new` NONE UNTRIAGED
+of 74. `bin/revenue` **$0 booked**, 27 Actors, 50 users, 798 runs30d; services
+(`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`,
+`/blog` all 200. Spend **$7.19/$85** (cycle projection $7.82), ~$0.01 this cycle (1
+README-only build + 1 fleet `check-price-superiority` scan, no platform runs). No owner
+email (no revenue event, nothing only they can fix).
+
+**THE WORK: `grants-gov-scraper`'s seventeenth `competitor_audit`.** Fresh 15-term sweep:
+167 matched (up from 140 at c2470), 96 unnamed (1 was this Actor's OWN listing, caught
+on title overlap -- excluded, leaving 95 genuine rival handles), all 95 live-priced
+event-by-event/tier-by-tier, 0 unresolvable, 0 ambiguous. **7 new undercutters
+disclosed**, all 1-2-user listings: 5 every-tier (`bovi/grants-scraper` flat $0.0011,
+`pj_pai/grants-gov-opportunities` flat $0.001 no fee, `mrslm_data/grants-gov-
+opportunities` tiered $0.001->$0.0008, `swillz/grants-gov-opportunity-search` tiered
+$0.0012->$0.0009, and `deepaksheoran172/grants-gov-opportunity-matcher` with
+`pricingInfos: null` -- genuinely $0 today, confirmed live, but its own Store
+description already discloses an intended $0.003/record PPE price, 2x our rate, so it
+is disclosed as a real-but-likely-temporary $0, not a sustained free floor) + 2 partial
+(`apex-b2b-data` ties FREE, undercuts BRONZE-DIAMOND behind a near-zero fee;
+`insight.solutions` undercuts only GOLD+, behind a real $0.001 start fee, crossover ~4
+rows). 6 OWNER-bucket `nexgenwatch` candidate handles re-verified dearer at every tier,
+ruleout holds (same flat-per-check watch family already described in the README), no
+new disclosure needed.
+
+**Patched `bin/_batch_price_ggs2.py` for its slice of the standing c2796 anti-stale-
+cohort rule** -- it had ZERO argv support at all (both input and output paths 100%
+hardcoded to `/tmp`), now requires both explicit args and exits 1 on a bare run; also
+added the missing `up.persist_sweep('ggs', out)` call (the c2149 mandate every batch
+pricer is supposed to carry, which this one had skipped since it was written at cycle
+1356) -- this is the first time a `grants-gov-scraper` sweep has been saved to
+`state/audit_data/`. **Its sibling `bin/_batch_price_ggs.py` (cycle 1320, superseded by
+ggs2's own docstring) is now orphaned** -- nothing calls it; flagged in `queue.md` as a
+delete-not-patch candidate for whoever next touches this niche, rather than spending a
+cycle fixing a trap in a script nothing runs.
+
+Shipped build 0.1.84 (package.json 0.1.27->28), live README verified byte-identical to
+local via `versions/sourceFiles`. Own price re-verified first
+(`check-own-price-freshness` 27/0, no drift; `check-registry-fields` 27/0 drift). Ran
+fleet `check-price-superiority` afterward (its `--only` flag is not actually honored by
+the tool, so it ran the full 26-Actor fleet, 129s): 2556 named-rival prices compared, 0
+undisclosed anywhere, including on this cycle's 7 new disclosures.
+
+**Blockers: none.** Standing: $0 revenue after 2806 cycles; Polar checkout deferred by
+owner decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+,
+google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26; both `queue.md` and
+`STATUS.md` still TRIM SOON per `check-doc-size` -- next QUALITY slot (c2808) should
+pick this up, it was deferred twice now (flagged at c2804/c2805).
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2805 (claude-sonnet-5). QUALITY slot (2805 % 3 == 0).
 Preflight ALL CLEAN: `checks-due --all`/`audit-due --all` NONE DUE; `inbox-triage new`
 NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 795 runs30d;
