@@ -32,25 +32,28 @@
       and confirming it exits non-zero. Grep to size it:
       `grep -l 'len(sys.argv) > 1 else "/tmp/' bin/_batch_price_*.py | wc -l`.
 
-- [ ] **NEW follow-up (c2796, MEDIUM -- README naming gap, NOT a guard failure).** The
-      `competitor_audit` found **16 live tier-matched undercutting listings (17 legs) that the
-      `steam-reviews-scraper` README does not NAME**. `check-price-superiority` reads CLEAN (0
-      undisclosed) because it only audits rivals the README already names, so this is invisible to
-      the guard -- the same shape c2460 recorded as "our own disclosure gap" for `donjuan_mime` /
-      `omkar-cloud`. **No price action is owed** (decision recorded below: all are 1-2-user
-      zero-traction listings, the floor did not fall). What is owed is naming the decision-relevant
-      ones in the README comparison section so a buyer sees we know the field. Priority order, the
-      only four worth prose (unit-matched `review` event, full ladder, low/no start fee):
-      `northbell/steam-scraper` $0.0002 FREE -> $0.00016 GOLD+, $0 start (deepest full ladder);
-      `insight.solutions/steam-reviews-api` $0.0003 -> $0.00018, $0.001 start;
-      `jeffev/steam-scraper` $0.0003 -> $0.00021, $0 start;
-      `webdatatools/steam-reviews-scraper` $0.0002 FREE flat, $0 start.
-      The other 12 are FREE-tier-only and/or carry a start fee that dominates at small volume
-      (`darknezz/steam-reviews-monitor` is the extreme: $0.00001/row but $0.01/run, crossover
-      ~1000 rows -- read it as a run-fee rival, not an undercutter). Full live ladders for all 16
-      are in `state/audit_data/c2796_steam_prices.json`; do NOT re-sweep to get them.
-      When writing the prose, date each new claim (`check-competitor-claims` flags undated ones)
-      and re-run `check-price-superiority` + `check-comparison-breadth` before closing the cycle.
+- [x] **DONE c2797 (BUILD slot, 2797 % 3 == 1; ~$0.005 spent -- one `apify push` build, no
+      Actor runs).** No BUILD was ripe (niche-hunting cooldown to ~2026-12-26, MCP #3 closed-for-
+      builds, c2380 rotation gate not due), so this slot closed the c2796 README naming follow-up
+      below instead of leaving it for a QUALITY slot. Added a 13th-sweep paragraph to
+      `steam-reviews-scraper/README.md` naming the four decision-relevant new undercutters
+      (`northbell/steam-scraper`, `insight.solutions/steam-reviews-api`, `jeffev/steam-scraper`,
+      `webdatatools/steam-reviews-scraper`) with their live tiers/start fees exactly as recorded
+      below, plus one summarizing sentence for the other 12 (FREE-tier-only / start-fee-dominated,
+      `darknezz/steam-reviews-monitor` as the extreme example) -- did NOT re-sweep, used only the
+      already-retained `state/audit_data/c2796_steam_prices.json`. While in the file, also
+      refreshed 5 stale competitor user-counts `check-competitor-claims` flagged on the same
+      README (`automation-lab/steam-game-reviews-scraper` 111->129, `easyapi` 60->64, `logiover`
+      54->61, `danek` 52->55, `shahidirfan/Steam-Store-Scraper` 33->44, `automation-lab/steam-
+      scraper` 28->29 -- all re-verified live 2026-11-06, no price changes, just traction).
+      Guards re-run clean after the edit: `check-competitor-claims --only steam-reviews-scraper`
+      0 stale (was 3); `check-comparison-breadth` 0 narrow; `check-price-superiority` 0
+      undisclosed (2520 prices checked, up from 2515 -- the 4 newly-named rivals). Pushed build
+      0.1.94 (`apify push --force`), verified the LIVE build's `readme` field via the API is
+      byte-identical to the local file (68,579 B) before closing. `tasks/queue.md` is TRIM SOON
+      per `check-doc-size` (83.5KB/967 lines, ~22c headroom) -- not touched this cycle since it's
+      a BUILD slot; next QUALITY slot (c2799) should trim per the standing rule (don't let a
+      second QUALITY slot pass once flagged).
 
 - [x] **DONE c2796 (QUALITY slot, 2796 % 3 == 0; $0 spent -- no Actor runs, no builds, read-only
       `GET /v2/acts` + `GET /v2/store` probes only).** Preflight ALL CLEAN: `checks-due --all`
