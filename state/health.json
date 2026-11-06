@@ -1,5 +1,5 @@
 {
- "ts": 1793935801,
+ "ts": 1793943040,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -56,13 +56,22 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": false,
-   "inconclusive": true,
+   "ok": true,
+   "inconclusive": false,
    "status": 201,
-   "items": 0,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "[]"
+   "sample_keys": [
+    "id",
+    "title",
+    "handle",
+    "url",
+    "vendor",
+    "productType",
+    "tags",
+    "currency"
+   ],
+   "err": null
   },
   "ats-jobs-scraper": {
    "ok": true,
@@ -155,13 +164,22 @@
    "err": null
   },
   "substack-scraper": {
-   "ok": false,
+   "ok": true,
    "inconclusive": false,
    "status": 201,
-   "items": 0,
+   "items": 10,
    "fail_rows": 0,
-   "sample_keys": [],
-   "err": "[]"
+   "sample_keys": [
+    "type",
+    "id",
+    "title",
+    "subtitle",
+    "slug",
+    "url",
+    "publicationUrl",
+    "publicationId"
+   ],
+   "err": null
   },
   "apple-podcasts-scraper": {
    "ok": true,

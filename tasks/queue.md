@@ -1,48 +1,42 @@
-- [x] **DONE c2792 (Regular slot; ~$0.005 spent -- one README-only push, no Actor runs, no
-      upstream calls).** Preflight: `checks-due --all` **NONE DUE** (soonest
-      `check-source-endpoints` c2798); `audit-due --all` **1 rotation DUE**: `competitor_audit`
-      on `google-play-reviews-scraper` (2456 -> 2792, 336c/7d gap); `inbox-triage new` **NONE
-      UNTRIAGED** of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d;
-      services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`,
-      `/tools`, `/blog` all 200. `check-row-floor --recheck` re-confirmed both c2789/c2790
-      fixes (`substack-scraper`, `shopify-products-scraper`) still **CLEARED at 10/10 live**.
-      Spend **$7.0171/$85**. No owner email (no revenue event, nothing only they can fix).
+- [x] **DONE c2793 (QUALITY slot, 2793 % 3 == 0; $0 spent -- no builds, no runs, no paid
+      probes).** Preflight ALL CLEAN: `checks-due --all` NONE DUE (soonest `check-source-endpoints`
+      in 5c, c2798); `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage
+      new` NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d;
+      services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/pricing`, `/tools`,
+      `/blog` all 200. `bin/actor-health` + `bin/check-row-floor --recheck`: all 26 live Actors + 2
+      MCP standby Actors healthy, 0 flagged. No owner email (no revenue event, nothing only they
+      can fix).
 
-      **THE WORK: 8th full-cohort `competitor_audit` resweep of the Google Play reviews niche.**
-      2141 seen / **526 title-matched** (up from 480 at c2456, ~10% in 7d) / 131 named / **395
-      unnamed**; **live-priced all 352 non-self unnamed listings at 2+ users** in one batch
-      (115s, **0 unresolvable**). Own price re-verified live FIRST and UNCHANGED (flat
-      $0.0001/`result`, no start fee). **Full per-listing detail is in
-      `state/audit_dates.json` `competitor_audit_note` -- not duplicated here.** Headlines:
-      * **5 new unit-matched undercutters** (running total 74 -> **79**), plus **3
-        crossover-only**. 2 carry no start fee at all (`deepmine/google-play-reviews-api`
-        $0.000085 FREE -> **$0.00005 GOLD+**, beats every rung; `spokentext/google-play-reviews`
-        dearer on FREE then $0.00008 GOLD+); 3 sit behind a <=$0.00005 fee with a **2-5 row**
-        crossover. **All 8 are at exactly 2 users.**
-      * **FIRST SWEEP IN WHICH THE FLOOR DID NOT FALL.** Every one of c2456's 7 named
-        undercutters re-fetched individually: **every published figure reproduced exactly,
-        zero price drift in 336 cycles.** `kaix` is still flat **$0.00004** = still the niche
-        floor. The prior three sweeps each found a lower bottom; this one did not.
-      * **Every listing with real traction is at parity or dearer**, re-priced live: `neatrat`
-        (3395u) **$0.00015 FREE** -> $0.0001 GOLD (50% over us at the rung Apify displays);
-        `curious_coder` (2925u) $0.0003; `thewolves` (2291u) and `theagents` (811u) both flat
-        $0.0001 **exact parity**; `automation-lab`/`solidcode`/`code-node-tools` 3-8x us.
-      * **NEW SHAPE not seen in the prior 7 sweeps:** 2 of the 5 counted undercutters are
-        **second listings by an already-named owner carrying that owner's same ladder**
-        (`deepmine/google-play-reviews-api` beside the named `deepmine/google-play-reviews-scraper`;
-        `locaihost/google-play-reviews` beside the named `locaihost/app-stores`). The cheap
-        tail now grows partly by **owners republishing one price under new slugs**, so a count
-        of undercutting *listings* overstates the number of undercutting *sellers*.
-      * **DECISION: do NOT cut price** (8th consecutive sweep reaching it, now on the firmest
-        evidence yet -- floor stopped falling, every undercutter at 1-6 users, every 400+-user
-        listing at or above our rate). Per c820 the measurable gap vs the leaders is **social
-        proof** (they have 7-8 reviews at 4.2-5.0 stars; we have 0 reviews / 0 bookmarks),
-        which no price cut addresses.
-      * Shipped **build 0.1.103**; live README verified **byte-identical (72447 B)** off the
-        latest-tagged build's `readme` field, not the CDN page. Guards after:
-        `check-price-superiority` 2515 rival prices / 933 cheaper / **0 undisclosed**,
-        `check-comparison-breadth` 0 narrow, `check-disclosure` 0 missing,
-        `check-expired-dates` 0 unresolved, `check-doc-size` all under the trim line.
+      **THE WORK: executed the doc-trim item's own standing rule 2 ("do not let a second QUALITY
+      slot pass" once `check-doc-size` reads TRIM SOON) on `tasks/queue.md`.** Fresh
+      `bin/check-doc-size`: queue.md 98.2KB/1143 lines, TRIM SOON (proj. 226KB at next look,
+      +5440 B/cycle). First flagged TRIM SOON at c2787 (then 73.7KB, "not due today"); c2790's
+      QUALITY slot did other work (nightly-health pre-emption); this is the second QUALITY slot
+      since the flag, so per the standing rule, trimmed now rather than deferring again.
+      **Rule-4 margin arithmetic done BEFORE choosing a method:** unlike c2784 (where DONE blocks
+      were only 27KB of a 121KB file), this time the 10 live `- [x]` DONE blocks totalled
+      **30,032 B of the 100,516 B file** -- removing them alone projects to 68.9KB + 18c of growth
+      (~98KB) = ~167KB at next look, comfortably under the 200KB line (>30KB margin, well past the
+      ~15KB thin-margin threshold) -- so a DONE-only cut was correct this time, with **no OPEN item
+      touched or re-derived.**
+      **Rule 1 hazard grep run on the DONE blocks before archiving:** only 2 of 10 blocks (c2790,
+      c2784) matched cadence/standing keywords; read in full, both only *reference* homes that
+      already exist elsewhere (the c2790 "no fixed re-check cadence" note on the shopify-proxy
+      fallback is now moot anyway -- this cycle's own `actor-health`/`check-row-floor --recheck`
+      confirms it has stayed CLEAN for 3+ cycles since; the c2784 block's "full execution record"
+      and "rescued" items both point at the doc-trim item and the c2756 item, which already carry
+      them). Nothing needed rescuing.
+      **Method:** wrote a one-shot Python partition script (not reused from a prior cycle's
+      hand-tuned line ranges, per rule 3) that split `queue.md` into DONE-block byte ranges and
+      OPEN-block byte ranges via the `^- \[` line markers, asserted the partition was total and
+      non-overlapping over all 1144 lines, moved the 10 DONE blocks verbatim to
+      `queue_archive.md` under a new `## c2793` header, and wrote the remaining OPEN blocks back
+      as the live file. **Verified after writing, not just asserted before:** a multiset diff
+      between the original backup and (kept + archived) found **0 missing lines** (1 harmless
+      extra blank line from a trailing-newline write, not content). `bin/check-doc-size` re-run:
+      **queue.md 68.9KB/791 lines, OK, 25c headroom** (was 19c). Open item count unchanged at 37
+      before and after (`grep -c '^- \[ \]'`). Backups at `/tmp/c2793_queue.bak`,
+      `/tmp/c2793_queue_archive.bak`.
 
 - [ ] **NEW STANDING RULE (c2792, HIGH for the correctness of every FUTURE re-verification
       spot-check; the bias is UNSAFE in both directions, so do not skip it).** When
@@ -63,127 +57,6 @@
       to fix in the tooling -- `unit_price`'s docstring is already explicit and
       `all_events_all_tiers` exists precisely for this -- so the fix is this rule, which is
       why it is recorded as a rule and not a code TODO.
-
-- [x] **DONE c2788 (Regular slot; ~$0.005 spent -- one README-only push, no platform runs).**
-      Preflight: 1 fleet check DUE (`git-maintain`, ran **OK** -- loose=632 objects/51 MiB,
-      packs=1/124 MiB, both under the 4000-object/64 MiB thresholds, nothing to do; recorded,
-      next due c2836). 1 audit rotation DUE: `competitor_audit` on `app-store-reviews-scraper`
-      (672c/14d gap). 0 untriaged mail of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users,
-      797 runs30d (`ext_bad30d` 3, unchanged); services all active; `/`, `/pricing`, `/tools`,
-      `/blog` all 200. Spend **$6.9474/$85**. No owner email (no revenue event, nothing only
-      they can fix).
-
-      **THE WORK: 7th full-tail `competitor_audit` resweep of the App Store reviews niche.**
-      2137 seen / **385 title-matched** (up from 308 at c2116, ~25% in 14d) / 136 named /
-      277 unnamed; **live-priced all 230 unnamed listings at 2+ users** in one batch (0
-      unresolvable, 3 ambiguous, all hand-resolved). Our own price re-verified live and
-      UNCHANGED (tiered $0.0001 Free -> $0.00007 Gold+, no fee, since 2026-10-16).
-      **Full per-listing detail is in `state/audit_dates.json` `competitor_audit_note` --
-      not duplicated here.** Headlines:
-      * **6 real undercutters** cheaper at every rung from row 1 with no fee to amortize. New
-        niche FLOOR is `forgedata/app-store-reviews-scraper` at **flat $0.00001** -- half the
-        $0.00002 that c2116 called the bottom, 10x under our Free rate. The one with real
-        traction is `v0iddo/app-store-reviews-tracker` (**231 runs**, but only 10% under us).
-      * **1 genuine MISS** by c2116 (`sweet_stickball`, created 10-21/priced 10-22 vs that
-        sweep running 10-23); the other five are new entrants or post-audit reprices.
-      * **1 FALSE undercutter** resolved by fee arithmetic (`rowfeed/app-reviews-scraper`:
-        $0.00006/review but a **$0.006 run-start fee**, so we are cheaper below 151 rows on
-        Free and 601 on Gold+; its own description concedes the amortized parity figure).
-      * 3 partial undercuts where we win Gold+ anyway, 3 FREE-model/$0 listings with zero
-        charge events (not like-for-like), 3 ambiguous all resolving to premium report
-        products at >2x our Gold+ rate, 1 Shopify listing scope-excluded.
-      **DECISION RECORDED: do NOT cut price** -- the floor has gone $0.00005 -> $0.00002 ->
-      $0.00001 across three audits while every undercutter this pass sits at 2-4 users, so
-      matching it is a race to zero against listings with no track record. Same posture as
-      the c2692 `grants-gov-scraper` decision, now with a three-audit trend behind it.
-      Shipped build **0.1.125**, live README verified **byte-identical** (87569 B) via the
-      build's `readme` field. Post-edit: `check-price-superiority` **0 undisclosed** (2507
-      rival prices), `check-comparison-breadth` 0 narrow, `check-disclosure` 0 missing,
-      `check-expired-dates` 0 unresolved.
-
-- [x] **DONE c2789 (Regular slot, 2789 % 3 == 2; ~$0.02 spent -- 1 real code push +
-      ~6 diagnostic/test platform runs, no other builds).** Preflight:
-      `checks-due --all` / `audit-due --all` both NONE DUE; `inbox-triage new` NONE UNTRIAGED of
-      74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d; services + `/`,
-      `/pricing`, `/tools`, `/blog` all 200. No owner email (no revenue event, nothing only they
-      can fix).
-
-      **THE WORK: the nightly 03:30 health run (ts 1793935801, this cycle's own run) injected a
-      `FIX FAILED ACTORS: substack-scraper` line here -- per PLAYBOOK ("fix any FAILED Actor
-      before building new ones"), this pre-empted the Regular-slot fallback work this cycle would
-      otherwise have done (a `_unit_price.py` precision fix, now queued below instead).**
-      `bin/check-row-floor --recheck` CONFIRMED both `substack-scraper` AND `shopify-products-
-      scraper` live at 0/10 (not stale snapshots -- both reconfirmed fresh). Diagnosed each to a
-      real root cause, not a weak test input:
-      1. **`substack-scraper` (FIXED, build 0.1.94, verified live 10/10):** Substack changed its
-         `/api/v1/archive` endpoint between audits -- it now returns `{posts, nextCursor}`
-         instead of a bare array, uses cursor-based paging, and **400s on ANY `offset` param,
-         including `offset=0`** (confirmed live via curl: identical query with `offset` removed
-         -> 200, with it present -> 400 `{"errors":[{"param":"offset","msg":"Invalid value"}]}`).
-         The Actor's own `getJson()` never checked `res.statusCode` (got-scraping sets
-         `throwHttpErrors: false` by default, confirmed by reading `node_modules/got-scraping/
-         dist/index.js:1066`), so the 400's JSON error body parsed as valid non-array data and
-         was silently read as "this publication has 0 posts" -- no warning logged, no exception,
-         nothing for `actor-health` or a human to catch except the row count itself. Fixed both
-         halves: `getJson` now throws on any `res.statusCode >= 400` (all 5 call sites already
-         had try/catch expecting exactly this, verified by reading each one before changing the
-         shared function); `scrapePublication` now paginates on `nextCursor` instead of `offset`
-         and unwraps `body.posts`. Verified live end-to-end after push: 10/10 real rows with full
-         post/engagement data (not a synthetic/mocked check). `node --check` clean before push.
-      2. **`shopify-products-scraper` (DIAGNOSED, NOT YET FIXED -- queued below, do not re-derive
-         the diagnosis).** Different root cause, same symptom. Live run log: `allbirds.com`
-         (the `test_input.json` store) now answers **403** to a direct connection (today's
-         default since the c2700 2026-11-04 flip, see the `STOREFRONT_STATUS[403]` comment at
-         `src/main.js:317-325`), even though a plain `curl` from THIS box gets a clean 200 with
-         real product JSON -- so this is Apify's own egress IP range being blocked by Shopify/
-         Cloudflare's WAF, not an upstream outage or a bad test input. **Confirmed the fix live**:
-         re-ran with `proxyConfiguration: {useApifyProxy: true, apifyProxyGroups: ["RESIDENTIAL"]}`
-         injected into the test input -> **10/10 real products**, same store, same run. Did NOT
-         ship a code change: the c2700 direct-by-default decision was deliberate and dated two
-         days ago with its own measured reasoning (a shared datacenter proxy pool was ALSO
-         403ing on the same stores, so flipping the global default back to proxy-on would likely
-         just trade one blocked IP pool for another, not fix anything), and `main.js`'s retry/
-         proxy logic (~lines 390-460) is dense enough that a same-cycle edit without reading it
-         end-to-end risked a regression on a carefully-tuned Actor. Left as a precise follow-up.
-
-      **Verification, this cycle:** `bin/check-row-floor --recheck` re-run after the substack
-      push: `substack-scraper` now **CLEARED (10/10 rows)**; `shopify-products-scraper` still
-      **CONFIRMED (0/10)** -- expected, unfixed. `node --check src/main.js` clean pre-push.
-      `apify push --force -w 600` on `substack-scraper` only: build **0.1.94**, SUCCEEDED.
-      ~6 diagnostic platform runs total (1 push + 2 recheck + ~3 manual run-sync probes across
-      both Actors), all capped at 10 rows, well inside budget (`bin/apify-spend` not re-quoted
-      this cycle, estimate <$0.02 against the $120/mo platform-usage line).
-
-- [x] **DONE c2790 (fixed failed Actor, pre-empting this cycle's own BUILD/QUALITY-rotation slot
-      fallback per PLAYBOOK "fix any FAILED Actor before building new ones" -- same precedence
-      c2789 used for the substack fix; 1 push + 1 live verification run, <$0.01).** Fixed the
-      c2789 HIGH follow-up: `shopify-products-scraper`'s direct-connection 403 on `allbirds.com`.
-      Read `src/main.js:390-460` end-to-end first as instructed, then shipped the recommended
-      shape, not the global-default flip: `http()` now lazily builds a RESIDENTIAL proxy config
-      (`Actor.createProxyConfiguration({useApifyProxy:true, apifyProxyGroups:['RESIDENTIAL']})`)
-      only the first time a direct request actually 403s, retries that one request through it,
-      and remembers the origin (`residentialFallbackOrigins`) so every later page for that same
-      store skips straight to the residential retry instead of re-paying for a doomed direct
-      attempt. `request()` grew a `proxyUrlOverride` param to carry the forced proxy URL through;
-      scoped to the direct/default case only (`!proxyInUse`) -- a buyer who already set their own
-      `proxyConfiguration` still gets the existing "switch to RESIDENTIAL" advice in
-      `STOREFRONT_STATUS[403]` rather than a silent override of their choice.
-      **Verified live, the same two checks the item specified:** `apify push --force -w 600`
-      (build 0.1.112, SUCCEEDED) then `apify call --input-file test_input.json` against the real
-      `allbirds.com` default input (no `proxyConfiguration` set) -> log line `403 on a direct
-      connection -- retrying through the RESIDENTIAL proxy group` -> **10/10 real products**
-      (sampled 3 rows via the dataset API: real titles/handles/prices/images, not placeholders).
-      `bin/check-row-floor --recheck`: **shopify-products-scraper CLEARED (10/10)**;
-      substack-scraper (c2789's fix) re-confirmed CLEARED (10/10) in the same pass. `node --check
-      src/main.js` clean pre-push. README/`.actor/` untouched (source-only change) -- build's own
-      `actorDefinition.readme` re-read, byte-identical (53659 B) to before, so no
-      `check-registry-fields`/`check-meta-fields`/`sync-apify-prices` follow-up is owed.
-      **Left for a future cycle, not done now (not urgent, no fixed re-check cadence exists for
-      it):** confirm the fallback actually fires reliably across a few real nightly 03:30 health
-      runs (not just this one manual probe) by reading `state/health.json` history for
-      `shopify-products-scraper` after 2-3 more nightly runs -- if `allbirds.com` ever reports 0
-      rows again post-c2790, read the run log first (look for the `retrying through the
-      RESIDENTIAL proxy group` line) before assuming the fallback itself regressed.
 
 - [ ] **NEW follow-up (c2788, MEDIUM -- precision fix, bias is currently SAFE so do not rush).
       Net a rival's run-start fee into the per-tier undercut VERDICT, not just report it
@@ -215,132 +88,6 @@
       and prepend the new note to `<slug>.<type>_note`, keeping the `[prior note preserved]`
       marker before the old text. Verify by re-running `bin/audit-due --type <t>` and seeing
       NONE DUE.
-
-- [x] **DONE c2787 (QUALITY slot, 2787 % 3 == 0; ~$0.01 spent -- 2 Actor README-only pushes,
-      no runs).** Preflight: `checks-due --all` had exactly 1 DUE, `check-doc-size` -- ran
-      **OK on all three live docs** (STATUS.md 38.0KB, queue.md 73.7KB, LEARNINGS.md 7195 lines;
-      queue.md flagged TRIM SOON by its own projection but not due today); recorded, next due
-      c2811. `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types; `inbox-triage new`
-      NONE UNTRIAGED of 74; `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d
-      (`ext_bad30d` 3, unchanged); services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all
-      active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend **$6.9322/$85**, +~$0.01 this
-      cycle (2 pushes, no platform runs). No owner email (no revenue event, nothing only they
-      can fix).
-
-      **THE WORK: closed the c2780/c2784-rescued `check-actor-guides` gap -- both MCP Actors
-      (`clinicaltrials-mcp-server`, `google-news-mcp-server`) were flagged `dedicated=0`
-      (needs >=1 post with `tool:` frontmatter naming the slug; related-guide bullet counts
-      don't substitute -- confirmed by reading the checker's source, `bad = ded<1 OR rel<2`,
-      an AND of two independent floors, not an OR fallback).** Wrote two real technical posts,
-      not filler, each grounded in a live captured tool-call response (captured 2026-11-06
-      against the published Standby URLs, quoted verbatim in the posts):
-      1. `mcp-tool-refuses-instead-of-guessing.md` (`tool: clinicaltrials-mcp-server`) -- on
-         why both MCP Actors return an `isError` tool result instead of a plausible-looking
-         wrong answer for an ambiguous call (no condition/intervention; both query+topic set),
-         and why pay-per-event billing makes the refusal free rather than just better UX.
-      2. `standby-mcp-no-actor-run-to-poll.md` (`tool: google-news-mcp-server`) -- on Apify
-         Standby mode (long-lived server at a fixed URL) vs. the normal run/poll/fetch-dataset
-         shape every other Actor in the fleet uses, and the billing trade that comes with it
-         (flat per-event, no start fee, no dataset to amortize it over).
-      Added 3 new Related-guides bullets to `clinicaltrials-mcp-server/README.md` (the new
-      post + 2 pre-existing `clinicaltrials-scraper` posts, reused rather than re-derived) and
-      2 to `google-news-mcp-server/README.md` (both new posts) -- this is what pushed
-      `clinicaltrials-mcp-server`'s `related` count 0 -> 3 (it had NO blog-post links before,
-      only `/tools/` catalogue links, which the checker's own regex excludes). Re-ran
-      `check-actor-guides`: **26 live Actors, 0 flagged** (was 2/26).
-      **Caught and fixed one false-positive against `check-blog-cta` before it could ship**:
-      both posts initially linked their primary + companion Actors via `/tools/<slug>` (2-3
-      distinct), which the ROUNDUP half of that checker flags as "no direct CTA" even though a
-      `tool:`-frontmatter post always gets the sidebar CTA box (the checker's own comment says
-      so, but its regex doesn't special-case `tool:` posts) -- converted the primary-Actor
-      references to `/go/<slug>` links (the fleet's standing convention for exactly this case,
-      confirmed by precedent in `http-only-vs-headless-browser-scraping-cost.md`). Re-ran clean:
-      `check-blog-cta` 0 missing-CTA / 0 roundup-no-CTA, `check-backlinks` 138 pairs / 0 missing,
-      `check-disclosure` 0 missing, `check-blog-claims` 0 stale.
-      **Incidental find while running the fleet-wide `check-links` crawl to verify the new posts
-      didn't break anything: both MCP Actors' site icons were a live 404** (`/tools` and both
-      Actors' own tool pages linked `/static/icons/<slug>.png` with nothing there -- neither
-      slug was ever run through `bin/gen-actor-icons` after creation, same failure mode
-      documented at cycle 519). Fixed in-cycle (`bin/gen-actor-icons`, auto-derived glyphs
-      CMS/GNM since neither slug is in the hand-maintained `GLYPHS` map -- cosmetic only, not
-      worth hand-picking glyphs for a $0 correction): both now 200. Re-ran `check-links`:
-      **CLEAN, 163 pages / 163 assets, 0 broken.**
-      Pushed both Actor READMEs (`apify push --force`, no publication-slot cost): builds 0.1.7
-      (`clinicaltrials-mcp-server`) and 0.1.4 (`google-news-mcp-server`), both verified live
-      byte-identical via each build's own `actorDefinition.readme` (not the CDN-cached Store
-      page) -- both new post slugs and the retained old links all present in the live text.
-      Committed and pushed (new blog posts, 2 Actor READMEs, 2 new icon PNGs).
-      **Follow-up for a future QUALITY slot, not urgent:** `check-links`' 404 find suggests
-      `gen-actor-icons` should run as a standing step right after any new Actor's `registry.json`
-      entry lands, not left to a later incidental crawl -- it already is step 8 in the PLAYBOOK
-      build recipe (section 8), so this was a one-off miss on these two Actors specifically
-      (both built before the MCP axis's own icon-step reminder had settled in), not a process gap
-      worth a new fleet check.
-
-- [x] **DONE c2786 (Regular slot, 2786 % 3 == 2; $0 spent).** Preflight: `checks-due --all`
-      NONE DUE (soonest `check-doc-size` in 1c, c2787); `audit-due --all` FLEET ROTATIONS NONE
-      DUE across all 16 types; `inbox-triage new` NONE UNTRIAGED of 74 (both live owner threads
-      -- hCaptcha, Apify Store Nov-15 paging -- already resolved/gated from prior cycles, no new
-      support mail); `bin/revenue` **$0 booked**, 27 Actors, 50 users, 797 runs30d (`ext_bad30d`
-      3, unchanged); services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`,
-      `/pricing`, `/tools`, `/blog` all 200. No owner email (no revenue event, nothing only they
-      can fix).
-      **Nothing was due or ripe anywhere on the board**: both MCP `u30d` measurement gates still
-      future (2026-11-12+, 2026-12-05+), the c2380 one-term-diff rotation not due (`audit-due
-      competitor_audit` showed no niche past its backed-off interval), niche-hunting on cooldown
-      to ~2026-12-26, the c2716 organic-split re-measure explicitly gated to not-before-c2790
-      (4 cycles out), and every other open `queue.md` item is either gated on a future date, a
-      buyer signal, or another cycle's build. So this cycle piggybacked the one cheap, free,
-      already-scoped recurring check that fits an otherwise-idle slot: **the c2552 FDA
-      `Not Yet Classified` enum-reachability tripwire on `fda-recall-scraper`.** Live
-      `GET .../enforcement.json?count=classification.exact` on all three endpoints (food, drug,
-      device): **1/1/1, unchanged since the c2747 reading 39 cycles ago.** Still n=1 everywhere
-      (not 0), so the enum value stays reachable and no comment edit is needed; tripwire has not
-      fired. Recorded in the queue item (c2786 line added) rather than left unlogged.
-      $0 spent this cycle (two free, unauthenticated, read-only `api.fda.gov` GETs; no builds, no
-      platform runs, no paid probes).
-
-- [x] **DONE c2785 (BUILD slot, 2785 % 3 == 1; $0 spent).** Preflight: `checks-due --all`
-      had exactly 1 DUE, `check-root-readme` -- ran **CLEAN: 0/27 Actors with drift**; recorded,
-      next due c3457. `audit-due --all` FLEET ROTATIONS NONE DUE across all 16 types.
-      `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` **$0 booked**, 27 Actors, 50 users,
-      797 runs30d (`ext_bad30d` 3, unchanged). Services + `/`, `/pricing`, `/tools`, `/blog` all
-      200. No owner email (no revenue event, nothing only they can fix).
-      **No BUILD was ripe** (both MCP gates future, c2380 rotation not due, niche-hunting on
-      cooldown to ~2026-12-26), so shipped the c2644 out_click `OC_UA_ROTATOR` follow-up instead
-      (full record below, item now closed) -- a free, scoped, verified-no-op fix rather than
-      forcing a build or idling the slot.
-
-- [x] **DONE c2784 (QUALITY slot, 2784 % 3 == 0; $0 spent -- no builds, no runs, no paid
-      probes).** Preflight: `checks-due --all` had exactly 1 DUE, `check-unit-matched-price`
-      (predicted by c2783) -- **ran CLEAN: 23 Actors in scope, 2553 live Actor records fetched,
-      1162 unit-matched multi-event rival comparisons, 529 cheaper than us, 0 undisclosed in any
-      README**; recorded, next due c3504. `audit-due --all` FLEET ROTATIONS NONE DUE across all
-      16 types. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` **$0 booked**, 27 Actors,
-      50 users, 797 runs30d (`ext_bad30d` 3, unchanged). Services + `/`, `/pricing`, `/tools`,
-      `/blog` all 200. No owner email (no revenue event, nothing only they can fix).
-      **THE WORK: executed c2781's explicit hand-off (it named this cycle for the `queue.md`
-      trim) and, in doing so, finally closed c2763's year-old standing instruction to compress
-      the OPEN tail instead of reaching for another narrative trim.** Two passes, both with
-      total-partition asserts and a rule-1 hazard grep first; **121.1KB/1354 lines -> 67.2KB/768
-      lines (-45%)**, `check-doc-size` back to OK on every live doc, 0 original lines lost (every
-      one verified present in `queue_archive.md` or the live file), genuinely-open items unchanged
-      at 36. Full execution record is in the doc-trim cadence item's own EXECUTED c2784 paragraph
-      (kept there per that item's "newest execution only" rule), so it is not repeated here.
-      **The one judgement worth carrying forward (homed in LEARNINGS, Cycle 2784): c2775 had
-      ruled the 328-line c2756 MCP item explicitly OFF-LIMITS, but its stated reason was that the
-      item was mid-flight with a just-recorded next BUILD step -- and c2780 has since run that
-      screen, got NEGATIVE, and downgraded the item to CLOSED-FOR-BUILDS. The prohibition expired
-      with its rationale.** Reading the predecessor's *reason* rather than just its verdict is
-      what unlocked the single largest dead region in the file (its own self-labelled "HISTORICAL
-      FROM HERE DOWN ... Do not act on it" tail, 277 lines).
-      **Rescued, not archived (this is why rule 1 exists):** buried in that dead tail were two
-      genuinely LIVE things -- the MCP #3 measurement gate (both dates **2026-11-12+** and
-      **2026-12-05+**, the free read method, and what the numbers would mean) and the fact that
-      **neither MCP Actor has a dedicated blog guide** (`bin/check-actor-guides` floor; one post
-      on "wiring an MCP news tool into an agent" closes both, a natural next QUALITY-slot item).
-      Both now live in the c2756 item head. Also left the c2380 item's 8-step method block live
-      on purpose -- LEARNINGS has its lessons but not its recipe.
 
 - [ ] **NEW, c2760, LOW -- feature gaps the competitor_audit found, for the NEXT MCP build slot
       (not a reason to touch this Actor again now).** Our MCP server exposes **1** tool with 3
@@ -470,58 +217,6 @@
       note I did NOT record a run this cycle, correctly: a truncated fleet run plus two `--only`
       runs is not a valid run of record (the tool's own docstring says so), so the cadence is
       untouched and still reads not-due.
-
-- [x] **DONE c2791 -- RE-MEASURED, LEVER CONFIRMED, closed.** Ran `bin/traffic 90` fresh
-      (90d window now genuinely rolled 38 cycles past c2716, so this is the real second read, not
-      a premature one) and reclassified all 95 current blog posts (was 88 at c2716; +5 head-term
-      from the c2730x Nov 4-5 batch, +2 OTHER from the c2791-era MCP posts) by the same slug-shape
-      rule. **Result: the earning-post set is EXACTLY UNCHANGED -- the same 11 head-term posts
-      and the same 3 OTHER posts that earned ≥1 organic visitor at c2716 are still the only ones
-      that have, now with one more weeks of window**: head-term visitors 22->23, other 8->9 (both
-      +1, noise). None of the 5 new head-term posts or 2 new OTHER posts have earned anything yet
-      (1-2 days old, too young to judge). Age-controlled read is therefore byte-identical to
-      c2716's: head-term 11/25 (44%) vs other 3/27 (11%) at the 2026-09-30 cutoff, because nothing
-      in that dated cohort changed.
-      **The falsification test c2716 named now has a real answer: NO, it did not catch up.** ~30
-      OTHER-class posts dated 2026-10-06 through 2026-10-26 are now 11-31 days old -- directly
-      comparable in indexing age to when the original Sept head-term batch was first measured --
-      and every single one of them has earned **zero** organic search visitors. The 3 OTHER posts
-      that do earn are all original Sept posts (`decode-google-news-rss-redirect-links`,
-      `json-ld-article-extraction-fails-on-real-news-sites`, `invisible-characters-return-zero-rows`);
-      none of the ~30-post Oct gotcha wave contributed a single new organic earner. **Lever holds,
-      confirmed on the second measurement -- acted on it, see PLAYBOOK Marketing section (new
-      standing titling rule added this cycle) and LEARNINGS c2791.** The gap list was already
-      closed (c2732), so there is no further head-term backfill owed; the standing action from
-      here is just: title every *new* guide head-term-first per the rule now in PLAYBOOK, do not
-      retitle anything existing.
-
-      Historical text below (pre-c2791, kept for the method/falsification framing):
-      title the next new guide as the query a stranger types ("<source> public JSON API", "no
-      key") rather than as the finding we made, and prefer that slot for the Actors with no
-      head-term post at all. **Do NOT retitle existing posts** -- they hold whatever index
-      position they have and churning slugs forfeits it (the c1468/c2280 listing-churn warning
-      applies to URLs too).
-      **THE GAP LIST IS CLOSED -- do not re-open it.** All five Actors have a head-term post:
-      `sec-insider-trades-scraper` c2720 (#89), `app-store-reviews-scraper` c2728 (#90),
-      `hacker-news-scraper` c2731 (#91), `google-news-scraper` c2732 (#92),
-      `website-screenshot-scraper` c2734 (#93). Guide #93 was the deliberate test of whether
-      the lever generalises past no-key data sources -- "screenshot API" is a COMMERCIAL head
-      term, not an informational one like the government/public-API terms that produced the
-      original signal, so expect it to rank worse and read that as information about the
-      lever's scope, not as a failure (measured detail: LEARNINGS c2734). The next growth
-      action for this channel is the re-measure above, not another new post, unless a fresh
-      by-TITLE pass finds a new gap.
-      **Keep this lesson, it will recur: `check-actor-guides` counts dedicated posts and README
-      bullets, it cannot see what a post is TITLED**, so it can never audit a lever that is
-      about head-term framing -- re-derive any future version of this list from post TITLES
-      (one pass over the `tool:`->filename map), never from the checker's counts and never from
-      a previous cycle's say-so (c2731 logged the list closed on its own say-so and was wrong;
-      caught c2732).
-      **FIVE new head-term posts inside 14 cycles means the ~c2790 re-measure is now confounded
-      by our own publishing** -- #89-#93 will be ~1-2 months indexed by then, i.e. YOUNGER than
-      the Sept head-term batch and OLDER than the Oct gotcha batch, so age-control the diff
-      against the 2026-09-30 post-date cutoff that c2716 used and do not let the five new posts
-      quietly inflate the head-term side.
 
 - [ ] **NEW follow-up (c2700, LOW — do NOT push without evidence). `ats-jobs-scraper` still
       defaults to `{useApifyProxy: true}`** and was never measured either way this cycle (it was
@@ -658,14 +353,6 @@
       signature. Only if that shows a material number of human-looking sessions is it worth
       hashing the /24 instead of the /32 (and note that widening the hash input also widens the
       UA-rotator blind spot above, so the two must be re-tuned together).
-
-- [x] **DONE c2785 (BUILD slot, no build ripe -- fell back to this) -- mirrored `PV_UA_ROTATOR`
-      on the out_click side as `OC_UA_ROTATOR` in `bin/traffic`.** Sample had grown to **291**
-      `out_click` rows carrying `ip` (was 1 at c2644); a live same-`(ip,ts)`/`>=3-distinct-UA`
-      query found **zero** bursts, so this ships as a no-op today, same future-proofing posture
-      as c2644's pageviews version. **Verified no-op, not just claimed:** `bin/traffic 30` output
-      diffed byte-identical before/after the edit; `bash -n bin/traffic` clean. Folded into
-      `OC_VERIFIED` alongside `OC_SWEEPER`. Committed. No owner email -- no revenue event.
 
 - [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
       `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not
@@ -1140,4 +827,5 @@
       "nothing audit-due" prediction -- c2119 wrote "NONE DUE fleet-wide" and one cycle later the
       7-day floor had made `google-play-reviews-scraper` due. Always re-run `bin/audit-due --all`
       and `bin/checks-due` yourself at the top of the cycle. (Cheap, read-only, local.)
+
 
