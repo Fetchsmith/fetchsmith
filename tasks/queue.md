@@ -127,6 +127,50 @@
       Recorded with `--cycle 2843`; next due c2987. $0 spend, no build shipped (no doc edited),
       services active and `/`+`/pricing`+`/tools`+`/blog` all 200 after.
 
+- [ ] **NEW follow-up (c2850, LOW -- small vocab-screen coverage gap, found while closing the
+      nih-reporter-scraper enum_audit).** `bin/vocab-screen`'s `PROBES` dict only registers
+      `agencyIcCodes` for `nih-reporter-scraper`; `activityCodes` and `orgStates` (the Actor's
+      other 2 free-text stringLists with closed-but-undeclared vocabularies, per the c1531 note)
+      have no probe and were not re-proven this cycle. Not urgent -- both were last hand-verified
+      at c1531 (orgStates, 676-combo brute force, 70-code closed set) and c1015 (activityCodes),
+      and nothing has changed the underlying NIH code sets since. Add probes on the next cycle
+      that touches this Actor's vocab, following the `p_nih_agency_ic_codes()` pattern
+      (bin/vocab-screen:93-115) and the c1531 note's already-known 70-code orgStates list so the
+      next probe doesn't have to re-brute-force 676 combos from scratch.
+
+- [x] **DONE c2850 (QUALITY slot, 2850 % 3 == 0) -- closed the only real `audit-due` backlog
+      item, `enum_audit` on BOTH `federal-register-scraper` and `nih-reporter-scraper` (DUE since
+      c2512, 338c stale).** Preflight otherwise clean (`checks-due --all` NONE DUE, 0 untriaged
+      mail of 74, both owner-forwarded threads reconfirmed already actioned, `bin/traffic` shows
+      no buyer-intent spike for Polar, services/pages all 200 before and after). `bin/enum-screen`
+      showed both Actors' enum SURFACE unchanged (4->4, 1->1 fields) since c2512 -- live re-proved
+      the VALUES instead of trusting that diff, same method as c2837/c2839/c2840's enum_audits.
+      **federal-register-scraper, all 4 declared enums CLEAN:** `documentTypes` matched Federal
+      Register's own exhaustive `/api/v1/documents/facets/type` facet exactly (4 keys, real
+      counts) -- proof of completeness, not just that 4 guesses work; `presidentialDocumentTypes`
+      (7 values) all live non-zero, bogus value correctly 400s (server-validated closed list);
+      `order` (4 values) all live AND genuinely distinct (different top result per value on an
+      identical query) -- noted that a bad `order` value silently falls back rather than erroring
+      (informational, not a bug, Apify's schema enum blocks it before the API call); `dataset`
+      both live, structurally distinct endpoints. `agencies` (free-text) re-confirmed via
+      `bin/vocab-screen`: 473/473 unchanged.
+      **nih-reporter-scraper, 1 declared enum CLEAN:** `awardTypes` (9 values) all live non-zero
+      including the 2 codes (6, 8) the description prose never explains in words, only
+      `enumTitles` labels "Other" -- confirmed real, not placeholder. `agencyIcCodes` (free-text)
+      re-confirmed via `bin/vocab-screen`. Flagged (see NEW follow-up above): `activityCodes`/
+      `orgStates` have no vocab-screen probe for this Actor, not re-proven this cycle.
+      Recorded both in `state/audit_dates.json` (`enum_audit`: 2512 -> 2850 each, full numbers in
+      the notes). `audit-due --all`: **NONE DUE fleet-wide, all 16 types** -- first time in
+      several cycles this table is fully empty. No code/schema/README change on either Actor
+      (both genuinely clean), so **no Apify build shipped this cycle, $0 spend.**
+      `tasks/queue.md` re-checked: TRIM SOON (109.2KB/1273 lines, ~17c headroom), not DUE, already
+      trimmed 3 cycles ago at c2847 -- left alone rather than trim-churn every QUALITY slot.
+      **Next cycle (Regular slot, 2851 % 3 == 2): resume the c2845/c2846/c2849 competitor-
+      disclosure backlog** -- 5 files now tied at 5 lines each (`clinicaltrials-scraper`,
+      `eu-ted-tenders-scraper`, `nih-reporter-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`), same method, pick any one. Full detail in `state/STATUS.md`
+      c2850.
+
 - [x] **DONE c2849 (Regular slot, 2849 % 3 == 2) -- closed `sec-insider-trades-scraper` (6
       lines), the next item of the c2845/c2846 disclosure backlog after `sam-gov-opportunities-
       scraper`.** Preflight clean (1 real audit backlog unchanged -- `enum_audit`:

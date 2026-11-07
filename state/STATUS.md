@@ -1,3 +1,70 @@
+Updated: 2026-11-07 UTC by cycle 2850 (claude-sonnet-5). QUALITY slot (2850 % 3 == 0).
+Preflight: `audit-due --all` had exactly 1 real backlog (`enum_audit`: `federal-register-scraper`,
+`nih-reporter-scraper`, both DUE, gap 338c) -- CLOSED this cycle, fleet now NONE DUE across all 16
+types. `checks-due --all` NONE DUE (soonest `check-rental-converts` in 1c). `inbox-triage new`
+NONE UNTRIAGED of 74 (re-confirmed both owner-forwarded threads already actioned; `bin/traffic`
+shows no buyer-intent spike, Polar stays deferred per owner decision). `bin/revenue` $0 booked, 27
+Actors, 50 users, 818 runs30d, 3 ext_bad30d (known one-offs). Services active; `/`, `/pricing`,
+`/tools`, `/blog` all 200 before and after. **$0 spend** -- pure read-only HTTP against Federal
+Register's and NIH RePORTER's public APIs, no Actor run, no build (both audits came back clean,
+no code/schema/README to ship).
+
+**THE WORK: closed the only real `audit-due` backlog this cycle -- the `enum_audit` on both
+`federal-register-scraper` and `nih-reporter-scraper` (DUE since c2512, 338c stale), live
+re-proving VALUES rather than trusting `bin/enum-screen`'s "surface unchanged" diff (both showed
+4->4 and 1->1 fields IDENTICAL, which only means no schema edit happened, not that the values
+still resolve).**
+
+`federal-register-scraper` (4 declared enums, all CLEAN): **`documentTypes`
+(RULE/PRORULE/NOTICE/PRESDOCU) matched an EXHAUSTIVE upstream facet exactly** --
+`GET /api/v1/documents/facets/type` returns precisely these 4 keys with live counts
+(120115/77061/769801/8612), so this is proof of completeness, not just that 4 guesses work.
+**`presidentialDocumentTypes` (7 values)** all tested live via
+`conditions[presidential_document_type][]=` + `conditions[type][]=PRESDOCU`, every one non-zero
+(executive_order 1574, proclamation 4446, memorandum 809, notice 792, determination 803,
+presidential_order 16, other 60); a bogus value correctly 400s
+`{"errors":{"presidential_document_type":"invalid value"}}` -- the API itself enforces a closed
+list server-side, so 7-for-7 plus a clean negative control is decisive (no facet endpoint exists
+for this field to cross-check exhaustiveness directly, confirmed 404). **`order` (4 values)**
+all live AND genuinely distinct -- each returned a different top result on the identical query
+('climate'), ruling out a silently-ignored param. Noted for the record, not a bug: unlike
+`presidentialDocumentTypes`, a bogus `order` value does **not** error, it silently falls back
+(same silent-degrade shape `documentTypes` itself shows on an unknown type: `{"count":0}`, no
+error) -- Apify's own schema enum blocks bad input before either field ever reaches the live API,
+so this is informational only. **`dataset`** both live, structurally distinct endpoints
+(`/documents.json` vs `/public-inspection-documents/current.json`, the latter carrying
+`special_filings_updated_at`/`regular_filings_updated_at` the former lacks). `agencies` (free-text,
+no declared enum) re-confirmed via `bin/vocab-screen`: 473/473, unchanged since c2512.
+
+`nih-reporter-scraper` (1 declared enum, CLEAN): **`awardTypes` (9 values, "1"-"9")** all live via
+`POST /v2/projects/search {criteria:{award_types:["N"]}}`, every one a real non-zero total --
+1=647223, 2=236793, 3=196402, 4=30960, 5=1784262, 6=5062, 7=49809, 8=2258, 9=2547 -- including the
+2 codes (6, 8) the schema's own description prose never explains (only `enumTitles` labels them
+"Other"), confirming they are real active codes, not unused placeholders. A bogus code ("99")
+correctly returns `total:0` (silent-empty, same shape as `documentTypes` above, not an error --
+not a bug, schema enum already blocks it). `agencyIcCodes` (free-text) re-confirmed via
+`bin/vocab-screen`: all 9 current + 2 historical codes still resolve as expected. **Flagged, not
+fixed this cycle:** `activityCodes` and `orgStates` (this Actor's other 2 free-text stringLists,
+per the c1531 note) are not covered by `vocab-screen`'s `PROBES` dict for this Actor -- only
+`agencyIcCodes` is registered; queued below as a follow-up, time budget did not allow adding a
+new probe this cycle.
+
+Recorded both in `state/audit_dates.json` (`enum_audit`: 2512 -> 2850 for each, full live-proof
+numbers in each note). Re-ran `audit-due --all` after: **NONE DUE, fleet-wide, all 16 types** --
+first time in several cycles the backlog table is fully empty. `tasks/queue.md` is TRIM SOON
+(109.2KB/1273 lines, ~17c headroom, same shape c2841's note predicted: "will read TRIM SOON again
+almost immediately") -- not DUE, and was already trimmed 3 cycles ago at c2847, so left alone
+rather than trim-churning every QUALITY slot; next QUALITY slot should just re-check
+`check-doc-size` fresh. The c2845/c2846/c2849 competitor-disclosure backlog (5 files tied at 5
+lines each: `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+`trademark-search-scraper`, `uk-find-a-tender-scraper`) is untouched by this cycle -- picking
+`nih-reporter-scraper` for its enum_audit here does NOT close its disclosure-backlog entry too,
+same note c2849 made about `sam-gov`/`sec-insider-trades`. **Next cycle (Regular slot, 2851 % 3
+== 2): resume the disclosure backlog, any one of the 5 tied files, same method as c2842/c2843/
+c2846/c2849.**
+
+---
+
 Updated: 2026-11-07 UTC by cycle 2849 (claude-sonnet-5). Regular slot (2849 % 3 == 2).
 Preflight: `audit-due --all` 1 type with a real backlog (`enum_audit`: `federal-register-scraper`,
 `nih-reporter-scraper`, unchanged). `checks-due --all` NONE DUE (soonest `check-rental-converts`
