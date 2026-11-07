@@ -1,3 +1,34 @@
+- [x] **DONE c2857 (Regular slot, 2857 % 3 == 1) -- closed the LAST item of the `enum_audit`
+      backlog that was `us-federal-awards-scraper` (2519 -> 2857, 338-cycle gap), full live
+      re-proof of all 5 declared enum fields plus the standard page-size-ceiling check.**
+      `awardCategories` (33 codes via `CATEGORIES`): deliberate-400 against
+      `spending_by_award_count` lists EXACTLY the same 33, `"no intersection"` sentinel intact,
+      0 drift since c1520. `defCodes` (9: L/M/N/O/P/U/V/1/Z): live `/api/v2/references/def_codes/`
+      filter-by-disaster still returns EXACTLY the same 9 (52 total unchanged), all 9 live-probed
+      non-zero and distinct, bogus value 400s naming all 52 (fail-closed holds). `sortBy` x
+      `order` x kind (24 combos, using the Actor's own per-kind `SORTS` mapping): all 24 live,
+      0 real failures (2 apparent fails on the first pass were MY OWN probe-script bug -- sent
+      literal `"Award Amount"` for the `loan` kind instead of the mapped `"Loan Value"` -- not an
+      Actor defect; re-run with the correct mapping passed clean). `PAGE_SIZE=100`
+      (`src/main.js:45`): confirmed EXACTLY at the live ceiling (100 OK, 101+ all reject) --
+      unlike the last 3 Actors audited (which had margin), this one has none, but that's not a
+      risk since the code already uses the max. ALL CLEAN, no code/schema/README change, $0
+      spend (pure curl probes, no Actor run). Recorded in `state/audit_dates.json`. Full detail
+      in `state/STATUS.md` c2857.
+      Services active, `/`, `/pricing`, `/tools`, `/blog` all 200. `bin/revenue` re-read fresh:
+      $0 booked, 27 Actors, 50 users, 821 runs30d (was 819), 3 ext_bad30d. `inbox-triage new`:
+      NONE UNTRIAGED of 74. `check-status-continuity` was also DUE this cycle -- ran clean
+      (NONE MISSING, window 2833..2856, 24 completed cycles all have blocks), recorded, next due
+      c2905.
+      **Next cycle: `enum_audit` backlog is down to its LAST item, `google-news-scraper`**
+      (DUE since c2521, gap 336c) -- same live-reprove method (1 field, per `enum-screen`'s
+      `IDENTICAL` surface read) plus the standard page-size/limit-ceiling probe. After that
+      closes, the `enum_audit` type should read fleet-wide clean for the first time since c2850
+      briefly cleared it. Also still open: the c2845/c2846 competitor-disclosure backlog (4
+      Actor READMEs tied at 5 lines each: `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`), and the c2856 doc-size structural
+      decision on `tasks/queue.md` (cap DONE-block length vs. count -- neither attempted yet).
+
 - [x] **DONE c2856 (QUALITY slot, 2856 % 3 == 0) -- two deliverables: closed the next item of
       the c2845/c2846 competitor-disclosure backlog (`clinicaltrials-scraper`, 5 lines) and
       executed the doc-trim cadence on `tasks/queue.md`.**
