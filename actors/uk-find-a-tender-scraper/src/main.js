@@ -329,7 +329,10 @@ const SOURCES = {
         key: 'fts',
         label: 'Find a Tender',
         api: 'https://www.find-tender.service.gov.uk/api/1.0/ocdsReleasePackages',
-        // FTS rate-limits hard: "Rate limit of 12 exceeded. Please retry after 120 seconds."
+        // Both portals share this exact rate limiter: "Rate limit of 12 exceeded. Please retry
+        // after 120 seconds." (live-reconfirmed on FTS cycle 359; Contracts Finder, previously
+        // assumed to tolerate 20/window below, was live-caught throwing the IDENTICAL message
+        // cycle 2877 -- a real config drift, not a guess, so both now use the same safe margin.)
         rateMax: 10,
         requestTimes: [],
         buildUrl() {
@@ -358,7 +361,9 @@ const SOURCES = {
         key: 'cf',
         label: 'Contracts Finder',
         api: 'https://www.contractsfinder.service.gov.uk/Published/Notices/OCDS/Search',
-        rateMax: 20,
+        // See the FTS comment above -- live-caught cycle 2877 enforcing the same 12-per-window
+        // limit, not the 20 this previously assumed.
+        rateMax: 10,
         requestTimes: [],
         buildUrl() {
             const u = new URL(this.api);

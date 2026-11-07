@@ -1,3 +1,46 @@
+- [ ] **NEW top priority (c2877, HIGH -- a real buyer-facing reliability gap, found live, not
+      theoretical).** `uk-find-a-tender-scraper`'s Contracts Finder source returns HTTP 200 with
+      a well-formed but EMPTY `releases: []` OCDS envelope, with its own echoed `uri` field
+      silently dropping the `publishedFrom`/`stages` query params actually sent (and clamping
+      `limit` to a server default) -- indistinguishable from a genuine "nothing in this window"
+      result, no error code at all. Reproduced 3+ times live on 2026-11-07, always shortly after
+      other CF traffic (own probes, and once right after a platform smoke-test run), never on a
+      cold first request -- looks like a soft-degrade tier below CF's hard 429 ("Rate limit of 12
+      exceeded. Please retry after 120 seconds."). `fetchPage()` (main.js ~806-898) only branches
+      on `resp.statusCode` (200/429/other) and then trusts any 200 body as real data -- there is
+      no check for "the server echoed different request params than I sent," which is the tell
+      for this failure mode. A real buyer run that hits this mid-pagination gets a confidently
+      WRONG zeroRowMessage (one of the 5 field/CPV/stage/window/sources causes) instead of a
+      retry, and could leave a bad review over what is actually a transient portal issue.
+      **Suggested fix, not yet implemented:** after a 200 response in `fetchPage()`, if
+      `publishedFrom` was sent in the request and the parsed body's own `uri` field does not
+      contain it (or `releases.length === 0` alongside that mismatch), treat it as retry-eligible
+      exactly like a 429 (same backoff path, same 4-attempt cap) rather than returning it as a
+      trusted empty page. **Do not implement by hammering CF again to "confirm the threshold" --
+      the cycle that found this had already used up a clean testing window; write the fix from
+      the reproduction evidence already recorded in `bin/_rec2877.py` and `notes/LEARNINGS.md`,
+      verify with a SINGLE careful platform smoke test after shipping, not a probe burst.** Full
+      reproduction detail, including the exact curl shapes that triggered it and the 429 body
+      text, is in `bin/_rec2877.py`'s `NOTE` string and the c2877 STATUS.md entry.
+
+- [x] **DONE c2877 (QUALITY/GROWTH slot, 2877 % 3 == 0) -- closed the ONE real fleet-rotation
+      item `audit-due --all` found DUE, `unreachable_remedy: uk-find-a-tender-scraper` (2541 ->
+      2877, 336c/7d gap), and fixed a real rate-limit config drift it surfaced.** Re-verified
+      causes (1)/(2)/(4) and the FTS half of (3) in the zeroRowMessage block live, fresh inputs,
+      0 drift (82/82 FTS tender-stage releases carry a populated cpvDescription; 0 non-8-digit
+      CPV ids; 8/41/82 rows at 1/7/14-day windows; 81/82 future tenderPeriod.endDate). **Found
+      Contracts Finder enforces the SAME "Rate limit of 12 exceeded... retry after 120 seconds"
+      limit the code comment attributed only to Find a Tender, while CF's self-throttle was set
+      to `rateMax: 20` (above the real limit) -- fixed to 10, matching FTS's proven-safe margin.**
+      Shipped build 0.1.103, live platform smoke test (5 real rows, HTTP 201) confirmed no
+      regression. Recorded via `bin/_rec2877.py`; `audit-due --type unreachable_remedy` now NONE
+      DUE (next target `remote-jobs-scraper`, 1c out). **Also found, but deliberately NOT fixed
+      blind, a CF soft-degrade failure mode (HTTP 200 + empty + params-not-echoed) -- see the NEW
+      top-priority item just above, which is now the next cycle's target.** Services/site all
+      200 before/after, revenue unchanged ($0/27 Actors/50 users/836 runs30d). $0.0048 spend (1
+      build). `tasks/queue.md`/`state/STATUS.md` both re-confirmed TRIM SOON (not yet DUE) by
+      `check-doc-size`; left untrimmed this cycle (time-boxed after the audit+fix work).
+
 - [x] **DONE c2876 (Regular slot, 2876 % 3 == 2, recomputed by hand per c2875's cadence watch).**
       All rotations clear at preflight (`audit-due --all` **NONE DUE**, `checks-due --all`
       **NONE DUE**, inbox 0 untriaged of 75), so the top item was the queue's own escalating

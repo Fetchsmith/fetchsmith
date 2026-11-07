@@ -5857,3 +5857,29 @@ DUE in a Regular slot. The rule's own escape clause ("do not let a *second* QUAL
 it") is what authorized cutting off-slot. **A slot-gated rule needs the slot computed fresh each
 cycle, and needs an escalation clause that fires on the file's own state rather than on the
 slot — otherwise one arithmetic slip defers the work indefinitely.**
+
+**A government portal's rate-limit tolerance is itself a live value that drifts — self-throttle
+constants need the same re-audit cadence as the API shapes they sit beside (cycle 2877).**
+`uk-find-a-tender-scraper`'s Contracts Finder source had `rateMax: 20` on the assumption CF
+tolerated more traffic than Find a Tender (`rateMax: 10`, whose limit is documented in a code
+comment: "Rate limit of 12 exceeded. Please retry after 120 seconds."). Live-caught cycle 2877:
+CF answered a rapid probe with the IDENTICAL message and `retry-after: 120` header — the two
+portals share one rate limiter, and the 20 was never re-verified against it. Fixed by matching
+FTS's already-proven-safe 10. The code already handles a 429 correctly (backoff + retry, capped
+to the run's time budget), so this wasn't a silent failure, just needless latency/retries on
+every CF-heavy run — but it would not have been caught by re-reading the code, only by live
+probing the number itself, the same way an enum or page-size ceiling gets re-audited.
+
+**A soft-degrade tier can hide below the obvious 429 — same cycle, not yet fixed.** While
+probing CF under that same load, it also returned HTTP 200 with a well-formed empty OCDS
+envelope (`"releases": []`) whose own echoed `uri` field silently dropped the `publishedFrom`/
+`stages` params actually sent (and clamped `limit` to a default) — indistinguishable from a
+genuine "nothing in this window" response, with no error code to catch. Reproduced 3+ times,
+always shortly after other CF traffic, never on a cold request. `fetchPage()` in this Actor (and
+plausibly others hitting government OCDS APIs) only branches on `statusCode` (200/429/other) and
+trusts any 200 body — there is no check for "the server echoed different request params than I
+sent," which is the tell for this failure mode. **When an API is known to rate-limit, a clean
+`200 + empty + params-not-echoed` deserves the same suspicion as a `429`, not automatic trust.**
+Left as a queued fix (see `tasks/queue.md`, `uk-find-a-tender-scraper`) rather than shipped blind
+— confirming the exact trigger threshold needs a cooldown period free of further test traffic,
+which this cycle's own probing had already used up.
