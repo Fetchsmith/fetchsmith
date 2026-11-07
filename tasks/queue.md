@@ -1,3 +1,48 @@
+- [x] **DONE c2834 (Regular slot, 2834 % 3 == 2) -- ran the DUE `court-records-scraper`
+      `enum_audit` (fleet-wide `audit-due --all` showed exactly one real backlog item), then
+      fixed all 8 `apple-podcasts-scraper` lines from c2832's dead-handle start-here list; all
+      8 were genuine 404s, no false-positive class this time.** Preflight: checks NONE DUE
+      (soonest git-maintain in 2c), `audit-due --all` showed 1 DUE (`enum_audit` on
+      court-records-scraper, 336c gap), inbox NONE UNTRIAGED of 74 (re-read the owner's
+      hCaptcha/CourtListener-token thread and the Store-ranking-change forward, both already
+      actioned in prior cycles -- `CL_API_TOKEN` confirmed present in `secrets/env`). Services
+      active, `/`+`/pricing`+`/tools`+`/blog` all 200. $0 spend (one build ~$0.005 for the
+      apple-podcasts-scraper README fix; the enum_audit and all verification were read-only).
+      No owner email warranted.
+      **1. `bin/vocab-screen court-records-scraper`** re-verified the `courts` vocabulary
+      live: `/api/rest/v4/courts/` count 3359 == baked snapshot, `in_use=true` count 472 ==
+      snapshot's claimed 472, 5 spot-checked ids (scotus/ca9/cand/nysd/cacb/ohctapp1) all match
+      their baked in_use/jurisdiction flags plus a negative-control 404 -- ALL CLEAN, no drift
+      since c2498. Recorded in `state/audit_dates.json` (enum_audit: 2498 -> 2834);
+      `audit-due --all` now reports NONE DUE fleet-wide again.
+      **2. All 8 `apple-podcasts-scraper` `GONE` lines re-confirmed 404 live first** (one
+      `GET /v2/acts/<owner>~<name>` per handle, all returned 404), then checked for the
+      court-records-style false-positive shape (placeholder prose / in-sentence shorthand) --
+      none found this time, all 8 are real dead listings named in dense comparison prose:
+      `crawlerbros/applepodcasts-listennotes-scraper`, `crawlerbros/itunes-podcast-scraper`,
+      `crawlerbros/itunes-podcasts-scraper`, `crawlerbros/podchaser-scraper`,
+      `datagleaner/podcast-email-finder`, `himanshu-data/audio-podcast-transcriber`,
+      `neuro-scraper/itunes-podcast-host-email-and-phone-number-scraper`,
+      `neuro-scraper/itunes-podcast-host-phone-number-scraper`. Each appears exactly once in
+      the file (grepped all 8 fleet-wide within the README first to rule out a second
+      recurrence like court-records-scraper's line-224 summary) -- rephrased in place with the
+      same `(**delisted -- the Apify API returned 404 ... on 2026-11-07**)` inline note,
+      keeping the surrounding prose as the historical record rather than deleting it.
+      Shipped build 0.1.119 (pkg 0.1.38 -> 0.1.39), README-only; live README verified
+      byte-identical (72,417 == 72,417) via `versions[0].sourceFiles`. `check-price-superiority`
+      before/after: 2714/1040/0 unchanged, fleet `gone` 77 -> 69, `gone_disclosed` 38 -> 46
+      (exactly -8/+8 as expected). `check-charges` 1/0/0, `check-registry-fields` 0 drift,
+      `check-own-price-prose` 27/0, all clean on this Actor.
+      **Next on the c2832 start-here list: `steam-reviews-scraper` (7 lines), then
+      `trademark-search-scraper` (6), `hacker-news-scraper` (6)** -- 19 of 83 lines will remain
+      after steam-reviews. **Two of those remaining lines are flagged in advance as likely the
+      same false-positive class c2833 found (verify live before editing, do not assume real):**
+      `trademark-search-scraper/README.md:150` names `owner/slug` (the exact literal
+      placeholder token that was a false positive on court-records-scraper); and
+      `hacker-news-scraper/README.md:123` names `omcljs/om` and `reagent-project/reagent`
+      together -- these read like ClojureScript library names, not Apify Store handles, and
+      deserve a read of the surrounding sentence before treating them as dead rivals.
+
 - [x] **DONE c2833 (Regular slot, 2833 % 3 == 1) -- fixed all 8 `court-records-scraper` lines
       from c2832's dead-handle start-here list; 6 were real, 2 were a second false-positive
       class the filter still misses.** Preflight all clean (checks/audits NONE DUE, inbox NONE

@@ -1,3 +1,71 @@
+Updated: 2026-11-07 UTC by cycle 2834 (claude-sonnet-5). Regular slot (2834 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 2c, cycle 2836). `audit-due
+--all` had 1 real backlog item -- `enum_audit` on `court-records-scraper` (336c gap, DUE) --
+closed this cycle, now NONE DUE fleet-wide again, all 16 types. `inbox-triage new` NONE
+UNTRIAGED of 74 -- re-read both open owner threads visible in raw `inbox list` (the
+`court-records-scraper` hCaptcha/CourtListener-token ask and the Apify `/v2/store` Nov-15
+forward); both remain fully actioned (`CL_API_TOKEN` confirmed present in `secrets/env`,
+40 chars, matches the token the owner sent 2026-10-28). `bin/revenue` $0 booked, 27 Actors,
+50 users, 812 runs30d (809 ext_ok / 3 ext_bad). Services all active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. Spend: one build (~$0.005, apple-podcasts-scraper README fix);
+the enum_audit (`bin/vocab-screen`, 5 live GETs) and all verification were $0 read-only.
+No owner email warranted.
+
+**THE WORK: two items, since the preflight audit backlog had exactly one real entry and it
+was quick. (1) Closed the DUE `court-records-scraper` `enum_audit`.** `bin/vocab-screen
+court-records-scraper` re-verified the `courts` vocabulary live: CourtListener
+`/api/rest/v4/courts/` count 3359 == baked snapshot (harvested 2026-09-19); live
+`in_use=true` count 472 == snapshot's claimed 472; 5 spot-checked ids (scotus, ca9, cand,
+nysd, cacb, ohctapp1) plus a negative control (`zzyzxqplonknonexistentcourtfetchsmithtest`,
+correctly 404) all match their baked in_use/jurisdiction flags exactly. **ALL CLEAN -- no
+drift since c2498 (1191c/~25d stale before this cycle).** Recorded in
+`state/audit_dates.json` (`enum_audit`: 2498 -> 2834, with a note); `audit-due --all` now
+reports NONE DUE fleet-wide again, all 16 types, 7th clean preflight running since c2828.
+
+**(2) Continued the dead-handle cleanup queue: `apple-podcasts-scraper`'s 8 `GONE` lines,
+all genuine 404s, no false-positive class this time.** Each of the 8 handles
+(`crawlerbros/applepodcasts-listennotes-scraper`, `crawlerbros/itunes-podcast-scraper`,
+`crawlerbros/itunes-podcasts-scraper`, `crawlerbros/podchaser-scraper`,
+`datagleaner/podcast-email-finder`, `himanshu-data/audio-podcast-transcriber`,
+`neuro-scraper/itunes-podcast-host-email-and-phone-number-scraper`,
+`neuro-scraper/itunes-podcast-host-phone-number-scraper`) was re-confirmed 404 live via
+`GET /v2/acts/<owner>~<name>` before editing, per the procedure c2832 wrote down. Unlike
+`court-records-scraper` last cycle, none of the 8 turned out to be a placeholder/shorthand
+false positive -- all are real dead Store listings named in dense comparison prose. Grepped
+each handle across the whole README first to check for a second recurrence (the shape that
+bit court-records-scraper's line-224 summary); none found here, each appears exactly once.
+Rephrased each in place with the same `(**delisted -- the Apify API returned 404 for this
+Actor on 2026-11-07**)` inline note used on court-records-scraper, keeping the surrounding
+price/feature prose as the historical record rather than deleting it. Shipped build 0.1.119
+(package.json 0.1.38 -> 0.1.39), README-only; live README verified **byte-identical**
+(72,417 == 72,417) via `versions[0].sourceFiles`. **Verified purely corrective with a real
+before/after `check-price-superiority` run:** 2714 compared / 1040 cheaper / 0 flagged
+unchanged both before and after, fleet `gone` 77 -> 69 and `gone_disclosed` 38 -> 46 --
+exactly -8/+8, no existing verdict moved. Per-Actor guards after: `check-charges` 1/0/0,
+`check-registry-fields` 0 drift, `check-own-price-prose` 27/0, all clean.
+
+**Not done, flagged for the next cleanup cycle:** two of the remaining 19 `GONE` lines look
+like they may be the same false-positive class found on court-records-scraper, and should be
+read in context before editing rather than assumed real: `trademark-search-
+scraper/README.md:150` names `owner/slug` (the exact literal-placeholder token that was a
+false positive before), and `hacker-news-scraper/README.md:123` names `omcljs/om` and
+`reagent-project/reagent` together, which read like ClojureScript library names rather than
+Apify Store handles.
+
+**Blockers: none.** Standing: $0 revenue after 2834 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. Both `STATUS.md` and `tasks/queue.md`
+remain TRIM SOON (grew again this cycle rather than being trimmed) -- re-check
+`check-doc-size` fresh next cycle; a QUALITY slot should take the trim if either now reads
+TRIM DUE. **`steam-reviews-scraper` (7 lines) is next on the c2832 start-here list**, same
+procedure: re-confirm each handle 404 live first, check for the false-positive shape, then
+`trademark-search-scraper` (6), `hacker-news-scraper` (6) -- 19 of 83 lines will remain after
+steam-reviews.
+
+---
+
+### Previous cycle (c2833) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2833 (claude-sonnet-5). Regular slot (2833 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 3c, cycle 2836). `audit-due
 --all` NONE DUE fleet-wide, all 16 types (6th clean cycle running since c2828). `inbox-triage
