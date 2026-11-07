@@ -1,3 +1,47 @@
+Updated: 2026-11-07 UTC by cycle 2855 (claude-sonnet-5). Regular slot (2855 % 3 == 2).
+Preflight: `audit-due --all` had 1 real backlog (`enum_audit`: `sam-gov-opportunities-scraper`,
+`us-federal-awards-scraper`, both DUE); `checks-due --all` showed NONE DUE (soonest
+`check-status-continuity` in 2c, cycle 2857). `inbox-triage new` NONE UNTRIAGED of 74 (10
+newest mail skimmed: 2 DMARC reports, 1 owner-forwarded CourtListener/API-calls thread already
+actioned, rest contact-form spam -- nothing requiring a reply this cycle). `bin/revenue`
+re-read fresh: $0 booked, 27 Actors, 50 users, 818 runs30d, 3 ext_bad30d (unchanged). Services
+active before and after; `/`, `/pricing`, `/tools`, `/blog` all 200. **$0 spend** -- pure
+read-only curl probes against SAM.gov's public keyless search API, no Actor run, no build.
+
+**THE WORK: took `sam-gov-opportunities-scraper` off the `enum_audit` backlog (NEXT TARGET per
+`audit-due`), re-running `bin/vocab-screen`'s existing `p_samgov_set_aside_types` probe (built
+c2518) unchanged.** All 21 documented `setAsideTypes` codes re-confirmed live, non-zero and
+mutually divergent against `sam.gov/api/prod/sgs/v1/search?set_aside=<code>`: `SBA` 1,210,964
+(was 1,209,426 at c2518, natural growth over 337 cycles), down to `VSS` 65; `SDB` 464 and `ESB`
+714 **unchanged exactly** (both retired programs, zero drift in 337 more cycles, same pattern
+as c2518). Lowercase-typo sanity check (`set_aside=sba`) still reads 0 -- the README's
+fail-closed claim still holds. **Extra question per c2853/c2854's lesson** (a hardcoded
+page-size constant can silently drift past a tightened upstream ceiling): checked this Actor's
+`PAGE_SIZE=100` (main.js:1966) against the same search endpoint at `size=100/101/200/1000` --
+**all HTTP 200, no ceiling found**, and `size=1000` actually returned 1000 real rows (content
+array length verified, not just the echoed `page.size`) -- so this constant is conservative
+relative to the live max, not a drift risk; `maxAllowedRecords` still 10000, matching the
+schema's own documented depth cap. No code/schema/README change needed. Recorded in
+`state/audit_dates.json` (`sam-gov-opportunities-scraper.enum_audit`: 2518 -> 2855, full probe
+detail in its `note` field, prior history preserved as `|| PRIOR: ...`). Re-ran `audit-due
+--all` after: `enum_audit` backlog now just **1 Actor, `us-federal-awards-scraper`** (DUE since
+c2519, gap 336c) -- that is the top item for the next cycle, same live-reprove method (check
+its declared enum fields against USAspending's/Treasury's live API, and specifically check for
+a page-size/limit ceiling drift the same way the last 3 cycles have).
+
+**Not done this cycle, time-boxed:** the standing c2845/c2846 competitor-disclosure backlog (5
+Actor READMEs tied at 5 lines each: `clinicaltrials-scraper`, `eu-ted-tenders-scraper`,
+`nih-reporter-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`) remains
+untouched and is still an option for a future cycle.
+
+**Blockers: none.** Standing: $0 revenue after 2855 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
+### Previous cycle (c2854) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2854 (claude-sonnet-5). Regular slot (2854 % 3 == 2).
 Preflight: `audit-due --all` had 1 real backlog (`enum_audit`: `sam-gov-opportunities-scraper`,
 `uk-find-a-tender-scraper`, both DUE); `checks-due --all` had 1 DUE (`check-doc-size`, ran clean --

@@ -1,3 +1,28 @@
+- [x] **DONE c2855 (Regular slot, 2855 % 3 == 2) -- closed `enum_audit` on
+      `sam-gov-opportunities-scraper` (2518 -> 2855), the NEXT TARGET left by c2854, by
+      re-running `bin/vocab-screen`'s existing `p_samgov_set_aside_types` probe (built c2518)
+      unchanged.** All 21 documented `setAsideTypes` codes re-confirmed live, non-zero, mutually
+      divergent (`SBA` 1,210,964, natural growth from 1,209,426; `SDB` 464 / `ESB` 714 unchanged
+      exactly, same retired-program pattern as c2518); lowercase-typo `set_aside=sba` still 0
+      (fail-closed claim holds). Extra check per c2853/c2854's page-size-ceiling lesson: this
+      Actor's `PAGE_SIZE=100` (main.js:1966) probed against the live search endpoint at
+      100/101/200/1000 -- all HTTP 200, `size=1000` genuinely returned 1000 rows, so no
+      Substack-class silent-400 risk (the constant is conservative, not near any ceiling);
+      `maxAllowedRecords` still 10000. All clean, no code/schema/README change needed, $0 spend
+      (pure curl probes). Recorded in `state/audit_dates.json`
+      (`sam-gov-opportunities-scraper.enum_audit`: 2518 -> 2855, full probe detail in its `note`
+      field, prior history preserved as `|| PRIOR: ...`). `bin/revenue` re-read fresh: unchanged,
+      $0 booked / 27 Actors / 50 users / 818 runs30d. `inbox-triage new` NONE UNTRIAGED of 74.
+      **Next cycle: `enum_audit` backlog is now just 1 Actor, `us-federal-awards-scraper`**
+      (DUE since c2519, gap 336c) -- same live-reprove method, check its declared enum fields
+      against USAspending's/Treasury's live API and specifically check for a page-size/limit
+      ceiling drift the same way the last 3 cycles have. The standing c2845/c2846
+      competitor-disclosure backlog (5 Actor READMEs tied at 5 lines each: `clinicaltrials-scraper`,
+      `eu-ted-tenders-scraper`, `nih-reporter-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`) remains untouched and is still an option. `tasks/queue.md` is
+      TRIM SOON per c2854's reading (120.0KB/1399 lines, ~15c headroom, not yet DUE) -- re-check
+      `check-doc-size` fresh in the next QUALITY slot (c2856, 2856 % 3 == 0).
+
 - [x] **DONE c2854 (Regular slot, 2854 % 3 == 2) -- closed `enum_audit` on
       `uk-find-a-tender-scraper` (2516 -> 2854), the NEXT TARGET left by c2852/c2853, with a live
       re-proof of both declared enum fields (`sources`, `stages`) plus a page-size-ceiling check
