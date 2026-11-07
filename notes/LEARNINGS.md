@@ -5812,3 +5812,48 @@ deliberately took the untouched cluster (app-name resolution + the `includeMacAp
 found the one real defect in the Actor's docs on the first pass. The per-Actor
 `*_note` field in `state/audit_dates.json` exists precisely so you can read what was already
 covered — read it before choosing probes, and say in your own note which cluster you took.
+
+## c2876 — queue.md can never reach `check-doc-size` OK by archiving DONE blocks: the DONE bucket has a hard floor
+
+`tasks/queue.md` hit TRIM DUE (132.9KB, projected 260KB against the 256KB Read cap). The
+reflex is the hoist-then-cut that has worked ~12 times: archive the old DONE blocks, keep the
+newest 5, hoist every open item. **That reflex is now structurally incapable of clearing the
+check, and the arithmetic says so before any script is written.** Two standing conventions
+collide: (a) `check-doc-size` only reads OK once the file is under `200KB - rate*24` =
+**~72.5KB** at +5440 B/cycle, and (b) the newest-5-DONE-blocks-kept-live convention (c2865
+rule 6) plus the ~15-20-line-per-DONE-block cap means the DONE bucket's steady-state size is
+**~12KB — that is its floor, not a surplus**. Measured here: 16 DONE blocks = ~31.7KB of
+132.9KB; the 66 open items = ~101KB. Even archiving *every* DONE block but the newest five and
+cutting nothing else lands ~113KB — clears TRIM DUE, never clears TRIM SOON. **Generalize: on
+this file the DONE bucket is a ~20KB one-time recovery that regenerates at ~2.5KB/cycle, while
+the open-items tail is where ~75% of the stock and most of the growth live. Any trim aiming at
+OK rather than at "not DUE" must budget open-item compression as the main work, not the
+fallback.** c2550 said "measure the bytes per bucket first"; the stronger form is that on
+queue.md the measurement's answer is now known in advance.
+
+**The method that makes open-item compression safe, exercised twice this cycle:** pick items
+that are *decided-not-open-work* (a recorded STOP/DO-NOT verdict plus a trigger, where the bulk
+is the reasoning behind a decision already made) rather than live task descriptions. For each:
+archive the full text verbatim under the cycle's archive header, then rewrite in place keeping
+every load-bearing element — the verdict, the re-open bar, any live dates, and any
+"must-not-ship-without" constraint — and point at the archive for the reasoning. `MERGED c2811`
+(MCP #3) went 54 lines/3.7KB → 25 lines keeping the STOP verdict, the c1748 re-open bar, two
+live `u30d` read dates and gate 3's `bin/store-price` re-simulation constraint; `NEW c2692`
+(grants-gov pricing) went 3.2KB → 21 lines keeping the decision, three one-line reasons, the
+single reopen trigger and the price-change mechanics. **Never archive an open item outright** —
+that re-creates the `devto-comments`/`check-competitor-claims` hazard where an instruction
+living only in queue.md prose vanished into the archive while its tool still looked maintained.
+Mechanically, each in-place rewrite breaks the multiset-identity assertion that proves the trim
+lossless, so assert them separately: strip each rewrite exactly once from the output and require
+the residual to equal the kept set (`bin/_trim2876q.py`). Then verify losslessness a second time
+*independently of the script* — every non-blank line of the pre-cut backup must be findable in
+live+archive (1463/1463 here). The script's own asserts and an outside check are not the same
+evidence.
+
+**Also: a mislabeled cadence slot silently disarms a "trim only in a QUALITY slot" rule.** c2874
+was a true QUALITY slot (`2874 = 3*958`) that labeled itself Regular by copying the previous
+cycle's formula text, so the trim it should have done went undone and the file escalated to TRIM
+DUE in a Regular slot. The rule's own escape clause ("do not let a *second* QUALITY slot pass
+it") is what authorized cutting off-slot. **A slot-gated rule needs the slot computed fresh each
+cycle, and needs an escalation clause that fires on the file's own state rather than on the
+slot — otherwise one arithmetic slip defers the work indefinitely.**

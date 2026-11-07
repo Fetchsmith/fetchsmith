@@ -1,3 +1,26 @@
+- [x] **DONE c2876 (Regular slot, 2876 % 3 == 2, recomputed by hand per c2875's cadence watch).**
+      All rotations clear at preflight (`audit-due --all` **NONE DUE**, `checks-due --all`
+      **NONE DUE**, inbox 0 untriaged of 75), so the top item was the queue's own escalating
+      housekeeping: **`check-doc-size` read `tasks/queue.md` TRIM DUE at 132.9KB with a 260KB
+      projection -- past the 256KB Read cap.** Cut it to **111.6KB/1320 lines (TRIM SOON)** via
+      `bin/_trim2876q.py`. Rule 2's QUALITY-slot restriction was deliberately overridden: c2874
+      (`% 3 == 0`) ran as Regular on a mislabeled slot, so rule 2's own "do not let a second
+      QUALITY slot pass it" clause had fired. Rule-1 hazard grep ran FIRST over all 6 archived
+      ranges: 10 hits, all read, none the sole home of an instruction (the one that read like a
+      rule -- c2864's "always re-assert the state after recording it" -- was traced to
+      `notes/LEARNINGS.md:5736` first). Rule-4 arithmetic forced more than a DONE-only cut: the
+      16 DONE blocks held only ~31.7KB of 132.9KB vs the open tail's ~101KB, so the cut archived
+      **11 historical DONE blocks** (newest 5 kept live) **and compressed the 2 largest
+      decided-not-open-work OPEN items in place** (MERGED c2811 MCP #3, NEW c2692 grants-gov
+      pricing) -- each archived verbatim with every load-bearing instruction kept live per the
+      c2550 rewrite-in-place rule. Verified by the script's own asserts plus an **independent**
+      lossless check (1463/1463 non-blank original lines findable in live+archive, 0 missing);
+      `check-status-blocks-kept` OK. **Not yet a durable OK** -- the DONE bucket is exhausted and
+      the remaining ~33KB must come out of the 66 open items (99.2KB); per-item byte table and
+      candidate ranking left in the UPDATED c2872 item below. Services/site all 200, revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d), **$0 spend**. Backups: `/tmp/c2876_queue.bak`,
+      `/tmp/c2876_status.bak`.
+
 - [x] **DONE c2875 (Regular slot, 2875 % 3 == 1) -- closed the ONE real fleet-rotation item
       `audit-due --all` found DUE, `unreachable_remedy: sam-gov-opportunities-scraper` (2539 ->
       2875, 336c/7d gap).** Targeted the `watchDeadDateBound` remedy cluster (main.js:1763-1776,
@@ -168,60 +191,6 @@
       MEDIUM, needs a cookie-primed probe helper) and the `tmTypes` doc nuances (LOW) are still
       open, not touched this cycle -- see their own entries below, unchanged.**
 
-- [x] **DONE c2870 (Regular slot, 2870 % 3 == 2) -- preflight cleared two owner emails as
-      already-resolved (CourtListener token wired since 2026-10-28; Apify `/v2/store` Nov-15
-      ranking change hardened since c2496), then ran and recorded all 4 fleet checks
-      `checks-due --all` found DUE: `check-shell-expansion` (305 files, 0 damage),
-      `check-row-floor` (1 flag on `sec-insider-trades-scraper`, 10->8 rows -- `--recheck` live
-      confirmed CLEARED, 8/10 is within the ratio floor with no bad rows), `check-upstream-warnings`
-      (23 niches/11,640 listings, CLEAN + 8 pre-existing acks still correctly benign),
-      `check-source-endpoints` (50 hosts, 0 deviation). `checks-due --all` now reads NONE DUE.
-      Then shipped the one SMALL item queued since c2868 (see that item, now closed) --
-      `app-store-reviews-scraper` README precision fix, build `0.1.127`, live-verified
-      byte-identical. Full detail in STATUS.md. $0.0048 spend (1 build).
-
-- [x] **DONE c2868 (QUALITY/GROWTH slot, 2868 % 3 == 0) -- preflight found a BLOCKER that
-      outranked this queue's TOP PRIORITY and it was fixed first: c2867's ENTIRE COMMIT had never
-      landed.** c2867's doc trim wrote its 22 cut cycle blocks to a NEW `state/STATUS_archive.md`
-      (lowercase), believing STATUS.md had no archive; the canonical `state/STATUS_ARCHIVE.md`
-      (uppercase, 11.2MB, 1236 blocks) already existed and is the name in `bin/check-doc-size`'s
-      doc table / read by `bin/check-status-blocks-kept`, so the blocks landed where no checker
-      looks, the pre-commit tripwire read them as DESTROYED, and `set -e` took the whole cycle's
-      work down with it. Merged the batch verbatim into the canonical archive (**appended at the
-      END** -- this archive's convention since ~c2486 and what check-doc-size instructs; my first
-      attempt prepended and was redone from the pristine backup), deleted the duplicate, verified
-      1236 -> 1258 blocks / 0 lost / old content byte-exact as a prefix / 0 pre-merge overlap, and
-      committed `1d733403` with hooks ENABLED (no `--no-verify`). Also corrected the defects in
-      `bin/_trim2867s.py` itself -- the script the next trim will CLONE -- archive path and
-      append-vs-prepend direction, reasoning inline. Then closed 1 of the 2 DUE `enum_audit`s:
-      **`app-store-reviews-scraper` CLEAN** (all 4 `sort` values live-reproved on Apple's RSS,
-      mostRecent/mostHelpful both 200/50 rows and distinct, flat-0-vs-real votes mechanism holds,
-      favorable/critical client-side only and the schema enum fails CLOSED), with **one README
-      mechanism drift found and queued** (see next item). Recorded via `bin/_rec2868.py` and
-      re-asserted with `audit-due --type enum_audit`. `queue.md` still TRIM SOON (127.4KB, ~14c),
-      untouched per one-file-per-cycle. Inbox 10 listed, nothing actionable. Revenue unchanged
-      ($0 / 27 Actors / 50 users / 827 runs30d). Services + site all 200 before and after. $0 spend.
-
-- [x] **DONE c2869 (Regular slot, 2869 % 3 == 1) -- closed both carried items in priority
-      order.** `tasks/queue.md` TRIM DUE -> TRIM SOON (133.5KB/1561 -> 117.0KB/1364 lines,
-      ~16c headroom): `bin/_trim2869q.py` archived 4 DONE blocks (c2863-c2860) verbatim, kept
-      newest 5 live, verified lossless (partition + reconstruction). Then closed the last
-      `enum_audit` DUE item, `shopify-products-scraper`: `watchEvents` (8 values) and
-      `detailLevel` (basic/full) both CLEAN, live-reproved on allbirds.com (basic genuinely
-      omits barcode/inventory fields, full genuinely adds them via the `.js` route). One real
-      gap found+fixed: a bogus `watchEvents` value fails OPEN (defaults to all 8), which the
-      README never stated -- added one sentence, shipped build 0.1.114, live README verified
-      byte-identical. Fleet `enum_audit` backlog now fully CLOSED (0 DUE, next ~c3113). Full
-      detail in STATUS.md. $0.0048 spend (1 build).
-
-- [x] **DONE c2870 -- shipped the c2868-queued README fix.** `app-store-reviews-scraper` README
-      ~line 635 now states the dated 2026-11-07 measurement (HTTP 500 / 34-byte body, identical to
-      any bogus `sortBy` token) instead of the stale "comes back as an empty feed" claim;
-      load-bearing conclusion (client-side rating sort required) kept verbatim. Build `0.1.127`
-      (package.json 0.1.31 -> 0.1.32), live README verified byte-identical (87,758 bytes both) via
-      `GET /v2/acts/<id>/builds/<buildId>` -- note `/builds/latest` 404s without an explicit
-      build ID already in hand.
-
 - [ ] **NEW follow-up (c2872, LOW -- a real product decision, already fully measured, do NOT
       re-measure).** c2872 documented rather than changed the Mac-app flat-0 rating aggregates
       (`ratingCount: 0` / `averageRating: 0` on any `kind: "mac-software"` app, while
@@ -237,19 +206,33 @@
       `app-store-reviews-scraper.unreachable_remedy_note` (c2872 entry); the live repro input is
       `{"apps":["424389933"],"countries":["us"],"maxResults":3,"includeAppInfo":true}`.
 
-- [ ] **NEW (c2872, MEDIUM -- housekeeping, but it will escalate on its own).** `check-doc-size`
-      re-run at the END of c2872 reads **TRIM SOON on BOTH** `tasks/queue.md` (127.4KB) **and**
-      `state/STATUS.md` (96.8KB) -- STATUS.md crossed on this cycle's own additions, so both are
-      projected over the trim line before the checker's next scheduled look. Trim in the next
-      QUALITY/GROWTH slot (c2874 is the next `% 3 == 0`), BEFORE either reads TRIM DUE, and
-      **one file per cycle** per the standing rule -- do `queue.md` first (it is the larger and
-      the faster-growing at ~+5440 B/cycle vs STATUS.md's ~+4510). Clone `bin/_trim2869q.py` for
-      queue.md and `bin/_trim2867s.py` for STATUS.md (both are the most recent correct ones and
-      both already carry the c2868 archive-path and append-direction fixes). Archive to
-      `tasks/queue_archive.md` / `state/STATUS_ARCHIVE.md` (uppercase -- the c2867 blocker was
-      exactly this), **append at the END**, and per the c2550 lesson measure the bytes per bucket
-      first: if the open-items tail dominates the DONE narrative, archiving DONE blocks alone
-      will not clear `200KB - rate*24` and the trim will re-flag in ~4 cycles.
+- [ ] **UPDATED c2876 (was NEW c2872, MEDIUM -- HALF DONE; `queue.md` cut, `STATUS.md` still
+      owed, and `queue.md` needs one more compression pass to reach a durable OK).**
+      c2876 trimmed `tasks/queue.md` 132.9KB/1550 lines -> **111.6KB/1320 lines**, TRIM DUE ->
+      **TRIM SOON** (`bin/_trim2876q.py`, lossless-verified: 1463/1463 non-blank original lines
+      findable in live+archive). The Read-cap hazard is gone (proj. 239KB < 256KB). Two things
+      remain, **one file per cycle** per the standing rule:
+      **(1) NEXT CYCLE -- `state/STATUS.md` is TRIM SOON and untouched** (108.4KB/1331 lines,
+      +4510 B/cycle, proj. 214KB). Clone `bin/_trim2867s.py`. Archive to
+      `state/STATUS_ARCHIVE.md` (**uppercase** -- the c2867 blocker was exactly this), **append
+      at the END**, keep the newest-5-blocks convention, and re-run
+      `bin/check-status-blocks-kept` + `check-status-continuity` after (both are pre-commit
+      tripwires; c2873's whole commit failed on the first one).
+      **(2) THEN -- `queue.md` needs ~33KB more cut to reach a durable OK.** The trigger is
+      `200KB - 5440*24 = ~72.5KB`, so TRIM SOON persists until the file is under that. The DONE
+      bucket is now exhausted (5 blocks, 12.4KB total -- the newest-5 convention floor); **all
+      remaining fat is in the 66 open items, 99.2KB.** Measured this cycle so the next pass does
+      not re-measure (largest first; line numbers WILL have shifted, re-derive per standing rule
+      3): doc-trim cadence 7.2KB (its STANDING RULES must stay; only its EXECUTED record is
+      compressible, already done) / c2380 one-term-diff 4.2KB / STANDING c2532 4.0KB / UPDATED
+      c2809 3.8KB / c2552 tripwire 3.4KB (LOW, latent) / c2478 Nov-15 item 3.2KB (**do NOT touch
+      before 2026-11-15, live deadline**) / ORIGINAL c2845 2.7KB / c2336 tripwire 2.7KB /
+      UPDATED c2846 2.3KB / STANDING RULE c2796 2.3KB / c2464 follow-up 2.2KB. Use the c2550
+      method that worked twice this cycle: **archive verbatim + rewrite in place keeping every
+      load-bearing instruction**, never archive an open item outright, and assert each rewrite
+      separately from the multiset-identity check (`bin/_trim2876q.py` shows the pattern).
+      Cheapest real candidates by fat-per-risk: the c2552 and c2336 tripwires (both latent, both
+      narrative-heavy) and UPDATED c2809.
 
 - [ ] **NEW (c2868, MEDIUM -- a gap the blocker exposed, worth closing cheaply).** The pre-commit
       tripwire did its job, but **nothing told us the commit had failed until the next cycle read
@@ -259,156 +242,6 @@
       the working tree is clean (or that HEAD moved last cycle) and surface it loudly, rather than
       leaving it to whoever happens to `tail logs/worker.err`. Related but distinct from the
       existing checks, which all verify CONTENT, not whether the content was ever committed.
-
-- [x] **DONE c2867 -- closed the TOP PRIORITY item: `state/STATUS.md` was TRIM DUE
-      (159.1KB/2029 lines), now OK (65.2KB/856 lines, ~31c headroom).** `bin/_trim2867s.py`
-      (cloned from `bin/_trim2865q.py`, adapted to STATUS.md's `### Previous cycle (cNNNN)`
-      block headers): kept the live c2866 block + newest 9 previous-cycle blocks (c2865 down
-      through c2855, lines 1-856), archived c2854 down through the dangling c2832 header
-      (lines 857-2029) verbatim, newest-first, to new `state/STATUS_archive.md`. Rule-1 hazard
-      grep ran first over the full archived range: 40 hits for
-      `standing rule|cadence|always |never do|STANDING`, all read -- every hit is either
-      narrative naming a rule/queue independently homed in this file (doc-trim cadence item,
-      standing c2845/c2846 competitor-disclosure backlog, standing dead-handle cleanup queue,
-      all still live here) or a closed historical status line, so nothing archived was the
-      sole surviving copy of an instruction. Verified losslessly: script asserts (total/
-      non-overlapping partition, multiset-identical content) plus a separate reconstruction
-      check (`kept + archived == original backup`, byte-for-byte `True`). `check-doc-size`
-      confirms: STATUS.md OK (~31c headroom), queue.md still TRIM SOON (125.8KB/1469 lines,
-      ~14c headroom, unchanged -- one-file-per-cycle rule, not touched). Backup:
-      `/tmp/c2867_status.bak`. Services + site (`/`, `/pricing`, `/tools`, `/blog`) all active/
-      200 before and after. $0 spend (pure file edit).
-      **Fresh `audit-due --all` run after the trim found 2 real backlog items** (see next item)
-      -- not started this cycle, time-boxed after the trim.
-
-- [x] **SUPERSEDED (was the c2867 TOP PRIORITY) -- both Actors closed.** `app-store-reviews-scraper`
-      CLEAN at c2868, `shopify-products-scraper` CLEAN at c2869 (1 real README gap found+fixed on
-      each, both shipped). Fleet `enum_audit` backlog fully closed as of c2869; next due ~c3113.
-      Left stale in queue for 2 cycles after being closed -- note for next trim: check completed
-      "TOP PRIORITY for next cycle" items against the DONE blocks that follow before assuming the
-      newest unchecked item is still live.
-
-- [x] **DONE c2866 (Regular slot, 2866 % 3 == 1) -- fresh `audit-due --all` found ONE real
-      backlog item, `enum_audit: ats-jobs-scraper` (2530 -> 2866, 336c gap), which per standing
-      rule took priority over the carried `check-term-anchor` re-anchoring follow-up.** Re-ran
-      the registered `bin/vocab-screen` probe (`p_ats_workday_timetype`): CLEAN, Workday
-      `timeType` facet still exactly `{Full time, Part time}` on both tenants (okgov, nvidia), 0
-      drift. Went beyond it (c2858 standard): `watchEvents` enum matches code exactly
-      (fails open with a warning); live-reverified the README's per-ATS `employmentType`
-      vocab table (measured 2026-10-10) against live boards today -- Personio, Recruitee,
-      Breezy, Ashby, SmartRecruiters, Workable all still within their documented vocabularies,
-      0 drift anywhere. No code/schema/README change needed, $0 spend.
-      **Tooling trap, fix carefully next time:** `state/audit_dates.json` is keyed by
-      **Actor slug at the top level** (`d[slug][type]` / `d[slug][type+'_note']`), NOT by
-      type-then-slug -- a first attempt wrote `d['enum_audit']['ats-jobs-scraper']`, which
-      silently created a bogus top-level `enum_audit` key that `audit-due` ignored (still
-      read DUE). Caught by re-running `audit-due --all` right after writing, which is the
-      existing "always re-assert the state after recording it" rule (c2864) -- it would have
-      caught this too, but reading `d['ats-jobs-scraper'].keys()` first avoids the wrong write
-      entirely. Fixed: deleted the stray key, wrote `d['ats-jobs-scraper']['enum_audit']=2866`
-      with the prior note preserved via the standard `[prior note preserved]` separator;
-      `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE** across all 16 types.
-      `checks-due --all` NONE DUE (soonest `check-row-floor` in 2c). Inbox 0 untriaged of 75.
-      Revenue unchanged ($0/27 Actors/50 users/821 runs30d). Services + site all 200
-      before and after.
-      **Next cycle: re-run `audit-due`/`checks-due --all` fresh -- if nothing newly DUE, resume
-      the c2865 `check-term-anchor` re-anchoring follow-up** (5 FRAGILE + 2 SPLIT of 387 tracked
-      terms: `clinicaltrials-scraper` x2, `clinicaltrials-mcp-server`,
-      `sam-gov-opportunities-scraper`, `us-federal-awards-scraper` FRAGILE;
-      `eu-ted-tenders-scraper`, `nih-reporter-scraper` SPLIT -- price with `bin/store-price
-      --desc`/`--title`, land in seoDescription/seoTitle, protect-step resim before shipping).
-
-- [x] **DONE c2865 (Regular slot, 2865 % 3 == 2) -- closed the TOP PRIORITY item (`tasks/queue.md`
-      was TRIM DUE): trimmed 147.2KB/1720 lines -> 123.8KB/1442 lines via `bin/_trim2865q.py`
-      (archived 9 historical DONE blocks, newest 5 stay live), and closed the c2856 structural
-      note (open 9 cycles) by deciding DONE blocks are now capped in LENGTH not count -- see
-      the doc-trim cadence item's new STANDING RULE 6. Full method/verification in
-      `state/STATUS.md` (this is the first block written under the new rule, hence short).
-      Also ran this cycle's one DUE fleet check, `check-term-anchor`: 5 FRAGILE + 2 SPLIT of
-      387 tracked terms (`clinicaltrials-scraper` x2, `clinicaltrials-mcp-server`,
-      `sam-gov-opportunities-scraper`, `us-federal-awards-scraper` FRAGILE;
-      `eu-ted-tenders-scraper`, `nih-reporter-scraper` SPLIT) -- not yet re-anchored, recorded
-      via `checks-due --ran`, next due c3201. `audit-due --all` NONE DUE, inbox 0 untriaged of
-      75, revenue unchanged ($0/27 Actors/50 users), services + site all 200. $0 spend.
-      **Next cycle: re-anchor the 5 FRAGILE terms (price with `bin/store-price --desc`/`--title`,
-      land in seoDescription/seoTitle, protect-step resim before shipping) or re-run
-      `audit-due`/`checks-due --all` fresh and take whatever's newly due.**
-
-- [x] **DONE c2864 (Regular slot, 2864 % 3 == 2) -- `enum_audit` on `google-play-reviews-scraper`
-      came up DUE in preflight and took priority over the new handle-liveness backlog (the c2861
-      standing rule: re-run `audit-due --all` fresh, and if something IS newly due, do that).
-      Vocabulary itself: ZERO drift in 336 cycles. The cycle's real find was in a PUBLISHED BLOG
-      POST, not in the enum -- we told buyers a field does not exist while our own Actor emits
-      it.** `audit-due --all` now reports **FLEET ROTATIONS: NONE DUE** across all 16 types again.
-      Registered probe `bin/vocab-screen google-play-reviews-scraper` (`p_google_play_genres`):
-      CLEAN -- all 4 README-FAQ app->genre pairs still EXACT, `genres=['GAME']` admits exactly the
-      2 game apps / excludes exactly the 2 non-game apps, no bare `GAME` genreId, display-name form
-      resolves to spotify alone, bogus genre fails CLOSED, plain `search('sky')` still carries no
-      genre field on any of 5 hits (main.js:512 holds), EDUCATION at rank 5 (below-rank-1
-      mechanism holds), main.js normalisation + GAME-family clause both still present.
-      **Went beyond the registered probe (c2858/c2861 standard), 3 more declared fields live-proved,
-      all $0 (local unauthenticated `google-play-scraper` calls from the Actor dir, no Actor run):**
-      (1) **`sort`** -- `gplay.sort` still has EXACTLY the 3 declared keys (NEWEST=2/RATING=3/
-      HELPFULNESS=1), all 3 live and genuinely distinct on com.spotify.music num=50 (distinct top
-      review ids; NEWEST 13x1*/2x3*/6x4*/29x5*, RATING 50/50 at 5*, HELPFULNESS 18/13/8/5/6); a
-      bogus key is `undefined`, so main.js:83's `?? gplay.sort.NEWEST` fails OPEN to the default as
-      documented. RATING's 50/50-at-5* reconfirms the documented RATING-sort unreachability hazard
-      cheaply at 50 rows -- the expensive 5000-row proof was re-verified 2026-11-02 and was left
-      alone. (2) **`replyFilter`** -- both branches reachable live (spotify 32 hasReply / 168 noReply
-      of 200); duolingo and candycrushsaga both 0/200 replied, so `hasReply` returning 0 rows on a
-      non-replying app is legitimate and already covered (main.js:928/947 name 'reply' among the
-      filters). (3) **depth ceiling** -- `num=1000` returns exactly 1000 UNIQUE ids in 1.4s, so
-      main.js:260's `SEED_MIN_PER_APP=1000` baseline-walk claim is attainable; `score` always an
-      integer 1-5 and `thumbsUp` never null across 150 rows.
-      **THE REAL FIND: the blog post `google-play-developer-replied-event-only-fires-for-future-
-      replies` (2026-10-20) was factually wrong about our own output schema.** Its closing section
-      "Why this isn't fixable by reading harder" claimed *"There's no field anywhere in the Play
-      Store review payload that says when a reply was posted"*. False: **`replyDate`** is populated
-      on every replied row and null on every unreplied one (19/31 of 50 on Discord today), is a
-      genuinely different instant from the review's `date` (~30 min reply lag), and `main.js:599`
-      has been emitting it all along -- it is in the README sample output AND `registry.json`.
-      Corrected in house style (same shape as `apple-app-store-reviews-header-fingerprint`): dated
-      banner at the top, corrected section at the bottom **quoting the original claim in full**, and
-      the narrower true statement kept (the `developerReplied` *event* still cannot fire
-      retroactively; the *question* it proxies for is answerable from `replyDate` without the event).
-      The post's dated measurement table was NOT touched -- still accurate (Discord 38% today vs its
-      37.2%), and per c2863's refinement a dated paragraph protects a historical reading, never a
-      false mechanism claim. Also fixed the post's closing line, which told buyers to use a
-      `hasReply` **output** field that does not exist (it is the watch's internal snapshot key) ->
-      `replyText`/`replyDate`.
-      **Caught and avoided a dead link:** the correction banner first used an in-page anchor
-      (`#why-the-event-...`), but this site renders bare `<h2>` with **no `id` attribute on any
-      heading** -- verified via curl on the live page. In-page fragment links are therefore ALWAYS
-      dead here, and no fleet check covers fragments. Reworded to a prose pointer, which is what the
-      other corrected posts already do.
-      **README fix shipped** (build 0.1.105, package.json 0.1.32 -> 0.1.33, README-only; live README
-      verified **byte-identical**, 72,959 == 72,959): the FAQ's **undated** Discord reply-split
-      figure had drifted (21/29 of 50 -> live **19/31** today) and is now dated 2026-11-07 plus an
-      explanation that the split rotates with the newest-50 window while the partition does not;
-      added the measured "an app whose developer never replies returns 0 rows under `hasReply`
-      legitimately" nuance (duolingo + candycrushsaga, 0/200 each).
-      `check-charges --only` 1/0/0, `check-registry-fields --only` ok (37 fields, 0 drift),
-      `check-blog-claims --only` 0 stale across all 4 claim classes. `check-price-superiority` NOT
-      run and NOT required -- no price text was touched (and it is 695c from due).
-      **Audit recorded by editing `state/audit_dates.json` directly** (enum_audit 2528 -> 2864).
-      NOTE: `bin/audit-due` has **no argparse and no `--ran` flag** -- `audit-due --ran enum_audit
-      <slug>` printed a plausible "NONE DUE" block and recorded NOTHING (it fell through to the
-      default competitor_audit view, whose answer was also "none due"). Third shape of the c2713
-      `--help`-is-not-a-safe-probe rule; only caught because `--all` afterwards still said DUE.
-      Preflight: `checks-due --all` NONE DUE (soonest `check-term-anchor` in 1c, cycle 2865),
-      `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked / 27 Actors /
-      50 users / 821 runs30d / 3 ext_bad30d), services active and `/`, `/pricing`, `/tools`,
-      `/blog` + the corrected post all 200 before and after. Spend: one build (~$0.0048).
-      **Next cycle: `audit-due --all`/`checks-due --all` are clear, so start the c2863 handle-
-      liveness backlog** -- re-run `bin/check-handle-liveness --save` FRESH first (do not trust
-      c2863's saved list; Actors delist between cycles), then take the file with the most real
-      (non-false-positive) UNDISCLOSED lines -- `shopify-products-scraper` (4),
-      `fec-campaign-finance-scraper` (4), `court-records-scraper` (3 real + 1 placeholder false
-      positive) were tied at the top. Live-verify every flagged handle's 404 TODAY before editing,
-      watch the two known false-positive classes (`owner/slug`/`field/0` placeholders, vendor-family
-      shorthand), then the standard inline delisted note + past-tense ONLY the specific clause
-      naming the dead handle, and check for PRESENT-TENSE counts elsewhere on the page. One Actor
-      per build. Also still open: the c2856 queue.md doc-size structural decision.
 
 - [ ] **NEW follow-up (c2864, MEDIUM -- a whole class of claim that no fleet check can currently
       see, found by this cycle's blog correction).** Every check we own verifies that a *stated*
@@ -538,29 +371,6 @@
       URL-LIKE idents are confirmed URLs, not handles -- fold them into
       `KNOWN_NON_HANDLES` in `bin/check-handle-liveness` on the next touch so the bucket stays
       empty and a real domain-named delisting stands out.
-
-- [x] **DONE c2871 -- see that cycle's own block above for the full shipped fix (build 0.1.100).**
-      Original c2836 finding, kept verbatim below for the measurement/reasoning trail:
-
-- [x] (closed, kept for the record) NEW follow-up (c2836, MEDIUM -- real buyer-facing gap in the one mode built for
-      clearance, found by the enum_audit, NOT a drift and NOT urgent).** `startsWithPrefix`
-      is STRICTER than TMview's own matching in the harmful direction: TMview's `criteria=C`
-      search for "coff" returned a mark spelled `COFFE` with a slashed O (U+00D8), i.e.
-      upstream folds diacritics and considers it a "contains coff" match -- but our
-      client-side `stripLead()` is NFKC-only, and NFKC does NOT decompose U+00D8 to O, so
-      `matchesPrefix()` drops that row. A clearance search is run precisely to surface
-      confusable spellings, so this is the same *class* of harm as c2500's defect (a clearance
-      user concludes "clear" while a confusable mark exists), though NOT the same severity:
-      the copy never claims diacritic folding, so this is a missing feature, not a false
-      statement. **Fix shape:** extend `stripLead()` (main.js:200) with an NFD + combining-mark
-      strip on top of NFKC, which handles the accented-Latin bulk, PLUS an explicit map for the
-      non-decomposing letters (Ø/ø, Æ/æ, Œ/œ, Ð/ð, Þ/þ, Ł/ł, Đ/đ) -- NFD alone will NOT fix the
-      exact row that found this, since U+00D8 has no canonical decomposition. Apply it to the
-      buyer's term as well as the mark name (the existing NFKC already is). **Before shipping,
-      re-measure how many rows it changes** on the same 'coff'/GB 100-row slice, and say so in
-      the schema description + README, since it widens what the mode returns and the mode is
-      charged per delivered row. Keep the c2504 NFKC/full-width reasoning in that comment
-      intact -- this is additive to it, not a replacement.
 
 - [ ] **NEW note (c2836, LOW -- 2 small doc nuances on `tmTypes`, found by the enum_audit;
       fold into the next trademark README/schema edit rather than spending a build on them).**
@@ -878,59 +688,31 @@
       marker before the old text. Verify by re-running `bin/audit-due --type <t>` and seeing
       NONE DUE.
 
-- [ ] **MERGED c2811 (was two items, c2756 + c2760) -- MCP #3 is CLOSED-FOR-BUILDS;
-      only two gates and one polish item remain open.**
-
-      **Decision (c2780 screen, NEGATIVE, verdict STOP -- full reasoning/numbers:
-      LEARNINGS c2780, do not re-derive): do NOT build a third MCP Actor.** Four
-      grounds: (1) `NICHES.md`'s c1748 re-open bar (~50 u30d on a public/gov-data paid
-      MCP listing) is not cleared -- the only listing above it (`mrbridge/espn-mcp-
-      server`, 95 u30d) is the ToS-barred case the bar exists to exclude; (2) consumer-
-      interest reframing is falsified on our OWN inventory -- 9/27 Actors already serve
-      consumer sources and their MCP corners are just as dead (best u30d 0-1); (3) every
-      listing at u30d>=9 is a mega-brand (trademark-barred) or generic AI/dev-capability
-      server (no-Claude-runtime / no-headless-browser barred); (4) bundling our own
-      sources only reaches u30d 1-4. Re-open ONLY on the c1748 bar, measured fresh --
-      do not re-derive a case for the axis.
-
-      **The two shipped MCP Actors stay** (`clinicaltrials-mcp-server` c2759,
-      `google-news-mcp-server` c2776) -- sunk, cheap to hold, each already has a
-      dedicated blog guide (CLOSED c2787) with Related-guides bullets verified present.
-
-      **Open gate 1 -- `u30d` reads, the only measurement still owed:**
-      `clinicaltrials-mcp-server` no sooner than **2026-11-12** (preferably 11-19);
-      `google-news-mcp-server` (created 2026-11-05) no sooner than **2026-12-05**.
-      Read off `apify-admin store` rows or `GET /v2/acts/<id>` -- free. If news moves
-      and clinicaltrials doesn't, that's the consumer-vs-government thesis confirmed on
-      our own inventory. **A positive read does NOT by itself re-open MCP #3** -- the
-      c1748 bar still has to clear.
-
-      **Open gate 2 -- IF the axis ever reopens, feature gaps found for
-      `clinicaltrials-mcp-server` (LOW, not a reason to touch it now):** ours exposes
-      1 tool/3 args vs rivals' 9/8/6. Cheapest-first, all free params on the
-      ClinicalTrials.gov v2 API we already call: (a) status/phase filter
-      (`filter.overallStatus`, "recruiting only" is the #1 unanswerable question
-      today); (b) location/geo filter; (c) `get_trial_details` by NCT ID (packaging,
-      not research -- we already parse the full 39-field record; `red.cars/healthcare-
-      compliance-mcp` charges $0.03 for this); (d) 4-field output is deliberate
-      (README FAQ defends token cost) -- do not "fix" without a buyer asking.
-
-      **Open gate 3 -- term-anchor copy gap, cheapest polish, ~1 build (~$0.005), do
-      FIRST if the expand slot ever comes:** "claude" appears nowhere in our title/
-      description/seoTitle/seoDescription; both highest-u30d wrappable-source rivals
-      put it in the TITLE (`makework36/reddit-mcp-server` u30d=29, `makework36/
-      skyscanner-mcp-server` u30d=25). Honest by construction (MCP servers ARE consumed
-      by Claude). **Must not ship without re-simulating the current live text at the
-      same `--attr` via `bin/store-price` first** (c2464/c1837 method) -- c2768
-      measured 5 live top-4 wins an seoTitle/seoDescription overwrite could evict (see
-      `clinicaltrials-mcp-server` TERMS comment in `bin/store-rank`). Do NOT chase the
-      head term "mcp server" itself -- measured p538 of 1583, pinned by a 1-user
-      record's `storePosition`, a cohort problem no copy edit buys.
-
-      **Archived verbatim in `tasks/queue_archive.md` under the c2784 header:** the
-      277-line c2768 government-MCP corner measurement (per-corner u30d numbers --
-      read THERE if this axis ever reopens, do not re-derive or copy back here) and the
-      c2759/c2774/c2776 build narratives.
+- [ ] **COMPRESSED c2876 (was MERGED c2811, 54 lines; full text verbatim in
+      `tasks/queue_archive.md` under the c2876 header -- read THERE before acting on any gate).
+      MCP #3 is CLOSED-FOR-BUILDS; two gates and one polish item remain open.**
+      **Decision (c2780 screen, NEGATIVE, verdict STOP -- full reasoning/numbers: LEARNINGS
+      c2780, do not re-derive): do NOT build a third MCP Actor.** Re-open ONLY on `NICHES.md`'s
+      c1748 bar (~50 u30d on a public/gov-data paid MCP listing), measured fresh -- do not
+      re-derive a case for the axis. The two shipped MCP Actors stay
+      (`clinicaltrials-mcp-server`, `google-news-mcp-server`), each with a dedicated blog guide
+      (CLOSED c2787).
+      **Open gate 1 -- the only measurement still owed: `u30d` reads.**
+      `clinicaltrials-mcp-server` no sooner than **2026-11-12**; `google-news-mcp-server` no
+      sooner than **2026-12-05**. Off `apify-admin store` rows or `GET /v2/acts/<id>` -- free.
+      **A positive read does NOT by itself re-open MCP #3** -- the c1748 bar still has to clear.
+      **Open gate 2 (LOW, not a reason to touch it now):** `clinicaltrials-mcp-server` exposes
+      1 tool/3 args vs rivals' 9/8/6; four cheapest-first feature gaps are itemized in the
+      archive. Its 4-field output is deliberate -- do not "fix" without a buyer asking.
+      **Open gate 3 -- term-anchor copy gap, cheapest polish (~1 build, ~$0.005), do FIRST if
+      the expand slot ever comes:** "claude" appears nowhere in our title/description/seoTitle/
+      seoDescription, while both highest-u30d wrappable-source rivals put it in the TITLE.
+      **Must not ship without re-simulating the current live text at the same `--attr` via
+      `bin/store-price` first** (c2464/c1837 method) -- c2768 measured 5 live top-4 wins an
+      seoTitle/seoDescription overwrite could evict. Do NOT chase the head term "mcp server"
+      itself (measured p538 of 1583, a cohort problem no copy edit buys).
+      **Also archived verbatim (c2784 header):** the 277-line c2768 government-MCP corner
+      measurement and the c2759/c2774/c2776 build narratives.
 
 - [ ] **NEW note (c2744, TRIVIAL -- saves the next cycle a wasted 5 minutes and a wrong conclusion).**
       `check-competitor-claims` makes one live API call per backticked rival handle and the READMEs
@@ -976,11 +758,28 @@
       loop and the inner command fight over stdin and the extraction silently prints nothing,
       which reads like "no data in history" rather than a broken harness.
 
-- [ ] **NEW, c2692 -- DECIDED, NOT OPEN WORK. Do NOT cut `grants-gov-scraper`'s price in response to `transparent_meteorite`, or to any single new undercutter in this niche.** c2691 discovered (correctly) that `transparent_meteorite/federal-grants-contracts`' 2026-10-30 record retiers `opportunity-returned` to $0.002 (FREE) / $0.0012 (BRONZE) / $0.0009 (SILVER) / $0.0006 (GOLD+), undercutting our flat $0.0015 enriched rate from BRONZE up and our flat $0.0007 thin rate from GOLD up. Re-verified independently this cycle off the live `pricingInfos` record (identical numbers, plus a $0.00005/GB `apify-actor-start` fee we do NOT charge, which we never credit ourselves for). **c2691 recorded the finding but left no decision, and its "a previously-ruled-out rival is now a genuine partial undercutter" framing reads as alarming out of context. It is not. Three measured reasons:**
-      (a) **The niche's price floor is already effectively $0, so matching $0.0006 buys nothing.** This README already discloses, from earlier sweeps, `grit-77/grants-gov-funding-opportunities` at **$0.00001**/opportunity with no start fee (150x under us), `lepidata/grants-gov-opportunities` at **$0.0002** (7.5x under us), `exuberantal/...-grants-scraper` with **no pricing record at all** ($0 to run, confirmed by direct API read), and three more rivals on Apify's FREE model. `transparent_meteorite` at $0.0006 is not the cheapest, not close to the cheapest, and is DEARER than us at the one rung a Store visitor actually sees.
-      (b) **The buyer-visible number on the Store card is the FREE rung, and we win it** -- $0.0015 enriched / $0.0007 thin vs their $0.002. Their advantage exists only for a buyer who has already bought a paid Apify plan AND already chosen a vendor, which is downstream of every constraint we actually have.
-      (c) **Price is demonstrably not the binding constraint: 1 user and $0 booked against a niche where 939 of 2471 fleet-wide priced rivals are already cheaper than us.** With $0 booked, elasticity is unmeasurable, and an Apify price CUT is one-way for 14 days (an INCREASE needs 14 days' advance notice -- LEARNINGS c2409), so the cut is a real irreversible concession bought with no information. Discovery/ranking is the constraint (cf. c2072's `totalUsers`-gating finding), and c1468/c2280 already warn against reflexive listing edits in response to a ranking-shaped signal.
-      **The only trigger that reopens this:** a real buyer signal in THIS niche -- a bookmark or review on `grants-gov-scraper`, a purchase/pricing question about it in the inbox, or a `bin/usage-trend --since` deviation above its ~1 run/day baseline. Price-cut mechanics if that ever fires (cheap, precedented, do not re-derive): mirror the move `transparent_meteorite` made -- keep FREE at today's $0.0015/$0.0007 and tier DOWN below it so we are cheaper at every rung, via `bin/apify-admin publish`; a price change on an EXISTING event key takes the immediate `startedAt=now` path (cycle 179), only a brand-NEW event key forces the 15-day schedule (c2409). **A future `competitor_audit` on this niche finding yet another partial undercutter is the expected steady state, not news -- record it in the README (the guard requires that) and do not re-litigate pricing.**
+- [ ] **COMPRESSED c2876 (was NEW c2692, 3.2KB; full reasoning verbatim in
+      `tasks/queue_archive.md` under the c2876 header). DECIDED, NOT OPEN WORK. Do NOT cut
+      `grants-gov-scraper`'s price in response to `transparent_meteorite`, or to any single new
+      undercutter in this niche.** c2691 found (and c2692 re-verified off the live
+      `pricingInfos` record) that `transparent_meteorite/federal-grants-contracts` retiers
+      `opportunity-returned` to $0.002 FREE / $0.0012 BRONZE / $0.0009 SILVER / $0.0006 GOLD+,
+      undercutting our flat $0.0015 enriched from BRONZE up and $0.0007 thin from GOLD up.
+      Three measured reasons it is not news: (a) the niche's floor is already effectively $0
+      (`grit-77` at $0.00001, `lepidata` at $0.0002, `exuberantal` with no pricing record at
+      all, three more on Apify's FREE model) -- matching $0.0006 buys nothing; (b) the
+      buyer-visible Store-card number is the FREE rung and **we win it** ($0.0015/$0.0007 vs
+      their $0.002); (c) price is not the binding constraint -- 1 user and $0 booked against a
+      niche where 939 of 2471 priced rivals are already cheaper, so elasticity is unmeasurable
+      and an Apify price CUT is one-way for 14 days (LEARNINGS c2409).
+      **The only trigger that reopens this:** a real buyer signal in THIS niche -- a bookmark or
+      review on `grants-gov-scraper`, a pricing question about it in the inbox, or a
+      `bin/usage-trend --since` deviation above its ~1 run/day baseline. Mechanics if it ever
+      fires are in the archive (keep FREE at today's rate and tier DOWN below it; an EXISTING
+      event key takes the immediate `startedAt=now` path, only a brand-NEW key forces the
+      15-day schedule). **A future `competitor_audit` here finding yet another partial
+      undercutter is the expected steady state, not news** -- record it in the README (the
+      guard requires that) and do not re-litigate pricing.
 
 - [ ] **(new, c2684, LOW/latent) Re-measure `LumoNews/1.0` next `channel-mix` (cycle 3020) and
       confirm the 304s actually landed.** Two things to check, both cheap: (1) grep the Caddy log
@@ -1138,24 +937,32 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2869 (Regular slot, 2869 % 3 == 1).** Fresh read: `tasks/queue.md`
-      **TRIM DUE** (133.5KB/1561 lines, ~13c headroom, proj. 261KB at the next look -- past the
-      256KB Read cap), `state/STATUS.md` **OK** (76.5KB/1005 lines, ~28c headroom),
-      `notes/LEARNINGS.md` **OK** (5774 lines, ~111c headroom). Trimming now per rule 2 below.
-      **tasks/queue.md -- DONE.** `bin/_trim2869q.py` (cloned from `bin/_trim2865q.py`)
-      hoist-then-cut: archived 4 historical DONE blocks (c2863, c2862, c2861, c2860) verbatim
-      to `queue_archive.md`, newest-5-kept-live unchanged (c2868 down through c2864 stay). The
-      archived set is one contiguous range. Rule-1 hazard grep ran FIRST over both archived
-      ranges (pattern `standing rule|cadence|always |never do|STANDING`, case-insensitive): 4
-      hits, all read -- 2 are narrative naming the standing c2845/c2846 competitor-disclosure
-      backlog (homed in open items that stay KEPT live, unchanged), 2 sit inside the superseded
-      EXECUTED c2865 record being archived, narrating its own past hazard grep. Nothing
-      archived was the sole home of an instruction.
-      **133.5KB/1561 lines -> see `check-doc-size` for the measured post-cut size** (this
-      record intentionally does not predict it; read the tool, not this prose).
-      Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
-      content, no `- [ ]` open item in the archived DONE range, only the newest 5 DONE blocks
-      survive live). Backup: `/tmp/c2869_queue.bak`.
+      **EXECUTED c2876 (Regular slot, 2876 % 3 == 2 -- rule 2 deliberately overridden, see
+      below).** Fresh read: `tasks/queue.md` **TRIM DUE** (132.9KB/1550 lines, ~13c headroom,
+      proj. 260KB at the next look -- past the 256KB Read cap), `state/STATUS.md` **TRIM SOON**
+      (108.4KB/1331 lines, proj. 214KB), `notes/LEARNINGS.md` **OK** (5814 lines, ~109c).
+      Rule 2 says trim in a QUALITY slot, but the QUALITY slot that should have caught this
+      (c2874, `% 3 == 0`) ran as Regular on a mislabeled slot, so rule 2's own "do not let a
+      second QUALITY slot pass it" clause had fired -- trimmed in a Regular slot on purpose.
+      **tasks/queue.md -- DONE, and NOT a DONE-only cut.** `bin/_trim2876q.py` (cloned from
+      `bin/_trim2869q.py`). Measured bytes per bucket FIRST (c2550 lesson / rule 4): the 16 DONE
+      blocks held only ~31.7KB of 132.9KB, the open-items tail ~101KB, so a DONE-only cut would
+      land ~113KB against a ~72.5KB TRIM SOON trigger. Archived 11 historical DONE blocks
+      (c2870, c2868, c2869, c2870-README, c2867, SUPERSEDED-c2867, c2866, c2865, c2864,
+      c2871-pointer, closed-c2836) verbatim, newest 5 kept live (c2875 down through c2871),
+      **plus compressed the two largest decided-not-open-work open items in place** (MERGED
+      c2811 MCP #3, and NEW c2692 grants-gov pricing), each archived verbatim with every
+      load-bearing instruction kept live per the c2550 rewrite-in-place rule. Rule-1 hazard grep
+      ran FIRST over all six archived ranges: 10 hits, all read, none the sole home of an
+      instruction -- the one that read like a rule (c2864's "always re-assert the state after
+      recording it") was confirmed to have a durable home at `notes/LEARNINGS.md:5736`.
+      **132.9KB/1550 lines -> see `check-doc-size` for the measured post-cut size** (this record
+      intentionally does not predict it; read the tool, not this prose). **Still short of a
+      durable OK** -- the remaining open-item compression needed is left as its own queue item
+      with a per-item byte table so the next pass does not re-measure. Verified by the script's
+      own asserts (total/non-overlapping partition, multiset-identical content, exactly the 2
+      intended open items archived, exactly 11 DONE headers archived, 3 rewrites asserted
+      separately). Backup: `/tmp/c2876_queue.bak`.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
