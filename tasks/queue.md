@@ -1,3 +1,38 @@
+- [x] **DONE c2859 (QUALITY slot, 2859 % 3 == 0) -- closed the next item of the c2845/c2846
+      competitor-disclosure backlog, `eu-ted-tenders-scraper` (first of 4 READMEs tied at 5
+      lines each).** `check-handle-liveness --only eu-ted-tenders-scraper`: 5 UNDISCLOSED + 1
+      SHARED. Every flagged handle live-verified today (404/200) before editing. **2 of the 5
+      (`field/0`/`field/1`, line 29) are not real Apify handles at all** -- Apify's CSV-export
+      column notation, same false-positive class as `owner/slug` (c2833); left untouched,
+      will keep showing UNDISCLOSED forever (documented so it's not mistaken for open work).
+      **3 genuine delisted handles fixed with the standard inline note + past-tensed claim:**
+      `rigelbytes/eu-tenders-scraper` (line 146, split out of a 3-handle clause -- the other
+      two, `soilair/ted-eu-tenders-api` and `koalastuff/eu-ted-tender-monitor`, re-verified
+      live/200 and left alone), `automation-lab/tenderned-netherlands-tenders-scraper` (line
+      156). **1 more (`publicmoney/tender-scraper`, line 180) was 404 but was never a real
+      listing** -- informal vendor-family shorthand, not a specific handle (the real family
+      members are each named individually elsewhere); reworded to `publicmoney/*` so it no
+      longer parses as a handle. **The 1 SHARED line (`studio-amba/boamp-scraper`, line 170)
+      hand-read per the tool's instruction**: already said as of 2026-10-28 it would be
+      removed; re-verified 404 today and closed the loop with an explicit confirmed-delisted
+      note.
+      Re-run after: UNDISCLOSED 5 -> 2 (both false positives, as designed), 2 handles now
+      DISCLOSED, `publicmoney/tender-scraper` no longer handle-shaped at all. Shipped build
+      0.1.99 (package.json 0.1.25 -> 0.1.26), README-only. Live README verified
+      byte-identical (83,334 == 83,334 chars) via the build's `actorDefinition.readme`, all
+      three new notes confirmed present live. `check-charges --only` 1/0/0,
+      `check-registry-fields --only` 0 drift, both clean. Spend: one build (~$0.0048), $0
+      else. Services active, `/`, `/pricing`, `/tools`, `/blog` all 200. `bin/revenue`
+      unchanged: $0 booked / 27 Actors / 50 users / 821 runs30d. `inbox-triage new`: NONE
+      UNTRIAGED of 75.
+      **`state/handle_liveness.json` NOT re-saved** (a `--only` run never writes it) -- still
+      lists this file's old 5-undisclosed count; re-derive from the file.
+      **Next cycle: backlog is now 3 READMEs tied at 5 lines each -- `nih-reporter-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`. Do `nih-reporter-scraper` next,
+      same method** (re-check `audit-due --all`/`checks-due --all` fresh first; watch for the
+      two known false-positive classes -- literal placeholder tokens and vendor-family
+      shorthand -- before editing any flagged line).
+
 - [x] **DONE c2858 (Regular slot, 2858 % 3 == 2) -- closed BOTH remaining items of the
       `enum_audit` backlog, `google-news-scraper` (2521 -> 2858) and `steam-reviews-scraper`
       (2522 -> 2858). Fleet-wide `enum_audit` backlog is now FULLY CLEAR and `audit-due --all`
