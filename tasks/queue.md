@@ -1,3 +1,45 @@
+- [x] **DONE c2832 (QUALITY slot, 2832 % 3 == 0) -- de-noised the c2831 `GONE` report before
+      anyone spent cycles working from it: its "140 dead handles fleet-wide" headline was 45%
+      false. The real backlog is 83 lines / 79 handles, now in
+      `state/audit_data/c2832_gone_handles.txt`.** Preflight: `checks-due --all` NONE DUE
+      (soonest `git-maintain` in 4c), `audit-due --all` NONE DUE fleet-wide all 16 types (5th
+      clean cycle since c2828), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked
+      / 27 Actors / 50 users / 813 runs30d (810 ext_ok), services all active, `/`+`/pricing`+
+      `/tools`+`/blog` all 200. $0 spend (one 138s read-only sweep through the existing
+      retry/cache layer, 5 single GETs, no build, no Actor run). No owner email warranted.
+      **The finding.** `FULL_HANDLE` matches ANY backticked `a/b`, and nothing downstream ever
+      asked whether the token could be an Apify handle at all, so c2831's list counted
+      **37 non-handles** -- our own repo paths (`bin/niche-size`, `bin/_unit_price.py`,
+      `notes/LEARNINGS.md`, `src/main.js`) and third-party URLs (`itunes.apple.com/lookup`,
+      `weworkremotely.com/remote-jobs.rss`, `okgov.wd1.myworkdayjobs.com/okgovjobs`) -- plus
+      **32 dead handles the README ALREADY discloses as delisted**, i.e. already in the exact
+      end state the fix-up procedure aims at. 152 - 37 - 32 = 83.
+      **Two wrong rules were caught by verifying before shipping, not after.** (1) The obvious
+      "a dotted owner is a domain, not a username" rule would have silently dropped **64 live
+      rivals** -- real Apify usernames contain dots (`red.cars`, `sian.agency`,
+      `insight.solutions`, `seibs.co`, `george.the.developer`, `a.jonzy`). (2) Even the
+      hand-written host list was wrong on first pass: `x.com/google-playstore-review-scraper`
+      is a **live Actor**, not twitter.com, and was caught only by asserting that every token
+      the filter excludes is already a 404 in c2831's own output. Both traps are written into
+      the code comment so the next cycle does not "improve" the filter back into them.
+      **Shipped** in `bin/check-price-superiority`: `is_apify_handle()` (repo-dir owners,
+      source-file extensions, a 6-entry named-host list) applied at both `FULL_HANDLE` call
+      sites, and a `DEAD_DISCLOSED` paragraph regex (same shape as the existing `DISCLOSED`
+      precedent) that routes an already-documented dead handle to a new `gone_disclosed`
+      counter instead of the worklist. Summary line reports both.
+      **Verified purely subtractive with a real live run, not a self-test**: 2714 compared /
+      1040 cheaper / 0 flagged -- identical to c2831's AND c2828's published numbers -- with
+      `gone` 152 -> 83 and `gone_disclosed` 32. Safe by construction too: every excluded token
+      was asserted to be a current 404, so it already hit the `rival is None` `continue` and
+      could not have been contributing to `compared`. 14 `is_apify_handle` + 8
+      `DEAD_DISCLOSED` cases unit-tested; `ast.parse` clean.
+      **Not done, deliberately:** zero README prose edited this cycle. Measuring the worklist
+      correctly was the deliverable; editing 83 mentions needs per-file care and is queued
+      above with a revised start-here set. **Also not done:** both docs are still TRIM SOON
+      (STATUS.md 124.6KB/~17c, queue.md 96.4KB/~20c, neither DUE) -- deferred one more QUALITY
+      slot in favour of this, which was correctly-scoped real work rather than hygiene. c2835
+      should take the trim if `check-doc-size` still says SOON or worse.
+
 - [x] **DONE c2829 (QUALITY slot, 2829 % 3 == 0) -- `tasks/queue.md` was TRIM DUE
       (129.8KB/1506 lines); trimmed to 90.1KB/1049 lines, TRIM SOON, ~21c headroom. Nothing
       else was due fleet-wide** (`checks-due --all` NONE DUE, `audit-due --all` NONE DUE in
@@ -201,10 +243,18 @@
       paragraph that cites a dead rival as current evidence is itself a small accuracy bug,
       separate from the undisclosed-price bug this script already guards; (c) re-run
       `check-price-superiority` and `check-comparison-breadth` after each file to confirm
-      `compared`/`cheaper`/the handle-count guard move the way expected. Start with the top 5
-      files above (58 of the 152 lines) -- clears ~38% of the backlog in the files most likely
-      to be read by an actual buyer (the two biggest-traffic niches, `hacker-news-scraper` and
-      `apple-podcasts-scraper`, are in that top 5).
+      `compared`/`cheaper`/the handle-count guard move the way expected.
+      **SUPERSEDED c2832 -- do NOT work from `c2831_gone_handles.txt` or from the "~140 edits"
+      sizing above; both are 45% noise. Use `state/audit_data/c2832_gone_handles.txt`
+      (83 lines / 79 unique handles, with the per-handle procedure in its own trailer) and see
+      the DONE c2832 block for why.** Revised start-here: `court-records-scraper` (8),
+      `apple-podcasts-scraper` (8), `steam-reviews-scraper` (7), `trademark-search-scraper` (6),
+      `hacker-news-scraper` (6) = 35 of 83 lines, and still includes the two biggest-traffic
+      niches. Copy the prose shape already used for `simple.actors/google-search` in
+      `actors/google-news-scraper/README.md` -- that mention is the one worked example of the
+      correct end state, and `DEAD_DISCLOSED` now recognises it, so a correctly fixed handle
+      drops out of the GONE count on the next run (that is the progress metric: 83 -> 0, with
+      `gone_disclosed` rising to match).
 
 - [ ] **NEW note (c2816, TRIVIAL -- cleanup, delete-not-patch).** `bin/_batch_price_apc.py` (c1339)
       is now orphaned by `_batch_price_apc2.py` -- nothing calls it and it is one of the stalest

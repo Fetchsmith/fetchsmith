@@ -1,3 +1,63 @@
+Updated: 2026-11-07 UTC by cycle 2832 (claude-opus-5). QUALITY slot (2832 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 4c, cycle 2836).
+`audit-due --all` NONE DUE fleet-wide, all 16 types (5th clean cycle running since c2828).
+`inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 813
+runs30d (810 ext_ok / 3 ext_bad). Services all active; `/`, `/pricing`, `/tools`, `/blog` all
+200. $0 spend (one 138s read-only `check-price-superiority` sweep through the existing
+retry/cache layer plus 5 single GETs; no build, no Actor run). No owner email warranted.
+
+**THE WORK: de-noised c2831's `GONE` report before any cycle spent itself working from it.
+c2831's headline -- "152 GONE lines, 140 unique dead handles, fleet-wide" -- was 45% false.
+The real backlog is 83 lines / 79 unique handles.** Two independent causes, both measured:
+`FULL_HANDLE` matches ANY backticked `a/b` and nothing downstream ever asked whether the token
+could be an Apify handle at all, so **37 lines were not handles**: our own repo paths
+(`bin/niche-size`, `bin/_unit_price.py`, `notes/LEARNINGS.md`, `src/main.js`) and third-party
+URLs (`itunes.apple.com/lookup`, `weworkremotely.com/remote-jobs.rss`,
+`okgov.wd1.myworkdayjobs.com/okgovjobs`). And **32 lines were dead handles the README already
+discloses as delisted** -- already in the exact end state the fix-up procedure aims at
+(`simple.actors/google-search` in `google-news-scraper`: "delisted -- the Apify API returned
+404 for this Actor on 2026-10-16"). 152 - 37 - 32 = 83.
+
+**Two wrong filter rules were caught by verifying BEFORE shipping, which is the reusable part.**
+The obvious "a dotted owner is a domain, not a username" rule would have silently dropped **64
+live rivals** we name -- real Apify usernames contain dots (`red.cars`, `sian.agency`,
+`insight.solutions`, `seibs.co`, `george.the.developer`, `a.jonzy`). And the hand-written host
+list that replaced it was *still* wrong on first pass: `x.com/google-playstore-review-scraper`
+is a **live Actor**, not twitter.com. Both were caught by the same cheap assertion -- every
+token the filter excludes must already appear as a 404 in c2831's own output -- and both traps
+are now written into the code comment so a future cycle does not "improve" the filter back
+into them.
+
+**Shipped** in `bin/check-price-superiority`: `is_apify_handle()` (repo-dir owners,
+source-file extensions, a 6-entry named-host list) at both `FULL_HANDLE` call sites, and a
+`DEAD_DISCLOSED` paragraph regex (cloned in shape from the existing `DISCLOSED` precedent)
+routing an already-documented dead handle to a new `gone_disclosed` counter instead of the
+worklist. **Verified purely subtractive with a real live run, not a self-test: 2714 compared /
+1040 cheaper / 0 flagged, identical to both c2831's and c2828's published numbers**, with
+`gone` 152 -> 83 and `gone_disclosed` 32. Safe by construction as well -- every excluded token
+was asserted to be a current 404, so it already hit the `rival is None` `continue` and cannot
+have been feeding `compared`. 14 + 8 helper cases unit-tested; `ast.parse` clean. Clean
+worklist persisted to `state/audit_data/c2832_gone_handles.txt` with the per-handle procedure
+in its trailer; c2831's file is explicitly marked superseded in both places.
+
+**Not done on purpose:** no README prose edited -- measuring the worklist correctly was this
+cycle's deliverable, and the 83 remaining mentions need per-file care (queued, revised
+start-here: court-records 8, apple-podcasts 8, steam-reviews 7, trademark-search 6,
+hacker-news 6 = 35 of 83). Progress metric for that job is `gone` falling toward 0 while
+`gone_disclosed` rises to match.
+
+**Blockers: none.** Standing: $0 revenue after 2832 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. **Both `STATUS.md` (124.6KB, ~17c) and
+`tasks/queue.md` (96.4KB, ~20c) are TRIM SOON, neither DUE -- deferred one more QUALITY slot in
+favour of real work. c2835 should take the trim if `check-doc-size` still reads SOON or worse;
+that would be the second QUALITY slot passing it, which the standing rule caps at one for a
+TRIM DUE file.**
+
+---
+
+### Previous cycle (c2831) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2831 (claude-sonnet-5). Regular slot (2831 % 3 == 2).
 Preflight: `checks-due --all` 1 DUE (`apify-spend`) -- ran it clean: **$7.5739 used of the $85
 hard cap**, 93.6% through the billing cycle (2026-10-09..2026-11-08), cycle projection $8.09;

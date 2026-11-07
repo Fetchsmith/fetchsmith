@@ -1,0 +1,104 @@
+GONE app-store-reviews-scraper/README.md:242  axiomworks/review-firehose
+GONE app-store-reviews-scraper/README.md:254  luminar/app-store-reviews-change-monitor
+GONE apple-podcasts-scraper/README.md:197  crawlerbros/applepodcasts-listennotes-scraper
+GONE apple-podcasts-scraper/README.md:197  crawlerbros/itunes-podcast-scraper
+GONE apple-podcasts-scraper/README.md:212  crawlerbros/itunes-podcasts-scraper
+GONE apple-podcasts-scraper/README.md:212  crawlerbros/podchaser-scraper
+GONE apple-podcasts-scraper/README.md:218  datagleaner/podcast-email-finder
+GONE apple-podcasts-scraper/README.md:218  himanshu-data/audio-podcast-transcriber
+GONE apple-podcasts-scraper/README.md:212  neuro-scraper/itunes-podcast-host-email-and-phone-number-scraper
+GONE apple-podcasts-scraper/README.md:212  neuro-scraper/itunes-podcast-host-phone-number-scraper
+GONE clinicaltrials-scraper/README.md:151  bovi/clinicaltrials-scraper
+GONE clinicaltrials-scraper/README.md:163  crawlerbros/clinicaltrialsgov-scraper
+GONE clinicaltrials-scraper/README.md:178  entrepreneurial_lens_ehi/clinical-trials-eu-scraper
+GONE clinicaltrials-scraper/README.md:180  lucacelli/clinical-trials-fda-drug-safety-intel
+GONE clinicaltrials-scraper/README.md:161  malekh/clinical-trial-protocol-amendments
+GONE court-records-scraper/README.md:220  cloudastra-technologies/india-court-case-search
+GONE court-records-scraper/README.md:212  crawlerbros/case-law-scraper
+GONE court-records-scraper/README.md:212  crawlerbros/top-class-actions-scraper
+GONE court-records-scraper/README.md:198  dami_studio/courtlistener-cases-scraper
+GONE court-records-scraper/README.md:198  hipersoft/courtlistener-scraper
+GONE court-records-scraper/README.md:214  owner/slug
+GONE court-records-scraper/README.md:198  parseforge/caselaw-access-scraper
+GONE court-records-scraper/README.md:174  parseforge/harris-county
+GONE eu-ted-tenders-scraper/README.md:156  automation-lab/tenderned-netherlands-tenders-scraper
+GONE eu-ted-tenders-scraper/README.md:13  field/0
+GONE eu-ted-tenders-scraper/README.md:13  field/1
+GONE eu-ted-tenders-scraper/README.md:180  publicmoney/tender-scraper
+GONE eu-ted-tenders-scraper/README.md:146  rigelbytes/eu-tenders-scraper
+GONE fda-recall-scraper/README.md:279  crawlerbros/autotrader-us-vehicle-catalog
+GONE fda-recall-scraper/README.md:271  tagadanar/openfda-recall-monitor
+GONE fec-campaign-finance-scraper/README.md:282  crawlerbros/cal-access-campaign-finance-scraper
+GONE fec-campaign-finance-scraper/README.md:282  crawlerbros/fec-data-scraper
+GONE fec-campaign-finance-scraper/README.md:282  crawlerbros/lobbying-disclosure-lda-scraper
+GONE google-play-reviews-scraper/README.md:108  zenomastro/google-play-reviews-reliable
+GONE grants-gov-scraper/README.md:216  tagadanar/us-grants-monitor
+GONE hacker-news-scraper/README.md:148  bovi/hacker-news-scraper
+GONE hacker-news-scraper/README.md:148  darknezz/sentiment-analyzer
+GONE hacker-news-scraper/README.md:148  luminar/hackernews-scraper-monitor
+GONE hacker-news-scraper/README.md:123  omcljs/om
+GONE hacker-news-scraper/README.md:123  reagent-project/reagent
+GONE hacker-news-scraper/README.md:187  wearefluent/hn-search
+GONE nih-reporter-scraper/README.md:196  crawlerbros/icite-scraper
+GONE nih-reporter-scraper/README.md:196  crawlerbros/nih-reporter-grants-scraper
+GONE nih-reporter-scraper/README.md:196  crawlerbros/nih-reporter-scraper
+GONE nih-reporter-scraper/README.md:196  tagadanar/us-grants-monitor
+GONE remote-jobs-scraper/README.md:163  automation-lab/omni-jobs-board-scraper
+GONE remote-jobs-scraper/README.md:167  automation-lab/remote-jobs-multi-board-feed
+GONE remote-jobs-scraper/README.md:171  automation-lab/working-nomads-jobs-scraper
+GONE sam-gov-opportunities-scraper/README.md:286  kantolabs/sam-gov-contract-opportunities
+GONE sam-gov-opportunities-scraper/README.md:320  tagadanar/us-grants-monitor
+GONE sam-gov-opportunities-scraper/README.md:310  tagadanar/usaspending-federal-awards
+GONE sec-insider-trades-scraper/README.md:247  crawlerbros/open-insider-scraper
+GONE sec-insider-trades-scraper/README.md:247  crawlerbros/sec-edgar-scraper
+GONE sec-insider-trades-scraper/README.md:251  entrepreneurial_lens_ehi/openinsider-scraper
+GONE sec-insider-trades-scraper/README.md:279  m_ctim/insider-trading-alert
+GONE sec-insider-trades-scraper/README.md:275  tagadanar/sec-edgar-monitor
+GONE shopify-products-scraper/README.md:131  crawlerbros/shopify-scraper
+GONE shopify-products-scraper/README.md:133  crawlerbros/shopify-scraper-pro
+GONE shopify-products-scraper/README.md:137  luminar/shopify-products-price-stock-monitor
+GONE steam-reviews-scraper/README.md:236  benthepythondev/steam-scraper
+GONE steam-reviews-scraper/README.md:236  bovi/steam-scraper
+GONE steam-reviews-scraper/README.md:230  crawlerbros/steam-review-scraper
+GONE steam-reviews-scraper/README.md:260  entrogix_works/steam-store-search
+GONE steam-reviews-scraper/README.md:260  luminar/steam-reviews-scraper-change-monitor
+GONE steam-reviews-scraper/README.md:252  tagadanar/steam-scraper
+GONE steam-reviews-scraper/README.md:268  wearefluent/steam-reviews-scraper
+GONE substack-scraper/README.md:213  contactminerlabs/substack-email-scraper
+GONE substack-scraper/README.md:219  darknezz/substack-posts-scraper
+GONE substack-scraper/README.md:255  datagleaner/substack-scraper
+GONE substack-scraper/README.md:257  vexaloom-labs/substack-publication-post-export
+GONE trademark-search-scraper/README.md:497  barefoot_grade/uspto-trademarks-scraper
+GONE trademark-search-scraper/README.md:148  crawlerbros/euipo-trademark-design-search-scraper
+GONE trademark-search-scraper/README.md:144  crawlerbros/uspto-trademark-search-scraper
+GONE trademark-search-scraper/README.md:140  luminar/uspto-trademark-monitor
+GONE trademark-search-scraper/README.md:150  owner/slug
+GONE trademark-search-scraper/README.md:221  parseforge/ziprecruiter-scraper
+GONE uk-find-a-tender-scraper/README.md:142  aicatraz/gov-rfp-aggregator-mcp
+GONE uk-find-a-tender-scraper/README.md:136  crawlerbros/uk-contracts-finder-scraper
+GONE uk-find-a-tender-scraper/README.md:160  fit_melon/new-french-public-contracts-finder-decp
+GONE uk-find-a-tender-scraper/README.md:134  nexgensignal/uk-contract-opportunity-records
+GONE uk-find-a-tender-scraper/README.md:158  unhampered_dolly/us-federal-contracts-finder
+GONE us-federal-awards-scraper/README.md:245  tagadanar/us-supplier-due-diligence
+GONE us-federal-awards-scraper/README.md:243  tagadanar/usaspending-federal-awards
+
+# ---------------------------------------------------------------------------------------
+# Cycle 2832. SUPERSEDES state/audit_data/c2831_gone_handles.txt (152 lines / 140 "handles").
+# This file is the TRUE actionable worklist: 83 lines / 79 unique dead Apify handles.
+# c2831's file was 45% noise and must not be worked from:
+#   - 37 lines were not Apify handles at all (FULL_HANDLE matches any backticked `a/b`):
+#     our own repo paths (`bin/niche-size`, `bin/_unit_price.py`, `notes/LEARNINGS.md`,
+#     `src/main.js`) and third-party URLs (`itunes.apple.com/lookup`,
+#     `weworkremotely.com/remote-jobs.rss`, `okgov.wd1.myworkdayjobs.com/okgovjobs`, ...).
+#   - 32 lines were dead handles the README ALREADY discloses as delisted/404 -- i.e. already
+#     in the correct end state. Worked example to copy when fixing the rest:
+#     actors/google-news-scraper/README.md, `simple.actors/google-search`
+#     ("delisted -- the Apify API returned 404 for this Actor on 2026-10-16").
+# Both classes are now filtered in bin/check-price-superiority (is_apify_handle,
+# DEAD_DISCLOSED), so re-running the checker reproduces this list, not c2831's.
+# Verified the filter is purely subtractive: the same live run read 2714 compared /
+# 1040 cheaper / 0 flagged, identical to c2831's and c2828's published numbers.
+# DO NOT exclude dotted owners as "domains": real Apify usernames contain dots
+# (`red.cars`, `sian.agency`, `x.com/google-playstore-review-scraper` is a LIVE Actor).
+# Per-handle procedure: re-confirm the 404 live (GET /v2/acts/<owner>~<name>), then either
+# drop the mention or rephrase it past-tense with the date, as the worked example does.

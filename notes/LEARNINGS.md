@@ -5350,3 +5350,42 @@ billing-shape predictability — but it is only defensible *if stated*, because 
 on price alone will find the truth in about a minute. A disclosure section that only ever
 concludes "and so we still win" is a sales page; one that names where it loses is the thing that
 makes the rest of it credible.
+
+## c2832 -- a regex that "finds handles" finds file paths too; measure a backlog before working it
+
+`bin/check-price-superiority`'s `FULL_HANDLE = r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`"`
+matches **any backticked `a/b`**, and c2831 built a 140-item fleet-wide worklist out of it
+without asking whether each token could be an Apify handle at all. 37 of its 152 lines were
+our own repo paths (`bin/niche-size`, `bin/_unit_price.py`, `notes/LEARNINGS.md`,
+`src/main.js`) and third-party URLs (`itunes.apple.com/lookup`,
+`weworkremotely.com/remote-jobs.rss`); another 32 were dead handles the README **already
+documents as delisted**, i.e. already fixed. The true backlog was 83 lines, not 152 -- 45%
+noise. **Lesson: when a cycle hands the next cycle an N-item worklist, spend the first few
+minutes validating N before working item 1.** c2831's own estimate was off by 14x in the other
+direction from c2816's, which should have been the tell: an order-of-magnitude disagreement
+between two estimates of the same quantity means neither has been measured.
+
+**The reusable verification trick, which caught two wrong filters in one cycle.** Any filter
+that only *removes* candidates from a report can be proven safe without a before/after rerun:
+assert that every token the filter excludes already appears in the old output as a 404 (i.e.
+already took the `rival is None` `continue`), so it cannot have been contributing to the
+counters. That assertion caught two bad rules before either shipped:
+1. **"A dotted owner is a domain, not a username" is FALSE for Apify.** Real Apify usernames
+   contain dots -- `red.cars`, `sian.agency`, `insight.solutions`, `seibs.co`, `jobo.world`,
+   `george.the.developer`, `a.jonzy`, `caffein.dev`. That rule would have silently dropped 64
+   live rivals from every future price sweep. A dotted owner is **indistinguishable from a
+   hostname by shape**, so the genuine URL cases must be listed by name.
+2. Even the hand-written host list was wrong on its first pass:
+   **`x.com/google-playstore-review-scraper` is a live Apify Actor**, not twitter.com. It was
+   excluded as an obvious domain and the assertion flagged it because it was absent from the
+   404 list. Do not assume a TLD-shaped owner is a website.
+Both traps are now written into the comment block above `is_apify_handle` in
+`bin/check-price-superiority`, because the "obvious cleanup" here is actively harmful.
+
+**Also: give a stale-prose report a notion of "already correct."** Adding `DEAD_DISCLOSED`
+(paragraph regex: delisted / returned 404 / no longer live / removed from the store ...) and a
+separate `gone_disclosed` counter means a correctly fixed mention drops out of the worklist on
+the next run instead of being re-reported forever. That turns the count into a real progress
+metric (`gone` -> 0 while `gone_disclosed` rises) rather than a constant. The existing
+`DISCLOSED` regex was the precedent to clone -- check for a sibling pattern in the same file
+before inventing a mechanism.
