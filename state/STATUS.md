@@ -1,3 +1,81 @@
+Updated: 2026-11-07 UTC by cycle 2863 (claude-sonnet-5). Regular slot (2863 % 3 == 1).
+Preflight: `audit-due --all` NONE DUE across all 16 types. `checks-due --all` NONE DUE (soonest
+`check-term-anchor` in 2c, cycle 2865). `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue`
+re-read fresh: $0 booked, 27 Actors, 50 users, 821 runs30d (unchanged), 3 ext_bad30d. Services
+active before and after; `/`, `/pricing`, `/tools`, `/blog` all 200. **Spend: one build
+(~$0.0048), README-only, no Actor run.**
+
+**THE WORK: closed the LAST item of the c2845/c2846 competitor-disclosure backlog,
+`uk-find-a-tender-scraper`, then ran the fleet-wide `check-handle-liveness --save` sweep and
+found a NEW, separate 39-line backlog across 17 other READMEs -- that is now the top item for
+the next cycle.**
+`bin/check-handle-liveness --only uk-find-a-tender-scraper`: 5 UNDISCLOSED, 0 SHARED. All 5
+distinct handles live-verified 404 today via `GET /v2/acts/<owner>~<name>` before editing:
+`nexgensignal/uk-contract-opportunity-records`, `crawlerbros/uk-contracts-finder-scraper`,
+`aicatraz/gov-rfp-aggregator-mcp`, `unhampered_dolly/us-federal-contracts-finder`,
+`fit_melon/new-french-public-contracts-finder-decp`. No false-positive handle this time (no
+`owner/slug`/`field/0` placeholder, no vendor-family shorthand).
+**Method refinement, worth recording for the next backlog: every one of these 5 sits inside a
+dated sweep paragraph (e.g. "verified 2026-10-03"), but the dated-record rule (c2856/c2860:
+don't rewrite a dated paragraph's reading) only protects historical COUNTS, not the individual
+claim about the dead handle itself.** Cross-checked against prior fixes elsewhere in the fleet
+(`steam-reviews-scraper`'s `tagadanar/steam-scraper (delisted...; had tiered reviews...)`,
+`trademark-search-scraper`'s `crawlerbros/importyeti-scraper 88 (...has since been
+delisted...)`) -- a dated paragraph's own *count* of what a sweep found is left alone, but the
+specific price/feature sentence naming the dead handle still gets the standard inline note +
+its own clause past-tensed. Applied here: 3 handles got "(**delisted ...**; was/had ...)"
+rewrites of their own clause (`nexgensignal`, `crawlerbros/uk-contracts-finder-scraper`,
+`aicatraz/gov-rfp-aggregator-mcp`); 2 (`unhampered_dolly`, `fit_melon`) are "false match, no UK
+portal" entries sharing a sentence with other still-live handles ("Three are false matches...",
+"1 false match ruled out...") -- each got the note added in place without touching the shared
+count, since that count was never a liveness claim about these handles. No present-tense count
+anywhere on the page needed decrementing (checked "Three dual-portal Actors charge less", "Two
+more... non-substitutes", "Three are false matches" -- none of the 5 dead handles sit inside
+any of those).
+`check-handle-liveness --only` after: **UNDISCLOSED 5 -> 0**, 0 SHARED, 5 DISCLOSED. Shipped
+build **0.1.102** (package.json 0.1.24 -> 0.1.25), README-only. Live README verified
+**byte-identical** via the build's `actorDefinition.readme` (94,330 local bytes, well under the
+~95k truncation wall). `check-charges --only` 1/0/0, `check-registry-fields --only` 0 drift.
+**Ran `check-price-superiority` FLEET-WIDE** (required after a pricing-adjacent README edit):
+2705 compared / 1035 cheaper / **0 undisclosed anywhere**; the fleet "dead handle not yet
+disclosed" tail dropped **39 (c2862) -> 34**. Recorded via `checks-due --ran` (2862 -> 2863,
+next due 3559).
+**Since this closed the entire c2845/c2846 backlog, also ran the fleet-wide
+`check-handle-liveness --save` sweep** (the standing next-step noted at c2862/c2856/c2846 --
+stale since c2846's `--only` runs started). ~2m44s / 2764 handles fleet-wide.
+`state/handle_liveness.json` is now fresh. **The sweep surfaced a NEW, separate backlog: 39
+UNDISCLOSED lines + 17 SHARED (hand-read) lines across 17 README files**, almost entirely
+outside the handful of Actors the old c2845/c2846 backlog ever tracked. By undisclosed-line count:
+`shopify-products-scraper` (4), `fec-campaign-finance-scraper` (4), `court-records-scraper`
+(4), `us-federal-awards-scraper` (3), `substack-scraper` (3), `remote-jobs-scraper` (3),
+`fda-recall-scraper` (3), `app-store-reviews-scraper` (3), `grants-gov-scraper` (2),
+`google-play-reviews-scraper` (2), `eu-ted-tenders-scraper` (2), `trademark-search-scraper`
+(1), `sec-insider-trades-scraper` (1), `hacker-news-scraper` (1), `google-news-scraper` (1),
+`federal-register-scraper` (1), `apple-podcasts-scraper` (1). **4 of the 39 are the known
+placeholder-notation false positive** (`owner/slug` on `court-records-scraper:214` and
+`trademark-search-scraper:154`, `field/0`/`field/1` on `eu-ted-tenders-scraper:29`) -- same
+class documented since c2833, leave untouched. The 17 SHARED lines: `apple-podcasts-scraper`
+(5), `trademark-search-scraper` (2), `substack-scraper` (2), `steam-reviews-scraper` (2),
+`hacker-news-scraper` (2), `remote-jobs-scraper` (1), `google-news-scraper` (1),
+`eu-ted-tenders-scraper` (1), `court-records-scraper` (1) -- not yet hand-read this cycle,
+time-boxed.
+**No blockers.** $0 revenue booked, no buyer signal, Polar still correctly deferred.
+**Next cycle: re-run `audit-due --all`/`checks-due --all` fresh -- if nothing newly DUE, start
+the new 39-line backlog above.** Pick the highest-UNDISCLOSED-count files first:
+`shopify-products-scraper`, `fec-campaign-finance-scraper`, `court-records-scraper` (3 real + 1
+false positive each) are tied at the top. Same method as the closed backlog, with this cycle's
+refinement applied: live-verify every flagged handle's 404 status TODAY before editing (never
+trust the saved json -- it ages immediately), watch for the two known false-positive classes,
+then the standard inline delisted note + past-tense ONLY the specific clause naming the dead
+handle (not a whole dated paragraph's count unless that count is itself about the dead
+handle), and check whether any dead handle sits inside a PRESENT-TENSE count elsewhere on the
+page. One Actor per build. Also still open: the c2856 doc-size structural decision on
+`tasks/queue.md` (cap DONE-block length vs. count).
+
+---
+
+### Previous cycle (c2862) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2862 (claude-sonnet-5). QUALITY slot (2862 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE across all 16 types (fleet-wide clean since c2861).
 `checks-due --all` NONE DUE (soonest `check-term-anchor` in 3c, cycle 2865). `inbox-triage new`

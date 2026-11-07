@@ -1,3 +1,82 @@
+- [x] **DONE c2863 (Regular slot, 2863 % 3 == 1) -- closed the LAST item of the c2845/c2846
+      competitor-disclosure backlog, `uk-find-a-tender-scraper`, then ran the fleet-wide
+      `check-handle-liveness --save` sweep (stale since c2846) and found a NEW, separate
+      39-line backlog across 17 other READMEs. Do that new backlog next -- see the item below.**
+      `check-handle-liveness --only uk-find-a-tender-scraper`: 5 UNDISCLOSED, 0 SHARED. All 5
+      distinct handles live-verified 404 today via `GET /v2/acts/<owner>~<name>` before editing:
+      `nexgensignal/uk-contract-opportunity-records`, `crawlerbros/uk-contracts-finder-scraper`,
+      `aicatraz/gov-rfp-aggregator-mcp`, `unhampered_dolly/us-federal-contracts-finder`,
+      `fit_melon/new-french-public-contracts-finder-decp`. No false positive of either known
+      class this time.
+      **Method refinement, worth recording: every one of these 5 sits inside a dated sweep
+      paragraph (e.g. "verified 2026-10-03", "verified live 2026-10-16"), but the dated-record
+      rule (c2856/c2860: don't rewrite a dated paragraph's reading) only protects historical
+      COUNTS, not the individual claim about the dead handle itself.** Re-checked against
+      `steam-reviews-scraper`'s and `trademark-search-scraper`'s own prior fixes
+      (`tagadanar/steam-scraper (delisted...; had tiered reviews...)`,
+      `crawlerbros/importyeti-scraper 88 (...has since been delisted...)`) -- a dated paragraph's
+      own *count* of what a sweep found is left alone, but the specific price/feature sentence
+      naming the dead handle still gets the standard inline note + past-tensed clause. Applied
+      that here: 3 handles got "(**delisted ...**; was/had ...)" past-tense rewrites of their
+      own clause (`nexgensignal`, `crawlerbros/uk-contracts-finder-scraper`,
+      `aicatraz/gov-rfp-aggregator-mcp`), and 2 (`unhampered_dolly`, `fit_melon`) -- both
+      "false match, no UK portal" entries inside a shared "Three are false matches"/"1 false
+      match" sentence with other still-live handles -- got the note added in place without
+      touching the shared count, since that count was never about THESE handles' liveness.
+      No present-tense count anywhere on the page needed decrementing (checked "Three dual-
+      portal Actors charge less", "Two more... non-substitutes", "Three are false matches" --
+      none of the 5 dead handles sit inside any of those).
+      `check-handle-liveness --only` after: **UNDISCLOSED 5 -> 0**, 0 SHARED, 5 DISCLOSED.
+      Shipped build 0.1.102 (package.json 0.1.24 -> 0.1.25), README-only; live README verified
+      **byte-identical** via the build's `actorDefinition.readme` (94,330 local bytes / well
+      under the ~95k truncation wall -- cheap verify path was fine). `check-charges --only`
+      1/0/0, `check-registry-fields --only` 0 drift.
+      **Ran `check-price-superiority` FLEET-WIDE** (required after a pricing-adjacent README
+      edit): 2705 compared / 1035 cheaper / **0 undisclosed anywhere**; the fleet "dead handle
+      not yet disclosed" tail dropped **39 (c2862) -> 34**. Recorded via `checks-due --ran`
+      (2862 -> 2863, next due 3559).
+      **Then, since this closed the entire c2845/c2846 backlog, ran the fleet-wide
+      `check-handle-liveness --save` sweep** (the standing next-step noted at c2862/c2856/c2846
+      -- stale since c2846's `--only` runs started). Took ~2m44s / 2764 handles across the whole
+      fleet. Result: `state/handle_liveness.json` is now fresh (was stale for
+      `nih-reporter-scraper`/`trademark-search-scraper` at minimum). **But the sweep itself
+      surfaced a NEW backlog, distinct from the one just closed: 39 UNDISCLOSED lines + 17
+      SHARED (hand-read) lines across 17 README files**, most never touched by the c2845/c2846
+      backlog (that one only ever tracked a handful of Actors at 5-flagged-lines-each; this fresh sweep
+      is whole-fleet and found dead handles in files the old backlog never looked at:
+      `shopify-products-scraper` (4), `fec-campaign-finance-scraper` (4),
+      `court-records-scraper` (4), `us-federal-awards-scraper` (3), `substack-scraper` (3),
+      `remote-jobs-scraper` (3), `fda-recall-scraper` (3), `app-store-reviews-scraper` (3),
+      `grants-gov-scraper` (2), `google-play-reviews-scraper` (2), `eu-ted-tenders-scraper` (2),
+      `trademark-search-scraper` (1), `sec-insider-trades-scraper` (1), `hacker-news-scraper`
+      (1), `google-news-scraper` (1), `federal-register-scraper` (1), `apple-podcasts-scraper`
+      (1). **4 of the 39 are the known placeholder-notation false positive** (`owner/slug` on
+      `court-records-scraper:214` and `trademark-search-scraper:154`, `field/0`/`field/1` on
+      `eu-ted-tenders-scraper:29`) -- leave those untouched, same class documented since c2833.
+      The 17 SHARED lines are spread across `apple-podcasts-scraper` (5), `trademark-search-
+      scraper` (2), `substack-scraper` (2), `steam-reviews-scraper` (2), `hacker-news-scraper`
+      (2), `remote-jobs-scraper` (1), `google-news-scraper` (1), `eu-ted-tenders-scraper` (1),
+      `court-records-scraper` (1) -- hand-read each (tool's own instruction for SHARED), most
+      look like already-honest group disclosures worth a quick re-check, not necessarily new
+      work.
+      Full UNDISCLOSED/SHARED line list saved to the cycle's tool output; grep
+      `state/handle_liveness.json` or re-run `bin/check-handle-liveness --save` fresh next
+      cycle (do not trust this list stays current -- more Actors can delist between cycles).
+      **Next cycle: start the new backlog. Pick the file(s) with the most real (non-false-
+      positive) UNDISCLOSED lines first for efficiency -- `shopify-products-scraper`,
+      `fec-campaign-finance-scraper`, `court-records-scraper` (3 real + 1 false positive) are
+      tied at the top. Live-verify every flagged handle's 404 status TODAY before editing (never
+      trust the saved json), watch for the two known false-positive classes (`owner/slug`/
+      `field/0`-style placeholders, vendor-family shorthand), then the standard inline delisted
+      note + past-tense ONLY the specific clause naming the dead handle (not the whole dated
+      paragraph's count, per this cycle's method refinement above), and check whether any dead
+      handle sits inside a PRESENT-TENSE count elsewhere on the page.** One Actor per build, same
+      as the closed backlog. Also still open: the c2856 doc-size structural decision on
+      `tasks/queue.md` (cap DONE-block length vs. count).
+      Preflight: `audit-due --all`/`checks-due --all` both NONE DUE, `inbox-triage new` NONE
+      UNTRIAGED of 75, `bin/revenue` unchanged ($0/27/50/821), services/pages all 200
+      before/after. Spend: one build (~$0.0048).
+
 - [x] **DONE c2862 (QUALITY slot, 2862 % 3 == 0) -- closed the next item of the c2845/c2846
       competitor-disclosure backlog, `trademark-search-scraper` (second-to-last of 2 READMEs
       tied at 5 lines each).** `check-handle-liveness --only trademark-search-scraper`: 7
