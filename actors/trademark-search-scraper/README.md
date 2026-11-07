@@ -220,7 +220,8 @@ this 31, are already named by owner above at the identical $0.03 and $0.02 FREE 
 
 The remaining 13 of the 31 are out of scope on their own live description, not a title guess
 (verified live 2026-10-08).
-Three share the shape already disclosed above for `crawlerbros/importyeti-scraper`: `khadinakbar/
+Three share the shape already disclosed above for `crawlerbros/importyeti-scraper` (now delisted
+— see above): `khadinakbar/
 importyeti-scraper`, `alwaysprimedev/importyeti-scraper` and `devilscrapes/importyeti-alternative-
 scraper` all carry a `trademarks` field inside US import/export trade data, not a register search.
 The other ten match this niche only via disclaimer boilerplate or a trademark field buried inside
@@ -427,14 +428,15 @@ Argentina/Canada/TTAB/EUIPO listings, the `nexgenwatch` CIPO and USPTO watches a
 and re-confirmed dearer here ($0.015–$0.0128, $0.08–$0.0536 and $0.02–$0.0175 respectively).
 Four listings are genuinely new to this section:
 
-- `rbbscrap/fast-uspto-trademark-scraper` is a **FREE** listing — `pricingModel: FREE`, no pricing
-  record at all, so it advertises **no charge event of any kind** and undercuts our $0.002 from
-  the first row with nothing to amortise. It is USPTO-only (wordmarks, serial and registration
-  numbers, LIVE/DEAD TSDR status, Nice classes, owners, attorney leads) where this Actor searches
-  70+ offices in one call, and it returns no opposition window, seniority claim, Vienna code,
-  territory or watch mode. It was **created 2026-10-24**, one day after the 2026-10-23 sweep, so
-  it is a new entrant rather than a miss — but it is the most aggressive price in this niche's
-  history and is named first for that reason.
+- `rbbscrap/fast-uspto-trademark-scraper` (**delisted — the Apify API returned 404 for this Actor
+  on 2026-11-07**) was a **FREE** listing — `pricingModel: FREE`, no pricing record at all, so it
+  advertised **no charge event of any kind** and undercut our $0.002 from the first row with
+  nothing to amortise. It was USPTO-only (wordmarks, serial and registration numbers, LIVE/DEAD
+  TSDR status, Nice classes, owners, attorney leads) where this Actor searches 70+ offices in one
+  call, and it returned no opposition window, seniority claim, Vienna code, territory or watch
+  mode. It was **created 2026-10-24**, one day after the 2026-10-23 sweep, so it was a new entrant
+  rather than a miss — but it was the most aggressive price in this niche's history while it
+  lasted.
 - `jungle_synthesizer/j-platpat-patent-crawler` searches Japan's J-PlatPat (patents, utility
   models, trademarks and designs) and tiers **$0.001 (FREE/BRONZE), $0.0009 (SILVER), $0.0008
   (GOLD+)** per record plus a $0.0001 start — half our rate or better, for the JP register alone.
@@ -464,12 +466,14 @@ register, so it leaves the niche on scope and never reaches a row-rate compariso
 re-affirmed on current facts rather than left standing on stale ones.** That paragraph above
 holds flat $0.002 partly because "here there is exactly **one** full-register undercutter" — that
 sentence was true on 2026-10-16 and is **no longer true**: `scrapersdelight/euipo-trademark-scraper`
-(2026-10-23) was the second, and `rbbscrap/fast-uspto-trademark-scraper` (2026-10-28) is the
-third. The conclusion does not change, for a reason the original trigger did not anticipate: the
-new undercutters are a **free** USPTO-only listing and a **free-to-$0.0008 JP-only** listing, and
-plan tiering cannot answer either — no ladder we could publish undercuts $0.00, and shaving our
-rate for every buyer on every plan to chase two single-office listings would give up margin
-without closing the only gap they actually have on us, which is scope, not price. What a buyer
+(2026-10-23) was the second, and `rbbscrap/fast-uspto-trademark-scraper` (2026-10-28, **delisted
+— see above**) was the third. The conclusion does not change, for a reason the original trigger
+did not anticipate: the new undercutters were a **free** USPTO-only listing and a
+**free-to-$0.0008 JP-only** listing, and plan tiering could not have answered either — no ladder
+we could publish undercuts $0.00 — and, now that the free USPTO-only listing is delisted, only
+one single-office listing (the JP-only one) remains live; shaving our rate for every buyer on
+every plan to chase it would give up margin without closing the only gap it actually has on us,
+which is scope, not price. What a buyer
 pays us for remains 70+ offices in one result set plus opposition windows, seniority claims,
 Vienna codes, territories and watch mode. The revisit conditions are restated accordingly: tier
 if a **multi-office** listing (not a single-register one) undercuts our $0.002 at any tier, if
@@ -514,7 +518,7 @@ even cheaper per unit: `ahmed_jasarevic/importyeti-scraper` tiers $0.0012 (FREE/
 (GOLD+) per importer profile, below our row rate, but it sells ImportYeti US customs bill-of-lading
 data in which "trademarks" is one field inside a supplier profile — not a trademark register search,
 so it never reaches a row-rate comparison (the same exclusion already applied to
-`crawlerbros/importyeti-scraper` above). The other two are dearer as well as out of scope:
+`crawlerbros/importyeti-scraper` above, now delisted — see above). The other two are dearer as well as out of scope:
 `vncntlabs/amazon-book-tshirt-niche-analyzer` is $0.15 per analysis of Amazon KDP/merch demand, and
 `parseforge/colorado-business-registry-scraper` tiers $0.0045 (FREE) to $0.0024 (DIAMOND) per
 Colorado business-entity record.
@@ -537,7 +541,7 @@ elsewhere but this exact Actor ID was not); four of the 21 left the niche on sco
 listing's own description: `ultimatemc/textile-fiber-label-checker` sells textile fiber-content
 labels, no trademark data at all; `nimbryxo-studio/importyeti-us-importer-and-global-supplier-search`
 sells ImportYeti customs/importer profiles, the same exclusion already applied twice above to
-`crawlerbros/importyeti-scraper` and `ahmed_jasarevic/importyeti-scraper`; `pink_comic/oregon-
+`crawlerbros/importyeti-scraper` (now delisted — see above) and `ahmed_jasarevic/importyeti-scraper`; `pink_comic/oregon-
 trademark-search` covers Oregon's **state** trademark registry, which TMview does not reach at all
 — its 81-office list has one slot for the US (`US`, the federal USPTO register) and none for any
 individual state; `accountable_eel/domain-availability-check` is an RDAP domain-name lookup, not a
@@ -567,7 +571,7 @@ a pure trademark-register competitor at our scope.
 
 **Cheaper than us once a run is big enough to amortise their start fee** (all four verified 2026-10-03). `automation-lab` (76 users as of 2026-11-06, re-verified live 2026-11-06, `automation-lab/euipo-tmview-trademarks-scraper`) charges a $0.005 start plus $0.0000355/record (FREE, down to $0.00001 on DIAMOND), so any run returning more than about 3 records costs less there — and it also offers application-date bounds and several search terms per run, which this Actor currently does not. `fetch_cat/uspto-trademarks-scraper` is the same shape against USPTO only: $0.005 start plus $0.00002875/record (FREE, to $0.000015 on GOLD+), crossing us at about 3 rows. `sian.agency/uspto-trademark-scraper` (34 users as of 2026-11-03) undercuts us only on the upper plans: its record price tiers from $0.009 (FREE, 4.5× ours) through $0.003 (BRONZE) and $0.00225 (SILVER) down to $0.0015 on **GOLD, PLATINUM and DIAMOND** — an earlier version of this sentence said PLATINUM and DIAMOND only, which understated by one plan — and on those three tiers its $0.005 start is repaid at about 10 rows; on FREE, BRONZE or SILVER it costs more than we do at every volume, and its start fee is itself tiered at **$0.05 on FREE** (not the $0.005 this section used to quote flat, which is the BRONZE-and-above figure). It never leaves the US register, but it adds availability checks, class suggestions and a detail event. `jungle_synthesizer/euipo-trademark-scraper` matches our $0.002 on FREE, and its $0.10 start fee means it undercuts us only on large runs on its top tiers. Its filed price change took effect at **09:23 UTC on 2026-10-04**, and it moves against the buyer, not for them: FREE/BRONZE ($0.002), SILVER ($0.0018) and GOLD ($0.0016) are untouched, while PLATINUM went $0.0014 → $0.0016 and DIAMOND $0.0012 → $0.0016. Before that moment its DIAMOND rate of $0.0012 beat ours above roughly 125 rows; from it, the three top tiers are flattened onto one $0.0016 price and the volume at which it undercuts us moves out to about **250 rows**. Both schedules were read live from the listing on 2026-10-04 and are filed exactly as described here.
 
-**2026-10-07 cleanup:** dropped every sub-20-user rival count from this README per the standing rule (an exact count is only published at 20+ users, since `totalUsers` churns in both directions and a one-user tick under 20 is automatically STALE at the checker's 10% tolerance) — 35 bare counts removed across the sweeps above, every price claim, scope exclusion and feature comparison left intact. Four of the 35 were decorated in shapes a plain `` `owner/slug` (N users) `` grep cannot see and were caught by reading the paragraphs: two where the count sits between a bare owner handle and the full slug (`scrapers_lat`, `jdepablos`, both of which now lead with the slug instead) and two bare-comma prose mentions (`khadinakbar/uspto-trademark-batch-search`, `nexgendata/india-trademark-search`). Where a count shared its parentheses with a scope or price note, only the count went: `unrivaled_fortress/wipo-global-trademark-brand-watch` still reads "(newly registered WIPO-international and US filings)", `accountable_eel/trademark-filing-watch` "(USPTO **and** EUIPO new applications by Nice class)", `stefano_seggio/kipris-patent-trademark-status-monitor` "(Korea KIPRIS)" and `dev00/uspto-trademark-text-check-api` "($0.005 per text check)". No superlative in this section was premised on a sub-20 count, so none needed rewording — the three that are premised on a count (`dltik/euipo-trademarks-scraper` busiest TMview-based, `parseforge/tmview-trademarks-scraper` second-busiest, `hanamira/patent-trademark-search` biggest trademark listing on the Store) all sit well above the threshold. Counts at 20 and above are untouched (`hanamira` 81, `crawlerbros/importyeti-scraper` 88, `dltik/euipo-trademarks-scraper` 73, `dev00/uspto-trademark-api` 68, `alizarin_refrigerator-owner` 64, `fortuitous_pirate` 57, `nexgendata/uspto-trademark-search` 49, `nexgendata/euipo-esearch-trademarks` 38, `sian.agency/uspto-trademark-scraper` 30, `memo23` 29, `parseforge/tmview-trademarks-scraper` 24, `automation-lab` 23), as are the sweeps' structural cohort statements about where the small competition sits (the "1–2 users" bands and the "1–2-user tail" heading), which are dated findings about a swept cohort rather than live per-listing claims. This edit only removes numbers, it does not restate any — but every count left standing was re-verified against the live Store records on 2026-10-07, and none of them is stale.
+**2026-10-07 cleanup:** dropped every sub-20-user rival count from this README per the standing rule (an exact count is only published at 20+ users, since `totalUsers` churns in both directions and a one-user tick under 20 is automatically STALE at the checker's 10% tolerance) — 35 bare counts removed across the sweeps above, every price claim, scope exclusion and feature comparison left intact. Four of the 35 were decorated in shapes a plain `` `owner/slug` (N users) `` grep cannot see and were caught by reading the paragraphs: two where the count sits between a bare owner handle and the full slug (`scrapers_lat`, `jdepablos`, both of which now lead with the slug instead) and two bare-comma prose mentions (`khadinakbar/uspto-trademark-batch-search`, `nexgendata/india-trademark-search`). Where a count shared its parentheses with a scope or price note, only the count went: `unrivaled_fortress/wipo-global-trademark-brand-watch` still reads "(newly registered WIPO-international and US filings)", `accountable_eel/trademark-filing-watch` "(USPTO **and** EUIPO new applications by Nice class)", `stefano_seggio/kipris-patent-trademark-status-monitor` "(Korea KIPRIS)" and `dev00/uspto-trademark-text-check-api` "($0.005 per text check)". No superlative in this section was premised on a sub-20 count, so none needed rewording — the three that are premised on a count (`dltik/euipo-trademarks-scraper` busiest TMview-based, `parseforge/tmview-trademarks-scraper` second-busiest, `hanamira/patent-trademark-search` biggest trademark listing on the Store) all sit well above the threshold. Counts at 20 and above are untouched (`hanamira` 81, `crawlerbros/importyeti-scraper` 88 (that listing has since been delisted — the 2026-10-07 reading above is left as the dated record it was), `dltik/euipo-trademarks-scraper` 73, `dev00/uspto-trademark-api` 68, `alizarin_refrigerator-owner` 64, `fortuitous_pirate` 57, `nexgendata/uspto-trademark-search` 49, `nexgendata/euipo-esearch-trademarks` 38, `sian.agency/uspto-trademark-scraper` 30, `memo23` 29, `parseforge/tmview-trademarks-scraper` 24, `automation-lab` 23), as are the sweeps' structural cohort statements about where the small competition sits (the "1–2 users" bands and the "1–2-user tail" heading), which are dated findings about a swept cohort rather than live per-listing claims. This edit only removes numbers, it does not restate any — but every count left standing was re-verified against the live Store records on 2026-10-07, and none of them is stale.
 
 What you get from us instead: no start fee at all, a flat rate that does not depend on your Apify plan, 70+ offices in one call, per-label incremental watch mode with status-change alerts and opposition deadlines, validation that tells you when an office, Nice class or status value can never match anything, and a hosted REST API at https://fetchsmith.com for the same data.
 

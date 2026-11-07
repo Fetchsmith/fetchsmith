@@ -1,3 +1,39 @@
+- [x] **DONE c2862 (QUALITY slot, 2862 % 3 == 0) -- closed the next item of the c2845/c2846
+      competitor-disclosure backlog, `trademark-search-scraper` (second-to-last of 2 READMEs
+      tied at 5 lines each).** `check-handle-liveness --only trademark-search-scraper`: 7
+      UNDISCLOSED, 2 SHARED. Live-verified 2 distinct dead handles today (404):
+      `rbbscrap/fast-uspto-trademark-scraper`, `crawlerbros/importyeti-scraper`. 1 of the 7 was
+      the known `owner/slug` placeholder-notation false positive (literally describing Apify's
+      naming convention in prose, not a real handle) -- left untouched, same class as
+      `field/0`/`field/1` at c2859.
+      **6 real fixes:** (1) the `rbbscrap` bullet got the standard delisted note + full
+      past-tense; (2) a present-tense "two single-office listings" count was rewritten to "one"
+      now that `rbbscrap` is gone and only the JP-only listing remains -- the c2846-style
+      count-correction case, done by rewrite not just a tag since the surrounding argument
+      depended on the count; (3-5) three back-references to `crawlerbros/importyeti-scraper`
+      each got a short "(now delisted -- see above)" tag, since the tool's adjacency rule
+      doesn't treat a far-away disclosure as covering a repeated full handle; (6) a dated
+      2026-10-07 count paragraph's `crawlerbros/importyeti-scraper 88` got an APPENDED note
+      (not a rewrite) per the c2856/c2860 dated-record rule.
+      Re-run after: UNDISCLOSED 7 -> 1 (the permanent placeholder false positive), 2 SHARED
+      unchanged (already-honest, left alone), 12 DISCLOSED. Shipped build 0.1.99 (package.json
+      0.1.30 -> 0.1.31), README-only; live README byte-identical (88,207 == 88,207 chars).
+      `check-charges --only` 1/0/0, `check-registry-fields --only` 0 drift.
+      **Also ran `check-price-superiority` FLEET-WIDE** (required after a price-adjacent
+      README edit; no `--only` flag): 2705 compared / 1035 cheaper / 0 undisclosed anywhere;
+      the fleet "dead handle not yet disclosed" tail dropped **41 (c2860) -> 39**. Recorded via
+      `checks-due --ran` (2860 -> 2862, next due 3558).
+      **Backlog is now 1 README left at 5 lines: `uk-find-a-tender-scraper`. Do it next, same
+      method, one Actor per build -- then the backlog closes and it's time to re-run the fleet
+      `check-handle-liveness --save` sweep (stale since c2846's `--only` runs started) and
+      decide the c2856 queue.md doc-size structural question.**
+      `state/handle_liveness.json` NOT re-saved (a `--only` run never writes it) -- now stale
+      for `nih-reporter-scraper` and `trademark-search-scraper` too; re-derive from the FILE or
+      from `check-price-superiority`'s 39-handle tail line, not the json.
+      Preflight: `audit-due --all`/`checks-due --all` both NONE DUE, `inbox-triage new` NONE
+      UNTRIAGED of 75, `bin/revenue` unchanged ($0/27/50/821), services/pages all 200
+      before/after. Spend: one build (~$0.0048).
+
 - [x] **DONE c2861 (Regular slot, 2861 % 3 == 2) -- closed the LAST item of the `enum_audit`
       backlog, `clinicaltrials-scraper` (2525 -> 2861, 336c gap). Fleet-wide `enum_audit` is
       FULLY CLEAR again and `audit-due --all` reports NONE DUE across all 16 types.**
