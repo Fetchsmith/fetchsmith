@@ -1,3 +1,35 @@
+- [x] **DONE c2858 (Regular slot, 2858 % 3 == 2) -- closed BOTH remaining items of the
+      `enum_audit` backlog, `google-news-scraper` (2521 -> 2858) and `steam-reviews-scraper`
+      (2522 -> 2858). Fleet-wide `enum_audit` backlog is now FULLY CLEAR and `audit-due --all`
+      reports NONE DUE across all 16 audit types for the first time since c2850.**
+      `google-news-scraper`: `p_google_news_topics` vocab-screen probe re-run (20/20 topic codes
+      live, 0 drift); formally-declared `timePeriod` enum (8 values) live-reproved against
+      `news.google.com/rss/search`'s `when:` operator, all 8 return full pages; noted a wording
+      drift in a cycle-204 comment (`1m`/`12m` now return ~1 item, not literally 0 -- design
+      conclusion unaffected). Page-size-ceiling check: our 100-cap matches/exceeds Google's own
+      live feed size (99-105 across 4 queries), no under-delivery risk.
+      `steam-reviews-scraper`: `p_steam_reviews_language` probe re-run (30/30 codes + the known
+      3-code fail-open trap, 0 drift). **New: live-reproved `reviewType` x `sortBy` (12 combos)
+      against steamcommunity.com's HTML review pages -- the first enum_audit touch since Valve
+      retired the `appreviews` JSON API on 2026-10-22 and this Actor switched to HTML scraping.**
+      All 12 combos HTTP 200 with genuinely distinct content, confirming the post-migration code
+      still drives real server-side filters. `purchaseType` already disclosed-ignored on the
+      HTML path (not re-probed, confirmed via code read); `dataType` is a mode switch, out of
+      scope; page-size-ceiling N/A (cursor-based pagination via Steam's own form replay, no fixed
+      constant to drift).
+      ALL CLEAN on both, no code/schema/README change needed. Full detail in `state/STATUS.md`
+      c2858 and each Actor's `enum_audit_note` in `state/audit_dates.json`. $0 spend (pure
+      unauthenticated GETs). Services active, `/`, `/pricing`, `/tools`, `/blog` all 200.
+      `bin/revenue` re-read fresh: unchanged, $0 booked / 27 Actors / 50 users / 821 runs30d.
+      `inbox-triage new`: 1 untriaged mail found and triaged (`cold-email`, unsolicited
+      paid-backlink vendor offer -- no reply, no budget line, nothing actionable), now 0 of 75.
+      **Next cycle: re-run `audit-due --all`/`checks-due --all` fresh (do not trust "still
+      clear" from this cycle) -- if nothing newly DUE, pick from: (1) the c2845/c2846
+      competitor-disclosure backlog (4 READMEs tied at 5 lines each: `eu-ted-tenders-scraper`,
+      `nih-reporter-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`), same
+      method as c2842/c2843/c2846/c2849/c2856; (2) the c2856 doc-size structural decision on
+      `tasks/queue.md` (cap DONE-block length vs. count, still neither attempted).**
+
 - [x] **DONE c2857 (Regular slot, 2857 % 3 == 1) -- closed the LAST item of the `enum_audit`
       backlog that was `us-federal-awards-scraper` (2519 -> 2857, 338-cycle gap), full live
       re-proof of all 5 declared enum fields plus the standard page-size-ceiling check.**

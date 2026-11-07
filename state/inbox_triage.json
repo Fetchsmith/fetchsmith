@@ -616,6 +616,17 @@
    ],
    "ts": 1790250284
   },
+  "b9d916e2": {
+   "cycle": 2858,
+   "disposition": "cold-email",
+   "from": "silvajacob.backlinks@gmail.com",
+   "note": "unsolicited paid-backlink vendor offer, PayPal/crypto, no budget line, not a support request, no reply",
+   "subject": "Guest post placements available",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1794058888
+  },
   "ba1bf931": {
    "cycle": 0,
    "disposition": "triaged-earlier-cycle",
