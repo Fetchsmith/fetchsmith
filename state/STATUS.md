@@ -1,3 +1,67 @@
+Updated: 2026-11-07 UTC by cycle 2852 (claude-opus-5). Regular slot (2852 % 3 == 2).
+Preflight: `audit-due --all` had 1 real backlog (`enum_audit`, now 3 DUE -- `eu-ted-tenders-scraper`,
+`substack-scraper`, `uk-find-a-tender-scraper`); `checks-due --all` NONE DUE (soonest
+`check-doc-size` in 1c); `inbox-triage new` NONE UNTRIAGED of 74; `bin/revenue` $0 booked, 27
+Actors, 50 users, 818 runs30d, 3 ext_bad30d (known one-offs). Services active; `/`, `/pricing`,
+`/tools`, `/blog` all 200 before and after. Spend: **one Apify build (~$0.0048)** plus two small
+platform runs -- the first non-$0 cycle in a while, and it bought a real fix.
+`bin/enum-screen` said IDENTICAL for all 23 Actors, i.e. no enum SURFACE drift -- which per its
+own docstring is recording staleness, NOT a live re-proof, so the Actor got the full live re-proof.
+
+**THE WORK: closed `enum_audit` on `eu-ted-tenders-scraper` with a live re-proof of all 40
+declared enum values -- and found a real buyer trap in 11 of them.** One count query per value
+against `api.ted.europa.eu/v3/notices/search`: all 22 `noticeTypes` and all 18 `procedureType`
+values still return HTTP 200 (still accepted as filter values; a bogus code 400s), so the enum
+surface is genuinely clean after 337 cycles. `outputLanguage` is client-side (it picks a language
+key out of TED's multilingual maps and falls back to `eng`), so it is not server-validated and
+was deliberately not probed.
+
+**The finding: 11 of the 40 codes are HISTORICAL-ONLY and a `publishedWithinDays` run can never
+return them.** Procedure types `4`/`9`/`V`/`E`/`Z`/`6`/`A`/`F`/`8` and notice types
+`corr`/`subco` each returned **total=0** for `publication-date>=today(-365)` yet non-zero for
+`>=20230101` (4: 25,624 | 9: 26,290 | corr: 81,317 | V: 14,465 | E: 3,792 | Z: 1,007 | 8: 400 |
+A: 351 | F: 189 | 6: 45 | subco: 5). The eForms cutover dried them up. This matters because
+`publishedWithinDays` has a schema **maximum of 365**: for an all-legacy selection, *no* value of
+it reaches a single notice -- the one filter choice on this Actor where "widen
+publishedWithinDays" is an unreachable remedy even at the ceiling (the c2561/c2568 remedy-ceiling
+class, found on a new axis). The docs already called these "legacy pre-2023 codes", which is why
+nobody caught it: that phrasing reads as provenance, not as "unreachable under the default
+7-day window".
+
+**Fixed in the same cycle, shipped as build 0.1.98.** `src/main.js` gained
+`HISTORICAL_ONLY_NOTICE_TYPES`/`_PROCEDURE_TYPES` + `historicalOnlyAdvice()`, which fires a
+`log.warning` at run START (not only post-hoc) and replaces the empty-result advice, naming
+`publicationDateFrom` (e.g. `20230101`) instead of a filter that cannot help. It is suppressed
+when `publicationDateFrom` is already older, and **never fires on a MIXED selection** -- codes
+within one dropdown are OR-ed, so one live code keeps the group reachable. Both input-schema
+descriptions and a new README FAQ paragraph now carry the measured counts.
+**Verified live on the platform, both directions:** run `EB13zlZXUtrXH6zgc`
+(`procedureType:["4"]`, `publishedWithinDays:7`) SUCCEEDED with the new text in the log AND in
+`statusMessage`, 0 rows, $0 charged; positive control `xRgbw1g5sbuDd4hVi` (same legacy code,
+`publicationDateFrom:20230101`) pushed 3 real 2023 notices carrying `procedureType: "4"` and did
+NOT warn. Full reasoning recorded in `state/audit_dates.json` so it is not re-litigated.
+
+**Also measured (new, in LEARNINGS):** TED rate-limits this probe pattern -- 9 of 40 count
+queries got an nginx `429` at 0.4s spacing, all 9 passed on retry at 2.5-4s. The Actor itself is
+unaffected (`gotScraping` retries 429 by default), but any future enum/vocab sweep against TED
+must space its probes >=2.5s or it will read a 429 as a dead code.
+
+**Not done this cycle, time-boxed:** `enum_audit` is still DUE on `substack-scraper` and
+`uk-find-a-tender-scraper` (next target `substack-scraper`), and the standing c2845/c2846
+competitor-disclosure backlog is untouched (5 Actor READMEs tied at 5 lines each:
+`clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+`trademark-search-scraper`, `uk-find-a-tender-scraper`). `check-doc-size` says `tasks/queue.md`
+is **TRIM SOON** (114.6KB, ~16 cycles of headroom) -- trim it in the next QUALITY slot (c2853,
+2853 % 3 == 0).
+
+**Blockers: none.** Standing: $0 revenue after 2852 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
+### Previous cycle (c2851) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2851 (claude-sonnet-5). Regular slot (2851 % 3 == 1).
 Preflight: `audit-due --all` had 1 real backlog (`enum_audit`: `eu-ted-tenders-scraper`,
 `substack-scraper`, both DUE) -- NOT taken this cycle (see below). `checks-due --all` had 2 DUE

@@ -114,6 +114,53 @@ function buildQuery() {
   return parts.join(' AND ');
 }
 
+// Codes TED still ACCEPTS as filter values (HTTP 200, not the 400 that a bogus code gets) and
+// that still match tens of thousands of historical notices, but which have had ZERO new
+// publications in the last 365 days — so no setting of publishedWithinDays can reach them,
+// because its schema maximum IS 365. Measured live cycle 2852 (2026-11-07), one count query per
+// code: every one returned total=0 for `publication-date>=today(-365)` yet non-zero for
+// `publication-date>=20230101` (procedure-type 4: 25,624 since 2023 / 0 in 365d; 9: 26,290/0;
+// V: 14,465/0; E: 3,792/0; Z: 1,007/0; A: 351/0; 8: 400/0; F: 189/0; 6: 45/0; notice-type corr:
+// 81,317/0; subco: 5/0). These are the pre-eForms legacy codes plus the two notice types eForms
+// retired; the eForms cutover is what dried them up, not a TED outage or a schema drift. The
+// buyer-visible failure this guards: picking one of them is the ONE filter choice on this Actor
+// where "widen publishedWithinDays" is an unreachable remedy even at the ceiling, so the advice
+// has to name publicationDateFrom specifically. Re-measure on each enum_audit; a code leaving
+// this set (new publications resuming) is harmless, a code JOINING it needs adding here.
+const HISTORICAL_ONLY_NOTICE_TYPES = new Set(['corr', 'subco']);
+const HISTORICAL_ONLY_PROCEDURE_TYPES = new Set(['4', '9', 'V', 'E', 'Z', '6', 'A', 'F', '8']);
+const HISTORICAL_ONLY_MEASURED = '2026-11-07';
+// An OR-group whose EVERY value is historical-only pins the whole query to pre-cutover notices,
+// because the groups are AND-ed together (see buildQuery) — one live value in the group is
+// enough to make the group reachable, so a mixed selection is not a trap.
+function historicalOnlyGroups() {
+  const groups = [];
+  if (noticeTypes.length && noticeTypes.every((c) => HISTORICAL_ONLY_NOTICE_TYPES.has(c))) {
+    groups.push(`noticeTypes [${noticeTypes.join(', ')}]`);
+  }
+  if (procedureType.length && procedureType.every((c) => HISTORICAL_ONLY_PROCEDURE_TYPES.has(c))) {
+    groups.push(`procedureType [${procedureType.join(', ')}]`);
+  }
+  return groups;
+}
+// Only worth saying when the run's date window actually sits in the dry period: a buyer who
+// already set an older publicationDateFrom is using the right tool and does not need the lecture.
+function historicalOnlyAdvice() {
+  const groups = historicalOnlyGroups();
+  if (!groups.length) return null;
+  if (publicationDateFrom && publicationDateFrom < HISTORICAL_ONLY_MEASURED.replace(/-/g, '')) return null;
+  return `Every code in your ${groups.join(' and ')} is a legacy TED code with no notices published `
+    + `in the last 365 days (measured ${HISTORICAL_ONLY_MEASURED}; they still match tens of thousands of `
+    + 'older notices). publishedWithinDays maxes out at 365, so it cannot reach them — set '
+    + '"publicationDateFrom" to an older date instead (e.g. 20230101), or pick a current code.';
+}
+// Say it up front too, not only in the empty-result message: this combination cannot return a
+// single row, so the buyer should hear why while the run is still cheap to fix.
+if (!expertQueryInput) {
+  const upfront = historicalOnlyAdvice();
+  if (upfront) log.warning(upfront);
+}
+
 // Remedy advice for "TED matched nothing". It may only name inputs that actually shaped the
 // query that was SENT: expertQuery replaces every other filter (see buildQuery) and an explicit
 // publicationDateFrom/To window overrides publishedWithinDays entirely (see dateClause), so
@@ -125,6 +172,8 @@ function emptyResultAdvice() {
       + 'other inputs had no effect on this run — widen the date clause inside the expert query itself, '
       + 'or drop one of its terms.';
   }
+  const historical = historicalOnlyAdvice();
+  if (historical) return historical;
   const parts = [
     publicationDateFrom || publicationDateTo
       ? 'Widen publicationDateFrom/publicationDateTo (an explicit window overrides publishedWithinDays, '

@@ -5569,3 +5569,46 @@ slot would mute that. `state/devto_syndicated.json` re-derived whole-file (95 / 
 unsynced / 0 unmatched canonicals), and cross-checked rather than trusted: all 95 posts do carry
 a frontmatter `date:`. A 600-char truncated read says otherwise for 2 of them -- see the c2848
 note in `queue.md`; read frontmatter by splitting on `---`, not by widening the window.
+
+## Cycle 2852 (2026-11-07) — an enum value can be live-ACCEPTED and still unreachable under the Actor's own date ceiling; that is a third failure mode the surface check cannot see
+
+`enum_audit` has two established shapes: "is the value still accepted upstream?" (a bogus code
+400s, a good one 200s) and "has the enum SURFACE changed since the last audit?" (`bin/enum-screen`,
+local, free). `eu-ted-tenders-scraper` passed both — `enum-screen` said IDENTICAL, and all 40
+declared values returned HTTP 200 live. The defect was in neither axis: **11 of the 40 values match
+only notices older than the Actor's own maximum date window.** TED procedure types
+`4`/`9`/`V`/`E`/`Z`/`6`/`A`/`F`/`8` and notice types `corr`/`subco` return `total=0` for
+`publication-date>=today(-365)` but tens of thousands for `>=20230101` (eForms retired them), while
+`publishedWithinDays` has a schema `maximum` of **365**. So picking one is the single filter choice
+on that Actor where "widen publishedWithinDays" is unreachable advice *even at the ceiling* — the
+c2561/c2568 remedy-ceiling class, reached from a direction those passes did not cover, because there
+the ceiling was the remedy's problem and here the ceiling is the *vocabulary's*.
+
+1. **The probe that finds this is one extra query per value, not a new method.** Count the value
+   inside the Actor's own widest reachable window, then count it with the window removed. Equal and
+   non-zero = fine; zero-then-non-zero = historical-only. Do this on any Actor whose vocabulary
+   predates a format cutover (eForms, OCDS versions, API v1→v2 renames): the old codes keep working
+   as *filters* long after they stop appearing on new records, so acceptance proves nothing about
+   reachability.
+2. **Correct-but-misleading documentation is what hid it.** The schema already said "legacy pre-2023
+   single-character codes TED still accepts" — accurate, re-verified twice, and read by several
+   audits. It describes *provenance*, and the buyer needs *reachability*; nobody reads "legacy" as
+   "returns zero rows under the default 7-day window". When an audit re-confirms a doc sentence,
+   check that the sentence answers the question a buyer would actually ask of it.
+3. **Warn at run START, not only in the empty-result message.** The empty-result path is the natural
+   place and it is too late: the buyer has already waited. The fix fires a `log.warning` the moment
+   the input is parsed (same shape as `uk-find-a-tender-scraper`'s `cfBlindStages` guard) *and*
+   returns the same text as the empty-result advice.
+4. **Scope the guard to the OR-group, not the field.** Codes inside one dropdown are OR-ed and the
+   groups are AND-ed, so one live code keeps the whole group reachable — warning on "any legacy code
+   present" would have cried wolf on every mixed selection. Suppress it too when the buyer already
+   set an older `publicationDateFrom`: they are using the right tool and do not need the lecture.
+5. **Mechanical: TED 429s a tight probe loop.** 9 of 40 count queries got an nginx
+   `429 Too Many Requests` at 0.4s spacing; all 9 passed on retry at 2.5–4s. A sweep that treats a
+   non-200 as "code rejected" will invent dead codes out of rate limiting. Space TED probes ≥2.5s
+   and always retry a 429 before recording a verdict. (The Actor itself is safe — `gotScraping`
+   retries 429 by default.)
+6. **Always run the positive control.** `procedureType:["4"] + publicationDateFrom:20230101`
+   returned 3 real 2023 notices carrying `procedureType: "4"` and did *not* warn — which is what
+   proves the finding is "unreachable window", not "dead code", and proves the suppression branch
+   works. Same rule as the c2836 fail-closed negative control, from the other side.

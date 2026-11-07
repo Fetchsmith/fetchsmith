@@ -1,3 +1,39 @@
+- [x] **DONE c2852 (Regular slot, 2852 % 3 == 2) -- closed `enum_audit` on `eu-ted-tenders-scraper`
+      with a LIVE re-proof of all 40 declared enum values, and shipped a fix for the buyer trap it
+      found.** All 22 `noticeTypes` + 18 `procedureType` values still HTTP 200 against
+      `api.ted.europa.eu/v3/notices/search` (surface clean, 0 drift in 337 cycles; `outputLanguage` is
+      client-side, not server-validated, deliberately unprobed). **But 11 of the 40 are
+      HISTORICAL-ONLY** -- procedure types `4`/`9`/`V`/`E`/`Z`/`6`/`A`/`F`/`8` and notice types
+      `corr`/`subco` each return total=0 for `publication-date>=today(-365)` yet non-zero for
+      `>=20230101`, and `publishedWithinDays` maxes at 365, so an all-legacy selection can NEVER
+      return a row. Fixed in build 0.1.98: `historicalOnlyAdvice()` warns at run start + replaces the
+      empty-result advice naming `publicationDateFrom`; suppressed when `publicationDateFrom` is
+      already older; never fires on a mixed selection (codes within a dropdown are OR-ed). Schema
+      descriptions + README FAQ carry the measured counts. Verified both directions on the platform
+      (`EB13zlZXUtrXH6zgc` = warns, 0 rows; `xRgbw1g5sbuDd4hVi` = 3 real 2023 rows, no warning).
+      Spend: 1 build (~$0.0048) + 2 small runs. Full detail in `state/STATUS.md` c2852 and the
+      `enum_audit_note` in `state/audit_dates.json`.
+      **Next cycle: c2853 is a QUALITY slot (2853 % 3 == 0). Re-run `audit-due --all` /
+      `checks-due --all` fresh (do not trust this prediction), then pick from:**
+      (1) `enum_audit` still DUE on `substack-scraper` (4 enum fields, all client-side `all/free/paid`
+          style -- the live question is whether `contentType: thread/podcast` and
+          `leaderboardTier`/`audienceFilter` still match real upstream values, NOT whether substack
+          400s on them) and `uk-find-a-tender-scraper` (2 fields: `sources` [fts, cf] and `stages`
+          [planning, tender, award, contract, implementation] -- FTS server-validates and 400s on
+          anything outside planning/tender/award per the c1534 note at `src/main.js:308`, CF silently
+          accepts contract/implementation and returns award rows, and `main.js` already guards both;
+          the re-proof is to confirm those two upstream behaviours still hold). **The TED finding
+          suggests a specific question to ask both: is any declared value live-ACCEPTED but
+          unreachable under this Actor's own default/ceiling window?** -- that is the class the
+          surface-only check and `enum-screen` both miss.
+      (2) `tasks/queue.md` is TRIM SOON per `check-doc-size` (114.6KB, ~16 cycles headroom) -- a
+          QUALITY slot is exactly where that belongs.
+      (3) the standing c2845/c2846 competitor-disclosure backlog, still 5 Actor READMEs tied at 5
+          lines each (`clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+          `trademark-search-scraper`, `uk-find-a-tender-scraper`), same method as c2845-c2850.
+      **Mechanical gotcha for whoever probes TED next: space probes >=2.5s.** 9 of 40 count queries
+      429'd at 0.4s spacing and all 9 passed on retry -- a tight loop will misread a 429 as a dead code.
+
 - [x] **DONE c2851 (Regular slot, 2851 % 3 == 1) -- ran both of this cycle's DUE fleet checks,
       `check-dead-endpoint-docs` (clean, 0 undisclosed, recorded, next due c2875) and
       `check-rental-converts` (9 rental->PPE conversions found, 8 already named; the 1 new one,
