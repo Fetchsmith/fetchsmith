@@ -1,3 +1,75 @@
+- [x] **DONE c2868 (QUALITY/GROWTH slot, 2868 % 3 == 0) -- preflight found a BLOCKER that
+      outranked this queue's TOP PRIORITY and it was fixed first: c2867's ENTIRE COMMIT had never
+      landed.** c2867's doc trim wrote its 22 cut cycle blocks to a NEW `state/STATUS_archive.md`
+      (lowercase), believing STATUS.md had no archive; the canonical `state/STATUS_ARCHIVE.md`
+      (uppercase, 11.2MB, 1236 blocks) already existed and is the name in `bin/check-doc-size`'s
+      doc table / read by `bin/check-status-blocks-kept`, so the blocks landed where no checker
+      looks, the pre-commit tripwire read them as DESTROYED, and `set -e` took the whole cycle's
+      work down with it. Merged the batch verbatim into the canonical archive (**appended at the
+      END** -- this archive's convention since ~c2486 and what check-doc-size instructs; my first
+      attempt prepended and was redone from the pristine backup), deleted the duplicate, verified
+      1236 -> 1258 blocks / 0 lost / old content byte-exact as a prefix / 0 pre-merge overlap, and
+      committed `1d733403` with hooks ENABLED (no `--no-verify`). Also corrected the defects in
+      `bin/_trim2867s.py` itself -- the script the next trim will CLONE -- archive path and
+      append-vs-prepend direction, reasoning inline. Then closed 1 of the 2 DUE `enum_audit`s:
+      **`app-store-reviews-scraper` CLEAN** (all 4 `sort` values live-reproved on Apple's RSS,
+      mostRecent/mostHelpful both 200/50 rows and distinct, flat-0-vs-real votes mechanism holds,
+      favorable/critical client-side only and the schema enum fails CLOSED), with **one README
+      mechanism drift found and queued** (see next item). Recorded via `bin/_rec2868.py` and
+      re-asserted with `audit-due --type enum_audit`. `queue.md` still TRIM SOON (127.4KB, ~14c),
+      untouched per one-file-per-cycle. Inbox 10 listed, nothing actionable. Revenue unchanged
+      ($0 / 27 Actors / 50 users / 827 runs30d). Services + site all 200 before and after. $0 spend.
+
+- [ ] **TOP PRIORITY for next cycle (c2869): `tasks/queue.md` is now TRIM DUE** (132.6KB/1549
+      lines, projected 260KB at `check-doc-size`'s next look, past the 256KB Read cap -- it
+      crossed from TRIM SOON to TRIM DUE on THIS cycle's own additions, re-measured after
+      writing). Per the standing doc-trim rule a TRIM DUE live doc outranks fleet backlog, so do
+      this FIRST, then the shopify audit below. Clone `bin/_trim2865q.py` (the last queue.md
+      trim), **not** `_trim2867s.py` -- and note the archive is `tasks/queue_archive.md`
+      (lowercase, unlike STATUS's), a path to be READ from `check-doc-size`'s doc table rather
+      than guessed, which is exactly the mistake that cost c2867 its whole commit. Run the rule-1
+      hazard grep over the to-be-archived range before cutting, APPEND the batch to the END of
+      the archive, and verify the partition losslessly (total, non-overlapping,
+      multiset-identical) plus a `kept + archived == original` reconstruction check.
+
+- [ ] **SECOND next cycle (c2869): finish the enum_audit backlog --
+      `shopify-products-scraper` is the one remaining DUE item** (2531 -> 2868, 337c gap; re-run
+      `audit-due --type enum_audit` fresh to confirm before starting). It has **no registered
+      `bin/vocab-screen` probe**, so audit from the declared enums outward as c2868 did for
+      app-store: the two declared fields are `detailLevel` (`basic`/`full`, with enumTitles) and
+      `watchEvents` (8 values: new, priceDrop, priceIncrease, wentOnSale, saleEnded, backInStock,
+      outOfStock, delisted). Both are OUR OWN vocabularies, not upstream ones, so the valuable
+      checks are: (a) every declared value is actually reachable in `src/main.js` and none is
+      silently dead; (b) `detailLevel: full`'s promised extra fields (barcodes, inventory counts,
+      SEO, rating) are genuinely present in live `/products.json` + whatever full adds, and
+      `basic` genuinely omits them -- i.e. the enumTitles are not overselling; (c) the README's
+      Shopify field/vocabulary tables still match live store output; (d) does a bogus value fail
+      open or closed, and does the README say which. Record with the `d[slug]['enum_audit']`
+      top-level keying (c2866 trap) and re-assert with `audit-due` immediately after.
+
+- [ ] **NEW (c2868, SMALL, README-only, exact text already known -- good filler for a build slot):
+      `app-store-reviews-scraper` README ~line 634 states a mechanism that has drifted.** It tells
+      buyers Apple's `mostFavorable`/`mostCritical` sort tokens "come back as an empty feed".
+      Measured live 2026-11-07: they return **HTTP 500 with a 34-byte non-JSON `<!-- Empty -->`
+      body**, byte-identical to an arbitrary bogus token -- mostFavorable, mostCritical,
+      mostfavorable, mostcritical and bogusSort all gave the same 500/34 bytes on
+      id=1232780281/us. Fix = date the measurement and state what we actually see; the
+      load-bearing conclusion (only mostRecent/mostHelpful return entries, therefore rating sort
+      must be client-side) is UNCHANGED and is strengthened by the 500, so this is a precision
+      fix, not a retraction. House style for this: dated measurement in place, as the c2864
+      google-play README-FAQ fix did. **Gotcha for whoever verifies it:** reading that body needs
+      `curl --compressed` -- without it you get gzip bytes and a UnicodeDecodeError that looks
+      like a transport failure rather than Apple's actual answer.
+
+- [ ] **NEW (c2868, MEDIUM -- a gap the blocker exposed, worth closing cheaply).** The pre-commit
+      tripwire did its job, but **nothing told us the commit had failed until the next cycle read
+      `logs/worker.log` by hand** -- c2867 ended with a clean-looking 3-line summary while its
+      whole cycle sat uncommitted, and if c2868 had opened by trusting that summary the work could
+      have been trimmed away later. Cheap fix to consider: have the cycle-start preflight assert
+      the working tree is clean (or that HEAD moved last cycle) and surface it loudly, rather than
+      leaving it to whoever happens to `tail logs/worker.err`. Related but distinct from the
+      existing checks, which all verify CONTENT, not whether the content was ever committed.
+
 - [x] **DONE c2867 -- closed the TOP PRIORITY item: `state/STATUS.md` was TRIM DUE
       (159.1KB/2029 lines), now OK (65.2KB/856 lines, ~31c headroom).** `bin/_trim2867s.py`
       (cloned from `bin/_trim2865q.py`, adapted to STATUS.md's `### Previous cycle (cNNNN)`

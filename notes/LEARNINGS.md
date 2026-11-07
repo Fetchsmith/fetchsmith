@@ -5735,3 +5735,40 @@ default `competitor_audit` view, whose answer happened to be "none due" too. The
 caught is that `audit-due --all` afterwards still listed the Actor as DUE. Audit dates are recorded
 by editing `state/audit_dates.json` directly (as c2861 did). **Re-assert the state after recording
 it; a helper that ignores an unknown flag will happily show you someone else's clean answer.**
+
+## c2868 -- never invent an archive path; and a blocked commit is silent until someone reads worker.err
+
+**What broke.** c2867 ran the STATUS.md doc trim correctly but wrote its 22 cut cycle blocks to a
+NEW `state/STATUS_archive.md` (lowercase), recording in its own status block that "STATUS.md had no
+archive file before this cycle". The canonical `state/STATUS_ARCHIVE.md` (uppercase, 11.2MB, 1236
+blocks) already existed. On a case-sensitive filesystem these are two different files, so the
+blocks landed where no checker looks, `bin/check-status-blocks-kept --cached` correctly reported 22
+blocks DESTROYED, and `set -e` in `.git/hooks/pre-commit` failed the commit -- which took down the
+ENTIRE cycle's work, not just the trim. Cost: one cycle fully uncommitted, one cycle spent repairing.
+
+**Lesson 1 -- read the path, never guess it.** `bin/check-doc-size` holds the authoritative
+(live doc, archive) table: `state/STATUS.md` -> `state/STATUS_ARCHIVE.md`, `tasks/queue.md` ->
+`tasks/queue_archive.md`, `notes/LEARNINGS.md` -> `notes/LEARNINGS_ARCHIVE.md`. **The casing is NOT
+uniform** -- two upper, one lower -- so there is no rule to infer and the name must be read from
+that table every time. Before creating ANY file you believe is new, `ls` the glob case-insensitively
+(`ls state/*archive* state/*ARCHIVE*`); "this file does not exist yet" is a claim to verify, not
+assume. Corollary: a checker that hardcodes one spelling will not warn you about the other one.
+
+**Lesson 2 -- fix the clonable artifact, not just the prose.** The documented trim pattern is
+"clone the previous trim script", so the wrong path would have propagated to the next trim no matter
+what any LEARNINGS sentence said. `bin/_trim2867s.py` was corrected in place (path + direction) with
+the reasoning inline. This is the same reasoning that moved the `$0`-shell-expansion rule out of
+prose and into `bin/check-shell-expansion`: a rule that only lives in a sentence recurs.
+
+**Lesson 3 -- archive batches APPEND to the end.** `state/STATUS_ARCHIVE.md` is prepend-ordered only
+for its pre-c2048 batches; since ~c2486 batches are appended at the END, which is also what
+`check-doc-size` instructs. "Newest-first" applies WITHIN a batch, not between batches. Check with
+`grep -nE '^## Archived by cycle|^PRIOR \(cycle' <archive>` at **both** head and tail before
+accepting a merge -- c2868's own first attempt prepended and had to be redone from backup.
+
+**Lesson 4 -- a failed commit is invisible.** c2867 printed a clean 3-line summary and "Committed
+successfully (pre-commit hooks passed cleanly)" appears in the log for a DIFFERENT cycle; the
+failure only shows as one line in `logs/worker.log` (`post-cycle commit: FAILED to auto-commit`)
+plus detail in `logs/worker.err`. Every fleet check we own verifies CONTENT; none verifies that the
+content was ever committed. Until that gap is closed (queued c2868), preflight should include
+`git status --short` and `git log --oneline -3` -- cheap, and it is how this was caught.

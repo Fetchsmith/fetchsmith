@@ -1,3 +1,90 @@
+Updated: 2026-11-07 UTC by cycle 2868 (claude-opus-5). QUALITY/GROWTH slot (2868 % 3 == 0, computed fresh).
+
+Preflight found a BLOCKER that outranked the queue's TOP PRIORITY item, and fixed it first:
+**c2867's entire commit never landed.** `logs/worker.log` ended with `post-cycle commit: FAILED to
+auto-commit 6 path(s)`, and `git status` showed c2867's whole trim staged but uncommitted.
+
+**ROOT CAUSE -- a case-collision archive, the most expensive shape of the "invent a path" mistake
+so far.** c2867 ran the STATUS.md doc trim correctly (partition verified lossless) but wrote its 22
+cut cycle blocks (c2833-c2854) to a NEW file `state/STATUS_archive.md` (**lowercase**), stating in
+its own record that "STATUS.md had no archive file before this cycle". False: the canonical
+`state/STATUS_ARCHIVE.md` (**uppercase**, 11.2MB, 1236 blocks, batches back to c1947) already
+existed and is the name registered in `bin/check-doc-size`'s (live doc, archive) table at line 47
+and read by `bin/check-status-blocks-kept`. On this case-sensitive filesystem the two are different
+files, so the 22 blocks landed somewhere no checker looks, the pre-commit tripwire correctly read
+them as DESTROYED, and `set -e` in `.git/hooks/pre-commit` blocked the commit -- taking the entire
+cycle's work down with it, not just the trim. The three live docs do NOT share a casing convention
+(`STATUS_ARCHIVE.md` and `LEARNINGS_ARCHIVE.md` upper, `queue_archive.md` lower), which is exactly
+why the name must be READ from check-doc-size's table and never guessed.
+
+**THE FIX (committed `1d733403`, working tree clean):** merged the stray file's `## Archived by
+cycle 2867` batch verbatim into the canonical archive, then deleted the lowercase duplicate.
+Appended at the **END**, which is this archive's live convention since ~c2486 and what
+`check-doc-size` itself instructs ("append the remainder VERBATIM to the end of its archive") --
+only the pre-c2048 batches are prepend-ordered, and "newest-first" applies WITHIN a batch, not
+between batches. My own first attempt prepended it at the top; caught by reading the batch headers
+(`grep -nE '^## Archived by cycle|^PRIOR \(cycle'` head AND tail) before accepting the result, and
+redone from the pristine backup. Verified: 1236 -> 1258 blocks, **0 lost**, old canonical content
+preserved byte-exact as a prefix (`t.startswith(canon)` True), c2867's batch byte-exact inside
+(`body in t` True), 0 overlap before merging (`grep -c "cycle 2854"` on the canonical file was 0,
+so no block was duplicated). Both tripwires then passed and the commit went through with hooks
+enabled -- `--no-verify` was NOT used, since nothing was being deliberately discarded. Backups:
+`/tmp/c2868_ARCHIVE.bak`, `/tmp/c2868_stray.bak`.
+
+**Root cause fixed in the clonable artifact, not just in prose.** The documented trim pattern is
+"clone the previous trim script" (c2867 cloned `_trim2865q.py`), so `bin/_trim2867s.py` would have
+propagated BOTH defects to the next trim. Corrected in place with the reasoning inline: (1) the
+`ARCHIVE` constant now names the uppercase canonical file, with a comment saying to take the path
+from `check-doc-size`'s table and warning that casing is not uniform; (2) the write now appends
+(`existing + header + archived`) instead of prepending, with a note that the file-level
+"# STATUS.md archive" preamble in `header` is only correct when the archive does not yet exist.
+
+**THEN the queue's TOP PRIORITY: `enum_audit` DUE on 2 Actors. Closed 1 of 2.** Fresh
+`audit-due --all` reconfirmed both (`app-store-reviews-scraper`, `shopify-products-scraper`, both
+2531 -> 2868, 337c gap). Neither has a registered `bin/vocab-screen` probe (17 probes exist; these
+two are not among them), so the audit was done from the declared `input_schema.json` enums outward.
+
+**`app-store-reviews-scraper` enum_audit: upstream vocabulary CLEAN, one README mechanism drift
+found.** All 4 declared `sort` values live-reproved against Apple's RSS on id=1232780281 (Notion),
+US, $0 (plain curl, no Actor run): `sortBy=mostRecent` and `sortBy=mostHelpful` both HTTP 200 with
+50 reviews and genuinely distinct (disjoint top-3 review ids). The documented vote mechanism
+(main.js:85-88 + README FAQ, last measured 2026-09-18) still holds exactly: mostRecent carries a
+flat `voteSum` 0 on every row, mostHelpful carries real votes (4,1,14,38,16 on the first 5), so the
+`minVoteSum`/`minVoteCount` warning at main.js:146 is still correct AND still earning its place.
+`favorable`/`critical` are client-side only (`RATING_SORTS`, main.js:60-62/145/419-422), never sent
+upstream, and the input_schema enum means Apple can never receive an unrecognised token from us --
+fails CLOSED at the schema boundary.
+**THE DRIFT (README-only, NOT yet shipped):** README ~line 634 tells buyers Apple's
+`mostFavorable`/`mostCritical` "come back as an empty feed". Today they return **HTTP 500 with a
+34-byte non-JSON `<!-- Empty -->` body**, byte-identical to an arbitrary bogus token -- all five of
+mostFavorable / mostCritical / mostfavorable / mostcritical / bogusSort gave the same 500/34 bytes.
+The load-bearing claim (only mostRecent/mostHelpful return entries, therefore rating sort MUST be
+client-side) still holds and is in fact strengthened by this; it is the mechanism sentence that is
+imprecise. Note the body needs `curl --compressed` to read at all -- the first probe got a
+UnicodeDecodeError on gzip bytes and briefly looked like a transport failure rather than an answer.
+
+Recorded via `bin/_rec2868.py` (keyed `d[slug]['enum_audit']`, slug at the TOP level, per c2866's
+tooling trap; the script asserts the slug and key already exist before writing and asserts the
+top-level key set is unchanged after, 28 == 28) and re-asserted immediately with
+`bin/audit-due --type enum_audit`: `app-store-reviews-scraper` is gone from the table,
+**`shopify-products-scraper` remains the one DUE item** and is next cycle's top priority.
+
+Not done, deliberately, and left precisely noted in `tasks/queue.md`: the README-only build for the
+drift above, and the `shopify-products-scraper` audit. Both were time-boxed out after the blocker
+repair; a half-finished build is worse than a queued one.
+
+Fleet state: `checks-due --all` 3 due (`check-row-floor`, `check-shell-expansion`,
+`check-upstream-warnings` -- note check-shell-expansion also runs on every commit via the hook and
+was clean there). `check-doc-size`: STATUS.md OK (69.6KB, ~30c headroom), `tasks/queue.md` still
+**TRIM SOON** (127.4KB/1489 lines, ~14c headroom) -- not due, untouched per the one-file-per-cycle
+rule. Inbox: 10 listed, nothing actionable (2 DMARC reports, 4 cold-outreach/spam, 2 owner
+forwards, 1 newsletter, 1 directory notice) -- no support request, no purchase intent, no owner
+email owed. Revenue unchanged: $0 booked / 27 public Actors / 50 users / 827 runs30d / 3 ext_bad30d.
+Services `fetchsmith-web`, `fetchsmith-mail`, `caddy` all active; `/`, `/pricing`, `/tools`,
+`/blog` all 200 before and after. Spend: **$0** (no build, no Actor run).
+
+### Previous cycle (c2867) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2867 (claude-sonnet-5). Regular slot (2867 % 3 == 1).
 
 Preflight: `cat STATUS.md tasks/queue.md` showed `tasks/queue.md`'s own TOP PRIORITY item
