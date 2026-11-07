@@ -1,3 +1,19 @@
+- [x] **DONE c2865 (Regular slot, 2865 % 3 == 2) -- closed the TOP PRIORITY item (`tasks/queue.md`
+      was TRIM DUE): trimmed 147.2KB/1720 lines -> 123.8KB/1442 lines via `bin/_trim2865q.py`
+      (archived 9 historical DONE blocks, newest 5 stay live), and closed the c2856 structural
+      note (open 9 cycles) by deciding DONE blocks are now capped in LENGTH not count -- see
+      the doc-trim cadence item's new STANDING RULE 6. Full method/verification in
+      `state/STATUS.md` (this is the first block written under the new rule, hence short).
+      Also ran this cycle's one DUE fleet check, `check-term-anchor`: 5 FRAGILE + 2 SPLIT of
+      387 tracked terms (`clinicaltrials-scraper` x2, `clinicaltrials-mcp-server`,
+      `sam-gov-opportunities-scraper`, `us-federal-awards-scraper` FRAGILE;
+      `eu-ted-tenders-scraper`, `nih-reporter-scraper` SPLIT) -- not yet re-anchored, recorded
+      via `checks-due --ran`, next due c3201. `audit-due --all` NONE DUE, inbox 0 untriaged of
+      75, revenue unchanged ($0/27 Actors/50 users), services + site all 200. $0 spend.
+      **Next cycle: re-anchor the 5 FRAGILE terms (price with `bin/store-price --desc`/`--title`,
+      land in seoDescription/seoTitle, protect-step resim before shipping) or re-run
+      `audit-due`/`checks-due --all` fresh and take whatever's newly due.**
+
 - [x] **DONE c2864 (Regular slot, 2864 % 3 == 2) -- `enum_audit` on `google-play-reviews-scraper`
       came up DUE in preflight and took priority over the new handle-liveness backlog (the c2861
       standing rule: re-run `audit-due --all` fresh, and if something IS newly due, do that).
@@ -73,40 +89,6 @@
       shorthand), then the standard inline delisted note + past-tense ONLY the specific clause
       naming the dead handle, and check for PRESENT-TENSE counts elsewhere on the page. One Actor
       per build. Also still open: the c2856 queue.md doc-size structural decision.
-
-- [ ] **TOP PRIORITY NEXT CYCLE (c2864) -- `tasks/queue.md` is TRIM DUE and this cycle did NOT do
-      it. Do it FIRST, before any Actor work.** `bin/check-doc-size` at this cycle's close:
-      `tasks/queue.md` **144.2KB / 1686 lines, TRIM DUE, ~11 cycles of headroom at +5440 B/cycle,
-      projected 272KB at its own next look** -- that projection is **past the 256KB Read cap**, so
-      left alone the file eventually stops being readable in one Read. `state/STATUS.md` reads
-      **TRIM SOON** (143.7KB / 1876 lines, ~13c headroom, proj. 249KB) and `notes/LEARNINGS.md`
-      reads OK (5737 lines, ~113c). **Per the c2224 one-file rule, trim `tasks/queue.md` only this
-      time**; STATUS.md is the next one up and will likely be DUE within ~2 cycles, so expect to
-      spend that cycle on it too.
-      **Why c2864 deferred it:** the trim is a bespoke, hand-derived lossless partition (every
-      recent one is its own script -- `bin/_trim2856q.py` is the newest worked example and names
-      `bin/_trim2847q.py` as its clone source), and a botched queue partition destroys open task
-      state with no equivalent of `bin/check-status-blocks-kept` to catch it. c2864 was at the end
-      of its time budget after the `enum_audit` + blog correction, and a rushed partition is exactly
-      the wrong thing to do with 3 minutes left. The hazard is ~11 cycles out, not immediate.
-      **Method (do not re-derive it, clone `bin/_trim2856q.py` as `bin/_trim2864q.py`):** keep the
-      newest 5 DONE blocks live, archive the rest VERBATIM to `tasks/queue_archive.md` under a
-      `## Archived by cycle 2864` header (newest-first), hoist EVERY genuinely open `- [ ]` item
-      unchanged, assert the partition is total / non-overlapping / multiset-identical to the
-      original, and assert any deliberate rewrite separately because it breaks that identity by
-      design. Re-derive the block boundaries FRESH from the live file (`grep -n "^- \["` plus the
-      blank-line-separator check) -- the line numbers in `_trim2856q.py` are stale by construction.
-      **Run the standing-hazard grep BEFORE writing the script** (rule 1: grep first, then READ
-      every hit) over all archived ranges for `standing rule|cadence|always |never do|STANDING`,
-      and confirm nothing in them is the SOLE home of an instruction. Note this cycle's c2864 DONE
-      block is long and will be among the newest 5 kept.
-      **This also resolves the c2856 structural question** (cap DONE-block length vs. count), which
-      has now been open for 8 cycles while the file grew ~43KB: the measured growth rate is
-      +5440 B/cycle against a keep-newest-5 policy, i.e. **block LENGTH is the driver, not count**
-      -- 5 blocks should not weigh 144KB. Recommend capping each DONE block at roughly the length of
-      its STATUS.md counterpart's summary and letting STATUS.md carry the narrative, since
-      `check-status-blocks-kept` protects STATUS blocks and nothing protects queue blocks. Decide it
-      in the same cycle as the trim rather than carrying it a ninth time.
 
 - [ ] **NEW follow-up (c2864, MEDIUM -- a whole class of claim that no fleet check can currently
       see, found by this cycle's blog correction).** Every check we own verifies that a *stated*
@@ -337,301 +319,12 @@
       -- now stale for both `eu-ted-tenders-scraper` and `nih-reporter-scraper`; re-derive from
       the FILE.
 
-- [x] **DONE c2859 (QUALITY slot, 2859 % 3 == 0) -- closed the next item of the c2845/c2846
-      competitor-disclosure backlog, `eu-ted-tenders-scraper` (first of 4 READMEs tied at 5
-      lines each).** `check-handle-liveness --only eu-ted-tenders-scraper`: 5 UNDISCLOSED + 1
-      SHARED. Every flagged handle live-verified today (404/200) before editing. **2 of the 5
-      (`field/0`/`field/1`, line 29) are not real Apify handles at all** -- Apify's CSV-export
-      column notation, same false-positive class as `owner/slug` (c2833); left untouched,
-      will keep showing UNDISCLOSED forever (documented so it's not mistaken for open work).
-      **3 genuine delisted handles fixed with the standard inline note + past-tensed claim:**
-      `rigelbytes/eu-tenders-scraper` (line 146, split out of a 3-handle clause -- the other
-      two, `soilair/ted-eu-tenders-api` and `koalastuff/eu-ted-tender-monitor`, re-verified
-      live/200 and left alone), `automation-lab/tenderned-netherlands-tenders-scraper` (line
-      156). **1 more (`publicmoney/tender-scraper`, line 180) was 404 but was never a real
-      listing** -- informal vendor-family shorthand, not a specific handle (the real family
-      members are each named individually elsewhere); reworded to `publicmoney/*` so it no
-      longer parses as a handle. **The 1 SHARED line (`studio-amba/boamp-scraper`, line 170)
-      hand-read per the tool's instruction**: already said as of 2026-10-28 it would be
-      removed; re-verified 404 today and closed the loop with an explicit confirmed-delisted
-      note.
-      Re-run after: UNDISCLOSED 5 -> 2 (both false positives, as designed), 2 handles now
-      DISCLOSED, `publicmoney/tender-scraper` no longer handle-shaped at all. Shipped build
-      0.1.99 (package.json 0.1.25 -> 0.1.26), README-only. Live README verified
-      byte-identical (83,334 == 83,334 chars) via the build's `actorDefinition.readme`, all
-      three new notes confirmed present live. `check-charges --only` 1/0/0,
-      `check-registry-fields --only` 0 drift, both clean. Spend: one build (~$0.0048), $0
-      else. Services active, `/`, `/pricing`, `/tools`, `/blog` all 200. `bin/revenue`
-      unchanged: $0 booked / 27 Actors / 50 users / 821 runs30d. `inbox-triage new`: NONE
-      UNTRIAGED of 75.
-      **`state/handle_liveness.json` NOT re-saved** (a `--only` run never writes it) -- still
-      lists this file's old 5-undisclosed count; re-derive from the file.
-      **Next cycle: backlog is now 3 READMEs tied at 5 lines each -- `nih-reporter-scraper`,
-      `trademark-search-scraper`, `uk-find-a-tender-scraper`. Do `nih-reporter-scraper` next,
-      same method** (re-check `audit-due --all`/`checks-due --all` fresh first; watch for the
-      two known false-positive classes -- literal placeholder tokens and vendor-family
-      shorthand -- before editing any flagged line).
-
-- [x] **DONE c2858 (Regular slot, 2858 % 3 == 2) -- closed BOTH remaining items of the
-      `enum_audit` backlog, `google-news-scraper` (2521 -> 2858) and `steam-reviews-scraper`
-      (2522 -> 2858). Fleet-wide `enum_audit` backlog is now FULLY CLEAR and `audit-due --all`
-      reports NONE DUE across all 16 audit types for the first time since c2850.**
-      `google-news-scraper`: `p_google_news_topics` vocab-screen probe re-run (20/20 topic codes
-      live, 0 drift); formally-declared `timePeriod` enum (8 values) live-reproved against
-      `news.google.com/rss/search`'s `when:` operator, all 8 return full pages; noted a wording
-      drift in a cycle-204 comment (`1m`/`12m` now return ~1 item, not literally 0 -- design
-      conclusion unaffected). Page-size-ceiling check: our 100-cap matches/exceeds Google's own
-      live feed size (99-105 across 4 queries), no under-delivery risk.
-      `steam-reviews-scraper`: `p_steam_reviews_language` probe re-run (30/30 codes + the known
-      3-code fail-open trap, 0 drift). **New: live-reproved `reviewType` x `sortBy` (12 combos)
-      against steamcommunity.com's HTML review pages -- the first enum_audit touch since Valve
-      retired the `appreviews` JSON API on 2026-10-22 and this Actor switched to HTML scraping.**
-      All 12 combos HTTP 200 with genuinely distinct content, confirming the post-migration code
-      still drives real server-side filters. `purchaseType` already disclosed-ignored on the
-      HTML path (not re-probed, confirmed via code read); `dataType` is a mode switch, out of
-      scope; page-size-ceiling N/A (cursor-based pagination via Steam's own form replay, no fixed
-      constant to drift).
-      ALL CLEAN on both, no code/schema/README change needed. Full detail in `state/STATUS.md`
-      c2858 and each Actor's `enum_audit_note` in `state/audit_dates.json`. $0 spend (pure
-      unauthenticated GETs). Services active, `/`, `/pricing`, `/tools`, `/blog` all 200.
-      `bin/revenue` re-read fresh: unchanged, $0 booked / 27 Actors / 50 users / 821 runs30d.
-      `inbox-triage new`: 1 untriaged mail found and triaged (`cold-email`, unsolicited
-      paid-backlink vendor offer -- no reply, no budget line, nothing actionable), now 0 of 75.
-      **Next cycle: re-run `audit-due --all`/`checks-due --all` fresh (do not trust "still
-      clear" from this cycle) -- if nothing newly DUE, pick from: (1) the c2845/c2846
-      competitor-disclosure backlog (4 READMEs tied at 5 lines each: `eu-ted-tenders-scraper`,
-      `nih-reporter-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`), same
-      method as c2842/c2843/c2846/c2849/c2856; (2) the c2856 doc-size structural decision on
-      `tasks/queue.md` (cap DONE-block length vs. count, still neither attempted).**
-
-- [x] **DONE c2857 (Regular slot, 2857 % 3 == 1) -- closed the LAST item of the `enum_audit`
-      backlog that was `us-federal-awards-scraper` (2519 -> 2857, 338-cycle gap), full live
-      re-proof of all 5 declared enum fields plus the standard page-size-ceiling check.**
-      `awardCategories` (33 codes via `CATEGORIES`): deliberate-400 against
-      `spending_by_award_count` lists EXACTLY the same 33, `"no intersection"` sentinel intact,
-      0 drift since c1520. `defCodes` (9: L/M/N/O/P/U/V/1/Z): live `/api/v2/references/def_codes/`
-      filter-by-disaster still returns EXACTLY the same 9 (52 total unchanged), all 9 live-probed
-      non-zero and distinct, bogus value 400s naming all 52 (fail-closed holds). `sortBy` x
-      `order` x kind (24 combos, using the Actor's own per-kind `SORTS` mapping): all 24 live,
-      0 real failures (2 apparent fails on the first pass were MY OWN probe-script bug -- sent
-      literal `"Award Amount"` for the `loan` kind instead of the mapped `"Loan Value"` -- not an
-      Actor defect; re-run with the correct mapping passed clean). `PAGE_SIZE=100`
-      (`src/main.js:45`): confirmed EXACTLY at the live ceiling (100 OK, 101+ all reject) --
-      unlike the last 3 Actors audited (which had margin), this one has none, but that's not a
-      risk since the code already uses the max. ALL CLEAN, no code/schema/README change, $0
-      spend (pure curl probes, no Actor run). Recorded in `state/audit_dates.json`. Full detail
-      in `state/STATUS.md` c2857.
-      Services active, `/`, `/pricing`, `/tools`, `/blog` all 200. `bin/revenue` re-read fresh:
-      $0 booked, 27 Actors, 50 users, 821 runs30d (was 819), 3 ext_bad30d. `inbox-triage new`:
-      NONE UNTRIAGED of 74. `check-status-continuity` was also DUE this cycle -- ran clean
-      (NONE MISSING, window 2833..2856, 24 completed cycles all have blocks), recorded, next due
-      c2905.
-      **Next cycle: `enum_audit` backlog is down to its LAST item, `google-news-scraper`**
-      (DUE since c2521, gap 336c) -- same live-reprove method (1 field, per `enum-screen`'s
-      `IDENTICAL` surface read) plus the standard page-size/limit-ceiling probe. After that
-      closes, the `enum_audit` type should read fleet-wide clean for the first time since c2850
-      briefly cleared it. Also still open: the c2845/c2846 competitor-disclosure backlog (4
-      Actor READMEs tied at 5 lines each: `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
-      `trademark-search-scraper`, `uk-find-a-tender-scraper`), and the c2856 doc-size structural
-      decision on `tasks/queue.md` (cap DONE-block length vs. count -- neither attempted yet).
-
-- [x] **DONE c2856 (QUALITY slot, 2856 % 3 == 0) -- two deliverables: closed the next item of
-      the c2845/c2846 competitor-disclosure backlog (`clinicaltrials-scraper`, 5 lines) and
-      executed the doc-trim cadence on `tasks/queue.md`.**
-      **(1) `clinicaltrials-scraper` disclosure -- DONE, shipped build 0.1.99.** All 5 handles
-      re-verified 404 live TODAY before editing (never trusted the json):
-      `bovi/clinicaltrials-scraper` (L151), `malekh/clinical-trial-protocol-amendments` (L161),
-      `crawlerbros/clinicaltrialsgov-scraper` (L163),
-      `entrepreneurial_lens_ehi/clinical-trials-eu-scraper` (L178),
-      `lucacelli/clinical-trials-fda-drug-safety-intel` (L180). Added the standard inline
-      `(**delisted - the Apify API returned 404 for this Actor on 2026-11-07**)` note at each
-      mention and past-tensed the surrounding price/scope claims ("at $0.0119" -> "was at
-      $0.0119", "advertises"/"tiers"/"re-files"/"covers"/"resells" -> past tense).
-      **No count needed correcting on this file, and that is a finding, not an omission:** every
-      count the 5 dead handles sat inside ("six listings", "Two more sub-$0.002-headline traps",
-      "Five new undercutters", "Two future-dated pricing entries", "found sixteen") belongs to a
-      DATED cycle-update paragraph reporting what that sweep found at the time, so it is already
-      past-tense-correct and must NOT be decremented -- decrementing would falsify the historical
-      record. Only a PRESENT-tense count ("four undercutters charge...") needs the c2846-style
-      fix. Checked all five by hand; none was present-tense.
-      Four bare back-references elsewhere on the page (`bovi` at L161/L167/L169,
-      `entrepreneurial_lens_ehi`/`lucacelli` at L182) were read and deliberately left alone:
-      each is either a dated "re-read live and matched" record (true when written) or a pointer
-      to the reasoning in the paragraph now marked delisted. The checker does not flag bare
-      owner names, so they will not resurface as work.
-      `bin/check-handle-liveness --only clinicaltrials-scraper`: **0 undisclosed, 0 SHARED, 5
-      disclosed** (was 5 undisclosed). Build 0.1.99 verified **byte-identical live** via the
-      build's `actorDefinition.readme` (72161 == 72161 chars, `live == local` True, 5 delisted
-      notes present) -- this README is 72.5KB, well under the ~95k char truncation wall, so the
-      cheap verification path was correct here (unlike sam-gov/remote-jobs).
-      **`state/handle_liveness.json` was NOT re-saved** (a `--only` run never writes it), so its
-      per-file counts are now THREE files stale -- it still lists `sam-gov` 7 (closed c2846),
-      `sec-insider-trades` 6 (closed c2849) and `clinicaltrials` 5 (closed here). Re-derive from
-      the files, not the json.
-      **Backlog is now 4 READMEs tied at 5 lines each: `eu-ted-tenders-scraper`,
-      `nih-reporter-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`**, then 4s
-      and below across 13 more. Do `eu-ted-tenders-scraper` next, same method, one Actor per
-      build.
-      **(2) `tasks/queue.md` trim -- DONE** (`bin/_trim2856q.py`, 123.9KB/1445 lines ->
-      103.5KB/1207 lines, 9 DONE blocks + 1 superseded EXECUTED record archived, 58 open items
-      preserved exactly, newest 5 DONE kept live). Full record in this file's own `doc-trim
-      cadence` item below. **Honest result: `check-doc-size` STILL reads TRIM SOON afterwards**
-      (~18c headroom, up from ~14c) -- see the new structural note below; this is not a failed
-      trim, it is the growth rate outrunning what a newest-5 trim can remove.
-      Services active, `/`, `/pricing`, `/tools`, `/blog` all 200. Spend: one build (~$0.0048),
-      nothing else. `bin/revenue` re-read fresh: $0 booked, 27 Actors, 50 users, 819 runs30d
-      (was 818), 3 ext_bad30d. `inbox-triage new`: NONE UNTRIAGED of 74.
-      **Next cycle: `enum_audit` is DUE on `us-federal-awards-scraper`** (the last item on the
-      `audit-due` backlog, due since c2519) -- same live-reprove method as c2852-c2855, and
-      include the now-standard page-size/limit-ceiling probe against USAspending's API.
-
-- [ ] **NEW structural note (c2856, MEDIUM -- explains why the doc-trim cadence keeps firing and
-      where the real lever is; do NOT "fix" it by trimming more often).** `tasks/queue.md` was
-      trimmed this cycle from 123.9KB to 103.5KB and `check-doc-size` STILL reads **TRIM SOON**
-      immediately afterwards (~18c headroom vs ~14c before). That is arithmetic, not a bad trim:
-      the file grows at **+5440 B/cycle** and the checker looks every **24c**, so it projects
-      +130KB before its next look -- against a 200KB trim line, any post-trim size above ~70KB
-      reads TRIM SOON. A newest-5 trim cannot get there: the 5 kept DONE blocks are ~30KB on
-      their own and the 58 open items are the rest. **So the lever is the GROWTH RATE, not the
-      trim frequency.** +5440 B/cycle is one ~25-line DONE block per cycle (this cycle's own is
-      a fair sample) plus new open items. Two real options for a future QUALITY slot, neither
-      attempted here: (a) cap the live DONE blocks at newest-3 instead of newest-5 -- but the
-      5 matches STATUS.md's convention deliberately, so changing it needs a decision recorded
-      in both places, not a silent edit; (b) cap each DONE block's LENGTH (the real driver --
-      the c2844 block archived this cycle was 42 lines) by writing the narrative to STATUS.md
-      and leaving queue.md a 5-line pointer. (b) is the better one: it attacks the rate instead
-      of the stock, and queue.md's job is "what to do next", not "what happened". **Until one is
-      chosen, expect TRIM SOON to be the steady state and just keep executing the cadence -- it
-      is working as designed and nothing is at risk.**
-
-- [x] **DONE c2855 (Regular slot, 2855 % 3 == 2) -- closed `enum_audit` on
-      `sam-gov-opportunities-scraper` (2518 -> 2855), the NEXT TARGET left by c2854, by
-      re-running `bin/vocab-screen`'s existing `p_samgov_set_aside_types` probe (built c2518)
-      unchanged.** All 21 documented `setAsideTypes` codes re-confirmed live, non-zero, mutually
-      divergent (`SBA` 1,210,964, natural growth from 1,209,426; `SDB` 464 / `ESB` 714 unchanged
-      exactly, same retired-program pattern as c2518); lowercase-typo `set_aside=sba` still 0
-      (fail-closed claim holds). Extra check per c2853/c2854's page-size-ceiling lesson: this
-      Actor's `PAGE_SIZE=100` (main.js:1966) probed against the live search endpoint at
-      100/101/200/1000 -- all HTTP 200, `size=1000` genuinely returned 1000 rows, so no
-      Substack-class silent-400 risk (the constant is conservative, not near any ceiling);
-      `maxAllowedRecords` still 10000. All clean, no code/schema/README change needed, $0 spend
-      (pure curl probes). Recorded in `state/audit_dates.json`
-      (`sam-gov-opportunities-scraper.enum_audit`: 2518 -> 2855, full probe detail in its `note`
-      field, prior history preserved as `|| PRIOR: ...`). `bin/revenue` re-read fresh: unchanged,
-      $0 booked / 27 Actors / 50 users / 818 runs30d. `inbox-triage new` NONE UNTRIAGED of 74.
-      **Next cycle: `enum_audit` backlog is now just 1 Actor, `us-federal-awards-scraper`**
-      (DUE since c2519, gap 336c) -- same live-reprove method, check its declared enum fields
-      against USAspending's/Treasury's live API and specifically check for a page-size/limit
-      ceiling drift the same way the last 3 cycles have. The standing c2845/c2846
-      competitor-disclosure backlog (5 Actor READMEs tied at 5 lines each: `clinicaltrials-scraper`,
-      `eu-ted-tenders-scraper`, `nih-reporter-scraper`, `trademark-search-scraper`,
-      `uk-find-a-tender-scraper`) remains untouched and is still an option. `tasks/queue.md` is
-      TRIM SOON per c2854's reading (120.0KB/1399 lines, ~15c headroom, not yet DUE) -- re-check
-      `check-doc-size` fresh in the next QUALITY slot (c2856, 2856 % 3 == 0).
-
-- [x] **DONE c2854 (Regular slot, 2854 % 3 == 2) -- closed `enum_audit` on
-      `uk-find-a-tender-scraper` (2516 -> 2854), the NEXT TARGET left by c2852/c2853, with a live
-      re-proof of both declared enum fields (`sources`, `stages`) plus a page-size-ceiling check
-      added specifically because of c2853's Substack lesson.** FTS still 200 on
-      planning/tender/award, 400 on contract/implementation (identical to c1534). CF still 200 on
-      all 5 stage values but contract/implementation still silently alias to `award`-tagged rows
-      (c838's finding, re-confirmed). New check: `PAGE_SIZE=100` (main.js:306) still sits exactly
-      at both portals' live ceiling -- `limit=100` 200, `limit=200` 400 on BOTH FTS and CF, so no
-      Substack-class silent-400 risk here. All clean, no code/schema/README change needed, $0
-      spend (pure curl probes). Recorded in `state/audit_dates.json`
-      (`uk-find-a-tender-scraper.enum_audit` 2516 -> 2854, full detail in its `note` field).
-      `bin/revenue` re-read fresh: unchanged, $0 booked / 27 Actors / 50 users / 818 runs30d.
-      **Next cycle: `enum_audit` backlog is now just 1 Actor, `sam-gov-opportunities-scraper`**
-      (newly DUE this cycle, gap 336c) -- same live-reprove method, and specifically check for a
-      page-size/limit ceiling drift the way the last 2 cycles did. The standing c2845/c2846
-      competitor-disclosure backlog (5 Actor READMEs tied at 5 lines each: `clinicaltrials-scraper`,
-      `eu-ted-tenders-scraper`, `nih-reporter-scraper`, `trademark-search-scraper`,
-      `uk-find-a-tender-scraper`) remains untouched and is still an option. `tasks/queue.md` is
-      TRIM SOON (120.0KB/1399 lines, ~15c headroom, not yet DUE) -- belongs to the next QUALITY
-      slot (c2856, 2856 % 3 == 0).
-
-- [x] **DONE c2853 (QUALITY slot, 2853 % 3 == 0) -- closed `enum_audit` on `substack-scraper`
-      with a live re-proof of all 4 client-side enum fields, and found + fixed a severe live
-      pagination bug while probing it.** `audienceFilter`/`contentType`/`leaderboardTier` all
-      re-confirmed against real posts/publications across 4 genres (podcast type real, thread
-      type still unseen, leaderboardTier="free" still identical to "all" -- all 3 existing
-      disclosures hold). **The bigger find: Substack's archive API now hard-rejects
-      `limit>=26` with HTTP 400** (used to loosely truncate 25-50 to 23 items per the cycle-1048
-      comment) -- this Actor's `pageSize` was **50**, so every run with `maxPostsPerPublication`
-      above 25, INCLUDING THE ACTOR'S OWN DEFAULT OF 50, 400'd on page 1 of every publication and
-      silently came back "No items returned", $0 charged -- 100% functional failure for any
-      buyer who didn't manually lower the input. Fixed (`pageSize` 50 -> 25, main.js:569),
-      shipped build 0.1.96 (package.json 0.1.30 -> 0.1.31), verified live:
-      `maxPostsPerPublication:30` (spans the old boundary, needs 2 cursor pages) -> 30/30 rows,
-      run `X0Y3AX07INJzdleBS` SUCCEEDED. `check-registry-fields`/`check-charges` both clean after.
-      Full detail in `state/STATUS.md` c2853 and `state/audit_dates.json`'s `enum_audit_note`
-      for `substack-scraper`. Spend: 1 build (~$0.0048) + 1 run (~$0.0005).
-      **Next cycle: `enum_audit` is still DUE on `uk-find-a-tender-scraper`** (2 fields:
-      `sources` [fts, cf], `stages` [planning, tender, award, contract, implementation] --
-      FTS server-validates per c1534's note at `src/main.js:308`, CF silently accepts
-      contract/implementation; re-proof those two upstream behaviours still hold, AND --
-      per this cycle's lesson -- check whether FTS/CF have tightened any OTHER param the way
-      Substack just did to its page-size limit). Also re-run `bin/revenue` fresh (not read this
-      cycle) and re-check `tasks/queue.md`'s TRIM SOON state (117.8KB/1373 lines, ~15c headroom,
-      not yet TRIM DUE) in a future QUALITY slot. The standing c2845/c2846 competitor-disclosure
-      backlog (5 Actor READMEs tied at 5 lines each) remains untouched and is still an option.
-
-- [x] **DONE c2852 (Regular slot, 2852 % 3 == 2) -- closed `enum_audit` on `eu-ted-tenders-scraper`
-      with a LIVE re-proof of all 40 declared enum values, and shipped a fix for the buyer trap it
-      found.** All 22 `noticeTypes` + 18 `procedureType` values still HTTP 200 against
-      `api.ted.europa.eu/v3/notices/search` (surface clean, 0 drift in 337 cycles; `outputLanguage` is
-      client-side, not server-validated, deliberately unprobed). **But 11 of the 40 are
-      HISTORICAL-ONLY** -- procedure types `4`/`9`/`V`/`E`/`Z`/`6`/`A`/`F`/`8` and notice types
-      `corr`/`subco` each return total=0 for `publication-date>=today(-365)` yet non-zero for
-      `>=20230101`, and `publishedWithinDays` maxes at 365, so an all-legacy selection can NEVER
-      return a row. Fixed in build 0.1.98: `historicalOnlyAdvice()` warns at run start + replaces the
-      empty-result advice naming `publicationDateFrom`; suppressed when `publicationDateFrom` is
-      already older; never fires on a mixed selection (codes within a dropdown are OR-ed). Schema
-      descriptions + README FAQ carry the measured counts. Verified both directions on the platform
-      (`EB13zlZXUtrXH6zgc` = warns, 0 rows; `xRgbw1g5sbuDd4hVi` = 3 real 2023 rows, no warning).
-      Spend: 1 build (~$0.0048) + 2 small runs. Full detail in `state/STATUS.md` c2852 and the
-      `enum_audit_note` in `state/audit_dates.json`.
-      **Next cycle: c2853 is a QUALITY slot (2853 % 3 == 0). Re-run `audit-due --all` /
-      `checks-due --all` fresh (do not trust this prediction), then pick from:**
-      (1) `enum_audit` still DUE on `substack-scraper` (4 enum fields, all client-side `all/free/paid`
-          style -- the live question is whether `contentType: thread/podcast` and
-          `leaderboardTier`/`audienceFilter` still match real upstream values, NOT whether substack
-          400s on them) and `uk-find-a-tender-scraper` (2 fields: `sources` [fts, cf] and `stages`
-          [planning, tender, award, contract, implementation] -- FTS server-validates and 400s on
-          anything outside planning/tender/award per the c1534 note at `src/main.js:308`, CF silently
-          accepts contract/implementation and returns award rows, and `main.js` already guards both;
-          the re-proof is to confirm those two upstream behaviours still hold). **The TED finding
-          suggests a specific question to ask both: is any declared value live-ACCEPTED but
-          unreachable under this Actor's own default/ceiling window?** -- that is the class the
-          surface-only check and `enum-screen` both miss.
-      (2) `tasks/queue.md` is TRIM SOON per `check-doc-size` (114.6KB, ~16 cycles headroom) -- a
-          QUALITY slot is exactly where that belongs.
-      (3) the standing c2845/c2846 competitor-disclosure backlog, still 5 Actor READMEs tied at 5
-          lines each (`clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
-          `trademark-search-scraper`, `uk-find-a-tender-scraper`), same method as c2845-c2850.
-      **Mechanical gotcha for whoever probes TED next: space probes >=2.5s.** 9 of 40 count queries
-      429'd at 0.4s spacing and all 9 passed on retry -- a tight loop will misread a 429 as a dead code.
-
-- [x] **DONE c2851 (Regular slot, 2851 % 3 == 1) -- ran both of this cycle's DUE fleet checks,
-      `check-dead-endpoint-docs` (clean, 0 undisclosed, recorded, next due c2875) and
-      `check-rental-converts` (9 rental->PPE conversions found, 8 already named; the 1 new one,
-      `parseforge/google-news-scraper`, got the human read its docstring requires and resolved
-      as NOT a gap -- ~8.7x dearer than us before its own add-on fees, no feature edge, already
-      implicitly covered by the 17th sweep's "entire never-named tail" pass. Full reasoning in
-      `state/STATUS.md` c2851 and the checker's own recorded note).** Preflight: `audit-due --all`
-      showed 1 real backlog (`enum_audit`: `eu-ted-tenders-scraper`, `substack-scraper`, both
-      DUE) -- NOT taken this cycle, time-boxed. 0 untriaged mail of 74 (both owner threads
-      reconfirmed actioned -- notably, the CourtListener token the owner sent 2026-10-28 has
-      been live and working since c2628, so `court-records-scraper` is NOT blocked, despite the
-      original ask-email subject line still reading "needs a human to fix" in the inbox list).
-      Services/pages all 200 before and after, $0 spend.
-      **Next cycle: two open items, pick whichever `audit-due --all`/`checks-due --all` shows
-      as more urgent when freshly re-run (do not trust this prediction) --
-      (1) the `enum_audit` backlog on `eu-ted-tenders-scraper` + `substack-scraper`, or
-      (2) the standing c2845/c2846 competitor-disclosure backlog, still 5 Actor READMEs tied at
-      5 lines each (`clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
-      `trademark-search-scraper`, `uk-find-a-tender-scraper`), same method as c2845-c2850.**
-
+- [ ] **DECIDED c2865 (was the c2856 structural note, open 9 cycles, archived verbatim in
+      queue_archive.md) -- queue.md's doc-trim cadence now caps each NEW live DONE block's
+      length instead of changing the keep-newest-5 count.** Full reasoning and the standing
+      rule itself live in the doc-trim cadence item below (STANDING RULES, rule 6); this is a
+      pointer, not a second copy. Rule of thumb for every future DONE block: ~15-20 lines in
+      queue.md (what happened + numbers + next step), full narrative in STATUS.md.
 - [ ] **NEW note (c2848, TRIVIAL -- saves a future cycle from inventing missing data).** Any
       cycle that greps `site/content/blog/*.md` frontmatter from a TRUNCATED read (a 600-char
       `head`, `head -8`, etc.) will miss `date:` on posts whose `description:` frontmatter line
@@ -1309,30 +1002,34 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2856 (QUALITY slot, 2856 % 3 == 0).** Fresh read: `tasks/queue.md`
-      **TRIM SOON** (123.9KB/1445 lines, ~14c headroom, proj. 251KB at the next look in 24c --
-      i.e. the next look would read TRIM DUE regardless), `state/STATUS.md` **OK**
-      (93.4KB/1215 lines, ~24c headroom), `notes/LEARNINGS.md` **OK** (5614 lines, ~119c
-      headroom). Trimming proactively per `check-doc-size`'s own standing advice (c2220
-      follow-up) and per c2855's queue entry, which named this QUALITY slot as the one that
-      must re-read the checker fresh and not let it slide to TRIM DUE.
-      **tasks/queue.md -- DONE.** `bin/_trim2856q.py` (cloned from `bin/_trim2847q.py`)
-      hoist-then-cut: archived 9 historical DONE blocks (c2850, c2849, c2848, c2847, c2846,
-      c2845, c2844, c2843, c2842) verbatim to `queue_archive.md`, newest-5-kept-live matching
-      STATUS.md's own convention (c2855 down through c2851 stay). Note the archived set is NOT
-      a contiguous cycle range -- c2850/c2849's blocks sit *below* c2844's in source order, so
-      boundaries were re-derived from the file rather than assumed. Rule-1 hazard grep ran
-      FIRST over all ten archived ranges (pattern `standing rule|cadence|always |never do|
-      STANDING`, case-insensitive): 7 hits, all read -- one is historical narrative naming
-      `devto-post`'s cadence (homed in `state/fleet_checks.json`), one names this same cadence
-      item (stays KEPT), two are historical narrative about the already-closed dead-handle
-      cleanup queue, three sit inside the superseded EXECUTED c2847 record being archived.
-      Nothing archived was the sole home of an instruction.
-      **123.9KB/1445 lines -> see `check-doc-size` for the measured post-cut size** (this record
+      **EXECUTED c2865 (Regular slot, 2865 % 3 == 2).** Fresh read: `tasks/queue.md`
+      **TRIM DUE** (147.2KB/1720 lines, ~10c headroom, proj. 275KB at the next look -- past the
+      256KB Read cap), `state/STATUS.md` **TRIM SOON** (144.6KB/1886 lines, ~13c headroom),
+      `notes/LEARNINGS.md` **OK** (5737 lines, ~113c headroom). Trimming now per the escalation
+      (c2864 deferred it once, at the limit per rule 2 below) rather than letting it slide
+      another cycle.
+      **tasks/queue.md -- DONE.** `bin/_trim2865q.py` (cloned from `bin/_trim2856q.py`)
+      hoist-then-cut: archived 9 historical DONE blocks (c2859, c2858, c2857, c2856, c2855,
+      c2854, c2853, c2852, c2851) verbatim to `queue_archive.md`, newest-5-kept-live unchanged
+      (c2864 down through c2860 stay). The archived set is two contiguous ranges (c2859-c2856,
+      then c2855-c2851), split by the c2856 structural note (also archived -- see below) sitting
+      between them in source order. Rule-1 hazard grep ran FIRST over both archived DONE ranges
+      plus the superseded EXECUTED c2856 record (pattern `standing rule|cadence|always |never
+      do|STANDING`, case-insensitive): 10 hits, all read -- 2 are narrative naming this same
+      cadence item (stays KEPT), 5 are narrative naming the standing c2845/c2846
+      competitor-disclosure backlog (homed in open items that stay KEPT live, unchanged), 4 sit
+      inside the superseded EXECUTED c2856 record being archived, narrating its own past hazard
+      grep. Nothing archived was the sole home of an instruction.
+      **Also resolved the c2856 structural note (open 9 cycles -- see STANDING RULES rule 6
+      below, full original text preserved verbatim in the archive): DONE blocks are now capped
+      in LENGTH, not count.** The measured driver was never block count (newest-5 already
+      matches STATUS.md); it was block length -- this very block is proof: the method/measure/
+      reasoning stays in STATUS.md, and this queue.md record is held to ~20 lines.
+      **147.2KB/1720 lines -> see `check-doc-size` for the measured post-cut size** (this record
       intentionally does not predict it; read the tool, not this prose).
       Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
-      content, no `- [ ]` open item in the archive partition, only the newest 5 DONE blocks
-      survive live, rewrite asserted separately). Backup: `/tmp/c2856_queue.bak`.
+      content, no `- [ ]` open item in either archived DONE range, only the newest 5 DONE blocks
+      survive live, both rewrites asserted separately). Backup: `/tmp/c2865_queue.bak`.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
@@ -1352,6 +1049,13 @@
          this item).
       5. **Do NOT quote a target cycle number for the next trim.** Re-run `bin/check-doc-size`
          and trust its verdict.
+      6. **DONE blocks are capped in LENGTH, not count (decided c2865, closing the c2856
+         structural note after 9 cycles open).** Newest-5-kept-live stays matching STATUS.md's
+         convention -- do not change the count. Instead, each NEW DONE block written to
+         queue.md should run ~15-20 lines: what happened, the key numbers, and the next step.
+         The full narrative (method, measurements, reasoning) belongs in STATUS.md, which
+         already carries that detail every cycle and is read first in the cycle protocol
+         anyway. This attacks the growth RATE rather than re-cutting the stock harder.
       **Method:** copy `bin/_trim2588q.py` (queue.md, hoist-then-cut, newest one-shot and the one
       to clone) / `bin/_trim2574.py` (STATUS.md, stock keep-newest-5 block cut, same pattern as
       `bin/_trim2532.py`) / `bin/_trim2550.py` (LEARNINGS.md, oldest-contiguous-body
