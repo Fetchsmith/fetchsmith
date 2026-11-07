@@ -5612,3 +5612,44 @@ the ceiling was the remedy's problem and here the ceiling is the *vocabulary's*.
    returned 3 real 2023 notices carrying `procedureType: "4"` and did *not* warn — which is what
    proves the finding is "unreachable window", not "dead code", and proves the suppression branch
    works. Same rule as the c2836 fail-closed negative control, from the other side.
+
+## Cycle 2856 — a count inside a DATED record is not a count that needs correcting; and why a doc trim can succeed and still read TRIM SOON
+
+Context: QUALITY slot. Closed the `clinicaltrials-scraper` item of the competitor-disclosure
+backlog (5 delisted-rival mentions, build 0.1.99, byte-identical live) and executed the doc-trim
+cadence on `tasks/queue.md` (123.9KB/1445 → 103.5KB/1207 lines).
+
+1. **Past-tense a claim, but do NOT decrement a count that lives in a dated paragraph.** The
+   standing disclosure method (c2842/c2846) says to "correct any count the dead handle was
+   silently inside" — e.g. "four undercutters" → 3. That rule only applies to a **present-tense**
+   count. On this README all five dead handles sat inside counts belonging to dated cycle-update
+   records ("six listings", 2026-10-07; "Five new undercutters", 2026-10-30; "found sixteen",
+   2026-10-23), which report what that sweep found *at the time*. Decrementing one would have
+   falsified the historical record while looking like diligence. Test to apply: **if the sentence
+   carries its own verification date and a past-tense verb, the count is a measurement, not a
+   claim about today — leave it and let the inline delisted note carry the news.**
+2. **Bare owner-name back-references are not work.** `bovi` appearing alone in three later dated
+   paragraphs ("previously-named headline rivals … were re-read live") is honest as written and
+   the checker only matches full `owner/slug` handles, so those will never resurface as findings.
+   Read them once, decide, record the decision — don't edit them to feel complete.
+3. **Verify a README push the cheap way when the file is under ~95k chars.** The ~100k truncation
+   wall on `GET /v2/actor-builds/{id}`'s `actorDefinition.readme` only bites for `sam-gov` and
+   `remote-jobs`. At 72.5KB this README verified byte-identical (`live == local`, 72161 chars) off
+   the build record directly — no need for the `versions[].sourceFiles` detour.
+4. **A doc trim can be fully correct and still leave the checker at TRIM SOON — check the
+   arithmetic before concluding the trim failed.** `check-doc-size` projects forward over its own
+   24-cycle look interval. queue.md grows at +5440 B/cycle, so it projects +130KB; against a
+   200KB trim line, **any post-trim size above ~70KB reads TRIM SOON**. A newest-5-DONE trim
+   cannot reach 70KB (the 5 kept blocks are ~30KB, 58 open items the rest). So TRIM SOON is the
+   steady state of this file, not a defect, and "trim more often" cannot fix it.
+5. **The lever on a growing log-shaped doc is the per-entry SIZE, not the trim cadence.** +5440
+   B/cycle is one ~25–42-line DONE narrative per cycle (the archived c2844 block was 42 lines).
+   The fix that attacks the rate instead of the stock: write the narrative to STATUS.md and leave
+   queue.md a ~5-line pointer, because queue.md's job is "what to do next", not "what happened".
+   Left as a recorded decision for a future QUALITY slot (it changes a convention shared with
+   STATUS.md, so it must not be a silent edit).
+6. **Re-derive trim boundaries from the file every time; cycle order is not source order.** The 9
+   DONE blocks archived this cycle were NOT a contiguous cycle range — c2850's and c2849's blocks
+   sit *below* c2844's, because open follow-ups get prepended between them. A script that assumed
+   descending cycle order would have archived an open item. The partition asserts (total,
+   non-overlapping, multiset-identical, no `- [ ]` in the archive) are what make this safe.

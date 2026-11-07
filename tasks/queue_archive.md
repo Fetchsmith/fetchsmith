@@ -74301,3 +74301,277 @@ item in queue.md, replaced by cycle 2817's own record (see queue.md). Verbatim b
       Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
       content, no `- [ ]` open item in the archive partition, only the newest 5 DONE blocks
       survive live, rewrite asserted separately). Backup: `/tmp/c2841_queue.bak`.
+
+
+## Archived by cycle 2856 (doc-trim cadence; tasks/queue.md 123.9KB/1445 lines,
+## TRIM SOON per bin/check-doc-size, proactive cut before the next look reads TRIM
+## DUE). 9 historical DONE cycle-summary blocks (c2848, c2847, c2846, c2845, c2844,
+## c2850, c2849, c2843, c2842 -- listed in original source order, which is NOT
+## descending cycle order) plus the doc-trim item's superseded EXECUTED c2847
+## record, verbatim. The newest 5 DONE blocks (c2855 down through c2851) stayed
+## live. No open `- [ ]` item was archived -- asserted by bin/_trim2856q.py, which
+## also asserted the kept/archived partition total, non-overlapping and
+## multiset-identical to the pre-trim file.
+
+- [x] **DONE c2848 (Regular slot, 2848 % 3 == 1) -- took the one DUE fleet check, `devto-post`,
+      end-to-end: syndicated `standby-mcp-no-actor-run-to-poll` to dev.to as id 4992741 and
+      re-derived `state/devto_syndicated.json` whole-file.** Preflight: `audit-due --all` showed
+      one real backlog (`enum_audit`: `federal-register-scraper`, `nih-reporter-scraper`),
+      `checks-due --all` showed **1 DUE (`devto-post`,** 96c cadence, last run c2752),
+      `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 / 27 Actors / 50 users /
+      818 runs30d, services + `/`, `/pricing`, `/tools`, `/blog` all 200 before and after.
+      Picked this post out of the 64 then-unsynced ones because MCP/agent integration is what
+      dev.to is actively reading, and PLAYBOOK forbids spending a cycle writing *original* copy
+      for this channel (~12-21 pageviews measured across 16-29 articles) -- syndicate or skip.
+      **Verified live rather than asserted:** the site post's central claim was the unmeasured
+      "round-trips in the time a single HTTP call takes", so I timed both calls against the
+      published Standby URL -- `tools/list` **HTTP 200 in 3.99s cold**, `search_news`
+      `tools/call` **HTTP 200 in 0.78s warm** with real data (CNBC `openai` story,
+      `publishedAt` 2026-11-06T16:22:49Z, 2 `relatedCoverage` entries). Both numbers plus a real
+      trimmed response object were **ADDED to the dev.to version**, making the syndication
+      strictly stronger than the site original and licensing its strong PLAYBOOK-(c) disclosure
+      footer. All 4 outbound links re-verified and absolutized (2x blog 200, 2x `/go/` 302 to
+      apify.com): **0 relative links** in the published body, the one thing that silently breaks
+      on dev.to. Post-publish `GET /api/articles/4992741` confirms canonical/tags/5003-char
+      body/4-min read and the public page is 200; `bin/check-disclosure` reads 95 site + 30
+      dev.to, 0 missing (run as verification, **deliberately not recorded** -- its 48c clock is
+      a backstop that must stay free to fire when the QUALITY-cycle run stops happening).
+      Draft kept at `notes/devto_article_21.md` (the sequence continues from `_20` = c2752).
+      Recorded: `devto-post` next due **c2944**.
+      **Next cycle: the top item is still the c2845/c2846 competitor-disclosure backlog
+      (62 lines/19 files, `sec-insider-trades-scraper` next at 6 lines) -- untouched this cycle.
+      The other live option is the `enum_audit` backlog above (2 Actors).** `tasks/queue.md` is
+      still TRIM SOON (~19c headroom after c2847's trim); that belongs to the next QUALITY slot.
+
+- [x] **DONE c2847 (QUALITY slot, 2847 % 3 == 0) -- trimmed `tasks/queue.md`, proactively,
+      per STATUS.md's c2845/c2846 entries naming this slot as the one that must not let it
+      slide to TRIM DUE.** Preflight fully clean: `audit-due --all` NONE DUE (16 types),
+      `checks-due --all` NONE DUE (soonest `devto-post` in 1c, cycle 2848 -- not due today),
+      `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users,
+      818 runs30d, 3 ext_bad30d (known one-offs). Services active before and after;
+      `/`, `/pricing`, `/tools`, `/blog` all 200.
+      **tasks/queue.md was TRIM SOON** (118.2KB/1377 lines, ~15c headroom, projected to read
+      TRIM DUE at the checker's own next look in 24c regardless of anything else). Full method,
+      boundary re-derivation and hazard-grep result are in this file's own `doc-trim cadence`
+      item's refreshed `EXECUTED c2847` record below, and mirrored in `state/STATUS.md`'s c2847
+      entry. Short version: `bin/_trim2847q.py` (hoist-then-cut, cloned from `bin/_trim2841q.py`)
+      archived 6 historical DONE blocks (c2841, c2840, c2839, c2838, c2837, c2836) verbatim to
+      `queue_archive.md`, kept the newest 5 DONE blocks live (c2846-c2842) plus every open item
+      untouched. **118.2KB/1377 -> 101.5KB/1182 lines** (TRIM SOON -> TRIM SOON, ~19c headroom,
+      up from ~15c). All asserts passed (partition total/non-overlapping, multiset-identical,
+      no open item archived, only the intended 5 DONE blocks survived live).
+      **No new follow-up queued; next cycle should just re-run `audit-due --all`/`checks-due
+      --all` fresh and pick whatever is DUE, or continue the c2845 disclosure backlog
+      (`sec-insider-trades-scraper`, 6 lines, is next per the `UPDATED c2846` item above).**
+
+- [x] **DONE c2846 (Regular slot, 2846 % 3 == 2) -- ran the one DUE fleet check
+      (`check-source-endpoints`: 50 hosts, 0 deviations, CLEAN, recorded) and closed the top
+      item of the c2845 disclosure backlog, `sam-gov-opportunities-scraper` (7 lines, the
+      largest single file). Full detail in the `UPDATED c2846` item below and `state/STATUS.md`
+      c2846. Build 0.1.91, byte-identical live, $0 spend beyond the ~$0.005 build. Preflight
+      otherwise clean (16/16 audit types not due, both owner-forwarded threads reconfirmed
+      already actioned, 0 untriaged mail, services/pages all 200). **Backlog now 62 lines / 19
+      files; next cycle: `sec-insider-trades-scraper` (6 lines), same method.**
+
+- [x] **DONE c2845 (Regular slot, 2845 % 3 == 2) -- two fixes, no new Actor build.** (1) Found and
+      fixed a real STATUS.md cycle-block-destruction bug: c2843 merged c2842's block under its own
+      header instead of prepending a fresh one, so `check-status-blocks-kept` correctly refused to
+      commit for TWO cycles (c2843, c2844 both "FAILED to auto-commit"). Restored c2842's header as
+      its own block (content unchanged), verified clean with `check-status-blocks-kept`/
+      `check-status-continuity`, committed+pushed the repair plus the 2-cycle backlog (`6eea7ee1`).
+      (2) Spot-checked `bin/check-handle-liveness`'s c2844 first-run backlog (93 undisclosed lines)
+      and found 14 flagged idents were never Apify handles (MIME types/UAs/code tokens + off-topic
+      GitHub repo refs, all 404-shaped like a real delisting). Added to `KNOWN_NON_HANDLES`,
+      re-ran (`--save`, recorded, next due c3181): **corrected backlog is 69 lines, 20 Actor
+      READMEs, 0 blog posts** (was 93/33 docs) -- see the `UPDATED c2845` item below for the real
+      work list. Full detail in `state/STATUS.md` c2845 and `notes/LEARNINGS.md`. Preflight was
+      otherwise fully clean (no audits/checks due, no untriaged mail, services/pages all 200).
+      $0 spend. **Next cycle: pick up the corrected 69-line backlog per-Actor, one build each.**
+
+- [x] **DONE c2844 (QUALITY slot, 2844 % 3 == 0) -- answered the QUALITY-slot question c2842/c2843
+      left open ("should the ad hoc dead-handle sweep become a real `checks-due` rotation?") and
+      the answer turned out to be bigger than the question: YES, but not as a clock on
+      `check-competitor-claims` -- as a NEW tool, because that checker was never looking at most
+      of the handles.** Measured before deciding (local, no network):
+      **2,839 unique backticked `owner/slug` handles fleet-wide; only 918 sit inside a USER-COUNT
+      claim, which is the only thing `check-competitor-claims` ever resolves (`USERS.finditer`).
+      1,921 (68%) were liveness-checked by nothing.** Same shape as c2842's hand sweep:
+      `steam-reviews-scraper`'s README names 110 handles but only 6 carry a count, and hand-checking
+      all 110 found 7 dead -- c2843's "fleet-wide GONE sweep found exactly one" was therefore a
+      coverage artifact, not a clean fleet. **Built `bin/check-handle-liveness`** (fleet-wide, no
+      Actor arg, read-only, never writes a doc): every backticked handle in `actors/*/README.md` +
+      `site/content/blog/*.md`, 8-way parallel `GET /v2/acts/<owner>~<slug>`, each non-200 retried
+      once (c1145/c1148/c1159 transients), 4 buckets -- UNDISCLOSED / SHARED / DISCLOSED /
+      URL-LIKE + ANOMALY. Registered in `state/fleet_checks.json` at **interval 336c (7d)**, run
+      recorded, next due c3180; `checks-due` prints no UNCLASSIFIED, so the registry is complete.
+      **FIRST FLEET RUN (~4 min, $0, log in `logs/handle-liveness-c2844.log`, machine-readable
+      queue in `state/handle_liveness.json`): 2,779 handles, 2,650 live, 129 delisted (404) of
+      which 7 are URL-shaped and set aside, 0 anomalies. 93 LINES NEED A DISCLOSURE NOTE, 17 are
+      group-disclosure paragraphs to hand-read once, 55 already disclosed.**
+      Two false-positive classes were found and closed WHILE building, not left in the output:
+      (1) backticked URLs/paths shaped like handles (`itunes.apple.com/lookup`, `api/appdetails`,
+      `bin/_unit_price.py`) -- filtered structurally by extension/repo-dir, and a 404 on a
+      domain-shaped owner goes to its own URL-LIKE bucket rather than being dropped, because
+      `caffein.dev`, `gooyer.co`, `examsens.ai` and `insight.solutions` are REAL Apify usernames in
+      our copy and a dots-in-owner filter would silently stop checking real rivals;
+      (2) our own prose writes GROUP disclosures ("the two future-dated listings (`luminar/...`;
+      `entrogix_works/...`) no longer resolve on the Store"), where strict adjacency (the c2092
+      rule) calls an already-honest paragraph undisclosed -- hence the SHARED bucket, which is
+      deliberately NOT allowed to read as DISCLOSED (that would re-open the c2092 hole) nor as
+      work. Also widened the removal-notice regex: `check-competitor-claims` only ever matched
+      "gone from the Store", but three other phrasings are live in the fleet ("delisted — the Apify
+      API returned 404 ..." (the c2842 standard note), "confirmed 404", "no longer resolve ...
+      returns `404 record-or-token-not-found`") -- a disclosure the checker cannot see reads as
+      missing work forever. Verified against the known-good file first: `--only steam-reviews`
+      returns 0 UNDISCLOSED / 2 SHARED (both hand-read and confirmed honest), i.e. it agrees with
+      c2842's completed fix instead of re-opening it.
+      **Also backfilled a lost run of record:** c2843 ran the FULL unfiltered `check-competitor-claims`
+      sweep but never recorded it, so `fleet_checks.json` still read `last_cycle=2802` / "in 102".
+      Recorded with `--cycle 2843`; next due c2987. $0 spend, no build shipped (no doc edited),
+      services active and `/`+`/pricing`+`/tools`+`/blog` all 200 after.
+
+- [x] **DONE c2850 (QUALITY slot, 2850 % 3 == 0) -- closed the only real `audit-due` backlog
+      item, `enum_audit` on BOTH `federal-register-scraper` and `nih-reporter-scraper` (DUE since
+      c2512, 338c stale).** Preflight otherwise clean (`checks-due --all` NONE DUE, 0 untriaged
+      mail of 74, both owner-forwarded threads reconfirmed already actioned, `bin/traffic` shows
+      no buyer-intent spike for Polar, services/pages all 200 before and after). `bin/enum-screen`
+      showed both Actors' enum SURFACE unchanged (4->4, 1->1 fields) since c2512 -- live re-proved
+      the VALUES instead of trusting that diff, same method as c2837/c2839/c2840's enum_audits.
+      **federal-register-scraper, all 4 declared enums CLEAN:** `documentTypes` matched Federal
+      Register's own exhaustive `/api/v1/documents/facets/type` facet exactly (4 keys, real
+      counts) -- proof of completeness, not just that 4 guesses work; `presidentialDocumentTypes`
+      (7 values) all live non-zero, bogus value correctly 400s (server-validated closed list);
+      `order` (4 values) all live AND genuinely distinct (different top result per value on an
+      identical query) -- noted that a bad `order` value silently falls back rather than erroring
+      (informational, not a bug, Apify's schema enum blocks it before the API call); `dataset`
+      both live, structurally distinct endpoints. `agencies` (free-text) re-confirmed via
+      `bin/vocab-screen`: 473/473 unchanged.
+      **nih-reporter-scraper, 1 declared enum CLEAN:** `awardTypes` (9 values) all live non-zero
+      including the 2 codes (6, 8) the description prose never explains in words, only
+      `enumTitles` labels "Other" -- confirmed real, not placeholder. `agencyIcCodes` (free-text)
+      re-confirmed via `bin/vocab-screen`. Flagged (see NEW follow-up above): `activityCodes`/
+      `orgStates` have no vocab-screen probe for this Actor, not re-proven this cycle.
+      Recorded both in `state/audit_dates.json` (`enum_audit`: 2512 -> 2850 each, full numbers in
+      the notes). `audit-due --all`: **NONE DUE fleet-wide, all 16 types** -- first time in
+      several cycles this table is fully empty. No code/schema/README change on either Actor
+      (both genuinely clean), so **no Apify build shipped this cycle, $0 spend.**
+      `tasks/queue.md` re-checked: TRIM SOON (109.2KB/1273 lines, ~17c headroom), not DUE, already
+      trimmed 3 cycles ago at c2847 -- left alone rather than trim-churn every QUALITY slot.
+      **Next cycle (Regular slot, 2851 % 3 == 2): resume the c2845/c2846/c2849 competitor-
+      disclosure backlog** -- 5 files now tied at 5 lines each (`clinicaltrials-scraper`,
+      `eu-ted-tenders-scraper`, `nih-reporter-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`), same method, pick any one. Full detail in `state/STATUS.md`
+      c2850.
+
+- [x] **DONE c2849 (Regular slot, 2849 % 3 == 2) -- closed `sec-insider-trades-scraper` (6
+      lines), the next item of the c2845/c2846 disclosure backlog after `sam-gov-opportunities-
+      scraper`.** Preflight clean (1 real audit backlog unchanged -- `enum_audit`:
+      `federal-register-scraper`, `nih-reporter-scraper`; `checks-due --all` NONE DUE; 0
+      untriaged mail of 74; services/pages all 200 before and after). Pulled the 6 flagged lines
+      straight from `state/handle_liveness.json`'s `undisclosed` list (lines 247x2, 251x2, 275,
+      288 -- 5 unique handles, `crawlerbros/open-insider-scraper` named once in full at 251 and
+      back-referenced at 247, both needing their own note per the tool's strict-adjacency rule).
+      Live-reconfirmed all 5 handles 404 twice (fresh + retry, no transients):
+      `crawlerbros/open-insider-scraper`, `crawlerbros/sec-edgar-scraper`,
+      `entrepreneurial_lens_ehi/openinsider-scraper`, `tagadanar/sec-edgar-monitor`,
+      `m_ctim/insider-trading-alert`. Added the standard inline `(**delisted -- the Apify API
+      returned 404 for this Actor on 2026-11-07**)` note at each of the 6 mentions, past-tensed
+      the surrounding price/feature claims (same treatment c2846 gave `owlabee`). Checked whether
+      any sat inside a "N genuine undercutters" tally needing correction (the c2846 stale-count
+      class) -- none did, all 5 were already "dearer than us"/"not a confirmed undercut" prose,
+      so no count fix was needed this time. Verified with `check-handle-liveness --only
+      sec-insider-trades-scraper`: 0 undisclosed, 0 SHARED, 6 newly disclosed. Bumped
+      `package.json` 0.1.27 -> 0.1.28, shipped build 0.1.74 (`apify push --force`), verified
+      byte-identical live via `versions[].sourceFiles` (76,283 chars both). `$0` spend beyond the
+      ~$0.005 build. `state/handle_liveness.json` NOT re-saved (same reasoning as c2846 -- a
+      `--only` run never writes it, and only 2 of 69 flagged files are closed so far, not
+      "substantially cleared"). **Backlog is now effectively 5 files tied at 5 lines each**
+      (`clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`) -- the json's own per-file counts
+      for the two closed files are stale, ignore them. **Next cycle: pick any one of the five,
+      same method.** Full detail in `state/STATUS.md` c2849.
+
+- [x] **DONE c2843 (Regular slot, 2843 % 3 == 2) -- ran the fresh fleet-wide `GONE` sweep c2842
+      asked for (all 27 Actors' READMEs, not just recently-touched ones).** Reused
+      `bin/check-competitor-claims`'s existing live-delisting detection (full unfiltered run,
+      ~9 min, 972 user-count claims + 281 paragraphs checked) rather than writing a new
+      extraction script -- it already resolves every backticked `owner/slug` AND bare-handle
+      claim (via its `COMPETITORS`/`FILE_OVERRIDES` maps) against a live `GET /v2/acts/<owner>~
+      <slug>`, and already distinguishes an undisclosed dead handle (`STALE ... is gone from the
+      Store`, no suffix) from one already disclosed (`DISCLOSED ... already disclosed in the
+      text`). Found exactly **one** undisclosed delisted competitor fleet-wide:
+      `darknezz/substack-posts-scraper` (`actors/substack-scraper/README.md:219`, confirmed 404
+      live). Fixed with the standard inline `(**delisted — the Apify API returned 404 for this
+      Actor on 2026-11-07**)` note, past-tensed the claim, and corrected the "Both are genuine
+      new undercutters" sentence to name only the surviving one (`cirkit`). Also ran the
+      checker's own `--fix --only substack-scraper` (mechanical, only fires when a stale count is
+      the sole problem with a claim), which fixed 1 more stale count in the same file
+      (`maximedupre/substack-recommendations` 3->1). Shipped build 0.1.95 (package.json 0.1.29 ->
+      0.1.30), README-only; live byte-identical via `diff` against `versions[].sourceFiles`
+      content. Services active after, all 4 pages 200. $0 spend beyond one ~$0.005 build.
+      **STILL OPEN, queued precisely:** the same sweep found 100 stale user-count claims
+      fleet-wide (not GONE, just drifted counts) -- 99 of 100 are guarded (trend/superlative/
+      30-day-sub-figure/dated-paragraph prose a blind swap would falsify) across
+      `apple-podcasts-scraper`, `eu-ted-tenders-scraper`, `fda-recall-scraper`,
+      `google-news-scraper`, `google-play-reviews-scraper`, `hacker-news-scraper`,
+      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `scholarship-scraper`,
+      `trademark-search-scraper`, `us-federal-awards-scraper`, `website-screenshot-scraper` --
+      each needs a hand edit per README, one Actor (one build) at a time; not attempted this
+      cycle (time budget). 4 of the 100 are UNGUARDED and safe for `--fix` with a one-line build
+      each: `apple-podcasts-scraper:189` (seemuapps 14->16), `eu-ted-tenders-scraper:184`
+      (sashaebashu 7->8), `hacker-news-scraper:132` (constructive_calm 26->29),
+      `website-screenshot-scraper:172` (fetchbase 20->23) -- good quick-win candidates for the
+      next cycle that has a few spare minutes. Also 1 `UNCHECKED` handle needing a COMPETITORS
+      entry: `sam-gov-opportunities-scraper:385` `jungle_synthesizer` (171 users). **Also still
+      open from c2842:** decide at the next QUALITY slot whether this ad hoc sweep should become
+      a real `checks-due` rotation now that it's proven to run fleet-wide in ~9 minutes for $0 --
+      nothing today re-checks competitor-handle liveness on a schedule.
+
+- [x] **DONE c2842 (Regular slot, 2842 % 3 == 1) -- closed the standing dead-handle cleanup
+      queue's last item, `steam-reviews-scraper` (open since c2835/c2836/c2838/c2839/c2840/c2841).**
+      Preflight fully clean: `audit-due --all` NONE DUE (16 types), `checks-due --all` NONE DUE
+      (soonest in 4c), `inbox-triage new` NONE UNTRIAGED of 74. Pulled a FRESH `GONE` list (did
+      not reuse any prior count): all 110 unique `owner/slug` handles in the README, live-checked
+      via `GET /v2/acts/<owner>~<slug>` (parallel, timeout-guarded, 0 anomalies outside 200/404).
+      **7 confirmed 404:** `benthepythondev/steam-scraper`, `bovi/steam-scraper`,
+      `crawlerbros/steam-review-scraper`, `entrogix_works/steam-store-search`,
+      `luminar/steam-reviews-scraper-change-monitor`, `tagadanar/steam-scraper`,
+      `wearefluent/steam-reviews-scraper`. 2 already had a correct "gone" banner from
+      2026-10-28; fixed the other 5 with the standard inline `(**delisted — the Apify API
+      returned 404 for this Actor on 2026-11-07**)` note, past-tensing the surrounding price
+      claim, and corrected the two undercutter-count paragraphs that referenced delisted handles
+      in their totals (`tagadanar`'s "four" -> 3 still-live/2 beat us outright; `wearefluent`'s
+      "ten" annotated as 9 still-live). Shipped build 0.1.95 (package.json 0.1.27 -> 0.1.28),
+      README-only. Live README verified byte-identical to local (69,646 bytes) via the actor
+      record's `versions[].sourceFiles` field (the top-level `/v2/acts/<id>` response has no
+      `readme` field, only `readmeSummary` — note this for next time, it cost a few minutes of
+      rediscovery this cycle). Services active after, `/`+`/pricing`+`/tools`+`/blog` all 200.
+      $0 spend beyond the one ~$0.005 build.
+      **Standing dead-handle cleanup queue is now EMPTY for the first time** — `steam-reviews-
+      scraper` was the last Actor on the c2835-c2841 start-here list. **Next cycle: re-derive a
+      fresh fleet-wide `GONE` sweep (all 27 Actors' READMEs, not just the ones recently touched)
+      rather than assuming the queue stays empty** — competitor listings keep getting delisted
+      over time and nothing currently re-checks this on a schedule; consider whether this deserves
+      promotion to a real rotation in `checks-due`/`audit-due` rather than an ad hoc queue item.**
+
+      **EXECUTED c2847 (QUALITY slot, 2847 % 3 == 0).** Fresh read: `tasks/queue.md`
+      **TRIM SOON** (118.2KB/1377 lines, ~15c headroom, proj. 246KB at the next look in 24c --
+      i.e. the next look would read TRIM DUE regardless), `state/STATUS.md` **OK**
+      (56.8KB/734 lines, ~33c headroom), `notes/LEARNINGS.md` **OK** (5528 lines, ~124c
+      headroom). Trimming proactively per `check-doc-size`'s own standing advice (c2220
+      follow-up) and per STATUS.md's c2845/c2846 entries, which named this QUALITY slot as the
+      one that must not let it slide to TRIM DUE.
+      **tasks/queue.md -- DONE.** `bin/_trim2847q.py` (cloned from `bin/_trim2841q.py`)
+      hoist-then-cut: archived 6 historical DONE blocks (c2841, c2840, c2839, c2838, c2837,
+      c2836) verbatim to `queue_archive.md`, newest-5-kept-live matching STATUS.md's own
+      convention (c2846 down through c2842 stay). Rule-1 hazard grep ran FIRST over the one
+      archived range (pattern `standing rule|cadence|always |never do|STANDING`,
+      case-insensitive): 8 hits, all read -- one names this same cadence item (stays KEPT),
+      one points at the file's own closing process lesson (also stays KEPT, outside the
+      archived range), six are historical status narrative about the already-closed dead-handle
+      cleanup queue. Nothing archived was the sole home of an instruction.
+      **118.2KB/1377 lines -> see `check-doc-size` for the measured post-cut size** (this record
+      intentionally does not predict it; read the tool, not this prose).
+      Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
+      content, no `- [ ]` open item in the archive partition, only the newest 5 DONE blocks
+      survive live, rewrite asserted separately). Backup: `/tmp/c2847_queue.bak`.
