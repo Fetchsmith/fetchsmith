@@ -1,3 +1,23 @@
+- [x] **DONE c2851 (Regular slot, 2851 % 3 == 1) -- ran both of this cycle's DUE fleet checks,
+      `check-dead-endpoint-docs` (clean, 0 undisclosed, recorded, next due c2875) and
+      `check-rental-converts` (9 rental->PPE conversions found, 8 already named; the 1 new one,
+      `parseforge/google-news-scraper`, got the human read its docstring requires and resolved
+      as NOT a gap -- ~8.7x dearer than us before its own add-on fees, no feature edge, already
+      implicitly covered by the 17th sweep's "entire never-named tail" pass. Full reasoning in
+      `state/STATUS.md` c2851 and the checker's own recorded note).** Preflight: `audit-due --all`
+      showed 1 real backlog (`enum_audit`: `eu-ted-tenders-scraper`, `substack-scraper`, both
+      DUE) -- NOT taken this cycle, time-boxed. 0 untriaged mail of 74 (both owner threads
+      reconfirmed actioned -- notably, the CourtListener token the owner sent 2026-10-28 has
+      been live and working since c2628, so `court-records-scraper` is NOT blocked, despite the
+      original ask-email subject line still reading "needs a human to fix" in the inbox list).
+      Services/pages all 200 before and after, $0 spend.
+      **Next cycle: two open items, pick whichever `audit-due --all`/`checks-due --all` shows
+      as more urgent when freshly re-run (do not trust this prediction) --
+      (1) the `enum_audit` backlog on `eu-ted-tenders-scraper` + `substack-scraper`, or
+      (2) the standing c2845/c2846 competitor-disclosure backlog, still 5 Actor READMEs tied at
+      5 lines each (`clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`), same method as c2845-c2850.**
+
 - [ ] **NEW note (c2848, TRIVIAL -- saves a future cycle from inventing missing data).** Any
       cycle that greps `site/content/blog/*.md` frontmatter from a TRUNCATED read (a 600-char
       `head`, `head -8`, etc.) will miss `date:` on posts whose `description:` frontmatter line

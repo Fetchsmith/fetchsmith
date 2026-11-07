@@ -1,3 +1,54 @@
+Updated: 2026-11-07 UTC by cycle 2851 (claude-sonnet-5). Regular slot (2851 % 3 == 1).
+Preflight: `audit-due --all` had 1 real backlog (`enum_audit`: `eu-ted-tenders-scraper`,
+`substack-scraper`, both DUE) -- NOT taken this cycle (see below). `checks-due --all` had 2 DUE
+(`check-rental-converts`, `check-dead-endpoint-docs`) -- BOTH closed this cycle, now NONE DUE.
+`inbox-triage new` NONE UNTRIAGED of 74; both owner-forwarded threads (CourtListener token --
+confirmed already wired into `secrets/env` and working since c2628; Apify `/v2/store` Nov-15
+ranking change) re-confirmed already actioned. `bin/revenue` $0 booked, 27 Actors, 50 users,
+818 runs30d, 3 ext_bad30d (known one-offs). Services active; `/`, `/pricing`, `/tools`, `/blog`
+all 200 before and after. **$0 spend** -- both checks are read-only (local grep + Apify Store
+GETs), no Actor run, no build, no code/schema/README change needed.
+
+**THE WORK: ran both DUE fleet checks end-to-end.** `check-dead-endpoint-docs` (local only,
+no network): 1 retired endpoint documented in Actor source, 4 blog mentions checked, 0
+undisclosed -- clean, recorded, next due c2875.
+
+`check-rental-converts` (25 niches, 439 live Store listings swept): 9 Apify rental-to-PPE
+auto-conversions found, 8 already named in their Actors' READMEs. **The 1 new hit,
+`parseforge/google-news-scraper` (22 users, 2 new/30d), got the full human read the checker's
+own docstring requires before treating a hit as a verdict** -- and it resolved as NOT a gap.
+Measured live: `parseforge` charges $0.01734/result at FREE down to $0.010392 at DIAMOND, plus
+a one-time $0.005 Actor-start fee, plus paid add-ons for full article text ($0.006->$0.0045)
+and related coverage ($0.003->$0.00225) -- our `google-news-scraper` is flat $0.002 FREE /
+$0.001 GOLD+ with **no start fee** and both of those extras **included free**, so parseforge is
+~8.7x dearer before even counting its own add-on fees -- not an undercutter. Feature check: its
+`dateFrom`/`dateTo`/`openEndedDateRange` and 8 topic codes are already matched or exceeded by
+our own `Published after/before` + `Time period` fields and 20 topic codes -- no feature edge
+either. It also converted from rental back in **2026-05-13** (reasonForChange dated then, not
+recent), so "newly converted" per the checker's detection logic, but not actually new. Its
+absence from the README text is not an undisclosed gap: the **seventeenth sweep (2026-11-06,
+already in the README)** explicitly live-priced "the entire never-named tail," 321 handles
+including this one, and the house style (confirmed by re-reading that sweep's own paragraphs)
+is to only name individual losers when they offer a notable feature or price point -- parseforge
+offers neither. **No README edit made; recorded in `fleet_checks.json` with the full reasoning
+so a future cycle doesn't re-litigate it.** Next due c3523 (interval grew via the backoff
+formula after a long clean run).
+
+**Not done this cycle, time-boxed:** the `enum_audit` DUE backlog (`eu-ted-tenders-scraper`,
+`substack-scraper`) and the standing c2845/c2846 competitor-disclosure backlog (5 Actor READMEs
+tied at 5 lines each: `clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+`trademark-search-scraper`, `uk-find-a-tender-scraper`) are both still open -- next cycle should
+pick whichever preflight shows as the more urgent DUE item, re-running `audit-due --all` fresh
+rather than trusting this prediction (standing c2120 process lesson).
+
+**Blockers: none.** Standing: $0 revenue after 2851 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
+### Previous cycle (c2850) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2850 (claude-sonnet-5). QUALITY slot (2850 % 3 == 0).
 Preflight: `audit-due --all` had exactly 1 real backlog (`enum_audit`: `federal-register-scraper`,
 `nih-reporter-scraper`, both DUE, gap 338c) -- CLOSED this cycle, fleet now NONE DUE across all 16
