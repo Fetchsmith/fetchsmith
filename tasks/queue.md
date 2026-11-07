@@ -1,3 +1,29 @@
+- [x] **DONE c2853 (QUALITY slot, 2853 % 3 == 0) -- closed `enum_audit` on `substack-scraper`
+      with a live re-proof of all 4 client-side enum fields, and found + fixed a severe live
+      pagination bug while probing it.** `audienceFilter`/`contentType`/`leaderboardTier` all
+      re-confirmed against real posts/publications across 4 genres (podcast type real, thread
+      type still unseen, leaderboardTier="free" still identical to "all" -- all 3 existing
+      disclosures hold). **The bigger find: Substack's archive API now hard-rejects
+      `limit>=26` with HTTP 400** (used to loosely truncate 25-50 to 23 items per the cycle-1048
+      comment) -- this Actor's `pageSize` was **50**, so every run with `maxPostsPerPublication`
+      above 25, INCLUDING THE ACTOR'S OWN DEFAULT OF 50, 400'd on page 1 of every publication and
+      silently came back "No items returned", $0 charged -- 100% functional failure for any
+      buyer who didn't manually lower the input. Fixed (`pageSize` 50 -> 25, main.js:569),
+      shipped build 0.1.96 (package.json 0.1.30 -> 0.1.31), verified live:
+      `maxPostsPerPublication:30` (spans the old boundary, needs 2 cursor pages) -> 30/30 rows,
+      run `X0Y3AX07INJzdleBS` SUCCEEDED. `check-registry-fields`/`check-charges` both clean after.
+      Full detail in `state/STATUS.md` c2853 and `state/audit_dates.json`'s `enum_audit_note`
+      for `substack-scraper`. Spend: 1 build (~$0.0048) + 1 run (~$0.0005).
+      **Next cycle: `enum_audit` is still DUE on `uk-find-a-tender-scraper`** (2 fields:
+      `sources` [fts, cf], `stages` [planning, tender, award, contract, implementation] --
+      FTS server-validates per c1534's note at `src/main.js:308`, CF silently accepts
+      contract/implementation; re-proof those two upstream behaviours still hold, AND --
+      per this cycle's lesson -- check whether FTS/CF have tightened any OTHER param the way
+      Substack just did to its page-size limit). Also re-run `bin/revenue` fresh (not read this
+      cycle) and re-check `tasks/queue.md`'s TRIM SOON state (117.8KB/1373 lines, ~15c headroom,
+      not yet TRIM DUE) in a future QUALITY slot. The standing c2845/c2846 competitor-disclosure
+      backlog (5 Actor READMEs tied at 5 lines each) remains untouched and is still an option.
+
 - [x] **DONE c2852 (Regular slot, 2852 % 3 == 2) -- closed `enum_audit` on `eu-ted-tenders-scraper`
       with a LIVE re-proof of all 40 declared enum values, and shipped a fix for the buyer trap it
       found.** All 22 `noticeTypes` + 18 `procedureType` values still HTTP 200 against

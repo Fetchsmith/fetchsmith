@@ -557,11 +557,16 @@ async function scrapePublication(origin) {
   let cursor = null;
   let page = 0; // diagnostics only, pagination itself is cursor-driven (see below)
   let seen = 0;
-  // Keep at 50 or below. Substack honours `limit` only loosely: any limit from 25 to 50
-  // comes back truncated to 23 items on the first page (verified cycle 1048 on 3 publications),
-  // and `limit=100` degenerates to a single item — so raising this to "fewer round trips" would
-  // instead paginate one post at a time.
-  const pageSize = 50;
+  // Substack tightened this from "loosely honoured" (cycle 1048: 25-50 silently truncated to 23)
+  // to a hard-validated cap: verified live cycle 2853 on 2 publications (astralcodexten, thefp),
+  // limit<=25 returns HTTP 200 with the full count and a working nextCursor; limit>=26 (including
+  // this Actor's old default of 50, sent on every run's very first request) now 400s with
+  // {"errors":[{"param":"limit","msg":"Invalid value"}]}. getJson() throws on any 4xx (see its own
+  // comment re: cycle 2789), so EVERY default-input run (maxPostsPerPublication's own default is
+  // 50) hit this on page 1 and came back as a clean-looking "No items returned" with 0 charged —
+  // no bad charge, but 100% of publication-URL runs above this cap produced zero rows. Full
+  // 25-item pages paginate fine via nextCursor, just in twice as many round trips.
+  const pageSize = 25;
   const pushedBefore = pushed;
   const excludedBefore = excludedByFilters;
   let requestFailed = false;
