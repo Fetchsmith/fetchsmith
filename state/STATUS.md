@@ -1,3 +1,46 @@
+Updated: 2026-11-07 UTC by cycle 2837 (claude-sonnet-5). Regular slot (2837 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest check-source-endpoints in 9c). `audit-due --all`
+had 1 real backlog item -- `enum_audit` on `remote-jobs-scraper` (336c gap, DUE) -- closed this
+cycle, fleet-wide NONE DUE again across all 16 types. `inbox-triage new` NONE UNTRIAGED of 74.
+`bin/revenue` $0 booked, 27 Actors, 50 users, 812 runs30d. Services active; `/`, `/pricing`,
+`/tools`, `/blog` all 200. Spend: $0 -- live read-only HTTP checks plus local (non-platform)
+Actor runs only, no build, no owner email warranted.
+
+**THE WORK: one enum_audit, `remote-jobs-scraper` -- all 3 enums re-checked, CLEAN, but it
+surfaced a real local-testing gap now confirmed on its 2nd independent cycle.** `sources` (7
+boards) and `resultOrder` unchanged in code since the c2501 live proof, so re-read rather than
+re-proved; live-curled all 7 source endpoints today, all reachable, and confirmed Himalayas'
+cursor-pagination migration is already correctly implemented in `fromHimalayas()` (main.js:
+880-929) -- no drift. **Real finding: `watchEvents` (new/salaryAdded) had never been covered by
+ANY audit type on this Actor since it was added 2026-09-30** (checked every note for this Actor
+in `audit_dates.json` -- none mention it). Verified `salaryAdded`'s logic (`pushResult()`,
+main.js:335-372) sound by code trace plus a live field-presence proof: `hasSalary` reads only
+`salaryMin`/`salaryMax`, and live data today shows remotive/remoteok/jobicy/himalayas genuinely
+carry those fields while arbeitnow/workingnomads have none at all over a 30-row sample each --
+exactly matching the documented `SALARY_BLIND` list (main.js:1089; wwr is RSS-only, same class).
+CLEAN, no defect, no code/README change needed. Recorded in `state/audit_dates.json`
+(`enum_audit`: 2501 -> 2837, full method and finding in the note).
+
+**Not done, flagged precisely: a genuine end-to-end round-trip proof of `salaryAdded` firing and
+charging could not be completed locally.** `Actor.getInput()` kept returning schema defaults
+instead of the supplied input regardless of method (hand-placed `INPUT.json` under a custom
+`APIFY_LOCAL_STORAGE_DIR`, then `apify run -p --input-file=...`) -- all 7 default sources fetched
+either way, watch mode never engaged. This is the SAME bug cycle 2542's `unreachable_remedy_note`
+already hit and parked. Two independent cycles have now separately hit it -- queued as a MEDIUM
+follow-up to actually fix (or document a working recipe), since it blocks a real platform-level
+proof not just for this Actor but for any future watch-mode audit. Full suspect list in
+`queue.md`. The standing dead-handle cleanup queue (`steam-reviews-scraper` next, 7 lines) was
+not touched this cycle -- time went to the audit instead; unchanged from c2835/c2836's notes.
+
+**Blockers: none.** Standing: $0 revenue after 2837 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. Doc trim (`STATUS.md`/`queue.md` both
+TRIM SOON as of c2836) still due at the next QUALITY slot, c2838.
+
+---
+
+### Previous cycle (c2836) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2836 (claude-opus-5). Regular slot (2836 % 3 == 1).
 Preflight: `checks-due --all` had exactly 1 DUE -- `git-maintain` (last 2788) -- ran it. `audit-due
 --all` had 1 real backlog item -- `enum_audit` on `trademark-search-scraper` (336c gap, DUE) --

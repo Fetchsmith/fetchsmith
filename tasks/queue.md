@@ -1,3 +1,55 @@
+- [x] **DONE c2837 (Regular slot, 2837 % 3 == 2) -- closed the one DUE fleet audit
+      (`enum_audit` on `remote-jobs-scraper`, 336c gap) -- all clean, no defect, but surfaced a
+      real unresolved local-testing gap, now confirmed on its 2nd independent cycle.**
+      Preflight: `checks-due --all` NONE DUE (soonest check-source-endpoints in 9c). `audit-due
+      --all` 1 real backlog item (`enum_audit` remote-jobs-scraper) -- closed, fleet-wide NONE DUE
+      again across all 16 types. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked,
+      27 Actors, 50 users, 812 runs30d. Services active, `/`+`/pricing`+`/tools`+`/blog` all 200.
+      $0 spend -- entirely live read-only HTTP checks plus local (non-platform) Actor runs, no
+      Actor-platform run, no build, no owner email warranted.
+      **`sources` (7 boards) and `resultOrder`** re-read unchanged in code since the c2501 live
+      proof -- no re-proof needed. Live-verified all 7 source endpoints (remotive/remoteok/jobicy/
+      arbeitnow/workingnomads/himalayas/wwr) reachable today via direct curl, and confirmed
+      Himalayas' own in-code comment about its cursor-pagination migration is ALREADY correctly
+      implemented (`fromHimalayas()`, main.js:880-929) -- no drift.
+      **REAL FINDING: `watchEvents` (new/salaryAdded) had never been covered by ANY audit type on
+      this Actor since it was added 2026-09-30** -- checked every note in `audit_dates.json` for
+      this Actor (enum_audit/varied_test/unreachable_remedy/competitor_audit/feature_diff_audit),
+      none mention it. Verified the `salaryAdded` logic (`pushResult()`, main.js:335-372) sound by
+      code trace + a live field-presence proof: `hasSalary` reads only `salaryMin`/`salaryMax`
+      (never `salaryText`), and live data today shows remotive/remoteok/jobicy/himalayas genuinely
+      carry those fields while arbeitnow/workingnomads have NO salary key at all over a 30-row
+      sample each -- exactly matching the `SALARY_BLIND` list (main.js:1089; wwr is RSS-only, same
+      class). So `salaryAdded` can only ever fire for the 4 documented non-blind sources, as
+      advertised. CLEAN, no defect, no code/README change needed.
+      **NOT DONE, flagged precisely rather than silently skipped: a genuine end-to-end round-trip
+      proof of `salaryAdded` actually firing and charging (seed run recording `hasSalary=false`,
+      second run where the same id now carries a salary, asserting `watchEvent === 'salaryAdded'`)
+      could not be completed locally.** `Actor.getInput()` kept returning the schema defaults
+      instead of the supplied input regardless of method tried -- plain `node src/main.js` with a
+      hand-placed `INPUT.json` under a custom `APIFY_LOCAL_STORAGE_DIR`, then
+      `apify run -p --input-file=...` (apify-cli 1.10.0) -- both ran all 7 default sources with
+      watch mode never engaged. **This is the SAME bug cycle 2542's `unreachable_remedy_note`
+      already hit and parked** ("local `Actor.getInput()` returned null... not pursued further
+      since the default-sources fallback made it moot for this claim"). Two independent cycles
+      (2542, 2837) have now separately hit this; it is worth a real fix or a documented working
+      recipe rather than a 3rd cycle rediscovering it from scratch.
+      **NEW follow-up (MEDIUM, closes a real local-testing blind spot that has now cost 2
+      cycles):** debug why `apify-cli`/`apify` SDK 3.7.2 local runs ignore a supplied input file
+      in this repo. Suspects to check first: (a) whether `@crawlee/memory-storage`'s KVS lookup
+      is keyed by a specific store NAME/ID that `--input-file` does NOT write into (apify-cli may
+      write to its own temp dir, not `APIFY_LOCAL_STORAGE_DIR`, or may require `APIFY_LOCAL_STORAGE_DIR`
+      set BEFORE `apify run` resolves its config rather than only at Node-process launch); (b)
+      whether `package.json`'s `start` script (`node src/main.js`, invoked via `npm run start`)
+      loses env vars passed to the outer `apify run` through the `npm` wrapper; (c) a stray
+      `.actor`/`apify.json` local config pinning a different storage dir. Once fixed, come back to
+      `remote-jobs-scraper` and run the actual seed+flip round-trip described above to fully close
+      this audit with a live platform-level proof instead of code+live-field verification only.
+      **Standing dead-handle cleanup queue (unchanged, not touched this cycle -- time went to the
+      audit instead): `steam-reviews-scraper` (7 lines) is next, per c2835/c2836's start-here
+      list.** Re-pull a fresh `GONE` list rather than reusing any prior cycle's saved file (stale
+      per c2835's regex widening).
+
 - [x] **DONE c2836 (Regular slot, 2836 % 3 == 1) -- ran the one DUE fleet check
       (`git-maintain`), closed the one DUE audit (`enum_audit` on `trademark-search-scraper`),
       and fixed 5 of that same Actor's 6 `GONE` dead-handle lines. One Actor, one build.**
