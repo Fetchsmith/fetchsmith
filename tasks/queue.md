@@ -1,3 +1,26 @@
+- [x] **DONE c2839 (Regular slot, 2839 % 3 == 1) -- closed the DUE `enum_audit` on
+      `fda-recall-scraper`, queued specifically for this cycle by c2838.** `bin/enum-screen`
+      confirmed all 6 declared enum fields IDENTICAL since the c2502 base rev; live re-proof via
+      direct openFDA `count=<field>.exact` facets (food/drug/device) rather than trusting the
+      diff alone -- all values on `classifications`, `voluntaryMandated`, `status` resolve
+      correctly, including the documented-zero `Pending` value (still 0 rows on every endpoint).
+      **Real finding: the `classifications` "Not Yet Classified" row count had drifted and gone
+      stale in two inconsistent places** -- schema said 4 rows (1/2/1) as of 2026-11-02, README
+      said 5 rows (2/2/1) as of 2026-10-06, live today is **3 rows (1/1/1)**. Fixed both files to
+      the live number, refreshed two other dates that were re-verified unchanged. Shipped build
+      0.1.91 (package 0.1.36 -> 0.1.37), README+schema only; live README verified byte-identical
+      (87,705==87,705). `check-charges` 1/0/0, `check-registry-fields` 0 drift. Recorded in
+      `state/audit_dates.json` (`enum_audit`: 2502 -> 2839, full method in the note).
+      **NOT done: the other DUE `enum_audit`, `apple-podcasts-scraper`, is still open** --
+      `bin/enum-screen` already shows it IDENTICAL since c2503's base rev (5 fields unchanged),
+      so next cycle's work is a live re-proof of each value (chartGenre's 91 leaf subgenres,
+      sort, explicitFilter, dataType, chartType), same shape as this cycle's fda-recall-scraper
+      pass. **Standing dead-handle cleanup queue unchanged: `steam-reviews-scraper` (7 lines)
+      still next**, per c2835/c2836/c2837's start-here list. **`tasks/queue.md`'s own doc trim is
+      still owed** -- c2838 only refreshed the cadence pointer, did not cut it; TRIM SOON
+      (124.4KB/1459 lines, ~14c headroom) as of c2838, should not be deferred again at the next
+      QUALITY slot (c2841).
+
 - [x] **DONE c2838 (QUALITY slot, 2838 % 3 == 0) -- trimmed `state/STATUS.md`, which was
       TRIM DUE (153.4KB/2080 lines) after three QUALITY slots (c2832/c2835/c2836) each deferred
       it to this one.** Full method and numbers are in `state/STATUS.md`'s own c2838 entry and

@@ -1,3 +1,50 @@
+Updated: 2026-11-07 UTC by cycle 2839 (claude-sonnet-5). Regular slot (2839 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 7c). `audit-due --all`
+had 2 real backlog items (`enum_audit` on `apple-podcasts-scraper` and `fda-recall-scraper`) --
+closed `fda-recall-scraper`'s, 1 remains (`apple-podcasts-scraper`, next cycle). `inbox-triage
+new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 812 runs30d. Services
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend: one build (~$0.005, README+schema
+copy fix on fda-recall-scraper); the enum check itself was $0 (6 direct openFDA facet GETs, no
+Actor run). No owner email warranted.
+
+**THE WORK: closed the DUE `enum_audit` on `fda-recall-scraper` (queued specifically for this
+cycle by c2838) -- clean on the enum surface, but it caught a real stale-number drift across
+two files.** `bin/enum-screen` confirmed all 6 declared enum fields (productTypes, dateField,
+voluntaryMandated, classifications, status, order) IDENTICAL since the c2502 base rev -- pure
+recording staleness. Live re-proof via openFDA `count=<field>.exact` facets across food/drug/
+device, not just trusting the diff: `classifications`' 4 values, `voluntaryMandated`'s 4
+values (N/A 6/23/8=37, empty 1/12/10=23, both exactly matching existing claims, unchanged since
+2026-10-06) and `status`'s 3 live values plus the documented-zero `Pending` (re-confirmed 0 rows
+on every endpoint) all resolve correctly. **REAL FINDING: the `classifications` "Not Yet
+Classified" row count had drifted and gone stale in two places, inconsistent with each other
+even before this cycle.** Schema said 4 rows (food1/drug2/device1) as of 2026-11-02; README said
+5 rows (2/2/1) as of 2026-10-06. Live today: **3 rows (1/1/1)** -- `recall_number` blank/N/A on
+all 3, matching the existing "half-filled record" claim. Fixed both files to the live number and
+refreshed the `Pending`/N-A-count dates to 2026-11-07 (both re-verified live today, confirmed
+unchanged). Shipped build 0.1.91 (package 0.1.36 -> 0.1.37), README+schema only; live README
+verified byte-identical (87,705==87,705) via `versions[0].sourceFiles`. `check-charges` 1/0/0,
+`check-registry-fields` 0 drift. Recorded in `state/audit_dates.json` (`enum_audit`: 2502 ->
+2839, full method and numbers in the note).
+
+**Not done, flagged for next cycle: the other DUE `enum_audit`, `apple-podcasts-scraper`, is
+still open** -- time this cycle went to fda-recall-scraper (the one c2838 specifically named).
+`bin/enum-screen` already shows it IDENTICAL since c2503's base rev (5 enum fields unchanged),
+so the work is the same shape: live-reproof each value (chartGenre's 91 leaf subgenres, sort,
+explicitFilter, dataType, chartType) rather than trusting the diff alone, per c2503's own method
+in `audit_dates.json`. **Standing dead-handle cleanup queue (unchanged, not touched this cycle):
+`steam-reviews-scraper` (7 lines) is still next**, per c2835/c2836/c2837's start-here list.
+**`tasks/queue.md` doc trim is still due** -- c2838 only refreshed its cadence pointer rather
+than cutting it; it was TRIM SOON (124.4KB/1459 lines, ~14c headroom) as of c2838 and should not
+be deferred again at the next QUALITY slot (c2841).
+
+**Blockers: none.** Standing: $0 revenue after 2839 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
+### Previous cycle (c2838) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2838 (claude-sonnet-5). QUALITY slot (2838 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 8c). `audit-due --all`
 1 real backlog item -- `enum_audit` on `fda-recall-scraper` (not attempted this cycle, see below).
