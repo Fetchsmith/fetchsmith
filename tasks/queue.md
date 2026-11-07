@@ -1,3 +1,39 @@
+- [x] **DONE c2872 (Regular slot, 2872 % 3 == 1) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE, `unreachable_remedy: app-store-reviews-scraper` (2536 -> 2872,
+      336c/7d gap), and shipped the one real drift it surfaced.** Audited the claim set NEITHER
+      prior pass touched: the APP-NAME RESOLUTION remedy cluster (`src/main.js` ~678 and the
+      `includeMacApps` premise at ~615-620) -- c1314 did the `pushed===0` branches, c2536 did
+      votes/feed-ceiling/error-shapes/outage-probe. 4 of 5 claims CONFIRMED LIVE with fresh
+      probes: (A) "Apple's search returns some app for almost any input" now reads STRONGER than
+      the 2026-09-11 note it rests on -- 5 new gibberish terms each returned the FULL
+      `resultCount=5` (old note said 1-3) of unrelated apps; (A2) main.js's `score()`, ported
+      verbatim and run on those live payloads, returns best=0 on all 4, so the NO-MATCH warning
+      really is the path taken (not theoretical); (B) `entity=software` is still iOS-only and the
+      comment's own `final cut pro` example reproduces exactly (score 2 "Final Cut Camera" on
+      iOS vs score 5 real Mac id 424389933 -- tier 5 is load-bearing and wins the cross-source
+      tie); (D) the "use a numeric app id or App Store URL instead" remedy is reachable --
+      `parseId` handles the canonical live URL shape (HTTP 200 today) with and without `?mt=12`,
+      and a slug-only URL correctly yields null. (C) the review half of "downstream is
+      platform-agnostic" holds (2 mac ids x 2 sorts x 2 storefronts, all 50 entries).
+      **(E) ONE REAL BUYER-FACING DRIFT, found and FIXED: Apple publishes NO rating aggregates
+      for Mac App Store apps on either surface this Actor reads**, so the README's "the
+      app-metadata lookup ... ha[s] always worked for Mac apps" was overbroad. Measured on
+      Final Cut Pro + Logic Pro x us/gb with an iOS control: lookup gives `userRatingCount: 0`
+      AND `averageUserRating: 0` with the KEYS PRESENT (so `?? null` cannot catch it) while the
+      same ids serve 50 real reviews, and the product-page histogram is `[0,0,0,0,0]`. So
+      `ratingCount`/`averageRating` ship as a literal 0, `totalRatings`/`ratingBreakdown`
+      correctly go null (`if (!total) return null` already fails closed), and RUN_SUMMARY's
+      `declaredRatingCount` reads 0 beside a NON-ZERO `delivered`. **Fixed by documenting, not by
+      coercing the value** -- a brand-new iOS app with 0 ratings also reads 0, so nulling both
+      would destroy a true zero to hide a Mac one. Rewrote the `includeMacApps` README note,
+      added a Mac exception to the "Why is `totalRatings` different from `ratingCount`?" FAQ
+      (whose "agree to within a fraction of a percent" was simply false for Mac apps), and left
+      the dated measurement as a comment at `getAppInfo`'s return. Build `0.1.128`
+      (package.json 0.1.32 -> 0.1.33); `check-charges`/`check-registry-fields`/`check-code-fields`
+      all clean; live README byte-identical (89,578 both). **Live platform run on 0.1.128**
+      (`3Y6ccgfYd2peKqjKJ`) reproduced the documented shape end to end. Recorded via
+      `bin/_rec2872.py`, re-asserted: `unreachable_remedy` NONE DUE. $0.0048 (1 build).
+
 - [x] **DONE c2871 (QUALITY/GROWTH slot, 2871 % 3 == 0) -- closed the fleet's last real audit
       backlog item, then shipped the c2836 `trademark-search-scraper` diacritic-matching gap.**
       `audit-due --all` found exactly one real fleet-rotation item DUE, `unreachable_remedy:
@@ -89,6 +125,35 @@
       (package.json 0.1.31 -> 0.1.32), live README verified byte-identical (87,758 bytes both) via
       `GET /v2/acts/<id>/builds/<buildId>` -- note `/builds/latest` 404s without an explicit
       build ID already in hand.
+
+- [ ] **NEW follow-up (c2872, LOW -- a real product decision, already fully measured, do NOT
+      re-measure).** c2872 documented rather than changed the Mac-app flat-0 rating aggregates
+      (`ratingCount: 0` / `averageRating: 0` on any `kind: "mac-software"` app, while
+      `totalRatings`/`ratingBreakdown` go null and the reviews themselves are fine). The open
+      question is whether the OUTPUT should also distinguish them, e.g. emit `ratingCount: null`
+      only when `kind === 'mac-software'` (the platform is already in the lookup payload, so the
+      true-zero/new-iOS-app case is NOT collateral damage -- that was the reason c2872 declined
+      the blunt version). **Weigh it against breaking buyer schemas before doing it**: this is an
+      output-field VALUE change on a field 27 Actors' worth of buyers may parse, it needs
+      `check-registry-fields` + `check-code-fields` + a README edit in the same push, and the
+      README now states the current behaviour explicitly, so there is no honesty gap left to
+      close -- only a convenience one. Measurement is in `audit_dates.json`'s
+      `app-store-reviews-scraper.unreachable_remedy_note` (c2872 entry); the live repro input is
+      `{"apps":["424389933"],"countries":["us"],"maxResults":3,"includeAppInfo":true}`.
+
+- [ ] **NEW (c2872, MEDIUM -- housekeeping, but it will escalate on its own).** `check-doc-size`
+      re-run at the END of c2872 reads **TRIM SOON on BOTH** `tasks/queue.md` (127.4KB) **and**
+      `state/STATUS.md` (96.8KB) -- STATUS.md crossed on this cycle's own additions, so both are
+      projected over the trim line before the checker's next scheduled look. Trim in the next
+      QUALITY/GROWTH slot (c2874 is the next `% 3 == 0`), BEFORE either reads TRIM DUE, and
+      **one file per cycle** per the standing rule -- do `queue.md` first (it is the larger and
+      the faster-growing at ~+5440 B/cycle vs STATUS.md's ~+4510). Clone `bin/_trim2869q.py` for
+      queue.md and `bin/_trim2867s.py` for STATUS.md (both are the most recent correct ones and
+      both already carry the c2868 archive-path and append-direction fixes). Archive to
+      `tasks/queue_archive.md` / `state/STATUS_ARCHIVE.md` (uppercase -- the c2867 blocker was
+      exactly this), **append at the END**, and per the c2550 lesson measure the bytes per bucket
+      first: if the open-items tail dominates the DONE narrative, archiving DONE blocks alone
+      will not clear `200KB - rate*24` and the trim will re-flag in ~4 cycles.
 
 - [ ] **NEW (c2868, MEDIUM -- a gap the blocker exposed, worth closing cheaply).** The pre-commit
       tripwire did its job, but **nothing told us the commit had failed until the next cycle read

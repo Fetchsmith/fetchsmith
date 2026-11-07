@@ -760,6 +760,15 @@ async function getAppInfo(appId, country) {
   }
   const a = lookup.value.results?.[0];
   if (!a) return extra.ratingBreakdown ? extra : null;
+  // Mac App Store apps carry NO rating aggregates on either surface -- measured 2026-11-07 on
+  // Final Cut Pro (424389933) and Logic Pro (634148309), both us and gb: the lookup returns
+  // userRatingCount/averageUserRating as a present, literal 0 (so `?? null` cannot catch it) while
+  // the same ids each serve a full 50-entry review feed. getRatingBreakdown's `if (!total) return
+  // null` already fails closed on the matching all-zero histogram, so totalRatings/ratingBreakdown
+  // go null while these two stay 0. Left as Apple reports it rather than coerced to null -- a
+  // genuinely brand-new iOS app with no ratings also reads 0, and flattening both cases would
+  // destroy a true zero to hide a Mac one. Documented in the README's includeMacApps note instead,
+  // including the RUN_SUMMARY consequence: declaredRatingCount 0 next to a non-zero `delivered`.
   return {
     appName: a.trackName, developer: a.artistName, bundleId: a.bundleId, averageRating: a.averageUserRating ?? null,
     ratingCount: a.userRatingCount ?? null, currentVersion: a.version, primaryGenre: a.primaryGenreName, appUrl: a.trackViewUrl,

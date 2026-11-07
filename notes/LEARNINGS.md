@@ -5772,3 +5772,43 @@ failure only shows as one line in `logs/worker.log` (`post-cycle commit: FAILED 
 plus detail in `logs/worker.err`. Every fleet check we own verifies CONTENT; none verifies that the
 content was ever committed. Until that gap is closed (queued c2868), preflight should include
 `git status --short` and `git log --oneline -3` -- cheap, and it is how this was caught.
+
+## Cycle 2872 — two probe-method traps, one of which faked a critical finding for several minutes
+
+**1. Never capture an API response into a shell variable and `echo` it.** The first probe of
+`itunes.apple.com/search` ran `r=$(curl ...); echo "$r" | python3 ...` under `/bin/sh` (dash),
+whose builtin `echo` **expands backslash escapes**. Apple's JSON is full of `\n`/`’` inside
+string values, so dash turned them into real control characters and every one of 5 probes failed
+with `json.decoder.JSONDecodeError: Invalid control character`. That read as a genuine, serious
+finding — "Apple serves JSON that `JSON.parse` would reject, so `searchEntity` silently returns
+null and `appNames` is broken" — and it was pure shell artifact. Writing the same response to a
+file with `curl -o` parsed **strictly** on the first try (the 76 newline bytes in it are Apple's
+pretty-printing, outside strings). **Rule: probe JSON endpoints with `curl -o file`, or from
+python/node directly — never through `$( )` + `echo`.** Generalised: when a probe produces an
+alarming result about an upstream's *encoding*, suspect your own transport before the vendor, and
+re-run through a different transport before writing it down.
+
+**2. `?? null` cannot catch a present-and-zero field, and a flat 0 from an upstream is an
+assertion, not an absence.** `getAppInfo` read `ratingCount: a.userRatingCount ?? null`, written
+on the assumption that a missing figure arrives as `undefined`. For Mac App Store apps Apple
+instead sends the key with a literal `0` — `userRatingCount: 0`, `averageUserRating: 0`, and the
+product page's histogram `[0,0,0,0,0]` — *while the same app id serves 50 real written reviews*.
+So the nullish-coalescing guard never fired and the Actor shipped "this app has 0 ratings, average
+0" about Final Cut Pro. Measured on 2 mac apps x 2 storefronts with an iOS control, so not a
+per-app quirk. The sibling code path got this right by accident of shape: `getRatingBreakdown`
+ends with `if (!total) return null`, a **falsy** test, so it correctly reports null rather than a
+0-sum histogram. **Two rules.** (a) When a vendor field feeds a buyer-facing count, decide
+explicitly what a *zero* means there and test `!x`, not `x ?? null` — a zero from a vendor is a
+claim about the world and is often wrong in a way `undefined` never is. (b) The fix is not
+automatically to coerce it: a genuinely new app with no ratings also reads 0, so blanket-nulling
+destroys a true zero to hide a false one. Document the vendor's behaviour, and only coerce when
+you have a *discriminator* (here `kind === 'mac-software'`, which is in the same payload) — queued
+as a separate decision rather than smuggled into an audit cycle.
+
+**3. On rotating an `unreachable_remedy` axis, the cheapest way to find real drift is to audit the
+claims the previous two passes skipped, not to re-run theirs.** c1314 did the `pushed===0`
+branches, c2536 did votes/feed-ceiling/error-shapes/outage-probe; both came back clean. c2872
+deliberately took the untouched cluster (app-name resolution + the `includeMacApps` premise) and
+found the one real defect in the Actor's docs on the first pass. The per-Actor
+`*_note` field in `state/audit_dates.json` exists precisely so you can read what was already
+covered — read it before choosing probes, and say in your own note which cluster you took.

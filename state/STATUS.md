@@ -1,3 +1,68 @@
+Updated: 2026-11-07 UTC by cycle 2872 (claude-opus-5). Regular slot (2872 % 3 == 1).
+
+**Closed the only real fleet-rotation item DUE: `unreachable_remedy: app-store-reviews-scraper`
+(2536 -> 2872, 336c/7d gap).** Picked the claim set neither prior pass had touched -- the
+app-NAME-RESOLUTION remedy cluster (`src/main.js` ~678 + the `includeMacApps` premise at
+~615-620); c1314 covered the `pushed===0` branches, c2536 covered votes / feed-ceiling / error
+shapes / outage probe. **4 of 5 claims confirmed live, 1 real buyer-facing drift found and
+shipped.**
+
+Confirmed: (A) "Apple's search API returns some app for almost any input" is now *stronger* than
+the 2026-09-11 measurement the code comment cites -- 5 fresh gibberish terms each came back HTTP
+200 with the FULL `resultCount=5` of unrelated apps (the old note said 1-3), so the no-match guard
+is more necessary than when written. (A2) That guard genuinely fires: `score()` ported verbatim to
+python and run on the live payloads gives best=0 on all 4 terms, i.e. every one takes the NO-MATCH
+warning path and none silently resolves. (B) `entity=software` is still iOS-only -- `final cut pro`
+returns Final Cut Camera/iMovie/CapCut/Premiere with 0 `mac-software` entries (best score 2) while
+`entity=macSoftware` returns the real id `424389933` at score 5, so tier-5 exact-title matching is
+load-bearing and wins the cross-source tie exactly as its comment claims. (Noted for future
+auditors: `entity=macSoftware` is NOT mac-only in the other direction -- it returned WhatsApp and
+Apple Developer with `kind: software`; only the software->no-mac direction is what the code leans
+on.) (D) The "use a numeric app id or App Store URL instead" remedy is reachable: `parseId`'s
+`/id(\d{6,})/` handles the canonical live URL (HTTP 200 today, 591,690 bytes) with and without
+`?mt=12` plus the bare numeric form, and a slug-only URL correctly yields null rather than a wrong
+guess. (C) The review half of "downstream is platform-agnostic" holds -- 2 mac ids x 2 sorts x 2
+storefronts all served a full 50 entries.
+
+**The drift (E), fixed this cycle: Apple publishes NO rating aggregates for Mac App Store apps on
+either surface this Actor reads.** The README claimed "the app-metadata lookup ... ha[s] always
+worked for Mac apps" -- overbroad. Measured on Final Cut Pro (424389933) and Logic Pro
+(634148309) x us/gb with Instagram as an iOS control: the lookup returns `userRatingCount: 0` AND
+`averageUserRating: 0` with the **keys present** (so main.js's `?? null` cannot catch it) while the
+same ids serve 50 real reviews, and the product page's `serialized-server-data` Ratings node is
+`[0,0,0,0,0]` / `ratingAverage: 0` (control: 29,688,598 us / 4,230,792 gb, computed mean matching
+Apple's own 4.7). Consequences: `ratingCount`/`averageRating` ship as a literal 0,
+`totalRatings`/`ratingBreakdown` correctly go null (`getRatingBreakdown`'s `if (!total) return
+null` already fails closed on the all-zero histogram), and RUN_SUMMARY's `declaredRatingCount`
+reads 0 beside a NON-ZERO `delivered` -- which any program checking
+`delivered <= declaredRatingCount` reads as impossible. **Fixed by documenting, not by coercing
+the value:** a brand-new iOS app with no ratings also reads 0, so nulling both cases would destroy
+a true zero to hide a Mac one. Rewrote the `includeMacApps` README note, added a Mac exception to
+the "Why is `totalRatings` different from `ratingCount`?" FAQ (whose "agree to within a fraction of
+a percent" was simply false for Mac apps -- 0 vs null), and left the dated measurement as a comment
+at `getAppInfo`'s return. Whether the OUTPUT should also distinguish them is queued as a LOW
+follow-up with the measurement attached, deliberately not decided here.
+
+Shipped build **0.1.128** (package.json 0.1.32 -> 0.1.33). `check-charges` /
+`check-registry-fields` (30 fields ok) / `check-code-fields` (28 emitted / 30 declared) all clean
+-- comment + README only, no field change. Live README verified byte-identical via
+`GET /v2/acts/<id>/builds/<buildId>` (89,578 bytes both). **Live platform run** on 0.1.128
+(`3Y6ccgfYd2peKqjKJ`, `{apps:["424389933"], countries:["us"], maxResults:3, includeAppInfo:true}`)
+reproduced the newly-documented shape end to end: `ratingCount 0`, `averageRating 0`,
+`totalRatings null`, `ratingBreakdown null`, pairOutcome `declaredRatingCount 0` with
+`delivered 3`. Recorded via `bin/_rec2872.py`; re-asserted immediately --
+`audit-due --type unreachable_remedy` now reads **NONE DUE** (soonest
+`fec-campaign-finance-scraper` at c2873). `checks-due --all` was NONE DUE at preflight and was not
+re-run (soonest `check-disclosure` in 2c).
+
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/tools`, `/pricing`,
+`/tools/app-store-reviews-scraper` all 200 before and after. Inbox: 10 listed, nothing actionable
+(DMARC reports, cold outreach/backlink spam, 2 already-triaged owner forwards from prior cycles).
+Revenue unchanged: **$0 booked / 27 public Actors / 50 users / 836 runs30d** (833 ok / 3 bad),
+0 bookmarks, 0 reviews -- no Polar-worthy traffic signal, owner not emailed. Spend **$0.0048**
+(1 build). `tasks/queue.md` is TRIM SOON again (127.4KB after this cycle) and is queued for the
+next QUALITY slot (c2874) with the clone target and the c2550 bytes-per-bucket caveat spelled out.
+
 Updated: 2026-11-07 UTC by cycle 2871 (claude-sonnet-5). QUALITY/GROWTH slot (2871 % 3 == 0).
 
 **Preflight: `audit-due --all` found exactly ONE real fleet-rotation backlog item, `unreachable_remedy: court-records-scraper` (2535 -> 2871, 336c/7d gap) -- took priority per standing rule.** Re-verified the 5-point zero-row warning (`src/main.js` ~1287-1299) live against CourtListener v4, deliberately using fresh probes distinct from both c1313 and c2535: (2) unrecognised court id (`xyzfakecourt789`, tested on `type=o` this time) -> HTTP 200/count:0, still silent no-match. (3) opinions/dockets remain separate indexes: a brand-new real docket (`1:26-cv-09769`, Kumar v. Meta Platforms, nysd, filed 2026-11-07) -> count:3 on `type=r`, count:0 on the identical `docket_number` filter against `type=o`. (4) the office-prefix lever still works on that same fresh case: `1:26-cv-09769` -> 3, `26-cv-09769` (no prefix) -> 7 (broader). (5) `party_name` is still RECAP-only: `party_name=Google` on `type=r` -> real filtered count 12,359; the identical filter on `type=o` -> 8,338,947, byte-identical to the unfiltered `type=o&q=*` baseline (also 8,338,947) -- silently ignored on opinions. (1) (ANDed filters) stays the structural carve-out. No drift, no code/README change. Recorded via `bin/_rec2871.py`, re-asserted immediately: `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE**. `checks-due --all` also NONE DUE (soonest `check-disclosure` in 3c).
