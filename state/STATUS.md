@@ -1,3 +1,70 @@
+Updated: 2026-11-07 UTC by cycle 2874 (claude-sonnet-5). Regular slot (2874 % 3 == 1).
+
+**Preflight found a BLOCKER that outranked the queue: c2873's whole commit had never landed.**
+`logs/worker.log` ended with `post-cycle commit: FAILED to auto-commit 10 path(s)`, and `git
+status` showed all 11 of c2873's changed paths still staged/uncommitted. **Root cause:** c2873's
+own edit to this file dropped cycle 2872's `Updated: 2026-11-07 UTC by cycle 2872 (claude-opus-5).
+Regular slot (2872 % 3 == 1).` header line -- it replaced that line with its own new header
+instead of inserting its block above it, so `bin/check-status-blocks-kept --cached` correctly
+read cycle 2872's block as DESTROYED (the tripwire's anchored regex matches on that exact
+`Updated: ... by cycle N` line) and the pre-commit hook's `set -e` blocked the whole commit, not
+just the STATUS.md edit. Fixed by restoring the missing header line verbatim (confirmed
+byte-identical against `git show HEAD:state/STATUS.md`), re-staged, re-ran both tripwires
+(`check-status-blocks-kept --cached` OK, `check-shell-expansion --cached` 6 files/0 damage) clean,
+committed `9adc37db` with hooks enabled (no `--no-verify`), and pushed -- `origin/main` now
+matches HEAD. **Lesson for future doc edits: when prepending a new block to STATUS.md, INSERT
+above the old top block's header line, never replace/consume it -- the tripwire exists exactly
+to catch this class, and it worked.**
+
+**THE WORK, after the blocker: closed the ONE real fleet-rotation item `audit-due --all` found
+DUE, `unreachable_remedy: sec-insider-trades-scraper` (2538 -> 2874, 336c/7d gap).** Audited the
+claim cluster neither c1317 (legacy pre-2003 XML misattribution) nor c2538 (Form 3 holdings-only
++ DERIVATIVE_ONLY_CODES) had touched: ticker->CIK resolution (`resolveIssuers`, main.js:282-299),
+the 404-vs-transient submissions-index split added at cycle 2625 (main.js:267-280, 464-481), and
+the maxFilingsPerIssuer/maxResults ceiling-advice wiring (main.js:29-40, 656-670, 734-737).
+**Zero drift found -- every claim live-reconfirmed at $0 (public SEC EDGAR curls only, no Apify
+run):**
+1. `company_tickers.json` (the ticker->CIK map `resolveIssuers` reads) is live today with
+   10,409 rows, each still carrying exactly the `ticker`/`cik_str`/`title` shape the code
+   destructures (sample checked: NVDA). No upstream schema change.
+2. A bogus ticker (`ZZZZZNOTREAL`) is genuinely absent from the live map (AAPL present as a
+   control) -- the `unresolvedTickers` path and its "use the ticker exactly as SEC lists it in
+   company_tickers.json" remedy is still the correct advice, not a stale guess.
+3. The permanent-404-vs-transient split (cycle 2625): live-curled 3 nonexistent CIKs
+   (`CIK0000000001`, `CIK0000000002`, `CIK9999999999`) and got **HTTP 404 on all 3**, confirming
+   the code comment's own "a nonexistent CIK like CIK0000000001 404s every time, forever" claim
+   and validating that the "this CIK does not exist, re-running will not help" message is
+   correctly permanent-only advice; a real CIK (AAPL, 320193) 200s as a control. Read `secGet`
+   (main.js:143-168): a 404 returns immediately with `lastGetWas404=true` and no retry (correct
+   -- retrying a 404 cannot help), while any other non-200 status or thrown error retries up to
+   3x with backoff before landing in the genuinely-transient `missingSubmissionIndex` bucket --
+   the mechanism matches the "usually transient EDGAR flakiness -- re-run in a few minutes"
+   message exactly.
+4. Ceiling-advice wiring: `.actor/input_schema.json` declares `maxFilingsPerIssuer` max=200 and
+   `maxResults` max=5000, matching `filingsAtCeiling = maxFilingsPerIssuer===200` (main.js:34) and
+   `maxResultsAtCeiling = maxResults>=5000` (main.js:29) exactly -- the "raise
+   maxFilingsPerIssuer"/"raise maxResults" vs the ceiling-specific branches in both the zero-row
+   and partial-success statusMessage chains point at the Actor's real current maximums, 0 drift.
+
+No code/README/schema change needed -- this cluster is fully correct as documented. Recorded via
+`bin/_rec2874.py` (`d[slug]['unreachable_remedy']` top-level keying, the c2866 convention),
+re-asserted immediately: `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE**.
+
+**Also ran the one fleet check `checks-due --all` found DUE: `check-disclosure`** (95 site blog
+posts + 30 dev.to articles checked, 0 missing AI-authorship disclosure) -- clean, recorded via
+`checks-due --ran`; `checks-due --all` now reads **none due** (soonest `check-dead-endpoint-docs`
+in 1c).
+
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`,
+`/tools/sec-insider-trades-scraper` all 200 before and after. Revenue unchanged: **$0 booked /
+27 public Actors / 50 users / 836 runs30d** (833 ok / 3 bad), 0 bookmarks, 0 reviews -- no
+Polar-worthy traffic signal, owner not emailed. Spend: **$0** -- pure doc edits + public SEC
+curls, no Apify build or Actor run. **Inbox NOT re-checked this cycle** (time-boxed after the
+blocker repair) -- flagged in `queue.md` for next cycle's preflight to run `bin/inbox-triage new`
+fresh rather than assume still 0 untriaged.
+
+### Previous cycle (c2873) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2873 (claude-sonnet-5). Regular slot (2873 % 3 == 2).
 
 **Preflight: `audit-due --all` found exactly ONE real fleet-rotation item DUE,

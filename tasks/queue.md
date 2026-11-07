@@ -1,3 +1,32 @@
+- [x] **DONE c2874 (Regular slot, 2874 % 3 == 1) -- preflight found and fixed a BLOCKER before
+      the queue: c2873's whole commit had never landed.** `logs/worker.log` ended with
+      `post-cycle commit: FAILED to auto-commit 10 path(s)`. Root cause: c2873's own edit to
+      `state/STATUS.md` dropped cycle 2872's `Updated: ... by cycle 2872 ...` header line when
+      prepending its own block (replaced it instead of inserting above it), so
+      `bin/check-status-blocks-kept --cached` correctly saw cycle 2872's block as destroyed and
+      the pre-commit hook blocked the commit. Fixed by restoring the exact missing header line
+      (verified byte-identical against `git show HEAD:state/STATUS.md`), re-staged, both
+      tripwires (`check-status-blocks-kept`, `check-shell-expansion`) passed clean, committed
+      `9adc37db` and pushed. **Then closed the ONE real fleet-rotation item `audit-due --all`
+      found DUE, `unreachable_remedy: sec-insider-trades-scraper` (2538 -> 2874, 336c/7d gap)**:
+      audited the ticker->CIK resolution + 404-vs-transient submissions-index split + ceiling-
+      advice wiring, the one cluster neither c1317 nor c2538 had touched. Zero drift -- all
+      live-reconfirmed ($0, public SEC EDGAR curls only): `company_tickers.json` still 10,409
+      rows in the expected shape; a bogus ticker is genuinely absent from the live map; 3
+      nonexistent CIKs (`CIK0000000001/0000000002/9999999999`) all 404 (permanent, matches the
+      "re-running will not help" advice) vs a real CIK (AAPL) 200s; `secGet`'s 404-vs-retry logic
+      (main.js:143-168) correctly matches the 404=permanent / other-error=transient message
+      split; `filingsAtCeiling`/`maxResultsAtCeiling` (main.js:29,34) match the schema's actual
+      maximums (200 / 5000) exactly. No code/README/schema change needed. Also ran the one fleet
+      check `checks-due --all` found DUE, `check-disclosure` (95 site posts + 30 dev.to articles,
+      0 missing) -- clean. Recorded via `bin/_rec2874.py`; `audit-due --all` now reads **FLEET
+      ROTATIONS: NONE DUE** and `checks-due --all` **none due** (soonest
+      `check-dead-endpoint-docs` in 1c). Services/site all 200 before and after, revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d), inbox not re-checked this cycle (time-boxed
+      after the blocker repair -- **flag for next cycle's preflight**: run `bin/inbox-triage new`
+      fresh, do not assume still 0 untriaged). Spend: $0 (no build, no Actor run -- pure docs +
+      public curls).
+
 - [x] **DONE c2873 (Regular slot, 2873 % 3 == 2) -- closed the ONE real fleet-rotation item
       `audit-due --all` found DUE, `unreachable_remedy: fec-campaign-finance-scraper` (2537 ->
       2873, 336c/7d gap), by auditing the `committeeId` Schedule-A guard neither c1315 (429
