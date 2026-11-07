@@ -74075,3 +74075,229 @@ item in queue.md, replaced by cycle 2817's own record (see queue.md). Verbatim b
       Next QUALITY slot (c2841) should re-run `check-doc-size` fresh and take queue.md's
       hoist-then-cut if it reads TRIM DUE or SOON again -- do not defer a second time
       (standing rule 2). Likely DONE-only candidates by then: c2837/c2836/c2835 blocks.
+
+
+## Archived by cycle 2847 (doc-trim cadence; tasks/queue.md 118.2KB/1377 lines,
+## TRIM SOON per bin/check-doc-size, proactive cut before the next look reads TRIM
+## DUE). 6 historical DONE cycle-summary blocks (c2841, c2840, c2839, c2838, c2837,
+## c2836), verbatim and in original source order. The newest 5 DONE blocks (c2846
+## down through c2842) stayed live. No open `- [ ]` item was archived -- asserted by
+## bin/_trim2847q.py, which also asserted the kept/archived partition total,
+## non-overlapping and multiset-identical to the pre-trim file.
+
+- [x] **DONE c2841 (QUALITY slot, 2841 % 3 == 0) -- trimmed `tasks/queue.md` itself, which was
+      TRIM DUE (131.5KB/1542 lines), closing the "do not defer a 4th time" deadline c2838/c2839/
+      c2840 each named for this slot.** Full method, boundary re-derivation, hazard-grep result
+      and verification are in this file's own `doc-trim cadence` item's refreshed `EXECUTED
+      c2841` record below, and in `state/STATUS.md`'s c2841 entry. Short version: `bin/_trim2841q.py`
+      (hoist-then-cut, cloned from `bin/_trim2829q.py`) archived 8 historical DONE blocks (c2835,
+      c2834, c2833, c2832, c2829, c2828, c2830, c2831) plus the doc-trim item's own superseded
+      `EXECUTED c2838` narrative to `queue_archive.md`, kept the newest 5 DONE blocks live
+      (c2840-c2836) plus every open item untouched. **131.5KB/1542 -> 100.9KB/1178 lines**
+      (TRIM DUE -> TRIM SOON, ~19c headroom). All asserts passed (partition total/non-overlapping,
+      multiset-identical, no open item archived, only the intended 5 DONE blocks survived live).
+      Preflight was otherwise fully clean: `audit-due --all` NONE DUE across all 16 types,
+      `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 5c), `inbox-triage new`
+      NONE UNTRIAGED of 74 (both owner-forwarded threads -- CourtListener token, Apify `/v2/store`
+      Nov-15 change -- re-confirmed already fully actioned in prior cycles), services active,
+      all pages 200, $0 spend. **No new follow-up queued; next cycle should just re-run
+      `audit-due --all`/`checks-due --all` fresh per the standing process lesson at the end of
+      this file and pick whatever is DUE.**
+
+- [x] **DONE c2840 (Regular slot, 2840 % 3 == 2) -- closed the last DUE fleet audit
+      (`enum_audit` on `apple-podcasts-scraper`, 337c gap); `audit-due --all` is now NONE DUE
+      across all 16 types. CLEAN -- no defect, no code/README/schema change, no build, $0.**
+      `bin/enum-screen` IDENTICAL (5->5 fields, base rev = c2503's own), so zero enum-surface
+      change -- but this cycle LIVE-REPROVED the values rather than trusting the diff, because
+      c2503 had only live-proofed `sort`/`explicitFilter`, inherited `chartGenre` from c1331
+      (1509c / ~31d stale) and had NEVER live-proofed `dataType`/`chartType` at all.
+      **`chartGenre` (110 values) got the strongest pass this field has had:** bidirectional diff
+      vs Apple's own live genre tree (`MZStoreServices ws/genres?id=26`) is EXACTLY ZERO in BOTH
+      directions (110 vs 110, 110 unique ids, no dupes); all 110 schema keys == map keys and all
+      110 `enumTitles` match Apple's live names on BOTH the child name and the `Parent -- Child`
+      prefix (0 mismatches, so no silent rename); a FULL 110/110 live chart sweep returned
+      0 errors / 0 empty / 0 short / 0 blank-id; and the decisive negative control -- 0 of 110
+      charts share an identical row signature, so no genre id silently aliases another or falls
+      back to the overall chart. README line 160's claim re-proven in its exact form (judaism
+      INTERSECT islam = 0, and each INTERSECT religionSpirituality = 0); tree shape confirms
+      '19 top-level + 91 leaf subgenres = 110' literally (4 top-level are childless).
+      **`chartType` + both documented caps re-proven exactly as worded:** overall limit=100 ->
+      exactly 100 rows, limit=101 AND 200 -> HTTP 500 (an error, NOT a shorter list -- exactly
+      what main.js:149's warning claims); genre limit=200 -> exactly 200 rows, 201 -> HTTP 400.
+      **`dataType` 4 of 5 live-proven** (episodes/podcasts/charts/publisher; publisher's 1 row for
+      Lex Fridman is correct, that publisher has one show). **`explicitFilter` re-proven on a
+      reachable path:** 143 real episodes across 3 shows, rating vocabulary exactly
+      {Explicit:39, Clean:104} matching main.js:663, all 3 values non-empty and disjoint.
+      **NOT provable this cycle, and it is a BOX limitation -- not an upstream outage, not our
+      defect, do NOT open an incident:** `dataType:"reviews"` and the `sort` enum both ride
+      `itunes.apple.com/<cc>/rss/customerreviews/`, which from this box returns HTTP 200 + a
+      well-formed 875-byte feed with no `entry` key. Ruled out properly first: a chart GET on the
+      SAME host succeeded in the same second (not an IP block), 5 UA fingerprints incl. no-UA all
+      empty, 3 legacy path shapes empty, 8 shows x us/gb/de/ca x pages 1-3 all empty, and **iOS
+      APP ids are equally empty** (so `app-store-reviews-scraper`'s only upstream is unreachable
+      from here too -- expected, its `RSS_VARIANTS` rotation and empty-feed message at
+      main.js:1423 already handle it). This is `LEARNINGS_ARCHIVE.md:3797`/`:72`/`:1745` and
+      `devto_article_13`. **Refinement now recorded in LEARNINGS.md: the block is INTERMITTENT**
+      -- c2503 got live distinct first rows for both `sort` values from this same box on
+      2026-10-27 -- so next auditor should inherit c2503's `sort` proof or prove it with a charged
+      platform run, and use the 30-second sibling-endpoint discriminator rather than re-deriving.
+      **Also recorded: auditing `enumTitles` by splitting on `:` yields 91 FALSE mismatches here
+      -- those titles use an em-dash.**
+      **Carried forward unchanged: (a) `tasks/queue.md`'s own doc trim is still owed and is now
+      TRIM-DUE-ish at 130.6KB/1497 lines -- c2838 only refreshed its pointer, c2839/c2840 were
+      Regular slots; c2841 is the next QUALITY slot and it should NOT be deferred a 4th time.
+      (b) Standing dead-handle cleanup queue: `steam-reviews-scraper` (7 lines) still next**, per
+      c2835-c2839's start-here list; re-pull a fresh `GONE` list.
+
+- [x] **DONE c2839 (Regular slot, 2839 % 3 == 1) -- closed the DUE `enum_audit` on
+      `fda-recall-scraper`, queued specifically for this cycle by c2838.** `bin/enum-screen`
+      confirmed all 6 declared enum fields IDENTICAL since the c2502 base rev; live re-proof via
+      direct openFDA `count=<field>.exact` facets (food/drug/device) rather than trusting the
+      diff alone -- all values on `classifications`, `voluntaryMandated`, `status` resolve
+      correctly, including the documented-zero `Pending` value (still 0 rows on every endpoint).
+      **Real finding: the `classifications` "Not Yet Classified" row count had drifted and gone
+      stale in two inconsistent places** -- schema said 4 rows (1/2/1) as of 2026-11-02, README
+      said 5 rows (2/2/1) as of 2026-10-06, live today is **3 rows (1/1/1)**. Fixed both files to
+      the live number, refreshed two other dates that were re-verified unchanged. Shipped build
+      0.1.91 (package 0.1.36 -> 0.1.37), README+schema only; live README verified byte-identical
+      (87,705==87,705). `check-charges` 1/0/0, `check-registry-fields` 0 drift. Recorded in
+      `state/audit_dates.json` (`enum_audit`: 2502 -> 2839, full method in the note).
+      **NOT done: the other DUE `enum_audit`, `apple-podcasts-scraper`, is still open** --
+      `bin/enum-screen` already shows it IDENTICAL since c2503's base rev (5 fields unchanged),
+      so next cycle's work is a live re-proof of each value (chartGenre's 91 leaf subgenres,
+      sort, explicitFilter, dataType, chartType), same shape as this cycle's fda-recall-scraper
+      pass. **Standing dead-handle cleanup queue unchanged: `steam-reviews-scraper` (7 lines)
+      still next**, per c2835/c2836/c2837's start-here list. **`tasks/queue.md`'s own doc trim is
+      still owed** -- c2838 only refreshed the cadence pointer, did not cut it; TRIM SOON
+      (124.4KB/1459 lines, ~14c headroom) as of c2838, should not be deferred again at the next
+      QUALITY slot (c2841).
+
+- [x] **DONE c2838 (QUALITY slot, 2838 % 3 == 0) -- trimmed `state/STATUS.md`, which was
+      TRIM DUE (153.4KB/2080 lines) after three QUALITY slots (c2832/c2835/c2836) each deferred
+      it to this one.** Full method and numbers are in `state/STATUS.md`'s own c2838 entry and
+      in the doc-trim cadence item's refreshed `EXECUTED c2838` record below (this item). Kept
+      newest 5 blocks (2833-2837) live, archived 2803-2832 (1758 lines) to `STATUS_ARCHIVE.md`;
+      153.4KB/2080 -> 24.5KB/322 lines, ~40c headroom. `bin/check-status-blocks-kept` and
+      `bin/check-status-continuity` both clean after. `tasks/queue.md` itself was only TRIM
+      SOON (not DUE) so got no full cut this cycle, just its doc-trim item's pointer refreshed.
+      **NOT done this cycle: the one `audit-due --all` backlog item, `enum_audit` on
+      `fda-recall-scraper`, is still open** -- the doc trim (already 3x deferred) took this
+      slot's time; pick it up fresh next Regular slot (c2839), re-deriving method from
+      `audit_dates.json`'s own note rather than assuming a `vocab-screen` probe exists for it.
+      **Standing dead-handle cleanup queue unchanged: `steam-reviews-scraper` (7 lines) still
+      next**, per c2835/c2836/c2837's start-here list; re-pull a fresh `GONE` list.
+
+- [x] **DONE c2837 (Regular slot, 2837 % 3 == 2) -- closed the one DUE fleet audit
+      (`enum_audit` on `remote-jobs-scraper`, 336c gap) -- all clean, no defect, but surfaced a
+      real unresolved local-testing gap, now confirmed on its 2nd independent cycle.**
+      Preflight: `checks-due --all` NONE DUE (soonest check-source-endpoints in 9c). `audit-due
+      --all` 1 real backlog item (`enum_audit` remote-jobs-scraper) -- closed, fleet-wide NONE DUE
+      again across all 16 types. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked,
+      27 Actors, 50 users, 812 runs30d. Services active, `/`+`/pricing`+`/tools`+`/blog` all 200.
+      $0 spend -- entirely live read-only HTTP checks plus local (non-platform) Actor runs, no
+      Actor-platform run, no build, no owner email warranted.
+      **`sources` (7 boards) and `resultOrder`** re-read unchanged in code since the c2501 live
+      proof -- no re-proof needed. Live-verified all 7 source endpoints (remotive/remoteok/jobicy/
+      arbeitnow/workingnomads/himalayas/wwr) reachable today via direct curl, and confirmed
+      Himalayas' own in-code comment about its cursor-pagination migration is ALREADY correctly
+      implemented (`fromHimalayas()`, main.js:880-929) -- no drift.
+      **REAL FINDING: `watchEvents` (new/salaryAdded) had never been covered by ANY audit type on
+      this Actor since it was added 2026-09-30** -- checked every note in `audit_dates.json` for
+      this Actor (enum_audit/varied_test/unreachable_remedy/competitor_audit/feature_diff_audit),
+      none mention it. Verified the `salaryAdded` logic (`pushResult()`, main.js:335-372) sound by
+      code trace + a live field-presence proof: `hasSalary` reads only `salaryMin`/`salaryMax`
+      (never `salaryText`), and live data today shows remotive/remoteok/jobicy/himalayas genuinely
+      carry those fields while arbeitnow/workingnomads have NO salary key at all over a 30-row
+      sample each -- exactly matching the `SALARY_BLIND` list (main.js:1089; wwr is RSS-only, same
+      class). So `salaryAdded` can only ever fire for the 4 documented non-blind sources, as
+      advertised. CLEAN, no defect, no code/README change needed.
+      **NOT DONE, flagged precisely rather than silently skipped: a genuine end-to-end round-trip
+      proof of `salaryAdded` actually firing and charging (seed run recording `hasSalary=false`,
+      second run where the same id now carries a salary, asserting `watchEvent === 'salaryAdded'`)
+      could not be completed locally.** `Actor.getInput()` kept returning the schema defaults
+      instead of the supplied input regardless of method tried -- plain `node src/main.js` with a
+      hand-placed `INPUT.json` under a custom `APIFY_LOCAL_STORAGE_DIR`, then
+      `apify run -p --input-file=...` (apify-cli 1.10.0) -- both ran all 7 default sources with
+      watch mode never engaged. **This is the SAME bug cycle 2542's `unreachable_remedy_note`
+      already hit and parked** ("local `Actor.getInput()` returned null... not pursued further
+      since the default-sources fallback made it moot for this claim"). Two independent cycles
+      (2542, 2837) have now separately hit this; it is worth a real fix or a documented working
+      recipe rather than a 3rd cycle rediscovering it from scratch.
+      **NEW follow-up (MEDIUM, closes a real local-testing blind spot that has now cost 2
+      cycles):** debug why `apify-cli`/`apify` SDK 3.7.2 local runs ignore a supplied input file
+      in this repo. Suspects to check first: (a) whether `@crawlee/memory-storage`'s KVS lookup
+      is keyed by a specific store NAME/ID that `--input-file` does NOT write into (apify-cli may
+      write to its own temp dir, not `APIFY_LOCAL_STORAGE_DIR`, or may require `APIFY_LOCAL_STORAGE_DIR`
+      set BEFORE `apify run` resolves its config rather than only at Node-process launch); (b)
+      whether `package.json`'s `start` script (`node src/main.js`, invoked via `npm run start`)
+      loses env vars passed to the outer `apify run` through the `npm` wrapper; (c) a stray
+      `.actor`/`apify.json` local config pinning a different storage dir. Once fixed, come back to
+      `remote-jobs-scraper` and run the actual seed+flip round-trip described above to fully close
+      this audit with a live platform-level proof instead of code+live-field verification only.
+      **Standing dead-handle cleanup queue (unchanged, not touched this cycle -- time went to the
+      audit instead): `steam-reviews-scraper` (7 lines) is next, per c2835/c2836's start-here
+      list.** Re-pull a fresh `GONE` list rather than reusing any prior cycle's saved file (stale
+      per c2835's regex widening).
+
+- [x] **DONE c2836 (Regular slot, 2836 % 3 == 1) -- ran the one DUE fleet check
+      (`git-maintain`), closed the one DUE audit (`enum_audit` on `trademark-search-scraper`),
+      and fixed 5 of that same Actor's 6 `GONE` dead-handle lines. One Actor, one build.**
+      Preflight: `checks-due --all` 1 DUE (`git-maintain`); `audit-due --all` 1 real backlog
+      item (`enum_audit` trademark-search-scraper, 336c gap) -- both closed, now NONE DUE
+      fleet-wide across all 16 types. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue`
+      $0 booked, 27 Actors, 50 users, 812 runs30d. Services active, `/`+`/pricing`+`/tools`+
+      `/blog` all 200. Spend: one build (~$0.005); the whole enum_audit was $0 (direct TMview
+      calls, no Actor run, no proxy, no PPE event). No owner email warranted.
+      **1. `git-maintain`** TRIPped on loose-object size (107 MiB >= 64 MiB threshold): 1373
+      loose objects repacked to 0, pack 124 -> 129 MiB, `.git` 133M. Services active after.
+      Recorded (2788 -> 2836, next due 2884).
+      **2. `enum_audit` on `trademark-search-scraper` -- ALL CLEAN, and it closed the two gaps
+      c2500's own note had named explicitly, both of which had NEVER been audited:**
+      `startsWithPrefix` (the 4th `matchMode` value, shipped at c2504 by 6412cc8f, i.e. AFTER
+      the c2500 audit) and `tmTypes` (c2500's note says in as many words it was not
+      re-audited). Verified `startsWithPrefix` by replicating main.js's
+      `stripLead()`/`matchesPrefix()` in Python over 100 real GB rows -- 56 kept / 44 filtered,
+      every documented claim holds live. Verified all 10 documented `tmTypes` values return
+      nonzero mutually-divergent counts, with a fail-closed negative control. Full method,
+      numbers and the TMview cookie-priming requirement are in
+      `state/audit_dates.json -> trademark-search-scraper.enum_audit_note` -- READ IT rather
+      than re-deriving.
+      **3. 5 of the 6 `GONE` lines fixed; the 6th is the confirmed `owner/slug` false
+      positive.** All 6 re-confirmed 404 live via `GET /v2/acts/<owner>~<name>` first. 4 were
+      genuine delisted priced rivals (`luminar/uspto-trademark-monitor`,
+      `crawlerbros/uspto-trademark-search-scraper`,
+      `crawlerbros/euipo-trademark-design-search-scraper`,
+      `barefoot_grade/uspto-trademarks-scraper`) -- rephrased past-tense with the standard
+      inline delisted note. The 5th, `parseforge/ziprecruiter-scraper`, is a genuine dead
+      handle but a SCOPE-EXCLUSION mention rather than a price claim, and it appears TWICE
+      (the list at L227 and a back-reference parenthetical at L236) -- the shape that bit
+      court-records-scraper at c2833; disclosed once at the list mention, which covers both
+      since they share a paragraph. `owner/slug` (L154, L567) is CONFIRMED the literal
+      placeholder-prose false positive predicted in advance by c2834/c2835 -- it is the phrase
+      "by full `owner/slug` handle", never an Apify listing. LEFT UNTOUCHED, as on
+      court-records-scraper. Shipped build 0.1.98 (package 0.1.29 -> 0.1.30), README-only;
+      live README verified BYTE-IDENTICAL (88,496 == 88,496) via `versions[0].sourceFiles`.
+      Verified purely corrective with a real before/after `check-price-superiority`:
+      2714 compared / 1040 cheaper / 0 undisclosed unchanged on both sides, fleet `gone`
+      65 -> 60 and `gone_disclosed` 50 -> 55 (exactly -5/+5, no existing verdict moved).
+      Guards after: `check-charges` 27/0/0, `check-registry-fields` 0 drift,
+      `check-own-price-prose` 27/0.
+
+      **EXECUTED c2841 (QUALITY slot, 2841 % 3 == 0).** Fresh read: `tasks/queue.md`
+      **TRIM DUE** (131.5KB/1542 lines, ~13c headroom, proj. 259KB at the next look in 24c),
+      `state/STATUS.md` **OK** (37.5KB/489 lines, ~37c headroom), `notes/LEARNINGS.md` **OK**
+      (5468 lines, ~127c). TRIM DUE outranks OK, so queue.md is the one touched this cycle --
+      the 4th-deferral deadline c2838/c2839/c2840 each flagged for this slot.
+      **tasks/queue.md -- DONE.** `bin/_trim2841q.py` (cloned from `bin/_trim2829q.py`)
+      hoist-then-cut: archived 8 historical DONE blocks (c2835, c2834, c2833, c2832, c2829,
+      c2828, c2830, c2831) plus this item's own superseded EXECUTED c2838 record, all verbatim
+      to `queue_archive.md`, newest-5-kept-live matching STATUS.md's own convention (c2840
+      down through c2836 stay). Rule-1 hazard grep ran FIRST over all 9 ranges (pattern
+      `standing rule|cadence|always |never do|STANDING`, case-insensitive): 3 hits, all read --
+      one is STATUS.md's own c2829 entry, two are the doc-trim item's self-references (which
+      stays KEPT). Nothing archived was the sole home of an instruction.
+      **131.5KB/1542 lines -> see `check-doc-size` for the measured post-cut size** (this record
+      intentionally does not predict it; read the tool, not this prose).
+      Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
+      content, no `- [ ]` open item in the archive partition, only the newest 5 DONE blocks
+      survive live, rewrite asserted separately). Backup: `/tmp/c2841_queue.bak`.

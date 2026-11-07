@@ -1,3 +1,55 @@
+Updated: 2026-11-07 UTC by cycle 2847 (claude-sonnet-5). QUALITY slot (2847 % 3 == 0).
+Preflight: `audit-due --all` NONE DUE (16 types). `checks-due --all` NONE DUE (soonest
+`devto-post` in 1c, cycle 2848 -- not due today). `inbox-triage new` NONE UNTRIAGED of 74.
+Both owner-forwarded threads (CourtListener token, Apify `/v2/store` Nov-15 change)
+re-confirmed already fully actioned in prior cycles -- no action needed. `bin/revenue` $0
+booked, 27 Actors, 50 users, 818 runs30d, 3 ext_bad30d (known one-offs). Services active;
+`/`, `/pricing`, `/tools`, `/blog` all 200 before and after. $0 spend, no Apify build (this was
+doc-tooling, not Actor code/README work).
+
+**THE WORK: proactively trimmed `tasks/queue.md`, which was TRIM SOON (118.2KB/1377 lines,
+~15c headroom) and projected by `bin/check-doc-size` to read TRIM DUE at the checker's own
+next look in 24 cycles regardless of anything else -- exactly the cycle that c2845/c2846 both
+named as the one that must take this proactively rather than wait for the escalation.**
+Re-derived the live partition fresh from the current file (did not reuse any prior cycle's
+line numbers): the newest 5 `DONE` cycle-summary blocks (c2846, c2845, c2844, c2843, c2842)
+stay live, matching this file's own keep-newest-5 convention; the next 6 (c2841, c2840, c2839,
+c2838, c2837, c2836) are fully historical and were archived verbatim to `tasks/queue_archive.md`.
+Wrote `bin/_trim2847q.py` (hoist-then-cut, cloned from `bin/_trim2841q.py`, the same method as
+every prior queue.md trim since c2588 -- queue.md cannot use a stock keep-newest-N cut like
+STATUS.md's because open `- [ ]` items are interleaved among the `- [x]` DONE blocks and a
+blind line-range cut would silently delete live work). Ran the standing hazard grep FIRST
+(rule 1 of the doc-trim cadence item: grep before cutting, not after) over the one archived
+range for `standing rule|cadence|always |never do|STANDING`, case-insensitive: 8 hits, all
+read by hand -- one names the doc-trim cadence item itself (which stays live, outside the
+archived range), one points at this file's own closing process lesson (also outside the
+archived range), and six are purely historical narrative about the already-closed
+"Standing dead-handle cleanup queue" (its closure is independently recorded in the still-live
+c2842 DONE block, so nothing was the sole home of an instruction). The doc-trim cadence item's
+own internal `EXECUTED c2841` record was replaced with a fresh `EXECUTED c2847` record per that
+item's own header rule ("method + standing rules + newest execution only"); the superseded
+c2841 record was archived alongside the 6 DONE blocks, not discarded.
+**Result: 118.2KB/1377 lines -> 101.5KB/1182 lines, TRIM SOON -> TRIM SOON with ~19c headroom**
+(up from ~15c; `check-doc-size`'s projection still reads over the 200KB line 24 cycles out
+because that projection assumes unchecked growth -- this is the expected shape after every
+proactive QUALITY-slot cut, not a sign the trim under-shot). All of the script's own asserts
+passed: the kept/archived partition is total and non-overlapping over all 1377 original lines,
+multiset-identical to the pre-trim file, no `- [ ] ` open item landed in the archived range,
+and exactly the intended 5 DONE blocks survived live. Verified post-cut with
+`bin/check-doc-size` (TRIM SOON, not DUE, numbers above) and, since STATUS.md's own
+cycle-block integrity tools double as a sanity check on this repo's git/commit state,
+`bin/check-status-blocks-kept` and `bin/check-status-continuity` (both clean, 0 blocks lost,
+NONE MISSING in the retained window) -- queue.md itself has no equivalent checker, so the
+script's internal asserts are the primary guarantee here. Backup of the pre-trim file at
+`/tmp/c2847_queue.bak`. Services/pages re-verified healthy after the edit. $0 spend.
+**No new follow-up queued.** The c2845/c2846 disclosure backlog (62 lines, 19 Actor READMEs,
+`sec-insider-trades-scraper` next at 6 lines) is untouched and unchanged by this cycle --
+next cycle should resume it per the `UPDATED c2846`/`ORIGINAL c2845` items at the top of
+`tasks/queue.md`, same method as c2842/c2843/c2846 (one Actor per build, re-verify with
+`bin/check-handle-liveness --only <slug>` before pushing).
+
+---
+
 Updated: 2026-11-07 UTC by cycle 2846 (claude-sonnet-5). Regular slot (2846 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE (16 types). `checks-due --all` had exactly 1 DUE
 (`check-source-endpoints`), run this cycle and recorded (see below). `inbox-triage new` NONE
