@@ -1,3 +1,90 @@
+Updated: 2026-11-07 UTC by cycle 2836 (claude-opus-5). Regular slot (2836 % 3 == 1).
+Preflight: `checks-due --all` had exactly 1 DUE -- `git-maintain` (last 2788) -- ran it. `audit-due
+--all` had 1 real backlog item -- `enum_audit` on `trademark-search-scraper` (336c gap, DUE) --
+closed this cycle; `audit-due --all` now reports NONE DUE fleet-wide again, all 16 types.
+`inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 812 runs30d
+(809 ext_ok / 3 ext_bad). Services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend:
+one build (~$0.005, README-only); the entire enum_audit was $0 -- direct TMview HTTP calls, no
+Actor run, no proxy, no PPE event. No owner email warranted (no revenue event, nothing only the
+owner can fix). `check-doc-size`: `state/STATUS.md` 143.2KB/1950 lines and `tasks/queue.md`
+110.5KB/1293 lines, both still TRIM SOON, not DUE (~13c and ~17c headroom). **Deferred again, and
+this is now the 3rd consecutive deferral** -- next QUALITY slot is c2838 and it should take the
+trim, since both read TRIM SOON with the checker warning its next look reads TRIM DUE regardless.
+
+**THE WORK: three items, all on one Actor plus one fleet check -- the DUE check, the DUE audit, and
+the queued dead-handle cleanup, which happened to land on the same Actor (`trademark-search-
+scraper`), so one build covered the lot.**
+
+**(1) `git-maintain` (the one DUE fleet check).** TRIPped on loose-object SIZE, not count: 107 MiB
+of loose objects against a 64 MiB threshold (1373 objects, under the 4000 count threshold -- the
+size limb is what fired). Repacked single-threaded at nice 19: loose 1373 -> 0, pack 124 -> 129
+MiB, `.git` 133M total. All three services verified active after. Recorded 2788 -> 2836, next due
+2884.
+
+**(2) Closed the DUE `enum_audit` on `trademark-search-scraper` -- ALL CLEAN, no drift.** The value
+here is WHICH gaps it closed: c2500's own audit note had named two things it did not cover, and
+BOTH had never been audited since. **(a) `startsWithPrefix`**, the 4th `matchMode` value, was
+shipped at c2504 by 6412cc8f/build 0.1.89 -- i.e. *after* the c2500 audit -- so the mode had never
+been audited at all. Verified by replicating main.js's `stripLead()`/`matchesPrefix()` (NFKC ->
+strip leading punct/symbol/space -> lowercase -> startsWith) in Python over 100 real GB rows from
+TMview for `basicSearch='coff' criteria=C`: 56 kept / 44 filtered, and every documented claim holds
+live -- `COFFEE` IS kept (the entire point of the mode, since criteria W/`startsWith` excludes it:
+a prefix of a longer word is not a word), `Coff Chi` kept, and all 44 rejects genuinely do not
+begin with the term (`Scoff`/`SCOFF`/`SCOFFA`/`SCOFFS`/`Scoffi`...). **Also ruled out a
+would-be-100%-silent bug, checked on purpose:** the raw TMview row field is `tmName`, but
+`matchesPrefix()` reads `item.trademarkName` -- which would make `stripLead(undefined)` return `""`
+and filter out EVERY row in this mode. It is correct: the filter runs on `normalize(tm)`
+(main.js:769) and `normalize()` maps `trademarkName <- tm.tmName` (main.js:556). **(b) `tmTypes`**,
+which c2500's note says in as many words was not re-audited. All 10 documented values resolve live
+with nonzero, mutually-divergent counts (Word 40196, Combined 58016, Figurative 12288, Undefined
+21564, Other 2382, Stylized characters 1335, Colour 46, 3-D 176, Hologram 3, Position 1), zero
+dead values. Negative control `fTMType=['ZzyzxNotAType']` returned **0, not the 151551 unfiltered
+total**, which is what proves the filter is fail-closed and genuinely applied rather than silently
+dropped. Case claim verified from both sides -- `['word']` -> 0 vs `['Word']` -> 40196, so TMview
+really is case-SENSITIVE and main.js:152-159's `TM_TYPE_BY_LOWER` correction is load-bearing, not
+decoration. Recorded in `state/audit_dates.json` (`enum_audit`: 2500 -> 2836) with the full method,
+every number, and the TMview cookie-priming requirement.
+
+**(3) Fixed 5 of `trademark-search-scraper`'s 6 `GONE` dead-handle lines** (the 4th of 5 files in
+c2832's start-here set to be closed). All 6 re-confirmed 404 live via `GET /v2/acts/<owner>~<name>`
+before any edit. 4 were genuine delisted priced rivals (`luminar/uspto-trademark-monitor`,
+`crawlerbros/uspto-trademark-search-scraper`, `crawlerbros/euipo-trademark-design-search-scraper`,
+`barefoot_grade/uspto-trademarks-scraper`), rephrased past-tense with the standard inline delisted
+note, surrounding price prose kept as the historical record. The 5th,
+`parseforge/ziprecruiter-scraper`, is a real dead handle but a **scope-exclusion** mention rather
+than a price claim, and it appears TWICE (the exclusion list plus a back-reference parenthetical)
+-- the exact shape that bit court-records-scraper at c2833; grepped first, disclosed once at the
+list mention, which covers both since they share a paragraph. The 6th, `owner/slug`, is
+**CONFIRMED the literal placeholder-prose false positive that c2834 and c2835 both predicted in
+advance** -- the phrase is "by full `owner/slug` handle", never an Apify listing -- left untouched,
+same as on court-records-scraper. Shipped build 0.1.98 (package 0.1.29 -> 0.1.30), README-only;
+live README verified **byte-identical** (88,496 == 88,496) via `versions[0].sourceFiles`.
+**Verified purely corrective with a real before/after `check-price-superiority` run:** 2714
+compared / 1040 cheaper / 0 undisclosed identical on both sides, fleet `gone` 65 -> 60 and
+`gone_disclosed` 50 -> 55 -- exactly -5/+5, no existing verdict moved. Guards after:
+`check-charges` 27/0/0, `check-registry-fields` 0 drift, `check-own-price-prose` 27/0.
+
+**Blockers: none.** Flags for next cycle, all in `queue.md`: (a) a real MEDIUM buyer-facing gap the
+audit surfaced -- `startsWithPrefix` is STRICTER than TMview's own matching in the harmful
+direction (TMview folds diacritics and returned a slashed-O `COFFE` for "coff"; our NFKC-only
+`stripLead()` does not decompose U+00D8, so the mode drops a row upstream considered a match --
+same class of harm as c2500's defect, but a missing feature rather than a false claim, with the
+exact fix shape and the NFD-alone-won't-work trap written down); (b) add a `trademark-search-
+scraper` probe to `bin/vocab-screen` -- it would be the 18th but the FIRST needing a cookie-primed
+session, since TMview returns a non-JSON empty body to the bare POST `vocab-screen`'s helpers send;
+(c) 2 LOW `tmTypes` doc nuances (`3-D` is an upstream alias group that also returns `3D shape`
+rows; the "known incomplete" warning now has a measured number -- 15,544 of 151,551 rows, 10.3%,
+unaccounted by the 10 confirmed values). **`steam-reviews-scraper` (7 lines) is the only file left
+in c2832's dead-handle start-here set**; re-pull a fresh `GONE` list rather than reusing
+`c2832_gone_handles.txt` (c2835's regex widening made its classifications stale, and reported line
+numbers drift -- grep the handle, do not trust the line). Standing: $0 revenue after 2836 cycles;
+Polar checkout deferred by owner decision; MCP #3 closed-for-builds (gated on dates:
+clinicaltrials 2026-11-12+, google-news 2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
+### Previous cycle (c2835) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2835 (claude-sonnet-5). QUALITY slot (2835 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 1c, cycle 2836). `audit-due --all`
 had 1 real backlog item -- `enum_audit` on `hacker-news-scraper` (336c gap, DUE) -- closed this

@@ -1,3 +1,98 @@
+- [x] **DONE c2836 (Regular slot, 2836 % 3 == 1) -- ran the one DUE fleet check
+      (`git-maintain`), closed the one DUE audit (`enum_audit` on `trademark-search-scraper`),
+      and fixed 5 of that same Actor's 6 `GONE` dead-handle lines. One Actor, one build.**
+      Preflight: `checks-due --all` 1 DUE (`git-maintain`); `audit-due --all` 1 real backlog
+      item (`enum_audit` trademark-search-scraper, 336c gap) -- both closed, now NONE DUE
+      fleet-wide across all 16 types. `inbox-triage new` NONE UNTRIAGED of 74. `bin/revenue`
+      $0 booked, 27 Actors, 50 users, 812 runs30d. Services active, `/`+`/pricing`+`/tools`+
+      `/blog` all 200. Spend: one build (~$0.005); the whole enum_audit was $0 (direct TMview
+      calls, no Actor run, no proxy, no PPE event). No owner email warranted.
+      **1. `git-maintain`** TRIPped on loose-object size (107 MiB >= 64 MiB threshold): 1373
+      loose objects repacked to 0, pack 124 -> 129 MiB, `.git` 133M. Services active after.
+      Recorded (2788 -> 2836, next due 2884).
+      **2. `enum_audit` on `trademark-search-scraper` -- ALL CLEAN, and it closed the two gaps
+      c2500's own note had named explicitly, both of which had NEVER been audited:**
+      `startsWithPrefix` (the 4th `matchMode` value, shipped at c2504 by 6412cc8f, i.e. AFTER
+      the c2500 audit) and `tmTypes` (c2500's note says in as many words it was not
+      re-audited). Verified `startsWithPrefix` by replicating main.js's
+      `stripLead()`/`matchesPrefix()` in Python over 100 real GB rows -- 56 kept / 44 filtered,
+      every documented claim holds live. Verified all 10 documented `tmTypes` values return
+      nonzero mutually-divergent counts, with a fail-closed negative control. Full method,
+      numbers and the TMview cookie-priming requirement are in
+      `state/audit_dates.json -> trademark-search-scraper.enum_audit_note` -- READ IT rather
+      than re-deriving.
+      **3. 5 of the 6 `GONE` lines fixed; the 6th is the confirmed `owner/slug` false
+      positive.** All 6 re-confirmed 404 live via `GET /v2/acts/<owner>~<name>` first. 4 were
+      genuine delisted priced rivals (`luminar/uspto-trademark-monitor`,
+      `crawlerbros/uspto-trademark-search-scraper`,
+      `crawlerbros/euipo-trademark-design-search-scraper`,
+      `barefoot_grade/uspto-trademarks-scraper`) -- rephrased past-tense with the standard
+      inline delisted note. The 5th, `parseforge/ziprecruiter-scraper`, is a genuine dead
+      handle but a SCOPE-EXCLUSION mention rather than a price claim, and it appears TWICE
+      (the list at L227 and a back-reference parenthetical at L236) -- the shape that bit
+      court-records-scraper at c2833; disclosed once at the list mention, which covers both
+      since they share a paragraph. `owner/slug` (L154, L567) is CONFIRMED the literal
+      placeholder-prose false positive predicted in advance by c2834/c2835 -- it is the phrase
+      "by full `owner/slug` handle", never an Apify listing. LEFT UNTOUCHED, as on
+      court-records-scraper. Shipped build 0.1.98 (package 0.1.29 -> 0.1.30), README-only;
+      live README verified BYTE-IDENTICAL (88,496 == 88,496) via `versions[0].sourceFiles`.
+      Verified purely corrective with a real before/after `check-price-superiority`:
+      2714 compared / 1040 cheaper / 0 undisclosed unchanged on both sides, fleet `gone`
+      65 -> 60 and `gone_disclosed` 50 -> 55 (exactly -5/+5, no existing verdict moved).
+      Guards after: `check-charges` 27/0/0, `check-registry-fields` 0 drift,
+      `check-own-price-prose` 27/0.
+
+- [ ] **NEW follow-up (c2836, MEDIUM -- real buyer-facing gap in the one mode built for
+      clearance, found by the enum_audit, NOT a drift and NOT urgent).** `startsWithPrefix`
+      is STRICTER than TMview's own matching in the harmful direction: TMview's `criteria=C`
+      search for "coff" returned a mark spelled `COFFE` with a slashed O (U+00D8), i.e.
+      upstream folds diacritics and considers it a "contains coff" match -- but our
+      client-side `stripLead()` is NFKC-only, and NFKC does NOT decompose U+00D8 to O, so
+      `matchesPrefix()` drops that row. A clearance search is run precisely to surface
+      confusable spellings, so this is the same *class* of harm as c2500's defect (a clearance
+      user concludes "clear" while a confusable mark exists), though NOT the same severity:
+      the copy never claims diacritic folding, so this is a missing feature, not a false
+      statement. **Fix shape:** extend `stripLead()` (main.js:200) with an NFD + combining-mark
+      strip on top of NFKC, which handles the accented-Latin bulk, PLUS an explicit map for the
+      non-decomposing letters (Ø/ø, Æ/æ, Œ/œ, Ð/ð, Þ/þ, Ł/ł, Đ/đ) -- NFD alone will NOT fix the
+      exact row that found this, since U+00D8 has no canonical decomposition. Apply it to the
+      buyer's term as well as the mark name (the existing NFKC already is). **Before shipping,
+      re-measure how many rows it changes** on the same 'coff'/GB 100-row slice, and say so in
+      the schema description + README, since it widens what the mode returns and the mode is
+      charged per delivered row. Keep the c2504 NFKC/full-width reasoning in that comment
+      intact -- this is additive to it, not a replacement.
+
+- [ ] **NEW note (c2836, LOW -- 2 small doc nuances on `tmTypes`, found by the enum_audit;
+      fold into the next trademark README/schema edit rather than spending a build on them).**
+      (a) `fTMType=['3-D']` returns rows whose own `tradeMarkType` field reads **`3D shape`**
+      as well as `3-D`, so the filter is an upstream ALIAS GROUP and a buyer who filtered
+      `3-D` can see an output value they did not ask for. Worth one clause in the `tmTypes`
+      description. (b) `3D shape` is therefore very likely one of the real-but-unconfirmed
+      values the schema's "known to be incomplete" warning refers to -- and that warning now
+      has a measured number to quote: the 10 confirmed values sum to 136,007 of 151,551
+      unfiltered rows for 'coff', leaving **15,544 (10.3%) unaccounted**. Both the alias and
+      the delta are live-measured c2836, not inferred.
+
+- [ ] **NEW follow-up (c2836, MEDIUM -- closes the structural cause of this exact backlog;
+      this is the 3rd enum_audit in a row to hit a never-probed vocabulary).** Add a
+      `trademark-search-scraper` probe to `bin/vocab-screen` (`PROBES` dict, bin/vocab-screen:1414)
+      covering `tmTypes` (10 values) + the `matchMode` -> `criteria` C/W/E mapping, so this
+      Actor stops being audited by hand. **It is the 18th probe but the FIRST that needs a
+      cookie-primed session**, which is why it was queued rather than written under time
+      pressure this cycle: TMview returns a non-JSON empty body to a bare POST, so
+      `vocab-screen`'s existing `http()`/`http_raw()` helpers (bin/vocab-screen:33-76) CANNOT
+      talk to it as written. Needs (i) a GET of `https://www.tmdn.org/tmview/` through a
+      `http.cookiejar.CookieJar` + `build_opener(HTTPCookieProcessor)` to pick up
+      `traefik_persistence`/`TS01919f74`, (ii) a browser `User-Agent` (the existing
+      `FetchSmith-vocab-screen/1.0` UA was NOT tested alone -- test it before assuming a
+      browser UA is required), and (iii) `referer: https://www.tmdn.org/tmview/` on the POST.
+      Mirror main.js's `primeCookies()` (main.js:239-251). Cleanest shape: add an optional
+      `extra_headers=`/`opener=` kwarg to `http_raw()` rather than a bespoke fetcher, so the
+      other 17 probes are untouched -- and re-run the full `vocab-screen` after, asserting the
+      other 17 are byte-identical, the same purely-additive discipline c2835 used on the
+      `DEAD_DISCLOSED` regex. Working probe code (all claims + the negative control) is
+      reproduced in this cycle's `enum_audit_note`; lift it from there.
+
 - [x] **DONE c2835 (QUALITY slot, 2835 % 3 == 0) -- closed the DUE `enum_audit` on
       `hacker-news-scraper` (fleet-wide `audit-due --all` showed exactly one real backlog
       item), then fixed all 6 of its `GONE` dead-handle lines from c2832's start-here list.**
@@ -368,7 +463,23 @@
       the DONE c2832 block for why.** Revised start-here: `court-records-scraper` (8),
       `apple-podcasts-scraper` (8), `steam-reviews-scraper` (7), `trademark-search-scraper` (6),
       `hacker-news-scraper` (6) = 35 of 83 lines, and still includes the two biggest-traffic
-      niches. Copy the prose shape already used for `simple.actors/google-search` in
+      niches.
+      **PROGRESS as of c2836: 4 of those 5 files are DONE** -- court-records (c2833),
+      apple-podcasts (c2834), hacker-news (c2835), trademark-search (c2836). **`steam-reviews-
+      scraper` (7 lines) is the ONLY one left in the start-here set**, and `uk-find-a-tender-
+      scraper` (5) + `us-federal-awards-scraper` (2) are the next-biggest clusters after it.
+      Fleet `gone` is now **60** (from 83 at c2832), `gone_disclosed` 55.
+      **RE-PULL A FRESH `GONE` LIST, do not reuse `c2832_gone_handles.txt` for line numbers** --
+      c2835 widened the `DEAD_DISCLOSED` regex, so that file's classifications are stale, and
+      its line numbers drift by a few lines per README edit anyway (measured c2836: the checker
+      reported :150/:221/:497 where the handles actually sat at L154/L227/L504 -- grep for the
+      handle, never trust the reported line).
+      **The `owner/slug` false positive is now CONFIRMED on two separate files** (court-records
+      c2833, trademark-search c2836) -- it is the literal placeholder phrase "by full
+      `owner/slug` handle". Any future file flagging `owner/slug` needs no live check and no
+      edit; it will stay in the `gone` count permanently, so the real floor is 60 minus however
+      many of those remain, not 0. Same for GitHub repo names in prose (c2835's `omcljs/om`).
+      Copy the prose shape already used for `simple.actors/google-search` in
       `actors/google-news-scraper/README.md` -- that mention is the one worked example of the
       correct end state, and `DEAD_DISCLOSED` now recognises it, so a correctly fixed handle
       drops out of the GONE count on the next run (that is the progress metric: 83 -> 0, with

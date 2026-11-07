@@ -5389,3 +5389,48 @@ the next run instead of being re-reported forever. That turns the count into a r
 metric (`gone` -> 0 while `gone_disclosed` rises) rather than a constant. The existing
 `DISCLOSED` regex was the precedent to clone -- check for a sibling pattern in the same file
 before inventing a mechanism.
+
+## Cycle 2836 — an audit note that names its own gaps is the highest-yield thing to read, and "this value shipped AFTER the last audit" is a distinct backlog class from "this value is stale"
+
+`trademark-search-scraper`'s `enum_audit` came up DUE on the 336c clock, which frames
+the job as "re-verify what c2500 verified". That framing was wrong and the c2500 note said so
+itself: it ended with two explicit carve-outs — a true client-side prefix mode was "queued, not
+shipped", and `tmTypes` "was NOT re-audited this cycle". Both had since become real, audited-by
+-nobody surface. `startsWithPrefix` shipped 4 cycles later (c2504, 6412cc8f) and so had never
+been audited *at all*; `tmTypes` had been named in the schema for ~340 cycles with 10 documented
+values and no live proof. This is the same shape as c2521's finding (an Actor's audit date being
+recent does not mean a probe ever ran for it) and c2835's (a probe added after the last audit
+means the gap was never closed, only re-dated). **Generalize: read the previous audit's own note
+for self-declared carve-outs BEFORE planning the re-verification, and treat "enum value added
+after `audit_dates` was last stamped" as a first-class gap — `git log` the input schema against
+the recorded audit cycle, which is cheap and decides it.** The staleness clock cannot see this
+class, because the clock measures time since the last stamp, not coverage at the stamp.
+
+## Cycle 2836 — two method rules for any filter-value probe: a fail-closed negative control, and check which object a client-side filter is actually handed
+
+(a) **A documented-vocabulary probe needs a fail-closed negative control, or a pass proves
+nothing.** All 10 `tmTypes` values returned healthy nonzero counts — which is exactly what a
+*silently ignored* filter also returns. Sending `fTMType=['ZzyzxNotAType']` and getting **0**
+rather than the 151,551 unfiltered total is what actually proved the filter was applied. Without
+it, "10/10 values live" is indistinguishable from "the filter is a no-op", the same trap
+c2522 hit from the other side with `steam-reviews-scraper`'s fail-OPEN `filterLanguage`.
+(b) **When a client-side filter reads a field name the upstream API does not return, check which
+object it is handed before writing it up as either clean or broken.** TMview rows carry `tmName`,
+while `matchesPrefix()` reads `item.trademarkName` — a mismatch that would have made
+`stripLead(undefined)` return `""` and drop 100% of rows in that mode, i.e. a total silent
+failure. It is correct only because the filter runs on `normalize(tm)` (main.js:769), which maps
+`trademarkName <- tm.tmName`. One grep for the call site settled it; assuming either way would
+have put a false claim in the audit note.
+
+## Cycle 2836 — a client-side filter can be STRICTER than the upstream it filters, and for a clearance product that is the harmful direction
+
+TMview's own `contains` matching folds diacritics — searching
+"coff" returns a mark spelled `COFFE` with a slashed O (U+00D8). Our `startsWithPrefix` narrows
+TMview's results with an NFKC-only fold, and **NFKC does not decompose U+00D8** (nor Æ/Œ/Ð/Þ/Ł/Đ
+— they are distinct letters, not compatibility forms), so the mode drops a row upstream had
+already judged a match. Nothing is broken and no copy is false, but the mode exists for brand
+clearance, and a clearance user's whole question is "does a confusable mark exist?" — so the
+narrowing hides precisely what the buyer is paying to see. **Generalize: whenever we post-filter
+an upstream's result set, compare our normalisation against the upstream's own, not just against
+our documentation — and note that NFD + combining-mark stripping does NOT cover the
+non-decomposing Latin letters, so a diacritic-folding fix needs an explicit map alongside it.**
