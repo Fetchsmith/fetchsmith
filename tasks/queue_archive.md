@@ -73659,3 +73659,26 @@ item in queue.md, replaced by cycle 2817's own record (see queue.md). Verbatim b
       an archive candidate ONLY after confirming the HOLD is homed elsewhere), and the c2478
       Store-API item (3250B, deadline 2026-11-15 -- read before touching). Re-derive line
       numbers fresh per rule 3; the byte sizes are stable enough to prioritize by.
+
+## Archived at cycle 2838 (doc-trim cadence item, superseded EXECUTED c2829 record)
+
+      **EXECUTED c2829 (QUALITY slot, 2829 % 3 == 0).** Fresh read: `tasks/queue.md`
+      **TRIM DUE** (129.8KB/1506 lines, ~13c headroom, proj. 257KB at the next look in 24c),
+      `state/STATUS.md` **TRIM SOON** (113.3KB/1548 lines, ~20c headroom -- left alone, one file
+      per cycle per the c2224 rule), `notes/LEARNINGS.md` **OK** (5352 lines, ~132c). TRIM DUE
+      outranks SOON, so queue.md is the one touched this cycle.
+      **tasks/queue.md -- DONE.** `bin/_trim2829q.py` (cloned from `bin/_trim2820q.py`)
+      hoist-then-cut: archived 10 historical DONE blocks (c2827 x2, c2826, c2825, c2824, c2823,
+      c2822, c2821, c2820, c2819 -- c2828's kept live per standing precedent, it carries the
+      current pointer) plus the superseded c2828 `johnvc/GoogleNewsAPI` arithmetic record
+      (the live UPDATED c2828 watch item already carries the pointer forward), all verbatim to
+      `queue_archive.md`. Rule-1 hazard grep ran FIRST over all 11 ranges and every hit was READ:
+      the owner-email rule is CLAUDE.md's, not sole-homed here; the c2812/c2796 standing-rule
+      references point to their own KEPT open items; one slot-process lesson (orig. L345, "check
+      the slot-type arithmetic FIRST") has visibly propagated into practice in every subsequent
+      cycle's own STATUS.md header, so archiving it loses no live instruction.
+      **129.8KB/1506 lines -> 90.4KB/1054 lines**, ~21c headroom (measured
+      by `check-doc-size` after the write, not predicted).
+      Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
+      content, no `- [ ]` open item in the archive partition, no DONE block but c2828 kept,
+      rewrite asserted separately). Backup: `/tmp/c2829_queue.bak`.

@@ -1,3 +1,18 @@
+- [x] **DONE c2838 (QUALITY slot, 2838 % 3 == 0) -- trimmed `state/STATUS.md`, which was
+      TRIM DUE (153.4KB/2080 lines) after three QUALITY slots (c2832/c2835/c2836) each deferred
+      it to this one.** Full method and numbers are in `state/STATUS.md`'s own c2838 entry and
+      in the doc-trim cadence item's refreshed `EXECUTED c2838` record below (this item). Kept
+      newest 5 blocks (2833-2837) live, archived 2803-2832 (1758 lines) to `STATUS_ARCHIVE.md`;
+      153.4KB/2080 -> 24.5KB/322 lines, ~40c headroom. `bin/check-status-blocks-kept` and
+      `bin/check-status-continuity` both clean after. `tasks/queue.md` itself was only TRIM
+      SOON (not DUE) so got no full cut this cycle, just its doc-trim item's pointer refreshed.
+      **NOT done this cycle: the one `audit-due --all` backlog item, `enum_audit` on
+      `fda-recall-scraper`, is still open** -- the doc trim (already 3x deferred) took this
+      slot's time; pick it up fresh next Regular slot (c2839), re-deriving method from
+      `audit_dates.json`'s own note rather than assuming a `vocab-screen` probe exists for it.
+      **Standing dead-handle cleanup queue unchanged: `steam-reviews-scraper` (7 lines) still
+      next**, per c2835/c2836/c2837's start-here list; re-pull a fresh `GONE` list.
+
 - [x] **DONE c2837 (Regular slot, 2837 % 3 == 2) -- closed the one DUE fleet audit
       (`enum_audit` on `remote-jobs-scraper`, 336c gap) -- all clean, no defect, but surfaced a
       real unresolved local-testing gap, now confirmed on its 2nd independent cycle.**
@@ -1049,26 +1064,29 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2829 (QUALITY slot, 2829 % 3 == 0).** Fresh read: `tasks/queue.md`
-      **TRIM DUE** (129.8KB/1506 lines, ~13c headroom, proj. 257KB at the next look in 24c),
-      `state/STATUS.md` **TRIM SOON** (113.3KB/1548 lines, ~20c headroom -- left alone, one file
-      per cycle per the c2224 rule), `notes/LEARNINGS.md` **OK** (5352 lines, ~132c). TRIM DUE
-      outranks SOON, so queue.md is the one touched this cycle.
-      **tasks/queue.md -- DONE.** `bin/_trim2829q.py` (cloned from `bin/_trim2820q.py`)
-      hoist-then-cut: archived 10 historical DONE blocks (c2827 x2, c2826, c2825, c2824, c2823,
-      c2822, c2821, c2820, c2819 -- c2828's kept live per standing precedent, it carries the
-      current pointer) plus the superseded c2828 `johnvc/GoogleNewsAPI` arithmetic record
-      (the live UPDATED c2828 watch item already carries the pointer forward), all verbatim to
-      `queue_archive.md`. Rule-1 hazard grep ran FIRST over all 11 ranges and every hit was READ:
-      the owner-email rule is CLAUDE.md's, not sole-homed here; the c2812/c2796 standing-rule
-      references point to their own KEPT open items; one slot-process lesson (orig. L345, "check
-      the slot-type arithmetic FIRST") has visibly propagated into practice in every subsequent
-      cycle's own STATUS.md header, so archiving it loses no live instruction.
-      **129.8KB/1506 lines -> 90.4KB/1054 lines**, ~21c headroom (measured
-      by `check-doc-size` after the write, not predicted).
-      Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
-      content, no `- [ ]` open item in the archive partition, no DONE block but c2828 kept,
-      rewrite asserted separately). Backup: `/tmp/c2829_queue.bak`.
+      **EXECUTED c2838 (QUALITY slot, 2838 % 3 == 0).** Fresh read: `state/STATUS.md`
+      **TRIM DUE** (153.4KB/2080 lines, ~11c headroom, proj. 259KB at the next look in 24c),
+      `tasks/queue.md` **TRIM SOON** (124.1KB/1456 lines, ~14c headroom, proj. 252KB), both
+      deferred three QUALITY slots running (c2832/c2835/c2836 each named c2838 for this).
+      TRIM DUE outranks SOON, so `state/STATUS.md` is the one given a full cut this cycle.
+      **state/STATUS.md -- DONE.** `bin/_trim2838s.py` (cloned from `bin/_trim2808s.py`,
+      stock keep-newest-5 block cut): structure re-derived fresh (35 blocks, strictly
+      newest-first, 2837 down to 2803, no gaps), kept window 2833-2837 live, archived
+      2803-2832 (1758 lines) verbatim to `STATUS_ARCHIVE.md`. Rule-1 hazard grep ran FIRST
+      over the archive-bound region: 26 "standing rule"/"cadence"/"always"/"never do" hits,
+      all read, all narrative *about* a rule homed elsewhere (this item, c2812, c2796,
+      checks-due/audit-due tool state, the MCP-#3 decision) -- STATUS.md is a pure rolling
+      log, nothing archived was its sole home. **153.4KB/2080 lines -> 24.5KB/322 lines**,
+      ~40c headroom (measured by `check-doc-size` after the write). Verified by
+      `bin/check-status-blocks-kept` (0 blocks destroyed, 1241 held across file+archive)
+      and `bin/check-status-continuity` (NONE MISSING on the retained 2833-2837 window),
+      plus the script's own reconstruct-equality assert. Backup: `/tmp/c2838_status.bak`,
+      `/tmp/c2838_status_archive.bak`.
+      **tasks/queue.md -- NOT cut this cycle** (only TRIM SOON, not DUE; a full
+      hoist-then-cut needs more time than this QUALITY slot had left after STATUS.md).
+      Next QUALITY slot (c2841) should re-run `check-doc-size` fresh and take queue.md's
+      hoist-then-cut if it reads TRIM DUE or SOON again -- do not defer a second time
+      (standing rule 2). Likely DONE-only candidates by then: c2837/c2836/c2835 blocks.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
