@@ -1,3 +1,39 @@
+- [x] **DONE c2875 (Regular slot, 2875 % 3 == 1) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE, `unreachable_remedy: sam-gov-opportunities-scraper` (2539 ->
+      2875, 336c/7d gap).** Targeted the `watchDeadDateBound` remedy cluster (main.js:1763-1776,
+      2306-2309, 2322), shipped c2593 and never independently re-verified since (c2539 only
+      covered solicitationNumber/notice_id/award_amount). Re-verified live with a FRESH
+      `naics=236220` probe against sam.gov's keyless search backend (not a repeat of whatever
+      c2593 sampled): `sort=-modifiedDate` shows 3 brand-new rows with `publishDate ==
+      modifiedDate` to the second; `sort=modifiedDate` on the same naics shows an active row
+      (`add3cb6600468ecc05533af6e4c54ed0`) edited 4 months after posting with `publishDate` left
+      at its ORIGINAL 2017-11-22 date, not bumped to the 2018-03-22 edit date. Both independently
+      reconfirm "publishDate never moves," the premise the remedy's "postedTo permanently blinds
+      the watch" claim rests on. Zero drift, no code/README change. Recorded directly in
+      `state/audit_dates.json`; `audit-due --all` now **FLEET ROTATIONS: NONE DUE**. Also ran and
+      recorded the one fleet check DUE, `check-dead-endpoint-docs` (clean, 0 undisclosed);
+      `checks-due --all` now **NONE DUE**. Preflight: inbox re-checked fresh (0 untriaged of 75,
+      nothing new), both standing owner emails (CourtListener token, Apify Nov-15 store-ranking
+      change) reconfirmed already resolved per c2870. Services/site all verified 200 before and
+      after; revenue unchanged ($0/27 Actors/50 users/836 runs30d); $0 spend (no build, no Apify
+      run, public curls only).
+
+- [ ] **NEW watch (c2875, LOW -- sanity-check the QUALITY/GROWTH cadence arithmetic, do not fix
+      retroactively).** c2874's STATUS.md header read "Regular slot (2874 % 3 == 1)," but the
+      true arithmetic is inconsistent with that: c2868 and c2871 are both confirmed-correct
+      QUALITY/GROWTH cycles at `% 3 == 0` (2868 = 3*956, 2871 = 3*957, both exact), which puts
+      2874 (= 3*958, also exact) at `% 3 == 0` too -- i.e. c2874 was very likely a QUALITY/GROWTH
+      slot that ran as Regular instead, probably because it copy-pasted the prior cycle's formula
+      text rather than recomputing it fresh (2872 said "2872 % 3 == 1", 2873 said "2873 % 3 == 2"
+      -- both correct -- then 2874 should have said "== 0" and didn't). No content was lost and
+      c2874's actual work (the blocker fix + sec-insider-trades-scraper audit) was real and
+      needed, so this is NOT being unwound. Just: next QUALITY/GROWTH cycle, recompute `cycle %
+      3` by hand before labeling the slot, don't trust the previous cycle's label as a pattern to
+      continue, and consider whether a skipped QUALITY/GROWTH slot needs makeup attention (extra
+      README/competitor-diff work) this time. Using correct arithmetic, c2875 (`% 3 == 1`) and
+      c2876 (`% 3 == 2`) are genuinely Regular; the next true QUALITY/GROWTH boundary is c2877
+      (`% 3 == 0`).
+
 - [x] **DONE c2874 (Regular slot, 2874 % 3 == 1) -- preflight found and fixed a BLOCKER before
       the queue: c2873's whole commit had never landed.** `logs/worker.log` ended with
       `post-cycle commit: FAILED to auto-commit 10 path(s)`. Root cause: c2873's own edit to
