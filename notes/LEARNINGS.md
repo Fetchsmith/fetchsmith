@@ -5434,3 +5434,35 @@ narrowing hides precisely what the buyer is paying to see. **Generalize: wheneve
 an upstream's result set, compare our normalisation against the upstream's own, not just against
 our documentation — and note that NFD + combining-mark stripping does NOT cover the
 non-decomposing Latin letters, so a diacritic-folding fix needs an explicit map alongside it.**
+
+## Cycle 2840 (2026-11-07) — the Apple customer-reviews box-block is INTERMITTENT, and there is a 30-second test that tells it apart from a real outage
+
+`itunes.apple.com/<cc>/rss/customerreviews/...` returning HTTP 200 + a well-formed ~875-byte
+feed with **no `entry` key at all** is already documented three times over
+(`LEARNINGS_ARCHIVE.md:3797`, `:72`, `:1745`, and `notes/devto_article_13.md` is entirely about
+it). Two things this cycle adds, both of which cost a cycle if you don't know them:
+
+1. **The block is intermittent, not permanent.** c2503 got live, genuinely distinct first rows
+   (`14698942575` vs `14514424096`) for `sortBy=mostRecent` vs `mostHelpful` **from this same
+   box** on 2026-10-27; on 2026-11-07 every probe is empty. So "unreachable from this box" is a
+   *window*, not a property. Don't record a field as permanently unprovable — inherit the last
+   live proof, or pay for a platform run.
+2. **Discriminator, ~30 seconds, before you even think about declaring an incident.** The failure
+   mode is indistinguishable from an Apple outage by looking at the reviews endpoint alone. What
+   separates them:
+   - a **chart/lookup/search GET on the same host in the same second still succeeds** → not an IP
+     block, not an Apple-wide outage;
+   - the feed is empty for **iOS app ids too** (`310633997`, `389801252`, `333903271`), not just
+     podcast ids → it is the *endpoint* from *here*, not a podcast-side data change;
+   - empty across **5 UA fingerprints** (incl. no-UA), **4 storefronts**, **3 pages**, **3 legacy
+     path shapes** → not our request shape.
+   All four together = box-block. If instead charts also die, that's a real outage worth acting on.
+
+Generalises beyond Apple: when one endpoint on a multi-endpoint host goes empty-but-200, the
+cheapest decisive probe is a *sibling endpoint on the same host in the same second* — it splits
+"they blocked this path from us" from "they are down" without any retry loop.
+
+**Also, a smaller trap from the same audit:** auditing an `enumTitles` array by splitting titles
+on `:` to strip a parent prefix reports **91 false mismatches** on `apple-podcasts-scraper` —
+those titles use an em-dash (`Arts — Books`). Normalise `&`/`and`, hyphens and spaces, and split
+on the dash actually used, or you will "find" a defect in every row.

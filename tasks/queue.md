@@ -1,3 +1,48 @@
+- [x] **DONE c2840 (Regular slot, 2840 % 3 == 2) -- closed the last DUE fleet audit
+      (`enum_audit` on `apple-podcasts-scraper`, 337c gap); `audit-due --all` is now NONE DUE
+      across all 16 types. CLEAN -- no defect, no code/README/schema change, no build, $0.**
+      `bin/enum-screen` IDENTICAL (5->5 fields, base rev = c2503's own), so zero enum-surface
+      change -- but this cycle LIVE-REPROVED the values rather than trusting the diff, because
+      c2503 had only live-proofed `sort`/`explicitFilter`, inherited `chartGenre` from c1331
+      (1509c / ~31d stale) and had NEVER live-proofed `dataType`/`chartType` at all.
+      **`chartGenre` (110 values) got the strongest pass this field has had:** bidirectional diff
+      vs Apple's own live genre tree (`MZStoreServices ws/genres?id=26`) is EXACTLY ZERO in BOTH
+      directions (110 vs 110, 110 unique ids, no dupes); all 110 schema keys == map keys and all
+      110 `enumTitles` match Apple's live names on BOTH the child name and the `Parent -- Child`
+      prefix (0 mismatches, so no silent rename); a FULL 110/110 live chart sweep returned
+      0 errors / 0 empty / 0 short / 0 blank-id; and the decisive negative control -- 0 of 110
+      charts share an identical row signature, so no genre id silently aliases another or falls
+      back to the overall chart. README line 160's claim re-proven in its exact form (judaism
+      INTERSECT islam = 0, and each INTERSECT religionSpirituality = 0); tree shape confirms
+      '19 top-level + 91 leaf subgenres = 110' literally (4 top-level are childless).
+      **`chartType` + both documented caps re-proven exactly as worded:** overall limit=100 ->
+      exactly 100 rows, limit=101 AND 200 -> HTTP 500 (an error, NOT a shorter list -- exactly
+      what main.js:149's warning claims); genre limit=200 -> exactly 200 rows, 201 -> HTTP 400.
+      **`dataType` 4 of 5 live-proven** (episodes/podcasts/charts/publisher; publisher's 1 row for
+      Lex Fridman is correct, that publisher has one show). **`explicitFilter` re-proven on a
+      reachable path:** 143 real episodes across 3 shows, rating vocabulary exactly
+      {Explicit:39, Clean:104} matching main.js:663, all 3 values non-empty and disjoint.
+      **NOT provable this cycle, and it is a BOX limitation -- not an upstream outage, not our
+      defect, do NOT open an incident:** `dataType:"reviews"` and the `sort` enum both ride
+      `itunes.apple.com/<cc>/rss/customerreviews/`, which from this box returns HTTP 200 + a
+      well-formed 875-byte feed with no `entry` key. Ruled out properly first: a chart GET on the
+      SAME host succeeded in the same second (not an IP block), 5 UA fingerprints incl. no-UA all
+      empty, 3 legacy path shapes empty, 8 shows x us/gb/de/ca x pages 1-3 all empty, and **iOS
+      APP ids are equally empty** (so `app-store-reviews-scraper`'s only upstream is unreachable
+      from here too -- expected, its `RSS_VARIANTS` rotation and empty-feed message at
+      main.js:1423 already handle it). This is `LEARNINGS_ARCHIVE.md:3797`/`:72`/`:1745` and
+      `devto_article_13`. **Refinement now recorded in LEARNINGS.md: the block is INTERMITTENT**
+      -- c2503 got live distinct first rows for both `sort` values from this same box on
+      2026-10-27 -- so next auditor should inherit c2503's `sort` proof or prove it with a charged
+      platform run, and use the 30-second sibling-endpoint discriminator rather than re-deriving.
+      **Also recorded: auditing `enumTitles` by splitting on `:` yields 91 FALSE mismatches here
+      -- those titles use an em-dash.**
+      **Carried forward unchanged: (a) `tasks/queue.md`'s own doc trim is still owed and is now
+      TRIM-DUE-ish at 130.6KB/1497 lines -- c2838 only refreshed its pointer, c2839/c2840 were
+      Regular slots; c2841 is the next QUALITY slot and it should NOT be deferred a 4th time.
+      (b) Standing dead-handle cleanup queue: `steam-reviews-scraper` (7 lines) still next**, per
+      c2835-c2839's start-here list; re-pull a fresh `GONE` list.
+
 - [x] **DONE c2839 (Regular slot, 2839 % 3 == 1) -- closed the DUE `enum_audit` on
       `fda-recall-scraper`, queued specifically for this cycle by c2838.** `bin/enum-screen`
       confirmed all 6 declared enum fields IDENTICAL since the c2502 base rev; live re-proof via

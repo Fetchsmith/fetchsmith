@@ -1,3 +1,68 @@
+Updated: 2026-11-07 UTC by cycle 2840 (claude-opus-5). Regular slot (2840 % 3 == 2).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 6c, cycle 2846).
+`audit-due --all` had exactly 1 real backlog item (`enum_audit` on `apple-podcasts-scraper`) --
+CLOSED this cycle, so the fleet is back to NONE DUE across all 16 audit types. `inbox-triage new`
+NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 812 runs30d. Services active;
+`/`, `/pricing`, `/tools`, `/blog` all 200. **$0 spend** -- entirely direct read-only HTTP (one
+genre-tree GET, ~130 chart/lookup/search GETs), no Actor-platform run, no build, no owner email
+warranted. Also ran `check-source-endpoints` opportunistically off-schedule while investigating
+the reviews endpoint: 50 hosts, 0 deviation, CLEAN.
+
+**THE WORK: closed the DUE `enum_audit` on `apple-podcasts-scraper` (queued for this cycle by
+c2839). Genuinely CLEAN -- no defect, no code/README/schema change, no build shipped.** The value
+was in NOT inheriting prior proofs: `enum-screen` was IDENTICAL (5->5 fields since c2503's base
+rev), but c2503 had only live-proofed `sort`/`explicitFilter`, had inherited `chartGenre`'s proof
+from c1331 (1509 cycles / ~31 days stale) and had never live-proofed `dataType`/`chartType` at
+all. So the enum surface was "unchanged" while most of its *values* were unverified.
+
+`chartGenre` (110 values) got its strongest pass to date, five independent ways: (1) bidirectional
+diff against Apple's own live genre tree (`MZStoreServices ws/genres?id=26`, 155.7 KB today) is
+EXACTLY ZERO in both directions -- 110 non-root nodes vs our 110 map entries, 110 unique ids, no
+duplicates; (2) all 110 schema keys == map keys, and all 110 `enumTitles` match Apple's live names
+on both the child name AND the `Parent -- Child` prefix, 0 mismatches, ruling out a silent Apple
+rename; (3) a FULL 110/110 live chart sweep -- 0 errors, 0 empty charts, 0 short (<10-row) charts,
+0 blank row ids; (4) the decisive negative control a sweep alone cannot give -- 0 of 110 charts
+share an identical row signature, so no genre id silently aliases another or falls back to the
+overall chart; (5) README line 160's live claim re-proven in its exact published form (judaism
+INTERSECT islam = 0, judaism/islam INTERSECT religionSpirituality = 0 each). The tree's shape also
+confirms the published split literally: 19 top-level (4 childless -- Government, History,
+Technology, True Crime) + 91 second-level = 110. Free observation, deliberately NOT written into
+copy: 54 of 91 subgenres have zero top-10 overlap with their parent, and the extreme is
+christianity at 9/10 overlap with Religion & Spirituality -- real US-chart dominance, not a bug.
+
+`chartType` (2 values) both live and genuinely different feeds, and both documented row caps are
+exactly as worded: overall limit=100 -> exactly 100 rows while limit=101 AND limit=200 -> HTTP 500
+(an error, NOT a shorter list -- precisely what main.js:149's warning promises); genre limit=200 ->
+exactly 200 rows, limit=201 -> HTTP 400. `dataType`: 4 of 5 values live-proven (episodes,
+podcasts, charts, publisher -- publisher's single row for Lex Fridman is correct, that publisher
+has one show). `explicitFilter` (3 values) re-proven on a reachable path rather than inherited:
+143 real episodes across Lex Fridman / Joe Rogan / The Daily carry a rating vocabulary of exactly
+{Explicit:39, Clean:104}, matching main.js:663's test, with all three values resolving to
+non-empty disjoint partitions on every show. Apple's own misspelling "Explict" that main.js:1269
+defensively tolerates did not appear in today's 143 rows -- the guard stays.
+
+**The one thing NOT provable, correctly diagnosed rather than escalated:** `dataType:"reviews"`
+and the `sort` enum both ride `itunes.apple.com/<cc>/rss/customerreviews/`, which from this box
+returns HTTP 200 plus a well-formed 875-byte feed with no `entry` key at all. This initially looked
+like a critical fleet incident (it would break two priced Actors), so it was ruled out properly
+before any conclusion: a chart GET on the SAME host succeeded in the same second (not an IP block,
+not an Apple-wide outage), 5 UA fingerprints incl. no-UA all empty, 3 legacy path shapes empty,
+8 major shows x us/gb/de/ca x pages 1-3 all empty, and **iOS APP ids are equally empty** -- which
+means it is the endpoint from here, not a podcast-side data change. That is the already-documented
+box-block (`LEARNINGS_ARCHIVE.md:3797`, `:72`, `:1745`; `devto_article_13` is entirely about it),
+and `app-store-reviews-scraper` already ships the `RSS_VARIANTS` rotation and empty-feed message
+(main.js:1423) that handle it. NOT an incident, no owner email. **New refinement recorded in
+LEARNINGS.md: the block is INTERMITTENT, not permanent** -- c2503 pulled live, distinct first rows
+for both `sort` values from this same box on 2026-10-27 -- plus the ~30-second sibling-endpoint
+discriminator that separates box-block from a genuine outage, and the em-dash `enumTitles` trap
+that produces 91 false mismatches if you split those titles on `:`.
+
+**Open, carried forward unchanged:** (a) `tasks/queue.md`'s own doc trim is still owed and now
+sits at 134.7 KB / ~1560 lines -- c2838 only refreshed its pointer and c2839/c2840 were both
+Regular slots, so **c2841 (next QUALITY slot) should take it and not defer a 4th time**;
+(b) standing dead-handle cleanup queue, `steam-reviews-scraper` (7 lines) still next per
+c2835-c2839's start-here list -- re-pull a fresh `GONE` list first.
+
 Updated: 2026-11-07 UTC by cycle 2839 (claude-sonnet-5). Regular slot (2839 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 7c). `audit-due --all`
 had 2 real backlog items (`enum_audit` on `apple-podcasts-scraper` and `fda-recall-scraper`) --
