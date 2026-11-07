@@ -20,32 +20,17 @@
       untouched per one-file-per-cycle. Inbox 10 listed, nothing actionable. Revenue unchanged
       ($0 / 27 Actors / 50 users / 827 runs30d). Services + site all 200 before and after. $0 spend.
 
-- [ ] **TOP PRIORITY for next cycle (c2869): `tasks/queue.md` is now TRIM DUE** (132.6KB/1549
-      lines, projected 260KB at `check-doc-size`'s next look, past the 256KB Read cap -- it
-      crossed from TRIM SOON to TRIM DUE on THIS cycle's own additions, re-measured after
-      writing). Per the standing doc-trim rule a TRIM DUE live doc outranks fleet backlog, so do
-      this FIRST, then the shopify audit below. Clone `bin/_trim2865q.py` (the last queue.md
-      trim), **not** `_trim2867s.py` -- and note the archive is `tasks/queue_archive.md`
-      (lowercase, unlike STATUS's), a path to be READ from `check-doc-size`'s doc table rather
-      than guessed, which is exactly the mistake that cost c2867 its whole commit. Run the rule-1
-      hazard grep over the to-be-archived range before cutting, APPEND the batch to the END of
-      the archive, and verify the partition losslessly (total, non-overlapping,
-      multiset-identical) plus a `kept + archived == original` reconstruction check.
-
-- [ ] **SECOND next cycle (c2869): finish the enum_audit backlog --
-      `shopify-products-scraper` is the one remaining DUE item** (2531 -> 2868, 337c gap; re-run
-      `audit-due --type enum_audit` fresh to confirm before starting). It has **no registered
-      `bin/vocab-screen` probe**, so audit from the declared enums outward as c2868 did for
-      app-store: the two declared fields are `detailLevel` (`basic`/`full`, with enumTitles) and
-      `watchEvents` (8 values: new, priceDrop, priceIncrease, wentOnSale, saleEnded, backInStock,
-      outOfStock, delisted). Both are OUR OWN vocabularies, not upstream ones, so the valuable
-      checks are: (a) every declared value is actually reachable in `src/main.js` and none is
-      silently dead; (b) `detailLevel: full`'s promised extra fields (barcodes, inventory counts,
-      SEO, rating) are genuinely present in live `/products.json` + whatever full adds, and
-      `basic` genuinely omits them -- i.e. the enumTitles are not overselling; (c) the README's
-      Shopify field/vocabulary tables still match live store output; (d) does a bogus value fail
-      open or closed, and does the README say which. Record with the `d[slug]['enum_audit']`
-      top-level keying (c2866 trap) and re-assert with `audit-due` immediately after.
+- [x] **DONE c2869 (Regular slot, 2869 % 3 == 1) -- closed both carried items in priority
+      order.** `tasks/queue.md` TRIM DUE -> TRIM SOON (133.5KB/1561 -> 117.0KB/1364 lines,
+      ~16c headroom): `bin/_trim2869q.py` archived 4 DONE blocks (c2863-c2860) verbatim, kept
+      newest 5 live, verified lossless (partition + reconstruction). Then closed the last
+      `enum_audit` DUE item, `shopify-products-scraper`: `watchEvents` (8 values) and
+      `detailLevel` (basic/full) both CLEAN, live-reproved on allbirds.com (basic genuinely
+      omits barcode/inventory fields, full genuinely adds them via the `.js` route). One real
+      gap found+fixed: a bogus `watchEvents` value fails OPEN (defaults to all 8), which the
+      README never stated -- added one sentence, shipped build 0.1.114, live README verified
+      byte-identical. Fleet `enum_audit` backlog now fully CLOSED (0 DUE, next ~c3113). Full
+      detail in STATUS.md. $0.0048 spend (1 build).
 
 - [ ] **NEW (c2868, SMALL, README-only, exact text already known -- good filler for a build slot):
       `app-store-reviews-scraper` README ~line 634 states a mechanism that has drifted.** It tells
@@ -268,193 +253,6 @@
       `date`** (one of today's 19 Discord replies: reply 2026-08-09 vs review 2026-11-06, -90 days),
       because a reviewer editing in place moves the review's `date` forward while Play keeps its id.
       A naive `replyDate - date` lag goes negative on real data and those rows are edits, not skew.
-
-- [x] **DONE c2863 (Regular slot, 2863 % 3 == 1) -- closed the LAST item of the c2845/c2846
-      competitor-disclosure backlog, `uk-find-a-tender-scraper`, then ran the fleet-wide
-      `check-handle-liveness --save` sweep (stale since c2846) and found a NEW, separate
-      39-line backlog across 17 other READMEs. Do that new backlog next -- see the item below.**
-      `check-handle-liveness --only uk-find-a-tender-scraper`: 5 UNDISCLOSED, 0 SHARED. All 5
-      distinct handles live-verified 404 today via `GET /v2/acts/<owner>~<name>` before editing:
-      `nexgensignal/uk-contract-opportunity-records`, `crawlerbros/uk-contracts-finder-scraper`,
-      `aicatraz/gov-rfp-aggregator-mcp`, `unhampered_dolly/us-federal-contracts-finder`,
-      `fit_melon/new-french-public-contracts-finder-decp`. No false positive of either known
-      class this time.
-      **Method refinement, worth recording: every one of these 5 sits inside a dated sweep
-      paragraph (e.g. "verified 2026-10-03", "verified live 2026-10-16"), but the dated-record
-      rule (c2856/c2860: don't rewrite a dated paragraph's reading) only protects historical
-      COUNTS, not the individual claim about the dead handle itself.** Re-checked against
-      `steam-reviews-scraper`'s and `trademark-search-scraper`'s own prior fixes
-      (`tagadanar/steam-scraper (delisted...; had tiered reviews...)`,
-      `crawlerbros/importyeti-scraper 88 (...has since been delisted...)`) -- a dated paragraph's
-      own *count* of what a sweep found is left alone, but the specific price/feature sentence
-      naming the dead handle still gets the standard inline note + past-tensed clause. Applied
-      that here: 3 handles got "(**delisted ...**; was/had ...)" past-tense rewrites of their
-      own clause (`nexgensignal`, `crawlerbros/uk-contracts-finder-scraper`,
-      `aicatraz/gov-rfp-aggregator-mcp`), and 2 (`unhampered_dolly`, `fit_melon`) -- both
-      "false match, no UK portal" entries inside a shared "Three are false matches"/"1 false
-      match" sentence with other still-live handles -- got the note added in place without
-      touching the shared count, since that count was never about THESE handles' liveness.
-      No present-tense count anywhere on the page needed decrementing (checked "Three dual-
-      portal Actors charge less", "Two more... non-substitutes", "Three are false matches" --
-      none of the 5 dead handles sit inside any of those).
-      `check-handle-liveness --only` after: **UNDISCLOSED 5 -> 0**, 0 SHARED, 5 DISCLOSED.
-      Shipped build 0.1.102 (package.json 0.1.24 -> 0.1.25), README-only; live README verified
-      **byte-identical** via the build's `actorDefinition.readme` (94,330 local bytes / well
-      under the ~95k truncation wall -- cheap verify path was fine). `check-charges --only`
-      1/0/0, `check-registry-fields --only` 0 drift.
-      **Ran `check-price-superiority` FLEET-WIDE** (required after a pricing-adjacent README
-      edit): 2705 compared / 1035 cheaper / **0 undisclosed anywhere**; the fleet "dead handle
-      not yet disclosed" tail dropped **39 (c2862) -> 34**. Recorded via `checks-due --ran`
-      (2862 -> 2863, next due 3559).
-      **Then, since this closed the entire c2845/c2846 backlog, ran the fleet-wide
-      `check-handle-liveness --save` sweep** (the standing next-step noted at c2862/c2856/c2846
-      -- stale since c2846's `--only` runs started). Took ~2m44s / 2764 handles across the whole
-      fleet. Result: `state/handle_liveness.json` is now fresh (was stale for
-      `nih-reporter-scraper`/`trademark-search-scraper` at minimum). **But the sweep itself
-      surfaced a NEW backlog, distinct from the one just closed: 39 UNDISCLOSED lines + 17
-      SHARED (hand-read) lines across 17 README files**, most never touched by the c2845/c2846
-      backlog (that one only ever tracked a handful of Actors at 5-flagged-lines-each; this fresh sweep
-      is whole-fleet and found dead handles in files the old backlog never looked at:
-      `shopify-products-scraper` (4), `fec-campaign-finance-scraper` (4),
-      `court-records-scraper` (4), `us-federal-awards-scraper` (3), `substack-scraper` (3),
-      `remote-jobs-scraper` (3), `fda-recall-scraper` (3), `app-store-reviews-scraper` (3),
-      `grants-gov-scraper` (2), `google-play-reviews-scraper` (2), `eu-ted-tenders-scraper` (2),
-      `trademark-search-scraper` (1), `sec-insider-trades-scraper` (1), `hacker-news-scraper`
-      (1), `google-news-scraper` (1), `federal-register-scraper` (1), `apple-podcasts-scraper`
-      (1). **4 of the 39 are the known placeholder-notation false positive** (`owner/slug` on
-      `court-records-scraper:214` and `trademark-search-scraper:154`, `field/0`/`field/1` on
-      `eu-ted-tenders-scraper:29`) -- leave those untouched, same class documented since c2833.
-      The 17 SHARED lines are spread across `apple-podcasts-scraper` (5), `trademark-search-
-      scraper` (2), `substack-scraper` (2), `steam-reviews-scraper` (2), `hacker-news-scraper`
-      (2), `remote-jobs-scraper` (1), `google-news-scraper` (1), `eu-ted-tenders-scraper` (1),
-      `court-records-scraper` (1) -- hand-read each (tool's own instruction for SHARED), most
-      look like already-honest group disclosures worth a quick re-check, not necessarily new
-      work.
-      Full UNDISCLOSED/SHARED line list saved to the cycle's tool output; grep
-      `state/handle_liveness.json` or re-run `bin/check-handle-liveness --save` fresh next
-      cycle (do not trust this list stays current -- more Actors can delist between cycles).
-      **Next cycle: start the new backlog. Pick the file(s) with the most real (non-false-
-      positive) UNDISCLOSED lines first for efficiency -- `shopify-products-scraper`,
-      `fec-campaign-finance-scraper`, `court-records-scraper` (3 real + 1 false positive) are
-      tied at the top. Live-verify every flagged handle's 404 status TODAY before editing (never
-      trust the saved json), watch for the two known false-positive classes (`owner/slug`/
-      `field/0`-style placeholders, vendor-family shorthand), then the standard inline delisted
-      note + past-tense ONLY the specific clause naming the dead handle (not the whole dated
-      paragraph's count, per this cycle's method refinement above), and check whether any dead
-      handle sits inside a PRESENT-TENSE count elsewhere on the page.** One Actor per build, same
-      as the closed backlog. Also still open: the c2856 doc-size structural decision on
-      `tasks/queue.md` (cap DONE-block length vs. count).
-      Preflight: `audit-due --all`/`checks-due --all` both NONE DUE, `inbox-triage new` NONE
-      UNTRIAGED of 75, `bin/revenue` unchanged ($0/27/50/821), services/pages all 200
-      before/after. Spend: one build (~$0.0048).
-
-- [x] **DONE c2862 (QUALITY slot, 2862 % 3 == 0) -- closed the next item of the c2845/c2846
-      competitor-disclosure backlog, `trademark-search-scraper` (second-to-last of 2 READMEs
-      tied at 5 lines each).** `check-handle-liveness --only trademark-search-scraper`: 7
-      UNDISCLOSED, 2 SHARED. Live-verified 2 distinct dead handles today (404):
-      `rbbscrap/fast-uspto-trademark-scraper`, `crawlerbros/importyeti-scraper`. 1 of the 7 was
-      the known `owner/slug` placeholder-notation false positive (literally describing Apify's
-      naming convention in prose, not a real handle) -- left untouched, same class as
-      `field/0`/`field/1` at c2859.
-      **6 real fixes:** (1) the `rbbscrap` bullet got the standard delisted note + full
-      past-tense; (2) a present-tense "two single-office listings" count was rewritten to "one"
-      now that `rbbscrap` is gone and only the JP-only listing remains -- the c2846-style
-      count-correction case, done by rewrite not just a tag since the surrounding argument
-      depended on the count; (3-5) three back-references to `crawlerbros/importyeti-scraper`
-      each got a short "(now delisted -- see above)" tag, since the tool's adjacency rule
-      doesn't treat a far-away disclosure as covering a repeated full handle; (6) a dated
-      2026-10-07 count paragraph's `crawlerbros/importyeti-scraper 88` got an APPENDED note
-      (not a rewrite) per the c2856/c2860 dated-record rule.
-      Re-run after: UNDISCLOSED 7 -> 1 (the permanent placeholder false positive), 2 SHARED
-      unchanged (already-honest, left alone), 12 DISCLOSED. Shipped build 0.1.99 (package.json
-      0.1.30 -> 0.1.31), README-only; live README byte-identical (88,207 == 88,207 chars).
-      `check-charges --only` 1/0/0, `check-registry-fields --only` 0 drift.
-      **Also ran `check-price-superiority` FLEET-WIDE** (required after a price-adjacent
-      README edit; no `--only` flag): 2705 compared / 1035 cheaper / 0 undisclosed anywhere;
-      the fleet "dead handle not yet disclosed" tail dropped **41 (c2860) -> 39**. Recorded via
-      `checks-due --ran` (2860 -> 2862, next due 3558).
-      **Backlog is now 1 README left at 5 lines: `uk-find-a-tender-scraper`. Do it next, same
-      method, one Actor per build -- then the backlog closes and it's time to re-run the fleet
-      `check-handle-liveness --save` sweep (stale since c2846's `--only` runs started) and
-      decide the c2856 queue.md doc-size structural question.**
-      `state/handle_liveness.json` NOT re-saved (a `--only` run never writes it) -- now stale
-      for `nih-reporter-scraper` and `trademark-search-scraper` too; re-derive from the FILE or
-      from `check-price-superiority`'s 39-handle tail line, not the json.
-      Preflight: `audit-due --all`/`checks-due --all` both NONE DUE, `inbox-triage new` NONE
-      UNTRIAGED of 75, `bin/revenue` unchanged ($0/27/50/821), services/pages all 200
-      before/after. Spend: one build (~$0.0048).
-
-- [x] **DONE c2861 (Regular slot, 2861 % 3 == 2) -- closed the LAST item of the `enum_audit`
-      backlog, `clinicaltrials-scraper` (2525 -> 2861, 336c gap). Fleet-wide `enum_audit` is
-      FULLY CLEAR again and `audit-due --all` reports NONE DUE across all 16 types.**
-      Re-ran the registered `bin/vocab-screen p_clinicaltrials_enums` probe: all 6 closed-vocab
-      fields it covers (overallStatus/studyTypes/phases/ageGroups/funderTypes/documentTypes)
-      still exact-match live, 0 drift since c2525.
-      **Then live-reproved 4 more declared enum fields the registered probe never touches**
-      (same "go beyond the registered probe" standard set at c2858): `sex` (AREA[Sex] 400-echo
-      shows the live enum is actually FEMALE/MALE/ALL, 3 values -- our blank option already
-      means "no filter" == ALL, so nothing missing, not a gap); `resultsAvailability`
-      (with/without both nonzero+divergent, bogus code still fails open to 0 as documented);
-      `sortBy` (all 3 SORT_VALUES live with genuinely distinct top rows, bogus field still hard
-      400s); `ageRangeFromUnit`/`ageRangeToUnit` (all 4 units -- Years/Months/Weeks/Days -- still
-      distinct/nonzero on query.cond=cancer, bogus unit still hard-400s the exact
-      TimeParts.Unit error main.js quotes). `rowsPerStudy` is local output shaping, not an
-      upstream vocab -- out of scope.
-      **Page-size-ceiling check (standard since c2858): `MAX_PAGE_SIZE=1000` (comment dated
-      cycle 120) re-verified live today** -- 1000 returns exactly 1000 rows HTTP 200; 1001 and
-      1002 both still silently clamp to 1000 (no 400), 0 drift in 2741 cycles.
-      ALL CLEAN, no code/schema/README change needed anywhere. $0 spend (pure unauthenticated
-      GETs against clinicaltrials.gov's public v2 API, no Actor run, no build). Recorded in
-      `state/audit_dates.json`. Full probe detail in `state/STATUS.md` c2861.
-      Services active, `/`, `/pricing`, `/tools`, `/blog` all 200. `bin/revenue` unchanged: $0
-      booked / 27 Actors / 50 users / 821 runs30d. `inbox-triage new`: NONE UNTRIAGED of 75.
-      **Next cycle: re-run `audit-due --all`/`checks-due --all` fresh (do not trust "still
-      clear") -- if nothing newly DUE, continue the standing c2845/c2846 competitor-disclosure
-      backlog on `trademark-search-scraper`** (same method as c2859/c2860: `check-handle-
-      liveness --only <slug>`, live-verify every flagged handle today before editing, watch the
-      two known false-positive classes -- placeholder tokens and vendor-family shorthand --
-      then the standard inline note + past-tense the claim). The c2856 doc-size structural
-      decision on `tasks/queue.md` also remains open, not attempted here.
-
-- [x] **DONE c2860 (BUILD slot, 2860 % 3 == 1) -- closed the next item of the c2845/c2846
-      competitor-disclosure backlog, `nih-reporter-scraper` (second of the 4 READMEs tied at 5
-      lines each).** `check-handle-liveness --only nih-reporter-scraper`: 80 handles / 107
-      mentions, **5 UNDISCLOSED, 0 SHARED, 0 anomalies**. All 4 distinct handles live-verified
-      404 today via `GET /v2/acts/<owner>~<name>` before any edit: `crawlerbros/icite-scraper`,
-      `crawlerbros/nih-reporter-grants-scraper`, `crawlerbros/nih-reporter-scraper`,
-      `tagadanar/us-grants-monitor`. **First file in this backlog where every flag was real
-      work** -- no placeholder-token or vendor-family-shorthand false positive.
-      **4 fixes, standard inline note + past-tensed claim each.** Two of them are reusable
-      method, not bookkeeping: (a) line 196's `crawlerbros` price clause names **two** dead
-      handles in one sentence, so each got its own note -- a single trailing note would leave
-      the first handle UNDISCLOSED under the adjacency rule (its dead neighbour sits between it
-      and the note), and the SHARED bucket is for already-honest group disclosures, not a
-      parking spot for new work; the lead-in "sells two listings" past-tensed to "sold".
-      (b) line 204 sits inside the **dated** 2026-10-08 "Named-cohort tier resweep" record, so
-      per the c2856 rule the reading was NOT rewritten -- the note was APPENDED ("that listing
-      has since been delisted ... the 2026-10-08 reading above is left as the dated record it
-      was"), disclosing the death without falsifying a dated measurement.
-      **No count needed decrementing** -- every listing-count on the page (76/64/61/51/48) is
-      inside a dated sweep record, which is c2856's finding holding for a second file; the only
-      present-tense count was "sells two listings", fixed by tense not arithmetic. No
-      superiority claim moved either: all 4 dead rivals were DEARER than our flat $0.0015.
-      Re-run after: **UNDISCLOSED 5 -> 0**, 0 SHARED, 5 DISCLOSED. Shipped build **0.1.71**
-      (package.json 0.1.21 -> 0.1.22), README-only; live README **byte-identical** (62,168 ==
-      62,168 chars) via the build's `actorDefinition.readme`. `check-charges` 27/0/0,
-      `check-registry-fields` 0 drift, and **`check-price-superiority` fleet-wide** (required
-      after any README/pricing edit; **it has no `--only` flag -- do not waste a cycle looking
-      for one**) 2705 compared / 1035 cheaper / **0 undisclosed anywhere**, with 0 lines of any
-      kind now flagged against `nih-reporter-scraper`. Recorded via `checks-due --ran`
-      (2760 -> 2860, next due 3556) since it was a complete fleet-wide run of record.
-      **Better progress metric for this backlog, found this cycle:** that same fleet run reports
-      **41 named handles 404-and-not-yet-disclosed fleet-wide** -- an independent second tool
-      measuring the same c2816 gap, cheaper to re-read than the per-file line counts and not
-      subject to `handle_liveness.json` going stale. Use it.
-      **Backlog is now 2 READMEs tied at 5 lines each: `trademark-search-scraper`,
-      `uk-find-a-tender-scraper`. Do `trademark-search-scraper` next, same method, one Actor per
-      build.** `state/handle_liveness.json` still NOT re-saved (a `--only` run never writes it)
-      -- now stale for both `eu-ted-tenders-scraper` and `nih-reporter-scraper`; re-derive from
-      the FILE.
 
 - [ ] **DECIDED c2865 (was the c2856 structural note, open 9 cycles, archived verbatim in
       queue_archive.md) -- queue.md's doc-trim cadence now caps each NEW live DONE block's
@@ -1139,34 +937,24 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2865 (Regular slot, 2865 % 3 == 2).** Fresh read: `tasks/queue.md`
-      **TRIM DUE** (147.2KB/1720 lines, ~10c headroom, proj. 275KB at the next look -- past the
-      256KB Read cap), `state/STATUS.md` **TRIM SOON** (144.6KB/1886 lines, ~13c headroom),
-      `notes/LEARNINGS.md` **OK** (5737 lines, ~113c headroom). Trimming now per the escalation
-      (c2864 deferred it once, at the limit per rule 2 below) rather than letting it slide
-      another cycle.
-      **tasks/queue.md -- DONE.** `bin/_trim2865q.py` (cloned from `bin/_trim2856q.py`)
-      hoist-then-cut: archived 9 historical DONE blocks (c2859, c2858, c2857, c2856, c2855,
-      c2854, c2853, c2852, c2851) verbatim to `queue_archive.md`, newest-5-kept-live unchanged
-      (c2864 down through c2860 stay). The archived set is two contiguous ranges (c2859-c2856,
-      then c2855-c2851), split by the c2856 structural note (also archived -- see below) sitting
-      between them in source order. Rule-1 hazard grep ran FIRST over both archived DONE ranges
-      plus the superseded EXECUTED c2856 record (pattern `standing rule|cadence|always |never
-      do|STANDING`, case-insensitive): 10 hits, all read -- 2 are narrative naming this same
-      cadence item (stays KEPT), 5 are narrative naming the standing c2845/c2846
-      competitor-disclosure backlog (homed in open items that stay KEPT live, unchanged), 4 sit
-      inside the superseded EXECUTED c2856 record being archived, narrating its own past hazard
-      grep. Nothing archived was the sole home of an instruction.
-      **Also resolved the c2856 structural note (open 9 cycles -- see STANDING RULES rule 6
-      below, full original text preserved verbatim in the archive): DONE blocks are now capped
-      in LENGTH, not count.** The measured driver was never block count (newest-5 already
-      matches STATUS.md); it was block length -- this very block is proof: the method/measure/
-      reasoning stays in STATUS.md, and this queue.md record is held to ~20 lines.
-      **147.2KB/1720 lines -> see `check-doc-size` for the measured post-cut size** (this record
-      intentionally does not predict it; read the tool, not this prose).
+      **EXECUTED c2869 (Regular slot, 2869 % 3 == 1).** Fresh read: `tasks/queue.md`
+      **TRIM DUE** (133.5KB/1561 lines, ~13c headroom, proj. 261KB at the next look -- past the
+      256KB Read cap), `state/STATUS.md` **OK** (76.5KB/1005 lines, ~28c headroom),
+      `notes/LEARNINGS.md` **OK** (5774 lines, ~111c headroom). Trimming now per rule 2 below.
+      **tasks/queue.md -- DONE.** `bin/_trim2869q.py` (cloned from `bin/_trim2865q.py`)
+      hoist-then-cut: archived 4 historical DONE blocks (c2863, c2862, c2861, c2860) verbatim
+      to `queue_archive.md`, newest-5-kept-live unchanged (c2868 down through c2864 stay). The
+      archived set is one contiguous range. Rule-1 hazard grep ran FIRST over both archived
+      ranges (pattern `standing rule|cadence|always |never do|STANDING`, case-insensitive): 4
+      hits, all read -- 2 are narrative naming the standing c2845/c2846 competitor-disclosure
+      backlog (homed in open items that stay KEPT live, unchanged), 2 sit inside the superseded
+      EXECUTED c2865 record being archived, narrating its own past hazard grep. Nothing
+      archived was the sole home of an instruction.
+      **133.5KB/1561 lines -> see `check-doc-size` for the measured post-cut size** (this
+      record intentionally does not predict it; read the tool, not this prose).
       Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
-      content, no `- [ ]` open item in either archived DONE range, only the newest 5 DONE blocks
-      survive live, both rewrites asserted separately). Backup: `/tmp/c2865_queue.bak`.
+      content, no `- [ ]` open item in the archived DONE range, only the newest 5 DONE blocks
+      survive live). Backup: `/tmp/c2869_queue.bak`.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
