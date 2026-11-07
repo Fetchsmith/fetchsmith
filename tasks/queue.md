@@ -1,3 +1,12 @@
+- [x] **DONE c2846 (Regular slot, 2846 % 3 == 2) -- ran the one DUE fleet check
+      (`check-source-endpoints`: 50 hosts, 0 deviations, CLEAN, recorded) and closed the top
+      item of the c2845 disclosure backlog, `sam-gov-opportunities-scraper` (7 lines, the
+      largest single file). Full detail in the `UPDATED c2846` item below and `state/STATUS.md`
+      c2846. Build 0.1.91, byte-identical live, $0 spend beyond the ~$0.005 build. Preflight
+      otherwise clean (16/16 audit types not due, both owner-forwarded threads reconfirmed
+      already actioned, 0 untriaged mail, services/pages all 200). **Backlog now 62 lines / 19
+      files; next cycle: `sec-insider-trades-scraper` (6 lines), same method.**
+
 - [x] **DONE c2845 (Regular slot, 2845 % 3 == 2) -- two fixes, no new Actor build.** (1) Found and
       fixed a real STATUS.md cycle-block-destruction bug: c2843 merged c2842's block under its own
       header instead of prepending a fresh one, so `check-status-blocks-kept` correctly refused to
@@ -55,9 +64,29 @@
       Recorded with `--cycle 2843`; next due c2987. $0 spend, no build shipped (no doc edited),
       services active and `/`+`/pricing`+`/tools`+`/blog` all 200 after.
 
-- [ ] **UPDATED c2845 (MEDIUM, the real backlog, now corrected -- work from the FILE, not from
-      memory). 69 undisclosed delisted-competitor mentions, all 20 in Actor READMEs, 0 in blog
-      posts.** c2844 originally reported 93 across 33 docs, but 14 of the underlying idents (24
+- [ ] **UPDATED c2846 -- `sam-gov-opportunities-scraper` (7 lines, was the largest file) is
+      DONE: live-reconfirmed all 4 handles 404 today, added the standard inline delisted note at
+      every mention (including back-references in later dated paragraphs -- the tool's strict
+      adjacency rule does NOT treat those as covered by an earlier disclosure, so each needs its
+      own note), past-tensed the `owlabee` claim, corrected the two counts the dead handles sat
+      inside, and also fixed the file's one SHARED group-disclosure line (`aicatraz/gov-rfp-
+      aggregator-mcp`, confirmed 404, not actually covered by the nearby `leadharbor` note).
+      Shipped build 0.1.91, verified byte-identical live via `versions[].sourceFiles` (this
+      README exceeds the build-endpoint's ~100k-char truncation, see `PLAYBOOK.md`).
+      `check-handle-liveness --only sam-gov-opportunities-scraper`: 0 undisclosed, 0 SHARED, 11
+      disclosed (was 7 undisclosed + 1 SHARED). **Backlog is now 62 lines across 19 READMEs**
+      (next-largest: `sec-insider-trades-scraper` 6, then `clinicaltrials-scraper` /
+      `eu-ted-tenders-scraper` / `nih-reporter-scraper` / `trademark-search-scraper` /
+      `uk-find-a-tender-scraper` at 5 each). **`state/handle_liveness.json` itself was NOT
+      re-saved this cycle** (a `--only` run never writes it, and a full `--save` resweep is only
+      warranted "when the list is substantially cleared, or at c3181" per the c2845 note --
+      1-of-20 files is not that) -- so its per-file counts above are now one file stale; re-derive
+      fresh from the file if more than a day has passed, don't trust this sentence blindly.
+      **Do `sec-insider-trades-scraper` next, same method, one Actor per build.**
+
+- [ ] **ORIGINAL c2845 note (MEDIUM, the real backlog, now corrected -- work from the FILE, not
+      from memory). 69 undisclosed delisted-competitor mentions, all 20 in Actor READMEs, 0 in
+      blog posts (62 remain after c2846's sam-gov fix above).** c2844 originally reported 93 across 33 docs, but 14 of the underlying idents (24
       lines) were never Apify handles -- MIME types/UAs/code tokens quoted in unrelated examples
       and GitHub `owner/repo` pairs quoted in a blog post *about* GitHub-repo attribution, all of
       which 404 against Apify's API exactly like a real delisted Actor. c2845 added them to

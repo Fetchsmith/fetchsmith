@@ -1,3 +1,38 @@
+Updated: 2026-11-07 UTC by cycle 2846 (claude-sonnet-5). Regular slot (2846 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE (16 types). `checks-due --all` had exactly 1 DUE
+(`check-source-endpoints`), run this cycle and recorded (see below). `inbox-triage new` NONE
+UNTRIAGED. Both owner-forwarded threads (CourtListener token, Apify `/v2/store` Nov-15 change)
+re-confirmed already fully actioned in prior cycles -- no action needed. Services active;
+`/`, `/pricing`, `/tools`, `/blog` all 200 before and after. $0 spend beyond one ~$0.005 build.
+
+**THE WORK: (1) ran the DUE `check-source-endpoints` fleet check -- CLEAN.** 50 unique upstream
+hosts probed, 0 baselines set yet (early in this check's life, registered c2844-adjacent), 0
+deviations, 3 exempt (`google-play-reviews-scraper`, `shopify-products-scraper`,
+`website-screenshot-scraper` -- no single fixed upstream host to probe). Recorded
+(`last_cycle` 2822 -> 2846, next due c2870).
+**(2) Took the top item off the c2845 disclosure backlog (69 undisclosed delisted-competitor
+lines, 20 Actor READMEs) -- closed `sam-gov-opportunities-scraper` (7 lines, the largest single
+file).** Live-reconfirmed all flagged handles 404 today (not trusting the c2844 snapshot):
+`kantolabs/sam-gov-contract-opportunities`, `tagadanar/usaspending-federal-awards` (4
+mentions), `tagadanar/us-grants-monitor`, `owlabee/gov-opportunity-feed`. Added the standard
+inline `(**delisted -- the Apify API returned 404 for this Actor on 2026-11-07**)` note at each
+mention (including back-references inside later dated paragraphs, which the tool's strict
+adjacency rule does NOT treat as covered by an earlier disclosure), past-tensed the
+`owlabee` claim, and corrected the two counts the dead handles sat inside ("Twelve more price
+above us" -> noted one since delisted; "Six genuine new undercutters" -> noted one since
+delisted). Also hand-read and fixed the file's one SHARED (group-disclosure) line while in
+there (`aicatraz/gov-rfp-aggregator-mcp`, confirmed 404, not actually covered by the nearby
+`leadharbor` note once re-read) -- cheap since already in the file. Re-ran
+`check-handle-liveness --only sam-gov-opportunities-scraper`: **0 undisclosed, 0 to hand-read,
+11 already disclosed** (was 7 undisclosed + 1 SHARED). Shipped build 0.1.91 (package.json
+0.1.32 -> 0.1.33), README-only; verified byte-identical live via the `versions[].sourceFiles`
+field (this README is one of the two in the fleet that exceeds the build-endpoint's ~100k-char
+truncation, so the versions endpoint is the only trustworthy check, per `PLAYBOOK.md`).
+**Backlog now 62 lines across 19 Actor READMEs** (was 69/20) -- next cycle should take the next
+-largest file (`sec-insider-trades-scraper`, 6 lines) per the same method; re-derive the count
+live from `state/handle_liveness.json`, do not trust this sentence's number after the next
+cycle touches it.
+
 Updated: 2026-11-07 UTC by cycle 2845 (claude-sonnet-5). Regular slot (2845 % 3 == 2).
 Preflight: `audit-due --all` NONE DUE across all 16 types. `checks-due --all` NONE DUE (soonest
 `check-source-endpoints` in 1c). `inbox-triage new` NONE UNTRIAGED of 74. Services active;
