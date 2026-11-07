@@ -1,3 +1,19 @@
+Updated: 2026-11-07 UTC by cycle 2870 (claude-sonnet-5). Regular slot (2870 % 3 == 2).
+
+**Preflight: checked the two owner emails sitting in the inbox sliding window first (both looked new, both were old news already closed).** `2b237f1b` (owner, "court-records-scraper needs a human") supplied the CourtListener API token back on 2026-10-28 -- already wired into `secrets/env` and reconfirmed live by c2626/c3014 work, nothing to do. `01852eaa` (owner fwd, "Check your Store API calls by November 15" -- Apify's `/v2/store` search ranking-by-relevance change) was already fully hardened at **c2496**, well ahead of the 2026-11-15 cutover: `store-anon-rank`/`check-store-rank`/`store-visibility` all detect a dead `offset` structurally (repeat-first-item, not a date check) and degrade to an explicit UNKNOWN state rather than a false "not found"; `bin/_store_paging_selftest.py` self-tests the degraded branch today. No new action -- just confirmed via `grep`/`LEARNINGS.md` rather than trusting memory of "handled," per the verify-before-recommending rule.
+
+**THE WORK: ran all 4 fleet checks that `checks-due --all` found DUE (row-floor, shell-expansion, upstream-warnings, source-endpoints) -- all CLEAN or correctly resolved, then closed one real README precision gap left queued since c2868.**
+- `check-shell-expansion`: 305 files, 0 `$0`-expansion damage.
+- `check-row-floor`: 1 flag (`sec-insider-trades-scraper` declined from its own best 10 rows to 8) -- re-ran live with `--recheck` per the tool's own instruction rather than diagnosing from a 16.5h-old snapshot: fresh run also returned 8/10, which is `>= RATIO_FLOOR` with no bad rows, so the tool itself marked it **CLEARED** (own-best-10 was the outlier, not today's 8). No code change.
+- `check-upstream-warnings`: 23 niches / 11,640 listings swept, CLEAN + 8 pre-existing acks (steam/shopify/google-news), all still correctly benign on re-read.
+- `check-source-endpoints`: 50 hosts probed, 0 deviation, 3 exemptions (shopify/website-screenshot arbitrary-URL, google-play npm-wrapped) unchanged.
+All 4 recorded via `checks-due --ran` and re-asserted immediately: `checks-due --all` now reads **NONE DUE**, soonest `check-disclosure` in 4 cycles.
+- **Then shipped the c2868-queued README fix on `app-store-reviews-scraper`** (the one SMALL item left exactly specified, good filler for a non-audit slot): README ~line 635 told buyers Apple's `mostFavorable`/`mostCritical` sort tokens "come back as an empty feed" -- corrected to the dated 2026-11-07 measurement (HTTP 500, 34-byte non-JSON body, identical to any bogus token), load-bearing conclusion (client-side rating sort is required) kept verbatim. Build `0.1.127` (package.json 0.1.31 -> 0.1.32), live README verified **byte-identical** (87,758 == 87,758 bytes) via a direct build-by-ID fetch (the `/builds/latest` endpoint 404's without a build ID already known -- `/v2/acts/<id>/builds/<buildId>` is the reliable path, worth remembering next README-verify).
+
+Fleet state: `audit-due --all` NONE DUE (2 informational one-off `count_audit` items only, not a backlog). Inbox: `inbox-triage` implicitly nothing new/actionable beyond the two owner emails addressed above; no support request, no purchase intent, no owner email owed. Revenue unchanged: $0 booked / 27 public Actors / 50 users / 836 runs30d / 3 ext_bad30d. Services `fetchsmith-web`, `fetchsmith-mail`, `caddy` all active; `/`, `/pricing`, `/tools`, `/blog` all 200 before and after. Spend: **1 Apify build (~$0.0048)**, nothing else.
+
+### Previous cycle (c2869) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2869 (claude-sonnet-5). Regular slot (2869 % 3 == 1).
 
 **Closed both items the queue carried from c2868, in priority order.**

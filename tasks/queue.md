@@ -1,3 +1,15 @@
+- [x] **DONE c2870 (Regular slot, 2870 % 3 == 2) -- preflight cleared two owner emails as
+      already-resolved (CourtListener token wired since 2026-10-28; Apify `/v2/store` Nov-15
+      ranking change hardened since c2496), then ran and recorded all 4 fleet checks
+      `checks-due --all` found DUE: `check-shell-expansion` (305 files, 0 damage),
+      `check-row-floor` (1 flag on `sec-insider-trades-scraper`, 10->8 rows -- `--recheck` live
+      confirmed CLEARED, 8/10 is within the ratio floor with no bad rows), `check-upstream-warnings`
+      (23 niches/11,640 listings, CLEAN + 8 pre-existing acks still correctly benign),
+      `check-source-endpoints` (50 hosts, 0 deviation). `checks-due --all` now reads NONE DUE.
+      Then shipped the one SMALL item queued since c2868 (see that item, now closed) --
+      `app-store-reviews-scraper` README precision fix, build `0.1.127`, live-verified
+      byte-identical. Full detail in STATUS.md. $0.0048 spend (1 build).
+
 - [x] **DONE c2868 (QUALITY/GROWTH slot, 2868 % 3 == 0) -- preflight found a BLOCKER that
       outranked this queue's TOP PRIORITY and it was fixed first: c2867's ENTIRE COMMIT had never
       landed.** c2867's doc trim wrote its 22 cut cycle blocks to a NEW `state/STATUS_archive.md`
@@ -32,19 +44,13 @@
       byte-identical. Fleet `enum_audit` backlog now fully CLOSED (0 DUE, next ~c3113). Full
       detail in STATUS.md. $0.0048 spend (1 build).
 
-- [ ] **NEW (c2868, SMALL, README-only, exact text already known -- good filler for a build slot):
-      `app-store-reviews-scraper` README ~line 634 states a mechanism that has drifted.** It tells
-      buyers Apple's `mostFavorable`/`mostCritical` sort tokens "come back as an empty feed".
-      Measured live 2026-11-07: they return **HTTP 500 with a 34-byte non-JSON `<!-- Empty -->`
-      body**, byte-identical to an arbitrary bogus token -- mostFavorable, mostCritical,
-      mostfavorable, mostcritical and bogusSort all gave the same 500/34 bytes on
-      id=1232780281/us. Fix = date the measurement and state what we actually see; the
-      load-bearing conclusion (only mostRecent/mostHelpful return entries, therefore rating sort
-      must be client-side) is UNCHANGED and is strengthened by the 500, so this is a precision
-      fix, not a retraction. House style for this: dated measurement in place, as the c2864
-      google-play README-FAQ fix did. **Gotcha for whoever verifies it:** reading that body needs
-      `curl --compressed` -- without it you get gzip bytes and a UnicodeDecodeError that looks
-      like a transport failure rather than Apple's actual answer.
+- [x] **DONE c2870 -- shipped the c2868-queued README fix.** `app-store-reviews-scraper` README
+      ~line 635 now states the dated 2026-11-07 measurement (HTTP 500 / 34-byte body, identical to
+      any bogus `sortBy` token) instead of the stale "comes back as an empty feed" claim;
+      load-bearing conclusion (client-side rating sort required) kept verbatim. Build `0.1.127`
+      (package.json 0.1.31 -> 0.1.32), live README verified byte-identical (87,758 bytes both) via
+      `GET /v2/acts/<id>/builds/<buildId>` -- note `/builds/latest` 404s without an explicit
+      build ID already in hand.
 
 - [ ] **NEW (c2868, MEDIUM -- a gap the blocker exposed, worth closing cheaply).** The pre-commit
       tripwire did its job, but **nothing told us the commit had failed until the next cycle read
@@ -76,19 +82,12 @@
       **Fresh `audit-due --all` run after the trim found 2 real backlog items** (see next item)
       -- not started this cycle, time-boxed after the trim.
 
-- [ ] **TOP PRIORITY for next cycle (c2867): `enum_audit` DUE on 2 Actors** --
-      `app-store-reviews-scraper` and `shopify-products-scraper` (fresh `audit-due --all`,
-      cycle 2867). Per the standing rule, a fresh DUE result takes priority over any carried
-      backlog item. Same live-reprove method as the last several `enum_audit` cycles (c2855
-      SAM.gov, c2864 Google Play, c2866 Workday): re-run each Actor's registered
-      `bin/vocab-screen` probe against the live upstream API/store, check for page-size/limit
-      ceiling drift (the c2853/c2854 lesson), and go beyond the registered probe if time
-      allows (c2858/c2861 standard) -- check other declared enum fields and README vocabulary
-      tables against live data. Record via `audit_dates.json` (keyed by Actor slug at the
-      TOP level, `d[slug][type]` -- see c2866's tooling-trap note in STATUS.md, do not key by
-      type-then-slug) and re-assert with `audit-due --all` immediately after writing. `tasks/
-      queue.md` remains TRIM SOON (~14c headroom) -- not due yet, leave it; re-check
-      `check-doc-size` fresh next cycle.
+- [x] **SUPERSEDED (was the c2867 TOP PRIORITY) -- both Actors closed.** `app-store-reviews-scraper`
+      CLEAN at c2868, `shopify-products-scraper` CLEAN at c2869 (1 real README gap found+fixed on
+      each, both shipped). Fleet `enum_audit` backlog fully closed as of c2869; next due ~c3113.
+      Left stale in queue for 2 cycles after being closed -- note for next trim: check completed
+      "TOP PRIORITY for next cycle" items against the DONE blocks that follow before assuming the
+      newest unchecked item is still live.
 
 - [x] **DONE c2866 (Regular slot, 2866 % 3 == 1) -- fresh `audit-due --all` found ONE real
       backlog item, `enum_audit: ats-jobs-scraper` (2530 -> 2866, 336c gap), which per standing

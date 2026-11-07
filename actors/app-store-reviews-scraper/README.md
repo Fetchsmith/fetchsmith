@@ -630,11 +630,13 @@ re-route a reviews run).
 One input the others have that this Actor does not (schema verified live 2026-10-01):
 `johnvc`'s `start_page` offset. Its `sort` enum
 also offers `mostfavorable`/`mostcritical`, which this Actor matches as `favorable`/`critical` — but
-note those are **not real Apple feed orders**: probed live 2026-09-26 against
+note those are **not real Apple feed orders**: probed live against
 `itunes.apple.com/<cc>/rss/customerreviews/.../sortBy=<X>/`, only `mostRecent` and `mostHelpful`
-return entries at all, and `mostFavorable`/`mostCritical` come back as an empty feed. This Actor
-therefore scans under `mostRecent` and re-orders by star rating itself; a scraper that passes those
-values straight through to the RSS feed gets nothing back.
+return entries at all. `mostFavorable`/`mostCritical` do not come back empty — re-measured
+2026-11-07: Apple returns **HTTP 500 with a 34-byte non-JSON body**, identical to what any other
+unrecognised `sortBy` token gets. This Actor therefore scans under `mostRecent` and re-orders by
+star rating itself; a scraper that passes those values straight through to the RSS feed gets a
+server error, not quietly-empty results.
 
 **Pricing decision, verified and shipped live 2026-10-16 (cycle 1781): moved from flat $0.0001/review to
 account-plan tiering, $0.0001 (Free) → $0.00009 (Bronze) → $0.00008 (Silver) → $0.00007 (Gold and
