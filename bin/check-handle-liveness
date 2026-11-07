@@ -109,7 +109,8 @@ REPO_DIRS = {"bin", "actors", "site", "data", "state", "notes", "tasks", "logs",
              "venv", "mail", "tmp", "docs", "src", "static", "templates", "content",
              # URL-path roots: `api/appdetails`, `v2/acts`, never Apify usernames.
              "api", "v2", "www", "http", "https"}
-# Hand-added URLs that look like handles. One line each, added after a sweep proves it.
+# Hand-added tokens shaped like a handle that are not Apify Actor handles. One line each,
+# added after a sweep proves it -- same convention as COMPETITORS in check-competitor-claims.
 KNOWN_NON_HANDLES = {
     "api.github.com/rate_limit",
     "data.uspto.gov/home",
@@ -119,6 +120,27 @@ KNOWN_NON_HANDLES = {
     "device/enforcement.json",
     "drug/enforcement.json",
     "food/enforcement.json",
+    # c2845 fleet run: MIME types, UAs, and code tokens, not owner/slug handles.
+    "curl/8.5.0",
+    "image/png",
+    "application/json",
+    "text/html",
+    "python-requests/2.x",
+    "try/catch",
+    "tools/call",
+    # c2845: this specific blog post's SUBJECT is GitHub-repo attribution from HN
+    # comments, so it quotes real GitHub `owner/repo` pairs that are not Apify Actors
+    # (and never will be) -- same pair is also quoted in hacker-news-scraper's README
+    # as a worked example of the same scraper behavior.
+    "omcljs/om",
+    "reagent-project/reagent",
+    "magomimmo/modern-cljs",
+    "owner/repo",
+    # c2845: Google News RSS query-param examples (`topic/<NAME>`, `geo/<CITY>`) quoted
+    # in a blog post about the RSS endpoint's own URL shape, not an Apify handle.
+    "topic/TECHNOLOGY",
+    "topic/NOTATOPIC",
+    "geo/Chicago",
 }
 
 

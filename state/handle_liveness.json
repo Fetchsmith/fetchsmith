@@ -2,9 +2,9 @@
  "_why": "Last check-handle-liveness sweep. UNDISCLOSED is the work queue: each mention needs the standard inline delisted note + a past-tensed claim, one Actor (one build) at a time.",
  "swept": "2026-11-07",
  "partial_only": [],
- "handles": 2779,
+ "handles": 2765,
  "live": 2650,
- "delisted": 129,
+ "delisted": 115,
  "undisclosed": [
   {
    "file": "actors/app-store-reviews-scraper/README.md",
@@ -140,16 +140,6 @@
    "file": "actors/grants-gov-scraper/README.md",
    "line": 232,
    "handle": "owlabee/gov-opportunity-feed"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 123,
-   "handle": "omcljs/om"
-  },
-  {
-   "file": "actors/hacker-news-scraper/README.md",
-   "line": 123,
-   "handle": "reagent-project/reagent"
   },
   {
    "file": "actors/hacker-news-scraper/README.md",
@@ -360,116 +350,6 @@
    "file": "actors/us-federal-awards-scraper/README.md",
    "line": 245,
    "handle": "tagadanar/usaspending-federal-awards"
-  },
-  {
-   "file": "site/content/blog/apple-app-store-reviews-header-fingerprint.md",
-   "line": 41,
-   "handle": "curl/8.5.0"
-  },
-  {
-   "file": "site/content/blog/apple-app-store-reviews-header-fingerprint.md",
-   "line": 53,
-   "handle": "curl/8.5.0"
-  },
-  {
-   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
-   "line": 20,
-   "handle": "geo/Chicago"
-  },
-  {
-   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
-   "line": 20,
-   "handle": "topic/TECHNOLOGY"
-  },
-  {
-   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
-   "line": 29,
-   "handle": "geo/Chicago"
-  },
-  {
-   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
-   "line": 33,
-   "handle": "topic/NOTATOPIC"
-  },
-  {
-   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
-   "line": 42,
-   "handle": "omcljs/om"
-  },
-  {
-   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
-   "line": 42,
-   "handle": "reagent-project/reagent"
-  },
-  {
-   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
-   "line": 48,
-   "handle": "magomimmo/modern-cljs"
-  },
-  {
-   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
-   "line": 49,
-   "handle": "omcljs/om"
-  },
-  {
-   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
-   "line": 50,
-   "handle": "reagent-project/reagent"
-  },
-  {
-   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
-   "line": 61,
-   "handle": "owner/repo"
-  },
-  {
-   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
-   "line": 76,
-   "handle": "magomimmo/modern-cljs"
-  },
-  {
-   "file": "site/content/blog/recruitee-job-board-json-api.md",
-   "line": 92,
-   "handle": "image/png"
-  },
-  {
-   "file": "site/content/blog/sam-gov-key-free-federal-datasets-one-endpoint.md",
-   "line": 26,
-   "handle": "application/json"
-  },
-  {
-   "file": "site/content/blog/standby-mcp-no-actor-run-to-poll.md",
-   "line": 17,
-   "handle": "tools/call"
-  },
-  {
-   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
-   "line": 28,
-   "handle": "application/json"
-  },
-  {
-   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
-   "line": 29,
-   "handle": "text/html"
-  },
-  {
-   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
-   "line": 41,
-   "handle": "application/json"
-  },
-  {
-   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
-   "line": 41,
-   "handle": "text/html"
-  },
-  {
-   "file": "site/content/blog/tmview-trademark-search-api-no-key.md",
-   "line": 56,
-   "handle": "python-requests/2.x"
-  },
-  {
-   "file": "site/content/blog/tmview-trademark-search-api-no-key.md",
-   "line": 57,
-   "handle": "try/catch"
   }
  ],
  "shared": [

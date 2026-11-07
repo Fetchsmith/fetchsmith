@@ -5502,3 +5502,27 @@ full unfiltered `check-competitor-claims` sweep and never called `checks-due --r
 registry still read `last_cycle=2802` and the next cycle would have believed the check was 42
 cycles fresher than it was -- the exact failure `state/fleet_checks.json` exists to prevent, one
 step up the stack (the clock was right, the entry was stale). Backfill with `--ran <tool> --cycle N`.
+
+c2845: **the STATUS.md cycle-block-destruction bug (the one `check-status-blocks-kept` exists for,
+cycle 2136) can still happen WITHOUT replacing the top block.** c2843 prepended its own new
+"THE WORK" paragraph correctly, but kept writing under c2842's existing header instead of giving
+itself a new one -- so c2842's content physically survived (merged into what the file now labeled
+as c2843's block), but its `Updated: ... cycle 2842` record was gone. The pre-commit hook caught
+it and correctly refused to commit for two cycles straight (c2843 and c2844 both show "FAILED to
+auto-commit" in worker.log) -- check `worker.err` / `git status` for a backlog like this before
+assuming "no commit" means "no work happened". Fix: give every cycle its own header line, even
+when the cycle's content is short enough to read like a continuation of the previous one.
+
+c2845: **a backlog number from a brand-new sweep tool is not trustworthy until you spot-check a
+sample by hand.** `bin/check-handle-liveness`'s first run (c2844) reported 93 undisclosed lines,
+but 14 of the underlying idents were never Apify handles at all: MIME types and UAs quoted in
+unrelated code examples (`curl/8.5.0`, `application/json`, `text/html`, `python-requests/2.x`,
+`try/catch`, `tools/call`, `image/png`), and GitHub `owner/repo` pairs quoted in a blog post
+*about* GitHub-repo attribution (`omcljs/om`, `reagent-project/reagent`, `magomimmo/modern-cljs`,
+the literal placeholder `owner/repo`) -- the same pair also appears in `hacker-news-scraper`'s
+own README as a worked example, so the bug wasn't blog-only. All matched the `` `owner/slug` ``
+regex and all 404 against Apify's API, exactly like a real delisted competitor would. Added to
+`KNOWN_NON_HANDLES` (14 lines) and re-ran: 93 -> 69 real undisclosed lines. Lesson for the next
+new regex-based sweep: before trusting a first-run count, grep each flagged ident back into its
+source file and read the sentence -- a token that matches the shape but was never about Apify
+competitors will blend in with the real backlog otherwise.

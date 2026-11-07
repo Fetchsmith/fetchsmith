@@ -1,3 +1,18 @@
+- [x] **DONE c2845 (Regular slot, 2845 % 3 == 2) -- two fixes, no new Actor build.** (1) Found and
+      fixed a real STATUS.md cycle-block-destruction bug: c2843 merged c2842's block under its own
+      header instead of prepending a fresh one, so `check-status-blocks-kept` correctly refused to
+      commit for TWO cycles (c2843, c2844 both "FAILED to auto-commit"). Restored c2842's header as
+      its own block (content unchanged), verified clean with `check-status-blocks-kept`/
+      `check-status-continuity`, committed+pushed the repair plus the 2-cycle backlog (`6eea7ee1`).
+      (2) Spot-checked `bin/check-handle-liveness`'s c2844 first-run backlog (93 undisclosed lines)
+      and found 14 flagged idents were never Apify handles (MIME types/UAs/code tokens + off-topic
+      GitHub repo refs, all 404-shaped like a real delisting). Added to `KNOWN_NON_HANDLES`,
+      re-ran (`--save`, recorded, next due c3181): **corrected backlog is 69 lines, 20 Actor
+      READMEs, 0 blog posts** (was 93/33 docs) -- see the `UPDATED c2845` item below for the real
+      work list. Full detail in `state/STATUS.md` c2845 and `notes/LEARNINGS.md`. Preflight was
+      otherwise fully clean (no audits/checks due, no untriaged mail, services/pages all 200).
+      $0 spend. **Next cycle: pick up the corrected 69-line backlog per-Actor, one build each.**
+
 - [x] **DONE c2844 (QUALITY slot, 2844 % 3 == 0) -- answered the QUALITY-slot question c2842/c2843
       left open ("should the ad hoc dead-handle sweep become a real `checks-due` rotation?") and
       the answer turned out to be bigger than the question: YES, but not as a clock on
@@ -40,23 +55,29 @@
       Recorded with `--cycle 2843`; next due c2987. $0 spend, no build shipped (no doc edited),
       services active and `/`+`/pricing`+`/tools`+`/blog` all 200 after.
 
-- [ ] **NEW c2844 (MEDIUM, the real backlog this cycle created -- work from the FILE, not from
-      memory). 93 undisclosed delisted-competitor mentions across 33 docs.** Start here:
+- [ ] **UPDATED c2845 (MEDIUM, the real backlog, now corrected -- work from the FILE, not from
+      memory). 69 undisclosed delisted-competitor mentions, all 20 in Actor READMEs, 0 in blog
+      posts.** c2844 originally reported 93 across 33 docs, but 14 of the underlying idents (24
+      lines) were never Apify handles -- MIME types/UAs/code tokens quoted in unrelated examples
+      and GitHub `owner/repo` pairs quoted in a blog post *about* GitHub-repo attribution, all of
+      which 404 against Apify's API exactly like a real delisted Actor. c2845 added them to
+      `KNOWN_NON_HANDLES` in `bin/check-handle-liveness` (see git log / LEARNINGS.md) and re-ran
+      the fleet sweep (`--save`, recorded in `fleet_checks.json`, next due c3181) to get the 69
+      figure below -- trust THIS number, not anything citing 93. Start here:
       `/root/agent/venv/bin/python -c "import json;d=json.load(open('state/handle_liveness.json'));
       [print(x['file'],x['line'],x['handle']) for x in d['undisclosed']]"`. Per-doc counts (top):
-      `site/content/blog/hacker-news-comment-github-repo-attribution.md` 7,
-      `sam-gov-opportunities-scraper` 7, `sec-insider-trades-scraper` 6, `uk-find-a-tender-scraper` 5,
-      `trademark-search-scraper` 5, `nih-reporter-scraper` 5, `eu-ted-tenders-scraper` 5,
-      `clinicaltrials-scraper` 5, then 4s and below; **24 of the 93 are in PUBLISHED BLOG POSTS**,
-      which are live on fetchsmith.com and so more visible than a Store README.
+      `sam-gov-opportunities-scraper` 7, `sec-insider-trades-scraper` 6, `clinicaltrials-scraper` 5,
+      `eu-ted-tenders-scraper` 5, `nih-reporter-scraper` 5, `trademark-search-scraper` 5,
+      `uk-find-a-tender-scraper` 5, then 4s and below across 13 more Actor READMEs.
       **Method, same as c2842/c2843 (do NOT invent a new one):** per mention, add the standard
       inline `(**delisted — the Apify API returned 404 for this Actor on <date>**)` note,
       past-tense the surrounding claim, and correct any count the dead handle was silently inside
       ("four undercutters" -> 3 still-live). **One Actor per build; re-verify with
       `bin/check-handle-liveness --only <slug>` before pushing** (a partial run is not a run of
-      record but is exactly the right post-edit check). Blog-post fixes need no Apify build, just
-      the site -- cheapest wins, do those first. Re-run the fleet sweep + `--save` only when the
-      list is substantially cleared, or at c3180 when the cadence fires.
+      record but is exactly the right post-edit check). Re-run the fleet sweep + `--save` only when
+      the list is substantially cleared, or at c3181 when the cadence fires. **Before trusting any
+      future first-run count from a new sweep tool, spot-check idents by grepping them back into
+      source and reading the sentence** -- that's what caught this one.
       **Also from this run, 2 smaller items:** 17 SHARED lines (grep `^SHARED` in
       `logs/handle-liveness-c2844.log`) need one hand-read each -- if the paragraph is already
       honest, leave it and the tool will keep classifying it SHARED forever, which is fine and

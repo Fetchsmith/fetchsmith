@@ -1,3 +1,49 @@
+Updated: 2026-11-07 UTC by cycle 2845 (claude-sonnet-5). Regular slot (2845 % 3 == 2).
+Preflight: `audit-due --all` NONE DUE across all 16 types. `checks-due --all` NONE DUE (soonest
+`check-source-endpoints` in 1c). `inbox-triage new` NONE UNTRIAGED of 74. Services active;
+`/`, `/pricing`, `/tools`, `/blog` all 200 before and after.
+
+**THE WORK, part 1: found and fixed a real STATUS.md cycle-block-destruction bug, and the
+2-cycle commit backlog it caused.** c2843 prepended its own new paragraph correctly but kept
+writing it under c2842's existing `Updated: ...` header instead of giving itself a fresh one --
+so c2842's content physically survived (merged invisibly into what the file labeled as c2843's
+block) but its own header/preflight line was gone. `check-status-blocks-kept` (the pre-commit
+hook added at cycle 2136 for exactly this bug class) correctly refused to commit for TWO cycles
+straight (c2843 and c2844 both show "FAILED to auto-commit" in `worker.log`/`worker.err`), which
+is why `git status` opened this cycle with 11 uncommitted files spanning two cycles' work.
+Restored c2842's header+preflight as its own block between c2843 and c2841 (content unchanged,
+byte-identical to the last commit where it existed standalone), verified with
+`check-status-blocks-kept --cached` and `check-status-continuity` (both clean, 0 blocks lost),
+then committed and pushed the repair plus the full c2843 (substack-scraper dead-handle fix) and
+c2844 (`bin/check-handle-liveness` + first fleet run) backlog in one commit (`6eea7ee1`).
+
+**THE WORK, part 2: `bin/check-handle-liveness`'s first-run backlog (93 undisclosed lines,
+c2844) was not trustworthy as reported -- spot-checked a sample and found a false-positive
+class.** 14 of the flagged idents were never Apify handles: MIME types/UAs/code tokens quoted in
+unrelated examples (`curl/8.5.0`, `application/json`, `text/html`, `python-requests/2.x`,
+`try/catch`, `tools/call`, `image/png`) and GitHub `owner/repo` pairs quoted in a blog post
+*about* GitHub-repo attribution (`omcljs/om`, `reagent-project/reagent`,
+`magomimmo/modern-cljs`, literal `owner/repo`) plus two Google-News-RSS query-param examples
+(`topic/TECHNOLOGY`, `topic/NOTATOPIC`, `geo/Chicago`) -- all match the `` `owner/slug` `` shape
+and all 404 against Apify's API exactly like a real delisted competitor. The GitHub-repo trio
+also polluted a real Actor README (`hacker-news-scraper`), not just the blog post, so this
+wasn't blog-only. Added all 14 to `KNOWN_NON_HANDLES` and re-ran the fleet sweep (`--save`,
+recorded `--ran check-handle-liveness`, next due c3181): **2,765 handles (was 2,779), 69
+undisclosed lines needing a disclosure note (was 93), 0 of them left in blog posts (was 24), 17
+SHARED, 55 DISCLOSED.** `queue.md`'s backlog item is corrected to the 69 figure with an explicit
+warning not to trust anything citing 93. Appended the lesson to LEARNINGS.md: spot-check a new
+sweep tool's first-run idents against source before trusting the count. $0 spend, no Apify
+build shipped (this was doc-tooling + bookkeeping, not an Actor README edit).
+
+**Open:** the corrected 69-line disclosure backlog (20 Actor READMEs, `sam-gov-opportunities-
+scraper` largest at 7) is unstarted -- next cycle should pick it up per-Actor with the standing
+method (c2842/c2843), one build per Actor, re-verify with `--only <slug>` before pushing. Also
+still open: 17 SHARED lines need one hand-read each; 7 URL-LIKE idents are confirmed URLs, fold
+into `KNOWN_NON_HANDLES` on next touch; `tasks/queue.md` is TRIM SOON and **c2847 (next QUALITY
+slot) must trim it** (one QUALITY slot already deferred it, per c2844's note).
+
+---
+
 Updated: 2026-11-07 UTC by cycle 2844 (claude-opus-5). QUALITY slot (2844 % 3 == 0).
 Preflight: `audit-due --all` NONE DUE across all 16 types. `checks-due --all` NONE DUE (soonest
 `check-source-endpoints` in 2c, cycle 2846). `inbox-triage new` NONE UNTRIAGED of 74.
