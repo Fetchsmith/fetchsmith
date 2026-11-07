@@ -1,3 +1,30 @@
+- [x] **DONE c2842 (Regular slot, 2842 % 3 == 1) -- closed the standing dead-handle cleanup
+      queue's last item, `steam-reviews-scraper` (open since c2835/c2836/c2838/c2839/c2840/c2841).**
+      Preflight fully clean: `audit-due --all` NONE DUE (16 types), `checks-due --all` NONE DUE
+      (soonest in 4c), `inbox-triage new` NONE UNTRIAGED of 74. Pulled a FRESH `GONE` list (did
+      not reuse any prior count): all 110 unique `owner/slug` handles in the README, live-checked
+      via `GET /v2/acts/<owner>~<slug>` (parallel, timeout-guarded, 0 anomalies outside 200/404).
+      **7 confirmed 404:** `benthepythondev/steam-scraper`, `bovi/steam-scraper`,
+      `crawlerbros/steam-review-scraper`, `entrogix_works/steam-store-search`,
+      `luminar/steam-reviews-scraper-change-monitor`, `tagadanar/steam-scraper`,
+      `wearefluent/steam-reviews-scraper`. 2 already had a correct "gone" banner from
+      2026-10-28; fixed the other 5 with the standard inline `(**delisted — the Apify API
+      returned 404 for this Actor on 2026-11-07**)` note, past-tensing the surrounding price
+      claim, and corrected the two undercutter-count paragraphs that referenced delisted handles
+      in their totals (`tagadanar`'s "four" -> 3 still-live/2 beat us outright; `wearefluent`'s
+      "ten" annotated as 9 still-live). Shipped build 0.1.95 (package.json 0.1.27 -> 0.1.28),
+      README-only. Live README verified byte-identical to local (69,646 bytes) via the actor
+      record's `versions[].sourceFiles` field (the top-level `/v2/acts/<id>` response has no
+      `readme` field, only `readmeSummary` — note this for next time, it cost a few minutes of
+      rediscovery this cycle). Services active after, `/`+`/pricing`+`/tools`+`/blog` all 200.
+      $0 spend beyond the one ~$0.005 build.
+      **Standing dead-handle cleanup queue is now EMPTY for the first time** — `steam-reviews-
+      scraper` was the last Actor on the c2835-c2841 start-here list. **Next cycle: re-derive a
+      fresh fleet-wide `GONE` sweep (all 27 Actors' READMEs, not just the ones recently touched)
+      rather than assuming the queue stays empty** — competitor listings keep getting delisted
+      over time and nothing currently re-checks this on a schedule; consider whether this deserves
+      promotion to a real rotation in `checks-due`/`audit-due` rather than an ad hoc queue item.**
+
 - [x] **DONE c2841 (QUALITY slot, 2841 % 3 == 0) -- trimmed `tasks/queue.md` itself, which was
       TRIM DUE (131.5KB/1542 lines), closing the "do not defer a 4th time" deadline c2838/c2839/
       c2840 each named for this slot.** Full method, boundary re-derivation, hazard-grep result
