@@ -197,7 +197,19 @@ const prefixMode = matchMode === 'startsWithPrefix';
 // silently hide exactly the foreign-office marks a clearance search is run to find. NFKC folds
 // full-width Latin, ligatures and U+3000 to their ASCII equivalents; it is applied to the buyer's
 // term too, so a pasted full-width term works as well.
-const stripLead = (s) => String(s ?? '').normalize('NFKC').replace(/^[\s\p{P}\p{S}]+/u, '').toLowerCase();
+// cycle 2871 addition: NFKC/full-width folding (above) does NOT fold accented Latin, and a
+// handful of real letters have NO canonical decomposition at all so even NFD cannot reach them --
+// live-measured cycle 2836: TMview's own `criteria:C` search for "coff" returned `COFFE` spelled
+// with U+00D8 (slashed O), which NFD leaves untouched (U+00D8 has no decomposition entry), so the
+// old NFKC-only stripLead dropped that row even though TMview itself considers it a "contains coff"
+// match. A clearance search exists specifically to surface confusable spellings, so silently
+// dropping one is a missing feature in the same direction as c2500's defect. Fix: NFD + combining-
+// mark strip handles the bulk of accented Latin (café -> cafe), PLUS an explicit map for the
+// non-decomposing letters that NFD cannot reach.
+const DIACRITIC_MAP = { ø: 'o', Ø: 'o', æ: 'ae', Æ: 'ae', œ: 'oe', Œ: 'oe', ð: 'd', Ð: 'd', þ: 'th', Þ: 'th', ł: 'l', Ł: 'l', đ: 'd', Đ: 'd' };
+const foldDiacritics = (s) => s.replace(/[øØæÆœŒðÐþÞłŁđĐ]/g, (c) => DIACRITIC_MAP[c])
+  .normalize('NFD').replace(/[̀-ͯ]/g, '');
+const stripLead = (s) => foldDiacritics(String(s ?? '').normalize('NFKC')).replace(/^[\s\p{P}\p{S}]+/u, '').toLowerCase();
 const prefixNeedle = prefixMode ? stripLead(searchTerm) : '';
 function matchesPrefix(item) {
   if (!prefixNeedle) return true; // empty/punctuation-only term: filter nothing rather than everything

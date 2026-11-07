@@ -1,3 +1,41 @@
+- [x] **DONE c2871 (QUALITY/GROWTH slot, 2871 % 3 == 0) -- closed the fleet's last real audit
+      backlog item, then shipped the c2836 `trademark-search-scraper` diacritic-matching gap.**
+      `audit-due --all` found exactly one real fleet-rotation item DUE, `unreachable_remedy:
+      court-records-scraper` (2535 -> 2871, 336c/7d gap): re-verified the 5-point zero-row
+      warning (main.js ~1287-1299) with 3 fresh live probes against CourtListener v4, each using
+      different inputs than both c1313 and c2535 (unrecognised court id on `type=o` this time
+      instead of `type=r`; a brand-new real docket 1:26-cv-09769 for the prefix-lever and
+      index-separation claims; `party_name=Google` instead of Tesla/Netflix for the RECAP-only
+      claim) -- all 5 points still hold exactly, no drift, no code/README change. Recorded via
+      `bin/_rec2871.py`, re-asserted immediately: `audit-due --all` now reads **FLEET ROTATIONS:
+      NONE DUE** fleet-wide. `checks-due --all` also NONE DUE (soonest `check-disclosure` in 3c).
+      **Then, since this is a QUALITY/GROWTH slot and the fleet backlog was empty, closed the one
+      well-specified MEDIUM item in queue.md (c2836 below, now marked DONE): `startsWithPrefix`'s
+      `stripLead()` was NFKC-only, which does NOT fold accented Latin and cannot reach letters
+      with no canonical decomposition at all (e.g. `Ø`).** Added an explicit map for the 7
+      non-decomposing letter pairs named in the c2836 note (`Ø/ø, Æ/æ, Œ/œ, Ð/ð, Þ/þ, Ł/ł, Đ/đ`)
+      plus an NFD + combining-mark strip for ordinary accents (`café` -> `cafe`), applied to both
+      the buyer's term and the mark name (both already shared one `stripLead()`). **Re-measured
+      the real impact live before shipping, per the note's own instruction:** a fresh GB-office
+      `criteria:C` "coff" page-1 pull (replicated main.js's exact `fetchPage` request shape via
+      `got-scraping` + a primed cookie jar) went from 32/50 prefix hits to 33/50 -- the ONE new
+      row is `CØFFE`, exactly the confusable spelling the original c2836 finding named. Shipped
+      build `0.1.100` (package.json 0.1.31 -> 0.1.32), `check-charges`/`check-registry-fields`/
+      `check-code-fields` all clean (no output-field change, pure matching-logic fix). **Live
+      platform smoke test** (`apify call`, `{searchTerm:"coff", matchMode:"startsWithPrefix",
+      offices:["GB"], maxResults:50}`): log itself now says "page 1 held 33 of 50 beginning with
+      'coff'", and the delivered dataset contains `CØFFE` as row 1, confirming the fix is live
+      and the row is correctly charged (not silently dropped). README (89,147 bytes) and
+      `.actor/input_schema.json` (7,444 bytes) both verified byte-identical live via
+      `GET /v2/acts/<id>/versions`. Services + site all 200 before/after. Inbox: `inbox-triage
+      new` confirms 0 untriaged of 75 (two new-looking subjects in the sliding window --
+      "Monthly rentals" reply and a "Regarding your Fetchsmith.com" message from a free gmail
+      address -- were already on record from a prior cycle's triage, not fresh). Revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d, no traffic signal for Polar). $0.0048 spend
+      (1 build). **Left in queue: the other c2836 item (`tmTypes` alias + vocab-screen probe,
+      MEDIUM, needs a cookie-primed probe helper) and the `tmTypes` doc nuances (LOW) are still
+      open, not touched this cycle -- see their own entries below, unchanged.**
+
 - [x] **DONE c2870 (Regular slot, 2870 % 3 == 2) -- preflight cleared two owner emails as
       already-resolved (CourtListener token wired since 2026-10-28; Apify `/v2/store` Nov-15
       ranking change hardened since c2496), then ran and recorded all 4 fleet checks
@@ -340,7 +378,10 @@
       `KNOWN_NON_HANDLES` in `bin/check-handle-liveness` on the next touch so the bucket stays
       empty and a real domain-named delisting stands out.
 
-- [ ] **NEW follow-up (c2836, MEDIUM -- real buyer-facing gap in the one mode built for
+- [x] **DONE c2871 -- see that cycle's own block above for the full shipped fix (build 0.1.100).**
+      Original c2836 finding, kept verbatim below for the measurement/reasoning trail:
+
+- [x] (closed, kept for the record) NEW follow-up (c2836, MEDIUM -- real buyer-facing gap in the one mode built for
       clearance, found by the enum_audit, NOT a drift and NOT urgent).** `startsWithPrefix`
       is STRICTER than TMview's own matching in the harmful direction: TMview's `criteria=C`
       search for "coff" returned a mark spelled `COFFE` with a slashed O (U+00D8), i.e.
