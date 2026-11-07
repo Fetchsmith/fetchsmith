@@ -155,13 +155,22 @@ if (input.candidateName === undefined && searchMode === 'candidates'
 }
 
 // `committee_id` is a fast, indexed filter on Schedules B and E but reliably 504s on Schedule A
-// (confirmed live in cycle 410 on both a large and a small committee), so it is accepted only
-// where it actually works rather than silently producing a failed run.
+// when SORTED by -contribution_receipt_date (the order this Actor always requests) for the
+// largest pass-through committees -- re-measured live cycle 2873, NOT the blanket "Schedule A
+// times out on committee_id" the cycle-410 comment claimed: an unsorted/default-order probe on
+// even the single biggest filer on record (ActBlue, C00401224, 100M+ matches in-period) answers
+// in well under 1s, and the SORTED request also succeeds fast (1-2.4s) on an ordinary large
+// committee (C00744946: 177,985 rows; C00019331: 36,604 rows) -- it is only the sorted request
+// against a mega pass-through committee (ActBlue-scale) that still 504s (confirmed, 15.9s to
+// timeout). There is no cheap way to tell "ordinary large" from "ActBlue-scale" before issuing
+// the real sorted request without an extra probe call on every contributions-mode run, so this
+// stays Schedules B/E only until that's built -- see queue.md follow-up. `candidates` has no
+// committee_id concept.
 const committeeId = committeeIdInput && (searchMode === 'disbursements' || searchMode === 'independentExpenditures')
   ? committeeIdInput
   : '';
 if (committeeIdInput && !committeeId) {
-  log.warning(`Ignoring committeeId "${committeeIdInput}": it is only supported in searchMode "disbursements" and "independentExpenditures" (the FEC's Schedule A endpoint times out on this filter).`);
+  log.warning(`Ignoring committeeId "${committeeIdInput}": it is only supported in searchMode "disbursements" and "independentExpenditures" (the FEC's Schedule A endpoint can time out on this filter, sorted by date, for the largest pass-through committees).`);
 }
 for (const [field, value, modes] of [
   ['recipientName', recipientName, ['disbursements']],

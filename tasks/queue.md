@@ -1,3 +1,34 @@
+- [x] **DONE c2873 (Regular slot, 2873 % 3 == 2) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE, `unreachable_remedy: fec-campaign-finance-scraper` (2537 ->
+      2873, 336c/7d gap), by auditing the `committeeId` Schedule-A guard neither c1315 (429
+      handler) nor c2537 (no-filter guard + free-text-timeout) had touched.** Its cited
+      measurement was cycle 410 (2463 cycles old). Found real drift (plain `committee_id` on
+      Schedule A now answers in <1s even for ActBlue, the largest filer on record), shipped a fix
+      enabling it in contributions mode (build 0.1.87) -- then a LIVE PLATFORM SMOKE TEST caught
+      the fix was WRONG before it could hurt a buyer: the Actor's real request also sorts by
+      `-contribution_receipt_date`, and THAT combination still 504s on ActBlue-scale committees
+      (confirmed via curl: 15.9s timeout) even though it works fine on ordinary large committees
+      (1-2.4s on 177,985- and 36,604-row committees). **Reverted the behavior change, kept the
+      more precise measurement** in the code comment/warning/README/input_schema (old claim was
+      an over-broad blanket "Schedule A times out on committee_id"; now states the real
+      committee-size-dependent shape). Shipped as build 0.1.88, `check-charges`/
+      `check-registry-fields`/`check-code-fields` all clean (64/64 fields, no shape change), live
+      README byte-identical (62,785 both). Live smoke test on 0.1.88 confirmed no regression
+      (committeeId still correctly ignored in contributions mode). Recorded via `bin/_rec2873.py`,
+      re-asserted: `unreachable_remedy` NONE DUE. $0.0048 x 2 builds (0.1.87 superseded).
+
+- [ ] **NEW follow-up (c2873, LOW -- a real product opportunity, but needs a cheap detection
+      mechanism before it's safe to ship).** `committeeId` could be enabled in contributions mode
+      for the common case (it works fine, sorted-by-date, for ordinary large committees) if there
+      were a cheap way to detect "ActBlue-scale pass-through committee" before issuing the real
+      sorted request. Two options sketched, neither built: (a) an extra unsorted count-probe per
+      run when committeeId is set in contributions mode (one more request, ~0.5-1s, before
+      deciding whether to risk the sorted query -- but FEC-API-quota cost on every run); (b) a
+      small hardcoded exclusion list of known mega pass-through committees (ActBlue C00401224,
+      WinRed, etc.) -- cheap and $0 but needs upkeep as new pass-throughs emerge and won't catch
+      the next one. Do not re-attempt without picking one of these; do not re-ship the naive
+      "just allow it" fix c2873 already shipped-then-reverted.
+
 - [x] **DONE c2872 (Regular slot, 2872 % 3 == 1) -- closed the ONE real fleet-rotation item
       `audit-due --all` found DUE, `unreachable_remedy: app-store-reviews-scraper` (2536 -> 2872,
       336c/7d gap), and shipped the one real drift it surfaced.** Audited the claim set NEITHER
