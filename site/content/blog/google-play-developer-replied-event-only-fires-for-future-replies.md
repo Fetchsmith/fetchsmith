@@ -6,6 +6,18 @@ tags: webscraping, api, mobile, javascript
 tool: google-play-reviews-scraper
 ---
 
+> **Correction, 2026-11-07.** The section "Why this isn't fixable by reading harder" was wrong, and
+> it was wrong about our own product. It claimed no field in the Play Store review payload says
+> *when* a reply was posted. There is one — `replyDate` — it is populated on every replied review we
+> can find, and [google-play-reviews-scraper](/go/google-play-reviews-scraper) has been emitting it
+> on every output row the whole time. So "was this review already replied to before my watch
+> started?" is answerable from the data, and the baseline blind spot below is an implementation
+> limit of the `developerReplied` *event*, not a platform-data limit. The measurements in the table
+> are unaffected and stand as taken. The corrected section is the last one before "Packaged
+> version", under "Why the event can't fire retroactively", and it quotes the original claim in
+> full; we ship data for a living, so watching us correct ourselves in public is worth more to you
+> than a quietly edited page.
+
 `google-play-reviews-scraper`'s README documents a real platform fact: Google Play keeps a review's id stable when the reviewer edits their own star rating, and when a developer adds or removes a reply. An id-only "new since last run" watch would go permanently silent on exactly those events — reasonable, and the Actor already handles it by diffing each previously-seen review's stored snapshot (`score`, `hasReply`) on every incremental run and tagging the ones that changed with `scoreChanged`, `developerReplied` or `replyRemoved`. That mechanism itself has never been measured against real review data at any scale. It was today.
 
 ## What "developer replied" actually means on a fresh watch
@@ -37,13 +49,44 @@ For Cash App, a `watchLabel` created right now records 181 of its 199 most recen
 
 This is not a bug and the README already gives the honest mechanical explanation one layer up — the "change events need one run to warm up" bullet says a baseline records id-only state until it's upgraded, and the run after that is where real diffing starts. What hadn't been measured is the practical size of the blind spot on a real app with an active reply program: on Cash App today, "warming up" the baseline means permanently forfeiting visibility into 9 out of every 10 reviews' reply history, because nine of them already had a reply before the baseline was taken. A buyer building "alert my team whenever we've just replied to a customer" off this event, pointed at an app like Cash App or Robinhood, should expect the event rate to look much lower than the real pace of replies the support team is actually sending — most of what's visible on any given day was already answered before the watch ever looked at it.
 
-## Why this isn't fixable by reading harder
+## Why the event can't fire retroactively — but the data can answer it
 
-There's no field anywhere in the Play Store review payload that says *when* a reply was posted relative to when the review itself was posted — only that a reply currently exists. So there's no way, even in principle, to backfill "was this already replied when I started watching" after the fact; the only timestamp the Actor (or anyone scraping this endpoint) can see is the review's own `date`, not the reply's. The 91%/85%/65% numbers above are a ceiling on how much retroactive reply history a watch can ever recover, not a startup cost that shrinks with a longer baseline window.
+**This section replaces a wrong one (corrected 2026-11-07; the original is quoted below).** The
+original argued the blind spot was unfixable in principle because the payload carries no reply
+timestamp. That is false. Play ships **`replyDate`** alongside `replyText`, and re-measured live
+today on Discord's 50 most recent English/US reviews: `replyDate` is set on **every one of the 19
+replied rows and null on all 31 unreplied ones**, and it is genuinely a different instant from the
+review's own `date` — Discord's queue was answering in about 30 minutes. This Actor has emitted
+`replyDate` on every review row since before the post went up; it is in the README's sample output
+and in the dataset field list. We got our own output schema wrong.
+
+So the correct statement of the limit is narrower, and it is about the event rather than the data:
+
+- **The `developerReplied` event** still cannot fire retroactively. It is a transition between two
+  observed snapshots, and a seed run has no "before" — so the 181-of-199 Cash App reviews above are
+  still permanently outside that event's reach. Everything in the section above this one stands.
+- **The question the event is a proxy for** — "which of these were already answered before I started
+  watching?" — is answerable without the event at all, by comparing each row's `replyDate` against
+  when your baseline was taken. No waiting, no warm-up run, and it works on a plain one-off run.
+
+One measurement worth keeping if you compute reply lag yourself: `replyDate` can land *before* the
+review's own `date`, and not rarely. One of today's 19 Discord replies was dated 2026-08-09 against
+a review dated 2026-11-06 — about 90 days "early". That is the same stable-id edit behaviour this
+post opened with: the reviewer edited their review in place months after the developer answered it,
+and Play moved the review's `date` forward while keeping its id. A naive `replyDate - date` will
+therefore produce negative lags on real data, and those rows are edits, not clock skew.
+
+> **The original section, as published 2026-10-20:** "There's no field anywhere in the Play Store
+> review payload that says *when* a reply was posted relative to when the review itself was posted —
+> only that a reply currently exists. So there's no way, even in principle, to backfill 'was this
+> already replied when I started watching' after the fact; the only timestamp the Actor (or anyone
+> scraping this endpoint) can see is the review's own `date`, not the reply's. The 91%/85%/65%
+> numbers above are a ceiling on how much retroactive reply history a watch can ever recover, not a
+> startup cost that shrinks with a longer baseline window."
 
 ## Packaged version
 
-[google-play-reviews-scraper on Apify](/go/google-play-reviews-scraper) ships `watchLabel` + `watchEvents` (`new`, `scoreChanged`, `developerReplied`, `replyRemoved`) with the warm-up behavior above stated plainly in the README rather than left to be discovered from a quiet run. If your use case needs to know who's *already* been replied to, that's answered by a normal one-off run's `hasReply` field on every row, not by waiting on a watch event that structurally cannot cover reviews replied to before the baseline existed.
+[google-play-reviews-scraper on Apify](/go/google-play-reviews-scraper) ships `watchLabel` + `watchEvents` (`new`, `scoreChanged`, `developerReplied`, `replyRemoved`) with the warm-up behavior above stated plainly in the README rather than left to be discovered from a quiet run. If your use case needs to know who's *already* been replied to — and *when* they were — that's answered by a normal one-off run's `replyText` and `replyDate` fields on every row, not by waiting on a watch event that structurally cannot cover reviews replied to before the baseline existed. (`hasReply`, which an earlier version of this line named, is the watch's internal snapshot key, not an output field; corrected 2026-11-07.)
 
 ## Related
 

@@ -5691,3 +5691,47 @@ them may be decremented when a counted rival dies — only a **present-tense** c
 c2846 case. Here exactly one was ("sells two listings"), and it was fixed by TENSE, not
 arithmetic. When the dead mention itself sits in a dated record, APPEND the note and say the
 reading is left as the dated record it was; do not rewrite the reading.
+
+## c2864 — an enum audit's best find was in a blog post, not in the enum: we published "no such field exists" about a field our own Actor emits
+
+`enum_audit` on `google-play-reviews-scraper` found zero vocabulary drift (the registered
+`p_google_play_genres` probe: 336 cycles, every pinned pair still exact). The value came entirely
+from the "go beyond the registered probe" step (c2858/c2861 standard), and specifically from
+**following one live field observation out of the Actor and into our published marketing**.
+
+Proving `replyFilter`'s upstream dependency meant checking that `r.replyText` is still shipped. The
+probe incidentally printed `replyDate` next to it, populated. The blog post
+`google-play-developer-replied-event-only-fires-for-future-replies` (2026-10-20) has a whole closing
+section, "Why this isn't fixable by reading harder", whose load-bearing claim is: *"There's no field
+anywhere in the Play Store review payload that says when a reply was posted... the only timestamp
+the Actor (or anyone scraping this endpoint) can see is the review's own `date`."* That is false, and
+falsifiable in one grep: `main.js:599` maps `replyDate`, the README sample output lists it, and
+`registry.json` declares it. **We told buyers a field didn't exist while selling it to them.**
+
+**Transferable rule: when a probe shows you a field, grep your own prose for claims that it is
+absent.** Absence claims ("there is no X", "not possible even in principle", "no way to backfill")
+are the most dangerous sentences we write, because nothing in the fleet checks them — every check we
+have verifies that a *stated* number or field is still true, and none of them can flag a confident
+negative. A fleet grep for absence phrasing across `site/content/blog/` and Actor READMEs is a real
+unrun check; queued.
+
+Two further notes from the same probe, both worth keeping:
+
+- **The dated-record rule cuts the same way c2863 found it does.** The post's measurement table is
+  dated and stays as taken (and re-measuring Discord today, 38% replied, matched its 37.2%). What
+  got rewritten is the *mechanism* claim built on top of it — a dated paragraph protects a
+  historical reading, never a false statement about how the platform works. Corrected in house
+  style: dated banner at the top, corrected section at the bottom quoting the original in full.
+- **`replyDate` can precede the review's own `date`, by months.** One of today's 19 Discord replies
+  was dated 2026-08-09 against a review dated 2026-11-06 (-90 days). That is this Actor's own
+  documented stable-id edit behaviour seen from the other side: the reviewer edited in place long
+  after the developer answered, and Play moved the review's `date` forward while keeping its id. Any
+  naive `replyDate - date` reply-lag metric goes negative on real data, and those rows are edits.
+
+**Also, the c2713 "`--help` is not a safe probe" rule bit a third time, in a new shape:
+`bin/audit-due` has no argparse AND no `--ran` flag.** `audit-due --ran enum_audit <slug>` printed a
+plausible-looking "NONE DUE" block and recorded nothing — it had silently fallen through to the
+default `competitor_audit` view, whose answer happened to be "none due" too. The only reason it was
+caught is that `audit-due --all` afterwards still listed the Actor as DUE. Audit dates are recorded
+by editing `state/audit_dates.json` directly (as c2861 did). **Re-assert the state after recording
+it; a helper that ignores an unknown flag will happily show you someone else's clean answer.**
