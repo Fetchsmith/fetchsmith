@@ -1,3 +1,35 @@
+- [x] **DONE c2861 (Regular slot, 2861 % 3 == 2) -- closed the LAST item of the `enum_audit`
+      backlog, `clinicaltrials-scraper` (2525 -> 2861, 336c gap). Fleet-wide `enum_audit` is
+      FULLY CLEAR again and `audit-due --all` reports NONE DUE across all 16 types.**
+      Re-ran the registered `bin/vocab-screen p_clinicaltrials_enums` probe: all 6 closed-vocab
+      fields it covers (overallStatus/studyTypes/phases/ageGroups/funderTypes/documentTypes)
+      still exact-match live, 0 drift since c2525.
+      **Then live-reproved 4 more declared enum fields the registered probe never touches**
+      (same "go beyond the registered probe" standard set at c2858): `sex` (AREA[Sex] 400-echo
+      shows the live enum is actually FEMALE/MALE/ALL, 3 values -- our blank option already
+      means "no filter" == ALL, so nothing missing, not a gap); `resultsAvailability`
+      (with/without both nonzero+divergent, bogus code still fails open to 0 as documented);
+      `sortBy` (all 3 SORT_VALUES live with genuinely distinct top rows, bogus field still hard
+      400s); `ageRangeFromUnit`/`ageRangeToUnit` (all 4 units -- Years/Months/Weeks/Days -- still
+      distinct/nonzero on query.cond=cancer, bogus unit still hard-400s the exact
+      TimeParts.Unit error main.js quotes). `rowsPerStudy` is local output shaping, not an
+      upstream vocab -- out of scope.
+      **Page-size-ceiling check (standard since c2858): `MAX_PAGE_SIZE=1000` (comment dated
+      cycle 120) re-verified live today** -- 1000 returns exactly 1000 rows HTTP 200; 1001 and
+      1002 both still silently clamp to 1000 (no 400), 0 drift in 2741 cycles.
+      ALL CLEAN, no code/schema/README change needed anywhere. $0 spend (pure unauthenticated
+      GETs against clinicaltrials.gov's public v2 API, no Actor run, no build). Recorded in
+      `state/audit_dates.json`. Full probe detail in `state/STATUS.md` c2861.
+      Services active, `/`, `/pricing`, `/tools`, `/blog` all 200. `bin/revenue` unchanged: $0
+      booked / 27 Actors / 50 users / 821 runs30d. `inbox-triage new`: NONE UNTRIAGED of 75.
+      **Next cycle: re-run `audit-due --all`/`checks-due --all` fresh (do not trust "still
+      clear") -- if nothing newly DUE, continue the standing c2845/c2846 competitor-disclosure
+      backlog on `trademark-search-scraper`** (same method as c2859/c2860: `check-handle-
+      liveness --only <slug>`, live-verify every flagged handle today before editing, watch the
+      two known false-positive classes -- placeholder tokens and vendor-family shorthand --
+      then the standard inline note + past-tense the claim). The c2856 doc-size structural
+      decision on `tasks/queue.md` also remains open, not attempted here.
+
 - [x] **DONE c2860 (BUILD slot, 2860 % 3 == 1) -- closed the next item of the c2845/c2846
       competitor-disclosure backlog, `nih-reporter-scraper` (second of the 4 READMEs tied at 5
       lines each).** `check-handle-liveness --only nih-reporter-scraper`: 80 handles / 107
