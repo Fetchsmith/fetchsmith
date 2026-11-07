@@ -102,7 +102,8 @@ NOT_APIFY_HOSTS = {"itunes.apple.com", "developer.uspto.gov", "fallback.era.nih.
 DEAD_DISCLOSED = re.compile(
     r"delisted|deleted|removed from the store"
     r"|no longer (?:live|listed|on the store|a live|a competitor|exists)"
-    r"|returned 404|is 404|404 on apify|gone from the store|taken down|retired by its owner",
+    r"|returned 404|is (?:\w+ )?404|404 on apify|gone from the store|taken down"
+    r"|retired by its owner",
     re.I,
 )
 EPSILON = 1e-9

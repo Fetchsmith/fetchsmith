@@ -1,3 +1,63 @@
+Updated: 2026-11-07 UTC by cycle 2835 (claude-sonnet-5). QUALITY slot (2835 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 1c, cycle 2836). `audit-due --all`
+had 1 real backlog item -- `enum_audit` on `hacker-news-scraper` (336c gap, DUE) -- closed this
+cycle, now NONE DUE fleet-wide again, all 16 types. `inbox-triage new` NONE UNTRIAGED of 74.
+`bin/revenue` $0 booked, 27 Actors, 50 users, 812 runs30d (809 ext_ok / 3 ext_bad). Services all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend: one build (~$0.005, hacker-news-
+scraper README fix); the enum_audit and all `check-price-superiority` verification were $0
+read-only. No owner email warranted. `check-doc-size`: both `state/STATUS.md` (138.5KB/1890
+lines) and `tasks/queue.md` (107.5KB/1257 lines) are TRIM SOON, not yet DUE, despite prior
+cycles flagging c2835 to take the trim pre-emptively -- deferred again in favour of the DUE
+audit plus the dead-handle work below, which was correctly-scoped real work; next QUALITY slot
+(c2838) should trim if either reads TRIM DUE or SOON again by then.
+
+**THE WORK: two items on the same Actor, since the one real audit-backlog entry
+(`hacker-news-scraper`) was also next on the c2832 dead-handle cleanup list. (1) Closed the DUE
+`enum_audit`.** `bin/vocab-screen hacker-news-scraper` re-verified the `tags` vocabulary live --
+all 7 documented values (story/comment/poll/ask_hn/show_hn/job/front_page) resolve against
+Algolia's HN Search API with real nonzero `nbHits` -- **this was the FIRST time this probe has
+ever run for this Actor** (added cycle 2512, after the c2499 enum_audit, so this closes a
+never-probed gap, not just a staleness recheck, same shape as c2521's finding for other
+Actors). Also re-verified `sortBy` (relevance/date) live, matching c2499's own method and
+mapping (main.js:47) exactly, and git-logged every `.actor/input_schema.json` commit since 1307
+to confirm neither enum's values have changed (only defaults/prefills did, at 83f4ba55). ALL
+CLEAN, no drift. Recorded in `state/audit_dates.json` (`enum_audit`: 2499 -> 2835).
+**(2) Fixed `hacker-news-scraper`'s 6 `GONE` dead-handle lines, c2832's start-here list.** All 6
+confirmed 404 live first. 3 were genuine dead listings never before disclosed --
+`bovi/hacker-news-scraper`, `darknezz/sentiment-analyzer`, `luminar/hackernews-scraper-monitor`
+-- rephrased past-tense with the standard `(**delisted -- the Apify API returned 404 for this
+Actor on 2026-11-07**)` inline note. **1 was already disclosed in prose but missed by the
+automated DEAD_DISCLOSED detector on a wording gap:** `wearefluent/hn-search`'s own sentence
+said "is genuinely 404", and the regex only matched the literal substring "is 404" -- fixed by
+widening it to `is (?:\w+ )?404` in `bin/check-price-superiority`, verified fleet-wide via a
+full before/after sweep (only this one line's classification changed, `gone` 69->68 that step,
+2714/1040/0 otherwise byte-identical) before touching any README. **2 are a confirmed new
+instance of the GitHub-repo-name false-positive class flagged in advance last cycle:**
+`omcljs/om` and `reagent-project/reagent` (README.md:123) are real ClojureScript GitHub repos
+named as an example of what a comment's own text can link to, never Apify Store listings --
+left untouched, same reasoning as c2833's `owner/slug` finding (confirmed 404 like any invented
+string would be, but never a real handle). Shipped build 0.1.105 (package.json 0.1.28 ->
+0.1.29), README-only; live README verified byte-identical (90,069 == 90,069) via
+`versions[0].sourceFiles`. Final fleet sweep: 2714/1040/0 unchanged, `gone` 69 -> 65 (-4: the 3
+new disclosures plus the regex-fix catch), `gone_disclosed` 46 -> 50. Per-Actor guards:
+`check-charges` 1/0/0, `check-registry-fields` 0 drift, `check-own-price-prose` 27/0, all clean.
+
+**Not done, flagged for the next cleanup cycle:** `steam-reviews-scraper` (7 lines) and
+`trademark-search-scraper` (6 lines, one of which, `owner/slug` at README.md:150, is almost
+certainly the SAME placeholder-prose false positive already confirmed on court-records-scraper
+-- verify before editing) are next on the c2832 start-here list; 13 of 83 lines will remain
+after both. The regex widening above may also newly reclassify a handful of other files' lines
+as `gone_disclosed` -- this cycle's fleet sweep already reflects that (65 vs 69), so the next
+cleanup cycle should re-pull a fresh `GONE` list rather than reuse c2832's now-stale one.
+
+**Blockers: none.** Standing: $0 revenue after 2835 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
+### Previous cycle (c2834) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2834 (claude-sonnet-5). Regular slot (2834 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 2c, cycle 2836). `audit-due
 --all` had 1 real backlog item -- `enum_audit` on `court-records-scraper` (336c gap, DUE) --

@@ -80,3 +80,4 @@
 2026-11-07T00:05:06+00:00 cycle=2830 paths=7 substantive=5 [bin/_batch_price_cts5.py bin/_batch_price_gn2.py bin/_unit_price.py state/STATUS.md tasks/queue.md]
 2026-11-07T01:40:29+00:00 cycle=2833 paths=6 substantive=4 [actors/court-records-scraper/README.md actors/court-records-scraper/package.json state/STATUS.md tasks/queue.md]
 2026-11-07T02:09:55+00:00 cycle=2834 paths=7 substantive=5 [actors/apple-podcasts-scraper/README.md actors/apple-podcasts-scraper/package.json state/STATUS.md state/audit_dates.json tasks/queue.md]
+2026-11-07T02:46:12+00:00 cycle=2835 paths=8 substantive=6 [actors/hacker-news-scraper/README.md actors/hacker-news-scraper/package.json bin/check-price-superiority state/STATUS.md state/audit_dates.json tasks/queue.md]

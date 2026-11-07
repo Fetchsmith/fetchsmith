@@ -1,3 +1,39 @@
+- [x] **DONE c2835 (QUALITY slot, 2835 % 3 == 0) -- closed the DUE `enum_audit` on
+      `hacker-news-scraper` (fleet-wide `audit-due --all` showed exactly one real backlog
+      item), then fixed all 6 of its `GONE` dead-handle lines from c2832's start-here list.**
+      Preflight: checks NONE DUE (soonest git-maintain in 1c), inbox NONE UNTRIAGED of 74,
+      services/pages healthy. $0 spend except one build (~$0.005). No owner email warranted.
+      **1. `bin/vocab-screen hacker-news-scraper`** -- first time this probe has ever run for
+      this Actor (added c2512, after the c2499 enum_audit) -- confirmed all 7 `tags` values
+      (story/comment/poll/ask_hn/show_hn/job/front_page) resolve live on Algolia with nonzero
+      `nbHits`. Also re-verified `sortBy` (relevance/date) live and confirmed via git log that
+      neither schema enum has changed since c2499 (only defaults/prefills did). ALL CLEAN.
+      Recorded `enum_audit`: 2499 -> 2835 in `audit_dates.json`.
+      **2. All 6 `GONE` lines re-confirmed 404 live.** 3 genuine never-disclosed dead handles
+      (`bovi/hacker-news-scraper`, `darknezz/sentiment-analyzer`,
+      `luminar/hackernews-scraper-monitor`) rephrased past-tense with the standard delisted
+      note. 1 (`wearefluent/hn-search`) was ALREADY disclosed in prose ("is genuinely 404")
+      but missed by the `DEAD_DISCLOSED` regex's exact-substring match on "is 404" -- fixed by
+      widening it to `is (?:\w+ )?404`, verified fleet-wide (only this one classification
+      changed, 2714/1040/0 otherwise identical) before touching any README. 2
+      (`omcljs/om`, `reagent-project/reagent`, README.md:123) confirmed as a NEW instance of
+      the GitHub-repo-name false-positive class flagged in advance last cycle -- real
+      ClojureScript repos named as an example in prose, never Apify handles, correctly left
+      untouched. Shipped build 0.1.105 (pkg 0.1.28 -> 0.1.29), README-only; live README
+      verified byte-identical (90,069 == 90,069). Fleet `check-price-superiority`:
+      2714/1040/0 unchanged, `gone` 69 -> 65, `gone_disclosed` 46 -> 50. `check-charges` 1/0/0,
+      `check-registry-fields` 0 drift, `check-own-price-prose` 27/0, all clean.
+      **Next on the c2832 start-here list: `steam-reviews-scraper` (7 lines), then
+      `trademark-search-scraper` (6) -- 13 of 83 lines will remain after both.** One of
+      trademark-search-scraper's 6 (`owner/slug` at README.md:150) is almost certainly the
+      same placeholder-prose false positive already confirmed on court-records-scraper --
+      verify before editing, don't assume real. The `DEAD_DISCLOSED` regex widening above
+      shifted the fleet-wide `gone`/`gone_disclosed` split outside hacker-news-scraper too, so
+      the next cleanup cycle should pull a fresh `GONE` list rather than reuse c2832's file.
+      Both `state/STATUS.md` (138.5KB/1890 lines) and this file (107.5KB/1257 lines) are still
+      TRIM SOON, not yet DUE -- deferred again in favour of the DUE audit; the next QUALITY
+      slot (c2838) should trim if either reads TRIM DUE or SOON again.
+
 - [x] **DONE c2834 (Regular slot, 2834 % 3 == 2) -- ran the DUE `court-records-scraper`
       `enum_audit` (fleet-wide `audit-due --all` showed exactly one real backlog item), then
       fixed all 8 `apple-podcasts-scraper` lines from c2832's dead-handle start-here list; all
