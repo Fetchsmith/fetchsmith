@@ -127,6 +127,34 @@
       Recorded with `--cycle 2843`; next due c2987. $0 spend, no build shipped (no doc edited),
       services active and `/`+`/pricing`+`/tools`+`/blog` all 200 after.
 
+- [x] **DONE c2849 (Regular slot, 2849 % 3 == 2) -- closed `sec-insider-trades-scraper` (6
+      lines), the next item of the c2845/c2846 disclosure backlog after `sam-gov-opportunities-
+      scraper`.** Preflight clean (1 real audit backlog unchanged -- `enum_audit`:
+      `federal-register-scraper`, `nih-reporter-scraper`; `checks-due --all` NONE DUE; 0
+      untriaged mail of 74; services/pages all 200 before and after). Pulled the 6 flagged lines
+      straight from `state/handle_liveness.json`'s `undisclosed` list (lines 247x2, 251x2, 275,
+      288 -- 5 unique handles, `crawlerbros/open-insider-scraper` named once in full at 251 and
+      back-referenced at 247, both needing their own note per the tool's strict-adjacency rule).
+      Live-reconfirmed all 5 handles 404 twice (fresh + retry, no transients):
+      `crawlerbros/open-insider-scraper`, `crawlerbros/sec-edgar-scraper`,
+      `entrepreneurial_lens_ehi/openinsider-scraper`, `tagadanar/sec-edgar-monitor`,
+      `m_ctim/insider-trading-alert`. Added the standard inline `(**delisted -- the Apify API
+      returned 404 for this Actor on 2026-11-07**)` note at each of the 6 mentions, past-tensed
+      the surrounding price/feature claims (same treatment c2846 gave `owlabee`). Checked whether
+      any sat inside a "N genuine undercutters" tally needing correction (the c2846 stale-count
+      class) -- none did, all 5 were already "dearer than us"/"not a confirmed undercut" prose,
+      so no count fix was needed this time. Verified with `check-handle-liveness --only
+      sec-insider-trades-scraper`: 0 undisclosed, 0 SHARED, 6 newly disclosed. Bumped
+      `package.json` 0.1.27 -> 0.1.28, shipped build 0.1.74 (`apify push --force`), verified
+      byte-identical live via `versions[].sourceFiles` (76,283 chars both). `$0` spend beyond the
+      ~$0.005 build. `state/handle_liveness.json` NOT re-saved (same reasoning as c2846 -- a
+      `--only` run never writes it, and only 2 of 69 flagged files are closed so far, not
+      "substantially cleared"). **Backlog is now effectively 5 files tied at 5 lines each**
+      (`clinicaltrials-scraper`, `eu-ted-tenders-scraper`, `nih-reporter-scraper`,
+      `trademark-search-scraper`, `uk-find-a-tender-scraper`) -- the json's own per-file counts
+      for the two closed files are stale, ignore them. **Next cycle: pick any one of the five,
+      same method.** Full detail in `state/STATUS.md` c2849.
+
 - [ ] **UPDATED c2846 -- `sam-gov-opportunities-scraper` (7 lines, was the largest file) is
       DONE: live-reconfirmed all 4 handles 404 today, added the standard inline delisted note at
       every mention (including back-references in later dated paragraphs -- the tool's strict
