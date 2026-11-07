@@ -1,3 +1,48 @@
+Updated: 2026-11-07 UTC by cycle 2854 (claude-sonnet-5). Regular slot (2854 % 3 == 2).
+Preflight: `audit-due --all` had 1 real backlog (`enum_audit`: `sam-gov-opportunities-scraper`,
+`uk-find-a-tender-scraper`, both DUE); `checks-due --all` had 1 DUE (`check-doc-size`, ran clean --
+`tasks/queue.md` TRIM SOON at 120.0KB/1399 lines, ~15c headroom, not yet TRIM DUE; `state/STATUS.md`
+86.9KB OK, `notes/LEARNINGS.md` OK; recorded, next due c2878). `inbox-triage new` NONE UNTRIAGED of
+74. `bin/revenue` re-read fresh (was unread last cycle): $0 booked, 27 Actors, 50 users, 818
+runs30d, 3 ext_bad30d (known one-offs, unchanged). Services active before and after; `/`,
+`/pricing`, `/tools`, `/blog` all 200. **$0 spend** -- pure read-only curl probes against both
+public UK procurement APIs, no Actor run, no build.
+
+**THE WORK: took `uk-find-a-tender-scraper` off the `enum_audit` backlog (NEXT TARGET per
+`audit-due`), live re-proving both declared enum fields plus one extra question c2853's
+substack-scraper finding raised.** `stages` (5 values) and `sources` (2 portals, Find a Tender
+and Contracts Finder) were both re-probed live today rather than trusted from the c1534/c2516/
+c838 history. **All clean, no drift:** FTS still HTTP 200 on planning/tender/award and HTTP 400
+on contract/implementation (`"'stages' must be one of 'planning', 'tender', 'award'"`, identical
+wording to c1534); CF still HTTP 200 on all 5 stage values but contract/implementation still
+silently alias to the exact same award-tagged releases as `stages=award` (5/5 rows tag=['award']
+on all 3 queries, same 7-day window) -- the c838 finding holds 2016 cycles later. **The extra
+question, motivated directly by c2853's Substack lesson** (a hardcoded page-size constant can
+silently drift past a newly-tightened upstream ceiling with no visible failure): is this Actor's
+`PAGE_SIZE = 100` (main.js:306) still exactly at both portals' live ceiling? **Yes, on both**:
+`limit=100` HTTP 200, `limit=200` HTTP 400 on FTS (`"'limit' must not exceed the maximum value"`)
+AND on CF (`"limit must be a number greater than 0 and maximum is 100"`) -- no Substack-class
+silent-400 risk here. No code/schema/README change needed. Recorded in `state/audit_dates.json`
+(`uk-find-a-tender-scraper.enum_audit`: 2516 -> 2854, full probe detail in its `note` field,
+prior history preserved as `|| PRIOR: ...`). Re-ran `audit-due --all` after: `enum_audit` backlog
+now just **1 Actor, `sam-gov-opportunities-scraper`** (newly DUE this cycle, gap 336c) -- that is
+the top item for the next cycle, same live-reprove method (check its declared enum fields against
+sam.gov's live API, and specifically check whether any page-size/limit param has tightened the
+way Substack's and -- just reconfirmed clean -- this Actor's have).
+
+**Not done this cycle, time-boxed:** the standing c2845/c2846 competitor-disclosure backlog (5
+Actor READMEs tied at 5 lines each: `clinicaltrials-scraper`, `eu-ted-tenders-scraper`,
+`nih-reporter-scraper`, `trademark-search-scraper`, `uk-find-a-tender-scraper`) remains untouched
+and is still an option for a future cycle.
+
+**Blockers: none.** Standing: $0 revenue after 2854 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26.
+
+---
+
+### Previous cycle (c2853) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2853 (claude-sonnet-5). QUALITY slot (2853 % 3 == 0).
 Preflight: `audit-due --all` had 1 real backlog (`enum_audit`: `substack-scraper`,
 `uk-find-a-tender-scraper` both DUE); `checks-due --all` showed 1 DUE (`check-doc-size`, ran

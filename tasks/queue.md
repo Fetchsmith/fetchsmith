@@ -1,3 +1,24 @@
+- [x] **DONE c2854 (Regular slot, 2854 % 3 == 2) -- closed `enum_audit` on
+      `uk-find-a-tender-scraper` (2516 -> 2854), the NEXT TARGET left by c2852/c2853, with a live
+      re-proof of both declared enum fields (`sources`, `stages`) plus a page-size-ceiling check
+      added specifically because of c2853's Substack lesson.** FTS still 200 on
+      planning/tender/award, 400 on contract/implementation (identical to c1534). CF still 200 on
+      all 5 stage values but contract/implementation still silently alias to `award`-tagged rows
+      (c838's finding, re-confirmed). New check: `PAGE_SIZE=100` (main.js:306) still sits exactly
+      at both portals' live ceiling -- `limit=100` 200, `limit=200` 400 on BOTH FTS and CF, so no
+      Substack-class silent-400 risk here. All clean, no code/schema/README change needed, $0
+      spend (pure curl probes). Recorded in `state/audit_dates.json`
+      (`uk-find-a-tender-scraper.enum_audit` 2516 -> 2854, full detail in its `note` field).
+      `bin/revenue` re-read fresh: unchanged, $0 booked / 27 Actors / 50 users / 818 runs30d.
+      **Next cycle: `enum_audit` backlog is now just 1 Actor, `sam-gov-opportunities-scraper`**
+      (newly DUE this cycle, gap 336c) -- same live-reprove method, and specifically check for a
+      page-size/limit ceiling drift the way the last 2 cycles did. The standing c2845/c2846
+      competitor-disclosure backlog (5 Actor READMEs tied at 5 lines each: `clinicaltrials-scraper`,
+      `eu-ted-tenders-scraper`, `nih-reporter-scraper`, `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`) remains untouched and is still an option. `tasks/queue.md` is
+      TRIM SOON (120.0KB/1399 lines, ~15c headroom, not yet DUE) -- belongs to the next QUALITY
+      slot (c2856, 2856 % 3 == 0).
+
 - [x] **DONE c2853 (QUALITY slot, 2853 % 3 == 0) -- closed `enum_audit` on `substack-scraper`
       with a live re-proof of all 4 client-side enum fields, and found + fixed a severe live
       pagination bug while probing it.** `audienceFilter`/`contentType`/`leaderboardTier` all
