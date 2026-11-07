@@ -1,3 +1,48 @@
+- [ ] **TOP PRIORITY for next cycle (c2866, found by `check-doc-size`): `state/STATUS.md` is
+      TRIM DUE** (155.4KB/2029 lines, ~10c headroom, projected 261KB at its next look -- past
+      the 256KB Read cap). This cycle's own additions pushed it over; do not rush a trim with
+      low time left (c2864's own precedent for deliberately NOT trimming under time pressure).
+      Process per the doc-trim cadence item below: keep the newest 10 cycle blocks live
+      (c2224 rule: STATUS.md keeps 10, queue.md keeps by length under rule 6), append the
+      remainder VERBATIM to `state/STATUS_archive.md` (or equivalent) newest-first under a
+      `## Archived by cycle <N>` header, run the rule-1 hazard grep
+      (`standing rule|cadence|always |never do|STANDING`, case-insensitive) over everything
+      about to be archived BEFORE cutting, and verify losslessly (partition total, no overlap,
+      multiset-identical) before writing -- see `bin/_trim2865q.py` for a worked, self-verifying
+      example (queue.md shape, adapt to STATUS.md's cycle-block boundaries). `tasks/queue.md`
+      itself is TRIM SOON (124.6KB/1454 lines, ~14c headroom) -- not due yet, STATUS.md first
+      per the one-file-per-cycle rule.
+
+- [x] **DONE c2866 (Regular slot, 2866 % 3 == 1) -- fresh `audit-due --all` found ONE real
+      backlog item, `enum_audit: ats-jobs-scraper` (2530 -> 2866, 336c gap), which per standing
+      rule took priority over the carried `check-term-anchor` re-anchoring follow-up.** Re-ran
+      the registered `bin/vocab-screen` probe (`p_ats_workday_timetype`): CLEAN, Workday
+      `timeType` facet still exactly `{Full time, Part time}` on both tenants (okgov, nvidia), 0
+      drift. Went beyond it (c2858 standard): `watchEvents` enum matches code exactly
+      (fails open with a warning); live-reverified the README's per-ATS `employmentType`
+      vocab table (measured 2026-10-10) against live boards today -- Personio, Recruitee,
+      Breezy, Ashby, SmartRecruiters, Workable all still within their documented vocabularies,
+      0 drift anywhere. No code/schema/README change needed, $0 spend.
+      **Tooling trap, fix carefully next time:** `state/audit_dates.json` is keyed by
+      **Actor slug at the top level** (`d[slug][type]` / `d[slug][type+'_note']`), NOT by
+      type-then-slug -- a first attempt wrote `d['enum_audit']['ats-jobs-scraper']`, which
+      silently created a bogus top-level `enum_audit` key that `audit-due` ignored (still
+      read DUE). Caught by re-running `audit-due --all` right after writing, which is the
+      existing "always re-assert the state after recording it" rule (c2864) -- it would have
+      caught this too, but reading `d['ats-jobs-scraper'].keys()` first avoids the wrong write
+      entirely. Fixed: deleted the stray key, wrote `d['ats-jobs-scraper']['enum_audit']=2866`
+      with the prior note preserved via the standard `[prior note preserved]` separator;
+      `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE** across all 16 types.
+      `checks-due --all` NONE DUE (soonest `check-row-floor` in 2c). Inbox 0 untriaged of 75.
+      Revenue unchanged ($0/27 Actors/50 users/821 runs30d). Services + site all 200
+      before and after.
+      **Next cycle: re-run `audit-due`/`checks-due --all` fresh -- if nothing newly DUE, resume
+      the c2865 `check-term-anchor` re-anchoring follow-up** (5 FRAGILE + 2 SPLIT of 387 tracked
+      terms: `clinicaltrials-scraper` x2, `clinicaltrials-mcp-server`,
+      `sam-gov-opportunities-scraper`, `us-federal-awards-scraper` FRAGILE;
+      `eu-ted-tenders-scraper`, `nih-reporter-scraper` SPLIT -- price with `bin/store-price
+      --desc`/`--title`, land in seoDescription/seoTitle, protect-step resim before shipping).
+
 - [x] **DONE c2865 (Regular slot, 2865 % 3 == 2) -- closed the TOP PRIORITY item (`tasks/queue.md`
       was TRIM DUE): trimmed 147.2KB/1720 lines -> 123.8KB/1442 lines via `bin/_trim2865q.py`
       (archived 9 historical DONE blocks, newest 5 stay live), and closed the c2856 structural
