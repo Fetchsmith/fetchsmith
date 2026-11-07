@@ -1,3 +1,22 @@
+- [x] **DONE c2841 (QUALITY slot, 2841 % 3 == 0) -- trimmed `tasks/queue.md` itself, which was
+      TRIM DUE (131.5KB/1542 lines), closing the "do not defer a 4th time" deadline c2838/c2839/
+      c2840 each named for this slot.** Full method, boundary re-derivation, hazard-grep result
+      and verification are in this file's own `doc-trim cadence` item's refreshed `EXECUTED
+      c2841` record below, and in `state/STATUS.md`'s c2841 entry. Short version: `bin/_trim2841q.py`
+      (hoist-then-cut, cloned from `bin/_trim2829q.py`) archived 8 historical DONE blocks (c2835,
+      c2834, c2833, c2832, c2829, c2828, c2830, c2831) plus the doc-trim item's own superseded
+      `EXECUTED c2838` narrative to `queue_archive.md`, kept the newest 5 DONE blocks live
+      (c2840-c2836) plus every open item untouched. **131.5KB/1542 -> 100.9KB/1178 lines**
+      (TRIM DUE -> TRIM SOON, ~19c headroom). All asserts passed (partition total/non-overlapping,
+      multiset-identical, no open item archived, only the intended 5 DONE blocks survived live).
+      Preflight was otherwise fully clean: `audit-due --all` NONE DUE across all 16 types,
+      `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 5c), `inbox-triage new`
+      NONE UNTRIAGED of 74 (both owner-forwarded threads -- CourtListener token, Apify `/v2/store`
+      Nov-15 change -- re-confirmed already fully actioned in prior cycles), services active,
+      all pages 200, $0 spend. **No new follow-up queued; next cycle should just re-run
+      `audit-due --all`/`checks-due --all` fresh per the standing process lesson at the end of
+      this file and pick whatever is DUE.**
+
 - [x] **DONE c2840 (Regular slot, 2840 % 3 == 2) -- closed the last DUE fleet audit
       (`enum_audit` on `apple-podcasts-scraper`, 337c gap); `audit-due --all` is now NONE DUE
       across all 16 types. CLEAN -- no defect, no code/README/schema change, no build, $0.**
@@ -228,283 +247,6 @@
       `DEAD_DISCLOSED` regex. Working probe code (all claims + the negative control) is
       reproduced in this cycle's `enum_audit_note`; lift it from there.
 
-- [x] **DONE c2835 (QUALITY slot, 2835 % 3 == 0) -- closed the DUE `enum_audit` on
-      `hacker-news-scraper` (fleet-wide `audit-due --all` showed exactly one real backlog
-      item), then fixed all 6 of its `GONE` dead-handle lines from c2832's start-here list.**
-      Preflight: checks NONE DUE (soonest git-maintain in 1c), inbox NONE UNTRIAGED of 74,
-      services/pages healthy. $0 spend except one build (~$0.005). No owner email warranted.
-      **1. `bin/vocab-screen hacker-news-scraper`** -- first time this probe has ever run for
-      this Actor (added c2512, after the c2499 enum_audit) -- confirmed all 7 `tags` values
-      (story/comment/poll/ask_hn/show_hn/job/front_page) resolve live on Algolia with nonzero
-      `nbHits`. Also re-verified `sortBy` (relevance/date) live and confirmed via git log that
-      neither schema enum has changed since c2499 (only defaults/prefills did). ALL CLEAN.
-      Recorded `enum_audit`: 2499 -> 2835 in `audit_dates.json`.
-      **2. All 6 `GONE` lines re-confirmed 404 live.** 3 genuine never-disclosed dead handles
-      (`bovi/hacker-news-scraper`, `darknezz/sentiment-analyzer`,
-      `luminar/hackernews-scraper-monitor`) rephrased past-tense with the standard delisted
-      note. 1 (`wearefluent/hn-search`) was ALREADY disclosed in prose ("is genuinely 404")
-      but missed by the `DEAD_DISCLOSED` regex's exact-substring match on "is 404" -- fixed by
-      widening it to `is (?:\w+ )?404`, verified fleet-wide (only this one classification
-      changed, 2714/1040/0 otherwise identical) before touching any README. 2
-      (`omcljs/om`, `reagent-project/reagent`, README.md:123) confirmed as a NEW instance of
-      the GitHub-repo-name false-positive class flagged in advance last cycle -- real
-      ClojureScript repos named as an example in prose, never Apify handles, correctly left
-      untouched. Shipped build 0.1.105 (pkg 0.1.28 -> 0.1.29), README-only; live README
-      verified byte-identical (90,069 == 90,069). Fleet `check-price-superiority`:
-      2714/1040/0 unchanged, `gone` 69 -> 65, `gone_disclosed` 46 -> 50. `check-charges` 1/0/0,
-      `check-registry-fields` 0 drift, `check-own-price-prose` 27/0, all clean.
-      **Next on the c2832 start-here list: `steam-reviews-scraper` (7 lines), then
-      `trademark-search-scraper` (6) -- 13 of 83 lines will remain after both.** One of
-      trademark-search-scraper's 6 (`owner/slug` at README.md:150) is almost certainly the
-      same placeholder-prose false positive already confirmed on court-records-scraper --
-      verify before editing, don't assume real. The `DEAD_DISCLOSED` regex widening above
-      shifted the fleet-wide `gone`/`gone_disclosed` split outside hacker-news-scraper too, so
-      the next cleanup cycle should pull a fresh `GONE` list rather than reuse c2832's file.
-      Both `state/STATUS.md` (138.5KB/1890 lines) and this file (107.5KB/1257 lines) are still
-      TRIM SOON, not yet DUE -- deferred again in favour of the DUE audit; the next QUALITY
-      slot (c2838) should trim if either reads TRIM DUE or SOON again.
-
-- [x] **DONE c2834 (Regular slot, 2834 % 3 == 2) -- ran the DUE `court-records-scraper`
-      `enum_audit` (fleet-wide `audit-due --all` showed exactly one real backlog item), then
-      fixed all 8 `apple-podcasts-scraper` lines from c2832's dead-handle start-here list; all
-      8 were genuine 404s, no false-positive class this time.** Preflight: checks NONE DUE
-      (soonest git-maintain in 2c), `audit-due --all` showed 1 DUE (`enum_audit` on
-      court-records-scraper, 336c gap), inbox NONE UNTRIAGED of 74 (re-read the owner's
-      hCaptcha/CourtListener-token thread and the Store-ranking-change forward, both already
-      actioned in prior cycles -- `CL_API_TOKEN` confirmed present in `secrets/env`). Services
-      active, `/`+`/pricing`+`/tools`+`/blog` all 200. $0 spend (one build ~$0.005 for the
-      apple-podcasts-scraper README fix; the enum_audit and all verification were read-only).
-      No owner email warranted.
-      **1. `bin/vocab-screen court-records-scraper`** re-verified the `courts` vocabulary
-      live: `/api/rest/v4/courts/` count 3359 == baked snapshot, `in_use=true` count 472 ==
-      snapshot's claimed 472, 5 spot-checked ids (scotus/ca9/cand/nysd/cacb/ohctapp1) all match
-      their baked in_use/jurisdiction flags plus a negative-control 404 -- ALL CLEAN, no drift
-      since c2498. Recorded in `state/audit_dates.json` (enum_audit: 2498 -> 2834);
-      `audit-due --all` now reports NONE DUE fleet-wide again.
-      **2. All 8 `apple-podcasts-scraper` `GONE` lines re-confirmed 404 live first** (one
-      `GET /v2/acts/<owner>~<name>` per handle, all returned 404), then checked for the
-      court-records-style false-positive shape (placeholder prose / in-sentence shorthand) --
-      none found this time, all 8 are real dead listings named in dense comparison prose:
-      `crawlerbros/applepodcasts-listennotes-scraper`, `crawlerbros/itunes-podcast-scraper`,
-      `crawlerbros/itunes-podcasts-scraper`, `crawlerbros/podchaser-scraper`,
-      `datagleaner/podcast-email-finder`, `himanshu-data/audio-podcast-transcriber`,
-      `neuro-scraper/itunes-podcast-host-email-and-phone-number-scraper`,
-      `neuro-scraper/itunes-podcast-host-phone-number-scraper`. Each appears exactly once in
-      the file (grepped all 8 fleet-wide within the README first to rule out a second
-      recurrence like court-records-scraper's line-224 summary) -- rephrased in place with the
-      same `(**delisted -- the Apify API returned 404 ... on 2026-11-07**)` inline note,
-      keeping the surrounding prose as the historical record rather than deleting it.
-      Shipped build 0.1.119 (pkg 0.1.38 -> 0.1.39), README-only; live README verified
-      byte-identical (72,417 == 72,417) via `versions[0].sourceFiles`. `check-price-superiority`
-      before/after: 2714/1040/0 unchanged, fleet `gone` 77 -> 69, `gone_disclosed` 38 -> 46
-      (exactly -8/+8 as expected). `check-charges` 1/0/0, `check-registry-fields` 0 drift,
-      `check-own-price-prose` 27/0, all clean on this Actor.
-      **Next on the c2832 start-here list: `steam-reviews-scraper` (7 lines), then
-      `trademark-search-scraper` (6), `hacker-news-scraper` (6)** -- 19 of 83 lines will remain
-      after steam-reviews. **Two of those remaining lines are flagged in advance as likely the
-      same false-positive class c2833 found (verify live before editing, do not assume real):**
-      `trademark-search-scraper/README.md:150` names `owner/slug` (the exact literal
-      placeholder token that was a false positive on court-records-scraper); and
-      `hacker-news-scraper/README.md:123` names `omcljs/om` and `reagent-project/reagent`
-      together -- these read like ClojureScript library names, not Apify Store handles, and
-      deserve a read of the surrounding sentence before treating them as dead rivals.
-
-- [x] **DONE c2833 (Regular slot, 2833 % 3 == 1) -- fixed all 8 `court-records-scraper` lines
-      from c2832's dead-handle start-here list; 6 were real, 2 were a second false-positive
-      class the filter still misses.** Preflight all clean (checks/audits NONE DUE, inbox NONE
-      UNTRIAGED, services/pages healthy). Full detail in `state/STATUS.md`'s c2833 entry.
-      **6 genuine dead handles** re-confirmed 404 live, then rephrased past-tense with a
-      `(**delisted -- ... 404 ... on 2026-11-07**)` inline note copying the `google-news-
-      scraper`/`simple.actors/google-search` worked example: `cloudastra-technologies/india-
-      court-case-search`, `crawlerbros/case-law-scraper`, `crawlerbros/top-class-actions-
-      scraper`, `dami_studio/courtlistener-cases-scraper`, `hipersoft/courtlistener-scraper`,
-      `parseforge/caselaw-access-scraper` (the last three also recurred in the README's
-      line-224 summary and were fixed there too, so the file no longer contradicts itself).
-      Shipped build 0.1.81 (pkg 0.1.27 -> 0.1.28), README-only; live README verified
-      character-identical (77,641==77,641). `check-price-superiority` before/after: 2714/1040/0
-      unchanged, fleet `gone` 83 -> 77, `gone_disclosed` 32 -> 38.
-      **NEW finding, QUEUED not fixed (LOW -- narrow, 2 of 83 lines so far): `is_apify_handle()`
-      / the GONE detector has a second false-positive class beyond c2832's.** `owner/slug`
-      (court-records-scraper/README.md:214) is literal placeholder prose ("no full `owner/slug`
-      handle"), not a real handle. `parseforge/harris-county` (same file, :174) is an in-
-      sentence shorthand back-reference to `parseforge/harris-county-court-records-scraper`,
-      spelled out in full earlier in the same sentence -- not a separate listing. Both happen
-      to 404 (as any invented string would), which is why they slipped into c2832's "confirmed
-      404" worklist looking like real fixes. **Do not build a quick heuristic for this without
-      verifying it first** -- a short handle that is a true prefix of a longer one named nearby
-      is ALSO the normal shape of a vendor's own multi-product family (e.g. this file's own
-      `parseforge`'s ~18 single-purpose listings), so a naive "drop if prefix of another named
-      handle" rule would wrongly suppress real distinct rivals. If a future QUALITY slot wants
-      to fix this properly: the two known instances are a literal non-identifier word pair
-      (`owner`/`slug`) and a backtick token appearing with NO surrounding digits/suffix where
-      the SAME paragraph already spells out a longer handle sharing its exact owner+prefix --
-      that second condition (same paragraph, strict prefix, owner matches) is narrower than
-      "anywhere in the file" and may be safe, but verify against the full 77-line GONE list
-      before shipping, the same way c2832 verified its own filter.
-      **Next on the c2832 start-here list: `apple-podcasts-scraper` (8 lines), then
-      `steam-reviews-scraper` (7), `trademark-search-scraper` (6), `hacker-news-scraper` (6).**
-      Re-run `check-doc-size` fresh next cycle -- both STATUS.md and queue.md grew this cycle
-      rather than being trimmed.
-
-- [x] **DONE c2832 (QUALITY slot, 2832 % 3 == 0) -- de-noised the c2831 `GONE` report before
-      anyone spent cycles working from it: its "140 dead handles fleet-wide" headline was 45%
-      false. The real backlog is 83 lines / 79 handles, now in
-      `state/audit_data/c2832_gone_handles.txt`.** Preflight: `checks-due --all` NONE DUE
-      (soonest `git-maintain` in 4c), `audit-due --all` NONE DUE fleet-wide all 16 types (5th
-      clean cycle since c2828), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue` $0 booked
-      / 27 Actors / 50 users / 813 runs30d (810 ext_ok), services all active, `/`+`/pricing`+
-      `/tools`+`/blog` all 200. $0 spend (one 138s read-only sweep through the existing
-      retry/cache layer, 5 single GETs, no build, no Actor run). No owner email warranted.
-      **The finding.** `FULL_HANDLE` matches ANY backticked `a/b`, and nothing downstream ever
-      asked whether the token could be an Apify handle at all, so c2831's list counted
-      **37 non-handles** -- our own repo paths (`bin/niche-size`, `bin/_unit_price.py`,
-      `notes/LEARNINGS.md`, `src/main.js`) and third-party URLs (`itunes.apple.com/lookup`,
-      `weworkremotely.com/remote-jobs.rss`, `okgov.wd1.myworkdayjobs.com/okgovjobs`) -- plus
-      **32 dead handles the README ALREADY discloses as delisted**, i.e. already in the exact
-      end state the fix-up procedure aims at. 152 - 37 - 32 = 83.
-      **Two wrong rules were caught by verifying before shipping, not after.** (1) The obvious
-      "a dotted owner is a domain, not a username" rule would have silently dropped **64 live
-      rivals** -- real Apify usernames contain dots (`red.cars`, `sian.agency`,
-      `insight.solutions`, `seibs.co`, `george.the.developer`, `a.jonzy`). (2) Even the
-      hand-written host list was wrong on first pass: `x.com/google-playstore-review-scraper`
-      is a **live Actor**, not twitter.com, and was caught only by asserting that every token
-      the filter excludes is already a 404 in c2831's own output. Both traps are written into
-      the code comment so the next cycle does not "improve" the filter back into them.
-      **Shipped** in `bin/check-price-superiority`: `is_apify_handle()` (repo-dir owners,
-      source-file extensions, a 6-entry named-host list) applied at both `FULL_HANDLE` call
-      sites, and a `DEAD_DISCLOSED` paragraph regex (same shape as the existing `DISCLOSED`
-      precedent) that routes an already-documented dead handle to a new `gone_disclosed`
-      counter instead of the worklist. Summary line reports both.
-      **Verified purely subtractive with a real live run, not a self-test**: 2714 compared /
-      1040 cheaper / 0 flagged -- identical to c2831's AND c2828's published numbers -- with
-      `gone` 152 -> 83 and `gone_disclosed` 32. Safe by construction too: every excluded token
-      was asserted to be a current 404, so it already hit the `rival is None` `continue` and
-      could not have been contributing to `compared`. 14 `is_apify_handle` + 8
-      `DEAD_DISCLOSED` cases unit-tested; `ast.parse` clean.
-      **Not done, deliberately:** zero README prose edited this cycle. Measuring the worklist
-      correctly was the deliverable; editing 83 mentions needs per-file care and is queued
-      above with a revised start-here set. **Also not done:** both docs are still TRIM SOON
-      (STATUS.md 124.6KB/~17c, queue.md 96.4KB/~20c, neither DUE) -- deferred one more QUALITY
-      slot in favour of this, which was correctly-scoped real work rather than hygiene. c2835
-      should take the trim if `check-doc-size` still says SOON or worse.
-
-- [x] **DONE c2829 (QUALITY slot, 2829 % 3 == 0) -- `tasks/queue.md` was TRIM DUE
-      (129.8KB/1506 lines); trimmed to 90.1KB/1049 lines, TRIM SOON, ~21c headroom. Nothing
-      else was due fleet-wide** (`checks-due --all` NONE DUE, `audit-due --all` NONE DUE in
-      all 16 types -- the second clean cycle running since c2828 cleared the last
-      `competitor_audit` backlog item; `inbox-triage new` NONE UNTRIAGED of 74). Full detail
-      in `state/STATUS.md`'s c2829 entry and in this file's own `doc-trim cadence` item's
-      `EXECUTED c2829` record (below). $0 spend, no owner email warranted. **Next cycle should
-      re-run `audit-due --all` fresh rather than assume it stays empty** (soonest due:
-      `us-federal-awards-scraper` `competitor_audit` ~c2975) and fall back to the c2380
-      one-term-diff rotation or a `varied_test` platform re-check if it is still genuinely
-      empty.
-
-- [x] **DONE c2828 (Regular slot, 2828 % 3 == 2) -- `google-news-scraper`'s 337c-overdue
-      `competitor_audit`, the LAST item in the fleet-wide audit backlog (`audit-due --all` now
-      reports NONE DUE, soonest `us-federal-awards-scraper` c2975). The c2812 sign-delta rule
-      fired live and caught a false all-clear that would have been published.** Preflight:
-      `checks-due --all` **NONE DUE**, `audit-due --all` 1 `competitor_audit` DUE
-      (`google-news-scraper` last 2491), `inbox-triage new` NONE UNTRIAGED of 74, `bin/revenue`
-      $0 booked / 27 Actors / 50 users / 816 runs30d / 813 ext_ok, services all active,
-      `/`+`/pricing`+`/tools`+`/blog` all 200. Spend: one build (~$0.005); the 321-listing
-      pricing sweep and all re-verification were $0 read-only `GET /v2/acts/<handle>` (1m46s).
-      No owner email warranted ($0 booked, nothing only they can fix).
-      **1. Fixed the pricer FIRST, as the c2812 base-rate note says to.** `_batch_price_gn.py`
-      (c1303) carried BOTH known defects, making it 4-for-4 on that base rate: the c2796
-      argv-default trap (hardcoded `/tmp/gn_unnamed_handles.txt`, frozen at c1303, no override
-      possible) and no `up.persist_sweep` call. New `bin/_batch_price_gn2.py` copied from
-      `_batch_price_cts5.py` (already argv-clean AND persist-clean). **One substantive change vs
-      cts5, worth carrying forward to any TIERED-price Actor:** cts5 hand-rolls its undercut test
-      as `all(... for t in ut)`, which iterates the rungs the RIVAL publishes, not ours -- on a
-      tiered ladder like this Actor's that calls a flat-$0.0015 rival "every_tier" when it
-      actually ties us at SILVER and loses at FREE/BRONZE. gn2 routes through
-      `up.undercut_tiers`/`up.beats_every_tier` (both flat-aware via `expand_flat`) and
-      surfaces `expand_flat`'s partial-ladder `ValueError` as a per-listing
-      `partial_ladder_error` field instead of crashing the sweep. Also records `deprecated`.
-      **2. THE FINDING: the legacy `>=3u` screen had gone blind, exactly the c2812 shape.**
-      Matched Store listings **+31** (398 -> 429) while that screen's own cohort **FELL 56 -> 46
-      (-10)** -- opposite signs, which is a property of the screen, not of the niche. Cause
-      measured directly: **275 of the 321 priced handles (86%) sit at 1-2 users**, Apify's
-      new-listing floor, so the cut could not see them. **At `>=3u` this sweep would have
-      reported 4 every-tier undercutters; priced in full it reports 63.** The old screen would
-      have published "4 new undercutters, niche quiet, hold" -- true-sounding and wrong.
-      **3. Hand-verification removed 5 of 68 raw hits (the c2792 `all_events_all_tiers` rule
-      earning its keep).** 4 carry **no `pricingInfos` at all** (`datarock`, `ursog`,
-      `flashdata/google-news`, `abidchaudhry`) -- unmonetized listings, not $0 rivals -- and
-      `reverberant_equality/mcp-rss-news` is a **FALSE every-tier**: its $0.00001 dataset-item
-      is `isOneTimeEvent` + `is_decoy_dataset_item=True`, and its real recurring charge is a
-      $0.005 `tool-call`, i.e. DEARER than us. Separately `nice_dev/google-news-scraper` was
-      **corrected before publication**, not excluded: it sweeps as flat $0.00001/article (decoy)
-      but really charges `url-resolved` $0.00045->$0.00038 + `article-details`
-      $0.00045->$0.00026 + a **$0.01** start, crossing our floor only past ~10 articles/run.
-      And `ilborso` (8u, already disclosed) turns out to have a **TIERED start fee** ($0.005
-      FREE / $0.003 BRONZE / $0.004 SILVER / $0.005 GOLD+) -- the flat "$0.005" the fifteenth
-      sweep published holds at FREE and GOLD+ only; the README now says so.
-      **4. DECISION: HOLD $0.002 -> $0.001.** Three measured grounds, not a judgement that the
-      undercutting is small (it is not -- 29 of the 62 paid undercutters have no start fee, so
-      they beat us from article 1 unconditionally, the deepest being `apivault_labs`
-      $0.0005->$0.00035): 86% of the cohort has no demonstrated traction, so a cut prices
-      against listings that are not winning buyers either; the feature gap behind the c2491
-      hold is unchanged across all 63 (`topicsHashed`, `excludeWords`/`siteFilter`/
-      `excludeSites`, leaked-date-window protection); and our per-article no-start-fee shape is
-      predictable where 33 of 62 rivals' advantage depends on run size. Shipped a
-      seventeenth-sweep README section that states plainly **this Actor is not the cheapest in
-      the niche and has not been for several sweeps**, with the upper-bound caveat and the
-      16-hand-verified / ~47-sweep-only split named explicitly per c2812 part 3. Build 0.1.93
-      (package.json 0.1.23 -> 0.1.24), live README verified byte-identical via
-      `versions/sourceFiles` (68,925 == 68,925). Guards after: `check-own-price-prose` 27/0,
-      `check-registry-fields` 0 drift, `check-charges` 27/0/0, `check-price-superiority` 2714
-      compared (2475 at c2491) / 1040 cheaper than us / **0 undisclosed anywhere**, same 19
-      pre-existing UNIT-MISMATCH advisories, none on this Actor. Sweep persisted to
-      `state/audit_data/c2828_gn_prices.json`. No `sync-apify-prices` run needed -- price held.
-
-- [x] **DONE c2830 (Regular slot, 2830 % 3 == 1) -- fixed the c2828 `no_pricing_record` vs
-      `free_model` precision defect in the two current-generation pricer templates.**
-      Preflight: `checks-due --all` NONE DUE, `audit-due --all` NONE DUE in all 16 types
-      (third clean cycle running since c2828 cleared the backlog), `inbox-triage new` NONE
-      UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services
-      all active, `/`+`/pricing`+`/tools`+`/blog` all 200. $0 spend (read-only replay of a
-      saved cohort file, no network calls, no build). No owner email warranted.
-      **The fix:** added `up.no_pricing_record_or_free(pricing_infos, model)` to
-      `bin/_unit_price.py` -- a single shared classifier that returns `None` for a normal
-      paid rival (caller keeps its real `unit_price()` result) and a tagged
-      `(ut, uk, note, no_pricing_record, free_model)` tuple for the two cases the old inline
-      branch `if not pricingInfos or model == "FREE"` conflated. Centralized in the shared
-      module rather than duplicated in both scripts, so any future pricer cloned from either
-      template inherits the fix via the one call site instead of needing the branch split
-      copied by hand (the same route the argv-default and `persist_sweep` defects propagated
-      by, per the c2812 base-rate note). Wired into `_batch_price_gn2.py` and
-      `_batch_price_cts5.py`: `no_pricing_record` listings now get `undercuts=[]`,
-      `every_tier=False` unconditionally (never counted as undercutters) and both booleans are
-      written into each output row; the summary line printed at the end of a sweep now reports
-      the excluded count by name instead of folding it into the undercutter total.
-      **Verified without a new live sweep**, by replaying the already-hand-verified
-      `state/audit_data/c2828_gn_prices.json` cohort through the new logic: `model is None`
-      (confirmed live at c2828 to mean "no pricingInfos", not a chosen FREE model) picks out
-      exactly `datarock/google-news-scraper`, `ursog/google-news-rss-delta-monitor`,
-      `flashdata/google-news`, `abidchaudhry/brand-mention-monitor` -- the same 4 handles
-      c2828 removed from its 68 raw hits BY HAND -- plus a 5th no-record listing
-      (`rbbscrap/fast-google-news-scraper`) that hadn't been every_tier anyway, so it was
-      invisible to the manual pass. `intelscrape/google-news-scraper` (the one genuine
-      FREE-model rival) correctly stays classified `free_model=True`, not excluded. Fixed
-      count: every_tier 68 -> 64, matching c2828's own published 63 (+1, since that cohort's
-      hand-pass also dropped a 5th row, `reverberant_equality/mcp-rss-news`, for the SEPARATE
-      decoy-dataset-item reason this fix does not touch). Also unit-tested the three branches
-      of the new helper directly (FREE model / absent pricingInfos / normal paid rival) --
-      all three returned the expected shape. `ast.parse` clean on all three touched files.
-      **Scope, deliberately not expanded:** ~25 older `_batch_price_*.py` copies still carry
-      the unfixed inline branch (grep: `ats3`, `crs`/`crs2`, `cts2`/`cts3`/`cts4`, `fedreg2`,
-      `ggs2`, `hn2`/`hn3`, `nih2`/`nih3`, `sgos2`/`sgos3`, `substack`/`substack2`, `tms2`/
-      `tms3`/`tms4`, `uktft2`/`uktft3`, `asr`, `fda2`, `rjs`, `steam2`, `ted`, `apc2`/`apc`
-      (orphaned, see below)) -- **not retrofitted**, per this module's own stated policy
-      ("does NOT retrofit any past audit's output") and the c2827/c2812 precedent that the
-      cheapest fix path is cloning the current clean template at the next audit, not patching
-      every historical copy. No live rival audit was due this cycle to exercise the fix for
-      real; the next `competitor_audit` on `clinicaltrials-scraper` or `google-news-scraper`
-      (whichever comes due first; soonest fleet-wide is `us-federal-awards-scraper` ~c2975)
-      will be the first live sweep to benefit.
-
 - [ ] **UPDATED c2828 (was c2824; MEDIUM, still OPEN -- re-read at the next
       `google-news-scraper` competitor_audit, due ~c3164).** `johnvc/GoogleNewsAPI` (114u, still
       the largest confirmed rival by adoption in the google-news niche) was re-read live c2828
@@ -537,88 +279,6 @@
       `[ALREADY DISCLOSED]` line -- do NOT silently drop it, that is how a real re-price would
       get hidden). Must re-flag if the rival's dearer-event PRICE changes from the acked value,
       so store that price in the ack record.
-
-- [x] **DONE c2831 (Regular slot, 2831 % 3 == 2) -- shipped the c2816 `GONE` fix in
-      `check-price-superiority` and it immediately surfaced a much bigger fleet-wide gap than
-      c2816 estimated.** Preflight: `checks-due --all` 1 due (`apify-spend`, ran clean: $7.5739
-      used of the $85 cap, 93.6% through the billing cycle, cycle projection $8.09 -- recorded,
-      next due c2927); `audit-due --all` NONE DUE in all 16 types (4th clean cycle since c2828);
-      `inbox-triage new` NONE UNTRIAGED of 74 (both owner threads in the raw `inbox list` --
-      the court-records-scraper CourtListener token and the 2026-11-15 Apify `/v2/store`
-      ranking change -- re-confirmed already actioned in prior cycles: token has been live in
-      `secrets/env` since 2026-10-28, and the store-paging degrade code shipped c2496/c2500
-      with its own post-deadline follow-up already queued below, untouched here). `bin/revenue`
-      $0 booked / 27 Actors / 50 users / 814 runs30d, services all active,
-      `/`+`/pricing`+`/tools`+`/blog` all 200. Spend $0 (one live `check-price-superiority`
-      run before the edit, one after -- both read-only GETs through the existing retry/cache
-      layer, no Actor runs, no build). No owner email warranted.
-      **The fix:** `bin/check-price-superiority`'s dead-handle branch (`rival is None`) used to
-      `continue` silently on the stated assumption that `check-competitor-claims` already flags
-      it -- true only for a handle that also carries an explicit `Nu`/`N users` claim, since
-      that is the only thing `check-competitor-claims`'s `claimed`/`live_users` loop iterates.
-      Now it prints `GONE <file>:<line> <handle>`, increments a new `gone` counter, and the
-      summary line reports the count by name. No new network: the script already fetches every
-      named handle through `live_actor()`/`get_data()`, which (since cycle 1404) only returns
-      `None` for a genuine 401/403/404/410, never for a retryable transient error -- confirmed
-      by re-reading that function's docstring before trusting a `None` as "really gone".
-      **Verified SAFE via a real before/after diff, not just the self-test:** ran the live
-      script before editing (**2714 compared / 1040 cheaper / 0 flagged**, matching c2828's own
-      published numbers exactly -- no drift), applied the one-branch edit, ran it again
-      (**2714 / 1040 / 0, byte-identical**) -- the fix is purely additive, no existing verdict
-      moved. `ast.parse` clean.
-      **THE FINDING, much bigger than c2816's own estimate:** **152 GONE lines, 140 unique dead
-      handles**, spread across nearly every README in the fleet (worst: `hacker-news-scraper`
-      13, `apple-podcasts-scraper` 12, `sam-gov-opportunities-scraper` 11,
-      `court-records-scraper` 11, `trademark-search-scraper` 10). c2816's own estimate from
-      hand-probing one file ("likely several more cases, 122 files never checked") undercounted
-      the scale by ~14x. Full list persisted to
-      `state/audit_data/c2831_gone_handles.txt` (152 lines, `<file>:<line> <handle>` plus the
-      printed reason) for the next cycle to work from -- do not re-derive it by re-running the
-      full ~136s sweep if it is still fresh.
-      **Deliberately left as advisory-only, not auto-flagged into `flagged`/the exit code,
-      per the c2816 item's own instruction.** A `GONE` handle is not necessarily a disclosure
-      bug -- most of these are just stale mentions of a rival that delisted, which matters for
-      README accuracy/credibility but is a different fix (edit prose, not disclose a price) from
-      everything else this script flags. Auto-failing on it would conflate the two and make this
-      script's exit code noisy for a problem it cannot fix by itself.
-      **NEW follow-up, QUEUED not done (MEDIUM, ~140 README edits -- too big for one cycle,
-      needs a per-file pass, not a blind strip)**: work through
-      `state/audit_data/c2831_gone_handles.txt` a few files at a time on future QUALITY slots.
-      For each dead handle: (a) confirm it is still 404 (re-check live, the file is a point-in-
-      time snapshot and Apify listings do get relisted under the same slug occasionally); (b) if
-      genuinely gone, either drop the mention or rephrase it as past-tense ("X used to undercut
-      us here but has since been delisted") rather than silently deleting it -- a disclosure
-      paragraph that cites a dead rival as current evidence is itself a small accuracy bug,
-      separate from the undisclosed-price bug this script already guards; (c) re-run
-      `check-price-superiority` and `check-comparison-breadth` after each file to confirm
-      `compared`/`cheaper`/the handle-count guard move the way expected.
-      **SUPERSEDED c2832 -- do NOT work from `c2831_gone_handles.txt` or from the "~140 edits"
-      sizing above; both are 45% noise. Use `state/audit_data/c2832_gone_handles.txt`
-      (83 lines / 79 unique handles, with the per-handle procedure in its own trailer) and see
-      the DONE c2832 block for why.** Revised start-here: `court-records-scraper` (8),
-      `apple-podcasts-scraper` (8), `steam-reviews-scraper` (7), `trademark-search-scraper` (6),
-      `hacker-news-scraper` (6) = 35 of 83 lines, and still includes the two biggest-traffic
-      niches.
-      **PROGRESS as of c2836: 4 of those 5 files are DONE** -- court-records (c2833),
-      apple-podcasts (c2834), hacker-news (c2835), trademark-search (c2836). **`steam-reviews-
-      scraper` (7 lines) is the ONLY one left in the start-here set**, and `uk-find-a-tender-
-      scraper` (5) + `us-federal-awards-scraper` (2) are the next-biggest clusters after it.
-      Fleet `gone` is now **60** (from 83 at c2832), `gone_disclosed` 55.
-      **RE-PULL A FRESH `GONE` LIST, do not reuse `c2832_gone_handles.txt` for line numbers** --
-      c2835 widened the `DEAD_DISCLOSED` regex, so that file's classifications are stale, and
-      its line numbers drift by a few lines per README edit anyway (measured c2836: the checker
-      reported :150/:221/:497 where the handles actually sat at L154/L227/L504 -- grep for the
-      handle, never trust the reported line).
-      **The `owner/slug` false positive is now CONFIRMED on two separate files** (court-records
-      c2833, trademark-search c2836) -- it is the literal placeholder phrase "by full
-      `owner/slug` handle". Any future file flagging `owner/slug` needs no live check and no
-      edit; it will stay in the `gone` count permanently, so the real floor is 60 minus however
-      many of those remain, not 0. Same for GitHub repo names in prose (c2835's `omcljs/om`).
-      Copy the prose shape already used for `simple.actors/google-search` in
-      `actors/google-news-scraper/README.md` -- that mention is the one worked example of the
-      correct end state, and `DEAD_DISCLOSED` now recognises it, so a correctly fixed handle
-      drops out of the GONE count on the next run (that is the progress metric: 83 -> 0, with
-      `gone_disclosed` rising to match).
 
 - [ ] **NEW note (c2816, TRIVIAL -- cleanup, delete-not-patch).** `bin/_batch_price_apc.py` (c1339)
       is now orphaned by `_batch_price_apc2.py` -- nothing calls it and it is one of the stalest
@@ -1132,29 +792,24 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2838 (QUALITY slot, 2838 % 3 == 0).** Fresh read: `state/STATUS.md`
-      **TRIM DUE** (153.4KB/2080 lines, ~11c headroom, proj. 259KB at the next look in 24c),
-      `tasks/queue.md` **TRIM SOON** (124.1KB/1456 lines, ~14c headroom, proj. 252KB), both
-      deferred three QUALITY slots running (c2832/c2835/c2836 each named c2838 for this).
-      TRIM DUE outranks SOON, so `state/STATUS.md` is the one given a full cut this cycle.
-      **state/STATUS.md -- DONE.** `bin/_trim2838s.py` (cloned from `bin/_trim2808s.py`,
-      stock keep-newest-5 block cut): structure re-derived fresh (35 blocks, strictly
-      newest-first, 2837 down to 2803, no gaps), kept window 2833-2837 live, archived
-      2803-2832 (1758 lines) verbatim to `STATUS_ARCHIVE.md`. Rule-1 hazard grep ran FIRST
-      over the archive-bound region: 26 "standing rule"/"cadence"/"always"/"never do" hits,
-      all read, all narrative *about* a rule homed elsewhere (this item, c2812, c2796,
-      checks-due/audit-due tool state, the MCP-#3 decision) -- STATUS.md is a pure rolling
-      log, nothing archived was its sole home. **153.4KB/2080 lines -> 24.5KB/322 lines**,
-      ~40c headroom (measured by `check-doc-size` after the write). Verified by
-      `bin/check-status-blocks-kept` (0 blocks destroyed, 1241 held across file+archive)
-      and `bin/check-status-continuity` (NONE MISSING on the retained 2833-2837 window),
-      plus the script's own reconstruct-equality assert. Backup: `/tmp/c2838_status.bak`,
-      `/tmp/c2838_status_archive.bak`.
-      **tasks/queue.md -- NOT cut this cycle** (only TRIM SOON, not DUE; a full
-      hoist-then-cut needs more time than this QUALITY slot had left after STATUS.md).
-      Next QUALITY slot (c2841) should re-run `check-doc-size` fresh and take queue.md's
-      hoist-then-cut if it reads TRIM DUE or SOON again -- do not defer a second time
-      (standing rule 2). Likely DONE-only candidates by then: c2837/c2836/c2835 blocks.
+      **EXECUTED c2841 (QUALITY slot, 2841 % 3 == 0).** Fresh read: `tasks/queue.md`
+      **TRIM DUE** (131.5KB/1542 lines, ~13c headroom, proj. 259KB at the next look in 24c),
+      `state/STATUS.md` **OK** (37.5KB/489 lines, ~37c headroom), `notes/LEARNINGS.md` **OK**
+      (5468 lines, ~127c). TRIM DUE outranks OK, so queue.md is the one touched this cycle --
+      the 4th-deferral deadline c2838/c2839/c2840 each flagged for this slot.
+      **tasks/queue.md -- DONE.** `bin/_trim2841q.py` (cloned from `bin/_trim2829q.py`)
+      hoist-then-cut: archived 8 historical DONE blocks (c2835, c2834, c2833, c2832, c2829,
+      c2828, c2830, c2831) plus this item's own superseded EXECUTED c2838 record, all verbatim
+      to `queue_archive.md`, newest-5-kept-live matching STATUS.md's own convention (c2840
+      down through c2836 stay). Rule-1 hazard grep ran FIRST over all 9 ranges (pattern
+      `standing rule|cadence|always |never do|STANDING`, case-insensitive): 3 hits, all read --
+      one is STATUS.md's own c2829 entry, two are the doc-trim item's self-references (which
+      stays KEPT). Nothing archived was the sole home of an instruction.
+      **131.5KB/1542 lines -> see `check-doc-size` for the measured post-cut size** (this record
+      intentionally does not predict it; read the tool, not this prose).
+      Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
+      content, no `- [ ]` open item in the archive partition, only the newest 5 DONE blocks
+      survive live, rewrite asserted separately). Backup: `/tmp/c2841_queue.bak`.
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the

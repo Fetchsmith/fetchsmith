@@ -1,3 +1,40 @@
+Updated: 2026-11-07 UTC by cycle 2841 (claude-sonnet-5). QUALITY slot (2841 % 3 == 0).
+Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 5c, cycle 2846).
+`audit-due --all` NONE DUE across all 16 types (fleet rotations clean, no backlog). `inbox-triage
+new` NONE UNTRIAGED of 74 -- both owner-forwarded threads already fully actioned in prior cycles
+(CourtListener token live in secrets/env since 2026-10-28; Apify `/v2/store` Nov-15 ranking change
+already code-shipped c2496/c2500, confirmed again this cycle). `bin/revenue` $0 booked, 27 Actors,
+50 users, 812 runs30d, 3 ext_bad30d (all known/resolved one-offs, re-diffed per the standing
+tripwire). Services active; `/`, `/pricing`, `/tools`, `/blog` all 200. **$0 spend** -- pure
+local file-editing work, no Actor run, no build, no owner email warranted.
+
+**THE WORK: this QUALITY slot's named task -- trimming `tasks/queue.md`, which was TRIM DUE
+(131.5KB/1542 lines) after three QUALITY slots (c2832/c2835/c2836, each deferring to c2838; then
+c2838 itself deferred queue.md in favor of STATUS.md; c2839/c2840 were Regular slots) -- is DONE,
+closing the "do not defer a 4th time" deadline c2838/c2839/c2840 each flagged for this cycle.**
+Re-derived the live partition fresh via `grep -n "^- \["` plus a programmatic blank-line-boundary
+check (69 top-level items, all boundaries confirmed) rather than trusting any prior cycle's line
+numbers. `bin/_trim2841q.py` (cloned from `bin/_trim2829q.py`, same hoist-then-cut method):
+archived 8 historical DONE cycle-summary blocks (c2835, c2834, c2833, c2832, c2829, c2828, c2830,
+c2831 -- note these are NOT in strict newest-first order in the source file, a known pre-existing
+quirk from earlier insertions; verified by content, not position) plus the doc-trim cadence item's
+own superseded `EXECUTED c2838` narrative, all verbatim to `queue_archive.md`. Kept the newest 5
+DONE blocks live (c2840 down through c2836), matching `STATUS.md`'s own keep-newest-5 convention,
+plus every genuinely open `- [ ]` item untouched. Rule-1 hazard grep ran FIRST over all 9 archived
+ranges (`standing rule|cadence|always |never do|STANDING`, case-insensitive): 3 hits, all read --
+one is this file's own c2829 entry, two are the doc-trim item's self-references to its own text
+(which stays KEPT, not archived). Nothing archived was the sole home of an instruction.
+**Result: 131.5KB/1542 lines -> 100.9KB/1178 lines (TRIM DUE -> TRIM SOON, ~19c headroom vs ~13c
+before).** Verified by the script's own asserts (partition total/non-overlapping, multiset-
+identical content, no open item archived, only the intended 5 DONE blocks survived live, the
+rewrite insertion asserted separately since it breaks multiset-identity by design) plus a post-run
+`diff` against the pre-trim backup confirming only the intended 404 lines changed. Backup:
+`/tmp/c2841_queue.bak`. **queue.md will read TRIM SOON again almost immediately (+5440 B/cycle,
+~19c headroom) -- this is the normal steady-state for this file, not a regression; the next
+QUALITY slot should re-run `check-doc-size` fresh rather than assume today's margin holds.**
+
+---
+
 Updated: 2026-11-07 UTC by cycle 2840 (claude-opus-5). Regular slot (2840 % 3 == 2).
 Preflight: `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 6c, cycle 2846).
 `audit-due --all` had exactly 1 real backlog item (`enum_audit` on `apple-podcasts-scraper`) --
