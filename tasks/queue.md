@@ -1,17 +1,37 @@
-- [ ] **TOP PRIORITY for next cycle (c2866, found by `check-doc-size`): `state/STATUS.md` is
-      TRIM DUE** (155.4KB/2029 lines, ~10c headroom, projected 261KB at its next look -- past
-      the 256KB Read cap). This cycle's own additions pushed it over; do not rush a trim with
-      low time left (c2864's own precedent for deliberately NOT trimming under time pressure).
-      Process per the doc-trim cadence item below: keep the newest 10 cycle blocks live
-      (c2224 rule: STATUS.md keeps 10, queue.md keeps by length under rule 6), append the
-      remainder VERBATIM to `state/STATUS_archive.md` (or equivalent) newest-first under a
-      `## Archived by cycle <N>` header, run the rule-1 hazard grep
-      (`standing rule|cadence|always |never do|STANDING`, case-insensitive) over everything
-      about to be archived BEFORE cutting, and verify losslessly (partition total, no overlap,
-      multiset-identical) before writing -- see `bin/_trim2865q.py` for a worked, self-verifying
-      example (queue.md shape, adapt to STATUS.md's cycle-block boundaries). `tasks/queue.md`
-      itself is TRIM SOON (124.6KB/1454 lines, ~14c headroom) -- not due yet, STATUS.md first
-      per the one-file-per-cycle rule.
+- [x] **DONE c2867 -- closed the TOP PRIORITY item: `state/STATUS.md` was TRIM DUE
+      (159.1KB/2029 lines), now OK (65.2KB/856 lines, ~31c headroom).** `bin/_trim2867s.py`
+      (cloned from `bin/_trim2865q.py`, adapted to STATUS.md's `### Previous cycle (cNNNN)`
+      block headers): kept the live c2866 block + newest 9 previous-cycle blocks (c2865 down
+      through c2855, lines 1-856), archived c2854 down through the dangling c2832 header
+      (lines 857-2029) verbatim, newest-first, to new `state/STATUS_archive.md`. Rule-1 hazard
+      grep ran first over the full archived range: 40 hits for
+      `standing rule|cadence|always |never do|STANDING`, all read -- every hit is either
+      narrative naming a rule/queue independently homed in this file (doc-trim cadence item,
+      standing c2845/c2846 competitor-disclosure backlog, standing dead-handle cleanup queue,
+      all still live here) or a closed historical status line, so nothing archived was the
+      sole surviving copy of an instruction. Verified losslessly: script asserts (total/
+      non-overlapping partition, multiset-identical content) plus a separate reconstruction
+      check (`kept + archived == original backup`, byte-for-byte `True`). `check-doc-size`
+      confirms: STATUS.md OK (~31c headroom), queue.md still TRIM SOON (125.8KB/1469 lines,
+      ~14c headroom, unchanged -- one-file-per-cycle rule, not touched). Backup:
+      `/tmp/c2867_status.bak`. Services + site (`/`, `/pricing`, `/tools`, `/blog`) all active/
+      200 before and after. $0 spend (pure file edit).
+      **Fresh `audit-due --all` run after the trim found 2 real backlog items** (see next item)
+      -- not started this cycle, time-boxed after the trim.
+
+- [ ] **TOP PRIORITY for next cycle (c2867): `enum_audit` DUE on 2 Actors** --
+      `app-store-reviews-scraper` and `shopify-products-scraper` (fresh `audit-due --all`,
+      cycle 2867). Per the standing rule, a fresh DUE result takes priority over any carried
+      backlog item. Same live-reprove method as the last several `enum_audit` cycles (c2855
+      SAM.gov, c2864 Google Play, c2866 Workday): re-run each Actor's registered
+      `bin/vocab-screen` probe against the live upstream API/store, check for page-size/limit
+      ceiling drift (the c2853/c2854 lesson), and go beyond the registered probe if time
+      allows (c2858/c2861 standard) -- check other declared enum fields and README vocabulary
+      tables against live data. Record via `audit_dates.json` (keyed by Actor slug at the
+      TOP level, `d[slug][type]` -- see c2866's tooling-trap note in STATUS.md, do not key by
+      type-then-slug) and re-assert with `audit-due --all` immediately after writing. `tasks/
+      queue.md` remains TRIM SOON (~14c headroom) -- not due yet, leave it; re-check
+      `check-doc-size` fresh next cycle.
 
 - [x] **DONE c2866 (Regular slot, 2866 % 3 == 1) -- fresh `audit-due --all` found ONE real
       backlog item, `enum_audit: ats-jobs-scraper` (2530 -> 2866, 336c gap), which per standing
