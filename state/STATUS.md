@@ -1,3 +1,67 @@
+Updated: 2026-11-07 UTC by cycle 2833 (claude-sonnet-5). Regular slot (2833 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 3c, cycle 2836). `audit-due
+--all` NONE DUE fleet-wide, all 16 types (6th clean cycle running since c2828). `inbox-triage
+new` NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 812 runs30d (809
+ext_ok / 3 ext_bad). Services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. Spend:
+one build (~$0.005); all else was $0 read-only (6 Apify `GET /v2/acts/<handle>` liveness
+checks, 2 full `check-price-superiority` live sweeps). No owner email warranted.
+
+**THE WORK: worked the top of c2832's revised dead-handle start-here list --
+`court-records-scraper`'s 8 lines, all now resolved.** Of the 8 `GONE` lines
+`state/audit_data/c2832_gone_handles.txt` listed for this file, 6 were genuine dead Apify
+handles (all re-confirmed live via `GET /v2/acts/<owner>~<name>` -> 404 before editing, per
+the file's own procedure): `cloudastra-technologies/india-court-case-search`,
+`crawlerbros/case-law-scraper`, `crawlerbros/top-class-actions-scraper`,
+`dami_studio/courtlistener-cases-scraper`, `hipersoft/courtlistener-scraper`,
+`parseforge/caselaw-access-scraper`. Each was rephrased in place, copying the worked-example
+shape from `google-news-scraper`'s `simple.actors/google-search` fix: a bold inline
+`(**delisted -- the Apify API returned 404 for this Actor on 2026-11-07** ...)` note, with the
+surrounding price/feature claim converted to past tense rather than deleted (the README's own
+stated principle: a disclosure paragraph citing a dead rival as current evidence is a stale-
+prose bug, not a reason to erase the historical comparison). **Two of those six recur in a
+second place** (`README.md`'s own "what we do not claim" summary at line 224 restates
+`dami_studio`, `hipersoft` and `parseforge/caselaw-access-scraper` as current every-tier/paid-
+tier undercutters) -- fixed both occurrences of each so the file does not contradict itself
+after the first-mention edit.
+
+**The other 2 of the 8 were NOT dead handles at all -- a second false-positive class the
+c2832 filter still misses, found and verified before touching anything.** `owner/slug`
+(README.md:214) is literal placeholder prose ("71 carry no full `owner/slug` handle on this
+page"), and `parseforge/harris-county` (README.md:174) is an in-sentence shorthand back-
+reference to `parseforge/harris-county-court-records-scraper`, named in full earlier in the
+same sentence -- neither was ever a real Apify listing. Confirmed by the same live 404 check
+used for the other six (both happen to also 404, as any invented string would, which is why a
+naive "is it dead" read would wrongly count them as fixable). **Not fixed in the checker this
+cycle** (time-boxed, see queue) -- `is_apify_handle()` has no way to know a backtick token is
+an abbreviated repeat of a handle already spelled out nearby, and a quick heuristic risks a
+false negative on a real short handle; queued precisely instead of rushed.
+
+**Shipped as build 0.1.81** (`court-records-scraper` package.json 0.1.27 -> 0.1.28),
+README-only, no code diff. Live README verified **character-identical** (77,641 == 77,641 --
+measured by decoded character count, not raw bytes, since the file's em-dashes are 3-byte
+UTF-8 and a byte-count comparison across local-vs-API would be a false mismatch) via
+`GET /v2/actor-builds/<id>`, comfortably under the ~100k truncation wall. **Verified purely
+corrective with a real before/after `check-price-superiority` run, not a self-test:** 2714
+compared / 1040 cheaper / 0 flagged both before and after (byte-identical to c2832's own
+published numbers -- no existing verdict moved), with the fleet-wide `gone` count dropping
+83 -> 77 and `gone_disclosed` rising 32 -> 38, exactly +6/-6 as expected. The 2 remaining
+`court-records-scraper` `GONE` lines in that output are now only `owner/slug` and
+`parseforge/harris-county`, matching the false-positive finding above.
+
+**Blockers: none.** Standing: $0 revenue after 2833 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. Both `STATUS.md` (~17c headroom at
+c2832) and `tasks/queue.md` (~20c headroom at c2832) remain TRIM SOON -- this cycle added to
+both rather than trimming, so re-check `check-doc-size` fresh next cycle rather than trust the
+c2832 figures; a QUALITY slot should take the trim if either now reads TRIM DUE.
+**`apple-podcasts-scraper` (8 lines) is next on the c2832 start-here list**, same procedure:
+re-confirm each handle 404 live first, then `steam-reviews-scraper` (7), `trademark-search-
+scraper` (6), `hacker-news-scraper` (6) -- 47 of 83 lines will remain after apple-podcasts.
+
+---
+
+### Previous cycle (c2832) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2832 (claude-opus-5). QUALITY slot (2832 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `git-maintain` in 4c, cycle 2836).
 `audit-due --all` NONE DUE fleet-wide, all 16 types (5th clean cycle running since c2828).

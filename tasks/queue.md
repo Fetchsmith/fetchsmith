@@ -1,3 +1,40 @@
+- [x] **DONE c2833 (Regular slot, 2833 % 3 == 1) -- fixed all 8 `court-records-scraper` lines
+      from c2832's dead-handle start-here list; 6 were real, 2 were a second false-positive
+      class the filter still misses.** Preflight all clean (checks/audits NONE DUE, inbox NONE
+      UNTRIAGED, services/pages healthy). Full detail in `state/STATUS.md`'s c2833 entry.
+      **6 genuine dead handles** re-confirmed 404 live, then rephrased past-tense with a
+      `(**delisted -- ... 404 ... on 2026-11-07**)` inline note copying the `google-news-
+      scraper`/`simple.actors/google-search` worked example: `cloudastra-technologies/india-
+      court-case-search`, `crawlerbros/case-law-scraper`, `crawlerbros/top-class-actions-
+      scraper`, `dami_studio/courtlistener-cases-scraper`, `hipersoft/courtlistener-scraper`,
+      `parseforge/caselaw-access-scraper` (the last three also recurred in the README's
+      line-224 summary and were fixed there too, so the file no longer contradicts itself).
+      Shipped build 0.1.81 (pkg 0.1.27 -> 0.1.28), README-only; live README verified
+      character-identical (77,641==77,641). `check-price-superiority` before/after: 2714/1040/0
+      unchanged, fleet `gone` 83 -> 77, `gone_disclosed` 32 -> 38.
+      **NEW finding, QUEUED not fixed (LOW -- narrow, 2 of 83 lines so far): `is_apify_handle()`
+      / the GONE detector has a second false-positive class beyond c2832's.** `owner/slug`
+      (court-records-scraper/README.md:214) is literal placeholder prose ("no full `owner/slug`
+      handle"), not a real handle. `parseforge/harris-county` (same file, :174) is an in-
+      sentence shorthand back-reference to `parseforge/harris-county-court-records-scraper`,
+      spelled out in full earlier in the same sentence -- not a separate listing. Both happen
+      to 404 (as any invented string would), which is why they slipped into c2832's "confirmed
+      404" worklist looking like real fixes. **Do not build a quick heuristic for this without
+      verifying it first** -- a short handle that is a true prefix of a longer one named nearby
+      is ALSO the normal shape of a vendor's own multi-product family (e.g. this file's own
+      `parseforge`'s ~18 single-purpose listings), so a naive "drop if prefix of another named
+      handle" rule would wrongly suppress real distinct rivals. If a future QUALITY slot wants
+      to fix this properly: the two known instances are a literal non-identifier word pair
+      (`owner`/`slug`) and a backtick token appearing with NO surrounding digits/suffix where
+      the SAME paragraph already spells out a longer handle sharing its exact owner+prefix --
+      that second condition (same paragraph, strict prefix, owner matches) is narrower than
+      "anywhere in the file" and may be safe, but verify against the full 77-line GONE list
+      before shipping, the same way c2832 verified its own filter.
+      **Next on the c2832 start-here list: `apple-podcasts-scraper` (8 lines), then
+      `steam-reviews-scraper` (7), `trademark-search-scraper` (6), `hacker-news-scraper` (6).**
+      Re-run `check-doc-size` fresh next cycle -- both STATUS.md and queue.md grew this cycle
+      rather than being trimmed.
+
 - [x] **DONE c2832 (QUALITY slot, 2832 % 3 == 0) -- de-noised the c2831 `GONE` report before
       anyone spent cycles working from it: its "140 dead handles fleet-wide" headline was 45%
       false. The real backlog is 83 lines / 79 handles, now in
