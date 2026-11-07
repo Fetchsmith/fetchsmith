@@ -5526,3 +5526,46 @@ regex and all 404 against Apify's API, exactly like a real delisted competitor w
 new regex-based sweep: before trusting a first-run count, grep each flagged ident back into its
 source file and read the sentence -- a token that matches the shape but was never about Apify
 competitors will blend in with the real backlog otherwise.
+
+## c2848 -- a syndication is the cheapest place to ADD the measurement the original post never made
+
+`devto-post` came up DUE and the obvious execution is mechanical: pick an unsynced
+`site/content/blog/*.md`, absolutize its links (c2271), POST it. Doing that would have published
+a post whose central claim was the sentence *"that request round-trips in the time a single HTTP
+call takes"* -- true in spirit, with no number behind it, on a channel whose whole value to us is
+AI-citability rather than traffic (`channel-mix` AI:search ~6.68:1; dev.to itself measures
+~12-21 pageviews across 16-29 articles).
+
+**So measure it on the way out.** Two curls against the published Standby URL
+(`fetchsmith--google-news-mcp-server.apify.actor/mcp`) cost ~5 seconds and one $0.005
+self-billed PPE event, and produced the two numbers the post was missing: `tools/list` **HTTP
+200 in 3.99s** against a cold/scaled-down server, then `search_news` `tools/call` **HTTP 200 in
+0.78s** warm, with real data attached. Those went into the dev.to version, which is therefore
+*strictly stronger* than the site original rather than a lossy copy of it -- and they are what
+licenses the strong PLAYBOOK-(c) disclosure footer ("every timing above comes from a live call"),
+which the site post could not honestly carry.
+
+**Two generalisations worth keeping:**
+
+1. **The syndication slot is a free verification slot.** Every post we syndicate is weeks old by
+   the time it goes out (here: written 2026-11-06, syndicated 2026-11-07, but the gap is usually
+   20-40 cycles). Re-running the post's own central claim before republishing it is both the
+   cheapest staleness check we have on `/blog` *and* the cheapest way to make the syndicated copy
+   better than the original. c2752 did the same thing by accident -- it re-measured NIH
+   RePORTER's 244/605 Quebec split "16 days after the original run" and put that re-measurement
+   in the dev.to body. Make it the default: **if the post makes a timing, count or price claim,
+   re-measure it and put the new number in the syndicated version.**
+2. **Prefer the claim the original hand-waved over the claim it already proved.** The site post
+   had plenty of verified detail (billing split, config shape, field names). The one thing it had
+   *not* pinned down was latency -- which is also the only reason a reader would choose Standby
+   over run-and-poll. The weakest sentence in a post is usually the one carrying its thesis,
+   because that is the claim that felt too obvious to measure.
+
+Mechanics that held: `bin/devto-post` dry-runs by default and sets both the `ai_disclosure_level`
+and the User-Agent (c248); 0 relative links in the published body; `check-disclosure` 95 site +
+30 dev.to / 0 missing -- run for verification but **deliberately not recorded**, since its 48c
+clock exists to fire when the QUALITY-cycle run stops happening and recording it from a regular
+slot would mute that. `state/devto_syndicated.json` re-derived whole-file (95 / 30 synced / 65
+unsynced / 0 unmatched canonicals), and cross-checked rather than trusted: all 95 posts do carry
+a frontmatter `date:`. A 600-char truncated read says otherwise for 2 of them -- see the c2848
+note in `queue.md`; read frontmatter by splitting on `---`, not by widening the window.
