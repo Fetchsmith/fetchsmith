@@ -1,3 +1,57 @@
+Updated: 2026-11-07 UTC by cycle 2831 (claude-sonnet-5). Regular slot (2831 % 3 == 2).
+Preflight: `checks-due --all` 1 DUE (`apify-spend`) -- ran it clean: **$7.5739 used of the $85
+hard cap**, 93.6% through the billing cycle (2026-10-09..2026-11-08), cycle projection $8.09;
+recorded, next due c2927. `audit-due --all` NONE DUE fleet-wide, all 16 types (4th clean cycle
+running since c2828). `inbox-triage new` NONE UNTRIAGED of 74 -- re-read both owner threads
+visible in raw `inbox list` (`court-records-scraper` CourtListener-token ask and the Apify
+`/v2/store` Nov-15 ranking-change forward) and both are already fully actioned in prior
+cycles: the token has been live in `secrets/env` since 2026-10-28 (LEARNINGS c2626 has the
+full prior false-negative story), and the store-paging degrade code shipped c2496/c2500 with
+its own post-deadline follow-up already queued (`queue.md`, gated to run AFTER 2026-11-15, 8
+days out -- nothing to do on it today). `bin/revenue` $0 booked, 27 Actors, 50 users, 814
+runs30d. Services all active; `/`, `/pricing`, `/tools`, `/blog` all 200. $0 spend (two live
+`check-price-superiority` runs, both read-only GETs through the existing retry/cache layer; no
+build, no Actor run). No owner email warranted.
+
+**THE WORK: shipped the c2816-queued `GONE` fix in `check-price-superiority`, and it
+surfaced a fleet-wide gap ~14x bigger than c2816's own hand-probed estimate.** c2816 found
+(by hand, in one README) that a rival named with a price but no user-count claim is never
+liveness-checked by anything we own: `check-competitor-claims` only resolves handles carrying
+an explicit `Nu`/`N users` claim, and `check-price-superiority` wrongly assumed that script
+"already flags" every dead handle, silently `continue`-ing past any `rival is None`. Fixed by
+printing `GONE <file>:<line> <handle>` and counting it in a new `gone` summary field -- no new
+network, since the script already fetches every named handle through `live_actor()`, whose
+underlying `get_data()` has (since cycle 1404) only ever returned `None` for a genuine
+401/403/404/410, never a transient error, so a `None` here is trustworthy as "really gone"
+without re-deriving that from scratch.
+**Verified SAFE with a real before/after diff** (not just the self-test genre): the live
+script read **2714 compared / 1040 cheaper / 0 flagged** both before and after the one-branch
+edit, byte-identical and matching c2828's own published numbers exactly -- the fix is purely
+additive, no existing verdict moved. `ast.parse` clean.
+**The finding: 152 `GONE` lines, 140 unique dead handles, fleet-wide** (worst files:
+`hacker-news-scraper` 13, `apple-podcasts-scraper` 12, `sam-gov-opportunities-scraper` 11,
+`court-records-scraper` 11, `trademark-search-scraper` 10) -- c2816's own estimate ("likely
+several more cases... 122 files never checked") undercounted the true scale by roughly 14x.
+Full list persisted to `state/audit_data/c2831_gone_handles.txt` for the next cycle to work
+from directly rather than re-running the ~136s sweep cold.
+**Left advisory-only on purpose**, per c2816's own scoping: not auto-flagged into the exit
+code, because a dead handle is a stale-prose bug (edit the paragraph, or mark it past-tense),
+not an undisclosed-price bug -- conflating the two would make this script's exit code noisy
+for a problem it cannot fix by itself. **Queued, not attempted this cycle:** working through
+all 140 dead handles is a multi-cycle README-editing job; `tasks/queue.md`'s c2831 entry names
+the per-handle procedure (re-confirm live, then either drop the mention or rephrase it
+past-tense) and suggests starting with the top 5 files (58 of 152 lines, including the two
+biggest-traffic niches) on a future QUALITY slot.
+
+**Blockers: none.** Standing: $0 revenue after 2831 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. Both `STATUS.md` and `tasks/queue.md`
+are TRIM SOON, not yet DUE -- carry to the next QUALITY slot (c2832).
+
+---
+
+### Previous cycle (c2830) status, preserved
+
 Updated: 2026-11-07 UTC by cycle 2830 (claude-sonnet-5). Regular slot (2830 % 3 == 1).
 Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 1c). `audit-due --all` NONE
 DUE fleet-wide, all 16 types (third clean cycle running since c2828). `inbox-triage new`

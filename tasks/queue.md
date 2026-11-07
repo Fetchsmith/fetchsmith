@@ -148,24 +148,63 @@
       get hidden). Must re-flag if the rival's dearer-event PRICE changes from the acked value,
       so store that price in the ack record.
 
-- [ ] **NEW follow-up (c2816, MEDIUM -- a real SILENT fleet-wide gap in our own guards, found by
-      hand; do NOT bolt it on under time pressure, it needs a before/after baseline diff).**
-      **A rival named in a README with a published PRICE but NO user count is never
-      liveness-checked by anything we own.** `check-competitor-claims` only resolves handles that
-      carry an `Nu`/`N users` claim (that is what its `claimed`/`live_users` loop iterates), and
-      `check-price-superiority` *explicitly defers to it* for dead handles -- `bin/check-price-superiority:407`
-      is literally `continue  # gone from Store -- check-competitor-claims already flags this`,
-      which is FALSE for any count-less mention. So such a listing can 404 and we keep publishing
-      its price forever. **Confirmed live, twice, in one file this cycle:** both
-      `wearefluent/podcast-transcripts` and `wearefluent/podcast-episodes-scraper` are 404 while
-      `apple-podcasts-scraper`'s README published their prices, and `check-competitor-claims --only`
-      read **0 stale / 0 unresolvable** on that file both before and after. Found only because this
-      audit hand-probed all 10 named rivals. **Cheapest fix: `check-price-superiority` already
-      fetches every named rival, so have it print a `GONE <file>:<line> <handle>` line (and count
-      it) instead of silently `continue`-ing** -- no new network at all. Scope it as advisory-only
-      first and diff `compared`/`cheaper`/`flagged` against the 2627/991/0 baseline recorded above
-      before trusting the run. Likely several more cases fleet-wide: 122 other README files have
-      never had a count-less named rival checked for liveness.
+- [x] **DONE c2831 (Regular slot, 2831 % 3 == 2) -- shipped the c2816 `GONE` fix in
+      `check-price-superiority` and it immediately surfaced a much bigger fleet-wide gap than
+      c2816 estimated.** Preflight: `checks-due --all` 1 due (`apify-spend`, ran clean: $7.5739
+      used of the $85 cap, 93.6% through the billing cycle, cycle projection $8.09 -- recorded,
+      next due c2927); `audit-due --all` NONE DUE in all 16 types (4th clean cycle since c2828);
+      `inbox-triage new` NONE UNTRIAGED of 74 (both owner threads in the raw `inbox list` --
+      the court-records-scraper CourtListener token and the 2026-11-15 Apify `/v2/store`
+      ranking change -- re-confirmed already actioned in prior cycles: token has been live in
+      `secrets/env` since 2026-10-28, and the store-paging degrade code shipped c2496/c2500
+      with its own post-deadline follow-up already queued below, untouched here). `bin/revenue`
+      $0 booked / 27 Actors / 50 users / 814 runs30d, services all active,
+      `/`+`/pricing`+`/tools`+`/blog` all 200. Spend $0 (one live `check-price-superiority`
+      run before the edit, one after -- both read-only GETs through the existing retry/cache
+      layer, no Actor runs, no build). No owner email warranted.
+      **The fix:** `bin/check-price-superiority`'s dead-handle branch (`rival is None`) used to
+      `continue` silently on the stated assumption that `check-competitor-claims` already flags
+      it -- true only for a handle that also carries an explicit `Nu`/`N users` claim, since
+      that is the only thing `check-competitor-claims`'s `claimed`/`live_users` loop iterates.
+      Now it prints `GONE <file>:<line> <handle>`, increments a new `gone` counter, and the
+      summary line reports the count by name. No new network: the script already fetches every
+      named handle through `live_actor()`/`get_data()`, which (since cycle 1404) only returns
+      `None` for a genuine 401/403/404/410, never for a retryable transient error -- confirmed
+      by re-reading that function's docstring before trusting a `None` as "really gone".
+      **Verified SAFE via a real before/after diff, not just the self-test:** ran the live
+      script before editing (**2714 compared / 1040 cheaper / 0 flagged**, matching c2828's own
+      published numbers exactly -- no drift), applied the one-branch edit, ran it again
+      (**2714 / 1040 / 0, byte-identical**) -- the fix is purely additive, no existing verdict
+      moved. `ast.parse` clean.
+      **THE FINDING, much bigger than c2816's own estimate:** **152 GONE lines, 140 unique dead
+      handles**, spread across nearly every README in the fleet (worst: `hacker-news-scraper`
+      13, `apple-podcasts-scraper` 12, `sam-gov-opportunities-scraper` 11,
+      `court-records-scraper` 11, `trademark-search-scraper` 10). c2816's own estimate from
+      hand-probing one file ("likely several more cases, 122 files never checked") undercounted
+      the scale by ~14x. Full list persisted to
+      `state/audit_data/c2831_gone_handles.txt` (152 lines, `<file>:<line> <handle>` plus the
+      printed reason) for the next cycle to work from -- do not re-derive it by re-running the
+      full ~136s sweep if it is still fresh.
+      **Deliberately left as advisory-only, not auto-flagged into `flagged`/the exit code,
+      per the c2816 item's own instruction.** A `GONE` handle is not necessarily a disclosure
+      bug -- most of these are just stale mentions of a rival that delisted, which matters for
+      README accuracy/credibility but is a different fix (edit prose, not disclose a price) from
+      everything else this script flags. Auto-failing on it would conflate the two and make this
+      script's exit code noisy for a problem it cannot fix by itself.
+      **NEW follow-up, QUEUED not done (MEDIUM, ~140 README edits -- too big for one cycle,
+      needs a per-file pass, not a blind strip)**: work through
+      `state/audit_data/c2831_gone_handles.txt` a few files at a time on future QUALITY slots.
+      For each dead handle: (a) confirm it is still 404 (re-check live, the file is a point-in-
+      time snapshot and Apify listings do get relisted under the same slug occasionally); (b) if
+      genuinely gone, either drop the mention or rephrase it as past-tense ("X used to undercut
+      us here but has since been delisted") rather than silently deleting it -- a disclosure
+      paragraph that cites a dead rival as current evidence is itself a small accuracy bug,
+      separate from the undisclosed-price bug this script already guards; (c) re-run
+      `check-price-superiority` and `check-comparison-breadth` after each file to confirm
+      `compared`/`cheaper`/the handle-count guard move the way expected. Start with the top 5
+      files above (58 of the 152 lines) -- clears ~38% of the backlog in the files most likely
+      to be read by an actual buyer (the two biggest-traffic niches, `hacker-news-scraper` and
+      `apple-podcasts-scraper`, are in that top 5).
 
 - [ ] **NEW note (c2816, TRIVIAL -- cleanup, delete-not-patch).** `bin/_batch_price_apc.py` (c1339)
       is now orphaned by `_batch_price_apc2.py` -- nothing calls it and it is one of the stalest

@@ -366,7 +366,7 @@ def main():
     sys.path.insert(0, os.path.join(ROOT, "bin"))
     import _unit_price as up
 
-    compared = cheaper_found = flagged = 0
+    compared = cheaper_found = flagged = gone = 0
     runfee_seen = runfee_flagged = 0
     tier_checked = tier_flagged = 0
     unit_checked = unit_advised = decoy_skipped = 0
@@ -404,7 +404,12 @@ def main():
                 continue
             rival = live_actor(ident, headers)
             if rival is None:
-                continue  # gone from Store -- check-competitor-claims already flags this
+                gone += 1
+                print(f"GONE {slug}/README.md:{lineno}  {ident} is 404 on Apify but still "
+                      f"named here -- check-competitor-claims only re-derives handles that "
+                      f"carry an explicit user-count claim (c2816), so a count-less mention "
+                      f"like this one is not liveness-checked anywhere else")
+                continue
             # Run-fee-only rivals first: headline_price would mis-read their flat per-run fee
             # as a per-row rate and conclude they are dearer. Our own price is per-row for all
             # 24 live Actors, but guard the division anyway -- if we ever price at $0 nobody
@@ -552,7 +557,10 @@ def main():
                               f"disclosing (0-TODO-h1448 container-noun false-positive risk)")
 
     print(f"check-price-superiority: {compared} named-rival price(s) compared, "
-          f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README "
+          f"{cheaper_found} cheaper than us, {flagged} undisclosed anywhere in the README, "
+          f"{gone} named handle(s) 404 on Apify but still live in a README (c2816 gap -- "
+          f"these are NOT covered by check-competitor-claims unless they also carry a "
+          f"user-count claim) "
           f"({runfee_seen} run-fee-only rival(s) held out of the per-row comparison, "
           f"{runfee_flagged} of them undisclosed under the {RUNFEE_CROSSOVER_ROWS}-row "
           f"crossover floor; {tier_checked} tiered-rival ladder(s) also checked at every "
