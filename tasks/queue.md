@@ -69,26 +69,51 @@
       pre-existing UNIT-MISMATCH advisories, none on this Actor. Sweep persisted to
       `state/audit_data/c2828_gn_prices.json`. No `sync-apify-prices` run needed -- price held.
 
-- [ ] **NEW follow-up (c2828, MEDIUM -- a real precision defect shared by EVERY
-      `bin/_batch_price_*.py`, and the bias is UNSAFE: it manufactures fake $0 undercutters).**
-      Every pricer carries this branch verbatim:
-      `if not d.get("pricingInfos") or model == "FREE": ut = {"FREE": 0.0}` -- which collapses
-      **two different things** into "a rival charging $0": an Actor genuinely on Apify's FREE
-      pricing model, and an Actor with **no pricing record at all**. The second is almost always
-      an unmonetized/never-priced listing, not a competitor underselling us. Measured live
-      c2828: of 68 raw every-tier hits on google-news, **4 were `model: None`**
-      (`datarock/google-news-scraper`, `ursog/google-news-rss-delta-monitor`,
-      `flashdata/google-news`, `abidchaudhry/brand-mention-monitor`) against exactly **1**
-      genuine FREE-model rival (`intelscrape/google-news-scraper`) -- so the branch was wrong 4
-      times out of 5 where it fired. It inflates every "N undercutters" count an audit
-      publishes, and it inflates it in the alarming direction. **Fix:** split the branch and tag
-      the listing (`"no_pricing_record": True` vs `"free_model": True`), exclude the
-      no-record ones from `every_tier`/`undercuts_tiers` counts, and report them as their own
-      line ("K listings carry no pricing record and were not counted"). Do it in
-      `_batch_price_gn2.py` + `_batch_price_cts5.py` first (the two current-generation copies
-      every future pricer gets cloned from), so the fix propagates by the same route the two
-      defects did. Cheap: no network, ~15 lines. Until then, **any audit reading an
-      `every_tier` count must re-check `model` on the hits before publishing a number.**
+- [x] **DONE c2830 (Regular slot, 2830 % 3 == 1) -- fixed the c2828 `no_pricing_record` vs
+      `free_model` precision defect in the two current-generation pricer templates.**
+      Preflight: `checks-due --all` NONE DUE, `audit-due --all` NONE DUE in all 16 types
+      (third clean cycle running since c2828 cleared the backlog), `inbox-triage new` NONE
+      UNTRIAGED of 74, `bin/revenue` $0 booked / 27 Actors / 50 users / 816 runs30d, services
+      all active, `/`+`/pricing`+`/tools`+`/blog` all 200. $0 spend (read-only replay of a
+      saved cohort file, no network calls, no build). No owner email warranted.
+      **The fix:** added `up.no_pricing_record_or_free(pricing_infos, model)` to
+      `bin/_unit_price.py` -- a single shared classifier that returns `None` for a normal
+      paid rival (caller keeps its real `unit_price()` result) and a tagged
+      `(ut, uk, note, no_pricing_record, free_model)` tuple for the two cases the old inline
+      branch `if not pricingInfos or model == "FREE"` conflated. Centralized in the shared
+      module rather than duplicated in both scripts, so any future pricer cloned from either
+      template inherits the fix via the one call site instead of needing the branch split
+      copied by hand (the same route the argv-default and `persist_sweep` defects propagated
+      by, per the c2812 base-rate note). Wired into `_batch_price_gn2.py` and
+      `_batch_price_cts5.py`: `no_pricing_record` listings now get `undercuts=[]`,
+      `every_tier=False` unconditionally (never counted as undercutters) and both booleans are
+      written into each output row; the summary line printed at the end of a sweep now reports
+      the excluded count by name instead of folding it into the undercutter total.
+      **Verified without a new live sweep**, by replaying the already-hand-verified
+      `state/audit_data/c2828_gn_prices.json` cohort through the new logic: `model is None`
+      (confirmed live at c2828 to mean "no pricingInfos", not a chosen FREE model) picks out
+      exactly `datarock/google-news-scraper`, `ursog/google-news-rss-delta-monitor`,
+      `flashdata/google-news`, `abidchaudhry/brand-mention-monitor` -- the same 4 handles
+      c2828 removed from its 68 raw hits BY HAND -- plus a 5th no-record listing
+      (`rbbscrap/fast-google-news-scraper`) that hadn't been every_tier anyway, so it was
+      invisible to the manual pass. `intelscrape/google-news-scraper` (the one genuine
+      FREE-model rival) correctly stays classified `free_model=True`, not excluded. Fixed
+      count: every_tier 68 -> 64, matching c2828's own published 63 (+1, since that cohort's
+      hand-pass also dropped a 5th row, `reverberant_equality/mcp-rss-news`, for the SEPARATE
+      decoy-dataset-item reason this fix does not touch). Also unit-tested the three branches
+      of the new helper directly (FREE model / absent pricingInfos / normal paid rival) --
+      all three returned the expected shape. `ast.parse` clean on all three touched files.
+      **Scope, deliberately not expanded:** ~25 older `_batch_price_*.py` copies still carry
+      the unfixed inline branch (grep: `ats3`, `crs`/`crs2`, `cts2`/`cts3`/`cts4`, `fedreg2`,
+      `ggs2`, `hn2`/`hn3`, `nih2`/`nih3`, `sgos2`/`sgos3`, `substack`/`substack2`, `tms2`/
+      `tms3`/`tms4`, `uktft2`/`uktft3`, `asr`, `fda2`, `rjs`, `steam2`, `ted`, `apc2`/`apc`
+      (orphaned, see below)) -- **not retrofitted**, per this module's own stated policy
+      ("does NOT retrofit any past audit's output") and the c2827/c2812 precedent that the
+      cheapest fix path is cloning the current clean template at the next audit, not patching
+      every historical copy. No live rival audit was due this cycle to exercise the fix for
+      real; the next `competitor_audit` on `clinicaltrials-scraper` or `google-news-scraper`
+      (whichever comes due first; soonest fleet-wide is `us-federal-awards-scraper` ~c2975)
+      will be the first live sweep to benefit.
 
 - [ ] **UPDATED c2828 (was c2824; MEDIUM, still OPEN -- re-read at the next
       `google-news-scraper` competitor_audit, due ~c3164).** `johnvc/GoogleNewsAPI` (114u, still

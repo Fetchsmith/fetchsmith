@@ -55,12 +55,20 @@ for h in handles:
     events = (cur.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
     model = cur.get("pricingModel")
     ut, uk, fee, note = unit_price(events)
-    if not d.get("pricingInfos") or model == "FREE":
-        ut, uk, note = {"FREE": 0.0}, None, "FREE model / no pricing record -- $0"
+    absent = up.no_pricing_record_or_free(d.get("pricingInfos"), model)
+    no_pricing_record = free_model = False
+    if absent:
+        ut, uk, note, no_pricing_record, free_model = absent
     future = [{"startedAt": p.get("startedAt"), "model": p.get("pricingModel")}
               for p in (d.get("pricingInfos") or [])
               if p.get("startedAt") and p["startedAt"] > NOW.isoformat()]
-    undercuts = sorted(t for t in ut if t in OURS and ut[t] < OURS[t])
+    if no_pricing_record:
+        # not a real rival price -- never counts as an undercutter, see
+        # up.no_pricing_record_or_free's docstring.
+        undercuts, every = [], False
+    else:
+        undercuts = sorted(t for t in ut if t in OURS and ut[t] < OURS[t])
+        every = bool(ut) and all(t in OURS and ut[t] < OURS[t] for t in ut)
     runfee, runfee_label = cps.runfee_price(d, NOW)
     crossover = round(runfee / OURS_GOLD) if runfee else None
     out.append({
@@ -76,15 +84,19 @@ for h in handles:
         "runfee": runfee,
         "runfee_label": runfee_label,
         "runfee_crossover_rows": crossover,
-        "every_tier": bool(ut) and all(t in OURS and ut[t] < OURS[t] for t in ut),
+        "every_tier": every,
         "future_pricing": future,
+        "no_pricing_record": no_pricing_record,
+        "free_model": free_model,
         "desc": (d.get("description") or "")[:500],
     })
 
 json.dump(out, open(OUT_FILE, "w"), indent=1)
 up.persist_sweep("cts", out)
 rf = [o for o in out if o.get("runfee")]
-print(f"priced {len(out)} listings -> {OUT_FILE} ({len(rf)} pure run-fee)")
+npr = [o for o in out if o.get("no_pricing_record")]
+print(f"priced {len(out)} listings -> {OUT_FILE} ({len(rf)} pure run-fee, "
+      f"{len(npr)} no pricing record, excluded from undercut counts, NOT $0 rivals)")
 for o in out:
     print(o["handle"], o.get("users"), o.get("model"), o.get("unit_tiers"),
           o.get("undercuts_tiers"), o.get("start_fee"), o.get("note"))

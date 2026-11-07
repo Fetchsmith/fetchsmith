@@ -1,3 +1,43 @@
+Updated: 2026-11-07 UTC by cycle 2830 (claude-sonnet-5). Regular slot (2830 % 3 == 1).
+Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 1c). `audit-due --all` NONE
+DUE fleet-wide, all 16 types (third clean cycle running since c2828). `inbox-triage new`
+NONE UNTRIAGED of 74. `bin/revenue` $0 booked, 27 Actors, 50 users, 816 runs30d. Services all
+active; `/`, `/pricing`, `/tools`, `/blog` all 200. $0 spend (read-only replay of a saved
+cohort file, no network, no build). No owner email warranted.
+
+**THE WORK: fixed the c2828 `no_pricing_record` vs `free_model` precision defect** --
+every `bin/_batch_price_*.py` shared the branch `if not pricingInfos or model == "FREE":
+ut = {"FREE": 0.0}`, which conflates a genuine FREE-model rival with a listing that has no
+pricing record at all (c2828 measured this wrong 4 times out of 5 where it fired, always
+in the fake-undercutter direction). Added `up.no_pricing_record_or_free()` to the shared
+`bin/_unit_price.py` module (one classifier, not duplicated per-script) and wired it into
+the two current-generation templates, `bin/_batch_price_gn2.py` and
+`bin/_batch_price_cts5.py`: `no_pricing_record` listings now get `undercuts_tiers=[]`,
+`every_tier=False` unconditionally, both booleans are written to each output row, and the
+sweep summary line reports the excluded count by name. **Verified by replaying
+`state/audit_data/c2828_gn_prices.json`** (no new API calls): the fix picks out exactly the
+4 handles c2828 removed by hand (`datarock`, `ursog`, `flashdata/google-news`,
+`abidchaudhry`) plus one more no-record listing the manual pass never surfaced
+(`rbbscrap/fast-google-news-scraper`), while correctly keeping `intelscrape/google-news-
+scraper` (the one genuine FREE-model rival) classified `free_model=True`. every_tier count
+68 -> 64 on replay, consistent with c2828's own published 63 (the extra 1 is a separate
+decoy-dataset-item exclusion this fix doesn't touch). Unit-tested the helper's 3 branches
+directly; `ast.parse` clean on all 3 touched files. **Deliberately not retrofitted** to the
+~25 older pricer copies that still carry the unfixed branch -- this module's own policy is
+"does not retrofit past audit output," and the established pattern (c2827) is that the next
+audit clones the current clean template rather than patching every historical copy. No live
+`competitor_audit` was due this cycle to exercise the fix for real (soonest fleet-wide:
+`us-federal-awards-scraper` ~c2975); full record in `tasks/queue.md`'s c2830 entry.
+
+**Blockers: none.** Standing: $0 revenue after 2830 cycles; Polar checkout deferred by owner
+decision; MCP #3 closed-for-builds (gated on dates: clinicaltrials 2026-11-12+, google-news
+2026-12-05+); niche-hunting on cooldown to ~2026-12-26. Both `STATUS.md` and `tasks/queue.md`
+are TRIM SOON, not yet DUE -- carry to the next QUALITY slot (c2832). `audit-due --all`
+should be re-run fresh next cycle rather than assumed empty; fall back to the c2380
+one-term-diff rotation or a `varied_test` platform re-check if it is still genuinely empty.
+
+---
+
 Updated: 2026-11-06 UTC by cycle 2829 (claude-sonnet-5). QUALITY slot (2829 % 3 == 0).
 Preflight: `checks-due --all` NONE DUE (soonest `apify-spend` in 2c). `audit-due --all` NONE
 DUE, fleet-wide (no backlog in any of the 16 audit types). `inbox-triage new` NONE UNTRIAGED

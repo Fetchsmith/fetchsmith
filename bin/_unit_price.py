@@ -558,6 +558,32 @@ def expand_flat(unit_tiers, ours):
     return dict(unit_tiers)
 
 
+def no_pricing_record_or_free(pricing_infos, model):
+    """(ut, uk, note, no_pricing_record, free_model) when a rival has nothing real to
+    compare, else None. Callers hit this on the test every bin/_batch_price_*.py copy
+    shared verbatim: `if not pricing_infos or model == "FREE"`.
+
+    That single branch conflated two different things (c2828 queue follow-up, found on
+    google-news-scraper's cohort): a listing genuinely on Apify's FREE pricing model (a
+    real $0 rival, e.g. intelscrape/google-news-scraper) and a listing with NO
+    pricingInfos at all (unmonetized/never-priced -- `model` reads None because
+    `cps.effective()` has nothing to return, not because the owner chose FREE). Measured
+    live: of 5 model-less-or-FREE every_tier hits in that cohort, 4 were the no-record
+    case (datarock, ursog, flashdata/google-news, abidchaudhry) against exactly 1 genuine
+    FREE rival -- so the merged branch was wrong 4 times out of 5 where it fired, always
+    in the direction of manufacturing a fake $0 undercutter. Callers must exclude
+    no_pricing_record from undercut_tiers/every_tier counts and report it as its own
+    line, not fold it into "N undercutters".
+    """
+    if not pricing_infos:
+        return ({"FREE": 0.0}, None,
+                "no pricing record -- NOT a $0 rival, unmonetized/never-priced listing",
+                True, False)
+    if model == "FREE":
+        return {"FREE": 0.0}, None, "FREE model -- genuine $0 rival", False, True
+    return None
+
+
 def undercut_tiers(unit_tiers, ours):
     """Sorted list of OUR tiers the rival is strictly cheaper than, flat-aware."""
     e = expand_flat(unit_tiers, ours)

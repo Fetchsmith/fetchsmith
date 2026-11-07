@@ -65,17 +65,24 @@ for i, h in enumerate(handles, 1):
     events = (cur.get("pricingPerEvent", {}) or {}).get("actorChargeEvents", {}) or {}
     model = cur.get("pricingModel")
     ut, uk, fee, note = unit_price(events)
-    if not d.get("pricingInfos") or model == "FREE":
-        ut, uk, note = {"FREE": 0.0}, None, "FREE model / no pricing record -- $0"
+    absent = up.no_pricing_record_or_free(d.get("pricingInfos"), model)
+    no_pricing_record = free_model = False
+    if absent:
+        ut, uk, note, no_pricing_record, free_model = absent
     future = [{"startedAt": p.get("startedAt"), "model": p.get("pricingModel")}
               for p in (d.get("pricingInfos") or [])
               if p.get("startedAt") and p["startedAt"] > NOW.isoformat()]
-    try:
-        undercuts = up.undercut_tiers(ut, OURS)
-        every = up.beats_every_tier(ut, OURS)
-        partial_err = None
-    except ValueError as e:  # partial rival ladder -- decide by hand, do not guess
-        undercuts, every, partial_err = [], False, str(e)
+    if no_pricing_record:
+        # not a real rival price -- never counts as an undercutter, see
+        # up.no_pricing_record_or_free's docstring.
+        undercuts, every, partial_err = [], False, None
+    else:
+        try:
+            undercuts = up.undercut_tiers(ut, OURS)
+            every = up.beats_every_tier(ut, OURS)
+            partial_err = None
+        except ValueError as e:  # partial rival ladder -- decide by hand, do not guess
+            undercuts, every, partial_err = [], False, str(e)
     runfee, runfee_label = cps.runfee_price(d, NOW)
     crossover = round(runfee / OURS_GOLD) if runfee else None
     out.append({
@@ -95,6 +102,8 @@ for i, h in enumerate(handles, 1):
         "every_tier": every,
         "future_pricing": future,
         "deprecated": bool(d.get("isDeprecated")),
+        "no_pricing_record": no_pricing_record,
+        "free_model": free_model,
         "desc": (d.get("description") or "")[:500],
     })
     if i % 50 == 0:
@@ -105,8 +114,10 @@ saved = up.persist_sweep("gn", out)
 rf = [o for o in out if o.get("runfee")]
 bad = [o for o in out if o.get("error")]
 pl = [o for o in out if o.get("partial_ladder_error")]
+npr = [o for o in out if o.get("no_pricing_record")]
 print(f"priced {len(out)} listings -> {OUT_FILE} (persisted {saved}); "
-      f"{len(rf)} pure run-fee, {len(bad)} unresolvable, {len(pl)} partial-ladder")
+      f"{len(rf)} pure run-fee, {len(bad)} unresolvable, {len(pl)} partial-ladder, "
+      f"{len(npr)} no pricing record (excluded from undercut counts, NOT $0 rivals)")
 for o in sorted(out, key=lambda x: (not x.get("every_tier"), -len(x.get("undercuts_tiers") or []))):
     if o.get("error"):
         continue
