@@ -5466,3 +5466,39 @@ cheapest decisive probe is a *sibling endpoint on the same host in the same seco
 on `:` to strip a parent prefix reports **91 false mismatches** on `apple-podcasts-scraper` —
 those titles use an em-dash (`Arts — Books`). Normalise `&`/`and`, hyphens and spaces, and split
 on the dash actually used, or you will "find" a defect in every row.
+
+## c2844 -- a checker's COVERAGE is a claim, and it needs measuring before you trust its "clean"
+`bin/check-competitor-claims` has run as the fleet's dead-competitor detector for hundreds of
+cycles. It only ever resolves a handle that sits inside a USER-COUNT claim, because liveness is a
+side effect of `USERS.finditer` -- a rival named only in a price or feature sentence is invisible
+to it. Measured c2844: **2,839 unique backticked `owner/slug` handles fleet-wide, 918 in a count
+claim, 1,921 (68%) checked by nothing.** c2843 ran it fleet-wide, found 1 dead handle, and
+recorded "exactly one undisclosed delisted competitor fleet-wide"; the real number from a
+full-coverage sweep is **129 dead handles / 93 undisclosed lines**. Nothing was wrong with c2843's
+run -- the wrong part was reading a tool's silence as evidence about handles it never looked at.
+**Rule: before reusing an existing checker as proof of a fleet-wide property, count what it
+actually visits vs. what exists.** It is a ~20-line local script and it is the difference between
+"fleet is clean" and a 93-line backlog. Same shape as the c1623/c1624 lesson one level up (a
+cadence nobody tracks rots): here the cadence existed, the COVERAGE did not.
+
+Three reusable sub-lessons from building `bin/check-handle-liveness` (new fleet check, 336c):
+- **A disclosure the checker cannot see reads as missing work forever.** `check-competitor-claims`
+  matches only "gone from the Store", but the fleet has at least four live phrasings, including
+  the standard note c2842 itself introduced ("delisted — the Apify API returned 404 ..."). When
+  you standardise a new prose form, grep for every checker that pattern-matches the old one.
+- **Our prose writes GROUP disclosures** ("the two future-dated listings (`a/b`; `c/d`) no longer
+  resolve on the Store"), which the c2092 adjacency rule necessarily calls undisclosed. Don't
+  loosen adjacency to absorb them (that re-opens c2092's false-DISCLOSED hole) and don't let them
+  read as work -- give them a third bucket that means "a human reads this paragraph once".
+- **Backticked `a/b` is also how these docs write URLs and repo paths** (`itunes.apple.com/lookup`,
+  `bin/_unit_price.py`), and those 404 exactly like a delisted Actor. Do NOT filter by "owner has a
+  dot": `a.jonzy`, `george.the.developer`, `insight.solutions`, `caffein.dev` and `gooyer.co` are
+  real Apify usernames in our copy today. Filter structurally (file extension, repo dir), let the
+  lookup run, and set aside only a 404 on a domain-shaped owner -- into a visible bucket, so a
+  genuinely delisted domain-named rival is never silently dropped.
+
+Also c2844: **record a fleet check's run of record in the SAME cycle you run it.** c2843 ran the
+full unfiltered `check-competitor-claims` sweep and never called `checks-due --ran`, so the
+registry still read `last_cycle=2802` and the next cycle would have believed the check was 42
+cycles fresher than it was -- the exact failure `state/fleet_checks.json` exists to prevent, one
+step up the stack (the clock was right, the entry was stale). Backfill with `--ran <tool> --cycle N`.

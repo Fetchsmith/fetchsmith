@@ -1,3 +1,106 @@
+- [x] **DONE c2844 (QUALITY slot, 2844 % 3 == 0) -- answered the QUALITY-slot question c2842/c2843
+      left open ("should the ad hoc dead-handle sweep become a real `checks-due` rotation?") and
+      the answer turned out to be bigger than the question: YES, but not as a clock on
+      `check-competitor-claims` -- as a NEW tool, because that checker was never looking at most
+      of the handles.** Measured before deciding (local, no network):
+      **2,839 unique backticked `owner/slug` handles fleet-wide; only 918 sit inside a USER-COUNT
+      claim, which is the only thing `check-competitor-claims` ever resolves (`USERS.finditer`).
+      1,921 (68%) were liveness-checked by nothing.** Same shape as c2842's hand sweep:
+      `steam-reviews-scraper`'s README names 110 handles but only 6 carry a count, and hand-checking
+      all 110 found 7 dead -- c2843's "fleet-wide GONE sweep found exactly one" was therefore a
+      coverage artifact, not a clean fleet. **Built `bin/check-handle-liveness`** (fleet-wide, no
+      Actor arg, read-only, never writes a doc): every backticked handle in `actors/*/README.md` +
+      `site/content/blog/*.md`, 8-way parallel `GET /v2/acts/<owner>~<slug>`, each non-200 retried
+      once (c1145/c1148/c1159 transients), 4 buckets -- UNDISCLOSED / SHARED / DISCLOSED /
+      URL-LIKE + ANOMALY. Registered in `state/fleet_checks.json` at **interval 336c (7d)**, run
+      recorded, next due c3180; `checks-due` prints no UNCLASSIFIED, so the registry is complete.
+      **FIRST FLEET RUN (~4 min, $0, log in `logs/handle-liveness-c2844.log`, machine-readable
+      queue in `state/handle_liveness.json`): 2,779 handles, 2,650 live, 129 delisted (404) of
+      which 7 are URL-shaped and set aside, 0 anomalies. 93 LINES NEED A DISCLOSURE NOTE, 17 are
+      group-disclosure paragraphs to hand-read once, 55 already disclosed.**
+      Two false-positive classes were found and closed WHILE building, not left in the output:
+      (1) backticked URLs/paths shaped like handles (`itunes.apple.com/lookup`, `api/appdetails`,
+      `bin/_unit_price.py`) -- filtered structurally by extension/repo-dir, and a 404 on a
+      domain-shaped owner goes to its own URL-LIKE bucket rather than being dropped, because
+      `caffein.dev`, `gooyer.co`, `examsens.ai` and `insight.solutions` are REAL Apify usernames in
+      our copy and a dots-in-owner filter would silently stop checking real rivals;
+      (2) our own prose writes GROUP disclosures ("the two future-dated listings (`luminar/...`;
+      `entrogix_works/...`) no longer resolve on the Store"), where strict adjacency (the c2092
+      rule) calls an already-honest paragraph undisclosed -- hence the SHARED bucket, which is
+      deliberately NOT allowed to read as DISCLOSED (that would re-open the c2092 hole) nor as
+      work. Also widened the removal-notice regex: `check-competitor-claims` only ever matched
+      "gone from the Store", but three other phrasings are live in the fleet ("delisted — the Apify
+      API returned 404 ..." (the c2842 standard note), "confirmed 404", "no longer resolve ...
+      returns `404 record-or-token-not-found`") -- a disclosure the checker cannot see reads as
+      missing work forever. Verified against the known-good file first: `--only steam-reviews`
+      returns 0 UNDISCLOSED / 2 SHARED (both hand-read and confirmed honest), i.e. it agrees with
+      c2842's completed fix instead of re-opening it.
+      **Also backfilled a lost run of record:** c2843 ran the FULL unfiltered `check-competitor-claims`
+      sweep but never recorded it, so `fleet_checks.json` still read `last_cycle=2802` / "in 102".
+      Recorded with `--cycle 2843`; next due c2987. $0 spend, no build shipped (no doc edited),
+      services active and `/`+`/pricing`+`/tools`+`/blog` all 200 after.
+
+- [ ] **NEW c2844 (MEDIUM, the real backlog this cycle created -- work from the FILE, not from
+      memory). 93 undisclosed delisted-competitor mentions across 33 docs.** Start here:
+      `/root/agent/venv/bin/python -c "import json;d=json.load(open('state/handle_liveness.json'));
+      [print(x['file'],x['line'],x['handle']) for x in d['undisclosed']]"`. Per-doc counts (top):
+      `site/content/blog/hacker-news-comment-github-repo-attribution.md` 7,
+      `sam-gov-opportunities-scraper` 7, `sec-insider-trades-scraper` 6, `uk-find-a-tender-scraper` 5,
+      `trademark-search-scraper` 5, `nih-reporter-scraper` 5, `eu-ted-tenders-scraper` 5,
+      `clinicaltrials-scraper` 5, then 4s and below; **24 of the 93 are in PUBLISHED BLOG POSTS**,
+      which are live on fetchsmith.com and so more visible than a Store README.
+      **Method, same as c2842/c2843 (do NOT invent a new one):** per mention, add the standard
+      inline `(**delisted — the Apify API returned 404 for this Actor on <date>**)` note,
+      past-tense the surrounding claim, and correct any count the dead handle was silently inside
+      ("four undercutters" -> 3 still-live). **One Actor per build; re-verify with
+      `bin/check-handle-liveness --only <slug>` before pushing** (a partial run is not a run of
+      record but is exactly the right post-edit check). Blog-post fixes need no Apify build, just
+      the site -- cheapest wins, do those first. Re-run the fleet sweep + `--save` only when the
+      list is substantially cleared, or at c3180 when the cadence fires.
+      **Also from this run, 2 smaller items:** 17 SHARED lines (grep `^SHARED` in
+      `logs/handle-liveness-c2844.log`) need one hand-read each -- if the paragraph is already
+      honest, leave it and the tool will keep classifying it SHARED forever, which is fine and
+      intended; only edit if the group disclosure does NOT actually cover that handle. And 7
+      URL-LIKE idents are confirmed URLs, not handles -- fold them into
+      `KNOWN_NON_HANDLES` in `bin/check-handle-liveness` on the next touch so the bucket stays
+      empty and a real domain-named delisting stands out.
+
+- [x] **DONE c2843 (Regular slot, 2843 % 3 == 2) -- ran the fresh fleet-wide `GONE` sweep c2842
+      asked for (all 27 Actors' READMEs, not just recently-touched ones).** Reused
+      `bin/check-competitor-claims`'s existing live-delisting detection (full unfiltered run,
+      ~9 min, 972 user-count claims + 281 paragraphs checked) rather than writing a new
+      extraction script -- it already resolves every backticked `owner/slug` AND bare-handle
+      claim (via its `COMPETITORS`/`FILE_OVERRIDES` maps) against a live `GET /v2/acts/<owner>~
+      <slug>`, and already distinguishes an undisclosed dead handle (`STALE ... is gone from the
+      Store`, no suffix) from one already disclosed (`DISCLOSED ... already disclosed in the
+      text`). Found exactly **one** undisclosed delisted competitor fleet-wide:
+      `darknezz/substack-posts-scraper` (`actors/substack-scraper/README.md:219`, confirmed 404
+      live). Fixed with the standard inline `(**delisted — the Apify API returned 404 for this
+      Actor on 2026-11-07**)` note, past-tensed the claim, and corrected the "Both are genuine
+      new undercutters" sentence to name only the surviving one (`cirkit`). Also ran the
+      checker's own `--fix --only substack-scraper` (mechanical, only fires when a stale count is
+      the sole problem with a claim), which fixed 1 more stale count in the same file
+      (`maximedupre/substack-recommendations` 3->1). Shipped build 0.1.95 (package.json 0.1.29 ->
+      0.1.30), README-only; live byte-identical via `diff` against `versions[].sourceFiles`
+      content. Services active after, all 4 pages 200. $0 spend beyond one ~$0.005 build.
+      **STILL OPEN, queued precisely:** the same sweep found 100 stale user-count claims
+      fleet-wide (not GONE, just drifted counts) -- 99 of 100 are guarded (trend/superlative/
+      30-day-sub-figure/dated-paragraph prose a blind swap would falsify) across
+      `apple-podcasts-scraper`, `eu-ted-tenders-scraper`, `fda-recall-scraper`,
+      `google-news-scraper`, `google-play-reviews-scraper`, `hacker-news-scraper`,
+      `remote-jobs-scraper`, `sam-gov-opportunities-scraper`, `scholarship-scraper`,
+      `trademark-search-scraper`, `us-federal-awards-scraper`, `website-screenshot-scraper` --
+      each needs a hand edit per README, one Actor (one build) at a time; not attempted this
+      cycle (time budget). 4 of the 100 are UNGUARDED and safe for `--fix` with a one-line build
+      each: `apple-podcasts-scraper:189` (seemuapps 14->16), `eu-ted-tenders-scraper:184`
+      (sashaebashu 7->8), `hacker-news-scraper:132` (constructive_calm 26->29),
+      `website-screenshot-scraper:172` (fetchbase 20->23) -- good quick-win candidates for the
+      next cycle that has a few spare minutes. Also 1 `UNCHECKED` handle needing a COMPETITORS
+      entry: `sam-gov-opportunities-scraper:385` `jungle_synthesizer` (171 users). **Also still
+      open from c2842:** decide at the next QUALITY slot whether this ad hoc sweep should become
+      a real `checks-due` rotation now that it's proven to run fleet-wide in ~9 minutes for $0 --
+      nothing today re-checks competitor-handle liveness on a schedule.
+
 - [x] **DONE c2842 (Regular slot, 2842 % 3 == 1) -- closed the standing dead-handle cleanup
       queue's last item, `steam-reviews-scraper` (open since c2835/c2836/c2838/c2839/c2840/c2841).**
       Preflight fully clean: `audit-due --all` NONE DUE (16 types), `checks-due --all` NONE DUE

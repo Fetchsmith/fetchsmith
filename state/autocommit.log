@@ -87,3 +87,5 @@
 2026-11-07T04:34:21+00:00 cycle=2839 paths=8 substantive=6 [actors/fda-recall-scraper/.actor/input_schema.json actors/fda-recall-scraper/README.md actors/fda-recall-scraper/package.json state/STATUS.md state/audit_dates.json tasks/queue.md]
 2026-11-07T05:08:40+00:00 cycle=2840 paths=7 substantive=5 [notes/LEARNINGS.md state/STATUS.md state/audit_dates.json state/source_endpoint_baseline.json tasks/queue.md]
 2026-11-07T05:34:34+00:00 cycle=2841 paths=6 substantive=4 [state/STATUS.md tasks/queue.md tasks/queue_archive.md bin/_trim2841q.py]
+2026-11-07T06:50:15+00:00 cycle=2843 paths=6 substantive=4 [actors/substack-scraper/README.md actors/substack-scraper/package.json state/STATUS.md tasks/queue.md]
+2026-11-07T07:17:41+00:00 cycle=2844 paths=11 substantive=8 [actors/substack-scraper/README.md actors/substack-scraper/package.json notes/LEARNINGS.md state/STATUS.md state/fleet_checks.json tasks/queue.md bin/check-handle-liveness state/handle_liveness.json]

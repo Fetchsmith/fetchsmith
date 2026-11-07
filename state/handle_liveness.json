@@ -1,0 +1,849 @@
+{
+ "_why": "Last check-handle-liveness sweep. UNDISCLOSED is the work queue: each mention needs the standard inline delisted note + a past-tensed claim, one Actor (one build) at a time.",
+ "swept": "2026-11-07",
+ "partial_only": [],
+ "handles": 2779,
+ "live": 2650,
+ "delisted": 129,
+ "undisclosed": [
+  {
+   "file": "actors/app-store-reviews-scraper/README.md",
+   "line": 246,
+   "handle": "axiomworks/review-firehose"
+  },
+  {
+   "file": "actors/app-store-reviews-scraper/README.md",
+   "line": 268,
+   "handle": "luminar/app-store-reviews-change-monitor"
+  },
+  {
+   "file": "actors/app-store-reviews-scraper/README.md",
+   "line": 307,
+   "handle": "axiomworks/review-firehose"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 220,
+   "handle": "wearefluent/podcast-episodes-scraper"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 151,
+   "handle": "bovi/clinicaltrials-scraper"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 161,
+   "handle": "malekh/clinical-trial-protocol-amendments"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 163,
+   "handle": "crawlerbros/clinicaltrialsgov-scraper"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 178,
+   "handle": "entrepreneurial_lens_ehi/clinical-trials-eu-scraper"
+  },
+  {
+   "file": "actors/clinicaltrials-scraper/README.md",
+   "line": 180,
+   "handle": "lucacelli/clinical-trials-fda-drug-safety-intel"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 174,
+   "handle": "parseforge/harris-county"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 210,
+   "handle": "dami_studio/courtlistener-cases-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 214,
+   "handle": "owner/slug"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 252,
+   "handle": "hipersoft/courtlistener-scraper"
+  },
+  {
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 29,
+   "handle": "field/0"
+  },
+  {
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 29,
+   "handle": "field/1"
+  },
+  {
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 146,
+   "handle": "rigelbytes/eu-tenders-scraper"
+  },
+  {
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 156,
+   "handle": "automation-lab/tenderned-netherlands-tenders-scraper"
+  },
+  {
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 180,
+   "handle": "publicmoney/tender-scraper"
+  },
+  {
+   "file": "actors/fda-recall-scraper/README.md",
+   "line": 271,
+   "handle": "tagadanar/openfda-recall-monitor"
+  },
+  {
+   "file": "actors/fda-recall-scraper/README.md",
+   "line": 279,
+   "handle": "crawlerbros/autotrader-us-vehicle-catalog"
+  },
+  {
+   "file": "actors/fec-campaign-finance-scraper/README.md",
+   "line": 282,
+   "handle": "crawlerbros/cal-access-campaign-finance-scraper"
+  },
+  {
+   "file": "actors/fec-campaign-finance-scraper/README.md",
+   "line": 282,
+   "handle": "crawlerbros/fec-data-scraper"
+  },
+  {
+   "file": "actors/fec-campaign-finance-scraper/README.md",
+   "line": 282,
+   "handle": "crawlerbros/lobbying-disclosure-lda-scraper"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 122,
+   "handle": "simple.actors/google-search"
+  },
+  {
+   "file": "actors/google-play-reviews-scraper/README.md",
+   "line": 108,
+   "handle": "zenomastro/google-play-reviews-reliable"
+  },
+  {
+   "file": "actors/grants-gov-scraper/README.md",
+   "line": 216,
+   "handle": "tagadanar/us-grants-monitor"
+  },
+  {
+   "file": "actors/grants-gov-scraper/README.md",
+   "line": 232,
+   "handle": "owlabee/gov-opportunity-feed"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 123,
+   "handle": "omcljs/om"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 123,
+   "handle": "reagent-project/reagent"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 189,
+   "handle": "wearefluent/hn-search"
+  },
+  {
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 196,
+   "handle": "crawlerbros/icite-scraper"
+  },
+  {
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 196,
+   "handle": "crawlerbros/nih-reporter-grants-scraper"
+  },
+  {
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 196,
+   "handle": "crawlerbros/nih-reporter-scraper"
+  },
+  {
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 196,
+   "handle": "tagadanar/us-grants-monitor"
+  },
+  {
+   "file": "actors/nih-reporter-scraper/README.md",
+   "line": 204,
+   "handle": "tagadanar/us-grants-monitor"
+  },
+  {
+   "file": "actors/remote-jobs-scraper/README.md",
+   "line": 163,
+   "handle": "automation-lab/omni-jobs-board-scraper"
+  },
+  {
+   "file": "actors/remote-jobs-scraper/README.md",
+   "line": 167,
+   "handle": "automation-lab/remote-jobs-multi-board-feed"
+  },
+  {
+   "file": "actors/remote-jobs-scraper/README.md",
+   "line": 171,
+   "handle": "automation-lab/working-nomads-jobs-scraper"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 289,
+   "handle": "kantolabs/sam-gov-contract-opportunities"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 313,
+   "handle": "tagadanar/usaspending-federal-awards"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 320,
+   "handle": "tagadanar/us-grants-monitor"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 320,
+   "handle": "tagadanar/usaspending-federal-awards"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 328,
+   "handle": "owlabee/gov-opportunity-feed"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 334,
+   "handle": "tagadanar/usaspending-federal-awards"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 363,
+   "handle": "tagadanar/usaspending-federal-awards"
+  },
+  {
+   "file": "actors/sec-insider-trades-scraper/README.md",
+   "line": 247,
+   "handle": "crawlerbros/open-insider-scraper"
+  },
+  {
+   "file": "actors/sec-insider-trades-scraper/README.md",
+   "line": 247,
+   "handle": "crawlerbros/sec-edgar-scraper"
+  },
+  {
+   "file": "actors/sec-insider-trades-scraper/README.md",
+   "line": 251,
+   "handle": "crawlerbros/open-insider-scraper"
+  },
+  {
+   "file": "actors/sec-insider-trades-scraper/README.md",
+   "line": 251,
+   "handle": "entrepreneurial_lens_ehi/openinsider-scraper"
+  },
+  {
+   "file": "actors/sec-insider-trades-scraper/README.md",
+   "line": 275,
+   "handle": "tagadanar/sec-edgar-monitor"
+  },
+  {
+   "file": "actors/sec-insider-trades-scraper/README.md",
+   "line": 288,
+   "handle": "m_ctim/insider-trading-alert"
+  },
+  {
+   "file": "actors/shopify-products-scraper/README.md",
+   "line": 131,
+   "handle": "crawlerbros/shopify-scraper"
+  },
+  {
+   "file": "actors/shopify-products-scraper/README.md",
+   "line": 133,
+   "handle": "crawlerbros/shopify-scraper"
+  },
+  {
+   "file": "actors/shopify-products-scraper/README.md",
+   "line": 133,
+   "handle": "crawlerbros/shopify-scraper-pro"
+  },
+  {
+   "file": "actors/shopify-products-scraper/README.md",
+   "line": 137,
+   "handle": "luminar/shopify-products-price-stock-monitor"
+  },
+  {
+   "file": "actors/substack-scraper/README.md",
+   "line": 213,
+   "handle": "contactminerlabs/substack-email-scraper"
+  },
+  {
+   "file": "actors/substack-scraper/README.md",
+   "line": 255,
+   "handle": "datagleaner/substack-scraper"
+  },
+  {
+   "file": "actors/substack-scraper/README.md",
+   "line": 257,
+   "handle": "vexaloom-labs/substack-publication-post-export"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 154,
+   "handle": "owner/slug"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 517,
+   "handle": "crawlerbros/importyeti-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 540,
+   "handle": "crawlerbros/importyeti-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 570,
+   "handle": "crawlerbros/importyeti-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 570,
+   "handle": "owner/slug"
+  },
+  {
+   "file": "actors/uk-find-a-tender-scraper/README.md",
+   "line": 134,
+   "handle": "nexgensignal/uk-contract-opportunity-records"
+  },
+  {
+   "file": "actors/uk-find-a-tender-scraper/README.md",
+   "line": 136,
+   "handle": "crawlerbros/uk-contracts-finder-scraper"
+  },
+  {
+   "file": "actors/uk-find-a-tender-scraper/README.md",
+   "line": 142,
+   "handle": "aicatraz/gov-rfp-aggregator-mcp"
+  },
+  {
+   "file": "actors/uk-find-a-tender-scraper/README.md",
+   "line": 158,
+   "handle": "unhampered_dolly/us-federal-contracts-finder"
+  },
+  {
+   "file": "actors/uk-find-a-tender-scraper/README.md",
+   "line": 160,
+   "handle": "fit_melon/new-french-public-contracts-finder-decp"
+  },
+  {
+   "file": "actors/us-federal-awards-scraper/README.md",
+   "line": 243,
+   "handle": "tagadanar/usaspending-federal-awards"
+  },
+  {
+   "file": "actors/us-federal-awards-scraper/README.md",
+   "line": 245,
+   "handle": "tagadanar/us-supplier-due-diligence"
+  },
+  {
+   "file": "actors/us-federal-awards-scraper/README.md",
+   "line": 245,
+   "handle": "tagadanar/usaspending-federal-awards"
+  },
+  {
+   "file": "site/content/blog/apple-app-store-reviews-header-fingerprint.md",
+   "line": 41,
+   "handle": "curl/8.5.0"
+  },
+  {
+   "file": "site/content/blog/apple-app-store-reviews-header-fingerprint.md",
+   "line": 53,
+   "handle": "curl/8.5.0"
+  },
+  {
+   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
+   "line": 20,
+   "handle": "geo/Chicago"
+  },
+  {
+   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
+   "line": 20,
+   "handle": "topic/TECHNOLOGY"
+  },
+  {
+   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
+   "line": 29,
+   "handle": "geo/Chicago"
+  },
+  {
+   "file": "site/content/blog/google-news-rss-public-feeds-no-key.md",
+   "line": 33,
+   "handle": "topic/NOTATOPIC"
+  },
+  {
+   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
+   "line": 42,
+   "handle": "omcljs/om"
+  },
+  {
+   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
+   "line": 42,
+   "handle": "reagent-project/reagent"
+  },
+  {
+   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
+   "line": 48,
+   "handle": "magomimmo/modern-cljs"
+  },
+  {
+   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
+   "line": 49,
+   "handle": "omcljs/om"
+  },
+  {
+   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
+   "line": 50,
+   "handle": "reagent-project/reagent"
+  },
+  {
+   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
+   "line": 61,
+   "handle": "owner/repo"
+  },
+  {
+   "file": "site/content/blog/hacker-news-comment-github-repo-attribution.md",
+   "line": 76,
+   "handle": "magomimmo/modern-cljs"
+  },
+  {
+   "file": "site/content/blog/recruitee-job-board-json-api.md",
+   "line": 92,
+   "handle": "image/png"
+  },
+  {
+   "file": "site/content/blog/sam-gov-key-free-federal-datasets-one-endpoint.md",
+   "line": 26,
+   "handle": "application/json"
+  },
+  {
+   "file": "site/content/blog/standby-mcp-no-actor-run-to-poll.md",
+   "line": 17,
+   "handle": "tools/call"
+  },
+  {
+   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
+   "line": 28,
+   "handle": "application/json"
+  },
+  {
+   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
+   "line": 29,
+   "handle": "text/html"
+  },
+  {
+   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
+   "line": 41,
+   "handle": "application/json"
+  },
+  {
+   "file": "site/content/blog/substack-bare-handle-redirects-to-profile-not-archive.md",
+   "line": 41,
+   "handle": "text/html"
+  },
+  {
+   "file": "site/content/blog/tmview-trademark-search-api-no-key.md",
+   "line": 56,
+   "handle": "python-requests/2.x"
+  },
+  {
+   "file": "site/content/blog/tmview-trademark-search-api-no-key.md",
+   "line": 57,
+   "handle": "try/catch"
+  }
+ ],
+ "shared": [
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 212,
+   "handle": "neuro-scraper/itunes-podcast-host-phone-number-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 222,
+   "handle": "wearefluent/podcast-episodes-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 222,
+   "handle": "wearefluent/podcast-transcripts"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 224,
+   "handle": "wearefluent/podcast-episodes-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 224,
+   "handle": "wearefluent/podcast-transcripts"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 224,
+   "handle": "dami_studio/courtlistener-cases-scraper"
+  },
+  {
+   "file": "actors/eu-ted-tenders-scraper/README.md",
+   "line": 170,
+   "handle": "studio-amba/boamp-scraper"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 140,
+   "handle": "cycha/rss-news-aggregator"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 136,
+   "handle": "crawlerbros/hacker-news-scraper"
+  },
+  {
+   "file": "actors/remote-jobs-scraper/README.md",
+   "line": 207,
+   "handle": "antishock/remoteok-jobs-scraper"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 298,
+   "handle": "aicatraz/gov-rfp-aggregator-mcp"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 260,
+   "handle": "entrogix_works/steam-store-search"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 260,
+   "handle": "luminar/steam-reviews-scraper-change-monitor"
+  },
+  {
+   "file": "actors/substack-scraper/README.md",
+   "line": 217,
+   "handle": "automation-lab/substack-recommendations-network-scraper"
+  },
+  {
+   "file": "actors/substack-scraper/README.md",
+   "line": 219,
+   "handle": "darknezz/substack-posts-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 223,
+   "handle": "crawlerbros/importyeti-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 238,
+   "handle": "parseforge/ziprecruiter-scraper"
+  }
+ ],
+ "disclosed": [
+  {
+   "file": "actors/app-store-reviews-scraper/README.md",
+   "line": 368,
+   "handle": "tinyrex/app-store-reviews-scraper"
+  },
+  {
+   "file": "actors/app-store-reviews-scraper/README.md",
+   "line": 478,
+   "handle": "gh0st1k/app-store-reviews-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 197,
+   "handle": "crawlerbros/applepodcasts-listennotes-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 197,
+   "handle": "crawlerbros/itunes-podcast-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 212,
+   "handle": "crawlerbros/itunes-podcasts-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 212,
+   "handle": "crawlerbros/podchaser-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 212,
+   "handle": "neuro-scraper/itunes-podcast-host-email-and-phone-number-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 218,
+   "handle": "datagleaner/podcast-email-finder"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 218,
+   "handle": "himanshu-data/audio-podcast-transcriber"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 222,
+   "handle": "barefoot_grade/apple-podcasts-scraper"
+  },
+  {
+   "file": "actors/apple-podcasts-scraper/README.md",
+   "line": 226,
+   "handle": "wearefluent/podcast-episodes-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 198,
+   "handle": "dami_studio/courtlistener-cases-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 204,
+   "handle": "parseforge/caselaw-access-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 206,
+   "handle": "hipersoft/courtlistener-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 212,
+   "handle": "crawlerbros/case-law-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 212,
+   "handle": "crawlerbros/top-class-actions-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 220,
+   "handle": "cloudastra-technologies/india-court-case-search"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 222,
+   "handle": "brasildados/brazil-companies-certificates-api"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 224,
+   "handle": "parseforge/caselaw-access-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 238,
+   "handle": "rbbscrap/fast-courtlistener-docket-scraper"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 240,
+   "handle": "steadfetch/cendoj-jurisprudence-monitor"
+  },
+  {
+   "file": "actors/court-records-scraper/README.md",
+   "line": 246,
+   "handle": "rbbscrap/fast-courtlistener-docket-scraper"
+  },
+  {
+   "file": "actors/fda-recall-scraper/README.md",
+   "line": 281,
+   "handle": "studio-amba/boamp-scraper"
+  },
+  {
+   "file": "actors/fec-campaign-finance-scraper/README.md",
+   "line": 270,
+   "handle": "crawlerbros/fec-campaign-finance-scraper"
+  },
+  {
+   "file": "actors/federal-register-scraper/README.md",
+   "line": 173,
+   "handle": "fit_melon/us-federal-register-search"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 102,
+   "handle": "crawlerbros/google-news-scraper"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 112,
+   "handle": "vortex_data/google-news"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 114,
+   "handle": "joyouscam35875/rss-news-aggregator"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 116,
+   "handle": "simple.actors/google-search"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 118,
+   "handle": "crw/google-news-scraper-1k-results-1"
+  },
+  {
+   "file": "actors/google-news-scraper/README.md",
+   "line": 140,
+   "handle": "ilborso/ai-news-content-crawler"
+  },
+  {
+   "file": "actors/google-play-reviews-scraper/README.md",
+   "line": 104,
+   "handle": "crawlerbros/google-playstore-scraper"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 136,
+   "handle": "crawlerbros/hackernews-scraper"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 151,
+   "handle": "bovi/hacker-news-scraper"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 151,
+   "handle": "luminar/hackernews-scraper-monitor"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 153,
+   "handle": "darknezz/sentiment-analyzer"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 168,
+   "handle": "fit_melon/hacker-news-search-scraper"
+  },
+  {
+   "file": "actors/hacker-news-scraper/README.md",
+   "line": 183,
+   "handle": "fit_melon/hacker-news-search-scraper"
+  },
+  {
+   "file": "actors/remote-jobs-scraper/README.md",
+   "line": 209,
+   "handle": "datagleaner/remote-jobs-scraper"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 296,
+   "handle": "leadharbor/sam-gov-vendor-screening"
+  },
+  {
+   "file": "actors/sam-gov-opportunities-scraper/README.md",
+   "line": 357,
+   "handle": "barefoot_grade/sam-gov-opportunities-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 230,
+   "handle": "crawlerbros/steam-review-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 236,
+   "handle": "benthepythondev/steam-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 236,
+   "handle": "bovi/steam-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 252,
+   "handle": "tagadanar/steam-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 264,
+   "handle": "wearefluent/steam-reviews-scraper"
+  },
+  {
+   "file": "actors/steam-reviews-scraper/README.md",
+   "line": 268,
+   "handle": "wearefluent/steam-reviews-scraper"
+  },
+  {
+   "file": "actors/substack-scraper/README.md",
+   "line": 217,
+   "handle": "crawlerbros/substack-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 140,
+   "handle": "luminar/uspto-trademark-monitor"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 144,
+   "handle": "crawlerbros/uspto-trademark-search-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 148,
+   "handle": "crawlerbros/euipo-trademark-design-search-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 165,
+   "handle": "crawlerbros/importyeti-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 227,
+   "handle": "parseforge/ziprecruiter-scraper"
+  },
+  {
+   "file": "actors/trademark-search-scraper/README.md",
+   "line": 506,
+   "handle": "barefoot_grade/uspto-trademarks-scraper"
+  },
+  {
+   "file": "actors/us-federal-awards-scraper/README.md",
+   "line": 247,
+   "handle": "crawlerbros/usaspending-scraper"
+  }
+ ],
+ "url_like_404": [
+  "itunes.apple.com/lookup",
+  "itunes.apple.com/search",
+  "jobs.ashbyhq.com/ramp",
+  "media.blubrry.com/...",
+  "okgov.wd1.myworkdayjobs.com/okgovjobs",
+  "ottonova.jobs.personio.de/xml",
+  "weworkremotely.com/remote-jobs.rss"
+ ],
+ "anomalies": []
+}

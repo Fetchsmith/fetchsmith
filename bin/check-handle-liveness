@@ -1,0 +1,310 @@
+#!/root/agent/venv/bin/python
+"""Is every competitor Actor handle we name in public copy still ON the Store? (cycle 2844)
+
+WHY THIS EXISTS -- the gap c2842/c2843 asked a QUALITY slot to close, measured.
+`bin/check-competitor-claims` already live-resolves handles and already distinguishes an
+undisclosed dead listing from one the prose already discloses, so c2843 reused it as a
+fleet-wide delisting sweep. That run found exactly 1 undisclosed dead handle and read as
+"the fleet is clean". It is not: check-competitor-claims only ever resolves a handle that
+sits inside a USER-COUNT claim (`USERS.finditer`), so a rival named only in a PRICE or
+FEATURE sentence -- the large majority -- is never liveness-checked by anything.
+
+Measured on 2026-11-07 across `actors/*/README.md` + `site/content/blog/*.md`:
+  2,839 unique backticked `owner/slug` handles fleet-wide
+    918 inside a user-count claim  (the only ones check-competitor-claims resolves)
+  1,921 never liveness-checked by any tool  (68%)
+The same shape is what c2842 hit by hand: `steam-reviews-scraper`'s README names 110
+unique handles but only 6 of them carry a user count, and hand-checking all 110 found
+7 confirmed 404s. check-competitor-claims could not have found those 7 -- it never looked.
+
+So this is NOT a second clock on the same work (the bin/checks-due `_intervals` warning
+about double-booking): it is the other 68% of the handles, and it is deliberately a
+separate tool rather than a bolt-on because the two checks answer different questions at
+different cost. check-competitor-claims resolves ~900 idents AND reads prose guards for a
+possible --fix; this one resolves ~2,800 idents and writes nothing, ever.
+
+WHAT A FINDING MEANS. A delisted rival is not a cosmetic staleness: our READMEs compare
+our price and fields against named Actors, and a comparison against a listing that no
+longer exists is a marketing claim we cannot back up (the cycle-388 reason
+check-competitor-claims exists at all). The fix is never "delete the sentence" -- it is
+the standard inline note the fleet already uses, which keeps the history honest:
+    (**delisted — the Apify API returned 404 for this Actor on YYYY-MM-DD**)
+plus past-tensing the surrounding claim and correcting any count ("four undercutters")
+that silently included the dead one.
+
+OUTPUT (one line per file:line:handle, deduped):
+  UNDISCLOSED <file>:<line>  `owner/slug` -- 404, no removal notice near the mention
+  SHARED      <file>:<line>  `owner/slug` -- 404, notice nearby but another handle intervenes
+  DISCLOSED   <file>:<line>  `owner/slug` -- 404, prose already discloses it
+  URL-LIKE    `owner/slug` -- 404 on a domain-shaped owner, read as a URL not a handle
+  ANOMALY     `owner/slug` -- HTTP <code> twice (NOT treated as delisted)
+UNDISCLOSED is work. An ANOMALY is an API problem, never evidence of a removal -- c2842
+saw 0 of these across 110 handles and c1145/c1148/c1159 each saw a transient non-200 on a
+listing that was still live, which is why every non-200 is retried once.
+
+DISCLOSURE TEST is copied deliberately from check-competitor-claims (cycles 2091/2092),
+including its adjacency rule: a removal notice in the window counts only if no OTHER
+backticked `owner/slug` comes between the handle and the notice, because these paragraphs
+name rivals back-to-back inside one sentence and a bare window test says "disclosed" for
+any dead handle sitting one dead neighbour away.
+
+SHARED is this tool's own addition, forced by the first smoke run (c2844,
+`steam-reviews-scraper`): our prose also writes GROUP disclosures -- "the two future-dated
+listings flagged below (`luminar/...`; `entrogix_works/...`) no longer resolve on the
+Store -- a direct API fetch on both returns `404`" -- where the notice genuinely covers
+both handles but each handle has the other one between it and the notice. Strict
+adjacency calls those UNDISCLOSED, which would send a future cycle to re-fix two already
+honest paragraphs. Loosening adjacency instead (e.g. "ignore intervening handles that are
+also 404") would re-open exactly the c2092 false-DISCLOSED hole, so neither bucket gets
+to absorb the case: it is reported separately and read by hand once. Keep it that way.
+
+KNOWN_NON_HANDLES / the skip rules exist because backticked `a/b` is also how these docs
+write file paths (`bin/_unit_price.py`) and URLs (`api.github.com/rate_limit`). Those
+404 like a dead Actor does. Extensions and repo dirs are filtered structurally; anything
+else that turns out to be a URL rather than a handle gets ONE hand-added line in
+KNOWN_NON_HANDLES, the same convention check-competitor-claims uses for COMPETITORS.
+Do NOT widen this into a dots-in-owner heuristic: `a.jonzy`, `george.the.developer`,
+`insight.solutions` and `caffein.dev` are all real Apify usernames in our copy today.
+
+Usage:
+  bin/check-handle-liveness                 # fleet sweep -- the run of record
+  bin/check-handle-liveness --only steam    # partial, repeatable; NOT a run of record
+  bin/check-handle-liveness --save          # also write state/handle_liveness.json
+Read-only on every doc. Record the sweep the same cycle you run it:
+  bin/checks-due --ran check-handle-liveness --note "..."
+"""
+import glob
+import json
+import os
+import re
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
+
+import httpx
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+OURS = "fetchsmith"
+WORKERS = 8
+WINDOW = 400  # chars after the handle, same as check-competitor-claims' disclosure window
+
+# Full backtick content only, so ordinary prose and partial paths are never matched.
+# Owner charset matches check-competitor-claims' USERS regex so the two tools agree on
+# what a handle looks like.
+HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,})/([A-Za-z0-9_.-]+)`")
+# Every phrasing our own READMEs actually use for a removal. check-competitor-claims
+# matches only "gone from the Store"; the c2844 smoke run found three more live in the
+# fleet ("delisted — the Apify API returned 404 ...", the c2842 standard note;
+# "confirmed 404"; "no longer resolve on the Store ... returns `404
+# record-or-token-not-found`"), and a disclosure the checker cannot see reads as missing
+# work forever.
+GONE = re.compile(r"gone from the Store|removed from the Store|delisted|confirmed 404"
+                  r"|no longer resolve|returns? `?404|404 record-or-token-not-found", re.I)
+OTHER_HANDLE = re.compile(r"`[\w.-]+/[\w.-]+`")
+
+# Structural non-handles: a backticked repo path or a file.
+NOT_HANDLE_EXT = re.compile(
+    r"\.(md|py|json|db|sh|txt|js|ts|tsx|yml|yaml|html|png|jpg|svg|csv|xml|log|toml|ini|sql)$")
+REPO_DIRS = {"bin", "actors", "site", "data", "state", "notes", "tasks", "logs", "secrets",
+             "venv", "mail", "tmp", "docs", "src", "static", "templates", "content",
+             # URL-path roots: `api/appdetails`, `v2/acts`, never Apify usernames.
+             "api", "v2", "www", "http", "https"}
+# Hand-added URLs that look like handles. One line each, added after a sweep proves it.
+KNOWN_NON_HANDLES = {
+    "api.github.com/rate_limit",
+    "data.uspto.gov/home",
+    "developer.uspto.gov/ds-api",
+    "fallback.era.nih.gov/systemUnavailable",
+    "holidu.jobs.personio.de/xml",
+    "device/enforcement.json",
+    "drug/enforcement.json",
+    "food/enforcement.json",
+}
+
+
+def token():
+    for line in open(os.path.join(ROOT, "secrets/env")):
+        if line.startswith("APIFY_TOKEN"):
+            return line.split("=", 1)[1].strip().strip('"')
+    sys.exit("check-handle-liveness: no APIFY_TOKEN in secrets/env")
+
+
+def sources(only=()):
+    """Every doc that can name a competitor: Actor READMEs + published blog posts.
+
+    Same glob as check-competitor-claims.sources() on purpose -- if one tool's corpus
+    drifts from the other's, a handle can be 'covered' by neither. A filtered run proves
+    nothing about the rest of the fleet, so --only refuses to be the run of record."""
+    paths = sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))
+                   + glob.glob(os.path.join(ROOT, "site/content/blog/*.md")))
+    if not only:
+        return paths
+    return [p for p in paths if any(o in os.path.relpath(p, ROOT) for o in only)]
+
+
+# A backticked `host.tld/path` URL (`itunes.apple.com/lookup`,
+# `okgov.wd1.myworkdayjobs.com/okgovjobs`) is shaped exactly like a handle and 404s exactly
+# like a delisted one -- 10 of the 128 404s in the first c2844 fleet sweep were these. It
+# is NOT filtered up front, because `caffein.dev`, `gooyer.co`, `examsens.ai` and
+# `insight.solutions` are real Apify usernames in our copy: a dots-in-owner filter would
+# silently stop checking real rivals. Instead the lookup still runs, a 200 is a real live
+# handle as before, and only a 404 on a domain-shaped owner is set aside -- reported in its
+# own bucket, never silently, so a genuinely delisted `caffein.dev/...` is still visible.
+DOMAIN_LIKE = re.compile(
+    r"\.(com|org|net|gov|edu|io|dev|ai|co|uk|de|eu|jobs|me|info|app|xyz|cloud|tech|gl)$")
+
+
+def is_handle(owner, slug):
+    ident = f"{owner}/{slug}"
+    if ident in KNOWN_NON_HANDLES or owner in REPO_DIRS or owner == OURS:
+        return False
+    return not NOT_HANDLE_EXT.search(slug)
+
+
+def occurrences(only=()):
+    """{ident: [(relpath, lineno, end_offset, text)]} for every real handle mention."""
+    hits = {}
+    for path in sources(only):
+        name = os.path.relpath(path, ROOT)
+        text = open(path).read()
+        for m in HANDLE.finditer(text):
+            owner, slug = m.groups()
+            if not is_handle(owner, slug):
+                continue
+            lineno = text.count("\n", 0, m.start()) + 1
+            hits.setdefault(f"{owner}/{slug}", []).append((name, lineno, m.end(), text))
+    return hits
+
+
+def status(ident, headers):
+    """HTTP status of GET /v2/acts/<owner>~<slug>, retried once on any non-200.
+
+    Cycles 1145/1148/1159: a single non-200 has repeatedly turned out to be a transient
+    API hiccup on a listing a re-check moments later confirmed live. A delisting claim we
+    print into a README has to survive two lookups."""
+    u, n = ident.split("/", 1)
+    url = f"https://api.apify.com/v2/acts/{u}~{n}"
+    for attempt in (0, 1):
+        try:
+            code = httpx.get(url, headers=headers, timeout=30).status_code
+        except httpx.HTTPError:
+            code = -1
+        if code == 200:
+            return 200
+        if attempt == 0:
+            time.sleep(2)
+    return code
+
+
+def paragraph(text, pos):
+    """The blank-line-to-blank-line paragraph containing pos (check-competitor-claims)."""
+    start = text.rfind("\n\n", 0, pos)
+    end = text.find("\n\n", pos)
+    return text[(0 if start < 0 else start + 2):(len(text) if end < 0 else end)]
+
+
+def classify(text, end):
+    """"disclosed" | "shared" | "undisclosed" for one mention.
+
+    check-competitor-claims 2091/2092's rule verbatim for "disclosed". "shared" is the
+    group-disclosure case in the module docstring, and the test for it is PARAGRAPH-wide
+    rather than window-forward because of the shape the c2844 smoke run actually found:
+    `steam-reviews-scraper`'s 2026-10-28 paragraph opens with the 404 statement for two
+    handles, then restates both further down under "Original note, kept for the method".
+    The restatement has no notice after it at all, so a forward-only test calls an
+    already-honest paragraph undisclosed. A paragraph-wide test cannot be trusted to say
+    DISCLOSED (that is the c2092 hole), but it is exactly the right trigger for "a human
+    should read this paragraph once"."""
+    window = text[end:end + WINDOW]
+    gone = GONE.search(window)
+    if gone and not OTHER_HANDLE.search(window[:gone.start()]):
+        return "disclosed"
+    return "shared" if GONE.search(paragraph(text, end)) else "undisclosed"
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    only = tuple(args[i + 1] for i, a in enumerate(args) if a == "--only" and i + 1 < len(args))
+    save = "--save" in args
+    if only:
+        print(f"NOTE: --only {' '.join(only)} -- PARTIAL sweep, {len(sources(only))} file(s). "
+              f"Does NOT satisfy the fleet_checks.json cadence; a clean result here says "
+              f"nothing about the other {len(sources()) - len(sources(only))} file(s).")
+        if not sources(only):
+            sys.exit("--only matched no file; pass a substring of actors/<slug>/README.md")
+
+    headers = {"Authorization": f"Bearer {token()}"}
+    hits = occurrences(only)
+    idents = sorted(hits)
+    print(f"check-handle-liveness: {len(idents)} unique competitor handle(s) across "
+          f"{len(sources(only))} doc(s), {sum(len(v) for v in hits.values())} mention(s)")
+
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        codes = dict(zip(idents, pool.map(lambda i: status(i, headers), idents)))
+
+    # A handle can appear twice on one line (e.g. a price claim restating it); the work is
+    # per line, not per match, so the same file:line:handle must not print twice. Where two
+    # matches on one line disagree, the WEAKEST classification wins -- if any mention on
+    # that line is undisclosed, the line still needs an edit.
+    rank = {"undisclosed": 0, "shared": 1, "disclosed": 2}
+    verdicts = {}
+    anomalies, url_like = [], []
+    for ident in idents:
+        code = codes[ident]
+        if code == 200:
+            continue
+        if code != 404:
+            anomalies.append((ident, code))
+            continue
+        if DOMAIN_LIKE.search(ident.split("/")[0]):
+            url_like.append(ident)
+            continue
+        for name, lineno, end, text in hits[ident]:
+            key = (name, lineno, ident)
+            v = classify(text, end)
+            if key not in verdicts or rank[v] < rank[verdicts[key]]:
+                verdicts[key] = v
+
+    def bucket(kind):
+        return sorted(k for k, v in verdicts.items() if v == kind)
+
+    undisclosed, shared, already = bucket("undisclosed"), bucket("shared"), bucket("disclosed")
+    for name, lineno, ident in undisclosed:
+        print(f"UNDISCLOSED {name}:{lineno}  `{ident}` -- 404, no removal notice near the mention")
+    for name, lineno, ident in shared:
+        print(f"SHARED {name}:{lineno}  `{ident}` -- 404, notice nearby but another handle "
+              f"intervenes; hand-read once")
+    for name, lineno, ident in already:
+        print(f"DISCLOSED {name}:{lineno}  `{ident}` -- 404, already disclosed in the text")
+    for ident in url_like:
+        print(f"URL-LIKE `{ident}` -- 404 on a domain-shaped owner; read as a URL in our copy, "
+              f"not a handle. NOT work. Add to KNOWN_NON_HANDLES if you confirm it.")
+    for ident, code in anomalies:
+        print(f"ANOMALY `{ident}` -- HTTP {code} twice; NOT treated as delisted, re-check by hand")
+
+    live = sum(1 for c in codes.values() if c == 200)
+    dead = sum(1 for c in codes.values() if c == 404)
+    print(f"\n{len(idents)} handle(s): {live} live, {dead} delisted (404) of which "
+          f"{len(url_like)} are URL-shaped and set aside, {len(anomalies)} anomal(y/ies).")
+    print(f"{len(undisclosed)} line(s) need a disclosure note, {len(shared)} to hand-read "
+          f"(group disclosure), {len(already)} already disclosed.")
+
+    if save:
+        out = os.path.join(ROOT, "state/handle_liveness.json")
+        with open(out, "w") as f:
+            json.dump({
+                "_why": "Last check-handle-liveness sweep. UNDISCLOSED is the work queue: "
+                        "each mention needs the standard inline delisted note + a past-tensed "
+                        "claim, one Actor (one build) at a time.",
+                "swept": time.strftime("%Y-%m-%d"),
+                "partial_only": list(only),
+                "handles": len(idents), "live": live, "delisted": dead,
+                "undisclosed": [{"file": n, "line": l, "handle": i} for n, l, i in undisclosed],
+                "shared": [{"file": n, "line": l, "handle": i} for n, l, i in shared],
+                "disclosed": [{"file": n, "line": l, "handle": i} for n, l, i in already],
+                "url_like_404": url_like,
+                "anomalies": [{"handle": i, "code": c} for i, c in anomalies],
+            }, f, indent=1)
+            f.write("\n")
+        print(f"wrote {os.path.relpath(out, ROOT)}")
+    sys.exit(1 if undisclosed else 0)
