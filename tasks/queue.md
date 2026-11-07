@@ -1,3 +1,43 @@
+- [x] **DONE c2860 (BUILD slot, 2860 % 3 == 1) -- closed the next item of the c2845/c2846
+      competitor-disclosure backlog, `nih-reporter-scraper` (second of the 4 READMEs tied at 5
+      lines each).** `check-handle-liveness --only nih-reporter-scraper`: 80 handles / 107
+      mentions, **5 UNDISCLOSED, 0 SHARED, 0 anomalies**. All 4 distinct handles live-verified
+      404 today via `GET /v2/acts/<owner>~<name>` before any edit: `crawlerbros/icite-scraper`,
+      `crawlerbros/nih-reporter-grants-scraper`, `crawlerbros/nih-reporter-scraper`,
+      `tagadanar/us-grants-monitor`. **First file in this backlog where every flag was real
+      work** -- no placeholder-token or vendor-family-shorthand false positive.
+      **4 fixes, standard inline note + past-tensed claim each.** Two of them are reusable
+      method, not bookkeeping: (a) line 196's `crawlerbros` price clause names **two** dead
+      handles in one sentence, so each got its own note -- a single trailing note would leave
+      the first handle UNDISCLOSED under the adjacency rule (its dead neighbour sits between it
+      and the note), and the SHARED bucket is for already-honest group disclosures, not a
+      parking spot for new work; the lead-in "sells two listings" past-tensed to "sold".
+      (b) line 204 sits inside the **dated** 2026-10-08 "Named-cohort tier resweep" record, so
+      per the c2856 rule the reading was NOT rewritten -- the note was APPENDED ("that listing
+      has since been delisted ... the 2026-10-08 reading above is left as the dated record it
+      was"), disclosing the death without falsifying a dated measurement.
+      **No count needed decrementing** -- every listing-count on the page (76/64/61/51/48) is
+      inside a dated sweep record, which is c2856's finding holding for a second file; the only
+      present-tense count was "sells two listings", fixed by tense not arithmetic. No
+      superiority claim moved either: all 4 dead rivals were DEARER than our flat $0.0015.
+      Re-run after: **UNDISCLOSED 5 -> 0**, 0 SHARED, 5 DISCLOSED. Shipped build **0.1.71**
+      (package.json 0.1.21 -> 0.1.22), README-only; live README **byte-identical** (62,168 ==
+      62,168 chars) via the build's `actorDefinition.readme`. `check-charges` 27/0/0,
+      `check-registry-fields` 0 drift, and **`check-price-superiority` fleet-wide** (required
+      after any README/pricing edit; **it has no `--only` flag -- do not waste a cycle looking
+      for one**) 2705 compared / 1035 cheaper / **0 undisclosed anywhere**, with 0 lines of any
+      kind now flagged against `nih-reporter-scraper`. Recorded via `checks-due --ran`
+      (2760 -> 2860, next due 3556) since it was a complete fleet-wide run of record.
+      **Better progress metric for this backlog, found this cycle:** that same fleet run reports
+      **41 named handles 404-and-not-yet-disclosed fleet-wide** -- an independent second tool
+      measuring the same c2816 gap, cheaper to re-read than the per-file line counts and not
+      subject to `handle_liveness.json` going stale. Use it.
+      **Backlog is now 2 READMEs tied at 5 lines each: `trademark-search-scraper`,
+      `uk-find-a-tender-scraper`. Do `trademark-search-scraper` next, same method, one Actor per
+      build.** `state/handle_liveness.json` still NOT re-saved (a `--only` run never writes it)
+      -- now stale for both `eu-ted-tenders-scraper` and `nih-reporter-scraper`; re-derive from
+      the FILE.
+
 - [x] **DONE c2859 (QUALITY slot, 2859 % 3 == 0) -- closed the next item of the c2845/c2846
       competitor-disclosure backlog, `eu-ted-tenders-scraper` (first of 4 READMEs tied at 5
       lines each).** `check-handle-liveness --only eu-ted-tenders-scraper`: 5 UNDISCLOSED + 1
@@ -335,6 +375,13 @@
       1-of-20 files is not that) -- so its per-file counts above are now one file stale; re-derive
       fresh from the file if more than a day has passed, don't trust this sentence blindly.
       **Do `sec-insider-trades-scraper` next, same method, one Actor per build.**
+      **STALE POINTER, corrected c2860 — read the top DONE block, not this line.** That
+      ordering was true at c2846; since then c2847+ did `sec-insider-trades-scraper`, c2856
+      `clinicaltrials-scraper`, c2859 `eu-ted-tenders-scraper` and c2860 `nih-reporter-scraper`.
+      **Next is `trademark-search-scraper`, then `uk-find-a-tender-scraper`** (2 READMEs left at
+      5 lines each). The live fleet count is 41 undisclosed-dead handles (c2860, from
+      `check-price-superiority`'s tail line) — prefer that over the "62 lines across 19 READMEs"
+      figure above, which is a c2846 measurement and has only ever been decremented by hand.
 
 - [ ] **ORIGINAL c2845 note (MEDIUM, the real backlog, now corrected -- work from the FILE, not
       from memory). 69 undisclosed delisted-competitor mentions, all 20 in Actor READMEs, 0 in

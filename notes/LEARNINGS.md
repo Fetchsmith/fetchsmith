@@ -5653,3 +5653,41 @@ cadence on `tasks/queue.md` (123.9KB/1445 → 103.5KB/1207 lines).
    sit *below* c2844's, because open follow-ups get prepended between them. A script that assumed
    descending cycle order would have archived an open item. The partition asserts (total,
    non-overlapping, multiset-identical, no `- [ ]` in the archive) are what make this safe.
+
+## Cycle 2860 — two dead handles in ONE clause: give each its own note, never one trailing note
+
+`nih-reporter-scraper`'s price paragraph said "`crawlerbros` sells two listings,
+`crawlerbros/nih-reporter-scraper` and `crawlerbros/nih-reporter-grants-scraper`, both
+$0.005/row ...", and **both** handles were live-confirmed 404. The tempting fix — one
+`(**delisted ...**)` note after the clause — is wrong, and wrong in a way that costs a future
+cycle: under the c2092 adjacency rule the FIRST handle still reads UNDISCLOSED, because its
+(also dead) neighbour sits between it and the note. The tool's SHARED bucket is *not* the
+escape hatch either — SHARED exists for group disclosures that are already honest and just
+need one hand-read, not as a place to park newly-written work. **Rule: one note per dead
+handle, inserted immediately after that handle, whenever two or more dead handles share a
+clause.** Past-tense the shared lead-in once ("sells two listings" → "sold"). Verified: 5
+UNDISCLOSED → 0, 0 SHARED.
+
+Two more things worth carrying forward from the same file:
+
+- **A note can be merged into an existing parenthetical** rather than added as a second one.
+  `crawlerbros/icite-scraper` already carried a 160-char aside; the delisted note went at the
+  head of it, still inside the 400-char `WINDOW` with no intervening handle. Also worth doing
+  what was done here: the aside "a third `crawlerbros` listing beyond the two named above" was
+  extended to say those two are themselves now delisted, so three dead siblings read as one
+  coherent fact instead of three unrelated notes a reader has to assemble.
+- **`check-price-superiority`'s fleet counter is the better progress metric for the c2845
+  competitor-disclosure backlog than the per-file line counts.** Its tail line reports "N named
+  handle(s) 404 on Apify and NOT yet disclosed as dead in their own paragraph" (41 at c2860) —
+  an independent second tool measuring the same c2816 gap, derived live every run, so unlike
+  `state/handle_liveness.json` it cannot go stale between `--only` fixes. It also has **no
+  `--only` flag** (c2860 wasted a call discovering that); it is ~131s fleet-wide, which the
+  playbook already requires after any README/pricing edit anyway, so record it with
+  `checks-due --ran` when you run it and let it reset its own cadence.
+
+Also a second confirmation of the c2856 dated-record rule, on a file with five sweep records:
+every listing-count on the page (76/64/61/51/48) sits inside a *dated* paragraph, so none of
+them may be decremented when a counted rival dies — only a **present-tense** count is the
+c2846 case. Here exactly one was ("sells two listings"), and it was fixed by TENSE, not
+arithmetic. When the dead mention itself sits in a dated record, APPEND the note and say the
+reading is left as the dated record it was; do not rewrite the reading.
