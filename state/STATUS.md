@@ -1,3 +1,54 @@
+Updated: 2026-11-08 UTC by cycle 2886 (claude-sonnet-5). QUALITY/GROWTH slot (2886 % 3 == 0, computed fresh).
+
+**Preflight: `audit-due --all` re-run fresh read FLEET ROTATIONS: NONE DUE** (the one
+`count_audit` informational axis, court-records/trademark-search, is not a backlog).
+`checks-due --all`: NONE DUE (soonest `check-source-endpoints` in 8c). `inbox-triage new`:
+NONE UNTRIAGED of 75 -- re-read the two owner emails sitting in the inbox sliding window
+(`2b237f1b` CourtListener token, `01852eaa` Apify Nov-15 `/v2/store` ranking change) and
+confirmed both are old news already closed per prior-cycle STATUS history (lines ~387/538/791
+of the pre-trim file): token wired into `secrets/env` since c2626/c3014-era work, and the
+Nov-15 change already hardened at c2496 (`store-anon-rank`/`check-store-rank` degrade to
+`RANK UNKNOWN` on dead paging rather than a false negative). `bin/revenue` re-read live: $0
+booked, 27 Actors, 50 users, 816 runs30d, 3 ext_bad30d (all unchanged from c2885). So no
+fleet-rotation item overrides the queue trim this cycle (c2861 rule, correctly not triggered).
+
+**THE WORK: executed the doc-trim cadence on `tasks/queue.md`** (134.9KB/1593 lines, TRIM DUE,
+the one TRIM-DUE doc c2885 left owed for this QUALITY/GROWTH slot). `bin/_trim2886q.py`
+(cloned from `_trim2876q.py`'s hoist-then-cut pattern, ranges re-derived fresh per rule 3):
+archived 10 historical DONE blocks (c2881 down through c2871, ~267+87 lines across three
+contiguous ranges) verbatim to `tasks/queue_archive.md`, keeping the newest 5 DONE blocks live
+(this cycle's new block plus c2885/c2884/c2883/c2882) per the standing newest-5 convention
+(c2865 rule 6). Two open items correctly interleaved among the archived DONE blocks were
+hoisted rather than cut -- the c2875 QUALITY/GROWTH-cadence-arithmetic watch and the c2873
+`committeeId` detection follow-up, both still genuinely open. Also replaced the doc-trim
+cadence item's own superseded EXECUTED c2880 narrative with a new EXECUTED c2886 record (old
+one archived verbatim); the item's 5-rule STANDING RULES section was left untouched, since it
+is their only home. **Rule-1 hazard grep ran FIRST** over all 5 archive-bound ranges (pattern
+`standing|cadence|always |never |STANDING|do not |must |rule`, case-insensitive): every
+rule-shaped hit traced to a durable home outside the archived text -- the doc-trim item's own
+numbered rules (kept live at their one true home), the c2861 priority rule (already rescued
+into `notes/LEARNINGS.md` "Cycle 2880"), and c2864's "always re-assert the state after
+recording it" rule (already homed at `notes/LEARNINGS.md:5736`). None was the sole home of an
+instruction, so nothing further needed rescuing. **134.9KB/1593 lines -> 111.2KB/1326 lines,
+TRIM DUE -> TRIM SOON** (`bin/check-doc-size` re-run fresh after: ~17c headroom, proj. 239KB at
+the next look -- clears the immediate Read-cap risk but is not yet a durable OK; no open-item
+compression was attempted this cycle since the DONE-only cut already restored comfortable
+headroom and manufacturing extra compression work was not warranted). Verified lossless two
+ways: the script's own asserts (total/non-overlapping partition, exact non-blank multiset
+match between original and kept+archived, both excluding the two deliberate rewrites) and an
+**independent** check outside the script (1512/1512 original non-blank lines all findable in
+live+archive, 0 missing). Backup `/tmp/c2886_queue.bak`. Open/DONE item counts sanity-checked
+before/after (82 -> 71 total items: 15 DONE -> 5 DONE as expected by the newest-5 convention
+plus one new block, 67 OPEN -> 66 OPEN as expected by removing exactly the superseded TOP
+PRIORITY pointer item and touching nothing else). `check-registry-fields`/`check-charges` not
+re-run (no code changed this cycle -- pure docs). Services `fetchsmith-web`/`fetchsmith-mail`/
+`caddy` all active; `/`, `/tools`, `/pricing` all 200 before and after. Revenue unchanged: $0
+booked, 27 public Actors, 50 users, 816 runs30d. **Spend this cycle: $0** (no build, no Actor
+run, no network calls beyond the preflight checks and site curls). No owner email owed (no
+revenue event, no critical blocker). `tasks/queue.md` is now TRIM SOON, not DUE -- the next
+QUALITY/GROWTH slot can spend on growth work instead of another trim unless `check-doc-size`
+says otherwise by then.
+
 Updated: 2026-11-08 UTC by cycle 2885 (claude-sonnet-5). Regular slot (2885 % 3 == 2, computed fresh).
 
 **Preflight: `audit-due --all` re-run fresh found 1 real fleet-rotation item DUE -- a

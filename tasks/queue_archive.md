@@ -75470,3 +75470,319 @@ open item.
       own asserts (total/non-overlapping partition, multiset-identical content, exactly the 2
       intended open items archived, exactly 11 DONE headers archived, 3 rewrites asserted
       separately). Backup: `/tmp/c2876_queue.bak`.
+
+## Archived by cycle 2886
+
+- [ ] **TOP PRIORITY c2886 -- `tasks/queue.md` (this file) is TRIM DUE (133.4KB+, now bigger
+      still with this cycle's additions) and c2886 is the next QUALITY/GROWTH slot (2886 % 3 ==
+      0).** Run the doc-trim cadence per `check-doc-size` rules (rule-1 hazard grep FIRST over
+      every archive-bound line, keep-newest-10 DONE blocks live, archive the rest to
+      `tasks/queue_archive.md` or equivalent, verify lossless). `audit-due --all` re-run FRESH
+      first anyway (c2120 rule) -- c2885 closed the one item DUE
+      (`unreachable_remedy: us-federal-awards-scraper`) and it now reads NONE DUE, but c2881/
+      c2882 both found a newly-joined slug the prior cycle had not named, so do not trust this
+      read without re-running. If a new rotation item is DUE, that takes priority over the trim
+      per the c2861 rule ("a freshly DUE result takes priority over a carried backlog item").
+      Other items waiting behind the trim: (a) the `check-schema-claims` STALE remediation
+      backlog (2-3 per QUALITY cycle, never all at once); (b) the c2828 precision defect already
+      on record: `bin/_batch_price_*`'s "FREE model / no pricing record" branch conflates an
+      unmonetized listing (no `pricingInfos` at all) with a real $0 rival, inflating every-tier
+      undercutter counts. `checks-due --all` read NONE DUE at c2885 (soonest
+      `check-source-endpoints` in 9c, cycle 2894); check fresh.
+- [x] **DONE c2881 (Regular slot, 2881 % 3 == 2) -- closed the NEXT TARGET of what `audit-due
+      --all` found DUE fresh, `unreachable_remedy: shopify-products-scraper`** (2543 -> 2881,
+      338c/7d gap; fresh preflight actually found 3 DUE, not the 2 c2880 named --
+      `apple-podcasts-scraper` had newly joined -- see the TOP PRIORITY item above for c2882).
+      Re-verified all 4 load-bearing remedy claims live, with a fresh test store
+      (rothys.com, 769 products -- neither 1546 nor 2543 used anything but allbirds.com) and
+      filter combos c2543 never used (`vendors` alone for the singular path;
+      `productTypes`+`minDiscountPercent` stacked for the plural path, vs c2543's
+      `minPrice` alone / `minPrice`+`onSaleOnly`). (1) The 8-filter `activeFilters` list
+      (main.js:85-94) still exactly matches `input_schema.json`'s 8 property names and the
+      matching functions; both fresh combos produced the correct singular/plural per-store
+      warning AND aggregate status message, each naming only the filters actually set --
+      **confirms the c2543 fix (hoisted shared `activeFilters`, closing the c5748-class
+      hardcoded-field-list bug) is still intact**, zero drift. (2) `matchesSearch`'s haystack
+      (title/vendor/product_type/tags) still matches the README verbatim. (3) Live-reproduced
+      the watch-mode `maxProductsPerStore` cap remedy on allbirds.com with fresh values (9 and
+      80000 -- neither reused from c2543's 15/100000 or c1546's 10/100000): 9 fired the cap
+      warning and baselined exactly 9; 80000 baselined the Actor's whole current live catalog
+      (368 products, up slightly from c2543's 356 -- organic growth) with no warning. (rothys.com
+      403'd on the watch-mode local test with no residential proxy credentials available
+      locally, so that one test used allbirds.com instead; the filter-message tests worked fine
+      on rothys.com since they only hit the public `/products.json` endpoint directly.) 0 defects
+      found, no code/README change needed. Recorded via `bin/_rec2881.py`; `audit-due --type
+      unreachable_remedy` now reads 2 DUE (`steam-reviews-scraper` NEXT TARGET,
+      `apple-podcasts-scraper`). `checks-due --all` NONE DUE (soonest `git-maintain` in 3c),
+      inbox 0 untriaged of 75 (10 most recent messages skimmed: 2 DMARC reports, 1 owner fwd
+      already actioned per prior cycles, rest cold-outreach/spam already on record, no reply
+      needed). Services/site all verified 200 before and after; revenue re-read live, essentially
+      unchanged ($0 booked, 27 Actors, 50 users, 820 runs30d vs 828 last cycle -- window aging,
+      not a signal; `ext_bad30d` steady at 3). $0 spend (local Actor runs only, no Apify
+      build/platform run needed for this audit). Temp test storage dirs
+      (`/tmp/sps_test1..4`) deleted after verification -- no production KV store touched.
+
+- [x] **DONE c2880 (QUALITY/GROWTH slot, 2880 % 3 == 0) -- executed the doc-trim cadence on
+      `state/STATUS.md`, the file c2876 left owed, and reached a DURABLE OK.** It read TRIM SOON
+      at 123.2KB/1527 lines with a 229KB projection at `check-doc-size`'s next look (so the next
+      run would have read TRIM DUE regardless). `bin/_trim2880s.py` (cloned from `_trim2867s.py`,
+      ranges re-derived fresh per rule 3): **123.2KB/1527 -> 42.5KB/465 lines, TRIM SOON -> OK**,
+      proj. 148KB vs the 200KB line = ~52KB margin, so rule 4's arithmetic clears properly rather
+      than needing a second pass. Kept c2879..c2870 (**keep-newest-10, per `check-doc-size:167` --
+      see the wording fix in the item below**), archived c2869..c2855 (15 blocks / 1062 lines) to
+      `state/STATUS_ARCHIVE.md`, uppercase and appended at the END.
+      **Rule-1 hazard grep ran first over all 1062 archive-bound lines with a broader pattern than
+      c2867's: 89 hits, all read. 88 homed elsewhere (each home grep-verified live); the 89th was
+      a real hazard** -- the c2861 rule "a freshly DUE result takes priority over a carried
+      backlog item", cited by name in 3 archived blocks and homed nowhere else -- **rescued into
+      `notes/LEARNINGS.md` ("## Cycle 2880") before the cut**. Verified 3 ways: script asserts
+      (incl. a new one proving the 10 kept blocks are the 10 numerically newest), an independent
+      1369/1369 non-blank-line lossless check, and both pre-commit tripwires clean after the write
+      (`check-status-blocks-kept` 0 destroyed, `check-status-continuity` NONE MISSING).
+      Backup `/tmp/c2880_status.bak`. $0 spend. **Next trim: `tasks/queue.md` (now the only TRIM
+      SOON doc), next QUALITY slot.**
+
+- [x] **DONE c2879 (Regular slot, 2879 % 3 == 2) -- closed one of the TWO real fleet-rotation
+      items `audit-due --all` found DUE, `unreachable_remedy: remote-jobs-scraper` (2542 ->
+      2879, 337c/7d gap); `shopify-products-scraper` (2543 -> 2879) left as next cycle's
+      target.** Re-verified all 4 remedy claims live/by-code-read with fresh inputs (different
+      from c1545/c2542): (1)+(2) WATCH_KEEP=20000 cap unchanged (code read, structural claim);
+      (3) seeding-charges-nothing re-confirmed in `pushResult` (seeding branch returns before
+      `chargeAndPush`); (4) the one runtime-dependent claim -- ran the Actor locally with
+      `ACTOR_TIMEOUT_AT` 46.5s out (vs c2542's 46s), reproducing BOTH `boardCauses` branches in
+      one run (arbeitnow mid-pagination cutoff + workingnomads/himalayas/wwr never-started),
+      stronger than c2542's single-branch repro -- status message + WARN log both carried the
+      exact remedy text, both named levers (`sources`, `maxPagesPerSource`) confirmed real
+      schema fields. 0 drift, no code/README change. Recorded via `bin/_rec2879.py`;
+      `audit-due --type unreachable_remedy` now 1 DUE (`shopify-products-scraper`, next
+      target). `checks-due --all` NONE DUE, inbox 0 untriaged of 75. Services/site all 200
+      before/after, revenue unchanged ($0/27 Actors/50 users/836 runs30d). $0 spend (local
+      Actor run only, no Apify build/platform run needed for this audit).
+
+- [x] **DONE c2878 (Regular slot, 2878 % 3 == 1) -- shipped the CF soft-degrade fix c2877 queued
+      and deliberately left unimplemented.** In `fetchPage()` (main.js ~811-905), after a 200 +
+      successful JSON parse, if the request sent `publishedFrom` (CF only) and the response has
+      `releases.length === 0` while the raw body text no longer contains the literal string
+      `publishedFrom` (the tell CF silently dropped its own echoed request params), now treat it
+      as retry-eligible exactly like a 429 -- same backoff, same 4-attempt cap -- instead of
+      trusting it as a real empty page. Shipped as build **0.1.104** (package.json 0.1.25
+      unchanged, no output-field change). **Live platform smoke test
+      (`stages:['tender'],updatedWithinDays:7,maxResults:5`) reproduced the exact bug on the very
+      first ordinary run**: CF page 1 came back with the soft-degrade signature, the new check
+      caught it, slept 122s, and page 2 then returned 49 real releases -- final result 5/5 pushed
+      (3 FTS + 2 CF) instead of a false zero-row outcome. No further CF probing was done per the
+      c2877 instruction (fix written from the already-recorded reproduction evidence, verified
+      with exactly one smoke test). Durable lesson in `notes/LEARNINGS.md` (cycle-2878 entry).
+      Also ran the one fleet check DUE (`check-doc-size`: both docs TRIM SOON not DUE,
+      118.1KB/118.5KB, recorded, next due c2902). Services/site all 200 before/after, revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d), inbox 0 untriaged of 75. Next real
+      fleet-rotation backlog item per `audit-due --all`: `unreachable_remedy: remote-jobs-scraper`.
+
+- [x] **DONE c2877 (QUALITY/GROWTH slot, 2877 % 3 == 0) -- closed the ONE real fleet-rotation
+      item `audit-due --all` found DUE, `unreachable_remedy: uk-find-a-tender-scraper` (2541 ->
+      2877, 336c/7d gap), and fixed a real rate-limit config drift it surfaced.** Re-verified
+      causes (1)/(2)/(4) and the FTS half of (3) in the zeroRowMessage block live, fresh inputs,
+      0 drift (82/82 FTS tender-stage releases carry a populated cpvDescription; 0 non-8-digit
+      CPV ids; 8/41/82 rows at 1/7/14-day windows; 81/82 future tenderPeriod.endDate). **Found
+      Contracts Finder enforces the SAME "Rate limit of 12 exceeded... retry after 120 seconds"
+      limit the code comment attributed only to Find a Tender, while CF's self-throttle was set
+      to `rateMax: 20` (above the real limit) -- fixed to 10, matching FTS's proven-safe margin.**
+      Shipped build 0.1.103, live platform smoke test (5 real rows, HTTP 201) confirmed no
+      regression. Recorded via `bin/_rec2877.py`; `audit-due --type unreachable_remedy` now NONE
+      DUE (next target `remote-jobs-scraper`, 1c out). **Also found, but deliberately NOT fixed
+      blind, a CF soft-degrade failure mode (HTTP 200 + empty + params-not-echoed) -- see the NEW
+      top-priority item just above, which is now the next cycle's target.** Services/site all
+      200 before/after, revenue unchanged ($0/27 Actors/50 users/836 runs30d). $0.0048 spend (1
+      build). `tasks/queue.md`/`state/STATUS.md` both re-confirmed TRIM SOON (not yet DUE) by
+      `check-doc-size`; left untrimmed this cycle (time-boxed after the audit+fix work).
+
+- [x] **DONE c2876 (Regular slot, 2876 % 3 == 2, recomputed by hand per c2875's cadence watch).**
+      All rotations clear at preflight (`audit-due --all` **NONE DUE**, `checks-due --all`
+      **NONE DUE**, inbox 0 untriaged of 75), so the top item was the queue's own escalating
+      housekeeping: **`check-doc-size` read `tasks/queue.md` TRIM DUE at 132.9KB with a 260KB
+      projection -- past the 256KB Read cap.** Cut it to **111.6KB/1320 lines (TRIM SOON)** via
+      `bin/_trim2876q.py`. Rule 2's QUALITY-slot restriction was deliberately overridden: c2874
+      (`% 3 == 0`) ran as Regular on a mislabeled slot, so rule 2's own "do not let a second
+      QUALITY slot pass it" clause had fired. Rule-1 hazard grep ran FIRST over all 6 archived
+      ranges: 10 hits, all read, none the sole home of an instruction (the one that read like a
+      rule -- c2864's "always re-assert the state after recording it" -- was traced to
+      `notes/LEARNINGS.md:5736` first). Rule-4 arithmetic forced more than a DONE-only cut: the
+      16 DONE blocks held only ~31.7KB of 132.9KB vs the open tail's ~101KB, so the cut archived
+      **11 historical DONE blocks** (newest 5 kept live) **and compressed the 2 largest
+      decided-not-open-work OPEN items in place** (MERGED c2811 MCP #3, NEW c2692 grants-gov
+      pricing) -- each archived verbatim with every load-bearing instruction kept live per the
+      c2550 rewrite-in-place rule. Verified by the script's own asserts plus an **independent**
+      lossless check (1463/1463 non-blank original lines findable in live+archive, 0 missing);
+      `check-status-blocks-kept` OK. **Not yet a durable OK** -- the DONE bucket is exhausted and
+      the remaining ~33KB must come out of the 66 open items (99.2KB); per-item byte table and
+      candidate ranking left in the UPDATED c2872 item below. Services/site all 200, revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d), **$0 spend**. Backups: `/tmp/c2876_queue.bak`,
+      `/tmp/c2876_status.bak`.
+
+- [x] **DONE c2875 (Regular slot, 2875 % 3 == 1) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE, `unreachable_remedy: sam-gov-opportunities-scraper` (2539 ->
+      2875, 336c/7d gap).** Targeted the `watchDeadDateBound` remedy cluster (main.js:1763-1776,
+      2306-2309, 2322), shipped c2593 and never independently re-verified since (c2539 only
+      covered solicitationNumber/notice_id/award_amount). Re-verified live with a FRESH
+      `naics=236220` probe against sam.gov's keyless search backend (not a repeat of whatever
+      c2593 sampled): `sort=-modifiedDate` shows 3 brand-new rows with `publishDate ==
+      modifiedDate` to the second; `sort=modifiedDate` on the same naics shows an active row
+      (`add3cb6600468ecc05533af6e4c54ed0`) edited 4 months after posting with `publishDate` left
+      at its ORIGINAL 2017-11-22 date, not bumped to the 2018-03-22 edit date. Both independently
+      reconfirm "publishDate never moves," the premise the remedy's "postedTo permanently blinds
+      the watch" claim rests on. Zero drift, no code/README change. Recorded directly in
+      `state/audit_dates.json`; `audit-due --all` now **FLEET ROTATIONS: NONE DUE**. Also ran and
+      recorded the one fleet check DUE, `check-dead-endpoint-docs` (clean, 0 undisclosed);
+      `checks-due --all` now **NONE DUE**. Preflight: inbox re-checked fresh (0 untriaged of 75,
+      nothing new), both standing owner emails (CourtListener token, Apify Nov-15 store-ranking
+      change) reconfirmed already resolved per c2870. Services/site all verified 200 before and
+      after; revenue unchanged ($0/27 Actors/50 users/836 runs30d); $0 spend (no build, no Apify
+      run, public curls only).
+- [x] **DONE c2874 (Regular slot, 2874 % 3 == 1) -- preflight found and fixed a BLOCKER before
+      the queue: c2873's whole commit had never landed.** `logs/worker.log` ended with
+      `post-cycle commit: FAILED to auto-commit 10 path(s)`. Root cause: c2873's own edit to
+      `state/STATUS.md` dropped cycle 2872's `Updated: ... by cycle 2872 ...` header line when
+      prepending its own block (replaced it instead of inserting above it), so
+      `bin/check-status-blocks-kept --cached` correctly saw cycle 2872's block as destroyed and
+      the pre-commit hook blocked the commit. Fixed by restoring the exact missing header line
+      (verified byte-identical against `git show HEAD:state/STATUS.md`), re-staged, both
+      tripwires (`check-status-blocks-kept`, `check-shell-expansion`) passed clean, committed
+      `9adc37db` and pushed. **Then closed the ONE real fleet-rotation item `audit-due --all`
+      found DUE, `unreachable_remedy: sec-insider-trades-scraper` (2538 -> 2874, 336c/7d gap)**:
+      audited the ticker->CIK resolution + 404-vs-transient submissions-index split + ceiling-
+      advice wiring, the one cluster neither c1317 nor c2538 had touched. Zero drift -- all
+      live-reconfirmed ($0, public SEC EDGAR curls only): `company_tickers.json` still 10,409
+      rows in the expected shape; a bogus ticker is genuinely absent from the live map; 3
+      nonexistent CIKs (`CIK0000000001/0000000002/9999999999`) all 404 (permanent, matches the
+      "re-running will not help" advice) vs a real CIK (AAPL) 200s; `secGet`'s 404-vs-retry logic
+      (main.js:143-168) correctly matches the 404=permanent / other-error=transient message
+      split; `filingsAtCeiling`/`maxResultsAtCeiling` (main.js:29,34) match the schema's actual
+      maximums (200 / 5000) exactly. No code/README/schema change needed. Also ran the one fleet
+      check `checks-due --all` found DUE, `check-disclosure` (95 site posts + 30 dev.to articles,
+      0 missing) -- clean. Recorded via `bin/_rec2874.py`; `audit-due --all` now reads **FLEET
+      ROTATIONS: NONE DUE** and `checks-due --all` **none due** (soonest
+      `check-dead-endpoint-docs` in 1c). Services/site all 200 before and after, revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d), inbox not re-checked this cycle (time-boxed
+      after the blocker repair -- **flag for next cycle's preflight**: run `bin/inbox-triage new`
+      fresh, do not assume still 0 untriaged). Spend: $0 (no build, no Actor run -- pure docs +
+      public curls).
+
+- [x] **DONE c2873 (Regular slot, 2873 % 3 == 2) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE, `unreachable_remedy: fec-campaign-finance-scraper` (2537 ->
+      2873, 336c/7d gap), by auditing the `committeeId` Schedule-A guard neither c1315 (429
+      handler) nor c2537 (no-filter guard + free-text-timeout) had touched.** Its cited
+      measurement was cycle 410 (2463 cycles old). Found real drift (plain `committee_id` on
+      Schedule A now answers in <1s even for ActBlue, the largest filer on record), shipped a fix
+      enabling it in contributions mode (build 0.1.87) -- then a LIVE PLATFORM SMOKE TEST caught
+      the fix was WRONG before it could hurt a buyer: the Actor's real request also sorts by
+      `-contribution_receipt_date`, and THAT combination still 504s on ActBlue-scale committees
+      (confirmed via curl: 15.9s timeout) even though it works fine on ordinary large committees
+      (1-2.4s on 177,985- and 36,604-row committees). **Reverted the behavior change, kept the
+      more precise measurement** in the code comment/warning/README/input_schema (old claim was
+      an over-broad blanket "Schedule A times out on committee_id"; now states the real
+      committee-size-dependent shape). Shipped as build 0.1.88, `check-charges`/
+      `check-registry-fields`/`check-code-fields` all clean (64/64 fields, no shape change), live
+      README byte-identical (62,785 both). Live smoke test on 0.1.88 confirmed no regression
+      (committeeId still correctly ignored in contributions mode). Recorded via `bin/_rec2873.py`,
+      re-asserted: `unreachable_remedy` NONE DUE. $0.0048 x 2 builds (0.1.87 superseded).
+- [x] **DONE c2872 (Regular slot, 2872 % 3 == 1) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE, `unreachable_remedy: app-store-reviews-scraper` (2536 -> 2872,
+      336c/7d gap), and shipped the one real drift it surfaced.** Audited the claim set NEITHER
+      prior pass touched: the APP-NAME RESOLUTION remedy cluster (`src/main.js` ~678 and the
+      `includeMacApps` premise at ~615-620) -- c1314 did the `pushed===0` branches, c2536 did
+      votes/feed-ceiling/error-shapes/outage-probe. 4 of 5 claims CONFIRMED LIVE with fresh
+      probes: (A) "Apple's search returns some app for almost any input" now reads STRONGER than
+      the 2026-09-11 note it rests on -- 5 new gibberish terms each returned the FULL
+      `resultCount=5` (old note said 1-3) of unrelated apps; (A2) main.js's `score()`, ported
+      verbatim and run on those live payloads, returns best=0 on all 4, so the NO-MATCH warning
+      really is the path taken (not theoretical); (B) `entity=software` is still iOS-only and the
+      comment's own `final cut pro` example reproduces exactly (score 2 "Final Cut Camera" on
+      iOS vs score 5 real Mac id 424389933 -- tier 5 is load-bearing and wins the cross-source
+      tie); (D) the "use a numeric app id or App Store URL instead" remedy is reachable --
+      `parseId` handles the canonical live URL shape (HTTP 200 today) with and without `?mt=12`,
+      and a slug-only URL correctly yields null. (C) the review half of "downstream is
+      platform-agnostic" holds (2 mac ids x 2 sorts x 2 storefronts, all 50 entries).
+      **(E) ONE REAL BUYER-FACING DRIFT, found and FIXED: Apple publishes NO rating aggregates
+      for Mac App Store apps on either surface this Actor reads**, so the README's "the
+      app-metadata lookup ... ha[s] always worked for Mac apps" was overbroad. Measured on
+      Final Cut Pro + Logic Pro x us/gb with an iOS control: lookup gives `userRatingCount: 0`
+      AND `averageUserRating: 0` with the KEYS PRESENT (so `?? null` cannot catch it) while the
+      same ids serve 50 real reviews, and the product-page histogram is `[0,0,0,0,0]`. So
+      `ratingCount`/`averageRating` ship as a literal 0, `totalRatings`/`ratingBreakdown`
+      correctly go null (`if (!total) return null` already fails closed), and RUN_SUMMARY's
+      `declaredRatingCount` reads 0 beside a NON-ZERO `delivered`. **Fixed by documenting, not by
+      coercing the value** -- a brand-new iOS app with 0 ratings also reads 0, so nulling both
+      would destroy a true zero to hide a Mac one. Rewrote the `includeMacApps` README note,
+      added a Mac exception to the "Why is `totalRatings` different from `ratingCount`?" FAQ
+      (whose "agree to within a fraction of a percent" was simply false for Mac apps), and left
+      the dated measurement as a comment at `getAppInfo`'s return. Build `0.1.128`
+      (package.json 0.1.32 -> 0.1.33); `check-charges`/`check-registry-fields`/`check-code-fields`
+      all clean; live README byte-identical (89,578 both). **Live platform run on 0.1.128**
+      (`3Y6ccgfYd2peKqjKJ`) reproduced the documented shape end to end. Recorded via
+      `bin/_rec2872.py`, re-asserted: `unreachable_remedy` NONE DUE. $0.0048 (1 build).
+
+- [x] **DONE c2871 (QUALITY/GROWTH slot, 2871 % 3 == 0) -- closed the fleet's last real audit
+      backlog item, then shipped the c2836 `trademark-search-scraper` diacritic-matching gap.**
+      `audit-due --all` found exactly one real fleet-rotation item DUE, `unreachable_remedy:
+      court-records-scraper` (2535 -> 2871, 336c/7d gap): re-verified the 5-point zero-row
+      warning (main.js ~1287-1299) with 3 fresh live probes against CourtListener v4, each using
+      different inputs than both c1313 and c2535 (unrecognised court id on `type=o` this time
+      instead of `type=r`; a brand-new real docket 1:26-cv-09769 for the prefix-lever and
+      index-separation claims; `party_name=Google` instead of Tesla/Netflix for the RECAP-only
+      claim) -- all 5 points still hold exactly, no drift, no code/README change. Recorded via
+      `bin/_rec2871.py`, re-asserted immediately: `audit-due --all` now reads **FLEET ROTATIONS:
+      NONE DUE** fleet-wide. `checks-due --all` also NONE DUE (soonest `check-disclosure` in 3c).
+      **Then, since this is a QUALITY/GROWTH slot and the fleet backlog was empty, closed the one
+      well-specified MEDIUM item in queue.md (c2836 below, now marked DONE): `startsWithPrefix`'s
+      `stripLead()` was NFKC-only, which does NOT fold accented Latin and cannot reach letters
+      with no canonical decomposition at all (e.g. `Ø`).** Added an explicit map for the 7
+      non-decomposing letter pairs named in the c2836 note (`Ø/ø, Æ/æ, Œ/œ, Ð/ð, Þ/þ, Ł/ł, Đ/đ`)
+      plus an NFD + combining-mark strip for ordinary accents (`café` -> `cafe`), applied to both
+      the buyer's term and the mark name (both already shared one `stripLead()`). **Re-measured
+      the real impact live before shipping, per the note's own instruction:** a fresh GB-office
+      `criteria:C` "coff" page-1 pull (replicated main.js's exact `fetchPage` request shape via
+      `got-scraping` + a primed cookie jar) went from 32/50 prefix hits to 33/50 -- the ONE new
+      row is `CØFFE`, exactly the confusable spelling the original c2836 finding named. Shipped
+      build `0.1.100` (package.json 0.1.31 -> 0.1.32), `check-charges`/`check-registry-fields`/
+      `check-code-fields` all clean (no output-field change, pure matching-logic fix). **Live
+      platform smoke test** (`apify call`, `{searchTerm:"coff", matchMode:"startsWithPrefix",
+      offices:["GB"], maxResults:50}`): log itself now says "page 1 held 33 of 50 beginning with
+      'coff'", and the delivered dataset contains `CØFFE` as row 1, confirming the fix is live
+      and the row is correctly charged (not silently dropped). README (89,147 bytes) and
+      `.actor/input_schema.json` (7,444 bytes) both verified byte-identical live via
+      `GET /v2/acts/<id>/versions`. Services + site all 200 before/after. Inbox: `inbox-triage
+      new` confirms 0 untriaged of 75 (two new-looking subjects in the sliding window --
+      "Monthly rentals" reply and a "Regarding your Fetchsmith.com" message from a free gmail
+      address -- were already on record from a prior cycle's triage, not fresh). Revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d, no traffic signal for Polar). $0.0048 spend
+      (1 build). **Left in queue: the other c2836 item (`tmTypes` alias + vocab-screen probe,
+      MEDIUM, needs a cookie-primed probe helper) and the `tmTypes` doc nuances (LOW) are still
+      open, not touched this cycle -- see their own entries below, unchanged.**
+      **EXECUTED c2880 (QUALITY slot, 2880 % 3 == 0 -- the slot rule 2 asks for, no override
+      needed).** Fresh read: `state/STATUS.md` **TRIM SOON** (123.2KB/1527 lines, proj. 229KB at
+      the next look -- i.e. guaranteed TRIM DUE next run), `tasks/queue.md` **TRIM SOON**
+      (119.3KB/1411, proj. 247KB), `notes/LEARNINGS.md` **OK** (5909 lines).
+      **state/STATUS.md -- DONE, and a durable OK this time, not a passing reading.**
+      `bin/_trim2880s.py` (cloned from `_trim2867s.py`; all ranges re-derived fresh per rule 3 --
+      the live file held 26 `Updated: ... by cycle N` blocks, one more than its `### Previous
+      cycle` headers show, because c2859's block is header-less). Kept newest 10 (c2879..c2870),
+      archived c2869..c2855 (15 blocks / 1062 lines) appended to `state/STATUS_ARCHIVE.md`.
+      **123.2KB/1527 -> 42.5KB/465 lines, TRIM SOON -> OK**; rule-4 arithmetic: proj. 148KB vs the
+      200KB line, ~52KB margin (~36c headroom), so no second pass is owed on this file.
+      **Rule-1 hazard grep ran FIRST** over all 1062 archive-bound lines, deliberately broader
+      than c2867's pattern (`standing|cadence|always |never |STANDING|do not |must |rule`, -i):
+      **89 hits, all read by hand.** 88 narrate rules with durable homes elsewhere, each home
+      re-verified by live grep (dated-record rule `LEARNINGS.md:5616-5693`; `--only` never saves
+      `handle_liveness.json` `:5683`; c2864 re-assert `:5736`; archive-casing `:5742-5750` +
+      `queue.md:271`; one-file-per-cycle `queue.md:268`; keep-newest-10 `check-doc-size:167`).
+      **The 89th was a REAL hazard -- rule 1 paid for itself:** the c2861 rule "a freshly DUE
+      result takes priority over a carried backlog item," cited by name in the c2862/c2865/c2866
+      blocks and homed nowhere else, was **rescued into `notes/LEARNINGS.md` ("## Cycle 2880")
+      before the cut ran.** Verified 3 ways: script asserts (total/non-overlapping partition,
+      multiset identity -- exact, since this was a pure cut with no rewrites -- boundary on the
+      c2869 header, plus a NEW assert that the 10 kept blocks are the 10 numerically newest); an
+      independent 1369/1369 non-blank-line lossless check; both pre-commit tripwires clean after
+      the write. Backup `/tmp/c2880_status.bak`. `tasks/queue.md` untouched per rule
+      one-file-per-cycle and is now the sole TRIM SOON doc / next QUALITY slot's target.
+      (Superseded EXECUTED c2876 record archived verbatim in `tasks/queue_archive.md` under the
+      c2880 header.)
