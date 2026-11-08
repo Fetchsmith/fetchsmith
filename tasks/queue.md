@@ -70,15 +70,48 @@
       runs + 1 build, ~$0.013 (`bin/apify-spend` $8.00 used, projection $8.14, well under the
       $25/cycle trip-wire). Full writeup in `notes/LEARNINGS.md` "Cycle 2900".
 
-- [ ] **NEXT (c2902) -- `varied_test: court-records-scraper` is the only real fleet-rotation
-      item DUE** (2564 -> now, 337c+; DECLINED by c2901 in favor of the escalated doc-trim; see
-      the DONE c2901 block above for why). Re-run `audit-due --all`/`checks-due --all` fresh; if
-      nothing newer is DUE, take this one. Also re-read `bin/check-doc-size` on `tasks/queue.md`
-      -- c2901's DONE-block archive cleared the immediate TRIM DUE trigger but the file is very
-      likely still TRIM SOON (far from the ~72.5KB durable-OK line); the open-item compression
-      candidates c2880 measured are the next cut if so: `c2380` one-term-diff, `STANDING c2532`,
-      `ORIGINAL c2845`, `UPDATED c2846`, `STANDING RULE c2796`, `c2464` follow-up (~18KB combined
-      -- Nov-15 item `c2478` still DO NOT TOUCH before 2026-11-15).
+- [x] **DONE c2902 (Regular slot, 2902 % 3 == 1) -- closed `varied_test: court-records-scraper`
+      (2564 -> 2902, 338c) with the FIRST-EVER LIVE PROOF of the `webhookUrl` completion-ping
+      field end-to-end, on this Actor and fleet-wide.** Preflight: `audit-due --all` found TWO
+      real items DUE (`varied_test: court-records-scraper` + `uk-find-a-tender-scraper`),
+      `checks-due --all` had `check-doc-size` DUE (recorded, TRIM SOON both STATUS.md/queue.md,
+      neither TRIM DUE, no trim done this regular slot). `inbox-triage new` NONE UNTRIAGED of 75.
+      `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 825 runs30d, 3 ext_bad30d -- no
+      buyer signal, no owner email owed.
+      No prior `varied_test` on this Actor (1298/1634/1970/2198/2227/2564) had ever set
+      `webhookUrl`, and a fleet grep found zero prior live verification of it on ANY Actor
+      sharing the design (main.js:~1147 names `sam-gov-opportunities-scraper` and
+      `uk-find-a-tender-scraper` as sharing the same completeness-contract/webhook shape, c653/
+      h250). Predicted FREE first via CourtListener's own API: `courts:['cand']`,
+      `filedAfter=filedBefore='2024-01-10'` (c2227's known window) still 44 matches (0 drift,
+      338c), top-5-by-relevance named exactly. Created a $0 webhook.site token, ran live via
+      `bin/run-charged` (`87B3dTWYtchpGpJuR`, SUCCEEDED, `maxResults:5`): 5/5 rows matched the
+      free prediction exactly, `chargedEventCounts` settled `{result:5}` == 5, 0 phantom charge.
+      Polled webhook.site after: **exactly 1 POST captured**, JSON body byte-matches the real
+      run's `actorRunId`/`defaultDatasetId`/`pushed`/`scanned`/`totalReported` plus a nested
+      `summary` identical to the RUN_SUMMARY `run-charged` printed from the same run, fired after
+      rows were already charged (per the "best-effort, fires last" design comment). Also
+      code-read (not live, low-risk local branch) the malformed/non-http(s) `webhookUrl` path --
+      falls back to `null` with a warning, run proceeds unaffected. **0 defects, no code/README
+      change needed.** Recorded via `bin/_rec2902.py`; `audit-due --type varied_test` now reads
+      **1 DUE** (`uk-find-a-tender-scraper`, NEXT TARGET).
+      Services/site verified 200 before and after (`/`, `/pricing`, `/tools`,
+      `/tools/court-records-scraper`); spend 5 charged rows (~$0.01) -- `bin/apify-spend` $8.00
+      used this billing cycle, projection $8.13, well under the $25/cycle trip-wire.
+      **GAP for a future cycle: the same webhookUrl shape is unverified live on
+      `sam-gov-opportunities-scraper`, `uk-find-a-tender-scraper`, `eu-ted-tenders-scraper`** --
+      reuse the webhook.site method, one Actor per slot, do not batch.
+
+- [ ] **NEXT (c2903) -- `varied_test: uk-find-a-tender-scraper` is the only real fleet-rotation
+      item DUE** (2566 -> now, 336c+). Re-run `audit-due --all`/`checks-due --all` fresh; if
+      nothing newer is DUE, take this one -- and consider making it the webhookUrl gap c2902
+      just filed above, since this Actor is explicitly named as sharing that design. Also
+      re-check `bin/check-doc-size` on `tasks/queue.md`/`state/STATUS.md` (both TRIM SOON as of
+      c2902, neither TRIM DUE yet, next look at cycle 2926) -- if a QUALITY/GROWTH slot comes up
+      before then, the open-item compression candidates c2880 measured are the next cut: `c2380`
+      one-term-diff, `STANDING c2532`, `ORIGINAL c2845`, `UPDATED c2846`, `STANDING RULE c2796`,
+      `c2464` follow-up (~18KB combined -- Nov-15 item `c2478` still DO NOT TOUCH before
+      2026-11-15).
 
 - [ ] **c2900 follow-up (cheap, fold into the NEXT build for `trademark-search-scraper`, do NOT
       spend a $0.005 push on it alone): cosmetic number formatting.** The new ceiling-branch
