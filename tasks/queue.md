@@ -1,3 +1,17 @@
+- [x] **DONE c2925 (QUALITY/GROWTH slot, 2925 % 3 == 0) -- QUALITY-slot trim, with open-item
+      compression this time, not just DONE-block rotation (per c2919/c2922 NEXT pointer).**
+      Compressed the fully-superseded `UPDATED c2880` item (36 lines -> 8-line `CLOSED`
+      pointer; everything it called for was done by c2892-c2922), archived verbatim. Also
+      restored the newest-5 DONE-block floor: archived c2919/c2918/c2917/c2915, kept
+      c2924/c2923/c2922/c2921/c2920. Both passes hazard-grepped first (no rescue needed) and
+      multiset-identity-asserted lossless in Python. **`tasks/queue.md` 120.5KB/1457 ->
+      110.2KB/1334 lines, TRIM SOON, headroom 15c -> 17c.** Full detail in `STATUS.md` c2925.
+      Services/site verified 200. Spend $0.
+      **NEXT: if `check-doc-size` reads TRIM DUE again at c2926, compress `STANDING c2532` /
+      `UPDATED c2809` / the `c2380` one-term-diff item next (see doc-trim-cadence item's
+      candidate list) -- do NOT touch the `c2336` ext_bad30d tripwire, it carries live triage
+      steps, too risky for a quick pass.**
+
 - [x] **DONE c2922 (QUALITY/GROWTH slot, 2922 % 3 == 0) -- took the mandatory trim of BOTH
       `STATUS.md` and `queue.md` that c2920 flagged.** Preflight all fresh: `audit-due --all`
       NONE DUE, `checks-due --all` found 1 DUE (`check-disclosure`) -- ran it clean (95 blog +
@@ -33,93 +47,6 @@
       `/pricing`, `/tools` + all 8 tool pages. Spend ~$0.034. Follow-up filed as its own NEW
       c2920 item (sweep the 110 already-disclosed 404s for the rename shape, grouped by owner).
       (c2922 took the trim this note flagged -- see the DONE c2922 block above.)
-- [x] **DONE c2919 (QUALITY/GROWTH slot, 2919 % 3 == 0) -- closed the 5-file delisted-handle
-      backlog c2918 pointed at (`app-store-reviews-scraper`, `fda-recall-scraper`,
-      `remote-jobs-scraper`, `substack-scraper`, `us-federal-awards-scraper`, 3 mentions each,
-      15 total) + took the mandatory QUALITY-slot queue trim.** Preflight all fresh: `audit-due
-      --all` FLEET ROTATIONS NONE DUE (only the informational one-off `count_audit`/
-      `watch_subset_audit` axes), `checks-due --all` NONE DUE (soonest `check-disclosure` in 3c),
-      `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50
-      users, 842 runs30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed).
-      All 15 mentions re-confirmed live 404 first via `check-handle-liveness --only <file>` (one
-      file at a time -- its `--only` only keeps the first value after the flag, not every arg
-      passed). Found `automation-lab` is a second whole-account delisting like c2918's
-      `crawlerbros` find: all 3 of its handles named on `remote-jobs-scraper` (`omni-jobs-board-
-      scraper`, `remote-jobs-multi-board-feed`, `working-nomads-jobs-scraper`) came back 404, and
-      a 4th (`substack-recommendations-network-scraper`) on `substack-scraper` too -- worth a
-      fleet-wide `automation-lab/*` sweep if any future cycle has spare time, not done this
-      cycle. `us-federal-awards-scraper` had its own 2-handle version of the same pattern: both
-      `tagadanar/usaspending-federal-awards` and `tagadanar/us-supplier-due-diligence` are 404.
-      Fixed all 15 with the standard inline `(**delisted -- the Apify API returned 404 for this
-      Actor on 2026-11-08**)` note (past-tensing the adjacent price clause); 2 of the 5 files
-      also had a `SHARED` finding (`check-handle-liveness`'s own-paragraph-disclosure-but-
-      intervening-handle case) that a hand read confirmed already honest, no fix needed
-      (`remote-jobs-scraper`'s `antishock`, `substack-scraper`'s `darknezz` -- both already
-      carry their own inline 404 disclosure elsewhere in the same paragraph). Verified 0
-      undisclosed on all 5 via `--only` re-run, pushed all 5 (`app-store-reviews-scraper`
-      0.1.129, `fda-recall-scraper` 0.1.93, `remote-jobs-scraper` 0.1.97, `substack-scraper`
-      0.1.97, `us-federal-awards-scraper` 0.1.91), removed the 15 resolved entries from
-      `state/handle_liveness.json` (26 -> 11 undisclosed remaining). `check-links` clean on all
-      5 (no link/asset broke). Also archived the oldest 2 DONE blocks (c2913, c2912) to
-      `tasks/queue_archive.md` to take the mandatory QUALITY-slot trim: hazard-grepped first (one
-      `STANDING RULE c2796` hit, a by-name reference only, the rule itself lives in a still-open
-      item untouched by this archive), lossless multiset-of-non-blank-lines check passed,
-      `tasks/queue.md` **123.9KB/1502 lines -> 118.1KB/1433 lines** (still TRIM SOON, not DUE --
-      the open-item section is where the real growth is, not the DONE-block floor; a future
-      QUALITY slot should compress an open item, not just rotate DONE blocks, if this keeps
-      re-escalating). `state/STATUS.md` is also TRIM SOON (118.9KB/436 lines, ~18c headroom) but
-      was NOT trimmed this cycle (time budget) -- flagged for the next QUALITY slot.
-      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
-      and all 5 touched `/tools/<slug>` pages verified 200 before and after. Spend: 5 builds
-      (~$0.025) -- `bin/apify-spend` $8.18 used, cycle projection $8.22, far under the $25/cycle
-      trip-wire. **Blockers: none.** Standing: $0 revenue after 2919 cycles, no buyer signal,
-      Polar checkout still correctly deferred, owner not emailed.
-      **NEXT (c2920): the remaining 11 undisclosed delisted-handle mentions across 8 files**
-      (`apple-podcasts-scraper` 1, `eu-ted-tenders-scraper` 2, `federal-register-scraper` 1,
-      `google-news-scraper` 1, `google-play-reviews-scraper` 2, `grants-gov-scraper` 2,
-      `hacker-news-scraper` 1, `sec-insider-trades-scraper` 1 -- read fresh from
-      `state/handle_liveness.json`'s `undisclosed` list, do not trust this count if it's gone
-      stale). **Check `eu-ted-tenders-scraper`'s two first -- the handles are literally
-      `field/0`/`field/1`, which smells like the same tool false-positive class c2917 found
-      twice (a literal placeholder phrase, not a real `owner/slug`) -- read the actual README
-      line before assuming it's 2 more real fixes.** If `state/STATUS.md` still reads TRIM SOON
-      or has escalated to TRIM DUE, take that trim too (deferred from this cycle).
-
-- [x] **DONE c2918 (regular slot) -- ran the 3 fleet checks `checks-due --all` had DUE (`check-row-floor`,
-      `check-upstream-warnings`, `check-source-endpoints`), all CLEAN/recorded, then closed the c2917
-      NEXT pointer: `fec-campaign-finance-scraper` + `shopify-products-scraper`'s 8 undisclosed
-      delisted-handle mentions.** All 7 unique handles re-confirmed live 404 first; fixed with inline
-      disclosure placed before the next backtick-handle in `check-handle-liveness`'s 400-char window
-      (its `OTHER_HANDLE` regex fires on ANY handle, so a late disclosure still reads UNDISCLOSED).
-      **Finding: the whole `crawlerbros` account looks delisted** (every handle checked 404s,
-      `store?search=crawlerbros` returns `total:1,items:[]`) -- full writeup LEARNINGS c2918. Verified
-      0 undisclosed via `--only` on both files, pushed (fec 0.1.89, shopify 0.1.115, README-only).
-      Also removed 5 stale already-fixed entries c2917 left in `state/handle_liveness.json` (court-
-      records x4, trademark-search x1) -- re-verified 0 live first. Backlog now 26 (was 39).
-      **NEXT (c2919): backlog targets by count (3 each): `app-store-reviews-scraper`,
-      `fda-recall-scraper` (its mention is another `crawlerbros/*` handle -- check live, don't assume
-      the account-wide pattern), `remote-jobs-scraper`, `substack-scraper`, `us-federal-awards-
-      scraper`. c2919 is a QUALITY/GROWTH slot (2919%3==0) -- `queue.md`/`STATUS.md` are both TRIM
-      SOON (not DUE), so take the trim too per cadence rule 2 before or alongside the backlog work.**
-
-- [x] **DONE c2917 (regular slot) -- closed the c2916 NEXT pointer: `court-records-scraper`'s
-      4 undisclosed delisted-handle mentions (full detail in the backlog item below).** Preflight
-      fresh: all NONE DUE, $0 booked/no buyer signal, no owner email owed, two owner emails in
-      the inbox window re-confirmed old news (CourtListener token c2870, Apify ranking c2496).
-      2 of the 4 were real stale back-references (`dami_studio/...`, `hipersoft/...`), fixed with
-      the README's own short disclosure form. The other 2 (`parseforge/harris-county`,
-      `` `owner/slug` ``) were a **tool false-positive**: in-prose shorthand and a literal
-      placeholder phrase, not real handles -- fixed at the prose level, no tool change needed.
-      Verified 0 undisclosed via `--only`, pushed (build 0.1.82). Found the identical
-      `` `owner/slug` `` false-positive was `trademark-search-scraper`'s last remaining
-      undisclosed count too -- fixed and pushed as a bonus (build 0.1.103). 2 README-only
-      builds, ~$0.01, services/site all verified 200 before and after. Next targets:
-      `fec-campaign-finance-scraper` / `shopify-products-scraper` (4 each) -- grep for
-      `` `owner/slug` `` on each before assuming the count is all real work.
-
-
-
-
 - [x] **DONE c2923 (regular slot) -- closed the c2916 follow-up: `bin/check-doc-size` now
       measures and warns on doc-trim rule 6 (the ~20-line DONE-block cap) instead of relying on
       memory.** Preflight all fresh: `audit-due --all` NONE DUE (only informational one-off
@@ -216,15 +143,6 @@
       a real buyer-facing clarity defect too) rather than loosening the regex -- loosening buys
       a false negative on a real unreachable remedy, which is the bug class the checker exists
       to catch.
-
-- [x] **DONE c2915 -- c2900 follow-up, cosmetic number formatting.** Folded into the c2915
-      within-field-AND doc push (build 0.1.102) rather than spending a separate push: wrapped the
-      three `wallRows` interpolations in `.toLocaleString('en-US')` so the ceiling-branch warning
-      now reads `10,000 rows`, matching its sibling branch's `26,117 matches`.
-      Original note, for the record: the new ceiling-branch warning printed `10000 rows`
-      unformatted while its sibling branch printed `26,117 matches` -- wrap the `wallRows`
-      interpolations in `.toLocaleString('en-US')` next time that file is built for any other
-      reason.
 
 - [ ] **CLOSED c2896 sweep -- residue only (COMPRESSED c2916; the full c2913 narrative, the
       6-form probe recipe and the per-Actor reasoning are verbatim in `queue_archive.md` under
@@ -338,41 +256,14 @@
       `app-store-reviews-scraper.unreachable_remedy_note` (c2872 entry); the live repro input is
       `{"apps":["424389933"],"countries":["us"],"maxResults":3,"includeAppInfo":true}`.
 
-- [ ] **UPDATED c2880 (was UPDATED c2876 / NEW c2872, MEDIUM -- `STATUS.md` half is now DONE and
-      at a durable OK; what remains is ONLY the `queue.md` compression pass, item (2) below).**
-      **c2880 did part (1):** `state/STATUS.md` 123.2KB/1527 -> **42.5KB/465 lines, OK** (proj.
-      148KB, ~36c headroom) via `bin/_trim2880s.py` -- clone THAT, not `_trim2867s.py`, it has the
-      extra kept-blocks-are-the-newest assert and the verified archive-path/append handling.
-      **Correction c2880, do not propagate the old wording: STATUS.md keeps the newest TEN CYCLE
-      blocks, not five.** The text below said "newest-5-blocks convention" for STATUS.md, which
-      conflated queue.md's newest-5 **DONE-block** convention with STATUS.md's newest-10
-      **cycle-block** convention (`bin/check-doc-size:167`, the c2224/c1836 rule; it is also what
-      c2867 cut to and what that tool's 4510 B/cycle growth figure is measured at). Per standing
-      rule 5, read the tool.
-      c2876 trimmed `tasks/queue.md` 132.9KB/1550 lines -> **111.6KB/1320 lines**, TRIM DUE ->
-      **TRIM SOON** (`bin/_trim2876q.py`, lossless-verified: 1463/1463 non-blank original lines
-      findable in live+archive). The Read-cap hazard is gone (proj. 239KB < 256KB). Two things
-      remain, **one file per cycle** per the standing rule:
-      **(1) DONE c2880 -- superseded, kept only for its still-live gotchas:** archive to
-      `state/STATUS_ARCHIVE.md` (**uppercase** -- the c2867 blocker was exactly this), **append
-      at the END**, and re-run `bin/check-status-blocks-kept` + `check-status-continuity` after
-      (both are pre-commit tripwires; c2873's whole commit failed on the first one). Both ran
-      clean at c2880.
-      **(2) THEN -- `queue.md` needs ~33KB more cut to reach a durable OK.** The trigger is
-      `200KB - 5440*24 = ~72.5KB`, so TRIM SOON persists until the file is under that. The DONE
-      bucket is now exhausted (5 blocks, 12.4KB total -- the newest-5 convention floor); **all
-      remaining fat is in the 66 open items, 99.2KB.** Measured this cycle so the next pass does
-      not re-measure (largest first; line numbers WILL have shifted, re-derive per standing rule
-      3): doc-trim cadence 7.2KB (its STANDING RULES must stay; only its EXECUTED record is
-      compressible, already done) / c2380 one-term-diff 4.2KB / STANDING c2532 4.0KB / UPDATED
-      c2809 3.8KB / c2552 tripwire 3.4KB (LOW, latent) / c2478 Nov-15 item 3.2KB (**do NOT touch
-      before 2026-11-15, live deadline**) / ORIGINAL c2845 2.7KB / c2336 tripwire 2.7KB /
-      UPDATED c2846 2.3KB / STANDING RULE c2796 2.3KB / c2464 follow-up 2.2KB. Use the c2550
-      method that worked twice this cycle: **archive verbatim + rewrite in place keeping every
-      load-bearing instruction**, never archive an open item outright, and assert each rewrite
-      separately from the multiset-identity check (`bin/_trim2876q.py` shows the pattern).
-      Cheapest real candidates by fat-per-risk: the c2552 and c2336 tripwires (both latent, both
-      narrative-heavy) and UPDATED c2809.
+- [ ] **CLOSED c2880 (was UPDATED c2876 / NEW c2872) -- fully superseded, archived
+      verbatim. Both halves it described are long done: the STATUS.md archival (done c2880
+      itself) and the "queue.md needs ~33KB more cut" call, overtaken by every trim since
+      (c2892/c2907/c2916/c2919/c2920/c2922/c2925). Full narrative + its stale candidate list in
+      `queue_archive.md` under the c2925 header. One fact worth keeping since it corrects a
+      live misconception: **STATUS.md keeps the newest TEN cycle blocks, not five** (queue.md's
+      DONE-block floor is the newest-5 convention; STATUS.md's is newest-10 -- see
+      `bin/check-doc-size:167`, the c2224/c1836 rule). Do not re-open this item.**
 
 - [ ] **NEW (c2868, MEDIUM -- a gap the blocker exposed, worth closing cheaply).** The pre-commit
       tripwire did its job, but **nothing told us the commit had failed until the next cycle read
