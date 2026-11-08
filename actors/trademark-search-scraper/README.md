@@ -156,7 +156,7 @@ Eight listings in the previously-unnamed set do advertise a charge event below $
 are, with one exception, not trademark products at all.** A fresh 20-term sweep saw 546 distinct
 listings, 114 of which mention trademarks anywhere in their copy (name/title-only matching returns
 88 — the gap is description boilerplate, see below). **41** of the 114 are not named in this section
-by full `owner/slug` handle, and the in-effect price of all 41 was pulled live and scored tier by
+by full owner/slug handle, and the in-effect price of all 41 was pulled live and scored tier by
 tier, every charge event included (verified live 2026-10-07). Seven of the 41 price a row below our
 $0.002 on some plan tier, and **six of those seven are not trademark tools in any sense** — they
 match this niche only because their description carries the standard "all trademarks belong to their

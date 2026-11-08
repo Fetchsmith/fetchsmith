@@ -1,3 +1,18 @@
+- [x] **DONE c2917 (regular slot) -- closed the c2916 NEXT pointer: `court-records-scraper`'s
+      4 undisclosed delisted-handle mentions (full detail in the backlog item below).** Preflight
+      fresh: all NONE DUE, $0 booked/no buyer signal, no owner email owed, two owner emails in
+      the inbox window re-confirmed old news (CourtListener token c2870, Apify ranking c2496).
+      2 of the 4 were real stale back-references (`dami_studio/...`, `hipersoft/...`), fixed with
+      the README's own short disclosure form. The other 2 (`parseforge/harris-county`,
+      `` `owner/slug` ``) were a **tool false-positive**: in-prose shorthand and a literal
+      placeholder phrase, not real handles -- fixed at the prose level, no tool change needed.
+      Verified 0 undisclosed via `--only`, pushed (build 0.1.82). Found the identical
+      `` `owner/slug` `` false-positive was `trademark-search-scraper`'s last remaining
+      undisclosed count too -- fixed and pushed as a bonus (build 0.1.103). 2 README-only
+      builds, ~$0.01, services/site all verified 200 before and after. Next targets:
+      `fec-campaign-finance-scraper` / `shopify-products-scraper` (4 each) -- grep for
+      `` `owner/slug` `` on each before assuming the count is all real work.
+
 - [x] **DONE c2916 (QUALITY/GROWTH slot, 2916 % 3 == 0) -- took the mandatory queue trim c2915
       flagged; this block is deliberately short, see finding (2).** Preflight all fresh (c2120
       rule): `audit-due --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE (soonest
@@ -19,8 +34,8 @@
       `shopify-products` (4 each). (2) **doc-trim rule 6 is not being honoured** -- live DONE
       blocks ran a mean ~31 lines against its 15-20 cap, which is the real reason this file
       re-escalates every ~3rd cycle.
-      **NEXT (c2917, regular slot):** nothing is due; best fallback is one Actor of the
-      delisted-handle backlog (`court-records-scraper`, 4 mentions, one build, one `--only` check).
+      **NEXT (c2917, regular slot): DONE** -- see c2917 block below (closed
+      `court-records-scraper`'s 4 mentions + bonus-fixed `trademark-search-scraper`'s last 1).
 
 - [x] **DONE c2913 (QUALITY/GROWTH slot, 2913 % 3 == 0).** Preflight all fresh (c2120 rule):
       `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational one-off `count_audit`/
@@ -502,13 +517,19 @@
       `/root/agent/venv/bin/python -c "import json;d=json.load(open('state/handle_liveness.json'));
       [print(x['file'],x['line'],x['handle']) for x in d['undisclosed']]"`
       **Fresh read c2916** (sweep of record `swept: 2026-11-07`, full, `partial_only: []`):
-      **39 undisclosed across 17 READMEs.** Largest first: `court-records-scraper` 4,
-      `fec-campaign-finance-scraper` 4, `shopify-products-scraper` 4; then `app-store-reviews`,
-      `fda-recall`, `remote-jobs`, `substack`, `us-federal-awards` at 3; `eu-ted-tenders`,
-      `google-play-reviews`, `grants-gov` at 2; and 6 more READMEs at 1 each.
-      **`uk-find-a-tender-scraper` is now CLEAR and `trademark-search-scraper` is down to 1** --
-      the "do `trademark-search`, then `uk-find-a-tender`" pointer carried by c2846/c2860 was
-      STALE as of this read. Take the 4s first.
+      **39 undisclosed across 17 READMEs** (now stale by -6, see c2917 below). Largest first:
+      `court-records-scraper` 4, `fec-campaign-finance-scraper` 4, `shopify-products-scraper` 4;
+      then `app-store-reviews`, `fda-recall`, `remote-jobs`, `substack`, `us-federal-awards` at
+      3; `eu-ted-tenders`, `google-play-reviews`, `grants-gov` at 2; and 6 more READMEs at 1 each.
+      **c2917 CLOSED `court-records-scraper` (4->0, build 0.1.82) and, as a bonus, closed
+      `trademark-search-scraper`'s last 1 (build 0.1.103) -- 2 of those 5 "undisclosed" counts
+      were actually a tool false-positive: the literal placeholder phrase `` `owner/slug` ``
+      (meaning "a generic handle", not a real one) matches the handle regex. Before trusting any
+      other file's count in this list, grep it first:
+      `grep -rln '`owner/slug`' actors/*/README.md` -- the fix is just removing the backticks,
+      no build-worthy content change.** Next targets: `fec-campaign-finance-scraper` and
+      `shopify-products-scraper`, both still at 4 (unverified whether either also carries the
+      `owner/slug` false-positive -- check before assuming all 4 are real per-Actor work).
       **Method -- same as c2842/c2843, do NOT invent a new one: ONE Actor per build.** Fix all of
       one README's mentions, then run `bin/check-handle-liveness --only <slug>` before pushing (a
       `--only` run is exactly the right post-edit check, but it is NOT a run of record). Two

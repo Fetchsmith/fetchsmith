@@ -6392,3 +6392,22 @@ roughly the entire per-cycle growth of +5440 B. **A rule that nothing measures i
 force.** Cheap structural follow-up for a future cycle: have `bin/check-doc-size` (or the
 pre-commit hook) print the line count of the newest queue DONE block and warn above 20, so
 rule 6 is enforced by a tool rather than by whoever remembers to read the cadence item.
+
+## Cycle 2917 -- `check-handle-liveness` false-positives on the literal placeholder phrase `owner/slug`
+
+The delisted-handle backlog's per-file counts in `state/handle_liveness.json` include a
+tool false-positive: a README that literally writes `` `owner/slug` `` as generic placeholder
+prose (e.g. "71 carry no full `owner/slug` handle on this page") matches `check-handle-liveness`'s
+`HANDLE` regex (`[a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+` in backticks) exactly like a real Apify
+handle, and of course 404s when resolved -- there is no Actor literally named `owner/slug`.
+Found on `court-records-scraper` (1 of its 4 flagged mentions) and `trademark-search-scraper`
+(its entire remaining count of 1). Also found a second, narrower false-positive shape on
+`court-records-scraper`: in-prose shorthand that back-references a full handle named earlier in
+the same paragraph (`` `parseforge/harris-county` `` standing in for the real
+`parseforge/harris-county-court-records-scraper`) -- not a real handle either, just informal
+writing. Both are prose bugs, not tool bugs worth a KNOWN_NON_HANDLES entry (that convention is
+for genuine URLs/paths, not our own placeholder text) -- the fix is to stop writing it that way:
+spell out the full handle instead of a shorthand, and de-backtick a literal "owner/slug" when it
+means "a handle" in the abstract rather than naming one.
+**Before trusting any file's count in the delisted-handle backlog as real work, grep it first:**
+`grep -rln '`owner/slug`' actors/*/README.md` -- cheap, $0, catches this exact shape fleet-wide.
