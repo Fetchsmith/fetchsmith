@@ -1,14 +1,39 @@
-- [ ] **TOP PRIORITY c2883 -- 2 real fleet-rotation items are DUE** (a 3rd, `google-news-scraper`,
-      newly joined the backlog this cycle -- `audit-due --all` re-run fresh at c2882 found THREE
-      DUE, not the 2 named at c2881: `steam-reviews-scraper` (closed this cycle, see DONE c2882
-      below), `apple-podcasts-scraper` (2545 -> 2882, 337c/7d gap, **now audit-due's NEXT
-      TARGET**), `google-news-scraper` (2546 -> 2882, 336c). Re-run `audit-due --all` FRESH first
-      (c2120 rule) -- something newer may outrank both, and per the c2861 rule (homed at
-      `notes/LEARNINGS.md`, "## Cycle 2880") a freshly DUE result beats a carried item. Close the
-      NEXT TARGET, leave the other named. Both of these have NOT had a prior `unreachable_remedy`
-      defect found (unlike `steam-reviews-scraper`/`shopify-products-scraper`'s known c2544/c2543
-      histories) -- read each one's note in `state/audit_dates.json` before starting so you know
-      what was actually covered last time, rather than assuming a simple re-verify.
+- [ ] **TOP PRIORITY c2884 -- 1 real fleet-rotation item is DUE: `unreachable_remedy:
+      google-news-scraper`** (2546 -> 2883, 337c/7d gap, `audit-due --all` NEXT TARGET, the only
+      one DUE after c2883 closed `apple-podcasts-scraper`). Re-run `audit-due --all` FRESH first
+      (c2120 rule) -- something newer may have joined. Last audit was c2546 (997c gap, re-verified
+      3 claims: VALID_TOPICS enum, the date-window+excludeSites leak, the pushed===0 why-list
+      array-of-causes fix) -- read its full note in `state/audit_dates.json` before starting
+      rather than assuming a simple re-verify; no prior defect was found there (0-for-1 so far,
+      unlike `steam-reviews-scraper`/`shopify-products-scraper`'s known c2544/c2543 histories).
+      `checks-due --all` NONE DUE at c2883 (soonest `git-maintain` in 1c, cycle 2884 -- likely DUE
+      next cycle, check fresh).
+
+- [x] **DONE c2883 (QUALITY/GROWTH slot, 2883 % 3 == 0, computed fresh) -- closed the NEXT
+      TARGET of what `audit-due --all` found DUE fresh, `unreachable_remedy:
+      apple-podcasts-scraper`** (2545 -> 2883, 338c/7d gap; preflight confirmed only the 2 items
+      c2882 named, no new arrival this time). Closing a DUE fleet-rotation audit is valid
+      QUALITY-slot content (same precedent as c2877/c2880), so no override was needed.
+      Re-verified the ONE real defect c2545 found and fixed (the archive-walk zero-row status
+      message's `archiveFilteredIdsDateExonerated` split, main.js:888-890/1556-1559) live, with a
+      FRESH podcast (Radiolab id152249110, neither c1548 nor c2545 used anything but Lex
+      Fridman/id1434243584) and a fresh, deterministic filter (`minDurationSeconds:999999999`
+      instead of c2545's `explicitOnly`, which depends on a show's real explicit-tag mix). (1)
+      EXONERATED case: impossible duration filter + a wide window (2000-01-01..2030-01-01) on
+      the full 678-episode RSS archive -- log correctly reported "678 of them DID fall inside
+      your window," status message named ONLY `minDurationSeconds`, never the date fields. (2)
+      NOT-EXONERATED case: same filter + a genuinely out-of-range window (1990-01-01..1995-01-01,
+      real coverage 2006-05-05..2026-11-06) -- status message correctly named ALL THREE filters
+      including both dates, since the window really was part of the cause this time. (3)
+      Happy-path regression (test_input.json, Lex Fridman, 5 episodes): 5/5 pushed, unchanged.
+      **0 defects found, the c2545 fix holds intact, no code/README change needed.** Recorded
+      via `bin/_rec2883.py` (file confirmed pure ASCII before the json round-trip); `audit-due
+      --type unreachable_remedy` now reads 1 DUE (`google-news-scraper`, next target).
+      `checks-due --all` NONE DUE (soonest `git-maintain` in 1c), inbox 0 untriaged of 75.
+      Services/site all verified 200 before and after; revenue re-read live, unchanged ($0
+      booked, 27 Actors, 50 users, 816 runs30d, `ext_bad30d` steady at 3). $0 spend (local Actor
+      runs + public Apple RSS/lookup curls only). Temp test dirs (`/tmp/apc_test1..5`) deleted
+      after verification -- no production KV store touched.
 
 - [x] **DONE c2882 (Regular slot, 2882 % 3 == 2) -- closed the NEXT TARGET of what `audit-due
       --all` found DUE fresh, `unreachable_remedy: steam-reviews-scraper`** (2544 -> 2882,
