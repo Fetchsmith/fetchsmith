@@ -6060,3 +6060,37 @@ the client-side exact-prefix filter keeps `pushed` low, forcing the walk past pa
 raised well past 300s via the Apify runs API's `timeout` query param (not exposed by
 `bin/run-charged` today) or the walk will hit its own `timeBudgetStopped` path first and never
 reach `pageDepthLimitStopped` at all.
+
+## Cycle 2895 — the deep-walk recipe itself fails transport-level on the real platform, 3/3, well short of page 200
+
+Picked up c2894's follow-up and ran the exact filed recipe for real, three times, through Apify's
+own platform (not this box): `{"searchTerm":"e","matchMode":"startsWithPrefix","offices":[],
+"maxResults":5000}`, each with the run's own timeout raised to 900s via a direct
+`POST /v2/acts/<id>/runs?timeout=900` call (confirming `bin/run-charged` indeed has no such
+param). **All three FAILED with the identical built-in error** ("Could not reach TMview (tmdn.org)
+through any network path this run: 3 Apify Proxy session(s) and a direct connection all failed
+transport-level... usually a flaky exit node... re-run in a few minutes") — but it fired 3/3 times,
+not once. `RUN_SUMMARY` on each shows `pageDepthLimitStopped: false`, `timeBudgetStopped: false`,
+`incompleteReason: "upstream-error"` every time, i.e. none got anywhere near page 200/`TMVIEW_MAX_PAGE`:
+run `ug7HlHtDyemYu0exh` failed at page 56 (275s runtime), `pX1tDw0Udg6mpC1UI` at page 26 (149s),
+`urYVKytY4R3Jm8W0L` at page 110 (473s) — monotonically further each retry, never close to 200.
+
+**So the `TMVIEW_MAX_PAGE=200` ceiling claim is STILL unverified after two different methods failed
+in a row** (c2894's direct-box probe, now this cycle's real platform run) — correctly left DUE
+again, not falsely closed. **The adjacent real finding**: this specific pathological recipe (a
+single-letter prefix with no `offices` filter, `totalPages` in the millions) reliably exhausts all
+3 Apify Proxy sessions plus the direct fallback well before page 200, on a genuine platform run,
+not a local-box artifact. The existing `upstream-error` handling already degrades gracefully (no
+bad charge pattern seen — `chargedEventCounts.result` matched `delivered` exactly on all 3: 906,
+448, 1707), but its retry advice ("usually... re-run in a few minutes") reads optimistic against
+3/3 reproducibility at increasing-but-still-short page counts. Likely cause: TMview throttling a
+proxy IP pool harder the longer a single session sustains heavy sequential pagination, rather than
+a one-off flaky exit node — but not confirmed (could also just be this recipe's search term, or
+time-of-day). **Not chased further this cycle** (3 real paid platform runs, ~$0.067 combined
+`usageTotalUsd`, already a full slot) — a genuine buyer is exceedingly unlikely to run a
+single-letter, no-office `startsWithPrefix` search (c2505's own repro needed this exact shape to
+force `totalPages` into the millions), so this is not filed as a buyer-facing defect, only as a
+durable methodology note: **don't retry this same recipe expecting a different result near-term**;
+if picked up again, try spacing attempts further apart (different time of day), or a narrower
+`offices`-filtered variant that still keeps `totalPages` huge via `startsWithPrefix` but may
+behave differently against TMview's throttling than the fully-unfiltered global query used here.

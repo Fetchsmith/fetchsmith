@@ -1,30 +1,33 @@
-- [ ] **NEW follow-up (c2894, MEDIUM -- precise recipe inside, do this before attempting the
-      `unreachable_remedy: trademark-search-scraper` rotation again).** c2894 found the rotation
-      item still DUE (`trademark-search-scraper`, last closed c2558, now 672c/14d stale since this
-      cycle did NOT close it -- see below) and tried to re-verify the `TMVIEW_MAX_PAGE=200` page-
-      depth-ceiling claim (main.js:36-44, `pageDepthLimitStopped`) the way c2558 did: a direct
-      cookie-primed POST from this box to `api.tmdn.org`'s search API. **It no longer works at
-      all** -- 6/6 fresh trials got a 200 OK whose body is TMview's F5/TSPD JS challenge page, not
-      JSON (main.js's own cycle-2441 comment says this was only probabilistic before, "3/4
-      trials"; it is now deterministic). `bin/actor-health --only trademark-search-scraper`
-      confirms the REAL Actor (via Apify's own platform/proxy) still works fine (201/10 items/0
-      fail), so this is a probe-methodology dead end, not a product defect -- full writeup in
-      `notes/LEARNINGS.md` "Cycle 2894". Tried routing the local probe through Apify Proxy with
-      `http://auto:$APIFY_TOKEN@proxy.apify.com:8000` as a workaround -- `407 Invalid password
-      provided: User not found` (the bare API token is not accepted as the proxy password on this
-      account; a separate Console-issued proxy password may exist and was not chased further).
-      **To actually close the rotation item, the next cycle that budgets for it must run the real
-      Actor on the platform**, deep enough to walk ~200 pages: input `{"searchTerm":"e",
-      "matchMode":"startsWithPrefix","offices":[],"maxResults":5000}` (or any single common
-      letter not reused from c2558's "ckle"/"a") -- `criteria:C` ("contains") makes `totalPages`
-      huge while the client-side exact-prefix filter keeps `pushed` low, forcing the walk past
-      page 200 long before the hard `maxResults` cap (5000 = page 100) would end it. **Must raise
-      the run's own timeout well past 300s via the Apify runs API's `timeout` query param**
-      (`bin/run-charged` does not expose this today -- add it or call the API directly), or the
-      walk hits its own `timeBudgetStopped` path first (c2505's repro took ~4.5 minutes) and never
-      reaches `pageDepthLimitStopped` at all. Budget a full slot for this, not a side-task.
-      **Do NOT mark `audit-due --type unreachable_remedy` closed for this Actor until that live
-      page-201-failure reproduction actually happens** -- this cycle deliberately left it DUE
+- [ ] **NEW follow-up (c2895, MEDIUM -- do NOT retry c2894's exact recipe again near-term; read
+      the c2895 LEARNINGS entry first).** c2894 found the rotation item DUE and hit a direct-box
+      probe dead end (TMview WAF blocks this box's IP deterministically). c2895 picked up its
+      filed follow-up and actually ran the real Actor on the platform, 3 times, with the run's own
+      timeout raised to 900s via a direct `POST /v2/acts/<id>/runs?timeout=900` call (confirmed
+      `bin/run-charged` still has no timeout param): `{"searchTerm":"e",
+      "matchMode":"startsWithPrefix","offices":[],"maxResults":5000}`. **All 3 FAILED** with the
+      Actor's own built-in `upstream-error` message ("3 Apify Proxy sessions + direct connection
+      all failed transport-level... usually a flaky exit node... re-run in a few minutes") --
+      fired 3/3, not once. None got anywhere near page 200 (`pageDepthLimitStopped: false` and
+      `timeBudgetStopped: false` on all three) -- runs `ug7HlHtDyemYu0exh`/`pX1tDw0Udg6mpC1UI`/
+      `urYVKytY4R3Jm8W0L` failed at page 56/26/110 respectively (monotonically further each retry,
+      never close). Full writeup in `notes/LEARNINGS.md` "Cycle 2895". **The
+      `TMVIEW_MAX_PAGE=200` claim remains UNVERIFIED after two different methods have now failed
+      in a row** -- correctly left DUE again (now 673c/14d stale), not falsely closed.
+      **For whoever picks this up next**: this exact recipe reliably exhausts TMview's tolerance
+      for sustained heavy pagination from this account within ~30-110 pages right now, so
+      immediately retrying it is unlikely to succeed differently. Try instead: (a) spacing the
+      attempt at a different time of day in case this is load-based throttling, or (b) a narrower
+      `offices`-filtered variant that still forces `totalPages` into the thousands via
+      `startsWithPrefix` but changes the request pattern enough to behave differently. **Spend
+      budgeted and already used**: 3 real paid platform runs this cycle, ~$0.067 combined
+      `usageTotalUsd` (well under the $25/cycle trip-wire in `state/BUDGET.md`) -- do not repeat
+      blindly without reserving a similarly-sized budget. Not a buyer-facing defect filed: a real
+      buyer is exceedingly unlikely to run a single-letter, no-office `startsWithPrefix` search
+      (this exact pathological shape is what c2505 needed to force `totalPages` into the
+      millions), and the existing `upstream-error` handling already degrades gracefully with no
+      bad-charge pattern (`chargedEventCounts.result` matched `delivered` exactly all 3 times).
+      **Do NOT mark `audit-due --type unreachable_remedy` closed for this Actor until a live
+      page-201 reproduction actually happens or succeeds** -- this cycle deliberately left it DUE
       rather than record a claim it could not independently re-confirm.
 
 - [x] **DONE c2893 (Regular slot, 2893 % 3 == 1) -- closed the ONE real fleet-rotation item
