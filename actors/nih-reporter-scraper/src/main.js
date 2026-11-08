@@ -1408,30 +1408,73 @@ if (rootTotal === null) {
     log.info(`Matched ${rootTotal} project records before paging.`);
 }
 
+// Cycle 2908: NIH's offset wall only binds if nothing NEARER binds first, and `maxResults`
+// defaults to 100 -- so on a default-input run over a 138k-match query the walk stops 14,900 rows
+// BEFORE the wall. Blaming the wall then told the buyer two false things at once: the wrong
+// shortfall (123,331 "past the wall" when 138,231 were really out of reach) and a remedy
+// ("narrow the query") that cannot add one single row, because narrowing a query does not raise
+// the row cap that actually stopped it. Worse, markIncomplete() is first-cause-wins, so marking
+// offset-wall HERE -- before walkChunk() runs at all -- permanently suppressed the true
+// `max-results` cause the walk would have recorded. So every offset-wall attribution below is now
+// gated on this. Discriminator is `maxResults >= OFFSET_WALL`, not `>`: at exactly 15000 the two
+// caps land on the same row, the buyer cannot get a 15001st from this query by any input, and
+// narrowing genuinely is the only remedy left -- so the wall is the honest cause there.
+// The log.warning still names BOTH caps in every case (the wall is real and worth knowing about);
+// only the cause attribution and the order of the remedies change.
+const wallBinds = maxResults >= OFFSET_WALL;
+// What a single unsplittable query can actually deliver this run, for "taking its first N" claims.
+const reachThisRun = Math.min(OFFSET_WALL, maxResults);
+
 if (rootTotal === null) {
     await walkChunk(rootCriteria, null);
 } else if (searchId && rootTotal > SPLIT_AT) {
     // The chunk-and-merge trick below rewrites the criteria object, and a saved search has none to
     // rewrite (NIH ignores criteria sent with a search id), so the 15000-row wall is hard here.
+    // `unreachableMatches` is deliberately NOT gated on wallBinds: it documents this Actor's
+    // permanent ceiling for the query (line 101), which is true whatever maxResults is set to,
+    // and RUN_SUMMARY.reachableMatches is derived from it. Only the CAUSE attribution is gated.
     unreachableMatches = rootTotal - OFFSET_WALL;
-    markIncomplete('offset-wall', `${unreachableMatches} of ${rootTotal} match(es) are past NIH's ${OFFSET_WALL}-row wall and a saved search cannot be split`);
-    log.warning(
-        `This saved search matches ${rootTotal} projects, but NIH RePORTER caps offset+limit at ${OFFSET_WALL} with no `
-        + `cursor, and a saved search cannot be split into sub-queries the way the filter inputs can. Only the first `
-        + `${OFFSET_WALL} are reachable. Narrow the search on reporter.nih.gov (a fiscal year, IC or state) and paste `
-        + 'the new link, or use this Actor\'s own filter inputs instead of startUrl.',
-    );
+    if (wallBinds) {
+        markIncomplete('offset-wall', `${unreachableMatches} of ${rootTotal} match(es) are past NIH's ${OFFSET_WALL}-row wall and a saved search cannot be split`);
+        log.warning(
+            `This saved search matches ${rootTotal} projects, but NIH RePORTER caps offset+limit at ${OFFSET_WALL} with no `
+            + `cursor, and a saved search cannot be split into sub-queries the way the filter inputs can. Only the first `
+            + `${OFFSET_WALL} are reachable. Narrow the search on reporter.nih.gov (a fiscal year, IC or state) and paste `
+            + 'the new link, or use this Actor\'s own filter inputs instead of startUrl.',
+        );
+    } else {
+        log.warning(
+            `This saved search matches ${rootTotal} projects, but maxResults=${maxResults} stops this run first -- `
+            + `that is YOUR row cap, not an upstream limit, so narrowing the search would not add a single row. `
+            + `Raise maxResults for more rows: anything up to ${OFFSET_WALL} helps here, and a maxResults above `
+            + `${OFFSET_WALL} cannot reach any further on a saved search, because NIH RePORTER caps offset+limit at `
+            + `${OFFSET_WALL} with no cursor and a saved search cannot be split into sub-queries the way the filter `
+            + 'inputs can. To go past that, narrow the search on reporter.nih.gov (a fiscal year, IC or state) and '
+            + 'paste the new link, or use this Actor\'s own filter inputs instead of startUrl.',
+        );
+    }
     await walkChunk(rootCriteria, rootTotal);
 } else if (rootTotal > SPLIT_AT) {
     // Past the 15000-row wall: fan out across a categorical dimension and merge on appl_id.
     const chunks = splitCriteria(rootCriteria);
     if (!chunks) {
-        unreachableMatches = rootTotal - OFFSET_WALL;
-        markIncomplete('offset-wall', `${unreachableMatches} of ${rootTotal} match(es) are past NIH's ${OFFSET_WALL}-row wall and no dimension is left to split on`);
-        log.warning(
-            `${rootTotal} matches but no dimension left to split on -- NIH RePORTER caps offset+limit at ${OFFSET_WALL} `
-            + 'and has no cursor, so only the first 15000 are reachable. Narrow the query (add a fiscal year, IC or state) to see the rest.',
-        );
+        unreachableMatches = rootTotal - OFFSET_WALL;   // see the wallBinds note above
+        if (wallBinds) {
+            markIncomplete('offset-wall', `${unreachableMatches} of ${rootTotal} match(es) are past NIH's ${OFFSET_WALL}-row wall and no dimension is left to split on`);
+            log.warning(
+                `${rootTotal} matches but no dimension left to split on -- NIH RePORTER caps offset+limit at ${OFFSET_WALL} `
+                + `and has no cursor, so only the first ${OFFSET_WALL} are reachable. Narrow the query (add a fiscal year, IC or state) to see the rest.`,
+            );
+        } else {
+            log.warning(
+                `${rootTotal} matches, but maxResults=${maxResults} stops this run first -- that is YOUR row cap, not `
+                + `an upstream limit, so narrowing the query would not add a single row. Raise maxResults for more `
+                + `rows: anything up to ${OFFSET_WALL} helps here, and a maxResults above ${OFFSET_WALL} cannot reach `
+                + `any further on this query, because no dimension is left to split on and NIH RePORTER caps `
+                + `offset+limit at ${OFFSET_WALL} with no cursor. To go past that, narrow the query (add a fiscal `
+                + 'year, IC or state).',
+            );
+        }
         await walkChunk(rootCriteria, rootTotal);
     } else {
         log.info(`Over the ${OFFSET_WALL}-row offset wall; splitting into ${chunks.length} sub-queries and merging on appl_id.`);
@@ -1471,17 +1514,25 @@ if (rootTotal === null) {
                         }
                         if (t === 0) continue;
                         if (t > SPLIT_AT) {
-                            unreachableMatches += t - OFFSET_WALL;
-                            markIncomplete('offset-wall', `a sub-query has ${t} matches and cannot be split further`);
-                            log.warning(`A sub-query still has ${t} matches and cannot be split further; taking its first ${OFFSET_WALL}.`);
+                            unreachableMatches += t - OFFSET_WALL;   // see the wallBinds note above
+                            if (wallBinds) markIncomplete('offset-wall', `a sub-query has ${t} matches and cannot be split further`);
+                            log.warning(
+                                `A sub-query still has ${t} matches and cannot be split further; taking at most its `
+                                + `first ${reachThisRun}`
+                                + (wallBinds ? ' (NIH\'s offset wall).' : ` (your maxResults, well short of NIH's ${OFFSET_WALL}-row wall -- raise maxResults for more).`),
+                            );
                         }
                         if (!(await walkChunk(s, t))) break;
                     }
                     continue;
                 }
-                unreachableMatches += total - OFFSET_WALL;
-                markIncomplete('offset-wall', `a sub-query has ${total} matches and cannot be split further`);
-                log.warning(`A sub-query still has ${total} matches and cannot be split further; taking its first ${OFFSET_WALL}.`);
+                unreachableMatches += total - OFFSET_WALL;   // see the wallBinds note above
+                if (wallBinds) markIncomplete('offset-wall', `a sub-query has ${total} matches and cannot be split further`);
+                log.warning(
+                    `A sub-query still has ${total} matches and cannot be split further; taking at most its `
+                    + `first ${reachThisRun}`
+                    + (wallBinds ? ' (NIH\'s offset wall).' : ` (your maxResults, well short of NIH's ${OFFSET_WALL}-row wall -- raise maxResults for more).`),
+                );
             }
             if (!(await walkChunk(chunk, total))) break;
         }

@@ -6293,3 +6293,59 @@ recorded at c2902 and is not due again until c2926), so the only thing standing 
 blown Read cap is the handoff note the cycle writes itself. Say so explicitly in the queue item --
 "c2904's own additions are what pushed it over" -- rather than leaving a stale TRIM SOON claim for
 the next cycle to trip over.
+
+## Cycle 2908 — "an upstream wall only binds if nothing nearer binds first" is a two-Actor class, and the second instance was worse than the first
+
+The c2900 defect class, swept fleet-wide this cycle and now CLOSED: **a warning that predicts an
+upstream limit which a nearer own-cap makes unreachable.** 28 `src/main.js` files swept, ~22
+predictive-terminal-limit literals triaged, **2 of 28 Actors carried it** — `trademark-search-scraper`
+(fixed c2900) and `nih-reporter-scraper` (fixed here, build 0.1.72).
+
+**The reusable shape, stated generally.** Any message that names an upstream ceiling as the reason a
+run fell short is making a claim about *which cap bound first*. That claim is only true if the
+Actor's own row cap is >= the upstream one. `nih-reporter-scraper` compared `rootTotal > SPLIT_AT`
+(14500) and never looked at `maxResults` at all — whose **default is 100**. So the single most
+likely 0-effort input (broad query, untouched defaults) got the wrong shortfall number *and* a
+remedy that could not add one row: narrowing a query does not raise the cap that stopped it.
+
+**Two generalisable lessons, neither specific to NIH:**
+
+1. **A first-cause-wins `markIncomplete()` turns a wrong attribution into active suppression.**
+   `if (!complete) return` means the FIRST cause recorded is the only one the buyer ever sees. Both
+   offending marks ran *before* `walkChunk()` executed, so they pre-empted the `max-results` cause
+   the walk would have recorded correctly a few lines later. **Rule: with first-cause-wins
+   bookkeeping, a cause recorded BEFORE the work starts is a prediction, and a prediction that can
+   be wrong must be gated — otherwise it permanently outranks the measured truth.** Worth grepping
+   for anywhere else the fleet marks a cause ahead of the loop that would discover it.
+2. **Gate the ATTRIBUTION, not the number.** `unreachableMatches` looked equally wrong at first and
+   was deliberately left alone: it documents the Actor's *permanent* ceiling for the query (true at
+   any `maxResults`) and feeds a documented `RUN_SUMMARY` field. Only `incompleteReason` and the
+   remedy wording were about *this run*. Separating "what this run delivered" from "what this Actor
+   can ever deliver" is what kept the fix to ~30 lines instead of a RUN_SUMMARY redesign.
+
+**Boundary choice worth copying: `>=`, not `>`.** `wallBinds = maxResults >= OFFSET_WALL`. At exactly
+15000 the two caps land on the same row, no input can reach a 15001st on an unsplittable query, and
+so narrowing genuinely IS the only remedy left — the wall is the honest cause *at* the boundary.
+Picking `>` there would have blamed the buyer's own cap for a shortfall they cannot fix by raising it.
+
+**Verifying an expensive branch for $0 (reusable method, extends c2896's).** Proving the
+wall-binding path unregressed needed `maxResults=15000`, i.e. a ~$22 run. Instead: pull the branch
+body out of the file *programmatically* (`src.index(...)` on the real anchors, never retyped), wrap
+it in a loop over `[14999, 15000, 20000]` with stub `log`/`markIncomplete`, and execute it in node.
+14999 blamed the own cap and marked nothing; 15000 and 20000 both reproduced the original 216-char
+warning and the original `offset-wall` detail byte-for-byte. One $0.00025 single-row platform run
+then confirmed the new branch end-to-end live. **Hoist the literals, do not retype them** — a
+retyped literal verifies your typing, not the shipped code.
+
+**c2904's standing rule (b) earned its keep, second time running.** `check-depth-remedy-ceiling`
+reported 2 MISSes on the new wording. They were false positives (the branch is gated on
+`maxResults < 15000`, well under the 20000 schema max) — its own documented blind spot (5), that it
+cannot see whether a remedy is *useful* below the ceiling. The rule says fix the wording, not the
+regex, and the wording fix was a real improvement: the message now names the raise's useful ceiling
+("anything up to 15000 helps here, and a maxResults above 15000 cannot reach any further on this
+query"), which is what a buyer actually needs and happens to contain the checker's standard
+`cannot reach` guard phrase. **What was explicitly refused: adding a dead `xAtCeiling` ternary to
+silence the checker.** In that branch `maxResults` is provably below its schema max, so such a
+ternary is unreachable code — padding a file to turn a checker green is how a checker stops meaning
+anything. If a third false positive appears, teach GUARD to recognise a guard identifier in the
+enclosing `if`.

@@ -199,11 +199,43 @@
       richness, same as the other Actors' designs). May require a non-watch-mode webhook test
       instead if no reusable trick exists here.
 
-- [ ] **NEXT (c2908).** Re-run `audit-due --all`/`checks-due --all` fresh (c2120 rule: do not
-      trust this reading). `tasks/queue.md` is still TRIM SOON as of c2907 -- if nothing real is
-      DUE, continue the open-item compression above (`c2380` is the largest remaining candidate)
-      or take the `sam-gov-opportunities-scraper` webhookUrl gap with the corrected
-      understanding above.
+- [ ] **NEXT (c2909).** Re-run `audit-due --all`/`checks-due --all` fresh (c2120 rule: do not
+      trust c2908's reading -- it found FLEET ROTATIONS NONE DUE and FLEET CHECKS NONE DUE, with
+      `check-row-floor` the soonest at cycle 2918). `tasks/queue.md` is still **TRIM SOON**
+      (121.1KB after c2908's own append, ~15c headroom) and **the DONE-block lever is exhausted
+      at the newest-5 floor** (c2905), so a trim now has to take the open-item compression
+      candidates c2880 measured -- `c2380` is the largest remaining one. Other unclaimed options,
+      in rough value order: the **c2896 within-field-AND doc sweep** across 6 other search Actors
+      (filed for a QUALITY/GROWTH slot, and c2909 % 3 == 0 IS one -- this is the natural pick);
+      the `sam-gov-opportunities-scraper` webhookUrl gap with c2907's correction (needs a
+      genuinely new method -- the seed-narrow/run-wide trick does NOT apply there); and the
+      c2900 cosmetic `.toLocaleString` tidy on `trademark-search-scraper`, which must be folded
+      into some other push for that Actor rather than spending $0.005 alone.
+      **The c2900 predictive-upstream-limit sweep is CLOSED as of c2908 -- do not re-open it.**
+
+- [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
+      `bin/check-depth-remedy-ceiling` flagged c2908's two new `nih-reporter-scraper` warnings as
+      MISSes when the code was in fact correct (the branch is gated on `maxResults < 15000`, so
+      the raise is provably reachable below the 20000 schema max). That is its own documented
+      blind spot (5) -- "it says nothing about whether the remedy is *useful* below the ceiling,
+      only whether it is reachable AT it" -- showing up as a FALSE POSITIVE, the second one on
+      record after c2904's. Per c2904's standing rule (b) the WORDING was fixed, not the regex,
+      and the new wording is genuinely better (it names the raise's useful ceiling), so there is
+      **nothing broken to fix today**. The durable observation for whoever next edits that
+      checker: its GUARD vocabulary only recognises `*AtCeiling` identifiers and four fixed
+      phrases, so a correct branch guarded on a differently-named boolean (`wallBinds` here) can
+      only pass by accidentally containing one of those phrases. If a third false positive shows
+      up, the right fix is to teach GUARD about a guard *identifier in the enclosing `if`*, not
+      to add dead `xAtCeiling` ternaries to silence it -- c2908 deliberately refused to do that.
+
+- [ ] **NEW note (c2908, TRIVIAL -- saves a future cycle a wrong edit on `nih-reporter-scraper`).**
+      `unreachableMatches` (main.js:101) is deliberately NOT gated on `wallBinds` and must stay
+      that way. It means "declared matches sitting past NIH's 15000-row wall", i.e. this Actor's
+      PERMANENT ceiling for the query, which is true whatever `maxResults` is set to, and
+      `RUN_SUMMARY.reachableMatches` is derived from it. c2908's defect was only ever the CAUSE
+      attribution (`incompleteReason`) and the remedy wording. Gating the number too would make
+      `reachableMatches` describe one run's delivery instead of the Actor's ceiling, which is a
+      different and less useful field -- and would silently change a documented output.
 
 
 - [ ] **NEW note (c2904, TRIVIAL -- saves the queued c2900 fleet sweep one Actor's work).**
@@ -244,7 +276,23 @@
       -- wrap the `wallRows` interpolations in `.toLocaleString('en-US')` next time that file is
       built for any other reason.
 
-- [ ] **c2900 follow-up (fleet sweep, $0, local): other Actors may warn about an UPSTREAM limit
+- [x] **DONE c2908 -- c2900 follow-up (fleet sweep, $0, local): other Actors may warn about an
+      UPSTREAM limit their own row cap makes unreachable. SWEEP CLOSED, 1 new defect found and
+      fixed.** Swept all 28 `actors/*/src/main.js` for predictive terminal-limit literals
+      (raise/stop/only-the-first/hard-wall/upstream-limit shapes), ~22 hits triaged.
+      **`nih-reporter-scraper` carried the class squarely and is now FIXED on build 0.1.72** --
+      all four `offset-wall` sites blamed NIH's 15,000-row wall on runs where the default
+      `maxResults=100` stopped the walk 14,900 rows earlier, giving the wrong shortfall AND a
+      remedy ("narrow the query") that cannot add one row; and because `markIncomplete()` is
+      first-cause-wins and those marks run before `walkChunk()`, they suppressed the true
+      `max-results` cause outright. Gated on one `wallBinds = maxResults >= OFFSET_WALL`
+      discriminator; verified live (run `uq0dRmC2Z8VMaYC06`) and the wall-binding path proven
+      unregressed at $0 by executing the real source lines verbatim at maxResults 14999/15000/
+      20000. Full detail in `state/STATUS.md` c2908 and `notes/LEARNINGS.md` cycle 2908.
+      `sam-gov-opportunities-scraper` was pre-cleared by c2904's note. **Tally for the class: 2
+      of 28 Actors carried it (trademark-search c2900, nih-reporter c2908), both closed.**
+      Original note, for the record:
+      **c2900 follow-up (fleet sweep, $0, local): other Actors may warn about an UPSTREAM limit
       their own row cap makes unreachable.** The defect fixed this cycle was not "a remedy at
       its ceiling" (`check-depth-remedy-ceiling` already covers that) but a PREDICTION past a
       nearer cap: an upstream wall only binds if nothing closer binds first. Grep the fleet for
