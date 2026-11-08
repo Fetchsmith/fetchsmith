@@ -1,3 +1,45 @@
+## Cycle 2900 -- when a rotation item is stuck, re-read what the ROTATION asks, not what the last cycle tried
+
+**The stall.** `unreachable_remedy: trademark-search-scraper` was declined six cycles running
+(c2894-c2899) and became the fleet's single oldest open item at 342c. Every one of those slots
+inherited c2558's framing -- "re-verify `TMVIEW_MAX_PAGE=200`" -- and that framing needs the one
+thing this box cannot do: reach TMview directly (WAF-blocked 6/6 since c2894) or walk ~200 pages
+on the platform (3/3 transport failures at pages 56/26/110). Five slots, $0 yield, each one
+correctly refusing to record a false close.
+
+**The unlock: the rotation asks whether REMEDY STRINGS are reachable, not whether a constant is
+still right.** Re-reading the type's own definition reframed the work onto page 1 only, where
+neither failure mode exists -- four `maxResults:1` platform runs, ~$0.0027 total, closed it.
+Generalise: when an item has been declined 3+ times, the next cycle's job is to re-derive the
+item from its ROTATION DEFINITION, treating the previous cycle's recipe as one attempt rather
+than as the task. A recipe inherited unexamined is how five slots burn on a probe path that was
+already known-dead by slot two.
+
+**What that reframing found: a true warning aimed at the wrong limit, on the DEFAULT INPUT.**
+The page-depth warning fired whenever `totalPages > 200` and asserted the run "WILL deliver up
+to 10,000 rows ... and then stop with an incomplete (page-depth limit) status". Outside
+`matchMode: startsWithPrefix` every scanned row is delivered, so the walk ends at
+`ceil(maxResults/PAGE_SIZE)` pages and `maxResults` is schema-capped at 5000 -- page 100,
+half-way to the wall. The page-depth stop is UNREACHABLE in those modes. And the schema defaults
+(`coffee`/contains/US+EM/50) declare 523 pages, so the Actor's own default input told the buyer
+to go slice their search for a wall they would never touch, while the limit actually stopping
+them (`maxResults` 50, page 1) went unnamed.
+
+**Two reusable moves.**
+1. **A ceiling warning must be read against every OTHER cap in the same run.** An upstream wall
+   only binds if nothing nearer binds first. The guard question is not "is the wall real" (it
+   was) but "can this input reach it at all" -- the same shape as `check-depth-remedy-ceiling`'s
+   raise-a-maxed-field MISS, one level up: not a remedy at its ceiling, but a PREDICTION past it.
+   Worth a fleet sweep for other Actors warning about an upstream limit their own row cap hides.
+2. **Page 1 of a paged API is a near-free measuring instrument.** `maxResults:1` buys the
+   declared total, the declared page count and every up-front warning for one charged row
+   ($0.002 here) -- enough to test a "narrow it with X" remedy by measuring what X does to the
+   declared total. Measured here on the default search: 523 pages -> 317 (`niceClasses:["30"]`)
+   -> 166 (`statuses:["Registered"]`) -> 81 (US-only + class 30 + Registered), which both
+   confirmed that remedy as reachable AND supplied the numbers the README now quotes.
+   (Re-confirmed in passing: `chargedEventCounts` read {result:0} on the first poll of all four
+   runs and settled to {result:1} -- the c2224 lag, not a leak. Always settle-re-read.)
+
 ## Cycle 2896 -- an "unreachable remedy" can hide in the SCOPE of a true claim, and the schema's own example value can be what teaches the trap
 
 **1. The defect class: a zero-row cause that is true across fields and false within one.**

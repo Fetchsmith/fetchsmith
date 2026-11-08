@@ -732,21 +732,46 @@ try {
     log.info(`TMview: ${declaredMatches} matches for "${searchTerm}"${offices.length ? ` in ${offices.join(', ')}` : ''} (${totalPages} pages).`);
     if (totalPages > TMVIEW_MAX_PAGE) {
       // Said up front, at $0 extra cost (page 1 is already fetched either way): TMview's page-depth
-      // ceiling (see TMVIEW_MAX_PAGE above) is flat and search-independent, so a search this wide WILL
-      // deterministically stop at ${TMVIEW_MAX_PAGE * PAGE_SIZE} rows every time, not just on a bad run.
-      // Without this, a buyer only learns the limit exists after paying for and receiving a full
-      // 10,000-row delivery and then seeing an "incomplete" status -- which can read as a bug rather
-      // than an upstream wall. Narrowing (fOffices/fNiceClass/fTMStatus) before running is the only way
-      // to get full coverage of a corpus this size.
-      log.warning(
-        `This search has ${totalPages} pages, past TMview's own hard ceiling of ${TMVIEW_MAX_PAGE} pages `
-        + `(${TMVIEW_MAX_PAGE * PAGE_SIZE} rows) -- TMview will refuse to serve page ${TMVIEW_MAX_PAGE + 1} no `
-        + `matter how this run is configured. This run WILL deliver up to ${TMVIEW_MAX_PAGE * PAGE_SIZE} rows `
-        + '(every one valid and charged normally) and then stop with an "incomplete (page-depth limit)" '
-        + 'status -- that is TMview, not an error in this Actor. To get FULL coverage of a search this '
-        + 'wide, narrow it first with office, Nice-class, or status filters so the declared page count '
-        + `drops under ${TMVIEW_MAX_PAGE}, then run once per narrower slice.`,
-      );
+      // ceiling (see TMVIEW_MAX_PAGE above) is flat and search-independent, so a search this wide
+      // can never be covered in one run, not even on a perfect run.
+      // Without this, a buyer only learns the limit exists after paying for a truncated delivery and
+      // then seeing an "incomplete" status -- which can read as a bug rather than an upstream wall.
+      //
+      // cycle 2900 (unreachable_remedy audit): the ceiling wall is only what actually STOPS this run
+      // in prefix mode. Every other mode delivers every row it scans, so the walk ends at
+      // ceil(maxResults / PAGE_SIZE) pages -- and maxResults is capped at 5000 by the input schema,
+      // i.e. page 100 at the very deepest, half-way to TMview's wall. Predicting an "incomplete
+      // (page-depth limit)" stop there is simply wrong, and it was being predicted on this Actor's
+      // OWN DEFAULT INPUT: searchTerm "coffee" / contains / offices US+EM declares 26,117 matches
+      // over 523 pages (measured live cycle 2900), so the old text told a default-input buyer their
+      // run would deliver 10,000 rows and stop at TMview's wall when it in fact stops after 50 rows
+      // on page 1 with the `stoppedByCap` status. The cap is the binding limit in that case and the
+      // remedy has to name it, or the buyer slices their search to fix a wall they never hit.
+      const wallRows = TMVIEW_MAX_PAGE * PAGE_SIZE;
+      // Measured cycle 2900 on the default "coffee"/US+EM search (523 pages): fNiceClass 30 -> 317,
+      // fTMStatus Registered -> 166, US-only + class 30 + Registered -> 81. All three are real
+      // server-side filters on the declared total, so the narrowing remedy below is reachable.
+      const narrowAdvice = 'To cover a search this wide, narrow it with office, Nice-class or status '
+        + `filters until the declared page count drops under ${TMVIEW_MAX_PAGE} (all three cut the `
+        + 'declared total server-side), then run once per narrower slice.';
+      if (prefixMode || maxResults > wallRows) {
+        log.warning(
+          `This search has ${totalPages} pages, past TMview's own hard ceiling of ${TMVIEW_MAX_PAGE} pages `
+          + `(${wallRows} rows) -- TMview will refuse to serve page ${TMVIEW_MAX_PAGE + 1} no matter how this `
+          + `run is configured. This run will read at most ${wallRows} rows of the corpus (every row `
+          + 'delivered is valid and charged normally) and then stop with an "incomplete (page-depth limit)" '
+          + `status -- that is TMview, not an error in this Actor. ${narrowAdvice}`,
+        );
+      } else {
+        log.warning(
+          `This search has ${totalPages} pages (${declaredMatches.toLocaleString('en-US')} matches), far more `
+          + `than this run will cover: maxResults is ${maxResults}, so it stops after ${maxResults} row(s) `
+          + `around page ${Math.ceil(maxResults / PAGE_SIZE)} with an "incomplete (cap)" status -- not at `
+          + `TMview's page-depth ceiling. TMview also refuses to page past page ${TMVIEW_MAX_PAGE} `
+          + `(${wallRows} rows), so even at this Actor's maxResults maximum of 5000 no single run can cover a `
+          + `corpus this size. ${narrowAdvice}`,
+        );
+      }
     }
     if (prefixMode) {
       // Said up front, before any row is delivered, because the number just logged is NOT this

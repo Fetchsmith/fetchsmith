@@ -1,3 +1,61 @@
+- [x] **DONE c2900 (Regular slot, 2900 % 3 == 2) -- CLOSED the fleet's single oldest open
+      item, `unreachable_remedy: trademark-search-scraper` (2558 -> 2900, 342c), after six
+      consecutive declines (c2894-c2899), by changing the METHOD instead of retrying the
+      recipe. FOUND AND FIXED a real buyer-facing defect on the Actor's OWN DEFAULT INPUT
+      (build 0.1.101).** Preflight: `audit-due --all` had this plus `varied_test:
+      court-records-scraper` DUE; `checks-due` NONE DUE (soonest `check-doc-size` in 2c);
+      `inbox-triage new` NONE UNTRIAGED of 75; `bin/revenue` unchanged ($0 booked, 27 Actors,
+      50 users, 825 runs30d, 3 ext_bad30d, 0 bookmarks/reviews) -- no buyer signal, no owner
+      email owed.
+      WHY IT UNSTUCK: all five burned slots inherited c2558's framing ("re-verify
+      TMVIEW_MAX_PAGE=200"), which needs either a direct probe (WAF-blocked 6/6 since c2894) or
+      a ~200-page platform walk (3/3 transport failures). The ROTATION actually asks whether
+      remedy STRINGS are reachable -- that only needs page 1, so four `maxResults:1` platform
+      runs (~$0.0027 total) closed it.
+      CLEAN ON THE FILED CLAIM: the warning's "narrow it with office, Nice-class, or status
+      filters" remedy is reachable and effective -- all three are real server-side filters that
+      cut the DECLARED total. Measured on the default `coffee`/contains/US+EM search: 26,117
+      matches / 523 pages -> 317 (`niceClasses:["30"]`) -> 166 (`statuses:["Registered"]`) ->
+      81 (US-only + class 30 + Registered); the warning correctly stops firing at <=200.
+      REAL FINDING: the same warning's PREDICTION was false. It fired on any `totalPages > 200`
+      and asserted the run "WILL deliver up to 10,000 rows ... and then stop with an incomplete
+      (page-depth limit) status" -- but outside `matchMode: startsWithPrefix` every scanned row
+      is delivered, so the walk ends at `ceil(maxResults/PAGE_SIZE)` pages and `maxResults` is
+      schema-capped at 5000 (page 100, half-way to the wall). The page-depth stop is
+      UNREACHABLE in every non-prefix mode, and the schema defaults declare 523 pages -- so a
+      default-input buyer was told to slice their search for a wall they never reach while the
+      cap actually stopping them (50 rows, page 1) went unnamed. Fixed by branching the warning
+      on `prefixMode || maxResults > wallRows`; README FAQ carried the identical overclaim and
+      was rewritten with the four measured page counts. Verified live on 0.1.101, all three
+      branches (`u2FhIFojv0AYCbeIa` cap branch, `dhXZDP27wbwB0lbFq` ceiling branch,
+      `q6FUcuCdBd8AwIxzD` no warning as designed); charges settle-re-read {result:1} == 1
+      pushed on all four runs (first read {result:0} every time -- c2224 lag, not a leak);
+      7 guards clean; live build README byte-identical to local. Recorded via
+      `bin/_rec2900.py`; `audit-due --type unreachable_remedy` now reads **NONE DUE**, soonest
+      `google-news-mcp-server` in 213c. Services/site 200 before and after; spend 7 page-1
+      runs + 1 build, ~$0.013 (`bin/apify-spend` $8.00 used, projection $8.14, well under the
+      $25/cycle trip-wire). Full writeup in `notes/LEARNINGS.md` "Cycle 2900".
+
+- [ ] **NEXT (c2901, QUALITY/GROWTH slot, 2901 % 3 == 0) -- `varied_test: court-records-scraper`
+      is the only real fleet-rotation item DUE** (2564 -> now, 336c+). `check-doc-size` comes
+      due in 2c and has flagged `state/STATUS.md` + `tasks/queue.md` as TRIM SOON since c2898,
+      carried forward three cycles now -- a QUALITY slot should finally trim both (see
+      `bin/_trim2892q.py` for the worked, self-verifying pattern).
+
+- [ ] **c2900 follow-up (cheap, fold into the NEXT build for `trademark-search-scraper`, do NOT
+      spend a $0.005 push on it alone): cosmetic number formatting.** The new ceiling-branch
+      warning prints `10000 rows` unformatted while its sibling branch prints `26,117 matches`
+      -- wrap the `wallRows` interpolations in `.toLocaleString('en-US')` next time that file is
+      built for any other reason.
+
+- [ ] **c2900 follow-up (fleet sweep, $0, local): other Actors may warn about an UPSTREAM limit
+      their own row cap makes unreachable.** The defect fixed this cycle was not "a remedy at
+      its ceiling" (`check-depth-remedy-ceiling` already covers that) but a PREDICTION past a
+      nearer cap: an upstream wall only binds if nothing closer binds first. Grep the fleet for
+      up-front warnings that assert a specific terminal status/row count, and check each against
+      that Actor's own `maxResults`/`maxItems` schema maximum and page size. Candidates to start
+      with: the other paged search Actors named in c2896's doc-gap sweep.
+
 - [x] **DONE c2899 (Regular slot, 2899 % 3 == 1) -- closed BOTH DUE items: fleet check
       `check-dead-endpoint-docs` (clean, 1 retired endpoint found, 0 undisclosed) and
       `varied_test: substack-scraper` (2563 -> 2899, 336c/7d gap). DECLINED `unreachable_remedy:
