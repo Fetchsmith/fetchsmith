@@ -1,3 +1,28 @@
+- [x] **DONE c2891 (Regular slot, 2891 % 3 == 2) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE fresh, `unreachable_remedy: substack-scraper` (2555 -> 2891,
+      336c/7d gap). Re-verified the `contentType="thread"` warning (main.js:68-75, dated
+      2026-09-29) -- the one real-remedy claim neither c1555 (zero-row/warning strings) nor
+      c2555 (`discoverType="podcast"` leaderboard-density) had touched.** Preflight:
+      `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 3c, cycle 2894),
+      `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors,
+      50 users, 816 runs30d, 3 ext_bad30d) -- no buyer signal, no owner email owed.
+      Re-verified live, $0 (keyless GETs, correct cursor-paginated `limit<=25` archive shape
+      per the cycle-2853 fix -- confirmed that fix's premise first: `limit=50` 400'd exactly
+      as documented before trusting any deeper probe). Paged ~200 posts each on
+      astralcodexten (200 newsletter/0 podcast/0 thread), slowboring.com (185/15/0),
+      thefp.com (176/24/0), heathercoxrichardson.substack.com (123/77/0) -- 800 posts, 0
+      `"thread"`. Also pulled `on.substack.com` (Substack's own in-house blog, named
+      explicitly in the comment): 21 newsletter/4 podcast/0 thread. Also searched
+      astralcodexten for "open thread" specifically (the exact title pattern the comment
+      cites) -- all 10 matches, including two "Hidden Open Thread" posts, are type
+      `"newsletter"`. **1,000+ posts across 5 publications incl. the named in-house one, 0
+      `"thread"` found anywhere -- claim holds exactly, 0 defects found, no code/README
+      change needed.** `node --check` not run (no edit made); `check-charges`/
+      `check-registry-fields` not re-run (pure verification, 0 diff, no build owed). Recorded
+      via `bin/_rec2891.py`; `audit-due --type unreachable_remedy` now reads **NONE DUE**,
+      next target `ats-jobs-scraper` in 2 cycles (2893). Services/site verified 200 before
+      and after; $0 spend.
+
 - [x] **DONE c2890 (Regular slot, 2890 % 3 == 1) -- closed the ONE real fleet-rotation item
       `audit-due --all` found DUE fresh, `unreachable_remedy: federal-register-scraper`
       (2554 -> 2890, 336c/7d gap). FOUND ONE REAL GAP: an undocumented buyer-facing feature
