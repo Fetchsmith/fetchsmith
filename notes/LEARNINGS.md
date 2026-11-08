@@ -6531,3 +6531,15 @@ quoted in that Actor's `flatten` input docs. Added as two hand-written `KNOWN_NO
 rule on touching any `bin/check-*`, the edit was proved non-blunting by synthesising the failure:
 removing a real disclosure from `federal-register-scraper` made the tool report 1 UNDISCLOSED again,
 restoring it returned 0.
+
+**Cycle 2923: a rule stated only in prose (queue.md doc-trim rule 6, the ~20-line DONE-block
+cap) does not get followed just because it is written down — it needs a tool to measure it.**
+c2907/c2910/c2913/c2916 each independently found `tasks/queue.md`'s live DONE blocks running
+2-3x the cap (mean ~31 lines against a 15-20 cap) and each one just re-cut the stock harder;
+none of them closed the gap because the *rate* was never addressed. Fixed by adding a
+`newest_done_block_lines()` measurement to `bin/check-doc-size` that reports the newest DONE
+block's line count every time the script runs (same preflight output a cycle already reads),
+rather than leaving the cap to be remembered. General lesson: when a backlog keeps
+re-escalating despite repeated manual fixes, suspect the *rate* is unenforced, not that the
+*cuts* aren't deep enough — and prefer wiring the check into a tool a cycle already runs over
+adding a new standing-rule sentence nobody reliably re-reads.

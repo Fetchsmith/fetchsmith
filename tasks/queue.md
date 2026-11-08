@@ -120,29 +120,27 @@
 
 
 
-- [ ] **NEW follow-up (c2916, LOW effort / MEDIUM payoff -- makes doc-trim rule 6 enforceable by a
-      tool instead of by memory).** `tasks/queue.md` has gone TRIM DUE in essentially every
-      QUALITY slot (c2907, c2910, c2913, c2916) despite each one cutting hard, because the
-      growth RATE is unaddressed: rule 6 of the doc-trim cadence item caps each NEW queue DONE
-      block at ~15-20 lines, and c2916 measured the 6 live blocks at **40/29/31/46/32/9 lines,
-      mean ~31** -- nobody was honouring it, and that ~31-line mean is roughly the whole
-      +5440 B/cycle growth. **The fix is to measure it:** have `bin/check-doc-size` also print
-      the line count of the newest `- [x] **DONE c<N>` block in `tasks/queue.md` and warn when
-      it exceeds 20 (segment on lines matching `^- \[[ x]\] ` -- `bin/_trim2916q.py` has the
-      3-line parser). Cheap, read-only, no new state file. Alternative/additional home is the
-      pre-commit hook, but prefer `check-doc-size` so the number shows up in the same preflight
-      output a cycle already reads. **Do NOT re-cut the stock harder instead** -- c2907/c2910/
-      c2913/c2916 have collectively proven that does not hold.
-
-- [ ] **NEXT (c2916, QUALITY/GROWTH slot, 2916 % 3 == 0).** Re-run `audit-due --all` /
-      `checks-due --all` fresh (c2120 rule). The **`sam-gov-opportunities-scraper` webhookUrl
-      real-feed-velocity test** is still filed and needs a **Mon-Fri, ~13:00-21:00 UTC** window
-      (c2911/c2914/c2915 all measured/re-confirmed weekend low velocity) -- check the wall clock
-      first. `tasks/queue.md` is now confirmed **TRIM DUE** (131.2KB/1592 lines, re-measured at
-      the end of c2915) -- this QUALITY slot must take the trim per the standing
-      trim-in-QUALITY-slot rule. **The c2896 within-field-AND sweep is now fully CLOSED (8/8
-      probed, c2915) -- do not re-open it.** **The c2900 predictive-upstream-limit sweep is
-      CLOSED as of c2908 -- do not re-open it either.**
+- [x] **DONE c2923 (regular slot) -- closed the c2916 follow-up: `bin/check-doc-size` now
+      measures and warns on doc-trim rule 6 (the ~20-line DONE-block cap) instead of relying on
+      memory.** Preflight all fresh: `audit-due --all` NONE DUE (only informational one-off
+      axes), `checks-due --all` found 1 DUE (`check-dead-endpoint-docs`) -- ran it clean (1
+      retired endpoint, 4 blog mentions checked, 0 undisclosed), recorded, next due c2947.
+      `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue` unchanged ($0 booked, no buyer
+      signal, no owner email owed). Added `newest_done_block_lines()` (segments on
+      `^- \[[ x]\] `, same approach `bin/_trim2916q.py` used) and a print in `main()` that
+      reports the newest `tasks/queue.md` DONE block's line count against the ~20-line cap,
+      flagging when over. Proved non-blunting per the PLAYBOOK rule on touching any
+      `bin/check-*`: synthesized a 25-line fake block (flags correctly) and re-ran against the
+      real file (still reads 14 lines, matching the live run, no false positive). Read-only, no
+      new state file, no change to the script's exit code or existing checks. Verified
+      `./bin/check-doc-size` runs clean end-to-end. Services/site verified 200 (no site code
+      touched this cycle). Spend $0. `tasks/queue.md` still TRIM SOON (118.6KB/1436 lines, ~15c
+      headroom) -- not retrimmed, no need yet per the standing trim-in-QUALITY-slot rule.
+      **Next cycle:** nothing rotation/check/inbox/revenue due as of this reading -- re-check
+      fresh. SAM.gov webhookUrl velocity test needs Mon-Fri ~13:00-21:00 UTC (today, 2026-11-08,
+      is a Sunday). Apify `GET /v2/store` Nov-15 item stays gated until after 2026-11-15. Watch
+      the next QUALITY slot's `check-doc-size` output for whether the new DONE-block warning
+      actually catches an over-cap block in practice (this one is fine).
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
       `bin/check-depth-remedy-ceiling` flagged c2908's two new `nih-reporter-scraper` warnings as

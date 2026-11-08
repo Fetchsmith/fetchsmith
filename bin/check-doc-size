@@ -36,7 +36,7 @@ the time this checker next runs (interval read from state/fleet_checks.json).
 Read-only, no network, no cost. Exit 1 if any live doc is at/over TRIM_BYTES or is
 projected over READ_CAP before the next scheduled run.
 """
-import json, os, sys
+import json, os, re, sys
 
 READ_CAP = 256 * 1024   # Read tool's single-file cap -- past this, reads truncate
 TRIM_BYTES = 200 * 1024 # act here, leaving room for one verbose cycle before the cap
@@ -59,6 +59,36 @@ LINE_DOCS = [
     ("notes/LEARNINGS.md", "notes/LEARNINGS_ARCHIVE.md", 8000, 20),
 ]
 ROOT = "/root/agent"
+
+# Doc-trim cadence rule 6 (decided cycle 2865): each NEW queue.md DONE block
+# should run ~15-20 lines, with the full narrative living in STATUS.md instead.
+# Measured cycle 2916: 6 live blocks ran 40/29/31/46/32/9 lines (mean ~31) --
+# nobody was honouring the cap by eye, and that overrun is roughly the whole
+# +5440 B/cycle growth this checker tracks above. Surfacing the newest block's
+# line count here puts it in the same preflight output a cycle already reads,
+# instead of relying on memory of a rule stated only in queue.md prose.
+DONE_BLOCK_CAP = 20
+TOP_LEVEL_BULLET = re.compile(r"^- \[[ x]\] ")
+NEWEST_DONE = re.compile(r"^- \[x\] \*\*DONE c\d+")
+
+
+def newest_done_block_lines(path):
+    """Line count of the first (newest) '- [x] **DONE c<N>' block in a queue-style
+    doc, or None if no such block exists. A block runs from its own top-level
+    bullet line up to (not including) the next top-level bullet line."""
+    full = os.path.join(ROOT, path)
+    if not os.path.exists(full):
+        return None
+    with open(full, encoding="utf-8") as f:
+        lines = f.readlines()
+    start = next((i for i, ln in enumerate(lines) if NEWEST_DONE.match(ln)), None)
+    if start is None:
+        return None
+    end = next(
+        (i for i in range(start + 1, len(lines)) if TOP_LEVEL_BULLET.match(lines[i])),
+        len(lines),
+    )
+    return end - start
 
 
 def size(path):
@@ -125,6 +155,16 @@ def main():
               f"~{head:.0f} cycles of headroom at +{rate} B/cycle"
               f" (proj. {projected/1024:.0f}KB at next look)"
               + (f"   (archive {ab/1024/1024:.1f}MB)" if ab else ""))
+
+    block_lines = newest_done_block_lines("tasks/queue.md")
+    if block_lines is not None:
+        flag = " -- OVER the ~" + str(DONE_BLOCK_CAP) + "-line cap (rule 6)" if block_lines > DONE_BLOCK_CAP else ""
+        print(f"  newest tasks/queue.md DONE block: {block_lines} lines "
+              f"(cap ~{DONE_BLOCK_CAP}){flag}")
+        if flag:
+            print("    Put the full narrative in STATUS.md instead and keep this file's")
+            print("    copy to the cap -- this is the rate rule 6 governs, measured cycle")
+            print("    2916 as the main driver of queue.md's byte growth above.")
 
     for live, arch, maxl, rate in LINE_DOCS:
         b, lines = size(live)
