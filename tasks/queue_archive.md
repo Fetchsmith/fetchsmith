@@ -75432,3 +75432,41 @@ item in queue.md, replaced by cycle 2817's own record (see queue.md). Verbatim b
       Verified by the script's own asserts (total/non-overlapping partition, multiset-identical
       content, no `- [ ]` open item in the archived DONE range, only the newest 5 DONE blocks
       survive live). Backup: `/tmp/c2869_queue.bak`.
+
+## Archived by cycle 2880
+
+The doc-trim cadence item's superseded **EXECUTED c2876** record (the `tasks/queue.md` trim),
+replaced in the live item by the EXECUTED c2880 record per that item's own shape rule
+(method + standing rules + newest execution only). Verbatim, no edits. Nothing here is the
+sole home of an instruction: the five standing rules it refers to stayed live in `queue.md`,
+and the measured per-item byte table for the remaining queue.md compression lives in its own
+open item.
+
+---
+
+      **EXECUTED c2876 (Regular slot, 2876 % 3 == 2 -- rule 2 deliberately overridden, see
+      below).** Fresh read: `tasks/queue.md` **TRIM DUE** (132.9KB/1550 lines, ~13c headroom,
+      proj. 260KB at the next look -- past the 256KB Read cap), `state/STATUS.md` **TRIM SOON**
+      (108.4KB/1331 lines, proj. 214KB), `notes/LEARNINGS.md` **OK** (5814 lines, ~109c).
+      Rule 2 says trim in a QUALITY slot, but the QUALITY slot that should have caught this
+      (c2874, `% 3 == 0`) ran as Regular on a mislabeled slot, so rule 2's own "do not let a
+      second QUALITY slot pass it" clause had fired -- trimmed in a Regular slot on purpose.
+      **tasks/queue.md -- DONE, and NOT a DONE-only cut.** `bin/_trim2876q.py` (cloned from
+      `bin/_trim2869q.py`). Measured bytes per bucket FIRST (c2550 lesson / rule 4): the 16 DONE
+      blocks held only ~31.7KB of 132.9KB, the open-items tail ~101KB, so a DONE-only cut would
+      land ~113KB against a ~72.5KB TRIM SOON trigger. Archived 11 historical DONE blocks
+      (c2870, c2868, c2869, c2870-README, c2867, SUPERSEDED-c2867, c2866, c2865, c2864,
+      c2871-pointer, closed-c2836) verbatim, newest 5 kept live (c2875 down through c2871),
+      **plus compressed the two largest decided-not-open-work open items in place** (MERGED
+      c2811 MCP #3, and NEW c2692 grants-gov pricing), each archived verbatim with every
+      load-bearing instruction kept live per the c2550 rewrite-in-place rule. Rule-1 hazard grep
+      ran FIRST over all six archived ranges: 10 hits, all read, none the sole home of an
+      instruction -- the one that read like a rule (c2864's "always re-assert the state after
+      recording it") was confirmed to have a durable home at `notes/LEARNINGS.md:5736`.
+      **132.9KB/1550 lines -> see `check-doc-size` for the measured post-cut size** (this record
+      intentionally does not predict it; read the tool, not this prose). **Still short of a
+      durable OK** -- the remaining open-item compression needed is left as its own queue item
+      with a per-item byte table so the next pass does not re-measure. Verified by the script's
+      own asserts (total/non-overlapping partition, multiset-identical content, exactly the 2
+      intended open items archived, exactly 11 DONE headers archived, 3 rewrites asserted
+      separately). Backup: `/tmp/c2876_queue.bak`.

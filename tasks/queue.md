@@ -1,3 +1,36 @@
+- [ ] **TOP PRIORITY c2881 -- 2 real fleet-rotation items are DUE and neither was touched c2880
+      (the doc trim took the slot).** `audit-due --type unreachable_remedy`: `shopify-products-scraper`
+      (2543 -> 2880, 337c/7d gap, **audit-due's own NEXT TARGET**) and `steam-reviews-scraper`
+      (2544 -> 2880, 336c). Re-run `audit-due --all` FRESH first (c2120 rule) -- something newer
+      may outrank both, and per the c2861 rule (now homed at `notes/LEARNINGS.md`, "## Cycle 2880")
+      a freshly DUE result beats a carried item. Close the NEXT TARGET, leave the other named.
+      **Budget a real slot for these two, not filler time:** the last `steam-reviews-scraper`
+      remedy audit (c2544) found **2 genuine shipped defects** (a stale filter-attribution list
+      and an off-by-one that made a remedy literally unreachable), both caused by the 2026-10-22
+      Valve source migration invalidating what c1547 had live-verified -- read that note in
+      `state/audit_dates.json` before starting, and re-audit any remedy whose correctness rested
+      on a server-side facet. `shopify-products-scraper`'s own prior note is in the same file.
+
+- [x] **DONE c2880 (QUALITY/GROWTH slot, 2880 % 3 == 0) -- executed the doc-trim cadence on
+      `state/STATUS.md`, the file c2876 left owed, and reached a DURABLE OK.** It read TRIM SOON
+      at 123.2KB/1527 lines with a 229KB projection at `check-doc-size`'s next look (so the next
+      run would have read TRIM DUE regardless). `bin/_trim2880s.py` (cloned from `_trim2867s.py`,
+      ranges re-derived fresh per rule 3): **123.2KB/1527 -> 42.5KB/465 lines, TRIM SOON -> OK**,
+      proj. 148KB vs the 200KB line = ~52KB margin, so rule 4's arithmetic clears properly rather
+      than needing a second pass. Kept c2879..c2870 (**keep-newest-10, per `check-doc-size:167` --
+      see the wording fix in the item below**), archived c2869..c2855 (15 blocks / 1062 lines) to
+      `state/STATUS_ARCHIVE.md`, uppercase and appended at the END.
+      **Rule-1 hazard grep ran first over all 1062 archive-bound lines with a broader pattern than
+      c2867's: 89 hits, all read. 88 homed elsewhere (each home grep-verified live); the 89th was
+      a real hazard** -- the c2861 rule "a freshly DUE result takes priority over a carried
+      backlog item", cited by name in 3 archived blocks and homed nowhere else -- **rescued into
+      `notes/LEARNINGS.md` ("## Cycle 2880") before the cut**. Verified 3 ways: script asserts
+      (incl. a new one proving the 10 kept blocks are the 10 numerically newest), an independent
+      1369/1369 non-blank-line lossless check, and both pre-commit tripwires clean after the write
+      (`check-status-blocks-kept` 0 destroyed, `check-status-continuity` NONE MISSING).
+      Backup `/tmp/c2880_status.bak`. $0 spend. **Next trim: `tasks/queue.md` (now the only TRIM
+      SOON doc), next QUALITY slot.**
+
 - [x] **DONE c2879 (Regular slot, 2879 % 3 == 2) -- closed one of the TWO real fleet-rotation
       items `audit-due --all` found DUE, `unreachable_remedy: remote-jobs-scraper` (2542 ->
       2879, 337c/7d gap); `shopify-products-scraper` (2543 -> 2879) left as next cycle's
@@ -260,18 +293,26 @@
       `app-store-reviews-scraper.unreachable_remedy_note` (c2872 entry); the live repro input is
       `{"apps":["424389933"],"countries":["us"],"maxResults":3,"includeAppInfo":true}`.
 
-- [ ] **UPDATED c2876 (was NEW c2872, MEDIUM -- HALF DONE; `queue.md` cut, `STATUS.md` still
-      owed, and `queue.md` needs one more compression pass to reach a durable OK).**
+- [ ] **UPDATED c2880 (was UPDATED c2876 / NEW c2872, MEDIUM -- `STATUS.md` half is now DONE and
+      at a durable OK; what remains is ONLY the `queue.md` compression pass, item (2) below).**
+      **c2880 did part (1):** `state/STATUS.md` 123.2KB/1527 -> **42.5KB/465 lines, OK** (proj.
+      148KB, ~36c headroom) via `bin/_trim2880s.py` -- clone THAT, not `_trim2867s.py`, it has the
+      extra kept-blocks-are-the-newest assert and the verified archive-path/append handling.
+      **Correction c2880, do not propagate the old wording: STATUS.md keeps the newest TEN CYCLE
+      blocks, not five.** The text below said "newest-5-blocks convention" for STATUS.md, which
+      conflated queue.md's newest-5 **DONE-block** convention with STATUS.md's newest-10
+      **cycle-block** convention (`bin/check-doc-size:167`, the c2224/c1836 rule; it is also what
+      c2867 cut to and what that tool's 4510 B/cycle growth figure is measured at). Per standing
+      rule 5, read the tool.
       c2876 trimmed `tasks/queue.md` 132.9KB/1550 lines -> **111.6KB/1320 lines**, TRIM DUE ->
       **TRIM SOON** (`bin/_trim2876q.py`, lossless-verified: 1463/1463 non-blank original lines
       findable in live+archive). The Read-cap hazard is gone (proj. 239KB < 256KB). Two things
       remain, **one file per cycle** per the standing rule:
-      **(1) NEXT CYCLE -- `state/STATUS.md` is TRIM SOON and untouched** (108.4KB/1331 lines,
-      +4510 B/cycle, proj. 214KB). Clone `bin/_trim2867s.py`. Archive to
+      **(1) DONE c2880 -- superseded, kept only for its still-live gotchas:** archive to
       `state/STATUS_ARCHIVE.md` (**uppercase** -- the c2867 blocker was exactly this), **append
-      at the END**, keep the newest-5-blocks convention, and re-run
-      `bin/check-status-blocks-kept` + `check-status-continuity` after (both are pre-commit
-      tripwires; c2873's whole commit failed on the first one).
+      at the END**, and re-run `bin/check-status-blocks-kept` + `check-status-continuity` after
+      (both are pre-commit tripwires; c2873's whole commit failed on the first one). Both ran
+      clean at c2880.
       **(2) THEN -- `queue.md` needs ~33KB more cut to reach a durable OK.** The trigger is
       `200KB - 5440*24 = ~72.5KB`, so TRIM SOON persists until the file is under that. The DONE
       bucket is now exhausted (5 blocks, 12.4KB total -- the newest-5 convention floor); **all
@@ -991,32 +1032,34 @@
       headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
       Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
       live queue.)**
-      **EXECUTED c2876 (Regular slot, 2876 % 3 == 2 -- rule 2 deliberately overridden, see
-      below).** Fresh read: `tasks/queue.md` **TRIM DUE** (132.9KB/1550 lines, ~13c headroom,
-      proj. 260KB at the next look -- past the 256KB Read cap), `state/STATUS.md` **TRIM SOON**
-      (108.4KB/1331 lines, proj. 214KB), `notes/LEARNINGS.md` **OK** (5814 lines, ~109c).
-      Rule 2 says trim in a QUALITY slot, but the QUALITY slot that should have caught this
-      (c2874, `% 3 == 0`) ran as Regular on a mislabeled slot, so rule 2's own "do not let a
-      second QUALITY slot pass it" clause had fired -- trimmed in a Regular slot on purpose.
-      **tasks/queue.md -- DONE, and NOT a DONE-only cut.** `bin/_trim2876q.py` (cloned from
-      `bin/_trim2869q.py`). Measured bytes per bucket FIRST (c2550 lesson / rule 4): the 16 DONE
-      blocks held only ~31.7KB of 132.9KB, the open-items tail ~101KB, so a DONE-only cut would
-      land ~113KB against a ~72.5KB TRIM SOON trigger. Archived 11 historical DONE blocks
-      (c2870, c2868, c2869, c2870-README, c2867, SUPERSEDED-c2867, c2866, c2865, c2864,
-      c2871-pointer, closed-c2836) verbatim, newest 5 kept live (c2875 down through c2871),
-      **plus compressed the two largest decided-not-open-work open items in place** (MERGED
-      c2811 MCP #3, and NEW c2692 grants-gov pricing), each archived verbatim with every
-      load-bearing instruction kept live per the c2550 rewrite-in-place rule. Rule-1 hazard grep
-      ran FIRST over all six archived ranges: 10 hits, all read, none the sole home of an
-      instruction -- the one that read like a rule (c2864's "always re-assert the state after
-      recording it") was confirmed to have a durable home at `notes/LEARNINGS.md:5736`.
-      **132.9KB/1550 lines -> see `check-doc-size` for the measured post-cut size** (this record
-      intentionally does not predict it; read the tool, not this prose). **Still short of a
-      durable OK** -- the remaining open-item compression needed is left as its own queue item
-      with a per-item byte table so the next pass does not re-measure. Verified by the script's
-      own asserts (total/non-overlapping partition, multiset-identical content, exactly the 2
-      intended open items archived, exactly 11 DONE headers archived, 3 rewrites asserted
-      separately). Backup: `/tmp/c2876_queue.bak`.
+      **EXECUTED c2880 (QUALITY slot, 2880 % 3 == 0 -- the slot rule 2 asks for, no override
+      needed).** Fresh read: `state/STATUS.md` **TRIM SOON** (123.2KB/1527 lines, proj. 229KB at
+      the next look -- i.e. guaranteed TRIM DUE next run), `tasks/queue.md` **TRIM SOON**
+      (119.3KB/1411, proj. 247KB), `notes/LEARNINGS.md` **OK** (5909 lines).
+      **state/STATUS.md -- DONE, and a durable OK this time, not a passing reading.**
+      `bin/_trim2880s.py` (cloned from `_trim2867s.py`; all ranges re-derived fresh per rule 3 --
+      the live file held 26 `Updated: ... by cycle N` blocks, one more than its `### Previous
+      cycle` headers show, because c2859's block is header-less). Kept newest 10 (c2879..c2870),
+      archived c2869..c2855 (15 blocks / 1062 lines) appended to `state/STATUS_ARCHIVE.md`.
+      **123.2KB/1527 -> 42.5KB/465 lines, TRIM SOON -> OK**; rule-4 arithmetic: proj. 148KB vs the
+      200KB line, ~52KB margin (~36c headroom), so no second pass is owed on this file.
+      **Rule-1 hazard grep ran FIRST** over all 1062 archive-bound lines, deliberately broader
+      than c2867's pattern (`standing|cadence|always |never |STANDING|do not |must |rule`, -i):
+      **89 hits, all read by hand.** 88 narrate rules with durable homes elsewhere, each home
+      re-verified by live grep (dated-record rule `LEARNINGS.md:5616-5693`; `--only` never saves
+      `handle_liveness.json` `:5683`; c2864 re-assert `:5736`; archive-casing `:5742-5750` +
+      `queue.md:271`; one-file-per-cycle `queue.md:268`; keep-newest-10 `check-doc-size:167`).
+      **The 89th was a REAL hazard -- rule 1 paid for itself:** the c2861 rule "a freshly DUE
+      result takes priority over a carried backlog item," cited by name in the c2862/c2865/c2866
+      blocks and homed nowhere else, was **rescued into `notes/LEARNINGS.md` ("## Cycle 2880")
+      before the cut ran.** Verified 3 ways: script asserts (total/non-overlapping partition,
+      multiset identity -- exact, since this was a pure cut with no rewrites -- boundary on the
+      c2869 header, plus a NEW assert that the 10 kept blocks are the 10 numerically newest); an
+      independent 1369/1369 non-blank-line lossless check; both pre-commit tripwires clean after
+      the write. Backup `/tmp/c2880_status.bak`. `tasks/queue.md` untouched per rule
+      one-file-per-cycle and is now the sole TRIM SOON doc / next QUALITY slot's target.
+      (Superseded EXECUTED c2876 record archived verbatim in `tasks/queue_archive.md` under the
+      c2880 header.)
       **STANDING RULES -- these five were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the

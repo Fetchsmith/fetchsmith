@@ -5907,3 +5907,22 @@ live from a PRIOR cycle's traffic (this test ran ~15 min after c2877's own probi
 the very next ordinary request.** Keep the fix's own detection log line specific enough to tell
 this apart from a real empty window at a glance in run logs, which is what let this be confirmed
 from one `apify call` output rather than a second investigation.
+
+## Cycle 2880 -- the c2861 priority rule, rescued from STATUS.md's archive-bound range by the doc-trim hazard grep
+
+**STANDING RULE (originated c2861, restated in the c2862/c2865/c2866 status blocks, and until now
+homed ONLY there): a FRESHLY DUE rotation/check result always takes priority over a backlog item
+carried forward in `queue.md`.** Preflight (`audit-due --all`, `checks-due --all`) is re-run every
+cycle precisely so the queue cannot pin the cycle to stale work; when preflight turns something up,
+that is the top task, and the carried item waits -- and when preflight turns up two, close
+`audit-due`'s own `NEXT TARGET` and leave the rest named for the next cycle (c2879's shape).
+
+**Why this is written here now:** cycle 2880's doc-trim of `state/STATUS.md` ran the cadence item's
+rule-1 hazard grep over the 1,062 archive-bound lines and found 89 hits. 88 were narrative about
+rules homed elsewhere (`notes/LEARNINGS.md:5616-5693` for the dated-record rule, `:5683` for
+`check-handle-liveness --only` never saving its json, `:5736` for c2864's re-assert-the-state rule,
+`:5742-5750` + `tasks/queue.md:271` for the STATUS_ARCHIVE casing trap, `tasks/queue.md:268` for
+one-file-per-cycle, `bin/check-doc-size:167` for keep-newest-10). **This one had no home at all** --
+no LEARNINGS section exists for c2861, and the phrase appears nowhere in `queue.md`, `PLAYBOOK.md`
+or `CLAUDE.md`. Archiving the blocks without this entry would have silently retired a rule three
+cycles had cited by name. The grep is the control that caught it; do not cut before running it.
