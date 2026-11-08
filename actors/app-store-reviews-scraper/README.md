@@ -243,7 +243,7 @@ Cheaper than us at every volume, **no start fee** (all verified 2026-10-05):
 `steadyscrape/app-store-reviews-scraper` flat
 **$0.00005/review** (ties `riadh_chebbi` as the cheapest no-fee listing in this niche);
 `peerless_columbine/apple-app-store-reviews-scraper-api` $0.00008 (Free) → $0.00005 (Gold+);
-`axiomworks/review-firehose` $0.00008 → $0.000056 (Gold+).
+`axiomworks/review-firehose` (**delisted — the Apify API returned 404 for this Actor on 2026-11-08**) was $0.00008 → $0.000056 (Gold+).
 
 **`snow_leo_data/app-store-scraper` removed from this list — forecast landed, re-verified live
 2026-10-16: its scheduled 2026-10-05 12:00 UTC pricing entry is now in effect, and it raised the
@@ -265,7 +265,7 @@ $0.00005 start (~3); `scrapesignal_labs/apple-app-store-reviews-scraper` $0.0000
 $0.00005 start (~3 on Bronze and up only); `superslowsloth/app-store-reviews-scraper` $0.00007 +
 a **$0.002** start fee (~67); `silentflow/apple-reviews-scraper` $0.00004 → $0.000034 (Gold+) — the
 lowest per-review rate in the niche — plus a **$0.005** start fee (~83 on Free, ~76 on Gold+);
-`luminar/app-store-reviews-change-monitor` $0.000075 plus $0.005 per monitored scan;
+`luminar/app-store-reviews-change-monitor` (**delisted — the Apify API returned 404 for this Actor on 2026-11-08**) was $0.000075 plus $0.005 per monitored scan;
 `grokbob/app-reviews-dual-batch-ppe` $0.00007 + a **$0.01** start fee (~333);
 `automly/appstore-reviews-scraper` $0.000095 + a **$0.01** start fee (~2,000).
 
@@ -304,7 +304,7 @@ tool silently read the second shape as "no tiers," which would have hidden both 
 Both survivors were read against their own current pricing record, never a one-time or secondary
 event, and neither is named with an exact user count (both are small, recently-launched listings —
 see the note above about why): `axiomworks/app-store-reviews-scraper` is a **second listing by the
-already-named `axiomworks/review-firehose`'s owner**, tiered identically — $0.00008 (Free) →
+already-named `axiomworks/review-firehose`'s owner (that listing now delisted — 404 on 2026-11-08)**, tiered identically — $0.00008 (Free) →
 $0.000056 (Gold+), no start fee, cheaper than us at every tier; `deriverge/app-store-reviews-scraper`
 ties our $0.0001 on Free but undercuts from Bronze up ($0.00008 → $0.00005), also with no start fee.
 One listing was read and ruled out of scope on its own description, not its title:

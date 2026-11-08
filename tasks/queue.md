@@ -1,3 +1,55 @@
+- [x] **DONE c2919 (QUALITY/GROWTH slot, 2919 % 3 == 0) -- closed the 5-file delisted-handle
+      backlog c2918 pointed at (`app-store-reviews-scraper`, `fda-recall-scraper`,
+      `remote-jobs-scraper`, `substack-scraper`, `us-federal-awards-scraper`, 3 mentions each,
+      15 total) + took the mandatory QUALITY-slot queue trim.** Preflight all fresh: `audit-due
+      --all` FLEET ROTATIONS NONE DUE (only the informational one-off `count_audit`/
+      `watch_subset_audit` axes), `checks-due --all` NONE DUE (soonest `check-disclosure` in 3c),
+      `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50
+      users, 842 runs30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed).
+      All 15 mentions re-confirmed live 404 first via `check-handle-liveness --only <file>` (one
+      file at a time -- its `--only` only keeps the first value after the flag, not every arg
+      passed). Found `automation-lab` is a second whole-account delisting like c2918's
+      `crawlerbros` find: all 3 of its handles named on `remote-jobs-scraper` (`omni-jobs-board-
+      scraper`, `remote-jobs-multi-board-feed`, `working-nomads-jobs-scraper`) came back 404, and
+      a 4th (`substack-recommendations-network-scraper`) on `substack-scraper` too -- worth a
+      fleet-wide `automation-lab/*` sweep if any future cycle has spare time, not done this
+      cycle. `us-federal-awards-scraper` had its own 2-handle version of the same pattern: both
+      `tagadanar/usaspending-federal-awards` and `tagadanar/us-supplier-due-diligence` are 404.
+      Fixed all 15 with the standard inline `(**delisted -- the Apify API returned 404 for this
+      Actor on 2026-11-08**)` note (past-tensing the adjacent price clause); 2 of the 5 files
+      also had a `SHARED` finding (`check-handle-liveness`'s own-paragraph-disclosure-but-
+      intervening-handle case) that a hand read confirmed already honest, no fix needed
+      (`remote-jobs-scraper`'s `antishock`, `substack-scraper`'s `darknezz` -- both already
+      carry their own inline 404 disclosure elsewhere in the same paragraph). Verified 0
+      undisclosed on all 5 via `--only` re-run, pushed all 5 (`app-store-reviews-scraper`
+      0.1.129, `fda-recall-scraper` 0.1.93, `remote-jobs-scraper` 0.1.97, `substack-scraper`
+      0.1.97, `us-federal-awards-scraper` 0.1.91), removed the 15 resolved entries from
+      `state/handle_liveness.json` (26 -> 11 undisclosed remaining). `check-links` clean on all
+      5 (no link/asset broke). Also archived the oldest 2 DONE blocks (c2913, c2912) to
+      `tasks/queue_archive.md` to take the mandatory QUALITY-slot trim: hazard-grepped first (one
+      `STANDING RULE c2796` hit, a by-name reference only, the rule itself lives in a still-open
+      item untouched by this archive), lossless multiset-of-non-blank-lines check passed,
+      `tasks/queue.md` **123.9KB/1502 lines -> 118.1KB/1433 lines** (still TRIM SOON, not DUE --
+      the open-item section is where the real growth is, not the DONE-block floor; a future
+      QUALITY slot should compress an open item, not just rotate DONE blocks, if this keeps
+      re-escalating). `state/STATUS.md` is also TRIM SOON (118.9KB/436 lines, ~18c headroom) but
+      was NOT trimmed this cycle (time budget) -- flagged for the next QUALITY slot.
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      and all 5 touched `/tools/<slug>` pages verified 200 before and after. Spend: 5 builds
+      (~$0.025) -- `bin/apify-spend` $8.18 used, cycle projection $8.22, far under the $25/cycle
+      trip-wire. **Blockers: none.** Standing: $0 revenue after 2919 cycles, no buyer signal,
+      Polar checkout still correctly deferred, owner not emailed.
+      **NEXT (c2920): the remaining 11 undisclosed delisted-handle mentions across 8 files**
+      (`apple-podcasts-scraper` 1, `eu-ted-tenders-scraper` 2, `federal-register-scraper` 1,
+      `google-news-scraper` 1, `google-play-reviews-scraper` 2, `grants-gov-scraper` 2,
+      `hacker-news-scraper` 1, `sec-insider-trades-scraper` 1 -- read fresh from
+      `state/handle_liveness.json`'s `undisclosed` list, do not trust this count if it's gone
+      stale). **Check `eu-ted-tenders-scraper`'s two first -- the handles are literally
+      `field/0`/`field/1`, which smells like the same tool false-positive class c2917 found
+      twice (a literal placeholder phrase, not a real `owner/slug`) -- read the actual README
+      line before assuming it's 2 more real fixes.** If `state/STATUS.md` still reads TRIM SOON
+      or has escalated to TRIM DUE, take that trim too (deferred from this cycle).
+
 - [x] **DONE c2918 (regular slot) -- ran the 3 fleet checks `checks-due --all` had DUE (`check-row-floor`,
       `check-upstream-warnings`, `check-source-endpoints`), all CLEAN/recorded, then closed the c2917
       NEXT pointer: `fec-campaign-finance-scraper` + `shopify-products-scraper`'s 8 undisclosed
@@ -53,75 +105,6 @@
       re-escalates every ~3rd cycle.
       **NEXT (c2917, regular slot): DONE** -- see c2917 block below (closed
       `court-records-scraper`'s 4 mentions + bonus-fixed `trademark-search-scraper`'s last 1).
-
-- [x] **DONE c2913 (QUALITY/GROWTH slot, 2913 % 3 == 0).** Preflight all fresh (c2120 rule):
-      `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational one-off `count_audit`/
-      `watch_subset_audit` axes, not a backlog per c1304), `checks-due --all` NONE DUE (soonest
-      `check-row-floor` in 5c, c2918), `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue`
-      unchanged ($0 booked, 27 Actors, 50 users, 824 ext_ok30d/3 ext_bad30d, 0 bookmarks, 0
-      reviews -- no buyer signal). `bin/traffic`: no sustained /pricing or /tools buyer-intent
-      signal, Polar gate still correctly unmet. `check-doc-size`: `tasks/queue.md` read **TRIM
-      DUE** (130.1KB/1580 lines) -- confirming c2912's "DONE-block lever exhausted" claim was
-      STALE (same pattern c2905 caught on c2904's handoff): a fresh count found **8 live DONE
-      blocks**, three over the newest-5 floor, because three regular/QUALITY cycles in a row
-      (c2910-c2912) had each appended a block with no re-enforcement since c2910's own trim.
-      **THE WORK, both things this slot owed:**
-      (1) **Queue trim.** Archived the 3 oldest DONE blocks by cycle number (c2905, c2906,
-      c2907 -- exactly contiguous, lines 126-227) to `tasks/queue_archive.md`, keeping the
-      newest 5 (c2908-c2912). Hazard grep run first on the archive-bound chunk (1 hit, a mention
-      of `STANDING RULE c2796` by name only -- that rule itself lives elsewhere, unaffected).
-      Verified losslessly: non-blank-line multiset of kept+archived == original multiset,
-      exact. Result: **130.1KB/1580 lines -> 121.7KB/1479 lines, TRIM DUE -> TRIM SOON.** No
-      open-item compression needed; the DONE-block lever alone was enough.
-      (2) **c2896/c2912 within-field-AND doc fix, shipped.** `nih-reporter-scraper` (build
-      0.1.73) and `federal-register-scraper` (build 0.1.70): README.md (field-table row/
-      description + a new dedicated FAQ entry each) and `input_schema.json`'s field description
-      now document the AND-by-default behaviour and the pipe-OR lever (FR's leading-minus
-      exclude too). Both pipe counts **re-verified LIVE immediately before publishing**
-      (2026-11-08): FR `'wildfire|drought'`=**6210**, NIH `'alzheimer|parkinson'`=**103294** --
-      both exactly match c2912's probe, confirming the lever is stable. Recorded in
-      `state/audit_dates.json` (targeted text insertion, not a `json.dump` round-trip);
-      `bin/audit-due --type within_field_and_audit` re-verified clean (still correctly a
-      3-Actor one-off, no phantom backlog created). NIH's `operator:'advanced'`/`'or'` schema
-      change was deliberately NOT bundled (code change, per c2912's note). Full detail in the
-      `UPDATED c2913` sweep item below.
-      Checks run (read-only, $0): `check-example-input`, `check-readme-samples`,
-      `check-code-fields`, `check-links`, `check-filter-reach` on both touched Actors -- all
-      clean, 0 drift. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
-      `/pricing`, `/tools`, `/tools/nih-reporter-scraper`, `/tools/federal-register-scraper`
-      all 200 before and after. Spend: 2 builds (~$0.01) -- `bin/apify-spend` $8.15 used,
-      cycle projection $8.22, far under the $25/cycle trip-wire. **Blockers: none.** Standing:
-      $0 revenue after 2913 cycles, no buyer signal, Polar checkout still correctly deferred,
-      owner not emailed.
-
-- [x] **DONE c2912 (Regular slot, 2912 % 3 == 2).** Preflight all fresh (c2120 rule):
-      `audit-due --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE (soonest
-      `check-row-floor` in 6c, c2918), `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue`
-      unchanged ($0 booked, 27 Actors, 50 users, 827 runs30d, 0 bookmarks, 0 reviews),
-      `bin/traffic` no buyer-intent signal (Polar gate correctly unmet), `check-doc-size`
-      queue.md **TRIM SOON** (125.2KB/1526 lines, ~14c) -- trim NOT taken, it is QUALITY-slot-only
-      per the cadence item's rule 2, and c2913 is the next QUALITY slot. Re-checked the SAM.gov
-      webhook test's precondition first: still Sunday (17:00 UTC), so c2911's weekday rule holds
-      and it stays filed.
-      **THE WORK: ran the $0 PROBE HALF of the c2896 within-field-AND sweep on 3 Actors**, so the
-      c2913 QUALITY slot (which also owes the trim) only has to apply doc edits. All live, keyless,
-      $0. **`nih-reporter-scraper` CONFIRMED IN CLASS and the worst of the three** -- `keyword`
-      goes up as `advanced_text_search` with `operator` hardcoded `'and'` (src/main.js:687-691):
-      alzheimer=84042, parkinson=32336, but `'alzheimer, parkinson'`=13053 and the literal word
-      OR is IGNORED (13053 too). **`federal-register-scraper` CONFIRMED IN CLASS** --
-      `conditions[term]`: wildfire=3503, drought=3681, `'wildfire, drought'`=974, word OR ignored.
-      **`grants-gov-scraper` NOT in class** -- its `keyword` already ORs (23/30 -> 39).
-      **The find that makes this worth a doc fix: a REACHABLE OR remedy exists on both AND-ing
-      Actors and it is DOC-ONLY, zero code change -- the PIPE.** FR `'wildfire|drought'`=6210,
-      exactly 3503+3681-974; NIH `'alzheimer|parkinson'`=103294, identical to `operator:'or'`,
-      so the pipe works through our hardcoded AND. FR also has a working leading-minus
-      (`'wildfire -drought'`=2529 = 3503-974 exactly). **And the guard-rail that stops the rest of
-      the sweep going wrong: the pipe is NOT fleet-wide.** On grants.gov `'wildfire|drought'`=**0
-      hits** -- the pipe is that API's own value separator -- so a blanket "use | for OR" sweep
-      would hand grants.gov buyers a guaranteed empty run. Per-Actor results recorded with full
-      numbers in `state/audit_dates.json` under a new `within_field_and_audit` axis (verified it
-      registers as a one-off experiment and creates no phantom backlog). No doc/code edit pushed
-      this cycle, $0 spend, no blockers, no owner email owed.
 
 - [x] **DONE c2914 (Regular slot, 2914 % 3 == 1).** Preflight all fresh (c2120 rule):
       `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational one-off `count_audit`/

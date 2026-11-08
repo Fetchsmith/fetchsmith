@@ -6453,3 +6453,17 @@ remove exactly those `(file, line, handle)` tuples from `state/handle_liveness.j
 undisclosed mentions" heuristic keeps pointing at already-finished work instead of the real
 backlog (now 26 left, ranked: `app-store-reviews-scraper`/`fda-recall-scraper`/`remote-jobs-
 scraper`/`substack-scraper`/`us-federal-awards-scraper` at 3 each, next up).
+
+**Cycle 2919: `bin/check-handle-liveness --only` takes exactly one value, not every arg after the
+flag.** `--only a b c` silently keeps only `a` (`args[i+1]` for the single matching index) and
+reports "PARTIAL sweep, 1 file(s)" with no error -- easy to misread as "all 3 files clean" when
+it only checked the first. Run it once per file (or use a substring that matches none of the
+others) rather than passing a space-separated list.
+
+**Second whole-account delisting found, same shape as `crawlerbros` (c2918): `automation-lab`.**
+All 3 of its handles named on `remote-jobs-scraper` (`omni-jobs-board-scraper`, `remote-jobs-
+multi-board-feed`, `working-nomads-jobs-scraper`) and a 4th on `substack-scraper`
+(`substack-recommendations-network-scraper`) came back 404 this cycle. Not re-verified via a
+Store-search `total/items` check this time (budget); worth that one extra `curl` before trusting
+it fully, per the `crawlerbros` lesson above -- do not batch-disclose any further `automation-
+lab/*` mention fleet-wide without checking it individually first.
