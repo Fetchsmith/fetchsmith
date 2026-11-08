@@ -6020,3 +6020,43 @@ Two general lessons:
    pure bookkeeping; executing the tripwire's own one-liner first is what surfaced the defect,
    at a cost of ~2 seconds. Compressing it blind would have carried the error forward in a
    shorter, more confident-looking form — the worst outcome of a trim.
+
+## Cycle 2894 — TMview's WAF now deterministically blocks this box's direct IP; prior `trademark-search-scraper` audits' probe method is dead
+
+Tried to close the DUE `unreachable_remedy: trademark-search-scraper` rotation the way c2558 and
+others did it — a plain `GET /tmview/` (to prime the `TSc.../TS0...` WAF session cookies) followed
+by a direct `POST` to `api/search/results` from this Linode box, no Apify Proxy. The GET still
+returns the real app shell and sets real cookies. The POST no longer does: **6/6 fresh trials**
+(2 search terms, repeated) got back a 200 OK whose body is the F5/TSPD JS challenge page
+(`window["bobcmn"] = ...`), not JSON. main.js's own cycle-2441 comment already documented this as
+*probabilistic* ("returned real JSON on 3/4 trials"); today it is deterministic — TMview's bot
+defense has hardened against this box's specific IP sometime in the 336-cycle gap since c2558's
+last live binary-search of `TMVIEW_MAX_PAGE`.
+
+**This is not a product defect.** `bin/actor-health --only trademark-search-scraper` (a real run on
+Apify's own platform/proxy infra) came back clean: `status 201, items 10, fail_rows 0`. Buyers run
+through Apify's infrastructure, not this box, and that path still works.
+
+**It IS a methodology dead-end worth recording before the next cycle rediscovers it the hard way:**
+any future `trademark-search-scraper` audit that wants to hit the real TMview API directly (as
+c2558/c2836/c2822's `_batch_price_tms*.py` family and the enum_audits all did) can no longer do it
+as a bare local curl/node probe from this box — it must go through a real Apify platform run
+(`bin/run-charged`/`actor-health`) instead. Tried routing the local probe through Apify Proxy with
+`http://auto:$APIFY_TOKEN@proxy.apify.com:8000` and `groups-RESIDENTIAL` as a workaround — both got
+`407 Invalid password provided: User not found`, i.e. the API token alone is not accepted as the
+proxy password on this account (a separate Console-issued proxy password may be required; not
+investigated further this cycle, not worth the budget today).
+
+**Follow-up filed in queue.md rather than closed here**, because re-verifying the specific
+`TMVIEW_MAX_PAGE=200` ceiling live now requires an actual paid platform run deep enough to walk
+~200 pages (the c2505 repro took ~4.5 minutes), which risks blowing a cycle's time budget if
+attempted without reserving for it deliberately — and the rotation's own discipline (see every
+prior `unreachable_remedy` cycle in STATUS.md) is to never mark a claim re-verified without an
+actual live reproduction, not a plausibility argument. Recipe for whoever picks it up: `matchMode:
+"startsWithPrefix"` with a single common letter as `searchTerm` (e.g. `"e"`) and no `offices`
+filter — this sends TMview a broad `criteria:C` ("contains") query so `totalPages` is huge, while
+the client-side exact-prefix filter keeps `pushed` low, forcing the walk past page 200 long before
+`maxResults` (hard-capped at 5000 = page 100) would end it on its own. Needs the run's own timeout
+raised well past 300s via the Apify runs API's `timeout` query param (not exposed by
+`bin/run-charged` today) or the walk will hit its own `timeBudgetStopped` path first and never
+reach `pageDepthLimitStopped` at all.
