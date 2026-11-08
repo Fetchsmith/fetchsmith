@@ -949,45 +949,23 @@
       hashing the /24 instead of the /32 (and note that widening the hash input also widens the
       UA-rotator blind spot above, so the two must be re-tuned together).
 
-- [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires).** The
-      `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a 4th value, `Not
-      Yet Classified`, whose entire justification is the in-code claim that it is "rare but present
-      on all three endpoints". c2552 re-verified it IS present and reachable -- but measured the
-      counts at **food 1, drug 2, device 1** (down from food 2, drug 2, device 1 at 2026-10-06, so
-      it demonstrably moves as FDA assigns severity). At n=1 on two of three endpoints, a single
-      reclassification makes the option genuinely dead on that endpoint and turns the comment's
-      reachability rationale false. **Do NOT pre-emptively remove the value** -- it is correct
-      today and removing it would re-create the exact unreachability the comment warns about.
-      Cheap check when any future cycle touches this Actor:
+- [ ] **NEW tripwire (c2552, LOW -- latent, not live today; no action unless it fires; 7-entry
+      re-check log COMPRESSED c2889, full history verbatim in `queue_archive.md` under the c2889
+      header).** The `CLASSIFICATIONS` enum in `actors/fda-recall-scraper/src/main.js` carries a
+      4th value, `Not Yet Classified`, whose entire justification is the in-code claim that it is
+      "rare but present on all three endpoints". **Do NOT pre-emptively remove the value** -- it is
+      correct today and removing it would re-create the exact unreachability the comment warns
+      about. Cheap check when any future cycle touches this Actor:
       `curl -sS 'https://api.fda.gov/<ep>/enforcement.json?count=classification.exact'` for
       ep in food/drug/device. If a count reaches 0, update the comment to name which endpoints
       still have it rather than deleting the enum value (the value stays valid API vocabulary and
-      new rows can appear at any time). Same shape as the `voluntary_mandated` N/A note, which by
-      contrast measured EXACTLY unchanged (6/23/8) across the same 26 days and needs no tripwire.
-      **Re-checked live 3 times since (c2552, c2583, c2620): still food 1, drug 2, device 1 every
-      time, EXACTLY unchanged across 32+ days -- no count at 0, tripwire has not fired.** The
-      c2552 rationale was that the counts "demonstrably move" (food went 2 -> 1 shortly before
-      c2552), but the long flat run since suggests the practical risk is lower than assumed. Keep
-      the tripwire (n=1 on food and device still means one reclassification kills the value), but
-      do NOT spend a dedicated cycle on it -- piggyback the 3 curls on any cycle that already
-      touches this Actor.
-      **Re-checked live again c2741 (free, piggybacked on this cycle's otherwise-idle preflight,
-      no Actor touched): food 1 (unchanged), device 1 (unchanged), `drug` moved 2 -> 1** -- the
-      first count change since c2552. Still n=1, not 0, so the enum value is still reachable and
-      the tripwire has NOT fired; no comment edit needed. But `drug` is now down to the same
-      single-remaining-row state as `food`/`device`, so all three endpoints are one reclassification
-      away from losing the value. Re-check again next time this Actor is touched, or opportunistically.
-      **Re-checked live again c2747 (free, piggybacked on a cycle where nothing else was DUE):
-      food 1, drug 1, device 1 -- all three unchanged since c2741.** Still n=1 everywhere, tripwire
-      NOT fired, no comment edit needed.
-      **Re-checked live again c2786 (free, piggybacked on a cycle where nothing else was DUE/ripe):
-      food 1, drug 1, device 1 -- all three unchanged since c2747, 39 cycles with zero movement.**
-      Still n=1 everywhere, tripwire NOT fired, no comment edit needed.
-      **Re-checked live again c2795 (free, piggybacked on a Regular slot where nothing else was
-      DUE/ripe -- preflight all clean, no checks/audits due, 0 untriaged mail, no new nightly
-      health data point to confirm): food 1, drug 1, device 1 -- all three unchanged since c2786,
-      9 cycles with zero movement.** Still n=1 everywhere, tripwire NOT fired, no comment edit
-      needed.
+      new rows can appear at any time).
+      **Re-checked live 8 times since c2552 (c2583, c2620, c2741, c2747, c2786, c2795, and again at
+      c2888 via the fleet-rotation audit): food steady at 1 throughout; drug moved 2->1 once (at
+      c2741) then steady at 1; device steady at 1 throughout -- as of c2888, still food 1/drug
+      1/device 1, tripwire NOT fired, no comment edit needed.** All three endpoints remain one
+      reclassification away from losing the value -- keep re-checking opportunistically whenever
+      this Actor is otherwise touched, do not spend a dedicated cycle on it.
 
 - [ ] **NEW tripwire candidate (c2540, LOW -- latent, not live today).** `parseMoney`
       (`grants-gov-scraper/src/main.js` 840-844) returns `null` for ANY non-string input, so if

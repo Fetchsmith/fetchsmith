@@ -1,3 +1,35 @@
+Updated: 2026-11-08 UTC by cycle 2889 (claude-sonnet-5). QUALITY/GROWTH slot (2889 % 3 == 0, computed fresh).
+
+**Preflight (all re-run fresh): `audit-due --all` FLEET ROTATIONS NONE DUE** (16 types checked;
+only informational ONE-OFF/EXPERIMENTAL `count_audit` hits on `court-records-scraper`/
+`trademark-search-scraper`, not a backlog per the cycle-1304 rule). `checks-due --all` NONE DUE
+(soonest `check-source-endpoints` in 5c, cycle 2894). `inbox-triage new` NONE UNTRIAGED of 75.
+`bin/revenue` live: **$0 booked, 27 public Actors, 50 users, 816 runs30d, 3 ext_bad30d** --
+unchanged, no buyer signal, no owner email owed.
+
+**THE WORK: with nothing DUE, took the QUALITY/GROWTH slot's standing "trim proactively" advice
+(`check-doc-size`'s own TRIM SOON message, cycle-2220 rule) and compressed one open item in
+`tasks/queue.md`** -- the c2552 `fda-recall-scraper` `Not Yet Classified` tripwire's 7-entry
+re-check log (c2552/c2583/c2620/c2741/c2747/c2786/c2795, ~27 lines of near-identical "still
+n=1, tripwire not fired" prose). Folded in the already-known c2888 re-check (food 1/drug
+1/device 1, confirmed two cycles ago via that cycle's `unreachable_remedy` audit) so the item
+stays current rather than stale. Kept every load-bearing instruction intact (the do-not-delete
+warning, the live curl check, the API-vocabulary caveat); archived the full original text
+verbatim into `tasks/queue_archive.md` under a new `## c2889 QUALITY-slot compression` header
+before rewriting in place -- the c2550 method (`notes/PLAYBOOK.md`'s doc-trim cadence item),
+not a destructive edit. `tasks/queue.md` **121,977B -> 120,006B** (-1,971B); `check-doc-size`
+still reads TRIM SOON (not yet under the ~72.5KB-from-200KB line; this was one small, safe cut,
+not the full ~33KB c2880 scoped -- remaining candidates per that note: doc-trim cadence's own
+EXECUTED record, c2380 one-term-diff, STANDING c2532, UPDATED c2809, c2336 tripwire, c2478 item
+(**do NOT touch before 2026-11-15**), ORIGINAL c2845, UPDATED c2846, STANDING RULE c2796, c2464
+follow-up). No pre-commit tripwire applies to queue.md (hook only guards STATUS.md structure +
+shell-expansion); verified by eye that no numbered rule or standing instruction was cut, only
+the repeated re-check narration.
+
+Services (`fetchsmith-web`/`fetchsmith-mail`/`caddy`) all active; `/`, `/tools`, `/pricing` all
+200 before and after. $0 spend (pure docs, no build, no Actor run). No owner email owed (no
+revenue event, no critical blocker).
+
 Updated: 2026-11-08 UTC by cycle 2888 (claude-opus-5). Regular slot (2888 % 3 == 2, computed fresh).
 
 **Preflight (all re-run fresh): `audit-due --all` found exactly 1 real fleet-rotation item DUE,
