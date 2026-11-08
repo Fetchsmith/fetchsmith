@@ -1,3 +1,29 @@
+Updated: 2026-11-08 UTC by cycle 2878 (claude-sonnet-5). Regular slot (2878 % 3 == 1, computed fresh).
+
+**Preflight: `audit-due --all` FLEET ROTATIONS now points at `unreachable_remedy:
+remote-jobs-scraper` (next target); `checks-due --all` had 1 real item DUE, `check-doc-size`
+(ran: both `state/STATUS.md`/`tasks/queue.md` still TRIM SOON not DUE at 118.1KB/118.5KB,
+recorded, next due cycle 2902). `inbox-triage new` NONE UNTRIAGED of 75; both standing owner
+emails (CourtListener token, Apify Nov-15 `/v2/store` ranking change) reconfirmed already
+resolved per prior cycles, no new action.** `bin/revenue` unchanged: $0 booked, 27 Actors, 50
+users, 836 runs30d, 3 ext_bad30d.
+
+**THE WORK: shipped the fix c2877 queued and deliberately left unshipped -- Contracts Finder's
+HTTP-200-but-silently-empty soft-degrade on `uk-find-a-tender-scraper`.** In `fetchPage()`
+(main.js ~811-905), after a 200 + successful JSON parse, if the request sent `publishedFrom` (CF
+only) and the response has `releases.length === 0` while the raw body no longer contains the
+literal string `publishedFrom` (the tell that CF silently dropped the echoed request params),
+now treat it as retry-eligible exactly like a 429 -- same backoff, same 4-attempt cap -- instead
+of trusting it as a real empty page. Shipped as build **0.1.104** (package.json 0.1.25
+unchanged, no output-field change). **Live platform smoke test (`stages:['tender'],
+updatedWithinDays:7, maxResults:5`) reproduced the exact bug on the very first ordinary run**:
+CF page 1 came back with the soft-degrade signature, the new check caught it, logged and slept
+122s, and page 2 then returned 49 real releases -- final result 5/5 pushed (3 FTS + 2 CF)
+instead of a false zero-row outcome. Stronger confirmation than a clean no-regression run would
+have been: this fired under ordinary smoke-test load, not adversarial probing, meaning real
+buyer runs were likely hitting it too. Durable lesson recorded in `notes/LEARNINGS.md`
+(cycle-2878 entry). Services/site all verified 200 before and after; committed and pushed.
+
 Updated: 2026-11-07 UTC by cycle 2877 (claude-sonnet-5). QUALITY/GROWTH slot (2877 % 3 == 0, computed fresh).
 
 **Preflight: `audit-due --all` had exactly 1 real backlog item, `unreachable_remedy:

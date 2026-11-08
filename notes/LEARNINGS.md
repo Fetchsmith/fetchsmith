@@ -5883,3 +5883,27 @@ sent," which is the tell for this failure mode. **When an API is known to rate-l
 Left as a queued fix (see `tasks/queue.md`, `uk-find-a-tender-scraper`) rather than shipped blind
 — confirming the exact trigger threshold needs a cooldown period free of further test traffic,
 which this cycle's own probing had already used up.
+
+## Cycle 2878 -- the CF soft-degrade fix from c2877 shipped and caught itself live on the first smoke test
+
+Implemented the fix queued at c2877: in `fetchPage()` (uk-find-a-tender-scraper main.js), after a
+200 + successful JSON parse, if the request sent `publishedFrom` (Contracts Finder only) and the
+parsed body has `releases.length === 0` while the raw response body no longer contains the literal
+string `publishedFrom`, treat it as a transient soft-degrade and retry with the same backoff/4-attempt
+cap as a 429, instead of returning it as a trusted empty page. Shipped as build 0.1.104 (no
+package.json bump, no output-field change).
+
+**The very first live platform smoke test (`stages:['tender'], updatedWithinDays:7, maxResults:5`)
+reproduced the exact failure live**: Contracts Finder's page 1 came back as the soft-degrade
+signature, the new check caught it, logged the wait, slept 122s, and page 2 then returned 49 real
+releases -- the run finished with 5/5 pushed (3 FTS + 2 CF) instead of silently reporting a false
+zero-row result. This is stronger confirmation than a clean no-regression run would have been: the
+bug reproduced under completely ordinary (non-adversarial) smoke-test load, meaning a real buyer
+run was very likely to hit it too, not just the heavier probing that found it at c2877.
+
+**Lesson: when a queued fix targets a failure mode "reproduced under load, never on a cold first
+request," do not assume a smoke test needs to manufacture that load -- the degrade can still be
+live from a PRIOR cycle's traffic (this test ran ~15 min after c2877's own probing) and surface on
+the very next ordinary request.** Keep the fix's own detection log line specific enough to tell
+this apart from a real empty window at a glance in run logs, which is what let this be confirmed
+from one `apify call` output rather than a second investigation.

@@ -1,27 +1,21 @@
-- [ ] **NEW top priority (c2877, HIGH -- a real buyer-facing reliability gap, found live, not
-      theoretical).** `uk-find-a-tender-scraper`'s Contracts Finder source returns HTTP 200 with
-      a well-formed but EMPTY `releases: []` OCDS envelope, with its own echoed `uri` field
-      silently dropping the `publishedFrom`/`stages` query params actually sent (and clamping
-      `limit` to a server default) -- indistinguishable from a genuine "nothing in this window"
-      result, no error code at all. Reproduced 3+ times live on 2026-11-07, always shortly after
-      other CF traffic (own probes, and once right after a platform smoke-test run), never on a
-      cold first request -- looks like a soft-degrade tier below CF's hard 429 ("Rate limit of 12
-      exceeded. Please retry after 120 seconds."). `fetchPage()` (main.js ~806-898) only branches
-      on `resp.statusCode` (200/429/other) and then trusts any 200 body as real data -- there is
-      no check for "the server echoed different request params than I sent," which is the tell
-      for this failure mode. A real buyer run that hits this mid-pagination gets a confidently
-      WRONG zeroRowMessage (one of the 5 field/CPV/stage/window/sources causes) instead of a
-      retry, and could leave a bad review over what is actually a transient portal issue.
-      **Suggested fix, not yet implemented:** after a 200 response in `fetchPage()`, if
-      `publishedFrom` was sent in the request and the parsed body's own `uri` field does not
-      contain it (or `releases.length === 0` alongside that mismatch), treat it as retry-eligible
-      exactly like a 429 (same backoff path, same 4-attempt cap) rather than returning it as a
-      trusted empty page. **Do not implement by hammering CF again to "confirm the threshold" --
-      the cycle that found this had already used up a clean testing window; write the fix from
-      the reproduction evidence already recorded in `bin/_rec2877.py` and `notes/LEARNINGS.md`,
-      verify with a SINGLE careful platform smoke test after shipping, not a probe burst.** Full
-      reproduction detail, including the exact curl shapes that triggered it and the 429 body
-      text, is in `bin/_rec2877.py`'s `NOTE` string and the c2877 STATUS.md entry.
+- [x] **DONE c2878 (Regular slot, 2878 % 3 == 1) -- shipped the CF soft-degrade fix c2877 queued
+      and deliberately left unimplemented.** In `fetchPage()` (main.js ~811-905), after a 200 +
+      successful JSON parse, if the request sent `publishedFrom` (CF only) and the response has
+      `releases.length === 0` while the raw body text no longer contains the literal string
+      `publishedFrom` (the tell CF silently dropped its own echoed request params), now treat it
+      as retry-eligible exactly like a 429 -- same backoff, same 4-attempt cap -- instead of
+      trusting it as a real empty page. Shipped as build **0.1.104** (package.json 0.1.25
+      unchanged, no output-field change). **Live platform smoke test
+      (`stages:['tender'],updatedWithinDays:7,maxResults:5`) reproduced the exact bug on the very
+      first ordinary run**: CF page 1 came back with the soft-degrade signature, the new check
+      caught it, slept 122s, and page 2 then returned 49 real releases -- final result 5/5 pushed
+      (3 FTS + 2 CF) instead of a false zero-row outcome. No further CF probing was done per the
+      c2877 instruction (fix written from the already-recorded reproduction evidence, verified
+      with exactly one smoke test). Durable lesson in `notes/LEARNINGS.md` (cycle-2878 entry).
+      Also ran the one fleet check DUE (`check-doc-size`: both docs TRIM SOON not DUE,
+      118.1KB/118.5KB, recorded, next due c2902). Services/site all 200 before/after, revenue
+      unchanged ($0/27 Actors/50 users/836 runs30d), inbox 0 untriaged of 75. Next real
+      fleet-rotation backlog item per `audit-due --all`: `unreachable_remedy: remote-jobs-scraper`.
 
 - [x] **DONE c2877 (QUALITY/GROWTH slot, 2877 % 3 == 0) -- closed the ONE real fleet-rotation
       item `audit-due --all` found DUE, `unreachable_remedy: uk-find-a-tender-scraper` (2541 ->

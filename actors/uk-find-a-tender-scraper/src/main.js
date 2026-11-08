@@ -887,13 +887,30 @@ async function fetchPage(pageUrl, source) {
             source.lastError = `HTTP ${resp.statusCode}: ${String(resp.body).slice(0, 120).replace(/\s+/g, ' ').trim()}`;
             return null;
         }
+        let parsed;
         try {
-            return JSON.parse(resp.body);
+            parsed = JSON.parse(resp.body);
         } catch {
             log.warning(`${source.label} returned a non-JSON body (${String(resp.body).slice(0, 200)})`);
             source.lastError = `non-JSON body: ${String(resp.body).slice(0, 120).replace(/\s+/g, ' ').trim()}`;
             return null;
         }
+        // Contracts Finder soft-degrade (live-caught cycle 2877, reproduced 3+ times): under
+        // recent load it answers with HTTP 200, a well-formed but EMPTY `releases: []`, and its
+        // own echoed `uri` field silently missing the `publishedFrom` param that was actually
+        // sent — indistinguishable from a genuine zero-row window except for that drop. A real
+        // empty-window response still echoes `publishedFrom` in its `uri`, so a missing echo
+        // alongside 0 releases is the one signal available; treat it as retry-eligible exactly
+        // like a 429 (same backoff/attempt cap) instead of trusting it as a real empty page —
+        // otherwise this surfaces to buyers as a confidently wrong zeroRowMessage.
+        if (pageUrl.includes('publishedFrom=') && Array.isArray(parsed.releases) && parsed.releases.length === 0
+            && !resp.body.includes('publishedFrom')) {
+            const waitMs = Math.min(122_000, Math.max(fetchBudgetMs(), 0));
+            log.warning(`${source.label} returned an empty page that dropped the publishedFrom param it sent (soft-degrade signature); waiting ${Math.round(waitMs / 1000)}s before retry ${attempt}/4.`);
+            await sleep(waitMs);
+            continue;
+        }
+        return parsed;
     }
     // Reached after 4 failed attempts from either cause — a 429 or a network-level error — so the
     // wording must not claim rate-limiting specifically.
