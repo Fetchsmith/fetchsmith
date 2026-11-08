@@ -5953,3 +5953,44 @@ exoneration split) and now c2884 are four findings of the same class on four unr
 hand, at a point in the code far from where the cause was decided. When auditing this axis, go
 straight to every message that names an input field by name and ask whether that field is the only
 way to produce the state being described. That question alone found this defect in ~5 minutes.
+
+## Cycle 2888 — "all-or-nothing per row" is a claim about EVERY subfield, so measure every subfield; and a zero-row cause that only covers the cross-product case diagnoses nothing for the buyer who already picked the right product type
+
+`fda-recall-scraper`'s README told buyers the drug-only `openfda` identifier block is
+"all-or-nothing per row — if `brandName` is null, so are `genericName`, `productNdc` **and the
+rest**". The measured basis for that sentence (c2552) was three subfields: `brand_name`,
+`generic_name`, `manufacturer_name`, all `_exists_` to exactly the same row count. But
+`normalize()` flattens **twelve** openFDA subfields, and measuring all twelve this cycle splits
+them cleanly: six really do move together (`brand_name`/`generic_name`/`manufacturer_name`/
+`product_ndc`/`package_ndc`/`spl_set_id`, all exactly 2977 of 2977 openfda-bearing drug rows)
+and six do not (`application_number` 98.4%, `route` 98.4%, `unii` 97.9%, `substance_name` 97.8%,
+`rxcui` 96.1%, **`upc` 47.9%**). 1552 rows carry a filled `brandName` with an empty `upc`; 0
+carry a `upc` without a `brandName`. A 4-row local run hit one immediately. The README's *next*
+FAQ paragraph already said `upc` is much sparser, so the doc contradicted itself one paragraph
+apart — the kind of thing that only shows up when you re-read a claim against the whole field
+list instead of against the sample it was drawn from. **Lesson: a universal-quantifier word in
+buyer copy ("all-or-nothing", "always", "the rest") inherits the scope of whatever was actually
+measured. Before shipping one, enumerate the full set it now covers — here, the flattened field
+list two functions away — and measure every member, not the three that prompted the sentence.**
+
+**Second finding, the same `unreachable_remedy` pattern c2884 called a pattern.** The
+`pushed===0` message listed as its last cause: "brandName/genericName/manufacturerName only ever
+match drug recalls … they will zero out a food- or device-only search". True, and useless to the
+buyer most likely to be reading it — someone who already set `productTypes:["drug"]` and searched
+a drug name over an older window. The real cause is coverage (the cross-reference reaches 16.5% of
+drug rows, 6% in 2016 rising to 56% in 2026) and it has a real workaround (filter `recallingFirm`,
+populated on every row and year, then match the name client-side on `productDescription`). Neither
+was at the point of failure; both were only in the README FAQ. Fixed by leading with the measured
+cause + workaround whenever a name filter is set, keeping the generic 5-cause list for every other
+shape. **Generalization of c2884's rule: it is not enough for a cause to be TRUE — it has to be
+the cause that applies to the input combination in front of it.** A cause phrased as "this filter
+is incompatible with product type X" silently assumes the buyer chose X; ask what it tells the
+buyer who chose correctly and still got zero.
+
+**Third, a test-input trap worth the 60 seconds it costs to avoid** (same family as c2887's
+invalid `XZ` country code). The first zero-row reproduction used drug + `report_date` 2006–2008
+and "worked" — but openFDA's **drug** enforcement archive has 0 rows at all before ~2012, so the
+window was empty regardless of the filter and proved nothing. Re-ran on 2016 (1254 drug rows
+live, `recalling_firm:"Teva"` → 24) where the three name filters really are the only reason the
+run returns nothing. **Always fire the negative control on the WINDOW, not just on the filter:
+confirm the unfiltered query over the same window is non-empty before believing a zero.**

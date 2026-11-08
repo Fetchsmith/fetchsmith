@@ -39,10 +39,14 @@ const MAX_SKIP = 25000;
 const CHUNK_THRESHOLD = 24000; // stay under MAX_SKIP with a page of headroom
 
 // `Not Yet Classified` is a real fourth value FDA uses for recalls whose severity the relevant
-// center has not assigned yet -- rare but present on all three endpoints (food 2, drug 2,
-// device 1 as of 2026-10-06, via `count=classification.exact`). Selecting Class I+II+III is
-// therefore NOT the same as leaving the filter empty; without this value those rows were
-// unreachable through the classifications filter at all.
+// center has not assigned yet -- rare but present on all three endpoints (food 1, drug 1,
+// device 1 as of 2026-11-08, via `count=classification.exact`; it was food 2 / drug 2 /
+// device 1 on 2026-10-06, so the population churns as FDA classifies the backlog, but it has
+// never been empty on any endpoint). Selecting Class I+II+III is therefore NOT the same as
+// leaving the filter empty; without this value those rows were unreachable through the
+// classifications filter at all. What actually PROVES that is the OR-sum: the four values
+// sum EXACTLY to each endpoint total (12994+14798+1793+1=29586 food, 14602+1753+1720+1=18076
+// drug, 35732+3677+1040+1=40450 device, re-measured 2026-11-08), so there is no fifth value.
 const CLASSIFICATIONS = ['Class I', 'Class II', 'Class III', 'Not Yet Classified'];
 
 const productTypes = (input.productTypes ?? ['food', 'drug', 'device'])
@@ -63,8 +67,8 @@ const status = String(input.status ?? '').trim();
 if (status === 'Pending') {
     log.warning(
         'status "Pending" is a value in FDA\'s recall-status vocabulary but has never appeared in openFDA\'s '
-        + 'enforcement data for any product type (verified live against food/drug/device 2026-09-25, 0 of '
-        + '~80,000 records) -- this run will almost certainly return zero rows. Use "Ongoing", "Completed" or '
+        + 'enforcement data for any product type (re-verified live against food/drug/device 2026-11-08, 0 of '
+        + '88,112 records) -- this run will almost certainly return zero rows. Use "Ongoing", "Completed" or '
         + '"Terminated", or leave the filter empty.',
     );
 }
@@ -76,7 +80,8 @@ const brandName = String(input.brandName ?? '').trim();
 const genericName = String(input.genericName ?? '').trim();
 const manufacturerName = String(input.manufacturerName ?? '').trim();
 // `N/A` is a real third value in openFDA's `voluntary_mandated` vocabulary (food 6, drug 23,
-// device 8 as of 2026-10-06, via `count=voluntary_mandated.exact`) -- FDA records it when the
+// device 8, byte-identical on 2026-10-06 and 2026-11-08, via `count=voluntary_mandated.exact`;
+// the four-value OR-sum is exact against each endpoint total) -- FDA records it when the
 // initiating party was never captured. A further 23 rows (food 1, drug 12, device 10) carry an
 // EMPTY string for this field; those are only reachable by leaving the filter off entirely,
 // since the empty option here means "no filter" (documented in the README FAQ).
@@ -118,12 +123,12 @@ if (webhookUrlRaw) {
 //
 // Coverage differs sharply between them, which matters because a row with no value in the
 // chosen field can never appear in a filtered run no matter how wide the window is
-// (`_exists_` counts, 2026-10-06):
-//   report_date                food 29471/29471  drug 18002/18002  device 40113/40113
-//   recall_initiation_date     food 29471/29471  drug 18002/18002  device 40113/40113
-//   center_classification_date food 29469/29471  drug 18000/18002  device 40112/40113
-//   termination_date           food 27958/29471  drug 14810/18002  device 25491/40113
-// So termination_date silently excludes ~5% of food, ~18% of drug and ~36% of device recalls
+// (`_exists_` counts, re-measured 2026-11-08; shape unchanged from 2026-10-06):
+//   report_date                food 29586/29586  drug 18076/18076  device 40450/40450
+//   recall_initiation_date     food 29586/29586  drug 18076/18076  device 40450/40450
+//   center_classification_date food 29585/29586  drug 18075/18076  device 40449/40450
+//   termination_date           food 27976/29586  drug 14813/18076  device 25496/40450
+// So termination_date silently excludes ~5% of food, ~18% of drug and ~37% of device recalls
 // (the ones never closed out -- mostly still Ongoing). Disclosed in the README FAQ + schema.
 const DATE_FIELDS = ['report_date', 'recall_initiation_date', 'center_classification_date', 'termination_date'];
 const dateField = DATE_FIELDS.includes(String(input.dateField ?? '').trim())
@@ -499,11 +504,11 @@ function buildSearch(from, to) {
         // Valid on all three endpoints' index mappings but only ever populated on drug rows --
         // food/device rows simply never match, same as any other filter with no data behind it,
         // verified live (not a 400, a normal empty match set): `_exists_:openfda.brand_name`
-        // is 0 of 29512 food and 0 of 40358 device rows (re-measured 2026-11-01).
+        // is 0 of 29586 food and 0 of 40450 device rows (re-measured 2026-11-08).
         // These three filters also reach only a MINORITY of drug rows: openFDA's NDC
-        // cross-reference exists on just 3033 of 18048 drug rows (16.8%), and the fill rate is
-        // strongly recency-skewed (by report_date year: 2016 6%, 2019 9%, 2022 22%, 2024 41%,
-        // 2025 48%, 2026 59%; 50 of the newest 100 drug rows). So a drug-name filter over an
+        // cross-reference exists on just 2977 of 18076 drug rows (16.5%), and the fill rate is
+        // strongly recency-skewed (by report_date year: 2016 6%, 2019 9%, 2022 22%, 2024 40%,
+        // 2025 48%, 2026 56%; 45 of the newest 100 drug rows). So a drug-name filter over an
         // older window is expected to return far fewer rows than the same window unfiltered --
         // that is upstream coverage, not a filter bug. Disclosed in the README FAQ.
         if (brandName) clauses.push(`openfda.brand_name:${quote(brandName)}`);
@@ -934,17 +939,30 @@ async function firmRecallCount(productType, firm) {
 }
 
 async function normalize(r, productType) {
-    // `openfda` appears on drug rows ONLY -- 0 of 29512 food and 0 of 40358 device rows carry
-    // it (`_exists_:openfda`, re-measured live 2026-11-01), so these flattened fields are
+    // `openfda` appears on drug rows ONLY -- 0 of 29586 food and 0 of 40450 device rows carry
+    // it (`_exists_:openfda`, re-measured live 2026-11-08), so these flattened fields are
     // advertised for drug recalls only and come back null for the other two product types.
-    // But it is NOT on all drug rows: only 3033 of 18048 (16.8%) have an `openfda` block at
-    // all, and every subfield we flatten (brand_name/generic_name/manufacturer_name) is
-    // present on exactly those same 3033 rows -- the block is all-or-nothing per row. An
-    // earlier version of this comment read "verified 5/5 drug rows populated", which was a
-    // lucky n=5 draw off the newest page (fill there is ~50%, not 100%) and badly overstated
-    // coverage. Fill is strongly recency-skewed by report_date year: 2016 6%, 2019 9%,
-    // 2022 22%, 2024 41%, 2025 48%, 2026 59%. Null openfda fields on a drug row are therefore
-    // normal and expected, especially pre-2020 -- do NOT treat them as a parse/mapping bug.
+    // But it is NOT on all drug rows: only 2977 of 18076 (16.5%) have an `openfda` block at
+    // all. An earlier version of this comment read "verified 5/5 drug rows populated", which
+    // was a lucky n=5 draw off the newest page (fill there is ~45%, not 100%) and badly
+    // overstated coverage. Fill is strongly recency-skewed by report_date year: 2016 6%,
+    // 2019 9%, 2022 22%, 2024 40%, 2025 48%, 2026 56%. Null openfda fields on a drug row are
+    // therefore normal and expected, especially pre-2020 -- do NOT treat them as a
+    // parse/mapping bug.
+    //
+    // The block is all-or-nothing only for SOME of the 12 subfields we flatten, NOT all of
+    // them -- an earlier version of this comment said "every subfield we flatten
+    // (brand_name/generic_name/manufacturer_name) is present on exactly those same rows --
+    // the block is all-or-nothing per row", which is true of those three but was read as
+    // covering the whole block (the README said "and the rest") and is false for half of it.
+    // `_exists_` per subfield, of the 2977 openfda-bearing drug rows, measured 2026-11-08:
+    //   brand_name 2977, generic_name 2977, manufacturer_name 2977, product_ndc 2977,
+    //   package_ndc 2977, spl_set_id 2977   <- these 6 really are all-or-nothing together
+    //   application_number 2929 (98.4%), route 2928 (98.4%), unii 2914 (97.9%),
+    //   substance_name 2912 (97.8%), rxcui 2862 (96.1%), upc 1425 (47.9%)  <- sparser
+    // `upc` is the outlier by far: 1552 rows carry a filled brand_name with NO upc, and 0 rows
+    // carry a upc without a brand_name (so upc is a strict subset, never an independent hit).
+    // A null `upc` next to a filled `brandName` is upstream sparsity, not a flattening bug.
     const o = r.openfda ?? {};
     const first = (v) => (Array.isArray(v) ? (v[0] ?? null) : (v ?? null));
     const list = (v) => (Array.isArray(v) ? Array.from(new Set(v.filter(Boolean))) : []);
@@ -1495,11 +1513,46 @@ if (pushed === 0 && watchMode && !seeding) {
     zeroRowMessage = noLookupMatch(recallNumber && echoCap(recallNumber, 40), eventId && echoCap(eventId, 40));
     log.warning(noLookupMatch(recallNumber, eventId));
 } else if (pushed === 0 && !seeding) {
+    // When a drug-name filter is set it LEADS, instead of trailing as cause (5) (cycle 2888).
+    // The generic list only said those filters "only ever match drug recalls", which diagnoses
+    // nothing for the buyer most likely to hit this: someone who already selected
+    // productTypes=["drug"] and searched a name over an older window. The real cause is
+    // coverage, and it is measured -- openFDA's NDC cross-reference exists on just 2977 of
+    // 18076 drug rows (16.5%, 2026-11-08) and is strongly recency-skewed (2016 6%, 2019 9%,
+    // 2022 22%, 2024 40%, 2025 48%, 2026 56%) -- and it has a real workaround, so both go in
+    // the message at the point of failure rather than only in the README FAQ.
+    const nameFilters = [brandName && 'brandName', genericName && 'genericName',
+        manufacturerName && 'manufacturerName'].filter(Boolean);
+    if (nameFilters.length) {
+        // Name the filter when there is one, say "the drug-name filters" when there are several --
+        // joining all three by name pushes this past the 500-char status cap (513) and would get
+        // the workaround cut off, which is the one part the buyer needs.
+        zeroRowMessage = `No recalls matched (scanned ${scanned}). Most likely: `
+            + `${nameFilters.length > 1 ? 'the drug-name filters' : nameFilters[0]} can only match `
+            + 'the 16.5% of DRUG rows carrying openFDA\'s NDC '
+            + 'cross-reference (2977 of 18076, worse pre-2020); no food or device row can match them '
+            + 'at all. Fix: filter recallingFirm instead (all rows, all years) and match the drug name '
+            + 'client-side on productDescription, or widen to a recent window. Also: filters are ANDed; '
+            + `dates run on ${dateField}; states = the FIRM's state; searchQuery is a phrase match.`;
+        log.warning(
+            `No recalls matched. Scanned ${scanned} rows. The most likely cause is the `
+            + `${nameFilters.join('/')} filter, not your other filters: openFDA only cross-references `
+            + 'brand/generic/manufacturer name for DRUG recalls, and even there on only 2977 of 18076 '
+            + 'drug rows — 16.5% (measured live 2026-11-08). Coverage is strongly recency-skewed by '
+            + 'report_date year: 2016 6%, 2019 9%, 2022 22%, 2024 40%, 2025 48%, 2026 56%. So a '
+            + 'drug-name search over an older window is EXPECTED to return few or no rows even when the '
+            + 'recall is really there — that is upstream coverage, not a filter bug. Workaround: drop '
+            + 'the name filter, filter on recallingFirm instead (populated on all three product types '
+            + 'and all years), and match the drug name client-side against productDescription; or keep '
+            + 'the name filter and widen the window to recent years. Food- and device-only searches can '
+            + 'never match these three filters at all.',
+        );
+    }
     // Log form keeps the full 5-cause explanation (984 chars, well past the status-message cap).
     // The status message below is a SEPARATE, compact rendering of the same 5 causes in the same
     // order, written to fit under 500 chars whole rather than relying on clampStatusMessage() to
     // cut it -- a truncated-but-non-null message would still lose causes (4) and (5) silently.
-    zeroRowMessage = `No recalls matched (scanned ${scanned}). Causes, in order: (1) filters are ANDed -- `
+    if (!nameFilters.length) zeroRowMessage = `No recalls matched (scanned ${scanned}). Causes, in order: (1) filters are ANDed -- `
         + 'drop one of searchQuery/state/classification; '
         + `(2) date filters run on ${dateField}, which can lag the real recall date -- try the other `
         + 'dateField or widen the window; (3) states means the RECALLING FIRM\'s state, not where the '

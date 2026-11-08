@@ -1,3 +1,66 @@
+- [x] **DONE c2888 (Regular slot, 2888 % 3 == 2) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE fresh, `unreachable_remedy: fda-recall-scraper` (2552 ->
+      2888, 336c/7d gap). FOUND AND FIXED TWO REAL BUYER-FACING DEFECTS: a self-contradicting
+      "all-or-nothing" coverage claim in the live README, and a zero-row cause that diagnoses
+      nothing for the buyer most likely to read it.** Preflight: `checks-due --all` NONE DUE
+      (soonest `check-source-endpoints` in 6c, cycle 2894), `inbox-triage new` NONE UNTRIAGED
+      of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 816 runs30d, 3
+      ext_bad30d). Negative control fired first (c2552's method): all three openFDA endpoints
+      non-empty -- food 29,586 / drug 18,076 / device 40,450, `last_updated` 2026-10-28 -- so
+      no probe could read as a false zero.
+      **All of c2552's claims re-verified live, $0 (every one HELD, with refreshed numbers):**
+      (1) `Not Yet Classified` still reachable and the 4-value OR-sum is still EXACT against
+      each endpoint total (12994+14798+1793+1=29586 food, 14602+1753+1720+1=18076 drug,
+      35732+3677+1040+1=40450 device) -- which is what actually proves Class I+II+III != no
+      filter; the count is now 1/1/1 (was 2/2/1 at 2026-10-06), matching what the README
+      already said at c2887 but NOT what the code comment said -- comment brought in line.
+      (2) `voluntary_mandated:"N/A"` byte-identical at food 6 / drug 23 / device 8, and the
+      empty-string rows (1/12/10) still sum to the totals. (3) `termination_date` still
+      silently excludes ~5% food / ~18% drug / **~37%** device (27,976/29,586, 14,813/18,076,
+      25,496/40,450 -- device drifted 36% -> 37%), and still tracks `status='Terminated'` to
+      within 4/1/34 rows. (4) `status:"Pending"` still 0, now of 88,112 records, still a normal
+      NOT_FOUND empty set on all three endpoints, not a 400.
+      **DEFECT 1 (buyer-facing, in the live README):** the FAQ said the drug-only `openfda`
+      block is "all-or-nothing per row -- if `brandName` is null, so are `genericName`,
+      `productNdc` **and the rest**". c2552 measured that on THREE subfields; `normalize()`
+      flattens TWELVE. Measured all twelve: six are genuinely all-or-nothing together
+      (`brand_name`/`generic_name`/`manufacturer_name`/`product_ndc`/`package_ndc`/`spl_set_id`,
+      all exactly 2977 of 2977 openfda rows) and six are NOT (`application_number` 98.4%,
+      `route` 98.4%, `unii` 97.9%, `substance_name` 97.8%, `rxcui` 96.1%, **`upc` 47.9%** --
+      1552 rows carry a filled `brandName` with an empty `upc`, and 0 carry a `upc` without a
+      `brandName`, so `upc` is a strict subset). A 4-row local run hit one instantly
+      (`D-0436-2015`, brandName + productNdc filled, `upc: []`). The README's NEXT FAQ
+      paragraph already said `upc` is much sparser -- the doc contradicted itself one paragraph
+      apart. Rewritten with the exact six-and-six split, and that next paragraph's two-sample
+      estimate (15%/34%, 2026-10-12) REPLACED with the whole-archive measurement.
+      **DEFECT 2 (`unreachable_remedy` proper, the c2884 pattern again):** the `pushed===0`
+      message's last cause said brandName/genericName/manufacturerName "only ever match drug
+      recalls ... they will zero out a food- or device-only search" -- true, and useless to the
+      buyer most likely to be reading it, who already set `productTypes:["drug"]` and searched
+      a name over an older window. The real cause (coverage: 16.5% of drug rows, 6% in 2016 ->
+      56% in 2026) and the real workaround (filter `recallingFirm`, populated on every row and
+      year, then match the name client-side on `productDescription`) existed ONLY in the README
+      FAQ, never at the point of failure. Fixed: when any name filter is set, a measured
+      cause-plus-workaround warning now LEADS (full numbers in the log, 489/493-char worst-case
+      status message, under the 500 cap -- verified with 3 name filters AND the longest
+      `dateField`), and the generic 5-cause list is unchanged for every other shape (verified
+      byte-identical on a no-name-filter zero-row run).
+      **Verification, all live, $0 beyond one build:** happy path 4/4 real rows
+      (brandName=Metformin, 2015-2019); zero-row repro on a window whose negative control
+      PASSES (2016: 1254 drug rows live, `recalling_firm:"Teva"` 24) -- the first attempt used
+      2006-2008, which has 0 drug rows at all and so proved nothing (bad test input, logged to
+      LEARNINGS, same family as c2887's `XZ`); **remedy proven to actually recover rows** --
+      `recallingFirm:"Teva"` over the identical 2016 window delivered 3 of 24 declared matches
+      where all three name filters deliver 0. `node --check` clean; `check-code-fields`,
+      `check-filter-reach` (18 filters, 0 unreachable), `check-readme-samples` (756 values),
+      `check-registry-fields`, `check-doc-size`, `check-zero-row-message` (63 branches, 0 MISS),
+      `check-charges` (27/0/0) all clean. Code + README both changed, no `meta.json` change, so
+      ONE `apify push --force`: **build 0.1.92 SUCCEEDED**, live `src/main.js` and `README.md`
+      both verified **byte-identical** to local via `/v2/acts/<id>/versions` `sourceFiles`.
+      Recorded via `bin/_rec2888.py` (targeted string replace, 1-line diff -- the c2551
+      json.dump trap avoided); `audit-due --type unreachable_remedy` now reads **NONE DUE**,
+      next target `federal-register-scraper` in 2 cycles (2890).
+
 - [x] **DONE c2887 (Regular slot, 2887 % 3 == 1) -- closed the ONE real fleet-rotation item
       `audit-due --all` found DUE fresh, `unreachable_remedy: eu-ted-tenders-scraper`**
       (2551 -> 2887, 336c/7d gap). Preflight: `checks-due --all` NONE DUE (soonest
