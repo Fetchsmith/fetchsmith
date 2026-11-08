@@ -76555,3 +76555,106 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       audit date without either a live re-verification or an explicit structural finding that
       there is nothing upstream to call.
 
+
+## Archived by cycle 2910 (2026-11-08)
+
+- [x] **DONE c2902 (Regular slot, 2902 % 3 == 1) -- closed `varied_test: court-records-scraper`
+      (2564 -> 2902, 338c) with the FIRST-EVER LIVE PROOF of the `webhookUrl` completion-ping
+      field end-to-end, on this Actor and fleet-wide.** Preflight: `audit-due --all` found TWO
+      real items DUE (`varied_test: court-records-scraper` + `uk-find-a-tender-scraper`),
+      `checks-due --all` had `check-doc-size` DUE (recorded, TRIM SOON both STATUS.md/queue.md,
+      neither TRIM DUE, no trim done this regular slot). `inbox-triage new` NONE UNTRIAGED of 75.
+      `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 825 runs30d, 3 ext_bad30d -- no
+      buyer signal, no owner email owed.
+      No prior `varied_test` on this Actor (1298/1634/1970/2198/2227/2564) had ever set
+      `webhookUrl`, and a fleet grep found zero prior live verification of it on ANY Actor
+      sharing the design (main.js:~1147 names `sam-gov-opportunities-scraper` and
+      `uk-find-a-tender-scraper` as sharing the same completeness-contract/webhook shape, c653/
+      h250). Predicted FREE first via CourtListener's own API: `courts:['cand']`,
+      `filedAfter=filedBefore='2024-01-10'` (c2227's known window) still 44 matches (0 drift,
+      338c), top-5-by-relevance named exactly. Created a $0 webhook.site token, ran live via
+      `bin/run-charged` (`87B3dTWYtchpGpJuR`, SUCCEEDED, `maxResults:5`): 5/5 rows matched the
+      free prediction exactly, `chargedEventCounts` settled `{result:5}` == 5, 0 phantom charge.
+      Polled webhook.site after: **exactly 1 POST captured**, JSON body byte-matches the real
+      run's `actorRunId`/`defaultDatasetId`/`pushed`/`scanned`/`totalReported` plus a nested
+      `summary` identical to the RUN_SUMMARY `run-charged` printed from the same run, fired after
+      rows were already charged (per the "best-effort, fires last" design comment). Also
+      code-read (not live, low-risk local branch) the malformed/non-http(s) `webhookUrl` path --
+      falls back to `null` with a warning, run proceeds unaffected. **0 defects, no code/README
+      change needed.** Recorded via `bin/_rec2902.py`; `audit-due --type varied_test` now reads
+      **1 DUE** (`uk-find-a-tender-scraper`, NEXT TARGET).
+      Services/site verified 200 before and after (`/`, `/pricing`, `/tools`,
+      `/tools/court-records-scraper`); spend 5 charged rows (~$0.01) -- `bin/apify-spend` $8.00
+      used this billing cycle, projection $8.13, well under the $25/cycle trip-wire.
+      **GAP for a future cycle: the same webhookUrl shape is unverified live on
+      `sam-gov-opportunities-scraper`, `uk-find-a-tender-scraper`, `eu-ted-tenders-scraper`** --
+      reuse the webhook.site method, one Actor per slot, do not batch.
+
+- [x] **DONE c2903 (Regular slot, 2903 % 3 == 2) -- closed `varied_test: uk-find-a-tender-scraper`
+      (2566 -> 2903, 337c), the only real fleet-rotation item DUE, with the FIRST-EVER LIVE PROOF
+      of `webhookUrl` payload fidelity in WATCH MODE, on this Actor and fleet-wide.** Preflight:
+      `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue`
+      unchanged ($0 booked, 27 Actors, 50 users, 825 runs30d, 3 ext_bad30d) -- no buyer signal,
+      no owner email owed. The two owner emails in the inbox window (CourtListener token,
+      Nov-15 store-ranking change) are both already-triaged old mail from c2870, nothing new.
+      This Actor's `webhookUrl` had only ever been checked once before (ship-time cycle 440,
+      stock non-watch input, httpbin 200-status-only) -- never against real payload content, and
+      never with `watchLabel`/`watchSeeding`/`watchNewCount`/`watchDeadDateBound` populated
+      (those fields only fire in watch mode; c2902's same-day proof on `court-records-scraper`
+      was non-watch). Real feed velocity was ruled out as a test method (FTS: <1 new
+      release/6h live on 2026-11-08) in favor of a genuine design fact: `updatedWithinDays` is
+      excluded from the watch fingerprint (main.js:619-626, deliberately -- it's a rolling
+      window) while `dateFrom`/`dateTo` only join it when set, so seeding narrow then running
+      incremental wide (both leaving dateFrom/dateTo unset) keeps the SAME watch key and
+      deterministically surfaces already-published notices as "new" with zero wait. Predicted
+      FREE via a direct FTS OCDS call (`sources:['fts']`, `stages:['tender']`,
+      `buyerName:'NHS'`): 0 matches/1 day, 4 matches/14 days, named exactly (105436-2026,
+      104526-2026, 104375-2026, 101509-2026). LIVE SEED (`bin/run-charged`, `ZHWU1oedCLMBpbBwS`,
+      `updatedWithinDays:1` + watchLabel + a $0 webhook.site token): pushed:0, matches exactly.
+      LIVE INCREMENTAL (same watchLabel, `updatedWithinDays:14`, confirmed same key via
+      `baselineSize:4`): `cmFZqHPlZe1iNdAhl`, pushed:4, scanned:82, `freeRowsGiven:4` ($0
+      charged correctly, not a leak) -- dataset rows matched the free prediction exactly, same
+      order, zero deviation. Polled webhook.site after both runs: **exactly 2 POSTs, one per
+      run, each byte-matching that run's own RUN_SUMMARY** -- seed payload
+      `pushed:0,watchSeeding:true,watchNewCount:null`; incremental payload
+      `pushed:4,scanned:82,watchSeeding:false,watchNewCount:4,watchDeadDateBound:false`, nested
+      `summary` identical key-for-key to RUN_SUMMARY. **0 defects, no code/README change
+      needed.** Recorded via `bin/_rec2903.py`; `audit-due --type varied_test` now reads **NONE
+      DUE** fleet-wide (soonest `nih-reporter-scraper` in 25c). Services/site verified 200
+      before and after. Spend: 4 rows, $0 (inside FREE_PER_RUN) -- negligible compute only.
+      **GAP for a future cycle: the same webhookUrl shape is still unverified live on
+      `sam-gov-opportunities-scraper` and `eu-ted-tenders-scraper`** (check the latter even
+      HAS watch mode before assuming the watch-field composition applies) -- reuse the
+      webhook.site method; the updatedWithinDays-excluded-from-fingerprint seed-narrow/
+      run-wide trick is reusable on any other Actor whose watch fingerprint excludes its own
+      rolling-window field.
+
+- [x] **DONE c2904 (QUALITY/GROWTH slot, 2904 % 3 == 0) -- closed BOTH DUE fleet checks and
+      executed the owed `state/STATUS.md` doc-trim.** Preflight: `audit-due --all` FLEET
+      ROTATIONS NONE DUE (only the informational one-off `count_audit` pair, not a backlog per
+      c1304); `inbox-triage new` NONE UNTRIAGED of 75; `bin/revenue` unchanged ($0 booked, 27
+      Actors, 50 users, 825 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews) -- no buyer signal,
+      no owner email owed.
+      (1) `check-mode-scope-warning` CLEAN (25 Actors, 44 mode-scoped fields, 0 flags).
+      (2) `check-depth-remedy-ceiling` returned 1 MISS which was **the first and only FALSE
+      POSITIVE that checker has produced** -- `sam-gov-opportunities-scraper:276`
+      (`timeBudgetDetail()`) said "Narrow the query or raise maxResults less", and its
+      lowering modifier sits AFTER the field name where the checker's `LOWER_VERB` exemption
+      never scans. The remedy was always followable at the ceiling, so there was no
+      boundary-guard bug -- **but the phrasing was a real buyer-facing defect** (it only parses
+      as "raise it by a smaller amount" and reads to everyone else as the exact opposite of the
+      advice, so a literal reader RAISES maxResults and makes the time-budget stop worse).
+      Fixed the WORDING, not the checker: "Narrow the query, lower maxResults, or give the run a
+      longer timeout" -- unambiguous AND it legitimately satisfies the existing `LOWER_VERB`
+      exemption, so precision was not loosened (a trailing-modifier rule would create false
+      NEGATIVES, e.g. "raise maxResults -- results are capped, so you get less data"). Built
+      0.1.92, live source verified via `/v2/acts/<id>/versions` -> `sourceFiles[]`, smoke run
+      3 rows/31 fields with enrichment populated, re-run clean (0 unguarded sites). Both checks
+      recorded (`check-mode-scope-warning` next c3000, `check-depth-remedy-ceiling` next c3240).
+      (3) Doc-trim on `state/STATUS.md` via `bin/_trim2904s.py`: 146.0KB/1224 lines -> 45.7KB/158
+      lines, **TRIM SOON -> OK with ~33c headroom**. Kept newest 10 CYCLE blocks (c2903..c2894)
+      per `bin/check-doc-size:167`, archived c2893..c2870 verbatim. Rule-1 hazard grep ran first
+      over all 1,066 archive-bound lines: 109 hits, all read, ALL homed elsewhere -- no rescue
+      needed (full home-by-home table in the script's docstring). Both pre-commit tripwires
+      clean after the cut. Spend ~$0.006 (one build + one smoke run).
+
