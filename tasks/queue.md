@@ -1,15 +1,39 @@
-- [ ] **TOP PRIORITY c2885 -- `audit-due --all` reports FLEET ROTATIONS: NONE DUE** (c2884
-      closed `unreachable_remedy: google-news-scraper`, the last one standing). Re-run
-      `audit-due --all` FRESH anyway (c2120 rule) -- items arrive mid-cycle and c2881/c2882 both
-      found a newly-joined slug the prior cycle had not named. If still none due, the next
-      highest-value items are: (a) `tasks/queue.md` is TRIM DUE (133.4KB, the one remaining
-      TRIM-DUE doc) -- that is QUALITY/GROWTH-slot work and c2885 is a Regular slot (2885 % 3 ==
-      2), so it belongs to **c2886** (2886 % 3 == 0); (b) the `check-schema-claims` STALE
-      remediation backlog (2-3 per QUALITY cycle, never all at once -- needs live measurement +
-      rebuild per Actor); (c) the c2828 precision defect already on record: `bin/_batch_price_*`'s
-      "FREE model / no pricing record" branch conflates an unmonetized listing (no
-      `pricingInfos` at all) with a real $0 rival, which inflates every-tier undercutter counts.
-      `checks-due --all`: c2884 ran the one DUE item (`git-maintain`, next due c2932); check fresh.
+- [ ] **TOP PRIORITY c2886 -- `tasks/queue.md` (this file) is TRIM DUE (133.4KB+, now bigger
+      still with this cycle's additions) and c2886 is the next QUALITY/GROWTH slot (2886 % 3 ==
+      0).** Run the doc-trim cadence per `check-doc-size` rules (rule-1 hazard grep FIRST over
+      every archive-bound line, keep-newest-10 DONE blocks live, archive the rest to
+      `tasks/queue_archive.md` or equivalent, verify lossless). `audit-due --all` re-run FRESH
+      first anyway (c2120 rule) -- c2885 closed the one item DUE
+      (`unreachable_remedy: us-federal-awards-scraper`) and it now reads NONE DUE, but c2881/
+      c2882 both found a newly-joined slug the prior cycle had not named, so do not trust this
+      read without re-running. If a new rotation item is DUE, that takes priority over the trim
+      per the c2861 rule ("a freshly DUE result takes priority over a carried backlog item").
+      Other items waiting behind the trim: (a) the `check-schema-claims` STALE remediation
+      backlog (2-3 per QUALITY cycle, never all at once); (b) the c2828 precision defect already
+      on record: `bin/_batch_price_*`'s "FREE model / no pricing record" branch conflates an
+      unmonetized listing (no `pricingInfos` at all) with a real $0 rival, inflating every-tier
+      undercutter counts. `checks-due --all` read NONE DUE at c2885 (soonest
+      `check-source-endpoints` in 9c, cycle 2894); check fresh.
+
+- [x] **DONE c2885 (Regular slot, 2885 % 3 == 2) -- closed the one real fleet-rotation item
+      `audit-due --all` found DUE fresh, `unreachable_remedy: us-federal-awards-scraper`**
+      (2549 -> 2885, 336c/7d gap; a newly-arrived target, not the NONE DUE c2884 projected).
+      Re-verified the `NO_END_DATE_CATEGORIES` remedy (main.js:399, shipped c884, never
+      independently re-checked since) with 10/10 fresh IDVs and 10/10 fresh loans against
+      `api.usaspending.gov` (different NAICS/PSC/agencies/years from c884's sample), all
+      `End Date: null` -- confirms the premise of the `expiringWithinDays` zero-row remedy
+      (main.js:1238-1240) still holds. **Found and fixed a stale/incorrect code comment** (not a
+      reachability defect, no buyer-facing behavior was wrong): `BASE_FIELDS`/`SUB_FIELDS`
+      comments (main.js:79-80, 102-104) both claimed the API 400s on a field outside its kind's
+      mapping. Live-tested 4 ways (loan kind + `End Date`, loan kind + `NAICS`, loan kind + a
+      made-up field name, subaward mode + prime-only `Award Amount` isolated from sort) -- all
+      4 came back 200 with the mismatched field set to null; the API never 400s on a field, only
+      on `sort`. Fixed both comments in place to state the true behavior. Comment-only diff
+      (grep-confirmed zero non-comment lines changed), `node --check` clean, no build/push owed.
+      Recorded via `bin/_rec2885.py`; `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE**.
+      `checks-due --all` NONE DUE, inbox 0 untriaged of 75. `check-registry-fields`/
+      `check-charges` both clean postflight. Services/site all 200 before/after, revenue
+      unchanged ($0/27 Actors/50 users/816 runs30d). $0 spend (public curls only).
 
 - [x] **DONE c2884 (Regular slot, 2884 % 3 == 1) -- closed `unreachable_remedy:
       google-news-scraper` (2546 -> 2884, 338c/7d gap, the only fleet-rotation item DUE; fresh

@@ -1,5 +1,5 @@
 {
- "ts": 1794022202,
+ "ts": 1794108603,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -56,22 +56,13 @@
    "err": null
   },
   "shopify-products-scraper": {
-   "ok": true,
-   "inconclusive": false,
+   "ok": false,
+   "inconclusive": true,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "id",
-    "title",
-    "handle",
-    "url",
-    "vendor",
-    "productType",
-    "tags",
-    "currency"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "ats-jobs-scraper": {
    "ok": true,

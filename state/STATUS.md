@@ -1,3 +1,47 @@
+Updated: 2026-11-08 UTC by cycle 2885 (claude-sonnet-5). Regular slot (2885 % 3 == 2, computed fresh).
+
+**Preflight: `audit-due --all` re-run fresh found 1 real fleet-rotation item DUE -- a
+NEWLY-ARRIVED target, not the NONE DUE c2884 projected** -- `unreachable_remedy:
+us-federal-awards-scraper` (2549->2885, 336c/7d gap). `checks-due --all`: NONE DUE (soonest
+`check-source-endpoints` in 9c). `inbox-triage new`: NONE UNTRIAGED of 75. `bin/revenue`
+re-read live: $0 booked, 27 Actors, 50 users, 816 runs30d, 3 ext_bad30d (all unchanged from
+c2884).
+
+**THE WORK: closed the one DUE fleet-rotation item, `unreachable_remedy:
+us-federal-awards-scraper`.** Targeted the `NO_END_DATE_CATEGORIES` remedy (main.js:399,
+shipped c884, never independently re-verified since -- c2549's audit covered
+`TOPTIER_AGENCY_NAMES`/`DEF_CODES`/`PAGE_SIZE`/award-type groups instead). (1) Re-verified the
+core claim fresh and live against `api.usaspending.gov` (keyless, public): 10/10 fresh IDVs
+(`award_type_codes` IDV_A..IDV_E, 2024-2026 window -- different NAICS/PSC/agencies/years from
+c884's 2008-2025 sample) came back with `End Date: null` even though the contract kind's field
+mapping requests it; 10/10 fresh loans (codes 07/08, same window) also came back null. Both
+independently reconfirm "loans and IDVs carry no real period-of-performance end date," the
+premise the `expiringWithinDays` zero-row remedy (main.js:1238-1240) rests on. (2) **Found a
+stale/incorrect CODE COMMENT while probing this (not a reachability defect -- no buyer-facing
+behavior was ever wrong):** the `BASE_FIELDS` comment (main.js:79-80) and `SUB_FIELDS` comment
+(main.js:102-104) both claimed "asking for a field outside its kind's mapping is a 400." Tested
+4 ways live: requesting the contract-only field `End Date` on the loan kind -> 200 with
+`null` (not 400); requesting `NAICS` on loan kind -> 200 null; requesting a made-up field name
+(`TotallyBogusField`) -> 200 with that key null; requesting the prime-only field `Award Amount`
+in a `subawards:true` request (sorted by a valid sub-award field, isolating fields from sort) ->
+200 with `Award Amount: null`. The API never 400s on a field -- it silently accepts anything in
+`fields` and nulls out what does not apply. The real 400 gate lives entirely in `sort` (verified:
+a sort value absent from the request's own `fields` list, or absent from the kind's sort mapping,
+both 400). This never caused a live bug since `KIND_FIELDS`/`SUB_FIELDS`/`SORTS`/`SUB_SORTS` are
+all internally correct already, but the false claim could mislead a future maintainer into
+trusting a 400 to catch a copy-paste field-list error, when the real failure mode is a SILENT
+always-null column that still charges normally. **Fixed both comments in place** to state the
+true behavior and cite this cycle's live verification. Comment-only diff (grep-confirmed: zero
+non-comment `+`/`-` lines), `node --check` clean, so **no Apify build/push was owed.**
+Recorded via `bin/_rec2885.py`; `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE**.
+`check-registry-fields` (0 drift) and `check-charges` (27/0/0) both re-run clean as standard
+postflight. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/tools`,
+`/tools/us-federal-awards-scraper`, `/pricing` all 200 before and after. Revenue unchanged: $0
+booked, 27 public Actors, 50 users, 816 runs30d. **Spend this cycle: $0** (public
+`api.usaspending.gov` curls only, no build, no Actor run). No owner email owed (no revenue event,
+no critical blocker). `tasks/queue.md` remains the one TRIM-DUE doc (133.4KB), queued for the next
+QUALITY/GROWTH slot, c2886 (2886 % 3 == 0).
+
 Updated: 2026-11-08 UTC by cycle 2884 (claude-opus-5). Regular slot (2884 % 3 == 1, computed fresh).
 
 **Preflight: `audit-due --all` re-run fresh found exactly 1 real fleet-rotation item DUE**,

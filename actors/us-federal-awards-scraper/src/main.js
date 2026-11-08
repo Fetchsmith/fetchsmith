@@ -77,7 +77,12 @@ const CATEGORIES = {
 };
 
 // Every award kind has its own field mapping on the API. These are the fields verified to
-// come back with data; asking for a field outside its kind's mapping is a 400.
+// come back with real (non-null) data for that kind — NOT because the API rejects a field
+// outside a kind's mapping (it does not: live-verified cycle 2885, a cross-kind field like
+// "End Date"/"NAICS" on the loan kind, and even a made-up field name, all come back 200 with
+// that key set to null, no 400). Only `sort` is strictly validated — against both `fields` and
+// the kind's own sort mapping, see SORTS/SUB_SORTS below — so a copy-paste field-list bug would
+// silently deliver an always-null column instead of erroring; keep these lists accurate per kind.
 const BASE_FIELDS = [
     'Award ID', 'Recipient Name', 'Recipient UEI', 'recipient_id',
     'Awarding Agency', 'Awarding Sub Agency', 'Funding Agency', 'Funding Sub Agency',
@@ -100,8 +105,11 @@ const SORTS = {
 };
 
 // Sub-award rows come from the same endpoint with `subawards: true`, but they have their own
-// field mapping — asking for a prime-award field (e.g. "Award Amount") there is a 400. This
-// list is the API's own Sub-Award mapping, taken verbatim from its 400 error text.
+// field mapping — same caveat as BASE_FIELDS/KIND_FIELDS above: putting a prime-award field
+// like "Award Amount" in `fields` is NOT itself a 400 (live-verified cycle 2885: comes back
+// null, 200 OK); only SORTING by a prime-award field is a hard 400 "not found in Sub-Award
+// mappings" (assertFiltersApplied's probeField, below, already relies on this correctly). This
+// list is the API's own Sub-Award mapping, taken verbatim from that 400 error text.
 const SUB_FIELDS = [
     'Sub-Award ID', 'Sub-Award Type', 'Sub-Awardee Name', 'Sub-Award Date', 'Sub-Award Amount',
     'Sub-Award Description', 'Sub-Recipient UEI',
