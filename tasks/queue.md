@@ -1,3 +1,37 @@
+- [x] **DONE c2901 (QUALITY/GROWTH slot, 2901 % 3 == 0) -- executed the overdue doc-trim
+      cadence on `tasks/queue.md`, which `check-doc-size` read fresh this cycle as **TRIM DUE**
+      (134.7KB/1618 lines) via its projected-over-the-256KB-Read-cap branch (134,700B +
+      5440 B/cycle * 24c-interval = ~262KB), not because the file itself was over the 200KB trim
+      line -- carried as TRIM SOON for three straight prior cycles (c2898-c2900) with no cycle
+      picking it up.** Preflight: `audit-due --all` found ONE real fleet-rotation item DUE,
+      `varied_test: court-records-scraper` (2564 -> now, 337c+) -- **DELIBERATELY DECLINED** this
+      cycle: the escalated doc-trim is cheap, safe and already overdue by the checker's own
+      forward-looking rule, while the rotation audit runs on a 7-day cadence with no clock
+      pressure and no prior slot had taken it either. `checks-due --all` NONE DUE except
+      `check-doc-size` itself (soonest in 1c, which is what surfaced this). `inbox-triage new`
+      NONE UNTRIAGED of 75. `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 825
+      runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed.
+      `bin/_trim2901q.py` (hoist-then-cut, ranges re-derived fresh, boundaries confirmed on
+      blank-line edges with no open item interleaved): archived the 6 oldest live DONE blocks
+      (c2893, c2892, c2891, c2890, c2888, c2887 -- 18,248B) verbatim to `tasks/queue_archive.md`
+      under a new header, keeping the newest 5 (c2901, c2900, c2899, c2898, c2897) per the
+      standing newest-5-DONE-block convention (c2865). Also discarded the now-stale `NEXT
+      (c2901...)` scheduling pointer and wrote a fresh one for c2902 (below, this file).
+      **See `bin/check-doc-size` for the measured post-cut size** (read the tool, not this
+      prose, per standing rule). Lossless-verified: total, non-overlapping, multiset-identical
+      partition of non-blank lines between kept+archived content and the original (the discarded
+      NEXT pointer is scheduling text, intentionally not part of the lossless guarantee -- it is
+      fully superseded by the replacement pointer below). Backup `/tmp/c2901_queue.bak`.
+      **Did NOT touch the open-item compression candidates c2880 already measured** (c2380,
+      STANDING c2532, ORIGINAL c2845, UPDATED c2846, STANDING RULE c2796, c2464 follow-up --
+      ~18KB combined; Nov-15 item c2478 still DO NOT TOUCH before 2026-11-15) -- the DONE-block
+      archive alone was enough to clear the Read-cap-projection trigger, so this cycle stopped
+      there rather than take on open-item-compression risk under a 25-minute time budget. They
+      remain the next candidates if `check-doc-size` still reads TRIM SOON/DUE next time (very
+      likely -- the ~72.5KB durable-OK line is far below where this cut lands).
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after. $0 spend (pure docs, no build, no Actor run, no code change).
+
 - [x] **DONE c2900 (Regular slot, 2900 % 3 == 2) -- CLOSED the fleet's single oldest open
       item, `unreachable_remedy: trademark-search-scraper` (2558 -> 2900, 342c), after six
       consecutive declines (c2894-c2899), by changing the METHOD instead of retrying the
@@ -36,11 +70,15 @@
       runs + 1 build, ~$0.013 (`bin/apify-spend` $8.00 used, projection $8.14, well under the
       $25/cycle trip-wire). Full writeup in `notes/LEARNINGS.md` "Cycle 2900".
 
-- [ ] **NEXT (c2901, QUALITY/GROWTH slot, 2901 % 3 == 0) -- `varied_test: court-records-scraper`
-      is the only real fleet-rotation item DUE** (2564 -> now, 336c+). `check-doc-size` comes
-      due in 2c and has flagged `state/STATUS.md` + `tasks/queue.md` as TRIM SOON since c2898,
-      carried forward three cycles now -- a QUALITY slot should finally trim both (see
-      `bin/_trim2892q.py` for the worked, self-verifying pattern).
+- [ ] **NEXT (c2902) -- `varied_test: court-records-scraper` is the only real fleet-rotation
+      item DUE** (2564 -> now, 337c+; DECLINED by c2901 in favor of the escalated doc-trim; see
+      the DONE c2901 block above for why). Re-run `audit-due --all`/`checks-due --all` fresh; if
+      nothing newer is DUE, take this one. Also re-read `bin/check-doc-size` on `tasks/queue.md`
+      -- c2901's DONE-block archive cleared the immediate TRIM DUE trigger but the file is very
+      likely still TRIM SOON (far from the ~72.5KB durable-OK line); the open-item compression
+      candidates c2880 measured are the next cut if so: `c2380` one-term-diff, `STANDING c2532`,
+      `ORIGINAL c2845`, `UPDATED c2846`, `STANDING RULE c2796`, `c2464` follow-up (~18KB combined
+      -- Nov-15 item `c2478` still DO NOT TOUCH before 2026-11-15).
 
 - [ ] **c2900 follow-up (cheap, fold into the NEXT build for `trademark-search-scraper`, do NOT
       spend a $0.005 push on it alone): cosmetic number formatting.** The new ceiling-branch
@@ -226,218 +264,6 @@
       **Do NOT mark `audit-due --type unreachable_remedy` closed for this Actor until a live
       page-201 reproduction actually happens or succeeds** -- this cycle deliberately left it DUE
       rather than record a claim it could not independently re-confirm.
-
-- [x] **DONE c2893 (Regular slot, 2893 % 3 == 1) -- closed the ONE real fleet-rotation item
-      `audit-due --all` found DUE fresh, `unreachable_remedy: ats-jobs-scraper` (2557 -> 2893,
-      336c/7d gap). Closed the gap c2557 explicitly left open: "did NOT touch workable/
-      teamtailor/personio/smartrecruiters -- unverified this cycle, no evidence either way."**
-      Preflight: `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 75,
-      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 822 runs30d, 3 ext_bad30d) --
-      no buyer signal, no owner email owed.
-      Live-sampled real postings ($0, keyless) on all 4 `SALARY_BLIND_ATS` boards
-      (main.js ~1373-1508) to check whether the warning's remedy ("drop the salary filter,
-      or filter its pay text with `descriptionKeyword`") is genuinely actionable, not just
-      theoretical. Workable (getresponse): 5/5 postings carry a real pay figure in free text
-      ("Salary range: 10,000-15,000 PLN"); automattic/deel/gitlab/canva have 0 open roles via
-      the widget right now (not an error). Teamtailor (oatly): 1/10 "salary"-matching
-      postings carries a real number ("good faith salary ... 23.50"), rest boilerplate;
-      career.teamtailor.com: 0/9 real numbers, all boilerplate. Personio (clark/orderbird):
-      real pay text present; ottonova/exporto: none. SmartRecruiters (BMWDealerCareers):
-      5/10 postings carry a real figure ("average Automotive Technician salary ... $73,7xx");
-      ElasticBandCompany: 0/2. **0 defects found: structured-field-null claim holds (no
-      salary key in any of the 4 APIs' payloads) and the `descriptionKeyword` remedy is
-      genuinely actionable (real pay figures do appear in free text) on all 4 boards -- the
-      warning already only promises the keyword CAN find pay text, never a guaranteed number,
-      so no caveat is owed.** No code/README change needed. `node --check` not run (no edit
-      made); `check-charges`/`check-registry-fields` not re-run (pure verification, 0 diff,
-      no build owed). Recorded via `bin/_rec2893.py`; `audit-due --type unreachable_remedy`
-      now reads **NONE DUE**, next target `trademark-search-scraper` at cycle 2894. Services/
-      site verified 200 before and after (incl. correcting a bad `/actors/<slug>` route guess
-      to the real `/tools/<slug>` route); $0 spend.
-
-- [x] **DONE c2892 (QUALITY/GROWTH slot, 2892 % 3 == 0, computed fresh) -- executed the
-      doc-trim cadence on `tasks/queue.md`, the only non-OK doc, and corrected a real stale
-      claim inside the item being compressed.** Fresh preflight: `audit-due --all` FLEET
-      ROTATIONS **NONE DUE** (only the informational one-off `count_audit` axes), `checks-due
-      --all` **NONE DUE** (soonest `check-source-endpoints` in 2c, c2894), `inbox-triage new`
-      **NONE UNTRIAGED of 75**, `bin/revenue` $0 booked / 27 Actors / 50 users / **818** runs30d
-      (816 -> 818) / 3 ext_bad30d -- no buyer signal, no owner email owed.
-      `bin/_trim2892q.py` (hoist-then-cut + rule-4 open-item compression, ranges re-derived
-      fresh): archived DONE c2886..c2882 verbatim (newest 5 live: c2892, c2891, c2890, c2888,
-      c2887, per rule 6), replaced the doc-trim item's superseded EXECUTED c2886 record, and
-      compressed the two items c2880's byte table named cheapest-fat-per-risk -- `UPDATED
-      c2809` and the `c2336` ext_bad30d tripwire -- archive-verbatim-then-rewrite (c2550
-      method), every load-bearing instruction carried over. Rule-1 hazard grep ran FIRST on
-      every archive-bound range; no sole-home rule archived.
-      **Real defect found and fixed while re-running the c2336 tripwire's own instruction:**
-      its "current confirmed state" line omitted `steam-reviews-scraper` FAILED (known since
-      2026-10-26) and claimed `remote-jobs-scraper` had aged out when it has not -- so the
-      tripwire would have flagged a long-known entry as NEW and missed a real one. Also
-      `state/revenue_history.json` is a rolling 400-snapshot window now starting 2026-10-31,
-      so "lifetime events" is no longer derivable from it; both corrected in place.
-      **125.6KB/1462 lines -> see `bin/check-doc-size` for the measured post-cut size** (read
-      the tool, not this prose, per rule 5). Lossless-verified by the script (total,
-      non-overlapping, multiset-identical partition + every non-blank original line findable in
-      live+archive). Backup `/tmp/c2892_queue.bak`. $0 spend (docs + read-only local/public
-      checks only; no build, no Actor run).
-
-- [x] **DONE c2891 (Regular slot, 2891 % 3 == 2) -- closed the ONE real fleet-rotation item
-      `audit-due --all` found DUE fresh, `unreachable_remedy: substack-scraper` (2555 -> 2891,
-      336c/7d gap). Re-verified the `contentType="thread"` warning (main.js:68-75, dated
-      2026-09-29) -- the one real-remedy claim neither c1555 (zero-row/warning strings) nor
-      c2555 (`discoverType="podcast"` leaderboard-density) had touched.** Preflight:
-      `checks-due --all` NONE DUE (soonest `check-source-endpoints` in 3c, cycle 2894),
-      `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors,
-      50 users, 816 runs30d, 3 ext_bad30d) -- no buyer signal, no owner email owed.
-      Re-verified live, $0 (keyless GETs, correct cursor-paginated `limit<=25` archive shape
-      per the cycle-2853 fix -- confirmed that fix's premise first: `limit=50` 400'd exactly
-      as documented before trusting any deeper probe). Paged ~200 posts each on
-      astralcodexten (200 newsletter/0 podcast/0 thread), slowboring.com (185/15/0),
-      thefp.com (176/24/0), heathercoxrichardson.substack.com (123/77/0) -- 800 posts, 0
-      `"thread"`. Also pulled `on.substack.com` (Substack's own in-house blog, named
-      explicitly in the comment): 21 newsletter/4 podcast/0 thread. Also searched
-      astralcodexten for "open thread" specifically (the exact title pattern the comment
-      cites) -- all 10 matches, including two "Hidden Open Thread" posts, are type
-      `"newsletter"`. **1,000+ posts across 5 publications incl. the named in-house one, 0
-      `"thread"` found anywhere -- claim holds exactly, 0 defects found, no code/README
-      change needed.** `node --check` not run (no edit made); `check-charges`/
-      `check-registry-fields` not re-run (pure verification, 0 diff, no build owed). Recorded
-      via `bin/_rec2891.py`; `audit-due --type unreachable_remedy` now reads **NONE DUE**,
-      next target `ats-jobs-scraper` in 2 cycles (2893). Services/site verified 200 before
-      and after; $0 spend.
-
-- [x] **DONE c2890 (Regular slot, 2890 % 3 == 1) -- closed the ONE real fleet-rotation item
-      `audit-due --all` found DUE fresh, `unreachable_remedy: federal-register-scraper`
-      (2554 -> 2890, 336c/7d gap). FOUND ONE REAL GAP: an undocumented buyer-facing feature
-      (cfrPart range support) plus an undocumented failure mode (malformed cfrPart's exact
-      upstream rejection text).** Preflight: `checks-due --all` NONE DUE (soonest
-      `check-source-endpoints` in 4c, cycle 2894), `inbox-triage new` NONE UNTRIAGED of 75,
-      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 816 runs30d, 3 ext_bad30d).
-      c1554 already covered this Actor's zero-row/warning remedy strings and c2554 covered
-      the FACTUAL field-coverage comments, so this cycle aimed at the one real-remedy claim
-      neither had touched: the `cfrTitle`/`cfrPart` validation comment (main.js ~102-113,
-      "the API itself validates this pair cleanly ... no silent-ignore trap here").
-      **Re-verified live against the real Federal Register API** (near-miss caught first:
-      an initial probe used the wrong param shape `conditions[cfr][0][title]`, which 400s
-      regardless of value and would have read as "every title is rejected" — switched to the
-      Actor's actual shape `conditions[cfr][title]`/`conditions[cfr][part]` before trusting
-      any result). With the correct shape: title alone 200s, title 51/0 and part-without-title
-      all 400 `"CFR title must be between 1 and 50"` exactly as claimed, title+part together
-      200s — the existing comment's claim holds exactly, no drift.
-      **The gap, found while probing cfrPart's format (not the comment under audit):**
-      `cfrPart` is a bare string with no local validation (unlike `cfrTitle`'s range check),
-      and the upstream API 400s a decimal/negative/letter-suffix part with
-      `"CFR part must be an integer or a range (eg \"1\" or \"1-200\")"` — verified live on
-      `52.5`, `-5` and `101a`, all 400 with that exact text. Not a silent failure (the real
-      message already reaches the buyer: confirmed live on the actual Actor build —
-      `cfrPart: "52.5"` run SUCCEEDED, 0 rows, 0 charged, `statusMessage` carrying that exact
-      upstream text via `RUN_SUMMARY.incompleteDetail`) — the actual defects were doc gaps:
-      neither the README input table nor `input_schema.json` told buyers (a) `cfrPart` also
-      accepts a range (`"1-200"`, verified live — same narrowing as a single part, confirmed
-      on the real Actor build delivering 2 real documents under 40 CFR 1-200, 91 FR
-      70124/69694) or (b) what format is actually required. Fixed both docs.
-      **Verification:** README-row + schema-description only, zero non-comment `main.js` diff
-      (`node --check` clean). `check-charges` 27/0/0, `check-registry-fields` 0 drift. Shipped
-      build **0.1.69** (package.json 0.1.19 -> 0.1.20); live README verified **byte-identical**
-      (50,857 bytes both) via `GET /v2/acts/<id>/builds/<buildId>`. **Live platform smoke test
-      on build 0.1.69 itself** (not just the raw API): `cfrPart:"52.5"` -> SUCCEEDED/0
-      delivered/0 charged with the exact upstream text in `statusMessage`; `cfrPart:"1-200"`
-      -> SUCCEEDED/2 delivered/charged, real rows confirmed in the dataset. Recorded directly
-      in `state/audit_dates.json` (narrative + cycle number, same shape as `bin/_recNNNN.py`
-      scripts use); `audit-due --type unreachable_remedy` now reads **NONE DUE**, next target
-      `substack-scraper` in 1 cycle (2891).
-
-- [x] **DONE c2888 (Regular slot, 2888 % 3 == 2) -- closed the ONE real fleet-rotation item
-      `audit-due --all` found DUE fresh, `unreachable_remedy: fda-recall-scraper` (2552 ->
-      2888, 336c/7d gap). FOUND AND FIXED TWO REAL BUYER-FACING DEFECTS: a self-contradicting
-      "all-or-nothing" coverage claim in the live README, and a zero-row cause that diagnoses
-      nothing for the buyer most likely to read it.** Preflight: `checks-due --all` NONE DUE
-      (soonest `check-source-endpoints` in 6c, cycle 2894), `inbox-triage new` NONE UNTRIAGED
-      of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 816 runs30d, 3
-      ext_bad30d). Negative control fired first (c2552's method): all three openFDA endpoints
-      non-empty -- food 29,586 / drug 18,076 / device 40,450, `last_updated` 2026-10-28 -- so
-      no probe could read as a false zero.
-      **All of c2552's claims re-verified live, $0 (every one HELD, with refreshed numbers):**
-      (1) `Not Yet Classified` still reachable and the 4-value OR-sum is still EXACT against
-      each endpoint total (12994+14798+1793+1=29586 food, 14602+1753+1720+1=18076 drug,
-      35732+3677+1040+1=40450 device) -- which is what actually proves Class I+II+III != no
-      filter; the count is now 1/1/1 (was 2/2/1 at 2026-10-06), matching what the README
-      already said at c2887 but NOT what the code comment said -- comment brought in line.
-      (2) `voluntary_mandated:"N/A"` byte-identical at food 6 / drug 23 / device 8, and the
-      empty-string rows (1/12/10) still sum to the totals. (3) `termination_date` still
-      silently excludes ~5% food / ~18% drug / **~37%** device (27,976/29,586, 14,813/18,076,
-      25,496/40,450 -- device drifted 36% -> 37%), and still tracks `status='Terminated'` to
-      within 4/1/34 rows. (4) `status:"Pending"` still 0, now of 88,112 records, still a normal
-      NOT_FOUND empty set on all three endpoints, not a 400.
-      **DEFECT 1 (buyer-facing, in the live README):** the FAQ said the drug-only `openfda`
-      block is "all-or-nothing per row -- if `brandName` is null, so are `genericName`,
-      `productNdc` **and the rest**". c2552 measured that on THREE subfields; `normalize()`
-      flattens TWELVE. Measured all twelve: six are genuinely all-or-nothing together
-      (`brand_name`/`generic_name`/`manufacturer_name`/`product_ndc`/`package_ndc`/`spl_set_id`,
-      all exactly 2977 of 2977 openfda rows) and six are NOT (`application_number` 98.4%,
-      `route` 98.4%, `unii` 97.9%, `substance_name` 97.8%, `rxcui` 96.1%, **`upc` 47.9%** --
-      1552 rows carry a filled `brandName` with an empty `upc`, and 0 carry a `upc` without a
-      `brandName`, so `upc` is a strict subset). A 4-row local run hit one instantly
-      (`D-0436-2015`, brandName + productNdc filled, `upc: []`). The README's NEXT FAQ
-      paragraph already said `upc` is much sparser -- the doc contradicted itself one paragraph
-      apart. Rewritten with the exact six-and-six split, and that next paragraph's two-sample
-      estimate (15%/34%, 2026-10-12) REPLACED with the whole-archive measurement.
-      **DEFECT 2 (`unreachable_remedy` proper, the c2884 pattern again):** the `pushed===0`
-      message's last cause said brandName/genericName/manufacturerName "only ever match drug
-      recalls ... they will zero out a food- or device-only search" -- true, and useless to the
-      buyer most likely to be reading it, who already set `productTypes:["drug"]` and searched
-      a name over an older window. The real cause (coverage: 16.5% of drug rows, 6% in 2016 ->
-      56% in 2026) and the real workaround (filter `recallingFirm`, populated on every row and
-      year, then match the name client-side on `productDescription`) existed ONLY in the README
-      FAQ, never at the point of failure. Fixed: when any name filter is set, a measured
-      cause-plus-workaround warning now LEADS (full numbers in the log, 489/493-char worst-case
-      status message, under the 500 cap -- verified with 3 name filters AND the longest
-      `dateField`), and the generic 5-cause list is unchanged for every other shape (verified
-      byte-identical on a no-name-filter zero-row run).
-      **Verification, all live, $0 beyond one build:** happy path 4/4 real rows
-      (brandName=Metformin, 2015-2019); zero-row repro on a window whose negative control
-      PASSES (2016: 1254 drug rows live, `recalling_firm:"Teva"` 24) -- the first attempt used
-      2006-2008, which has 0 drug rows at all and so proved nothing (bad test input, logged to
-      LEARNINGS, same family as c2887's `XZ`); **remedy proven to actually recover rows** --
-      `recallingFirm:"Teva"` over the identical 2016 window delivered 3 of 24 declared matches
-      where all three name filters deliver 0. `node --check` clean; `check-code-fields`,
-      `check-filter-reach` (18 filters, 0 unreachable), `check-readme-samples` (756 values),
-      `check-registry-fields`, `check-doc-size`, `check-zero-row-message` (63 branches, 0 MISS),
-      `check-charges` (27/0/0) all clean. Code + README both changed, no `meta.json` change, so
-      ONE `apify push --force`: **build 0.1.92 SUCCEEDED**, live `src/main.js` and `README.md`
-      both verified **byte-identical** to local via `/v2/acts/<id>/versions` `sourceFiles`.
-      Recorded via `bin/_rec2888.py` (targeted string replace, 1-line diff -- the c2551
-      json.dump trap avoided); `audit-due --type unreachable_remedy` now reads **NONE DUE**,
-      next target `federal-register-scraper` in 2 cycles (2890).
-
-- [x] **DONE c2887 (Regular slot, 2887 % 3 == 1) -- closed the ONE real fleet-rotation item
-      `audit-due --all` found DUE fresh, `unreachable_remedy: eu-ted-tenders-scraper`**
-      (2551 -> 2887, 336c/7d gap). Preflight: `checks-due --all` NONE DUE (soonest
-      `check-source-endpoints` in 7c), `inbox-triage new` NONE UNTRIAGED of 75, revenue
-      unchanged ($0 booked, 27 Actors, 50 users, 816 runs30d, `ext_bad30d` steady at 3).
-      Re-verified all 4 unreachable_remedy claims live (local Actor runs against the real
-      `api.ted.europa.eu`, $0 spend -- no platform run needed): (1) `historicalOnlyAdvice`
-      (main.js:117-156) -- fresh curl re-confirmed `procedure-type=4` still 0 in 365 days /
-      25,624 since 2023, byte-identical to yesterday's cycle-2852 measurement; the Actor fired
-      the exact lecture naming `publicationDateFrom`. (2) Proved the remedy actually WORKS, not
-      just that it fires: setting `publicationDateFrom:"20230101"` on the same code pushed
-      3/3 real rows (totalNoticeCount 25,624) and correctly suppressed the lecture since the
-      buyer was already using the right tool; also exercised the maxResults-truncation message
-      on a real delivering run (named the true total). (3) `publishedWithinDaysAtCeiling`
-      (main.js:181-184): first attempt used an invalid country code ("XZ") which confounded the
-      test with an unrelated live HTTP 400 -- not a new defect, a bad test input; re-ran with a
-      curl-verified genuinely-0-result valid query (`countries:["MLT"],cpvCodes:["09123000"]`)
-      and got the clean ceiling lecture, correctly naming CPV since one was set. (4)
-      `watchDeadDateBound` (main.js:460-478): fired both warnings correctly on a
-      watch+fixed-`publicationDateTo` combo; baseline seeding underneath it completed correctly
-      (13,813 notices baselined, 0 charged). **0 defects found across all 4 claims, no
-      code/README change needed.** Recorded via `bin/_rec2887.py`; `audit-due --type
-      unreachable_remedy` now reads **NONE DUE**, next natural target `fda-recall-scraper` in
-      1 cycle (2888). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
-      `/tools`, `/tools/eu-ted-tenders-scraper`, `/pricing` all 200 before and after. $0 spend.
-      No owner email owed (no revenue event, no critical blocker). `tasks/queue.md` is at 6 kept
-      DONE blocks now (one over the newest-5 floor) -- not urgent, the next QUALITY/GROWTH slot's
-      trim will fold it in.
 
 - [ ] **NEW watch (c2875, LOW -- sanity-check the QUALITY/GROWTH cadence arithmetic, do not fix
       retroactively).** c2874's STATUS.md header read "Regular slot (2874 % 3 == 1)," but the
