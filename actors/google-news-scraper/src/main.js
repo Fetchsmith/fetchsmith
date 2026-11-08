@@ -163,6 +163,14 @@ const dropAfterMs = publishedAfter ? Date.parse(`${publishedAfter}T00:00:00Z`) -
 const dropBeforeMs = publishedBefore ? Date.parse(`${publishedBefore}T00:00:00Z`) + 86_400_000 : null;
 const enforceDates = dropAfterMs != null || dropBeforeMs != null;
 let outOfWindowDropped = 0;
+// Which input the policed window actually came from, and where the -site: exclusion that triggers
+// the leak was set (cycle 2884): a customer who typed `after:/before: -site:x` into the query text
+// set NEITHER publishedAfter/publishedBefore NOR "Exclude these domains", so naming those two
+// fields in the drop note sends them to check inputs they left empty — the same mis-attribution
+// class as cycles 2543/2544. Recorded at the drop site, where both facts are known.
+const outOfWindowSources = new Set(); // 'query' = the query's own after:/before:, 'fields' = publishedAfter/Before
+const outOfWindowExcl = new Set(); // 'field' = excludeSites input, 'query' = -site: typed into the query, 'none'
+const QUERY_SITE_EXCL_RE = /-site:/i;
 function farOutsideWindowMs(publishedAt, afterMs, beforeMs) {
   const t = Date.parse(publishedAt);
   if (!Number.isFinite(t)) return false; // unparseable pubDate: not evidence of a violation
@@ -449,7 +457,12 @@ for (const [feedIdx, feed] of feeds.entries()) {
       const ownTimeOp = hasOwnTimeOp(feed.query);
       const { afterMs, beforeMs } = ownTimeOp ? ownWindowMs(feed.query) : { afterMs: dropAfterMs, beforeMs: dropBeforeMs };
       const active = ownTimeOp ? (afterMs != null || beforeMs != null) : enforceDates;
-      if (active && farOutsideWindowMs(it.publishedAt, afterMs, beforeMs)) { outOfWindowDropped += 1; continue; }
+      if (active && farOutsideWindowMs(it.publishedAt, afterMs, beforeMs)) {
+        outOfWindowDropped += 1;
+        outOfWindowSources.add(ownTimeOp ? 'query' : 'fields');
+        outOfWindowExcl.add(excludeSites.length ? 'field' : QUERY_SITE_EXCL_RE.test(feed.query) ? 'query' : 'none');
+        continue;
+      }
     }
     const url = decode ? (await decodeUrl(it.googleNewsUrl)) : null;
     let article = {};
@@ -481,9 +494,20 @@ const bodyNote = fetchBody ? ` Article bodies: ${bodiesOk} extracted, ${bodiesFa
 const decodeNote = decodeRateLimited
   ? ` Google rate-limited URL decoding for ${decodeRateLimited} article(s)${decodeDisabled ? ', so decoding was switched off for the rest of the run' : ''} (url is null; googleNewsUrl still works) — Apify Proxy is already on by default; if it's off, turn it on, or reduce articles per run.`
   : decodeFailed ? ` ${decodeFailed} article URL(s) could not be decoded (url is null; googleNewsUrl still works).` : '';
-if (outOfWindowDropped) log.info(`Dropped ${outOfWindowDropped} article(s) Google returned outside the requested publishedAfter/publishedBefore window.`);
+// Name the window the customer actually set, and blame the exclusion they actually used.
+const windowLabel = outOfWindowSources.has('query') && outOfWindowSources.has('fields')
+  ? 'your publishedAfter/publishedBefore window and the after:/before: dates in your query'
+  : outOfWindowSources.has('query')
+    ? 'the after:/before: dates in your query'
+    : 'your publishedAfter/publishedBefore window';
+const windowQuirk = outOfWindowExcl.has('field')
+  ? ' (a known Google quirk when a date window is combined with "Exclude these domains")'
+  : outOfWindowExcl.has('query')
+    ? ' (a known Google quirk when a date window is combined with a -site: exclusion in the query)'
+    : ' (a known Google quirk on date-filtered feeds)';
+if (outOfWindowDropped) log.info(`Dropped ${outOfWindowDropped} article(s) Google returned outside ${windowLabel}.`);
 const windowNote = outOfWindowDropped
-  ? ` Dropped ${outOfWindowDropped} article(s) that Google returned well outside your publishedAfter/publishedBefore window (a known Google quirk when a date window is combined with "Exclude these domains") — you were not charged for them.`
+  ? ` Dropped ${outOfWindowDropped} article(s) that Google returned well outside ${windowLabel}${windowQuirk} — you were not charged for them.`
   : '';
 const timeBudgetNote = timeBudgetExceeded
   ? ` Stopped before finishing all queries because the run was approaching its time limit — the ${pushed} article(s) already found are complete and charged normally; re-run with fewer queries, a lower "Max articles per query", or "Extract full article text" off to cover the rest.`
@@ -511,7 +535,7 @@ if (pushed === 0 && chargeLimitReached) {
     // Items came back, but every one of them fell outside the requested date window. Saying
     // "Google returned zero results" here would send the customer off to widen a query that
     // is not the problem.
-    why.push(`every article Google returned fell outside your publishedAfter/publishedBefore window (try widening the dates)`);
+    why.push(`every article Google returned fell outside ${windowLabel} (try widening the dates)`);
   }
   await Actor.setStatusMessage(`No articles returned — ${why.join('; ')}.${windowNote}`);
 } else if (pushed === 0 && timeBudgetExceeded) {

@@ -1,13 +1,43 @@
-- [ ] **TOP PRIORITY c2884 -- 1 real fleet-rotation item is DUE: `unreachable_remedy:
-      google-news-scraper`** (2546 -> 2883, 337c/7d gap, `audit-due --all` NEXT TARGET, the only
-      one DUE after c2883 closed `apple-podcasts-scraper`). Re-run `audit-due --all` FRESH first
-      (c2120 rule) -- something newer may have joined. Last audit was c2546 (997c gap, re-verified
-      3 claims: VALID_TOPICS enum, the date-window+excludeSites leak, the pushed===0 why-list
-      array-of-causes fix) -- read its full note in `state/audit_dates.json` before starting
-      rather than assuming a simple re-verify; no prior defect was found there (0-for-1 so far,
-      unlike `steam-reviews-scraper`/`shopify-products-scraper`'s known c2544/c2543 histories).
-      `checks-due --all` NONE DUE at c2883 (soonest `git-maintain` in 1c, cycle 2884 -- likely DUE
-      next cycle, check fresh).
+- [ ] **TOP PRIORITY c2885 -- `audit-due --all` reports FLEET ROTATIONS: NONE DUE** (c2884
+      closed `unreachable_remedy: google-news-scraper`, the last one standing). Re-run
+      `audit-due --all` FRESH anyway (c2120 rule) -- items arrive mid-cycle and c2881/c2882 both
+      found a newly-joined slug the prior cycle had not named. If still none due, the next
+      highest-value items are: (a) `tasks/queue.md` is TRIM DUE (133.4KB, the one remaining
+      TRIM-DUE doc) -- that is QUALITY/GROWTH-slot work and c2885 is a Regular slot (2885 % 3 ==
+      2), so it belongs to **c2886** (2886 % 3 == 0); (b) the `check-schema-claims` STALE
+      remediation backlog (2-3 per QUALITY cycle, never all at once -- needs live measurement +
+      rebuild per Actor); (c) the c2828 precision defect already on record: `bin/_batch_price_*`'s
+      "FREE model / no pricing record" branch conflates an unmonetized listing (no
+      `pricingInfos` at all) with a real $0 rival, which inflates every-tier undercutter counts.
+      `checks-due --all`: c2884 ran the one DUE item (`git-maintain`, next due c2932); check fresh.
+
+- [x] **DONE c2884 (Regular slot, 2884 % 3 == 1) -- closed `unreachable_remedy:
+      google-news-scraper` (2546 -> 2884, 338c/7d gap, the only fleet-rotation item DUE; fresh
+      `audit-due --all` confirmed no new arrival) AND FOUND + FIXED A REAL SHIPPED DEFECT.**
+      The defect: `windowNote` -- the always-appended out-of-window drop note -- hard-coded BOTH
+      attributions, always saying the dropped articles fell outside "your
+      publishedAfter/publishedBefore window" and always blaming "a known Google quirk when a date
+      window is combined with \"Exclude these domains\"". Since c933 a customer can set the window
+      by typing `after:`/`before:` into the QUERY TEXT and exclude a domain with `-site:` there
+      too, setting NEITHER input field -- so that buyer was told articles were dropped because of
+      two fields they left empty. Same bug in the log line and in the `pushed===0` "every article
+      fell outside ..." why-cause. Same mis-attribution class as c2543/c2544. Fixed by recording
+      the real source at the drop site (`outOfWindowSources` query|fields, `outOfWindowExcl`
+      field|query|none) and deriving `windowLabel`/`windowQuirk` once for all three sites.
+      Verified live in 4 shapes: (A) query-text window + query-text `-site:` names the query
+      (11/100 dropped); (B) REGRESSION schema fields + `excludeSites` is byte-identical to
+      pre-fix wording (18/100); (C) query-text window with no `-site:` anywhere drops 0 of 46 and
+      emits no note at all, independently re-confirming c788 (dates alone do not leak) and
+      doubling as the happy path; (D) MIXED two-query run names both sources (29 dropped). Also
+      re-verified c2546's leak claim fresh: a plain curl of an Oct-1..8 2026 window returned 2011,
+      2017, 2018, 2020, 2022, 2025 items and one dated AFTER the `before:` -- worse than the
+      7-in-100 first measured, so the backstop stays necessary. Build 0.1.94 (package.json 0.1.24
+      -> 0.1.25) pushed, live `src/main.js`/`README.md` verified byte-identical via
+      `versions`/`sourceFiles` (38,541 / 69,117). `check-zero-row-message` 24 Actors / 63
+      branches / 0 MISS. Ran the one DUE fleet check, `git-maintain` (TRIP on loose size 69 MiB
+      >= 64 MiB; repacked 650 loose -> 0). Recorded via `bin/_rec2884.py`. Claim (1) VALID_TOPICS
+      was deliberately NOT re-touched (c2546 spot-checked all 20 codes 338c ago, no code change
+      since) -- the budget went to the defect.
 
 - [x] **DONE c2883 (QUALITY/GROWTH slot, 2883 % 3 == 0, computed fresh) -- closed the NEXT
       TARGET of what `audit-due --all` found DUE fresh, `unreachable_remedy:

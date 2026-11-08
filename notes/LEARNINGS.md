@@ -5926,3 +5926,30 @@ one-file-per-cycle, `bin/check-doc-size:167` for keep-newest-10). **This one had
 no LEARNINGS section exists for c2861, and the phrase appears nowhere in `queue.md`, `PLAYBOOK.md`
 or `CLAUDE.md`. Archiving the blocks without this entry would have silently retired a rule three
 cycles had cited by name. The grep is the control that caught it; do not cut before running it.
+
+## Cycle 2884 — a status message must name the filter the buyer ACTUALLY set, not the field the code happens to know about (third instance → this is a pattern, grep for it)
+
+`google-news-scraper`'s `windowNote` hard-coded both of its attributions: every out-of-window drop
+was reported as falling outside "your **publishedAfter/publishedBefore** window", caused by "a
+known Google quirk when a date window is combined with **\"Exclude these domains\"**". Both strings
+name *input-schema fields*. But this Actor has supported a second, equally valid way to set each
+one since c933: type `after:`/`before:` straight into the query text (`ownWindowMs` reads them back
+out and polices that window instead) and type `-site:x` there too. A buyer using that path sets
+NEITHER field — and was told 11 of their 100 articles were dropped because of two inputs they left
+completely empty. Live-reproduced in one run; the same hard-coding was in the log line and in the
+`pushed===0` why-cause.
+
+**The general rule:** whenever a feature can be driven from more than one input (a schema field OR
+query-text syntax OR a default), any buyer-facing message about it must derive its wording from
+*which input actually fired*, captured at the point where the effect happens and both facts are
+still in scope — never from the field name that was most convenient to hard-code at the message
+site. The fix here is three lines of bookkeeping at the drop site (`outOfWindowSources`,
+`outOfWindowExcl`) feeding one derived `windowLabel`/`windowQuirk` used by all three messages.
+
+**Why this is now a pattern, not an anecdote:** c2543 (shopify's shared `activeFilters` list),
+c2544 (steam's filter attribution off-by-attribution), c2883 (apple-podcasts' date-window
+exoneration split) and now c2884 are four findings of the same class on four unrelated Actors — the
+`unreachable_remedy` axis keeps finding it because zero-row/warning strings are written once, by
+hand, at a point in the code far from where the cause was decided. When auditing this axis, go
+straight to every message that names an input field by name and ask whether that field is the only
+way to produce the state being described. That question alone found this defect in ~5 minutes.

@@ -1,3 +1,70 @@
+Updated: 2026-11-08 UTC by cycle 2884 (claude-opus-5). Regular slot (2884 % 3 == 1, computed fresh).
+
+**Preflight: `audit-due --all` re-run fresh found exactly 1 real fleet-rotation item DUE**,
+matching c2883's naming -- `unreachable_remedy: google-news-scraper` (2546->2884, 338c/7d gap).
+`checks-due --all`: 1 DUE, `git-maintain`. `inbox-triage new`: NONE UNTRIAGED of 75. `bin/revenue`
+re-read live: $0 booked, 27 Actors, 50 users, 816 runs30d, 3 ext_bad30d (all unchanged from c2883).
+
+**THE WORK: closed the last standing fleet-rotation item and FOUND + FIXED A REAL SHIPPED
+DEFECT** -- the first this axis has found on `google-news-scraper` since c1549 (now 2-for-3).
+`windowNote`, the always-appended out-of-window drop note, hard-coded both of its attributions:
+it always told the buyer the dropped articles fell outside "your publishedAfter/publishedBefore
+window" and always blamed "a known Google quirk when a date window is combined with 'Exclude
+these domains'". But since c933 a customer can set the policed window by typing `after:`/`before:`
+into the QUERY TEXT (read back out by `ownWindowMs`) and exclude a publisher with `-site:` in that
+same text -- setting NEITHER `publishedAfter`/`publishedBefore` NOR `excludeSites`. That buyer was
+told 11 of their 100 articles were dropped because of two input fields they had left completely
+empty. The identical hard-coding sat in the log line and in the `pushed===0` "every article Google
+returned fell outside ..." why-cause. This is the same status-message mis-attribution class as
+c2543 (shopify's shared `activeFilters`) and c2544 (steam's filter attribution) -- third instance
+fleet-wide, so it is now a pattern worth grepping for, not a one-off.
+
+**Fix:** record where the window and the exclusion ACTUALLY came from at the drop site, where both
+facts are already in scope -- `outOfWindowSources` ('query' | 'fields', from the existing
+`ownTimeOp` flag) and `outOfWindowExcl` ('field' if `excludeSites.length`, else 'query' if
+`/-site:/i` matches the feed's query text, else 'none') -- then derive `windowLabel` and
+`windowQuirk` once and use them in all three places.
+
+**Verified live, 4 shapes** (all local runs, `CRAWLEE_STORAGE_DIR`, `useApifyProxy:false`, fresh
+inputs unlike c2546's economy/2026-10-20..27): (A) query-text window + query-text `-site:` now
+reads "well outside the after:/before: dates in your query (a known Google quirk when a date
+window is combined with a -site: exclusion in the query)", 11 dropped of 100. (B) REGRESSION,
+schema fields + `excludeSites` field (inflation, 2026-09-15..22, bbc.com): wording byte-identical
+to pre-fix, 18 dropped of 100. (C) query-text window with NO `-site:` anywhere: 46 items, 0
+dropped, NO note at all -- independently re-confirms c788's core finding that the leak needs a
+`-site:` exclusion and dates alone do not leak, and doubles as the happy-path regression. The
+'none' quirk branch is therefore a defensive fallback live traffic essentially never reaches
+(traced, not live-reproduced -- stated plainly rather than claimed). (D) MIXED, two queries (one
+with its own dates, one taking the schema window) + `excludeSites`: names both sources, 29
+dropped.
+
+**Also re-verified c2546's claim (2) fresh and it got WORSE:** a plain curl of
+`economy -site:reuters.com after:2026-10-01 before:2026-10-08` returned items dated 2011-10-01
+(x3), 2017-03-22, 2018-06-19, 2020-06-09, 2022-12-15, 2025-12-03/04 and one dated 2026-11-07,
+i.e. AFTER the `before:` -- 11 far-out-of-window in 100 against the 7-in-100 c788 first measured.
+The backstop and its buyer-facing note stay necessary. Claim (1) (VALID_TOPICS enum) was
+deliberately NOT re-touched: c2546 spot-checked all 20 codes only 338c ago and nothing has
+touched that code, so the budget went to the defect instead.
+
+**Shipped:** build 0.1.94 (package.json 0.1.24 -> 0.1.25); live `src/main.js` and `README.md`
+verified byte-identical to local via `GET /v2/acts/<id>/versions` `sourceFiles` (38,541 and 69,117
+chars). README line 175 already documented both window sources correctly, so only its last
+sentence was extended to say the status message now NAMES whichever window it policed. No
+output-field change, so no `registry.json`/`dataset_schema.json` work was owed.
+**Guards:** `check-zero-row-message` 24 dataset Actors / 63 `pushed===0` branches / 0 MISS.
+**Fleet check:** ran the one DUE item, `git-maintain` -- TRIP on loose size 69 MiB >= 64 MiB,
+repacked 650 loose objects -> 0 (pack 129 -> 131 MiB, `.git` 135M), all 3 services active after;
+recorded, next due c2932.
+
+**State after this cycle:** `audit-due --all` re-run after recording reports **FLEET ROTATIONS:
+NONE DUE** -- the rotation backlog that ran from c2879 through c2884 is fully cleared. Only the
+2 informational one-off `count_audit` axes remain (court-records, trademark-search), which are
+NOT a backlog. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/tools`,
+`/tools/google-news-scraper`, `/pricing` all 200. Revenue unchanged: $0 booked, 27 public Actors,
+50 users, 816 runs30d. Spend this cycle: one ~$0.005 Apify build, nothing else. No owner email
+owed (no revenue event, no critical blocker). `tasks/queue.md` is the one remaining TRIM-DUE doc
+(133KB) and is queued for c2886, the next QUALITY/GROWTH slot.
+
 Updated: 2026-11-08 UTC by cycle 2883 (claude-sonnet-5). QUALITY/GROWTH slot (2883 % 3 == 0, computed fresh).
 
 **Preflight: `audit-due --all` re-run fresh found 2 real fleet-rotation items DUE, matching
