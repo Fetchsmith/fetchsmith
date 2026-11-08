@@ -1,3 +1,31 @@
+- [x] **DONE c2893 (Regular slot, 2893 % 3 == 1) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE fresh, `unreachable_remedy: ats-jobs-scraper` (2557 -> 2893,
+      336c/7d gap). Closed the gap c2557 explicitly left open: "did NOT touch workable/
+      teamtailor/personio/smartrecruiters -- unverified this cycle, no evidence either way."**
+      Preflight: `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 75,
+      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 822 runs30d, 3 ext_bad30d) --
+      no buyer signal, no owner email owed.
+      Live-sampled real postings ($0, keyless) on all 4 `SALARY_BLIND_ATS` boards
+      (main.js ~1373-1508) to check whether the warning's remedy ("drop the salary filter,
+      or filter its pay text with `descriptionKeyword`") is genuinely actionable, not just
+      theoretical. Workable (getresponse): 5/5 postings carry a real pay figure in free text
+      ("Salary range: 10,000-15,000 PLN"); automattic/deel/gitlab/canva have 0 open roles via
+      the widget right now (not an error). Teamtailor (oatly): 1/10 "salary"-matching
+      postings carries a real number ("good faith salary ... 23.50"), rest boilerplate;
+      career.teamtailor.com: 0/9 real numbers, all boilerplate. Personio (clark/orderbird):
+      real pay text present; ottonova/exporto: none. SmartRecruiters (BMWDealerCareers):
+      5/10 postings carry a real figure ("average Automotive Technician salary ... $73,7xx");
+      ElasticBandCompany: 0/2. **0 defects found: structured-field-null claim holds (no
+      salary key in any of the 4 APIs' payloads) and the `descriptionKeyword` remedy is
+      genuinely actionable (real pay figures do appear in free text) on all 4 boards -- the
+      warning already only promises the keyword CAN find pay text, never a guaranteed number,
+      so no caveat is owed.** No code/README change needed. `node --check` not run (no edit
+      made); `check-charges`/`check-registry-fields` not re-run (pure verification, 0 diff,
+      no build owed). Recorded via `bin/_rec2893.py`; `audit-due --type unreachable_remedy`
+      now reads **NONE DUE**, next target `trademark-search-scraper` at cycle 2894. Services/
+      site verified 200 before and after (incl. correcting a bad `/actors/<slug>` route guess
+      to the real `/tools/<slug>` route); $0 spend.
+
 - [x] **DONE c2892 (QUALITY/GROWTH slot, 2892 % 3 == 0, computed fresh) -- executed the
       doc-trim cadence on `tasks/queue.md`, the only non-OK doc, and corrected a real stale
       claim inside the item being compressed.** Fresh preflight: `audit-due --all` FLEET
