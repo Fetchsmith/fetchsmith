@@ -18,32 +18,32 @@
         "conditions": {
             "title": "Conditions / diseases",
             "type": "string",
-            "description": "Condition or disease terms, e.g. \"breast cancer\". Maps to query.cond. Leave empty alongside any other filter (interventions, sponsors, locations, overallStatus, phases, a date window, etc.) to search without a condition restriction. Leave every filter empty and the run uses the example condition \"cancer\" instead of returning every study since 1999 unfiltered.",
+            "description": "Condition or disease terms, e.g. \"breast cancer\". Maps to query.cond. Leave empty alongside any other filter (interventions, sponsors, locations, overallStatus, phases, a date window, etc.) to search without a condition restriction. Leave every filter empty and the run uses the example condition \"cancer\" instead of returning every study since 1999 unfiltered. Terms are ANDed inside this one box as well as across boxes, and a comma is an AND too, not \"any of these\" -- use \"A OR B\" for alternatives (sponsors=\"Pfizer, Moderna\" matches 0 studies, \"Pfizer OR Moderna\" matches 6,111; measured live 2026-11-08).",
             "editor": "textfield",
             "prefill": "breast cancer"
         },
         "interventions": {
             "title": "Interventions / treatments",
             "type": "string",
-            "description": "Drug, device or procedure name, e.g. \"pembrolizumab\". Maps to query.intr.",
+            "description": "Drug, device or procedure name, e.g. \"pembrolizumab\". Maps to query.intr. Terms are ANDed inside this one box as well as across boxes, and a comma is an AND too, not \"any of these\" -- use \"A OR B\" for alternatives (sponsors=\"Pfizer, Moderna\" matches 0 studies, \"Pfizer OR Moderna\" matches 6,111; measured live 2026-11-08).",
             "editor": "textfield"
         },
         "sponsors": {
             "title": "Sponsor / collaborator name",
             "type": "string",
-            "description": "Lead sponsor or collaborator organization name. Maps to query.spons.",
+            "description": "Lead sponsor or collaborator organization name. Maps to query.spons. Terms are ANDed inside this one box as well as across boxes, and a comma is an AND too, not \"any of these\" -- use \"A OR B\" for alternatives (sponsors=\"Pfizer, Moderna\" matches 0 studies, \"Pfizer OR Moderna\" matches 6,111; measured live 2026-11-08).",
             "editor": "textfield"
         },
         "locations": {
             "title": "Location (city, state or country)",
             "type": "string",
-            "description": "Facility location text, e.g. \"Boston, Massachusetts\". Maps to query.locn. Selects STUDIES, not sites: with rowsPerStudy=\"site\" the other sites of each matching study are returned and charged too -- filter site.facility/site.city on the rows yourself. See the README FAQ.",
+            "description": "Facility location text, e.g. \"Boston, Massachusetts\". Maps to query.locn. Selects STUDIES, not sites: with rowsPerStudy=\"site\" the other sites of each matching study are returned and charged too -- filter site.facility/site.city on the rows yourself. See the README FAQ. Terms are ANDed inside this one box as well as across boxes, and a comma is an AND too, not \"any of these\" -- use \"A OR B\" for alternatives (sponsors=\"Pfizer, Moderna\" matches 0 studies, \"Pfizer OR Moderna\" matches 6,111; measured live 2026-11-08). The \"Boston, Massachusetts\" example above is therefore a deliberate AND (a site matching both words, 21,483 studies), not two alternatives.",
             "editor": "textfield"
         },
         "searchQuery": {
             "title": "Free-text search",
             "type": "string",
-            "description": "General search term across titles, outcomes and eligibility text. Maps to query.term.",
+            "description": "General search term across titles, outcomes and eligibility text. Maps to query.term. Terms are ANDed inside this one box as well as across boxes, and a comma is an AND too, not \"any of these\" -- use \"A OR B\" for alternatives (sponsors=\"Pfizer, Moderna\" matches 0 studies, \"Pfizer OR Moderna\" matches 6,111; measured live 2026-11-08).",
             "editor": "textfield"
         },
         "overallStatus": {

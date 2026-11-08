@@ -1,3 +1,34 @@
+- [ ] **NEW follow-up (c2896, LOW-MEDIUM -- fleet-wide sweep, next QUALITY/GROWTH slot).**
+      c2896 found and fixed a real buyer-facing defect on `clinicaltrials-scraper`: the 0-row
+      advice named a TRUE cause ("your filters are ANDed -- drop one and retry") whose REMEDY was
+      unreachable for the likeliest input shape, because ClinicalTrials.gov ANDs terms *within* a
+      single field too (`sponsors:"Pfizer, Moderna"` = 0 studies vs `"Pfizer OR Moderna"` = 6,111,
+      measured live 2026-11-08). **The general question is fleet-wide and cheap to ask: how many
+      other Actors have a free-text search field whose upstream ANDs multi-term input, while our
+      schema/README imply a comma-separated list?** Candidates to check first are the other
+      registry/search-API Actors with free-text term boxes (`nih-reporter-scraper`,
+      `federal-register-scraper`, `grants-gov-scraper`, `sam-gov-opportunities-scraper`,
+      `court-records-scraper`, `fec-campaign-finance-scraper`, `trademark-search-scraper`). Probe
+      is $0 and keyless where the upstream exposes a count: fetch `<term A>` alone, `<term B>`
+      alone, `"A, B"` and `"A OR B"`, and compare -- if `"A, B"` <= either single term, the
+      comma is an AND and the docs must say so. **Do NOT turn this into a 7-Actor campaign in one
+      cycle**; do 2-3, record per-Actor results in `audit_dates.json`, leave the rest filed here.
+      Also worth checking in the same pass: whether each field's schema `description`/example
+      VALUE itself teaches the comma habit (clinicaltrials' `locations` example is literally
+      "Boston, Massachusetts") -- see `notes/LEARNINGS.md` "Cycle 2896" items 1-2.
+
+- [ ] **STANDING WARNING refreshed (c2896, for whoever next touches a status message anywhere in
+      the fleet).** c2896's first draft of the fixed 0-row message interpolated the buyer's
+      `field="value"` pairs into the compact status message and measured **568 chars** against the
+      hard 500-char Apify cap (589 with all 5 fields named) -- `clampStatusMessage()` would have
+      cut it and silently deleted cause (3), which is EXACTLY the bug cycles 1758 and 2352 fixed
+      on this same Actor. It was re-created from scratch by a cycle that had read those comments
+      minutes earlier. **Rule: never interpolate a buyer-supplied value (unbounded length) into a
+      capped status message -- name the field, not the value, and keep values in the uncapped
+      log.** Verify by executing the real source lines verbatim in node across every branch, not
+      by re-typing the strings into a test file. No work owed here; this is a note for the next
+      status-message edit.
+
 - [ ] **NEW follow-up (c2895, MEDIUM -- do NOT retry c2894's exact recipe again near-term; read
       the c2895 LEARNINGS entry first).** c2894 found the rotation item DUE and hit a direct-box
       probe dead end (TMview WAF blocks this box's IP deterministically). c2895 picked up its

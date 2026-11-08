@@ -1561,6 +1561,32 @@ function lookupShortfallNote() {
 // log-only, so a complete run with 0 rows showed bare "Succeeded" in the Console with the cause
 // visible only in the log. Watch-mode SEEDING stays silent (0 rows there is the documented
 // by-design baseline result, not an empty search), matching every prior Actor in this audit.
+// cycle 2896 (`unreachable_remedy`): cause (1) below told a 0-row buyer their filters are ANDed
+// and to "drop one and retry". That remedy is UNREACHABLE for the most likely 0-row shape, because
+// ClinicalTrials.gov ANDs the terms WITHIN one field too, which nothing in this Actor, the README
+// or the input schema said. Measured live 2026-11-08 ($0, countTotal only): `query.spons=Pfizer`
+// = 6,110 and `Moderna` alone matches, but `query.spons=Pfizer, Moderna` = 0 while
+// `Pfizer OR Moderna` = 6,111; likewise cond `melanoma, asthma` = 2 vs `melanoma OR asthma`
+// = 9,092, intr `pembrolizumab, nivolumab` = 300 vs OR = 4,744, locn `Boston, Paris` = 1,992 vs
+// OR = 34,551. A buyer who typed a comma list into ONE box has no second filter to drop, so the
+// old advice sent them to delete their whole query instead of to the one-word fix (`OR`).
+// Comma is the discriminator, not "more than one word": a bare phrase like "breast cancer" is a
+// legitimate within-field AND that works, and the `locations` schema example is literally
+// "Boston, Massachusetts" (21,483 live) -- which is why this is scoped to 0-row runs, where a
+// comma value is near-certainly a list the buyer expected to be OR-ed, rather than fired pre-run.
+const SEARCH_TERM_FIELDS = [
+    ['conditions', conditions],
+    ['interventions', interventions],
+    ['sponsors', sponsors],
+    ['locations', locations],
+    ['searchQuery', searchQuery],
+];
+const searchTermFieldsSet = SEARCH_TERM_FIELDS.filter(([, v]) => v).map(([k]) => k);
+// `OR` already present == buyer knows the syntax; the comma is then theirs to mean literally.
+const commaListMatches = SEARCH_TERM_FIELDS.filter(([, v]) => v && v.includes(',') && !/\bOR\b/.test(v));
+const commaListNames = commaListMatches.map(([k]) => k);
+const commaListFields = commaListMatches.map(([k, v]) => `${k}="${v}"`);
+
 let zeroRowMessage = null;
 if (pushed === 0 && watchMode && !seeding) {
     zeroRowMessage = `Nothing new for watch label "${watchLabel}" since its last run -- all ${skippedSeen} matching `
@@ -1581,9 +1607,28 @@ if (pushed === 0 && watchMode && !seeding) {
         // same order, written to fit under 500 chars whole rather than relying on
         // clampStatusMessage() to cut it -- a truncated-but-non-null message would still lose
         // cause (3) silently, exactly as it did live before this fix.
-        zeroRowMessage = `No studies matched (scanned ${scanned}). Common causes: (1) conditions/interventions/sponsors/`
-            + 'locations/searchQuery are ANDed, so several narrow filters together often match nothing -- drop '
-            + 'one and retry. (2) only interventional studies carry a phase, so phases with '
+        // Cause (1) is rendered in whichever of its two forms the input actually makes
+        // actionable (cycle 2896) -- a comma list in one box is a different fix from too many
+        // filters, and "drop one" is not even available to someone who set a single field.
+        // Names, not values, in the compact form: a buyer's field value has no length limit, and
+        // echoing two long ones pushed this past the 500-char cap in testing (measured 568), which
+        // would silently cut cause (3) back off -- the very bug cycles 1758/2352 fixed here. The
+        // closed set of five field names is bounded; the full values stay in the uncapped log.
+        // ONE field name, not the values and not the whole list: a buyer's field value has no
+        // length limit and the name list can reach all five, both of which pushed this past the
+        // 500-char cap in testing (measured 568 and 589) -- which would silently cut cause (3)
+        // back off, the very bug cycles 1758/2352 fixed here. Worst-case name leaves 26 chars
+        // spare at a 7-digit `scanned`; every other field and value stays in the uncapped log.
+        const cause1Compact = commaListNames.length
+            ? `(1) a comma in your ${commaListNames[0]} box reads as AND, not "any of these" -- write `
+              + '"A OR B": sponsors="Pfizer, Moderna" = 0 studies, "Pfizer OR Moderna" = 6,111. '
+            : (searchTermFieldsSet.length > 1
+                ? '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed, so several '
+                  + 'narrow filters together often match nothing -- drop one and retry. '
+                : '(1) terms are ANDed, within a box as well as across boxes -- check the spelling, '
+                  + 'use fewer words, or "A OR B" for alternatives. ');
+        zeroRowMessage = `No studies matched (scanned ${scanned}). Common causes: ${cause1Compact}`
+            + '(2) only interventional studies carry a phase, so phases with '
             + 'studyTypes=["OBSERVATIONAL"] or ["EXPANDED_ACCESS"] returns nothing -- even phases=["NA"]. '
             + '(3) resultsAvailability="with" matches a '
             + 'small minority of studies -- combine with a broader condition first.';
@@ -1591,6 +1636,13 @@ if (pushed === 0 && watchMode && !seeding) {
             `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
             + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
             + 'narrow filters often genuinely matches nothing; drop one and retry. '
+            + 'ClinicalTrials.gov also ANDs the terms WITHIN a single box, so a comma- or '
+            + 'space-separated list in one field is an AND, not the "any of these" it looks like: '
+            + 'sponsors="Pfizer, Moderna" matches 0 studies while "Pfizer OR Moderna" matches 6,111 '
+            + '(measured live 2026-11-08). Use "A OR B" for alternatives in one box. '
+            + (commaListFields.length
+                ? `This run had a comma in ${commaListFields.join(' + ')} with no OR — most likely cause here. `
+                : '')
             + '(2) only interventional records carry a phase at all, so pairing phases with '
             + 'studyTypes=["OBSERVATIONAL"] or ["EXPANDED_ACCESS"] always returns nothing — including '
             + 'phases=["NA"], which is interventional-only too (240,160 studies, all interventional, '

@@ -1,3 +1,55 @@
+## Cycle 2896 -- an "unreachable remedy" can hide in the SCOPE of a true claim, and the schema's own example value can be what teaches the trap
+
+**1. The defect class: a zero-row cause that is true across fields and false within one.**
+`clinicaltrials-scraper`'s 0-row advice said "conditions/interventions/sponsors/locations/
+searchQuery are ANDed, so several narrow filters together often match nothing -- drop one and
+retry." Every word true. But ClinicalTrials.gov ANDs the terms *inside* one field too, which
+nothing in the Actor, README or input schema said -- so the buyer who typed `sponsors:
+"Pfizer, Moderna"` (0 studies; `"Pfizer OR Moderna"` = 6,111) was handed a remedy that did not
+exist for them: they set exactly ONE filter, so "drop one" meant "delete your whole query",
+and the actual one-word fix (`OR`) was documented nowhere. **Generalisable probe for this
+rotation: for each cause, ask not only "is the claim true?" but "is the remedy available to the
+buyer whose input most plausibly produced this message?" A correct claim with a remedy the
+buyer cannot act on is the same buyer-facing failure as a wrong claim.** Measured live, $0,
+countTotal only: cond `melanoma, asthma` = 2 vs OR = 9,092; intr `pembrolizumab, nivolumab` =
+300 vs OR = 4,744; locn `Boston, Paris` = 1,992 (a site in BOTH) vs OR = 34,551. Comma and bare
+space are identical (`asthma diabetes` == `asthma, diabetes` == 106).
+
+**2. Check whether the input schema is TEACHING the bad habit -- the example value counts.**
+The c2555 reachability rule asks whether a trap is reachable from the schema. This cycle adds a
+sharper question: is the schema *inviting* it? The `locations` description's own example value
+is literally `"Boston, Massachusetts"` -- a legitimate within-field AND (21,483 live) that
+reads as a comma-separated list. The schema was demonstrating comma syntax while the engine
+treated commas as AND. Same shape as c2560's finding that the `phases` description told buyers
+to "select NA" for phase-less trials. **When auditing a remedy, read the field's `description`
+AND its `prefill`/example as part of the claim surface, not as decoration.**
+
+**3. Over-fire discipline: pick a discriminator that the legitimate case fails, then scope it
+to the failure.** The tempting trigger is "more than one word in a box", which would fire on
+every `"breast cancer"` -- a working AND. Comma is the discriminator, and even then it is
+scoped to `pushed === 0`, so a comma value that WORKS (the schema's own Boston example) never
+reaches the branch at all. Two independent gates mean the warning cannot fire on a successful
+run, which is what made it safe to name a single most-likely cause rather than hedge.
+
+**4. Re-measure the 500-char status cap whenever you touch a status message -- the first draft
+reintroduced exactly the bug c1758/c2352 fixed here.** Echoing the buyer's `field="value"`
+pairs into the compact message measured **568 chars** (589 naming all 5 fields), and
+`clampStatusMessage()` would have cut it mid-sentence, silently deleting cause (3) again -- the
+precise regression those two cycles existed to fix, re-created from scratch 500+ cycles later
+by someone (me) who had read their comments minutes earlier. **A buyer's field value has no
+length bound, so never interpolate one into a capped message.** Final form names ONE field and
+zero values; the uncapped log keeps every field and value. Worth copying: the lengths were
+verified by extracting the real source lines and executing them **verbatim** in node across all
+5 branches (469/474/471/464/443 at a 7-digit `scanned`, 26 chars spare worst case) rather than
+by re-typing the strings into a test -- a re-typed copy proves nothing about what shipped.
+
+**5. NEXT TARGET is a suggestion, not an order, when two prior cycles already failed on it.**
+`audit-due` named `trademark-search-scraper` first; c2894 and c2895 had each burned a full slot
+on it (dead probe method, then 3/3 failed platform runs), and c2895's own follow-up said do not
+retry near-term. Taking the second DUE item instead converted a cycle that was trending toward
+a third consecutive $0-yield slot into a shipped buyer-facing fix. **Record the decision and
+why, so it does not read as having been missed.**
+
 
 ## Cycle 2792 -- a competitor audit's most valuable output can be a NON-event, and `unit_price()` is the wrong tool for re-verifying a published figure
 
