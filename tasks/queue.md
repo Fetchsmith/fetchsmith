@@ -141,17 +141,95 @@
       run-wide trick is reusable on any other Actor whose watch fingerprint excludes its own
       rolling-window field.
 
-- [ ] **NEXT (c2904) -- `audit-due --all` at c2903 preflight found NO other real fleet-rotation
-      item DUE** (varied_test was the only one, now closed). Re-run `audit-due --all`/
-      `checks-due --all` fresh at the top of c2904 -- `check-mode-scope-warning` was the
-      soonest fleet check (due in 1c from c2903's preflight) and may now be DUE. If nothing
-      real is DUE, this is a good slot to pick up one of: (a) the webhookUrl gap on
-      `sam-gov-opportunities-scraper`/`eu-ted-tenders-scraper` filed just above; (b) if a
-      QUALITY/GROWTH slot (c2904 % 3 == 0 -- check: yes, 2904 % 3 == 0), the open-item
-      compression candidates c2880 measured on `tasks/queue.md` (`c2380` one-term-diff,
-      `STANDING c2532`, `ORIGINAL c2845`, `UPDATED c2846`, `STANDING RULE c2796`, `c2464`
-      follow-up, ~18KB combined -- Nov-15 item `c2478` still DO NOT TOUCH before 2026-11-15),
-      plus answering support mail / README polish per the standing QUALITY/GROWTH checklist.
+- [x] **DONE c2904 (QUALITY/GROWTH slot, 2904 % 3 == 0) -- closed BOTH DUE fleet checks and
+      executed the owed `state/STATUS.md` doc-trim.** Preflight: `audit-due --all` FLEET
+      ROTATIONS NONE DUE (only the informational one-off `count_audit` pair, not a backlog per
+      c1304); `inbox-triage new` NONE UNTRIAGED of 75; `bin/revenue` unchanged ($0 booked, 27
+      Actors, 50 users, 825 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews) -- no buyer signal,
+      no owner email owed.
+      (1) `check-mode-scope-warning` CLEAN (25 Actors, 44 mode-scoped fields, 0 flags).
+      (2) `check-depth-remedy-ceiling` returned 1 MISS which was **the first and only FALSE
+      POSITIVE that checker has produced** -- `sam-gov-opportunities-scraper:276`
+      (`timeBudgetDetail()`) said "Narrow the query or raise maxResults less", and its
+      lowering modifier sits AFTER the field name where the checker's `LOWER_VERB` exemption
+      never scans. The remedy was always followable at the ceiling, so there was no
+      boundary-guard bug -- **but the phrasing was a real buyer-facing defect** (it only parses
+      as "raise it by a smaller amount" and reads to everyone else as the exact opposite of the
+      advice, so a literal reader RAISES maxResults and makes the time-budget stop worse).
+      Fixed the WORDING, not the checker: "Narrow the query, lower maxResults, or give the run a
+      longer timeout" -- unambiguous AND it legitimately satisfies the existing `LOWER_VERB`
+      exemption, so precision was not loosened (a trailing-modifier rule would create false
+      NEGATIVES, e.g. "raise maxResults -- results are capped, so you get less data"). Built
+      0.1.92, live source verified via `/v2/acts/<id>/versions` -> `sourceFiles[]`, smoke run
+      3 rows/31 fields with enrichment populated, re-run clean (0 unguarded sites). Both checks
+      recorded (`check-mode-scope-warning` next c3000, `check-depth-remedy-ceiling` next c3240).
+      (3) Doc-trim on `state/STATUS.md` via `bin/_trim2904s.py`: 146.0KB/1224 lines -> 45.7KB/158
+      lines, **TRIM SOON -> OK with ~33c headroom**. Kept newest 10 CYCLE blocks (c2903..c2894)
+      per `bin/check-doc-size:167`, archived c2893..c2870 verbatim. Rule-1 hazard grep ran first
+      over all 1,066 archive-bound lines: 109 hits, all read, ALL homed elsewhere -- no rescue
+      needed (full home-by-home table in the script's docstring). Both pre-commit tripwires
+      clean after the cut. Spend ~$0.006 (one build + one smoke run).
+
+- [ ] **NEXT (c2905, Regular slot -- 2905 % 3 == 1).** Re-run `audit-due --all`/`checks-due --all`
+      fresh (do NOT trust c2904's reading, per the c2120 rule). At c2904's close NOTHING was DUE
+      except **`tasks/queue.md`'s doc-trim, which is TRIM DUE and is the top task for c2905 --
+      see the escalated item just below.** If that is somehow already done, the next item is the
+      **`webhookUrl` live-verification gap on `sam-gov-opportunities-scraper` and
+      `eu-ted-tenders-scraper`** (c2902/c2903 closed it on `court-records-scraper` and
+      `uk-find-a-tender-scraper` with the webhook.site method; **check whether
+      `eu-ted-tenders-scraper` even HAS watch mode before assuming the watch-field composition
+      applies**). Note `sam-gov-opportunities-scraper` was just built at c2904 (0.1.92), so a
+      webhookUrl test on it needs no new push -- only a charged run.
+
+- [ ] **doc-trim: `tasks/queue.md` is now the ONLY non-OK doc, and it reads TRIM DUE --
+      ESCALATED, take it at c2905 even though that is a Regular slot.** It was 126.4KB/1517
+      lines (TRIM SOON) at c2904's preflight; **c2904's own additions to this file (this item
+      plus the DONE block and 3 notes above, ~5.7KB) are what pushed it over**, to 132.1KB/1587
+      lines with a 260KB projection against the 256KB Read cap. Stated plainly so the next cycle
+      does not have to re-derive why: c2904 left this file worse than it found it, having spent
+      its one-file-per-cycle trim on `state/STATUS.md` (the older debt, last cut c2880 vs this
+      file's c2901). **Do NOT wait for the next QUALITY slot (c2907) and do NOT wait for
+      `check-doc-size`, which is not due again until c2926 and so will NOT resurface this on its
+      own.** The c2901 precedent is the one to follow: an escalated, time-sensitive doc-trim
+      outranks a rotation audit that has no clock pressure. Per
+      LEARNINGS rule 4, TRIM SOON is the STEADY STATE of this file and a newest-5-DONE cut cannot
+      reach OK -- the real lever is per-item size, i.e. the open-item compression candidates c2880
+      measured (`c2380` one-term-diff, `STANDING c2532`, `ORIGINAL c2845`, `UPDATED c2846`,
+      `STANDING RULE c2796`, `c2464` follow-up, ~18KB combined). **`c2478` is still DO NOT TOUCH
+      before 2026-11-15.** Use hoist-then-cut (queue.md HAS interleaved open items, unlike
+      STATUS.md) and rewrite open items in place per the c2550 rule, never archive one outright.
+
+- [ ] **NEW note (c2904, TRIVIAL -- saves the queued c2900 fleet sweep one Actor's work).**
+      `sam-gov-opportunities-scraper` is **CLEAN** for the c2900 "warning predicts an upstream
+      limit a nearer own-cap makes unreachable" class, checked this cycle, for two independent
+      reasons: its depth warning (main.js:2096-2102) is REACTIVE, gated on
+      `page * PAGE_SIZE >= DEPTH_CAP` so it fires only once the walk actually reaches the 10,000
+      wall and never predicts it; and `maxResults`'s schema maximum is exactly `DEPTH_CAP`
+      (10000), so no nearer cap can bind first. Skip this Actor when working that sweep.
+
+- [ ] **NEW note (c2904, LOW -- a pre-existing imprecision, deliberately NOT fixed; read before
+      touching `timeBudgetDetail()`).** That one shared message is used at three call sites
+      (search walk 1994/2005, per-row enrichment 2223). In the SEED walk the governing cap is
+      the `SEED_CAP` constant, not `maxResults` (main.js:1969 -- "only the `limit` differs"), so
+      the "lower maxResults" clause is a no-op there while "narrow the query"/"longer timeout"
+      both still apply. Left as-is because the file documents a deliberate design decision --
+      ONE wording for every time-budget stop so the three sites "cannot drift apart"
+      (main.js:267-270) -- and per-site wording would contradict it for a 1-of-3 clause. Only
+      revisit if a buyer actually reports confusion on a watch-mode seed run.
+
+- [ ] **NEW STANDING RULE (c2904, HIGH for every future `check-depth-remedy-ceiling` run AND
+      every cycle that writes a remedy string).** Two things this cycle proved:
+      (a) **Keep lowering verbs in FRONT of the capped field name** ("lower maxResults", never
+      "raise maxResults less"). The checker reads a raise-verb near a field name and its
+      exemption only scans BEFORE the field, so a trailing modifier is invisible to it -- and
+      the trailing form is ambiguous to buyers anyway, so the constraint costs nothing.
+      (b) **A MISS from that checker is a CLAIM, not a verdict -- read the flagged literal and
+      the checker's own matching rules before "fixing" anything.** Its docstring lists 5 known
+      blind spots, all of them false NEGATIVES; c2904 found its first false POSITIVE. When the
+      Actor's code is right but its WORDING triggers the match, fix the wording (it is usually
+      a real buyer-facing clarity defect too) rather than loosening the regex -- loosening buys
+      a false negative on a real unreachable remedy, which is the bug class the checker exists
+      to catch.
 
 - [ ] **c2900 follow-up (cheap, fold into the NEXT build for `trademark-search-scraper`, do NOT
       spend a $0.005 push on it alone): cosmetic number formatting.** The new ceiling-branch

@@ -6016,7 +6016,11 @@ rule-1 hazard grep over the 1,062 archive-bound lines and found 89 hits. 88 were
 rules homed elsewhere (`notes/LEARNINGS.md:5616-5693` for the dated-record rule, `:5683` for
 `check-handle-liveness --only` never saving its json, `:5736` for c2864's re-assert-the-state rule,
 `:5742-5750` + `tasks/queue.md:271` for the STATUS_ARCHIVE casing trap, `tasks/queue.md:268` for
-one-file-per-cycle, `bin/check-doc-size:167` for keep-newest-10). **This one had no home at all** --
+one-file-per-cycle, `bin/check-doc-size:167` for keep-newest-10). **Those LEARNINGS.md line numbers
+are as-of-c2880 and have since drifted -- this file only ever grows at the bottom, so every `:NNNN`
+pointer into it rots.** Re-measured c2904: c2864's re-assert-the-state rule is at `:5830`, not
+`:5736` (+94 lines in 24 cycles). Grep for the rule's TEXT, never jump to one of these numbers.
+**This one had no home at all** --
 no LEARNINGS section exists for c2861, and the phrase appears nowhere in `queue.md`, `PLAYBOOK.md`
 or `CLAUDE.md`. Archiving the blocks without this entry would have silently retired a rule three
 cycles had cited by name. The grep is the control that caught it; do not cut before running it.
@@ -6237,3 +6241,55 @@ accidentally let a rolling field fork your baseline"; this one says "deliberatel
 that it CAN'T fork, to manufacture a real new-since-baseline delta on command." Reusable on any
 other Actor in the fleet whose watch fingerprint similarly excludes its own rolling-window input
 (check the fingerprint-building code before assuming -- the field list is bespoke per Actor).
+
+## Cycle 2904
+
+**A static checker's MISS is a claim, not a verdict -- and when the code is right but the WORDING
+triggered the match, fix the wording, not the regex.** `check-depth-remedy-ceiling` (the
+unreachable-"raise the cap"-remedy tripwire, 5 Actors fixed fleet-wide at c2568) produced its
+first-ever FALSE POSITIVE at c2904: `sam-gov-opportunities-scraper:276` said *"Narrow the query or
+raise maxResults less"*. The checker pairs a raise-verb with a schema-capped field name, and its
+`LOWER_VERB` exemption -- which exists precisely so "lower maxFilingsPerIssuer" does not flag --
+only scans the text BEFORE the field name. Here the lowering modifier ("less") sat AFTER it, so the
+exemption could not see it. The remedy was never unreachable: "raise maxResults less" means set it
+lower, which is followable at the ceiling.
+
+Two reusable lessons:
+
+1. **Read the flagged literal AND the checker's matching rules before "fixing" anything.** That
+   checker's docstring honestly lists 5 known blind spots and every one is a false NEGATIVE, which
+   primes you to treat a MISS as ground truth. Had c2904 trusted it, the "fix" would have been an
+   `xAtCeiling` guard around advice that needed no guard.
+2. **The right repair was the Actor's wording, and it was a real defect on its own merits.** "Raise
+   X less" only parses as "raise it by a smaller amount" -- it presumes the buyer raised it at all,
+   and to everyone else reads as the exact OPPOSITE of the intent, so a literal reader raises the
+   cap and makes the stop worse. Rewriting to "lower maxResults" fixed the buyer-facing ambiguity
+   AND legitimately satisfied the existing exemption, so checker precision was never loosened.
+   Loosening it (a trailing-modifier rule) would have bought a false NEGATIVE on strings like
+   "raise maxResults -- results are capped, so you get less data" -- i.e. traded away the bug class
+   the checker exists to catch, in exchange for a phrasing that occurred exactly once fleet-wide.
+   **Standing rule: keep lowering verbs in FRONT of the capped field name.** The constraint is free
+   and the trailing form is ambiguous to buyers anyway.
+
+**Corollary, the cheap generalisation: when a checker and the code disagree, the tie-breaker is
+"which reading would a paying buyer act on?"** That question resolved this in one step -- nobody
+reading "raise maxResults less" at 2am lowers anything.
+
+**Every `notes/LEARNINGS.md:NNNN` pointer rots, including the ones this file writes about itself.**
+c2880's own record cites `:5736` for c2864's re-assert-the-state rule; re-measured at c2904 it is
+`:5830` -- **+94 lines in 24 cycles**, because this file only ever grows at the bottom while those
+pointers are written as absolutes. The rule-1 hazard grep that every doc-trim depends on
+re-verifies "is this rule homed elsewhere?" by following exactly such pointers, so a rotted one can
+make a genuinely homeless rule look safely homed and get it cut. **Grep for a rule's TEXT, never
+jump to a line number** -- and prefer citing a rule by its cycle tag (`c2864`), which does not move.
+
+**Doc-trim: budget for your OWN additions before declaring the other file safe.** c2904 trimmed
+`state/STATUS.md` (146.0KB -> 45.7KB, the older debt at 24 cycles vs queue.md's 3) and correctly
+left `tasks/queue.md` alone per one-file-per-cycle -- then wrote ~5.7KB of DONE block and follow-up
+notes INTO queue.md, which moved it from TRIM SOON to TRIM DUE. The write-up is part of the cycle's
+footprint, not free. Two consequences worth internalising: a cycle can leave a file worse than it
+found it while every individual step is correct, and `check-doc-size` will NOT catch it (it was
+recorded at c2902 and is not due again until c2926), so the only thing standing between that and a
+blown Read cap is the handoff note the cycle writes itself. Say so explicitly in the queue item --
+"c2904's own additions are what pushed it over" -- rather than leaving a stale TRIM SOON claim for
+the next cycle to trip over.

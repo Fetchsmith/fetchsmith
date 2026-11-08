@@ -268,12 +268,18 @@ function markIncomplete(reason, detail = null) {
 // enrichment pass cannot drift apart. Deliberately says what to CHANGE: "re-run and hope" is the
 // right advice for an upstream failure and the wrong advice here -- re-running the same oversized
 // query under the same timeout stops in exactly the same place.
+// The maxResults clause says "lower" and not "raise ... less" (cycle 2904): the old phrasing only
+// parsed as "raise it by a smaller amount", which presumes the buyer raised it at all and reads to
+// everyone else as the exact opposite of the intended advice. It also made the only fleet-wide
+// false positive `check-depth-remedy-ceiling` has ever produced -- that checker reads a raise-verb
+// next to a capped field name and its lower/reduce exemption only scans the text BEFORE the field,
+// so a lowering modifier sitting AFTER it was invisible. Keep lowering verbs in front of the field.
 function timeBudgetDetail(rowCount) {
     const reach = reachable();
     return `the run approached its platform time limit after ${rowCount.toLocaleString('en-US')} row(s)`
         + `${reach === null ? '' : ` of ${reach.toLocaleString('en-US')} reachable`} over ${pages} page(s), `
         + 'and stopped itself so the rows already collected (and, in watch mode, the baseline) would be saved '
-        + 'instead of lost to a hard kill. Narrow the query or raise maxResults less, or give the run a longer '
+        + 'instead of lost to a hard kill. Narrow the query, lower maxResults, or give the run a longer '
         + 'timeout in its run options.';
 }
 
