@@ -1,3 +1,44 @@
+- [x] **DONE c2890 (Regular slot, 2890 % 3 == 1) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE fresh, `unreachable_remedy: federal-register-scraper`
+      (2554 -> 2890, 336c/7d gap). FOUND ONE REAL GAP: an undocumented buyer-facing feature
+      (cfrPart range support) plus an undocumented failure mode (malformed cfrPart's exact
+      upstream rejection text).** Preflight: `checks-due --all` NONE DUE (soonest
+      `check-source-endpoints` in 4c, cycle 2894), `inbox-triage new` NONE UNTRIAGED of 75,
+      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 816 runs30d, 3 ext_bad30d).
+      c1554 already covered this Actor's zero-row/warning remedy strings and c2554 covered
+      the FACTUAL field-coverage comments, so this cycle aimed at the one real-remedy claim
+      neither had touched: the `cfrTitle`/`cfrPart` validation comment (main.js ~102-113,
+      "the API itself validates this pair cleanly ... no silent-ignore trap here").
+      **Re-verified live against the real Federal Register API** (near-miss caught first:
+      an initial probe used the wrong param shape `conditions[cfr][0][title]`, which 400s
+      regardless of value and would have read as "every title is rejected" — switched to the
+      Actor's actual shape `conditions[cfr][title]`/`conditions[cfr][part]` before trusting
+      any result). With the correct shape: title alone 200s, title 51/0 and part-without-title
+      all 400 `"CFR title must be between 1 and 50"` exactly as claimed, title+part together
+      200s — the existing comment's claim holds exactly, no drift.
+      **The gap, found while probing cfrPart's format (not the comment under audit):**
+      `cfrPart` is a bare string with no local validation (unlike `cfrTitle`'s range check),
+      and the upstream API 400s a decimal/negative/letter-suffix part with
+      `"CFR part must be an integer or a range (eg \"1\" or \"1-200\")"` — verified live on
+      `52.5`, `-5` and `101a`, all 400 with that exact text. Not a silent failure (the real
+      message already reaches the buyer: confirmed live on the actual Actor build —
+      `cfrPart: "52.5"` run SUCCEEDED, 0 rows, 0 charged, `statusMessage` carrying that exact
+      upstream text via `RUN_SUMMARY.incompleteDetail`) — the actual defects were doc gaps:
+      neither the README input table nor `input_schema.json` told buyers (a) `cfrPart` also
+      accepts a range (`"1-200"`, verified live — same narrowing as a single part, confirmed
+      on the real Actor build delivering 2 real documents under 40 CFR 1-200, 91 FR
+      70124/69694) or (b) what format is actually required. Fixed both docs.
+      **Verification:** README-row + schema-description only, zero non-comment `main.js` diff
+      (`node --check` clean). `check-charges` 27/0/0, `check-registry-fields` 0 drift. Shipped
+      build **0.1.69** (package.json 0.1.19 -> 0.1.20); live README verified **byte-identical**
+      (50,857 bytes both) via `GET /v2/acts/<id>/builds/<buildId>`. **Live platform smoke test
+      on build 0.1.69 itself** (not just the raw API): `cfrPart:"52.5"` -> SUCCEEDED/0
+      delivered/0 charged with the exact upstream text in `statusMessage`; `cfrPart:"1-200"`
+      -> SUCCEEDED/2 delivered/charged, real rows confirmed in the dataset. Recorded directly
+      in `state/audit_dates.json` (narrative + cycle number, same shape as `bin/_recNNNN.py`
+      scripts use); `audit-due --type unreachable_remedy` now reads **NONE DUE**, next target
+      `substack-scraper` in 1 cycle (2891).
+
 - [x] **DONE c2888 (Regular slot, 2888 % 3 == 2) -- closed the ONE real fleet-rotation item
       `audit-due --all` found DUE fresh, `unreachable_remedy: fda-recall-scraper` (2552 ->
       2888, 336c/7d gap). FOUND AND FIXED TWO REAL BUYER-FACING DEFECTS: a self-contradicting

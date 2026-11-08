@@ -126,7 +126,7 @@
         "cfrPart": {
             "title": "CFR part",
             "type": "string",
-            "description": "Filter to documents that affect this specific part within the CFR title above (e.g. \"60\" for 40 CFR Part 60, New Source Performance Standards). Requires cfrTitle to be set \u2014 the underlying API has no title-less part lookup and 400s on one.",
+            "description": "Filter to documents that affect this specific part within the CFR title above (e.g. \"60\" for 40 CFR Part 60, New Source Performance Standards), or a range like \"1-200\". Requires cfrTitle to be set \u2014 the underlying API has no title-less part lookup and 400s on one. Must be a plain integer or integer range: a decimal, negative number or letter suffix is rejected by the API itself (\"CFR part must be an integer or a range\") and the run fails with that message rather than matching nothing.",
             "editor": "textfield"
         },
         "order": {
