@@ -358,6 +358,39 @@ function timeBudgetOk() {
   return true;
 }
 
+// Cycle 2924 (the fleet-wide follow-up filed by uk-find-a-tender-scraper c2815): the run budget
+// above is SHARED by every company in the list, and nothing stopped the company being fetched
+// right now from spending all of it. One unreachable board is worth up to 3 outer attempts x a
+// 30s first-byte timeout, so on a default 180s run a single dead company starves every company
+// after it -- measured on this Actor before the fix, with `greenhouse:airbnb` pointed at a
+// blackhole: `ashby:ramp` (healthy, answers in ~1s, data sitting right there) was NEVER ASKED
+// and the run delivered 0 rows. Hold back a reserve for each company that has not been tried
+// yet and cut the current company off once it has spent down to that reserve. Scoped to
+// NOT-YET-TRIED companies only, and never more than half of what is left, so the reserve cannot
+// starve the current company instead (the same bug pointed the other way) and the last company
+// in the list still gets the whole remainder.
+const SIBLING_RESERVE_MS = 30_000;
+let siblingReserveMs = 0;
+// What the CURRENT company is allowed to spend. Every request clamp below reads this instead of
+// remainingMs(); the two are identical once no untried company is left (siblingReserveMs === 0).
+function fetchBudgetMs() { return remainingMs() - siblingReserveMs; }
+function setSiblingReserve(untried) {
+  // Math.floor is NOT cosmetic: the half-of-what-is-left cap below produces a fractional
+  // millisecond count, and both `timeout.request` and `AbortSignal.timeout()` reject a
+  // non-integer delay by THROWING SYNCHRONOUSLY ("The value of \"delay\" is out of range")
+  // instead of timing out -- i.e. an un-floored reserve fails every request of every board
+  // instantly. Caught by the forced-starvation test on the first draft of this fix (c2924).
+  siblingReserveMs = Math.floor(Math.min(Math.max(untried, 0) * SIBLING_RESERVE_MS, Math.max(remainingMs(), 0) / 2));
+}
+// A company cut off to protect its siblings is NOT the same failure as a board that did not
+// answer: the board may be perfectly healthy and simply never got asked in time. Tagged so the
+// per-company catch can report it as its own cause instead of blaming the board.
+function siblingCutError() {
+  const e = new Error('cut off to protect the remaining companies\' share of the run time budget');
+  e.siblingCut = true;
+  return e;
+}
+
 let pushed = 0;
 // Set when the platform refuses a charge (the run's pay-per-event budget is already spent), which
 // produces a zero-row run on a perfectly healthy board — a cause the zero-row status message below
@@ -444,14 +477,23 @@ const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop
 async function requestWithRetry(opts) {
   let lastErr;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
-    const left = remainingMs();
+    // `fetchBudgetMs()`, not `remainingMs()`: what is left for THIS company, after the reserve
+    // held back for companies that have not been tried at all yet (c2924).
+    const left = fetchBudgetMs();
     if (left <= MIN_REQUEST_MS) {
-      timeBudgetExceeded = true;
-      throw lastErr ?? new Error('run time budget exhausted before the request could be made');
+      if (remainingMs() <= MIN_REQUEST_MS) {
+        timeBudgetExceeded = true;
+        throw lastErr ?? new Error('run time budget exhausted before the request could be made');
+      }
+      // Time is left in the run, just not for this company: stop it, keep the rest for the
+      // untried companies. Reported as its own cause, never as a board that failed to answer.
+      throw lastErr ?? siblingCutError();
     }
     const wantedMs = opts.timeout?.request ?? 30000;
     const wantedRetries = opts.retry?.limit ?? 2;
-    const perRequest = Math.max(MIN_REQUEST_MS, Math.min(wantedMs, left));
+    // Floored for the same reason as the sibling reserve: a fractional delay throws instead of
+    // timing out, so every ms figure that reaches got or AbortSignal must be an integer (c2924).
+    const perRequest = Math.floor(Math.max(MIN_REQUEST_MS, Math.min(wantedMs, left)));
     // got applies `timeout.request` per attempt, so `limit: 2` is worth 3x that wall-clock.
     // Allow only as many attempts as fit in what's left.
     const retryLimit = Math.max(0, Math.min(wantedRetries, Math.floor(left / perRequest) - 1));
@@ -468,9 +510,9 @@ async function requestWithRetry(opts) {
       });
     } catch (e) {
       lastErr = e;
-      if (attempt < 3 && remainingMs() > MIN_REQUEST_MS) {
+      if (attempt < 3 && fetchBudgetMs() > MIN_REQUEST_MS) {
         log.warning(`${opts.url}: attempt ${attempt}/3 failed (${e.message}) — retrying.`);
-        await new Promise((r) => setTimeout(r, Math.min(attempt * 1000, Math.max(0, remainingMs() - MIN_REQUEST_MS))));
+        await new Promise((r) => setTimeout(r, Math.floor(Math.min(attempt * 1000, Math.max(0, fetchBudgetMs() - MIN_REQUEST_MS)))));
       }
     }
   }
@@ -1434,6 +1476,7 @@ const notFoundCompanies = [];
 const erroredCompanies = [];
 const partialCompanies = []; // Workday: a later page failed after retries, so this company's jobs are an undercount, not a clean zero
 const skippedCompanies = []; // never even attempted -- maxResults was already reached by an earlier company in the list
+const cutOffCompanies = []; // c2924: stopped early (or never asked) to protect the untried companies' share of the run time budget
 let runError = null;
 // Board sizes before filters, and how many postings passed passesFilters, summed over every
 // company. A zero-row run has to tell "no board answered" apart from "the boards are empty" and
@@ -1446,10 +1489,18 @@ try {
   for (let companyIndex = 0; companyIndex < companies.length; companyIndex += 1) {
     const { ats, slug } = companies[companyIndex];
     if (!timeBudgetOk()) { log.warning('Time budget nearly exhausted — stopping before remaining companies.'); break; }
+    // Reserve a share of what is left for every company after this one that has not been tried
+    // at all yet, so this one cannot spend the whole budget (c2924).
+    setSiblingReserve(companies.length - companyIndex - 1);
     let result;
     try {
       result = ats === 'auto' ? await fetchAuto(slug) : await FETCHERS[ats](slug);
     } catch (e) {
+      if (e?.siblingCut) {
+        log.warning(`${ats}:${slug} — ${e.message}; the companies after it in your list keep their share.`);
+        cutOffCompanies.push({ ats, slug });
+        continue;
+      }
       log.warning(`${ats}:${slug} — fetch failed (${e.message}), skipping this company.`);
       erroredCompanies.push({ ats, slug, error: e.message });
       continue;
@@ -1544,6 +1595,10 @@ try {
     // A seeding run pushes nothing, so the maxResults stop above can never fire for it.
     if (seeding && watchSeen.size >= SEED_CAP) break;
   }
+  // Nothing after the company walk is a sibling's competitor, so the reserve must not survive it
+  // (the status-message and webhook calls below have to run on whatever time is actually left).
+  siblingReserveMs = 0;
+  if (cutOffCompanies.length) log.warning(`Cut off to protect the remaining companies' time budget (run not failed): ${cutOffCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
   if (notFoundCompanies.length) log.warning(`Not found / not on this ATS (skipped, run not failed): ${notFoundCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
   if (erroredCompanies.length) log.warning(`Fetch errors (skipped, run not failed): ${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
   if (partialCompanies.length) log.warning(`Partial results (a page fetch failed after retries, so fewer postings than actually exist): ${partialCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}`);
@@ -1555,6 +1610,7 @@ try {
   // the error, let the tail of the script persist the baseline, and fail at the very end instead.
   log.exception(err, 'Run failed');
   runError = err.message;
+  siblingReserveMs = 0;
 }
 
 // WATCH_KEEP record-cap eviction (h285): empty unless something was actually dropped, so it
@@ -1594,10 +1650,14 @@ if (watchMode && !skipBaselineSave) {
     );
     // A board that failed to answer during the seed contributes nothing to the baseline, so its
     // entire current board would come back as "new" (and billable) on the next run. Say so.
-    if (erroredCompanies.length) {
+    // c2924: a company cut off to protect its siblings' time budget leaves exactly the same hole
+    // in the baseline as a board that failed to answer — its whole board comes back as "new" (and
+    // billable) next run — so it belongs in this warning too.
+    if (erroredCompanies.length || cutOffCompanies.length) {
       log.warning(
-        `Baseline is INCOMPLETE for: ${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')} — those boards `
-        + 'failed to respond during this seeding run, so their currently-open postings are not in the baseline and '
+        `Baseline is INCOMPLETE for: ${[...erroredCompanies, ...cutOffCompanies].map((c) => `${c.ats}:${c.slug}`).join(', ')} — those boards `
+        + 'did not finish during this seeding run (no response after retries, or cut off to protect the other '
+        + 'companies\' time budget), so their currently-open postings are not in the baseline and '
         + 'will be returned as new next run. Re-run the baseline (delete the record above from the '
         + `"${WATCH_STORE}" key-value store) if you want a clean start.`,
       );
@@ -1663,7 +1723,7 @@ function zeroRowCauses() {
   // Only safe to claim the boards are empty when every one of them was actually reached: a run
   // that failed outright, or stopped early on its time budget, never saw the rest of the list.
   if (totalRawPostings === 0 && !notFoundCompanies.length && !erroredCompanies.length
-    && !runError && !timeBudgetExceeded && companies.length > 0) {
+    && !cutOffCompanies.length && !runError && !timeBudgetExceeded && companies.length > 0) {
     causes.push('the board(s) answered but have no open postings at all right now');
   }
   if (chargeBlocked) {
@@ -1672,7 +1732,16 @@ function zeroRowCauses() {
   // A partial board hides postings in the zero-row case too: the page that failed could have held
   // the only posting that passed the filters, so "nothing matched" is not a safe reading either.
   if (partialCompanies.length) causes.push(partialCause());
+  if (cutOffCompanies.length) causes.push(cutOffCause());
   return causes;
+}
+// Shared by zeroRowCauses() and pushedCauses() (c2924). The remedy is deliberately NOT "re-run":
+// a re-run of the same list hits the same slow company first and lands in the same place.
+function cutOffCause() {
+  return `${cutOffCompanies.length} of the ${companies.length} compan(ies) you listed (${cutOffCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) `
+    + 'were stopped early so the companies after them in your list would still get a share of the run time budget — '
+    + 'an earlier company in the list was answering too slowly to fit everyone in. Their postings are missing from '
+    + 'this result: raise the run timeout, or put the slow company in its own run';
 }
 // Shared by zeroRowCauses() and pushedCauses() — the sentence is true either way, because the
 // consequence of a dropped page is the same whether 0 or 50 postings came back from the rest.
@@ -1693,6 +1762,7 @@ function pushedCauses() {
     causes.push(`${erroredCompanies.length} compan(ies) failed to answer after retries (${erroredCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}), so their postings are missing from this result — re-run to retry just those`);
   }
   if (partialCompanies.length) causes.push(partialCause());
+  if (cutOffCompanies.length) causes.push(cutOffCause());
   if (skippedCompanies.length) {
     const maxResultsAtCeiling = maxResults >= 100000;
     const remedy = maxResultsAtCeiling

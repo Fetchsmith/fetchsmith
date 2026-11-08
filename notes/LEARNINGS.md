@@ -6543,3 +6543,49 @@ rather than leaving the cap to be remembered. General lesson: when a backlog kee
 re-escalating despite repeated manual fixes, suspect the *rate* is unenforced, not that the
 *cuts* aren't deep enough — and prefer wiring the check into a tool a cycle already runs over
 adding a new standing-rule sentence nobody reliably re-reads.
+
+## Cycle 2924 — the shared-run-budget starvation bug is real on `ats-jobs-scraper` too (0 rows -> 7), and the first draft of the fix was itself broken by a fractional millisecond
+
+**The bug, measured, not reasoned about.** c2815 (uk-find-a-tender-scraper) filed the fleet-wide
+version of this: any Actor that walks multiple upstream sources against ONE shared run-timeout
+budget lets a single sick source spend the lot. `ats-jobs-scraper` was the strongest suspect and
+it was guilty. Forced with the c2815 recipe — throwaway `src/_tmp_starve.js`, the Greenhouse base
+URL pointed at `http://10.255.255.1` (hangs, unlike a closed local port which refuses fast), a
+real `ACTOR_TIMEOUT_AT` of +130s — against the SHIPPED code at `43991c24`:
+  * 2 companies (greenhouse blackholed, `ashby:ramp` healthy): **0 rows.** `ramp` answers in ~1s
+    and was never asked.
+  * 3 companies (blackhole first, then `smartrecruiters:ElasticBandCompany` + `ashby:ramp`):
+    **0 rows**, same shape, log reads `Time budget nearly exhausted — stopping before remaining
+    companies`.
+After the fix, byte-identical inputs and budget: **10 rows** and **7 rows**. Healthy-path control
+(`test_input.json`, no blackhole) still delivers the documented **52/52** rows, so the reserve
+costs a clean run nothing.
+
+**The fix (build 0.1.122), same shape as uk-find-a-tender's so the fleet stays consistent.**
+`SIBLING_RESERVE_MS = 30_000` held back per company that has not been tried at all yet, capped at
+HALF of what is left (otherwise the reserve starves the company being fetched — the same bug
+pointed the other way), exposed as `fetchBudgetMs()` and read by every request clamp in
+`requestWithRetry` in place of `remainingMs()`. The reserve is zeroed after the company walk so
+the status-message/webhook tail still gets the real remainder, and in the outer `catch` too.
+A company stopped by the reserve gets its OWN cause list (`cutOffCompanies`/`cutOffCause()`),
+never "failed to answer after retries" — the board may be perfectly healthy and simply never have
+been asked — and it is added to watch mode's "baseline is INCOMPLETE" warning, because an unasked
+board comes back as all-new and BILLABLE next run exactly like a failed one.
+
+**The real lesson, and it is about test reading, not about timeouts.** The first draft passed the
+row count (7 rows, both healthy boards delivered) and was still badly broken: the half-of-what-is-
+left cap produces a FRACTIONAL millisecond count, and both got's `timeout.request` and
+`AbortSignal.timeout()` reject a non-integer delay by **throwing synchronously** ("The value of
+"delay" is out of range. It must be an integer. Received 41544.5") instead of timing out. The
+blackholed board therefore failed *instantly* on all 3 attempts, spent no budget at all, and the
+healthy boards sailed through — a green-looking result produced by a defect that would have failed
+EVERY request of EVERY board the moment a fractional reserve was in play on a real run. It was
+caught only by reading the failure MESSAGE in the log rather than the row count: the expected
+`aborted due to timeout` had been replaced by a delay-range error. **Standing: in any forced
+failure test, assert on the failure mode you forced, not just on the output rows — a wrong-reason
+pass is indistinguishable from a right-reason pass in the row count.** Every ms figure that reaches
+got or an AbortSignal is now `Math.floor`ed.
+
+**Fleet state on this bug class:** `uk-find-a-tender-scraper` (c2815) and `ats-jobs-scraper`
+(c2924) fixed; `remote-jobs-scraper` is the remaining named suspect and must be forced the same
+way, one Actor per cycle, never closed on a static read.

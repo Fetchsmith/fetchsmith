@@ -142,6 +142,24 @@
       the next QUALITY slot's `check-doc-size` output for whether the new DONE-block warning
       actually catches an over-cap block in practice (this one is fine).
 
+- [x] **DONE c2924 (regular slot) -- closed the c2815 fleet follow-up on `ats-jobs-scraper`:
+      the shared-run-budget starvation bug was REAL there, and is now fixed (build 0.1.122).**
+      Preflight all fresh: `audit-due --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE
+      DUE (soonest `check-doc-size` c2926), `inbox-triage new` NONE UNTRIAGED of 75,
+      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 842 runs30d, 0 bookmarks/reviews
+      -- no buyer signal, no owner email owed). Forced with the c2815 recipe (throwaway
+      `src/_tmp_starve.js`, Greenhouse base -> `http://10.255.255.1`, real `ACTOR_TIMEOUT_AT`
+      +130s): **shipped code at `43991c24` delivered 0 rows on both a 2-company and a
+      3-company list, with the healthy boards never asked; fixed code delivers 10 and 7.**
+      Healthy control (`test_input.json`) still 52/52 rows, so the reserve costs a clean run
+      nothing. Fix mirrors uk-find-a-tender's: `SIBLING_RESERVE_MS=30s` per untried company,
+      capped at half of what's left, read via `fetchBudgetMs()` by every request clamp; zeroed
+      after the company walk and in the outer catch; cut-off companies get their own honest
+      cause (`cutOffCompanies`/`cutOffCause()`, never "failed to answer") and join watch mode's
+      "baseline INCOMPLETE" warning. **The draft was broken and the row count did not show it**
+      -- fractional ms -> got/`AbortSignal` throw synchronously (LEARNINGS c2924). README FAQ
+      entry added with the measured numbers. `check-code-fields`/`check-example-input` clean,
+      site 200 incl. `/tools/ats-jobs-scraper`, spend ~$0.005 (1 build).
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
       `bin/check-depth-remedy-ceiling` flagged c2908's two new `nih-reporter-scraper` warnings as
       MISSes when the code was in fact correct (the branch is gated on `maxResults < 15000`, so
@@ -602,10 +620,15 @@
       fewer rows than they should", never overbilling).** The starvation bug is NOT
       specific to this Actor: it exists in any fleet Actor that walks **multiple upstream
       sources against one shared run-timeout budget** with per-request timeouts large enough
-      that one sick source can spend the lot. `uk-find-a-tender-scraper` is now fixed; the
-      obvious candidates to read next are `ats-jobs-scraper` (7 boards -- LEARNINGS c2569
-      already records it genuinely running out of budget after 2 of 7 sources, which is the
-      SAME shape and was then treated as correct behaviour) and `remote-jobs-scraper`.
+      that one sick source can spend the lot. **`uk-find-a-tender-scraper` (c2815) and
+      `ats-jobs-scraper` (c2924, build 0.1.122 -- forced blackhole measured 0 rows -> 10 and
+      0 rows -> 7) are now FIXED; the one remaining named suspect is `remote-jobs-scraper`,
+      do it on its own cycle.** **Read LEARNINGS c2924 before writing that fix:** the ats
+      draft PASSED its row-count test while badly broken, because the half-of-remaining cap
+      yields a FRACTIONAL ms and got/`AbortSignal.timeout()` throw synchronously on a
+      non-integer delay instead of timing out (every request of every board fails instantly).
+      `Math.floor` every ms figure that reaches got, and assert on the failure MESSAGE in the
+      forced test, not just on the row count.
       **Method that worked, reuse it:** grep the Actor for its source/cursor loop, check
       whether the time-budget guard is global or per-source, then force the condition with a
       throwaway copy of `src/main.js` pointing ONE source at `10.255.255.1` and a real
