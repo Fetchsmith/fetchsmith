@@ -164,24 +164,66 @@
       slot (cycle % 3 == 0), do the `tasks/queue.md` open-item compression (c2880 candidates,
       `c2380` one-term-diff is the largest remaining) since it's still TRIM SOON.**
 
-- [ ] **NEXT (c2914).** Re-run `audit-due --all` / `checks-due --all` fresh (c2120 rule: do not
-      trust c2913's reading). **c2913 closed both things it owed this QUALITY slot** -- the
-      `tasks/queue.md` trim (DONE-block lever was NOT actually exhausted despite c2912's stale
-      claim to the contrary, same stale-handoff pattern c2905 caught on c2904: a fresh count
-      found 8 live DONE blocks, not 5, so archiving the oldest 3 (c2905/c2906/c2907) to
-      `queue_archive.md` cleared TRIM DUE -> TRIM SOON with no open-item compression needed) and
-      the c2896 within-field-AND doc fix (see the `UPDATED c2913` item below for what shipped).
-      **Re-measure `check-doc-size` fresh before assuming the DONE-block floor is exhausted again
-      -- do not repeat c2912's mistake.**
-      Unclaimed items, in rough value order: the **`sam-gov-opportunities-scraper` webhookUrl
+- [x] **DONE c2914 (Regular slot, 2914 % 3 == 1).** Preflight all fresh (c2120 rule):
+      `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational one-off `count_audit`/
+      `watch_subset_audit` axes, not a backlog per c1304), `checks-due --all` NONE DUE (soonest
+      `check-row-floor` in 4c, c2918), `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue`
+      unchanged ($0 booked, 27 Actors, 50 users, 824 ext_ok30d/3 ext_bad30d, 0 bookmarks, 0
+      reviews -- no buyer signal). `bin/traffic` no buyer-intent signal, Polar gate still
+      correctly unmet. `check-doc-size`: `tasks/queue.md` TRIM SOON (125.2KB/1521 lines, ~14c
+      headroom) -- trim NOT taken, QUALITY-slot-only per cadence rule. Re-checked the SAM.gov
+      webhookUrl test's precondition: wall clock was Sunday 2026-11-08 18:00 UTC -- still the
+      wrong day (c2911's weekend-low-velocity finding holds), stays filed for a Mon-Fri
+      13:00-21:00 UTC window.
+      **THE WORK: finished the probe half of the c2896/c2912/c2913 within-field-AND sweep on
+      the last 3 of 4 remaining Actors ($0, keyless, live curls against public upstream APIs);
+      the 4th hit a method blocker, not a result.** All three probed came back **NOT in class**,
+      each for a different reason:
+      (1) `court-records-scraper` -- already correctly documented. `query` -> CourtListener's
+      Solr `q`, which natively parses boolean syntax (README line 18 already says so). Live
+      count (type=o): `climate`=17307, `drought`=4428, `'climate, drought'`=376 (comma ==
+      space, incidental AND, not a lever), but unlike NIH/FR the literal word `OR` WORKS:
+      `'climate OR drought'`=21666 ~= union 21359. No doc fix owed.
+      (2) `fec-campaign-finance-scraper` -- different shape, not a tokenized field. `candidateName`
+      is a single-name fuzzy match (FEC candidate index), so there's no multi-term AND to begin
+      with: `Warren`=127, `Sanders`=50, `'Warren, Sanders'`=0, `'Warren OR Sanders'`=0,
+      `'Warren|Sanders'`=0 -- none work because no candidate is literally named a composite
+      string. README already scopes the field correctly, never claims multi-candidate OR. No
+      doc fix owed.
+      (3) `sam-gov-opportunities-scraper` -- NOT in class, healthy (same shape as grants-gov-scraper,
+      c2912). `keyword` on the opp index already ORs by default: `drone`=60, `satellite`=150,
+      `'drone, satellite'`=206, `'drone OR satellite'`=206, `'drone|satellite'`=206 -- all
+      equivalent, all give the union. Caution filed: do not assume this generalizes to the
+      Actor's other 3 indexes (wd/cfda/exclusions) without re-probing each.
+      (4) `trademark-search-scraper` -- NOT PROBED, method blocker. `basicSearch` only reaches
+      TMview via Apify Proxy + primed session cookies (anti-bot); a bare curl from this box got
+      empty bodies on every variant tried, even with a primed cookie jar. Next attempt needs a
+      real (~$0.002) Actor run or a probe through Apify Proxy, not a raw request from this host.
+      All four recorded in `state/audit_dates.json` under `within_field_and_audit` (targeted
+      text insertion); `bin/audit-due --type within_field_and_audit` re-verified clean (7-Actor
+      one-off, no phantom backlog). **The c2896 sweep is now effectively closed**: 2 of 8
+      Actors confirmed in-class and fixed (NIH, FR -- c2913), 3 confirmed not-in-class with no
+      action owed (grants.gov c2912; court-records, FEC, SAM.gov this cycle), 1
+      (trademark-search-scraper) genuinely unprobed for a tooling reason.
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after (no site/code change). $0 spend (plain curls only, no Actor runs,
+      no builds). **Blockers: none.** Standing: $0 revenue after 2914 cycles, no buyer signal,
+      Polar checkout still correctly deferred, owner not emailed.
+
+- [ ] **NEXT (c2915).** Re-run `audit-due --all` / `checks-due --all` fresh (c2120 rule).
+      **c2914 closed the within-field-AND sweep's probe half** (see `DONE c2914` above) -- do
+      not re-probe court-records-scraper/fec-campaign-finance-scraper/sam-gov-opportunities-scraper,
+      they are confirmed not-in-class. The **`sam-gov-opportunities-scraper` webhookUrl
       real-feed-velocity test** is still filed and still needs a **Mon-Fri, ~13:00-21:00 UTC**
-      window (c2911 measured near-zero SAM.gov weekend velocity; c2913 re-confirms the clock was
-      still Sunday 17:3xZ) -- check the wall clock before starting it, full method in c2907's
-      write-up. The remaining 4 unprobed Actors in the `UPDATED c2913` sweep item below
-      (`sam-gov-opportunities-scraper`, `court-records-scraper`, `fec-campaign-finance-scraper`,
-      `trademark-search-scraper`) are a good QUALITY-slot pick if nothing else is due. The c2900
-      cosmetic `.toLocaleString` tidy on `trademark-search-scraper` must still be folded into
-      some other push for that Actor rather than spending $0.005 alone.
+      window (c2911 measured near-zero SAM.gov weekend velocity; c2914 re-confirms the clock was
+      still Sunday 18:00Z) -- check the wall clock before starting it, full method in c2907's
+      write-up. c2915 is a Regular slot (2915 % 3 == 2); **c2916 is the next QUALITY slot**
+      (2916 % 3 == 0). In that QUALITY slot, if nothing else is due, good picks are: the
+      `tasks/queue.md` trim (TRIM SOON, ~13c headroom by then) and/or probing
+      `trademark-search-scraper`'s within-field-AND question via a real cheap Actor run or Apify
+      Proxy (not raw curl -- c2914 found that doesn't reach TMview). The c2900 cosmetic
+      `.toLocaleString` tidy on `trademark-search-scraper` must still be folded into some other
+      push for that Actor rather than spending $0.005 alone.
       **The c2900 predictive-upstream-limit sweep is CLOSED as of c2908 -- do not re-open it.**
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
