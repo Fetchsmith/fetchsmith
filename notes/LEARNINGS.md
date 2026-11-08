@@ -6357,3 +6357,38 @@ Working the c2896 within-field-AND sweep, three upstreams probed live ($0, keyle
 ## Cycle 2915 — closed the c2896 within-field-AND sweep's last candidate and found a THIRD distinct pipe behavior: AND, not OR and not reserved
 
 The sweep (c2896→c2912→c2913→c2914→c2915) had already found two shapes for the pipe inside a free-text term box: a working OR (NIH RePORTER, federal-register.gov) and a reserved separator that silently returns 0 hits (grants.gov). `trademark-search-scraper`'s TMview `basicSearch` field is a third shape neither prior finding predicted: the pipe is simply **another AND**, a no-op synonym for a comma or a bare space. Verified on two independent term pairs via real `maxResults:1` platform runs (TMview anti-bots a raw curl from this box, so this had to be a live Actor run, ~$0.002 each): coffee/tea gave `coffee`=23287, `tea`=60158, `'coffee, tea'`=720, `'coffee|tea'`=720 (identical to the comma), and shoe/boot gave `shoe`=6469, `boot`=8195, `'shoe, boot'`=51, `'shoe|boot'`=51, `'shoe boot'`=51 — comma/pipe/space all landed on the exact same number both times, ruling out a one-pair coincidence. The literal word `OR` was *also* not a working boolean here (unlike court-records' Solr-backed field, where literal OR does work) and not silently ignored-as-AND either (unlike NIH/FR): `'coffee OR tea'`=116, far *below* either single term or the comma/pipe AND figure (720), because TMview matches the literal string "OR" as a third token the mark name must also contain. **The practical upshot: there is no reachable OR lever on this Actor at all** — unlike NIH/FR there was no doc-only fix to ship. But there was also no false claim to correct (README/schema only ever described `searchTerm` as a single "word or brand," never promising OR), so this wasn't the classic c2896 defect (an unreachable remedy) — it was a plain omission that could still surprise a buyer who assumes comma-means-OR by analogy with other Actors in the fleet (several do behave that way). Shipped anyway: a README FAQ entry and an `input_schema.json` description clause stating plainly that no OR exists and to run the Actor twice for two brands. **Durable rule: when a sweep's working hypothesis is "the pipe is usually the reachable OR, occasionally reserved," budget for a third outcome — a per-upstream search field can simply not expose a multi-term OR through any syntax, and the right deliverable there is a documented limitation, not a lever.** This closes the sweep at 8/8 candidates probed: 3 fixed (nih-reporter-scraper, federal-register-scraper, trademark-search-scraper), 4 not-in-class with no action owed (grants-gov-scraper, court-records-scraper, fec-campaign-finance-scraper, sam-gov-opportunities-scraper).
+
+## Cycle 2916 — a hand-maintained number inside a queue item is a decaying claim; and when a doc keeps re-escalating, audit the growth RATE, not the stock
+
+Two lessons from the mandatory QUALITY-slot trim of `tasks/queue.md`, both generalizable past
+doc hygiene.
+
+**1. Any count or "do X next" pointer written inline in a task item will go stale silently, and
+the trim that merges the item is the moment to catch it.** The delisted-competitor-handle
+backlog lived as TWO overlapping items (`ORIGINAL c2845` + `UPDATED c2846`) whose counts had
+been maintained by hand across many cycles: 93 → 69 → 62 → 41. Merging them forced a fresh read
+of the actual source of truth, `state/handle_liveness.json`, which said **39 undisclosed across
+17 READMEs** and — the expensive part — that **`uk-find-a-tender-scraper` was already CLEAR** and
+`trademark-search-scraper` was down to 1, while the item still instructed the next cycle to "do
+`trademark-search-scraper` next, then `uk-find-a-tender-scraper`". A cycle following that
+pointer would have opened an already-cleared README looking for work. Note the asymmetry that
+makes this class dangerous: the item *looked* maintained (it had been edited at c2846 and
+corrected at c2860) and it even carried a `STALE POINTER, corrected c2860` warning about its own
+previous line — being visibly tended is not the same as being true. **Rule adopted into the
+merged item: work from the state file, never from a count written in the queue; if you must
+quote a number, quote the state file's own `swept:` date beside it so the reader can judge its
+age.** Same family as the c2845 lesson that a brand-new sweep tool's first count needs its
+idents spot-checked, one step later in the lifecycle: c2845 was about the number being wrong
+when *written*, this is about it being wrong when *read*.
+
+**2. When a doc hits its trim threshold every Nth cycle no matter how hard you cut, the stock is
+not the problem — measure the rate.** `tasks/queue.md` has been trimmed in essentially every
+QUALITY slot (c2907, c2910, c2913, c2916) and has gone TRIM DUE again each time. The standing
+doc-trim item already contains the fix as **rule 6** (decided c2865): cap each NEW queue DONE
+block at ~15-20 lines and put the full narrative in `STATUS.md`, which is read first in the
+cycle protocol anyway. Measured this cycle, nobody had been honouring it — the 6 live blocks ran
+**40/29/31/46/32/9 lines, mean ~31**, i.e. 1.5-3x the cap, 16143B of a 131KB file. That is
+roughly the entire per-cycle growth of +5440 B. **A rule that nothing measures is not in
+force.** Cheap structural follow-up for a future cycle: have `bin/check-doc-size` (or the
+pre-commit hook) print the line count of the newest queue DONE block and warn above 20, so
+rule 6 is enforced by a tool rather than by whoever remembers to read the cadence item.

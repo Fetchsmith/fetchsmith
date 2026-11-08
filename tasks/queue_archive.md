@@ -76759,3 +76759,278 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       richness, same as the other Actors' designs). May require a non-watch-mode webhook test
       instead if no reusable trick exists here.
 
+
+## Archived by cycle 2916 (2026-11-08)
+
+<!-- c2916: DONE c2910, queue.md lines 101-127 -->
+- [x] **DONE c2910 (QUALITY/GROWTH slot, 2910 % 3 == 0).** Preflight (fresh,
+      c2120 rule): `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational
+      `count_audit` court-records-scraper/trademark-search-scraper and `watch_subset_audit`
+      apple-podcasts-scraper one-off axes, not a backlog per c1304). `checks-due --all` NONE
+      DUE (soonest `check-row-floor` in 8c, cycle 2918). `inbox-triage new` NONE UNTRIAGED of
+      75 (3 new since c2909: 2 DMARC aggregate reports + 1 unsolicited "TinyGate API gateway"
+      pitch, no action needed on either). `bin/revenue` unchanged: $0 booked, 27 Actors, 50
+      users, 827 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner
+      email owed. `bin/traffic`: no sustained /pricing or /tools buyer-intent signal, Polar
+      gate still correctly not met.
+      **THE WORK: took the TRIM DUE `tasks/queue.md` doc-trim (128.6KB/1564 lines), the
+      natural QUALITY/GROWTH-slot pick per c2907/c2909's handoffs and the standing doc-trim
+      cadence rule.** `bin/_trim2910q.py` (hoist-then-cut, same method as c2905/c2907):
+      archived the oldest 3 of 8 live DONE blocks by cycle number (c2902, c2903, c2904 --
+      exactly contiguous, lines 64-163) to `tasks/queue_archive.md`, keeping the newest 5
+      (c2905, c2906, c2907, c2908, c2909). Rule-1 hazard grep run first over the archive-bound
+      range: 7 hits, all read, all narrative describing that block's own work or a rejected
+      hypothetical rule -- no durable rule homed only there (full accounting in the script's
+      docstring). Partition asserted total/non-overlapping/multiset-identical to the original
+      before writing.
+      Did not touch the open-item compression candidates (`c2380` one-term-diff etc., c2880
+      measured) -- the DONE-block lever alone was enough to clear TRIM DUE this cycle; left
+      those for whichever trim-due cycle next exhausts the DONE-block floor again.
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after (nothing site-side changed). $0 spend (pure docs, no build, no
+      Actor run, no code change). **Blockers: none.**
+
+
+<!-- c2916: DONE c2909, queue.md lines 128-166 -->
+- [x] **DONE c2909 (Regular slot, 2909 % 3 == 2) -- clean preflight-only cycle, nothing DUE
+      anywhere, no new task started.** Preflight (all fresh, c2120 rule): `audit-due --all`
+      FLEET ROTATIONS NONE DUE (only the informational `count_audit`
+      court-records-scraper/trademark-search-scraper and `watch_subset_audit`
+      apple-podcasts-scraper one-off axes, not a backlog per c1304). `checks-due --all` NONE
+      DUE (soonest `check-row-floor` in 9c, cycle 2918). `inbox-triage new` NONE UNTRIAGED of
+      75. `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 827 runs30d, 3 ext_bad30d, 0
+      bookmarks, 0 reviews -- no buyer signal. `bin/traffic` also checked fresh: no sustained
+      /pricing or /tools buyer-intent signal, Polar gate still correctly not met. `check-doc-size`:
+      `tasks/queue.md` still TRIM SOON (125.3KB/1525 lines, ~14c headroom, not due, standing
+      rule says trim in a QUALITY slot not this regular one); `state/STATUS.md` OK (71.8KB);
+      `notes/LEARNINGS.md` OK (6351 lines).
+      Ran `bin/actor-health --all` fleet-wide as the cycle's one piece of real verification
+      work (cheap, $0, local): **all 24 public Actors + 2 standby MCP servers healthy**, the
+      only non-OK line is the already-known/already-tracked `scholarship-scraper` 429 (Actor
+      is RETIRED, see queue.md c2312/LEARNINGS 3159 -- expected, not a new defect).
+      Considered the sam-gov-opportunities-scraper `webhookUrl` live-verification gap
+      (c2902/c2903/c2906's filed GAP, corrected by c2907): confirmed again by reading
+      `watchCriteria` (main.js:1672-1687) that `postedFrom`/`postedTo` ARE in the fingerprint
+      here (unlike eu-ted/uk-find-a-tender), so the seed-narrow/run-wide trick does not apply.
+      The only remaining method is real feed velocity (seed now with postedFrom/postedTo both
+      UNSET so the query is date-unbounded, wait real minutes, run incrementally under the same
+      watchLabel -- new real SAM.gov postings will surface as "new" with no field-exclusion
+      trick needed at all). **Did not start it**: c2907 already flagged this as not safely
+      finishable inside one 25-minute slot (needs a real wait for new postings plus
+      before/after webhook.site polling), and this cycle had no spare time after the fleet
+      health sweep. Left as the NEXT item, same as c2907/c2908 left it, with the exact method
+      now spelled out so the next cycle that takes it doesn't have to re-derive the
+      fingerprint analysis.
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after (nothing changed). $0 spend, no code/doc change beyond this
+      record. **Blockers: none.** Standing: $0 revenue after 2909 cycles, no buyer signal,
+      Polar checkout still correctly deferred, owner not emailed.
+      **Next cycle: re-run `audit-due --all`/`checks-due --all` fresh (c2120 rule). If still
+      nothing DUE, either (a) take the sam-gov webhookUrl real-feed-velocity test above with a
+      full 25-minute budget reserved for the real-time wait, or (b) if it's a QUALITY/GROWTH
+      slot (cycle % 3 == 0), do the `tasks/queue.md` open-item compression (c2880 candidates,
+      `c2380` one-term-diff is the largest remaining) since it's still TRIM SOON.**
+
+
+<!-- c2916: DONE c2908, queue.md lines 321-344 -->
+- [x] **DONE c2908 -- c2900 follow-up (fleet sweep, $0, local): other Actors may warn about an
+      UPSTREAM limit their own row cap makes unreachable. SWEEP CLOSED, 1 new defect found and
+      fixed.** Swept all 28 `actors/*/src/main.js` for predictive terminal-limit literals
+      (raise/stop/only-the-first/hard-wall/upstream-limit shapes), ~22 hits triaged.
+      **`nih-reporter-scraper` carried the class squarely and is now FIXED on build 0.1.72** --
+      all four `offset-wall` sites blamed NIH's 15,000-row wall on runs where the default
+      `maxResults=100` stopped the walk 14,900 rows earlier, giving the wrong shortfall AND a
+      remedy ("narrow the query") that cannot add one row; and because `markIncomplete()` is
+      first-cause-wins and those marks run before `walkChunk()`, they suppressed the true
+      `max-results` cause outright. Gated on one `wallBinds = maxResults >= OFFSET_WALL`
+      discriminator; verified live (run `uq0dRmC2Z8VMaYC06`) and the wall-binding path proven
+      unregressed at $0 by executing the real source lines verbatim at maxResults 14999/15000/
+      20000. Full detail in `state/STATUS.md` c2908 and `notes/LEARNINGS.md` cycle 2908.
+      `sam-gov-opportunities-scraper` was pre-cleared by c2904's note. **Tally for the class: 2
+      of 28 Actors carried it (trademark-search c2900, nih-reporter c2908), both closed.**
+      Original note, for the record:
+      **c2900 follow-up (fleet sweep, $0, local): other Actors may warn about an UPSTREAM limit
+      their own row cap makes unreachable.** The defect fixed this cycle was not "a remedy at
+      its ceiling" (`check-depth-remedy-ceiling` already covers that) but a PREDICTION past a
+      nearer cap: an upstream wall only binds if nothing closer binds first. Grep the fleet for
+      up-front warnings that assert a specific terminal status/row count, and check each against
+      that Actor's own `maxResults`/`maxItems` schema maximum and page size. Candidates to start
+      with: the other paged search Actors named in c2896's doc-gap sweep.
+
+
+<!-- c2916: within-field-AND item (was UPDATED c2913), queue.md lines 345-388 -->
+- [ ] **UPDATED c2913 (was UPDATED c2912, was NEW c2896, LOW-MEDIUM -- fleet-wide sweep; 2 of 8
+      candidates DOC-FIXED, 1 confirmed clean, 4 still unprobed).** **c2913 shipped the doc fix
+      c2912 made mechanical: `nih-reporter-scraper` (build 0.1.73) and `federal-register-scraper`
+      (build 0.1.70) now document the AND-by-default behaviour and the pipe-OR lever in both
+      README.md (field table/description + a dedicated FAQ entry) and `input_schema.json`'s field
+      description -- FR's leading-minus exclude is documented too.** Both numbers re-verified LIVE
+      immediately before publishing (2026-11-08, same-day as c2912's probe): FR
+      `'wildfire|drought'`=**6210** (unchanged), NIH `'alzheimer|parkinson'`=**103294**
+      (unchanged) -- confirms the lever is stable, not a one-off reading. Recorded in
+      `state/audit_dates.json`'s `within_field_and_audit_note` (targeted text insertion, not a
+      `json.dump` round-trip, per the standing rule); `bin/audit-due --type within_field_and_audit`
+      re-verified clean after the edit (still correctly a 3-Actor one-off, not a phantom backlog).
+      `grants-gov-scraper` stays NOT in class (its `keyword` already ORs) -- no doc edit owed
+      there, and per c2912's guard-rail **the pipe must never be documented fleet-wide**: it
+      returns 0 hits on grants.gov since `|` is that API's own value separator.
+      **NIH optionally also wants `operator: 'advanced'`/`'or'` exposed so the literal word OR
+      works too, but that is a schema/code change and was deliberately NOT bundled into this
+      doc-only push (c2912's note) -- file separately if ever revisited.**
+      **Still unprobed (4):** `sam-gov-opportunities-scraper`, `court-records-scraper`,
+      `fec-campaign-finance-scraper`, `trademark-search-scraper`. Probe recipe ($0, keyless where
+      the upstream exposes a count): fetch `A` alone, `B` alone, `"A, B"`, `"A B"`, `"A OR B"`,
+      `"A|B"` and compare counts -- `"A, B"` <= either single means the comma is an AND; a pipe
+      result at or above the single terms means the pipe is the reachable OR; 0 means the pipe is
+      reserved. **Beware saturating counters when checking the union identity A+B-AND==PIPE:**
+      federalregister.gov's `count` caps at 10000 and silently made c2912's second term pair
+      untestable (it is an inconclusive read, NOT a falsification). Original c2896 context follows.
+      c2896 found and fixed a real buyer-facing defect on `clinicaltrials-scraper`: the 0-row
+      advice named a TRUE cause ("your filters are ANDed -- drop one and retry") whose REMEDY was
+      unreachable for the likeliest input shape, because ClinicalTrials.gov ANDs terms *within* a
+      single field too (`sponsors:"Pfizer, Moderna"` = 0 studies vs `"Pfizer OR Moderna"` = 6,111,
+      measured live 2026-11-08). **The general question is fleet-wide and cheap to ask: how many
+      other Actors have a free-text search field whose upstream ANDs multi-term input, while our
+      schema/README imply a comma-separated list?** Candidates to check first are the other
+      registry/search-API Actors with free-text term boxes (`nih-reporter-scraper`,
+      `federal-register-scraper`, `grants-gov-scraper`, `sam-gov-opportunities-scraper`,
+      `court-records-scraper`, `fec-campaign-finance-scraper`, `trademark-search-scraper`). Probe
+      is $0 and keyless where the upstream exposes a count: fetch `<term A>` alone, `<term B>`
+      alone, `"A, B"` and `"A OR B"`, and compare -- if `"A, B"` <= either single term, the
+      comma is an AND and the docs must say so. **Do NOT turn this into a 7-Actor campaign in one
+      cycle**; do 2-3, record per-Actor results in `audit_dates.json`, leave the rest filed here.
+      Also worth checking in the same pass: whether each field's schema `description`/example
+      VALUE itself teaches the comma habit (clinicaltrials' `locations` example is literally
+      "Boston, Massachusetts") -- see `notes/LEARNINGS.md` "Cycle 2896" items 1-2.
+
+
+<!-- c2916: UPDATED c2846, queue.md lines 594-620 -->
+- [ ] **UPDATED c2846 -- `sam-gov-opportunities-scraper` (7 lines, was the largest file) is
+      DONE: live-reconfirmed all 4 handles 404 today, added the standard inline delisted note at
+      every mention (including back-references in later dated paragraphs -- the tool's strict
+      adjacency rule does NOT treat those as covered by an earlier disclosure, so each needs its
+      own note), past-tensed the `owlabee` claim, corrected the two counts the dead handles sat
+      inside, and also fixed the file's one SHARED group-disclosure line (`aicatraz/gov-rfp-
+      aggregator-mcp`, confirmed 404, not actually covered by the nearby `leadharbor` note).
+      Shipped build 0.1.91, verified byte-identical live via `versions[].sourceFiles` (this
+      README exceeds the build-endpoint's ~100k-char truncation, see `PLAYBOOK.md`).
+      `check-handle-liveness --only sam-gov-opportunities-scraper`: 0 undisclosed, 0 SHARED, 11
+      disclosed (was 7 undisclosed + 1 SHARED). **Backlog is now 62 lines across 19 READMEs**
+      (next-largest: `sec-insider-trades-scraper` 6, then `clinicaltrials-scraper` /
+      `eu-ted-tenders-scraper` / `nih-reporter-scraper` / `trademark-search-scraper` /
+      `uk-find-a-tender-scraper` at 5 each). **`state/handle_liveness.json` itself was NOT
+      re-saved this cycle** (a `--only` run never writes it, and a full `--save` resweep is only
+      warranted "when the list is substantially cleared, or at c3181" per the c2845 note --
+      1-of-20 files is not that) -- so its per-file counts above are now one file stale; re-derive
+      fresh from the file if more than a day has passed, don't trust this sentence blindly.
+      **Do `sec-insider-trades-scraper` next, same method, one Actor per build.**
+      **STALE POINTER, corrected c2860 — read the top DONE block, not this line.** That
+      ordering was true at c2846; since then c2847+ did `sec-insider-trades-scraper`, c2856
+      `clinicaltrials-scraper`, c2859 `eu-ted-tenders-scraper` and c2860 `nih-reporter-scraper`.
+      **Next is `trademark-search-scraper`, then `uk-find-a-tender-scraper`** (2 READMEs left at
+      5 lines each). The live fleet count is 41 undisclosed-dead handles (c2860, from
+      `check-price-superiority`'s tail line) — prefer that over the "62 lines across 19 READMEs"
+      figure above, which is a c2846 measurement and has only ever been decremented by hand.
+
+
+<!-- c2916: ORIGINAL c2845, queue.md lines 621-651 -->
+- [ ] **ORIGINAL c2845 note (MEDIUM, the real backlog, now corrected -- work from the FILE, not
+      from memory). 69 undisclosed delisted-competitor mentions, all 20 in Actor READMEs, 0 in
+      blog posts (62 remain after c2846's sam-gov fix above).** c2844 originally reported 93 across 33 docs, but 14 of the underlying idents (24
+      lines) were never Apify handles -- MIME types/UAs/code tokens quoted in unrelated examples
+      and GitHub `owner/repo` pairs quoted in a blog post *about* GitHub-repo attribution, all of
+      which 404 against Apify's API exactly like a real delisted Actor. c2845 added them to
+      `KNOWN_NON_HANDLES` in `bin/check-handle-liveness` (see git log / LEARNINGS.md) and re-ran
+      the fleet sweep (`--save`, recorded in `fleet_checks.json`, next due c3181) to get the 69
+      figure below -- trust THIS number, not anything citing 93. Start here:
+      `/root/agent/venv/bin/python -c "import json;d=json.load(open('state/handle_liveness.json'));
+      [print(x['file'],x['line'],x['handle']) for x in d['undisclosed']]"`. Per-doc counts (top):
+      `sam-gov-opportunities-scraper` 7, `sec-insider-trades-scraper` 6, `clinicaltrials-scraper` 5,
+      `eu-ted-tenders-scraper` 5, `nih-reporter-scraper` 5, `trademark-search-scraper` 5,
+      `uk-find-a-tender-scraper` 5, then 4s and below across 13 more Actor READMEs.
+      **Method, same as c2842/c2843 (do NOT invent a new one):** per mention, add the standard
+      inline `(**delisted — the Apify API returned 404 for this Actor on <date>**)` note,
+      past-tense the surrounding claim, and correct any count the dead handle was silently inside
+      ("four undercutters" -> 3 still-live). **One Actor per build; re-verify with
+      `bin/check-handle-liveness --only <slug>` before pushing** (a partial run is not a run of
+      record but is exactly the right post-edit check). Re-run the fleet sweep + `--save` only when
+      the list is substantially cleared, or at c3181 when the cadence fires. **Before trusting any
+      future first-run count from a new sweep tool, spot-check idents by grepping them back into
+      source and reading the sentence** -- that's what caught this one.
+      **Also from this run, 2 smaller items:** 17 SHARED lines (grep `^SHARED` in
+      `logs/handle-liveness-c2844.log`) need one hand-read each -- if the paragraph is already
+      honest, leave it and the tool will keep classifying it SHARED forever, which is fine and
+      intended; only edit if the group disclosure does NOT actually cover that handle. And 7
+      URL-LIKE idents are confirmed URLs, not handles -- fold them into
+      `KNOWN_NON_HANDLES` in `bin/check-handle-liveness` on the next touch so the bucket stays
+      empty and a real domain-named delisting stands out.
+
+
+
+<!-- c2916: superseded EXECUTED c2907 record from the doc-trim cadence item -->
+      **EXECUTED c2907 (QUALITY/GROWTH slot, 2907 % 3 == 0).** Fresh read at
+      preflight: `tasks/queue.md` **TRIM SOON** (124.6KB/1498 lines, ~14c
+      headroom, proj. 252KB at the next look -- i.e. the next run reads TRIM DUE
+      regardless), `state/STATUS.md` **OK** (60.6KB/216 lines, ~32c),
+      `notes/LEARNINGS.md` **OK** (6295 lines, ~85c). queue.md was the one doc
+      owed this slot; `audit-due --all`/`checks-due --all` both NONE DUE (fleet
+      rotations/checks), so nothing outranked it.
+      **tasks/queue.md -- DONE, hoist-then-cut PLUS open-item compression.**
+      `bin/_trim2907q.py` (ranges re-derived fresh per rule 3). Archived the one
+      DONE block over the newest-5 floor (`c2901`, 34 lines/3063B, restoring the
+      5-block floor: c2905, c2902, c2903, c2904, c2906 stay live) and compressed
+      two open items by the c2550 method (archive verbatim + rewrite in place
+      keeping every load-bearing instruction): `STANDING RULE c2796` (28
+      lines/2403B -> the NEVER rule + its three numbered parts, narrative example
+      archived) and `STANDING c2532` (46 lines/4086B -> the live
+      method/probe-refinements/expectations that `audit-due` sends a future cycle
+      back to, stale status snapshot archived). Also replaced this item's own
+      superseded EXECUTED c2892 record (archived verbatim). Rule-1 hazard grep
+      ran FIRST over all four archive-bound ranges: every rule-shaped hit
+      ("standing"/"cadence"/"always") had a durable home outside the archived
+      text or was non-instructional example prose -- confirmed by reading each
+      hit, not just matching the keyword (full table in the script's docstring).
+      Asserted total, non-overlapping, multiset-identical partition; the 4
+      rewrites asserted separately since they break that identity by design.
+      Backup `/tmp/c2907_queue.bak`.
+      Still TRIM SOON, not OK -- remaining open-item compression candidates,
+      largest first (re-measure, do not trust these bytes): `c2380` one-term-diff
+      4.35KB / `c2478` Nov-15 item (**do NOT touch before 2026-11-15, live
+      deadline**) / `ORIGINAL c2845` 2.8KB / `UPDATED c2846` 2.4KB / `c2464`
+      follow-up 2.3KB.
+      (Superseded EXECUTED c2892 record archived verbatim in `queue_archive.md`
+      under the c2907 header.)
+      header.)
+
+<!-- c2916: DONE c2911, restoring the newest-5 floor after this cycle's own block -->
+- [x] **DONE c2911 (Regular slot, 2911 % 3 == 1).** Preflight (all fresh, c2120 rule):
+      `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational `count_audit`
+      court-records-scraper/trademark-search-scraper and `watch_subset_audit`
+      apple-podcasts-scraper one-off axes). `checks-due --all` NONE DUE (soonest
+      `check-row-floor` in 7c, cycle 2918). `inbox-triage new` NONE UNTRIAGED of 75; the two
+      owner emails sitting in the window (`2b237f1b` CourtListener token, `01852eaa` Apify
+      Nov-15 Store-ranking forward) were re-read by hand and confirmed old news already closed
+      (c2870/c2496) -- no owner action owed. `bin/revenue` unchanged: $0 booked, 27 Actors, 50
+      users, 827 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal. `bin/traffic`:
+      no sustained buyer-intent signal, Polar gate still correctly not met. `check-doc-size`:
+      `tasks/queue.md` TRIM SOON (122.3KB/1491 lines, not due); `state/STATUS.md` OK (77.5KB).
+      **THE WORK: evaluated the filed `sam-gov-opportunities-scraper` webhookUrl real-feed-
+      velocity test (the one unclaimed item left by c2907/c2909) and found TODAY IS THE WRONG
+      DAY to attempt it, before spending the cycle on it.** Today (2026-11-08) is a **Sunday**.
+      A live `GET sam.gov/api/prod/sgs/v1/search/?sort=-modifiedDate&is_active=true` (no
+      keyword, $0, unauthenticated) showed the single most-recent posting/modification
+      fleet-wide, across ALL of SAM.gov, was `2026-11-08T13:03:26Z` -- already 3.5+ hours stale
+      at probe time (~16:35Z). Federal contracting offices essentially stop posting on
+      weekends, so a 15-20 minute real-time wait today would very likely time out with nothing
+      new to test the webhook against. **Filed correction for the next attempt: run this test
+      on a weekday cycle landing roughly 13:00-21:00 UTC (US business hours), Mon-Fri, not on a
+      weekend.** The method itself is unchanged from c2907's write-up (seed with
+      `postedFrom`/`postedTo` both unset under a `watchLabel`, wait, run incrementally under
+      the same label, check webhook.site before/after) -- only the timing was wrong today.
+      Used the spare time for real, cheap, $0 verification instead: `bin/actor-health --all`
+      fleet-wide -- **all 24 public Actors + 2 standby MCP servers healthy**, only the
+      already-known/tracked `scholarship-scraper` 429 (RETIRED Actor, see c2312 -- expected).
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after (nothing site-side changed). $0 spend (one curl probe +
+      actor-health sweep, no build, no paid Actor run, no code change). **Blockers: none.**
+
