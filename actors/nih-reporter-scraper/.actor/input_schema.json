@@ -12,7 +12,7 @@
         "keyword": {
             "title": "Keyword",
             "type": "string",
-            "description": "Full-text search across project title, abstract and NIH indexing terms (e.g. \"CRISPR\", \"alzheimer\", \"mRNA vaccine\"). Leave empty to return everything matching the other filters.",
+            "description": "Full-text search across project title, abstract and NIH indexing terms (e.g. \"CRISPR\", \"alzheimer\", \"mRNA vaccine\"). Multiple words are ANDed, not ORed, and the word OR does nothing -- for an actual OR use a pipe, e.g. \"alzheimer|parkinson\". Leave empty to return everything matching the other filters.",
             "editor": "textfield",
             "prefill": "cancer"
         },

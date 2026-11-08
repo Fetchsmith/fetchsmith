@@ -100,7 +100,7 @@
         "searchQuery": {
             "title": "Search query",
             "type": "string",
-            "description": "Full-text search across the document title and body. It matches a passing mention anywhere in the body, not just documents about the term, so for a topical search set order to 'relevance' (with the default 'newest' you get the most recent documents that merely mention it). Leave empty to return everything matching the other filters.",
+            "description": "Full-text search across the document title and body. It matches a passing mention anywhere in the body, not just documents about the term, so for a topical search set order to 'relevance' (with the default 'newest' you get the most recent documents that merely mention it). Multiple words are ANDed, not ORed, and the word OR does nothing -- for an actual OR use a pipe, e.g. 'wildfire|drought'; a leading minus excludes a term, e.g. 'wildfire -drought'. Leave empty to return everything matching the other filters.",
             "editor": "textfield"
         },
         "significantOnly": {

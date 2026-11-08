@@ -76658,3 +76658,104 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       needed (full home-by-home table in the script's docstring). Both pre-commit tripwires
       clean after the cut. Spend ~$0.006 (one build + one smoke run).
 
+- [x] **DONE c2905 (Regular slot, 2905 % 3 == 1) -- closed the ESCALATED doc-trim on
+      `tasks/queue.md`, the top task left by c2904, by fixing a stale assumption in its own
+      handoff note.** Preflight: `audit-due --all` FLEET ROTATIONS NONE DUE (only the
+      informational `count_audit` pair, not a backlog per c1304). `checks-due --all` found ONE
+      real item DUE, `check-status-continuity` -- ran it, NONE MISSING (retained window
+      2894..2904, 11 completed cycles, all have a block). `inbox-triage new` NONE UNTRIAGED of
+      75. `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 826 runs30d, 3 ext_bad30d, 0
+      bookmarks, 0 reviews -- no buyer signal, no owner email owed.
+      c2904's handoff claimed the DONE bucket was "already exhausted" at the newest-5 floor and
+      that only open-item compression remained -- **that claim was stale, not re-derived: a
+      fresh count found 8 live DONE blocks**, three over the newest-5-DONE convention (c2865),
+      because several regular cycles in a row (c2902-c2904) had appended a block with no
+      QUALITY/GROWTH or escalated cycle re-enforcing the floor since c2901. `bin/_trim2905q.py`
+      (hoist-then-cut, ranges re-derived fresh, lossless-verified): archived c2900, c2899,
+      c2898, c2897 (4 oldest by cycle number, 9,968B) to `tasks/queue_archive.md`, keeping the
+      newest 5 (c2905, c2904, c2903, c2902, c2901). Discarded the stale NEXT pointer and the
+      escalated item that named this cycle (both superseded).
+      **See `bin/check-doc-size` for the measured post-cut size** (read the tool, not this
+      prose). The DONE-block floor is now genuinely exhausted (5 is the floor) -- the next
+      trim-due cycle has no DONE-block lever left and must take the open-item compression
+      candidates c2880 already measured (below). Services `fetchsmith-web`/`fetchsmith-mail`/
+      `caddy` all active; `/`, `/pricing`, `/tools` all 200 before and after. $0 spend (pure
+      docs + one read-only check, no build, no Actor run, no code change).
+
+- [x] **DONE c2906 (Regular slot, 2906 % 3 == 2).** Preflight (fresh): `audit-due --all`
+      FLEET ROTATIONS NONE DUE (only the informational `count_audit` pair). `checks-due --all`
+      NONE DUE (soonest `check-row-floor` in 12c). `inbox-triage new` NONE UNTRIAGED of 75 --
+      re-read the owner's CourtListener-token reply (`2b237f1b`) and the Nov-15 Store-ranking
+      forward (`01852eaa`) by hand to confirm both are old news already closed (c2870/c2496);
+      `ransomedarcy0@gmail.com` is an unsolicited SEO pitch, no action. `bin/revenue` unchanged:
+      $0 booked, 27 Actors, 50 users, 827 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no
+      buyer signal, no owner email owed. `check-doc-size`: `tasks/queue.md` still TRIM SOON
+      (121.5KB/1462 lines, ~15c headroom) -- not due, left for the next QUALITY/GROWTH slot
+      (c2907).
+      **THE WORK: closed half of the `webhookUrl` live-verification gap filed by c2902/c2903 --
+      `eu-ted-tenders-scraper`, confirmed to have watch mode (main.js:404) first.** Found
+      `publishedWithinDays` is excluded from `watchCriteria` (main.js:384-393) exactly like
+      `uk-find-a-tender-scraper`'s `updatedWithinDays` -- seeding with a narrow window then
+      running incrementally with a wider one under the same `watchLabel` deterministically
+      surfaces already-published notices as "new". Predicted FREE first via direct
+      `api.ted.europa.eu/v3/notices/search` POST (`buyer-country=IRL`, no auth, $0):
+      `publication-date>=today(-1)` = 0 matches (seed); `>=today(-3)` = 82 matches, top 5 by
+      the API's own order = `767595-2026/767677-2026/767746-2026/767769-2026/767776-2026`, all
+      dated 2026-11-05. LIVE SEED RUN (`bin/run-charged`, `V0BLcIxTFUrEFxh0v`, fresh webhook.site
+      token, `watchLabel:"c2906-ted-irl-test"`, `publishedWithinDays:1`): SUCCEEDED, pushed 0,
+      matching the 0-match prediction. LIVE INCREMENTAL RUN (same label, `publishedWithinDays:3`,
+      `maxResults:5`): SUCCEEDED (`H84Uf5iGJa8jDKEKg`), pushed 5, `chargedEventCounts` settled
+      `{result:5}` == 5, 0 phantom charge. Fetched the dataset: all 5 `publicationNumber`s
+      matched the free prediction exactly, same order, zero deviation.
+      **Webhook verification:** polled webhook.site's `/token/<uuid>/requests` after both runs --
+      exactly 2 POSTs captured, one per run. Seed payload: `pushed:0, watchSeeding:true,
+      watchNewCount:null, totalNoticeCount:null` (gated correctly on seeding). Incremental
+      payload: `pushed:5, watchSeeding:false, watchNewCount:5, totalNoticeCount:82` (byte-matches
+      the live 3-day total), `actorRunId`/`defaultDatasetId` exact-matching each real run.
+      **0 defects found across the whole webhookUrl + watch-mode-field path on this Actor -- no
+      code/README change needed.**
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`,
+      `/tools/eu-ted-tenders-scraper` all 200 before and after. Spend: 5 charged rows at
+      `credits_per_result:3` (well under $0.01), `bin/apify-spend` $8.01 used, projection $8.12,
+      far under the $25/cycle trip-wire.
+      **GAP REMAINING for a future cycle: the identical webhookUrl shape is still unverified
+      live on `sam-gov-opportunities-scraper`** (the other half of this filed gap) -- reuse the
+      same $0-first-prediction + webhook.site method; that Actor's watch fingerprint/rolling-
+      window field has not yet been checked for the same excluded-field trick, check that first.
+
+- [x] **DONE c2907 (QUALITY/GROWTH slot, 2907 % 3 == 0).** Preflight (fresh): `audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE (soonest `check-row-floor` in 11c),
+      `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue` unchanged: $0 booked, 27 Actors, 50
+      users, 827 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email
+      owed.
+      **Checked the `sam-gov-opportunities-scraper` webhookUrl gap first and found the handoff's
+      premise was wrong: its `watchCriteria` (main.js:1672-1687) already includes
+      `postedFrom`/`postedTo` in the fingerprint (deliberate, c2392), unlike
+      `eu-ted-tenders-scraper`/`uk-find-a-tender-scraper` -- so the seed-narrow/run-wide trick
+      c2902/c2903/c2906 used does NOT apply here.** Closing that gap needs real feed velocity or
+      a different excluded field (not safely finishable in 25 min), so took the other handoff
+      option instead: proactively trimmed `tasks/queue.md` (c2220 rule).
+      `bin/_trim2907q.py` (hoist-then-cut, rule-1 hazard grep run first over every archive-bound
+      range, full table in the script's docstring): archived the one DONE block over the
+      newest-5 floor (`c2901`) and compressed two open items by the c2550 method (archive
+      verbatim + rewrite in place, every load-bearing instruction kept live): `STANDING RULE
+      c2796` (NEVER-run-without-arguments rule, all 3 numbered parts preserved) and `STANDING
+      c2532` (the `unreachable_remedy` rotation's live method/probe-refinements/expectations
+      preserved, stale c2567-era status snapshot archived). Also replaced the doc-trim cadence
+      item's own superseded EXECUTED c2892 sub-record with EXECUTED c2907. Asserted
+      total/non-overlapping/multiset-identical partition programmatically; 4 rewrites asserted
+      separately. Backup `/tmp/c2907_queue.bak`.
+      Result: 124.6KB/1498 lines -> **118.8KB/1447 lines, still TRIM SOON but more headroom**
+      (deliberately not a durable OK -- time-boxed). Services/site all 200 before and after. $0
+      spend (docs + one read-only code read).
+      **NEXT candidates for the next trim pass:** `c2380` one-term-diff (4.35KB), `ORIGINAL
+      c2845` (2.8KB), `UPDATED c2846` (2.4KB), `c2464` follow-up (2.3KB). `c2478` still DO NOT
+      TOUCH before 2026-11-15.
+      **sam-gov-opportunities-scraper webhookUrl gap, CORRECTED for the next cycle that picks it
+      up:** do not reuse the seed-narrow/run-wide trick (closed off by c2392's deliberate
+      fingerprint design) -- either time a broad/no-date-filter watch query against real SAM.gov
+      posting velocity across two runs, or find a field this Actor excludes from
+      `watchCriteria` that still changes row identity (unlikely: `enrichDetail` only changes
+      richness, same as the other Actors' designs). May require a non-watch-mode webhook test
+      instead if no reusable trick exists here.
+
