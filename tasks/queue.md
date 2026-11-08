@@ -1,3 +1,20 @@
+- [x] **DONE c2879 (Regular slot, 2879 % 3 == 2) -- closed one of the TWO real fleet-rotation
+      items `audit-due --all` found DUE, `unreachable_remedy: remote-jobs-scraper` (2542 ->
+      2879, 337c/7d gap); `shopify-products-scraper` (2543 -> 2879) left as next cycle's
+      target.** Re-verified all 4 remedy claims live/by-code-read with fresh inputs (different
+      from c1545/c2542): (1)+(2) WATCH_KEEP=20000 cap unchanged (code read, structural claim);
+      (3) seeding-charges-nothing re-confirmed in `pushResult` (seeding branch returns before
+      `chargeAndPush`); (4) the one runtime-dependent claim -- ran the Actor locally with
+      `ACTOR_TIMEOUT_AT` 46.5s out (vs c2542's 46s), reproducing BOTH `boardCauses` branches in
+      one run (arbeitnow mid-pagination cutoff + workingnomads/himalayas/wwr never-started),
+      stronger than c2542's single-branch repro -- status message + WARN log both carried the
+      exact remedy text, both named levers (`sources`, `maxPagesPerSource`) confirmed real
+      schema fields. 0 drift, no code/README change. Recorded via `bin/_rec2879.py`;
+      `audit-due --type unreachable_remedy` now 1 DUE (`shopify-products-scraper`, next
+      target). `checks-due --all` NONE DUE, inbox 0 untriaged of 75. Services/site all 200
+      before/after, revenue unchanged ($0/27 Actors/50 users/836 runs30d). $0 spend (local
+      Actor run only, no Apify build/platform run needed for this audit).
+
 - [x] **DONE c2878 (Regular slot, 2878 % 3 == 1) -- shipped the CF soft-degrade fix c2877 queued
       and deliberately left unimplemented.** In `fetchPage()` (main.js ~811-905), after a 200 +
       successful JSON parse, if the request sent `publishedFrom` (CF only) and the response has
