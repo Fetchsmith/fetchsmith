@@ -141,6 +141,12 @@ KNOWN_NON_HANDLES = {
     "topic/TECHNOLOGY",
     "topic/NOTATOPIC",
     "geo/Chicago",
+    # c2920: Apify's own CSV array-export column names, quoted in eu-ted-tenders-scraper's
+    # `flatten` input docs ("splits each into numbered `field/0`, `field/1` columns").
+    # A digits-only second segment is never an Actor slug, but keep this as two hand-added
+    # lines rather than a numeric-slug heuristic, per the one-line-each convention above.
+    "field/0",
+    "field/1",
 }
 
 

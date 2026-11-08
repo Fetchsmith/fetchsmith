@@ -155,7 +155,7 @@ A second pass on 2026-10-03 priced **every one of the 89 matching listings** rat
 - `brightpath-data/federal-register-search` (2 users) charges $0.0015/row plus a $0.0001 start fee, 1.9x us, and caps `maxResults` at 100.
 - `sovereign_workspace/federal-register-monitor` (2 users) charges **$0.01 per document matched** plus a $0.00005 start fee — 12.5x us. Its record also carries a $0.00001 dataset-item event, but its own README states the charge plainly: "`document-matched`: $0.01 per document returned."
 - `george.the.developer/federal-register-monitor` (1 user, re-verified 2026-10-18) charges $0.02 per document, 25x us, with a $0.05 `full-text-brief` add-on for full metadata. Its README advertises a $0.25 start fee and a $0.10 brief, both dearer than what the live record actually bills — where the two disagree, the live record is what you are charged.
-- `copious_atoll/federal-register-scraper` charges $0.001/row plus a $0.00005 start fee, 1.25x us.
+- `copious_atoll/federal-register-scraper` (**delisted — the Apify API returned 404 for this Actor on 2026-11-08, so it is no longer a live competitor; the rest of this line is the dated 2026-10-03 record**) charged $0.001/row plus a $0.00005 start fee, 1.25x us.
 
 Every per-event price on this page was read from each listing's live in-effect `pricingInfos` on 2026-10-03, and cross-checked against that listing's own published pricing table wherever it has one.
 

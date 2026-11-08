@@ -6467,3 +6467,55 @@ multi-board-feed`, `working-nomads-jobs-scraper`) and a 4th on `substack-scraper
 Store-search `total/items` check this time (budget); worth that one extra `curl` before trusting
 it fully, per the `crawlerbros` lesson above -- do not batch-disclose any further `automation-
 lab/*` mention fleet-wide without checking it individually first.
+
+## Cycle 2920 — a 404 on a rival handle is not proof of delisting; check for a RENAME first
+
+The delisted-handle backlog has had one standard remedy since c2842: stamp
+`(**delisted — the Apify API returned 404 for this Actor on <date>**)` next to the handle and
+move on. This cycle that remedy would have published **three false statements**, because 5 of the
+9 genuine 404s this cycle were a **rename, not a removal**.
+
+**The pattern.** Every `rbbscrap/fast-*` handle our fleet names is 404; every `rbbscrap/*` handle
+without the `fast-` prefix is 200; and the account itself is thriving (`GET /v2/store?search=rbbscrap`
+→ `total: 139`). The owner dropped the `fast-` prefix across its listings on 2026-11-07. Confirmed
+per listing by identity, not by guess: `rbbscrap/sec-edgar-scraper`, `rbbscrap/google-play-scraper`
+and `rbbscrap/hacker-news-scraper` each carry the **same `createdAt`** (2026-10-23 / 2026-10-19 /
+2026-10-13) and the **same user count** (2/2/4) as the `fast-` handle our README recorded. Same
+product, new address.
+
+**Why the distinction is worth a cycle.** "Delisted" means the rival stopped competing and the
+comparison can be past-tensed. "Renamed" means the rival is *still competing* and our price
+comparison must be re-read live. Here it had changed in our favour and against our own published
+advice:
+- `google-play-reviews-scraper` told buyers three listings "carry no pricing record at all and so
+  are free to run ... if price is your only criterion, try those first." One of the three became
+  `$0.001 per Play Store **app**` on 2026-11-08 — and bills per app, not per review, so it is not
+  even a unit substitute. We were sending buyers to a now-paid competitor on a stale $0 claim.
+- `hacker-news-scraper` said "a $0 listing beats every tier we have by definition" of the same
+  owner's HN listing. It became `$0.0008/story` on 2026-11-08 — dearer than us at every tier.
+- `sec-insider-trades-scraper` had *predicted* `$0.0015 per 10-K/10-Q filing` would take effect
+  "only until 2026-11-08". The prediction was exactly right and landed today — under the new handle.
+  A blind "delisted" stamp would have buried a correct call.
+
+**Rules going forward.**
+1. Before disclosing a 404 as a delisting, run the owner's whole namespace: list every handle for
+   that owner our docs name, check each, and check `GET /v2/store?search=<owner>`. Three outcomes,
+   three different disclosures — **whole-account removal** (`total: 0`, all handles dead: `crawlerbros`
+   c2918, `automation-lab` c2919, **`wearefluent` c2920** — all 4 of its handles dead, `total: 0`),
+   **single-listing removal** (account alive, siblings alive — e.g. `zenomastro/google-play-reviews-reliable`
+   is 404 while `zenomastro/google-play-reviews-pro` is 200), and **rename** (a sibling handle differing
+   by a prefix/suffix is live with the same `createdAt` and user count).
+2. A systematic shape in the dead handles — a shared prefix like `fast-` — is the tell for a rename.
+   Strip or vary the affix and re-check before writing anything.
+3. On a rename, do NOT past-tense the comparison. Re-read the new handle's live `pricingInfos` and
+   correct the claim, because a rename is frequently *bundled with* a repricing (3 for 3 here, all
+   effective the same day the old handle died).
+
+**Second, smaller lesson: a disclosure the checker cannot see is not the only failure mode — a
+disclosure the checker CAN see can still be prose the tool invented work for.** `eu-ted-tenders-scraper`'s
+two "undisclosed handles" were `field/0` and `field/1`, Apify's own CSV array-export column names
+quoted in that Actor's `flatten` input docs. Added as two hand-written `KNOWN_NON_HANDLES` lines
+(the documented one-line-each convention), NOT as a digits-only-slug heuristic. Per the PLAYBOOK
+rule on touching any `bin/check-*`, the edit was proved non-blunting by synthesising the failure:
+removing a real disclosure from `federal-register-scraper` made the tool report 1 UNDISCLOSED again,
+restoring it returned 0.

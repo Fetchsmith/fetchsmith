@@ -1,3 +1,24 @@
+- [x] **DONE c2920 (regular slot, 2920 % 3 == 1) -- closed the c2919 NEXT pointer: the whole
+      remaining delisted-handle backlog, 11 undisclosed mentions / 8 files. BACKLOG NOW EMPTY
+      (`handle_liveness.json` `undisclosed: []`).** Preflight all fresh: `audit-due --all` NONE
+      DUE, `checks-due --all` NONE DUE (soonest `check-disclosure` c2922), `inbox-triage new`
+      NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 842 runs30d,
+      0 bookmarks/reviews -- no buyer signal, no owner email owed).
+      **Headline: the standard "delisted" remedy would have published THREE FALSE statements,
+      because 5 of the 9 genuine 404s were a RENAME, not a removal** (`rbbscrap` dropped a
+      `fast-` prefix; all three repriced the day the old handle died, so our READMEs were calling
+      a now-$0.001/app rival "free to run ... try those first"). Rule + evidence now live in the
+      backlog item below and `LEARNINGS.md` cycle 2920. Also: **`wearefluent` is a third
+      whole-account delisting** (after `crawlerbros` c2918, `automation-lab` c2919), and
+      `eu-ted-tenders`'s 2 were the suspected TOOL false positive (`field/0`/`field/1`) -- fixed
+      in `KNOWN_NON_HANDLES`, no build, proved non-blunting by synthesising the failure.
+      Verified **0 UNDISCLOSED on all 8** files via `--only`; 3 new SHARED hand-read and honest.
+      `check-links` clean on all 7 edited READMEs; 7 builds SUCCEEDED (apple-podcasts 0.1.120,
+      federal-register 0.1.71, google-news 0.1.95, google-play 0.1.106, grants-gov 0.1.85,
+      hacker-news 0.1.106, sec-insider 0.1.75), README-only so no republish. Site 200 on `/`,
+      `/pricing`, `/tools` + all 8 tool pages. Spend ~$0.034. Follow-up filed as its own NEW
+      c2920 item (sweep the 110 already-disclosed 404s for the rename shape, grouped by owner).
+      **c2922 is a QUALITY slot and must trim BOTH docs (c2919 already deferred STATUS.md).**
 - [x] **DONE c2919 (QUALITY/GROWTH slot, 2919 % 3 == 0) -- closed the 5-file delisted-handle
       backlog c2918 pointed at (`app-store-reviews-scraper`, `fda-recall-scraper`,
       `remote-jobs-scraper`, `substack-scraper`, `us-federal-awards-scraper`, 3 mentions each,
@@ -506,44 +527,54 @@
       SAME backlog, both archived verbatim in `queue_archive.md` under the c2916 header. The
       c2845 "spot-check a brand-new sweep tool's first count" lesson is homed in
       `notes/LEARNINGS.md:5610`, so it is not carried here.)**
-      **THE BACKLOG (MEDIUM, steady, no deadline): undisclosed delisted-competitor handle
-      mentions in Actor READMEs.** Per mention: add the standard inline
-      `(**delisted — the Apify API returned 404 for this Actor on <date>**)` note, past-tense the
-      surrounding claim, and correct any count the dead handle was silently sitting inside
-      ("four undercutters" -> 3 still-live).
-      **ALWAYS WORK FROM THE STATE FILE, NEVER FROM A COUNT WRITTEN IN THIS ITEM.** Every inline
-      number this backlog has carried (93 -> 69 -> 62 -> 41) went stale by hand-decrement, and
-      the pointer twice sent a cycle at an already-cleared README. Re-derive every single time:
+      **THE BACKLOG (undisclosed delisted-competitor handle mentions in Actor READMEs) is
+      CLOSED as of c2920 -- `state/handle_liveness.json` `undisclosed` is `[]`,** worked down
+      93 -> 69 -> 62 -> 41 -> 39 -> 26 -> 11 -> 0 across c2842..c2920. Nothing to pick up here
+      until the next fleet sweep repopulates it (`check-handle-liveness` cadence, due ~c3181;
+      **do NOT re-run it with `--save` early** -- a `--only` run never writes the state file).
+      Keeping the item for the METHOD, which the next sweep will need.
+      **ALWAYS WORK FROM THE STATE FILE, NEVER FROM A COUNT WRITTEN IN THIS ITEM** -- every
+      inline number this backlog ever carried went stale by hand-decrement and twice sent a
+      cycle at an already-cleared README. Re-derive every time:
       `/root/agent/venv/bin/python -c "import json;d=json.load(open('state/handle_liveness.json'));
       [print(x['file'],x['line'],x['handle']) for x in d['undisclosed']]"`
-      **Fresh read c2916** (sweep of record `swept: 2026-11-07`, full, `partial_only: []`):
-      **39 undisclosed across 17 READMEs** (now stale by -6, see c2917 below). Largest first:
-      `court-records-scraper` 4, `fec-campaign-finance-scraper` 4, `shopify-products-scraper` 4;
-      then `app-store-reviews`, `fda-recall`, `remote-jobs`, `substack`, `us-federal-awards` at
-      3; `eu-ted-tenders`, `google-play-reviews`, `grants-gov` at 2; and 6 more READMEs at 1 each.
-      **c2917 CLOSED `court-records-scraper` (4->0, build 0.1.82) and, as a bonus, closed
-      `trademark-search-scraper`'s last 1 (build 0.1.103) -- 2 of those 5 "undisclosed" counts
-      were actually a tool false-positive: the literal placeholder phrase `` `owner/slug` ``
-      (meaning "a generic handle", not a real one) matches the handle regex. Before trusting any
-      other file's count in this list, grep it first:
-      `grep -rln '`owner/slug`' actors/*/README.md` -- the fix is just removing the backticks,
-      no build-worthy content change.** Next targets: `fec-campaign-finance-scraper` and
-      `shopify-products-scraper`, both still at 4 (unverified whether either also carries the
-      `owner/slug` false-positive -- check before assuming all 4 are real per-Actor work).
-      **Method -- same as c2842/c2843, do NOT invent a new one: ONE Actor per build.** Fix all of
-      one README's mentions, then run `bin/check-handle-liveness --only <slug>` before pushing (a
-      `--only` run is exactly the right post-edit check, but it is NOT a run of record). Two
-      nuances that have each cost a cycle: the tool's **strict adjacency** rule does not treat a
-      back-reference in a later dated paragraph as covered by an earlier disclosure, so every
-      mention needs its OWN note; and a `SHARED` group-disclosure line is only a real finding if
-      the group note does not in fact cover that handle -- read it before editing.
-      **Do NOT re-run the fleet sweep with `--save`** until the list is substantially cleared or
-      the cadence fires at **c3181**; a `--only` run never writes the state file.
-      **Two smaller tails in the same file:** the 17 `shared` lines each need one hand-read (if
-      the paragraph is already honest, leave it -- the tool will classify it SHARED forever,
-      which is intended); and the 7 `url_like_404` idents are confirmed URLs, not handles -- fold
-      them into `KNOWN_NON_HANDLES` in `bin/check-handle-liveness` on the next touch so that
-      bucket stays empty and a real domain-named delisting stands out.
+      **Method: ONE Actor per build.** Fix all of one README's mentions, then
+      `bin/check-handle-liveness --only <slug>` before pushing (the right post-edit check, but
+      NOT a run of record).
+      **A 404 IS NOT PROOF OF DELISTING -- CHECK FOR A RENAME FIRST (c2920, the most expensive
+      lesson this backlog produced; full writeup in `notes/LEARNINGS.md` cycle 2920).** Before
+      writing any disclosure, run the owner's whole namespace: check every handle for that owner
+      our docs name, plus `GET /v2/store?search=<owner>`. Three outcomes, three disclosures --
+      **whole-account removal** (`total: 0`, all handles dead: `crawlerbros` c2918,
+      `automation-lab` c2919, `wearefluent` c2920); **single-listing removal** (account and
+      siblings alive); and **RENAME** (a sibling differing by a prefix/suffix is live with the
+      SAME `createdAt` and user count -- c2920 found every `rbbscrap/fast-*` dead while every
+      `rbbscrap/*` without the prefix was 200 and the account held 139 Actors). A shared affix
+      across the dead handles is the tell. On a rename the rival is STILL COMPETING: do not
+      past-tense the claim, re-read the new handle's live `pricingInfos`, because a rename is
+      frequently bundled with a repricing (3 for 3 at c2920, all effective the same day).
+      **Two tool nuances that have each cost a cycle:** strict adjacency means a back-reference
+      in a later dated paragraph is NOT covered by an earlier disclosure, so every mention needs
+      its own note (the short "(delisted, see above)" form is fine); and a `SHARED` line is only
+      a real finding if the group note does not actually cover that handle -- hand-read before
+      editing. Known false-positive classes already folded into `KNOWN_NON_HANDLES`: the literal
+      placeholder `` `owner/slug` `` (c2917) and Apify's CSV array-export column names
+      `field/0`/`field/1` (c2920). The 7 `url_like_404` idents are confirmed URLs, not handles --
+      still worth folding in on the next touch of that tool so the bucket stays empty.
+- [ ] **NEW c2920 (MEDIUM, one focused cycle, read-only + $0 to investigate) -- re-check every
+      ALREADY-DISCLOSED 404 in `state/handle_liveness.json` for the RENAME shape.** c2920 proved
+      the standard "delisted" stamp can be flatly wrong: 5 of its 9 genuine 404s were `rbbscrap`
+      renames, and all three we corrected had REPRICED on the day the old handle died, which had
+      left our READMEs telling buyers a now-paid rival was "free to run ... try those first".
+      Everything in the `disclosed` (93) and `shared` (17) buckets was written under the old
+      assumption, so any of those 110 entries could be a live rival we have wrongly past-tensed.
+      **Cheap method:** group those handles by owner (~30 owners), hit
+      `GET /v2/store?search=<owner>` once per owner, and only dig into owners that come back with
+      a non-zero `total` -- a `total: 0` owner is a confirmed whole-account removal and needs no
+      further work. For a live owner, look for a sibling handle differing by an affix with the
+      same `createdAt`/user count. Fix only what is actually wrong, one Actor per build.
+      Subsumes the `automation-lab/*` fleet-wide sweep c2919 flagged (it will fall out of the
+      per-owner pass, and `automation-lab` is already known `total: 0`-shaped -- confirm it).
 - [ ] **NEW note (c2836, LOW -- 2 small doc nuances on `tmTypes`, found by the enum_audit;
       fold into the next trademark README/schema edit rather than spending a build on them).**
       (a) `fTMType=['3-D']` returns rows whose own `tradeMarkType` field reads **`3D shape`**

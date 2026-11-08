@@ -385,11 +385,16 @@ the live Actor at all** (`pricingInfos` is `null`, confirmed by direct API read,
 script's default) — a real unmonetized alternative rather than a parse artifact, covering 10-K/10-Q/
 8-K/Form 4/13F with "executive transactions, insider trades" among its claims, so on sticker price it
 is unbeatable in the same way `constant_quadruped`'s FREE model already is. `rbbscrap/fast-sec-edgar-scraper`
-(2 users) is free today but **only until 2026-11-08**, when a scheduled price record takes effect —
-and that record is worth reading rather than assuming: it charges **$0.0015 per *10-K/10-Q filing*
-extracted**, its own event description's words, so despite naming "Form 4 executive insider stock
-transactions" in its description it prices an annual/quarterly report, not a transaction row. Not a
-unit-matched substitute either before or after the change.
+(2 users) was free, but **only until 2026-11-08**, when a scheduled price record was due to take
+effect — and both halves of that prediction are now settled, with one twist. The handle itself
+**no longer resolves (the Apify API returned 404 for it on 2026-11-08): it was renamed, not removed.**
+The same listing is live as `rbbscrap/sec-edgar-scraper` (still 2 users, same `createdAt` of
+2026-10-23, title "SEC EDGAR Scraper — 10-K, 10-Q & Insider Trades"), and the scheduled record did
+take effect on 2026-11-08 exactly as read: it charges **$0.0015 per *10-K/10-Q filing* extracted**,
+its own event description's words, so despite naming "Form 4 executive insider stock transactions"
+in its description it prices an annual/quarterly report, not a transaction row. Not a unit-matched
+substitute either before or after the change, and no longer free. Verified live 2026-11-08 on the
+new handle's own pricing record.
 
 **Two more are cheaper per item but bill a unit that is not ours, named for completeness the same way
 the per-filing group above is:** `api-co/sec-edgar-filings` (2 users, tiered per **`Filing`** —
