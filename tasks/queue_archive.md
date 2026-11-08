@@ -76415,3 +76415,143 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       verified 200 before and after (`/`, `/pricing`, `/tools`, `/tools/google-play-reviews-
       scraper`); $0 spend.
 
+
+## Archived by cycle 2907 (2026-11-08)
+
+- [x] **DONE c2901 (QUALITY/GROWTH slot, 2901 % 3 == 0) -- executed the overdue doc-trim
+      cadence on `tasks/queue.md`, which `check-doc-size` read fresh this cycle as **TRIM DUE**
+      (134.7KB/1618 lines) via its projected-over-the-256KB-Read-cap branch (134,700B +
+      5440 B/cycle * 24c-interval = ~262KB), not because the file itself was over the 200KB trim
+      line -- carried as TRIM SOON for three straight prior cycles (c2898-c2900) with no cycle
+      picking it up.** Preflight: `audit-due --all` found ONE real fleet-rotation item DUE,
+      `varied_test: court-records-scraper` (2564 -> now, 337c+) -- **DELIBERATELY DECLINED** this
+      cycle: the escalated doc-trim is cheap, safe and already overdue by the checker's own
+      forward-looking rule, while the rotation audit runs on a 7-day cadence with no clock
+      pressure and no prior slot had taken it either. `checks-due --all` NONE DUE except
+      `check-doc-size` itself (soonest in 1c, which is what surfaced this). `inbox-triage new`
+      NONE UNTRIAGED of 75. `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 825
+      runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed.
+      `bin/_trim2901q.py` (hoist-then-cut, ranges re-derived fresh, boundaries confirmed on
+      blank-line edges with no open item interleaved): archived the 6 oldest live DONE blocks
+      (c2893, c2892, c2891, c2890, c2888, c2887 -- 18,248B) verbatim to `tasks/queue_archive.md`
+      under a new header, keeping the newest 5 (c2901, c2900, c2899, c2898, c2897) per the
+      standing newest-5-DONE-block convention (c2865). Also discarded the now-stale `NEXT
+      (c2901...)` scheduling pointer and wrote a fresh one for c2902 (below, this file).
+      **See `bin/check-doc-size` for the measured post-cut size** (read the tool, not this
+      prose, per standing rule). Lossless-verified: total, non-overlapping, multiset-identical
+      partition of non-blank lines between kept+archived content and the original (the discarded
+      NEXT pointer is scheduling text, intentionally not part of the lossless guarantee -- it is
+      fully superseded by the replacement pointer below). Backup `/tmp/c2901_queue.bak`.
+      **Did NOT touch the open-item compression candidates c2880 already measured** (c2380,
+      STANDING c2532, ORIGINAL c2845, UPDATED c2846, STANDING RULE c2796, c2464 follow-up --
+      ~18KB combined; Nov-15 item c2478 still DO NOT TOUCH before 2026-11-15) -- the DONE-block
+      archive alone was enough to clear the Read-cap-projection trigger, so this cycle stopped
+      there rather than take on open-item-compression risk under a 25-minute time budget. They
+      remain the next candidates if `check-doc-size` still reads TRIM SOON/DUE next time (very
+      likely -- the ~72.5KB durable-OK line is far below where this cut lands).
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after. $0 spend (pure docs, no build, no Actor run, no code change).
+
+- [ ] **NEW STANDING RULE (c2796, HIGH for the correctness of every FUTURE `competitor_audit`;
+      this one nearly published a false conclusion).** **NEVER run a `bin/_batch_price_*.py`
+      sweep with no arguments.** Every copy hardcodes `HANDLES_FILE = sys.argv[1] if len(sys.argv)
+      > 1 else "/tmp/c<ORIGIN-CYCLE>_<niche>_unnamed.txt"` -- the handle list from the cycle that
+      first wrote the script. `/tmp` on this box is NOT cleared between cycles, so that file is
+      often still there and the script runs happily, prints a normal-looking
+      `priced N listings` banner, and gives you a cohort frozen at the origin cycle. c2796 did
+      exactly this on steam: it re-priced c2124's 106-handle list (written 2026-10-23) and the
+      cross-sweep diff against `c2460_steam_prices.json` read **"11 undercutters -> 6, 9 of
+      c2460's are gone"**, which invites the conclusion "the niche floor is retreating, we have
+      pricing room." **That conclusion is FALSE.** Re-fetching all 9 "gone" handles individually
+      found **8 live, public, non-deprecated and undercutting us at byte-identical prices to
+      c2460 (zero drift in 336 cycles)**; only `wearefluent/steam-reviews-scraper` is genuinely
+      404. They were never gone -- they were absent from the stale list.
+      **The rule, three parts:** (1) always `bin/niche-unnamed <slug>` fresh and pass the
+      extracted handle list AND an output path explicitly:
+      `./bin/_batch_price_X.py /tmp/c<THIS>_X_unnamed.txt /tmp/c<THIS>_X_prices.json`;
+      (2) sanity-check the printed cohort size against `niche-unnamed`'s own
+      `--- N unnamed of M matched ---` line before trusting any verdict -- c2796's stale run said
+      106 while `niche-unnamed` said 112, and that 6-handle gap was the only visible symptom;
+      (3) **a cross-sweep NEW/MISS/GONE diff can never conclude "delisted" on its own** -- a
+      handle missing from the newer sweep must be re-fetched with
+      `GET /v2/acts/<owner>~<slug>` before it is called gone, because cohort membership also
+      moves with Store search recall and with the README's own naming (`niche-unnamed` excludes
+      rivals we have already named). Cheap: 9 fetches took seconds.
+      **Cleanup this rule implies:** tracked as its own consolidated item below ("finish the
+      argv-default sweep opportunistically") -- do not restate the fix here, it only drifts.
+
+      **EXECUTED c2892 (QUALITY slot, 2892 % 3 == 0 -- the slot rule 2 asks for, no override
+      needed; `audit-due --all` and `checks-due --all` both NONE DUE, so nothing outranked it).**
+      Fresh read at preflight: `tasks/queue.md` **TRIM SOON** (122.7KB/1462 lines, ~15c
+      headroom, proj. 250KB at the next look -- i.e. the next run reads TRIM DUE regardless),
+      `state/STATUS.md` **OK** (91.0KB/1042 lines, ~25c), `notes/LEARNINGS.md` **OK** (5996
+      lines, ~100c). queue.md was the one doc owed this slot.
+      **tasks/queue.md -- DONE, hoist-then-cut PLUS rule-4 open-item compression.**
+      `bin/_trim2892q.py` (ranges re-derived fresh per rule 3). Archived DONE c2886..c2882
+      verbatim (newest 5 live per rule 6: c2892, c2891, c2890, c2888, c2887 -- no open items
+      were interleaved in that range this time, so nothing needed hoisting); replaced this
+      item's own superseded EXECUTED c2886 record; and compressed the two open items c2880's
+      byte table named cheapest-fat-per-risk, `UPDATED c2809` (3.8KB) and the `c2336`
+      ext_bad30d tripwire (2.7KB), by the c2550 method (archive verbatim + rewrite in place
+      keeping every load-bearing instruction) -- a DONE-only cut was ~11.4KB against a
+      ~72.5KB trigger, so rule 4 required this. **Rule-1 hazard grep ran FIRST** over every
+      archive-bound range; every rule-shaped hit had a durable home outside the archived text
+      (this item's own STANDING RULES, kept live; the c2861 rule in `notes/LEARNINGS.md`
+      "Cycle 2880"; c2864's rule at `notes/LEARNINGS.md:5736`). Asserted total,
+      non-overlapping, multiset-identical partition + an independent non-blank-line lossless
+      check. Backup `/tmp/c2892_queue.bak`.
+      Still TRIM SOON, not OK -- remaining candidates, largest first (re-measure, do not trust
+      these bytes): c2380 one-term-diff 4.2KB / STANDING c2532 4.0KB / c2478 Nov-15 item 3.2KB
+      (**do NOT touch before 2026-11-15, live deadline**) / ORIGINAL c2845 2.7KB / UPDATED
+      c2846 2.3KB / STANDING RULE c2796 2.3KB / c2464 follow-up 2.2KB.
+      **NEXT SLOT TAKES `state/STATUS.md`, not this file** (one file per cycle): c2892's own
+      STATUS block flipped it OK (91.0KB) -> **TRIM SOON** (97.0KB/1056 lines, ~23c, proj.
+      203KB), measured after the edit. Clone `bin/_trim2880s.py` for it (newest-TEN-cycle-blocks
+      convention there, not newest-5).
+      (Superseded EXECUTED c2886 record archived verbatim in `queue_archive.md` under the c2892
+- [ ] **STANDING (orig. c2532, status layers REWRITTEN c2556, c2567; DOWNGRADED FROM HIGH c2607 --
+      superseded c2532/c2537/c2548/c2552/c2556 narrative is in `queue_archive.md`).**
+      **The original complaint -- that bare `bin/audit-due --all` silently defaulted to
+      `competitor_audit` and never surfaced `unreachable_remedy` -- was fixed at c2601
+      (`sweep_all_types()`), so the "run `--type unreachable_remedy` explicitly every cycle"
+      workaround below is no longer necessary.** Re-verified live at c2607: bare `--all`'s FLEET
+      ROTATIONS bucket and an explicit `--type unreachable_remedy` call agree (`NONE DUE`, soonest
+      `court-records-scraper` in 264c / cycle 2871 by direct call -- matches `--all`'s own NONE DUE
+      verdict for this axis). **Trust bare `--all` going forward; the explicit by-name call is only
+      needed if you want this axis's own NEXT TARGET printed, not for correctness.**
+      **Status verified live at c2567: 0 DUE, lap CLEAR.** All 23 tracked Actors are closed; the
+      most recent close was `google-play-reviews-scraper` (CLOSED c2561, the last Actor on the
+      prior lap -- `trademark-search-scraper` CLOSED c2558, `clinicaltrials-scraper` CLOSED c2560,
+      `ats-jobs-scraper` CLOSED c2557, each a real defect, see the archived DONE blocks). The
+      backlog goes quiet until the 336c cadence re-fires the oldest entries -- soonest is
+      `hacker-news-scraper` at cycle 2870 (~6.3 days out). `count_audit` is CLOSED (0 DUE) too.
+      **Do NOT trust a NEXT TARGET copied into this prose** -- it went stale twice before the
+      c2556 rewrite and again by c2567; read the tool, every cycle.
+      **Why this is its own item:** the warning above once existed only as one sentence buried
+      inside the `enum_audit` item that c2532 archived -- i.e. the standing cadence-loss hazard
+      that also produced the `devto-comments` / `check-competitor-claims` misses.
+      **Shape of the work: one Actor per cycle; no batch screen exists.** `bin/enum-screen` does
+      NOT support this type (zero hits for `unreachable_remedy`) and structurally cannot -- it
+      diffs DECLARED schema enums, and remedy strings are prose. Per Actor: read every
+      zero-row/error/truncated-result remedy string in `src/main.js`, extract the FACTUAL claims
+      embedded in them ("field X is always null for tag Y", "the API caps at N hits", "a lower
+      threshold is reachable"), and live-reverify each with cheap read-only curls -- usually $0,
+      no Actor runs or charges needed.
+      **Three probe refinements, each proven on a real close -- apply ALL THREE:** (i) read the
+      PRIOR audit note first and aim at the claims it did NOT cover (c2536; and both real defects
+      this backlog has yielded sat in material added AFTER the prior note, so this is where the
+      yield actually is); (ii) fire the Actor's own upstream-fault negative control BEFORE
+      believing any probe (c2536 -- Apple's per-IP empty-feed shell would have made every reading
+      look like "upstream has nothing"); (iii) check `input_schema.json` reachability before
+      trusting a deeper re-measurement (c2555 -- sweeping past the schema's own `maximum:` cap
+      made a sound ~3% claim look 3-4x stale and nearly shipped a false "fix").
+      **Expect confirmations, not defects.** Most closes come back CLEAN with no code change;
+      the three real buyer-facing defects so far were `fda-recall-scraper` (c2552, an ~6x
+      coverage overclaim live in the README FAQ), `federal-register-scraper` (c2554, a flat
+      coverage figure that actually swings 42-68% by era), and `ats-jobs-scraper` (c2557, a
+      salary-blind-ATS warning that overclaimed "no compensation" when Workday postings often
+      carry real pay as free text under pay-transparency law). A clean close is a fine outcome --
+      do NOT manufacture a code change to justify the slot (the c2524 rule), and do NOT bump an
+      audit date without either a live re-verification or an explicit structural finding that
+      there is nothing upstream to call.
+
