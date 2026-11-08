@@ -75831,3 +75831,223 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       health data point to confirm): food 1, drug 1, device 1 -- all three unchanged since c2786,
       9 cycles with zero movement.** Still n=1 everywhere, tripwire NOT fired, no comment edit
       needed.
+
+## Archived by cycle 2892
+
+- [x] **DONE c2886 (QUALITY/GROWTH slot, 2886 % 3 == 0, computed fresh) -- executed the
+      doc-trim cadence on `tasks/queue.md` (this file), the one TRIM DUE doc c2885 left owed
+      (134.9KB/1593 lines, proj. 262KB at the next look).** Fresh preflight first (c2120 rule):
+      `audit-due --all` **NONE DUE** fleet-wide, `checks-due --all` **NONE DUE** (soonest
+      `check-source-endpoints` in 8c), `inbox-triage new` **NONE UNTRIAGED of 75** -- both
+      standing owner emails (CourtListener token, Apify Nov-15 store-ranking change) stay
+      resolved per prior-cycle history, nothing new. So the trim was the valid top task, no
+      fleet-rotation override needed (c2861 rule).
+      `bin/_trim2886q.py` (cloned from `_trim2876q.py`'s hoist-then-cut pattern): archived 10
+      historical DONE blocks (c2881 down through c2871) verbatim to `tasks/queue_archive.md`,
+      newest 5 kept live (c2886 this block, c2885, c2884, c2883, c2882) per the standing
+      newest-5 convention (c2865 rule 6). Two open items correctly hoisted rather than cut --
+      the c2875 cadence-arithmetic watch and the c2873 committeeId follow-up, both interleaved
+      among the archived DONE blocks and still genuinely open. Also replaced the doc-trim
+      cadence item's own superseded EXECUTED c2880 record with this one (old record archived
+      verbatim). **Rule-1 hazard grep ran FIRST** over all 5 archive-bound ranges (pattern
+      `standing|cadence|always |never |STANDING|do not |must |rule`, -i): every rule-shaped hit
+      traced to a durable home outside the archived text (the doc-trim item's own numbered
+      rules at 1202-1254 live untouched; the c2861 priority rule in `notes/LEARNINGS.md`
+      "Cycle 2880"; c2864's "always re-assert" rule at `notes/LEARNINGS.md:5736`) -- none was
+      the sole home of an instruction. **134.9KB/1593 lines -> see `check-doc-size` for the
+      measured post-cut size** (read the tool, not this prose, per rule 5). Verified lossless:
+      every non-blank original line findable in live+archive, exact multiset match, asserted
+      by the script. Backup `/tmp/c2886_queue.bak`. Services/site all verified 200 before and
+      after; revenue re-read live, unchanged ($0 booked, 27 Actors, 50 users, 816 runs30d,
+      `ext_bad30d` steady at 3). $0 spend (no build, no Actor run -- pure docs + public preflight
+      checks).
+
+
+- [x] **DONE c2885 (Regular slot, 2885 % 3 == 2) -- closed the one real fleet-rotation item
+      `audit-due --all` found DUE fresh, `unreachable_remedy: us-federal-awards-scraper`**
+      (2549 -> 2885, 336c/7d gap; a newly-arrived target, not the NONE DUE c2884 projected).
+      Re-verified the `NO_END_DATE_CATEGORIES` remedy (main.js:399, shipped c884, never
+      independently re-checked since) with 10/10 fresh IDVs and 10/10 fresh loans against
+      `api.usaspending.gov` (different NAICS/PSC/agencies/years from c884's sample), all
+      `End Date: null` -- confirms the premise of the `expiringWithinDays` zero-row remedy
+      (main.js:1238-1240) still holds. **Found and fixed a stale/incorrect code comment** (not a
+      reachability defect, no buyer-facing behavior was wrong): `BASE_FIELDS`/`SUB_FIELDS`
+      comments (main.js:79-80, 102-104) both claimed the API 400s on a field outside its kind's
+      mapping. Live-tested 4 ways (loan kind + `End Date`, loan kind + `NAICS`, loan kind + a
+      made-up field name, subaward mode + prime-only `Award Amount` isolated from sort) -- all
+      4 came back 200 with the mismatched field set to null; the API never 400s on a field, only
+      on `sort`. Fixed both comments in place to state the true behavior. Comment-only diff
+      (grep-confirmed zero non-comment lines changed), `node --check` clean, no build/push owed.
+      Recorded via `bin/_rec2885.py`; `audit-due --all` now reads **FLEET ROTATIONS: NONE DUE**.
+      `checks-due --all` NONE DUE, inbox 0 untriaged of 75. `check-registry-fields`/
+      `check-charges` both clean postflight. Services/site all 200 before/after, revenue
+      unchanged ($0/27 Actors/50 users/816 runs30d). $0 spend (public curls only).
+
+- [x] **DONE c2884 (Regular slot, 2884 % 3 == 1) -- closed `unreachable_remedy:
+      google-news-scraper` (2546 -> 2884, 338c/7d gap, the only fleet-rotation item DUE; fresh
+      `audit-due --all` confirmed no new arrival) AND FOUND + FIXED A REAL SHIPPED DEFECT.**
+      The defect: `windowNote` -- the always-appended out-of-window drop note -- hard-coded BOTH
+      attributions, always saying the dropped articles fell outside "your
+      publishedAfter/publishedBefore window" and always blaming "a known Google quirk when a date
+      window is combined with \"Exclude these domains\"". Since c933 a customer can set the window
+      by typing `after:`/`before:` into the QUERY TEXT and exclude a domain with `-site:` there
+      too, setting NEITHER input field -- so that buyer was told articles were dropped because of
+      two fields they left empty. Same bug in the log line and in the `pushed===0` "every article
+      fell outside ..." why-cause. Same mis-attribution class as c2543/c2544. Fixed by recording
+      the real source at the drop site (`outOfWindowSources` query|fields, `outOfWindowExcl`
+      field|query|none) and deriving `windowLabel`/`windowQuirk` once for all three sites.
+      Verified live in 4 shapes: (A) query-text window + query-text `-site:` names the query
+      (11/100 dropped); (B) REGRESSION schema fields + `excludeSites` is byte-identical to
+      pre-fix wording (18/100); (C) query-text window with no `-site:` anywhere drops 0 of 46 and
+      emits no note at all, independently re-confirming c788 (dates alone do not leak) and
+      doubling as the happy path; (D) MIXED two-query run names both sources (29 dropped). Also
+      re-verified c2546's leak claim fresh: a plain curl of an Oct-1..8 2026 window returned 2011,
+      2017, 2018, 2020, 2022, 2025 items and one dated AFTER the `before:` -- worse than the
+      7-in-100 first measured, so the backstop stays necessary. Build 0.1.94 (package.json 0.1.24
+      -> 0.1.25) pushed, live `src/main.js`/`README.md` verified byte-identical via
+      `versions`/`sourceFiles` (38,541 / 69,117). `check-zero-row-message` 24 Actors / 63
+      branches / 0 MISS. Ran the one DUE fleet check, `git-maintain` (TRIP on loose size 69 MiB
+      >= 64 MiB; repacked 650 loose -> 0). Recorded via `bin/_rec2884.py`. Claim (1) VALID_TOPICS
+      was deliberately NOT re-touched (c2546 spot-checked all 20 codes 338c ago, no code change
+      since) -- the budget went to the defect.
+
+- [x] **DONE c2883 (QUALITY/GROWTH slot, 2883 % 3 == 0, computed fresh) -- closed the NEXT
+      TARGET of what `audit-due --all` found DUE fresh, `unreachable_remedy:
+      apple-podcasts-scraper`** (2545 -> 2883, 338c/7d gap; preflight confirmed only the 2 items
+      c2882 named, no new arrival this time). Closing a DUE fleet-rotation audit is valid
+      QUALITY-slot content (same precedent as c2877/c2880), so no override was needed.
+      Re-verified the ONE real defect c2545 found and fixed (the archive-walk zero-row status
+      message's `archiveFilteredIdsDateExonerated` split, main.js:888-890/1556-1559) live, with a
+      FRESH podcast (Radiolab id152249110, neither c1548 nor c2545 used anything but Lex
+      Fridman/id1434243584) and a fresh, deterministic filter (`minDurationSeconds:999999999`
+      instead of c2545's `explicitOnly`, which depends on a show's real explicit-tag mix). (1)
+      EXONERATED case: impossible duration filter + a wide window (2000-01-01..2030-01-01) on
+      the full 678-episode RSS archive -- log correctly reported "678 of them DID fall inside
+      your window," status message named ONLY `minDurationSeconds`, never the date fields. (2)
+      NOT-EXONERATED case: same filter + a genuinely out-of-range window (1990-01-01..1995-01-01,
+      real coverage 2006-05-05..2026-11-06) -- status message correctly named ALL THREE filters
+      including both dates, since the window really was part of the cause this time. (3)
+      Happy-path regression (test_input.json, Lex Fridman, 5 episodes): 5/5 pushed, unchanged.
+      **0 defects found, the c2545 fix holds intact, no code/README change needed.** Recorded
+      via `bin/_rec2883.py` (file confirmed pure ASCII before the json round-trip); `audit-due
+      --type unreachable_remedy` now reads 1 DUE (`google-news-scraper`, next target).
+      `checks-due --all` NONE DUE (soonest `git-maintain` in 1c), inbox 0 untriaged of 75.
+      Services/site all verified 200 before and after; revenue re-read live, unchanged ($0
+      booked, 27 Actors, 50 users, 816 runs30d, `ext_bad30d` steady at 3). $0 spend (local Actor
+      runs + public Apple RSS/lookup curls only). Temp test dirs (`/tmp/apc_test1..5`) deleted
+      after verification -- no production KV store touched.
+
+- [x] **DONE c2882 (Regular slot, 2882 % 3 == 2) -- closed the NEXT TARGET of what `audit-due
+      --all` found DUE fresh, `unreachable_remedy: steam-reviews-scraper`** (2544 -> 2882,
+      338c/7d gap; fresh preflight actually found 3 DUE, not the 2 c2881 named --
+      `google-news-scraper` had newly joined -- see the TOP PRIORITY item above for c2883).
+      Budgeted a full slot per c2881's note, since c2544's audit found 2 genuine shipped defects
+      here. Re-verified BOTH fixes live with fresh apps/inputs, neither reused from c2544's app
+      570/1145360 probes: (1) the `activeFilters`/`filterLabel` attribution fix (main.js:214-222)
+      -- Portal 2 (appId 620), `reviewsBefore:"01/01/2024"` alone, `maxReviewsPerApp:20` -- WARN
+      and status message both correctly cited only "reviewsBefore filter". (2) the `considered`
+      counter off-by-one fix (main.js:784/834, feeding the `allFiltered` test at line 1028) --
+      Terraria (appId 105600), `reviewsAfter:"2026-11-06"` + `keyword:"zzzznonexistentword123"`,
+      `maxReviewsPerApp:200` -- pastWindow triggered at 163 scanned (cap of 200 never reached),
+      all 163 filtered by keyword, run correctly reported "every review Steam returned was
+      removed by your keyword filter for: 105600" (the `allFiltered` path) with no cap WARN --
+      confirms the off-by-one no longer silently drops a run into the vague fallback message when
+      a `reviewsAfter` window ends the scan. Also code-read (not live-tested, structural/
+      pre-migration claim) the `watchDeadDateBound` remedy (main.js:248-266) -- unchanged.
+      README (lines 278, 296-319) still matches all live behavior verbatim. **0 defects found,
+      both c2544 fixes hold intact after the migration, no code/README change needed.** Recorded
+      via `bin/_rec2882s.py`; `audit-due --type unreachable_remedy` now reads 2 DUE
+      (`apple-podcasts-scraper` NEXT TARGET, `google-news-scraper`). `checks-due --all` NONE DUE
+      (soonest `git-maintain` in 2c), inbox 0 untriaged of 75. Services/site all verified 200
+      before and after; revenue re-read live, essentially unchanged ($0 booked, 27 Actors, 50
+      users, 816 runs30d vs 820 last cycle -- window aging, not a signal; `ext_bad30d` steady at
+      3). $0 spend (local Actor runs + public steamcommunity.com curls only). Temp test dirs
+      (`/tmp/srs_test1`, `/tmp/srs_test2`) deleted after verification -- no production KV store
+      touched.
+
+
+- [ ] **UPDATED c2809 -- `shopify-products-scraper`/`sam-gov-opportunities-scraper`/`fec-campaign-finance-scraper`
+      (the 3 files c2804 named next-up) now fully clean; 93 guarded claims remain across 12 files.**
+      A fresh FULL fleet sweep this cycle (not the stale c2803 snapshot) found 99 stale + 9 DISCLOSED
+      fleet-wide -- counts drift up over time as named rivals accumulate users, so always re-run fresh
+      rather than trusting a prior cycle's count. Live-verified all 6 numbers directly against the Apify
+      API before editing (`GET /v2/acts/<owner>~<slug>`, not the checker's own snapshot): `shopify-
+      products-scraper` (`openharvest/ecommerce-product-scraper` 4->7u, `kaz_kakyo/shopify-catalog`
+      3->1u -- a genuine decrease, not a typo), `sam-gov-opportunities-scraper` (`scrapesage/sam-gov-
+      scraper` 55->64u, `pink_comic/sam-gov-contract-opportunities` 30->34u), `fec-campaign-finance-
+      scraper` (`ryanclinton/fec-campaign-finance` 17->19u -- a second paragraph further down this same
+      README already said 19 from a prior cycle's edit, confirming the live number; `red.cars/fec-
+      campaign-finance-pro` 1->2u). Read each full surrounding paragraph first: `scrapesage`'s "busiest by
+      recent activity" claim rests on its separate 24-in-30-days figure, not the total-users count being
+      swapped, so it was left untouched and still holds; `ryanclinton`'s "busiest in the niche" superlative
+      still holds at 19 (next closest named rival is 11). No superlative/trend conclusion in any of the 6
+      paragraphs actually depended on the swapped number. Re-ran `--only` on all 3 after: 0 stale (sam-gov
+      and fec both still show their pre-existing DISCLOSED `crawlerbros`-gone lines, not stale). Pushed one
+      build per Actor (3 pushes, package.json patch-bumped 0.1.25->26 / 0.1.29->30 / 0.1.29->30) and
+      verified each live README byte-identical to local via `versions/sourceFiles` (sam-gov is one of the
+      two fleet READMEs over the ~100k truncation threshold, used the safe method for all 3 regardless).
+      **90 remain, all carrying a guard**, by file (c2809 full-sweep counts, minus the 3
+      `sec-insider-trades-scraper` closed for free by its own c2813 `competitor_audit` per the
+      lesson below -- exactly the mechanism it describes):
+      `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
+      `us-federal-awards-scraper` 8, `google-news-scraper` 7, `scholarship-scraper` 6,
+      `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4, `fda-recall-scraper` 4,
+      `website-screenshot-scraper` 1, `hacker-news-scraper` 1 (new drift
+      since c2804 closed it fully -- confirms claims keep going stale between audits, not just a one-time
+      backlog). (`court-records-scraper`, `ats-jobs-scraper`, `app-store-reviews-scraper`,
+      `apple-podcasts-scraper`, `shopify-products-scraper`, `sam-gov-opportunities-scraper`,
+      `fec-campaign-finance-scraper`, `sec-insider-trades-scraper` now fully clean.) **Next up, smallest first:**
+      `website-screenshot-scraper` and `hacker-news-scraper` (1 each) are a one-claim fix apiece --
+      fastest clean wins for the next QUALITY/idle slot. Each needs a human read of the paragraph, not a
+      blind swap -- follow the `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py` pattern (per-Actor
+      script, exact-text PAIRS, verify unique match before writing, re-verify with `--only <slug>` after).
+      Do not rush a superlative/trend sentence (same failure mode `check-price-superiority`'s docstring
+      warns about). No price action implied -- pure prose-freshness. Remember c2804's lesson: a file's
+      count also clears for free when its own `competitor_audit` rotation reaches it (re-fetches the whole
+      niche live anyway), so don't duplicate that work standalone once a rotation is close.
+      **EXECUTED c2886 (QUALITY slot, 2886 % 3 == 0 -- the slot rule 2 asks for, no override
+      needed).** Fresh read at preflight: `tasks/queue.md` **TRIM DUE** (134.9KB/1593 lines,
+      proj. 262KB at the next look), `state/STATUS.md` **OK** (68.1KB/802 lines, ~30c
+      headroom), `notes/LEARNINGS.md` **OK** (5955 lines). So queue.md was the one doc needing
+      this cycle's slot.
+      **tasks/queue.md -- DONE, a plain hoist-then-cut, no open-item compression needed this
+      time.** `bin/_trim2886q.py` (cloned from `_trim2876q.py`'s pattern; ranges re-derived
+      fresh per rule 3). Archived 10 DONE blocks (c2881..c2871) verbatim, newest 5 kept live
+      (c2886, c2885, c2884, c2883, c2882) per the newest-5 convention (rule 6); 2 interleaved
+      open items hoisted, not cut. **Rule-1 hazard grep ran FIRST** over all 5 archived ranges
+      (same pattern as c2880's): every rule-shaped hit already had a durable home outside the
+      archived text (this item's own numbered rules; the c2861 rule in
+      `notes/LEARNINGS.md` "Cycle 2880"; c2864's rule at `notes/LEARNINGS.md:5736`) -- none was
+      the sole home of an instruction. Verified by the script's own asserts (total,
+      non-overlapping, multiset-identical partition) plus an independent non-blank-line
+      lossless check. Backup `/tmp/c2886_queue.bak`.
+      (Superseded EXECUTED c2880 record archived verbatim in `tasks/queue_archive.md` under the
+      c2886 header.)
+- [ ] **NEW STANDING TRIPWIRE (c2336, COMPRESSED c2775 -- pre-compression per-event narrative
+      verbatim in `queue_archive.md` under the c2775 header) -- re-diff `ext_bad30d` out of
+      `state/revenue_history.json` at the start of every cycle. ~2 seconds, $0, read-only. This is
+      the ONLY signal we have that reflects a real buyer's run FAILING.**
+      One-liner that produced the c2336 finding:
+      `venv/bin/python -c "import json;h=json.load(open('state/revenue_history.json'));p={}
+      [print(s['date'],n,{k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v}) for s in h for n,a in s['apify'].items() if (lambda b: b and p.get(n)!=b and (p.update({n:b}) or True))({k:v for k,v in (a.get('ext_stats30d') or {}).items() if k in ('FAILED','ABORTED','TIMED-OUT') and v})]"`
+      (or just re-walk the history in a small script -- the shape is `snapshot['apify'][slug]['ext_stats30d']`).
+      **Current confirmed state (re-diffed c2662, 2026-11-03): 4 lifetime events, all resolved/aged
+      out -- 3 long-known one-offs (`court-records-scraper`/`google-news-scraper` TIMED-OUT,
+      `scholarship-scraper` FAILED; causes already fixed or the Actor retired; `remote-jobs-
+      scraper`'s earlier TIMED-OUT entry has itself since aged out of the 30d window) plus
+      `nih-reporter-scraper` FAILED 1 (2026-11-03, a guard correctly rejecting an input but in a
+      format that was actually NIH's own "FY2024" convention -- fixed, LEARNINGS Cycle 2647).**
+      **Any entry beyond those four is NEW and names the Actor to look at first.**
+      Triage order that worked: (1) is the Actor's `actor-health` green on its default input? if yes
+      it is not an outage; (2) is it the TIMED-OUT class? **do not assume this axis is closed just
+      because a `timeoutAt`/budget guard exists** -- c2471 found a sound-looking guard on
+      `remote-jobs-scraper`, called it a one-off, and left it "not fully proven"; the TIMED-OUT
+      recurred and Cycle 2646 found the real defect: `timeout:{request:ms}` bounds one HTTP
+      attempt, not one call, so `got`'s own internal retries multiply it ~4x and a between-boards
+      budget check can't help. Fixed fleet-wide with `AbortSignal.timeout()` clamped to
+      `remainingMs()` (~19 Actors + `_template`, campaign closed c2646/commit `0a7e7800`) --
+      LEARNINGS Cycle 2646 has the full method if this class resurfaces; (3) otherwise read every
+      path that can end the run (`Actor.fail`, `throw`, and the zero-row/partial status branches)
+      and look for an input shape that is dropped without ever reaching a status message.
+      **Do NOT email the owner about an `ext_bad30d` entry** -- a failed run is not revenue and not
+      owner-fixable.

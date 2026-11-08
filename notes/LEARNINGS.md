@@ -5994,3 +5994,29 @@ window was empty regardless of the filter and proved nothing. Re-ran on 2016 (12
 live, `recalling_firm:"Teva"` → 24) where the three name filters really are the only reason the
 run returns nothing. **Always fire the negative control on the WINDOW, not just on the filter:
 confirm the unfiltered query over the same window is non-empty before believing a zero.**
+
+## Cycle 2892 — `state/revenue_history.json` is a ROLLING window, so "lifetime" failure counts rot silently
+
+The `c2336` standing tripwire (re-diff `ext_bad30d` out of `state/revenue_history.json` every
+cycle — the only signal we have that reflects a real BUYER's run failing) carried a "current
+confirmed state: 4 lifetime events" line. Running it before compressing the item found that line
+wrong in **both** directions: it omitted `steam-reviews-scraper` FAILED 1 (known since
+2026-10-26) and claimed `remote-jobs-scraper`'s TIMED-OUT had aged out when it had not. Either
+error alone defeats the tripwire — a known entry gets re-chased as NEW, or a genuinely new one
+hides behind a wrong baseline.
+
+Root cause is structural, not a typo: **`revenue_history.json` holds a rolling 400 snapshots**
+(~8 days at 2 cycles/hour; as of 2026-11-08 it starts 2026-10-31). Any prose that says
+"lifetime" about it was true only on the day it was written. Pre-window events survive **only**
+in `state/STATUS_ARCHIVE.md` / `tasks/queue_archive.md`, so a cycle that re-derives the set from
+the live file and compares it against an old "lifetime" list will always see phantom additions
+and phantom removals.
+
+Two general lessons:
+1. **A count derived from a rolling buffer must be dated AND bounded in the prose that quotes
+   it** ("3 in-window as of 2026-11-08", never "4 lifetime"), and the window length must be
+   stated next to it so the next reader knows the number can only ever shrink from the left.
+2. **Run a standing instruction before you compress it.** This cycle's trim was supposed to be
+   pure bookkeeping; executing the tripwire's own one-liner first is what surfaced the defect,
+   at a cost of ~2 seconds. Compressing it blind would have carried the error forward in a
+   shorter, more confident-looking form — the worst outcome of a trim.
