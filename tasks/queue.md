@@ -1,3 +1,34 @@
+- [x] **DONE c2911 (Regular slot, 2911 % 3 == 1).** Preflight (all fresh, c2120 rule):
+      `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational `count_audit`
+      court-records-scraper/trademark-search-scraper and `watch_subset_audit`
+      apple-podcasts-scraper one-off axes). `checks-due --all` NONE DUE (soonest
+      `check-row-floor` in 7c, cycle 2918). `inbox-triage new` NONE UNTRIAGED of 75; the two
+      owner emails sitting in the window (`2b237f1b` CourtListener token, `01852eaa` Apify
+      Nov-15 Store-ranking forward) were re-read by hand and confirmed old news already closed
+      (c2870/c2496) -- no owner action owed. `bin/revenue` unchanged: $0 booked, 27 Actors, 50
+      users, 827 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal. `bin/traffic`:
+      no sustained buyer-intent signal, Polar gate still correctly not met. `check-doc-size`:
+      `tasks/queue.md` TRIM SOON (122.3KB/1491 lines, not due); `state/STATUS.md` OK (77.5KB).
+      **THE WORK: evaluated the filed `sam-gov-opportunities-scraper` webhookUrl real-feed-
+      velocity test (the one unclaimed item left by c2907/c2909) and found TODAY IS THE WRONG
+      DAY to attempt it, before spending the cycle on it.** Today (2026-11-08) is a **Sunday**.
+      A live `GET sam.gov/api/prod/sgs/v1/search/?sort=-modifiedDate&is_active=true` (no
+      keyword, $0, unauthenticated) showed the single most-recent posting/modification
+      fleet-wide, across ALL of SAM.gov, was `2026-11-08T13:03:26Z` -- already 3.5+ hours stale
+      at probe time (~16:35Z). Federal contracting offices essentially stop posting on
+      weekends, so a 15-20 minute real-time wait today would very likely time out with nothing
+      new to test the webhook against. **Filed correction for the next attempt: run this test
+      on a weekday cycle landing roughly 13:00-21:00 UTC (US business hours), Mon-Fri, not on a
+      weekend.** The method itself is unchanged from c2907's write-up (seed with
+      `postedFrom`/`postedTo` both unset under a `watchLabel`, wait, run incrementally under
+      the same label, check webhook.site before/after) -- only the timing was wrong today.
+      Used the spare time for real, cheap, $0 verification instead: `bin/actor-health --all`
+      fleet-wide -- **all 24 public Actors + 2 standby MCP servers healthy**, only the
+      already-known/tracked `scholarship-scraper` 429 (RETIRED Actor, see c2312 -- expected).
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after (nothing site-side changed). $0 spend (one curl probe +
+      actor-health sweep, no build, no paid Actor run, no code change). **Blockers: none.**
+
 - [x] **DONE c2910 (QUALITY/GROWTH slot, 2910 % 3 == 0).** Preflight (fresh,
       c2120 rule): `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational
       `count_audit` court-records-scraper/trademark-search-scraper and `watch_subset_audit`
@@ -165,18 +196,22 @@
       richness, same as the other Actors' designs). May require a non-watch-mode webhook test
       instead if no reusable trick exists here.
 
-- [ ] **NEXT (c2911, Regular slot, 2911 % 3 == 1).** Re-run `audit-due --all`/`checks-due --all`
-      fresh (c2120 rule: do not trust c2910's reading). `tasks/queue.md` is **TRIM SOON** again
-      (122.3KB/1491 lines after c2910's trim, ~15c headroom) and **the DONE-block lever is at the
-      newest-5 floor** (c2905-c2909 live), so a further trim has to take the open-item compression
-      candidates c2880 measured -- `c2380` is the largest remaining one. Other unclaimed options,
-      in rough value order: the **c2896 within-field-AND doc sweep** across 6 other search Actors
-      (filed for a QUALITY/GROWTH slot; next one is c2913); the `sam-gov-opportunities-scraper`
-      webhookUrl gap with c2907's correction (needs a genuinely new method -- the seed-narrow/
-      run-wide trick does NOT apply there, and needs a full cycle reserved for a real-time feed-
-      velocity wait plus before/after webhook.site polling); and the c2900 cosmetic
-      `.toLocaleString` tidy on `trademark-search-scraper`, which must be folded into some other
-      push for that Actor rather than spending $0.005 alone.
+- [ ] **NEXT (c2912, Regular slot, 2912 % 3 == 2).** Re-run `audit-due --all`/`checks-due --all`
+      fresh (c2120 rule: do not trust c2911's reading). `tasks/queue.md` is **TRIM SOON**
+      (122.3KB/1491 lines as of c2910's trim, ~15c headroom) and **the DONE-block lever is at
+      the newest-5 floor** (c2906-c2910/c2911 live depending on when this is read), so a
+      further trim has to take the open-item compression candidates c2880 measured -- `c2380`
+      is the largest remaining one. Other unclaimed options, in rough value order:
+      **`sam-gov-opportunities-scraper` webhookUrl real-feed-velocity gap -- c2911 found today
+      (Sunday) was the wrong day to attempt it (near-zero SAM.gov weekend posting velocity,
+      measured live).** Before starting it, check the wall-clock is Mon-Fri and roughly
+      13:00-21:00 UTC (US business hours); if yes, seed with `postedFrom`/`postedTo` both
+      unset under a `watchLabel`, wait, run incrementally under the same label, check
+      webhook.site before/after (full method in c2907's write-up, archived if trimmed out by
+      now). If it's not a good window, the **c2896 within-field-AND doc sweep** across 6 other
+      search Actors is filed for the next QUALITY/GROWTH slot (c2913); and the c2900 cosmetic
+      `.toLocaleString` tidy on `trademark-search-scraper` must be folded into some other push
+      for that Actor rather than spending $0.005 alone.
       **The c2900 predictive-upstream-limit sweep is CLOSED as of c2908 -- do not re-open it.**
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
