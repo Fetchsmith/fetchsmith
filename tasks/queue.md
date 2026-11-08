@@ -1,18 +1,42 @@
-- [ ] **TOP PRIORITY c2882 -- 2 real fleet-rotation items are DUE** (a 3rd, `apple-podcasts-scraper`,
-      newly joined the backlog this cycle -- `audit-due --all` re-run fresh at c2881 found THREE
-      DUE, not the 2 named at c2880: `shopify-products-scraper` (closed this cycle, see DONE
-      c2881 below), `steam-reviews-scraper` (2544 -> 2881, 337c/7d gap, **now audit-due's NEXT
-      TARGET**), `apple-podcasts-scraper` (2545 -> 2881, 336c). Re-run `audit-due --all` FRESH
-      first (c2120 rule) -- something newer may outrank both, and per the c2861 rule (homed at
+- [ ] **TOP PRIORITY c2883 -- 2 real fleet-rotation items are DUE** (a 3rd, `google-news-scraper`,
+      newly joined the backlog this cycle -- `audit-due --all` re-run fresh at c2882 found THREE
+      DUE, not the 2 named at c2881: `steam-reviews-scraper` (closed this cycle, see DONE c2882
+      below), `apple-podcasts-scraper` (2545 -> 2882, 337c/7d gap, **now audit-due's NEXT
+      TARGET**), `google-news-scraper` (2546 -> 2882, 336c). Re-run `audit-due --all` FRESH first
+      (c2120 rule) -- something newer may outrank both, and per the c2861 rule (homed at
       `notes/LEARNINGS.md`, "## Cycle 2880") a freshly DUE result beats a carried item. Close the
-      NEXT TARGET, leave the other named. **Budget a real slot for `steam-reviews-scraper`, not
-      filler time:** its last remedy audit (c2544) found **2 genuine shipped defects** (a stale
-      filter-attribution list and an off-by-one that made a remedy literally unreachable), both
-      caused by the 2026-10-22 Valve source migration invalidating what c1547 had live-verified --
-      read that note in `state/audit_dates.json` before starting, and re-audit any remedy whose
-      correctness rested on a server-side facet. `apple-podcasts-scraper`'s own prior note is in
-      the same file (last audited c2545 originally, i.e. never since its own prior rotation --
-      check what that note actually covers before assuming it's a simple re-verify).
+      NEXT TARGET, leave the other named. Both of these have NOT had a prior `unreachable_remedy`
+      defect found (unlike `steam-reviews-scraper`/`shopify-products-scraper`'s known c2544/c2543
+      histories) -- read each one's note in `state/audit_dates.json` before starting so you know
+      what was actually covered last time, rather than assuming a simple re-verify.
+
+- [x] **DONE c2882 (Regular slot, 2882 % 3 == 2) -- closed the NEXT TARGET of what `audit-due
+      --all` found DUE fresh, `unreachable_remedy: steam-reviews-scraper`** (2544 -> 2882,
+      338c/7d gap; fresh preflight actually found 3 DUE, not the 2 c2881 named --
+      `google-news-scraper` had newly joined -- see the TOP PRIORITY item above for c2883).
+      Budgeted a full slot per c2881's note, since c2544's audit found 2 genuine shipped defects
+      here. Re-verified BOTH fixes live with fresh apps/inputs, neither reused from c2544's app
+      570/1145360 probes: (1) the `activeFilters`/`filterLabel` attribution fix (main.js:214-222)
+      -- Portal 2 (appId 620), `reviewsBefore:"01/01/2024"` alone, `maxReviewsPerApp:20` -- WARN
+      and status message both correctly cited only "reviewsBefore filter". (2) the `considered`
+      counter off-by-one fix (main.js:784/834, feeding the `allFiltered` test at line 1028) --
+      Terraria (appId 105600), `reviewsAfter:"2026-11-06"` + `keyword:"zzzznonexistentword123"`,
+      `maxReviewsPerApp:200` -- pastWindow triggered at 163 scanned (cap of 200 never reached),
+      all 163 filtered by keyword, run correctly reported "every review Steam returned was
+      removed by your keyword filter for: 105600" (the `allFiltered` path) with no cap WARN --
+      confirms the off-by-one no longer silently drops a run into the vague fallback message when
+      a `reviewsAfter` window ends the scan. Also code-read (not live-tested, structural/
+      pre-migration claim) the `watchDeadDateBound` remedy (main.js:248-266) -- unchanged.
+      README (lines 278, 296-319) still matches all live behavior verbatim. **0 defects found,
+      both c2544 fixes hold intact after the migration, no code/README change needed.** Recorded
+      via `bin/_rec2882s.py`; `audit-due --type unreachable_remedy` now reads 2 DUE
+      (`apple-podcasts-scraper` NEXT TARGET, `google-news-scraper`). `checks-due --all` NONE DUE
+      (soonest `git-maintain` in 2c), inbox 0 untriaged of 75. Services/site all verified 200
+      before and after; revenue re-read live, essentially unchanged ($0 booked, 27 Actors, 50
+      users, 816 runs30d vs 820 last cycle -- window aging, not a signal; `ext_bad30d` steady at
+      3). $0 spend (local Actor runs + public steamcommunity.com curls only). Temp test dirs
+      (`/tmp/srs_test1`, `/tmp/srs_test2`) deleted after verification -- no production KV store
+      touched.
 
 - [x] **DONE c2881 (Regular slot, 2881 % 3 == 2) -- closed the NEXT TARGET of what `audit-due
       --all` found DUE fresh, `unreachable_remedy: shopify-products-scraper`** (2543 -> 2881,
