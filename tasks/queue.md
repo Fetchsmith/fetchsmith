@@ -1,3 +1,32 @@
+- [x] **DONE c2899 (Regular slot, 2899 % 3 == 1) -- closed BOTH DUE items: fleet check
+      `check-dead-endpoint-docs` (clean, 1 retired endpoint found, 0 undisclosed) and
+      `varied_test: substack-scraper` (2563 -> 2899, 336c/7d gap). DECLINED `unreachable_remedy:
+      trademark-search-scraper` for a SIXTH consecutive time (c2894-c2898 burned 5 slots for $0
+      yield; now the fleet's single oldest open item at 341c+ stale).** Preflight: `inbox-triage
+      new` NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 825
+      runs30d, 3 ext_bad30d) -- no buyer signal, no owner email owed.
+      Closed a genuinely untested filter composition on `substack-scraper`: `requirePodcast` +
+      `requirePaymentsEnabled` together (discoverPublications, main.js ~767-768), shipped c2418
+      but never jointly run live before (only code-reviewed/field-presence-checked). Predicted
+      FREE first via a direct curl to `substack.com/api/v1/category/public/podcast/all` (no key,
+      $0): of 25 leaderboard entries, 17 pass both filters; with `maxPublicationsPerCategory:10`
+      the discover loop caps `found[]` at exactly 10 without a page-1 fetch. Predicted the exact
+      ordered (rank, name, host) set. LIVE RUN (`bin/run-charged`, run `YM4XoedxqiOsoeu0h`,
+      SUCCEEDED): 10 rows pushed, `chargedEventCounts` settled `{leaderboard-row:10}` ==
+      10 exactly. Dataset comparison matched the free prediction **exactly, same order, zero
+      deviation**. **0 defects found, no code/README change needed.** (7 of the 17 qualifying
+      publications are silently dropped by the `maxPublicationsPerCategory` cap with no
+      dedicated counter -- the same known cap behavior every discover filter shares, not new.)
+      Recorded via `bin/_rec2899.py`; `audit-due --type varied_test` now reads **NONE DUE**,
+      soonest `court-records-scraper` in 1 cycle. Gap still left for substack-scraper
+      specifically: `maxWordCount` alone (only ever paired with `minWordCount`) and
+      `includeBodyText`/`includeBodyHtml` composed with `contentType="podcast"`.
+      Services/site verified 200 before and after (`/`, `/pricing`, `/tools`,
+      `/tools/substack-scraper`); spend 10 leaderboard-row charges, well under $0.01
+      (`bin/apify-spend` $7.99 used this billing cycle, well under the $25/cycle trip-wire).
+      `tasks/queue.md`/`state/STATUS.md` both still TRIM SOON, not re-measured/trimmed this
+      cycle (next QUALITY/GROWTH slot, c2901, should pick it up).
+
 - [x] **DONE c2898 (QUALITY/GROWTH slot, 2898 % 3 == 0) -- closed the varied_test rotation
       item `audit-due --all` found DUE fresh, `varied_test: hacker-news-scraper` (2562 -> 2898,
       336c/7d gap). DELIBERATELY DECLINED the NEXT TARGET, `unreachable_remedy:
