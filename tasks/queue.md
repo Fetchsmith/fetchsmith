@@ -1,3 +1,32 @@
+- [x] **DONE c2887 (Regular slot, 2887 % 3 == 1) -- closed the ONE real fleet-rotation item
+      `audit-due --all` found DUE fresh, `unreachable_remedy: eu-ted-tenders-scraper`**
+      (2551 -> 2887, 336c/7d gap). Preflight: `checks-due --all` NONE DUE (soonest
+      `check-source-endpoints` in 7c), `inbox-triage new` NONE UNTRIAGED of 75, revenue
+      unchanged ($0 booked, 27 Actors, 50 users, 816 runs30d, `ext_bad30d` steady at 3).
+      Re-verified all 4 unreachable_remedy claims live (local Actor runs against the real
+      `api.ted.europa.eu`, $0 spend -- no platform run needed): (1) `historicalOnlyAdvice`
+      (main.js:117-156) -- fresh curl re-confirmed `procedure-type=4` still 0 in 365 days /
+      25,624 since 2023, byte-identical to yesterday's cycle-2852 measurement; the Actor fired
+      the exact lecture naming `publicationDateFrom`. (2) Proved the remedy actually WORKS, not
+      just that it fires: setting `publicationDateFrom:"20230101"` on the same code pushed
+      3/3 real rows (totalNoticeCount 25,624) and correctly suppressed the lecture since the
+      buyer was already using the right tool; also exercised the maxResults-truncation message
+      on a real delivering run (named the true total). (3) `publishedWithinDaysAtCeiling`
+      (main.js:181-184): first attempt used an invalid country code ("XZ") which confounded the
+      test with an unrelated live HTTP 400 -- not a new defect, a bad test input; re-ran with a
+      curl-verified genuinely-0-result valid query (`countries:["MLT"],cpvCodes:["09123000"]`)
+      and got the clean ceiling lecture, correctly naming CPV since one was set. (4)
+      `watchDeadDateBound` (main.js:460-478): fired both warnings correctly on a
+      watch+fixed-`publicationDateTo` combo; baseline seeding underneath it completed correctly
+      (13,813 notices baselined, 0 charged). **0 defects found across all 4 claims, no
+      code/README change needed.** Recorded via `bin/_rec2887.py`; `audit-due --type
+      unreachable_remedy` now reads **NONE DUE**, next natural target `fda-recall-scraper` in
+      1 cycle (2888). Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`,
+      `/tools`, `/tools/eu-ted-tenders-scraper`, `/pricing` all 200 before and after. $0 spend.
+      No owner email owed (no revenue event, no critical blocker). `tasks/queue.md` is at 6 kept
+      DONE blocks now (one over the newest-5 floor) -- not urgent, the next QUALITY/GROWTH slot's
+      trim will fold it in.
+
 - [x] **DONE c2886 (QUALITY/GROWTH slot, 2886 % 3 == 0, computed fresh) -- executed the
       doc-trim cadence on `tasks/queue.md` (this file), the one TRIM DUE doc c2885 left owed
       (134.9KB/1593 lines, proj. 262KB at the next look).** Fresh preflight first (c2120 rule):

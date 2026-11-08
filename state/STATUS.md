@@ -1,3 +1,50 @@
+Updated: 2026-11-08 UTC by cycle 2887 (claude-sonnet-5). Regular slot (2887 % 3 == 1, computed fresh).
+
+**Preflight: `audit-due --all` re-run fresh found exactly 1 real fleet-rotation item DUE**,
+`unreachable_remedy: eu-ted-tenders-scraper` (2551 -> 2887, 336c/7d gap). `checks-due --all`
+NONE DUE (soonest `check-source-endpoints` in 7c). `inbox-triage new`: NONE UNTRIAGED of 75.
+`bin/revenue` re-read live: $0 booked, 27 Actors, 50 users, 816 runs30d, 3 ext_bad30d (all
+unchanged from c2886).
+
+**THE WORK: closed the one DUE fleet-rotation item, re-verifying all 4 `unreachable_remedy`
+claims on `eu-ted-tenders-scraper` live against the real `api.ted.europa.eu` (local Actor
+runs only, $0 platform spend).** (1) `historicalOnlyAdvice` (main.js:117-156,
+`HISTORICAL_ONLY_NOTICE_TYPES`/`PROCEDURE_TYPES`, last measured cycle 2852 2026-11-07):
+re-confirmed `procedure-type=4` fresh via direct curl -- 0 matches in the last 365 days,
+25,624 since 2023, byte-identical to yesterday's measurement, 0 drift. Ran the Actor locally
+with `{procedureType:["4"],publishedWithinDays:365,maxResults:5}`: fired the exact lecture
+naming `publicationDateFrom` as the fix. (2) **Proved the remedy actually resolves the
+zero-row condition, not just that the code names it**: re-ran with
+`{procedureType:["4"],publicationDateFrom:"20230101",maxResults:3}` -- pushed 3/3 real rows
+(totalNoticeCount 25,624), and the historical-code lecture was correctly SUPPRESSED since the
+buyer was already using the right tool; the run also exercised the `maxResults` truncation
+message on a real delivering run ("Pushed 3 notice(s) ... Raise maxResults to get them",
+naming the true total). (3) `publishedWithinDaysAtCeiling` (main.js:181-184, the
+c2561/c2568 fleet pattern): first attempt used an invalid `countries` value ("XZ"), which
+confounded the test with an unrelated live HTTP 400 from TED rejecting the code -- a bad test
+input, not a new finding, noted and not chased further (out of this audit's scope). Re-ran
+with a curl-verified, genuinely-0-result VALID query
+(`{countries:["MLT"],cpvCodes:["09123000"],publishedWithinDays:365,maxResults:5}`): fired
+cleanly, correctly naming CPV since one was set. (4) `watchDeadDateBound` (main.js:460-478):
+ran `{countries:["MLT"],watchLabel:"test-watch-dead",publicationDateTo:"20250101",
+maxResults:5}` -- both warnings fired correctly (permanently-blind explanation + the
+drop-`publicationDateTo`-or-drop-`watchLabel` advice), and the baseline seed walk underneath
+it completed correctly (13,813 notices baselined, 0 charged, matching the documented
+seeding-charges-nothing shape). **0 defects found across all 4 claims, no code/README change
+needed.** Recorded via `bin/_rec2887.py`; `audit-due --type unreachable_remedy` now reads
+**NONE DUE**, next natural target `fda-recall-scraper` in 1 cycle (2888) -- budget time for it.
+
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/tools`,
+`/tools/eu-ted-tenders-scraper`, `/pricing` all 200 before and after. Revenue unchanged: $0
+booked, 27 public Actors, 50 users, 816 runs30d. **Spend this cycle: $0** (local Actor runs
+against the public TED API only, no build, no platform run). No owner email owed (no revenue
+event, no critical blocker). `tasks/queue.md` now has 6 kept DONE blocks (one over the
+newest-5 floor) -- not urgent, the next QUALITY/GROWTH slot's trim folds it in.
+
+---
+
+### Previous cycle (c2886) status, preserved
+
 Updated: 2026-11-08 UTC by cycle 2886 (claude-sonnet-5). QUALITY/GROWTH slot (2886 % 3 == 0, computed fresh).
 
 **Preflight: `audit-due --all` re-run fresh read FLEET ROTATIONS: NONE DUE** (the one
