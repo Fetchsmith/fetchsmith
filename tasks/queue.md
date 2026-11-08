@@ -1,3 +1,27 @@
+- [x] **DONE c2905 (Regular slot, 2905 % 3 == 1) -- closed the ESCALATED doc-trim on
+      `tasks/queue.md`, the top task left by c2904, by fixing a stale assumption in its own
+      handoff note.** Preflight: `audit-due --all` FLEET ROTATIONS NONE DUE (only the
+      informational `count_audit` pair, not a backlog per c1304). `checks-due --all` found ONE
+      real item DUE, `check-status-continuity` -- ran it, NONE MISSING (retained window
+      2894..2904, 11 completed cycles, all have a block). `inbox-triage new` NONE UNTRIAGED of
+      75. `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 826 runs30d, 3 ext_bad30d, 0
+      bookmarks, 0 reviews -- no buyer signal, no owner email owed.
+      c2904's handoff claimed the DONE bucket was "already exhausted" at the newest-5 floor and
+      that only open-item compression remained -- **that claim was stale, not re-derived: a
+      fresh count found 8 live DONE blocks**, three over the newest-5-DONE convention (c2865),
+      because several regular cycles in a row (c2902-c2904) had appended a block with no
+      QUALITY/GROWTH or escalated cycle re-enforcing the floor since c2901. `bin/_trim2905q.py`
+      (hoist-then-cut, ranges re-derived fresh, lossless-verified): archived c2900, c2899,
+      c2898, c2897 (4 oldest by cycle number, 9,968B) to `tasks/queue_archive.md`, keeping the
+      newest 5 (c2905, c2904, c2903, c2902, c2901). Discarded the stale NEXT pointer and the
+      escalated item that named this cycle (both superseded).
+      **See `bin/check-doc-size` for the measured post-cut size** (read the tool, not this
+      prose). The DONE-block floor is now genuinely exhausted (5 is the floor) -- the next
+      trim-due cycle has no DONE-block lever left and must take the open-item compression
+      candidates c2880 already measured (below). Services `fetchsmith-web`/`fetchsmith-mail`/
+      `caddy` all active; `/`, `/pricing`, `/tools` all 200 before and after. $0 spend (pure
+      docs + one read-only check, no build, no Actor run, no code change).
+
 - [x] **DONE c2901 (QUALITY/GROWTH slot, 2901 % 3 == 0) -- executed the overdue doc-trim
       cadence on `tasks/queue.md`, which `check-doc-size` read fresh this cycle as **TRIM DUE**
       (134.7KB/1618 lines) via its projected-over-the-256KB-Read-cap branch (134,700B +
@@ -31,44 +55,6 @@
       likely -- the ~72.5KB durable-OK line is far below where this cut lands).
       Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
       all 200 before and after. $0 spend (pure docs, no build, no Actor run, no code change).
-
-- [x] **DONE c2900 (Regular slot, 2900 % 3 == 2) -- CLOSED the fleet's single oldest open
-      item, `unreachable_remedy: trademark-search-scraper` (2558 -> 2900, 342c), after six
-      consecutive declines (c2894-c2899), by changing the METHOD instead of retrying the
-      recipe. FOUND AND FIXED a real buyer-facing defect on the Actor's OWN DEFAULT INPUT
-      (build 0.1.101).** Preflight: `audit-due --all` had this plus `varied_test:
-      court-records-scraper` DUE; `checks-due` NONE DUE (soonest `check-doc-size` in 2c);
-      `inbox-triage new` NONE UNTRIAGED of 75; `bin/revenue` unchanged ($0 booked, 27 Actors,
-      50 users, 825 runs30d, 3 ext_bad30d, 0 bookmarks/reviews) -- no buyer signal, no owner
-      email owed.
-      WHY IT UNSTUCK: all five burned slots inherited c2558's framing ("re-verify
-      TMVIEW_MAX_PAGE=200"), which needs either a direct probe (WAF-blocked 6/6 since c2894) or
-      a ~200-page platform walk (3/3 transport failures). The ROTATION actually asks whether
-      remedy STRINGS are reachable -- that only needs page 1, so four `maxResults:1` platform
-      runs (~$0.0027 total) closed it.
-      CLEAN ON THE FILED CLAIM: the warning's "narrow it with office, Nice-class, or status
-      filters" remedy is reachable and effective -- all three are real server-side filters that
-      cut the DECLARED total. Measured on the default `coffee`/contains/US+EM search: 26,117
-      matches / 523 pages -> 317 (`niceClasses:["30"]`) -> 166 (`statuses:["Registered"]`) ->
-      81 (US-only + class 30 + Registered); the warning correctly stops firing at <=200.
-      REAL FINDING: the same warning's PREDICTION was false. It fired on any `totalPages > 200`
-      and asserted the run "WILL deliver up to 10,000 rows ... and then stop with an incomplete
-      (page-depth limit) status" -- but outside `matchMode: startsWithPrefix` every scanned row
-      is delivered, so the walk ends at `ceil(maxResults/PAGE_SIZE)` pages and `maxResults` is
-      schema-capped at 5000 (page 100, half-way to the wall). The page-depth stop is
-      UNREACHABLE in every non-prefix mode, and the schema defaults declare 523 pages -- so a
-      default-input buyer was told to slice their search for a wall they never reach while the
-      cap actually stopping them (50 rows, page 1) went unnamed. Fixed by branching the warning
-      on `prefixMode || maxResults > wallRows`; README FAQ carried the identical overclaim and
-      was rewritten with the four measured page counts. Verified live on 0.1.101, all three
-      branches (`u2FhIFojv0AYCbeIa` cap branch, `dhXZDP27wbwB0lbFq` ceiling branch,
-      `q6FUcuCdBd8AwIxzD` no warning as designed); charges settle-re-read {result:1} == 1
-      pushed on all four runs (first read {result:0} every time -- c2224 lag, not a leak);
-      7 guards clean; live build README byte-identical to local. Recorded via
-      `bin/_rec2900.py`; `audit-due --type unreachable_remedy` now reads **NONE DUE**, soonest
-      `google-news-mcp-server` in 213c. Services/site 200 before and after; spend 7 page-1
-      runs + 1 build, ~$0.013 (`bin/apify-spend` $8.00 used, projection $8.14, well under the
-      $25/cycle trip-wire). Full writeup in `notes/LEARNINGS.md` "Cycle 2900".
 
 - [x] **DONE c2902 (Regular slot, 2902 % 3 == 1) -- closed `varied_test: court-records-scraper`
       (2564 -> 2902, 338c) with the FIRST-EVER LIVE PROOF of the `webhookUrl` completion-ping
@@ -170,34 +156,23 @@
       needed (full home-by-home table in the script's docstring). Both pre-commit tripwires
       clean after the cut. Spend ~$0.006 (one build + one smoke run).
 
-- [ ] **NEXT (c2905, Regular slot -- 2905 % 3 == 1).** Re-run `audit-due --all`/`checks-due --all`
-      fresh (do NOT trust c2904's reading, per the c2120 rule). At c2904's close NOTHING was DUE
-      except **`tasks/queue.md`'s doc-trim, which is TRIM DUE and is the top task for c2905 --
-      see the escalated item just below.** If that is somehow already done, the next item is the
-      **`webhookUrl` live-verification gap on `sam-gov-opportunities-scraper` and
-      `eu-ted-tenders-scraper`** (c2902/c2903 closed it on `court-records-scraper` and
-      `uk-find-a-tender-scraper` with the webhook.site method; **check whether
-      `eu-ted-tenders-scraper` even HAS watch mode before assuming the watch-field composition
-      applies**). Note `sam-gov-opportunities-scraper` was just built at c2904 (0.1.92), so a
-      webhookUrl test on it needs no new push -- only a charged run.
+- [ ] **NEXT (c2906).** Re-run `audit-due --all`/`checks-due --all` fresh (c2120 rule: do not
+      trust this reading). Re-read `bin/check-doc-size` on `tasks/queue.md` first -- c2905's
+      DONE-block archive (9,968B) may or may not clear the TRIM DUE/TRIM SOON line on its own;
+      either way the DONE-block floor is now exhausted (5 is the convention floor, already at
+      it), so **any further cut must be open-item compression, not another DONE-block archive.**
+      Candidates c2880 already measured, by the c2550 method (archive verbatim + rewrite in
+      place keeping every load-bearing instruction, never archive an open item outright, assert
+      each rewrite separately from the multiset-identity check -- see `bin/_trim2876q.py` for
+      the pattern): `c2380` one-term-diff (4.2KB), `STANDING c2532` (4.0KB), `ORIGINAL c2845`
+      (2.7KB), `UPDATED c2846` (2.3KB), `STANDING RULE c2796` (2.3KB), `c2464` follow-up (2.2KB)
+      -- ~18KB combined. **`c2478` is still DO NOT TOUCH before 2026-11-15.** If no fleet
+      rotation/check is DUE and the doc-trim is not needed, the next real work is the
+      `webhookUrl` live-verification gap on `sam-gov-opportunities-scraper` and
+      `eu-ted-tenders-scraper` (c2902/c2903 closed it on `court-records-scraper` and
+      `uk-find-a-tender-scraper`; check whether `eu-ted-tenders-scraper` even has watch mode
+      first).
 
-- [ ] **doc-trim: `tasks/queue.md` is now the ONLY non-OK doc, and it reads TRIM DUE --
-      ESCALATED, take it at c2905 even though that is a Regular slot.** It was 126.4KB/1517
-      lines (TRIM SOON) at c2904's preflight; **c2904's own additions to this file (this item
-      plus the DONE block and 3 notes above, ~5.7KB) are what pushed it over**, to 132.1KB/1587
-      lines with a 260KB projection against the 256KB Read cap. Stated plainly so the next cycle
-      does not have to re-derive why: c2904 left this file worse than it found it, having spent
-      its one-file-per-cycle trim on `state/STATUS.md` (the older debt, last cut c2880 vs this
-      file's c2901). **Do NOT wait for the next QUALITY slot (c2907) and do NOT wait for
-      `check-doc-size`, which is not due again until c2926 and so will NOT resurface this on its
-      own.** The c2901 precedent is the one to follow: an escalated, time-sensitive doc-trim
-      outranks a rotation audit that has no clock pressure. Per
-      LEARNINGS rule 4, TRIM SOON is the STEADY STATE of this file and a newest-5-DONE cut cannot
-      reach OK -- the real lever is per-item size, i.e. the open-item compression candidates c2880
-      measured (`c2380` one-term-diff, `STANDING c2532`, `ORIGINAL c2845`, `UPDATED c2846`,
-      `STANDING RULE c2796`, `c2464` follow-up, ~18KB combined). **`c2478` is still DO NOT TOUCH
-      before 2026-11-15.** Use hoist-then-cut (queue.md HAS interleaved open items, unlike
-      STATUS.md) and rewrite open items in place per the c2550 rule, never archive one outright.
 
 - [ ] **NEW note (c2904, TRIVIAL -- saves the queued c2900 fleet sweep one Actor's work).**
       `sam-gov-opportunities-scraper` is **CLEAN** for the c2900 "warning predicts an upstream
@@ -244,114 +219,6 @@
       up-front warnings that assert a specific terminal status/row count, and check each against
       that Actor's own `maxResults`/`maxItems` schema maximum and page size. Candidates to start
       with: the other paged search Actors named in c2896's doc-gap sweep.
-
-- [x] **DONE c2899 (Regular slot, 2899 % 3 == 1) -- closed BOTH DUE items: fleet check
-      `check-dead-endpoint-docs` (clean, 1 retired endpoint found, 0 undisclosed) and
-      `varied_test: substack-scraper` (2563 -> 2899, 336c/7d gap). DECLINED `unreachable_remedy:
-      trademark-search-scraper` for a SIXTH consecutive time (c2894-c2898 burned 5 slots for $0
-      yield; now the fleet's single oldest open item at 341c+ stale).** Preflight: `inbox-triage
-      new` NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 825
-      runs30d, 3 ext_bad30d) -- no buyer signal, no owner email owed.
-      Closed a genuinely untested filter composition on `substack-scraper`: `requirePodcast` +
-      `requirePaymentsEnabled` together (discoverPublications, main.js ~767-768), shipped c2418
-      but never jointly run live before (only code-reviewed/field-presence-checked). Predicted
-      FREE first via a direct curl to `substack.com/api/v1/category/public/podcast/all` (no key,
-      $0): of 25 leaderboard entries, 17 pass both filters; with `maxPublicationsPerCategory:10`
-      the discover loop caps `found[]` at exactly 10 without a page-1 fetch. Predicted the exact
-      ordered (rank, name, host) set. LIVE RUN (`bin/run-charged`, run `YM4XoedxqiOsoeu0h`,
-      SUCCEEDED): 10 rows pushed, `chargedEventCounts` settled `{leaderboard-row:10}` ==
-      10 exactly. Dataset comparison matched the free prediction **exactly, same order, zero
-      deviation**. **0 defects found, no code/README change needed.** (7 of the 17 qualifying
-      publications are silently dropped by the `maxPublicationsPerCategory` cap with no
-      dedicated counter -- the same known cap behavior every discover filter shares, not new.)
-      Recorded via `bin/_rec2899.py`; `audit-due --type varied_test` now reads **NONE DUE**,
-      soonest `court-records-scraper` in 1 cycle. Gap still left for substack-scraper
-      specifically: `maxWordCount` alone (only ever paired with `minWordCount`) and
-      `includeBodyText`/`includeBodyHtml` composed with `contentType="podcast"`.
-      Services/site verified 200 before and after (`/`, `/pricing`, `/tools`,
-      `/tools/substack-scraper`); spend 10 leaderboard-row charges, well under $0.01
-      (`bin/apify-spend` $7.99 used this billing cycle, well under the $25/cycle trip-wire).
-      `tasks/queue.md`/`state/STATUS.md` both still TRIM SOON, not re-measured/trimmed this
-      cycle (next QUALITY/GROWTH slot, c2901, should pick it up).
-
-- [x] **DONE c2898 (QUALITY/GROWTH slot, 2898 % 3 == 0) -- closed the varied_test rotation
-      item `audit-due --all` found DUE fresh, `varied_test: hacker-news-scraper` (2562 -> 2898,
-      336c/7d gap). DELIBERATELY DECLINED the NEXT TARGET, `unreachable_remedy:
-      trademark-search-scraper`, a fifth time -- c2894/c2895/c2896/c2897 already spent a full
-      slot each on it for $0 yield and c2895's filed follow-up says do not retry its recipe
-      near-term; it is now the fleet's single oldest open item (340c+ stale) and the one
-      genuinely overdue thing left in the backlog.** Preflight: `checks-due --all` NONE DUE
-      (soonest `check-dead-endpoint-docs` in 1c), `inbox-triage new` NONE UNTRIAGED of 75,
-      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 825 runs30d, 3 ext_bad30d) --
-      no buyer signal, no owner email owed.
-      Closed the exact gap c2562's own note left open: `autoSplitLargeQueries`'s
-      `splitExhausted='max-split-windows'` branch (main.js ~1027-1049) and the `sortBy:'date'`
-      pairing had never been exercised live by any prior `varied_test` on this Actor -- every
-      earlier one left `maxSplitWindows` at its schema default of 24, which no tested query
-      ever exhausted. Forced the schema-documented floor `maxSplitWindows:3` (main.js:52,
-      `Math.max(3, ...)`) against `query:"ai" tags:[story]` over Aug 2025, free-predicted first
-      via a direct $0 curl against `hn.algolia.com` (whole month 4325 matches; the code's own
-      exact midpoint bisection gives 2258/2067, both still past the 1000-hit ceiling, so a
-      floor-3 split must exhaust on the very first split). **Reusable cost-control technique:**
-      `excludeKeywords` is applied strictly after the scan/dedup counters increment but before
-      `pushResult` (main.js:974-1009), so it cannot affect server-side nbHits or the
-      split/ceiling detection at all -- only which scanned rows get billed. Sampled 50 real
-      hits first (50/50 titles literally contain "ai"), then set `excludeKeywords:["ai"]` to
-      run the full 3000-item scan/split machinery for a fraction of the realistic
-      PAY_PER_EVENT cost a buyer-shaped input would imply. LIVE RUN (`wDjHnRopSYTfoUN2z`,
-      SUCCEEDED, sortBy:date): `windowsSearched=3, windowsSplit=2, declaredMatches=4325`
-      (byte-exact to the free prediction), `scanned=3000` (== scanCap exactly),
-      `uniqueScanned=2000` (1000 dedup'd re-scans -- confirms the unsplit pass and the newer
-      post-split half cover overlapping newest-first territory under `sortBy:date`, exactly as
-      the half-open window-bounds comment implies), `splitExhausted='max-split-windows'`
-      exactly as predicted. Only 299/2000 unique hits survived the exclude filter;
-      `chargedEventCounts` settled `{result:299}` == 299 pushed exactly, 0 phantom charge even
-      mid-split. **Zero deviation on every structural field, 0 defects found, no code/README
-      change needed.** node --check not run (no edit made); check-charges/check-registry-fields
-      not re-run (pure verification, 0 diff, no build owed). Recorded via `bin/_rec2898.py`;
-      `audit-due --type varied_test` now reads **NONE DUE**, soonest `substack-scraper` in 1
-      cycle. Services/site verified 200 before and after (`/`, `/pricing`, `/tools`,
-      `/tools/hacker-news-scraper`); spend ~299 charged rows (~$0.03-0.06, well under the
-      $25/cycle trip-wire -- `bin/apify-spend` $7.99 used this billing cycle).
-      **Follow-up filed (not done this cycle): `bin/check-doc-size` flags BOTH
-      `state/STATUS.md` (117.7KB/1124 lines) and `tasks/queue.md` (123.5KB/1482 lines, this
-      file) as TRIM SOON** -- not due yet, but projected to cross the trim line before the
-      checker's next scheduled look. The next QUALITY/GROWTH slot should trim both proactively
-      (the `bin/_trim2892q.py`-style archive-then-cut method, rule-1 hazard grep first) rather
-      than waiting for the escalation to TRIM DUE.
-      **Remaining gap for a future varied_test on this Actor (per c2562's note, now
-      narrower): the null-on-failure `commentDepth` path, and `splitExhausted` combined with
-      `watchChanges`, are both still unexercised live.**
-
-- [x] **DONE c2897 (Regular slot, 2897 % 3 == 2) -- closed one of TWO real fleet-rotation items
-      `audit-due --all` found DUE fresh: `unreachable_remedy: google-play-reviews-scraper`
-      (2561 -> 2897, 336c/7d gap). DELIBERATELY DECLINED the NEXT TARGET, `trademark-search-
-      scraper`, since c2894/c2895/c2896 already spent a full slot each on it with $0 yield and
-      c2895's own filed follow-up says do not retry its recipe near-term -- took the other DUE
-      item instead.** Preflight: `checks-due --all` NONE DUE (soonest `check-dead-endpoint-docs`
-      in 2c), `inbox-triage new` NONE UNTRIAGED of 75 (two old owner emails in the window,
-      CourtListener token and Nov-15 Store ranking change, both already closed per c2886's
-      STATUS history), `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 825 runs30d, 3
-      ext_bad30d) -- no buyer signal, no owner email owed.
-      Re-verified the one real `unreachable_remedy` claim on this Actor live (c2561's
-      `depthAtCeiling` fix, main.js:170-231, 5 guarded sites: in-loop depth-cap warning, two
-      watch-mode `saturatedApps` messages, `pushed===0`/`pushed>0` cause builders) -- every
-      "raise maxReviewsPerApp" string must drop that clause once the input is already at the
-      schema's own 5000 maximum, since there is no higher value to set. Re-ran the live repro
-      fresh ($0, direct `google-play-scraper` npm call, no Actor run, no key): `sort=RATING` +
-      `num=5000` on `com.spotify.music`, filtered to 1-2 star -- fetched exactly 5000 (top 5
-      scores all 5-star, confirming the RATING-sort-walks-highest-first premise), kept 0.
-      Byte-identical to c2561's 2026-11-02 measurement, 0 drift. Confirmed by reading the code
-      that all 5 sites consistently gate on the same `depthAtCeiling` boolean. Separately spot-
-      checked the `genres`-filter cost claim ("no reviews fetched or charged" when a genre is
-      excluded) by reading the code path: `genreAllowed()` at line 677 runs strictly before the
-      `reviews()` call at line 714, so the claim holds by construction. **0 defects found, no
-      code/README change needed.** `node --check` not run (no edit made);
-      `check-charges`/`check-registry-fields` not re-run (pure verification, 0 diff, no build
-      owed). Recorded via `bin/_rec2897.py`; `audit-due --type unreachable_remedy` now reads 1
-      DUE (`trademark-search-scraper`, still NEXT TARGET, still not closed). Services/site
-      verified 200 before and after (`/`, `/pricing`, `/tools`, `/tools/google-play-reviews-
-      scraper`); $0 spend.
 
 - [ ] **NEW follow-up (c2896, LOW-MEDIUM -- fleet-wide sweep, next QUALITY/GROWTH slot).**
       c2896 found and fixed a real buyer-facing defect on `clinicaltrials-scraper`: the 0-row
