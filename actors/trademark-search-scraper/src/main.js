@@ -757,8 +757,8 @@ try {
       if (prefixMode || maxResults > wallRows) {
         log.warning(
           `This search has ${totalPages} pages, past TMview's own hard ceiling of ${TMVIEW_MAX_PAGE} pages `
-          + `(${wallRows} rows) -- TMview will refuse to serve page ${TMVIEW_MAX_PAGE + 1} no matter how this `
-          + `run is configured. This run will read at most ${wallRows} rows of the corpus (every row `
+          + `(${wallRows.toLocaleString('en-US')} rows) -- TMview will refuse to serve page ${TMVIEW_MAX_PAGE + 1} no matter how this `
+          + `run is configured. This run will read at most ${wallRows.toLocaleString('en-US')} rows of the corpus (every row `
           + 'delivered is valid and charged normally) and then stop with an "incomplete (page-depth limit)" '
           + `status -- that is TMview, not an error in this Actor. ${narrowAdvice}`,
         );
@@ -768,7 +768,7 @@ try {
           + `than this run will cover: maxResults is ${maxResults}, so it stops after ${maxResults} row(s) `
           + `around page ${Math.ceil(maxResults / PAGE_SIZE)} with an "incomplete (cap)" status -- not at `
           + `TMview's page-depth ceiling. TMview also refuses to page past page ${TMVIEW_MAX_PAGE} `
-          + `(${wallRows} rows), so even at this Actor's maxResults maximum of 5000 no single run can cover a `
+          + `(${wallRows.toLocaleString('en-US')} rows), so even at this Actor's maxResults maximum of 5000 no single run can cover a `
           + `corpus this size. ${narrowAdvice}`,
         );
       }

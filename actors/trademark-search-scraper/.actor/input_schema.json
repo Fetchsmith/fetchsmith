@@ -6,7 +6,7 @@
     "searchTerm": {
       "title": "Trademark term",
       "type": "string",
-      "description": "Word or brand to search for. Matches trademarks whose name contains this term (see Match mode for a whole-word match or an ends-with-these-letters match instead).",
+      "description": "Word or brand to search for. Matches trademarks whose name contains this term (see Match mode for a whole-word match or an ends-with-these-letters match instead). Multiple words are ANDed, not ORed -- comma, pipe, space and the literal word OR all behave the same way; run the Actor once per brand to check alternatives (see FAQ).",
       "editor": "textfield",
       "default": "coffee"
     },

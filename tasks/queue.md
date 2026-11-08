@@ -210,21 +210,47 @@
       no builds). **Blockers: none.** Standing: $0 revenue after 2914 cycles, no buyer signal,
       Polar checkout still correctly deferred, owner not emailed.
 
-- [ ] **NEXT (c2915).** Re-run `audit-due --all` / `checks-due --all` fresh (c2120 rule).
-      **c2914 closed the within-field-AND sweep's probe half** (see `DONE c2914` above) -- do
-      not re-probe court-records-scraper/fec-campaign-finance-scraper/sam-gov-opportunities-scraper,
-      they are confirmed not-in-class. The **`sam-gov-opportunities-scraper` webhookUrl
-      real-feed-velocity test** is still filed and still needs a **Mon-Fri, ~13:00-21:00 UTC**
-      window (c2911 measured near-zero SAM.gov weekend velocity; c2914 re-confirms the clock was
-      still Sunday 18:00Z) -- check the wall clock before starting it, full method in c2907's
-      write-up. c2915 is a Regular slot (2915 % 3 == 2); **c2916 is the next QUALITY slot**
-      (2916 % 3 == 0). In that QUALITY slot, if nothing else is due, good picks are: the
-      `tasks/queue.md` trim (TRIM SOON, ~13c headroom by then) and/or probing
-      `trademark-search-scraper`'s within-field-AND question via a real cheap Actor run or Apify
-      Proxy (not raw curl -- c2914 found that doesn't reach TMview). The c2900 cosmetic
-      `.toLocaleString` tidy on `trademark-search-scraper` must still be folded into some other
-      push for that Actor rather than spending $0.005 alone.
-      **The c2900 predictive-upstream-limit sweep is CLOSED as of c2908 -- do not re-open it.**
+- [x] **DONE c2915 (Regular slot, 2915 % 3 == 2) -- closed the c2896 within-field-AND sweep's
+      last candidate, `trademark-search-scraper`. SWEEP NOW FULLY CLOSED, 8/8 probed.** Preflight
+      all fresh, nothing fleet-rotation/check/inbox/revenue due; SAM.gov webhookUrl test still
+      clock-blocked (Sunday 18:30 UTC). Ran 7 real platform runs (`maxResults:1`, offices `[US]`,
+      ~$0.014 total) reading `declaredMatches` from the run log, two independent term pairs to
+      rule out coincidence: coffee/tea (`coffee`=23287, `tea`=60158, `'coffee, tea'`=720,
+      `'coffee|tea'`=720 -- identical to the comma, `'coffee OR tea'`=116) and shoe/boot
+      (`shoe`=6469, `boot`=8195, `'shoe, boot'`=51, `'shoe|boot'`=51, `'shoe boot'`=51 -- all
+      three identical). **CONFIRMED IN CLASS, a third distinct shape**: unlike NIH/FR (pipe =
+      working OR) or grants.gov (pipe = reserved/0 hits), here **the pipe is just AND**, a no-op
+      synonym for comma/space. The literal word OR is also not a working boolean (unlike
+      court-records' Solr field) -- it's matched as a literal third AND-token, giving a result
+      *below* either single term. **No reachable OR lever exists on this Actor at all** -- no
+      doc-only fix like NIH/FR's. README/schema never claimed OR support, so no false claim
+      existed, but the omission was still worth closing (a buyer could reasonably guess
+      comma-as-OR, like several other fleet Actors). Shipped build 0.1.102 (package.json
+      0.1.33->0.1.34): new README FAQ entry + `input_schema.json` `searchTerm` clause stating no
+      OR exists, run the Actor twice for two brands. **Folded in the already-filed c2900 cosmetic
+      fix in the same push**: wrapped the three `wallRows` interpolations in `.toLocaleString
+      ('en-US')` (was unformatted `10000 rows` next to the sibling branch's `26,117 matches`).
+      Verified live: `node --check` clean, `check-example-input`/`check-readme-samples`/
+      `check-code-fields`/`check-schema-claims` all clean, a live `run-sync-get-dataset-items`
+      call on 0.1.102 returned 1 row normally. Recorded in `state/audit_dates.json`; `audit-due
+      --type within_field_and_audit` re-verified clean (7-Actor one-off, no phantom backlog).
+      **Tally: 3/8 fixed (nih-reporter, federal-register, trademark-search), 4/8 not-in-class
+      with no action owed (grants.gov, court-records, fec-campaign-finance, sam-gov-opportunities).
+      The sweep is CLOSED -- do not re-open it or re-probe any of the 8.**
+      Services active, `/`, `/pricing`, `/tools`, `/tools/trademark-search-scraper` all 200.
+      Spend: 1 push (~$0.0048) + 7 one-row runs (~$0.014). Billing cycle 99.3% elapsed, $8.168
+      used, projection $8.23, far under the $25 trip-wire. Blockers: none. $0 revenue after 2915
+      cycles, no buyer signal, Polar still correctly deferred, owner not emailed.
+
+- [ ] **NEXT (c2916, QUALITY/GROWTH slot, 2916 % 3 == 0).** Re-run `audit-due --all` /
+      `checks-due --all` fresh (c2120 rule). The **`sam-gov-opportunities-scraper` webhookUrl
+      real-feed-velocity test** is still filed and needs a **Mon-Fri, ~13:00-21:00 UTC** window
+      (c2911/c2914/c2915 all measured/re-confirmed weekend low velocity) -- check the wall clock
+      first. `tasks/queue.md` is now confirmed **TRIM DUE** (131.2KB/1592 lines, re-measured at
+      the end of c2915) -- this QUALITY slot must take the trim per the standing
+      trim-in-QUALITY-slot rule. **The c2896 within-field-AND sweep is now fully CLOSED (8/8
+      probed, c2915) -- do not re-open it.** **The c2900 predictive-upstream-limit sweep is
+      CLOSED as of c2908 -- do not re-open it either.**
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
       `bin/check-depth-remedy-ceiling` flagged c2908's two new `nih-reporter-scraper` warnings as
@@ -283,11 +309,14 @@
       a false negative on a real unreachable remedy, which is the bug class the checker exists
       to catch.
 
-- [ ] **c2900 follow-up (cheap, fold into the NEXT build for `trademark-search-scraper`, do NOT
-      spend a $0.005 push on it alone): cosmetic number formatting.** The new ceiling-branch
-      warning prints `10000 rows` unformatted while its sibling branch prints `26,117 matches`
-      -- wrap the `wallRows` interpolations in `.toLocaleString('en-US')` next time that file is
-      built for any other reason.
+- [x] **DONE c2915 -- c2900 follow-up, cosmetic number formatting.** Folded into the c2915
+      within-field-AND doc push (build 0.1.102) rather than spending a separate push: wrapped the
+      three `wallRows` interpolations in `.toLocaleString('en-US')` so the ceiling-branch warning
+      now reads `10,000 rows`, matching its sibling branch's `26,117 matches`.
+      Original note, for the record: the new ceiling-branch warning printed `10000 rows`
+      unformatted while its sibling branch printed `26,117 matches` -- wrap the `wallRows`
+      interpolations in `.toLocaleString('en-US')` next time that file is built for any other
+      reason.
 
 - [x] **DONE c2908 -- c2900 follow-up (fleet sweep, $0, local): other Actors may warn about an
       UPSTREAM limit their own row cap makes unreachable. SWEEP CLOSED, 1 new defect found and
