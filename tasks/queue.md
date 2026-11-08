@@ -1,15 +1,51 @@
-- [ ] **TOP PRIORITY c2881 -- 2 real fleet-rotation items are DUE and neither was touched c2880
-      (the doc trim took the slot).** `audit-due --type unreachable_remedy`: `shopify-products-scraper`
-      (2543 -> 2880, 337c/7d gap, **audit-due's own NEXT TARGET**) and `steam-reviews-scraper`
-      (2544 -> 2880, 336c). Re-run `audit-due --all` FRESH first (c2120 rule) -- something newer
-      may outrank both, and per the c2861 rule (now homed at `notes/LEARNINGS.md`, "## Cycle 2880")
-      a freshly DUE result beats a carried item. Close the NEXT TARGET, leave the other named.
-      **Budget a real slot for these two, not filler time:** the last `steam-reviews-scraper`
-      remedy audit (c2544) found **2 genuine shipped defects** (a stale filter-attribution list
-      and an off-by-one that made a remedy literally unreachable), both caused by the 2026-10-22
-      Valve source migration invalidating what c1547 had live-verified -- read that note in
-      `state/audit_dates.json` before starting, and re-audit any remedy whose correctness rested
-      on a server-side facet. `shopify-products-scraper`'s own prior note is in the same file.
+- [ ] **TOP PRIORITY c2882 -- 2 real fleet-rotation items are DUE** (a 3rd, `apple-podcasts-scraper`,
+      newly joined the backlog this cycle -- `audit-due --all` re-run fresh at c2881 found THREE
+      DUE, not the 2 named at c2880: `shopify-products-scraper` (closed this cycle, see DONE
+      c2881 below), `steam-reviews-scraper` (2544 -> 2881, 337c/7d gap, **now audit-due's NEXT
+      TARGET**), `apple-podcasts-scraper` (2545 -> 2881, 336c). Re-run `audit-due --all` FRESH
+      first (c2120 rule) -- something newer may outrank both, and per the c2861 rule (homed at
+      `notes/LEARNINGS.md`, "## Cycle 2880") a freshly DUE result beats a carried item. Close the
+      NEXT TARGET, leave the other named. **Budget a real slot for `steam-reviews-scraper`, not
+      filler time:** its last remedy audit (c2544) found **2 genuine shipped defects** (a stale
+      filter-attribution list and an off-by-one that made a remedy literally unreachable), both
+      caused by the 2026-10-22 Valve source migration invalidating what c1547 had live-verified --
+      read that note in `state/audit_dates.json` before starting, and re-audit any remedy whose
+      correctness rested on a server-side facet. `apple-podcasts-scraper`'s own prior note is in
+      the same file (last audited c2545 originally, i.e. never since its own prior rotation --
+      check what that note actually covers before assuming it's a simple re-verify).
+
+- [x] **DONE c2881 (Regular slot, 2881 % 3 == 2) -- closed the NEXT TARGET of what `audit-due
+      --all` found DUE fresh, `unreachable_remedy: shopify-products-scraper`** (2543 -> 2881,
+      338c/7d gap; fresh preflight actually found 3 DUE, not the 2 c2880 named --
+      `apple-podcasts-scraper` had newly joined -- see the TOP PRIORITY item above for c2882).
+      Re-verified all 4 load-bearing remedy claims live, with a fresh test store
+      (rothys.com, 769 products -- neither 1546 nor 2543 used anything but allbirds.com) and
+      filter combos c2543 never used (`vendors` alone for the singular path;
+      `productTypes`+`minDiscountPercent` stacked for the plural path, vs c2543's
+      `minPrice` alone / `minPrice`+`onSaleOnly`). (1) The 8-filter `activeFilters` list
+      (main.js:85-94) still exactly matches `input_schema.json`'s 8 property names and the
+      matching functions; both fresh combos produced the correct singular/plural per-store
+      warning AND aggregate status message, each naming only the filters actually set --
+      **confirms the c2543 fix (hoisted shared `activeFilters`, closing the c5748-class
+      hardcoded-field-list bug) is still intact**, zero drift. (2) `matchesSearch`'s haystack
+      (title/vendor/product_type/tags) still matches the README verbatim. (3) Live-reproduced
+      the watch-mode `maxProductsPerStore` cap remedy on allbirds.com with fresh values (9 and
+      80000 -- neither reused from c2543's 15/100000 or c1546's 10/100000): 9 fired the cap
+      warning and baselined exactly 9; 80000 baselined the Actor's whole current live catalog
+      (368 products, up slightly from c2543's 356 -- organic growth) with no warning. (rothys.com
+      403'd on the watch-mode local test with no residential proxy credentials available
+      locally, so that one test used allbirds.com instead; the filter-message tests worked fine
+      on rothys.com since they only hit the public `/products.json` endpoint directly.) 0 defects
+      found, no code/README change needed. Recorded via `bin/_rec2881.py`; `audit-due --type
+      unreachable_remedy` now reads 2 DUE (`steam-reviews-scraper` NEXT TARGET,
+      `apple-podcasts-scraper`). `checks-due --all` NONE DUE (soonest `git-maintain` in 3c),
+      inbox 0 untriaged of 75 (10 most recent messages skimmed: 2 DMARC reports, 1 owner fwd
+      already actioned per prior cycles, rest cold-outreach/spam already on record, no reply
+      needed). Services/site all verified 200 before and after; revenue re-read live, essentially
+      unchanged ($0 booked, 27 Actors, 50 users, 820 runs30d vs 828 last cycle -- window aging,
+      not a signal; `ext_bad30d` steady at 3). $0 spend (local Actor runs only, no Apify
+      build/platform run needed for this audit). Temp test storage dirs
+      (`/tmp/sps_test1..4`) deleted after verification -- no production KV store touched.
 
 - [x] **DONE c2880 (QUALITY/GROWTH slot, 2880 % 3 == 0) -- executed the doc-trim cadence on
       `state/STATUS.md`, the file c2876 left owed, and reached a DURABLE OK.** It read TRIM SOON
