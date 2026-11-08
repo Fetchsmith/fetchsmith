@@ -6213,3 +6213,27 @@ the mirror image of the free-prediction-before-paid-run discipline already stand
 rotation (cycle 2559's note, etc.): that technique avoids paying to find out what *should* happen;
 this one avoids paying for rows that aren't needed to prove what *did* happen once a paid run is
 already warranted.
+
+## Cycle 2903: test watch-mode "new since baseline" deterministically, without waiting on real feed velocity
+
+When a `varied_test`/`webhookUrl` audit needs a real "new notices since last run" result on a
+low-velocity source (checked live on 2026-11-08: UK Find a Tender averaged under 1 new
+release/6h), don't burn a 25-minute cycle waiting for the calendar to produce one. Check whether
+the Actor's watch fingerprint (the hash that decides "same saved query") deliberately EXCLUDES its
+own rolling-window field -- most watch-mode Actors in this fleet do this on purpose (the
+cycle-297/298 lesson: a rolling field like `updatedWithinDays` changes its resolved value every
+day, so including it in the fingerprint would silently fork one logical watch into a new baseline
+each day). `uk-find-a-tender-scraper`'s `watchCriteria` (main.js:627-643) is a clean example:
+`updatedWithinDays` is absent, `dateFromMs`/`dateToMs` only join when the buyer sets them
+explicitly. That means: SEED with a narrow `updatedWithinDays` (e.g. 1 day) and a `watchLabel`,
+leaving `dateFrom`/`dateTo` unset, then run INCREMENTAL on the same label with a wider
+`updatedWithinDays` (e.g. 14 days) and the same unset `dateFrom`/`dateTo` -- both runs hash to the
+identical watch key, so the incremental run's "new" set is deterministically every notice that
+matched the wider window but fell outside the narrow one, with zero real-time wait. Confirm the
+key actually matched by reading the incremental run's own RUN_SUMMARY (`baselineSize` should equal
+the seed's delivered-to-baseline count, and `watchSeeding:false`) rather than assuming it from the
+input alone. This is the same trick in reverse of the cycle-297/298 trap: that lesson says "don't
+accidentally let a rolling field fork your baseline"; this one says "deliberately use the fact
+that it CAN'T fork, to manufacture a real new-since-baseline delta on command." Reusable on any
+other Actor in the fleet whose watch fingerprint similarly excludes its own rolling-window input
+(check the fingerprint-building code before assuming -- the field list is bespoke per Actor).

@@ -102,16 +102,56 @@
       `sam-gov-opportunities-scraper`, `uk-find-a-tender-scraper`, `eu-ted-tenders-scraper`** --
       reuse the webhook.site method, one Actor per slot, do not batch.
 
-- [ ] **NEXT (c2903) -- `varied_test: uk-find-a-tender-scraper` is the only real fleet-rotation
-      item DUE** (2566 -> now, 336c+). Re-run `audit-due --all`/`checks-due --all` fresh; if
-      nothing newer is DUE, take this one -- and consider making it the webhookUrl gap c2902
-      just filed above, since this Actor is explicitly named as sharing that design. Also
-      re-check `bin/check-doc-size` on `tasks/queue.md`/`state/STATUS.md` (both TRIM SOON as of
-      c2902, neither TRIM DUE yet, next look at cycle 2926) -- if a QUALITY/GROWTH slot comes up
-      before then, the open-item compression candidates c2880 measured are the next cut: `c2380`
-      one-term-diff, `STANDING c2532`, `ORIGINAL c2845`, `UPDATED c2846`, `STANDING RULE c2796`,
-      `c2464` follow-up (~18KB combined -- Nov-15 item `c2478` still DO NOT TOUCH before
-      2026-11-15).
+- [x] **DONE c2903 (Regular slot, 2903 % 3 == 2) -- closed `varied_test: uk-find-a-tender-scraper`
+      (2566 -> 2903, 337c), the only real fleet-rotation item DUE, with the FIRST-EVER LIVE PROOF
+      of `webhookUrl` payload fidelity in WATCH MODE, on this Actor and fleet-wide.** Preflight:
+      `checks-due --all` NONE DUE, `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue`
+      unchanged ($0 booked, 27 Actors, 50 users, 825 runs30d, 3 ext_bad30d) -- no buyer signal,
+      no owner email owed. The two owner emails in the inbox window (CourtListener token,
+      Nov-15 store-ranking change) are both already-triaged old mail from c2870, nothing new.
+      This Actor's `webhookUrl` had only ever been checked once before (ship-time cycle 440,
+      stock non-watch input, httpbin 200-status-only) -- never against real payload content, and
+      never with `watchLabel`/`watchSeeding`/`watchNewCount`/`watchDeadDateBound` populated
+      (those fields only fire in watch mode; c2902's same-day proof on `court-records-scraper`
+      was non-watch). Real feed velocity was ruled out as a test method (FTS: <1 new
+      release/6h live on 2026-11-08) in favor of a genuine design fact: `updatedWithinDays` is
+      excluded from the watch fingerprint (main.js:619-626, deliberately -- it's a rolling
+      window) while `dateFrom`/`dateTo` only join it when set, so seeding narrow then running
+      incremental wide (both leaving dateFrom/dateTo unset) keeps the SAME watch key and
+      deterministically surfaces already-published notices as "new" with zero wait. Predicted
+      FREE via a direct FTS OCDS call (`sources:['fts']`, `stages:['tender']`,
+      `buyerName:'NHS'`): 0 matches/1 day, 4 matches/14 days, named exactly (105436-2026,
+      104526-2026, 104375-2026, 101509-2026). LIVE SEED (`bin/run-charged`, `ZHWU1oedCLMBpbBwS`,
+      `updatedWithinDays:1` + watchLabel + a $0 webhook.site token): pushed:0, matches exactly.
+      LIVE INCREMENTAL (same watchLabel, `updatedWithinDays:14`, confirmed same key via
+      `baselineSize:4`): `cmFZqHPlZe1iNdAhl`, pushed:4, scanned:82, `freeRowsGiven:4` ($0
+      charged correctly, not a leak) -- dataset rows matched the free prediction exactly, same
+      order, zero deviation. Polled webhook.site after both runs: **exactly 2 POSTs, one per
+      run, each byte-matching that run's own RUN_SUMMARY** -- seed payload
+      `pushed:0,watchSeeding:true,watchNewCount:null`; incremental payload
+      `pushed:4,scanned:82,watchSeeding:false,watchNewCount:4,watchDeadDateBound:false`, nested
+      `summary` identical key-for-key to RUN_SUMMARY. **0 defects, no code/README change
+      needed.** Recorded via `bin/_rec2903.py`; `audit-due --type varied_test` now reads **NONE
+      DUE** fleet-wide (soonest `nih-reporter-scraper` in 25c). Services/site verified 200
+      before and after. Spend: 4 rows, $0 (inside FREE_PER_RUN) -- negligible compute only.
+      **GAP for a future cycle: the same webhookUrl shape is still unverified live on
+      `sam-gov-opportunities-scraper` and `eu-ted-tenders-scraper`** (check the latter even
+      HAS watch mode before assuming the watch-field composition applies) -- reuse the
+      webhook.site method; the updatedWithinDays-excluded-from-fingerprint seed-narrow/
+      run-wide trick is reusable on any other Actor whose watch fingerprint excludes its own
+      rolling-window field.
+
+- [ ] **NEXT (c2904) -- `audit-due --all` at c2903 preflight found NO other real fleet-rotation
+      item DUE** (varied_test was the only one, now closed). Re-run `audit-due --all`/
+      `checks-due --all` fresh at the top of c2904 -- `check-mode-scope-warning` was the
+      soonest fleet check (due in 1c from c2903's preflight) and may now be DUE. If nothing
+      real is DUE, this is a good slot to pick up one of: (a) the webhookUrl gap on
+      `sam-gov-opportunities-scraper`/`eu-ted-tenders-scraper` filed just above; (b) if a
+      QUALITY/GROWTH slot (c2904 % 3 == 0 -- check: yes, 2904 % 3 == 0), the open-item
+      compression candidates c2880 measured on `tasks/queue.md` (`c2380` one-term-diff,
+      `STANDING c2532`, `ORIGINAL c2845`, `UPDATED c2846`, `STANDING RULE c2796`, `c2464`
+      follow-up, ~18KB combined -- Nov-15 item `c2478` still DO NOT TOUCH before 2026-11-15),
+      plus answering support mail / README polish per the standing QUALITY/GROWTH checklist.
 
 - [ ] **c2900 follow-up (cheap, fold into the NEXT build for `trademark-search-scraper`, do NOT
       spend a $0.005 push on it alone): cosmetic number formatting.** The new ceiling-branch
