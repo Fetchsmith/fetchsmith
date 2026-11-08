@@ -1,5 +1,5 @@
 {
- "_why": "Last check-handle-liveness sweep. UNDISCLOSED is the work queue: each mention needs the standard inline delisted note + a past-tensed claim, one Actor (one build) at a time.",
+ "_why": "Last check-handle-liveness sweep. UNDISCLOSED is the work queue: each mention needs the standard inline delisted note + a past-tensed claim, one Actor (one build) at a time. (c2918: 8 mentions closed on fec-campaign-finance-scraper/shopify-products-scraper via inline 'delisted as of 2026-11-08' / 'delisted, see Pricing above' notes, line numbers not renumbered since insertions were in-place; next full re-sweep will recompute exact lines.)",
  "swept": "2026-11-07",
  "partial_only": [],
  "handles": 2764,
@@ -27,26 +27,6 @@
    "handle": "wearefluent/podcast-episodes-scraper"
   },
   {
-   "file": "actors/court-records-scraper/README.md",
-   "line": 174,
-   "handle": "parseforge/harris-county"
-  },
-  {
-   "file": "actors/court-records-scraper/README.md",
-   "line": 210,
-   "handle": "dami_studio/courtlistener-cases-scraper"
-  },
-  {
-   "file": "actors/court-records-scraper/README.md",
-   "line": 214,
-   "handle": "owner/slug"
-  },
-  {
-   "file": "actors/court-records-scraper/README.md",
-   "line": 252,
-   "handle": "hipersoft/courtlistener-scraper"
-  },
-  {
    "file": "actors/eu-ted-tenders-scraper/README.md",
    "line": 29,
    "handle": "field/0"
@@ -70,26 +50,6 @@
    "file": "actors/fda-recall-scraper/README.md",
    "line": 285,
    "handle": "rbbscrap/fast-openfda-scraper"
-  },
-  {
-   "file": "actors/fec-campaign-finance-scraper/README.md",
-   "line": 280,
-   "handle": "copious_atoll/fec-campaign-finance"
-  },
-  {
-   "file": "actors/fec-campaign-finance-scraper/README.md",
-   "line": 282,
-   "handle": "crawlerbros/cal-access-campaign-finance-scraper"
-  },
-  {
-   "file": "actors/fec-campaign-finance-scraper/README.md",
-   "line": 282,
-   "handle": "crawlerbros/fec-data-scraper"
-  },
-  {
-   "file": "actors/fec-campaign-finance-scraper/README.md",
-   "line": 282,
-   "handle": "crawlerbros/lobbying-disclosure-lda-scraper"
   },
   {
    "file": "actors/federal-register-scraper/README.md",
@@ -147,26 +107,6 @@
    "handle": "rbbscrap/fast-sec-edgar-scraper"
   },
   {
-   "file": "actors/shopify-products-scraper/README.md",
-   "line": 131,
-   "handle": "crawlerbros/shopify-scraper"
-  },
-  {
-   "file": "actors/shopify-products-scraper/README.md",
-   "line": 133,
-   "handle": "crawlerbros/shopify-scraper"
-  },
-  {
-   "file": "actors/shopify-products-scraper/README.md",
-   "line": 133,
-   "handle": "crawlerbros/shopify-scraper-pro"
-  },
-  {
-   "file": "actors/shopify-products-scraper/README.md",
-   "line": 137,
-   "handle": "luminar/shopify-products-price-stock-monitor"
-  },
-  {
    "file": "actors/substack-scraper/README.md",
    "line": 213,
    "handle": "contactminerlabs/substack-email-scraper"
@@ -180,11 +120,6 @@
    "file": "actors/substack-scraper/README.md",
    "line": 257,
    "handle": "vexaloom-labs/substack-publication-post-export"
-  },
-  {
-   "file": "actors/trademark-search-scraper/README.md",
-   "line": 154,
-   "handle": "owner/slug"
   },
   {
    "file": "actors/us-federal-awards-scraper/README.md",

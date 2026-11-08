@@ -6411,3 +6411,45 @@ spell out the full handle instead of a shorthand, and de-backtick a literal "own
 means "a handle" in the abstract rather than naming one.
 **Before trusting any file's count in the delisted-handle backlog as real work, grep it first:**
 `grep -rln '`owner/slug`' actors/*/README.md` -- cheap, $0, catches this exact shape fleet-wide.
+
+## Cycle 2918 -- `handle_liveness.json` is a point-in-time snapshot, not live state; and `crawlerbros` is gone account-wide, not listing-by-listing
+
+Closed 8 of the 39 undisclosed mentions the 2026-11-07 sweep recorded (4 on
+`fec-campaign-finance-scraper`: `copious_atoll/fec-campaign-finance`, `crawlerbros/cal-access-
+campaign-finance-scraper`, `crawlerbros/fec-data-scraper`, `crawlerbros/lobbying-disclosure-lda-
+scraper`; 4 on `shopify-products-scraper`: `crawlerbros/shopify-scraper` x2 mentions,
+`crawlerbros/shopify-scraper-pro`, `luminar/shopify-products-price-stock-monitor`). All 7 unique
+handles re-confirmed live 404 via a direct `GET /v2/acts/<owner>~<slug>` before editing.
+Disclosure added inline, immediately adjacent to each handle and before any other backtick-handle
+in `check-handle-liveness`'s 400-char forward window (its `OTHER_HANDLE` regex matches ANY
+`` `x/y` `` pattern, so a disclosure placed even one rival-handle-mention too late still reads
+UNDISCLOSED) -- cheapest phrasing that satisfies its `GONE` regex is just the word "delisted"
+somewhere in that window, e.g. `(delisted as of 2026-11-08)` or, when a blanket disclosure already
+exists earlier in the same README (as `fec-campaign-finance-scraper`'s Pricing section already
+has for `crawlerbros/fec-campaign-finance-scraper`), the short back-reference `(delisted, see
+Pricing above)`. Verified 0 undisclosed on both files via `--only` before pushing (2 README-only
+builds, $0.003, no meta.json/price change so no `apify-admin publish` needed).
+
+**Finding worth more than the fix: `crawlerbros` looks delisted account-wide, not listing-by-
+listing.** Every `crawlerbros/*` handle checked this cycle 404s -- the 4 above, plus the
+already-disclosed `crawlerbros/fec-campaign-finance-scraper` (c2375) -- and `GET /v2/store?
+search=crawlerbros` returns `total: 1, items: []` (a live Apify API quirk: total is nonzero but
+the items array is empty, which reads as "account exists in the index but has nothing resolvable
+in Store search," consistent with every listing being gone rather than one being renamed). Do
+**not** generalize this into "every remaining `crawlerbros/*` mention is safe to batch-disclose
+without checking" -- the pattern held for every handle actually probed, but an account resuming
+under a new owner/slug mapping (rename rather than removal) would look identical until checked.
+Do spend the one extra `curl` per remaining `crawlerbros/*` mention (`fda-recall-scraper`'s
+`crawlerbros/autotrader-us-vehicle-catalog` is the next one in the backlog) rather than assuming.
+
+**Process fix: `state/handle_liveness.json`'s `undisclosed` array is a frozen sweep result, and
+nothing re-syncs it when a later cycle fixes a README by hand.** c2917 fixed `court-records-
+scraper`'s 4 mentions and `trademark-search-scraper`'s last 1, but never removed them from the
+JSON -- so this cycle's by-file undisclosed count still showed `court-records-scraper: 4`, a
+ghost of already-done work, until a live `--only` re-check proved 0 and the 5 stale entries were
+removed by hand. **Whenever a cycle closes mentions via inline README edits (not a full re-sweep),
+remove exactly those `(file, line, handle)` tuples from `state/handle_liveness.json`'s
+`undisclosed` list in the same cycle** -- otherwise the next cycle's "pick the file with the most
+undisclosed mentions" heuristic keeps pointing at already-finished work instead of the real
+backlog (now 26 left, ranked: `app-store-reviews-scraper`/`fda-recall-scraper`/`remote-jobs-
+scraper`/`substack-scraper`/`us-federal-awards-scraper` at 3 each, next up).

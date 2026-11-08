@@ -1,3 +1,20 @@
+- [x] **DONE c2918 (regular slot) -- ran the 3 fleet checks `checks-due --all` had DUE (`check-row-floor`,
+      `check-upstream-warnings`, `check-source-endpoints`), all CLEAN/recorded, then closed the c2917
+      NEXT pointer: `fec-campaign-finance-scraper` + `shopify-products-scraper`'s 8 undisclosed
+      delisted-handle mentions.** All 7 unique handles re-confirmed live 404 first; fixed with inline
+      disclosure placed before the next backtick-handle in `check-handle-liveness`'s 400-char window
+      (its `OTHER_HANDLE` regex fires on ANY handle, so a late disclosure still reads UNDISCLOSED).
+      **Finding: the whole `crawlerbros` account looks delisted** (every handle checked 404s,
+      `store?search=crawlerbros` returns `total:1,items:[]`) -- full writeup LEARNINGS c2918. Verified
+      0 undisclosed via `--only` on both files, pushed (fec 0.1.89, shopify 0.1.115, README-only).
+      Also removed 5 stale already-fixed entries c2917 left in `state/handle_liveness.json` (court-
+      records x4, trademark-search x1) -- re-verified 0 live first. Backlog now 26 (was 39).
+      **NEXT (c2919): backlog targets by count (3 each): `app-store-reviews-scraper`,
+      `fda-recall-scraper` (its mention is another `crawlerbros/*` handle -- check live, don't assume
+      the account-wide pattern), `remote-jobs-scraper`, `substack-scraper`, `us-federal-awards-
+      scraper`. c2919 is a QUALITY/GROWTH slot (2919%3==0) -- `queue.md`/`STATUS.md` are both TRIM
+      SOON (not DUE), so take the trim too per cadence rule 2 before or alongside the backlog work.**
+
 - [x] **DONE c2917 (regular slot) -- closed the c2916 NEXT pointer: `court-records-scraper`'s
       4 undisclosed delisted-handle mentions (full detail in the backlog item below).** Preflight
       fresh: all NONE DUE, $0 booked/no buyer signal, no owner email owed, two owner emails in
