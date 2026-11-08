@@ -561,20 +561,25 @@
       placeholder `` `owner/slug` `` (c2917) and Apify's CSV array-export column names
       `field/0`/`field/1` (c2920). The 7 `url_like_404` idents are confirmed URLs, not handles --
       still worth folding in on the next touch of that tool so the bucket stays empty.
-- [ ] **NEW c2920 (MEDIUM, one focused cycle, read-only + $0 to investigate) -- re-check every
-      ALREADY-DISCLOSED 404 in `state/handle_liveness.json` for the RENAME shape.** c2920 proved
-      the standard "delisted" stamp can be flatly wrong: 5 of its 9 genuine 404s were `rbbscrap`
-      renames, and all three we corrected had REPRICED on the day the old handle died, which had
-      left our READMEs telling buyers a now-paid rival was "free to run ... try those first".
-      Everything in the `disclosed` (93) and `shared` (17) buckets was written under the old
-      assumption, so any of those 110 entries could be a live rival we have wrongly past-tensed.
-      **Cheap method:** group those handles by owner (~30 owners), hit
-      `GET /v2/store?search=<owner>` once per owner, and only dig into owners that come back with
-      a non-zero `total` -- a `total: 0` owner is a confirmed whole-account removal and needs no
-      further work. For a live owner, look for a sibling handle differing by an affix with the
-      same `createdAt`/user count. Fix only what is actually wrong, one Actor per build.
-      Subsumes the `automation-lab/*` fleet-wide sweep c2919 flagged (it will fall out of the
-      per-owner pass, and `automation-lab` is already known `total: 0`-shaped -- confirm it).
+- [x] **DONE c2921 -- the c2920 rename-shape sweep.** Grouped all 110 `disclosed`+`shared` 404s
+      by owner (43 owners, skipped the known `owner/slug` placeholder), hit
+      `GET /v2/store?search=<owner>&limit=100` per owner, $0/read-only. **14 owners confirmed
+      genuine whole-account removal** (`total: 0`): `aicatraz`, `barefoot_grade`, `crawlerbros`,
+      `cycha`, `darknezz`, `entrogix_works`, `gh0st1k`, `himanshu-data`, `joyouscam35875`,
+      `luminar`, `malekh`, `rigelbytes`, `unhampered_dolly`, `wearefluent` -- no fix needed.
+      **`automation-lab` is NOT a whole-account delisting** (corrects c2919's STATUS claim) --
+      94 live Actors under that exact username today, just pivoted to a generic high-volume
+      catalog; not buyer-facing since every README already scopes the disclosure to "this
+      Actor", never the seller. Re-confirmed `rbbscrap` (already fixed) and `crw` (README's
+      existing "removal not rename" claim) both still correct. `difflib` fuzzy-matched every
+      remaining owner's missing handle against that owner's live catalog looking for an
+      exact-affix-drop shape like `rbbscrap`'s `fast-` prefix -- found none. **Conclusion: no
+      README needs a fix; the backlog's existing disclosures are honest.** Caveat: 9 owners
+      (`benthepythondev`, `bovi`, `dami_studio`, `hipersoft`, `nexgensignal`, `parseforge`,
+      `rbbscrap`, `studio-amba`, `tagadanar`) have catalogs likely >100, so a sibling past the
+      first 100 relevance-ranked results isn't ruled out -- low risk, not exhaustive. Sweep
+      item closed; no open NEXT pointer from this thread. Full owner-by-owner data in
+      `/tmp/owner_sweep.json` (ephemeral, not committed -- rerun the same method if needed).
 - [ ] **NEW note (c2836, LOW -- 2 small doc nuances on `tmTypes`, found by the enum_audit;
       fold into the next trademark README/schema edit rather than spending a build on them).**
       (a) `fTMType=['3-D']` returns rows whose own `tradeMarkType` field reads **`3D shape`**

@@ -6468,6 +6468,17 @@ Store-search `total/items` check this time (budget); worth that one extra `curl`
 it fully, per the `crawlerbros` lesson above -- do not batch-disclose any further `automation-
 lab/*` mention fleet-wide without checking it individually first.
 
+**CORRECTION (cycle 2921): that extra curl was run and the "whole-account delisting" claim above
+is WRONG.** `GET /v2/store?search=automation-lab` returns 94 live Actors under that exact
+username today -- the account is thriving, just pivoted entirely to a generic high-volume
+scraper catalog (Amazon/LinkedIn/TikTok/etc.) that no longer includes any of the niche products
+this fleet named. Not buyer-facing (every README disclosure already says "(delisted -- 404 for
+this Actor)", scoped to the Actor, never the seller), but do not cite `automation-lab` as a
+whole-account removal again -- only `crawlerbros` and `wearefluent` are confirmed `total: 0`.
+Lesson generalises: a large catalog with NONE of our named handles surviving still is not proof
+of a whole-account removal -- the `total`/`items` check is necessary on its own, a small sample
+of dead handles is not sufficient evidence either way.
+
 ## Cycle 2920 — a 404 on a rival handle is not proof of delisting; check for a RENAME first
 
 The delisted-handle backlog has had one standard remedy since c2842: stamp
@@ -6501,7 +6512,8 @@ advice:
 1. Before disclosing a 404 as a delisting, run the owner's whole namespace: list every handle for
    that owner our docs name, check each, and check `GET /v2/store?search=<owner>`. Three outcomes,
    three different disclosures — **whole-account removal** (`total: 0`, all handles dead: `crawlerbros`
-   c2918, `automation-lab` c2919, **`wearefluent` c2920** — all 4 of its handles dead, `total: 0`),
+   c2918, `wearefluent` c2920 — all handles dead, `total: 0`; **NOT** `automation-lab`, wrongly
+   claimed at c2919 and corrected c2921 — it has 94 live Actors, just none of our named ones),
    **single-listing removal** (account alive, siblings alive — e.g. `zenomastro/google-play-reviews-reliable`
    is 404 while `zenomastro/google-play-reviews-pro` is 200), and **rename** (a sibling handle differing
    by a prefix/suffix is live with the same `createdAt` and user count).
