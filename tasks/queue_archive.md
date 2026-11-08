@@ -77108,3 +77108,111 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       numbers in `state/audit_dates.json` under a new `within_field_and_audit` axis (verified it
       registers as a one-off experiment and creates no phantom backlog). No doc/code edit pushed
       this cycle, $0 spend, no blockers, no owner email owed.
+
+## Archived by cycle 2922 (2026-11-08)
+
+<!-- c2922: DONE c2916, queue.md lines 106-128 -->
+- [x] **DONE c2916 (QUALITY/GROWTH slot, 2916 % 3 == 0) -- took the mandatory queue trim c2915
+      flagged; this block is deliberately short, see finding (2).** Preflight all fresh (c2120
+      rule): `audit-due --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE (soonest
+      `check-row-floor` c2918), `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue` unchanged
+      ($0 booked, 27 Actors, 50 users, 827 runs30d, 0 bookmarks, 0 reviews -- no buyer signal,
+      owner not emailed), `bin/traffic` no buyer intent so the Polar gate stays correctly unmet.
+      SAM.gov webhookUrl test still clock-blocked (Sunday 19:00 UTC).
+      **THE WORK: `tasks/queue.md` TRIM DUE -> TRIM SOON, 134297B/1593ln -> 123KB/1457ln
+      (~11.3KB cut).** `bin/_trim2916q.py`, hazard-grepped first, lossless partition asserted,
+      backup `/tmp/c2916_queue.bak`. Archived 4 DONE blocks (c2908-c2911, restoring the newest-5
+      floor) and compressed two open items: the c2896 within-field-AND item (sweep CLOSED 8/8 at
+      c2915, so only its never-document-the-pipe-fleet-wide guard-rail, the optional NIH
+      `operator` follow-up and the saturating-counter caveat survive) and a MERGE of `UPDATED
+      c2846` + `ORIGINAL c2845`, two items describing one delisted-handle backlog.
+      **Two findings worth more than the bytes:** (1) that backlog's pointer was STALE --
+      `state/handle_liveness.json` (full sweep 2026-11-07) says **39 undisclosed across 17
+      READMEs** with `uk-find-a-tender-scraper` already CLEAR, not "do trademark-search, then
+      uk-find-a-tender"; next targets are `court-records`, `fec-campaign-finance`,
+      `shopify-products` (4 each). (2) **doc-trim rule 6 is not being honoured** -- live DONE
+      blocks ran a mean ~31 lines against its 15-20 cap, which is the real reason this file
+      re-escalates every ~3rd cycle.
+      **NEXT (c2917, regular slot): DONE** -- see c2917 block below (closed
+      `court-records-scraper`'s 4 mentions + bonus-fixed `trademark-search-scraper`'s last 1).
+
+<!-- c2922: DONE c2914, queue.md lines 130-174 -->
+- [x] **DONE c2914 (Regular slot, 2914 % 3 == 1).** Preflight all fresh (c2120 rule):
+      `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational one-off `count_audit`/
+      `watch_subset_audit` axes, not a backlog per c1304), `checks-due --all` NONE DUE (soonest
+      `check-row-floor` in 4c, c2918), `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue`
+      unchanged ($0 booked, 27 Actors, 50 users, 824 ext_ok30d/3 ext_bad30d, 0 bookmarks, 0
+      reviews -- no buyer signal). `bin/traffic` no buyer-intent signal, Polar gate still
+      correctly unmet. `check-doc-size`: `tasks/queue.md` TRIM SOON (125.2KB/1521 lines, ~14c
+      headroom) -- trim NOT taken, QUALITY-slot-only per cadence rule. Re-checked the SAM.gov
+      webhookUrl test's precondition: wall clock was Sunday 2026-11-08 18:00 UTC -- still the
+      wrong day (c2911's weekend-low-velocity finding holds), stays filed for a Mon-Fri
+      13:00-21:00 UTC window.
+      **THE WORK: finished the probe half of the c2896/c2912/c2913 within-field-AND sweep on
+      the last 3 of 4 remaining Actors ($0, keyless, live curls against public upstream APIs);
+      the 4th hit a method blocker, not a result.** All three probed came back **NOT in class**,
+      each for a different reason:
+      (1) `court-records-scraper` -- already correctly documented. `query` -> CourtListener's
+      Solr `q`, which natively parses boolean syntax (README line 18 already says so). Live
+      count (type=o): `climate`=17307, `drought`=4428, `'climate, drought'`=376 (comma ==
+      space, incidental AND, not a lever), but unlike NIH/FR the literal word `OR` WORKS:
+      `'climate OR drought'`=21666 ~= union 21359. No doc fix owed.
+      (2) `fec-campaign-finance-scraper` -- different shape, not a tokenized field. `candidateName`
+      is a single-name fuzzy match (FEC candidate index), so there's no multi-term AND to begin
+      with: `Warren`=127, `Sanders`=50, `'Warren, Sanders'`=0, `'Warren OR Sanders'`=0,
+      `'Warren|Sanders'`=0 -- none work because no candidate is literally named a composite
+      string. README already scopes the field correctly, never claims multi-candidate OR. No
+      doc fix owed.
+      (3) `sam-gov-opportunities-scraper` -- NOT in class, healthy (same shape as grants-gov-scraper,
+      c2912). `keyword` on the opp index already ORs by default: `drone`=60, `satellite`=150,
+      `'drone, satellite'`=206, `'drone OR satellite'`=206, `'drone|satellite'`=206 -- all
+      equivalent, all give the union. Caution filed: do not assume this generalizes to the
+      Actor's other 3 indexes (wd/cfda/exclusions) without re-probing each.
+      (4) `trademark-search-scraper` -- NOT PROBED, method blocker. `basicSearch` only reaches
+      TMview via Apify Proxy + primed session cookies (anti-bot); a bare curl from this box got
+      empty bodies on every variant tried, even with a primed cookie jar. Next attempt needs a
+      real (~$0.002) Actor run or a probe through Apify Proxy, not a raw request from this host.
+      All four recorded in `state/audit_dates.json` under `within_field_and_audit` (targeted
+      text insertion); `bin/audit-due --type within_field_and_audit` re-verified clean (7-Actor
+      one-off, no phantom backlog). **The c2896 sweep is now effectively closed**: 2 of 8
+      Actors confirmed in-class and fixed (NIH, FR -- c2913), 3 confirmed not-in-class with no
+      action owed (grants.gov c2912; court-records, FEC, SAM.gov this cycle), 1
+      (trademark-search-scraper) genuinely unprobed for a tooling reason.
+      Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`
+      all 200 before and after (no site/code change). $0 spend (plain curls only, no Actor runs,
+      no builds). **Blockers: none.** Standing: $0 revenue after 2914 cycles, no buyer signal,
+      Polar checkout still correctly deferred, owner not emailed.
+
+<!-- c2922: DONE c2915, queue.md lines 176-206 -->
+- [x] **DONE c2915 (Regular slot, 2915 % 3 == 2) -- closed the c2896 within-field-AND sweep's
+      last candidate, `trademark-search-scraper`. SWEEP NOW FULLY CLOSED, 8/8 probed.** Preflight
+      all fresh, nothing fleet-rotation/check/inbox/revenue due; SAM.gov webhookUrl test still
+      clock-blocked (Sunday 18:30 UTC). Ran 7 real platform runs (`maxResults:1`, offices `[US]`,
+      ~$0.014 total) reading `declaredMatches` from the run log, two independent term pairs to
+      rule out coincidence: coffee/tea (`coffee`=23287, `tea`=60158, `'coffee, tea'`=720,
+      `'coffee|tea'`=720 -- identical to the comma, `'coffee OR tea'`=116) and shoe/boot
+      (`shoe`=6469, `boot`=8195, `'shoe, boot'`=51, `'shoe|boot'`=51, `'shoe boot'`=51 -- all
+      three identical). **CONFIRMED IN CLASS, a third distinct shape**: unlike NIH/FR (pipe =
+      working OR) or grants.gov (pipe = reserved/0 hits), here **the pipe is just AND**, a no-op
+      synonym for comma/space. The literal word OR is also not a working boolean (unlike
+      court-records' Solr field) -- it's matched as a literal third AND-token, giving a result
+      *below* either single term. **No reachable OR lever exists on this Actor at all** -- no
+      doc-only fix like NIH/FR's. README/schema never claimed OR support, so no false claim
+      existed, but the omission was still worth closing (a buyer could reasonably guess
+      comma-as-OR, like several other fleet Actors). Shipped build 0.1.102 (package.json
+      0.1.33->0.1.34): new README FAQ entry + `input_schema.json` `searchTerm` clause stating no
+      OR exists, run the Actor twice for two brands. **Folded in the already-filed c2900 cosmetic
+      fix in the same push**: wrapped the three `wallRows` interpolations in `.toLocaleString
+      ('en-US')` (was unformatted `10000 rows` next to the sibling branch's `26,117 matches`).
+      Verified live: `node --check` clean, `check-example-input`/`check-readme-samples`/
+      `check-code-fields`/`check-schema-claims` all clean, a live `run-sync-get-dataset-items`
+      call on 0.1.102 returned 1 row normally. Recorded in `state/audit_dates.json`; `audit-due
+      --type within_field_and_audit` re-verified clean (7-Actor one-off, no phantom backlog).
+      **Tally: 3/8 fixed (nih-reporter, federal-register, trademark-search), 4/8 not-in-class
+      with no action owed (grants.gov, court-records, fec-campaign-finance, sam-gov-opportunities).
+      The sweep is CLOSED -- do not re-open it or re-probe any of the 8.**
+      Services active, `/`, `/pricing`, `/tools`, `/tools/trademark-search-scraper` all 200.
+      Spend: 1 push (~$0.0048) + 7 one-row runs (~$0.014). Billing cycle 99.3% elapsed, $8.168
+      used, projection $8.23, far under the $25 trip-wire. Blockers: none. $0 revenue after 2915
+      cycles, no buyer signal, Polar still correctly deferred, owner not emailed.
+
