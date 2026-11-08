@@ -1,3 +1,32 @@
+- [x] **DONE c2912 (Regular slot, 2912 % 3 == 2).** Preflight all fresh (c2120 rule):
+      `audit-due --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE (soonest
+      `check-row-floor` in 6c, c2918), `inbox-triage new` NONE UNTRIAGED of 75, `bin/revenue`
+      unchanged ($0 booked, 27 Actors, 50 users, 827 runs30d, 0 bookmarks, 0 reviews),
+      `bin/traffic` no buyer-intent signal (Polar gate correctly unmet), `check-doc-size`
+      queue.md **TRIM SOON** (125.2KB/1526 lines, ~14c) -- trim NOT taken, it is QUALITY-slot-only
+      per the cadence item's rule 2, and c2913 is the next QUALITY slot. Re-checked the SAM.gov
+      webhook test's precondition first: still Sunday (17:00 UTC), so c2911's weekday rule holds
+      and it stays filed.
+      **THE WORK: ran the $0 PROBE HALF of the c2896 within-field-AND sweep on 3 Actors**, so the
+      c2913 QUALITY slot (which also owes the trim) only has to apply doc edits. All live, keyless,
+      $0. **`nih-reporter-scraper` CONFIRMED IN CLASS and the worst of the three** -- `keyword`
+      goes up as `advanced_text_search` with `operator` hardcoded `'and'` (src/main.js:687-691):
+      alzheimer=84042, parkinson=32336, but `'alzheimer, parkinson'`=13053 and the literal word
+      OR is IGNORED (13053 too). **`federal-register-scraper` CONFIRMED IN CLASS** --
+      `conditions[term]`: wildfire=3503, drought=3681, `'wildfire, drought'`=974, word OR ignored.
+      **`grants-gov-scraper` NOT in class** -- its `keyword` already ORs (23/30 -> 39).
+      **The find that makes this worth a doc fix: a REACHABLE OR remedy exists on both AND-ing
+      Actors and it is DOC-ONLY, zero code change -- the PIPE.** FR `'wildfire|drought'`=6210,
+      exactly 3503+3681-974; NIH `'alzheimer|parkinson'`=103294, identical to `operator:'or'`,
+      so the pipe works through our hardcoded AND. FR also has a working leading-minus
+      (`'wildfire -drought'`=2529 = 3503-974 exactly). **And the guard-rail that stops the rest of
+      the sweep going wrong: the pipe is NOT fleet-wide.** On grants.gov `'wildfire|drought'`=**0
+      hits** -- the pipe is that API's own value separator -- so a blanket "use | for OR" sweep
+      would hand grants.gov buyers a guaranteed empty run. Per-Actor results recorded with full
+      numbers in `state/audit_dates.json` under a new `within_field_and_audit` axis (verified it
+      registers as a one-off experiment and creates no phantom backlog). No doc/code edit pushed
+      this cycle, $0 spend, no blockers, no owner email owed.
+
 - [x] **DONE c2911 (Regular slot, 2911 % 3 == 1).** Preflight (all fresh, c2120 rule):
       `audit-due --all` FLEET ROTATIONS NONE DUE (only the informational `count_audit`
       court-records-scraper/trademark-search-scraper and `watch_subset_audit`
@@ -196,22 +225,27 @@
       richness, same as the other Actors' designs). May require a non-watch-mode webhook test
       instead if no reusable trick exists here.
 
-- [ ] **NEXT (c2912, Regular slot, 2912 % 3 == 2).** Re-run `audit-due --all`/`checks-due --all`
-      fresh (c2120 rule: do not trust c2911's reading). `tasks/queue.md` is **TRIM SOON**
-      (122.3KB/1491 lines as of c2910's trim, ~15c headroom) and **the DONE-block lever is at
-      the newest-5 floor** (c2906-c2910/c2911 live depending on when this is read), so a
-      further trim has to take the open-item compression candidates c2880 measured -- `c2380`
-      is the largest remaining one. Other unclaimed options, in rough value order:
-      **`sam-gov-opportunities-scraper` webhookUrl real-feed-velocity gap -- c2911 found today
-      (Sunday) was the wrong day to attempt it (near-zero SAM.gov weekend posting velocity,
-      measured live).** Before starting it, check the wall-clock is Mon-Fri and roughly
-      13:00-21:00 UTC (US business hours); if yes, seed with `postedFrom`/`postedTo` both
-      unset under a `watchLabel`, wait, run incrementally under the same label, check
-      webhook.site before/after (full method in c2907's write-up, archived if trimmed out by
-      now). If it's not a good window, the **c2896 within-field-AND doc sweep** across 6 other
-      search Actors is filed for the next QUALITY/GROWTH slot (c2913); and the c2900 cosmetic
-      `.toLocaleString` tidy on `trademark-search-scraper` must be folded into some other push
-      for that Actor rather than spending $0.005 alone.
+- [ ] **NEXT (c2913, QUALITY/GROWTH slot, 2913 % 3 == 0).** Re-run `audit-due --all` /
+      `checks-due --all` fresh (c2120 rule: do not trust c2912's reading). **Two things are owed
+      this slot and the trim outranks, because `check-doc-size` will read TRIM DUE:**
+      (1) **the `tasks/queue.md` trim.** It was TRIM SOON at 125.2KB/1526 lines at c2912 and the
+      DONE-block lever is at the newest-5 floor, so per the cadence item's rule 4 this one needs
+      **open-item compression** too -- `c2380` one-term-diff (~4.35KB) is the largest remaining
+      candidate; `c2478` is still OFF LIMITS until 2026-11-15. Re-measure the bytes, do not trust
+      these. (2) **the c2896 within-field-AND sweep's DOC half, which c2912 made mechanical** --
+      the measurements are done and filed per-Actor in `state/audit_dates.json`
+      (`within_field_and_audit_note`, full live numbers); what is left is editing
+      `nih-reporter-scraper` and `federal-register-scraper` to document the pipe-OR lever (and FR's
+      leading-minus), plus their 0-row advice. **Read the `grants-gov-scraper` note FIRST: the pipe
+      returns 0 hits there, so there is no fleet-wide "use |" wording -- it must be per-Actor.**
+      NIH optionally also wants `operator: 'advanced'` exposed, but that is a schema/code change,
+      so keep it separate from the doc-only fix and do not bundle it into the same push.
+      Other unclaimed items, in rough value order: the **`sam-gov-opportunities-scraper` webhookUrl
+      real-feed-velocity test** is still filed and still needs a **Mon-Fri, ~13:00-21:00 UTC**
+      window (c2911 measured near-zero SAM.gov weekend velocity; c2912 re-confirmed the clock was
+      still Sunday) -- check the wall clock before starting it, full method in c2907's write-up.
+      The c2900 cosmetic `.toLocaleString` tidy on `trademark-search-scraper` must still be folded
+      into some other push for that Actor rather than spending $0.005 alone.
       **The c2900 predictive-upstream-limit sweep is CLOSED as of c2908 -- do not re-open it.**
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
@@ -301,7 +335,27 @@
       that Actor's own `maxResults`/`maxItems` schema maximum and page size. Candidates to start
       with: the other paged search Actors named in c2896's doc-gap sweep.
 
-- [ ] **NEW follow-up (c2896, LOW-MEDIUM -- fleet-wide sweep, next QUALITY/GROWTH slot).**
+- [ ] **UPDATED c2912 (was NEW c2896, LOW-MEDIUM -- fleet-wide sweep; 3 of 8 candidates now
+      MEASURED, 4 still unprobed).** **c2912 ran the probe half on `nih-reporter-scraper`
+      (CONFIRMED in class), `federal-register-scraper` (CONFIRMED) and `grants-gov-scraper` (NOT
+      in class -- its keyword already ORs).** Full live numbers per Actor are in
+      `state/audit_dates.json` under `within_field_and_audit_note` -- read them there, do not
+      re-probe. Two results change how the REST of this sweep must be worked:
+      **(i) the remedy is usually DOC-ONLY** -- a pipe inside the term box is a real OR on both
+      AND-ing upstreams (FR `'wildfire|drought'`=6210 = 3503+3681-974 exactly; NIH
+      `'alzheimer|parkinson'`=103294, same as `operator:'or'`, through our hardcoded AND), and the
+      literal word `OR` is ignored on both, so "use OR" would be an UNREACHABLE remedy -- the
+      exact c2896 defect class, in a new place. **(ii) the pipe is NOT a fleet-wide operator:** it
+      returns **0 hits** on grants.gov, whose API uses `|` as its own value separator. So probe
+      the pipe per Actor before documenting it anywhere; never write one shared "use |" sentence.
+      **Still unprobed (4):** `sam-gov-opportunities-scraper`, `court-records-scraper`,
+      `fec-campaign-finance-scraper`, `trademark-search-scraper`. Probe recipe ($0, keyless where
+      the upstream exposes a count): fetch `A` alone, `B` alone, `"A, B"`, `"A B"`, `"A OR B"`,
+      `"A|B"` and compare counts -- `"A, B"` <= either single means the comma is an AND; a pipe
+      result at or above the single terms means the pipe is the reachable OR; 0 means the pipe is
+      reserved. **Beware saturating counters when checking the union identity A+B-AND==PIPE:**
+      federalregister.gov's `count` caps at 10000 and silently made c2912's second term pair
+      untestable (it is an inconclusive read, NOT a falsification). Original c2896 context follows.
       c2896 found and fixed a real buyer-facing defect on `clinicaltrials-scraper`: the 0-row
       advice named a TRUE cause ("your filters are ANDed -- drop one and retry") whose REMEDY was
       unreachable for the likeliest input shape, because ClinicalTrials.gov ANDs terms *within* a
