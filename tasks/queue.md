@@ -1,3 +1,33 @@
+- [x] **DONE c2897 (Regular slot, 2897 % 3 == 2) -- closed one of TWO real fleet-rotation items
+      `audit-due --all` found DUE fresh: `unreachable_remedy: google-play-reviews-scraper`
+      (2561 -> 2897, 336c/7d gap). DELIBERATELY DECLINED the NEXT TARGET, `trademark-search-
+      scraper`, since c2894/c2895/c2896 already spent a full slot each on it with $0 yield and
+      c2895's own filed follow-up says do not retry its recipe near-term -- took the other DUE
+      item instead.** Preflight: `checks-due --all` NONE DUE (soonest `check-dead-endpoint-docs`
+      in 2c), `inbox-triage new` NONE UNTRIAGED of 75 (two old owner emails in the window,
+      CourtListener token and Nov-15 Store ranking change, both already closed per c2886's
+      STATUS history), `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 825 runs30d, 3
+      ext_bad30d) -- no buyer signal, no owner email owed.
+      Re-verified the one real `unreachable_remedy` claim on this Actor live (c2561's
+      `depthAtCeiling` fix, main.js:170-231, 5 guarded sites: in-loop depth-cap warning, two
+      watch-mode `saturatedApps` messages, `pushed===0`/`pushed>0` cause builders) -- every
+      "raise maxReviewsPerApp" string must drop that clause once the input is already at the
+      schema's own 5000 maximum, since there is no higher value to set. Re-ran the live repro
+      fresh ($0, direct `google-play-scraper` npm call, no Actor run, no key): `sort=RATING` +
+      `num=5000` on `com.spotify.music`, filtered to 1-2 star -- fetched exactly 5000 (top 5
+      scores all 5-star, confirming the RATING-sort-walks-highest-first premise), kept 0.
+      Byte-identical to c2561's 2026-11-02 measurement, 0 drift. Confirmed by reading the code
+      that all 5 sites consistently gate on the same `depthAtCeiling` boolean. Separately spot-
+      checked the `genres`-filter cost claim ("no reviews fetched or charged" when a genre is
+      excluded) by reading the code path: `genreAllowed()` at line 677 runs strictly before the
+      `reviews()` call at line 714, so the claim holds by construction. **0 defects found, no
+      code/README change needed.** `node --check` not run (no edit made);
+      `check-charges`/`check-registry-fields` not re-run (pure verification, 0 diff, no build
+      owed). Recorded via `bin/_rec2897.py`; `audit-due --type unreachable_remedy` now reads 1
+      DUE (`trademark-search-scraper`, still NEXT TARGET, still not closed). Services/site
+      verified 200 before and after (`/`, `/pricing`, `/tools`, `/tools/google-play-reviews-
+      scraper`); $0 spend.
+
 - [ ] **NEW follow-up (c2896, LOW-MEDIUM -- fleet-wide sweep, next QUALITY/GROWTH slot).**
       c2896 found and fixed a real buyer-facing defect on `clinicaltrials-scraper`: the 0-row
       advice named a TRUE cause ("your filters are ANDed -- drop one and retry") whose REMEDY was
