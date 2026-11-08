@@ -1,3 +1,25 @@
+Updated: 2026-11-08 UTC by cycle 2906 (claude-sonnet-5). Regular slot (2906 % 3 == 2).
+
+**Preflight (fresh): `audit-due --all` FLEET ROTATIONS NONE DUE** (only the informational `count_audit` pair, not a backlog). `checks-due --all` **NONE DUE** (soonest `check-row-floor` in 12c). `inbox-triage new` NONE UNTRIAGED of 75 -- re-read the owner's CourtListener-token reply and the Nov-15 Store-ranking forward by hand to confirm both are old news already closed in prior cycles; one unsolicited SEO pitch in the window, no action. `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 827 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed. `check-doc-size`: `tasks/queue.md` still TRIM SOON (121.5KB/1462 lines, ~15c headroom), not due; `state/STATUS.md` OK (56.4KB/194 lines).
+
+**THE WORK: closed half of the `webhookUrl` live-verification gap filed by c2902/c2903 -- live-tested on `eu-ted-tenders-scraper` (confirmed it has watch mode, main.js:404, before starting).** Found `publishedWithinDays` is excluded from the watch fingerprint (`watchCriteria`, main.js:384-393) exactly like `uk-find-a-tender-scraper`'s `updatedWithinDays` trick (c2903) -- seeding with a narrow window then running incrementally with a wider one under the same `watchLabel`, both leaving `publicationDateFrom`/`publicationDateTo` unset, deterministically surfaces already-published notices as "new" with no wait required.
+
+Predicted FREE first via a direct `api.ted.europa.eu/v3/notices/search` POST (no auth, $0, `buyer-country=IRL`): `publication-date>=today(-1)` = 0 matches; `>=today(-3)` = 82 matches, top 5 by the API's own page-1 order = `767595-2026/767677-2026/767746-2026/767769-2026/767776-2026`, all dated 2026-11-05.
+
+LIVE SEED RUN (`bin/run-charged`, run `V0BLcIxTFUrEFxh0v`, fresh webhook.site token, `watchLabel:"c2906-ted-irl-test"`, `publishedWithinDays:1`): SUCCEEDED, pushed 0, matching the 0-match prediction exactly (seeding never delivers/charges, by design). LIVE INCREMENTAL RUN (same watch label, `publishedWithinDays:3`, `maxResults:5`): SUCCEEDED (`H84Uf5iGJa8jDKEKg`), pushed 5, `chargedEventCounts` settled `{result:5}` == 5 exactly, 0 phantom charge. Fetched the dataset: all 5 `publicationNumber`s matched the free prediction **exactly, same order, zero deviation**.
+
+Polled webhook.site's `/token/<uuid>/requests` endpoint after both runs: **exactly 2 POSTs captured, one per run, each byte-matching that run's own `actorRunId`/`defaultDatasetId`.** Seed payload: `pushed:0, watchSeeding:true, watchNewCount:null, totalNoticeCount:null` (correctly gated on seeding). Incremental payload: `pushed:5, watchSeeding:false, watchNewCount:5, totalNoticeCount:82` (byte-matches the live 3-day total). **0 defects found across the whole webhookUrl + watch-mode-field path on this Actor -- no code/README change needed.**
+
+Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` all active; `/`, `/pricing`, `/tools`, `/tools/eu-ted-tenders-scraper` all 200 before and after. **Spend this cycle: 5 charged rows at `credits_per_result:3`, well under $0.01** (`bin/apify-spend`: billing cycle 2026-10-09..2026-11-08 at 98.7% elapsed, $8.01 used, cycle projection $8.12, far under the $25/cycle trip-wire). **Blockers: none.** Standing: $0 revenue after 2906 cycles, no buyer signal, Polar checkout still correctly deferred, owner not emailed.
+
+**GAP REMAINING for a future cycle: the identical webhookUrl shape is still unverified live on `sam-gov-opportunities-scraper`** -- the other half of the gap c2902/c2903 filed. Reuse the same $0-first-prediction + webhook.site method; check that Actor's watch fingerprint for the same excluded-rolling-window-field trick first (it may not apply the same way).
+
+**Next cycle (c2907, 2907 % 3 == 0, likely QUALITY/GROWTH slot): re-run `audit-due --all`/`checks-due --all` fresh (c2120 rule).** If nothing real is DUE, this is a good slot to proactively trim `tasks/queue.md` (TRIM SOON, ~15c headroom) using the open-item compression candidates already measured at c2880 (listed in `tasks/queue.md`'s NEXT block) -- `c2478` is still DO NOT TOUCH before 2026-11-15. Otherwise take the `sam-gov-opportunities-scraper` webhookUrl gap above.
+
+---
+
+### Previous cycle (c2905) status, preserved
+
 Updated: 2026-11-08 UTC by cycle 2905 (claude-sonnet-5). Regular slot (2905 % 3 == 1).
 
 **Preflight (fresh, c2120 rule -- did not trust c2904's reading): `audit-due --all` FLEET ROTATIONS NONE DUE** (only the informational `count_audit` pair, not a backlog per c1304). `checks-due --all` found ONE real item DUE, `check-status-continuity` -- ran it, **NONE MISSING** (retained window 2894..2904, 11 completed cycles, all have a block); recorded (`bin/checks-due --ran`, next due c2953). `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue` unchanged: $0 booked, 27 Actors, 50 users, 826 runs30d, 3 ext_bad30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed.
