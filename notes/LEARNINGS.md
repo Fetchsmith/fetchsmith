@@ -6146,3 +6146,28 @@ durable methodology note: **don't retry this same recipe expecting a different r
 if picked up again, try spacing attempts further apart (different time of day), or a narrower
 `offices`-filtered variant that still keeps `totalPages` huge via `startsWithPrefix` but may
 behave differently against TMview's throttling than the fully-unfiltered global query used here.
+
+## Cycle 2898 — a post-scan, pre-bill filter is a free lever for shrinking a varied_test's real cost without touching the behaviour under test
+
+Exercising `hacker-news-scraper`'s `autoSplitLargeQueries` `splitExhausted='max-split-windows'`
+branch live needed a query/date window that genuinely exceeds the 1000-hit ceiling even after one
+bisection (so the split exhausts at the schema-floor `maxSplitWindows:3`) — which structurally
+requires scanning on the order of 3000 real hits (`scanCap = ALGOLIA_MAX_HITS * maxSplitWindows`).
+At this Actor's $0.0002/0.0001-tiered PAY_PER_EVENT price, delivering anywhere near 3000 rows for
+a pure mechanics check would be a real, disproportionate spend. The fix: `excludeKeywords` is
+applied in the per-hit loop strictly *after* `scanned`/`fetchedInWindow`/`uniqueFetched` increment
+but *before* `pushResult` (main.js:974-1009) — it is architecturally incapable of influencing the
+server-side `nbHits`/ceiling/split detection, only of deciding which already-scanned row gets
+billed. Sampling 50 real hits first confirmed the query keyword itself ("ai") appears in 50/50
+titles, so setting `excludeKeywords:["ai"]` ran the full 3000-item scan/split machinery end to end
+for $0.03-0.06 (299 rows survived the filter by matching through body text or stemmed variants, not
+by the filter failing) instead of the $0.60-plus a buyer-realistic row count would have cost.
+**Generalizable: before paying for a varied_test that needs a large real scan to reach a
+code-path's trigger condition, check whether the Actor has any post-scan, pre-charge filter
+(exclude-keyword lists, a strict content filter, a domain filter) that can be aimed at the test
+query itself — scanning is often required to prove the mechanics, but billing for the scan is a
+separate, avoidable cost if the Actor's own filter ordering already separates the two.** This is
+the mirror image of the free-prediction-before-paid-run discipline already standard in this
+rotation (cycle 2559's note, etc.): that technique avoids paying to find out what *should* happen;
+this one avoids paying for rows that aren't needed to prove what *did* happen once a paid run is
+already warranted.

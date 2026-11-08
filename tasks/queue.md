@@ -1,3 +1,52 @@
+- [x] **DONE c2898 (QUALITY/GROWTH slot, 2898 % 3 == 0) -- closed the varied_test rotation
+      item `audit-due --all` found DUE fresh, `varied_test: hacker-news-scraper` (2562 -> 2898,
+      336c/7d gap). DELIBERATELY DECLINED the NEXT TARGET, `unreachable_remedy:
+      trademark-search-scraper`, a fifth time -- c2894/c2895/c2896/c2897 already spent a full
+      slot each on it for $0 yield and c2895's filed follow-up says do not retry its recipe
+      near-term; it is now the fleet's single oldest open item (340c+ stale) and the one
+      genuinely overdue thing left in the backlog.** Preflight: `checks-due --all` NONE DUE
+      (soonest `check-dead-endpoint-docs` in 1c), `inbox-triage new` NONE UNTRIAGED of 75,
+      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 825 runs30d, 3 ext_bad30d) --
+      no buyer signal, no owner email owed.
+      Closed the exact gap c2562's own note left open: `autoSplitLargeQueries`'s
+      `splitExhausted='max-split-windows'` branch (main.js ~1027-1049) and the `sortBy:'date'`
+      pairing had never been exercised live by any prior `varied_test` on this Actor -- every
+      earlier one left `maxSplitWindows` at its schema default of 24, which no tested query
+      ever exhausted. Forced the schema-documented floor `maxSplitWindows:3` (main.js:52,
+      `Math.max(3, ...)`) against `query:"ai" tags:[story]` over Aug 2025, free-predicted first
+      via a direct $0 curl against `hn.algolia.com` (whole month 4325 matches; the code's own
+      exact midpoint bisection gives 2258/2067, both still past the 1000-hit ceiling, so a
+      floor-3 split must exhaust on the very first split). **Reusable cost-control technique:**
+      `excludeKeywords` is applied strictly after the scan/dedup counters increment but before
+      `pushResult` (main.js:974-1009), so it cannot affect server-side nbHits or the
+      split/ceiling detection at all -- only which scanned rows get billed. Sampled 50 real
+      hits first (50/50 titles literally contain "ai"), then set `excludeKeywords:["ai"]` to
+      run the full 3000-item scan/split machinery for a fraction of the realistic
+      PAY_PER_EVENT cost a buyer-shaped input would imply. LIVE RUN (`wDjHnRopSYTfoUN2z`,
+      SUCCEEDED, sortBy:date): `windowsSearched=3, windowsSplit=2, declaredMatches=4325`
+      (byte-exact to the free prediction), `scanned=3000` (== scanCap exactly),
+      `uniqueScanned=2000` (1000 dedup'd re-scans -- confirms the unsplit pass and the newer
+      post-split half cover overlapping newest-first territory under `sortBy:date`, exactly as
+      the half-open window-bounds comment implies), `splitExhausted='max-split-windows'`
+      exactly as predicted. Only 299/2000 unique hits survived the exclude filter;
+      `chargedEventCounts` settled `{result:299}` == 299 pushed exactly, 0 phantom charge even
+      mid-split. **Zero deviation on every structural field, 0 defects found, no code/README
+      change needed.** node --check not run (no edit made); check-charges/check-registry-fields
+      not re-run (pure verification, 0 diff, no build owed). Recorded via `bin/_rec2898.py`;
+      `audit-due --type varied_test` now reads **NONE DUE**, soonest `substack-scraper` in 1
+      cycle. Services/site verified 200 before and after (`/`, `/pricing`, `/tools`,
+      `/tools/hacker-news-scraper`); spend ~299 charged rows (~$0.03-0.06, well under the
+      $25/cycle trip-wire -- `bin/apify-spend` $7.99 used this billing cycle).
+      **Follow-up filed (not done this cycle): `bin/check-doc-size` flags BOTH
+      `state/STATUS.md` (117.7KB/1124 lines) and `tasks/queue.md` (123.5KB/1482 lines, this
+      file) as TRIM SOON** -- not due yet, but projected to cross the trim line before the
+      checker's next scheduled look. The next QUALITY/GROWTH slot should trim both proactively
+      (the `bin/_trim2892q.py`-style archive-then-cut method, rule-1 hazard grep first) rather
+      than waiting for the escalation to TRIM DUE.
+      **Remaining gap for a future varied_test on this Actor (per c2562's note, now
+      narrower): the null-on-failure `commentDepth` path, and `splitExhausted` combined with
+      `watchChanges`, are both still unexercised live.**
+
 - [x] **DONE c2897 (Regular slot, 2897 % 3 == 2) -- closed one of TWO real fleet-rotation items
       `audit-due --all` found DUE fresh: `unreachable_remedy: google-play-reviews-scraper`
       (2561 -> 2897, 336c/7d gap). DELIBERATELY DECLINED the NEXT TARGET, `trademark-search-
