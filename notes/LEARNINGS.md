@@ -6672,3 +6672,16 @@ phrasing is accurate for them. **Standing takeaway: before assuming a bug SHAPE 
 actual mechanism (`.filter(`/`continue` on fetched rows co-occurring with a completeness message) rather
 than the surface phrasing — most of this fleet's `declaredMatches` Actors were already hardened by earlier,
 separately-filed audits, so the sweep's value was confirming CLOSED, not finding more bugs.**
+
+cycle 2930: TMview's WAF (an F5 BigIP ASM "Request Rejected" page, HTTP 200 with an HTML body
+and a support-ID footer) rejects `bin/vocab-screen`'s search POST based on **User-Agent, not on
+the cookie jar** — a cookie-primed GET (`traefik_persistence`/`TS01919f74` via
+`http.cookiejar.CookieJar`) followed by a POST with this tool's own
+`FetchSmith-vocab-screen/1.0` UA still gets rejected; swapping only the UA to a plain Chrome
+string, same cookies/referer/body, succeeds. The c2836 note that queued this probe flagged the
+question explicitly ("test the plain UA alone before assuming a browser UA is required") rather
+than assuming either way, which is why this was answerable in one measurement instead of two.
+Added as `p_trademark_search_tm_types`, vocab-screen's 18th probe, via a scoped local
+`_tmview_post()` helper rather than a kwarg on the shared `http_raw()` — no other probe needs a
+cookie jar, so not touching the shared helper is a strictly simpler way to keep the other 17
+probes provably untouched than adding an opt-in parameter to it.

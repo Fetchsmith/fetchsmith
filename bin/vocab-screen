@@ -1411,6 +1411,99 @@ def p_courtlistener_courts():
     return not mismatches, out
 
 
+# ---- trademark-search-scraper: needs a cookie-primed session, unlike every probe above ----
+# TMview's WAF (an F5 BigIP ASM "Request Rejected" page, support-ID footer) rejects this tool's
+# plain http()/http_raw() even WITH the right cookies and a referer -- live-measured c2930: the
+# existing `FetchSmith-vocab-screen/1.0` UA alone still gets rejected post-cookie, so (per the
+# c2836 queue note) a browser UA was tested rather than assumed, and that is what the WAF is
+# actually keying on, not the cookie. A scoped local opener is used here instead of adding
+# cookie/UA kwargs to the shared http_raw() -- no other probe needs a cookie jar, and this keeps
+# the other 17 probes provably untouched (byte-identical re-run after this change, see below).
+_TM_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+
+
+def _tmview_post(body):
+    """GET the search page to pick up traefik_persistence/TS01919f74 (mirrors main.js's own
+    primeCookies(), main.js:251), then POST the search body through the same jar. Returns
+    (status, parsed-json-or-raw-text) -- never raises on a 4xx, matching http_raw()'s contract,
+    since the negative controls below need to read a deliberate 400's body."""
+    import http.cookiejar
+    jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+    opener.open(urllib.request.Request(
+        "https://www.tmdn.org/tmview/", headers={"User-Agent": _TM_UA}), timeout=TIMEOUT)
+    req = urllib.request.Request(
+        "https://www.tmdn.org/tmview/api/search/results",
+        data=json.dumps(body).encode(),
+        headers={"User-Agent": _TM_UA, "Content-Type": "application/json",
+                 "Accept": "application/json", "Referer": "https://www.tmdn.org/tmview/"})
+    try:
+        with opener.open(req, timeout=TIMEOUT) as r:
+            return r.status, json.loads(r.read().decode())
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode()
+
+
+def p_trademark_search_tm_types():
+    """tmTypes is a free-text stringList (c2512 limb 1 -- enum-screen is structurally blind to
+    it, no `enum` in the schema) with a closed, README-documented vocabulary of 10 values. Also
+    covers the matchMode -> criteria C/W/E mapping the README's prose claims (c1866/c2500/c2504),
+    since both live on the same search POST and the c2836 follow-up asked for both. Queued
+    c2836, written c2930 -- first vocab-screen probe needing a cookie-primed session (see
+    _tmview_post above)."""
+    out = []
+    desc = field("trademark-search-scraper", "tmTypes").get("description", "")
+    m = re.search(r"live-confirmed to work:\s*([^.]+)\.", desc)
+    types = [t.strip() for t in m.group(1).split(",")] if m else []
+    out.append(f"  schema documents {len(types)} tmTypes: {types}")
+    if not types:
+        out.append("  PROBE INVALID: could not parse any documented tmType out of the description")
+        return False, out
+
+    totals = {}
+    for t in types:
+        status, resp = _tmview_post({"page": "0", "pageSize": "1", "criteria": "C",
+                                      "basicSearch": "a", "fTMType": [t]})
+        totals[t] = resp.get("totalResults") if status == 200 and isinstance(resp, dict) else None
+        out.append(f"    {t:22s} HTTP {status}  totalResults={totals[t]}")
+    dead = [t for t, n in totals.items() if not n]
+    if len(set(totals.values())) == 1:
+        out.append("  PROBE INVALID: every tmType returned the same total, so the filter was "
+                   "ignored rather than applied -- this proves nothing about the vocabulary.")
+        return False, out
+    if dead:
+        out.append(f"  DEAD tmTypes (documented as live but return nothing): {dead}")
+
+    bogus_status, bogus_resp = _tmview_post({"page": "0", "pageSize": "1", "criteria": "C",
+                                              "basicSearch": "a", "fTMType": ["ZzyzxNotARealType"]})
+    bogus_total = bogus_resp.get("totalResults") if isinstance(bogus_resp, dict) else None
+    out.append(f"  negative control fTMType='ZzyzxNotARealType': HTTP {bogus_status} "
+               f"totalResults={bogus_total} "
+               f"({'fails closed, matches README' if bogus_total == 0 else 'CONTRADICTS fails-closed assumption'})")
+    if bogus_total != 0:
+        dead.append("negative control did not fail closed")
+
+    # matchMode -> criteria mapping (MATCH_MODE_TO_CRITERIA, main.js:181): contains/startsWithPrefix
+    # share C, startsWith is W, endsWith is E. Assert C/W/E each resolve and diverge on the same term.
+    crit_totals = {}
+    for crit in ("C", "W", "E"):
+        status, resp = _tmview_post({"page": "0", "pageSize": "1", "criteria": crit, "basicSearch": "coffee"})
+        crit_totals[crit] = resp.get("totalResults") if status == 200 and isinstance(resp, dict) else None
+        out.append(f"    criteria={crit}  HTTP {status}  totalResults={crit_totals[crit]}")
+    if len(set(crit_totals.values())) == 1 or any(not n for n in crit_totals.values()):
+        out.append("  MISMATCH: C/W/E criteria codes did not each resolve to a distinct, non-zero total")
+        dead.append("criteria C/W/E mapping")
+    bogus_crit_status, _ = _tmview_post({"page": "0", "pageSize": "1", "criteria": "Q", "basicSearch": "coffee"})
+    out.append(f"  negative control criteria='Q': HTTP {bogus_crit_status} "
+               f"({'rejected as expected' if bogus_crit_status == 400 else 'UNEXPECTED -- was not rejected'})")
+    if bogus_crit_status != 400:
+        dead.append("bogus criteria code was not rejected")
+
+    if dead:
+        out.append(f"  MISMATCHES: {dead}")
+    return not dead, out
+
+
 PROBES = {
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
@@ -1432,6 +1525,7 @@ PROBES = {
     "google-play-reviews-scraper": ("genres", p_google_play_genres),
     "ats-jobs-scraper": ("employmentTypeKeyword/WORKDAY_TIME_TYPES", p_ats_workday_timetype),
     "court-records-scraper": ("courts", p_courtlistener_courts),
+    "trademark-search-scraper": ("tmTypes+matchMode/criteria", p_trademark_search_tm_types),
 }
 
 targets = sys.argv[1:] or sorted(PROBES)

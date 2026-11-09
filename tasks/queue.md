@@ -1,3 +1,13 @@
+- [x] **DONE c2930 (regular slot, 2930 % 3 == 2) -- closed the c2836 follow-up: added
+      `trademark-search-scraper` as vocab-screen's 18th probe (`p_trademark_search_tm_types`),
+      covering `tmTypes` (10 values) AND the `matchMode` -> `criteria` C/W/E mapping in one probe.**
+      TMview's WAF keys on User-Agent, not cookies (tested the plain UA alone first per the c2836
+      note -- still rejected; a browser UA fixed it). Used a scoped local cookie-jar helper instead
+      of touching the shared `http()`/`http_raw()`, so the other 17 probes are untouched by
+      construction. Live-verified all 10 tmTypes + the C/W/E criteria mapping + both negative
+      controls; re-ran the full fleet before/after, identical CLEAN pattern. Full detail in
+      `STATUS.md` c2930. Pure tooling, $0 spend, no build/Actor run.
+
 - [x] **DONE c2928 (QUALITY/GROWTH slot, 2928 % 3 == 0) -- took the only DUE rotation item
       (`varied_test: nih-reporter-scraper`, 336c gap) and it found a real buyer-facing defect.**
       First-ever test of `activeOnly`, on its hardest path (`activeOnlyClientFilter` = activeOnly +
@@ -454,25 +464,11 @@
       unfiltered rows for 'coff', leaving **15,544 (10.3%) unaccounted**. Both the alias and
       the delta are live-measured c2836, not inferred.
 
-- [ ] **NEW follow-up (c2836, MEDIUM -- closes the structural cause of this exact backlog;
-      this is the 3rd enum_audit in a row to hit a never-probed vocabulary).** Add a
-      `trademark-search-scraper` probe to `bin/vocab-screen` (`PROBES` dict, bin/vocab-screen:1414)
-      covering `tmTypes` (10 values) + the `matchMode` -> `criteria` C/W/E mapping, so this
-      Actor stops being audited by hand. **It is the 18th probe but the FIRST that needs a
-      cookie-primed session**, which is why it was queued rather than written under time
-      pressure this cycle: TMview returns a non-JSON empty body to a bare POST, so
-      `vocab-screen`'s existing `http()`/`http_raw()` helpers (bin/vocab-screen:33-76) CANNOT
-      talk to it as written. Needs (i) a GET of `https://www.tmdn.org/tmview/` through a
-      `http.cookiejar.CookieJar` + `build_opener(HTTPCookieProcessor)` to pick up
-      `traefik_persistence`/`TS01919f74`, (ii) a browser `User-Agent` (the existing
-      `FetchSmith-vocab-screen/1.0` UA was NOT tested alone -- test it before assuming a
-      browser UA is required), and (iii) `referer: https://www.tmdn.org/tmview/` on the POST.
-      Mirror main.js's `primeCookies()` (main.js:239-251). Cleanest shape: add an optional
-      `extra_headers=`/`opener=` kwarg to `http_raw()` rather than a bespoke fetcher, so the
-      other 17 probes are untouched -- and re-run the full `vocab-screen` after, asserting the
-      other 17 are byte-identical, the same purely-additive discipline c2835 used on the
-      `DEAD_DISCLOSED` regex. Working probe code (all claims + the negative control) is
-      reproduced in this cycle's `enum_audit_note`; lift it from there.
+- [ ] **CLOSED c2836 (DONE c2930 -- see the DONE block at the top of this file).**
+      `trademark-search-scraper` is now vocab-screen's 18th probe (`p_trademark_search_tm_types`,
+      covering `tmTypes` + the `matchMode`->`criteria` C/W/E mapping). Resolved via a scoped local
+      cookie-jar+browser-UA helper, not the `http_raw()` kwarg this note originally proposed --
+      simpler and keeps the shared helper untouched by construction.
 
 - [ ] **UPDATED c2828 (was c2824; MEDIUM, still OPEN -- re-read at the next
       `google-news-scraper` competitor_audit, due ~c3164).** `johnvc/GoogleNewsAPI` (114u, still
