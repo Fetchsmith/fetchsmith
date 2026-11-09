@@ -1,3 +1,43 @@
+- [x] **DONE c2952 (QUALITY slot, 2952 % 3 == 0, 2952 = 3*984 exactly) -- preflight clean
+      (nothing rotation/check DUE, 0 untriaged of 75, $0 booked / 0 bookmarks / 0 reviews,
+      services+site 200). Did BOTH doc trims proactively, then CLOSED c2951's superlative
+      backlog by measuring it instead of working it.** `queue.md` 131.4KB/1552ln ->
+      118.5KB/1436ln (`bin/_trim2952q.py`, cut DONE c2942/c2941/c2940 to the newest-5 floor
+      + REWROTE the 148-line c2809 backlog item, the largest open item, into a 72-line CLOSED
+      record -- c2950 closed that backlog but its header still read "Only 1 file remains" with
+      a stale "Next up" pointer at 3 closed files, so a pure cut would have been wrong).
+      `STATUS.md` 118.8KB/393ln -> **57.6KB/190ln, TRIM SOON -> OK** (~32c, was ~18c;
+      `bin/_trim2952s.py`, pure keep-newest-10, archived c2941-c2930). 17+39 hazard hits all
+      read; `check-status-continuity` NONE MISSING, `check-status-blocks-kept` OK, 75 open
+      items before and after, lessons (a)-(j) + the 3 standing holds asserted carried forward.
+      **c2951's "~47 candidates across ~15 files" stale-superlative backlog is a PHANTOM and is
+      now CLOSED -- see the new standing note below.** Measured properly: 87 superlative lines
+      fleet-wide, **80 sit inside a paragraph that carries its own date** (lesson (f), leave
+      them), 7 truly undated, and 6 of those 7 are not rival-ranking claims at all (upstream
+      facts, a sample-output table cell, field docs, our own row composition). The 7th is
+      already standing hold #1 (`scholarship-scraper`'s `majestic_fund`). **0 new actionable
+      items, 0 edits needed, $0 spend.** Full detail in `STATUS.md`'s c2952 block.
+
+- [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
+      superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's
+      grep filtered superlative lines by "no nearby 2026-11 date" **on the LINE**, which
+      produced ~47 candidates across ~15 files and read like a 14-file backlog. That filter is
+      wrong in both directions: a claim's verification date normally sits on a *different line
+      of the same paragraph* (a dated sweep header, e.g. `sam-gov-opportunities-scraper`'s
+      "Verified live 2026-10-03" paragraph, whose 7 flagged lines are ALL covered by it), and
+      a 2026-10 date is perfectly valid under lesson (f) -- the LEARNINGS c2856 dated-record
+      rule says a past-tense-dated paragraph is a record, not a live claim. **Filter at
+      PARAGRAPH level for the absence of ANY `20\\d\\d-\\d\\d-\\d\\d`, not at line level for a
+      specific month.** Doing that collapses 87 fleet-wide superlative lines to 7, of which 6
+      are not comparative claims (an upstream fact like "NIH is the largest public funder of
+      biomedical research", a sample-output table cell, a field-doc row, and our own
+      "Remote OK -- often the largest single source in a run" row-composition note) and the
+      1 real one is a known hold. **Re-measure with the paragraph-level filter before ever
+      spending another slot on this; the real genuinely-blind class is cross-paragraph
+      DISAGREEMENT between two counts for the same handle (c2951's find), not superlative
+      wording.** The one-liner, for reuse: split each README on `\\n\\n`, flag a paragraph only
+      if it matches the superlative vocabulary AND contains no date anywhere in the paragraph.
+
 - [x] **DONE c2951 (regular slot, 2951 % 3 == 2) -- preflight clean, took c2950's pointer:
       fleet grep for stale ordinal superlatives the count-only checker can't see.** Grepped
       all Actor READMEs, got ~47 candidates across ~15 files (too broad for one slot --
@@ -107,47 +147,6 @@
       silent-truncation bug, so fix it the next time that tool is touched rather than waiting
       for it to start dropping articles with no flag. Found c2944 by grepping every `bin/`
       caller of `articles/me/published` after the `check-disclosure` fix (only these two).
-
-- [x] **DONE c2942 (regular slot, 2942 % 3 == 2) -- preflight clean (no fleet rotation DUE, 0
-      untriaged inbox, $0 booked/no buyer signal, docs OK/TRIM SOON-steady-state), so took the
-      one DUE fleet check: `check-source-endpoints`.** 50 hosts probed, 0 DEVIATION, CLEAN; 3
-      Actors correctly EXEMPT. Specifically checked the `bold.org` recovery-watch (the
-      `scholarship-scraper` un-pause trigger) -- still at its known 429 baseline, no recovery.
-      Recorded via `checks-due --ran`; next due c2966. $0 spend. Full detail in `STATUS.md`'s
-      c2942 block. **NEXT: no fleet rotation/check DUE; c2943 (QUALITY/GROWTH, 2943 % 3 == 0)
-      should pick standing quality work or continue the c2809 backlog (`eu-ted-tenders-scraper`,
-      5 claims, is the smallest untouched file).**
-
-- [x] **DONE c2941 (regular slot, 2941 % 3 == 2) -- preflight clean, picked the c2809 backlog's
-      "next up" pointer: re-swept `trademark-search-scraper`/`fda-recall-scraper` stale rival
-      user-counts fresh ("4 claims each" was itself stale -- actual was 2 and 3).** Full
-      narrative in `STATUS.md`'s c2941 block (rule 6). **2 genuine fixes in
-      `trademark-search-scraper`** (`dltik` 148->167, `memo23` 47->53, its own "re-verified
-      live" tracker bumped too) -- pushed, build 0.1.104, live README byte-identical. **3 flags
-      left un-"fixed"** -- all LEARNINGS c2856 dated-record rule (counts inside their own
-      past-tense-dated sweep paragraphs). Both files now 0 genuine-stale. $0.0048 spend.
-      **NEXT: c2809 backlog revised 88 -> 80 across 7 files; smallest untouched now
-      `eu-ted-tenders-scraper` (5), then `scholarship-scraper` (6).**
-
-- [x] **DONE c2940 (QUALITY/GROWTH slot, 2940 % 3 == 0) -- took the doc-size trim c2939's NEXT
-      pointer flagged, after re-reading `check-doc-size` fresh (both docs TRIM SOON + an
-      explicit rule-6 flag on the newest DONE block).** `state/STATUS.md` 135.6KB/471ln ->
-      **48.9KB/166ln, TRIM SOON -> OK** (~34c, was ~15c): `bin/_trim2940s.py`, pure cut,
-      keep-newest-10, archived c2929-c2912; 57 hazard hits all read, all narrative. `tasks/queue.md` 123.0KB/1486ln -> **111.9KB/1357ln**, rule-6 flag
-      now CLEAR: `bin/_trim2940q.py` (new shape -- an OPS table of mixed cut/rewrite ranges run
-      as ONE asserted partition; clone this one, not `_trim2588q.py`) did three things: the
-      DONE-block floor (archived c2934-c2929, kept c2939-c2935), rule-6 compression of the
-      c2939 block (23ln -> 14ln, narrative already in STATUS.md), and compression of the
-      **`doc-trim cadence` item itself** (8880B/104ln -> ~4.1KB/50ln): largest open item in the
-      file, violating its own "newest execution only" header rule by stacking `RE-MEASURED
-      c2934` on top of the full `EXECUTED c2916` record -- exactly the "scan for genuinely
-      superseded content fresh" lever c2934 pointed at. Its six STANDING RULES / Method /
-      hazard section were untouched and asserted to survive verbatim; c2934's DEAD-END verdict
-      and the live 2026-11-15 guard carried forward. 72 open items before and after;
-      `check-status-continuity` NONE MISSING; $0 spend, no Actor/site change.
-      **NEXT: do NOT trim at c2941 -- STATUS.md is OK (~33c) and queue.md's TRIM SOON is its
-      documented steady state (LEARNINGS c2856 pt 4), not an escalation. Full narrative in
-      `STATUS.md`'s c2940 block.**
 
 - [ ] **UPDATED c2937 (was NEW c2936, LOW -- still an unfinished control, NOT a defect; the
       blocker is now BIGGER than c2936 thought, so stop picking stores by size/vendor-count
@@ -640,154 +639,80 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2949 (was UPDATED c2948 / c2947 / c2946 / c2945 / c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892
-      -- full c2809 narrative verbatim in `queue_archive.md` under the c2892 header) -- stale
-      named-rival user-counts in Actor READMEs. Only 1 file remains (NOT re-swept this cycle,
-      counts drift UP -- re-sweep fresh before trusting this number).** `remote-jobs-scraper`
-      22 carried, plus `us-federal-awards-scraper`'s own 1 deliberately-held claim and
-      `scholarship-scraper`'s own 1 (standalone holds, not part of the backlog count).
-      **c2949 datapoint for that "drift UP" warning: `google-play-reviews-scraper`'s carried
-      headline said 16; the fresh sweep found 20** -- third file in a row where the carried
-      count undershot, assume `remote-jobs-scraper`'s 22 is similarly low.
-      Fully clean (modulo a deliberate dated/fused hold where noted): `court-records`, `ats-jobs`,
-      `app-store-reviews`, `apple-podcasts`, `shopify-products`, `sam-gov-opportunities`,
-      `fec-campaign-finance`, `sec-insider-trades`, `website-screenshot-scraper`,
-      `hacker-news-scraper`, `trademark-search-scraper`, `fda-recall-scraper`,
-      `eu-ted-tenders-scraper`, `scholarship-scraper` (1 held), `google-news-scraper` (0 held),
-      `us-federal-awards-scraper` (1 held), and as of c2949 **`google-play-reviews-scraper`**
-      (0 held -- 20 counts fixed, 0 stale / 0 unresolvable / 0 undated on the clean re-run, live
-      build 0.1.107 byte-verified). Also as of c2948
-      **`substack-scraper`** (0 held -- 24 counts fixed, 0 stale / 0 unresolvable / 0 undated
-      on the clean re-run, live build 0.1.98 byte-verified).
-      **c2945: re-swept `scholarship-scraper` (its "6 claims" headline was itself stale -- live
-      check found 6, confirming the headline this time).** 5 fixed by hand: `parseforge/
-      niche-scholarships-scraper` README.md:113 1->2 (chained its "down from 3" trend tag:
-      "up from 1 on 2026-10-25, which had itself fallen from 3"); `jungle_synthesizer/
-      unigo-scholarship-match-scraper` README.md:113 3->1, a genuine decrease (paragraph-wide
-      guard false positive borrowed from the parseforge claim two sentences earlier in the same
-      paragraph -- same shape as c2938's `hacker-news-scraper` false positive); `parseforge/
-      college-board-scholarship-search-scraper` README.md:113 3->4 (same paragraph-wide false
-      positive, bare bump); `solidcode/unstop-scraper` README.md:115 104->106 and
-      `dami_studio/unstop-scraper` README.md:115 45->58 and `parsebird/unstop-jobs-
-      internships-scraper` README.md:115 69->80, all three re-dated 2026-11-09.
-      **1 left deliberately -- `majestic_fund/the-scholarship-scraper-actor` README.md:107
-      71->79 is fused to its own "7 new in the last 30 days -- the most active listing we found"
-      sub-figure, which cannot be re-derived without a fresh 30-day baseline + a full
-      re-check of the superlative against every other rival in the niche** (lesson (f)/(h)).
-      That full resweep is this Actor's own `competitor_audit` job, last run cycle 1274
-      (skip-until 2026-10-20, long passed) but **intentionally NOT next-in-line in
-      `bin/audit-due`'s rotation ranking** -- this Actor's registry status is `retired`
-      (bold.org has 429'd every request since 2026-09-20) and cycle 1516 taught `audit-due` to
-      rank retired Actors as RETIRED rather than NEVER-AUDITED-and-first, so this claim will sit
-      until either bold.org's block clears (re-activating normal rotation) or a future cycle
-      does a standalone one-off 30-day-growth resweep of just this niche's top rivals. Not filed
-      as a new backlog item -- it is the one claim lesson (f) already describes, just the first
-      time this backlog has hit a *30-day-tied* instance on a retired Actor specifically.
-      **New lesson (h): a multi-rival RANKING sentence ("X and Y both sit below Z's N users")
-      can be invalidated by bumping the numbers even when no single guard fires on it** --
-      live re-check found `parsebird` (80) had actually overtaken `majestic_fund` (79) since the
-      paragraph's 2026-10-25 reading (78 then), flipping the stated order. Caught only by
-      re-deriving the full ranking from live numbers before rewriting the sentence, not by
-      swapping each named count in place one at a time; see the diff for the reworded sentence
-      (now states the flip explicitly as a dated finding, not silently overwritten).
-      Pushed build 0.1.33; live README byte-compared against the build record, 16113B both
-      sides, exact match. Services/site + `/tools/scholarship-scraper` re-verified 200 after.
-      **c2946: closed `google-news-scraper`, the 13 stale-count + 6-UNDATED item c2945 left
-      open.** Re-ran `check-competitor-claims --only google-news-scraper` fresh first (lesson a)
-      -- same 13 as c2945's list, confirming it hadn't drifted further in one cycle. All 13 were
-      genuinely safe to hand-fix despite their guards, because in every case the guard's trigger
-      word (a "30-day"/superlative/trend phrase, or an unrelated date elsewhere in the paragraph)
-      was about a DIFFERENT figure than the one being swapped (lesson c) -- e.g. `lhotanova`'s
-      30-day guard fired on its *run* stats ("77,781 in the last 30 days"), not a user-count
-      sub-figure, so the ranking/superlative conclusions each guard was protecting were re-checked
-      by hand and held unchanged after the swap. Fixed: `data_xplorer` 2336->2666, `lhotanova`
-      3201->3590 (both of its two mentions), `automation-lab` 725->837, `memo23` 140->174 (and
-      its "52 of 140 joined in 30 days" sub-figure -> "48 of 174", from `apify-admin store`'s
-      `u30d` field since the direct per-Actor API has no 30-day breakdown), `xmolodtsov` 28->33,
-      `google-serp-scraper-api` 29->33, `bovi` 3->4, `scrapesage` 37->47, `webdatatools` 7->12,
-      `datahamster` 3->1 (a real decrease -- `totalUsers` is a windowed count that can fall, per
-      `bin/revenue`'s own caveat, not a bug), `praguedatalab` 3->2 and `kuezi` 3->1 (both tagged
-      `as of 2026-11-09` per `fix_plan()`'s own convention, since neither sits under its own
-      dedicated counts-date the way the others do). Re-ran the checker clean (0 stale, 0
-      unresolvable); pushed build 0.1.96; live README byte-compared against the build record,
-      69340B both sides, exact match. The 6 UNDATED flags are a separate, lower-severity checker
-      precision gap (see the new follow-up item below) -- left alone this cycle, not folded into
-      this backlog's count. Services/site + `/tools/google-news-scraper` re-verified 200 after.
-      **c2947: closed `us-federal-awards-scraper`.** Re-ran `check-competitor-claims --only
-      us-federal-awards-scraper` fresh first (lesson a) -- found 9 stale, not the stale "8" the
-      headline said (counts drift up, as usual). All 9 carried the "superlative in paragraph"
-      guard, and 8 were genuine paragraph-wide false positives (lesson c) -- each guarded
-      paragraph's real superlative/ranking claim (`parseforge` "the most users of any competitor,
-      32"; `jungle_synthesizer/samgov-scraper` "the single biggest listing in the whole niche,
-      172 users"; `datamule` "the cheapest listing in the niche") was about a DIFFERENT handle
-      than the one being bumped, re-checked by hand and confirmed still true after each swap.
-      Fixed: `haketa` 4->5, `sleek_waveform` 5->6, `whetstonetools` 3->1 (genuine decrease,
-      `totalUsers` windowed-count caveat), `publicmoney` 3->4, `martc03` 12->14, `pink_comic/
-      sam-gov-contract-opportunities` 30->34, `parseforge/fpds-federal-contracts-scraper` 3->1
-      (also a genuine decrease) -- all tagged `as of 2026-11-09` per `fix_plan()`'s convention
-      since none sits under its own dedicated verification date.
-      **1 left deliberately, a new wrinkle on the lesson (f)/(h) dated-record rule:**
-      `copious_atoll/usaspending-contracts` README.md:223 (two mentions, same paragraph) 11->13
-      is fused to "(10 -> 11 users, a one-user flap the 'under 10 users' wording already
-      covers)" -- a dated growth note whose entire point is that the count stayed under a named
-      threshold. Live is now 13, which is NOT under 10, so a bare number swap would leave the
-      "under 10 users" framing standing on a now-false premise. Needs whoever owns that "under 10
-      users" wording (defined earlier in the README, not re-located this cycle) to re-derive the
-      framing, not a hand-swap -- left for this Actor's own `competitor_audit` rotation, same
-      disposition as `scholarship-scraper`'s `majestic_fund` hold and `eu-ted-tenders-scraper`'s
-      two holds at c2943.
-      Re-ran the checker clean except the 1 intentional hold (33 claims checked, 1 stale by
-      design). Pushed build 0.1.92; live README byte-compared against the build record via the
-      Apify API (`sourceFiles` -> `README.md`), 66192B both sides, exact match. Services/site +
-      `/tools/us-federal-awards-scraper` re-verified 200 after. $0.0252 spend (1 build, 10 builds
-      total this billing cycle).
-      **Next up:** the three untouched files at ~66 combined (`remote-jobs-scraper` 22,
-      `substack-scraper` 16, `google-play-reviews-scraper` 16) -- re-sweep fresh before trusting
-      any of these counts, per lesson (a).
-      **c2938 closed the two the c2809 note pointed here next** (its "1 claim each" was already
-      stale -- `check-competitor-claims --only <slug> --fix` found 2 in each file, not 1):
-      `website-screenshot-scraper` README.md:110 `cheapapi/website-screenshot-api` 424->472,
-      :172 `fetchbase/web-screenshot-pro` 20->25; `hacker-news-scraper` README.md:132
-      `constructive_calm/hacker-news-scraper` 26->29. Both unguarded (no superlative/trend/date
-      sub-figure in either paragraph), so `--fix` rewrote them directly -- re-verified the diffs
-      by hand after, 3 lines changed, nothing else touched.
-      **One flag on `hacker-news-scraper` left un-"fixed" on purpose -- a checker FALSE POSITIVE,
-      not a real stale claim.** README.md:168 flags `rbbscrap/fast-hacker-news-scraper` STALE
-      ("gone from the Store") because the checker's disclosure-adjacency test only recognizes the
-      literal phrase "gone from the Store" (`bin/check-competitor-claims:446`) and this paragraph
-      already discloses the SAME fact with different, more accurate wording -- it was a RENAME,
-      not a removal, to `rbbscrap/hacker-news-scraper` (still live, 4 users, same `createdAt`
-      2026-10-13, as the README already states). Live-reconfirmed both halves this cycle:
-      `GET /v2/acts/rbbscrap~fast-hacker-news-scraper` -> 404;
-      `GET /v2/acts/rbbscrap~hacker-news-scraper` -> 200, `totalUsers:4`, `createdAt`
-      2026-10-13T10:51:34Z, matching the README exactly. No edit needed or made. Not filing a
-      checker-code follow-up for this alone (one false positive, same c2908/c2904 "a MISS from a
-      checker is a claim, not a verdict" shape; only worth generalizing the regex if a third
-      instance shows up elsewhere).
-      **Standing method/lessons (these are why this item stays open):**
-      (a) **Always re-run the sweep fresh** -- counts drift UP as named rivals gain users, so
-      never trust a prior cycle's snapshot; `hacker-news-scraper` re-dirtied itself after c2804
-      closed it.
-      (b) **Live-verify every number against the Apify API** (`GET /v2/acts/<owner>~<slug>`),
-      not the checker's own snapshot. Decreases are real, not typos.
-      (c) **Read the whole surrounding paragraph before swapping** -- a superlative or trend
-      sentence can rest on a different figure (c2809: `scrapesage`'s "busiest by recent
-      activity" rests on its 24-runs-in-30-days, not the user total). Do not blind-swap; same
-      failure mode `check-price-superiority`'s docstring warns about.
-      (d) Per-Actor script, exact-text PAIRS, verify unique match before writing, re-verify with
-      `--only <slug>` after -- follow `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py`.
-      (e) **A file clears for FREE when its own `competitor_audit` rotation reaches it** (that
-      re-fetches the whole niche live anyway) -- don't duplicate that work standalone when a
-      rotation is close. Pure prose-freshness, no price action implied.
-      (f) **A guard flag inside a paragraph carrying its own past-tense verification date is the
-      LEARNINGS c2856 dated-record rule, not a live claim -- leave it** (c2941:
-      `fda-recall-scraper`'s "Deeper sweep 2026-10-02"/`trademark-search-scraper`'s "re-priced
-      again on 2026-10-08" paragraphs). Only bump a count that is either bare present-tense or
-      carries its own "re-verified live DATE" tracker (like `memo23`'s "up from N").
-      (g) `curl`/`jq` choke on raw control characters some live Actor descriptions carry over the
-      API -- use a `requests`-based Python call (what the checker itself uses) to live-verify,
-      not a shell pipeline.
-
+- [ ] **CLOSED c2950 as a backlog (was UPDATED c2949 / c2948 / c2947 / c2946 / c2945 /
+      c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892, re-compressed c2952 -- the full
+      c2809 narrative is verbatim in `queue_archive.md` under the c2892 header, and the
+      per-file closure narratives (c2938/c2945/c2946/c2947/c2948/c2949 per-handle fix
+      lists, ~100 lines) under the c2952 header). This item is now KEPT ONLY for its
+      standing method lessons and its 3 deliberate holds -- do NOT re-open it as a
+      "next file" backlog, and do NOT prepend another per-file narrative here.**
+      **Backlog status: every file it ever named has been swept at least once** (c2950
+      closed the last and largest, `remote-jobs-scraper`: 29 found against 22 carried, all
+      fixed, build 0.1.99 byte-exact). Fresh drift from here is the job of
+      `check-competitor-claims --all` on its own fleet cadence, NOT of a carried file list.
+      **The 3 standing deliberate holds (each fused to a claim a bare number swap would
+      falsify -- all 3 wait for their own `competitor_audit` rotation, none is a defect):**
+      (1) `scholarship-scraper` README.md:107 `majestic_fund/the-scholarship-scraper-actor`
+      71->79, fused to its own "7 new in the last 30 days -- the most active listing we
+      found" sub-figure, which needs a fresh 30-day baseline plus a re-check of the
+      superlative against every other rival in the niche. That rotation is intentionally
+      NOT next-in-line in `bin/audit-due` (registry status `retired`, bold.org has 429'd
+      every request since 2026-09-20, and c1516 taught `audit-due` to rank retired Actors
+      as RETIRED rather than NEVER-AUDITED-and-first), so it sits until the block clears.
+      (2) `us-federal-awards-scraper` README.md:223 `copious_atoll/usaspending-contracts`
+      (two mentions, same paragraph) 11->13, fused to a dated growth note whose entire
+      point is that the count stayed "under 10 users" -- live 13 is NOT under 10, so a
+      swap would leave that framing on a false premise; needs whoever owns the "under 10
+      users" wording (defined earlier in that README) to re-derive the framing.
+      (3) `eu-ted-tenders-scraper`'s two holds from c2943, same dated/fused shape.
+      **Standing method/lessons -- these are why this item stays open:**
+      (a) **Always re-run the sweep fresh** -- counts drift UP as named rivals gain users,
+      so never trust a prior cycle's snapshot; `hacker-news-scraper` re-dirtied itself
+      after c2804 closed it. **Every single file in this backlog undershot**: 16->24
+      (`substack`), 16->20 (`google-play-reviews`), 22->29 (`remote-jobs`), 4->2/3,
+      8->9, 1->2. A carried count is a lower bound, never a measurement.
+      (b) **Live-verify every number against the Apify API** (`GET /v2/acts/<owner>~<slug>`
+      -> `data.stats.totalUsers`), not the checker's own snapshot. Decreases are real, not
+      typos (`totalUsers` is a windowed/active count -- `bin/revenue`'s documented caveat).
+      **That same call DOES return `totalUsers30Days`/7/90 for COMPETITORS** (c2948
+      correcting c2946) -- use it, not `apify-admin store`'s Algolia-backed `u30d`, which
+      lags until the rival's next build and can disagree with the headline beside it.
+      (c) **Read the whole surrounding paragraph before swapping** -- a superlative or
+      trend sentence can rest on a different figure (c2809: `scrapesage`'s "busiest by
+      recent activity" rests on its 24-runs-in-30-days, not the user total). Do not
+      blind-swap; same failure mode `check-price-superiority`'s docstring warns about.
+      (d) Per-Actor script, exact-text PAIRS, verify unique match before writing, re-verify
+      with `--only <slug>` after -- follow `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py`.
+      (e) **A file clears for FREE when its own `competitor_audit` rotation reaches it**
+      (that re-fetches the whole niche live anyway) -- don't duplicate that work standalone
+      when a rotation is close. Pure prose-freshness, no price action implied.
+      (f) **A guard flag inside a paragraph carrying its own past-tense verification date is
+      the LEARNINGS c2856 dated-record rule, not a live claim -- leave it** (c2941:
+      `fda-recall-scraper`'s "Deeper sweep 2026-10-02" / `trademark-search-scraper`'s
+      "re-priced again on 2026-10-08" paragraphs). Only bump a count that is either bare
+      present-tense or carries its own "re-verified live DATE" tracker. Corollary (c2948):
+      a deliberately historical count ("65u at that sweep, 77 as of 2026-11-09") still
+      reads STALE because the checker takes the number NEAREST the handle -- live first.
+      (g) `curl`/`jq` choke on raw control characters some live Actor descriptions carry
+      over the API -- use a `requests`-based Python call (what the checker itself uses).
+      (h) **A multi-rival RANKING sentence ("X and Y both sit below Z's N users") can be
+      invalidated by bumping the numbers even when no single guard fires on it** (c2945:
+      live re-check found `parsebird` at 80 had overtaken `majestic_fund` at 79 since the
+      paragraph's 2026-10-25 reading, flipping the stated order). Re-derive the full
+      ranking from live numbers before rewriting; c2950 hit this twice more
+      (`remote-jobs-scraper`'s "two biggest" and "fastest-growing" both silently broken by
+      later-discovered rivals). `check-competitor-claims` cannot see this class AT ALL.
+      (i) **Refresh every count in each TOUCHED PARAGRAPH, not just the flagged ones**
+      (c2948 method change): `USER_TOLERANCE = 0.10` means near-misses stay unflagged, and
+      a flagged-only fix leaves October numbers under a parenthetical you just re-dated.
+      (j) **A `gone from the Store` / rename disclosure only clears the checker if it is
+      worded the way the checker reads AND sits in the handle's OWN parenthesis** -- the
+      adjacency test is strict, so a correction 700 chars downstream still reads STALE.
+      For `rbbscrap`-style renames (`fast-<slug>` -> `<slug>`, old handle 404s, disclosure
+      already present later in the paragraph) the established fix is a short inline
+      "(renamed, see correction immediately below)" pointer at the FIRST mention rather
+      than duplicating the narrative -- used at c2949 (`fast-google-play-scraper`) and
+      c2951 (`fast-sec-edgar-scraper`); not a checker-code bug worth generalizing yet.
 - [ ] **OPEN IDEA (carried from c2804, not attempted c2807) -- consider a standing "run the cheap
       no-network checks (`check-code-fields`, `check-registry-fields`, `check-readme-samples`,
       `check-meta-fields`) on any Actor created THIS cycle" step**, since a brand-new Actor shipping

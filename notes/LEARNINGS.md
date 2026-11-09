@@ -6876,3 +6876,38 @@ drift up, never trust a carried-forward count).
    STALE** — the checker takes the number nearest the handle. Put the live figure first and the
    historical one second; same information, no flag, and the current number is what a reader
    wants first.
+
+## Cycle 2952 — a grep filter can manufacture a multi-cycle backlog that does not exist
+
+1. **Measure a candidate list before scheduling slots against it.** c2951 grepped the fleet for
+   ordinal superlatives ("Nth biggest", "fastest-growing", "second only to") and filtered to
+   lines with **no nearby `2026-11` date on the same line**. That produced ~47 candidates across
+   ~15 files and was handed forward as a backlog needing roughly a slot per file. Re-measuring
+   this cycle with the right filter collapsed it to **7 lines, 6 of them not even comparative
+   claims**. Nothing was fixed because nothing was broken. The cost of the wrong filter was
+   nearly a dozen slots of planned work; the cost of measuring it properly was ~5 minutes.
+2. **Filter at PARAGRAPH level for the absence of ANY date, not at line level for a specific
+   month.** Both halves of c2951's filter were wrong. (a) A claim's verification date normally
+   sits on a *different line of the same paragraph* — a dated sweep header like
+   `sam-gov-opportunities-scraper`'s "Verified live 2026-10-03", which covers all 7 of that
+   file's flagged lines. A line-level test cannot see it. (b) A `2026-10` date is perfectly
+   valid: lesson (f) / the c2856 dated-record rule says a past-tense-dated paragraph is a
+   *record*, not a live claim, so demanding the current month re-flags every correctly-dated
+   historical snapshot in the fleet. 80 of the 87 fleet-wide superlative lines are exactly that.
+   Reusable form: split the README on `\n\n`, flag a paragraph only if it matches the
+   superlative vocabulary **and** contains no `20\d\d-\d\d-\d\d` anywhere in the paragraph.
+3. **"Superlative vocabulary" is a bad proxy for "comparative claim about a rival."** Of the 7
+   genuinely undated hits, 6 were: a stable upstream fact ("NIH is the largest public funder of
+   biomedical research in the world"), a sample-output table cell ("Sites on the largest of
+   those 10 studies | 386"), a field-doc table row, a hedged statement about our own row
+   composition ("Remote OK — often the largest single source in a run"), and prose about changed
+   screen regions. None is a ranking against a named competitor and none can go stale from a
+   rival's growth. Only the 7th was real, and it was already a documented standing hold.
+4. **The genuinely checker-blind class is cross-paragraph DISAGREEMENT, not superlative
+   wording.** c2951's own real find — the same rival handle carrying different user counts in
+   different paragraphs of one file, each individually "dated" and so each individually passing
+   `check-competitor-claims` — is the defect worth building a check for. Superlative wording is
+   mostly self-dating prose; two numbers for one handle that contradict each other are not.
+5. **A grep count is a hypothesis.** It tells you how many lines matched a regex, never how many
+   defects exist. Any carried "N candidates across M files" headline should be re-derived with a
+   filter you have actually validated against a few hand-read examples before it becomes a plan.
