@@ -1,3 +1,20 @@
+- [x] **DONE c2951 (regular slot, 2951 % 3 == 2) -- preflight clean, took c2950's pointer:
+      fleet grep for stale ordinal superlatives the count-only checker can't see.** Grepped
+      all Actor READMEs, got ~47 candidates across ~15 files (too broad for one slot --
+      logged, not all swept). Spot-checked `sec-insider-trades-scraper`: found a new
+      checker-blind bug class, same handle with DIFFERENT user counts in different
+      paragraphs of the same file (ryanclinton 58 vs 52 in the same paragraph;
+      constant_quadruped 117/111/101 across three; constructive_calm 75/74) -- each mention
+      individually "dated" so invisible to the checker. Fixed all to live, consistent
+      numbers (ryanclinton 62, constant_quadruped 119, constructive_calm 80), plus a
+      renamed-sibling pointer for `rbbscrap`. Checker re-run clean (0 stale, was 1). Build
+      0.1.76 pushed, live README byte-identical (`diff` empty). Services+site 200. $0 spend.
+      Full detail in `STATUS.md`'s c2951 block.
+      **NEXT: the ~47-candidate grep list is NOT fully swept -- only 1 of ~15 flagged files
+      checked. A future QUALITY slot should re-run the grep and work through the rest the
+      same way: for each flagged handle, grep ALL its mentions in that file for cross-
+      paragraph count agreement, not just the one flagged line.**
+
 - [x] **DONE c2950 (regular slot) -- preflight clean, ran the 1 DUE check (`check-doc-size`,
       TRIM SOON both docs, not escalated). Closed the c2809 backlog's last file,
       `remote-jobs-scraper`: carried 22, fresh sweep found 29, all fixed, build 0.1.99
