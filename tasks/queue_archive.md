@@ -77354,3 +77354,104 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       interpolations in `.toLocaleString('en-US')` next time that file is built for any other
       reason.
 
+
+## Archived by cycle 2931 (2026-11-09)
+
+<!-- c2931: DONE c2922+c2920+c2923+c2924, queue.md lines 61-135 -->
+- [x] **DONE c2922 (QUALITY/GROWTH slot, 2922 % 3 == 0) -- took the mandatory trim of BOTH
+      `STATUS.md` and `queue.md` that c2920 flagged.** Preflight all fresh: `audit-due --all`
+      NONE DUE, `checks-due --all` found 1 DUE (`check-disclosure`) -- ran it clean (95 blog +
+      30 dev.to, 0 missing), recorded. `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue`
+      unchanged ($0 booked, no buyer signal, no owner email owed).
+      `state/STATUS.md`: 133.6KB/490 lines -> **52.3KB/189 lines, TRIM SOON -> OK** (`bin/_trim2922s.py`,
+      pure line cut, kept newest-10 cycle blocks c2921-c2912, archived c2911-c2894 to
+      `STATUS_ARCHIVE.md`). `tasks/queue.md`: 128.9KB/1522 lines -> **120.1KB/1423 lines, still
+      TRIM SOON** (`bin/_trim2922q.py`, DONE-block-floor lever only -- archived the 3 oldest of 8
+      live DONE blocks, c2916/c2914/c2915, keeping c2921/c2920/c2919/c2918/c2917). Rule-1 hazard
+      greps run first on both files (54 + 9 hits), all narrative about rules homed elsewhere, no
+      rescue needed. Both pre-commit tripwires (`check-status-blocks-kept`, `check-status-continuity`)
+      re-run clean. Services/site verified 200. Spend $0. **Did not attempt open-item compression
+      on `queue.md`** (time budget) -- if it re-escalates to TRIM DUE, that's the next lever.
+- [x] **DONE c2920 (regular slot, 2920 % 3 == 1) -- closed the c2919 NEXT pointer: the whole
+      remaining delisted-handle backlog, 11 undisclosed mentions / 8 files. BACKLOG NOW EMPTY
+      (`handle_liveness.json` `undisclosed: []`).** Preflight all fresh: `audit-due --all` NONE
+      DUE, `checks-due --all` NONE DUE (soonest `check-disclosure` c2922), `inbox-triage new`
+      NONE UNTRIAGED of 75, `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 842 runs30d,
+      0 bookmarks/reviews -- no buyer signal, no owner email owed).
+      **Headline: the standard "delisted" remedy would have published THREE FALSE statements,
+      because 5 of the 9 genuine 404s were a RENAME, not a removal** (`rbbscrap` dropped a
+      `fast-` prefix; all three repriced the day the old handle died, so our READMEs were calling
+      a now-$0.001/app rival "free to run ... try those first"). Rule + evidence now live in the
+      backlog item below and `LEARNINGS.md` cycle 2920. Also: **`wearefluent` is a third
+      whole-account delisting** (after `crawlerbros` c2918, `automation-lab` c2919), and
+      `eu-ted-tenders`'s 2 were the suspected TOOL false positive (`field/0`/`field/1`) -- fixed
+      in `KNOWN_NON_HANDLES`, no build, proved non-blunting by synthesising the failure.
+      Verified **0 UNDISCLOSED on all 8** files via `--only`; 3 new SHARED hand-read and honest.
+      `check-links` clean on all 7 edited READMEs; 7 builds SUCCEEDED (apple-podcasts 0.1.120,
+      federal-register 0.1.71, google-news 0.1.95, google-play 0.1.106, grants-gov 0.1.85,
+      hacker-news 0.1.106, sec-insider 0.1.75), README-only so no republish. Site 200 on `/`,
+      `/pricing`, `/tools` + all 8 tool pages. Spend ~$0.034. Follow-up filed as its own NEW
+      c2920 item (sweep the 110 already-disclosed 404s for the rename shape, grouped by owner).
+      (c2922 took the trim this note flagged -- see the DONE c2922 block above.)
+- [x] **DONE c2923 (regular slot) -- closed the c2916 follow-up: `bin/check-doc-size` now
+      measures and warns on doc-trim rule 6 (the ~20-line DONE-block cap) instead of relying on
+      memory.** Preflight all fresh: `audit-due --all` NONE DUE (only informational one-off
+      axes), `checks-due --all` found 1 DUE (`check-dead-endpoint-docs`) -- ran it clean (1
+      retired endpoint, 4 blog mentions checked, 0 undisclosed), recorded, next due c2947.
+      `inbox-triage new` NONE UNTRIAGED of 75. `bin/revenue` unchanged ($0 booked, no buyer
+      signal, no owner email owed). Added `newest_done_block_lines()` (segments on
+      `^- \[[ x]\] `, same approach `bin/_trim2916q.py` used) and a print in `main()` that
+      reports the newest `tasks/queue.md` DONE block's line count against the ~20-line cap,
+      flagging when over. Proved non-blunting per the PLAYBOOK rule on touching any
+      `bin/check-*`: synthesized a 25-line fake block (flags correctly) and re-ran against the
+      real file (still reads 14 lines, matching the live run, no false positive). Read-only, no
+      new state file, no change to the script's exit code or existing checks. Verified
+      `./bin/check-doc-size` runs clean end-to-end. Services/site verified 200 (no site code
+      touched this cycle). Spend $0. `tasks/queue.md` still TRIM SOON (118.6KB/1436 lines, ~15c
+      headroom) -- not retrimmed, no need yet per the standing trim-in-QUALITY-slot rule.
+      **Next cycle:** nothing rotation/check/inbox/revenue due as of this reading -- re-check
+      fresh. SAM.gov webhookUrl velocity test needs Mon-Fri ~13:00-21:00 UTC (today, 2026-11-08,
+      is a Sunday). Apify `GET /v2/store` Nov-15 item stays gated until after 2026-11-15. Watch
+      the next QUALITY slot's `check-doc-size` output for whether the new DONE-block warning
+      actually catches an over-cap block in practice (this one is fine).
+
+- [x] **DONE c2924 (regular slot) -- closed the c2815 fleet follow-up on `ats-jobs-scraper`:
+      the shared-run-budget starvation bug was REAL there, and is now fixed (build 0.1.122).**
+      Preflight all fresh: `audit-due --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE
+      DUE (soonest `check-doc-size` c2926), `inbox-triage new` NONE UNTRIAGED of 75,
+      `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 842 runs30d, 0 bookmarks/reviews
+      -- no buyer signal, no owner email owed). Forced with the c2815 recipe (throwaway
+      `src/_tmp_starve.js`, Greenhouse base -> `http://10.255.255.1`, real `ACTOR_TIMEOUT_AT`
+      +130s): **shipped code at `43991c24` delivered 0 rows on both a 2-company and a
+      3-company list, with the healthy boards never asked; fixed code delivers 10 and 7.**
+      Healthy control (`test_input.json`) still 52/52 rows, so the reserve costs a clean run
+      nothing. Fix mirrors uk-find-a-tender's: `SIBLING_RESERVE_MS=30s` per untried company,
+      capped at half of what's left, read via `fetchBudgetMs()` by every request clamp; zeroed
+      after the company walk and in the outer catch; cut-off companies get their own honest
+      cause (`cutOffCompanies`/`cutOffCause()`, never "failed to answer") and join watch mode's
+      "baseline INCOMPLETE" warning. **The draft was broken and the row count did not show it**
+      -- fractional ms -> got/`AbortSignal` throw synchronously (LEARNINGS c2924). README FAQ
+      entry added with the measured numbers. `check-code-fields`/`check-example-input` clean,
+      site 200 incl. `/tools/ats-jobs-scraper`, spend ~$0.005 (1 build).
+
+<!-- c2931: DONE c2921, queue.md lines 437-455 -->
+- [x] **DONE c2921 -- the c2920 rename-shape sweep.** Grouped all 110 `disclosed`+`shared` 404s
+      by owner (43 owners, skipped the known `owner/slug` placeholder), hit
+      `GET /v2/store?search=<owner>&limit=100` per owner, $0/read-only. **14 owners confirmed
+      genuine whole-account removal** (`total: 0`): `aicatraz`, `barefoot_grade`, `crawlerbros`,
+      `cycha`, `darknezz`, `entrogix_works`, `gh0st1k`, `himanshu-data`, `joyouscam35875`,
+      `luminar`, `malekh`, `rigelbytes`, `unhampered_dolly`, `wearefluent` -- no fix needed.
+      **`automation-lab` is NOT a whole-account delisting** (corrects c2919's STATUS claim) --
+      94 live Actors under that exact username today, just pivoted to a generic high-volume
+      catalog; not buyer-facing since every README already scopes the disclosure to "this
+      Actor", never the seller. Re-confirmed `rbbscrap` (already fixed) and `crw` (README's
+      existing "removal not rename" claim) both still correct. `difflib` fuzzy-matched every
+      remaining owner's missing handle against that owner's live catalog looking for an
+      exact-affix-drop shape like `rbbscrap`'s `fast-` prefix -- found none. **Conclusion: no
+      README needs a fix; the backlog's existing disclosures are honest.** Caveat: 9 owners
+      (`benthepythondev`, `bovi`, `dami_studio`, `hipersoft`, `nexgensignal`, `parseforge`,
+      `rbbscrap`, `studio-amba`, `tagadanar`) have catalogs likely >100, so a sibling past the
+      first 100 relevance-ranked results isn't ruled out -- low risk, not exhaustive. Sweep
+      item closed; no open NEXT pointer from this thread. Full owner-by-owner data in
+      `/tmp/owner_sweep.json` (ephemeral, not committed -- rerun the same method if needed).
+
