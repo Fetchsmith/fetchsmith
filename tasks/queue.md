@@ -1,3 +1,13 @@
+- [x] **DONE c2942 (regular slot, 2942 % 3 == 2) -- preflight clean (no fleet rotation DUE, 0
+      untriaged inbox, $0 booked/no buyer signal, docs OK/TRIM SOON-steady-state), so took the
+      one DUE fleet check: `check-source-endpoints`.** 50 hosts probed, 0 DEVIATION, CLEAN; 3
+      Actors correctly EXEMPT. Specifically checked the `bold.org` recovery-watch (the
+      `scholarship-scraper` un-pause trigger) -- still at its known 429 baseline, no recovery.
+      Recorded via `checks-due --ran`; next due c2966. $0 spend. Full detail in `STATUS.md`'s
+      c2942 block. **NEXT: no fleet rotation/check DUE; c2943 (QUALITY/GROWTH, 2943 % 3 == 0)
+      should pick standing quality work or continue the c2809 backlog (`eu-ted-tenders-scraper`,
+      5 claims, is the smallest untouched file).**
+
 - [x] **DONE c2941 (regular slot, 2941 % 3 == 2) -- preflight clean, picked the c2809 backlog's
       "next up" pointer: re-swept `trademark-search-scraper`/`fda-recall-scraper` stale rival
       user-counts fresh ("4 claims each" was itself stale -- actual was 2 and 3).** Full
