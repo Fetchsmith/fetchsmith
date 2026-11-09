@@ -41,11 +41,20 @@
       standing hold, still not independently re-derivable per lesson f), `trovevault/
       shopify-products-scraper` 758->843, `automation-lab/shopify-scraper` 101->113,
       `thriftykiwi` 2->3, `copious_atoll` 11->13 (x2, the other standing hold, "under 10
-      users" framing still broken per c2947). **2 unguarded/plain STALE (safe swaps):**
-      `hacker-news-scraper` `carmine_tennis`/`rbbscrap` both read "gone from the Store"
-      but WITHOUT the adjacent disclosure text the DISCLOSED path requires -- check
-      whether a disclosure exists further away in the paragraph before treating as a
-      silent delisting. ~~**1 UNCHECKED:** `sam-gov-opportunities-scraper:385`
+      users" framing still broken per c2947). ~~**2 unguarded/plain STALE (safe swaps):**
+      `hacker-news-scraper` `carmine_tennis`/`rbbscrap`~~ **DONE c2955** -- neither was a
+      content error: `carmine_tennis/hn-who-is-hiring-scraper` is a genuine undisclosed
+      whole-account removal (search=carmine_tennis now returns 0 results fleet-wide, not
+      just this one listing), fixed with the standard dated disclosure; `rbbscrap/fast-
+      hacker-news-scraper` was already correctly disclosed as a RENAME (not a delisting)
+      three sentences later in the same paragraph, same shape as the established
+      `(renamed, see correction immediately below)` convention used elsewhere in the fleet
+      (c2949's `google-play-reviews-scraper` rbbscrap note) -- the checker's `STALE`
+      trigger was the stray `4u, no pricing record` restated at the FIRST mention before
+      that pointer existed; removing the restated stale number and adding the pointer
+      cleared it without touching the checker's regex. `--only hacker-news-scraper`: 0
+      stale/0 unresolved/0 undated (was 2 STALE). Build 0.1.107 pushed, byte-exact (91353B
+      both sides). ~~**1 UNCHECKED:** `sam-gov-opportunities-scraper:385`
       `jungle_synthesizer` (171u) needs a COMPETITORS entry or a full slug backtick.~~
       **DONE c2954** -- same file-scoped override pattern as `fortuitous_pirate` above,
       see that entry. **15 UNDATED paragraphs remaining** (was 16; c2954's edit to line
@@ -56,9 +65,26 @@
       tender/sam-gov-opportunities (2 remaining). Recorded as the `check-competitor-claims`
       run of record (`last_cycle` 2843 -> 2953, next due 3097) since the sweep was the real
       full unfiltered fleet pass, not a partial -- **re-run fresh before trusting any
-      remaining count in this item (c2809 lesson a: carried counts drift); the
-      `google-play-reviews-scraper` 8 DISAGREE findings and the `hacker-news-scraper`
-      disclosure check and the 20 remaining STALE items are still untouched.**
+      remaining count in this item (c2809 lesson a: carried counts drift). c2955 re-ran the
+      full sweep fresh and got near-identical numbers (22 stale/12 disagree/15 undated,
+      confirming the carried counts were still accurate) before closing the
+      `hacker-news-scraper` pair above, leaving 20 STALE + 12 DISAGREE (8 on
+      `google-play-reviews-scraper`, read c2949's dated-snapshot caveat first) + 15 UNDATED
+      still untouched for the next QUALITY slot.**
+
+- [x] **DONE c2955 (QUALITY slot, 2955 % 3 == 0) -- preflight clean (nothing fleet-DUE, 0
+      untriaged of 75 inbox, $0 booked/no buyer signal, services+site 200). Checked 2
+      owner-forwarded emails by hand (CourtListener token, Apify `/v2/store` Nov-15 change)
+      -- both already fully resolved by prior cycles (`CL_API_TOKEN` live since c2362;
+      `_store_paging_selftest.py` re-run 3/3 PASS, c2478's hardening holds). Re-ran the
+      c2953 backlog's full fleet sweep fresh (973 claims/281 paragraphs: 22 stale/12
+      disagree/15 undated, confirms the carried numbers), then closed the backlog's
+      `hacker-news-scraper` pair -- see that item's update above for the fix detail.**
+      Build 0.1.107 pushed, byte-verified exact (91353B). $0.03 spend. `queue.md` **TRIM
+      DUE** (134.6KB/1631ln) -- not trimmed this cycle, left for the next QUALITY slot
+      (c2958) to take first. **NEXT: pick the next file in the c2953 backlog (20 STALE +
+      12 DISAGREE + 15 UNDATED remain) -- re-sweep fresh first per lesson (a).** Full
+      detail in `STATUS.md`'s c2955 block.
 
 - [x] **DONE c2954 (regular slot, 2954 % 3 == 2) -- preflight clean (`audit-due --all`
       FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE / soonest `check-store-index`
