@@ -102,14 +102,51 @@
       still untouched for the next QUALITY slot.** **c2956 then closed
       `google-news-scraper` completely (its 1 DISAGREE + its 6 UNDATED, one push, build
       0.1.97) -- `--only google-news-scraper` now reads 77 claims / 0 stale / 0
-      unresolvable / 0 disagree / 0 undated. Remainder, by arithmetic rather than a fresh
-      fleet sweep (so RE-MEASURE, do not trust these three numbers): ~20 STALE + ~11
-      DISAGREE + ~9 UNDATED. The 8-on-`google-play-reviews-scraper` DISAGREE cluster is
-      now by far the biggest single unit left and is the obvious next pick -- but read
-      c2949's dated-snapshot caveat FIRST, because unlike the `johnvc` case just closed,
-      that file is known to contain at least one deliberately dated historical snapshot
-      where "disagreement" is correct by design and an "update to live" fix would be the
-      bug.**
+      unresolvable / 0 disagree / 0 undated.** **c2957 then took the 8-DISAGREE
+      `google-play-reviews-scraper` cluster (7 on re-sweep) and found it was MOSTLY a
+      PHANTOM, same shape as c2952's superlative-sweep closure: the checker flags any
+      handle with >1 distinct count anywhere in a file but never checks whether each
+      mention carries its OWN earlier date explaining the difference. Read all 7 by hand
+      against fresh live API counts: `thewolves` 2253(dated 2026-11-03)->2291(dated
+      2026-11-06 sweep)->2362(dated 2026-11-09, = live), `theagents`
+      811(11-06)->827(11-09, live 826, 1-off noise), `neatrat`
+      3217(10-25)->3368(11-03)->3395(11-06)->3458(live), `curious_coder`
+      2702(10-03)->2911(11-03)->2925(11-06)->2945(live), `automation-lab`
+      1293(11-06)->1345(11-09, live 1347), `solidcode/...-apps-scraper`
+      435(11-06)->464(11-09, = live), `code-node-tools` 402(11-06)->419(11-09, = live) --
+      every one is a monotonically increasing, correctly self-dated growth sequence, not
+      a contradiction. 0 edits made for these 7 (editing would destroy a correct
+      historical record to satisfy a checker that can't read per-mention dates). The
+      genuine finding was a separate STALE flag on the same file:
+      `apivault_labs/google-play-reviews-scraper` read "3 users as of 2026-11-09" but
+      live is 1 (confirmed via direct API, a real same-day decrease, not a dating
+      artifact -- its "cheapest honest per-review price" superlative is about PRICE,
+      unchanged, so still holds). Fixed inline, re-ran clean: **135 claims checked
+      (unchanged denominator per the c2956 near-miss rule) / 0 stale / 0 unresolvable /
+      7 disagree (phantom, left alone, see above) / 0 undated.** Build 0.1.108 pushed,
+      live README byte-verified exact (74329 chars both sides). $0.03 spend. Services+
+      site 200 after. **Standing note: before fixing a DISAGREE, check whether each
+      paragraph carries its own date and whether the values are in date order -- if so
+      it's a correct growth record, not a bug, exactly like c2952 found for
+      superlatives.** Remainder, by arithmetic (RE-MEASURE, do not trust): ~20 STALE +
+      ~4 real DISAGREE (apple-podcasts-scraper 3, scholarship-scraper's known
+      `majestic_fund` hold) + ~9 UNDATED across the other backlog files. No single
+      cluster stands out next -- re-sweep the full fleet fresh first (c2809 lesson a)
+      and pick the smallest remaining file.**
+
+- [x] **DONE c2957 (regular slot, 2957 % 3 == 2) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
+      `bin/revenue` unchanged $0 booked/0 bookmarks/0 reviews, `bin/traffic` <=1 visit/
+      day per tool page vs the >100 gate so NO owner email owed; services + site 200
+      before and after; spend $0.1505->$0.1511 pre/post, 2.2% of billing cycle elapsed).
+      Took the c2956 handoff: the 8-DISAGREE `google-play-reviews-scraper` cluster --
+      see the backlog item above for the full writeup. Found 7 of the 8 are a PHANTOM
+      (legitimate, correctly self-dated, monotonically-increasing growth records the
+      checker can't distinguish from real contradictions), fixed the 1 genuine STALE
+      finding (`apivault_labs` 3->1 users, a real same-day decrease), build 0.1.108
+      pushed, byte-verified exact (74329B). $0.03 spend. **NEXT: re-sweep the full
+      fleet fresh (c2809 lesson a) and pick the smallest remaining file among the ~20
+      STALE + ~4 real DISAGREE + ~9 UNDATED left; no single file stands out.**
 
 - [x] **DONE c2956 (regular slot, 2956 % 3 == 1) -- preflight clean (`audit-due --all`
       FLEET ROTATIONS NONE DUE, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0
