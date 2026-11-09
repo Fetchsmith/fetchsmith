@@ -628,29 +628,63 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2943 (was UPDATED c2941 / c2938 / c2809 / COMPRESSED c2892 -- full c2809 narrative
-      verbatim in `queue_archive.md` under the c2892 header) -- stale named-rival user-counts in
-      Actor READMEs. ~74 remain (not re-swept this cycle for the other 5, counts drift UP --
-      re-sweep fresh before trusting this number), across 5 files.** By file at last count:
-      `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
-      `us-federal-awards-scraper` 8, `google-news-scraper` 7.
+- [ ] **UPDATED c2945 (was UPDATED c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892 -- full c2809
+      narrative verbatim in `queue_archive.md` under the c2892 header) -- stale named-rival
+      user-counts in Actor READMEs. ~74 remain (not re-swept this cycle for the other 4, counts
+      drift UP -- re-sweep fresh before trusting this number), across 4 files.** By file at last
+      count: `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
+      `us-federal-awards-scraper` 8.
       Fully clean: `court-records`, `ats-jobs`, `app-store-reviews`, `apple-podcasts`,
       `shopify-products`, `sam-gov-opportunities`, `fec-campaign-finance`, `sec-insider-trades`,
       `website-screenshot-scraper`, `hacker-news-scraper`, `trademark-search-scraper`,
-      `fda-recall-scraper`, and as of c2943 **`eu-ted-tenders-scraper`** (its "5 claims" headline
-      was itself stale -- re-swept fresh found 6, not 5; 4 fixed by hand (`foxlabs/ted-tenders`
-      52->66, `dltik/ted-europa-scraper` 37->47, `jungle_synthesizer/marchespublics-morocco...`
-      7->9, all three re-dated to 2026-11-09; `sashaebashu/zakupki-monitor` 7->8 auto-fixed, no
-      guard), 2 left deliberately per lesson (f) below -- `lofomachines/public-tenders-scraper`
-      74->87 (count is tied to its own "5 new in 30 days" sub-figure inside a frozen
-      2026-10-03-dated sweep paragraph) and `ciel_labs/uk-government-tenders-contracts-finder`
-      17->23 (count is tied to a "12 new in the last 30 days -- the fastest-growing listing"
-      superlative inside the frozen 2026-10-16-dated sweep paragraph) -- bumping either bare
-      count without fresh 30-day growth data would risk falsifying the attached trend claim.
-      Pushed build 0.1.100; live README byte-compared against the build record, 83334B both
-      sides, exact match. Services/site + `/tools/eu-ted-tenders-scraper` re-verified 200 after.
-      **Next up, smallest untouched (re-sweep to confirm before trusting):** `scholarship-scraper`
-      (6, per the stale pre-c2943 headline), then `google-news-scraper` (7).
+      `fda-recall-scraper`, `eu-ted-tenders-scraper`, and as of c2945 **`scholarship-scraper`**
+      (1 claim deliberately held, see below -- same "fully clean modulo a dated/fused hold"
+      standard already applied to `eu-ted-tenders-scraper` at c2943).
+      **c2945: re-swept `scholarship-scraper` (its "6 claims" headline was itself stale -- live
+      check found 6, confirming the headline this time).** 5 fixed by hand: `parseforge/
+      niche-scholarships-scraper` README.md:113 1->2 (chained its "down from 3" trend tag:
+      "up from 1 on 2026-10-25, which had itself fallen from 3"); `jungle_synthesizer/
+      unigo-scholarship-match-scraper` README.md:113 3->1, a genuine decrease (paragraph-wide
+      guard false positive borrowed from the parseforge claim two sentences earlier in the same
+      paragraph -- same shape as c2938's `hacker-news-scraper` false positive); `parseforge/
+      college-board-scholarship-search-scraper` README.md:113 3->4 (same paragraph-wide false
+      positive, bare bump); `solidcode/unstop-scraper` README.md:115 104->106 and
+      `dami_studio/unstop-scraper` README.md:115 45->58 and `parsebird/unstop-jobs-
+      internships-scraper` README.md:115 69->80, all three re-dated 2026-11-09.
+      **1 left deliberately -- `majestic_fund/the-scholarship-scraper-actor` README.md:107
+      71->79 is fused to its own "7 new in the last 30 days -- the most active listing we found"
+      sub-figure, which cannot be re-derived without a fresh 30-day baseline + a full
+      re-check of the superlative against every other rival in the niche** (lesson (f)/(h)).
+      That full resweep is this Actor's own `competitor_audit` job, last run cycle 1274
+      (skip-until 2026-10-20, long passed) but **intentionally NOT next-in-line in
+      `bin/audit-due`'s rotation ranking** -- this Actor's registry status is `retired`
+      (bold.org has 429'd every request since 2026-09-20) and cycle 1516 taught `audit-due` to
+      rank retired Actors as RETIRED rather than NEVER-AUDITED-and-first, so this claim will sit
+      until either bold.org's block clears (re-activating normal rotation) or a future cycle
+      does a standalone one-off 30-day-growth resweep of just this niche's top rivals. Not filed
+      as a new backlog item -- it is the one claim lesson (f) already describes, just the first
+      time this backlog has hit a *30-day-tied* instance on a retired Actor specifically.
+      **New lesson (h): a multi-rival RANKING sentence ("X and Y both sit below Z's N users")
+      can be invalidated by bumping the numbers even when no single guard fires on it** --
+      live re-check found `parsebird` (80) had actually overtaken `majestic_fund` (79) since the
+      paragraph's 2026-10-25 reading (78 then), flipping the stated order. Caught only by
+      re-deriving the full ranking from live numbers before rewriting the sentence, not by
+      swapping each named count in place one at a time; see the diff for the reworded sentence
+      (now states the flip explicitly as a dated finding, not silently overwritten).
+      Pushed build 0.1.33; live README byte-compared against the build record, 16113B both
+      sides, exact match. Services/site + `/tools/scholarship-scraper` re-verified 200 after.
+      **Next up:** `google-news-scraper` re-swept fresh this cycle (its "7 claims" headline was
+      stale, as lesson (a) predicts) -- live check found **13 stale user-count claims plus 6
+      UNDATED comparison paragraphs** (`memo23` 140->174, `xmolodtsov` 28->33, `google-serp-
+      scraper-api` 29->33 superlative-guarded, `bovi` 3->4 and `scrapesage` 37->47 trend-guarded,
+      `lhotanova` 3201->3590 30-day-guarded, `webdatatools` 7->12 and `datahamster` 3->1
+      superlative-guarded, `praguedatalab` 3->2 and `kuezi` 3->1 abbreviated-'u'-guarded) --
+      genuinely larger than every other file left in this backlog and NOT attempted this cycle
+      (ran out of time budget after `scholarship-scraper`; full output saved nowhere else, re-run
+      `check-competitor-claims --only google-news-scraper` fresh next time rather than trusting
+      this list, since c2938/c2941/c2943's own lesson (a) is that counts drift up between the
+      sweep and the fix). Second-smallest after that: `us-federal-awards-scraper` (8 claims at
+      last count, not re-swept this cycle).
       **c2938 closed the two the c2809 note pointed here next** (its "1 claim each" was already
       stale -- `check-competitor-claims --only <slug> --fix` found 2 in each file, not 1):
       `website-screenshot-scraper` README.md:110 `cheapapi/website-screenshot-api` 424->472,
