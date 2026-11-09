@@ -40,6 +40,21 @@
       if so it is a correct growth record, not a bug, same class as the superlative-
       sweep phantom.** No single remaining cluster stands out as the obvious next pick
       -- re-sweep the full fleet fresh first and take the smallest clean file.
+- [x] **DONE c2961 (QUALITY slot, 2961 % 3 == 0) -- preflight clean (nothing fleet-DUE,
+      0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic ~1/Actor vs the
+      >100 gate so no owner email owed, services+site 200, $0.1639 spend unchanged --
+      pure doc work, no build/run).** Took c2960's handoff: `queue.md` was TRIM DUE
+      (129.6KB/1579ln). 8 DONE blocks were live; a PURE CUT archiving the oldest 3 by
+      cycle number (c2955/c2954/c2953, one contiguous 70-line range, `bin/_trim2961q.py`
+      cloned from c2958's) was enough -- no rewrite needed this time. **123.9KB/1509ln,
+      TRIM SOON** (the documented steady state). Lossless check passed; hazard grep
+      found 2 benign descriptive hits, nothing orphaned. `check-status-blocks-kept` OK,
+      `check-status-continuity` NONE MISSING (2942-2960, 19/19). **Blockers: none.
+      Owner email: none owed.** Full detail in `STATUS.md`'s c2961 block.
+      **NEXT: TRIM SOON with ~14c headroom, no trim owed for a while. Best-evidenced
+      work is the backlog item above's remainder (~19 STALE + ~4 real DISAGREE + ~6
+      UNDATED) -- re-sweep fresh first (c2809 lesson a), pick the smallest clean file.**
+
 - [x] **DONE c2958 (QUALITY slot, 2958 % 3 == 0) -- preflight clean (nothing fleet-DUE,
       0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic <=1 visit/day vs
       the >100 gate so no owner email owed, services+site 200).** `queue.md` was TRIM
@@ -139,76 +154,6 @@
       **NEXT: the 8-DISAGREE cluster on `google-play-reviews-scraper`, after reading
       c2949's dated-snapshot caveat.**
 
-- [x] **DONE c2955 (QUALITY slot, 2955 % 3 == 0) -- preflight clean (nothing fleet-DUE, 0
-      untriaged of 75 inbox, $0 booked/no buyer signal, services+site 200). Checked 2
-      owner-forwarded emails by hand (CourtListener token, Apify `/v2/store` Nov-15 change)
-      -- both already fully resolved by prior cycles (`CL_API_TOKEN` live since c2362;
-      `_store_paging_selftest.py` re-run 3/3 PASS, c2478's hardening holds). Re-ran the
-      c2953 backlog's full fleet sweep fresh (973 claims/281 paragraphs: 22 stale/12
-      disagree/15 undated, confirms the carried numbers), then closed the backlog's
-      `hacker-news-scraper` pair -- see that item's update above for the fix detail.**
-      Build 0.1.107 pushed, byte-verified exact (91353B). $0.03 spend. `queue.md` **TRIM
-      DUE** (134.6KB/1631ln) -- not trimmed this cycle, left for the next QUALITY slot
-      (c2958) to take first. **NEXT: pick the next file in the c2953 backlog (20 STALE +
-      12 DISAGREE + 15 UNDATED remain) -- re-sweep fresh first per lesson (a).** Full
-      detail in `STATUS.md`'s c2955 block.
-
-- [x] **DONE c2954 (regular slot, 2954 % 3 == 2) -- preflight clean (`audit-due --all`
-      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE / soonest `check-store-index`
-      in 2c, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0 booked/0 bookmarks/0
-      reviews so no owner email owed, services+site 200). Took the c2953 backlog's
-      `fortuitous_pirate`/`jungle_synthesizer` items first since they were flagged
-      "check this one first."** Investigated the suspected "cross-file ID mixup" by hand
-      and confirmed it: the checker's global `COMPETITORS` dict maps bare `fortuitous_pirate`
-      -> their `florida-court-records-scraper` listing, but `sam-gov-opportunities-scraper`
-      README.md:385 has a BARE mention of the same handle two paragraphs below where it's
-      correctly named in full as `fortuitous_pirate/sam-gov-scraper` (line 280) -- the
-      global default silently won, so the checker was comparing a SAM.gov-niche claim (129u)
-      against an unrelated Florida-court-records listing's live count (15u). Not a content
-      bug at all. Fixed in `bin/check-competitor-claims` with a file-scoped
-      `FILE_OVERRIDES` entry (the exact same pattern already used for 11 other
-      multi-listing-vendor files) rather than touching the README number, plus the same fix
-      for the companion bare `jungle_synthesizer` mention in the same paragraph (c2953's
-      filed "1 UNCHECKED" item -- `jungle_synthesizer` sells dozens of Actors fleet-wide, so
-      a global mapping would have been unsafe; file-scoped is correct). **Live re-verify:**
-      `fortuitous_pirate/sam-gov-scraper` 129->146u (genuine drift, now correctly checked
-      against the right listing), `jungle_synthesizer/samgov-scraper` already-correct 171u.
-      README edited: both mentions (full-slug line 280, bare line 385) updated to 146u and
-      re-dated 2026-11-09, which also closed 1 of the file's 3 UNDATED flags (the
-      "re-verified ... 2026-11-09" text satisfies the FRESHNESS regex). **Verification:**
-      `--only sam-gov-opportunities-scraper` now reads 0 stale/0 unresolved/0 disagree (was
-      2 STALE + 1 UNCHECKED + 1 DISAGREE), 2 UNDATED remain (lines 371/381, untouched,
-      pre-existing, same low-priority class as the c2824/c2908/c2946 wording gaps). Build
-      0.1.93 pushed (`apify push --force`); live README byte-compared via `GET
-      /v2/acts/<id>/versions` `sourceFiles` (this is one of only 2 READMEs fleet-wide over
-      the ~100k-char build-record truncation limit, per `PLAYBOOK.md` step 10) --
-      **119892B both sides, exact match.** $0.03 spend (1 build + routine preflight calls).
-      Services+site 200 after, including `/tools/sam-gov-opportunities-scraper`.
-      **Blockers: none. Owner email: none owed.** `check-doc-size` fresh: `STATUS.md` OK
-      (~29c headroom), `queue.md` TRIM SOON (its documented steady state, not escalated by
-      this cycle's edits -- newest DONE block 16 lines, under the ~20 cap after
-      compression). Full detail in `STATUS.md`'s c2954 block.
-      **NEXT (c2955): re-run `audit-due --all`/`checks-due --all` fresh first. The c2953
-      backlog above still has 20 STALE + 8 DISAGREE (all on `google-play-reviews-scraper`,
-      read against c2949's dated-snapshot-paragraph caveat before hand-fixing) + the
-      `hacker-news-scraper` 2-handle delisting-disclosure check + 15 UNDATED remaining --
-      pick the next piece there (re-sweep fresh first per lesson a).**
-
-- [x] **DONE c2953 (regular slot, 2953 % 3 == 1) -- preflight clean, ran the 1 DUE check
-      (`check-status-continuity`, NONE MISSING). Shipped the `check-competitor-claims`
-      extension c2951/c2952 flagged as the best next step: a 3rd check,
-      CROSS-PARAGRAPH DISAGREEMENT -- flags a backticked handle carrying two different
-      claimed counts in two paragraphs of one README, invisible to checks 1-2 since
-      those only ever compare one claim to live, never to its own siblings.** Verified
-      against the known `sec-insider-trades-scraper`/c2951 bug shape and the known
-      `scholarship-scraper` `majestic_fund` hold (correctly re-surfaced as DISAGREE).
-      Full unfiltered fleet sweep run as verification + this check's cadence run of
-      record (972 claims, 281 paragraphs, 5m30s, $0): 22 stale (guarded) + 1 unresolvable
-      + **12 disagreements (new finding class)** + 16 undated -- filed as the new c2953
-      backlog item above, not fixed this cycle. `check-competitor-claims` last_cycle
-      2843->2953 (next due 3097), `check-status-continuity` 2905->2953 (next due 3001).
-      No README/build touched. Services+site 200. $0 spend. Full detail in `STATUS.md`'s
-      c2953 block.
 
 - [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
       superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's
