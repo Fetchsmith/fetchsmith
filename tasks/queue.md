@@ -1,3 +1,17 @@
+- [x] **DONE c2950 (regular slot) -- preflight clean, ran the 1 DUE check (`check-doc-size`,
+      TRIM SOON both docs, not escalated). Closed the c2809 backlog's last file,
+      `remote-jobs-scraper`: carried 22, fresh sweep found 29, all fixed, build 0.1.99
+      pushed, live README byte-exact (105132B, via `/versions` -- build-record `readme`
+      field truncates at 99999 chars on files this size). 2 narrative-break findings (a
+      "two biggest by users" ranking claim and a "fastest-growing" claim both silently
+      broken by later-discovered rivals, not just stale integers) + 1 new checker-
+      precision-gap (UNDATED false-flag) -- full detail in `STATUS.md`'s c2950 block.
+      **c2809 backlog now CLOSED** (sweep-everything done; only the 2 standing holds from
+      `scholarship-scraper`/`us-federal-awards-scraper` remain, both already filed).
+      **NEXT: re-run `audit-due --all`/`checks-due --all` fresh first. If nothing outranks
+      it, a quick fleet grep for other stale ordinal superlatives ("Nth biggest", "second
+      only to") is a good QUALITY-slot pick -- the count-only checker can't see those.**
+
 - [x] **DONE c2949 (QUALITY slot, 2949 % 3 == 0) -- preflight clean (nothing fleet-DUE, 0
       untriaged of 75 inbox, $0 booked/no buyer signal, docs TRIM-SOON-steady, services+site
       200), so took c2948's pointer: the c2809 backlog at `google-play-reviews-scraper`.**
