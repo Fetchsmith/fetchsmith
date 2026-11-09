@@ -10,13 +10,22 @@
       (c2959), `nih-reporter-scraper`+`trademark-search-scraper` (c2960),
       `court-records-scraper` (c2962), `remote-jobs-scraper` (c2963),
       `apple-podcasts-scraper` (c2964 -- 3 DISAGREE all confirmed PHANTOM, 1 real STALE
-      + the :197 UNDATED fixed, build 0.1.122).
-      **OPEN REMAINDER = the ~20 STALE only** (1-13 unit drifts, natural live-count
-      growth, hand-fix), last measured by the c2962 FRESH full sweep (971 claims/281
-      paragraphs, 21 stale) and NOT re-measured since -- re-sweep the full fleet fresh
-      before trusting that number (c2809 lesson a: carried counts always drift up).
-      Scattered across `ats-jobs` / `eu-ted-tenders` / `fda-recall` / `google-news` /
-      `remote-jobs` / `scholarship` / `shopify-products` / `us-federal-awards`. Note
+      + the :197 UNDATED fixed, build 0.1.122), `ats-jobs-scraper` (c2965 -- 2 stale,
+      build 0.1.123).
+      **OPEN REMAINDER, re-measured fresh c2965 (971 claims/281 paragraphs, 18 stale,
+      11 disagree all phantom, 0 undated):** `eu-ted-tenders-scraper` (2 stale, :148/:170),
+      `fda-recall-scraper` (2 stale, both :263), `google-news-scraper` (1 stale :142,
+      recurring drift on `automation_craft`, re-flags after every closure -- drift, not
+      regression), `scholarship-scraper` (1 stale `dadhalfdev` :113, fixable, plus its
+      standing `majestic_fund` hold below), `shopify-products-scraper` (2 stale, :115/:131),
+      `us-federal-awards-scraper` (2 stale, both :223, same line). **NEWLY SURFACED c2965,
+      not in any prior carried list: `app-store-reviews-scraper`** (3 stale line-matches/
+      2 handles: `lergassy/app-store-reviews-scraper` 15->18 at :466 and :654 (superlative
+      guard), `apivault_labs/app-store-reviews-scraper` 3->1 at :552, unguarded) -- drifted
+      stale since its own last closure; not yet touched, pick up next. All of the above are
+      plain hand-fixes (1-13 unit drifts), no DISAGREE/UNDATED complexity remaining anywhere.
+      `remote-jobs-scraper` no longer appears in the fresh sweep at all -- c2963's closure
+      confirmed holding. Note
       `google-news-scraper` (`automation_craft` 3->5 at :142) went stale AGAIN after
       being fully closed at c2956 -- plain drift, not a regression, so expect previously
       closed files to reappear. Two STALE items are DELIBERATE STANDING HOLDS, not work:
@@ -43,6 +52,24 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [x] **DONE c2965 (regular slot, 2965 % 3 == 1) -- preflight clean (nothing fleet-due, 0
+      untriaged of 75 inbox -- 2 owner threads re-checked by hand, both already resolved
+      per c2892/c2964, no new owner ask; $0 booked/no buyer signal; services+site 200;
+      spend $0.1734 -> $0.1752 after 1 build).** Re-swept `check-competitor-claims`
+      fleet-wide fresh: 971 claims/281 paragraphs, 18 stale (down from carried 21), 11
+      disagree (all previously-confirmed phantoms), 0 undated. Closed `ats-jobs-scraper`
+      (2 stale, 0 disagree/undated): README.md:198 `openclawai/career-site-ats-jobs-scraper`
+      78->89u re-verified live 2026-11-09 (plain snapshot, in-place edit); README.md:227
+      `lepidata/new-jobs-feed` 3->4u, fixed with the paragraph's own established "N users
+      as of \<date\>, was M at this sweep" convention since it sits inside the dated
+      cycle-2479 sweep record (5 sibling mentions already use that form). Build **0.1.123**,
+      live README byte-verified EXACT (83,848 chars both sides). `--only ats-jobs-scraper`
+      before/after: denominators held at 91 claims/10 paragraphs, 0/0/0/0 after.
+      **Surfaced `app-store-reviews-scraper` as a new, previously-untracked stale file**
+      (3 line-matches/2 handles) -- added to the backlog item above, not fixed this cycle.
+      **NEXT: pick the next-smallest of the remaining single-file units listed in the
+      backlog item above (`fda-recall-scraper` or `us-federal-awards-scraper`, both
+      2-claim/1-line fixes) after a fresh re-sweep (c2809 lesson a).**
 - [x] **DONE c2964 (QUALITY slot, 2964 % 3 == 0 = 3*988, re-derived fresh per c2963's
       warning) -- preflight clean (nothing fleet-DUE, soonest `check-row-floor` c2966; 0
       untriaged of 75; $0 booked/0 bookmarks/0 reviews so no owner email owed; services+site
