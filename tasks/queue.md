@@ -18,9 +18,10 @@
       lesson (a)): ~20 STALE (1-13 unit drifts, natural, hand-fix) + ~4 real DISAGREE
       (`apple-podcasts-scraper`'s 3: `sourabhbgp` 75v71, `ryanclinton/podcast-directory-
       scraper` 216/207/217, `automation-lab/podcast-scraper` 117v124; plus
-      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~9 UNDATED
+      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~8 UNDATED
       paragraphs scattered across apple-podcasts/court-records/nih-reporter/remote-jobs/
-      trademark-search/uk-find-a-tender/sam-gov-opportunities (2 remaining there).**
+      trademark-search/sam-gov-opportunities (2 remaining there). `uk-find-a-tender-
+      scraper`'s 1 UNDATED closed DONE c2959 (pure wording gap, see below).**
       **Standing lesson (c2952, re-confirmed c2957): before fixing a DISAGREE, check
       whether each paragraph carries its OWN date and the values are in date order --
       if so it is a correct growth record, not a bug, same class as the superlative-
@@ -41,6 +42,32 @@
       block. **NEXT: re-sweep the fleet fresh (c2809 lesson a) and pick the smallest
       remaining file among the rewritten backlog's ~20 STALE + ~4 real DISAGREE + ~9
       UNDATED; no single file stands out.**
+
+- [x] **DONE c2959 (regular slot, 2959 % 3 == 1) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
+      `bin/revenue` unchanged $0 booked/0 bookmarks/0 reviews, `bin/traffic` verified
+      out-clicks 1-2/Actor vs the >100/day gate so NO owner email owed; services + site
+      200 before and after; spend $0.155, 2.3% of billing cycle elapsed, projection
+      $6.7 against the $85 cap).** Re-swept `check-competitor-claims` fresh (971 claims/
+      281 paragraphs: 22 stale/0 unresolvable/11 disagree/9 undated -- matches the
+      c2958 carried estimate), then targeted the 7 backlog candidate files individually
+      to find the smallest clean unit: `uk-find-a-tender-scraper` (0 stale, 1 undated)
+      and `nih-reporter-scraper` (0 stale, 1 undated) tied smallest -- picked
+      `uk-find-a-tender-scraper`. **Confirmed by direct regex test that its UNDATED flag
+      on README.md:166 (the "New full audit, 2026-11-06..." paragraph) was a pure
+      wording gap, same class as c2956's google-news-scraper fix: the paragraph already
+      carried a real, in-window date, just not preceded by a `verified|checked|
+      re-verified|rechecked` trigger word within the checker's 40-char window.** Fixed
+      by rewording "New full audit, 2026-11-06" -> "New full audit, verified live
+      2026-11-06" (1-word insert, no fact changed). `--only uk-find-a-tender-scraper`
+      before: 7 claims/0 stale/0 disagree, 13 paragraphs/1 undated; after: **7 claims/0
+      stale/0 disagree (denominator unchanged, checked per the c2956 near-miss rule), 13
+      paragraphs/0 undated.** Build 0.1.105 pushed (`apify push --force -w 600`), live
+      README byte-verified exact against the build record (93711 chars both sides).
+      $0 additional spend beyond the one build. Blockers: none. **NEXT: re-sweep fresh
+      and pick the next smallest file among the remaining ~20 STALE + ~4 real DISAGREE +
+      ~8 UNDATED -- `nih-reporter-scraper` (0 stale, 1 undated) is the next-smallest
+      untouched unit.**
 
 - [x] **DONE c2957 (regular slot, 2957 % 3 == 2) -- preflight clean (`audit-due --all`
       FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
