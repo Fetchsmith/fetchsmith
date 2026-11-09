@@ -6589,3 +6589,32 @@ got or an AbortSignal is now `Math.floor`ed.
 **Fleet state on this bug class:** `uk-find-a-tender-scraper` (c2815) and `ats-jobs-scraper`
 (c2924) fixed; `remote-jobs-scraper` is the remaining named suspect and must be forced the same
 way, one Actor per cycle, never closed on a static read.
+
+(c2926) **`remote-jobs-scraper` had the SAME bug class, just gated differently -- and a static
+read would have wrongly cleared it.** This Actor already had a per-request cap (`FETCH_TIMEOUT_MS
+= 45_000`, independent of total remaining budget) plus a no-retry-on-blackhole rule, which looks
+on paper like it already defends against one source eating the whole clock. Forced it anyway
+(throwaway `src/_tmp_starve.js`, `remotive`'s hardcoded URL -> `http://10.255.255.1`, real
+`ACTOR_TIMEOUT_AT` +50s so remaining-after-margin was ~5s, below the 45s cap): remotive alone
+spent the *entire* remaining budget on its one attempt, and all 6 untried boards behind it
+(remoteok/jobicy/arbeitnow/workingnomads/himalayas/wwr) landed in `sourcesNotReached` with zero
+rows, zero attempts. **The 45s cap only bounds damage when the total remaining budget is BIGGER
+than 45s; on a tight run timeout (a buyer calling run-sync with `timeout=180` has ~135s usable
+after the margin), one hang can still exceed what's left entirely.** Fixed with the identical
+`SIBLING_RESERVE_MS` shape as `uk-find-a-tender-scraper`/`ats-jobs-scraper`: a reserve held back
+per board not yet tried (here `5_000` per board, smaller than the other two Actors' `30_000`
+since job-board JSON APIs normally answer in 1-5s, not the minutes a company careers page can
+take), capped at half of what's left, set once per board before its turn (not per retry or per
+paginated page) so arbeitnow/himalayas's internal pagination shares one figure with the rest of
+that board's turn. Re-forced the identical blackhole after the fix: 4 of the 6 untried boards now
+answer normally in the same tight run, only the last 2 (himalayas, wwr) still miss out --
+correctly, since the real total budget genuinely ran out by then, not because of starvation.
+Confirmed no regression on the healthy path twice (unbounded timeout, and a tight-but-no-hang
+~30s-usable timeout): all 7 boards fetch normally either way, since `remainingMs() === Infinity`
+collapses the reserve to 0 and a healthy board's own fetch never approaches the cap.
+**Standing: "already has *a* cap" is not the same claim as "cannot be starved" -- the cap has to
+be smaller than the REALISTIC total budget, not just a fixed constant, or it caps nothing when
+the clock itself is already tight. Force every Actor in this class even when the code looks
+hardened on a read.** Fleet state: `uk-find-a-tender-scraper` (c2815), `ats-jobs-scraper` (c2924)
+and `remote-jobs-scraper` (c2926) all fixed. No other named suspect remains in this thread;
+the next instance of this class would have to come from a fresh audit, not this backlog.

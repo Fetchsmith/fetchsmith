@@ -49,12 +49,31 @@ function timeBudgetOk() {
 // (verified same test: exactly 3.0s), so clamping it to the remaining budget guarantees the
 // source loop gets control back while there is still time to push what it has.
 const FETCH_TIMEOUT_MS = 45_000;
+// The 45s cap above only bounds damage once it is SMALLER than what's left — on a tight run
+// timeout (buyers calling run-sync with e.g. timeout=180 see ~135s usable after the margin), one
+// blackholed source early in `sources` can still eat the ENTIRE remaining budget before the loop
+// even reaches the next board, because nothing reserves anything for the boards not yet tried.
+// Forced (cycle 2926, throwaway `src/_tmp_starve.js`, remotive's URL -> `http://10.255.255.1`,
+// real `ACTOR_TIMEOUT_AT` +50s): with 6 untried, healthy boards queued behind it, ALL 6 landed in
+// `sourcesNotReached` — remotive alone spent the whole clock. Same shape, same fix, as the c2815
+// SIBLING_RESERVE_MS pattern on uk-find-a-tender-scraper/ats-jobs-scraper: hold back a per-untried-
+// board reserve (capped at half of what's left, so the reserve can never starve the CURRENT board
+// instead), set once per board before its turn so its own retries/pagination share one figure.
+const SIBLING_RESERVE_MS = 5_000;
+let siblingReserveMs = 0;
+function setSiblingReserve(untried) {
+  const left = remainingMs();
+  siblingReserveMs = left === Infinity
+    ? 0
+    : Math.floor(Math.min(Math.max(untried, 0) * SIBLING_RESERVE_MS, Math.max(left, 0) / 2));
+}
 function fetchBudgetMs() {
   const left = remainingMs();
+  if (left === Infinity) return FETCH_TIMEOUT_MS;
   // 2s floor: only reachable deep inside a paginated source (the loop skips a source outright
   // once the budget is gone), and a doomed 2s attempt is still better than a 0ms one that
   // aborts before the socket opens and reports a misleading transport error.
-  return left === Infinity ? FETCH_TIMEOUT_MS : Math.max(2000, Math.min(FETCH_TIMEOUT_MS, left));
+  return Math.max(2000, Math.min(FETCH_TIMEOUT_MS, left - siblingReserveMs));
 }
 
 const SOURCE_SITE = {
@@ -1117,7 +1136,13 @@ const erroredSources = [];
 let runError = null;
 try {
   const collected = [];
-  for (const src of sources) {
+  for (let i = 0; i < sources.length; i += 1) {
+    const src = sources[i];
+    // Held back for the boards after this one that haven't been tried at all yet, so one
+    // blackholed board early in the list can no longer spend the whole clock before the loop
+    // even reaches them (see fetchBudgetMs/setSiblingReserve above). Set once per board so its
+    // own retries and (for arbeitnow/himalayas) pagination all share the same figure.
+    setSiblingReserve(sources.length - i - 1);
     // Checked before starting each board, not just inside the paginated ones' own loops: a run
     // can also run low on budget between single-fetch sources (Remotive/Remote OK/Jobicy/Working
     // Nomads), and skipping the rest here is what lets `sourcesNotReached` name the true reason
@@ -1138,6 +1163,10 @@ try {
       log.warning(`${src}: fetch failed (${err.message}). Continuing with the other sources.`);
     }
   }
+  // Zeroed once the walk is done so anything downstream reading remainingMs()/fetchBudgetMs()
+  // (the status-message/webhook tail) sees the real remainder, not a reserve held for boards
+  // that no longer exist.
+  siblingReserveMs = 0;
 
   // De-duplicate BEFORE charging: the same job is routinely syndicated to several boards
   // and the buyer must not be billed once per copy.

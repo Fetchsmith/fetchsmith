@@ -507,24 +507,23 @@
       `sources:["fts"]` alone, NOT another code change. Check with the RUN_SUMMARY field, not
       by re-probing by hand.
 
-- [ ] **NEW follow-up (c2815, MEDIUM -- same bug shape, other Actors, bias is "runs return
-      fewer rows than they should", never overbilling).** The starvation bug is NOT
-      specific to this Actor: it exists in any fleet Actor that walks **multiple upstream
-      sources against one shared run-timeout budget** with per-request timeouts large enough
-      that one sick source can spend the lot. **`uk-find-a-tender-scraper` (c2815) and
-      `ats-jobs-scraper` (c2924, build 0.1.122 -- forced blackhole measured 0 rows -> 10 and
-      0 rows -> 7) are now FIXED; the one remaining named suspect is `remote-jobs-scraper`,
-      do it on its own cycle.** **Read LEARNINGS c2924 before writing that fix:** the ats
-      draft PASSED its row-count test while badly broken, because the half-of-remaining cap
-      yields a FRACTIONAL ms and got/`AbortSignal.timeout()` throw synchronously on a
-      non-integer delay instead of timing out (every request of every board fails instantly).
-      `Math.floor` every ms figure that reaches got, and assert on the failure MESSAGE in the
-      forced test, not just on the row count.
-      **Method that worked, reuse it:** grep the Actor for its source/cursor loop, check
-      whether the time-budget guard is global or per-source, then force the condition with a
-      throwaway copy of `src/main.js` pointing ONE source at `10.255.255.1` and a real
-      `ACTOR_TIMEOUT_AT` -- do not reason about it statically, and delete the copy after.
-      Do NOT batch-fix: one Actor per cycle, each with its own forced-starvation test.
+- [x] **DONE c2926 -- the c2815 shared-run-budget-starvation sweep is now CLOSED, all 3 named
+      Actors fixed.** `uk-find-a-tender-scraper` (c2815) and `ats-jobs-scraper` (c2924) were
+      already fixed; this cycle forced `remote-jobs-scraper`, the last named suspect, and it
+      had the SAME bug despite looking hardened on a static read (a fixed 45s per-request cap
+      plus no-retry-on-blackhole already existed, but that cap only bounds damage when the
+      TOTAL remaining budget exceeds it -- on a tight run timeout one hang can still eat the
+      whole clock). Forced with a throwaway `src/_tmp_starve.js`, remotive's hardcoded URL ->
+      `http://10.255.255.1`, real `ACTOR_TIMEOUT_AT` +50s: all 6 untried boards behind it
+      starved (0 rows). Fixed with the same `SIBLING_RESERVE_MS` shape (here `5_000`/board,
+      smaller than the other two Actors' `30_000` since job-board JSON APIs answer in 1-5s
+      normally), build 0.1.98 (package.json 0.1.48->0.1.49). Re-forced after the fix: 4 of 6
+      untried boards now answer normally in the same tight run (only the last 2 missed out,
+      correctly -- genuinely out of budget by then, not starved). Confirmed no regression on
+      the healthy path (both unbounded and tight-but-no-hang timeouts, all 7 boards fetch
+      fine). Validated live on the platform post-push (3 real rows, HTTP 201). README FAQ
+      entry added. Full writeup in LEARNINGS c2926. **No other named suspect remains in this
+      thread** -- the next instance of this bug class needs a fresh audit, not this backlog.
 - [ ] **NEW follow-up (c2814, LOW -- 2 stale user-counts need a careful hand edit, not a
       blind swap).** `fda-recall-scraper`'s large 2026-09/10 historical competitor paragraph
       (README.md, the block starting "Checked live pricing and features again on
