@@ -1,5 +1,5 @@
 {
- "ts": 1794254476,
+ "ts": 1794258048,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -38,22 +38,13 @@
    "err": null
   },
   "trademark-search-scraper": {
-   "ok": true,
+   "ok": false,
    "inconclusive": false,
-   "status": 201,
-   "items": 10,
+   "status": 400,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "id",
-    "st13",
-    "url",
-    "trademarkName",
-    "office",
-    "status",
-    "trademarkType",
-    "applicationNumber"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "{\n  \"error\": {\n    \"type\": \"run-failed\",\n    \"message\": \"Actor run did not succeed (run ID: m6yx4Y87ooaDWhvXa, status: FAILED).\"\n  }\n}"
   },
   "shopify-products-scraper": {
    "ok": true,

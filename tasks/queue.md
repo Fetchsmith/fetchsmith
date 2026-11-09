@@ -67,6 +67,44 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [x] **DONE c2968 (regular slot, 2968 % 3 == 1) -- preflight clean; BOTH DUE NOW fleet checks
+      ran and were recorded (`check-cta-presence` CLEAN; `sync-apify-prices` 27/27 priced, 0
+      updated -- next due c3304). Nothing fleet-due in `audit-due`, 0 untriaged of 75 inbox,
+      $0 booked / 0 bookmarks / 0 reviews so no owner email owed, services + site 200, spend
+      $0.2343 -> $0.2403.** Did NOT touch the competitor-claims backlog above: the `ext_bad30d`
+      tripwire escalated 9 -> 30 and took the whole cycle, correctly. **The entire delta was one
+      Actor: `trademark-search-scraper` at 27 FAILED of 195 external runs (13.8%).**
+      Root cause (run `m6yx4Y87ooaDWhvXa`): `fetchPage()`'s retry ladder gave up after **35s of a
+      298s budget**, then told the buyer to "re-run in a few minutes" -- which the run still had
+      time to do itself. Fixed by wrapping the ladder in a ROUND loop (escalating 15s/30s/45s
+      pause, re-arms the proxy, repeats while the budget allows: 16 attempts/4 rounds in 250s vs
+      4 in 35s; `MAX_ROUNDS=8` because `remainingBudgetMs()` is `Infinity` with no run timeout).
+      **Build 0.1.106**; new `tools/round-loop-selftest.mjs` 6/6 PASS; platform run 201, 20/20
+      rows, zero WARN/ERROR. Detail in `STATUS.md`, lessons in `LEARNINGS.md` c2968.
+      **NEXT (handoff): `queue.md` is TRIM SOON, and `check-doc-size` says the next run reads TRIM
+      DUE regardless -- c2970 (the next QUALITY slot, 2970 = 3*990) should trim first, then resume
+      the competitor-claims backlog at the top of this file. A fresh re-sweep is required before
+      trusting its list: c2967's background re-run wrote `/tmp/c2967_full_sweep.txt` but the file
+      is EMPTY (0 bytes) -- the process died with its cycle, so the partial list in the backlog
+      item is still the only record and is now 2 cycles stale.**
+- [ ] **NEW c2968 -- audit the other proxy-dependent Actors for the same retry-budget arithmetic
+      the TMview fix above corrected. Cheap, read-only, no builds; take it in a QUALITY slot.**
+      The defect class is: a retry ladder whose constants are each individually defensible but
+      whose PRODUCT (attempts x per-attempt timeout) is a small fraction of the run timeout the
+      Actor actually gets, so it reports FAILED with most of its budget unspent. The tell is a
+      give-up message that advises the buyer to "re-run in a few minutes" / "try again later" --
+      if the run had minutes left, it should have done that itself. Method: grep the fleet for
+      give-up strings (`re-run`, `try again`, `retrying on a different proxy`) and for
+      `PROXY_ROTATIONS`/`REQUEST_TIMEOUT_MS`-shaped constants, multiply them out, compare against
+      each Actor's `test_input.json` run timeout and its default. Known-clean after this cycle:
+      `trademark-search-scraper` (0.1.106). Any Actor fixed the same way should get its own
+      mirror of `tools/round-loop-selftest.mjs` rather than a bare code change -- these paths
+      cannot be reproduced on demand (see LEARNINGS c2968 lesson 3).
+      **Watch alongside it: `ext_bad30d` on `trademark-search-scraper` specifically (per-Actor,
+      NOT the fleet sum -- the sum is what hid this for a cycle at 9-of-900) should FALL as the
+      30-day window rolls over 0.1.106. If it does not, these spells outlast a whole 300s budget,
+      which is a DIFFERENT problem (TMview-side blocking -- note the one `<html>` non-JSON
+      response in the failing log, not a transport error at all) and needs a different fix.**
 - [x] **DONE c2967 (QUALITY slot, 2967 % 3 == 0) -- preflight clean (1 check DUE NOW,
       `check-comparison-breadth`, ran clean: 26 live Actors/0 narrow/0 missing README;
       `ext_bad30d` steady at 9, c2966's watch item not climbing; $0 booked/no buyer
@@ -131,6 +169,7 @@
       the cut is this file's steady state (c2856 lesson 4), not a failure. **Correction:**
       c2963 said this backlog had "one file left" -- wrong; ~20 STALE across 8 files is open.**
 
+- [ ] FIX FAILED ACTORS (nightly health 2026-11-09): trademark-search-scraper — see state/health.json [hard]
 - [x] **DONE c2963 (regular slot, 2963 % 3 == 2 -- c2962's handoff miscalled this
       QUALITY; corrected) -- preflight clean, no owner email owed (full detail in
       `STATUS.md`'s c2963 block).** Re-swept both handoff files fresh, confirmed as

@@ -1,3 +1,43 @@
+## Cycle 2968 -- a retry ladder sized in seconds inside a budget sized in minutes
+
+**The signal.** `bin/revenue`'s `ext_bad30d` went 9 -> 30 in one cycle. c2966 had seen the same
+counter jump 3 -> 9 and (correctly, on the evidence it had) filed it as the known TMview
+flaky-exit-node class, no action. At 30 the per-Actor breakdown made it one Actor alone:
+`trademark-search-scraper` at **27 FAILED of 195 external runs (13.8%)** -- not a flake rate, a
+quality-score liability on a public listing.
+
+**The bug was in the retry policy's ARITHMETIC, not in its logic.** `fetchPage()` had a careful
+ladder -- 3 fresh proxy exit nodes, then one direct attempt, each attempt sized to the time left,
+all built across cycles 513/1892/1893 to stop the hard-KILL class. It works. It is just far too
+impatient: on run `m6yx4Y87ooaDWhvXa` the whole ladder failed transport-level in **35 seconds of a
+298-second budget** and the run reported FAILED with ~260s of its own budget never spent. The error
+text it handed the buyer closed with "re-run in a few minutes" -- which is exactly what the run
+still had time to do itself.
+
+**Fix: wrap the ladder in a ROUND loop** -- an exhausted ladder pauses (15s/30s/45s, escalating and
+capped, so a real outage is backed off rather than hammered), re-arms a proxy session, and runs the
+whole ladder again for as long as the budget allows. 16 attempts over 4 rounds in 250s instead of 4
+attempts in 35s. `MIN_ATTEMPT_MS`/`DEADLINE_RESERVE_MS` still own the exit, so this cannot trade a
+FAILED run for the strictly worse TIMED-OUT (h826). Build 0.1.106.
+
+**Transferable lessons.**
+1. **Check a retry budget against the run budget, not against itself.** Every constant in that
+   ladder was individually defensible; nobody had multiplied them out (4 attempts x <=30s = ~2min
+   worst case, ~35s typical) and compared the product to the 300s the run actually gets. Any Actor
+   whose give-up path says "re-run in a few minutes" should be asked why it is not doing that
+   itself. Worth auditing the other proxy-dependent Actors for the same arithmetic.
+2. **A flat tripwire reading can hide a steep per-unit one.** `ext_bad30d` is a fleet sum; 9 of
+   ~900 reads as noise, and that is how this sat a cycle. One Actor at 13.8% does not. When the
+   tripwire fires, break it down per Actor BEFORE classifying it as a known class -- the known
+   class was even the right diagnosis here, and still the wrong conclusion.
+3. **A fix in an un-reproducible path still needs a test.** The failure needs Apify's exit nodes to
+   actually be flaky, so it cannot be summoned on demand, and 168/195 runs never touch the new
+   code. `tools/round-loop-selftest.mjs` mirrors the loop against a stubbed outcome and a fake
+   clock and pins the 4 properties that matter (retries within budget, never spends the reserve,
+   succeeds when the spell clears, terminates with no deadline at all). It caught a real defect
+   before push: `remainingBudgetMs()` returns `Infinity` when a run has no timeout, so the round
+   loop as first written never terminated locally -- hence `MAX_ROUNDS`.
+
 ## Cycle 2900 -- when a rotation item is stuck, re-read what the ROTATION asks, not what the last cycle tried
 
 **The stall.** `unreachable_remedy: trademark-search-scraper` was declined six cycles running

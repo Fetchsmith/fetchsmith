@@ -294,6 +294,15 @@ const REQUEST_TIMEOUT_MS = 30000;
 const DEADLINE_RESERVE_MS = 15000;
 // Below this there is no point starting another attempt — stop and report instead of being killed.
 const MIN_ATTEMPT_MS = 5000;
+// Pause between whole rotation ladders (see the round loop in fetchPage). Escalates per round and
+// caps, so a transient exit-node spell is waited out while a real TMview outage is backed off.
+const ROUND_PAUSE_MS = 15000;
+const ROUND_PAUSE_MAX_MS = 45000;
+// The budget check is the real governor on the platform, but remainingBudgetMs() is Infinity when
+// the run has no timeout at all (local/dev, see RUN_DEADLINE_MS below) — without a hard cap the
+// round loop would then never terminate against a down TMview. 8 rounds is far more than any
+// observed exit-node spell has needed and still bounded.
+const MAX_ROUNDS = 8;
 // Read from every source the platform might populate, not just `Actor.getEnv().timeoutAt`.
 // Cycle 1892 measured this Actor getting hard-KILLED at 60s on build 0.1.68 with no RUN_SUMMARY
 // and no status message, while the byte-identical `Actor.getEnv().timeoutAt` call in
@@ -599,79 +608,105 @@ async function fetchPage(page) {
   if (statuses.length) body.fTMStatus = statuses;
   if (tmTypes.length) body.fTMType = tmTypes;
 
-  // attempt 0 uses the session we already have; each later attempt rotates to a fresh exit node,
-  // and the final one drops the proxy entirely.
   let lastErr;
   let outOfTime = false;
-  for (let attempt = 0; attempt <= PROXY_ROTATIONS; attempt += 1) {
-    const budget = remainingBudgetMs();
-    if (budget < MIN_ATTEMPT_MS) { outOfTime = true; break; }
-    if (attempt > 0) {
-      const rotated = attempt < PROXY_ROTATIONS && await rotateProxy();
-      if (!rotated) {
-        if (!proxyUrl) break; // already direct and it still failed — nothing left to try
-        log.warning('Every Apify Proxy session tried failed to reach TMview — retrying once on a direct connection.');
-        proxyUrl = undefined;
-        cookieJar = new CookieJar();
-        cookiesPrimed = false;
-      } else {
-        log.warning(`TMview request failed through the proxy (${lastErr.message}) — retrying on a different proxy session (${attempt}/${PROXY_ROTATIONS}).`);
+  let round = 0;
+  // One ROUND is the full ladder below (PROXY_ROTATIONS fresh exit nodes, then one direct
+  // attempt). A single round is cheap: measured on run m6yx4Y87ooaDWhvXa (2026-11-09 nightly
+  // health check, 298s budget), the entire ladder failed transport-level in 35s and the run was
+  // reported FAILED with ~260s of its own budget never spent — while the error text it handed the
+  // buyer said to "re-run in a few minutes", which is precisely what the run still had time to do
+  // itself. That shape is what drove ext_bad30d on this Actor from 6 to 27 of 195 external runs
+  // (cycle 2968). Flaky-exit-node spells clear on the order of tens of seconds, so an exhausted
+  // ladder now PAUSES and runs again on a fresh set of sessions for as long as the budget allows.
+  // The pause escalates (15s, 30s, 45s, capped) so a genuine TMview outage is backed off rather
+  // than hammered, and MIN_ATTEMPT_MS/DEADLINE_RESERVE_MS still own the exit, so this can never
+  // trade a FAILED run for the strictly worse TIMED-OUT (h826).
+  for (;;) {
+    // attempt 0 uses the session we already have; each later attempt rotates to a fresh exit node,
+    // and the final one drops the proxy entirely.
+    for (let attempt = 0; attempt <= PROXY_ROTATIONS; attempt += 1) {
+      const budget = remainingBudgetMs();
+      if (budget < MIN_ATTEMPT_MS) { outOfTime = true; break; }
+      if (attempt > 0) {
+        const rotated = attempt < PROXY_ROTATIONS && await rotateProxy();
+        if (!rotated) {
+          if (!proxyUrl) break; // already direct and it still failed — this round is spent
+          log.warning('Every Apify Proxy session tried failed to reach TMview — retrying once on a direct connection.');
+          proxyUrl = undefined;
+          cookieJar = new CookieJar();
+          cookiesPrimed = false;
+        } else {
+          log.warning(`TMview request failed through the proxy (${lastErr.message}) — retrying on a different proxy session (${attempt}/${PROXY_ROTATIONS}).`);
+        }
       }
-    }
-    let res;
-    try {
-      const requestTimeoutMs = Math.min(REQUEST_TIMEOUT_MS, budget);
-      if (!cookiesPrimed) {
-        await primeCookies(Math.min(10000, requestTimeoutMs));
+      let res;
+      try {
+        const requestTimeoutMs = Math.min(REQUEST_TIMEOUT_MS, budget);
+        if (!cookiesPrimed) {
+          await primeCookies(Math.min(10000, requestTimeoutMs));
+        }
+        res = await gotScraping({
+          url: API,
+          method: 'POST',
+          json: body,
+          responseType: 'json',
+          timeout: { request: requestTimeoutMs },
+          retry: { limit: 0 },
+          throwHttpErrors: false,
+          cookieJar,
+          headers: { referer: SEARCH_PAGE },
+          proxyUrl,
+          // got's own `timeout.request` does NOT fire while stuck in a hung proxy CONNECT:
+          // got-scraping's H1 proxy agent issues CONNECT as its own untimed, uncancellable nested
+          // http(s).request() inside createConnection(), fully decoupled from got's timeout
+          // machinery (cycle 1892 platform run ZIcKbMxI4MWHeTUhw sat ~50s past a 30s request
+          // timeout). Reproduced locally (cycle 1893) with a fake proxy that accepts the TCP
+          // connection but never answers CONNECT: timeout.request and timeout.connect both hung
+          // past an 8s outer cap, while AbortSignal.timeout() aborted the socket in ~3s as
+          // configured — only an externally-aborted signal actually tears it down.
+          signal: AbortSignal.timeout(requestTimeoutMs),
+        });
+      } catch (e) {
+        // Transport-level (proxy CONNECT refused/590, socket reset, DNS, timeout): no statusCode
+        // exists, so this never reaches the check below. Rotate and try again.
+        lastErr = e;
+        continue;
       }
-      res = await gotScraping({
-        url: API,
-        method: 'POST',
-        json: body,
-        responseType: 'json',
-        timeout: { request: requestTimeoutMs },
-        retry: { limit: 0 },
-        throwHttpErrors: false,
-        cookieJar,
-        headers: { referer: SEARCH_PAGE },
-        proxyUrl,
-        // got's own `timeout.request` does NOT fire while stuck in a hung proxy CONNECT:
-        // got-scraping's H1 proxy agent issues CONNECT as its own untimed, uncancellable nested
-        // http(s).request() inside createConnection(), fully decoupled from got's timeout
-        // machinery (cycle 1892 platform run ZIcKbMxI4MWHeTUhw sat ~50s past a 30s request
-        // timeout). Reproduced locally (cycle 1893) with a fake proxy that accepts the TCP
-        // connection but never answers CONNECT: timeout.request and timeout.connect both hung
-        // past an 8s outer cap, while AbortSignal.timeout() aborted the socket in ~3s as
-        // configured — only an externally-aborted signal actually tears it down.
-        signal: AbortSignal.timeout(requestTimeoutMs),
-      });
-    } catch (e) {
-      // Transport-level (proxy CONNECT refused/590, socket reset, DNS, timeout): no statusCode
-      // exists, so this never reaches the check below. Rotate and try again.
-      lastErr = e;
-      continue;
-    }
-    if (res.statusCode !== 200) {
-      const bodyStr = JSON.stringify(res.body).slice(0, 300);
-      // Page number logged on every non-200, not just this one tagged shape: cycle 2505 had to
-      // re-run the same failing search twice to tell which failure mode it was hitting, purely
-      // because the page being fetched when it broke was nowhere in the logs.
-      log.warning(`TMview returned a non-200 status fetching page ${page}: HTTP ${res.statusCode} ${bodyStr}`);
-      const err = new Error(`TMview returned HTTP ${res.statusCode}: ${bodyStr}`);
-      // TMview enforces its own hard ceiling on how many pages a single search can page through --
-      // deterministic for this exact search (retrying will fail identically every time), and
-      // unrelated to both our own clock and proxy flakiness, so it needs its own tag rather than
-      // falling into the generic runError branch below (cycle 2505 repro: searchTerm "ckle",
-      // offices ["US"], 206 declared pages -> this exact HTTP 400 ~4.5 minutes into the walk; a
-      // smaller 36-page GB corpus of the same term completed cleanly, so the ceiling is a
-      // deep-page phenomenon, not a general timeout/proxy issue). Quantified cycle 2558: the wall
-      // sits at page TMVIEW_MAX_PAGE (200) regardless of corpus size -- see that constant's comment.
-      if (res.statusCode === 400 && /max page number/i.test(bodyStr)) {
-        err.pageDepthLimit = true;
+      if (res.statusCode !== 200) {
+        const bodyStr = JSON.stringify(res.body).slice(0, 300);
+        // Page number logged on every non-200, not just this one tagged shape: cycle 2505 had to
+        // re-run the same failing search twice to tell which failure mode it was hitting, purely
+        // because the page being fetched when it broke was nowhere in the logs.
+        log.warning(`TMview returned a non-200 status fetching page ${page}: HTTP ${res.statusCode} ${bodyStr}`);
+        const err = new Error(`TMview returned HTTP ${res.statusCode}: ${bodyStr}`);
+        // TMview enforces its own hard ceiling on how many pages a single search can page through --
+        // deterministic for this exact search (retrying will fail identically every time), and
+        // unrelated to both our own clock and proxy flakiness, so it needs its own tag rather than
+        // falling into the generic runError branch below (cycle 2505 repro: searchTerm "ckle",
+        // offices ["US"], 206 declared pages -> this exact HTTP 400 ~4.5 minutes into the walk; a
+        // smaller 36-page GB corpus of the same term completed cleanly, so the ceiling is a
+        // deep-page phenomenon, not a general timeout/proxy issue). Quantified cycle 2558: the wall
+        // sits at page TMVIEW_MAX_PAGE (200) regardless of corpus size -- see that constant's comment.
+        if (res.statusCode === 400 && /max page number/i.test(bodyStr)) {
+          err.pageDepthLimit = true;
+        }
+        throw err;
       }
-      throw err;
+      return res.body ?? {};
     }
-    return res.body ?? {};
+    if (outOfTime || round >= MAX_ROUNDS) break;
+    const pause = Math.min(ROUND_PAUSE_MS * (round + 1), ROUND_PAUSE_MAX_MS);
+    // A round is only worth starting if the pause AND one real attempt both fit in what is left,
+    // so the last thing this loop ever does is report — never get killed mid-pause.
+    if (remainingBudgetMs() < pause + MIN_ATTEMPT_MS) break;
+    round += 1;
+    log.warning(`Whole proxy ladder failed to reach TMview (${lastErr?.message}) — ${Math.round(remainingBudgetMs() / 1000)}s of run budget left, so pausing ${pause / 1000}s and trying a fresh set of sessions (round ${round + 1}).`);
+    await new Promise((r) => setTimeout(r, pause));
+    // The ladder leaves proxyUrl undefined after its direct attempt; re-arm a session so the new
+    // round starts on the proxy again (cycle 513 measured direct as unreliable from Apify egress,
+    // so it stays a last resort). If no session can be had we simply retry direct.
+    await rotateProxy();
   }
   // Deliberately a plain throw, not Actor.fail() (h287, same class as ats-jobs-scraper cycle
   // 678): Actor.fail() exits the process immediately, which — on a page-2+ failure — would skip
@@ -694,8 +729,11 @@ async function fetchPage(page) {
   }
   throw new Error(
     'Could not reach TMview (tmdn.org) through any network path this run: '
-    + `${PROXY_ROTATIONS} Apify Proxy session(s) and a direct connection all failed transport-level — last error: ${lastErr?.message}. `
-    + 'TMview itself is frequently reachable when this happens, so it is usually a flaky exit node rather than an outage — re-run in a few minutes.',
+    + `${round + 1} round(s) of ${PROXY_ROTATIONS} Apify Proxy session(s) plus a direct connection all failed `
+    + `transport-level, spread over this run's whole time budget — last error: ${lastErr?.message}. `
+    + 'TMview itself is frequently reachable when this happens, so it is usually a flaky exit node rather '
+    + 'than an outage — but it did not clear within this run, so either TMview is genuinely down right now '
+    + 'or give the run a longer timeout (Input > Run options) so it can keep retrying.',
   );
 }
 
