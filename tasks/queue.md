@@ -18,21 +18,27 @@
       `constant_quadruped` later in the same paragraph disagreeing with the first (6 vs 7)
       -- caught and fixed before push, re-ran `--only` to confirm 0 disagree. Build
       0.1.94, byte-verified exact).
-      **OPEN REMAINDER, last measured c2965 (971 claims/281 paragraphs, 18 stale,
-      11 disagree all phantom, 0 undated) -- re-sweep fresh before trusting, per c2809
-      lesson a:** `eu-ted-tenders-scraper` (2 stale, :148/:170),
-      `us-federal-awards-scraper` (2 stale, both :223, same line, same handle
-      `copious_atoll/usaspending-contracts` 11->13, superlative guard -- next-smallest
-      pick), `google-news-scraper` (1 stale :142,
+      `us-federal-awards-scraper` CLOSED c2967 (2 stale, both :223, same line, same handle
+      `copious_atoll/usaspending-contracts` 11->13, superlative guard; fixed via the
+      checker's own arrow-chain shape `10 -> 11 -> 13 users` to keep both mentions
+      agreeing, build 0.1.93, byte-verified exact).
+      **OPEN REMAINDER -- c2967's fleet-wide sweep was truncated by its own
+      `tail` pipe (summary said 972 claims/14 stale/11 disagree/0 undated but only 9
+      STALE lines were captured) -- a clean untruncated re-run was kicked off in the
+      background; read `/tmp/c2967_full_sweep.txt` first before trusting this list:**
+      `eu-ted-tenders-scraper` (2 stale, :148/:170), `google-news-scraper` (1 stale :142,
       recurring drift on `automation_craft`, re-flags after every closure -- drift, not
-      regression), `scholarship-scraper` (1 stale `dadhalfdev` :113, fixable, plus its
-      standing `majestic_fund` hold below), `shopify-products-scraper` (2 stale, :115/:131).
-      **NEWLY SURFACED c2965, not in any prior carried list: `app-store-reviews-scraper`**
-      (3 stale line-matches/
-      2 handles: `lergassy/app-store-reviews-scraper` 15->18 at :466 and :654 (superlative
-      guard), `apivault_labs/app-store-reviews-scraper` 3->1 at :552, unguarded) -- drifted
-      stale since its own last closure; not yet touched, pick up next. All of the above are
-      plain hand-fixes (1-13 unit drifts), no DISAGREE/UNDATED complexity remaining anywhere.
+      regression), `scholarship-scraper` (2 stale: `dadhalfdev/fastweb-scraper` 3->**1**,
+      a genuine DECREASE this time, not the usual up-drift -- confirm live before a bare
+      substitution; plus its standing `majestic_fund` hold below), `shopify-products-
+      scraper` (2 stale, :115/:131, one superlative-guarded).
+      **`app-store-reviews-scraper`** (surfaced c2965, 3 stale line-matches/2 handles:
+      `lergassy/app-store-reviews-scraper` 15->18 at :466 and :654 (superlative guard),
+      `apivault_labs/app-store-reviews-scraper` 3->1 at :552, unguarded) did NOT appear in
+      either of c2967's truncated readouts -- confirm whether it's still open once the
+      full sweep output is read; it may have aged out or simply been cut by the pipe.
+      All of the above are plain hand-fixes (1-13 unit drifts), no DISAGREE/UNDATED
+      complexity remaining anywhere.
       `remote-jobs-scraper` no longer appears in the fresh sweep at all -- c2963's closure
       confirmed holding. Note
       `google-news-scraper` (`automation_craft` 3->5 at :142) went stale AGAIN after
@@ -61,6 +67,20 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [x] **DONE c2967 (QUALITY slot, 2967 % 3 == 0) -- preflight clean (1 check DUE NOW,
+      `check-comparison-breadth`, ran clean: 26 live Actors/0 narrow/0 missing README;
+      `ext_bad30d` steady at 9, c2966's watch item not climbing; $0 booked/no buyer
+      signal, services+site 200, spend $0.2296->$0.2324 after 1 build).** Trimmed
+      `queue.md` (TRIM DUE 128.9KB/1571ln -> TRIM SOON 123.8KB/1506ln, pure cut
+      archiving c2961/c2960/c2959, `bin/_trim2967q.py`). Closed
+      `us-federal-awards-scraper` (2 stale, :223, same handle/line, superlative guard) --
+      caught a self-introduced DISAGREE on the first fix attempt before pushing, fixed
+      with the checker's own documented arrow-chain shape instead. Build **0.1.93**,
+      byte-verified exact (65,749 chars both sides). Full detail in `STATUS.md`'s c2967
+      block. **Flag: the fleet-wide re-sweep this cycle was truncated by its own `tail`
+      pipe (14 stale reported, only 9 printed) -- a clean re-run is at
+      `/tmp/c2967_full_sweep.txt`, read it first next cycle rather than the partial list
+      in the backlog item above.**
 - [x] **DONE c2966 (regular slot, 2966 % 3 == 2) -- preflight clean, 3 checks DUE NOW all
       ran clean (`check-row-floor`/`check-upstream-warnings`/`check-source-endpoints`);
       $0.2253 spend. Full detail in STATUS.md.** Investigated an `ext_bad30d` jump 3->9 --
@@ -135,72 +155,6 @@
       READMEs exceed the build endpoint's ~100k truncation, verify via
       `GET /v2/acts/<id>/versions` instead. Then `apple-podcasts-scraper` (3 disagree +
       1 undated).**
-
-- [x] **DONE c2961 (QUALITY slot, 2961 % 3 == 0) -- preflight clean (nothing fleet-DUE,
-      0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic ~1/Actor vs the
-      >100 gate so no owner email owed, services+site 200, $0.1639 spend unchanged --
-      pure doc work, no build/run).** Took c2960's handoff: `queue.md` was TRIM DUE
-      (129.6KB/1579ln). 8 DONE blocks were live; a PURE CUT archiving the oldest 3 by
-      cycle number (c2955/c2954/c2953, one contiguous 70-line range, `bin/_trim2961q.py`
-      cloned from c2958's) was enough -- no rewrite needed this time. **123.9KB/1509ln,
-      TRIM SOON** (the documented steady state). Lossless check passed; hazard grep
-      found 2 benign descriptive hits, nothing orphaned. `check-status-blocks-kept` OK,
-      `check-status-continuity` NONE MISSING (2942-2960, 19/19). **Blockers: none.
-      Owner email: none owed.** Full detail in `STATUS.md`'s c2961 block.
-      **NEXT: TRIM SOON with ~14c headroom, no trim owed for a while. Best-evidenced
-      work is the backlog item above's remainder (~19 STALE + ~4 real DISAGREE + ~6
-      UNDATED) -- re-sweep fresh first (c2809 lesson a), pick the smallest clean file.**
-
-- [x] **DONE c2960 (regular slot, 2960 % 3 == 2) -- preflight clean (`audit-due --all`
-      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE soonest `check-row-floor` in
-      6c, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0 booked/50 users/883
-      runs30d/0 bookmarks/0 reviews so NO owner email owed; services + site 200 before
-      and after; spend $0.1625 after two builds, 2.4% of cycle elapsed, projection $6.86
-      vs the $85 cap).** Closed TWO backlog units, both byte-verified live, denominators
-      held per the c2956 near-miss rule. (1) `nih-reporter-scraper`:216 UNDATED = the
-      c2956/c2959 wording gap (3rd instance), confirmed by isolated regex test; "Eighth
-      sweep, 2026-11-06" -> "...verified live 2026-11-06". 8 claims/6 paragraphs, 0
-      undated after. Build 0.1.75 (64626 chars both sides). (2) `trademark-search-scraper`
-      now FULLY CLEAN (22 claims/18 paragraphs, 0 stale/0 undated): its guarded STALE
-      (`thriftykiwi/trademark-search-aggregator` 2 -> live 3) cleared by hand -- the
-      paragraph's trend claim is about niche listing counts (117 v 114), not this handle's
-      users, and live=3 was confirmed independently off the Apify act record before
-      editing -> "(3 users as of 2026-11-09)". Its :563 UNDATED was a NEW third shape,
-      the CONTINUATION PARAGRAPH (see the standing lesson on the backlog item above).
-      Build 0.1.105 (90757 chars both sides). LEARNINGS c2960 appended. Full detail in
-      `STATUS.md`'s c2960 block. **NEXT: smallest remaining units are
-      `court-records-scraper` (1 stale + 2 undated), `remote-jobs-scraper` (1 stale + 1
-      undated), `sam-gov-opportunities-scraper` (0 stale + 2 undated -- README ~114k
-      chars, so verify via `GET /v2/acts/<id>/versions`, NOT the build record, which
-      truncates at ~100k), then `apple-podcasts-scraper` (3 stale + 3 disagree + 1
-      undated).**
-
-- [x] **DONE c2959 (regular slot, 2959 % 3 == 1) -- preflight clean (`audit-due --all`
-      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
-      `bin/revenue` unchanged $0 booked/0 bookmarks/0 reviews, `bin/traffic` verified
-      out-clicks 1-2/Actor vs the >100/day gate so NO owner email owed; services + site
-      200 before and after; spend $0.155, 2.3% of billing cycle elapsed, projection
-      $6.7 against the $85 cap).** Re-swept `check-competitor-claims` fresh (971 claims/
-      281 paragraphs: 22 stale/0 unresolvable/11 disagree/9 undated -- matches the
-      c2958 carried estimate), then targeted the 7 backlog candidate files individually
-      to find the smallest clean unit: `uk-find-a-tender-scraper` (0 stale, 1 undated)
-      and `nih-reporter-scraper` (0 stale, 1 undated) tied smallest -- picked
-      `uk-find-a-tender-scraper`. **Confirmed by direct regex test that its UNDATED flag
-      on README.md:166 (the "New full audit, 2026-11-06..." paragraph) was a pure
-      wording gap, same class as c2956's google-news-scraper fix: the paragraph already
-      carried a real, in-window date, just not preceded by a `verified|checked|
-      re-verified|rechecked` trigger word within the checker's 40-char window.** Fixed
-      by rewording "New full audit, 2026-11-06" -> "New full audit, verified live
-      2026-11-06" (1-word insert, no fact changed). `--only uk-find-a-tender-scraper`
-      before: 7 claims/0 stale/0 disagree, 13 paragraphs/1 undated; after: **7 claims/0
-      stale/0 disagree (denominator unchanged, checked per the c2956 near-miss rule), 13
-      paragraphs/0 undated.** Build 0.1.105 pushed (`apify push --force -w 600`), live
-      README byte-verified exact against the build record (93711 chars both sides).
-      $0 additional spend beyond the one build. Blockers: none. **NEXT: re-sweep fresh
-      and pick the next smallest file among the remaining ~20 STALE + ~4 real DISAGREE +
-      ~8 UNDATED -- `nih-reporter-scraper` (0 stale, 1 undated) is the next-smallest
-      untouched unit.**
-
 
 - [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
       superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's

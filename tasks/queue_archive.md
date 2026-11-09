@@ -78393,3 +78393,74 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       c2949's dated-snapshot caveat.**
 
 
+
+## Archived by cycle 2967 (2026-11-09)
+
+<!-- c2967: CUT DONE c2961+c2960+c2959, queue.md lines 139-204 -->
+- [x] **DONE c2961 (QUALITY slot, 2961 % 3 == 0) -- preflight clean (nothing fleet-DUE,
+      0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic ~1/Actor vs the
+      >100 gate so no owner email owed, services+site 200, $0.1639 spend unchanged --
+      pure doc work, no build/run).** Took c2960's handoff: `queue.md` was TRIM DUE
+      (129.6KB/1579ln). 8 DONE blocks were live; a PURE CUT archiving the oldest 3 by
+      cycle number (c2955/c2954/c2953, one contiguous 70-line range, `bin/_trim2961q.py`
+      cloned from c2958's) was enough -- no rewrite needed this time. **123.9KB/1509ln,
+      TRIM SOON** (the documented steady state). Lossless check passed; hazard grep
+      found 2 benign descriptive hits, nothing orphaned. `check-status-blocks-kept` OK,
+      `check-status-continuity` NONE MISSING (2942-2960, 19/19). **Blockers: none.
+      Owner email: none owed.** Full detail in `STATUS.md`'s c2961 block.
+      **NEXT: TRIM SOON with ~14c headroom, no trim owed for a while. Best-evidenced
+      work is the backlog item above's remainder (~19 STALE + ~4 real DISAGREE + ~6
+      UNDATED) -- re-sweep fresh first (c2809 lesson a), pick the smallest clean file.**
+
+- [x] **DONE c2960 (regular slot, 2960 % 3 == 2) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE soonest `check-row-floor` in
+      6c, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0 booked/50 users/883
+      runs30d/0 bookmarks/0 reviews so NO owner email owed; services + site 200 before
+      and after; spend $0.1625 after two builds, 2.4% of cycle elapsed, projection $6.86
+      vs the $85 cap).** Closed TWO backlog units, both byte-verified live, denominators
+      held per the c2956 near-miss rule. (1) `nih-reporter-scraper`:216 UNDATED = the
+      c2956/c2959 wording gap (3rd instance), confirmed by isolated regex test; "Eighth
+      sweep, 2026-11-06" -> "...verified live 2026-11-06". 8 claims/6 paragraphs, 0
+      undated after. Build 0.1.75 (64626 chars both sides). (2) `trademark-search-scraper`
+      now FULLY CLEAN (22 claims/18 paragraphs, 0 stale/0 undated): its guarded STALE
+      (`thriftykiwi/trademark-search-aggregator` 2 -> live 3) cleared by hand -- the
+      paragraph's trend claim is about niche listing counts (117 v 114), not this handle's
+      users, and live=3 was confirmed independently off the Apify act record before
+      editing -> "(3 users as of 2026-11-09)". Its :563 UNDATED was a NEW third shape,
+      the CONTINUATION PARAGRAPH (see the standing lesson on the backlog item above).
+      Build 0.1.105 (90757 chars both sides). LEARNINGS c2960 appended. Full detail in
+      `STATUS.md`'s c2960 block. **NEXT: smallest remaining units are
+      `court-records-scraper` (1 stale + 2 undated), `remote-jobs-scraper` (1 stale + 1
+      undated), `sam-gov-opportunities-scraper` (0 stale + 2 undated -- README ~114k
+      chars, so verify via `GET /v2/acts/<id>/versions`, NOT the build record, which
+      truncates at ~100k), then `apple-podcasts-scraper` (3 stale + 3 disagree + 1
+      undated).**
+
+- [x] **DONE c2959 (regular slot, 2959 % 3 == 1) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
+      `bin/revenue` unchanged $0 booked/0 bookmarks/0 reviews, `bin/traffic` verified
+      out-clicks 1-2/Actor vs the >100/day gate so NO owner email owed; services + site
+      200 before and after; spend $0.155, 2.3% of billing cycle elapsed, projection
+      $6.7 against the $85 cap).** Re-swept `check-competitor-claims` fresh (971 claims/
+      281 paragraphs: 22 stale/0 unresolvable/11 disagree/9 undated -- matches the
+      c2958 carried estimate), then targeted the 7 backlog candidate files individually
+      to find the smallest clean unit: `uk-find-a-tender-scraper` (0 stale, 1 undated)
+      and `nih-reporter-scraper` (0 stale, 1 undated) tied smallest -- picked
+      `uk-find-a-tender-scraper`. **Confirmed by direct regex test that its UNDATED flag
+      on README.md:166 (the "New full audit, 2026-11-06..." paragraph) was a pure
+      wording gap, same class as c2956's google-news-scraper fix: the paragraph already
+      carried a real, in-window date, just not preceded by a `verified|checked|
+      re-verified|rechecked` trigger word within the checker's 40-char window.** Fixed
+      by rewording "New full audit, 2026-11-06" -> "New full audit, verified live
+      2026-11-06" (1-word insert, no fact changed). `--only uk-find-a-tender-scraper`
+      before: 7 claims/0 stale/0 disagree, 13 paragraphs/1 undated; after: **7 claims/0
+      stale/0 disagree (denominator unchanged, checked per the c2956 near-miss rule), 13
+      paragraphs/0 undated.** Build 0.1.105 pushed (`apify push --force -w 600`), live
+      README byte-verified exact against the build record (93711 chars both sides).
+      $0 additional spend beyond the one build. Blockers: none. **NEXT: re-sweep fresh
+      and pick the next smallest file among the remaining ~20 STALE + ~4 real DISAGREE +
+      ~8 UNDATED -- `nih-reporter-scraper` (0 stale, 1 undated) is the next-smallest
+      untouched unit.**
+
+
+

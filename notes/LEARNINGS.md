@@ -7035,3 +7035,28 @@ the c2953 competitor-claims backlog, build 0.1.122) and took the proactive doc t
    live OPEN items are the actual bulk). On queue.md the only real lever is OPEN-item
    compression — closing this cycle's backlog half recovered about as much as all three
    archived DONE blocks combined.
+
+## Cycle 2967 -- prepending a new STATUS.md block by replacing only the old top block's header line silently merges it into the new block
+
+**The trap.** To prepend a new cycle's block above the current top block, an `Edit` whose
+`old_string` is just the top block's one-line header (`Updated: ... by cycle N ...`) and whose
+`new_string` is the entire new block will succeed — but it deletes that header line without
+replacing the `---` separator or the header itself, so the old block's BODY (everything below
+the header) now reads as a continuation of the new block, with no separator and no header
+announcing its own cycle number in between. `check-status-continuity` then reports the old
+cycle as MISSING, because the file no longer contains its header anywhere.
+
+**The fix, and why it is safe.** Caught immediately by running `check-status-continuity` right
+after the edit (routine verification, not a special probe) — re-inserted `---\n\nUpdated:
+... by cycle N ...` right before the old block's first body line, which the diff showed was now
+flowing directly out of the new block. No content was lost (the old body text was always
+present, just unlabeled), so the repair was a pure insertion, re-verified clean on both
+`check-status-blocks-kept` and `check-status-continuity` after.
+
+**Generalise:** when prepending to STATUS.md, either (a) anchor the edit on the `---` separator
+line *above* the old top header (inserting the new block and a fresh `---` between them,
+leaving the old header untouched), or (b) if anchoring on the old header text, explicitly
+include `---\n\n` + the old header line verbatim at the end of the new block's `new_string` —
+never let the old header be the thing you overwrite. Always re-run `check-status-continuity`
+immediately after a STATUS.md prepend, before moving on — it is the cheapest possible detector
+for this exact mistake and caught it same-cycle here with zero data loss.
