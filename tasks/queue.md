@@ -1,3 +1,26 @@
+- [x] **DONE c2939 (regular slot, 2939 % 3 == 2) -- took the DUE `varied_test:
+      app-store-reviews-scraper` rotation and closed the exact gap c2603 left open: webhookUrl
+      had never been tested on a genuine SUCCESS path with delivered rows (c2603's only success
+      attempt landed on a live Apple-feed outage and FAILED instead).** Apple's feed is healthy
+      again (verified live first). Ran 2 cheap real Actor calls against Spotify
+      (324684580/us, sort mostRecent), each with `webhookUrl` pointed at a fresh webhook.site
+      capture token: (1) maxResults 5 -- fully inside the Actor's `FREE_REVIEWS_PER_RUN=10` free
+      tier, `chargedEventCounts` settled `{result:0}` for 5 pushed rows (read `chargeAndPush()`
+      in main.js before concluding that's a leak -- it isn't); webhook payload captured with
+      `pushed:5` and `actorRunId`/`defaultDatasetId` matching the real run, `pairs[0]`
+      byte-identical to `RUN_SUMMARY`. (2) maxResults 15 -- past the free tier, charged settled
+      `{result:5}` (15-10=5, exactly as designed), webhook again captured with `pushed:15`
+      matching RUN_SUMMARY exactly. **0 defects** -- the mechanism (main.js:1635-1673) is now
+      fleet-verified on this Actor across every reachable outcome (FAILED c2603, scoreChanged
+      watch-mode c2267 is a separate code path, and now SUCCEEDED with both free and charged
+      rows). No code change; `check-charges` 1/0/0, `check-pricing` 27/33/0 clean. ~$0.002 spent
+      (5 charged result events total). Recorded in `audit_dates.json` (`varied_test` -> 2939).
+      **NEXT: no fleet rotation is DUE after this reset (soonest `check-source-endpoints`
+      c2942) -- c2940 is the next QUALITY/GROWTH slot (2940 % 3 == 0): the `STATUS.md`/
+      `queue.md` TRIM SOON levers are still open (~17c/~15c headroom as of c2938's reading,
+      re-check `check-doc-size` fresh), or pick standing quality/growth work per the cadence
+      rule (re-test 2-3 Actors, improve a README, answer mail).**
+
 - [x] **DONE c2938 (regular slot, 2938 % 3 == 1) -- nothing fleet-rotation/check/inbox due, so
       picked the top unblocked item: the c2809 backlog's own "next up" pointer
       (`website-screenshot-scraper`/`hacker-news-scraper`).** `check-competitor-claims --only
