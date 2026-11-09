@@ -22,15 +22,16 @@
       being fully closed at c2956 -- plain live-count drift, not a regression) + ~4 real
       DISAGREE (`apple-podcasts-scraper`'s 3: `sourabhbgp` 75v71, `ryanclinton/podcast-
       directory-scraper` 216/207/217, `automation-lab/podcast-scraper` 117v124; plus
-      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~4 UNDATED
-      (`apple-podcasts-scraper`:197, `remote-jobs-scraper`:231,
-      `sam-gov-opportunities-scraper`:371 and :381 -- the google-play-reviews-scraper
+      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~1 UNDATED
+      (`apple-podcasts-scraper`:197 -- the google-play-reviews-scraper
       7-handle DISAGREE cluster is the confirmed c2957 PHANTOM, correctly-dated growth,
       deliberately left alone). `uk-find-a-tender-scraper`'s 1 UNDATED closed DONE c2959
       (pure wording gap); `nih-reporter-scraper`'s 1 UNDATED and `trademark-search-
       scraper`'s 1 STALE + 1 UNDATED both closed DONE c2960; `court-records-scraper`'s 1
-      STALE (`hipersoft/cendoj-scraper` 1->2u) + 2 UNDATED closed DONE c2962 (that file
-      is now fully clean at 0/0/0/0 of 18 claims + 15 paragraphs).**
+      STALE (`hipersoft/cendoj-scraper` 1->2u) + 2 UNDATED closed DONE c2962;
+      `remote-jobs-scraper`'s 1 STALE (`memo23/weworkremotely-jobs-scraper` 125->139u)
+      + 1 UNDATED, and `sam-gov-opportunities-scraper`'s 2 UNDATED, both closed DONE
+      c2963 (both now fully clean, 0/0/0/0).**
       **Standing lesson (c2960): an UNDATED flag has THREE shapes, and only one is real
       work -- (a) genuinely unverified, go verify; (b) the c2956/c2959/c2960 WORDING GAP,
       a real in-window date the regex cannot see because the preceding word is
@@ -47,6 +48,17 @@
       if so it is a correct growth record, not a bug, same class as the superlative-
       sweep phantom.** No single remaining cluster stands out as the obvious next pick
       -- re-sweep the full fleet fresh first and take the smallest clean file.
+- [x] **DONE c2963 (regular slot, 2963 % 3 == 2 -- c2962's handoff miscalled this
+      QUALITY; corrected) -- preflight clean, no owner email owed (full detail in
+      `STATUS.md`'s c2963 block).** Re-swept both handoff files fresh, confirmed as
+      predicted, closed both: `remote-jobs-scraper` (1 stale + 1 undated of 87/14,
+      `memo23` 125->139u + a c2960 wording-gap fix, build **0.1.100**) and
+      `sam-gov-opportunities-scraper` (0 stale + 2 undated of 38/20, both a c2960
+      continuation-paragraph fix, build **0.1.94**). Both >100k chars, verified via
+      `versions` `sourceFiles` not the build record: both exact matches, now 0/0/0/0.
+      **NEXT: `apple-podcasts-scraper` (3 disagree + 1 undated) is all that's left in
+      this backlog -- read c2952's dated-paragraph caution first. `queue.md`/`STATUS.md`
+      both TRIM SOON (not DUE) -- next QUALITY slot (c2964) should trim proactively.**
 - [x] **DONE c2962 (regular slot, 2962 % 3 == 1) -- preflight clean, no owner email owed
       (full detail in `STATUS.md`'s c2962 block).** Re-swept `check-competitor-claims`
       fleet-wide fresh (971 claims/281 paragraphs, 21 stale/11 disagree/6 undated), then
