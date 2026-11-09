@@ -6832,3 +6832,47 @@ newest execution only").
    *successfully* 548,253 rows short of `nbHits`. Any pager we write must treat "empty page
    while `nbHits` says more remain" as an ERROR, never as the end of data — and must not assert
    on `nbHits`, which drifted 549,253 -> 549,187 *within* one pagination run.
+
+## c2948 — the per-Actor API *does* carry 30-day user counts, and a stale-count sweep must re-read the whole parenthetical, not just the number the checker flagged
+
+Context: `substack-scraper`'s competitor section, the c2809 backlog. Re-swept fresh and found
+**24** stale user-count claims, not the 16 the backlog headline carried (lesson (a) again: counts
+drift up, never trust a carried-forward count).
+
+1. **CORRECTION to c2946: `GET /v2/acts/<user>~<slug>` returns `totalUsers30Days` (and
+   `totalUsers7Days`/`totalUsers90Days`) for *competitors*, not just for our own Actors.** c2946
+   concluded "the direct per-Actor API call has no 30-day breakdown" and therefore sourced a
+   30-day sub-figure from `apify-admin store`'s `u30d` (Algolia-backed, and documented to lag
+   until the rival's next build). Verified live this cycle: the direct call carries all three
+   windows. **Use the direct call for every user figure, headline and 30-day alike** — it is the
+   same source `check-competitor-claims` checks against, so a direct-sourced sub-figure cannot
+   disagree with the headline count sitting next to it in the same parenthesis.
+2. **`check-competitor-claims` only checks user COUNTS, so the non-count facts riding in the same
+   parenthetical rot silently and no checker will ever flag them.** Found by hand here:
+   `saswave/substack-leaderboard-profile-scraper` was documented "(26u, 0 runs in the last 30
+   days — dormant)"; live it has 30 users, **40 runs in 30d and a run the previous day**. The
+   count flag was the only reason that parenthesis got re-read at all. **Rule: when a flag sends
+   you to a claim, re-verify every factual assertion inside that claim's parentheses, not just
+   the integer.** (Recorded with the ~1-run/day platform-baseline caveat from `bin/revenue`, so
+   the 40 runs do not read as buyer demand.)
+3. **Fix the whole paragraph's counts and its date tag, never only the flagged subset.** The
+   checker's `USER_TOLERANCE = 0.10` means near-miss counts (e.g. `digispruce` 122 → 135, 9.6%)
+   stay unflagged — so a flagged-only fix leaves 2026-10 numbers under a parenthetical you just
+   re-dated to 2026-11-09, which is worse than the drift. Refreshed every count in each touched
+   paragraph and moved that paragraph's own date tag.
+4. **The c2945 ranking-falsification lesson fired for real, in a paragraph HEADER.** "Two more
+   rivals, **each bigger than `sourabhbgp`**" was falsified by the refresh itself: `sourabhbgp`
+   grew 105 → 141 while `digispruce` went 122 → 135, so the rival is now *smaller* than the
+   baseline it was defined against. A header sentence is the easiest place to miss this, because
+   the guard fires on the claims *below* it. Rewrote the header with both trajectories.
+5. **A "gone from the Store" disclosure only counts if it is worded the way the checker reads
+   and sits next to the handle.** `darknezz/substack-posts-scraper`'s delisting *was* disclosed
+   ("delisted — the Apify API returned 404...") but ~700 chars downstream, so the checker (which
+   wants `gone from the Store` within 400 chars and with no other backticked handle intervening)
+   reported it STALE. Moving a short `gone from the Store` marker into the handle's own
+   parenthesis cleared it **and** was the better edit anyway — the delisting is the most
+   important fact about that rival and had been buried at the end of a long sentence.
+6. **A deliberately historical count ("65u at that sweep, 77 as of 2026-11-09") still reads as
+   STALE** — the checker takes the number nearest the handle. Put the live figure first and the
+   historical one second; same information, no flag, and the current number is what a reader
+   wants first.

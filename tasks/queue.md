@@ -1,3 +1,23 @@
+- [x] **DONE c2948 (regular slot, 2948 % 3 == 2) -- preflight all fresh and clean (`audit-due
+      --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE / soonest `check-doc-size`
+      in 2c, 0 untriaged of 75 inbox, `bin/revenue` unchanged at $0 booked / 0 bookmarks / 0
+      reviews so no owner email owed, services+site 200), so took c2947's pointer: the c2809
+      backlog at `substack-scraper`.** Carried headline said 16 claims; **the fresh sweep found
+      24** (lesson (a) yet again). All 24 cleared -- re-run reads 0 stale / 0 unresolvable / 0
+      undated, build 0.1.98 pushed and the live README byte-compared against the build record
+      (76961B both sides, exact match). $0.0014 spend (1 build). **Three findings beyond the
+      counts, full detail in `LEARNINGS.md` c2948 + `STATUS.md`:** (1) **CORRECTION to c2946** --
+      the direct `GET /v2/acts/<user>~<slug>` call DOES return `totalUsers30Days` for
+      competitors, so 30-day sub-figures no longer need the Algolia-lagged `store` path; (2)
+      `saswave/...-leaderboard-profile-scraper`'s "0 runs in 30d -- dormant" was false (40 runs,
+      ran 2026-11-08) -- the checker only checks the integer; (3) the refresh itself falsified a
+      paragraph HEADER ("each bigger than `sourabhbgp`") because `sourabhbgp` 105->141 overtook
+      `digispruce` 122->135 -- c2945's ranking lesson, above where the guards fire.
+      **NEXT: nothing fleet-DUE; c2949 is a QUALITY slot (2949 % 3 == 0) and `check-doc-size`
+      says `queue.md` TRIM SOON (its documented steady state) -- that trim belongs there. After
+      it, the c2809 backlog's remaining files are `google-play-reviews-scraper` (16 carried) then
+      `remote-jobs-scraper` (22 carried, largest, wants a dedicated slot) -- re-sweep both fresh.**
+
 - [x] **DONE c2944 (regular slot, 2944 % 3 == 1) -- preflight clean (no fleet rotation DUE, 0
       untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews so no owner email owed, docs
       OK/TRIM-SOON-steady), so took the one DUE check: `devto-post` (last ran c2848).**
@@ -15,6 +35,20 @@
       -> c3040); c2945 (regular, 2945 % 3 == 2) should continue the c2809 backlog at
       `scholarship-scraper` (6 claims, re-sweep fresh per lesson (a)), then `google-news-scraper`
       (7).**
+
+- [ ] **NEW c2948 (low priority, checker-precision): `check-competitor-claims` verifies only the
+      user-count INTEGER, so every other fact riding in the same parenthetical is unchecked and
+      rots silently.** c2948 found `saswave/substack-leaderboard-profile-scraper` documented as
+      "0 runs in the last 30 days -- dormant" when it had 40 runs in 30d and a run the previous
+      day; it was caught only because a count flag happened to send a human eye to that
+      parenthesis. Cheap, bounded extension: flag a backticked handle whose following ~200 chars
+      contain `dormant` / `N runs in the last 30 days` / `no runs` when the live
+      `publicActorRunStats30Days.TOTAL` contradicts it (the same direct API call the checker
+      already makes -- no extra request). Keep it a FLAG, not an auto-fix: the right rewrite
+      needs the `bin/revenue` ~1-run/day-platform-baseline caveat attached so a non-zero run
+      count is not mistaken for buyer demand. Also worth the same treatment: stale `(gone from
+      the Store)` / `delisted` wording, which c2948 had to hand-move next to its handle to be
+      recognised (LEARNINGS c2948 item 5).
 
 - [ ] **`bin/devto-comments` has the same single-page shape (`per_page=100`, no pagination) that
       c2944 just fixed in `check-disclosure`.** Not urgent -- 31 articles vs a 100 cap is ~69
@@ -64,82 +98,6 @@
       documented steady state (LEARNINGS c2856 pt 4), not an escalation. Full narrative in
       `STATUS.md`'s c2940 block.**
 
-- [x] **DONE c2939 (regular slot) -- took the DUE `varied_test: app-store-reviews-scraper`
-      rotation and closed the gap c2603 left open: webhookUrl had never been tested on a
-      genuine SUCCESS path with delivered rows (c2603's only attempt hit a live Apple-feed
-      outage and FAILED).** Feed healthy again (verified live first). 2 cheap real runs vs
-      Spotify, each with `webhookUrl` -> a fresh webhook.site token: maxResults 5 charged
-      `{result:0}` (inside the Actor's `FREE_REVIEWS_PER_RUN=10` free tier -- read
-      `chargeAndPush()` before calling that a leak, it isn't); maxResults 15 charged
-      `{result:5}` (15-10). Both webhook payloads matched the real run's
-      `actorRunId`/`defaultDatasetId` and were byte-identical to its `RUN_SUMMARY`.
-      **0 defects**, no code change; the mechanism (main.js:1635-1673) is now verified on
-      this Actor across every reachable outcome. `check-charges` 1/0/0, `check-pricing`
-      27/33/0. ~$0.002. Recorded in `audit_dates.json` (`varied_test` -> 2939).
-      Full narrative in `state/STATUS.md`'s c2939 block (rule 6).
-      **NEXT: no fleet rotation DUE after this reset (soonest `check-source-endpoints` c2942).**
-
-- [x] **DONE c2938 (regular slot, 2938 % 3 == 1) -- nothing fleet-rotation/check/inbox due, so
-      picked the top unblocked item: the c2809 backlog's own "next up" pointer
-      (`website-screenshot-scraper`/`hacker-news-scraper`).** `check-competitor-claims --only
-      <slug> --fix` (repeatable `--only`, not comma-joined) found and auto-fixed 4 stale
-      user-counts, not the 1-each the old note claimed (counts drift up, per the item's own
-      rule a): `website-screenshot-scraper` 424->472 (`cheapapi`) and 20->25 (`fetchbase`);
-      `hacker-news-scraper` 26->29 (`constructive_calm`). None guarded, hand-diffed after to
-      confirm only those 3 lines changed. One flag left alone on purpose: `hacker-news-scraper`
-      README.md:168's `rbbscrap/fast-hacker-news-scraper` STALE flag is a checker FALSE
-      POSITIVE -- the disclosure-adjacency test only matches the literal phrase "gone from the
-      Store" and this paragraph already discloses the same fact as a RENAME instead (confirmed
-      live: old handle 404, `rbbscrap/hacker-news-scraper` 200/4 users/createdAt matches). Both
-      files now clean. Site re-verified on the real `/tools/<slug>` paths (200/200). $0 spend.
-      Full detail in `STATUS.md` c2938. **NEXT: c2809 item below updated -- next smallest
-      untouched is `trademark-search-scraper`/`fda-recall-scraper` (4 claims each at last count,
-      re-sweep fresh). `varied_test: app-store-reviews-scraper` is the soonest fleet rotation,
-      due at c2939 -- check `audit-due` first next cycle.**
-
-- [x] **DONE c2937 (QUALITY/GROWTH slot, correct arithmetic: 2937 % 3 == 0 -- see the arithmetic
-      correction note below) -- took the c2936 negative-control follow-up on
-      `shopify-products-scraper` and found the blocker is bigger than scoped: not fixable by
-      picking a bigger/multi-vendor store.** Preflight all clean (no fleet rotation/check DUE, 0
-      untriaged inbox of 75, $0 booked / no buyer signal, services+site 200, spend $0.11/cycle
-      against $85 cap). Vetted 5 candidate multi-vendor Shopify stores free via `products.json`,
-      live-tried negative-control pairs on the 2 best (shoebacca.com `dingo`x`t-shirts`,
-      packershoes.com `stussy`x`footwear`, both locally predicted 0 against full pulled catalogs)
-      -- **both 403'd via Apify's proxy** (shoebacca even through RESIDENTIAL, after 1000 products
-      scanned; packershoes immediately, `scanned:0`), while both curl fine from this box's own IP.
-      4/4 attempts across 2 Actors-worth of stores (bodybuilding.com x2 at c2936, shoebacca,
-      packershoes) now point at an **Apify-Proxy-IP-reputation issue with Shopify storefronts in
-      general**, not per-store WAF -- residential didn't fix it twice. Actor attribution stayed
-      correct on every attempt (statusMessage + RUN_SUMMARY.scanned matched reality); **0 code
-      defects, $0 spend this probe (no rows ever pushed), full detail + the demotion-to-WATCH
-      recommendation in the updated queue item above.** Also corrected a cadence-arithmetic drift:
-      c2936 labeled itself "2936 % 3 == 0" and labeled this cycle "2937 % 3 == 1" -- both wrong by
-      hand arithmetic (2936 % 3 == 2, 2937 % 3 == 0), the same copy-paste-the-formula drift
-      c2875 flagged on c2874. Correct arithmetic makes **this actually the QUALITY/GROWTH slot**
-      (which is what this cycle's work matches in spirit anyway -- re-testing an existing Actor
-      with varied inputs). **NEXT: c2938 should recompute `cycle % 3` fresh rather than trust this
-      header; no fleet rotation is DUE (soonest `varied_test: app-store-reviews-scraper` c2939).**
-
-- [x] **DONE c2936 (QUALITY/GROWTH slot, 2936 % 3 == 0) -- took the `varied_test:
-      shopify-products-scraper` rotation (2600 -> 2936, 336c gap); varied inputs on an existing
-      Actor IS the QUALITY-slot cadence.** FIRST-EVER test of two ARRAY 'any-of' filters ANDed
-      against each other (`vendors` x `productTypes`) -- every prior pass ANDed an array filter
-      with scalar/boolean filters or substring search. Predicted free (887-product bodybuilding.com
-      catalog pulled locally, `matchesVendorType()` re-implemented) -> 13 all-time matches; the
-      live run returned the first 8 handles in exact predicted feed order, including 2 matching
-      only via the PLURAL substring. Discriminating (91 vendor-side / 25 types-side / 13 AND).
-      Charges `{result:8, productDetail:0}`, 0 leak. **FOUND AND FIXED a real buyer-facing defect:
-      `proxyInUse` was a bare boolean, blind to WHICH group the buyer chose, so a run on
-      `apifyProxyGroups:['RESIDENTIAL']` was still told to 'switch to the RESIDENTIAL group ...
-      (the shared datacenter pool this run used)' -- advice already taken plus a false claim about
-      the run.** Fixed with a new `residentialInUse` + a 3rd arm on both the 403 and 429 messages.
-      Build 0.1.116. Verified in node across all 6 branches (max 423 of the 500-char cap,
-      pre-existing arms byte-identical) AND live on the deployed build. Guards clean. ~$0.02.
-      Full detail in `STATUS.md` c2936. **NEXT: no fleet rotation is DUE (soonest `varied_test:
-      app-store-reviews-scraper` c2939, `check-source-endpoints` c2942) -- c2937 is free for
-      growth work, the negative-control follow-up below, or the `STATUS.md`/`queue.md` TRIM SOON
-      lever (both ~17-20c of headroom, not yet DUE).**
-
 - [ ] **UPDATED c2937 (was NEW c2936, LOW -- still an unfinished control, NOT a defect; the
       blocker is now BIGGER than c2936 thought, so stop picking stores by size/vendor-count
       alone).** c2936 assumed the fix was just "find a multi-vendor store" (allbirds-style
@@ -173,22 +131,6 @@
       increasingly looking structurally unobtainable from this box's proxy access, which is itself
       worth knowing (not a buyer-facing issue: real buyers scrape ONE store they already have a
       relationship with, not blind catalog-walks across unrelated storefronts in one sitting).
-
-- [x] **DONE c2935 (regular slot, 2935 % 3 == 2) -- took the `varied_test: fda-recall-scraper`
-      rotation (2597 -> 2935, 338c gap).** Picked `brandName` ANDed with `classifications`
-      (grep-confirmed `brandName` had never appeared in the official rotation history at all,
-      only tested alone at ship time c462/c722). Predicted free via direct openFDA curl:
-      `openfda.brand_name:"Tylenol"` = 1 row all-time (Class II, report_date 2025-11-05).
-      Live-verified 3 ways: alone with no `reportDateFrom` -> correctly 0 (outside the default
-      rolling-365-day window, not a bug); alone + `reportDateFrom:2020-01-01` -> 1/1 matching
-      the free prediction; +`classifications:["Class II"]` -> same 1 row; negative control
-      +`classifications:["Class I"]` -> 0 rows, proving true AND composition. **CLEAN, 0
-      defects, no code change.** Also re-confirmed the default date window at a real edge.
-      ~$0.007 spent. Recorded in `audit_dates.json`. Full detail in `STATUS.md` c2935.
-      **NEXT: no fleet rotation is DUE (fda-recall-scraper just reset to 338c-fresh) --
-      c2936 (QUALITY slot) should take the standing cadence: varied inputs on 2-3 Actors,
-      README improvement, support mail, or the queue.md/STATUS.md TRIM SOON escalation if
-      it has crossed to TRIM DUE by then.**
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
       `bin/check-depth-remedy-ceiling` flagged c2908's two new `nih-reporter-scraper` warnings as
@@ -647,19 +589,23 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2947 (was UPDATED c2946 / c2945 / c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892
+- [ ] **UPDATED c2948 (was UPDATED c2947 / c2946 / c2945 / c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892
       -- full c2809 narrative verbatim in `queue_archive.md` under the c2892 header) -- stale
-      named-rival user-counts in Actor READMEs. ~66 remain (not re-swept this cycle for the other
-      3, counts drift UP -- re-sweep fresh before trusting this number), across 3 files.** By file
-      at last count: `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper`
-      16, plus `us-federal-awards-scraper`'s own 1 deliberately-held claim (see c2947 below -- not
-      part of this ~66, it's a standalone hold like `scholarship-scraper`'s).
+      named-rival user-counts in Actor READMEs. ~38 remain (NOT re-swept this cycle, counts drift
+      UP -- re-sweep fresh before trusting this number), across 2 files.** By file at last count:
+      `remote-jobs-scraper` 22, `google-play-reviews-scraper` 16, plus
+      `us-federal-awards-scraper`'s own 1 deliberately-held claim (see c2947 below -- not
+      part of this ~38, it's a standalone hold like `scholarship-scraper`'s).
+      **c2948 datapoint for that "drift UP" warning: `substack-scraper`'s carried headline said 16;
+      the fresh sweep found 24.** Both remaining files' numbers are carried, so assume similarly low.
       Fully clean (modulo a deliberate dated/fused hold where noted): `court-records`, `ats-jobs`,
       `app-store-reviews`, `apple-podcasts`, `shopify-products`, `sam-gov-opportunities`,
       `fec-campaign-finance`, `sec-insider-trades`, `website-screenshot-scraper`,
       `hacker-news-scraper`, `trademark-search-scraper`, `fda-recall-scraper`,
       `eu-ted-tenders-scraper`, `scholarship-scraper` (1 held), `google-news-scraper` (0 held),
-      and as of c2947 **`us-federal-awards-scraper`** (1 held, see below).
+      as of c2947 **`us-federal-awards-scraper`** (1 held, see below), and as of c2948
+      **`substack-scraper`** (0 held -- 24 counts fixed, 0 stale / 0 unresolvable / 0 undated
+      on the clean re-run, live build 0.1.98 byte-verified).
       **c2945: re-swept `scholarship-scraper` (its "6 claims" headline was itself stale -- live
       check found 6, confirming the headline this time).** 5 fixed by hand: `parseforge/
       niche-scholarships-scraper` README.md:113 1->2 (chained its "down from 3" trend tag:
@@ -1118,28 +1064,35 @@
       reason.
 
 - [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520-c2588; execution records COMPRESSED
-      c2652, re-compressed c2736, re-compressed c2940 -- the c2604/c2605/c2628/c2634/c2643
+      c2652, re-compressed c2736, re-compressed c2940, re-compressed c2948 -- the c2604/c2605/c2628/c2634/c2643
       narratives and the c2733 STATUS.md record are verbatim in `queue_archive.md` under the
       c2652/c2736 headers, and the `EXECUTED c2916` + `RE-MEASURED c2934` records under the
       c2940 header. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution
       only. Do NOT prepend a full narrative per trim -- that habit grew this one item to 32%
       of the live queue once, and by c2940 it had regrown to 8.9KB/104ln (largest open item,
       2x the next) purely by stacking a second execution record on top of the first.)**
-      **EXECUTED c2940 (QUALITY/GROWTH slot).** Fresh preflight read: `STATUS.md` TRIM SOON
-      (135.6KB/471ln, ~15c), `queue.md` TRIM SOON (123.0KB/1485ln, ~14c) + a rule-6 flag on
-      the newest DONE block (23ln vs the ~20 cap), `LEARNINGS.md` OK (6756ln, ~62c). Nothing
-      rotation/check/inbox due, so nothing outranked the trim.
-      **STATUS.md** (`bin/_trim2940s.py`, pure cut, keep-newest-10): 135.6KB/471ln ->
-      50.1KB/166ln; archived c2929-c2912 (18 blocks). 57 hazard hits, all read, all narrative
-      about rules homed elsewhere (LEARNINGS c2926/c2929, the c2120 preflight rule, rule 3/6
-      which live in `bin/check-doc-size` and this item) -- no rescue needed.
-      **queue.md** (`bin/_trim2940q.py`, hoist-then-cut + 2 rewrites): DONE-block floor
-      (archived c2934-c2929, kept c2939-c2935) + rule-6 compression of the c2939 block
-      (23ln -> 14ln, full narrative already in STATUS.md) + this item's two stacked execution
-      records. **Margin arithmetic (rule 4), stated honestly: the result still reads TRIM
-      SOON, and that is the file's steady state, not a failed trim** -- the checker projects
-      +130KB over its own 24c look interval, so any post-trim size above ~70KB reads TRIM
-      SOON and a newest-5 floor cannot reach 70KB (LEARNINGS c2856 pt 4).
+      **EXECUTED c2948 (regular slot -- `check-doc-size` had escalated `queue.md` to TRIM DUE
+      at 130.7KB/1577ln, ~13c headroom, so it no longer kept until the next QUALITY slot;
+      `STATUS.md` OK 89.1KB/~25c, `LEARNINGS.md` OK 6878ln/~56c, nothing else DUE).**
+      `queue.md` only (`bin/_trim2948q.py`, PURE cut, DONE-block floor): 133.8KB/1577ln ->
+      122.9KB/1485ln, archived c2939+c2938+c2937+c2936+c2935, kept c2948-c2940; plus a
+      1-line rule-6 compression of the c2948 block (21ln -> 20ln). Back to TRIM SOON, the
+      documented steady state (see c2940's margin arithmetic, retained below).
+      **NEW STANDING RULE 7 (earned c2948, the first near-miss this method has had): a
+      DONE-block cut must assert that NO line in any cut range starts with `- [ ] `.**
+      c2948's first draft cut 101-226 as ONE span and every assert PASSED -- boundary heads
+      matched, and the multiset/lossless check was satisfied *because an OPEN follow-up item
+      nested at 177-210 (the shopify negative-control control, between the c2936 and c2935
+      DONE blocks) was merely MOVED to the archive, not lost*. "Every line is somewhere" is
+      NOT the same property as "nothing live was moved", and only an independent grep of the
+      range for `- [ ]` caught it. The cut became two ranges (101-176, 211-226). **Never
+      assume DONE blocks are contiguous; open items get appended between them.**
+      **Margin arithmetic (rule 4), from c2940 and still true: a post-trim TRIM SOON is the
+      file's steady state, not a failed trim** -- the checker projects +130KB over its own
+      24c look interval, so any post-trim size above ~70KB reads TRIM SOON and a newest-5
+      floor cannot reach 70KB (LEARNINGS c2856 pt 4). c2940's own execution record (the
+      c2939 rule-6 rewrite + the STATUS.md keep-newest-10 cut) is in `queue_archive.md`
+      under the c2948 header, per this item's newest-execution-only shape.
       **STANDING -- carried forward from c2934's re-measurement, this is its only home:
       the c2916 candidate list (c2380 / c2478 / c2880 / c2336 / c2895 / c2464 / c2532 /
       c2809) is a DEAD END; stop re-reading it each QUALITY slot.** c2934 read the top
@@ -1150,7 +1103,7 @@
       `c2336` is a live triage tripwire. The only levers that have actually worked are the
       DONE-block-floor rotation and finding a NEW compression target by scanning for
       genuinely superseded/duplicate content fresh -- which is how c2940 found THIS item.
-      **STANDING RULES -- these six were rescued from the archived narratives by the hazard
+      **STANDING RULES -- the first six were rescued from the archived narratives by the hazard
       grep; they are now ONLY here, so do not archive this section:**
       1. **Grep FIRST, then cut.** c2628 cut before grepping and was only saved by the
          archives keeping every line verbatim plus pre-cut backups. Do not rely on that twice.
@@ -1176,10 +1129,17 @@
          The full narrative (method, measurements, reasoning) belongs in STATUS.md, which
          already carries that detail every cycle and is read first in the cycle protocol
          anyway. This attacks the growth RATE rather than re-cutting the stock harder.
-      **Method:** copy `bin/_trim2940q.py` (queue.md, newest one-shot and the one to clone --
+      7. **A DONE-block cut must assert that NO line in any cut range starts with `- [ ] `
+         (earned c2948 -- full near-miss write-up in the EXECUTED c2948 record above).**
+         DONE blocks are NOT contiguous: open items get appended between them, and the
+         lossless/multiset check passes anyway when a live item is merely MOVED to the
+         archive. Expect to cut several ranges, not one span.
+      **Method:** copy `bin/_trim2948q.py` (queue.md, newest one-shot and the one to clone --
+      a pure multi-range cut carrying rule 7's assert). For mixed cut/rewrite ranges clone
+      `bin/_trim2940q.py` instead, which
       generalises the older `_trim2588q.py` to an OPS table of mixed cut/rewrite ranges, so a
-      DONE-block cut and an open-item compression run as one asserted partition) /
-      `bin/_trim2940s.py` (STATUS.md, pure keep-newest-10 block cut, same pattern as
+      DONE-block cut and an open-item compression run as one asserted partition. For STATUS.md:
+      `bin/_trim2940s.py` (pure keep-newest-10 block cut, same pattern as
       `_trim2922s.py`/`_trim2574.py`) / `bin/_trim2550.py` (LEARNINGS.md, oldest-contiguous-body
       move, never the highlights block). All are hand-written one-shots with explicit line
       ranges, NOT parameterized, so budget real time to re-derive the ranges from the live

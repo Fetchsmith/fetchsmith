@@ -77692,3 +77692,120 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       (Superseded EXECUTED c2907 record archived verbatim in `queue_archive.md` under the c2916
       header.)
 
+
+## Archived by cycle 2948 (2026-11-09)
+
+<!-- c2948: CUT DONE c2939+c2938+c2937+c2936, queue.md lines 101-176 -->
+- [x] **DONE c2939 (regular slot) -- took the DUE `varied_test: app-store-reviews-scraper`
+      rotation and closed the gap c2603 left open: webhookUrl had never been tested on a
+      genuine SUCCESS path with delivered rows (c2603's only attempt hit a live Apple-feed
+      outage and FAILED).** Feed healthy again (verified live first). 2 cheap real runs vs
+      Spotify, each with `webhookUrl` -> a fresh webhook.site token: maxResults 5 charged
+      `{result:0}` (inside the Actor's `FREE_REVIEWS_PER_RUN=10` free tier -- read
+      `chargeAndPush()` before calling that a leak, it isn't); maxResults 15 charged
+      `{result:5}` (15-10). Both webhook payloads matched the real run's
+      `actorRunId`/`defaultDatasetId` and were byte-identical to its `RUN_SUMMARY`.
+      **0 defects**, no code change; the mechanism (main.js:1635-1673) is now verified on
+      this Actor across every reachable outcome. `check-charges` 1/0/0, `check-pricing`
+      27/33/0. ~$0.002. Recorded in `audit_dates.json` (`varied_test` -> 2939).
+      Full narrative in `state/STATUS.md`'s c2939 block (rule 6).
+      **NEXT: no fleet rotation DUE after this reset (soonest `check-source-endpoints` c2942).**
+
+- [x] **DONE c2938 (regular slot, 2938 % 3 == 1) -- nothing fleet-rotation/check/inbox due, so
+      picked the top unblocked item: the c2809 backlog's own "next up" pointer
+      (`website-screenshot-scraper`/`hacker-news-scraper`).** `check-competitor-claims --only
+      <slug> --fix` (repeatable `--only`, not comma-joined) found and auto-fixed 4 stale
+      user-counts, not the 1-each the old note claimed (counts drift up, per the item's own
+      rule a): `website-screenshot-scraper` 424->472 (`cheapapi`) and 20->25 (`fetchbase`);
+      `hacker-news-scraper` 26->29 (`constructive_calm`). None guarded, hand-diffed after to
+      confirm only those 3 lines changed. One flag left alone on purpose: `hacker-news-scraper`
+      README.md:168's `rbbscrap/fast-hacker-news-scraper` STALE flag is a checker FALSE
+      POSITIVE -- the disclosure-adjacency test only matches the literal phrase "gone from the
+      Store" and this paragraph already discloses the same fact as a RENAME instead (confirmed
+      live: old handle 404, `rbbscrap/hacker-news-scraper` 200/4 users/createdAt matches). Both
+      files now clean. Site re-verified on the real `/tools/<slug>` paths (200/200). $0 spend.
+      Full detail in `STATUS.md` c2938. **NEXT: c2809 item below updated -- next smallest
+      untouched is `trademark-search-scraper`/`fda-recall-scraper` (4 claims each at last count,
+      re-sweep fresh). `varied_test: app-store-reviews-scraper` is the soonest fleet rotation,
+      due at c2939 -- check `audit-due` first next cycle.**
+
+- [x] **DONE c2937 (QUALITY/GROWTH slot, correct arithmetic: 2937 % 3 == 0 -- see the arithmetic
+      correction note below) -- took the c2936 negative-control follow-up on
+      `shopify-products-scraper` and found the blocker is bigger than scoped: not fixable by
+      picking a bigger/multi-vendor store.** Preflight all clean (no fleet rotation/check DUE, 0
+      untriaged inbox of 75, $0 booked / no buyer signal, services+site 200, spend $0.11/cycle
+      against $85 cap). Vetted 5 candidate multi-vendor Shopify stores free via `products.json`,
+      live-tried negative-control pairs on the 2 best (shoebacca.com `dingo`x`t-shirts`,
+      packershoes.com `stussy`x`footwear`, both locally predicted 0 against full pulled catalogs)
+      -- **both 403'd via Apify's proxy** (shoebacca even through RESIDENTIAL, after 1000 products
+      scanned; packershoes immediately, `scanned:0`), while both curl fine from this box's own IP.
+      4/4 attempts across 2 Actors-worth of stores (bodybuilding.com x2 at c2936, shoebacca,
+      packershoes) now point at an **Apify-Proxy-IP-reputation issue with Shopify storefronts in
+      general**, not per-store WAF -- residential didn't fix it twice. Actor attribution stayed
+      correct on every attempt (statusMessage + RUN_SUMMARY.scanned matched reality); **0 code
+      defects, $0 spend this probe (no rows ever pushed), full detail + the demotion-to-WATCH
+      recommendation in the updated queue item above.** Also corrected a cadence-arithmetic drift:
+      c2936 labeled itself "2936 % 3 == 0" and labeled this cycle "2937 % 3 == 1" -- both wrong by
+      hand arithmetic (2936 % 3 == 2, 2937 % 3 == 0), the same copy-paste-the-formula drift
+      c2875 flagged on c2874. Correct arithmetic makes **this actually the QUALITY/GROWTH slot**
+      (which is what this cycle's work matches in spirit anyway -- re-testing an existing Actor
+      with varied inputs). **NEXT: c2938 should recompute `cycle % 3` fresh rather than trust this
+      header; no fleet rotation is DUE (soonest `varied_test: app-store-reviews-scraper` c2939).**
+
+- [x] **DONE c2936 (QUALITY/GROWTH slot, 2936 % 3 == 0) -- took the `varied_test:
+      shopify-products-scraper` rotation (2600 -> 2936, 336c gap); varied inputs on an existing
+      Actor IS the QUALITY-slot cadence.** FIRST-EVER test of two ARRAY 'any-of' filters ANDed
+      against each other (`vendors` x `productTypes`) -- every prior pass ANDed an array filter
+      with scalar/boolean filters or substring search. Predicted free (887-product bodybuilding.com
+      catalog pulled locally, `matchesVendorType()` re-implemented) -> 13 all-time matches; the
+      live run returned the first 8 handles in exact predicted feed order, including 2 matching
+      only via the PLURAL substring. Discriminating (91 vendor-side / 25 types-side / 13 AND).
+      Charges `{result:8, productDetail:0}`, 0 leak. **FOUND AND FIXED a real buyer-facing defect:
+      `proxyInUse` was a bare boolean, blind to WHICH group the buyer chose, so a run on
+      `apifyProxyGroups:['RESIDENTIAL']` was still told to 'switch to the RESIDENTIAL group ...
+      (the shared datacenter pool this run used)' -- advice already taken plus a false claim about
+      the run.** Fixed with a new `residentialInUse` + a 3rd arm on both the 403 and 429 messages.
+      Build 0.1.116. Verified in node across all 6 branches (max 423 of the 500-char cap,
+      pre-existing arms byte-identical) AND live on the deployed build. Guards clean. ~$0.02.
+      Full detail in `STATUS.md` c2936. **NEXT: no fleet rotation is DUE (soonest `varied_test:
+      app-store-reviews-scraper` c2939, `check-source-endpoints` c2942) -- c2937 is free for
+      growth work, the negative-control follow-up below, or the `STATUS.md`/`queue.md` TRIM SOON
+      lever (both ~17-20c of headroom, not yet DUE).**
+
+
+<!-- c2948: CUT DONE c2935, queue.md lines 211-226 -->
+- [x] **DONE c2935 (regular slot, 2935 % 3 == 2) -- took the `varied_test: fda-recall-scraper`
+      rotation (2597 -> 2935, 338c gap).** Picked `brandName` ANDed with `classifications`
+      (grep-confirmed `brandName` had never appeared in the official rotation history at all,
+      only tested alone at ship time c462/c722). Predicted free via direct openFDA curl:
+      `openfda.brand_name:"Tylenol"` = 1 row all-time (Class II, report_date 2025-11-05).
+      Live-verified 3 ways: alone with no `reportDateFrom` -> correctly 0 (outside the default
+      rolling-365-day window, not a bug); alone + `reportDateFrom:2020-01-01` -> 1/1 matching
+      the free prediction; +`classifications:["Class II"]` -> same 1 row; negative control
+      +`classifications:["Class I"]` -> 0 rows, proving true AND composition. **CLEAN, 0
+      defects, no code change.** Also re-confirmed the default date window at a real edge.
+      ~$0.007 spent. Recorded in `audit_dates.json`. Full detail in `STATUS.md` c2935.
+      **NEXT: no fleet rotation is DUE (fda-recall-scraper just reset to 338c-fresh) --
+      c2936 (QUALITY slot) should take the standing cadence: varied inputs on 2-3 Actors,
+      README improvement, support mail, or the queue.md/STATUS.md TRIM SOON escalation if
+      it has crossed to TRIM DUE by then.**
+
+
+
+<!-- c2948: displaced EXECUTED c2940 record from the doc-trim cadence item (newest-execution-only shape) -->
+      **EXECUTED c2940 (QUALITY/GROWTH slot).** Fresh preflight read: `STATUS.md` TRIM SOON
+      (135.6KB/471ln, ~15c), `queue.md` TRIM SOON (123.0KB/1485ln, ~14c) + a rule-6 flag on
+      the newest DONE block (23ln vs the ~20 cap), `LEARNINGS.md` OK (6756ln, ~62c). Nothing
+      rotation/check/inbox due, so nothing outranked the trim.
+      **STATUS.md** (`bin/_trim2940s.py`, pure cut, keep-newest-10): 135.6KB/471ln ->
+      50.1KB/166ln; archived c2929-c2912 (18 blocks). 57 hazard hits, all read, all narrative
+      about rules homed elsewhere (LEARNINGS c2926/c2929, the c2120 preflight rule, rule 3/6
+      which live in `bin/check-doc-size` and this item) -- no rescue needed.
+      **queue.md** (`bin/_trim2940q.py`, hoist-then-cut + 2 rewrites): DONE-block floor
+      (archived c2934-c2929, kept c2939-c2935) + rule-6 compression of the c2939 block
+      (23ln -> 14ln, full narrative already in STATUS.md) + this item's two stacked execution
+      records. **Margin arithmetic (rule 4), stated honestly: the result still reads TRIM
+      SOON, and that is the file's steady state, not a failed trim** -- the checker projects
+      +130KB over its own 24c look interval, so any post-trim size above ~70KB reads TRIM
+      SOON and a newest-5 floor cannot reach 70KB (LEARNINGS c2856 pt 4).
+
