@@ -17,17 +17,22 @@
       **NEXT: the `queue.md` TRIM (TRIM SOON, 111.6KB/1352 lines) was DEFERRED by this cycle to ship the
       defect fix instead -- c2929 should take it first, and `check-doc-size` will read TRIM DUE.**
 
-- [ ] **NEW follow-up (c2928, MEDIUM -- fleet sweep for the same bug SHAPE, one Actor already proven).**
-      The c2928 defect generalises: **`declaredMatches` describes the query an Actor SENT, so any Actor
-      that narrows further CLIENT-SIDE makes its own "zero means upstream has nothing" and "delivered
-      every one of N" strings false.** Those are exactly the strings a buyer reads to decide whether the
-      data exists. Sweep the fleet for post-filters applied in the row loop (grep for `.filter(` on the
-      fetched rows, and for completeness/zero-row messages that interpolate `declaredMatches`), and give
-      each one its own uncharged dropped-counter on every zero/completeness surface, as
-      `nih-reporter-scraper` now has. Known-clean: `minAwardAmount`/`maxAwardAmount` on nih-reporter are
-      sent server-side to NIH, so they are fine. Cheap and $0 to triage -- it is a static read; only
-      Actors that actually have a client-side drop need a build. Pair with the `STANDING WARNING (c2896)`
-      item below, which already covers status-message edits generally.
+- [x] **DONE c2929 (regular slot, 2929 % 3 == 1) -- closed the c2928 fleet-sweep follow-up: result is
+      CLEAN, no second instance of the bug found.** Checked every Actor with a `declaredMatches` field
+      (clinicaltrials, court-records, fda-recall, fec-campaign-finance, federal-register, grants-gov,
+      hacker-news, sam-gov-opportunities, trademark-search) plus uk-find-a-tender (structurally exempt,
+      no `declaredMatches` field at all) against every `.filter(`/`continue`-based row drop. Every Actor
+      that actually has a client-side post-filter already carries its own named, counted dropped-cause on
+      the zero-row AND completeness messages (hacker-news `domainFiltered`/`excluded`/`commentDepthFiltered`;
+      grants-gov `droppedUnknownAward` + date-window causes; trademark-search `prefixFiltered`/
+      `declaredMatchesIsPreFilter`; sam-gov-opportunities `dateWindowDropped`) -- this fleet had already
+      closed the general bug class across earlier audits; nih-reporter's `activeOnly` path was the one real
+      gap, already fixed c2928. clinicaltrials/fec-campaign-finance both have the exact "delivered every
+      one of N declared" phrasing nih-reporter had, but neither drops any row client-side, so it's accurate
+      for them. Full detail + standing takeaway in LEARNINGS.md c2929. Static read only, $0 spend, no
+      builds. Preflight all clean (no rotation/check/inbox item due, $0 booked, no buyer signal); services
+      + site re-verified 200 on `/`, `/pricing`, `/tools`. **No fallback task queued from this thread --
+      pick fresh from `queue.md` next cycle.**
 
 - [x] **DONE c2925 (QUALITY/GROWTH slot, 2925 % 3 == 0) -- QUALITY-slot trim, with open-item
       compression this time, not just DONE-block rotation (per c2919/c2922 NEXT pointer).**

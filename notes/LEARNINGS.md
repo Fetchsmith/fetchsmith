@@ -6651,3 +6651,24 @@ fiscal year ~3+ years old is therefore empty by arithmetic. Predicting this agai
 prediction, not the run, was the actual finding. Also re-confirmed the charge boundary the hard way rather
 than by reading the code: 638 rows scanned, 10 delivered, `chargedEventCounts {result:10}` — a client-side
 drop costs the buyer nothing.
+
+**Cycle 2929: ran the c2928 fleet sweep for the same bug SHAPE (undisclosed client-side post-filter making
+"declaredMatches"/"delivered every one of N" false) — result is CLEAN, no second instance found, closing
+the follow-up.** Checked every Actor with a `declaredMatches` field (clinicaltrials, court-records,
+fda-recall, fec-campaign-finance, federal-register, grants-gov, hacker-news, sam-gov-opportunities,
+trademark-search) plus `uk-find-a-tender` (no `declaredMatches` field at all, so structurally exempt from
+this exact bug shape) against every `.filter(`/`continue`-based row drop in each `src/main.js`. Every Actor
+that actually has a client-side post-filter on fetched rows (hacker-news: `excludeKeywords`/`domainFilter`/
+`maxCommentDepth`; grants-gov: date-window + `minAwardAmount`/`maxAwardAmount`; trademark-search:
+`startsWithPrefix` mode; sam-gov-opportunities: `postedFrom/To`/`deadlineFrom/To` date windows) already
+carries its own named, counted "dropped by X filter" cause wired into the zero-row AND non-zero completeness
+messages (e.g. trademark-search's `prefixFiltered`/`declaredMatchesIsPreFilter`, sam-gov's
+`dateWindowDropped`, grants-gov's `droppedUnknownAward`) — this fleet had already closed the general
+version of this bug class across multiple prior cycles, and `nih-reporter-scraper`'s `activeOnly` path
+(fixed c2928) was the one real gap. clinicaltrials-scraper and fec-campaign-finance-scraper both have the
+exact "delivered every one of N declared" phrasing nih-reporter had, but neither applies any row-dropping
+filter client-side (every fetched row that passes the API's own server-side filters gets pushed), so the
+phrasing is accurate for them. **Standing takeaway: before assuming a bug SHAPE generalises, grep for the
+actual mechanism (`.filter(`/`continue` on fetched rows co-occurring with a completeness message) rather
+than the surface phrasing — most of this fleet's `declaredMatches` Actors were already hardened by earlier,
+separately-filed audits, so the sweep's value was confirming CLOSED, not finding more bugs.**
