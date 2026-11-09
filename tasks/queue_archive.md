@@ -78464,3 +78464,57 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
 
 
 
+
+## Archived by cycle 2970 (2026-11-09)
+
+<!-- c2970: CUT DONE c2964, queue.md lines 180-199 -->
+- [x] **DONE c2964 (QUALITY slot, 2964 % 3 == 0 = 3*988, re-derived fresh per c2963's
+      warning) -- preflight clean (nothing fleet-DUE, soonest `check-row-floor` c2966; 0
+      untriaged of 75; $0 booked/0 bookmarks/0 reviews so no owner email owed; services+site
+      200; spend $0.1715 of $85). FULL NARRATIVE IN STATUS.md.
+      **(1) Closed `apple-podcasts-scraper`**, the last DISAGREE/UNDATED unit of the c2953
+      backlog. Re-swept fresh and carried numbers HAD drifted (3 DISAGREE + 1 UNDATED
+      predicted; 3 STALE + 3 DISAGREE + 1 UNDATED live, of 72 claims/15 paragraphs). All 3
+      DISAGREE = PHANTOM (dated monotonic growth, 0 edits); 2 of 3 STALE = permanent c2856
+      :222 holds, do-not-fix per the item above. 3 edits in build **0.1.122**:
+      `seemuapps/apple-podcast-reviews-scraper` 14->17, the :197 UNDATED closed as a
+      continuation-paragraph (lesson (c)), headline :177 refreshed 75->83. Live README
+      byte-verified EXACT; paragraph axis 0 undated/stale of 15 (was 1).
+      **(2) Proactive doc trim, both files** (this slot's named job). `bin/_trim2964s.py`
+      STATUS.md keep-newest-10: 135.2KB/399ln -> 59.4KB/175ln, now **OK ~32c headroom**.
+      `bin/_trim2964q.py` queue.md keep-newest-5-by-cycle-number (archive set NON-CONTIGUOUS
+      -- c2958 sat between c2961/c2960): 130.7KB -> 126.8KB. Both pure cuts, hazard greps
+      read first, "STANDING RULE 7" confirmed live at queue.md:1142 first. TRIM SOON after
+      the cut is this file's steady state (c2856 lesson 4), not a failure. **Correction:**
+      c2963 said this backlog had "one file left" -- wrong; ~20 STALE across 8 files is open.**
+
+
+<!-- c2970: CUT DONE c2963, queue.md lines 204-214 -->
+- [x] **DONE c2963 (regular slot, 2963 % 3 == 2 -- c2962's handoff miscalled this
+      QUALITY; corrected) -- preflight clean, no owner email owed (full detail in
+      `STATUS.md`'s c2963 block).** Re-swept both handoff files fresh, confirmed as
+      predicted, closed both: `remote-jobs-scraper` (1 stale + 1 undated of 87/14,
+      `memo23` 125->139u + a c2960 wording-gap fix, build **0.1.100**) and
+      `sam-gov-opportunities-scraper` (0 stale + 2 undated of 38/20, both a c2960
+      continuation-paragraph fix, build **0.1.94**). Both >100k chars, verified via
+      `versions` `sourceFiles` not the build record: both exact matches, now 0/0/0/0.
+      **NEXT: `apple-podcasts-scraper` (3 disagree + 1 undated) is all that's left in
+      this backlog -- read c2952's dated-paragraph caution first. `queue.md`/`STATUS.md`
+      both TRIM SOON (not DUE) -- next QUALITY slot (c2964) should trim proactively.**
+
+<!-- c2970: CUT DONE c2962, queue.md lines 215-228 -->
+- [x] **DONE c2962 (regular slot, 2962 % 3 == 1) -- preflight clean, no owner email owed
+      (full detail in `STATUS.md`'s c2962 block).** Re-swept `check-competitor-claims`
+      fleet-wide fresh (971 claims/281 paragraphs, 21 stale/11 disagree/6 undated), then
+      closed `court-records-scraper` (1 stale + 2 undated), the next-smallest backlog
+      unit: `hipersoft/cendoj-scraper` 1->2u (live-confirmed) + a wording-gap UNDATED
+      (c2956 pattern, "re-priced"->"re-verified") + a genuinely-undated paragraph, both
+      fixed. Build **0.1.83**, live README byte-verified exact (77803 chars). File now
+      fully clean: 18 claims/15 paragraphs, 0/0/0/0.
+      **NEXT (c2963, QUALITY slot): `remote-jobs-scraper` (1 stale + 1 undated) and
+      `sam-gov-opportunities-scraper` (0 stale + 2 undated) are next-smallest -- both
+      READMEs exceed the build endpoint's ~100k truncation, verify via
+      `GET /v2/acts/<id>/versions` instead. Then `apple-podcasts-scraper` (3 disagree +
+      1 undated).**
+
+
