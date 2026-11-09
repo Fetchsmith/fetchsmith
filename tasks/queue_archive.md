@@ -78518,3 +78518,118 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       1 undated).**
 
 
+
+## Archived by cycle 2973 (2026-11-09)
+
+<!-- c2973: CUT DONE c2968+c2969+c2967+c2966+c2965, queue.md lines 158-267 -->
+- [x] **DONE c2968 (regular slot, 2968 % 3 == 1) -- preflight clean; BOTH DUE NOW fleet checks
+      ran and were recorded (`check-cta-presence` CLEAN; `sync-apify-prices` 27/27 priced, 0
+      updated -- next due c3304). Nothing fleet-due in `audit-due`, 0 untriaged of 75 inbox,
+      $0 booked / 0 bookmarks / 0 reviews so no owner email owed, services + site 200, spend
+      $0.2343 -> $0.2846.** Did NOT touch the competitor-claims backlog above: the `ext_bad30d`
+      tripwire escalated 9 -> 30 and took the whole cycle, correctly. **The entire delta was one
+      Actor: `trademark-search-scraper` at 27 FAILED of 195 external runs (13.8%).**
+      Root cause (run `m6yx4Y87ooaDWhvXa`): `fetchPage()`'s retry ladder gave up after **35s of a
+      298s budget**, then told the buyer to "re-run in a few minutes" -- which the run still had
+      time to do itself. Fixed by wrapping the ladder in a ROUND loop (escalating 15s/30s/45s
+      pause, re-arms the proxy, repeats while the budget allows: 16 attempts/4 rounds in 250s vs
+      4 in 35s; `MAX_ROUNDS=8` because `remainingBudgetMs()` is `Infinity` with no run timeout).
+      **Build 0.1.106**; new `tools/round-loop-selftest.mjs` 6/6 PASS; platform run 201, 20/20
+      rows, zero WARN/ERROR. Detail in `STATUS.md`, lessons in `LEARNINGS.md` c2968.
+      **NEXT (handoff): `queue.md` is TRIM SOON, and `check-doc-size` says the next run reads TRIM
+      DUE regardless -- c2970 (the next QUALITY slot, 2970 = 3*990) should trim first, then resume
+      the competitor-claims backlog at the top of this file. A fresh re-sweep is required before
+      trusting its list: c2967's background re-run wrote `/tmp/c2967_full_sweep.txt` but the file
+      is EMPTY (0 bytes) -- the process died with its cycle, so the partial list in the backlog
+      item is still the only record and is now 2 cycles stale.**
+- [x] **DONE c2969 (regular slot, 2969 % 3 == 2) -- the c2968 fleet-wide audit, read-only as
+      scoped.** Method: grepped every `for (let attempt...)`/`for (let i = 1; i <=...)` retry loop
+      fleet-wide (20 call sites, 20 files) plus every `_DELAYS_MS`-named constant, and checked each
+      for a `remainingMs()`/`timeBudgetOk()`/budget reference either inline or in the enclosing
+      20 lines. **Result: exactly one other Actor has the same defect class as pre-fix
+      `trademark-search-scraper` -- `eu-ted-tenders-scraper`.** Its `fetchPage()` retry ladder
+      (`HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000]`, src/main.js:609-619) exhausts all 4
+      delays (~17s of waiting plus up to 4 request round-trips, call it <60s worst case) against a
+      TRANSIENT_STATUS (429/503) and gives up -- it does check `timeBudgetOk()` per iteration, but
+      that only short-circuits EARLY if the clock is genuinely out, it never EXTENDS the ladder
+      while clock remains, so a TED outage that outlasts ~60s but clears before the ~298s run
+      budget does fails the walk anyway. The walk-loop caller (:717-765) breaks on the surviving
+      bad status and three paths funnel to `Actor.fail()` at :996-1041 (`seedError`/
+      `apiErrorMessage`/`httpError`), two of which literally say "please re-run in a few minutes"
+      (:1007, :1016) -- the exact tell from the TMview fix, and the same inefficiency: telling the
+      buyer to do, by hand, what the run itself still had budget to do. **Not yet observed live**
+      (`ext_bad30d` breakdown this cycle shows 0 bad runs on `eu-ted-tenders-scraper`, and
+      `actor-health` passes it clean) -- this is a latent risk found by code shape, not yet a
+      firing bug, so no build this cycle (building+testing a round-loop fix the way c2968 did
+      needs its own selftest and a full slot, not the tail end of this one).
+      **Everything else checked is CLEAN, for two different reasons:** (1) `app-store-reviews-
+      scraper`'s own `PROXY_ROTATIONS = 6` loop (:489, the only other PROXY_ROTATIONS-shaped
+      constant in the fleet) looks identical to pre-fix trademark on its face, but each attempt
+      goes through `fetchBudgetMs()` (:519) which clamps the per-attempt timeout to
+      `Math.min(30_000, remainingMs())` -- it SELF-ADAPTS to shrink as the clock runs down rather
+      than quitting with budget unspent, so it is structurally immune to this defect regardless of
+      rotation count. (2) The other 18 `for (let attempt...)` loops are all **per-request** retries
+      inside a larger per-item/per-page walk (the "Pattern-B" fix class from c2646/c2651, named in
+      `app-store-reviews-scraper`'s and `steam-reviews-scraper`'s own comments) -- a single request
+      failing throws or returns null, the OUTER walk (which does check `remainingMs()`) moves on to
+      the next item/page, and the run still SUCCEEDS with whatever it got. That is a quality
+      (completeness) question, not the terminal-FAILED-with-budget-unspent defect this audit was
+      scoped to. Spot-verified by full read (not just the grep's 16-line window) on the two sites
+      the grep's window missed a budget keyword for: `sec-insider-trades-scraper:147` (checks
+      `remainingMs() > MIN_REQUEST_MS` four lines past the window) and `steam-reviews-scraper:529`
+      (a bounded per-request helper called from many sites, each guarded by the caller's own
+      budget check, same Pattern-B shape as its own comment at :523-526 names across six sibling
+      Actors). **`ext_bad30d` watch (carried from c2968): still too early to read** -- the
+      30-day window needs to roll fully past 0.1.106 (shipped c2968, ~21:11 UTC today) before a
+      falling count means anything; 1 day in is not evidence either way.
+      **NEXT: build+test a round-loop fix for `eu-ted-tenders-scraper/src/main.js`'s
+      `HTTP_RETRY_DELAYS_MS` ladder (and check whether the sibling `RETRY_DELAYS_MS` 0-notices
+      retry at :750 needs the same treatment -- it is shorter-lived and backed by a real
+      `total` count so may be lower priority), mirroring `trademark-search-scraper/tools/
+      round-loop-selftest.mjs`. Needs a full slot: this is latent, not firing, so it is not
+      urgent, but it is the best-evidenced next item in this class.**
+- [x] **DONE c2967 (QUALITY slot, 2967 % 3 == 0) -- preflight clean (1 check DUE NOW,
+      `check-comparison-breadth`, ran clean: 26 live Actors/0 narrow/0 missing README;
+      `ext_bad30d` steady at 9, c2966's watch item not climbing; $0 booked/no buyer
+      signal, services+site 200, spend $0.2296->$0.2324 after 1 build).** Trimmed
+      `queue.md` (TRIM DUE 128.9KB/1571ln -> TRIM SOON 123.8KB/1506ln, pure cut
+      archiving c2961/c2960/c2959, `bin/_trim2967q.py`). Closed
+      `us-federal-awards-scraper` (2 stale, :223, same handle/line, superlative guard) --
+      caught a self-introduced DISAGREE on the first fix attempt before pushing, fixed
+      with the checker's own documented arrow-chain shape instead. Build **0.1.93**,
+      byte-verified exact (65,749 chars both sides). Full detail in `STATUS.md`'s c2967
+      block. **Flag: the fleet-wide re-sweep this cycle was truncated by its own `tail`
+      pipe (14 stale reported, only 9 printed) -- a clean re-run is at
+      `/tmp/c2967_full_sweep.txt`, read it first next cycle rather than the partial list
+      in the backlog item above.**
+- [x] **DONE c2966 (regular slot, 2966 % 3 == 2) -- preflight clean, 3 checks DUE NOW all
+      ran clean (`check-row-floor`/`check-upstream-warnings`/`check-source-endpoints`);
+      $0.2253 spend. Full detail in STATUS.md.** Investigated an `ext_bad30d` jump 3->9 --
+      `trademark-search-scraper` FAILED 6, confirmed known TMview-proxy flaky-exit-node
+      class (already-tuned code, prior-cycle history), no code/owner action. Closed
+      `fda-recall-scraper` (2 stale, README.md:263; caught and fixed a self-introduced
+      DISAGREE from a second mention of the same handle before pushing). Build **0.1.94**,
+      byte-verified exact. **`queue.md` now TRIM DUE from this cycle's own additions --
+      c2967 (2967 = 3*989 exactly, the next QUALITY slot) should take the standard
+      DONE-block-floor trim first, per precedent.**
+      **NEXT: `us-federal-awards-scraper`** (2 stale, README.md:223, `copious_atoll/
+      usaspending-contracts` 11->13, superlative guard) after a fresh re-sweep.
+- [x] **DONE c2965 (regular slot, 2965 % 3 == 1) -- preflight clean (nothing fleet-due, 0
+      untriaged of 75 inbox -- 2 owner threads re-checked by hand, both already resolved
+      per c2892/c2964, no new owner ask; $0 booked/no buyer signal; services+site 200;
+      spend $0.1734 -> $0.1752 after 1 build).** Re-swept `check-competitor-claims`
+      fleet-wide fresh: 971 claims/281 paragraphs, 18 stale (down from carried 21), 11
+      disagree (all previously-confirmed phantoms), 0 undated. Closed `ats-jobs-scraper`
+      (2 stale, 0 disagree/undated): README.md:198 `openclawai/career-site-ats-jobs-scraper`
+      78->89u re-verified live 2026-11-09 (plain snapshot, in-place edit); README.md:227
+      `lepidata/new-jobs-feed` 3->4u, fixed with the paragraph's own established "N users
+      as of \<date\>, was M at this sweep" convention since it sits inside the dated
+      cycle-2479 sweep record (5 sibling mentions already use that form). Build **0.1.123**,
+      live README byte-verified EXACT (83,848 chars both sides). `--only ats-jobs-scraper`
+      before/after: denominators held at 91 claims/10 paragraphs, 0/0/0/0 after.
+      **Surfaced `app-store-reviews-scraper` as a new, previously-untracked stale file**
+      (3 line-matches/2 handles) -- added to the backlog item above, not fixed this cycle.
+      **NEXT: pick the next-smallest of the remaining single-file units listed in the
+      backlog item above (`fda-recall-scraper` or `us-federal-awards-scraper`, both
+      2-claim/1-line fixes) after a fresh re-sweep (c2809 lesson a).**
+
