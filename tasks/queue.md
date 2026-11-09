@@ -22,21 +22,36 @@
       `copious_atoll/usaspending-contracts` 11->13, superlative guard; fixed via the
       checker's own arrow-chain shape `10 -> 11 -> 13 users` to keep both mentions
       agreeing, build 0.1.93, byte-verified exact).
-      **OPEN REMAINDER -- c2967's fleet-wide sweep was truncated by its own
-      `tail` pipe (summary said 972 claims/14 stale/11 disagree/0 undated but only 9
-      STALE lines were captured) -- a clean untruncated re-run was kicked off in the
-      background; read `/tmp/c2967_full_sweep.txt` first before trusting this list:**
-      `eu-ted-tenders-scraper` (2 stale, :148/:170), `scholarship-scraper` (2 stale: `dadhalfdev/fastweb-scraper` 3->**1**,
-      a genuine DECREASE this time, not the usual up-drift -- confirm live before a bare
-      substitution; plus its standing `majestic_fund` hold below), `shopify-products-
-      scraper` (2 stale, :115/:131, one superlative-guarded).
-      **`app-store-reviews-scraper`** (surfaced c2965, 3 stale line-matches/2 handles:
-      `lergassy/app-store-reviews-scraper` 15->18 at :466 and :654 (superlative guard),
-      `apivault_labs/app-store-reviews-scraper` 3->1 at :552, unguarded) did NOT appear in
-      either of c2967's truncated readouts -- confirm whether it's still open once the
-      full sweep output is read; it may have aged out or simply been cut by the pipe.
+      **OPEN REMAINDER -- the c2971 background re-run (`/tmp/c2971_full_sweep.txt`)
+      finished mid-cycle and gives a CLEAN fresh count: 972 claims/12 stale/11
+      disagree/0 undated (the 11 disagree are all previously-confirmed PHANTOMS on
+      `apple-podcasts-scraper`/`google-play-reviews-scraper`, 0 edits owed -- see the
+      standing lesson below). It started before this cycle's own `eu-ted-tenders-scraper`
+      fix landed, so its 2 STALE lines for that file are already stale-on-the-snapshot;
+      that file is CLOSED, see below. Of the 12 STALE lines, the following are still
+      genuinely open:** `scholarship-scraper` (2 stale, :107/:113: standing
+      `majestic_fund/the-scholarship-scraper-actor` 71->79u hold below, plus
+      `dadhalfdev/fastweb-scraper` 3->**1**, a genuine DECREASE -- confirm live before a
+      bare substitution), `shopify-products-scraper` (2 stale, :115/:131:
+      `trovevault/shopify-products-scraper` 758->843u superlative-guarded,
+      `automation-lab/shopify-scraper` 101->113u unguarded), `app-store-reviews-scraper`
+      (3 stale, confirmed still open and freshly re-measured: `lergassy/app-store-reviews-
+      scraper` 15->**20**u at :466/:654 superlative-guarded, `apivault_labs/app-store-
+      reviews-scraper` 3->**1**u at :552 unguarded -- numbers moved again since c2965's
+      15->18, re-read live rather than trusting either carried figure), and a NEWLY
+      surfaced single item on `substack-scraper` (:251, trend-guarded:
+      `exciting_pawpaw/substack-scraper` 6->**7**u). `eu-ted-tenders-scraper`
+      CLOSED c2971 (2 stale at :148/:170, both guarded "30-day sub-figure in paragraph" --
+      `lofomachines/public-tenders-scraper` 74->87u/5->11 new-in-30d and
+      `ciel_labs/uk-government-tenders-contracts-finder` 17->23u/12->10 new-in-30d, both
+      live-confirmed via direct `totalUsers`/`totalUsers30Days` reads before editing; fixed
+      with the `as of 2026-11-09, was X at the <sweep date> sweep` convention, leaving each
+      paragraph's own sweep-scoped superlative ("biggest listing"/"fastest-growing ... at
+      that sweep") untouched since it describes that past sweep, not today. Build 0.1.101,
+      byte-verified exact, 83,472 chars both sides).
       All of the above are plain hand-fixes (1-13 unit drifts), no DISAGREE/UNDATED
-      complexity remaining anywhere.
+      complexity remaining anywhere. Next-smallest pick: `substack-scraper` (1 claim) or
+      `scholarship-scraper`/`shopify-products-scraper` (2 claims each).
       `remote-jobs-scraper` no longer appears in the fresh sweep at all -- c2963's closure
       confirmed holding. `google-news-scraper` CLOSED AGAIN c2970 (2 stale, :142/:166 --
       `automation_craft` 3->5, `praguedatalab` 2->3, both plain live-count drift after
@@ -66,6 +81,17 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [x] **DONE c2971 (regular slot, 2971 % 3 == 1) -- preflight clean (nothing fleet-due on
+      `audit-due`; 1 fleet check DUE NOW -- `check-dead-endpoint-docs` ran clean, 1 retired
+      endpoint/4 blog mentions/0 undisclosed, recorded; 0 untriaged of 75 inbox; $0
+      booked/0 bookmarks/0 reviews so no owner email owed; services+site 200;
+      `apify-spend` $0.3383, proj. $10.8 vs $85 cap).** Kicked off a fresh fleet-wide
+      `check-competitor-claims` sweep in the background early (per c2970's handoff --
+      it timed out synchronously at 240s last cycle); it finished mid-cycle: clean fresh
+      count 972 claims/12 stale/11 disagree (all phantom)/0 undated, see backlog item above.
+      Closed `eu-ted-tenders-scraper`'s 2 stale claims (see backlog item above) --
+      build **0.1.101**, byte-verified exact (83,472 chars both sides).
+      **Blockers: none. Owner email: none owed.**
 - [x] **DONE c2970 (QUALITY slot, 2970 % 3 == 0 = 3*990 exactly) -- preflight clean
       (nothing fleet-due on `audit-due`; 2 fleet checks DUE NOW ran clean:
       `check-disclosure` 0 missing of 95 site + 31 devto posts, `devto-comments` 31
