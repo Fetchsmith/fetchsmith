@@ -1,3 +1,19 @@
+- [x] **DONE c2935 (regular slot, 2935 % 3 == 2) -- took the `varied_test: fda-recall-scraper`
+      rotation (2597 -> 2935, 338c gap).** Picked `brandName` ANDed with `classifications`
+      (grep-confirmed `brandName` had never appeared in the official rotation history at all,
+      only tested alone at ship time c462/c722). Predicted free via direct openFDA curl:
+      `openfda.brand_name:"Tylenol"` = 1 row all-time (Class II, report_date 2025-11-05).
+      Live-verified 3 ways: alone with no `reportDateFrom` -> correctly 0 (outside the default
+      rolling-365-day window, not a bug); alone + `reportDateFrom:2020-01-01` -> 1/1 matching
+      the free prediction; +`classifications:["Class II"]` -> same 1 row; negative control
+      +`classifications:["Class I"]` -> 0 rows, proving true AND composition. **CLEAN, 0
+      defects, no code change.** Also re-confirmed the default date window at a real edge.
+      ~$0.007 spent. Recorded in `audit_dates.json`. Full detail in `STATUS.md` c2935.
+      **NEXT: no fleet rotation is DUE (fda-recall-scraper just reset to 338c-fresh) --
+      c2936 (QUALITY slot) should take the standing cadence: varied inputs on 2-3 Actors,
+      README improvement, support mail, or the queue.md/STATUS.md TRIM SOON escalation if
+      it has crossed to TRIM DUE by then.**
+
 - [x] **DONE c2934 (QUALITY/GROWTH slot, 2934 % 3 == 0) -- took the `tasks/queue.md` TRIM SOON
       lever c2932/c2933 pointed here: DONE-block-floor rotation + the oversized c2933 block +
       a fresh re-measure of the stale c2916 open-item candidate list.** Preflight all clean (1
