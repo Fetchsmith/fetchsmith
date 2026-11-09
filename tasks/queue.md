@@ -1,138 +1,46 @@
-- [ ] **NEW c2953 backlog: fleet sweep after the new cross-paragraph-disagreement check
-      found 22 stale counts (all guarded, hand-fix) + 12 disagreements (new class) + 16
-      undated paragraphs. Pick this up in a QUALITY slot, same shape as the closed c2809
-      backlog.** Full `check-competitor-claims` output saved at `/tmp/c2953_check.txt`
-      (re-run fresh before trusting -- counts drift, per c2809 lesson (a)). **12
-      DISAGREE findings (NEW, never measured before this cycle):** `scholarship-scraper`
-      `majestic_fund` 71 vs 79 (= the existing standing hold, already known stale);
-      `apple-podcasts-scraper` `sourabhbgp` 75 vs 71, `ryanclinton/podcast-directory-
-      scraper` 216/207/217, `automation-lab/podcast-scraper` 117 vs 124;
-      ~~`google-news-scraper` `johnvc/GoogleNewsAPI` 111/114/114~~ **DONE c2956 -- the
-      111 was the stale one: live is 114, so the two 2026-11-06 paragraphs (lines 154/168)
-      were already right and only the 2026-10-06 tenth-sweep paragraph (line 120) was
-      carrying a pre-growth number. NOT fixed by re-dating it as a historical snapshot
-      (the c2856 convention) because that paragraph's own framing dates its PRICES
-      ("as each was priced on 2026-10-06") while presenting the user counts bare, so a
-      reader reads the counts as current -- updated all five of its counts to live
-      instead (`futurizerush` 118->119, `johnvc` 111->114, `sync-network` 109 unchanged,
-      `powerai` 83->84, `khadinakbar` 74->81, each read from `stats.totalUsers`) and
-      tagged them "re-verified live 2026-11-09", leaving the dated price claim intact.
-      Closed the file's 6 UNDATED flags in the same push -- see the UNDATED note below.**
-      **8 of the 12 are on
-      `google-play-reviews-scraper`** (`thewolves` 2362/2291/2253, `theagents` 827/811,
-      `neatrat` 3217/3395/3368, `curious_coder` 2702/2925/2911, `automation-lab/google-
-      play-scraper` 1345/1293, `solidcode/google-play-apps-scraper` 464/435, `code-node-
-      tools` 402/419) -- **before hand-fixing these, check whether the lower-line-number
-      paragraph is a dated HISTORICAL snapshot (c2949's STATUS block describes a
-      `neatrat 3,395 / curious_coder 2,925 ... as read on 2026-11-06` paragraph that is a
-      deliberate dated record per the c2856 convention, not an error) before assuming
-      disagreement == bug; c2949/c2950 already reconciled some of these once, so some of
-      this drift may be genuine post-reconciliation growth, not a leftover inconsistency.**
-      **22 STALE (all guarded -- hand-fix, 1-13 users each, natural drift):**
-      `lergassy/app-store-reviews-scraper` 15->18 (x2 mentions), `seemuapps` 14->17,
-      `tidydata/audio-video-transcription` 20->27, `sourabhbgp/apple-podcast-scraper`
-      71->83 (apple-podcasts-scraper, separate from the scholarship-scraper
-      `majestic_fund` hold above), `openclawai` 78->89, `lepidata/new-jobs-feed` 3->4,
-      `hipersoft/cendoj-scraper` 1->2, `lofomachines` 74->87, `ciel_labs` 17->23,
-      `maximedupre/fda-food-recalls-scraper` 3->2 (decrease), `constant_quadruped/fda-
-      catalyst-alerts` 6->7, ~~`fortuitous_pirate/sam-gov-scraper` 129->146~~ **DONE c2954**,
-      ~~`fortuitous_pirate/florida-court-records-scraper` 129->15 (cross-file ID mixup)~~
-      **DONE c2954 -- confirmed NOT a content error, a checker handle-resolution bug: this
-      was the SAME `fortuitous_pirate/sam-gov-scraper` claim (bare mention, line 385) being
-      silently resolved by the global `COMPETITORS["fortuitous_pirate"]` default to their
-      UNRELATED `florida-court-records-scraper` listing (15u) because this file had no
-      `FILE_OVERRIDES` entry. Fixed with a file-scoped override (same established pattern
-      as 11 other multi-listing-vendor files already in `bin/check-competitor-claims`), not
-      a README number swap -- the 129 was already right, just mis-checked. Also fixed the
-      companion bare `jungle_synthesizer` mention in the same paragraph the same way (see
-      the resolved UNCHECKED below). Re-verified live: 146u, re-dated 2026-11-09, both
-      mentions (full-slug + bare) now agree. `--only sam-gov-opportunities-scraper`: 0
-      stale/0 unresolved/0 disagree (was 2 STALE + 1 UNCHECKED + 1 DISAGREE). Build 0.1.93
-      pushed, byte-exact via `/versions`.** `majestic_fund` 71->79 (the
-      standing hold, still not independently re-derivable per lesson f), `trovevault/
-      shopify-products-scraper` 758->843, `automation-lab/shopify-scraper` 101->113,
-      `thriftykiwi` 2->3, `copious_atoll` 11->13 (x2, the other standing hold, "under 10
-      users" framing still broken per c2947). ~~**2 unguarded/plain STALE (safe swaps):**
-      `hacker-news-scraper` `carmine_tennis`/`rbbscrap`~~ **DONE c2955** -- neither was a
-      content error: `carmine_tennis/hn-who-is-hiring-scraper` is a genuine undisclosed
-      whole-account removal (search=carmine_tennis now returns 0 results fleet-wide, not
-      just this one listing), fixed with the standard dated disclosure; `rbbscrap/fast-
-      hacker-news-scraper` was already correctly disclosed as a RENAME (not a delisting)
-      three sentences later in the same paragraph, same shape as the established
-      `(renamed, see correction immediately below)` convention used elsewhere in the fleet
-      (c2949's `google-play-reviews-scraper` rbbscrap note) -- the checker's `STALE`
-      trigger was the stray `4u, no pricing record` restated at the FIRST mention before
-      that pointer existed; removing the restated stale number and adding the pointer
-      cleared it without touching the checker's regex. `--only hacker-news-scraper`: 0
-      stale/0 unresolved/0 undated (was 2 STALE). Build 0.1.107 pushed, byte-exact (91353B
-      both sides). ~~**1 UNCHECKED:** `sam-gov-opportunities-scraper:385`
-      `jungle_synthesizer` (171u) needs a COMPETITORS entry or a full slug backtick.~~
-      **DONE c2954** -- same file-scoped override pattern as `fortuitous_pirate` above,
-      see that entry. **15 UNDATED paragraphs remaining** (was 16; c2954's edit to line
-      385 added a verification date, closing 1 of the 3 sam-gov-opportunities instances --
-      2 remain there, lines 371/381), ~~mostly `google-news-scraper` (7 lines, same file as a
-      DISAGREE finding above -- worth doing together)~~ **DONE c2956 -- it was 6 on a fresh
-      run, not 7 (carried count drifted down; lesson (a) again). ALL 6 were pure WORDING
-      gaps, zero content error: every one of those paragraphs already carried a real,
-      in-window verification date (2026-11-06, 3d old vs MAX_AGE_DAYS=45), just phrased
-      outside the `DATED` regex (`bin/check-competitor-claims:298` needs
-      `verified|checked|re-verified|rechecked` within 40 non-period chars BEFORE the date,
-      so "isPrimaryEvent re-check (2026-11-06)", "read live ... on 2026-11-06" and
-      "re-verified by hand against pricingInfos" all missed). Fixed by rewording the
-      README to the canonical "verified live YYYY-MM-DD" form, NOT by widening the regex
-      -- loosening it fleet-wide would silence genuinely undated paragraphs, and the 6
-      here needed no new facts. **Reusable trap found while verifying: the first fix
-      attempt dropped the checked-claim count 77 -> 76**, i.e. rewording moved
-      `johnvc/GoogleNewsAPI`'s "114 users" too far from its slug for the claim regex to
-      see it, silently converting a verified claim into an unverified one while the
-      report still read "0 stale". Caught only by diffing the claim COUNT, not the
-      finding count; re-worded to keep the number slug-adjacent and the count returned to
-      77. **Always compare the claims-checked total before/after any README wording edit
-      -- a clean report with a smaller denominator is a regression, not a pass.**** Plus
-      scattered singles across
-      apple-podcasts/court-records/nih-reporter/remote-jobs/trademark-search/uk-find-a-
-      tender/sam-gov-opportunities (2 remaining). Recorded as the `check-competitor-claims`
-      run of record (`last_cycle` 2843 -> 2953, next due 3097) since the sweep was the real
-      full unfiltered fleet pass, not a partial -- **re-run fresh before trusting any
-      remaining count in this item (c2809 lesson a: carried counts drift). c2955 re-ran the
-      full sweep fresh and got near-identical numbers (22 stale/12 disagree/15 undated,
-      confirming the carried counts were still accurate) before closing the
-      `hacker-news-scraper` pair above, leaving 20 STALE + 12 DISAGREE (8 on
-      `google-play-reviews-scraper`, read c2949's dated-snapshot caveat first) + 15 UNDATED
-      still untouched for the next QUALITY slot.** **c2956 then closed
-      `google-news-scraper` completely (its 1 DISAGREE + its 6 UNDATED, one push, build
-      0.1.97) -- `--only google-news-scraper` now reads 77 claims / 0 stale / 0
-      unresolvable / 0 disagree / 0 undated.** **c2957 then took the 8-DISAGREE
-      `google-play-reviews-scraper` cluster (7 on re-sweep) and found it was MOSTLY a
-      PHANTOM, same shape as c2952's superlative-sweep closure: the checker flags any
-      handle with >1 distinct count anywhere in a file but never checks whether each
-      mention carries its OWN earlier date explaining the difference. Read all 7 by hand
-      against fresh live API counts: `thewolves` 2253(dated 2026-11-03)->2291(dated
-      2026-11-06 sweep)->2362(dated 2026-11-09, = live), `theagents`
-      811(11-06)->827(11-09, live 826, 1-off noise), `neatrat`
-      3217(10-25)->3368(11-03)->3395(11-06)->3458(live), `curious_coder`
-      2702(10-03)->2911(11-03)->2925(11-06)->2945(live), `automation-lab`
-      1293(11-06)->1345(11-09, live 1347), `solidcode/...-apps-scraper`
-      435(11-06)->464(11-09, = live), `code-node-tools` 402(11-06)->419(11-09, = live) --
-      every one is a monotonically increasing, correctly self-dated growth sequence, not
-      a contradiction. 0 edits made for these 7 (editing would destroy a correct
-      historical record to satisfy a checker that can't read per-mention dates). The
-      genuine finding was a separate STALE flag on the same file:
-      `apivault_labs/google-play-reviews-scraper` read "3 users as of 2026-11-09" but
-      live is 1 (confirmed via direct API, a real same-day decrease, not a dating
-      artifact -- its "cheapest honest per-review price" superlative is about PRICE,
-      unchanged, so still holds). Fixed inline, re-ran clean: **135 claims checked
-      (unchanged denominator per the c2956 near-miss rule) / 0 stale / 0 unresolvable /
-      7 disagree (phantom, left alone, see above) / 0 undated.** Build 0.1.108 pushed,
-      live README byte-verified exact (74329 chars both sides). $0.03 spend. Services+
-      site 200 after. **Standing note: before fixing a DISAGREE, check whether each
-      paragraph carries its own date and whether the values are in date order -- if so
-      it's a correct growth record, not a bug, exactly like c2952 found for
-      superlatives.** Remainder, by arithmetic (RE-MEASURE, do not trust): ~20 STALE +
-      ~4 real DISAGREE (apple-podcasts-scraper 3, scholarship-scraper's known
-      `majestic_fund` hold) + ~9 UNDATED across the other backlog files. No single
-      cluster stands out next -- re-sweep the full fleet fresh first (c2809 lesson a)
-      and pick the smallest remaining file.**
+- [ ] **NEW c2953 backlog (REWRITTEN c2958 -- full per-handle history for the CLOSED
+      chunks below is archived verbatim; this item now carries only the open remainder).
+      Fleet sweep after the cross-paragraph-disagreement check found 22 stale + 12
+      disagree + 16 undated. Same shape as the closed c2809 backlog -- pick up in a
+      QUALITY slot.**
+      **Closed so far, full narrative in each cycle's own still-live DONE block above
+      or in `queue_archive.md`/`STATUS.md`:** `sam-gov-opportunities-scraper`'s
+      `fortuitous_pirate`/`jungle_synthesizer` pair (DONE c2954, a checker
+      handle-resolution bug, not a content error) and 2 of its 3 UNDATED paragraphs;
+      `hacker-news-scraper`'s `carmine_tennis`/`rbbscrap` pair (DONE c2955, one genuine
+      whole-account removal, one already-disclosed rename needing only a pointer);
+      `google-news-scraper` completely -- its 1 DISAGREE + 6 UNDATED (DONE c2956, now
+      0/0/0/0 of 77 claims); `google-play-reviews-scraper`'s 8-DISAGREE cluster (DONE
+      c2957 -- 7 of 8 were a PHANTOM, correctly self-dated monotonic growth sequences,
+      not contradictions; the 1 genuine fix was `apivault_labs` 3->1 users, a real
+      same-day decrease).
+      **Remainder (arithmetic, NOT a fresh sweep -- RE-MEASURE before trusting, c2809
+      lesson (a)): ~20 STALE (1-13 unit drifts, natural, hand-fix) + ~4 real DISAGREE
+      (`apple-podcasts-scraper`'s 3: `sourabhbgp` 75v71, `ryanclinton/podcast-directory-
+      scraper` 216/207/217, `automation-lab/podcast-scraper` 117v124; plus
+      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~9 UNDATED
+      paragraphs scattered across apple-podcasts/court-records/nih-reporter/remote-jobs/
+      trademark-search/uk-find-a-tender/sam-gov-opportunities (2 remaining there).**
+      **Standing lesson (c2952, re-confirmed c2957): before fixing a DISAGREE, check
+      whether each paragraph carries its OWN date and the values are in date order --
+      if so it is a correct growth record, not a bug, same class as the superlative-
+      sweep phantom.** No single remaining cluster stands out as the obvious next pick
+      -- re-sweep the full fleet fresh first and take the smallest clean file.
+- [x] **DONE c2958 (QUALITY slot, 2958 % 3 == 0) -- preflight clean (nothing fleet-DUE,
+      0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic <=1 visit/day vs
+      the >100 gate so no owner email owed, services+site 200).** `queue.md` was TRIM
+      DUE (141.3KB/1716ln) -- trimmed in two passes: a pure DONE-block-floor cut
+      (archived c2952/c2951/c2950/c2949/c2948/c2944, kept newest 5) got to 132.3KB but
+      the forward projection still read TRIM DUE, so per rule 4 also REWROTE the c2953
+      backlog item (136 lines of now-redundant closure history -> 18-line open
+      remainder, same shape as c2940's c2809 rewrite). Final: **123.3KB/1499ln, TRIM
+      SOON** (the documented steady state). Both standing holds and the c2956
+      near-miss lesson confirmed independently homed elsewhere before archiving the
+      copies here. `check-status-blocks-kept` OK, `check-status-continuity` NONE
+      MISSING. $0 spend, no README/build touched. Full detail in `STATUS.md`'s c2958
+      block. **NEXT: re-sweep the fleet fresh (c2809 lesson a) and pick the smallest
+      remaining file among the rewritten backlog's ~20 STALE + ~4 real DISAGREE + ~9
+      UNDATED; no single file stands out.**
 
 - [x] **DONE c2957 (regular slot, 2957 % 3 == 2) -- preflight clean (`audit-due --all`
       FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
@@ -238,26 +146,6 @@
       No README/build touched. Services+site 200. $0 spend. Full detail in `STATUS.md`'s
       c2953 block.
 
-- [x] **DONE c2952 (QUALITY slot, 2952 % 3 == 0, 2952 = 3*984 exactly) -- preflight clean
-      (nothing rotation/check DUE, 0 untriaged of 75, $0 booked / 0 bookmarks / 0 reviews,
-      services+site 200). Did BOTH doc trims proactively, then CLOSED c2951's superlative
-      backlog by measuring it instead of working it.** `queue.md` 131.4KB/1552ln ->
-      118.5KB/1436ln (`bin/_trim2952q.py`, cut DONE c2942/c2941/c2940 to the newest-5 floor
-      + REWROTE the 148-line c2809 backlog item, the largest open item, into a 72-line CLOSED
-      record -- c2950 closed that backlog but its header still read "Only 1 file remains" with
-      a stale "Next up" pointer at 3 closed files, so a pure cut would have been wrong).
-      `STATUS.md` 118.8KB/393ln -> **57.6KB/190ln, TRIM SOON -> OK** (~32c, was ~18c;
-      `bin/_trim2952s.py`, pure keep-newest-10, archived c2941-c2930). 17+39 hazard hits all
-      read; `check-status-continuity` NONE MISSING, `check-status-blocks-kept` OK, 75 open
-      items before and after, lessons (a)-(j) + the 3 standing holds asserted carried forward.
-      **c2951's "~47 candidates across ~15 files" stale-superlative backlog is a PHANTOM and is
-      now CLOSED -- see the new standing note below.** Measured properly: 87 superlative lines
-      fleet-wide, **80 sit inside a paragraph that carries its own date** (lesson (f), leave
-      them), 7 truly undated, and 6 of those 7 are not rival-ranking claims at all (upstream
-      facts, a sample-output table cell, field docs, our own row composition). The 7th is
-      already standing hold #1 (`scholarship-scraper`'s `majestic_fund`). **0 new actionable
-      items, 0 edits needed, $0 spend.** Full detail in `STATUS.md`'s c2952 block.
-
 - [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
       superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's
       grep filtered superlative lines by "no nearby 2026-11 date" **on the LINE**, which
@@ -277,95 +165,6 @@
       DISAGREEMENT between two counts for the same handle (c2951's find), not superlative
       wording.** The one-liner, for reuse: split each README on `\\n\\n`, flag a paragraph only
       if it matches the superlative vocabulary AND contains no date anywhere in the paragraph.
-
-- [x] **DONE c2951 (regular slot, 2951 % 3 == 2) -- preflight clean, took c2950's pointer:
-      fleet grep for stale ordinal superlatives the count-only checker can't see.** Grepped
-      all Actor READMEs, got ~47 candidates across ~15 files (too broad for one slot --
-      logged, not all swept). Spot-checked `sec-insider-trades-scraper`: found a new
-      checker-blind bug class, same handle with DIFFERENT user counts in different
-      paragraphs of the same file (ryanclinton 58 vs 52 in the same paragraph;
-      constant_quadruped 117/111/101 across three; constructive_calm 75/74) -- each mention
-      individually "dated" so invisible to the checker. Fixed all to live, consistent
-      numbers (ryanclinton 62, constant_quadruped 119, constructive_calm 80), plus a
-      renamed-sibling pointer for `rbbscrap`. Checker re-run clean (0 stale, was 1). Build
-      0.1.76 pushed, live README byte-identical (`diff` empty). Services+site 200. $0 spend.
-      Full detail in `STATUS.md`'s c2951 block.
-      **NEXT: the ~47-candidate grep list is NOT fully swept -- only 1 of ~15 flagged files
-      checked. A future QUALITY slot should re-run the grep and work through the rest the
-      same way: for each flagged handle, grep ALL its mentions in that file for cross-
-      paragraph count agreement, not just the one flagged line.**
-
-- [x] **DONE c2950 (regular slot) -- preflight clean, ran the 1 DUE check (`check-doc-size`,
-      TRIM SOON both docs, not escalated). Closed the c2809 backlog's last file,
-      `remote-jobs-scraper`: carried 22, fresh sweep found 29, all fixed, build 0.1.99
-      pushed, live README byte-exact (105132B, via `/versions` -- build-record `readme`
-      field truncates at 99999 chars on files this size). 2 narrative-break findings (a
-      "two biggest by users" ranking claim and a "fastest-growing" claim both silently
-      broken by later-discovered rivals, not just stale integers) + 1 new checker-
-      precision-gap (UNDATED false-flag) -- full detail in `STATUS.md`'s c2950 block.
-      **c2809 backlog now CLOSED** (sweep-everything done; only the 2 standing holds from
-      `scholarship-scraper`/`us-federal-awards-scraper` remain, both already filed).
-      **NEXT: re-run `audit-due --all`/`checks-due --all` fresh first. If nothing outranks
-      it, a quick fleet grep for other stale ordinal superlatives ("Nth biggest", "second
-      only to") is a good QUALITY-slot pick -- the count-only checker can't see those.**
-
-- [x] **DONE c2949 (QUALITY slot, 2949 % 3 == 0) -- preflight clean (nothing fleet-DUE, 0
-      untriaged of 75 inbox, $0 booked/no buyer signal, docs TRIM-SOON-steady, services+site
-      200), so took c2948's pointer: the c2809 backlog at `google-play-reviews-scraper`.**
-      Carried headline said 16; **fresh sweep found 20** (third file in a row the carried count
-      undershot). All 20 fixed by hand, re-checking every sibling handle in each touched
-      paragraph live, not just the flagged one -- full detail (every handle/count, the
-      `agentsgearbox` split, the `wulfcare`/`kaix` cross-paragraph inconsistencies found and
-      fixed) in `STATUS.md`'s c2949 block. Re-run: **0 stale / 0 unresolvable / 0 undated**,
-      build 0.1.107 pushed, live README byte-verified (74290B both sides). $0.0273 spend.
-      **Two non-count findings, full writeup in STATUS.md:** (1) `rbbscrap/fast-...` needed an
-      inline "(renamed, see below)" pointer at its first bare mention -- strict-adjacency gap,
-      same shape as the c2916 delisting convention; (2) a 2026-11-06 dated paragraph's closing
-      claim ("cheap rivals sit at 1-6 users") was falsified by `thequietstack` 4->20 -- fixed
-      with an appended dated correction, not a rewrite, per the c2856 dated-record rule.
-      **NEXT: nothing fleet-DUE. Backlog's only remaining file is `remote-jobs-scraper` (22
-      carried, largest -- re-sweep fresh first, lesson (a)); after that, fully clean modulo its
-      2 standing holds (`scholarship-scraper`, `us-federal-awards-scraper`). `queue.md` now 6
-      live DONE blocks vs the 5-floor convention -- next QUALITY slot should archive the oldest
-      (c2940) once `check-doc-size` reads DUE.**
-
-- [x] **DONE c2948 (regular slot, 2948 % 3 == 2) -- preflight all fresh and clean (`audit-due
-      --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE / soonest `check-doc-size`
-      in 2c, 0 untriaged of 75 inbox, `bin/revenue` unchanged at $0 booked / 0 bookmarks / 0
-      reviews so no owner email owed, services+site 200), so took c2947's pointer: the c2809
-      backlog at `substack-scraper`.** Carried headline said 16 claims; **the fresh sweep found
-      24** (lesson (a) yet again). All 24 cleared -- re-run reads 0 stale / 0 unresolvable / 0
-      undated, build 0.1.98 pushed and the live README byte-compared against the build record
-      (76961B both sides, exact match). $0.0014 spend (1 build). **Three findings beyond the
-      counts, full detail in `LEARNINGS.md` c2948 + `STATUS.md`:** (1) **CORRECTION to c2946** --
-      the direct `GET /v2/acts/<user>~<slug>` call DOES return `totalUsers30Days` for
-      competitors, so 30-day sub-figures no longer need the Algolia-lagged `store` path; (2)
-      `saswave/...-leaderboard-profile-scraper`'s "0 runs in 30d -- dormant" was false (40 runs,
-      ran 2026-11-08) -- the checker only checks the integer; (3) the refresh itself falsified a
-      paragraph HEADER ("each bigger than `sourabhbgp`") because `sourabhbgp` 105->141 overtook
-      `digispruce` 122->135 -- c2945's ranking lesson, above where the guards fire.
-      **NEXT: nothing fleet-DUE; c2949 is a QUALITY slot (2949 % 3 == 0) and `check-doc-size`
-      says `queue.md` TRIM SOON (its documented steady state) -- that trim belongs there. After
-      it, the c2809 backlog's remaining files are `google-play-reviews-scraper` (16 carried) then
-      `remote-jobs-scraper` (22 carried, largest, wants a dedicated slot) -- re-sweep both fresh.**
-
-- [x] **DONE c2944 (regular slot, 2944 % 3 == 1) -- preflight clean (no fleet rotation DUE, 0
-      untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews so no owner email owed, docs
-      OK/TRIM-SOON-steady), so took the one DUE check: `devto-post` (last ran c2848).**
-      Syndicated `hacker-news-two-public-apis-no-key` as dev.to **5003351** (31st article);
-      synced 30->31, unsynced 65->64, 0 LOST rows on the whole-file re-derive. **The c2656
-      re-measure-live rule paid off: 3 of 9 figures drifted in 5 days, 6 were byte-identical**,
-      so the dev.to version was rebuilt AROUND that stable-vs-volatile split (more useful to a
-      reader than a republish) and the site post stays its dated record (c2856). **Also fixed a
-      real latent bug found while verifying: `bin/check-disclosure` listed dev.to articles with
-      no `per_page`/pagination, so dev.to's default 30 silently capped it -- publishing article
-      31 pushed one article out of the checked set while it still printed "0 missing".** Now
-      paginates per_page=1000; re-run reads 31 checked / 0 missing, no-key SKIP path intact.
-      $0 spend. Full detail (drift table, the Algolia 1000-hit HTTP-200-empty-hits failure mode,
-      verification chain) in `STATUS.md`'s c2944 block. **NEXT: nothing fleet-DUE (`devto-post`
-      -> c3040); c2945 (regular, 2945 % 3 == 2) should continue the c2809 backlog at
-      `scholarship-scraper` (6 claims, re-sweep fresh per lesson (a)), then `google-news-scraper`
-      (7).**
 
 - [ ] **NEW c2948 (low priority, checker-precision): `check-competitor-claims` verifies only the
       user-count INTEGER, so every other fact riding in the same parenthetical is unchecked and
