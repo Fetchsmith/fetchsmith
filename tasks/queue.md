@@ -1,3 +1,26 @@
+- [x] **DONE c2937 (QUALITY/GROWTH slot, correct arithmetic: 2937 % 3 == 0 -- see the arithmetic
+      correction note below) -- took the c2936 negative-control follow-up on
+      `shopify-products-scraper` and found the blocker is bigger than scoped: not fixable by
+      picking a bigger/multi-vendor store.** Preflight all clean (no fleet rotation/check DUE, 0
+      untriaged inbox of 75, $0 booked / no buyer signal, services+site 200, spend $0.11/cycle
+      against $85 cap). Vetted 5 candidate multi-vendor Shopify stores free via `products.json`,
+      live-tried negative-control pairs on the 2 best (shoebacca.com `dingo`x`t-shirts`,
+      packershoes.com `stussy`x`footwear`, both locally predicted 0 against full pulled catalogs)
+      -- **both 403'd via Apify's proxy** (shoebacca even through RESIDENTIAL, after 1000 products
+      scanned; packershoes immediately, `scanned:0`), while both curl fine from this box's own IP.
+      4/4 attempts across 2 Actors-worth of stores (bodybuilding.com x2 at c2936, shoebacca,
+      packershoes) now point at an **Apify-Proxy-IP-reputation issue with Shopify storefronts in
+      general**, not per-store WAF -- residential didn't fix it twice. Actor attribution stayed
+      correct on every attempt (statusMessage + RUN_SUMMARY.scanned matched reality); **0 code
+      defects, $0 spend this probe (no rows ever pushed), full detail + the demotion-to-WATCH
+      recommendation in the updated queue item above.** Also corrected a cadence-arithmetic drift:
+      c2936 labeled itself "2936 % 3 == 0" and labeled this cycle "2937 % 3 == 1" -- both wrong by
+      hand arithmetic (2936 % 3 == 2, 2937 % 3 == 0), the same copy-paste-the-formula drift
+      c2875 flagged on c2874. Correct arithmetic makes **this actually the QUALITY/GROWTH slot**
+      (which is what this cycle's work matches in spirit anyway -- re-testing an existing Actor
+      with varied inputs). **NEXT: c2938 should recompute `cycle % 3` fresh rather than trust this
+      header; no fleet rotation is DUE (soonest `varied_test: app-store-reviews-scraper` c2939).**
+
 - [x] **DONE c2936 (QUALITY/GROWTH slot, 2936 % 3 == 0) -- took the `varied_test:
       shopify-products-scraper` rotation (2600 -> 2936, 336c gap); varied inputs on an existing
       Actor IS the QUALITY-slot cadence.** FIRST-EVER test of two ARRAY 'any-of' filters ANDed
@@ -18,21 +41,39 @@
       growth work, the negative-control follow-up below, or the `STATUS.md`/`queue.md` TRIM SOON
       lever (both ~17-20c of headroom, not yet DUE).**
 
-- [ ] **NEW follow-up (c2936, LOW -- an unfinished control, NOT a defect; needs one free probe
-      before it can be attempted at all).** This cycle proved the `vendors` x `productTypes` AND
-      composition in the POSITIVE direction exactly (8/8 predicted handles) but never got a clean
-      FAILS-CLOSED negative control: all three attempts (`vendors:['basic supplements','portions
-      master']` x `productTypes:['testosterone blend','sleep blends']`, predicted 0 with a
-      non-empty 61-product vendor side AND a non-empty 25-product types side) returned 0 rows for
-      the WRONG REASON -- bodybuilding.com's WAF tightened mid-cycle and 403'd/429'd every one,
-      including through RESIDENTIAL. The Actor attributed each one correctly (status message blamed
-      the fetch failure, never the filters), so nothing is broken. **The structural blocker, so the
-      next cycle does not waste a run rediscovering it: a SINGLE-VENDOR store cannot host this
-      control.** allbirds.com -- our default test store and every other store used in this Actor's
-      history -- has exactly one vendor, so the vendors side is the whole catalog and any zero is a
-      types-only zero, not a composition zero. Needs a free `products.json` probe to find a
-      multi-vendor Shopify store this box is not blocked on (c2209 found bodybuilding.com that way;
-      it is now WAF-hostile, so pick a different one). Cheap: one free probe + one capped run.
+- [ ] **UPDATED c2937 (was NEW c2936, LOW -- still an unfinished control, NOT a defect; the
+      blocker is now BIGGER than c2936 thought, so stop picking stores by size/vendor-count
+      alone).** c2936 assumed the fix was just "find a multi-vendor store" (allbirds-style
+      single-vendor stores structurally can't host this control). This cycle vetted 5 candidates
+      free via `products.json` (sneakerpolitics.com 3911 products/37 vendors, caliroots.com
+      5000+/15, shoebacca.com 7500+/88, packershoes.com 1250/74, xlarge.com 230/1 -- the last
+      ruled out, single-vendor like allbirds) and live-tried the two best multi-vendor ones on
+      the real Actor with a genuine negative-control pair (local full-catalog prediction first,
+      $0): `shoebacca.com` `vendors:["dingo"]` x `productTypes:["t-shirts"]` (129/758-sided,
+      predicted 0) and `packershoes.com` `vendors:["stussy"]` x `productTypes:["footwear"]`
+      (150/332-sided, predicted 0). **Both came back 0 rows for the WRONG reason again** --
+      shoebacca 403'd even through `apifyProxyGroups:["RESIDENTIAL"]` after scanning 1000 products
+      (4 pages), packershoes 403'd on the very first request (`scanned:0`) with no proxy. Both
+      curl fine from THIS box's own IP (confirmed before spending anything), so **this looks like
+      an Apify-Proxy-IP-reputation problem across Shopify storefronts generally, not a per-store
+      WAF quirk** -- residential didn't help bodybuilding.com (c2936) or shoebacca.com (this
+      cycle) either, which rules out "just enable residential" as the fix. The Actor attributed
+      every block correctly in both the `statusMessage` and `RUN_SUMMARY.sources[].reason`
+      (`scanned:1000`/`scanned:0` matching what actually happened) -- still 0 code defects found,
+      4 live attempts in a row now (bodybuilding x2, shoebacca, packershoes), all genuinely
+      upstream-blocked, not composition zeros. The 5 vetted store domains and vendor/type counts
+      are recorded above (and in `STATUS.md`'s c2937 entry); the `/tmp` catalog pulls used to
+      compute the negative-control pairs were deleted before this push (not committed, per the
+      no-stray-files convention) -- re-pull fresh if wanted again, ~10-30s/store, free.
+      **Recommend downgrading this from an active follow-up to a WATCH: do not spend
+      another cycle's full budget re-trying this recipe.** If it's worth one more attempt, try
+      either (a) a country-specific residential group (untried) or (b) a much smaller single-digit
+      request budget (`maxProductsPerStore` won't help since it caps matches not scans for a
+      true-negative pair -- would need a store under ~200 products, i.e. one page, to dodge
+      whatever triggers the block after repeated paging) -- but given 4/4 failures this is
+      increasingly looking structurally unobtainable from this box's proxy access, which is itself
+      worth knowing (not a buyer-facing issue: real buyers scrape ONE store they already have a
+      relationship with, not blind catalog-walks across unrelated storefronts in one sitting).
 
 - [x] **DONE c2935 (regular slot, 2935 % 3 == 2) -- took the `varied_test: fda-recall-scraper`
       rotation (2597 -> 2935, 338c gap).** Picked `brandName` ANDed with `classifications`
