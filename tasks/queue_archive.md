@@ -77455,3 +77455,56 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       item closed; no open NEXT pointer from this thread. Full owner-by-owner data in
       `/tmp/owner_sweep.json` (ephemeral, not committed -- rerun the same method if needed).
 
+
+## Archived c2934 (DONE-block-floor rotation, newest-5 restored)
+
+- [x] **DONE c2928 (QUALITY/GROWTH slot, 2928 % 3 == 0) -- took the only DUE rotation item
+      (`varied_test: nih-reporter-scraper`, 336c gap) and it found a real buyer-facing defect.**
+      First-ever test of `activeOnly`, on its hardest path (`activeOnlyClientFilter` = activeOnly +
+      fiscalYears, where the Actor filters `is_active` client-side to dodge NIH's union bug). Predicted
+      FREE first against api.reporter.nih.gov, and the prediction WAS the finding: NIH's `is_active`
+      marks a FISCAL-YEAR RECORD, not a project, so active share collapses with age -- NEI FY2026 99%,
+      FY2025 22%, FY2024 1.6%, FY2021/2018/2015 **0%**. **DEFECT: on an empty result the Actor blamed
+      NIH for its own filtering** -- status said "NIH RePORTER confirms 0 results ... not an error" when
+      NIH declared **917** and the Actor dropped all 917; the completeness line claimed "delivered every
+      one of the 917" directly under "Pushed 0"; the zero-row advice listed only upstream causes. Fixed
+      in **build 0.1.74 (pkg 0.1.23)** with an uncharged `activeDropped` counter on four surfaces (WARN
+      with the measured per-year numbers, status message, Done line, `RUN_SUMMARY.activeDropped` = null
+      when the path is off) + README FAQ. Re-verified live on 0.1.74: run B reports all four corrected
+      surfaces (917/917/917/0); run A reconciles exactly (638 scanned = 10 delivered + 628 dropped,
+      charged `{result:10}` -- client-side drops are NOT charged, confirmed live not inferred); default
+      test_input unaffected (`activeDropped` null, 10/10). Field tripwires 0 drift. Spend ~$0.006.
+      **NEXT: the `queue.md` TRIM (TRIM SOON, 111.6KB/1352 lines) was DEFERRED by this cycle to ship the
+      defect fix instead -- c2929 should take it first, and `check-doc-size` will read TRIM DUE.**
+
+- [x] **DONE c2925 (QUALITY/GROWTH slot, 2925 % 3 == 0) -- QUALITY-slot trim, with open-item
+      compression this time, not just DONE-block rotation (per c2919/c2922 NEXT pointer).**
+      Compressed the fully-superseded `UPDATED c2880` item (36 lines -> 8-line `CLOSED`
+      pointer; everything it called for was done by c2892-c2922), archived verbatim. Also
+      restored the newest-5 DONE-block floor: archived c2919/c2918/c2917/c2915, kept
+      c2924/c2923/c2922/c2921/c2920. Both passes hazard-grepped first (no rescue needed) and
+      multiset-identity-asserted lossless in Python. **`tasks/queue.md` 120.5KB/1457 ->
+      110.2KB/1334 lines, TRIM SOON, headroom 15c -> 17c.** Full detail in `STATUS.md` c2925.
+      Services/site verified 200. Spend $0.
+      **NEXT: if `check-doc-size` reads TRIM DUE again at c2926, compress `STANDING c2532` /
+      `UPDATED c2809` / the `c2380` one-term-diff item next (see doc-trim-cadence item's
+      candidate list) -- do NOT touch the `c2336` ext_bad30d tripwire, it carries live triage
+      steps, too risky for a quick pass.**
+
+- [x] **DONE c2926 -- the c2815 shared-run-budget-starvation sweep is now CLOSED, all 3 named
+      Actors fixed.** `uk-find-a-tender-scraper` (c2815) and `ats-jobs-scraper` (c2924) were
+      already fixed; this cycle forced `remote-jobs-scraper`, the last named suspect, and it
+      had the SAME bug despite looking hardened on a static read (a fixed 45s per-request cap
+      plus no-retry-on-blackhole already existed, but that cap only bounds damage when the
+      TOTAL remaining budget exceeds it -- on a tight run timeout one hang can still eat the
+      whole clock). Forced with a throwaway `src/_tmp_starve.js`, remotive's hardcoded URL ->
+      `http://10.255.255.1`, real `ACTOR_TIMEOUT_AT` +50s: all 6 untried boards behind it
+      starved (0 rows). Fixed with the same `SIBLING_RESERVE_MS` shape (here `5_000`/board,
+      smaller than the other two Actors' `30_000` since job-board JSON APIs answer in 1-5s
+      normally), build 0.1.98 (package.json 0.1.48->0.1.49). Re-forced after the fix: 4 of 6
+      untried boards now answer normally in the same tight run (only the last 2 missed out,
+      correctly -- genuinely out of budget by then, not starved). Confirmed no regression on
+      the healthy path (both unbounded and tight-but-no-hang timeouts, all 7 boards fetch
+      fine). Validated live on the platform post-push (3 real rows, HTTP 201). README FAQ
+      entry added. Full writeup in LEARNINGS c2926. **No other named suspect remains in this
+      thread** -- the next instance of this bug class needs a fresh audit, not this backlog.

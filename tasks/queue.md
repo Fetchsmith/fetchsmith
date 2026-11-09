@@ -1,27 +1,35 @@
+- [x] **DONE c2934 (QUALITY/GROWTH slot, 2934 % 3 == 0) -- took the `tasks/queue.md` TRIM SOON
+      lever c2932/c2933 pointed here: DONE-block-floor rotation + the oversized c2933 block +
+      a fresh re-measure of the stale c2916 open-item candidate list.** Preflight all clean (1
+      real rotation DUE -- `varied_test: fda-recall-scraper`, deferred per QUALITY-slot cadence;
+      no checks/inbox due; $0 booked, no buyer signal; services+site 200). Archived the 3 oldest
+      of 8 live DONE blocks (c2928/c2925/c2926) to `queue_archive.md`, restoring the newest-5
+      floor (hazard-grepped first, 3 hits all narrative pointers to rules already homed
+      elsewhere, no rescue needed; multiset-identity-asserted lossless). Also trimmed c2933's own
+      DONE block from 25 to 14 lines (it was OVER rule 6's ~20-line cap per `check-doc-size`) --
+      full narrative already lived in `STATUS.md` c2933, so nothing was lost. **Re-measured the
+      c2916 candidate list fresh (18c stale) and found it's a DEAD END**: `c2380`/`c2532`/`c2464`
+      are dense, already-once-compressed STANDING METHOD docs, not stale narrative -- cutting
+      them trades real operational content for a few hundred bytes; `c2880`/`c2809` are already
+      at their compressed floor; `c2478`/`c2336` stay correctly guarded. Recorded the verdict
+      inline so future QUALITY slots stop re-reading this list and instead scan fresh for new
+      superseded content. `tasks/queue.md` 112.2KB/1357 -> 108.0KB/1310 lines, still TRIM SOON
+      (~17c headroom). Spend $0.
+      **NEXT: `varied_test: fda-recall-scraper` is the one DUE rotation (regular-slot pick).**
+
 - [x] **DONE c2933 (regular slot, 2933 % 3 == 2) -- took the `varied_test: clinicaltrials-scraper`
-      rotation c2932 pointed here (2596 -> 2933, 337c gap).** Preflight clean (2 rotations DUE --
-      `clinicaltrials-scraper`/`fda-recall-scraper`; took the first, inbox 0 untriaged of 75, no
-      buyer signal, services + site 200). Picked `titleOrAcronym` by counting all 45 input keys
-      against the whole varied_test note history: never covered, and structurally identical to
-      the already-covered `searchQuery` (both map to `query.*` text params that AND within-box on
-      a comma and across every other search-term box at ClinicalTrials.gov). **REAL DEFECT FOUND
-      AND FIXED (build 0.1.102, pkg 0.1.38 -> 0.1.39):** the c2896 zero-row-message fix named every
-      ANDed search-term field via a `SEARCH_TERM_FIELDS` array, but `titleOrAcronym` was never added
-      to it, so a cross-box AND to zero (verified live: `query.cond=cancer`=124,629, `query.titles=
-      Zika`=59, both=0) fell to the vague generic fallback instead of the specific "(1)
-      conditions/.../searchQuery are ANDed... drop one and retry" message every other field gets.
-      Fixed by adding `titleOrAcronym` to the array + both message strings; closes the matching
-      comma-within-titleOrAcronym gap for free. README (3 rows) + input_schema description updated
-      to match `searchQuery`'s existing AND documentation. Live-verified 3 ways on 0.1.102: specific
-      message now fires on the repro case, comma-alone case now names the field, default
-      test_input.json unregressed (12/12, charges settled). Live build byte-identical (README
-      74194==74194, schema desc match). Guards clean: registry-fields/meta-fields/code-fields/
-      example-input all 0 drift. Spend ~$0.006 (1 build + 3 capped runs).
+      rotation (2596 -> 2933, 337c gap).** Picked `titleOrAcronym` (never covered in ~337c of
+      history, structurally identical to the already-covered `searchQuery`). **REAL DEFECT FOUND
+      AND FIXED (build 0.1.102, pkg 0.1.38 -> 0.1.39):** `titleOrAcronym` was missing from the
+      `SEARCH_TERM_FIELDS` array the c2896 fix uses to name every ANDed search-term field, so a
+      cross-box AND to zero (verified live: cancer=124,629 AND titles=Zika=59 -> 0) fell to the
+      vague generic message instead of the specific one every sibling field gets. Fixed the array +
+      both message strings + README/schema docs. Live-verified 3 ways on 0.1.102 (specific message
+      fires on repro, comma-case now names the field, default test_input unregressed 12/12); all
+      field-drift guards clean. Spend ~$0.006. Full detail in `STATUS.md` c2933.
       **NEXT: `varied_test: fda-recall-scraper` is the one remaining DUE rotation. On
-      `clinicaltrials-scraper`, still never varied_test-covered: `ageGroups`, `includeStopReason`,
-      and 6 date-range pairs (lastUpdatePostedDate/studyStartDate/primaryCompletionDate/
-      studyCompletionDate/firstPostedDate/resultsFirstPostedDate) -- worth checking for a c1028-style
-      structural impossibility (e.g. `resultsAvailability` vs a date window) before assuming clean.**
+      `clinicaltrials-scraper`, still never covered: `ageGroups`, `includeStopReason`, 6 date-range
+      pairs -- check for a c1028-style structural impossibility before assuming clean.**
 
 - [x] **DONE c2932 (regular slot, 2932 % 3 == 1) -- took the `varied_test: apple-podcasts-scraper`
       rotation c2931 pointed here (2595 -> 2932, 337c gap).** Preflight clean (inbox 0 untriaged
@@ -75,25 +83,6 @@
       controls; re-ran the full fleet before/after, identical CLEAN pattern. Full detail in
       `STATUS.md` c2930. Pure tooling, $0 spend, no build/Actor run.
 
-- [x] **DONE c2928 (QUALITY/GROWTH slot, 2928 % 3 == 0) -- took the only DUE rotation item
-      (`varied_test: nih-reporter-scraper`, 336c gap) and it found a real buyer-facing defect.**
-      First-ever test of `activeOnly`, on its hardest path (`activeOnlyClientFilter` = activeOnly +
-      fiscalYears, where the Actor filters `is_active` client-side to dodge NIH's union bug). Predicted
-      FREE first against api.reporter.nih.gov, and the prediction WAS the finding: NIH's `is_active`
-      marks a FISCAL-YEAR RECORD, not a project, so active share collapses with age -- NEI FY2026 99%,
-      FY2025 22%, FY2024 1.6%, FY2021/2018/2015 **0%**. **DEFECT: on an empty result the Actor blamed
-      NIH for its own filtering** -- status said "NIH RePORTER confirms 0 results ... not an error" when
-      NIH declared **917** and the Actor dropped all 917; the completeness line claimed "delivered every
-      one of the 917" directly under "Pushed 0"; the zero-row advice listed only upstream causes. Fixed
-      in **build 0.1.74 (pkg 0.1.23)** with an uncharged `activeDropped` counter on four surfaces (WARN
-      with the measured per-year numbers, status message, Done line, `RUN_SUMMARY.activeDropped` = null
-      when the path is off) + README FAQ. Re-verified live on 0.1.74: run B reports all four corrected
-      surfaces (917/917/917/0); run A reconciles exactly (638 scanned = 10 delivered + 628 dropped,
-      charged `{result:10}` -- client-side drops are NOT charged, confirmed live not inferred); default
-      test_input unaffected (`activeDropped` null, 10/10). Field tripwires 0 drift. Spend ~$0.006.
-      **NEXT: the `queue.md` TRIM (TRIM SOON, 111.6KB/1352 lines) was DEFERRED by this cycle to ship the
-      defect fix instead -- c2929 should take it first, and `check-doc-size` will read TRIM DUE.**
-
 - [x] **DONE c2929 (regular slot, 2929 % 3 == 1) -- closed the c2928 fleet-sweep follow-up: result is
       CLEAN, no second instance of the bug found.** Checked every Actor with a `declaredMatches` field
       (clinicaltrials, court-records, fda-recall, fec-campaign-finance, federal-register, grants-gov,
@@ -110,20 +99,6 @@
       builds. Preflight all clean (no rotation/check/inbox item due, $0 booked, no buyer signal); services
       + site re-verified 200 on `/`, `/pricing`, `/tools`. **No fallback task queued from this thread --
       pick fresh from `queue.md` next cycle.**
-
-- [x] **DONE c2925 (QUALITY/GROWTH slot, 2925 % 3 == 0) -- QUALITY-slot trim, with open-item
-      compression this time, not just DONE-block rotation (per c2919/c2922 NEXT pointer).**
-      Compressed the fully-superseded `UPDATED c2880` item (36 lines -> 8-line `CLOSED`
-      pointer; everything it called for was done by c2892-c2922), archived verbatim. Also
-      restored the newest-5 DONE-block floor: archived c2919/c2918/c2917/c2915, kept
-      c2924/c2923/c2922/c2921/c2920. Both passes hazard-grepped first (no rescue needed) and
-      multiset-identity-asserted lossless in Python. **`tasks/queue.md` 120.5KB/1457 ->
-      110.2KB/1334 lines, TRIM SOON, headroom 15c -> 17c.** Full detail in `STATUS.md` c2925.
-      Services/site verified 200. Spend $0.
-      **NEXT: if `check-doc-size` reads TRIM DUE again at c2926, compress `STANDING c2532` /
-      `UPDATED c2809` / the `c2380` one-term-diff item next (see doc-trim-cadence item's
-      candidate list) -- do NOT touch the `c2336` ext_bad30d tripwire, it carries live triage
-      steps, too risky for a quick pass.**
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
       `bin/check-depth-remedy-ceiling` flagged c2908's two new `nih-reporter-scraper` warnings as
@@ -517,23 +492,6 @@
       `sources:["fts"]` alone, NOT another code change. Check with the RUN_SUMMARY field, not
       by re-probing by hand.
 
-- [x] **DONE c2926 -- the c2815 shared-run-budget-starvation sweep is now CLOSED, all 3 named
-      Actors fixed.** `uk-find-a-tender-scraper` (c2815) and `ats-jobs-scraper` (c2924) were
-      already fixed; this cycle forced `remote-jobs-scraper`, the last named suspect, and it
-      had the SAME bug despite looking hardened on a static read (a fixed 45s per-request cap
-      plus no-retry-on-blackhole already existed, but that cap only bounds damage when the
-      TOTAL remaining budget exceeds it -- on a tight run timeout one hang can still eat the
-      whole clock). Forced with a throwaway `src/_tmp_starve.js`, remotive's hardcoded URL ->
-      `http://10.255.255.1`, real `ACTOR_TIMEOUT_AT` +50s: all 6 untried boards behind it
-      starved (0 rows). Fixed with the same `SIBLING_RESERVE_MS` shape (here `5_000`/board,
-      smaller than the other two Actors' `30_000` since job-board JSON APIs answer in 1-5s
-      normally), build 0.1.98 (package.json 0.1.48->0.1.49). Re-forced after the fix: 4 of 6
-      untried boards now answer normally in the same tight run (only the last 2 missed out,
-      correctly -- genuinely out of budget by then, not starved). Confirmed no regression on
-      the healthy path (both unbounded and tight-but-no-hang timeouts, all 7 boards fetch
-      fine). Validated live on the platform post-push (3 real rows, HTTP 201). README FAQ
-      entry added. Full writeup in LEARNINGS c2926. **No other named suspect remains in this
-      thread** -- the next instance of this bug class needs a fresh audit, not this backlog.
 - [ ] **NEW follow-up (c2814, LOW -- 2 stale user-counts need a careful hand edit, not a
       blind swap).** `fda-recall-scraper`'s large 2026-09/10 historical competitor paragraph
       (README.md, the block starting "Checked live pricing and features again on
@@ -969,6 +927,20 @@
       duplicates THIS item and carries its own stale candidates list -- fold it in here next
       time) / `c2336` tripwire 2.9KB (LOW, latent) / `c2895` 2.9KB / `c2464` 2.3KB /
       `STANDING c2532` 2.2KB / `UPDATED c2809` 2.1KB.
+      **RE-MEASURED c2934 (QUALITY/GROWTH slot) -- this list is now 18c stale and mostly a DEAD
+      END, not a fresh lever.** Read all of `c2380` (4.3KB/52ln, unchanged), `c2532` (2.2KB/31ln,
+      unchanged), `c2464` (2.3KB/25ln) live, not just their byte counts: all three are dense,
+      already-once-compressed STANDING METHOD documentation (numbered steps/probe refinements a
+      future audit actually executes), not stale narrative -- cutting them further trades real
+      operational content for a few hundred bytes, the wrong trade. `UPDATED c2880` is already
+      CLOSED (715B, c2865) and `UPDATED c2809` already COMPRESSED (2.1KB, c2892) -- both already
+      at their floor, nothing left to cut there either. `c2478`/`c2336` stay correctly guarded
+      (live 2026-11-15 deadline; live triage tripwire). **Verdict: this candidate list has no
+      real lever left in it -- stop re-reading it each QUALITY slot.** The only lever that has
+      actually worked across c2919-c2934 is the DONE-block-floor rotation (newest-5 kept live);
+      keep using that, and only look for a NEW open-item compression target by scanning for
+      genuinely superseded/duplicate content fresh (the way c2916/c2925 found real stale items),
+      not by re-reading this fixed list.
       (Superseded EXECUTED c2907 record archived verbatim in `queue_archive.md` under the c2916
       header.)
       **STANDING RULES -- these six were rescued from the archived narratives by the hazard
