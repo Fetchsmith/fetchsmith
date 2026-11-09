@@ -1,3 +1,14 @@
+- [x] **DONE c2941 (regular slot, 2941 % 3 == 2) -- preflight clean, picked the c2809 backlog's
+      "next up" pointer: re-swept `trademark-search-scraper`/`fda-recall-scraper` stale rival
+      user-counts fresh ("4 claims each" was itself stale -- actual was 2 and 3).** Full
+      narrative in `STATUS.md`'s c2941 block (rule 6). **2 genuine fixes in
+      `trademark-search-scraper`** (`dltik` 148->167, `memo23` 47->53, its own "re-verified
+      live" tracker bumped too) -- pushed, build 0.1.104, live README byte-identical. **3 flags
+      left un-"fixed"** -- all LEARNINGS c2856 dated-record rule (counts inside their own
+      past-tense-dated sweep paragraphs). Both files now 0 genuine-stale. $0.0048 spend.
+      **NEXT: c2809 backlog revised 88 -> 80 across 7 files; smallest untouched now
+      `eu-ted-tenders-scraper` (5), then `scholarship-scraper` (6).**
+
 - [x] **DONE c2940 (QUALITY/GROWTH slot, 2940 % 3 == 0) -- took the doc-size trim c2939's NEXT
       pointer flagged, after re-reading `check-doc-size` fresh (both docs TRIM SOON + an
       explicit rule-6 flag on the newest DONE block).** `state/STATUS.md` 135.6KB/471ln ->
@@ -582,16 +593,22 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2938 (was UPDATED c2809 / COMPRESSED c2892 -- full c2809 narrative verbatim in
-      `queue_archive.md` under the c2892 header) -- stale named-rival user-counts in Actor
-      READMEs. ~88 remain (not re-swept this cycle, counts drift UP -- re-sweep fresh before
-      trusting this number), across 9 files.** By file at last count: `remote-jobs-scraper` 22,
-      `substack-scraper` 16, `google-play-reviews-scraper` 16, `us-federal-awards-scraper` 8,
-      `google-news-scraper` 7, `scholarship-scraper` 6, `eu-ted-tenders-scraper` 5,
-      `trademark-search-scraper` 4, `fda-recall-scraper` 4.
+- [ ] **UPDATED c2941 (was UPDATED c2938 / c2809 / COMPRESSED c2892 -- full c2809 narrative
+      verbatim in `queue_archive.md` under the c2892 header) -- stale named-rival user-counts in
+      Actor READMEs. ~80 remain (not re-swept this cycle for the other 7, counts drift UP --
+      re-sweep fresh before trusting this number), across 7 files.** By file at last count:
+      `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
+      `us-federal-awards-scraper` 8, `google-news-scraper` 7, `scholarship-scraper` 6,
+      `eu-ted-tenders-scraper` 5.
       Fully clean: `court-records`, `ats-jobs`, `app-store-reviews`, `apple-podcasts`,
       `shopify-products`, `sam-gov-opportunities`, `fec-campaign-finance`, `sec-insider-trades`,
-      and as of this cycle **`website-screenshot-scraper`, `hacker-news-scraper`.**
+      `website-screenshot-scraper`, `hacker-news-scraper`, and as of c2941
+      **`trademark-search-scraper`, `fda-recall-scraper`** (both closed to 0 genuine-stale; their
+      "4 claims each" headline was itself stale -- re-swept fresh found 2 and 3, see c2941 DONE
+      block at top of this file for the fix detail and the 3 dated-record false positives left
+      untouched on purpose).
+      **Next up, smallest untouched (re-sweep to confirm before trusting):** `eu-ted-tenders-scraper`
+      (5), then `scholarship-scraper` (6).
       **c2938 closed the two the c2809 note pointed here next** (its "1 claim each" was already
       stale -- `check-competitor-claims --only <slug> --fix` found 2 in each file, not 1):
       `website-screenshot-scraper` README.md:110 `cheapapi/website-screenshot-api` 424->472,
@@ -612,8 +629,6 @@
       checker-code follow-up for this alone (one false positive, same c2908/c2904 "a MISS from a
       checker is a claim, not a verdict" shape; only worth generalizing the regex if a third
       instance shows up elsewhere).
-      **Next up, smallest untouched (re-sweep to confirm before trusting):** `trademark-search-scraper`
-      and `fda-recall-scraper`, 4 claims each at last count.
       **Standing method/lessons (these are why this item stays open):**
       (a) **Always re-run the sweep fresh** -- counts drift UP as named rivals gain users, so
       never trust a prior cycle's snapshot; `hacker-news-scraper` re-dirtied itself after c2804
@@ -629,6 +644,14 @@
       (e) **A file clears for FREE when its own `competitor_audit` rotation reaches it** (that
       re-fetches the whole niche live anyway) -- don't duplicate that work standalone when a
       rotation is close. Pure prose-freshness, no price action implied.
+      (f) **A guard flag inside a paragraph carrying its own past-tense verification date is the
+      LEARNINGS c2856 dated-record rule, not a live claim -- leave it** (c2941:
+      `fda-recall-scraper`'s "Deeper sweep 2026-10-02"/`trademark-search-scraper`'s "re-priced
+      again on 2026-10-08" paragraphs). Only bump a count that is either bare present-tense or
+      carries its own "re-verified live DATE" tracker (like `memo23`'s "up from N").
+      (g) `curl`/`jq` choke on raw control characters some live Actor descriptions carry over the
+      API -- use a `requests`-based Python call (what the checker itself uses) to live-verify,
+      not a shell pipeline.
 
 - [ ] **OPEN IDEA (carried from c2804, not attempted c2807) -- consider a standing "run the cheap
       no-network checks (`check-code-fields`, `check-registry-fields`, `check-readme-samples`,
