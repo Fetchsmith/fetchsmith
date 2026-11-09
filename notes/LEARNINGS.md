@@ -6618,3 +6618,36 @@ the clock itself is already tight. Force every Actor in this class even when the
 hardened on a read.** Fleet state: `uk-find-a-tender-scraper` (c2815), `ats-jobs-scraper` (c2924)
 and `remote-jobs-scraper` (c2926) all fixed. No other named suspect remains in this thread;
 the next instance of this class would have to come from a fresh audit, not this backlog.
+
+## Cycle 2928 — an Actor that filters client-side must never report the drop as an upstream zero
+
+`nih-reporter-scraper`'s first-ever `varied_test` of `activeOnly` found the Actor blaming NIH for its own
+filtering. Background: NIH RePORTER *unions* `include_active_projects` with `fiscal_years` instead of
+intersecting (c969), so since c983 this Actor omits that criterion and filters `is_active === true`
+client-side to deliver the true intersection. That part works. What was broken was the **accounting story on
+an empty result**: `{activeOnly, fiscalYears:[2018], NEI, keyword:"retina"}` delivered 0 rows and told the
+buyer *"NIH RePORTER confirms 0 results for these filters -- not an error"* — while NIH had declared **917**
+and the Actor itself had dropped all 917. The completeness line underneath simultaneously claimed
+*"Complete: delivered every one of the 917 project(s)"* directly below *"Pushed 0"*, and the zero-row advice
+offered only upstream causes (narrow AND, bad IC code, pre-1985 years), none of which applied.
+
+**The generalisable rule: `declaredMatches` describes the query you SENT, so the moment an Actor narrows
+further on its own, every "zero means upstream has nothing" and every "delivered every one of N" string
+becomes a lie — and they are exactly the strings a buyer uses to decide whether to keep paying.** Any
+client-side drop needs its own counter, surfaced on every zero/completeness surface, with the charge status
+spelled out. Fixed in build 0.1.74 via an uncharged `activeDropped` counter on four surfaces (WARN, status
+message, Done line, `RUN_SUMMARY.activeDropped`, null when the path is off so a pipeline can distinguish
+by-design shortfall from failure). This is the same trap c2592 found for `newlyAddedOnly` (a legitimately
+empty intersection is indistinguishable from a typo'd filter) in a worse form, because misattributing it
+upstream sends the buyer off editing a query that was never wrong. **Fleet follow-up: any other Actor with a
+client-side post-filter has this bug shape by default** — `minAwardAmount`/`maxAwardAmount` here are
+server-side so they are fine, but grep the fleet for filters applied in the row loop.
+
+Second, durable, and free to have found: **NIH's `is_active` marks a FISCAL-YEAR RECORD, not a project**, so
+the active fraction collapses as the year ages. Measured by scanning every row for `agencies:[NEI]`:
+FY2026 **99%** active, FY2025 **22%**, FY2024 **1.6%**, FY2021/FY2018/FY2015 **0%**. `activeOnly` plus any
+fiscal year ~3+ years old is therefore empty by arithmetic. Predicting this against `api.reporter.nih.gov`
+*before* spending anything is what made the live test discriminating instead of a smoke test — and the
+prediction, not the run, was the actual finding. Also re-confirmed the charge boundary the hard way rather
+than by reading the code: 638 rows scanned, 10 delivered, `chargedEventCounts {result:10}` — a client-side
+drop costs the buyer nothing.

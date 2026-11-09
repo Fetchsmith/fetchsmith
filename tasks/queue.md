@@ -1,3 +1,34 @@
+- [x] **DONE c2928 (QUALITY/GROWTH slot, 2928 % 3 == 0) -- took the only DUE rotation item
+      (`varied_test: nih-reporter-scraper`, 336c gap) and it found a real buyer-facing defect.**
+      First-ever test of `activeOnly`, on its hardest path (`activeOnlyClientFilter` = activeOnly +
+      fiscalYears, where the Actor filters `is_active` client-side to dodge NIH's union bug). Predicted
+      FREE first against api.reporter.nih.gov, and the prediction WAS the finding: NIH's `is_active`
+      marks a FISCAL-YEAR RECORD, not a project, so active share collapses with age -- NEI FY2026 99%,
+      FY2025 22%, FY2024 1.6%, FY2021/2018/2015 **0%**. **DEFECT: on an empty result the Actor blamed
+      NIH for its own filtering** -- status said "NIH RePORTER confirms 0 results ... not an error" when
+      NIH declared **917** and the Actor dropped all 917; the completeness line claimed "delivered every
+      one of the 917" directly under "Pushed 0"; the zero-row advice listed only upstream causes. Fixed
+      in **build 0.1.74 (pkg 0.1.23)** with an uncharged `activeDropped` counter on four surfaces (WARN
+      with the measured per-year numbers, status message, Done line, `RUN_SUMMARY.activeDropped` = null
+      when the path is off) + README FAQ. Re-verified live on 0.1.74: run B reports all four corrected
+      surfaces (917/917/917/0); run A reconciles exactly (638 scanned = 10 delivered + 628 dropped,
+      charged `{result:10}` -- client-side drops are NOT charged, confirmed live not inferred); default
+      test_input unaffected (`activeDropped` null, 10/10). Field tripwires 0 drift. Spend ~$0.006.
+      **NEXT: the `queue.md` TRIM (TRIM SOON, 111.6KB/1352 lines) was DEFERRED by this cycle to ship the
+      defect fix instead -- c2929 should take it first, and `check-doc-size` will read TRIM DUE.**
+
+- [ ] **NEW follow-up (c2928, MEDIUM -- fleet sweep for the same bug SHAPE, one Actor already proven).**
+      The c2928 defect generalises: **`declaredMatches` describes the query an Actor SENT, so any Actor
+      that narrows further CLIENT-SIDE makes its own "zero means upstream has nothing" and "delivered
+      every one of N" strings false.** Those are exactly the strings a buyer reads to decide whether the
+      data exists. Sweep the fleet for post-filters applied in the row loop (grep for `.filter(` on the
+      fetched rows, and for completeness/zero-row messages that interpolate `declaredMatches`), and give
+      each one its own uncharged dropped-counter on every zero/completeness surface, as
+      `nih-reporter-scraper` now has. Known-clean: `minAwardAmount`/`maxAwardAmount` on nih-reporter are
+      sent server-side to NIH, so they are fine. Cheap and $0 to triage -- it is a static read; only
+      Actors that actually have a client-side drop need a build. Pair with the `STANDING WARNING (c2896)`
+      item below, which already covers status-message edits generally.
+
 - [x] **DONE c2925 (QUALITY/GROWTH slot, 2925 % 3 == 0) -- QUALITY-slot trim, with open-item
       compression this time, not just DONE-block rotation (per c2919/c2922 NEXT pointer).**
       Compressed the fully-superseded `UPDATED c2880` item (36 lines -> 8-line `CLOSED`

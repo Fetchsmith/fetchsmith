@@ -93,6 +93,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 // on the webhook payload.
 let declaredMatches = null;   // NIH's own meta.total for the root query; null = never answered, NEVER 0
 let scanned = 0;              // raw project rows read back from the API
+// Rows this run fetched, was NOT charged for, and dropped itself because `activeOnlyClientFilter`
+// is on and NIH marked them is_active:false. Counted because it is the difference between "NIH
+// has nothing for you" and "NIH had plenty and WE filtered it all out" -- see cycle 2928.
+let activeDropped = 0;
 let pages = 0;
 let complete = true;
 let incompleteReason = null;
@@ -1264,6 +1268,10 @@ async function walkChunk(criteria, total) {
         // `rows.length` itself must stay the raw NIH page size for offset/pagination math below --
         // only `fresh` (what continues past this point) drops the union-bug rows, the same way it
         // already drops already-seen ones. See `activeOnlyClientFilter` above.
+        if (activeOnlyClientFilter) {
+            activeDropped += rows.filter((r) => (r.appl_id == null || !seen.has(r.appl_id))
+                && r.is_active !== true).length;
+        }
         const fresh = rows.filter((r) => (r.appl_id == null || !seen.has(r.appl_id))
             && (!activeOnlyClientFilter || r.is_active === true));
         for (const r of fresh) if (r.appl_id != null) seen.add(r.appl_id);
@@ -1619,10 +1627,19 @@ if (pushed === 0 && !seeding && !complete) {
             + 'would show for this link right now -- open it in a browser to confirm, then widen the search there.'
             : exclusiveProjectNums
             ? `No project found for [${projectNums.join(', ')}]. Use a full project number (5R01CA234538-06) or a core number (R01CA234538) exactly as shown on reporter.nih.gov.`
+            : activeOnlyClientFilter && activeDropped > 0
+            ? `NIH RePORTER matched ${declaredMatches === null ? 'these' : declaredMatches.toLocaleString('en-US')} `
+            + `project(s) for these filters, but activeOnly dropped every one of the ${activeDropped.toLocaleString('en-US')} `
+            + 'fetched: NIH marks a project record inactive once its fiscal year is over, so activeOnly combined with a '
+            + `PAST fiscalYear is empty by arithmetic, not by mistake. Measured 2026-11-09 on one IC: ${''
+            }FY2026 99% of records active, FY2025 22%, FY2024 1.6%, FY2021 and older 0%. Your filters are fine -- `
+            + 'either move fiscalYears to the current year, or drop activeOnly to get that fiscal year\'s historical '
+            + 'records. You were charged nothing for the dropped rows.'
             : 'No projects matched. Most common causes: (1) all filters are ANDed -- a narrow keyword plus IC plus '
             + 'activity code often has zero real matches, drop one and retry; (2) an IC code, activity code or org '
             + 'state code that is not a real NIH value matches nothing (a warning above lists any unrecognised one); '
-            + '(3) fiscal years before 1985 have no data.',
+            + '(3) fiscal years before 1985 have no data; (4) activeOnly over a past fiscalYear -- see the dedicated '
+            + 'warning this run prints instead of this one when that is what happened.',
     );
     // A zero-row run still SUCCEEDS, so without this the Apify console shows the default
     // "Succeeded" status on a run that genuinely matched nothing -- the same null-statusMessage
@@ -1638,6 +1655,13 @@ if (pushed === 0 && !seeding && !complete) {
             ? `The saved search ${searchId} resolved, but matched no projects right now.`
             : exclusiveProjectNums
             ? `No project found for [${projectNums.join(', ')}]. Use a full or core project number exactly as shown on reporter.nih.gov.`
+            : activeOnlyClientFilter && activeDropped > 0
+            // Must NOT say "NIH confirms 0 results" here: NIH confirmed declaredMatches, and this
+            // Actor dropped them. Naming the real cause is the whole point (cycle 2928).
+            ? `0 row(s) of ${declaredMatches === null ? 'the' : declaredMatches.toLocaleString('en-US')} declared `
+            + `(${appliedFilterSummary()}) -- activeOnly dropped all ${activeDropped.toLocaleString('en-US')} fetched `
+            + 'row(s): NIH marks a project record inactive once its fiscal year ends, so activeOnly + a past '
+            + 'fiscalYear is empty by arithmetic. Use the current fiscal year or drop activeOnly. Charged nothing.'
             : `No projects matched (${appliedFilterSummary()}). NIH RePORTER confirms 0 results for these filters -- `
             + 'not an error. Drop a filter to broaden the search; see the log for the full checklist.',
         // Reserved out of the 500-char budget, not appended after clamping, so a long watchLabel
@@ -1646,7 +1670,8 @@ if (pushed === 0 && !seeding && !complete) {
     ));
 }
 
-log.info(`Done. Pushed ${pushed} project records (scanned ${scanned} row(s) over ${pages} page(s)).`);
+log.info(`Done. Pushed ${pushed} project records (scanned ${scanned} row(s) over ${pages} page(s)`
+    + `${activeOnlyClientFilter && activeDropped > 0 ? `, ${activeDropped} dropped as inactive by activeOnly, uncharged` : ''}).`);
 
 // ---------------------------------------------------------------------------
 // RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
@@ -1665,6 +1690,9 @@ const runSummary = {
     reachableMatches: declaredMatches === null ? null : Math.max(declaredMatches - unreachableMatches, 0),
     unreachableMatches,
     scanned,
+    // Rows fetched then dropped by this Actor's own activeOnly+fiscalYears intersection, never
+    // charged. Non-zero means `delivered` is short of `declaredMatches` BY DESIGN, not by failure.
+    activeDropped: activeOnlyClientFilter ? activeDropped : null,
     delivered: pushed,
     pages,
     complete,
@@ -1706,7 +1734,15 @@ if (!complete) {
         + `cap (${baselineTruncatedTotal} total) -- those will be re-delivered and CHARGED next run. See RUN_SUMMARY.`,
     );
 } else if (declaredMatches !== null && !watchMode && !exclusiveProjectNums) {
-    log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} project(s) NIH RePORTER declared for these filters.`);
+    // `declaredMatches` describes the query actually SENT (fiscalYears alone when
+    // activeOnlyClientFilter is on), so with rows dropped client-side "delivered every one of the
+    // N declared" is a flat contradiction of the Pushed line right above it -- cycle 2928 saw it
+    // say "delivered every one of the 917" on a run that pushed 0. Report the drop instead.
+    log.info(activeDropped > 0
+        ? `Complete: walked every one of the ${declaredMatches.toLocaleString('en-US')} project(s) NIH RePORTER `
+        + `declared for these filters and delivered the ${pushed.toLocaleString('en-US')} that were active -- `
+        + `activeOnly dropped the other ${activeDropped.toLocaleString('en-US')} (uncharged).`
+        : `Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} project(s) NIH RePORTER declared for these filters.`);
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
