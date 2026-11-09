@@ -647,19 +647,19 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2945 (was UPDATED c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892 -- full c2809
-      narrative verbatim in `queue_archive.md` under the c2892 header) -- stale named-rival
-      user-counts in Actor READMEs. ~74 remain (not re-swept this cycle for the other 4, counts
-      drift UP -- re-sweep fresh before trusting this number), across 4 files.** By file at last
-      count: `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
-      `us-federal-awards-scraper` 8.
-      Fully clean: `court-records`, `ats-jobs`, `app-store-reviews`, `apple-podcasts`,
-      `shopify-products`, `sam-gov-opportunities`, `fec-campaign-finance`, `sec-insider-trades`,
-      `website-screenshot-scraper`, `hacker-news-scraper`, `trademark-search-scraper`,
-      `fda-recall-scraper`, `eu-ted-tenders-scraper`, and as of c2945 **`scholarship-scraper`**
-      (1 claim deliberately held, see below -- same "fully clean modulo a dated/fused hold"
-      standard already applied to `eu-ted-tenders-scraper` at c2943), and as of c2946
-      **`google-news-scraper`** (0 claims held -- all 13 were safe to fix in place, see below).
+- [ ] **UPDATED c2947 (was UPDATED c2946 / c2945 / c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892
+      -- full c2809 narrative verbatim in `queue_archive.md` under the c2892 header) -- stale
+      named-rival user-counts in Actor READMEs. ~66 remain (not re-swept this cycle for the other
+      3, counts drift UP -- re-sweep fresh before trusting this number), across 3 files.** By file
+      at last count: `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper`
+      16, plus `us-federal-awards-scraper`'s own 1 deliberately-held claim (see c2947 below -- not
+      part of this ~66, it's a standalone hold like `scholarship-scraper`'s).
+      Fully clean (modulo a deliberate dated/fused hold where noted): `court-records`, `ats-jobs`,
+      `app-store-reviews`, `apple-podcasts`, `shopify-products`, `sam-gov-opportunities`,
+      `fec-campaign-finance`, `sec-insider-trades`, `website-screenshot-scraper`,
+      `hacker-news-scraper`, `trademark-search-scraper`, `fda-recall-scraper`,
+      `eu-ted-tenders-scraper`, `scholarship-scraper` (1 held), `google-news-scraper` (0 held),
+      and as of c2947 **`us-federal-awards-scraper`** (1 held, see below).
       **c2945: re-swept `scholarship-scraper` (its "6 claims" headline was itself stale -- live
       check found 6, confirming the headline this time).** 5 fixed by hand: `parseforge/
       niche-scholarships-scraper` README.md:113 1->2 (chained its "down from 3" trend tag:
@@ -714,9 +714,37 @@
       69340B both sides, exact match. The 6 UNDATED flags are a separate, lower-severity checker
       precision gap (see the new follow-up item below) -- left alone this cycle, not folded into
       this backlog's count. Services/site + `/tools/google-news-scraper` re-verified 200 after.
-      **Next up:** `us-federal-awards-scraper` (8 claims at last count, not re-swept this cycle --
-      re-run the check fresh first per lesson (a)), then the three untouched files at ~74 combined
-      (`remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16).
+      **c2947: closed `us-federal-awards-scraper`.** Re-ran `check-competitor-claims --only
+      us-federal-awards-scraper` fresh first (lesson a) -- found 9 stale, not the stale "8" the
+      headline said (counts drift up, as usual). All 9 carried the "superlative in paragraph"
+      guard, and 8 were genuine paragraph-wide false positives (lesson c) -- each guarded
+      paragraph's real superlative/ranking claim (`parseforge` "the most users of any competitor,
+      32"; `jungle_synthesizer/samgov-scraper` "the single biggest listing in the whole niche,
+      172 users"; `datamule` "the cheapest listing in the niche") was about a DIFFERENT handle
+      than the one being bumped, re-checked by hand and confirmed still true after each swap.
+      Fixed: `haketa` 4->5, `sleek_waveform` 5->6, `whetstonetools` 3->1 (genuine decrease,
+      `totalUsers` windowed-count caveat), `publicmoney` 3->4, `martc03` 12->14, `pink_comic/
+      sam-gov-contract-opportunities` 30->34, `parseforge/fpds-federal-contracts-scraper` 3->1
+      (also a genuine decrease) -- all tagged `as of 2026-11-09` per `fix_plan()`'s convention
+      since none sits under its own dedicated verification date.
+      **1 left deliberately, a new wrinkle on the lesson (f)/(h) dated-record rule:**
+      `copious_atoll/usaspending-contracts` README.md:223 (two mentions, same paragraph) 11->13
+      is fused to "(10 -> 11 users, a one-user flap the 'under 10 users' wording already
+      covers)" -- a dated growth note whose entire point is that the count stayed under a named
+      threshold. Live is now 13, which is NOT under 10, so a bare number swap would leave the
+      "under 10 users" framing standing on a now-false premise. Needs whoever owns that "under 10
+      users" wording (defined earlier in the README, not re-located this cycle) to re-derive the
+      framing, not a hand-swap -- left for this Actor's own `competitor_audit` rotation, same
+      disposition as `scholarship-scraper`'s `majestic_fund` hold and `eu-ted-tenders-scraper`'s
+      two holds at c2943.
+      Re-ran the checker clean except the 1 intentional hold (33 claims checked, 1 stale by
+      design). Pushed build 0.1.92; live README byte-compared against the build record via the
+      Apify API (`sourceFiles` -> `README.md`), 66192B both sides, exact match. Services/site +
+      `/tools/us-federal-awards-scraper` re-verified 200 after. $0.0252 spend (1 build, 10 builds
+      total this billing cycle).
+      **Next up:** the three untouched files at ~66 combined (`remote-jobs-scraper` 22,
+      `substack-scraper` 16, `google-play-reviews-scraper` 16) -- re-sweep fresh before trusting
+      any of these counts, per lesson (a).
       **c2938 closed the two the c2809 note pointed here next** (its "1 claim each" was already
       stale -- `check-competitor-claims --only <slug> --fix` found 2 in each file, not 1):
       `website-screenshot-scraper` README.md:110 `cheapapi/website-screenshot-api` 424->472,
