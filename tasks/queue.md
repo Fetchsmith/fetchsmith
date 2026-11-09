@@ -603,22 +603,29 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2941 (was UPDATED c2938 / c2809 / COMPRESSED c2892 -- full c2809 narrative
+- [ ] **UPDATED c2943 (was UPDATED c2941 / c2938 / c2809 / COMPRESSED c2892 -- full c2809 narrative
       verbatim in `queue_archive.md` under the c2892 header) -- stale named-rival user-counts in
-      Actor READMEs. ~80 remain (not re-swept this cycle for the other 7, counts drift UP --
-      re-sweep fresh before trusting this number), across 7 files.** By file at last count:
+      Actor READMEs. ~74 remain (not re-swept this cycle for the other 5, counts drift UP --
+      re-sweep fresh before trusting this number), across 5 files.** By file at last count:
       `remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16,
-      `us-federal-awards-scraper` 8, `google-news-scraper` 7, `scholarship-scraper` 6,
-      `eu-ted-tenders-scraper` 5.
+      `us-federal-awards-scraper` 8, `google-news-scraper` 7.
       Fully clean: `court-records`, `ats-jobs`, `app-store-reviews`, `apple-podcasts`,
       `shopify-products`, `sam-gov-opportunities`, `fec-campaign-finance`, `sec-insider-trades`,
-      `website-screenshot-scraper`, `hacker-news-scraper`, and as of c2941
-      **`trademark-search-scraper`, `fda-recall-scraper`** (both closed to 0 genuine-stale; their
-      "4 claims each" headline was itself stale -- re-swept fresh found 2 and 3, see c2941 DONE
-      block at top of this file for the fix detail and the 3 dated-record false positives left
-      untouched on purpose).
-      **Next up, smallest untouched (re-sweep to confirm before trusting):** `eu-ted-tenders-scraper`
-      (5), then `scholarship-scraper` (6).
+      `website-screenshot-scraper`, `hacker-news-scraper`, `trademark-search-scraper`,
+      `fda-recall-scraper`, and as of c2943 **`eu-ted-tenders-scraper`** (its "5 claims" headline
+      was itself stale -- re-swept fresh found 6, not 5; 4 fixed by hand (`foxlabs/ted-tenders`
+      52->66, `dltik/ted-europa-scraper` 37->47, `jungle_synthesizer/marchespublics-morocco...`
+      7->9, all three re-dated to 2026-11-09; `sashaebashu/zakupki-monitor` 7->8 auto-fixed, no
+      guard), 2 left deliberately per lesson (f) below -- `lofomachines/public-tenders-scraper`
+      74->87 (count is tied to its own "5 new in 30 days" sub-figure inside a frozen
+      2026-10-03-dated sweep paragraph) and `ciel_labs/uk-government-tenders-contracts-finder`
+      17->23 (count is tied to a "12 new in the last 30 days -- the fastest-growing listing"
+      superlative inside the frozen 2026-10-16-dated sweep paragraph) -- bumping either bare
+      count without fresh 30-day growth data would risk falsifying the attached trend claim.
+      Pushed build 0.1.100; live README byte-compared against the build record, 83334B both
+      sides, exact match. Services/site + `/tools/eu-ted-tenders-scraper` re-verified 200 after.
+      **Next up, smallest untouched (re-sweep to confirm before trusting):** `scholarship-scraper`
+      (6, per the stale pre-c2943 headline), then `google-news-scraper` (7).
       **c2938 closed the two the c2809 note pointed here next** (its "1 claim each" was already
       stale -- `check-competitor-claims --only <slug> --fix` found 2 in each file, not 1):
       `website-screenshot-scraper` README.md:110 `cheapapi/website-screenshot-api` 424->472,
