@@ -1580,6 +1580,7 @@ const SEARCH_TERM_FIELDS = [
     ['sponsors', sponsors],
     ['locations', locations],
     ['searchQuery', searchQuery],
+    ['titleOrAcronym', titleOrAcronym],
 ];
 const searchTermFieldsSet = SEARCH_TERM_FIELDS.filter(([, v]) => v).map(([k]) => k);
 // `OR` already present == buyer knows the syntax; the comma is then theirs to mean literally.
@@ -1623,8 +1624,8 @@ if (pushed === 0 && watchMode && !seeding) {
             ? `(1) a comma in your ${commaListNames[0]} box reads as AND, not "any of these" -- write `
               + '"A OR B": sponsors="Pfizer, Moderna" = 0 studies, "Pfizer OR Moderna" = 6,111. '
             : (searchTermFieldsSet.length > 1
-                ? '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed, so several '
-                  + 'narrow filters together often match nothing -- drop one and retry. '
+                ? '(1) conditions/interventions/sponsors/locations/searchQuery/titleOrAcronym are ANDed, '
+                  + 'so several narrow filters together often match nothing -- drop one and retry. '
                 : '(1) terms are ANDed, within a box as well as across boxes -- check the spelling, '
                   + 'use fewer words, or "A OR B" for alternatives. ');
         zeroRowMessage = `No studies matched (scanned ${scanned}). Common causes: ${cause1Compact}`
@@ -1634,8 +1635,8 @@ if (pushed === 0 && watchMode && !seeding) {
             + 'small minority of studies -- combine with a broader condition first.';
         log.warning(
             `No studies matched. Scanned ${scanned} rows. Most common causes, in order: `
-            + '(1) conditions/interventions/sponsors/locations/searchQuery are ANDed — combining several '
-            + 'narrow filters often genuinely matches nothing; drop one and retry. '
+            + '(1) conditions/interventions/sponsors/locations/searchQuery/titleOrAcronym are ANDed — '
+            + 'combining several narrow filters often genuinely matches nothing; drop one and retry. '
             + 'ClinicalTrials.gov also ANDs the terms WITHIN a single box, so a comma- or '
             + 'space-separated list in one field is an AND, not the "any of these" it looks like: '
             + 'sponsors="Pfizer, Moderna" matches 0 studies while "Pfizer OR Moderna" matches 6,111 '

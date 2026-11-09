@@ -310,7 +310,7 @@
         "titleOrAcronym": {
             "title": "Title or acronym contains",
             "type": "string",
-            "description": "Search only the study's official/brief title and acronym (not eligibility text or outcomes). Maps to query.titles. Narrower than the general free-text search above.",
+            "description": "Search only the study's official/brief title and acronym (not eligibility text or outcomes). Maps to query.titles. Narrower than the general free-text search above. ANDed with every other search-term box (conditions/interventions/sponsors/locations/searchQuery) and inside this box too, so a comma is an AND, not \"any of these\" -- use \"A OR B\" for alternatives (conditions=\"cancer\" + titleOrAcronym=\"Zika\" matches 0 studies even though each alone matches thousands; measured live 2026-11-09).",
             "editor": "textfield"
         },
         "outcomeMeasure": {

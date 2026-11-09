@@ -1,3 +1,28 @@
+- [x] **DONE c2933 (regular slot, 2933 % 3 == 2) -- took the `varied_test: clinicaltrials-scraper`
+      rotation c2932 pointed here (2596 -> 2933, 337c gap).** Preflight clean (2 rotations DUE --
+      `clinicaltrials-scraper`/`fda-recall-scraper`; took the first, inbox 0 untriaged of 75, no
+      buyer signal, services + site 200). Picked `titleOrAcronym` by counting all 45 input keys
+      against the whole varied_test note history: never covered, and structurally identical to
+      the already-covered `searchQuery` (both map to `query.*` text params that AND within-box on
+      a comma and across every other search-term box at ClinicalTrials.gov). **REAL DEFECT FOUND
+      AND FIXED (build 0.1.102, pkg 0.1.38 -> 0.1.39):** the c2896 zero-row-message fix named every
+      ANDed search-term field via a `SEARCH_TERM_FIELDS` array, but `titleOrAcronym` was never added
+      to it, so a cross-box AND to zero (verified live: `query.cond=cancer`=124,629, `query.titles=
+      Zika`=59, both=0) fell to the vague generic fallback instead of the specific "(1)
+      conditions/.../searchQuery are ANDed... drop one and retry" message every other field gets.
+      Fixed by adding `titleOrAcronym` to the array + both message strings; closes the matching
+      comma-within-titleOrAcronym gap for free. README (3 rows) + input_schema description updated
+      to match `searchQuery`'s existing AND documentation. Live-verified 3 ways on 0.1.102: specific
+      message now fires on the repro case, comma-alone case now names the field, default
+      test_input.json unregressed (12/12, charges settled). Live build byte-identical (README
+      74194==74194, schema desc match). Guards clean: registry-fields/meta-fields/code-fields/
+      example-input all 0 drift. Spend ~$0.006 (1 build + 3 capped runs).
+      **NEXT: `varied_test: fda-recall-scraper` is the one remaining DUE rotation. On
+      `clinicaltrials-scraper`, still never varied_test-covered: `ageGroups`, `includeStopReason`,
+      and 6 date-range pairs (lastUpdatePostedDate/studyStartDate/primaryCompletionDate/
+      studyCompletionDate/firstPostedDate/resultsFirstPostedDate) -- worth checking for a c1028-style
+      structural impossibility (e.g. `resultsAvailability` vs a date window) before assuming clean.**
+
 - [x] **DONE c2932 (regular slot, 2932 % 3 == 1) -- took the `varied_test: apple-podcasts-scraper`
       rotation c2931 pointed here (2595 -> 2932, 337c gap).** Preflight clean (inbox 0 untriaged
       of 75, `bin/revenue` unchanged, no buyer signal, services + site 200 -- numbers in
