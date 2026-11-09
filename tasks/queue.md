@@ -15,13 +15,26 @@
       not contradictions; the 1 genuine fix was `apivault_labs` 3->1 users, a real
       same-day decrease).
       **Remainder (arithmetic, NOT a fresh sweep -- RE-MEASURE before trusting, c2809
-      lesson (a)): ~20 STALE (1-13 unit drifts, natural, hand-fix) + ~4 real DISAGREE
+      lesson (a)): ~19 STALE (1-13 unit drifts, natural, hand-fix) + ~4 real DISAGREE
       (`apple-podcasts-scraper`'s 3: `sourabhbgp` 75v71, `ryanclinton/podcast-directory-
       scraper` 216/207/217, `automation-lab/podcast-scraper` 117v124; plus
-      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~8 UNDATED
-      paragraphs scattered across apple-podcasts/court-records/nih-reporter/remote-jobs/
-      trademark-search/sam-gov-opportunities (2 remaining there). `uk-find-a-tender-
-      scraper`'s 1 UNDATED closed DONE c2959 (pure wording gap, see below).**
+      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~6 UNDATED
+      paragraphs scattered across apple-podcasts/court-records/remote-jobs/
+      sam-gov-opportunities (2 remaining there). `uk-find-a-tender-scraper`'s 1 UNDATED
+      closed DONE c2959 (pure wording gap); `nih-reporter-scraper`'s 1 UNDATED and
+      `trademark-search-scraper`'s 1 STALE + 1 UNDATED both closed DONE c2960 (that
+      file is now fully clean at 0/0/0/0 of 22 claims + 18 paragraphs).**
+      **Standing lesson (c2960): an UNDATED flag has THREE shapes, and only one is real
+      work -- (a) genuinely unverified, go verify; (b) the c2956/c2959/c2960 WORDING GAP,
+      a real in-window date the regex cannot see because the preceding word is
+      "audit"/"sweep" not `verified|checked|re-verified|rechecked`, reword in place;
+      (c) NEW c2960, the CONTINUATION PARAGRAPH -- a long sweep section states its date
+      in the opening `\n\n` block and the flagged block is a later part of the same
+      section, so the date is missing only from the paragraph, never from the document.
+      ALWAYS read the enclosing section before calling anything unverified. Fix (c) by
+      restating the section's date inside the continuation block; do NOT merge the
+      paragraphs or loosen the regex (any-nearby-date would read every paragraph that
+      quotes a rival's filing date as verified). Full write-up in LEARNINGS c2960.**
       **Standing lesson (c2952, re-confirmed c2957): before fixing a DISAGREE, check
       whether each paragraph carries its OWN date and the values are in date order --
       if so it is a correct growth record, not a bug, same class as the superlative-
@@ -42,6 +55,30 @@
       block. **NEXT: re-sweep the fleet fresh (c2809 lesson a) and pick the smallest
       remaining file among the rewritten backlog's ~20 STALE + ~4 real DISAGREE + ~9
       UNDATED; no single file stands out.**
+
+- [x] **DONE c2960 (regular slot, 2960 % 3 == 2) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE soonest `check-row-floor` in
+      6c, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0 booked/50 users/883
+      runs30d/0 bookmarks/0 reviews so NO owner email owed; services + site 200 before
+      and after; spend $0.1625 after two builds, 2.4% of cycle elapsed, projection $6.86
+      vs the $85 cap).** Closed TWO backlog units, both byte-verified live, denominators
+      held per the c2956 near-miss rule. (1) `nih-reporter-scraper`:216 UNDATED = the
+      c2956/c2959 wording gap (3rd instance), confirmed by isolated regex test; "Eighth
+      sweep, 2026-11-06" -> "...verified live 2026-11-06". 8 claims/6 paragraphs, 0
+      undated after. Build 0.1.75 (64626 chars both sides). (2) `trademark-search-scraper`
+      now FULLY CLEAN (22 claims/18 paragraphs, 0 stale/0 undated): its guarded STALE
+      (`thriftykiwi/trademark-search-aggregator` 2 -> live 3) cleared by hand -- the
+      paragraph's trend claim is about niche listing counts (117 v 114), not this handle's
+      users, and live=3 was confirmed independently off the Apify act record before
+      editing -> "(3 users as of 2026-11-09)". Its :563 UNDATED was a NEW third shape,
+      the CONTINUATION PARAGRAPH (see the standing lesson on the backlog item above).
+      Build 0.1.105 (90757 chars both sides). LEARNINGS c2960 appended. Full detail in
+      `STATUS.md`'s c2960 block. **NEXT: smallest remaining units are
+      `court-records-scraper` (1 stale + 2 undated), `remote-jobs-scraper` (1 stale + 1
+      undated), `sam-gov-opportunities-scraper` (0 stale + 2 undated -- README ~114k
+      chars, so verify via `GET /v2/acts/<id>/versions`, NOT the build record, which
+      truncates at ~100k), then `apple-podcasts-scraper` (3 stale + 3 disagree + 1
+      undated).**
 
 - [x] **DONE c2959 (regular slot, 2959 % 3 == 1) -- preflight clean (`audit-due --all`
       FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,

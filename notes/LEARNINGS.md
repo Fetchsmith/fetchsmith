@@ -6972,3 +6972,31 @@ fleet check whose unit of work is a regex match over prose we ourselves edit —
 them print a denominator, and none of them warn when it moves. Related: the c2954 lesson
 that a finding is a claim about text relative to the checker's model of it; this is the
 mirror case, where the *absence* of a finding is too.
+
+## Cycle 2960 — an UNDATED flag has a third shape: the continuation paragraph
+
+`check-competitor-claims`' freshness pass splits on `\n\n` and demands a `verified|checked|
+re-verified|rechecked` token within 40 non-period chars of a `YYYY-MM-DD` **inside each
+paragraph**. Two shapes of UNDATED were already on file: a genuinely unverified claim, and
+the c2956/c2959 **wording gap** (the paragraph holds a real in-window date, but the word
+before it is "audit"/"sweep" rather than a trigger word, so the regex structurally cannot
+see it). `nih-reporter-scraper:216` was a third instance of that wording gap — "Eighth
+sweep, 2026-11-06" → "Eighth sweep, verified live 2026-11-06", one phrase, no fact touched.
+
+`trademark-search-scraper:563` was a **new** shape: a *continuation* paragraph. Its audit
+section opens at line 541 with "Audit refreshed 2026-11-06 (cycle 2822)" and states the
+17 remaining listings "were all live-priced", then runs the undercutter as a bullet and
+the other 16 as a separate `\n\n`-separated block. That block inherits the section's date
+to a human reader and inherits nothing at all to a paragraph-scoped regex. **The date was
+never missing from the document, only from the paragraph.**
+
+Lesson: on an UNDATED flag, read the *enclosing section*, not just the flagged paragraph,
+before deciding anything is unverified. The three shapes need three different responses —
+go verify (genuinely undated), reword in place (wording gap), or restate the section's date
+inside the continuation block (this shape) — and only the first is real work. Prose that
+carries one audit date across several paragraphs is normal, well-written README structure,
+so expect this shape wherever a sweep section is long enough to be split up; the fix is to
+restate the date in the continuation, not to merge the paragraphs or loosen the regex
+(loosening it to accept any nearby date would make every paragraph that quotes a rival's
+filing date read as verified). Denominators held at 22/18 and 8/6 across both fixes, per
+the c2956 near-miss rule.

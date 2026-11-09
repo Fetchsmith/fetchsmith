@@ -197,7 +197,7 @@ trademarks (up from 114 at cycle 1360) — and this section already named 86 of 
 in-effect price of the remaining 31 was pulled live via the shared `bin/_unit_price.py` helper
 (also repointed this cycle, closing this Actor's slice of `0-TODO-h1396-repoint-batch-pricers`),
 every charge event and plan tier included. One is a genuine undercut and is disclosed here:
-`thriftykiwi/trademark-search-aggregator` (2 users) reads the USPTO trademark search and EUIPO
+`thriftykiwi/trademark-search-aggregator` (3 users as of 2026-11-09) reads the USPTO trademark search and EUIPO
 TMview together — status, owner, Nice classes and the official record link — for a flat $0.001 per
 returned mark with no start fee, half our $0.002 at every tier. It is a real substitute if USPTO
 and TMview-covered EU offices are all you need; what you pay us for is those two plus 68 more
@@ -560,7 +560,7 @@ count). One undercuts us at every tier:
   what it bills is outside this Actor's trademark-only scope, but the trademark-filing rows
   themselves are a genuine, cheaper match.
 
-The other 16 are dearer than us at every tier or an exact tie, not an undercut: `red.cars/tmview-
+The other 16 are dearer than us at every tier or an exact tie, not an undercut (all prices verified live 2026-11-06): `red.cars/tmview-
 trademarks-pro` (also built on TMview) and `plainrecordlabs/cancelled-us-trademarks` both charge
 exactly $0.002/row flat, matching us with no start fee either side; `fabrikit/uspto-trademark-
 scraper` tiers $0.00315 (FREE) down to $0.0022 (GOLD+), close but still above us on every rung;
