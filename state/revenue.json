@@ -1,5 +1,5 @@
 {
- "ts": 1794234621,
+ "ts": 1794236438,
  "date": "2026-11-09",
  "apify": {
   "google-news-scraper": {
@@ -158,16 +158,16 @@
    "public": true,
    "users": 2,
    "users30d": 1,
-   "runs30d": 29,
+   "runs30d": 30,
    "runs": 611,
-   "ext_ok30d": 29,
+   "ext_ok30d": 30,
    "ext_bad30d": 0,
    "ext_stats30d": {
     "ABORTED": 0,
     "FAILED": 0,
-    "SUCCEEDED": 29,
+    "SUCCEEDED": 30,
     "TIMED-OUT": 0,
-    "TOTAL": 29
+    "TOTAL": 30
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -386,16 +386,16 @@
    "public": true,
    "users": 4,
    "users30d": 3,
-   "runs30d": 58,
-   "runs": 505,
-   "ext_ok30d": 58,
-   "ext_bad30d": 0,
+   "runs30d": 106,
+   "runs": 520,
+   "ext_ok30d": 100,
+   "ext_bad30d": 6,
    "ext_stats30d": {
     "ABORTED": 0,
-    "FAILED": 0,
-    "SUCCEEDED": 58,
+    "FAILED": 6,
+    "SUCCEEDED": 100,
     "TIMED-OUT": 0,
-    "TOTAL": 58
+    "TOTAL": 106
    },
    "bookmarks": 0,
    "reviews": 0,
@@ -406,7 +406,7 @@
    "users": 2,
    "users30d": 1,
    "runs30d": 29,
-   "runs": 328,
+   "runs": 329,
    "ext_ok30d": 29,
    "ext_bad30d": 0,
    "ext_stats30d": {
@@ -508,9 +508,9 @@
  "apify_totals": {
   "public_actors": 27,
   "users": 50,
-  "runs30d": 834,
-  "ext_ok30d": 831,
-  "ext_bad30d": 3,
+  "runs30d": 883,
+  "ext_ok30d": 874,
+  "ext_bad30d": 9,
   "bookmarks": 0,
   "reviews": 0,
   "metric": "runs30d=publicActorRunStats30Days.TOTAL; pre-cycle-172 history had a false 0 here",

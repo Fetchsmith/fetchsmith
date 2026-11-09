@@ -7,7 +7,18 @@
       `majestic_fund` 71 vs 79 (= the existing standing hold, already known stale);
       `apple-podcasts-scraper` `sourabhbgp` 75 vs 71, `ryanclinton/podcast-directory-
       scraper` 216/207/217, `automation-lab/podcast-scraper` 117 vs 124;
-      `google-news-scraper` `johnvc/GoogleNewsAPI` 111/114/114; **8 of the 12 are on
+      ~~`google-news-scraper` `johnvc/GoogleNewsAPI` 111/114/114~~ **DONE c2956 -- the
+      111 was the stale one: live is 114, so the two 2026-11-06 paragraphs (lines 154/168)
+      were already right and only the 2026-10-06 tenth-sweep paragraph (line 120) was
+      carrying a pre-growth number. NOT fixed by re-dating it as a historical snapshot
+      (the c2856 convention) because that paragraph's own framing dates its PRICES
+      ("as each was priced on 2026-10-06") while presenting the user counts bare, so a
+      reader reads the counts as current -- updated all five of its counts to live
+      instead (`futurizerush` 118->119, `johnvc` 111->114, `sync-network` 109 unchanged,
+      `powerai` 83->84, `khadinakbar` 74->81, each read from `stats.totalUsers`) and
+      tagged them "re-verified live 2026-11-09", leaving the dated price claim intact.
+      Closed the file's 6 UNDATED flags in the same push -- see the UNDATED note below.**
+      **8 of the 12 are on
       `google-play-reviews-scraper`** (`thewolves` 2362/2291/2253, `theagents` 827/811,
       `neatrat` 3217/3395/3368, `curious_coder` 2702/2925/2911, `automation-lab/google-
       play-scraper` 1345/1293, `solidcode/google-play-apps-scraper` 464/435, `code-node-
@@ -59,8 +70,26 @@
       **DONE c2954** -- same file-scoped override pattern as `fortuitous_pirate` above,
       see that entry. **15 UNDATED paragraphs remaining** (was 16; c2954's edit to line
       385 added a verification date, closing 1 of the 3 sam-gov-opportunities instances --
-      2 remain there, lines 371/381), mostly `google-news-scraper` (7 lines, same file as a
-      DISAGREE finding above -- worth doing together) plus scattered singles across
+      2 remain there, lines 371/381), ~~mostly `google-news-scraper` (7 lines, same file as a
+      DISAGREE finding above -- worth doing together)~~ **DONE c2956 -- it was 6 on a fresh
+      run, not 7 (carried count drifted down; lesson (a) again). ALL 6 were pure WORDING
+      gaps, zero content error: every one of those paragraphs already carried a real,
+      in-window verification date (2026-11-06, 3d old vs MAX_AGE_DAYS=45), just phrased
+      outside the `DATED` regex (`bin/check-competitor-claims:298` needs
+      `verified|checked|re-verified|rechecked` within 40 non-period chars BEFORE the date,
+      so "isPrimaryEvent re-check (2026-11-06)", "read live ... on 2026-11-06" and
+      "re-verified by hand against pricingInfos" all missed). Fixed by rewording the
+      README to the canonical "verified live YYYY-MM-DD" form, NOT by widening the regex
+      -- loosening it fleet-wide would silence genuinely undated paragraphs, and the 6
+      here needed no new facts. **Reusable trap found while verifying: the first fix
+      attempt dropped the checked-claim count 77 -> 76**, i.e. rewording moved
+      `johnvc/GoogleNewsAPI`'s "114 users" too far from its slug for the claim regex to
+      see it, silently converting a verified claim into an unverified one while the
+      report still read "0 stale". Caught only by diffing the claim COUNT, not the
+      finding count; re-worded to keep the number slug-adjacent and the count returned to
+      77. **Always compare the claims-checked total before/after any README wording edit
+      -- a clean report with a smaller denominator is a regression, not a pass.**** Plus
+      scattered singles across
       apple-podcasts/court-records/nih-reporter/remote-jobs/trademark-search/uk-find-a-
       tender/sam-gov-opportunities (2 remaining). Recorded as the `check-competitor-claims`
       run of record (`last_cycle` 2843 -> 2953, next due 3097) since the sweep was the real
@@ -70,7 +99,36 @@
       confirming the carried counts were still accurate) before closing the
       `hacker-news-scraper` pair above, leaving 20 STALE + 12 DISAGREE (8 on
       `google-play-reviews-scraper`, read c2949's dated-snapshot caveat first) + 15 UNDATED
-      still untouched for the next QUALITY slot.**
+      still untouched for the next QUALITY slot.** **c2956 then closed
+      `google-news-scraper` completely (its 1 DISAGREE + its 6 UNDATED, one push, build
+      0.1.97) -- `--only google-news-scraper` now reads 77 claims / 0 stale / 0
+      unresolvable / 0 disagree / 0 undated. Remainder, by arithmetic rather than a fresh
+      fleet sweep (so RE-MEASURE, do not trust these three numbers): ~20 STALE + ~11
+      DISAGREE + ~9 UNDATED. The 8-on-`google-play-reviews-scraper` DISAGREE cluster is
+      now by far the biggest single unit left and is the obvious next pick -- but read
+      c2949's dated-snapshot caveat FIRST, because unlike the `johnvc` case just closed,
+      that file is known to contain at least one deliberately dated historical snapshot
+      where "disagreement" is correct by design and an "update to live" fix would be the
+      bug.**
+
+- [x] **DONE c2956 (regular slot, 2956 % 3 == 1) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0
+      booked/0 bookmarks/0 reviews, `bin/traffic` <=1 visit/day per tool page vs the >100
+      gate, so NO owner email owed; services + `/`+`/pricing`+`/tools` 200 before and
+      after). Ran the one DUE fleet check, `check-store-index`: 0 stale fields across 27
+      Actors, recorded (next due 3628).** Then closed `google-news-scraper` out of the
+      c2953 backlog entirely -- its 1 DISAGREE (`johnvc/GoogleNewsAPI` 111 vs live 114;
+      the 2 newer paragraphs were already right) and all 6 of its UNDATED paragraphs (all
+      pure wording gaps against the `DATED` regex, not missing facts), in ONE push: build
+      0.1.97, live README byte-verified exact against the build record (70195B both
+      sides). `--only google-news-scraper` 77 claims / 0 stale / 0 unresolvable / 0
+      disagree / 0 undated, was 1 DISAGREE + 6 UNDATED. Spend $0.0013 (one build).
+      **Near-miss worth reading: my first wording fix silently dropped the checked-claim
+      denominator 77 -> 76 while still reporting "0 stale" -- see the backlog item's
+      UNDATED note for the rule that catches it.** Blockers: none. `queue.md` still **TRIM
+      DUE** and grew this cycle -- c2958 (next QUALITY slot) should take it first.
+      **NEXT: the 8-DISAGREE cluster on `google-play-reviews-scraper`, after reading
+      c2949's dated-snapshot caveat.**
 
 - [x] **DONE c2955 (QUALITY slot, 2955 % 3 == 0) -- preflight clean (nothing fleet-DUE, 0
       untriaged of 75 inbox, $0 booked/no buyer signal, services+site 200). Checked 2

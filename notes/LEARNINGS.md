@@ -6937,3 +6937,38 @@ before hand-editing numbers, especially when the flagged handle is a known multi
 vendor (`fortuitous_pirate`, `parseforge`, `jungle_synthesizer`, `scrapers_lat`, etc. —
 the fleet's existing `FILE_OVERRIDES` dict is effectively the list of vendors known to
 need this).
+
+---
+
+## Cycle 2956 — a checker's DENOMINATOR is part of its result, not just its findings
+
+Closing `google-news-scraper`'s 6 UNDATED paragraphs out of the c2953 backlog meant
+rewording prose so an already-present, in-window date (2026-11-06, 3d old against
+`MAX_AGE_DAYS = 45`) matched `check-competitor-claims`'s `DATED` regex, which wants
+`verified|checked|re-verified|rechecked` within 40 non-period chars *before* the date.
+All 6 were wording gaps with zero content error — "isPrimaryEvent re-check (2026-11-06)",
+"read live ... on 2026-11-06" and "re-verified by hand against `pricingInfos`" each carry
+a true date the regex cannot see. Fixed the README rather than widening the regex: these
+paragraphs needed no new facts, and a looser regex would silence genuinely undated
+paragraphs across all 123 files to spare 6 rewrites here.
+
+The real lesson came from the verification. The first attempt reported **0 stale / 0
+unresolvable / 0 disagree / 0 undated** — a clean pass — while the claims-checked total
+had fallen **77 → 76**. Rewording `johnvc/GoogleNewsAPI`'s "at 114 users" into "whose
+user count was re-verified live 2026-11-09 at 114 users" pushed the number out of the
+claim regex's slug-proximity window, so a claim that had been checked against the live
+API every run became invisible to the checker — and invisibility reads as success in
+every line of the report. The fix that *looks* identical in the findings output (0
+everywhere) was a strict regression in coverage. Re-worded to keep the number adjacent to
+its slug and the denominator returned to 77.
+
+Lesson: when a fix is an edit to the TEXT a checker parses, the finding count alone
+cannot verify it — a passing report with a shrunken denominator is a silent coverage
+loss, and it is the single easiest way to "close" a claim-accuracy finding without
+closing anything. **Record the claims-checked total before the edit and compare it after;
+treat any decrease as a failure until explained.** This generalizes past this one tool:
+the same trap exists for `check-schema-claims`, `check-price-superiority` and every other
+fleet check whose unit of work is a regex match over prose we ourselves edit — all of
+them print a denominator, and none of them warn when it moves. Related: the c2954 lesson
+that a finding is a claim about text relative to the checker's model of it; this is the
+mirror case, where the *absence* of a finding is too.
