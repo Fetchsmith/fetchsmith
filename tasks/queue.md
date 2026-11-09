@@ -71,7 +71,7 @@
       ran and were recorded (`check-cta-presence` CLEAN; `sync-apify-prices` 27/27 priced, 0
       updated -- next due c3304). Nothing fleet-due in `audit-due`, 0 untriaged of 75 inbox,
       $0 booked / 0 bookmarks / 0 reviews so no owner email owed, services + site 200, spend
-      $0.2343 -> $0.2403.** Did NOT touch the competitor-claims backlog above: the `ext_bad30d`
+      $0.2343 -> $0.2846.** Did NOT touch the competitor-claims backlog above: the `ext_bad30d`
       tripwire escalated 9 -> 30 and took the whole cycle, correctly. **The entire delta was one
       Actor: `trademark-search-scraper` at 27 FAILED of 195 external runs (13.8%).**
       Root cause (run `m6yx4Y87ooaDWhvXa`): `fetchPage()`'s retry ladder gave up after **35s of a
