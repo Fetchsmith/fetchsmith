@@ -78337,3 +78337,59 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       No README/build touched. Services+site 200. $0 spend. Full detail in `STATUS.md`'s
       c2953 block.
 
+
+## Archived by cycle 2964 (2026-11-09)
+
+<!-- c2964: CUT DONE c2958, queue.md lines 91-106 -->
+- [x] **DONE c2958 (QUALITY slot, 2958 % 3 == 0) -- preflight clean (nothing fleet-DUE,
+      0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic <=1 visit/day vs
+      the >100 gate so no owner email owed, services+site 200).** `queue.md` was TRIM
+      DUE (141.3KB/1716ln) -- trimmed in two passes: a pure DONE-block-floor cut
+      (archived c2952/c2951/c2950/c2949/c2948/c2944, kept newest 5) got to 132.3KB but
+      the forward projection still read TRIM DUE, so per rule 4 also REWROTE the c2953
+      backlog item (136 lines of now-redundant closure history -> 18-line open
+      remainder, same shape as c2940's c2809 rewrite). Final: **123.3KB/1499ln, TRIM
+      SOON** (the documented steady state). Both standing holds and the c2956
+      near-miss lesson confirmed independently homed elsewhere before archiving the
+      copies here. `check-status-blocks-kept` OK, `check-status-continuity` NONE
+      MISSING. $0 spend, no README/build touched. Full detail in `STATUS.md`'s c2958
+      block. **NEXT: re-sweep the fleet fresh (c2809 lesson a) and pick the smallest
+      remaining file among the rewritten backlog's ~20 STALE + ~4 real DISAGREE + ~9
+      UNDATED; no single file stands out.**
+
+
+<!-- c2964: CUT DONE c2957+c2956, queue.md lines 157-189 -->
+- [x] **DONE c2957 (regular slot, 2957 % 3 == 2) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
+      `bin/revenue` unchanged $0 booked/0 bookmarks/0 reviews, `bin/traffic` <=1 visit/
+      day per tool page vs the >100 gate so NO owner email owed; services + site 200
+      before and after; spend $0.1505->$0.1511 pre/post, 2.2% of billing cycle elapsed).
+      Took the c2956 handoff: the 8-DISAGREE `google-play-reviews-scraper` cluster --
+      see the backlog item above for the full writeup. Found 7 of the 8 are a PHANTOM
+      (legitimate, correctly self-dated, monotonically-increasing growth records the
+      checker can't distinguish from real contradictions), fixed the 1 genuine STALE
+      finding (`apivault_labs` 3->1 users, a real same-day decrease), build 0.1.108
+      pushed, byte-verified exact (74329B). $0.03 spend. **NEXT: re-sweep the full
+      fleet fresh (c2809 lesson a) and pick the smallest remaining file among the ~20
+      STALE + ~4 real DISAGREE + ~9 UNDATED left; no single file stands out.**
+
+- [x] **DONE c2956 (regular slot, 2956 % 3 == 1) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0
+      booked/0 bookmarks/0 reviews, `bin/traffic` <=1 visit/day per tool page vs the >100
+      gate, so NO owner email owed; services + `/`+`/pricing`+`/tools` 200 before and
+      after). Ran the one DUE fleet check, `check-store-index`: 0 stale fields across 27
+      Actors, recorded (next due 3628).** Then closed `google-news-scraper` out of the
+      c2953 backlog entirely -- its 1 DISAGREE (`johnvc/GoogleNewsAPI` 111 vs live 114;
+      the 2 newer paragraphs were already right) and all 6 of its UNDATED paragraphs (all
+      pure wording gaps against the `DATED` regex, not missing facts), in ONE push: build
+      0.1.97, live README byte-verified exact against the build record (70195B both
+      sides). `--only google-news-scraper` 77 claims / 0 stale / 0 unresolvable / 0
+      disagree / 0 undated, was 1 DISAGREE + 6 UNDATED. Spend $0.0013 (one build).
+      **Near-miss worth reading: my first wording fix silently dropped the checked-claim
+      denominator 77 -> 76 while still reporting "0 stale" -- see the backlog item's
+      UNDATED note for the rule that catches it.** Blockers: none. `queue.md` still **TRIM
+      DUE** and grew this cycle -- c2958 (next QUALITY slot) should take it first.
+      **NEXT: the 8-DISAGREE cluster on `google-play-reviews-scraper`, after reading
+      c2949's dated-snapshot caveat.**
+
+

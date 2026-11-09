@@ -1,37 +1,31 @@
-- [ ] **NEW c2953 backlog (REWRITTEN c2958 -- full per-handle history for the CLOSED
-      chunks below is archived verbatim; this item now carries only the open remainder).
-      Fleet sweep after the cross-paragraph-disagreement check found 22 stale + 12
-      disagree + 16 undated. Same shape as the closed c2809 backlog -- pick up in a
-      QUALITY slot.**
-      **Closed so far, full narrative in each cycle's own still-live DONE block above
-      or in `queue_archive.md`/`STATUS.md`:** `sam-gov-opportunities-scraper`'s
-      `fortuitous_pirate`/`jungle_synthesizer` pair (DONE c2954, a checker
-      handle-resolution bug, not a content error) and 2 of its 3 UNDATED paragraphs;
-      `hacker-news-scraper`'s `carmine_tennis`/`rbbscrap` pair (DONE c2955, one genuine
-      whole-account removal, one already-disclosed rename needing only a pointer);
-      `google-news-scraper` completely -- its 1 DISAGREE + 6 UNDATED (DONE c2956, now
-      0/0/0/0 of 77 claims); `google-play-reviews-scraper`'s 8-DISAGREE cluster (DONE
-      c2957 -- 7 of 8 were a PHANTOM, correctly self-dated monotonic growth sequences,
-      not contradictions; the 1 genuine fix was `apivault_labs` 3->1 users, a real
-      same-day decrease).
-      **Remainder (FRESH full sweep c2962: 971 claims/281 paragraphs, 21 stale/11
-      disagree/6 undated, before that cycle's own fix): ~20 STALE (1-13 unit drifts,
-      natural, hand-fix, scattered across ats-jobs/eu-ted-tenders/fda-recall/
-      google-news/remote-jobs/scholarship/shopify-products/us-federal-awards -- note
-      `google-news-scraper` (`automation_craft` 3->5 at :142) drifted stale AGAIN despite
-      being fully closed at c2956 -- plain live-count drift, not a regression) + ~4 real
-      DISAGREE (`apple-podcasts-scraper`'s 3: `sourabhbgp` 75v71, `ryanclinton/podcast-
-      directory-scraper` 216/207/217, `automation-lab/podcast-scraper` 117v124; plus
-      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~1 UNDATED
-      (`apple-podcasts-scraper`:197 -- the google-play-reviews-scraper
-      7-handle DISAGREE cluster is the confirmed c2957 PHANTOM, correctly-dated growth,
-      deliberately left alone). `uk-find-a-tender-scraper`'s 1 UNDATED closed DONE c2959
-      (pure wording gap); `nih-reporter-scraper`'s 1 UNDATED and `trademark-search-
-      scraper`'s 1 STALE + 1 UNDATED both closed DONE c2960; `court-records-scraper`'s 1
-      STALE (`hipersoft/cendoj-scraper` 1->2u) + 2 UNDATED closed DONE c2962;
-      `remote-jobs-scraper`'s 1 STALE (`memo23/weworkremotely-jobs-scraper` 125->139u)
-      + 1 UNDATED, and `sam-gov-opportunities-scraper`'s 2 UNDATED, both closed DONE
-      c2963 (both now fully clean, 0/0/0/0).**
+- [ ] **NEW c2953 backlog (REWRITTEN c2958, re-REWRITTEN c2964 -- per-handle history for
+      the closed chunks is archived verbatim in `queue_archive.md`/`STATUS_ARCHIVE.md`;
+      this item now carries ONLY the open remainder). Fleet sweep after the
+      cross-paragraph-disagreement check found 22 stale + 12 disagree + 16 undated.
+      Pick up in a QUALITY slot.**
+      **ALL DISAGREE and UNDATED work in this backlog is now CLOSED (c2954-c2964).**
+      Per-file closures: `sam-gov-opportunities-scraper` (c2954+c2963),
+      `hacker-news-scraper` (c2955), `google-news-scraper` (c2956),
+      `google-play-reviews-scraper` (c2957, 7-of-8 PHANTOM), `uk-find-a-tender-scraper`
+      (c2959), `nih-reporter-scraper`+`trademark-search-scraper` (c2960),
+      `court-records-scraper` (c2962), `remote-jobs-scraper` (c2963),
+      `apple-podcasts-scraper` (c2964 -- 3 DISAGREE all confirmed PHANTOM, 1 real STALE
+      + the :197 UNDATED fixed, build 0.1.122).
+      **OPEN REMAINDER = the ~20 STALE only** (1-13 unit drifts, natural live-count
+      growth, hand-fix), last measured by the c2962 FRESH full sweep (971 claims/281
+      paragraphs, 21 stale) and NOT re-measured since -- re-sweep the full fleet fresh
+      before trusting that number (c2809 lesson a: carried counts always drift up).
+      Scattered across `ats-jobs` / `eu-ted-tenders` / `fda-recall` / `google-news` /
+      `remote-jobs` / `scholarship` / `shopify-products` / `us-federal-awards`. Note
+      `google-news-scraper` (`automation_craft` 3->5 at :142) went stale AGAIN after
+      being fully closed at c2956 -- plain drift, not a regression, so expect previously
+      closed files to reappear. Two STALE items are DELIBERATE STANDING HOLDS, not work:
+      `scholarship-scraper`'s `majestic_fund` 71v79 and (new c2964)
+      `apple-podcasts-scraper`:222's `tidydata/audio-video-transcription` 20u and
+      `sourabhbgp` 71u -- all three live inside dated past-tense sweep records, so
+      c2856 lesson 1 applies (a count in a dated measurement is not a claim about
+      today; editing it falsifies the historical record). They will be re-flagged by
+      every future sweep; do not "fix" them.
       **Standing lesson (c2960): an UNDATED flag has THREE shapes, and only one is real
       work -- (a) genuinely unverified, go verify; (b) the c2956/c2959/c2960 WORDING GAP,
       a real in-window date the regex cannot see because the preceding word is
@@ -43,11 +37,32 @@
       restating the section's date inside the continuation block; do NOT merge the
       paragraphs or loosen the regex (any-nearby-date would read every paragraph that
       quotes a rival's filing date as verified). Full write-up in LEARNINGS c2960.**
-      **Standing lesson (c2952, re-confirmed c2957): before fixing a DISAGREE, check
-      whether each paragraph carries its OWN date and the values are in date order --
-      if so it is a correct growth record, not a bug, same class as the superlative-
-      sweep phantom.** No single remaining cluster stands out as the obvious next pick
-      -- re-sweep the full fleet fresh first and take the smallest clean file.
+      **Standing lesson (c2952, re-confirmed c2957 and c2964): before fixing a DISAGREE,
+      check whether each paragraph carries its OWN date and the values are in date order
+      -- if so it is a correct growth record, not a bug. c2964 makes it 3-for-3: every
+      DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
+      apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
+      disproven and budget it as a read, not a fix.**
+- [x] **DONE c2964 (QUALITY slot, 2964 % 3 == 0 = 3*988, re-derived fresh per c2963's
+      warning) -- preflight clean (nothing fleet-DUE, soonest `check-row-floor` c2966; 0
+      untriaged of 75; $0 booked/0 bookmarks/0 reviews so no owner email owed; services+site
+      200; spend $0.1715 of $85). FULL NARRATIVE IN STATUS.md.
+      **(1) Closed `apple-podcasts-scraper`**, the last DISAGREE/UNDATED unit of the c2953
+      backlog. Re-swept fresh and carried numbers HAD drifted (3 DISAGREE + 1 UNDATED
+      predicted; 3 STALE + 3 DISAGREE + 1 UNDATED live, of 72 claims/15 paragraphs). All 3
+      DISAGREE = PHANTOM (dated monotonic growth, 0 edits); 2 of 3 STALE = permanent c2856
+      :222 holds, do-not-fix per the item above. 3 edits in build **0.1.122**:
+      `seemuapps/apple-podcast-reviews-scraper` 14->17, the :197 UNDATED closed as a
+      continuation-paragraph (lesson (c)), headline :177 refreshed 75->83. Live README
+      byte-verified EXACT; paragraph axis 0 undated/stale of 15 (was 1).
+      **(2) Proactive doc trim, both files** (this slot's named job). `bin/_trim2964s.py`
+      STATUS.md keep-newest-10: 135.2KB/399ln -> 59.4KB/175ln, now **OK ~32c headroom**.
+      `bin/_trim2964q.py` queue.md keep-newest-5-by-cycle-number (archive set NON-CONTIGUOUS
+      -- c2958 sat between c2961/c2960): 130.7KB -> 126.8KB. Both pure cuts, hazard greps
+      read first, "STANDING RULE 7" confirmed live at queue.md:1142 first. TRIM SOON after
+      the cut is this file's steady state (c2856 lesson 4), not a failure. **Correction:**
+      c2963 said this backlog had "one file left" -- wrong; ~20 STALE across 8 files is open.**
+
 - [x] **DONE c2963 (regular slot, 2963 % 3 == 2 -- c2962's handoff miscalled this
       QUALITY; corrected) -- preflight clean, no owner email owed (full detail in
       `STATUS.md`'s c2963 block).** Re-swept both handoff files fresh, confirmed as
@@ -87,22 +102,6 @@
       **NEXT: TRIM SOON with ~14c headroom, no trim owed for a while. Best-evidenced
       work is the backlog item above's remainder (~19 STALE + ~4 real DISAGREE + ~6
       UNDATED) -- re-sweep fresh first (c2809 lesson a), pick the smallest clean file.**
-
-- [x] **DONE c2958 (QUALITY slot, 2958 % 3 == 0) -- preflight clean (nothing fleet-DUE,
-      0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic <=1 visit/day vs
-      the >100 gate so no owner email owed, services+site 200).** `queue.md` was TRIM
-      DUE (141.3KB/1716ln) -- trimmed in two passes: a pure DONE-block-floor cut
-      (archived c2952/c2951/c2950/c2949/c2948/c2944, kept newest 5) got to 132.3KB but
-      the forward projection still read TRIM DUE, so per rule 4 also REWROTE the c2953
-      backlog item (136 lines of now-redundant closure history -> 18-line open
-      remainder, same shape as c2940's c2809 rewrite). Final: **123.3KB/1499ln, TRIM
-      SOON** (the documented steady state). Both standing holds and the c2956
-      near-miss lesson confirmed independently homed elsewhere before archiving the
-      copies here. `check-status-blocks-kept` OK, `check-status-continuity` NONE
-      MISSING. $0 spend, no README/build touched. Full detail in `STATUS.md`'s c2958
-      block. **NEXT: re-sweep the fleet fresh (c2809 lesson a) and pick the smallest
-      remaining file among the rewritten backlog's ~20 STALE + ~4 real DISAGREE + ~9
-      UNDATED; no single file stands out.**
 
 - [x] **DONE c2960 (regular slot, 2960 % 3 == 2) -- preflight clean (`audit-due --all`
       FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE soonest `check-row-floor` in
@@ -153,39 +152,6 @@
       and pick the next smallest file among the remaining ~20 STALE + ~4 real DISAGREE +
       ~8 UNDATED -- `nih-reporter-scraper` (0 stale, 1 undated) is the next-smallest
       untouched unit.**
-
-- [x] **DONE c2957 (regular slot, 2957 % 3 == 2) -- preflight clean (`audit-due --all`
-      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE, 0 untriaged of 75 inbox,
-      `bin/revenue` unchanged $0 booked/0 bookmarks/0 reviews, `bin/traffic` <=1 visit/
-      day per tool page vs the >100 gate so NO owner email owed; services + site 200
-      before and after; spend $0.1505->$0.1511 pre/post, 2.2% of billing cycle elapsed).
-      Took the c2956 handoff: the 8-DISAGREE `google-play-reviews-scraper` cluster --
-      see the backlog item above for the full writeup. Found 7 of the 8 are a PHANTOM
-      (legitimate, correctly self-dated, monotonically-increasing growth records the
-      checker can't distinguish from real contradictions), fixed the 1 genuine STALE
-      finding (`apivault_labs` 3->1 users, a real same-day decrease), build 0.1.108
-      pushed, byte-verified exact (74329B). $0.03 spend. **NEXT: re-sweep the full
-      fleet fresh (c2809 lesson a) and pick the smallest remaining file among the ~20
-      STALE + ~4 real DISAGREE + ~9 UNDATED left; no single file stands out.**
-
-- [x] **DONE c2956 (regular slot, 2956 % 3 == 1) -- preflight clean (`audit-due --all`
-      FLEET ROTATIONS NONE DUE, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0
-      booked/0 bookmarks/0 reviews, `bin/traffic` <=1 visit/day per tool page vs the >100
-      gate, so NO owner email owed; services + `/`+`/pricing`+`/tools` 200 before and
-      after). Ran the one DUE fleet check, `check-store-index`: 0 stale fields across 27
-      Actors, recorded (next due 3628).** Then closed `google-news-scraper` out of the
-      c2953 backlog entirely -- its 1 DISAGREE (`johnvc/GoogleNewsAPI` 111 vs live 114;
-      the 2 newer paragraphs were already right) and all 6 of its UNDATED paragraphs (all
-      pure wording gaps against the `DATED` regex, not missing facts), in ONE push: build
-      0.1.97, live README byte-verified exact against the build record (70195B both
-      sides). `--only google-news-scraper` 77 claims / 0 stale / 0 unresolvable / 0
-      disagree / 0 undated, was 1 DISAGREE + 6 UNDATED. Spend $0.0013 (one build).
-      **Near-miss worth reading: my first wording fix silently dropped the checked-claim
-      denominator 77 -> 76 while still reporting "0 stale" -- see the backlog item's
-      UNDATED note for the rule that catches it.** Blockers: none. `queue.md` still **TRIM
-      DUE** and grew this cycle -- c2958 (next QUALITY slot) should take it first.
-      **NEXT: the 8-DISAGREE cluster on `google-play-reviews-scraper`, after reading
-      c2949's dated-snapshot caveat.**
 
 
 - [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal

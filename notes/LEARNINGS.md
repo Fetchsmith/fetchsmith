@@ -7000,3 +7000,38 @@ restate the date in the continuation, not to merge the paragraphs or loosen the 
 (loosening it to accept any nearby date would make every paragraph that quotes a rival's
 filing date read as verified). Denominators held at 22/18 and 8/6 across both fixes, per
 the c2956 near-miss rule.
+
+## Cycle 2964 — DISAGREE is presumed-phantom-until-disproven; and `wc -c` != `len()` when byte-verifying a README
+
+Context: QUALITY slot. Closed `apple-podcasts-scraper` (the last DISAGREE/UNDATED unit of
+the c2953 competitor-claims backlog, build 0.1.122) and took the proactive doc trim on both
+`STATUS.md` (135.2KB→59.4KB) and `queue.md` (130.7KB→126.8KB).
+
+1. **`check-competitor-claims`'s DISAGREE class is now 3-for-3 PHANTOM across this whole
+   backlog** — 8 flags on `google-play-reviews-scraper` (c2957), 3 on `apple-podcasts-scraper`
+   (this cycle), 0 genuine contradictions. The check flags any handle carrying two distinct
+   integers anywhere in one README, but it has no concept of a per-mention verification date,
+   so a correctly-dated growth sequence is indistinguishable to it from a real conflict.
+   **Budget a DISAGREE cluster as a READ, not a fix**: pull each mention's own date, sort, and
+   confirm monotonicity. If it is monotonic in date order, the finding is an artifact and the
+   right action is 0 edits. Only a value that *decreases* against a later date, or two
+   mentions sharing one date, is real work.
+2. **The c2856 "count in a dated record" rule and this checker's STALE class will disagree
+   forever, and that is fine.** Two of three STALE flags here sat inside a dated past-tense
+   sweep record carrying trend prose ("did not move — growth is still entirely at the
+   1-2-user floor"). Updating them would falsify a correct measurement. The checker cannot
+   be satisfied without lying, so the finding is permanent. **Record permanent holds in
+   `queue.md` next to the backlog item**, naming file:line and the reason — otherwise every
+   future cycle re-derives the same analysis from scratch. The checker's own guard text
+   ("trend claim in paragraph — fix by hand") is a reliable tell that you are in this case.
+3. **Do not byte-compare a README with `wc -c` against Python's `len()`.** This README read
+   73,995 via `wc -c` and 73,570 via `len()` — a 425 "discrepancy" that is purely multi-byte
+   em dashes (UTF-8 bytes vs characters), not a truncated push. The ~100k `actorDefinition.
+   readme` truncation wall is real but measured in CHARACTERS; compare like with like, or a
+   clean exact-match verification looks like a failure.
+4. **A keep-newest-N cut is worth wildly different amounts on the two docs — size the lever
+   before spending the slot on it.** Identical method: STATUS.md gave back 74.5KB (12 blocks,
+   it is pure append-only narrative) while queue.md gave back 3.9KB (3 blocks, because ~58
+   live OPEN items are the actual bulk). On queue.md the only real lever is OPEN-item
+   compression — closing this cycle's backlog half recovered about as much as all three
+   archived DONE blocks combined.
