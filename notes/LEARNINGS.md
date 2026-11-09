@@ -6754,3 +6754,44 @@ Two method notes from the same cycle, both worth reusing:
   the AND is never exercised. The same trap generalises to any membership filter on a corpus where
   that field is constant -- check the field's CARDINALITY in the free prediction before designing
   the control, not after spending the run.
+
+## Cycle 2940 — the largest open item in a log-shaped doc is often the trim item itself, and a rule you enforce on another cycle's block applies to your own
+
+c2934 closed out the doc-trim candidate list with a correct verdict ("no real lever left in
+it — stop re-reading it each QUALITY slot") and a correct instruction: find the next lever by
+"scanning for genuinely superseded/duplicate content fresh". c2940 did that scan the cheap way
+— measure the byte size of *every* bullet in `queue.md`, largest first — and the answer was the
+**`doc-trim cadence` item itself**: 8880B/104 lines, 2x the next-largest open item, and in
+violation of its own header rule ("KEEP THIS ITEM IN THIS SHAPE: method + standing rules +
+newest execution only").
+
+1. **The item that records a cadence is a log too, and logs grow.** It had regrown not by
+   anyone ignoring the rule in spirit but by *stacking* `RE-MEASURED c2934` on top of the full
+   `EXECUTED c2916` record instead of replacing it — which is how "newest execution only"
+   quietly becomes "every execution, newest first". **Check the trim item's own size during the
+   trim.** It will never show up in a candidate list that the item itself maintains.
+2. **Measure every bullet, don't re-read a maintained list.** A 12-line script that sorts the
+   file's bullets by byte size found in seconds what two QUALITY slots of re-reading a
+   hand-maintained candidate list had declared a dead end. The list wasn't wrong — it was just
+   a snapshot, and snapshots don't include the thing that writes them.
+3. **A mixed cut/rewrite OPS table beats separate passes.** `bin/_trim2940q.py` runs a
+   DONE-block cut, a rule-6 block compression and an open-item compression as ONE partition
+   asserted total + non-overlapping over 1..N, with multiset identity asserted for the pure cut
+   and the rewrites' replacement text asserted separately. That is the shape to clone: three
+   separate scripts would each have had to re-derive line numbers the previous one shifted.
+4. **Assert what you deliberately did NOT cut, by verbatim probe.** The item's six STANDING
+   RULES are marked "ONLY here, so do not archive this section". The script asserts four
+   verbatim probes from it survive *exactly once* each, plus that the carried-forward content
+   (c2934's DEAD-END verdict, the live 2026-11-15 guard) is present in the new text. A
+   do-not-touch section protected only by the author's attention is protected by nothing.
+5. **The rule you enforce on another cycle's work applies to your own block, and the checker
+   will tell you.** c2940 compressed c2939's 23-line DONE block for breaching rule 6's ~20-line
+   cap — then wrote a 21-line block of its own and had to cut it twice to reach 20. Note the
+   arithmetic: `check-doc-size` counts the block's **trailing blank line**, so a "20-line" block
+   is 19 lines of text. Re-run the checker after writing the block, not before.
+6. **Say plainly when a correct trim still reads TRIM SOON.** `queue.md` went 123.0KB -> 113.8KB
+   and still reads TRIM SOON (~16c). That is the documented steady state (c2856 pt 4: the
+   checker projects +130KB over its own 24c look interval, so anything above ~70KB reads TRIM
+   SOON and a newest-5 floor cannot reach 70KB) — not a failed trim. Recording it as a win
+   would mislead the next cycle into trimming again; recording it as a failure would mislead it
+   into trimming *harder*. Both are wrong. The real lever is the growth RATE (rule 6).

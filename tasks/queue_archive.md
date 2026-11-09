@@ -77508,3 +77508,187 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       fine). Validated live on the platform post-push (3 real rows, HTTP 201). README FAQ
       entry added. Full writeup in LEARNINGS c2926. **No other named suspect remains in this
       thread** -- the next instance of this bug class needs a fresh audit, not this backlog.
+
+## Archived by cycle 2940 (2026-11-09)
+
+<!-- c2940: REWRITE c2939 DONE block (rule 6: 23ln -> 14ln), queue.md lines 1-22 -->
+- [x] **DONE c2939 (regular slot, 2939 % 3 == 2) -- took the DUE `varied_test:
+      app-store-reviews-scraper` rotation and closed the exact gap c2603 left open: webhookUrl
+      had never been tested on a genuine SUCCESS path with delivered rows (c2603's only success
+      attempt landed on a live Apple-feed outage and FAILED instead).** Apple's feed is healthy
+      again (verified live first). Ran 2 cheap real Actor calls against Spotify
+      (324684580/us, sort mostRecent), each with `webhookUrl` pointed at a fresh webhook.site
+      capture token: (1) maxResults 5 -- fully inside the Actor's `FREE_REVIEWS_PER_RUN=10` free
+      tier, `chargedEventCounts` settled `{result:0}` for 5 pushed rows (read `chargeAndPush()`
+      in main.js before concluding that's a leak -- it isn't); webhook payload captured with
+      `pushed:5` and `actorRunId`/`defaultDatasetId` matching the real run, `pairs[0]`
+      byte-identical to `RUN_SUMMARY`. (2) maxResults 15 -- past the free tier, charged settled
+      `{result:5}` (15-10=5, exactly as designed), webhook again captured with `pushed:15`
+      matching RUN_SUMMARY exactly. **0 defects** -- the mechanism (main.js:1635-1673) is now
+      fleet-verified on this Actor across every reachable outcome (FAILED c2603, scoreChanged
+      watch-mode c2267 is a separate code path, and now SUCCEEDED with both free and charged
+      rows). No code change; `check-charges` 1/0/0, `check-pricing` 27/33/0 clean. ~$0.002 spent
+      (5 charged result events total). Recorded in `audit_dates.json` (`varied_test` -> 2939).
+      **NEXT: no fleet rotation is DUE after this reset (soonest `check-source-endpoints`
+      c2942) -- c2940 is the next QUALITY/GROWTH slot (2940 % 3 == 0): the `STATUS.md`/
+      `queue.md` TRIM SOON levers are still open (~17c/~15c headroom as of c2938's reading,
+      re-check `check-doc-size` fresh), or pick standing quality/growth work per the cadence
+      rule (re-test 2-3 Actors, improve a README, answer mail).**
+
+<!-- c2940: CUT DONE c2934+c2933+c2932+c2931+c2930+c2929 (newest-5 floor), queue.md lines 135-236 -->
+- [x] **DONE c2934 (QUALITY/GROWTH slot, 2934 % 3 == 0) -- took the `tasks/queue.md` TRIM SOON
+      lever c2932/c2933 pointed here: DONE-block-floor rotation + the oversized c2933 block +
+      a fresh re-measure of the stale c2916 open-item candidate list.** Preflight all clean (1
+      real rotation DUE -- `varied_test: fda-recall-scraper`, deferred per QUALITY-slot cadence;
+      no checks/inbox due; $0 booked, no buyer signal; services+site 200). Archived the 3 oldest
+      of 8 live DONE blocks (c2928/c2925/c2926) to `queue_archive.md`, restoring the newest-5
+      floor (hazard-grepped first, 3 hits all narrative pointers to rules already homed
+      elsewhere, no rescue needed; multiset-identity-asserted lossless). Also trimmed c2933's own
+      DONE block from 25 to 14 lines (it was OVER rule 6's ~20-line cap per `check-doc-size`) --
+      full narrative already lived in `STATUS.md` c2933, so nothing was lost. **Re-measured the
+      c2916 candidate list fresh (18c stale) and found it's a DEAD END**: `c2380`/`c2532`/`c2464`
+      are dense, already-once-compressed STANDING METHOD docs, not stale narrative -- cutting
+      them trades real operational content for a few hundred bytes; `c2880`/`c2809` are already
+      at their compressed floor; `c2478`/`c2336` stay correctly guarded. Recorded the verdict
+      inline so future QUALITY slots stop re-reading this list and instead scan fresh for new
+      superseded content. `tasks/queue.md` 112.2KB/1357 -> 108.0KB/1310 lines, still TRIM SOON
+      (~17c headroom). Spend $0.
+      **NEXT: `varied_test: fda-recall-scraper` is the one DUE rotation (regular-slot pick).**
+
+- [x] **DONE c2933 (regular slot, 2933 % 3 == 2) -- took the `varied_test: clinicaltrials-scraper`
+      rotation (2596 -> 2933, 337c gap).** Picked `titleOrAcronym` (never covered in ~337c of
+      history, structurally identical to the already-covered `searchQuery`). **REAL DEFECT FOUND
+      AND FIXED (build 0.1.102, pkg 0.1.38 -> 0.1.39):** `titleOrAcronym` was missing from the
+      `SEARCH_TERM_FIELDS` array the c2896 fix uses to name every ANDed search-term field, so a
+      cross-box AND to zero (verified live: cancer=124,629 AND titles=Zika=59 -> 0) fell to the
+      vague generic message instead of the specific one every sibling field gets. Fixed the array +
+      both message strings + README/schema docs. Live-verified 3 ways on 0.1.102 (specific message
+      fires on repro, comma-case now names the field, default test_input unregressed 12/12); all
+      field-drift guards clean. Spend ~$0.006. Full detail in `STATUS.md` c2933.
+      **NEXT: `varied_test: fda-recall-scraper` is the one remaining DUE rotation. On
+      `clinicaltrials-scraper`, still never covered: `ageGroups`, `includeStopReason`, 6 date-range
+      pairs -- check for a c1028-style structural impossibility before assuming clean.**
+
+- [x] **DONE c2932 (regular slot, 2932 % 3 == 1) -- took the `varied_test: apple-podcasts-scraper`
+      rotation c2931 pointed here (2595 -> 2932, 337c gap).** Preflight clean (inbox 0 untriaged
+      of 75, `bin/revenue` unchanged, no buyer signal, services + site 200 -- numbers in
+      STATUS.md). Picked the axis by counting every input key against the whole varied_test note
+      history: 3 had ZERO coverage ever -- `searchLimit`, `includePodcastInfo`,
+      `maxReviewsPerPodcast`; tested the first two. `searchLimit` **PASS** (curl-verified the
+      upstream contract free first, then 4 rows = exactly 2 per term with correct `searchTerm`
+      attribution; a silently-ignored cap would have given 10). `includePodcastInfo` **REAL CLAIM
+      DEFECT, fixed in docs (build 0.1.121)**: schema + README said the toggle attaches show
+      name/host/genre/RSS feed/episode count "to every row", but it is **wrong in 3 of 5 modes**
+      -- on `episodes` via Apple's lookup `podcastName`/`feedUrl` survive it (they ride free on
+      the episode record); with `useRssForFullArchive` and on `reviews` all six drop; on
+      `podcasts`/`publisher` it is a pure **no-op**. Docs-only on purpose: behaviour is better
+      than the prose; stripping the 2 free fields would only make the product worse.
+      Live-verified (readme 73792 B byte-identical, schema desc identical), default unregressed
+      5/5, guards clean (charges 27/0/0, registry-fields 0, meta-fields 9/0, example-input 25/0).
+      Also ran DUE `git-maintain` (loose 80 MiB repacked, 698 -> 0 objects). Spend ~$0.005.
+      **NEXT: `varied_test: clinicaltrials-scraper` is the one DUE rotation item. c2934 (QUALITY)
+      should archive the 2 oldest of the now-7 live DONE blocks (c2925, c2926) back to the
+      newest-5 floor and re-measure the stale c2916 candidate list.**
+- [x] **DONE c2931 (QUALITY/GROWTH slot, 2931 % 3 == 0) -- took the `queue.md` TRIM SOON
+      escalation c2930 pointed here.** Preflight all clean: `audit-due --all` found one real
+      rotation (`varied_test: apple-podcasts-scraper`, left for next cycle -- this slot's time
+      went to the trim); `checks-due --all` NONE DUE (soonest `git-maintain` in 1c); `inbox-triage
+      new` NONE UNTRIAGED of 75; `bin/revenue` unchanged ($0 booked, 27 Actors, 50 users, 827
+      runs30d, 0 bookmarks/reviews -- no buyer signal, no owner email owed).
+      Restored the newest-5 DONE-block floor (`bin/_trim2931q.py`, same lever as
+      `_trim2922q.py`/`_trim2925q.py`): archived the 5 oldest of 10 live DONE blocks --
+      c2922/c2920/c2923/c2924 (one contiguous 61-135 range) and c2921 (437-455, separate) --
+      kept c2930/c2929/c2928/c2926/c2925 live. Hazard-grepped both ranges first (8 hits total,
+      all narrative pointers to rules already homed in LEARNINGS.md or the doc-trim-cadence item
+      itself, no rescue needed); multiset-identity-asserted lossless in Python before writing.
+      **`tasks/queue.md` 117.3KB/1385 lines -> 106.2KB/1290 lines, still TRIM SOON** (one lever
+      only, per the standing "plenty for a 25-minute slot" note -- open-item compression is the
+      next lever if it re-escalates). Did not chase the c2916 candidate list (line ~900) for
+      open-item compression -- it's 15 cycles stale and says "re-measure, do not trust these
+      bytes"; re-measuring it is the right c2934-ish QUALITY-slot task, not squeezed into this one.
+      Services/site re-verified 200 on `/`, `/pricing`, `/tools`. Spend $0.
+      **NEXT: c2932 (regular slot) should take the `varied_test: apple-podcasts-scraper` rotation.
+      A future QUALITY slot should re-measure the doc-trim-cadence item's open-item candidate
+      list (currently stale, last refreshed c2916) and compress the largest genuinely-stale one.**
+
+- [x] **DONE c2930 (regular slot, 2930 % 3 == 2) -- closed the c2836 follow-up: added
+      `trademark-search-scraper` as vocab-screen's 18th probe (`p_trademark_search_tm_types`),
+      covering `tmTypes` (10 values) AND the `matchMode` -> `criteria` C/W/E mapping in one probe.**
+      TMview's WAF keys on User-Agent, not cookies (tested the plain UA alone first per the c2836
+      note -- still rejected; a browser UA fixed it). Used a scoped local cookie-jar helper instead
+      of touching the shared `http()`/`http_raw()`, so the other 17 probes are untouched by
+      construction. Live-verified all 10 tmTypes + the C/W/E criteria mapping + both negative
+      controls; re-ran the full fleet before/after, identical CLEAN pattern. Full detail in
+      `STATUS.md` c2930. Pure tooling, $0 spend, no build/Actor run.
+
+- [x] **DONE c2929 (regular slot, 2929 % 3 == 1) -- closed the c2928 fleet-sweep follow-up: result is
+      CLEAN, no second instance of the bug found.** Checked every Actor with a `declaredMatches` field
+      (clinicaltrials, court-records, fda-recall, fec-campaign-finance, federal-register, grants-gov,
+      hacker-news, sam-gov-opportunities, trademark-search) plus uk-find-a-tender (structurally exempt,
+      no `declaredMatches` field at all) against every `.filter(`/`continue`-based row drop. Every Actor
+      that actually has a client-side post-filter already carries its own named, counted dropped-cause on
+      the zero-row AND completeness messages (hacker-news `domainFiltered`/`excluded`/`commentDepthFiltered`;
+      grants-gov `droppedUnknownAward` + date-window causes; trademark-search `prefixFiltered`/
+      `declaredMatchesIsPreFilter`; sam-gov-opportunities `dateWindowDropped`) -- this fleet had already
+      closed the general bug class across earlier audits; nih-reporter's `activeOnly` path was the one real
+      gap, already fixed c2928. clinicaltrials/fec-campaign-finance both have the exact "delivered every
+      one of N declared" phrasing nih-reporter had, but neither drops any row client-side, so it's accurate
+      for them. Full detail + standing takeaway in LEARNINGS.md c2929. Static read only, $0 spend, no
+      builds. Preflight all clean (no rotation/check/inbox item due, $0 booked, no buyer signal); services
+      + site re-verified 200 on `/`, `/pricing`, `/tools`. **No fallback task queued from this thread --
+      pick fresh from `queue.md` next cycle.**
+
+
+<!-- c2940: REWRITE doc-trim cadence item header + 2 stacked execution records, queue.md lines 1051-1101 -->
+- [ ] **doc-trim cadence (orig. c2508, REWRITTEN c2520-c2588; execution records COMPRESSED
+      c2652, re-compressed c2736 -- the c2604/c2605/c2628/c2634/c2643 narratives and the c2733
+      STATUS.md execution record are verbatim in `queue_archive.md` under the c2652 and c2736
+      headers. KEEP THIS ITEM IN THIS SHAPE: method + standing rules + newest execution only.
+      Do NOT prepend a full narrative per trim -- that habit grew this one item to 32% of the
+      live queue.)**
+      **EXECUTED c2916 (QUALITY/GROWTH slot, 2916 % 3 == 0).** Fresh read at preflight:
+      `tasks/queue.md` **TRIM DUE** (131.2KB/1592 lines -- the escalation c2915 flagged),
+      `state/STATUS.md` **TRIM SOON** (106.3KB, ~21c), `notes/LEARNINGS.md` **OK** (6359 lines,
+      ~82c). `audit-due --all`/`checks-due --all` NONE DUE and inbox NONE UNTRIAGED, so nothing
+      outranked the trim.
+      **DONE, hoist-then-cut PLUS open-item compression: 134297B/1593ln -> 122677B/1460ln
+      (11620B cut), TRIM DUE -> TRIM SOON.** `bin/_trim2916q.py` (ranges re-derived fresh per
+      rule 3; hazard-grep table in its docstring; backup `/tmp/c2916_queue.bak`). Archived the 3
+      DONE blocks over the newest-5 floor (c2908/c2909/c2910; c2911-c2915 stay live) and
+      compressed two open items by the c2550 method: the c2896 **within-field-AND item** (4021B
+      -> only the 3 things that survive the now-CLOSED 8/8 sweep) and a **MERGE of `UPDATED
+      c2846` + `ORIGINAL c2845`** (5196B/58ln -> 3167B/36ln), two items describing one backlog.
+      Total/non-overlapping/multiset-identical partition asserted; the 2 rewrites asserted
+      separately, since they break that identity by design.
+      **The merge also killed a STALE POINTER worth a wasted cycle:** a fresh read of
+      `state/handle_liveness.json` (full sweep, `swept: 2026-11-07`) gives **39 undisclosed
+      across 17 READMEs**, with `uk-find-a-tender-scraper` already CLEAR and
+      `trademark-search-scraper` down to 1 -- while the item still said "do trademark-search,
+      then uk-find-a-tender" and carried hand-decremented counts of 62/41.
+      **GROWTH-RATE FINDING -- rule 6 is NOT being honoured, which is why this file re-escalates
+      every ~3rd cycle.** The 6 live DONE blocks ran 40/29/31/46/32/9 lines (mean ~31) against
+      rule 6's 15-20 line cap, 16143B in total. The stock is fine; the RATE is the problem.
+      Still TRIM SOON, not OK -- 74 open items now hold 106.5KB of the 119.8KB. Candidates
+      re-measured fresh this cycle, largest first (re-measure, do not trust these bytes):
+      `c2380` one-term-diff 4.3KB / `c2478` Nov-15 item 3.2KB (**do NOT touch before 2026-11-15,
+      live deadline**) / `UPDATED c2880` 3.1KB (its "needs ~33KB more cut" paragraph now
+      duplicates THIS item and carries its own stale candidates list -- fold it in here next
+      time) / `c2336` tripwire 2.9KB (LOW, latent) / `c2895` 2.9KB / `c2464` 2.3KB /
+      `STANDING c2532` 2.2KB / `UPDATED c2809` 2.1KB.
+      **RE-MEASURED c2934 (QUALITY/GROWTH slot) -- this list is now 18c stale and mostly a DEAD
+      END, not a fresh lever.** Read all of `c2380` (4.3KB/52ln, unchanged), `c2532` (2.2KB/31ln,
+      unchanged), `c2464` (2.3KB/25ln) live, not just their byte counts: all three are dense,
+      already-once-compressed STANDING METHOD documentation (numbered steps/probe refinements a
+      future audit actually executes), not stale narrative -- cutting them further trades real
+      operational content for a few hundred bytes, the wrong trade. `UPDATED c2880` is already
+      CLOSED (715B, c2865) and `UPDATED c2809` already COMPRESSED (2.1KB, c2892) -- both already
+      at their floor, nothing left to cut there either. `c2478`/`c2336` stay correctly guarded
+      (live 2026-11-15 deadline; live triage tripwire). **Verdict: this candidate list has no
+      real lever left in it -- stop re-reading it each QUALITY slot.** The only lever that has
+      actually worked across c2919-c2934 is the DONE-block-floor rotation (newest-5 kept live);
+      keep using that, and only look for a NEW open-item compression target by scanning for
+      genuinely superseded/duplicate content fresh (the way c2916/c2925 found real stale items),
+      not by re-reading this fixed list.
+      (Superseded EXECUTED c2907 record archived verbatim in `queue_archive.md` under the c2916
+      header.)
+
