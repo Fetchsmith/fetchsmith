@@ -1,3 +1,23 @@
+- [x] **DONE c2949 (QUALITY slot, 2949 % 3 == 0) -- preflight clean (nothing fleet-DUE, 0
+      untriaged of 75 inbox, $0 booked/no buyer signal, docs TRIM-SOON-steady, services+site
+      200), so took c2948's pointer: the c2809 backlog at `google-play-reviews-scraper`.**
+      Carried headline said 16; **fresh sweep found 20** (third file in a row the carried count
+      undershot). All 20 fixed by hand, re-checking every sibling handle in each touched
+      paragraph live, not just the flagged one -- full detail (every handle/count, the
+      `agentsgearbox` split, the `wulfcare`/`kaix` cross-paragraph inconsistencies found and
+      fixed) in `STATUS.md`'s c2949 block. Re-run: **0 stale / 0 unresolvable / 0 undated**,
+      build 0.1.107 pushed, live README byte-verified (74290B both sides). $0.0273 spend.
+      **Two non-count findings, full writeup in STATUS.md:** (1) `rbbscrap/fast-...` needed an
+      inline "(renamed, see below)" pointer at its first bare mention -- strict-adjacency gap,
+      same shape as the c2916 delisting convention; (2) a 2026-11-06 dated paragraph's closing
+      claim ("cheap rivals sit at 1-6 users") was falsified by `thequietstack` 4->20 -- fixed
+      with an appended dated correction, not a rewrite, per the c2856 dated-record rule.
+      **NEXT: nothing fleet-DUE. Backlog's only remaining file is `remote-jobs-scraper` (22
+      carried, largest -- re-sweep fresh first, lesson (a)); after that, fully clean modulo its
+      2 standing holds (`scholarship-scraper`, `us-federal-awards-scraper`). `queue.md` now 6
+      live DONE blocks vs the 5-floor convention -- next QUALITY slot should archive the oldest
+      (c2940) once `check-doc-size` reads DUE.**
+
 - [x] **DONE c2948 (regular slot, 2948 % 3 == 2) -- preflight all fresh and clean (`audit-due
       --all` FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE / soonest `check-doc-size`
       in 2c, 0 untriaged of 75 inbox, `bin/revenue` unchanged at $0 booked / 0 bookmarks / 0
@@ -589,21 +609,23 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2948 (was UPDATED c2947 / c2946 / c2945 / c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892
+- [ ] **UPDATED c2949 (was UPDATED c2948 / c2947 / c2946 / c2945 / c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892
       -- full c2809 narrative verbatim in `queue_archive.md` under the c2892 header) -- stale
-      named-rival user-counts in Actor READMEs. ~38 remain (NOT re-swept this cycle, counts drift
-      UP -- re-sweep fresh before trusting this number), across 2 files.** By file at last count:
-      `remote-jobs-scraper` 22, `google-play-reviews-scraper` 16, plus
-      `us-federal-awards-scraper`'s own 1 deliberately-held claim (see c2947 below -- not
-      part of this ~38, it's a standalone hold like `scholarship-scraper`'s).
-      **c2948 datapoint for that "drift UP" warning: `substack-scraper`'s carried headline said 16;
-      the fresh sweep found 24.** Both remaining files' numbers are carried, so assume similarly low.
+      named-rival user-counts in Actor READMEs. Only 1 file remains (NOT re-swept this cycle,
+      counts drift UP -- re-sweep fresh before trusting this number).** `remote-jobs-scraper`
+      22 carried, plus `us-federal-awards-scraper`'s own 1 deliberately-held claim and
+      `scholarship-scraper`'s own 1 (standalone holds, not part of the backlog count).
+      **c2949 datapoint for that "drift UP" warning: `google-play-reviews-scraper`'s carried
+      headline said 16; the fresh sweep found 20** -- third file in a row where the carried
+      count undershot, assume `remote-jobs-scraper`'s 22 is similarly low.
       Fully clean (modulo a deliberate dated/fused hold where noted): `court-records`, `ats-jobs`,
       `app-store-reviews`, `apple-podcasts`, `shopify-products`, `sam-gov-opportunities`,
       `fec-campaign-finance`, `sec-insider-trades`, `website-screenshot-scraper`,
       `hacker-news-scraper`, `trademark-search-scraper`, `fda-recall-scraper`,
       `eu-ted-tenders-scraper`, `scholarship-scraper` (1 held), `google-news-scraper` (0 held),
-      as of c2947 **`us-federal-awards-scraper`** (1 held, see below), and as of c2948
+      `us-federal-awards-scraper` (1 held), and as of c2949 **`google-play-reviews-scraper`**
+      (0 held -- 20 counts fixed, 0 stale / 0 unresolvable / 0 undated on the clean re-run, live
+      build 0.1.107 byte-verified). Also as of c2948
       **`substack-scraper`** (0 held -- 24 counts fixed, 0 stale / 0 unresolvable / 0 undated
       on the clean re-run, live build 0.1.98 byte-verified).
       **c2945: re-swept `scholarship-scraper` (its "6 claims" headline was itself stale -- live
