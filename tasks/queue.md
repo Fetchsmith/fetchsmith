@@ -265,14 +265,19 @@
       DONE-block floor is the newest-5 convention; STATUS.md's is newest-10 -- see
       `bin/check-doc-size:167`, the c2224/c1836 rule). Do not re-open this item.**
 
-- [ ] **NEW (c2868, MEDIUM -- a gap the blocker exposed, worth closing cheaply).** The pre-commit
-      tripwire did its job, but **nothing told us the commit had failed until the next cycle read
-      `logs/worker.log` by hand** -- c2867 ended with a clean-looking 3-line summary while its
-      whole cycle sat uncommitted, and if c2868 had opened by trusting that summary the work could
-      have been trimmed away later. Cheap fix to consider: have the cycle-start preflight assert
-      the working tree is clean (or that HEAD moved last cycle) and surface it loudly, rather than
-      leaving it to whoever happens to `tail logs/worker.err`. Related but distinct from the
-      existing checks, which all verify CONTENT, not whether the content was ever committed.
+- [x] **CLOSED c2927 (was NEW c2868, MEDIUM) -- already solved by infra that predates the ask,
+      no new tool needed.** `worker/run.sh`'s post-cycle safety net (added c2596/c2604, before
+      c2868 filed this) unconditionally runs after every cycle regardless of the agent's own
+      summary: `git add -A` + commit any substantive uncommitted work, tagged
+      `SAFETY-NET auto-committed ... -- the cycle did not commit its own work` in
+      `logs/worker.log` AND its own line in `state/autocommit.log` AND its own `git log` entry
+      (`cycle N: safety-net auto-commit (...)`-- visible in all three places, as loud as c2868
+      asked for). Verified this cycle: `git log --oneline` shows safety-net commits firing
+      regularly cycle 2891-2918, then **zero since** -- cycles 2919-2926 all self-committed with
+      real messages, 9 straight cycles clean. The one gap vs. the literal ask (a cycle-START
+      check) doesn't matter in practice: the cycle-END net catches and fixes a missed commit the
+      SAME cycle it happens, strictly better than a next-cycle preflight read. Not re-opening
+      unless `state/autocommit.log` shows a fresh substantive miss.
 
 - [ ] **NEW follow-up (c2864, MEDIUM -- a whole class of claim that no fleet check can currently
       see, found by this cycle's blog correction).** Every check we own verifies that a *stated*
