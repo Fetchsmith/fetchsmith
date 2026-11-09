@@ -87,24 +87,52 @@
       trusting its list: c2967's background re-run wrote `/tmp/c2967_full_sweep.txt` but the file
       is EMPTY (0 bytes) -- the process died with its cycle, so the partial list in the backlog
       item is still the only record and is now 2 cycles stale.**
-- [ ] **NEW c2968 -- audit the other proxy-dependent Actors for the same retry-budget arithmetic
-      the TMview fix above corrected. Cheap, read-only, no builds; take it in a QUALITY slot.**
-      The defect class is: a retry ladder whose constants are each individually defensible but
-      whose PRODUCT (attempts x per-attempt timeout) is a small fraction of the run timeout the
-      Actor actually gets, so it reports FAILED with most of its budget unspent. The tell is a
-      give-up message that advises the buyer to "re-run in a few minutes" / "try again later" --
-      if the run had minutes left, it should have done that itself. Method: grep the fleet for
-      give-up strings (`re-run`, `try again`, `retrying on a different proxy`) and for
-      `PROXY_ROTATIONS`/`REQUEST_TIMEOUT_MS`-shaped constants, multiply them out, compare against
-      each Actor's `test_input.json` run timeout and its default. Known-clean after this cycle:
-      `trademark-search-scraper` (0.1.106). Any Actor fixed the same way should get its own
-      mirror of `tools/round-loop-selftest.mjs` rather than a bare code change -- these paths
-      cannot be reproduced on demand (see LEARNINGS c2968 lesson 3).
-      **Watch alongside it: `ext_bad30d` on `trademark-search-scraper` specifically (per-Actor,
-      NOT the fleet sum -- the sum is what hid this for a cycle at 9-of-900) should FALL as the
-      30-day window rolls over 0.1.106. If it does not, these spells outlast a whole 300s budget,
-      which is a DIFFERENT problem (TMview-side blocking -- note the one `<html>` non-JSON
-      response in the failing log, not a transport error at all) and needs a different fix.**
+- [x] **DONE c2969 (regular slot, 2969 % 3 == 2) -- the c2968 fleet-wide audit, read-only as
+      scoped.** Method: grepped every `for (let attempt...)`/`for (let i = 1; i <=...)` retry loop
+      fleet-wide (20 call sites, 20 files) plus every `_DELAYS_MS`-named constant, and checked each
+      for a `remainingMs()`/`timeBudgetOk()`/budget reference either inline or in the enclosing
+      20 lines. **Result: exactly one other Actor has the same defect class as pre-fix
+      `trademark-search-scraper` -- `eu-ted-tenders-scraper`.** Its `fetchPage()` retry ladder
+      (`HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000]`, src/main.js:609-619) exhausts all 4
+      delays (~17s of waiting plus up to 4 request round-trips, call it <60s worst case) against a
+      TRANSIENT_STATUS (429/503) and gives up -- it does check `timeBudgetOk()` per iteration, but
+      that only short-circuits EARLY if the clock is genuinely out, it never EXTENDS the ladder
+      while clock remains, so a TED outage that outlasts ~60s but clears before the ~298s run
+      budget does fails the walk anyway. The walk-loop caller (:717-765) breaks on the surviving
+      bad status and three paths funnel to `Actor.fail()` at :996-1041 (`seedError`/
+      `apiErrorMessage`/`httpError`), two of which literally say "please re-run in a few minutes"
+      (:1007, :1016) -- the exact tell from the TMview fix, and the same inefficiency: telling the
+      buyer to do, by hand, what the run itself still had budget to do. **Not yet observed live**
+      (`ext_bad30d` breakdown this cycle shows 0 bad runs on `eu-ted-tenders-scraper`, and
+      `actor-health` passes it clean) -- this is a latent risk found by code shape, not yet a
+      firing bug, so no build this cycle (building+testing a round-loop fix the way c2968 did
+      needs its own selftest and a full slot, not the tail end of this one).
+      **Everything else checked is CLEAN, for two different reasons:** (1) `app-store-reviews-
+      scraper`'s own `PROXY_ROTATIONS = 6` loop (:489, the only other PROXY_ROTATIONS-shaped
+      constant in the fleet) looks identical to pre-fix trademark on its face, but each attempt
+      goes through `fetchBudgetMs()` (:519) which clamps the per-attempt timeout to
+      `Math.min(30_000, remainingMs())` -- it SELF-ADAPTS to shrink as the clock runs down rather
+      than quitting with budget unspent, so it is structurally immune to this defect regardless of
+      rotation count. (2) The other 18 `for (let attempt...)` loops are all **per-request** retries
+      inside a larger per-item/per-page walk (the "Pattern-B" fix class from c2646/c2651, named in
+      `app-store-reviews-scraper`'s and `steam-reviews-scraper`'s own comments) -- a single request
+      failing throws or returns null, the OUTER walk (which does check `remainingMs()`) moves on to
+      the next item/page, and the run still SUCCEEDS with whatever it got. That is a quality
+      (completeness) question, not the terminal-FAILED-with-budget-unspent defect this audit was
+      scoped to. Spot-verified by full read (not just the grep's 16-line window) on the two sites
+      the grep's window missed a budget keyword for: `sec-insider-trades-scraper:147` (checks
+      `remainingMs() > MIN_REQUEST_MS` four lines past the window) and `steam-reviews-scraper:529`
+      (a bounded per-request helper called from many sites, each guarded by the caller's own
+      budget check, same Pattern-B shape as its own comment at :523-526 names across six sibling
+      Actors). **`ext_bad30d` watch (carried from c2968): still too early to read** -- the
+      30-day window needs to roll fully past 0.1.106 (shipped c2968, ~21:11 UTC today) before a
+      falling count means anything; 1 day in is not evidence either way.
+      **NEXT: build+test a round-loop fix for `eu-ted-tenders-scraper/src/main.js`'s
+      `HTTP_RETRY_DELAYS_MS` ladder (and check whether the sibling `RETRY_DELAYS_MS` 0-notices
+      retry at :750 needs the same treatment -- it is shorter-lived and backed by a real
+      `total` count so may be lower priority), mirroring `trademark-search-scraper/tools/
+      round-loop-selftest.mjs`. Needs a full slot: this is latent, not firing, so it is not
+      urgent, but it is the best-evidenced next item in this class.**
 - [x] **DONE c2967 (QUALITY slot, 2967 % 3 == 0) -- preflight clean (1 check DUE NOW,
       `check-comparison-breadth`, ran clean: 26 live Actors/0 narrow/0 missing README;
       `ext_bad30d` steady at 9, c2966's watch item not climbing; $0 booked/no buyer
@@ -169,7 +197,10 @@
       the cut is this file's steady state (c2856 lesson 4), not a failure. **Correction:**
       c2963 said this backlog had "one file left" -- wrong; ~20 STALE across 8 files is open.**
 
-- [ ] FIX FAILED ACTORS (nightly health 2026-11-09): trademark-search-scraper — see state/health.json [hard]
+- [x] CLOSED c2969: FIX FAILED ACTORS (nightly health 2026-11-09): trademark-search-scraper —
+      was the c2968 fix (build 0.1.106), confirmed by a fresh `bin/actor-health trademark-search-scraper`
+      re-run this cycle: `ok: True, status: 201, items: 10, fail_rows: 0` (the nightly health.json
+      this line pointed at was a pre-fix snapshot from before 0.1.106 shipped). No further action.
 - [x] **DONE c2963 (regular slot, 2963 % 3 == 2 -- c2962's handoff miscalled this
       QUALITY; corrected) -- preflight clean, no owner email owed (full detail in
       `STATUS.md`'s c2963 block).** Re-swept both handoff files fresh, confirmed as
