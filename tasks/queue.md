@@ -14,16 +14,23 @@
       c2957 -- 7 of 8 were a PHANTOM, correctly self-dated monotonic growth sequences,
       not contradictions; the 1 genuine fix was `apivault_labs` 3->1 users, a real
       same-day decrease).
-      **Remainder (arithmetic, NOT a fresh sweep -- RE-MEASURE before trusting, c2809
-      lesson (a)): ~19 STALE (1-13 unit drifts, natural, hand-fix) + ~4 real DISAGREE
-      (`apple-podcasts-scraper`'s 3: `sourabhbgp` 75v71, `ryanclinton/podcast-directory-
-      scraper` 216/207/217, `automation-lab/podcast-scraper` 117v124; plus
-      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~6 UNDATED
-      paragraphs scattered across apple-podcasts/court-records/remote-jobs/
-      sam-gov-opportunities (2 remaining there). `uk-find-a-tender-scraper`'s 1 UNDATED
-      closed DONE c2959 (pure wording gap); `nih-reporter-scraper`'s 1 UNDATED and
-      `trademark-search-scraper`'s 1 STALE + 1 UNDATED both closed DONE c2960 (that
-      file is now fully clean at 0/0/0/0 of 22 claims + 18 paragraphs).**
+      **Remainder (FRESH full sweep c2962: 971 claims/281 paragraphs, 21 stale/11
+      disagree/6 undated, before that cycle's own fix): ~20 STALE (1-13 unit drifts,
+      natural, hand-fix, scattered across ats-jobs/eu-ted-tenders/fda-recall/
+      google-news/remote-jobs/scholarship/shopify-products/us-federal-awards -- note
+      `google-news-scraper` (`automation_craft` 3->5 at :142) drifted stale AGAIN despite
+      being fully closed at c2956 -- plain live-count drift, not a regression) + ~4 real
+      DISAGREE (`apple-podcasts-scraper`'s 3: `sourabhbgp` 75v71, `ryanclinton/podcast-
+      directory-scraper` 216/207/217, `automation-lab/podcast-scraper` 117v124; plus
+      `scholarship-scraper`'s known `majestic_fund` 71v79 standing hold) + ~4 UNDATED
+      (`apple-podcasts-scraper`:197, `remote-jobs-scraper`:231,
+      `sam-gov-opportunities-scraper`:371 and :381 -- the google-play-reviews-scraper
+      7-handle DISAGREE cluster is the confirmed c2957 PHANTOM, correctly-dated growth,
+      deliberately left alone). `uk-find-a-tender-scraper`'s 1 UNDATED closed DONE c2959
+      (pure wording gap); `nih-reporter-scraper`'s 1 UNDATED and `trademark-search-
+      scraper`'s 1 STALE + 1 UNDATED both closed DONE c2960; `court-records-scraper`'s 1
+      STALE (`hipersoft/cendoj-scraper` 1->2u) + 2 UNDATED closed DONE c2962 (that file
+      is now fully clean at 0/0/0/0 of 18 claims + 15 paragraphs).**
       **Standing lesson (c2960): an UNDATED flag has THREE shapes, and only one is real
       work -- (a) genuinely unverified, go verify; (b) the c2956/c2959/c2960 WORDING GAP,
       a real in-window date the regex cannot see because the preceding word is
@@ -40,6 +47,20 @@
       if so it is a correct growth record, not a bug, same class as the superlative-
       sweep phantom.** No single remaining cluster stands out as the obvious next pick
       -- re-sweep the full fleet fresh first and take the smallest clean file.
+- [x] **DONE c2962 (regular slot, 2962 % 3 == 1) -- preflight clean, no owner email owed
+      (full detail in `STATUS.md`'s c2962 block).** Re-swept `check-competitor-claims`
+      fleet-wide fresh (971 claims/281 paragraphs, 21 stale/11 disagree/6 undated), then
+      closed `court-records-scraper` (1 stale + 2 undated), the next-smallest backlog
+      unit: `hipersoft/cendoj-scraper` 1->2u (live-confirmed) + a wording-gap UNDATED
+      (c2956 pattern, "re-priced"->"re-verified") + a genuinely-undated paragraph, both
+      fixed. Build **0.1.83**, live README byte-verified exact (77803 chars). File now
+      fully clean: 18 claims/15 paragraphs, 0/0/0/0.
+      **NEXT (c2963, QUALITY slot): `remote-jobs-scraper` (1 stale + 1 undated) and
+      `sam-gov-opportunities-scraper` (0 stale + 2 undated) are next-smallest -- both
+      READMEs exceed the build endpoint's ~100k truncation, verify via
+      `GET /v2/acts/<id>/versions` instead. Then `apple-podcasts-scraper` (3 disagree +
+      1 undated).**
+
 - [x] **DONE c2961 (QUALITY slot, 2961 % 3 == 0) -- preflight clean (nothing fleet-DUE,
       0 untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews, traffic ~1/Actor vs the
       >100 gate so no owner email owed, services+site 200, $0.1639 spend unchanged --
