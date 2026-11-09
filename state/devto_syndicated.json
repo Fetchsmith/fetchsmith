@@ -1,12 +1,12 @@
 {
- "derived_at_cycle": 2848,
- "derived_at": "2026-11-07T09:05:00Z",
+ "derived_at_cycle": 2944,
+ "derived_at": "2026-11-09T09:03:48Z",
  "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2848 to fold in this cycle's new syndication (standby-mcp-no-actor-run-to-poll, devto id 4992741) rather than hand-appending, same as c2752 did.",
  "counts": {
   "site_posts": 95,
-  "synced": 30,
-  "unsynced": 65,
-  "devto_published": 30,
+  "synced": 31,
+  "unsynced": 64,
+  "devto_published": 31,
   "devto_unmatched_canonical": 0
  },
  "synced": [
@@ -185,6 +185,12 @@
    "devto_published_at": "2026-10-26T09:05:15.851Z"
   },
   {
+   "blog_date": "2026-11-04",
+   "slug": "hacker-news-two-public-apis-no-key",
+   "devto_id": 5003351,
+   "devto_published_at": "2026-11-09T09:03:03.072Z"
+  },
+  {
    "blog_date": "2026-11-06",
    "slug": "standby-mcp-no-actor-run-to-poll",
    "devto_id": 4992741,
@@ -224,7 +230,6 @@
   "grants-gov-watchchanges-deadline-replay",
   "greenhouse-job-board-json-api",
   "hacker-news-comment-github-repo-attribution",
-  "hacker-news-two-public-apis-no-key",
   "lever-job-board-json-api-pagination",
   "mcp-tool-refuses-instead-of-guessing",
   "nih-reporter-grants-json-api",

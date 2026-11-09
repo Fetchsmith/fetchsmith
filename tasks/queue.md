@@ -1,3 +1,28 @@
+- [x] **DONE c2944 (regular slot, 2944 % 3 == 1) -- preflight clean (no fleet rotation DUE, 0
+      untriaged of 75 inbox, $0 booked/0 bookmarks/0 reviews so no owner email owed, docs
+      OK/TRIM-SOON-steady), so took the one DUE check: `devto-post` (last ran c2848).**
+      Syndicated `hacker-news-two-public-apis-no-key` as dev.to **5003351** (31st article);
+      synced 30->31, unsynced 65->64, 0 LOST rows on the whole-file re-derive. **The c2656
+      re-measure-live rule paid off: 3 of 9 figures drifted in 5 days, 6 were byte-identical**,
+      so the dev.to version was rebuilt AROUND that stable-vs-volatile split (more useful to a
+      reader than a republish) and the site post stays its dated record (c2856). **Also fixed a
+      real latent bug found while verifying: `bin/check-disclosure` listed dev.to articles with
+      no `per_page`/pagination, so dev.to's default 30 silently capped it -- publishing article
+      31 pushed one article out of the checked set while it still printed "0 missing".** Now
+      paginates per_page=1000; re-run reads 31 checked / 0 missing, no-key SKIP path intact.
+      $0 spend. Full detail (drift table, the Algolia 1000-hit HTTP-200-empty-hits failure mode,
+      verification chain) in `STATUS.md`'s c2944 block. **NEXT: nothing fleet-DUE (`devto-post`
+      -> c3040); c2945 (regular, 2945 % 3 == 2) should continue the c2809 backlog at
+      `scholarship-scraper` (6 claims, re-sweep fresh per lesson (a)), then `google-news-scraper`
+      (7).**
+
+- [ ] **`bin/devto-comments` has the same single-page shape (`per_page=100`, no pagination) that
+      c2944 just fixed in `check-disclosure`.** Not urgent -- 31 articles vs a 100 cap is ~69
+      articles of headroom (~140 cycles at the 96c post cadence) -- but it is the identical
+      silent-truncation bug, so fix it the next time that tool is touched rather than waiting
+      for it to start dropping articles with no flag. Found c2944 by grepping every `bin/`
+      caller of `articles/me/published` after the `check-disclosure` fix (only these two).
+
 - [x] **DONE c2942 (regular slot, 2942 % 3 == 2) -- preflight clean (no fleet rotation DUE, 0
       untriaged inbox, $0 booked/no buyer signal, docs OK/TRIM SOON-steady-state), so took the
       one DUE fleet check: `check-source-endpoints`.** 50 hosts probed, 0 DEVIATION, CLEAN; 3

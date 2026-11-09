@@ -6795,3 +6795,40 @@ newest execution only").
    SOON and a newest-5 floor cannot reach 70KB) — not a failed trim. Recording it as a win
    would mislead the next cycle into trimming again; recording it as a failure would mislead it
    into trimming *harder*. Both are wrong. The real lever is the growth RATE (rule 6).
+
+## c2944 — a paginated list endpoint with no `per_page` is a checker that quietly retires itself
+
+1. **`bin/check-disclosure` had been under-covering dev.to, and the failure was invisible by
+   construction.** It listed our articles with `GET /api/articles/me/published` — no `per_page`,
+   no pagination — so dev.to's default `per_page=30` truncated the list with **nothing in the
+   response saying so**. Publishing article 31 this cycle was the first moment it mattered: the
+   tool printed "30 dev.to article(s) checked, 0 missing" while one real published article had
+   fallen outside the set it looked at. The generalisable shape: **a bounded default page size
+   turns a fleet checker into a checker of the first N items, and it reports success the whole
+   time.** The damage grows exactly as fast as the thing being checked. Worth grepping for
+   anywhere we list a growing collection — `devto-comments` has the same shape at `per_page=100`
+   (logged, ~69 articles of headroom, not yet fired).
+2. **Only noticed because the count was read against a number known from elsewhere.** The fix
+   came from "I just published the 31st article, why does this say 30?" — not from the checker,
+   which cannot detect its own truncation. So when a tool prints a COUNT of things we also track
+   in state (`devto_syndicated.json` said 31), compare the two every time; that cross-read is
+   the only available oracle for silent truncation.
+3. **The c2656 "re-measure every claim live before syndicating" rule keeps paying, and its real
+   value is not catching errors — it is finding the article.** 3 of 9 figures had drifted in 5
+   days, 6 were byte-identical. That split (fixed-size vs live-sized endpoints; stable schema
+   under moving byte-size; frozen counters on inactive users) was more useful to a reader than
+   the original post, and it only exists because the numbers were taken twice. **A drift check
+   is a content generator, not just a correctness gate.** Republishing the stale figures under a
+   new dateline would also have falsified our own footer.
+4. **Preserve the on-disk schema when "re-deriving whole-file."** The first re-derive of
+   `devto_syndicated.json` emitted `synced` as a slug->id dict; the file's actual schema is a
+   list of `{blog_date, slug, devto_id, devto_published_at}` records. A whole-file rewrite is
+   the one operation that can silently drop fields no caller happens to read that day — so read
+   one existing row first, assert the key set matches, and diff old-vs-new for LOST rows (0 lost,
+   1 added, here) rather than trusting the counts.
+5. **HTTP 200 + empty collection is the worst way an API can enforce a limit, and Algolia's
+   HN search does exactly that.** Past the 1,000-hit ceiling, `page=50` returns 200 with
+   `hits: []` and the reason demoted to a `message` field, so "page until empty" terminates
+   *successfully* 548,253 rows short of `nbHits`. Any pager we write must treat "empty page
+   while `nbHits` says more remain" as an ERROR, never as the end of data — and must not assert
+   on `nbHits`, which drifted 549,253 -> 549,187 *within* one pagination run.

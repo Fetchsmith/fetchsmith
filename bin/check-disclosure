@@ -86,8 +86,25 @@ else:
     H = {"api-key": key,
          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
                        "Chrome/120 Safari/537.36"}
+    # MUST pass per_page and page explicitly: dev.to defaults this route to per_page=30
+    # and silently truncates with no flag of any kind in the response. Cycle 2944 caught
+    # it at exactly the wrong moment -- publishing article 31 pushed one article out of
+    # the window, so the check reported "30 dev.to article(s) checked, 0 missing" while
+    # never looking at one of them. A disclosure checker that silently stops covering
+    # new posts as you publish more is worse than no checker. Paginate to exhaustion
+    # (per_page=1000 is dev.to's documented max) rather than trusting a single page.
+    arts, st = [], None
     try:
-        arts, st = get_json("https://dev.to/api/articles/me/published", headers=H)
+        for page in range(1, 11):
+            batch, st = get_json(
+                "https://dev.to/api/articles/me/published?per_page=1000&page=%d" % page,
+                headers=H)
+            if not isinstance(batch, list):
+                arts = batch  # propagate the non-list to the SKIPPED branch below
+                break
+            arts.extend(batch)
+            if len(batch) < 1000:
+                break
     except ApifyGetError as e:
         arts, st = None, "unreachable: %s" % e
     if not isinstance(arts, list):
