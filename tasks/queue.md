@@ -24,11 +24,20 @@
       `majestic_fund` hold above), `openclawai` 78->89, `lepidata/new-jobs-feed` 3->4,
       `hipersoft/cendoj-scraper` 1->2, `lofomachines` 74->87, `ciel_labs` 17->23,
       `maximedupre/fda-food-recalls-scraper` 3->2 (decrease), `constant_quadruped/fda-
-      catalyst-alerts` 6->7, `fortuitous_pirate/sam-gov-scraper` 129->146,
-      `fortuitous_pirate/florida-court-records-scraper` 129->15 (cross-file ID mixup --
-      **check this one first**, a 129-vs-15 gap this large on a guarded "superlative in
-      paragraph" claim smells like the sam-gov-opportunities-scraper README citing the
-      WRONG fortuitous_pirate listing, not ordinary drift), `majestic_fund` 71->79 (the
+      catalyst-alerts` 6->7, ~~`fortuitous_pirate/sam-gov-scraper` 129->146~~ **DONE c2954**,
+      ~~`fortuitous_pirate/florida-court-records-scraper` 129->15 (cross-file ID mixup)~~
+      **DONE c2954 -- confirmed NOT a content error, a checker handle-resolution bug: this
+      was the SAME `fortuitous_pirate/sam-gov-scraper` claim (bare mention, line 385) being
+      silently resolved by the global `COMPETITORS["fortuitous_pirate"]` default to their
+      UNRELATED `florida-court-records-scraper` listing (15u) because this file had no
+      `FILE_OVERRIDES` entry. Fixed with a file-scoped override (same established pattern
+      as 11 other multi-listing-vendor files already in `bin/check-competitor-claims`), not
+      a README number swap -- the 129 was already right, just mis-checked. Also fixed the
+      companion bare `jungle_synthesizer` mention in the same paragraph the same way (see
+      the resolved UNCHECKED below). Re-verified live: 146u, re-dated 2026-11-09, both
+      mentions (full-slug + bare) now agree. `--only sam-gov-opportunities-scraper`: 0
+      stale/0 unresolved/0 disagree (was 2 STALE + 1 UNCHECKED + 1 DISAGREE). Build 0.1.93
+      pushed, byte-exact via `/versions`.** `majestic_fund` 71->79 (the
       standing hold, still not independently re-derivable per lesson f), `trovevault/
       shopify-products-scraper` 758->843, `automation-lab/shopify-scraper` 101->113,
       `thriftykiwi` 2->3, `copious_atoll` 11->13 (x2, the other standing hold, "under 10
@@ -36,14 +45,61 @@
       `hacker-news-scraper` `carmine_tennis`/`rbbscrap` both read "gone from the Store"
       but WITHOUT the adjacent disclosure text the DISCLOSED path requires -- check
       whether a disclosure exists further away in the paragraph before treating as a
-      silent delisting. **1 UNCHECKED:** `sam-gov-opportunities-scraper:385`
-      `jungle_synthesizer` (171u) needs a COMPETITORS entry or a full slug backtick.
-      **16 UNDATED paragraphs**, mostly `google-news-scraper` (7 lines, same file as a
+      silent delisting. ~~**1 UNCHECKED:** `sam-gov-opportunities-scraper:385`
+      `jungle_synthesizer` (171u) needs a COMPETITORS entry or a full slug backtick.~~
+      **DONE c2954** -- same file-scoped override pattern as `fortuitous_pirate` above,
+      see that entry. **15 UNDATED paragraphs remaining** (was 16; c2954's edit to line
+      385 added a verification date, closing 1 of the 3 sam-gov-opportunities instances --
+      2 remain there, lines 371/381), mostly `google-news-scraper` (7 lines, same file as a
       DISAGREE finding above -- worth doing together) plus scattered singles across
       apple-podcasts/court-records/nih-reporter/remote-jobs/trademark-search/uk-find-a-
-      tender/sam-gov-opportunities (3). Recorded as the `check-competitor-claims` run of
-      record (`last_cycle` 2843 -> 2953, next due 3097) since the sweep was the real
-      full unfiltered fleet pass, not a partial.
+      tender/sam-gov-opportunities (2 remaining). Recorded as the `check-competitor-claims`
+      run of record (`last_cycle` 2843 -> 2953, next due 3097) since the sweep was the real
+      full unfiltered fleet pass, not a partial -- **re-run fresh before trusting any
+      remaining count in this item (c2809 lesson a: carried counts drift); the
+      `google-play-reviews-scraper` 8 DISAGREE findings and the `hacker-news-scraper`
+      disclosure check and the 20 remaining STALE items are still untouched.**
+
+- [x] **DONE c2954 (regular slot, 2954 % 3 == 2) -- preflight clean (`audit-due --all`
+      FLEET ROTATIONS NONE DUE, `checks-due --all` NONE DUE / soonest `check-store-index`
+      in 2c, 0 untriaged of 75 inbox, `bin/revenue` unchanged $0 booked/0 bookmarks/0
+      reviews so no owner email owed, services+site 200). Took the c2953 backlog's
+      `fortuitous_pirate`/`jungle_synthesizer` items first since they were flagged
+      "check this one first."** Investigated the suspected "cross-file ID mixup" by hand
+      and confirmed it: the checker's global `COMPETITORS` dict maps bare `fortuitous_pirate`
+      -> their `florida-court-records-scraper` listing, but `sam-gov-opportunities-scraper`
+      README.md:385 has a BARE mention of the same handle two paragraphs below where it's
+      correctly named in full as `fortuitous_pirate/sam-gov-scraper` (line 280) -- the
+      global default silently won, so the checker was comparing a SAM.gov-niche claim (129u)
+      against an unrelated Florida-court-records listing's live count (15u). Not a content
+      bug at all. Fixed in `bin/check-competitor-claims` with a file-scoped
+      `FILE_OVERRIDES` entry (the exact same pattern already used for 11 other
+      multi-listing-vendor files) rather than touching the README number, plus the same fix
+      for the companion bare `jungle_synthesizer` mention in the same paragraph (c2953's
+      filed "1 UNCHECKED" item -- `jungle_synthesizer` sells dozens of Actors fleet-wide, so
+      a global mapping would have been unsafe; file-scoped is correct). **Live re-verify:**
+      `fortuitous_pirate/sam-gov-scraper` 129->146u (genuine drift, now correctly checked
+      against the right listing), `jungle_synthesizer/samgov-scraper` already-correct 171u.
+      README edited: both mentions (full-slug line 280, bare line 385) updated to 146u and
+      re-dated 2026-11-09, which also closed 1 of the file's 3 UNDATED flags (the
+      "re-verified ... 2026-11-09" text satisfies the FRESHNESS regex). **Verification:**
+      `--only sam-gov-opportunities-scraper` now reads 0 stale/0 unresolved/0 disagree (was
+      2 STALE + 1 UNCHECKED + 1 DISAGREE), 2 UNDATED remain (lines 371/381, untouched,
+      pre-existing, same low-priority class as the c2824/c2908/c2946 wording gaps). Build
+      0.1.93 pushed (`apify push --force`); live README byte-compared via `GET
+      /v2/acts/<id>/versions` `sourceFiles` (this is one of only 2 READMEs fleet-wide over
+      the ~100k-char build-record truncation limit, per `PLAYBOOK.md` step 10) --
+      **119892B both sides, exact match.** $0.03 spend (1 build + routine preflight calls).
+      Services+site 200 after, including `/tools/sam-gov-opportunities-scraper`.
+      **Blockers: none. Owner email: none owed.** `check-doc-size` fresh: `STATUS.md` OK
+      (~29c headroom), `queue.md` TRIM SOON (its documented steady state, not escalated by
+      this cycle's edits -- newest DONE block 16 lines, under the ~20 cap after
+      compression). Full detail in `STATUS.md`'s c2954 block.
+      **NEXT (c2955): re-run `audit-due --all`/`checks-due --all` fresh first. The c2953
+      backlog above still has 20 STALE + 8 DISAGREE (all on `google-play-reviews-scraper`,
+      read against c2949's dated-snapshot-paragraph caveat before hand-fixing) + the
+      `hacker-news-scraper` 2-handle delisting-disclosure check + 15 UNDATED remaining --
+      pick the next piece there (re-sweep fresh first per lesson a).**
 
 - [x] **DONE c2953 (regular slot, 2953 % 3 == 1) -- preflight clean, ran the 1 DUE check
       (`check-status-continuity`, NONE MISSING). Shipped the `check-competitor-claims`

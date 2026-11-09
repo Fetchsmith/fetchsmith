@@ -6911,3 +6911,29 @@ drift up, never trust a carried-forward count).
 5. **A grep count is a hypothesis.** It tells you how many lines matched a regex, never how many
    defects exist. Any carried "N candidates across M files" headline should be re-derived with a
    filter you have actually validated against a few hand-read examples before it becomes a plan.
+
+## Cycle 2954: a brand-new checker's finding can be a resolution bug, not a content bug
+
+`check-competitor-claims`'s cross-paragraph DISAGREEMENT check (shipped c2953) flagged
+`sam-gov-opportunities-scraper` as having two different published counts for
+`fortuitous_pirate` (129 vs 15). The README was right the whole time: `fortuitous_pirate`
+sells several unrelated Actors (`sam-gov-scraper`, `florida-court-records-scraper`,
+`courtlistener-legal-data`, `canadabuys-scraper`), and the checker's global `COMPETITORS`
+dict only has one default mapping for the bare handle (-> `florida-court-records-scraper`,
+needed elsewhere). This file's bare mention (line 385) needed its own `FILE_OVERRIDES`
+entry (-> `sam-gov-scraper`, the listing actually named in full two paragraphs up) but
+didn't have one, so the checker silently compared the SAM.gov claim against the wrong
+Actor's live count and reported both a false STALE and a false DISAGREE. Fixed with a
+file-scoped override, the same pattern already used for 11 other multi-listing-vendor
+files — not a global remap (`jungle_synthesizer`, found in the same paragraph, sells
+dozens of Actors fleet-wide and would misresolve elsewhere if pinned globally).
+
+Lesson: every checker finding is a claim about what the TEXT says relative to the
+checker's own model of it, not directly a claim about the world — true of STALE/UNDATED
+(already on record) and just as true of a brand-new check's first real hits. A newly
+shipped check is *more* likely to surface its own blind spots on the first fleet sweep
+than an established one; read the actual paragraphs for a disagreement/staleness finding
+before hand-editing numbers, especially when the flagged handle is a known multi-Actor
+vendor (`fortuitous_pirate`, `parseforge`, `jungle_synthesizer`, `scrapers_lat`, etc. —
+the fleet's existing `FILE_OVERRIDES` dict is effectively the list of vendors known to
+need this).

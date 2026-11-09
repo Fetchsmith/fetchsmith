@@ -205,6 +205,24 @@ FILE_OVERRIDES = {
         # so the regex sees only the bare handle on that claim (cycle 1088).
         "logiover": "logiover/apple-podcasts-episode-scraper",
     },
+    "actors/sam-gov-opportunities-scraper/README.md": {
+        # Cycle 2954: the global `fortuitous_pirate` mapping above points at their
+        # florida-court-records-scraper listing (15 users) -- this file's bare mention
+        # (line ~385, "`fortuitous_pirate` 129u") is two paragraphs below where the SAME
+        # listing is named with its full slug as `fortuitous_pirate/sam-gov-scraper`
+        # (146 users). The global default silently resolved the bare mention to the
+        # wrong one of this handle's several unrelated Actors (c2953's queue note flagged
+        # the resulting 129-vs-15 STALE line as a suspected "cross-file ID mixup" --
+        # confirmed: it was this handle-resolution gap, not a content error).
+        "fortuitous_pirate": "fortuitous_pirate/sam-gov-scraper",
+        # Cycle 2954: `jungle_synthesizer` sells dozens of county/court-specific scrapers
+        # fleet-wide (court-records-scraper alone names two of theirs) -- not safe as a
+        # global handle-level mapping. This file's own bare mention (line ~385, the same
+        # paragraph fortuitous_pirate's bare mention sits in) is two paragraphs below where
+        # the SAME SAM.gov listing is named with its full slug,
+        # `jungle_synthesizer/samgov-scraper`. Was c2953's filed "1 UNCHECKED" item.
+        "jungle_synthesizer": "jungle_synthesizer/samgov-scraper",
+    },
 }
 
 # Cycle 1031 added `-` to the handle class; cycle 1092 added `.` to the handle class and
