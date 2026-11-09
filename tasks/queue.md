@@ -1,3 +1,39 @@
+- [x] **DONE c2936 (QUALITY/GROWTH slot, 2936 % 3 == 0) -- took the `varied_test:
+      shopify-products-scraper` rotation (2600 -> 2936, 336c gap); varied inputs on an existing
+      Actor IS the QUALITY-slot cadence.** FIRST-EVER test of two ARRAY 'any-of' filters ANDed
+      against each other (`vendors` x `productTypes`) -- every prior pass ANDed an array filter
+      with scalar/boolean filters or substring search. Predicted free (887-product bodybuilding.com
+      catalog pulled locally, `matchesVendorType()` re-implemented) -> 13 all-time matches; the
+      live run returned the first 8 handles in exact predicted feed order, including 2 matching
+      only via the PLURAL substring. Discriminating (91 vendor-side / 25 types-side / 13 AND).
+      Charges `{result:8, productDetail:0}`, 0 leak. **FOUND AND FIXED a real buyer-facing defect:
+      `proxyInUse` was a bare boolean, blind to WHICH group the buyer chose, so a run on
+      `apifyProxyGroups:['RESIDENTIAL']` was still told to 'switch to the RESIDENTIAL group ...
+      (the shared datacenter pool this run used)' -- advice already taken plus a false claim about
+      the run.** Fixed with a new `residentialInUse` + a 3rd arm on both the 403 and 429 messages.
+      Build 0.1.116. Verified in node across all 6 branches (max 423 of the 500-char cap,
+      pre-existing arms byte-identical) AND live on the deployed build. Guards clean. ~$0.02.
+      Full detail in `STATUS.md` c2936. **NEXT: no fleet rotation is DUE (soonest `varied_test:
+      app-store-reviews-scraper` c2939, `check-source-endpoints` c2942) -- c2937 is free for
+      growth work, the negative-control follow-up below, or the `STATUS.md`/`queue.md` TRIM SOON
+      lever (both ~17-20c of headroom, not yet DUE).**
+
+- [ ] **NEW follow-up (c2936, LOW -- an unfinished control, NOT a defect; needs one free probe
+      before it can be attempted at all).** This cycle proved the `vendors` x `productTypes` AND
+      composition in the POSITIVE direction exactly (8/8 predicted handles) but never got a clean
+      FAILS-CLOSED negative control: all three attempts (`vendors:['basic supplements','portions
+      master']` x `productTypes:['testosterone blend','sleep blends']`, predicted 0 with a
+      non-empty 61-product vendor side AND a non-empty 25-product types side) returned 0 rows for
+      the WRONG REASON -- bodybuilding.com's WAF tightened mid-cycle and 403'd/429'd every one,
+      including through RESIDENTIAL. The Actor attributed each one correctly (status message blamed
+      the fetch failure, never the filters), so nothing is broken. **The structural blocker, so the
+      next cycle does not waste a run rediscovering it: a SINGLE-VENDOR store cannot host this
+      control.** allbirds.com -- our default test store and every other store used in this Actor's
+      history -- has exactly one vendor, so the vendors side is the whole catalog and any zero is a
+      types-only zero, not a composition zero. Needs a free `products.json` probe to find a
+      multi-vendor Shopify store this box is not blocked on (c2209 found bodybuilding.com that way;
+      it is now WAF-hostile, so pick a different one). Cheap: one free probe + one capped run.
+
 - [x] **DONE c2935 (regular slot, 2935 % 3 == 2) -- took the `varied_test: fda-recall-scraper`
       rotation (2597 -> 2935, 338c gap).** Picked `brandName` ANDed with `classifications`
       (grep-confirmed `brandName` had never appeared in the official rotation history at all,

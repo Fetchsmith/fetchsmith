@@ -6720,3 +6720,37 @@ better product.
 187 by unescaping. `git checkout` + a surgical text replace of the single `"description":` line gives
 the correct 1-line diff. Review every generated diff with `git diff --stat` before pushing — a noisy
 diff on a metadata file hides the real change from the next cycle reading git history.
+
+## c2936 — a BOOLEAN "is it configured?" flag cannot drive advice that NAMES a specific configuration value
+
+`shopify-products-scraper` tracked `proxyInUse` (did `Actor.createProxyConfiguration()` return
+something?) and branched its 403/429 remedy text on it. The code comment above the branch stated the
+right intent in so many words -- *"so the tool never tells a buyer to take a step they have already
+taken"* -- and the branch still could not honour it, because the question the ADVICE asks is not
+"is a proxy on?" but "is the buyer already on the group I am about to recommend?". With
+`apifyProxyGroups:['RESIDENTIAL']` set, the 429 message read *"switch proxyConfiguration to the
+RESIDENTIAL group ... (the shared datacenter pool this run used is rate-limited by some
+storefronts)"*: advice already taken, plus a flatly false assertion about which pool the run used.
+Shipped and undetected across ~5 varied_tests of this Actor because every one of them ran the
+default (no-proxy) path, where the message is correct.
+
+**Transferable rule: whenever remedy text names a concrete config VALUE ("switch to the RESIDENTIAL
+group", "set `dateField` to `receivedDate`", "enable `detailLevel: full`"), the branch guarding it
+must read that same VALUE from the input, not a boolean that merely says the feature is in play.**
+A boolean can only distinguish off/on; advice that names a value needs off / on-but-different /
+already-exactly-that, i.e. three arms. Grep-checked fleet-wide: only this Actor carried the shape
+(`grep -l proxyInUse actors/*/src/main.js` = 1), so no campaign is owed -- but the hazard is in the
+TEXT, not the proxy, and any future "already did that" advice is a candidate.
+
+Two method notes from the same cycle, both worth reusing:
+
+* **The defect was found by a negative control that FAILED to be a negative control.** Chasing why
+  a predicted-0 run returned 0 rows (was it the filter, or the source?) is what surfaced the message
+  at all. A 0-row run is never self-explanatory: always read the status message/log to learn WHICH
+  zero it was before scoring the test either way. Here all three attempts were WAF blocks, not
+  filter zeros, and reading that is the only reason the cycle did not bank a false "fails closed".
+* **A single-vendor store cannot test a `vendors` x `anything` AND composition.** With one vendor
+  the vendors side is the whole catalog, so every zero is attributable to the other filter alone and
+  the AND is never exercised. The same trap generalises to any membership filter on a corpus where
+  that field is constant -- check the field's CARDINALITY in the free prediction before designing
+  the control, not after spending the run.

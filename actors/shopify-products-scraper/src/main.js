@@ -328,6 +328,17 @@ let proxyUrlFor = async () => undefined;
 // buyer has NOT already taken: enabling the proxy when it is off (now the default), or switching to
 // the residential group when a datacenter proxy is already in play.
 let proxyInUse = false;
+// ...and WHICH group, because `proxyInUse` alone is not enough to honour that promise. Measured
+// live cycle 2936 on bodybuilding.com with `apifyProxyGroups: ['RESIDENTIAL']` explicitly set: the
+// store 429'd anyway and the advice still read "switch proxyConfiguration to the RESIDENTIAL group
+// ... (the shared datacenter pool this run used is rate-limited by some storefronts)" — a step the
+// buyer had already taken AND a false statement about which pool the run used. The group is read
+// from the buyer's own input rather than from the SDK's proxy object (which exposes no group
+// getter); the lazy 403 residential FALLBACK below is deliberately not counted here, since the
+// advice is about what the buyer should change in `proxyConfiguration`, not what we retried
+// internally — and that fallback only ever fires when `proxyInUse` is false.
+const residentialInUse = (input.proxyConfiguration?.apifyProxyGroups ?? [])
+  .some((g) => String(g).toUpperCase() === 'RESIDENTIAL');
 try {
   const proxyConfiguration = await Actor.createProxyConfiguration(input.proxyConfiguration ?? { useApifyProxy: false });
   if (proxyConfiguration) {
@@ -489,9 +500,9 @@ const STOREFRONT_STATUS = {
   // take a step they have already taken. Since the default flipped to a direct connection
   // (2026-11-04) the usual branch is "enable proxyConfiguration"; when a datacenter proxy IS
   // already in play the useful next step is a different group, not enabling it.
-  403: `this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. ${proxyInUse ? 'A proxy was already in use, so switch proxyConfiguration to the RESIDENTIAL group' : 'Re-run with proxyConfiguration enabled (residential group)'} to get a different IP.`,
+  403: `this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. ${residentialInUse ? 'The RESIDENTIAL proxy group was already in use, so there is no cleaner pool to switch to: this store blocks at the store level. Try a country-specific residential group, or drop this URL.' : proxyInUse ? 'A proxy was already in use, so switch proxyConfiguration to the RESIDENTIAL group to get a different IP.' : 'Re-run with proxyConfiguration enabled (residential group) to get a different IP.'}`,
   404: 'there is no Shopify store at this URL (404 "Not Found") — check the domain/handle for a typo, or the store has been deleted.',
-  429: `this storefront rate-limited us (429) — a transient per-IP throttle, not a missing or disabled products.json. Re-run with fewer storeUrls${proxyInUse ? ', or switch proxyConfiguration to the RESIDENTIAL group so each request comes from a different IP (the shared datacenter pool this run used is rate-limited by some storefronts)' : ', or with proxyConfiguration enabled so each request comes from a different IP'}.`,
+  429: `this storefront rate-limited us (429) — a transient per-IP throttle, not a missing or disabled products.json. Re-run with fewer storeUrls${residentialInUse ? ', or simply retry: the RESIDENTIAL group was already in use, so there is no less-throttled group to switch to and the throttle lifts on its own' : proxyInUse ? ', or switch proxyConfiguration to the RESIDENTIAL group so each request comes from a different IP (the shared datacenter pool this run used is rate-limited by some storefronts)' : ', or with proxyConfiguration enabled so each request comes from a different IP'}.`,
 };
 const throwIfStorefrontError = (res) => {
   const code = res.statusCode;
