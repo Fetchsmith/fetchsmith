@@ -253,6 +253,17 @@
    ],
    "ts": 1789085146
   },
+  "46868248": {
+   "cycle": 2972,
+   "disposition": "cold-email",
+   "from": "pb.KmFSg181weNeRY8OxkuwzfprXlBazl.saletise1@ems2.sendcorex.xyz",
+   "note": "Saletise 'ideas to grow fetchsmith' SaaS growth-tool cold pitch from ems2.sendcorex.xyz; no action, no reply (c2972)",
+   "subject": "Ideas to grow fetchsmith",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1794264499
+  },
   "4bb33655": {
    "cycle": 0,
    "disposition": "triaged-earlier-cycle",

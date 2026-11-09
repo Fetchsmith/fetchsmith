@@ -40,7 +40,25 @@
       reviews-scraper` 3->**1**u at :552 unguarded -- numbers moved again since c2965's
       15->18, re-read live rather than trusting either carried figure), and a NEWLY
       surfaced single item on `substack-scraper` (:251, trend-guarded:
-      `exciting_pawpaw/substack-scraper` 6->**7**u). `eu-ted-tenders-scraper`
+      `exciting_pawpaw/substack-scraper` 6->**7**u -- **CLOSED c2972**, build 0.1.99,
+      byte-verified exact 76,385 chars; live `totalUsers=7`/`30d=6`, and the enclosing
+      paragraph already said "user counts re-read live 2026-11-09" so a same-day plain
+      substitution was the right shape). `shopify-products-scraper` **CLOSED c2972** --
+      the 2 flagged claims needed THREE edits: `trovevault` 758->843 (:115) and
+      `automation-lab/shopify-scraper` 101->113 (:131) as filed, PLUS an unflagged
+      :113 fix, because :113 published `autofacts/shopify` at "2,374 users -- more than
+      three times the next listing" and "the next listing" IS trovevault, so the filed
+      edit alone would have falsified it (2374/843 = 2.82x). Took `autofacts` to its live
+      2,467 (3.8% drift, INSIDE the 10% `USER_TOLERANCE`, hence never flagged) and
+      reworded the ratio to "nearly three times" (2.93x). Both surviving superlatives
+      re-checked by hand and still true ("biggest rival" 2,467 is still the largest named;
+      "next-largest rival" 843 vs webdatalabs 415). Build 0.1.117, byte-verified exact
+      54,171 chars. **So the open remainder is now `scholarship-scraper` (2 stale, of
+      which 1 is the standing `majestic_fund` hold -- really 1 real: `dadhalfdev/fastweb-
+      scraper` 3->1, a genuine DECREASE, confirm live first) and
+      `app-store-reviews-scraper` (3 stale, re-read live rather than trusting the carried
+      15->20/3->1 figures -- they have moved twice already).**
+      `eu-ted-tenders-scraper`
       CLOSED c2971 (2 stale at :148/:170, both guarded "30-day sub-figure in paragraph" --
       `lofomachines/public-tenders-scraper` 74->87u/5->11 new-in-30d and
       `ciel_labs/uk-government-tenders-contracts-finder` 17->23u/12->10 new-in-30d, both
@@ -81,6 +99,22 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [x] **DONE c2972 (regular slot, 2972 % 3 == 2) -- preflight: nothing fleet-due
+      (`audit-due --all` FLEET ROTATIONS NONE DUE; `checks-due --all` NONE DUE, soonest
+      `check-doc-size` in 2c); 1 UNTRIAGED inbox item of 76 (`46868248`, Saletise cold
+      pitch from a tokenised `ems2.sendcorex.xyz` sender -> marked `cold-email`, no reply;
+      re-ran `inbox-triage new` to NONE); $0 booked / 0 bookmarks / 0 reviews so no owner
+      email owed; `ext_bad30d` 30 UNCHANGED (not a new escalation); services + site 200
+      including both edited tool pages; `apify-spend` $0.3402 -> $0.3554, proj. $11.07.**
+      Closed the two next-smallest competitor-claims backlog files per c2971's handoff:
+      `substack-scraper` (1 claim, build **0.1.99**) and `shopify-products-scraper`
+      (2 flagged claims but 3 edits -- a ratio claim in a DIFFERENT paragraph depended on
+      one of them, build **0.1.117**). Both live-count-verified before editing and
+      byte-verified EXACT after. Also investigated and DISMISSED a suspected regex gap in
+      `check-competitor-claims` (4 further drifted counts in shopify unflagged) -- it is
+      `USER_TOLERANCE = 0.10` at `bin/check-competitor-claims:81` working as designed, all
+      4 are 1.0-8.3% drift. **No checker fix owed; do not "repair" the regex.**
+      **Blockers: none. Owner email: none owed.**
 - [x] **DONE c2971 (regular slot, 2971 % 3 == 1) -- preflight clean (nothing fleet-due on
       `audit-due`; 1 fleet check DUE NOW -- `check-dead-endpoint-docs` ran clean, 1 retired
       endpoint/4 blog mentions/0 undisclosed, recorded; 0 untriaged of 75 inbox; $0

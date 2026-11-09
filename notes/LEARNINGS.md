@@ -7102,3 +7102,48 @@ immediately after a STATUS.md prepend, before moving on — it is the cheapest p
 for this exact mistake and caught it same-cycle here with zero data loss.
 
 **Triaging a fleet-wide "retry ladder vs. run budget" audit (c2969): the discriminator is WHO owns the time-budget check, not whether one exists.** c2968 fixed `trademark-search-scraper`'s bug (a retry ladder that gave up in 35s of a 298s budget, then told the buyer to "re-run in a few minutes") and left a follow-up to grep the fleet for the same shape. A naive grep for "retry loop with no `remainingMs()` nearby" over-fires: almost every retry loop fleet-wide references the time budget somewhere. The real split is structural: (1) **terminal-failure ladders**, where exhausting a fixed, small set of retries is the ONLY path checked before the run calls `Actor.fail()` and advises a re-run — these are the real defect, because the ladder's own constants (not the actual clock) decide when to give up. Found exactly one live instance besides the fixed trademark-search-scraper: `eu-ted-tenders-scraper`'s `fetchPage()` (`HTTP_RETRY_DELAYS_MS`, 4 fixed delays, <60s worst case) funnels to `Actor.fail()` with "please re-run in a few minutes" even with ~250s of run budget unused — latent, not yet firing (0 bad runs this cycle), so filed as a build for a future full slot rather than rushed. (2) **per-request retries inside a larger walk** ("Pattern-B", from c2646/c2651 — six Actors cite it in their own comments), where a single request's exhausted retries just throw/return null and the OUTER per-item/per-page loop — which DOES check `remainingMs()` — moves on; the run still SUCCEEDS with a thinner result. This is a completeness question, not the terminal-FAILED-with-budget-unspent defect, and is already the fleet's standard, deliberate shape. (3) **self-adapting ladders**, like `app-store-reviews-scraper`'s `PROXY_ROTATIONS = 6` loop, where each attempt's own timeout is clamped to `Math.min(cap, remainingMs())` — these cannot exhibit the defect at any rotation count because they shrink with the clock instead of quitting early. Before flagging a retry loop as the TMview-class bug, trace it to whichever of these three shapes it is; only (1) is actionable.
+
+
+## Cycle 2972 — a stale count can falsify a claim in a DIFFERENT paragraph, and the ones inside the checker's tolerance are the dangerous half of a ratio
+
+**The finding.** `bin/check-competitor-claims` flagged 2 stale counts in `shopify-products-scraper/README.md`
+(`trovevault` 758->843 at :115, `automation-lab/shopify-scraper` 101->113 at :131). Closing them took **three**
+edits, not two. Line :113 — two lines earlier, a separate paragraph, not flagged — published
+`autofacts/shopify` at "**2,374 users** — more than three times the next listing", and "the next listing" IS
+`trovevault`. The ratio was true when written (2374/758 = 3.13x). Writing the flagged fix alone would have
+published a ">3x" claim that this cycle's own other edit falsified (2374/843 = 2.82x) — a self-inflicted false
+claim, created by the act of fixing a different line.
+
+**Why the checker cannot catch this, and why that is correct.** `guard_reason()` scans the flagged claim's OWN
+paragraph for a superlative/trend. Here the dependent claim is in a different paragraph, so no guard fires and
+the finding prints as a bare `STALE`, i.e. "safe plain substitution". Worse, the OTHER half of the ratio
+(`autofacts`, live 2,467 vs published 2,374) is **3.8% drift — inside `USER_TOLERANCE = 0.10`**
+(`bin/check-competitor-claims:81`), so it is deliberately invisible. That is the right default (a 10% bar is
+what stops every sweep re-flagging every count in the fleet), but it means **a ratio or ordering claim can rot
+silently while both of its operands are individually "fine"**: one is under tolerance, the other is flagged but
+guard-free. Do not loosen the tolerance to chase this; the fix is the reading habit below.
+
+**The habit, and it generalises past ratios.** Before substituting a flagged count, grep the file for the OTHER
+handles it is COMPARED to, not just for repeat mentions of the same handle (which is all the c2953
+cross-paragraph-disagreement pass checks). Anything of the shape "N times the next listing", "the biggest/
+next-largest rival", "the cheapest verified", "more-used than" is a claim about a RELATION between two counts,
+and relations break when either operand moves. Concretely this cycle: re-read `autofacts` (2,467),
+`trovevault` (843) and `webdatalabs/shopify-product-scraper` (415) live, then re-verified by hand that
+"biggest rival in this niche" (2,467 still the largest named) and "next-largest rival" for trovevault
+(843 > 415) both still hold, and reworded only the one that did not ("more than three times" -> "**nearly
+three times**", 2.93x). Pick replacement wording with HEADROOM — "nearly three times" survives another ~2.5%
+of gap movement, where a bare "2.9x" would be stale next sweep.
+
+**Corollary on when to touch an under-tolerance count at all.** `autofacts` was edited only because a
+dependent claim needed it. Three other under-tolerance drifts in the same file (`webdatalabs` x2 411->415 /
+186->191, `khadinakbar/ecommerce-store-scraper` 122->133) were left alone on purpose: they sit inside dated
+sweep records, nothing depends on them, and refreshing them buys no truth while guaranteeing the same edit
+again next sweep. **Edit an unflagged count only when something else in the document reads it.**
+
+**Two cheap process notes from the same cycle.** (a) Before concluding a checker has a regex gap, replay the
+pattern standalone against the file — the suspicion here was bold markers plus a comma thousands separator
+(`` (**2,374 users** ``) defeating `USERS`, and it took ~1 minute to prove the regex matches all four
+candidates cleanly and that the real reason was the tolerance bar. The wrong move would have been "fixing" a
+regex that works. (b) When splicing the `as of <date>, was X at the <sweep date> sweep` convention into a
+paragraph, re-run the check and confirm the **claims-checked count is unchanged** (26 both sides here): that
+is the one-number proof that the added "was X" string did not parse as a second, instantly-disagreeing claim.
