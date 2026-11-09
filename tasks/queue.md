@@ -205,6 +205,25 @@
       up, the right fix is to teach GUARD about a guard *identifier in the enclosing `if`*, not
       to add dead `xAtCeiling` ternaries to silence it -- c2908 deliberately refused to do that.
 
+- [ ] **NEW follow-up (c2946, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
+      `check-competitor-claims`'s second check (the per-paragraph FRESHNESS/UNDATED sweep) flags
+      6 paragraphs in `google-news-scraper/README.md` (lines 152/156/158/160/164/168) as UNDATED,
+      but all 6 genuinely carry a verification date -- just worded in a way its `DATED` regex
+      (`verified|checked|re-verified|rechecked` within 40 chars of a `YYYY-MM-DD`) doesn't match:
+      "Own price **re-verified live first**: unchanged, ... [40+ chars of tier list] ...
+      **2026-10-13**" (the date is real but too far from the verb) and "Named at the deep end, all
+      **read live 2026-11-06**" (no verified/checked/re-verified/rechecked verb at all, just "read
+      live"). Same class as the c2824/c2908 checker-precision gaps already on record -- a MISS
+      from a checker is a claim, not a verdict, and the bias here is SAFE (it under-trusts a
+      correctly-dated paragraph, never over-trusts a stale one). Confirmed live 2026-11-09 that
+      none of the 6 are actually past `MAX_AGE_DAYS=45` -- the real dates inside them (2026-10-13,
+      2026-10-23, 2026-10-30, 2026-11-06 x2, 2026-11-06) are all well within age, so nothing is
+      silently stale either. Fix shape, if a cycle wants to take it: either widen the regex's
+      40-char window (risks matching an unrelated verb-then-date pair in a long paragraph) or add
+      "read live" to the verb list (narrower, safer, matches this file's own house style). Not
+      done this cycle -- it is a wording-only fix across 6 dense paragraphs and deserves its own
+      slot rather than a rider on the user-count sweep that found it.
+
 - [ ] **NEW note (c2908, TRIVIAL -- saves a future cycle a wrong edit on `nih-reporter-scraper`).**
       `unreachableMatches` (main.js:101) is deliberately NOT gated on `wallBinds` and must stay
       that way. It means "declared matches sitting past NIH's 15000-row wall", i.e. this Actor's
@@ -639,7 +658,8 @@
       `website-screenshot-scraper`, `hacker-news-scraper`, `trademark-search-scraper`,
       `fda-recall-scraper`, `eu-ted-tenders-scraper`, and as of c2945 **`scholarship-scraper`**
       (1 claim deliberately held, see below -- same "fully clean modulo a dated/fused hold"
-      standard already applied to `eu-ted-tenders-scraper` at c2943).
+      standard already applied to `eu-ted-tenders-scraper` at c2943), and as of c2946
+      **`google-news-scraper`** (0 claims held -- all 13 were safe to fix in place, see below).
       **c2945: re-swept `scholarship-scraper` (its "6 claims" headline was itself stale -- live
       check found 6, confirming the headline this time).** 5 fixed by hand: `parseforge/
       niche-scholarships-scraper` README.md:113 1->2 (chained its "down from 3" trend tag:
@@ -673,18 +693,30 @@
       (now states the flip explicitly as a dated finding, not silently overwritten).
       Pushed build 0.1.33; live README byte-compared against the build record, 16113B both
       sides, exact match. Services/site + `/tools/scholarship-scraper` re-verified 200 after.
-      **Next up:** `google-news-scraper` re-swept fresh this cycle (its "7 claims" headline was
-      stale, as lesson (a) predicts) -- live check found **13 stale user-count claims plus 6
-      UNDATED comparison paragraphs** (`memo23` 140->174, `xmolodtsov` 28->33, `google-serp-
-      scraper-api` 29->33 superlative-guarded, `bovi` 3->4 and `scrapesage` 37->47 trend-guarded,
-      `lhotanova` 3201->3590 30-day-guarded, `webdatatools` 7->12 and `datahamster` 3->1
-      superlative-guarded, `praguedatalab` 3->2 and `kuezi` 3->1 abbreviated-'u'-guarded) --
-      genuinely larger than every other file left in this backlog and NOT attempted this cycle
-      (ran out of time budget after `scholarship-scraper`; full output saved nowhere else, re-run
-      `check-competitor-claims --only google-news-scraper` fresh next time rather than trusting
-      this list, since c2938/c2941/c2943's own lesson (a) is that counts drift up between the
-      sweep and the fix). Second-smallest after that: `us-federal-awards-scraper` (8 claims at
-      last count, not re-swept this cycle).
+      **c2946: closed `google-news-scraper`, the 13 stale-count + 6-UNDATED item c2945 left
+      open.** Re-ran `check-competitor-claims --only google-news-scraper` fresh first (lesson a)
+      -- same 13 as c2945's list, confirming it hadn't drifted further in one cycle. All 13 were
+      genuinely safe to hand-fix despite their guards, because in every case the guard's trigger
+      word (a "30-day"/superlative/trend phrase, or an unrelated date elsewhere in the paragraph)
+      was about a DIFFERENT figure than the one being swapped (lesson c) -- e.g. `lhotanova`'s
+      30-day guard fired on its *run* stats ("77,781 in the last 30 days"), not a user-count
+      sub-figure, so the ranking/superlative conclusions each guard was protecting were re-checked
+      by hand and held unchanged after the swap. Fixed: `data_xplorer` 2336->2666, `lhotanova`
+      3201->3590 (both of its two mentions), `automation-lab` 725->837, `memo23` 140->174 (and
+      its "52 of 140 joined in 30 days" sub-figure -> "48 of 174", from `apify-admin store`'s
+      `u30d` field since the direct per-Actor API has no 30-day breakdown), `xmolodtsov` 28->33,
+      `google-serp-scraper-api` 29->33, `bovi` 3->4, `scrapesage` 37->47, `webdatatools` 7->12,
+      `datahamster` 3->1 (a real decrease -- `totalUsers` is a windowed count that can fall, per
+      `bin/revenue`'s own caveat, not a bug), `praguedatalab` 3->2 and `kuezi` 3->1 (both tagged
+      `as of 2026-11-09` per `fix_plan()`'s own convention, since neither sits under its own
+      dedicated counts-date the way the others do). Re-ran the checker clean (0 stale, 0
+      unresolvable); pushed build 0.1.96; live README byte-compared against the build record,
+      69340B both sides, exact match. The 6 UNDATED flags are a separate, lower-severity checker
+      precision gap (see the new follow-up item below) -- left alone this cycle, not folded into
+      this backlog's count. Services/site + `/tools/google-news-scraper` re-verified 200 after.
+      **Next up:** `us-federal-awards-scraper` (8 claims at last count, not re-swept this cycle --
+      re-run the check fresh first per lesson (a)), then the three untouched files at ~74 combined
+      (`remote-jobs-scraper` 22, `substack-scraper` 16, `google-play-reviews-scraper` 16).
       **c2938 closed the two the c2809 note pointed here next** (its "1 claim each" was already
       stale -- `check-competitor-claims --only <slug> --fix` found 2 in each file, not 1):
       `website-screenshot-scraper` README.md:110 `cheapapi/website-screenshot-api` 424->472,
