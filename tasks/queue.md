@@ -11,15 +11,24 @@
       `court-records-scraper` (c2962), `remote-jobs-scraper` (c2963),
       `apple-podcasts-scraper` (c2964 -- 3 DISAGREE all confirmed PHANTOM, 1 real STALE
       + the :197 UNDATED fixed, build 0.1.122), `ats-jobs-scraper` (c2965 -- 2 stale,
-      build 0.1.123).
-      **OPEN REMAINDER, re-measured fresh c2965 (971 claims/281 paragraphs, 18 stale,
-      11 disagree all phantom, 0 undated):** `eu-ted-tenders-scraper` (2 stale, :148/:170),
-      `fda-recall-scraper` (2 stale, both :263), `google-news-scraper` (1 stale :142,
+      build 0.1.123), `fda-recall-scraper` (c2966 -- 2 stale at :263 inside one dated
+      2026-10-02 sweep paragraph, `maximedupre/fda-food-recalls-scraper` 3->2 (a genuine
+      decrease, live-confirmed) and `constant_quadruped/fda-catalyst-alerts` 6->7; fixing
+      the first edit alone would have left a SECOND independent mention of
+      `constant_quadruped` later in the same paragraph disagreeing with the first (6 vs 7)
+      -- caught and fixed before push, re-ran `--only` to confirm 0 disagree. Build
+      0.1.94, byte-verified exact).
+      **OPEN REMAINDER, last measured c2965 (971 claims/281 paragraphs, 18 stale,
+      11 disagree all phantom, 0 undated) -- re-sweep fresh before trusting, per c2809
+      lesson a:** `eu-ted-tenders-scraper` (2 stale, :148/:170),
+      `us-federal-awards-scraper` (2 stale, both :223, same line, same handle
+      `copious_atoll/usaspending-contracts` 11->13, superlative guard -- next-smallest
+      pick), `google-news-scraper` (1 stale :142,
       recurring drift on `automation_craft`, re-flags after every closure -- drift, not
       regression), `scholarship-scraper` (1 stale `dadhalfdev` :113, fixable, plus its
-      standing `majestic_fund` hold below), `shopify-products-scraper` (2 stale, :115/:131),
-      `us-federal-awards-scraper` (2 stale, both :223, same line). **NEWLY SURFACED c2965,
-      not in any prior carried list: `app-store-reviews-scraper`** (3 stale line-matches/
+      standing `majestic_fund` hold below), `shopify-products-scraper` (2 stale, :115/:131).
+      **NEWLY SURFACED c2965, not in any prior carried list: `app-store-reviews-scraper`**
+      (3 stale line-matches/
       2 handles: `lergassy/app-store-reviews-scraper` 15->18 at :466 and :654 (superlative
       guard), `apivault_labs/app-store-reviews-scraper` 3->1 at :552, unguarded) -- drifted
       stale since its own last closure; not yet touched, pick up next. All of the above are
@@ -52,6 +61,18 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [x] **DONE c2966 (regular slot, 2966 % 3 == 2) -- preflight clean, 3 checks DUE NOW all
+      ran clean (`check-row-floor`/`check-upstream-warnings`/`check-source-endpoints`);
+      $0.2253 spend. Full detail in STATUS.md.** Investigated an `ext_bad30d` jump 3->9 --
+      `trademark-search-scraper` FAILED 6, confirmed known TMview-proxy flaky-exit-node
+      class (already-tuned code, prior-cycle history), no code/owner action. Closed
+      `fda-recall-scraper` (2 stale, README.md:263; caught and fixed a self-introduced
+      DISAGREE from a second mention of the same handle before pushing). Build **0.1.94**,
+      byte-verified exact. **`queue.md` now TRIM DUE from this cycle's own additions --
+      c2967 (2967 = 3*989 exactly, the next QUALITY slot) should take the standard
+      DONE-block-floor trim first, per precedent.**
+      **NEXT: `us-federal-awards-scraper`** (2 stale, README.md:223, `copious_atoll/
+      usaspending-contracts` 11->13, superlative guard) after a fresh re-sweep.
 - [x] **DONE c2965 (regular slot, 2965 % 3 == 1) -- preflight clean (nothing fleet-due, 0
       untriaged of 75 inbox -- 2 owner threads re-checked by hand, both already resolved
       per c2892/c2964, no new owner ask; $0 booked/no buyer signal; services+site 200;
