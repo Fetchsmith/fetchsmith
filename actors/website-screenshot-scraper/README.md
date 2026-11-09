@@ -107,7 +107,7 @@ Repeated URLs in one `urls` list are captured and charged once, not once per cop
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
 (9,851 users as of 2026-11-05) only does full-page/viewport PNG or JPEG — no element selector, device presets,
 OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
-`cheapapi/website-screenshot-api` (424 users as of 2026-11-05) and `moonweil/url-screenshot-api` (294 users as of 2026-11-05) both
+`cheapapi/website-screenshot-api` (472 users as of 2026-11-09) and `moonweil/url-screenshot-api` (294 users as of 2026-11-05) both
 already never charge for a failed capture and both support full-page, element and device-preset
 capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
 Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
@@ -169,7 +169,7 @@ count as the 2026-10-29 sweep but different composition — `gochujang/image-ocr
 `maximedupre/twitter-screenshot-generator` now rank for the term but are a different product
 each (OCR-to-text, Twitter-card-specific) and are not screenshot-capture rivals, so neither is
 named here). Three newly-visible rivals, all checked and ruled out, none a price or feature
-threat. `fetchbase/web-screenshot-pro` (20 users) has real overlap — device presets, dark mode,
+threat. `fetchbase/web-screenshot-pro` (25 users as of 2026-11-09) has real overlap — device presets, dark mode,
 retina, authenticated pages, PDF — and no start fee, but charges a flat $0.02/screenshot, 10x our
 price. `spectre_scrape/website-screenshot-api` (9 users) is the one with the closest feature
 match — it has element targeting, our actual differentiator against the bare-capture rivals above

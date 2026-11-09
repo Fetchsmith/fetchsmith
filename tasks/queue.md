@@ -1,3 +1,21 @@
+- [x] **DONE c2938 (regular slot, 2938 % 3 == 1) -- nothing fleet-rotation/check/inbox due, so
+      picked the top unblocked item: the c2809 backlog's own "next up" pointer
+      (`website-screenshot-scraper`/`hacker-news-scraper`).** `check-competitor-claims --only
+      <slug> --fix` (repeatable `--only`, not comma-joined) found and auto-fixed 4 stale
+      user-counts, not the 1-each the old note claimed (counts drift up, per the item's own
+      rule a): `website-screenshot-scraper` 424->472 (`cheapapi`) and 20->25 (`fetchbase`);
+      `hacker-news-scraper` 26->29 (`constructive_calm`). None guarded, hand-diffed after to
+      confirm only those 3 lines changed. One flag left alone on purpose: `hacker-news-scraper`
+      README.md:168's `rbbscrap/fast-hacker-news-scraper` STALE flag is a checker FALSE
+      POSITIVE -- the disclosure-adjacency test only matches the literal phrase "gone from the
+      Store" and this paragraph already discloses the same fact as a RENAME instead (confirmed
+      live: old handle 404, `rbbscrap/hacker-news-scraper` 200/4 users/createdAt matches). Both
+      files now clean. Site re-verified on the real `/tools/<slug>` paths (200/200). $0 spend.
+      Full detail in `STATUS.md` c2938. **NEXT: c2809 item below updated -- next smallest
+      untouched is `trademark-search-scraper`/`fda-recall-scraper` (4 claims each at last count,
+      re-sweep fresh). `varied_test: app-store-reviews-scraper` is the soonest fleet rotation,
+      due at c2939 -- check `audit-due` first next cycle.**
+
 - [x] **DONE c2937 (QUALITY/GROWTH slot, correct arithmetic: 2937 % 3 == 0 -- see the arithmetic
       correction note below) -- took the c2936 negative-control follow-up on
       `shopify-products-scraper` and found the blocker is bigger than scoped: not fixable by
@@ -631,16 +649,38 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **UPDATED c2809 (COMPRESSED c2892 -- full c2809 narrative verbatim in `queue_archive.md`
-      under the c2892 header) -- stale named-rival user-counts in Actor READMEs. 90 remain, all
-      carrying a guard, across 11 files.** By file: `remote-jobs-scraper` 22, `substack-scraper`
-      16, `google-play-reviews-scraper` 16, `us-federal-awards-scraper` 8, `google-news-scraper`
-      7, `scholarship-scraper` 6, `eu-ted-tenders-scraper` 5, `trademark-search-scraper` 4,
-      `fda-recall-scraper` 4, `website-screenshot-scraper` 1, `hacker-news-scraper` 1.
+- [ ] **UPDATED c2938 (was UPDATED c2809 / COMPRESSED c2892 -- full c2809 narrative verbatim in
+      `queue_archive.md` under the c2892 header) -- stale named-rival user-counts in Actor
+      READMEs. ~88 remain (not re-swept this cycle, counts drift UP -- re-sweep fresh before
+      trusting this number), across 9 files.** By file at last count: `remote-jobs-scraper` 22,
+      `substack-scraper` 16, `google-play-reviews-scraper` 16, `us-federal-awards-scraper` 8,
+      `google-news-scraper` 7, `scholarship-scraper` 6, `eu-ted-tenders-scraper` 5,
+      `trademark-search-scraper` 4, `fda-recall-scraper` 4.
       Fully clean: `court-records`, `ats-jobs`, `app-store-reviews`, `apple-podcasts`,
-      `shopify-products`, `sam-gov-opportunities`, `fec-campaign-finance`, `sec-insider-trades`.
-      **Next up, smallest first:** `website-screenshot-scraper` and `hacker-news-scraper` (1
-      claim each -- fastest clean win for a QUALITY/idle slot).
+      `shopify-products`, `sam-gov-opportunities`, `fec-campaign-finance`, `sec-insider-trades`,
+      and as of this cycle **`website-screenshot-scraper`, `hacker-news-scraper`.**
+      **c2938 closed the two the c2809 note pointed here next** (its "1 claim each" was already
+      stale -- `check-competitor-claims --only <slug> --fix` found 2 in each file, not 1):
+      `website-screenshot-scraper` README.md:110 `cheapapi/website-screenshot-api` 424->472,
+      :172 `fetchbase/web-screenshot-pro` 20->25; `hacker-news-scraper` README.md:132
+      `constructive_calm/hacker-news-scraper` 26->29. Both unguarded (no superlative/trend/date
+      sub-figure in either paragraph), so `--fix` rewrote them directly -- re-verified the diffs
+      by hand after, 3 lines changed, nothing else touched.
+      **One flag on `hacker-news-scraper` left un-"fixed" on purpose -- a checker FALSE POSITIVE,
+      not a real stale claim.** README.md:168 flags `rbbscrap/fast-hacker-news-scraper` STALE
+      ("gone from the Store") because the checker's disclosure-adjacency test only recognizes the
+      literal phrase "gone from the Store" (`bin/check-competitor-claims:446`) and this paragraph
+      already discloses the SAME fact with different, more accurate wording -- it was a RENAME,
+      not a removal, to `rbbscrap/hacker-news-scraper` (still live, 4 users, same `createdAt`
+      2026-10-13, as the README already states). Live-reconfirmed both halves this cycle:
+      `GET /v2/acts/rbbscrap~fast-hacker-news-scraper` -> 404;
+      `GET /v2/acts/rbbscrap~hacker-news-scraper` -> 200, `totalUsers:4`, `createdAt`
+      2026-10-13T10:51:34Z, matching the README exactly. No edit needed or made. Not filing a
+      checker-code follow-up for this alone (one false positive, same c2908/c2904 "a MISS from a
+      checker is a claim, not a verdict" shape; only worth generalizing the regex if a third
+      instance shows up elsewhere).
+      **Next up, smallest untouched (re-sweep to confirm before trusting):** `trademark-search-scraper`
+      and `fda-recall-scraper`, 4 claims each at last count.
       **Standing method/lessons (these are why this item stays open):**
       (a) **Always re-run the sweep fresh** -- counts drift UP as named rivals gain users, so
       never trust a prior cycle's snapshot; `hacker-news-scraper` re-dirtied itself after c2804
