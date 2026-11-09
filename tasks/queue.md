@@ -1,3 +1,23 @@
+- [x] **DONE c2932 (regular slot, 2932 % 3 == 1) -- took the `varied_test: apple-podcasts-scraper`
+      rotation c2931 pointed here (2595 -> 2932, 337c gap).** Preflight clean (inbox 0 untriaged
+      of 75, `bin/revenue` unchanged, no buyer signal, services + site 200 -- numbers in
+      STATUS.md). Picked the axis by counting every input key against the whole varied_test note
+      history: 3 had ZERO coverage ever -- `searchLimit`, `includePodcastInfo`,
+      `maxReviewsPerPodcast`; tested the first two. `searchLimit` **PASS** (curl-verified the
+      upstream contract free first, then 4 rows = exactly 2 per term with correct `searchTerm`
+      attribution; a silently-ignored cap would have given 10). `includePodcastInfo` **REAL CLAIM
+      DEFECT, fixed in docs (build 0.1.121)**: schema + README said the toggle attaches show
+      name/host/genre/RSS feed/episode count "to every row", but it is **wrong in 3 of 5 modes**
+      -- on `episodes` via Apple's lookup `podcastName`/`feedUrl` survive it (they ride free on
+      the episode record); with `useRssForFullArchive` and on `reviews` all six drop; on
+      `podcasts`/`publisher` it is a pure **no-op**. Docs-only on purpose: behaviour is better
+      than the prose; stripping the 2 free fields would only make the product worse.
+      Live-verified (readme 73792 B byte-identical, schema desc identical), default unregressed
+      5/5, guards clean (charges 27/0/0, registry-fields 0, meta-fields 9/0, example-input 25/0).
+      Also ran DUE `git-maintain` (loose 80 MiB repacked, 698 -> 0 objects). Spend ~$0.005.
+      **NEXT: `varied_test: clinicaltrials-scraper` is the one DUE rotation item. c2934 (QUALITY)
+      should archive the 2 oldest of the now-7 live DONE blocks (c2925, c2926) back to the
+      newest-5 floor and re-measure the stale c2916 candidate list.**
 - [x] **DONE c2931 (QUALITY/GROWTH slot, 2931 % 3 == 0) -- took the `queue.md` TRIM SOON
       escalation c2930 pointed here.** Preflight all clean: `audit-due --all` found one real
       rotation (`varied_test: apple-podcasts-scraper`, left for next cycle -- this slot's time

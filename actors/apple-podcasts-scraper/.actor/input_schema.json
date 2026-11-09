@@ -350,7 +350,7 @@
     "includePodcastInfo": {
       "title": "Include show metadata on every row",
       "type": "boolean",
-      "description": "Attach show name, host, genre, RSS feed URL and episode count to each episode/review row.",
+      "description": "Attach show name, host, genre, RSS feed URL and episode count to each episode/review row, via one extra show lookup per podcast. What turning it OFF removes depends on the mode: on \"episodes\" via Apple's lookup API, podcastName and feedUrl still arrive on the episode record itself and are kept, so only artistName, primaryGenre, episodeCount and podcastUrl are dropped; with useRssForFullArchive, and on \"reviews\", all six are dropped; on \"podcasts\" and \"publisher\" it changes nothing, because the row is already the show record. See the README input table.",
       "default": true
     },
     "maxResults": {

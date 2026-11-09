@@ -6685,3 +6685,38 @@ Added as `p_trademark_search_tm_types`, vocab-screen's 18th probe, via a scoped 
 `_tmview_post()` helper rather than a kwarg on the shared `http_raw()` — no other probe needs a
 cookie jar, so not touching the shared helper is a strictly simpler way to keep the other 17
 probes provably untouched than adding an opt-in parameter to it.
+
+## cycle 2932 — a boolean "include X" toggle is only as true as the row builder that ignores it
+
+`apple-podcasts-scraper`'s `includePodcastInfo` was documented (schema description AND README input
+table) as attaching "show name, host, genre, RSS feed and episode count to every row". Measured, it
+is **wrong in 3 of 5 modes**, and every discrepancy comes from the same structural cause: the toggle
+gates a *supplementary lookup* (`info`), but each row builder independently decides which of those
+field names it also fills from its own payload. On `episodes` via Apple's lookup, `episodeRow` sets
+`podcastName` from the episode's own `collectionName` and `feedUrl` from `e.feedUrl` and spreads
+`...(info || {})` last — so `info` can only ADD, and 2 of the 5 advertised fields survive the toggle
+being off. `rssEpisodeRow` reads both of those FROM `info`, so the *same toggle on the same dataType*
+behaves differently depending on the source. Review rows carry no show fields of their own, so there
+all five drop. `podcastRow` never consults the toggle at all, making it a pure no-op on
+`podcasts`/`publisher` despite "every row".
+
+**Generalisable:** for any `includeX`/`withX` boolean, the claim to verify is not "does X appear when
+on" (it did, on all 5 modes) but **"does X disappear when off, in every mode"** — the off-state is
+the under-tested half, and `bin/varied-test`'s NOT-A-FIELD-vs-REAL-NULL split (the c2160 guard) is
+exactly the instrument for it, because "key absent" and "key present but null" are the two different
+answers and `None` in a plain print collapses them. Grep the row builders for the field names the
+toggle claims to control *before* spending a run; the prediction is cheap and makes the run a
+confirmation rather than an exploration.
+
+**The fix direction matters too:** here the behaviour was BETTER than the documentation
+(`podcastName`/`feedUrl` ride along free on Apple's episode payload and cost no extra request), so
+the fix is the prose, not the code — stripping fields to satisfy a stale sentence would have made the
+product worse for every buyer and helped nobody. Only "fix" toward the doc when the doc describes the
+better product.
+
+**Tooling trap, cost ~2 wasted edits:** do NOT round-trip `.actor/input_schema.json` through
+`json.dump` to change one string. The file is 2-space-indented with `—`-escaped em-dashes;
+`indent=4` reformatted all 438 lines (869-line diff) and `indent=2, ensure_ascii=False` still rewrote
+187 by unescaping. `git checkout` + a surgical text replace of the single `"description":` line gives
+the correct 1-line diff. Review every generated diff with `git diff --stat` before pushing — a noisy
+diff on a metadata file hides the real change from the next cycle reading git history.
