@@ -15,7 +15,7 @@ Added cycle 388, after three separate findings:
     that schedule, and the sentence contradicted the one before it.
   - cycle 388: user counts hardcoded in two READMEs had drifted (25->28, 2583->2644).
 
-Two checks:
+Three checks:
 
 1. USER COUNTS — "`handle` (N users" / "`handle` N users" / "`handle` at N users"
    / "`handle` (Nu)" vs the competitor's live
@@ -27,6 +27,17 @@ Two checks:
    part that actually prevents the cycle-387/388 findings: a price claim's text can't
    be machine-diffed against pricingInfos (our prices and theirs appear in the same
    sentence), but we CAN force it to be re-checked on a schedule and dated in public.
+
+3. CROSS-PARAGRAPH DISAGREEMENT (added cycle 2953, c2951's find) — the same handle
+   claimed at two different counts in two different paragraphs of one README. Checks
+   1 and 2 both operate per-claim, so a claim within 10% of live never gets flagged no
+   matter how many OTHER claims for that same ident in the same file disagree with it;
+   c2951 found three real cases by hand (ryanclinton 58 vs 52, constant_quadruped
+   117/111/101, constructive_calm 75/74) that passed checks 1-2 cleanly because each
+   mention individually sat under its own "verified live DATE" tag. Prints DISAGREE,
+   informational like UNCHECKED -- never auto-fixed, since which number is current
+   (and whether two dated snapshots are a legitimate before/after pair) needs a human
+   read of both paragraphs.
 
 Adding a competitor: backtick the full `owner/slug` in the claim itself and nothing else
 is needed (cycle 1088) -- the checker resolves it directly. A claim that backticks only a
@@ -389,7 +400,7 @@ if __name__ == "__main__":
             sys.exit("--only matched no file; pass a substring of actors/<slug>/README.md")
     headers = {"Authorization": f"Bearer {token()}"}
     today = datetime.date.today()
-    checked = flagged = unresolved = fixed = 0
+    checked = flagged = unresolved = fixed = disagreements = 0
 
     for path in sources(ONLY):
         name = os.path.relpath(path, ROOT)
@@ -405,6 +416,7 @@ if __name__ == "__main__":
         # number from the match offset catches those while keeping output line-addressable.
         text = open(path).read()
         file_edits = []
+        file_claims = {}
         for m in USERS.finditer(text):
             handle, slug, claimed, suffix = m.groups()
             lineno = text.count("\n", 0, m.start()) + 1
@@ -422,6 +434,7 @@ if __name__ == "__main__":
                 continue
             checked += 1
             claimed = int(claimed.replace(",", ""))
+            file_claims.setdefault(ident, []).append((lineno, claimed))
             actual = live_users(ident, headers)
             if actual is None:
                 # Cycle 2091: a dead listing's historical user-count mention re-flags
@@ -472,6 +485,24 @@ if __name__ == "__main__":
                     tag = "STALE" if reason is None else f"STALE (guard: {reason})"
                     print(f"{tag} {name}:{lineno}  claims {ident} has {claimed} users, live is {actual}")
 
+        # Cycle 2953: c2951 found the same handle carrying different counts in different
+        # paragraphs of one file (ryanclinton 58 vs 52, constant_quadruped 117/111/101),
+        # each individually invisible to the STALE check above -- a claim within 10% of
+        # live is never flagged no matter how many OTHER claims for the same ident in this
+        # file disagree with it. STALE/FIX only ever compare one claim to the live API, never
+        # a claim to its own sibling claims, so this is a structurally separate pass: collect
+        # every claimed value per ident across the whole file first, then flag any ident with
+        # more than one distinct value. Informational like UNCHECKED, not auto-fixable --
+        # which number is right (and whether a "verified on <date>" framing legitimizes two
+        # different snapshots) needs a human read of both paragraphs, same as every other
+        # finding this tool prints.
+        for ident, entries in file_claims.items():
+            distinct = {v for _, v in entries}
+            if len(distinct) > 1:
+                disagreements += 1
+                where = ", ".join(f"{name}:{ln}={v}" for ln, v in entries)
+                print(f"DISAGREE {name}  `{ident}` claims disagree across paragraphs: {where}")
+
         if FIX and file_edits:
             file_edits.sort(key=lambda e: e[0], reverse=True)
             new_text = text
@@ -482,7 +513,8 @@ if __name__ == "__main__":
             print(f"  -- wrote {len(file_edits)} fix(es) to {name}")
 
     print(f"check-competitor-claims: {checked} competitor user-count claim(s) checked, "
-          f"{flagged} stale, {unresolved} unresolvable" + (f", {fixed} fixed" if FIX else ""))
+          f"{flagged} stale, {unresolved} unresolvable, {disagreements} cross-paragraph "
+          f"disagreement(s)" + (f", {fixed} fixed" if FIX else ""))
 
     # -------------------------------------------------------------- freshness
     checked = stale = 0

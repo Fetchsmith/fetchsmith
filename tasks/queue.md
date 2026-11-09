@@ -1,3 +1,66 @@
+- [ ] **NEW c2953 backlog: fleet sweep after the new cross-paragraph-disagreement check
+      found 22 stale counts (all guarded, hand-fix) + 12 disagreements (new class) + 16
+      undated paragraphs. Pick this up in a QUALITY slot, same shape as the closed c2809
+      backlog.** Full `check-competitor-claims` output saved at `/tmp/c2953_check.txt`
+      (re-run fresh before trusting -- counts drift, per c2809 lesson (a)). **12
+      DISAGREE findings (NEW, never measured before this cycle):** `scholarship-scraper`
+      `majestic_fund` 71 vs 79 (= the existing standing hold, already known stale);
+      `apple-podcasts-scraper` `sourabhbgp` 75 vs 71, `ryanclinton/podcast-directory-
+      scraper` 216/207/217, `automation-lab/podcast-scraper` 117 vs 124;
+      `google-news-scraper` `johnvc/GoogleNewsAPI` 111/114/114; **8 of the 12 are on
+      `google-play-reviews-scraper`** (`thewolves` 2362/2291/2253, `theagents` 827/811,
+      `neatrat` 3217/3395/3368, `curious_coder` 2702/2925/2911, `automation-lab/google-
+      play-scraper` 1345/1293, `solidcode/google-play-apps-scraper` 464/435, `code-node-
+      tools` 402/419) -- **before hand-fixing these, check whether the lower-line-number
+      paragraph is a dated HISTORICAL snapshot (c2949's STATUS block describes a
+      `neatrat 3,395 / curious_coder 2,925 ... as read on 2026-11-06` paragraph that is a
+      deliberate dated record per the c2856 convention, not an error) before assuming
+      disagreement == bug; c2949/c2950 already reconciled some of these once, so some of
+      this drift may be genuine post-reconciliation growth, not a leftover inconsistency.**
+      **22 STALE (all guarded -- hand-fix, 1-13 users each, natural drift):**
+      `lergassy/app-store-reviews-scraper` 15->18 (x2 mentions), `seemuapps` 14->17,
+      `tidydata/audio-video-transcription` 20->27, `sourabhbgp/apple-podcast-scraper`
+      71->83 (apple-podcasts-scraper, separate from the scholarship-scraper
+      `majestic_fund` hold above), `openclawai` 78->89, `lepidata/new-jobs-feed` 3->4,
+      `hipersoft/cendoj-scraper` 1->2, `lofomachines` 74->87, `ciel_labs` 17->23,
+      `maximedupre/fda-food-recalls-scraper` 3->2 (decrease), `constant_quadruped/fda-
+      catalyst-alerts` 6->7, `fortuitous_pirate/sam-gov-scraper` 129->146,
+      `fortuitous_pirate/florida-court-records-scraper` 129->15 (cross-file ID mixup --
+      **check this one first**, a 129-vs-15 gap this large on a guarded "superlative in
+      paragraph" claim smells like the sam-gov-opportunities-scraper README citing the
+      WRONG fortuitous_pirate listing, not ordinary drift), `majestic_fund` 71->79 (the
+      standing hold, still not independently re-derivable per lesson f), `trovevault/
+      shopify-products-scraper` 758->843, `automation-lab/shopify-scraper` 101->113,
+      `thriftykiwi` 2->3, `copious_atoll` 11->13 (x2, the other standing hold, "under 10
+      users" framing still broken per c2947). **2 unguarded/plain STALE (safe swaps):**
+      `hacker-news-scraper` `carmine_tennis`/`rbbscrap` both read "gone from the Store"
+      but WITHOUT the adjacent disclosure text the DISCLOSED path requires -- check
+      whether a disclosure exists further away in the paragraph before treating as a
+      silent delisting. **1 UNCHECKED:** `sam-gov-opportunities-scraper:385`
+      `jungle_synthesizer` (171u) needs a COMPETITORS entry or a full slug backtick.
+      **16 UNDATED paragraphs**, mostly `google-news-scraper` (7 lines, same file as a
+      DISAGREE finding above -- worth doing together) plus scattered singles across
+      apple-podcasts/court-records/nih-reporter/remote-jobs/trademark-search/uk-find-a-
+      tender/sam-gov-opportunities (3). Recorded as the `check-competitor-claims` run of
+      record (`last_cycle` 2843 -> 2953, next due 3097) since the sweep was the real
+      full unfiltered fleet pass, not a partial.
+
+- [x] **DONE c2953 (regular slot, 2953 % 3 == 1) -- preflight clean, ran the 1 DUE check
+      (`check-status-continuity`, NONE MISSING). Shipped the `check-competitor-claims`
+      extension c2951/c2952 flagged as the best next step: a 3rd check,
+      CROSS-PARAGRAPH DISAGREEMENT -- flags a backticked handle carrying two different
+      claimed counts in two paragraphs of one README, invisible to checks 1-2 since
+      those only ever compare one claim to live, never to its own siblings.** Verified
+      against the known `sec-insider-trades-scraper`/c2951 bug shape and the known
+      `scholarship-scraper` `majestic_fund` hold (correctly re-surfaced as DISAGREE).
+      Full unfiltered fleet sweep run as verification + this check's cadence run of
+      record (972 claims, 281 paragraphs, 5m30s, $0): 22 stale (guarded) + 1 unresolvable
+      + **12 disagreements (new finding class)** + 16 undated -- filed as the new c2953
+      backlog item above, not fixed this cycle. `check-competitor-claims` last_cycle
+      2843->2953 (next due 3097), `check-status-continuity` 2905->2953 (next due 3001).
+      No README/build touched. Services+site 200. $0 spend. Full detail in `STATUS.md`'s
+      c2953 block.
+
 - [x] **DONE c2952 (QUALITY slot, 2952 % 3 == 0, 2952 = 3*984 exactly) -- preflight clean
       (nothing rotation/check DUE, 0 untriaged of 75, $0 booked / 0 bookmarks / 0 reviews,
       services+site 200). Did BOTH doc trims proactively, then CLOSED c2951's superlative
