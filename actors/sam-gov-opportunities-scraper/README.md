@@ -66,10 +66,10 @@ Set `dataType` to one of the three wage-determination options and the same filte
   "recordType": "wdDBRA",
   "isActive": true,
   "isStandard": true,
-  "revisionNumber": 4,
+  "revisionNumber": 5,
   "year": 2026,
-  "publishDate": "2026-10-15T04:00:00.000Z",
-  "modifiedDate": "2026-10-15T00:00:00-04:00",
+  "publishDate": "2026-11-05T05:00:00.000Z",
+  "modifiedDate": "2026-11-05T00:00:00-05:00",
   "constructionTypes": ["Building", "Heavy"],
   "services": null,
   "coverage": [
@@ -77,7 +77,7 @@ Set `dataType` to one of the three wage-determination options and the same filte
       "stateCode": "AK",
       "stateName": "Alaska",
       "isStateWide": null,
-      "counties": ["Anchorage", "Matanuska-Susitna", "Fairbanks North Star", "Juneau"],
+      "counties": ["Anchorage", "Matanuska-Susitna", "Fairbanks North Star", "Haines"],
       "excludedCounties": []
     }
   ],
@@ -86,6 +86,7 @@ Set `dataType` to one of the three wage-determination options and the same filte
   "wageRates": null
 }
 ```
+`counties` above is **abridged to the first 4 entries** so the row stays readable — the real row lists all 28 (`countyCount` is the full count, which is why the two do not match here). Note that SAM.gov's own county list for a statewide determination can repeat a name (AK20260001 carries "Matanuska-Susitna" and "Southeast Fairbanks" twice), so `countyCount` counts entries as published, not distinct counties. `isLatest` is emitted on every wage-determination row too, but it is absent from this sample on purpose: of the three wage-determination indices only `cba` publishes the field (measured 2026-11-10 — 10/10 live `cba` rows carry it, 0/25 `dbra` and 0/10 `sca` do), so a DBRA row like this one delivers `isLatest: null`. Use `revisionNumber` + `isActive` to tell whether a DBRA/SCA determination is current.
 
 ## Assistance listings (CFDA)
 Set `dataType` to `assistance-listings` to pull the Catalog of Federal Domestic Assistance — ~7,400 federal grant/loan/direct-payment programs (~2,900 currently active), each with its objective, eligibility rules, funding-obligation history, related programs and the agency's own published program contact.
