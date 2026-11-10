@@ -385,6 +385,14 @@ let decodeRateLimited = 0; let decodeFailed = 0; let decodeDisabled = false; let
 async function decodeUrl(gnUrl) {
   if (decodeDisabled) return null;
   try {
+    // rssUrls accepts any feed, not just news.google.com ones (see FAQ) -- a third-party
+    // feed's own <link> often already contains "/articles/" (BBC and others use that path
+    // segment too), which used to slip past the split-on-'/articles/' check below and fire a
+    // real request at Google with a foreign ID, wasting a round trip for an id that can never
+    // resolve. The real link in that case is already sitting in googleNewsUrl undecoded, so
+    // there's nothing to decode -- skip the request rather than let Google 400 it.
+    let host; try { host = new URL(gnUrl).hostname; } catch { host = null; }
+    if (host !== 'news.google.com') { decodeFailed += 1; return null; }
     const id = gnUrl.split('/articles/')[1]?.split('?')[0];
     if (!id) { decodeFailed += 1; return null; }
     const page = await http(`https://news.google.com/articles/${id}`, { throwHttpErrors: false });
