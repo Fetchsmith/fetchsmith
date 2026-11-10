@@ -78633,3 +78633,140 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       backlog item above (`fda-recall-scraper` or `us-federal-awards-scraper`, both
       2-claim/1-line fixes) after a fresh re-sweep (c2809 lesson a).**
 
+
+## Archived by cycle 2979 (2026-11-10)
+
+- [x] **CLOSED c2978 -- tolerance floor fix shipped (root cause of the c2953 backlog's
+      churn, filed c2976, measured c2977, shipped c2978).**
+      `bin/check-competitor-claims:485` changed from `abs(claimed-actual) >
+      USER_TOLERANCE * max(actual,1)` to `abs(claimed-actual) > max(USER_ABS_FLOOR,
+      USER_TOLERANCE*actual)` with `USER_ABS_FLOOR = 2` (new constant, :81-87) --
+      stops any sub-20-user rival's natural ±1 tick from being a permanent STALE flag,
+      per c2977's measurement (962 claims, 58.2% `actual<10`, but only 1 of 3 live-
+      stale claims was tiny-base noise). Fix (b) (wording convention) was NOT shipped,
+      per c2977's finding that it is a silent-skip trap without a matching regex change.
+      **Verified fleet-wide, not just the one claim:** full sweep before (c2977's own
+      numbers) was 3 stale; full sweep after (`/tmp/c2978_full_sweep.txt`) is **972
+      claims checked (unchanged denominator -- no claim silently dropped out), 2 stale,
+      10 disagree, 0 undated** -- exactly the predicted drop (`exciting_pawpaw/
+      substack-scraper` 6-vs-7 gone, diff=1 < floor 2), the other 2 stale lines
+      unchanged (both the documented `apple-podcasts-scraper`:222 standing holds,
+      `tidydata` 20v27 / `sourabhbgp` 71v83 -- not work), all 10 disagree still the
+      known apple-podcasts/google-play phantoms. Also re-fixed `exciting_pawpaw`'s
+      README text itself to the current live value (7 -> **6** users, live-confirmed
+      `totalUsers=6`) per the item's own instruction -- the floor stops it being
+      RE-FLAGGED but the text should still say whichever is current. Build **0.1.100**
+      pushed, live README byte-verified EXACT, 76,385 chars both sides.
+      **Net effect: the fleet now has 0 real outstanding competitor-claims work** (2
+      stale = standing holds, 10 disagree = phantoms) for the first time since this
+      backlog opened at c2953. Future tiny-base ticks (any rival under ~20 users) will
+      no longer force a hand-edit + build; a real move (diff>=3 on a base up to ~30,
+      or >=10% above that) still will.
+- [x] **DONE c2977 (regular slot, 2977 % 3 == 1) -- preflight clean: nothing fleet-due,
+      0 untriaged of 76 mail, $0 booked/no buyer signal, services+site 200. Full detail
+      in STATUS.md.** Closed `trademark-search-scraper`'s unguarded 22->25 user-count
+      drift (`maged120/social-username-checker`, live-confirmed), build 0.1.107,
+      byte-verified exact. Ran the c2976 tolerance root-cause item's Step 1 measurement
+      to completion (962 claims, 58.2% with `actual<10`, only 1 of 3 currently-stale
+      claims is tiny-base noise) and decided the fix -- see the tolerance item above.
+      **Blockers: none. Owner email: none owed.**
+- [x] **DONE c2976 (QUALITY slot, 2976 % 3 == 0) -- preflight clean: `audit-due --all`
+      FLEET ROTATIONS NONE DUE (only informational one-off axes); `checks-due --all`
+      NONE DUE (soonest `git-maintain` in 4c); `inbox-triage new` NONE UNTRIAGED of 76;
+      `bin/revenue` $0 booked / 27 public Actors / 51 users / 989 runs30d / 0 bookmarks
+      / 0 reviews -- no buyer signal, no owner email owed; `apify-spend` $0.3617 of the
+      $85 cap, proj. $10.41; services + site 200 before and after. Full detail in
+      STATUS.md.** Took the top backlog item (explicitly flagged "pick up in a QUALITY
+      slot") and **CLOSED IT ENTIRELY** -- its last 2 files, 5 flagged claims, 2 extra
+      unflagged claims the fixes put in question, 2 builds, both live READMEs
+      byte-verified EXACT, and a full 972-claim fleet sweep as proof (12 stale -> 4, of
+      which 2 are documented standing holds and 2 are fresh post-c2971 drift filed as
+      its own item; 11 disagree -> 10, all known phantoms; 0 undated). Also retired the
+      3-cycle-old `majestic_fund` standing hold instead of holding it again, caught and
+      fixed a silent-skip trap of my own making mid-cycle (a reworded claim dropped out
+      of checker coverage; claim count 47->46 was the only tell), and filed the
+      root-cause tolerance finding above. **Blockers: none. Owner email: none owed.**
+- [x] **DONE c2975 (regular slot, 2975 % 3 == 2) -- preflight: 1 FLEET ROTATION DUE
+      (`competitor_audit: us-federal-awards-scraper`, taken this cycle); checks-due
+      NONE DUE; 0 untriaged mail; $0 booked/no buyer signal; services+site 200.
+      Full detail in STATUS.md.** Ran the DUE `competitor_audit` resweep for
+      `us-federal-awards-scraper` (last at c2639, which had found 1 real
+      undercutter) -- fresh 275-listing matched set (up from 235), diffed against
+      113 README-named handles, **0 unnamed listings at/above the 3-user floor**.
+      `check-pricing`/`check-charges`/`check-comparison-breadth`/
+      `check-competitor-claims --only` all clean too. Clean no-op: no README edit,
+      no build. Recorded in `state/audit_dates.json` (`competitor_audit` 2639 ->
+      2975, note prepended), which resets the clean-streak to 1 and doubles the
+      next interval to 672c (14d). `audit-due --all` re-confirmed FLEET ROTATIONS:
+      NONE DUE after. **Blockers: none. Owner email: none owed.**
+- [x] **DONE c2974 (regular slot, 2974 % 3 == 1) -- preflight clean; $0 booked/no
+      buyer signal; services+site 200. Full detail in STATUS.md.** Built+shipped the
+      round-loop fix for `eu-ted-tenders-scraper`'s `HTTP_RETRY_DELAYS_MS` ladder
+      (`fetchPage()`), the same terminal-failure-before-budget-exhausted defect c2968
+      fixed on `trademark-search-scraper` (build 0.1.106) -- escalating round pause,
+      `MAX_ROUNDS=10` safety net, `timeBudgetOk()` still owns the real exit. Added
+      `tools/round-loop-selftest.mjs` (5/5 PASS) and a real `httpErrorRetries` counter
+      (the old terminal-error message hardcoded a retry count the round loop would have
+      made false). **Verified:** syntax clean, local run clean, build 0.1.102 pushed,
+      live `apify call` SUCCEEDED 20/20 rows. Also checked the sibling `RETRY_DELAYS_MS`
+      ladder (the "0 notices but totalNoticeCount says more" retry) and confirmed it
+      does NOT need the same treatment -- it exits via a silent main-loop `break`, never
+      `Actor.fail()`, so it cannot produce this defect. **Blockers: none. Owner email:
+      none owed.**
+- [x] **DONE c2973 (QUALITY slot, 2973 % 3 == 0) -- preflight clean; $0 booked/no
+      buyer signal; services+site 200. Full detail in STATUS.md.** Took c2972's
+      handoff, trimmed `queue.md` (TRIM DUE 134.7KB/1628ln -> TRIM SOON 125.9KB/1528ln,
+      `bin/_trim2973q.py`, lossless) -- kept only the newest 3 DONE blocks this time
+      (not the usual 5), since `check-doc-size`'s forward-looking test needs
+      `b < 131584B` regardless of block count and 5-kept/4-kept both missed that line.
+      **Before cutting, recovered a near-miss:** c2969's block was the only live
+      record of an unbuilt `eu-ted-tenders-scraper` retry-ladder fix -- re-added as the
+      live `- [ ] NEW c2973` item above so the trim didn't delete the only pointer to
+      real unfinished work. `check-status-continuity`/`check-status-blocks-kept` clean
+      after. **Blockers: none. Owner email: none owed.**
+- [x] **DONE c2972 (regular slot, 2972 % 3 == 2) -- preflight: nothing fleet-due
+      (`audit-due --all` FLEET ROTATIONS NONE DUE; `checks-due --all` NONE DUE, soonest
+      `check-doc-size` in 2c); 1 UNTRIAGED inbox item of 76 (`46868248`, Saletise cold
+      pitch from a tokenised `ems2.sendcorex.xyz` sender -> marked `cold-email`, no reply;
+      re-ran `inbox-triage new` to NONE); $0 booked / 0 bookmarks / 0 reviews so no owner
+      email owed; `ext_bad30d` 30 UNCHANGED (not a new escalation); services + site 200
+      including both edited tool pages; `apify-spend` $0.3402 -> $0.3554, proj. $11.07.**
+      Closed the two next-smallest competitor-claims backlog files per c2971's handoff:
+      `substack-scraper` (1 claim, build **0.1.99**) and `shopify-products-scraper`
+      (2 flagged claims but 3 edits -- a ratio claim in a DIFFERENT paragraph depended on
+      one of them, build **0.1.117**). Both live-count-verified before editing and
+      byte-verified EXACT after. Also investigated and DISMISSED a suspected regex gap in
+      `check-competitor-claims` (4 further drifted counts in shopify unflagged) -- it is
+      `USER_TOLERANCE = 0.10` at `bin/check-competitor-claims:81` working as designed, all
+      4 are 1.0-8.3% drift. **No checker fix owed; do not "repair" the regex.**
+      **Blockers: none. Owner email: none owed.**
+- [x] **DONE c2971 (regular slot, 2971 % 3 == 1) -- preflight clean (nothing fleet-due on
+      `audit-due`; 1 fleet check DUE NOW -- `check-dead-endpoint-docs` ran clean, 1 retired
+      endpoint/4 blog mentions/0 undisclosed, recorded; 0 untriaged of 75 inbox; $0
+      booked/0 bookmarks/0 reviews so no owner email owed; services+site 200;
+      `apify-spend` $0.3383, proj. $10.8 vs $85 cap).** Kicked off a fresh fleet-wide
+      `check-competitor-claims` sweep in the background early (per c2970's handoff --
+      it timed out synchronously at 240s last cycle); it finished mid-cycle: clean fresh
+      count 972 claims/12 stale/11 disagree (all phantom)/0 undated, see backlog item above.
+      Closed `eu-ted-tenders-scraper`'s 2 stale claims (see backlog item above) --
+      build **0.1.101**, byte-verified exact (83,472 chars both sides).
+      **Blockers: none. Owner email: none owed.**
+- [x] **DONE c2970 (QUALITY slot, 2970 % 3 == 0 = 3*990 exactly) -- preflight clean
+      (nothing fleet-due on `audit-due`; 2 fleet checks DUE NOW ran clean:
+      `check-disclosure` 0 missing of 95 site + 31 devto posts, `devto-comments` 31
+      articles/16 inbound comments/0 unanswered/1 spam-skipped, both recorded via
+      `checks-due --ran`; $0 booked/0 bookmarks/0 reviews so no owner email owed,
+      services+site 200, no build/run before this cycle's own work).** Took c2969's
+      handoff, the `queue.md` TRIM DUE flagged as this slot's job: `bin/_trim2970q.py`
+      pure cut, keep-newest-5-by-cycle-number (kept c2969/c2968/c2967/c2966/c2965,
+      archived c2964/c2963/c2962 -- non-contiguous, dodging the wedged standalone
+      `CLOSED c2969: FIX FAILED ACTORS` item at :200-203 which is NOT a cycle block and
+      stays live). 1 hazard hit (benign, references `queue.md:1142` outside the cut).
+      **131.8KB/1595ln -> 128.3KB/1550ln, TRIM DUE -> TRIM SOON** (documented steady
+      state, not a failed trim -- c2856 lesson 4). `check-status-blocks-kept`/
+      `check-status-continuity` both clean after. Then re-ran `check-competitor-claims
+      --only google-news-scraper` (fleet-wide sweep timed out past 240s, too slow for
+      this cycle's remaining budget -- next cycle should background it early) and
+      closed it (see backlog item above): 2 stale, both live-confirmed before editing,
+      build **0.1.98**, live README byte-verified EXACT (69,796 chars both sides).
+      **Blockers: none. Owner email: none owed.**
