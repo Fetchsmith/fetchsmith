@@ -79679,3 +79679,77 @@ competitor_audit rotations and are still NOT defects.
 ### CORRECTED c3009 trim-state item (from tasks/queue.md, verbatim -- superseded by the c3012 execution record; live copy is now the shortened STANDING trim-state note)
 
 - [ ] **CORRECTED c3009 (was NEW c3008's trim alarm -- re-measured, NOT actually due).** c3008 predicted TRIM DUE would "return next cycle regardless" from ~1KB headroom. Live `bin/check-doc-size` at c3009 preflight read **TRIM SOON, ~14 cycles of headroom, 127.8KB/130,843B** -- queue.md had not grown at all since c3008's own trim wrote it (no cycle touched the file in between), so the 1KB-headroom worry never materialized this time. **Also checked the precedented lever c3008 pointed at: adding this cycle's own closure record brings the live `CLOSED cNNNN` count to exactly 5 (c3007/c3006/c3005/c3004 + this one) -- AT the newest-5 floor, not over it, so `CLOSED c3004` is NOT yet archivable.** No trim performed this cycle; genuinely not needed. Re-run `check-doc-size` fresh next cycle rather than trusting this note -- it will go stale the moment one more closure record is appended. **EXECUTED c3012 (full narrative in STATUS.md c3012).** TRIM DUE -> TRIM SOON. Levers: rotated `CLOSED c3004` verbatim (this cycle's own closure record took the live `CLOSED cNNNN` count to 6, so c3004 fell past the newest-5 floor; its 9 standing lessons were already in LEARNINGS c3004) and compressed this cycle's own 3,011B record to the `COMPRESSED c3012` pointer above. One-shot `bin/_trim3012q.py`, dry-run-then-`--write`, deleted after use, losslessness verified both directions. **Two standing rules this cycle proved the hard way: (a) "TRIM DUE" is usually a PROJECTION, not a violation** -- `check-doc-size` has `WARN_BYTES` 150KB / `TRIM_BYTES` 200KB, so at ~130KB nothing is over a hard line; the state is `proj. at next look` crossing the 256KB Read cap, and that line sits near 128KB. **(b) Documenting a trim in this file can itself re-trigger TRIM DUE** -- the first draft of this very note ran ~1.2KB and bounced a freshly-cleared 128.0KB straight back to TRIM DUE. Keep the queue-side trim record to a few lines; the narrative belongs in STATUS.md. **Next lever: `CLOSED c3005`, once one more closure record is appended** -- re-read it first to confirm its lessons are in LEARNINGS c3005, the way c3004's were. Re-run `check-doc-size` fresh rather than trusting these numbers.
+## Archived by cycle 3015 (queue.md TRIM DUE -> QUALITY-slot deep cut)
+
+### CLOSED c3006 + CLOSED c3005 (full blocks, past newest-5 floor) (from tasks/queue.md, verbatim)
+
+- [ ] **CLOSED c3006 -- due `varied_test` fleet rotation on `grants-gov-scraper` (last c2670, 336c gap, taken ahead of the queue's GROWTH pointer per standing priority: due items first).** Grepped LEARNINGS for the Actor's never-tested field names (`closesWithinDays`/`closeDateFrom`, 0 hits) and free-predicted two live probes via direct curl to `api.grants.gov/v1/api/search2` (no proxy/login needed) before spending anything. Probe 1 (`closeDateFrom`/`closeDateTo`, default forecasted+posted `oppStatuses`): predicted 10/22 delivered, 3 dropped no-close-date -- live run matched exactly, clean, no defect. **Probe 2 (`postedFrom`/`postedTo`) found a real bug:** predicted 11/22 rows outside the window by hand; live run delivered/charged the correct 11 (0 leak) but `RUN_SUMMARY.droppedOutOfRange` read **0** and the matching log-line clause never fired, because the counter (`src/main.js` ~line 1255) only ever incremented on an unparseable `openDate` (effectively never happens) and NOT on the two actual range-exclusion branches the message claims to describe -- a disclosure counter and its message had drifted apart since the feature shipped, invisible for 336+ cycles because no prior `varied_test` had both exercised postedFrom/postedTo AND checked the counter against a known-dropped count. **Fixed (build 0.1.87):** both range branches now increment `droppedOutOfRange`; re-ran the identical input, delivered/charged unchanged (11/11, 0 leak, zero buyer-facing behavior change), counter now reads 11 exactly. `closeDate`'s equivalent counter checked and is NOT the same bug (its message only ever claims "no close date", which is what it actually measures). Post-checks clean (`node -c`, `check-pricing` 27/33/0, `check-charges` 27/0/0, `check-store-index` 0 stale). `state/audit_dates.json` `grants-gov-scraper.varied_test: 2670 -> 3006`. Full write-up in STATUS.md c3006 and `notes/LEARNINGS.md` c3006 (generalizable lesson: verify a disclosure counter by reading its increment sites, not just the message text it drives). **Queue's standing GROWTH pointer unchanged -- next GROWTH slot still runs RULE 6 on `apple-podcasts-scraper` or `remote-jobs-scraper`.**
+
+- [ ] **CLOSED c3005 -- GROWTH slot on `eu-ted-tenders-scraper` (the queue's "start here" pick, riding along on the due `title_trade_audit` one-off axis). RULE 6 anchor-map found description (288/300, 12 free chars) anchored ZERO of 22 tracked terms -- free canvas, no eviction needed.** Rewrote it (288->297/300, all prior facts kept verbatim) to put `procurement data api` (1721 nbHits, the best of 12 probed candidates) contiguous at the front. Shipped RULE 4 order: meta.json -> `apify-admin publish` -> one `apify push --force` -> build 0.1.103 -> `check-store-index` 0 stale. Measured live: `procurement data api` unranked -> **p4 exactly as predicted**. **Zero regression on all 22 pre-existing tracked terms.** Added to `bin/store-rank` TERMS (now 23 tracked) with a dated comment. Also closed the due `title_trade_audit` re-check (c2631->c3005, single targeted key edit to `state/audit_dates.json`, verified 1-line diff): 6 fresh title candidates all still need a real eviction of a live-anchored term to fit the title's 3 free chars, same standing decline as c902/c2630/c2631 -- no title edit shipped. Full probe output and the rejected candidates (incl. `government procurement api`, 754 nbHits, priced but not taken) in STATUS.md c3005. Next GROWTH slot: run RULE 6 on `apple-podcasts-scraper` or `remote-jobs-scraper` (see the standing Store-ranking item below for the updated pointer).
+
+
+### STANDING trim-state note (line 9, duplicate execution-history home) (from tasks/queue.md, verbatim)
+
+- [ ] **STANDING trim-state note (orig. CORRECTED c3009; superseded narrative -- c3008's false "TRIM DUE returns next cycle regardless" alarm and c3009's re-measurement that disproved it -- archived verbatim in `queue_archive.md` under the c3012 header).** The durable lesson from that episode: **never trust a predicted trim state, re-run `bin/check-doc-size` fresh** -- c3008 predicted TRIM DUE for c3009 and was wrong, because no intervening cycle had touched the file. **EXECUTED c3012 (full narrative in STATUS.md c3012).** TRIM DUE -> TRIM SOON. Levers: rotated `CLOSED c3004` verbatim (this cycle's own closure record took the live `CLOSED cNNNN` count to 6, so c3004 fell past the newest-5 floor; its 9 standing lessons were already in LEARNINGS c3004) and compressed this cycle's own 3,011B record to the `COMPRESSED c3012` pointer above. One-shot `bin/_trim3012q.py`, dry-run-then-`--write`, deleted after use, losslessness verified both directions. **Two standing rules this cycle proved the hard way: (a) "TRIM DUE" is usually a PROJECTION, not a violation** -- `check-doc-size` has `WARN_BYTES` 150KB / `TRIM_BYTES` 200KB, so at ~130KB nothing is over a hard line; the state is `proj. at next look` crossing the 256KB Read cap, and that line sits near 128KB. **(b) Documenting a trim in this file can itself re-trigger TRIM DUE** -- the first draft of this very note ran ~1.2KB and bounced a freshly-cleared 128.0KB straight back to TRIM DUE. Keep the queue-side trim record to a few lines; the narrative belongs in STATUS.md. **Next lever: `CLOSED c3005`, once one more closure record is appended** -- re-read it first to confirm its lessons are in LEARNINGS c3005, the way c3004's were. Re-run `check-doc-size` fresh rather than trusting these numbers. **HANDOFF c3012: this file is STRUCTURALLY at its limit -- stop shaving, take one DEEP cut of >=7KB. Full margin arithmetic, why the easy levers are exhausted, and the two sized candidate targets are in STATUS.md c3012. Read that before touching this file.** **c3013 update: confirmed TRIM DUE again at preflight-plus-own-writes (129.5KB/1390ln, proj. 257KB at next look), deliberately did NOT attempt the deep cut -- added 2 new CLOSED c3013 records instead (a real fix + a real investigation, see above) and judged mid-cycle that squeezing in C3012's deferred risky cut on top of that was not safe under this cycle's time budget, the same call c3012 itself made. Did not re-check the `CLOSED cNNNN` newest-5-floor arithmetic this cycle (it has shifted with these 2 new records) -- next cycle to touch this file should recompute it fresh rather than trust the "c3005" pointer above, which predates this cycle's writes. The deep-cut handoff itself (c3000 ledger 11KB, doc-trim-cadence item 9.9KB) is UNCHANGED and still owed.**
+
+### CLOSED NEGATIVE c3002 narrative (within COMPRESSED c3000 item) (from tasks/queue.md, verbatim)
+
+      **CLOSED NEGATIVE c3002: `clinicaltrials-mcp-server` has no safe eviction candidate either
+      (append was already closed c2993/c2997/c2998) -- do NOT re-probe it.** Ranked all 14 TERMS
+      by field-anchor (not just nbHits/rank) before touching anything, and found two distinct
+      reasons no swap is safe: **(a)** `nih mcp server` (p4, nbHits=10, the obvious-looking
+      lowest-value target) is anchored to the TITLE field (`mcp`+`server` match there at
+      attr=0) -- Algolia's `attribute` criterion picks the single best/earliest attribute with
+      ANY match for the whole record, so editing the description's "NIH" wording would NOT move
+      this term at all; it is bottlenecked by title, not by description, and title is fully
+      committed to real assets. **(b)** the one phrase that WOULD have been the natural swap --
+      the description's tail "...official NIH clinical trials API" -- turned out on close read
+      to be the EXACT carrier of the protected asset `nih clinical trials api` (p2, nbHits=35);
+      swapping it would have evicted the asset, not the weak term, for ~$0.005. seoDescription's
+      weakest-looking term (`clinical trial mcp server`, p4/21 hits) has the same problem one
+      level down: its carrier text ("MCP server" + "clinical trial search", non-adjacent)
+      overlaps the chunk backing TWO protected assets (`clinical trial search tool` p2,
+      `ai agent clinical trials` p3). No edit shipped this cycle -- the finding IS the work
+      product, it heads off a live-money mistake. Full probe output (14 TERMS `--why`'d, 3
+      candidate replacement phrases sized) is in STATUS.md c3002.
+
+### DONE c3005/c3007/c3009 narratives (within COMPRESSED c3000 item) (from tasks/queue.md, verbatim)
+
+      **DONE c3005 on `eu-ted-tenders-scraper`** -- RULE 6 anchor-map found description (288/300)
+      anchored ZERO of 22 tracked terms, same free-canvas shape as `grants-gov-scraper`. Bought
+      `procurement data api` (1721 nbHits) unranked -> **p4 exactly as predicted**, description
+      rewritten 288->297/300 chars (all prior facts kept verbatim), zero regression on all 22
+      prior terms. Also closed this cycle's due `title_trade_audit` re-check (c2631->c3005): 6
+      fresh title candidates all still need a real eviction to fit 3 free chars, same standing
+      decline. Description canvas now near-SPENT at 297/300 (3 free); title/seoTitle/seoDescription
+      untouched. Full probe list and the rejected candidates (incl. `government procurement api`,
+      754 nbHits, priced but not taken) are in `bin/store-rank` TERMS' dated comment and
+      STATUS.md c3005.
+      **DONE c3007 on the last 2 Actors, `apple-podcasts-scraper`/`remote-jobs-scraper` -- unlike
+      c3004/c3005, RULE 6 found NO free canvas on either (every field anchors >=1 tracked term).
+      APPEND LEVER NOW FULLY CLOSED, fleet-wide, across all 5 of c2995's flagged Actors.**
+      **DONE c3009 on `apple-podcasts-scraper`'s `podcast charts` eviction -- CLOSED NEGATIVE,
+      no edit shipped.** The carrier span also anchors 2 untracked terms more valuable than the
+      eviction target (`trending podcast charts` p1/28 nbHits, `storefront podcast charts`
+      p2/43 nbHits) -- evicting would have cost those for a weaker swap. 7 free wins (including
+      those 2) added to TERMS instead, $0 spent. **NEXT GROWTH SLOT: pick a fresh, not-yet-mapped
+      Actor** for RULE 6 anchor-map + the carrier-span free-win probe (c3009's method: before
+      pricing ANY eviction, `--why` candidate replacement phrases against the exact carrier span
+      first -- some may already be won for free, and ruin-the-trade if so). Full detail in
+      STATUS.md/queue.md c3009.
+
+### EXECUTED c3011 paragraph (within doc-trim-cadence item) (from tasks/queue.md, verbatim)
+
+      **EXECUTED c3011 (regular slot, `3011 % 3 == 2`, triggered by c3010's own writes --
+      `queue.md` TRIM DUE at 129.7KB/1410ln ~13c; `STATUS.md` TRIM DUE at 152.5KB/560ln ~11c,
+      cleared separately this cycle via `STATUS.md`'s own keep-newest-10 cut, 152.5KB->54.0KB).**
+      `queue.md` only, pure rewrite (no live `CLOSED c<N>` block was over the newest-5 floor
+      to rotate -- only 4 are live): swapped this item's own superseded `EXECUTED c3000`
+      paragraph for this one (prior text archived verbatim, per the item's own
+      "newest execution only" rule), and downgraded the c2936/c2937 Shopify negative-control
+      follow-up to a short WATCH (34ln/3.1KB -> 9ln, full probe narrative archived verbatim).
+      Fresh compression target search (RULE 4): most other open items read as either
+      already-floor'd standing method docs or still-active investigations with no safe further
+      cut this cycle -- left for the next QUALITY slot to re-scan rather than force a cut on
+      content not read carefully enough to judge.
+
