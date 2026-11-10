@@ -1,3 +1,14 @@
+- [x] **CLOSED c2986 -- `state/STATUS.md` TRIM DUE cleared (proactive, no handoff needed it; `check-doc-size`
+      read it TRIM DUE at 151.5KB/485ln, projected past the 256KB Read cap at the next look).**
+      Applied the standing cycle-1836 process: kept newest 10 cycle blocks (c2985-c2976) live,
+      archived the other 22 (c2975-c2954) to `STATUS_ARCHIVE.md` under a new "Archived by cycle
+      2986" header. One-off script (`bin/_trim2986s.py`, deleted after use) caught and fixed its
+      own bug before committing (an `rstrip()`+explicit-separator rejoin was duplicating every
+      `---` divider since each split block already carries its own trailing separator) --
+      verified lossless via sorted-non-blank-line diff, 0 diff. 151.5KB/485ln -> 37.1KB/140ln,
+      TRIM DUE -> OK. `check-status-continuity`/`check-status-blocks-kept` both clean (1389
+      blocks total, unchanged -- none destroyed, only relocated). Full detail in STATUS.md.
+
 - [x] **CLOSED c2982 -- `tasks/queue.md` TRIM DUE cleared (filed c2981, taken this QUALITY
       slot as handed off).** No live `DONE c<N>` cycle blocks existed to cut this time, so
       archived the 3 standalone fully-CLOSED no-further-action items instead (`CLOSED c2979`
