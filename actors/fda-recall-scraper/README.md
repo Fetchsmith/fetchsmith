@@ -78,6 +78,8 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
 
 ### Sample row (drug recall, trimmed)
 
+Real row, pulled live and re-verified against openFDA 2026-11-10. One value here is a snapshot rather than a constant: `riskScore` carries a recency component, so this same recall scores slightly lower every week it ages (see the `riskScore` FAQ below) — everything else on the row is what openFDA publishes.
+
 ```json
 {
   "source": "enforcement",
@@ -101,7 +103,7 @@ Filters are **ANDed**. A search query plus a state plus a classification over a 
   "recallInitiationDate": "2026-08-06",
   "centerClassificationDate": "2026-08-21",
   "terminationDate": null,
-  "riskScore": 80,
+  "riskScore": 78,
   "brandName": "LEVOTHYROXINE SODIUM",
   "genericName": "LEVOTHYROXINE SODIUM",
   "manufacturerName": "Accord Healthcare Inc.",
@@ -222,6 +224,8 @@ Whole words (and, for a multi-word phrase, consecutive whole words), on both sou
 
 **What exactly is `riskScore` and why isn't it called "AI"?**
 It's a plain weighted formula, computed with no external calls and no model: 45% classification severity (Class I=100, II=60, III=25), 30% recency (linear decay from 100 at today's date to 0 at two years old), 25% distribution scope (100 for nationwide/international language in `distributionPattern`, scaling down by how many distinct US state codes are mentioned, down to 30 for a single state/city). Rounded to an integer 0-100. We could have marketed this as "AI-powered" like a competitor does for the same idea, but it isn't AI, and saying so would be misleading — this is what it actually computes. Set `includeRiskScore: false` to skip it.
+
+**One consequence of that recency term worth stating plainly:** `riskScore` is computed at run time against today's date, so it is a snapshot as of your run, not a permanent property of the recall — the same recall, with its classification and distribution pattern completely unchanged upstream, scores a little lower every week it ages (about 1 point per 24 days from the recency component alone, reaching 0 at two years old). The sample row above is a worked example: it scored 80 when captured and 78 when re-verified live on 2026-11-10, with all three inputs byte-identical. So do not treat a stored `riskScore` as comparable across runs taken months apart, and do not read a drop as FDA downgrading the recall — re-run the row, or compare the severity/scope inputs directly, if you need a stable ranking. (Same caveat as `firmRecallCount` below, for a different reason.)
 
 **What is `rootCause`, and is it AI?**
 No model, no network call, no inference — it is an ordered list of published keyword regexes over openFDA's free-text `reason_for_recall`, so the same reason text always produces the same category. `riskScore` grades **how bad** a recall is; `rootCause` says **what went wrong**. 19 categories, checked most-specific-first: `undeclared_allergen`, `undeclared_additive_or_ingredient`, `undeclared_drug_ingredient`, `sterility_failure`, `microbial_contamination`, `chemical_contamination`, `foreign_material`, `potency_or_specification_failure`, `software_defect`, `labeling_error`, `packaging_defect`, `storage_or_handling`, `cgmp_deviation`, `unapproved_or_uncleared`, `supplier_or_upstream_recall`, `shelf_life_or_expiry`, `physical_appearance_change`, `device_malfunction`, `contamination_unspecified` — plus `other` when no rule matches, which is a real reported value, not a silent null. Recalls often have more than one cause ("undeclared milk ... possible *Listeria*"), so `rootCause` is the primary (most specific) one and `rootCauses` is the full array of everything the text matched.

@@ -132,7 +132,7 @@ Set `dataType` to `assistance-listings` to pull the Catalog of Federal Domestic 
   "contacts": [{ "name": null, "title": null, "phone": null, "address": "Commander, U.S. Army Corps of Engineers, Attn: CECW-OE, Washington, DC 20314-1000." }],
   "relatedPrograms": ["12.104", "12.105"],
   "website": "http://www.usace.army.mil/business.html.",
-  "historicalIndexCount": 6,
+  "historicalIndexCount": 12,
   "sourceUrl": "https://sam.gov/fal/8d745b5ad52a421dbf9483c7451adec1/view"
 }
 ```

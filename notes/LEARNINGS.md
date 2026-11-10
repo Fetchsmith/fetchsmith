@@ -6277,3 +6277,50 @@ only proves the condition is unchanged, not that charge-capable code still can't
 Both flags here traced out safe in <15 min each once the prior re-verification's method was reused
 verbatim; a "new" SUSPECT on a watch-mode Actor is first a bookkeeping staleness check, not
 automatically a dispatch-worthy incident.
+
+## cycle 3016 (regular slot, 3016 % 3 == 1) — a skipped field splits into two kinds, and only one of them can ever be "fixed"
+
+Took the c3012 follow-up (walk `check-readme-live-row`'s 15 entries' `skip_note`s and re-derive each
+skipped field locally through the owning Actor's own transform against the live raw row, since by
+construction nothing watches any of them). The useful move was a triage step c3012 did not state:
+**a skipped field can only carry rot if the README actually PRINTS a value for it.** Most skip lists
+are dominated by "not present in / not exercised by this sample" entries (uk-find-a-tender's 14
+award-stage fields, sec-insider-trades' derivative columns, grants-gov's forecast-only fields) — those
+have no published value, so there is nothing to go stale and re-deriving them is pure cost. Filtering
+15 entries down that way left a handful of printed-but-unchecked fields, and 2 of 3 I re-derived were
+wrong. Do the filter first; do not walk the lists linearly.
+
+The printed-and-unchecked ones then split into two classes that need OPPOSITE remedies:
+
+1. **Wall-clock-dependent — unfixable by construction, must be DISCLOSED.** `fda-recall-scraper`'s
+   `riskScore` published 80, live 78. Re-derived by running main.js's own `isoOf`/`severityPoints`/
+   `recencyPoints`/`scopePoints`/`riskScore` over the live row (slice the function block out of
+   main.js into a temp `.mjs` and call it — do NOT re-implement the formula by hand from the README's
+   prose, which is how you'd have "confirmed" the wrong number). All three inputs were byte-identical
+   upstream (Class II / 20260806 / "Nationwide within the United States"), so the whole gap was the
+   30% recency term decaying ~1 point per 24 days toward 0 at two years. Refreshing the number buys
+   ~3 weeks. This is the same class as `eu-ted-tenders-scraper`'s `daysUntilDeadline`, and the remedy
+   is the one c3008 used for the unreachable `searchLimit` cap: DISCLOSE, don't chase. Fixed by adding
+   an as-of anchor to the sample block and a FAQ paragraph stating the consequence (a stored score is
+   a snapshot, not a property of the recall; a drop is not FDA downgrading it) — wording lifted from
+   the `firmRecallCount` caveat already on the same page, which had been making exactly this point for
+   a different reason. The README already disclosed the MECHANISM ("30% recency, linear decay") and
+   that was not enough: a buyer diffing their run against our sample needs the CONSEQUENCE spelled out.
+   **Generalizable tripwire: any sample value computed against `new Date()` at run time is a documented
+   lie with a half-life.** Grep for `today`/`Date.now()` reaching a shipped field before publishing a
+   sample row.
+2. **Ordinary rot — fix the value.** `sam-gov-opportunities-scraper`'s `historicalIndexCount` published
+   6, live 12 (a doubling). One-line `row.historicalIndex.length` over the *search* row (no cfda detail
+   endpoint exists, main.js:838), so it was always cheaply re-derivable — it was skipped only because it
+   sat in a skip_note whose other four members are genuine reshapes, i.e. **a cheap field can hide
+   inside an expensive field's skip list and inherit its exemption.** Not decay and not new activity:
+   every `historicalIndex` entry pre-dates the row's own `modifiedDate`, so it was backfilled upstream or
+   miscounted at capture (the 1992 timeFrame hand-edit signature). It is also a `watchChanges` watched
+   field for that record family, so the wrong baseline was not merely cosmetic.
+
+Also re-confirmed the c3012 duplication lesson generalizes beyond blog posts: `riskScore: 80` was
+duplicated verbatim in `actors/registry.json`'s sample row, which is what `/tools/<slug>` serves, so
+fixing only the README would have left the stale value live on fetchsmith.com. **Grep every fixed
+sample value fleet-wide (`registry.json` + `site/content/blog/`) before calling the fix done** —
+`check-readme-samples` type-checks sample values but does not compare the README's copy against
+registry.json's copy, so nothing catches that divergence today.
