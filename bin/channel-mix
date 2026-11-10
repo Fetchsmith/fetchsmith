@@ -45,6 +45,7 @@ log (3593/9221 at cycle 1676) and all come from our public IP. UA-matching `curl
 would also sweep up genuine external curl users, and would miss our own non-curl probes.
 """
 import argparse, collections, glob, gzip, json, subprocess, sys, time
+from urllib.parse import unquote
 
 DEFAULT_DAYS = 7.0     # c2688: was "whole current log file", i.e. 0.20d right after a rotation.
 QUOTABLE_DAYS = 2.0    # below this the mix is sample noise; rates/ratio are refused, not printed.
@@ -99,6 +100,20 @@ OTHER_BOT = [  # SEO/backlink/monitoring/directory crawlers -- neither a buyer n
                   # starts fetching article URLs per-query the way chatgpt-user does.
     "uptimerobot", "pingdom", "statuscake", "censysinspect", "internet-measurement",
     "paloaltonetworks", "expanse", "scrapy", "python-requests", "go-http-client",
+    "ai-data-product-radar",
+                  # c3020: 175 hits/14d (two UA variants, both covered by this stem), walks
+                  # /pricing, /blog, /tools/<slug> and /go/<slug>. DELIBERATELY NOT in AI
+                  # despite the leading "AI": the name is self-declared and appears in no
+                  # published crawler registry, and the headline AI:SEARCH ratio this script
+                  # prints gets quoted in PLAYBOOK/LEARNINGS for hundreds of cycles (see the
+                  # docstring's stale-7.86:1 story), so an unverifiable name must not be
+                  # allowed to inflate it. Evidence it is a plain crawler, not an answer
+                  # engine: steady breadth-first walk, 0 of 175 hits fetched /static/* (it
+                  # never renders a page), no per-query article fetching. Same bar as the
+                  # lumonews entry above -- reclassify only on per-query behaviour.
+    "geedoshopproductfinder",
+                  # c3020: 69 hits/7d, shopping-catalogue crawler -- /robots.txt, /sitemap.xml,
+                  # /, /tools/<slug>. Declares itself inside an otherwise-plain Chrome UA.
     "headlesschrome", "bot", "crawler", "spider",  # generic catch-alls LAST
 ]
 # Vulnerability scanners, matched on the REQUEST PATH, not the UA (found cycle 2012).
@@ -120,6 +135,18 @@ SCANNER_PATH = [
     "/autodiscover", "/owa/", "/.env", "/.git/", "/.aws", "/.ssh", "/.svn", "/.vscode",
     "/.ds_store",
 ]
+# Scanners that NAME THEMSELVES in the UA (cycle 3020). SCANNER_PATH cannot catch these:
+# their dictionaries are so wide that almost no request repeats a marker -- the fleet found
+# at c3020 (`TLM-Audit-Scanner/2.0`, single IP 93.123.109.247) made 1500 requests to 1497
+# DISTINCT paths in 7 days, so only ~580 happened to contain a SCANNER_PATH marker and the
+# other 916 sat in `unclassified` as its 2nd-biggest row. Extending SCANNER_PATH to 1497
+# entries is the wrong remedy; matching the self-declared UA is the cheap one.
+# FALSE-POSITIVE AUDIT (same bar as SCANNER_PATH -- re-run if you add a marker): 1493 of
+# that fleet's 1500 requests were 404s, and its dictionary includes `/.aws/credentials`,
+# `/backend/.env` and `/..\..\..\..\var/log/apache2/access.log`, so intent is unambiguous.
+SCANNER_UA = [
+    "tlm-audit-scanner",   # c3020: 1500 hits/7d, 1497 distinct paths, 1493 404s, 1 IP
+]
 
 
 def bucket(ua, uri=""):
@@ -128,11 +155,24 @@ def bucket(ua, uri=""):
         for p in pats:
             if p in u:
                 return name, p
+    for m in SCANNER_UA:
+        if m in u:
+            return "scanner", m
     # Path-based, and only AFTER the UA buckets: a real engine fetching an odd path stays
     # in its own bucket. A UA that is itself a URL is never a real client.
+    # Cycle 3020: match the PERCENT-DECODED path as well as the raw one. The c3020 scanner
+    # fleet requests `/%2eenv`, `/%2f%2eaws%2fcredentials` and `/%2egit/%63onfig`, none of
+    # which contain `/.env`, `/.aws` or `/.git/` as a raw substring -- so the whole bucket
+    # was trivially evadable by percent-encoding a single dot. 39 hits/7d were escaping this
+    # way at c3020 (0.2% of external traffic; small today, but it defeats the bucket's
+    # purpose rather than just undercounting it). Double-encoding (`%25`) measured: 0 hits.
     p = uri.lower()
+    try:
+        p_decoded = unquote(p)
+    except Exception:
+        p_decoded = p
     for m in SCANNER_PATH:
-        if m in p:
+        if m in p or m in p_decoded:
             return "scanner", m
     if u.startswith(("http://", "https://")):
         return "scanner", "<UA-is-a-URL>"
