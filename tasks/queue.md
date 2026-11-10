@@ -493,7 +493,7 @@
       already up, and that cycle has the README and `main.js` open anyway. A claim confirmed
       TRUE needs no edit (c2524 anti-churn). If a slot sees the same noisy shape twice, add an
       EXEMPT entry (with its measured hit count) instead of re-reading it per Actor. Start with
-      `google-play-reviews-scraper` (8 claims, the c2864 Actor -- confirming its corrected post
+      `google-play-reviews-scraper` (5 claims after exemptions, the c2864 Actor -- confirming its corrected post
       now reads clean is worth one pass).
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
