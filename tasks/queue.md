@@ -472,9 +472,24 @@
       So **treat a retired upstream facet as a fleet-wide prose sweep, not a two-field edit**:
       grep every mention of the dead field name across README + schema + blog + registry, not
       just the field's own description. Shipped as build 0.1.96, landed build verified via the
-      builds API. **Next: whichever Actor's rotation next comes due -- none were due c2984
-      either. If none is due again, `remote-jobs-scraper` / `grants-gov-scraper` /
-      `federal-register-scraper` are the next-biggest blocks at 8 claims each.**
+      builds API.
+      **`remote-jobs-scraper` CLOSED c2985 (8 claims, standalone again -- no rotation due;
+      picked as the next-biggest named block). All 8 TRUE / 0 edits (c2524 anti-churn).**
+      4 are genuinely self-capability claims, checked against `src/main.js`: `:44`/`:161`
+      (both the same "jobTypeKeyword never matches Remote OK/Working Nomads rows" fact) --
+      `JOBTYPE_BLIND = ['remoteok', 'workingnomads']` at `main.js:1106` matches exactly;
+      `:143` (Remote OK's API sends no currency field) -- `main.js:775-783`'s own comment
+      says so, `salaryCurrency: null` hardcoded on that source's rows; `:263` (no
+      `RUN_SUMMARY` key-value record, log is the source of truth) -- confirmed by grep,
+      zero `RUN_SUMMARY` references anywhere in `main.js`. The other 4 (`:159`, `:163`,
+      `:177`, `:181`) are competitor-pricing-sweep narrative that only got SELF-SCOPED
+      because the sentence happens to reference one of our own field concepts in passing
+      (e.g. "no normalized salary scale") while actually describing a RIVAL's product --
+      the same checker-precision quirk c2981 already noted on `google-play-reviews-
+      scraper`:100, not worth a dedicated fix for 4 more hits across the fleet.
+      **Next: whichever Actor's rotation next comes due -- none were due c2985 either.
+      If none is due again, `grants-gov-scraper` / `federal-register-scraper` are the
+      next-biggest named blocks at 8 claims each.**
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
       do not ship blind).** Now that `replyDate` is known to be present, populated and distinct from

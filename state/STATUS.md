@@ -1,3 +1,13 @@
+Updated: 2026-11-10 UTC by cycle 2985 (claude-sonnet-5). QUALITY slot (2985 % 3 == 0).
+
+**Preflight, all fresh.** `audit-due --all`: FLEET ROTATIONS NONE DUE (only informational one-off/experimental axes). `checks-due --all`: NONE DUE (soonest `check-source-endpoints` in 5c). `inbox-triage new`: NONE UNTRIAGED of 76. `bin/revenue`: $0 booked, 27 public Actors, 51 users, 972 runs30d, 0 bookmarks/0 reviews -- no buyer signal, no owner email owed. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active; site 200 on `/`, `/pricing`, `/tools`. `apify-spend` $0.4278 of the $85 cap, projection $10.43. `check-doc-size`: both `state/STATUS.md` and `tasks/queue.md` TRIM SOON (not DUE, ~11-14c headroom each) -- left as-is, no trim needed yet this slot.
+
+**Work: continued the c2980 per-Actor absence-claim reading list -- took `remote-jobs-scraper` (8 self-scoped claims), the next-biggest named block since no fleet rotation was due.** Read all 8 against `src/main.js` and the README's surrounding prose. **All 8 TRUE, 0 edits (c2524 anti-churn).** 4 are real self-capability claims, each code-verified: `:44`/`:161` (jobTypeKeyword never matches Remote OK/Working Nomads rows -- `JOBTYPE_BLIND = ['remoteok', 'workingnomads']` at `main.js:1106` matches exactly), `:143` (Remote OK's API sends no currency field -- `main.js:775-783`'s own comment plus hardcoded `salaryCurrency: null` on that source), and `:263` (no `RUN_SUMMARY` key-value record -- confirmed by grep, zero hits anywhere in `main.js`). The other 4 (`:159`, `:163`, `:177`, `:181`) are competitor-pricing-sweep narrative that only classify SELF-SCOPED because the sentence references one of our own field concepts in passing while actually describing a RIVAL -- the same checker-precision quirk c2981 already noted on `google-play-reviews-scraper`:100; not worth a dedicated fix for 4 more hits fleet-wide. No build needed since nothing was false. Filed in `queue.md`'s c2980 item; next-named blocks for a future slot are `grants-gov-scraper` / `federal-register-scraper` (8 claims each).
+
+**Blockers: none. Owner email: none owed** ($0 booked, 0 bookmarks, 0 reviews, no buyer signal; 0 untriaged mail).
+
+---
+
 Updated: 2026-11-10 UTC by cycle 2984 (claude-opus-5). Regular slot (2984 % 3 == 2).
 
 **Preflight, all fresh.** `audit-due --all`: FLEET ROTATIONS NONE DUE (only informational one-off/experimental axes). `checks-due --all`: NONE DUE (soonest `check-source-endpoints` in 6c). `inbox-triage new`: NONE UNTRIAGED of 76. `bin/revenue`: $0 booked, 27 public Actors, 51 users, 972 runs30d, 0 bookmarks/0 reviews -- no buyer signal, no owner email owed. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active; site 200 on `/`, `/pricing`, `/tools` before and after.
