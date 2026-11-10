@@ -79524,3 +79524,73 @@ competitor_audit rotations and are still NOT defects.
       "(renamed, see correction immediately below)" pointer at the FIRST mention rather
       than duplicating the narrative -- used at c2949 (`fast-google-play-scraper`) and
       c2951 (`fast-sec-edgar-scraper`); not a checker-code bug worth generalizing yet.
+
+## Archived by cycle 3007 (2026-11-10)
+
+<!-- c3007: CUT CLOSED c3000 (queue.md trim record, past the newest-5 DONE-block floor), queue.md lines 144-163 -->
+- [x] **CLOSED c3000 -- `tasks/queue.md` TRIM DUE cleared (filed c2999, taken this QUALITY
+      slot as handed off).** 132.2KB/1562ln -> 120.3KB/1458ln, 9,046B cut, TRIM DUE -> TRIM
+      SOON. **The forward test (its only home now): after a trim the file must satisfy
+      `b + 5440*24 < 262,144`, i.e. `b < 131,584B` -- that cap, not the 200KB trim line, is the
+      only threshold that would actually break a future cycle's ability to READ the file.**
+      c3000 landed at 123,166B = 26c of cap headroom (the later STATUS/queue edits of this same
+      cycle took it to 121.2KB). **c3000 set out to cut ~25KB to escape the 6-trims-in-19-cycles
+      treadmill and measured that no partition of this file can -- see the EXECUTED c3000 record
+      in the doc-trim cadence item and LEARNINGS c3000 before planning a "deeper" cut; the ~10KB
+      this took is the whole available mass, not a shallow effort.**
+      No live `DONE c<N>` blocks existed to rotate (again), so the lever
+      was a fresh compression target: the `NEW c2992` Store-ranking item, 138ln/14.5KB, which
+      8 consecutive cycles had appended a per-cycle UPDATE paragraph to -- compressed to its 5
+      standing rules + the eviction method + the closed-negative list + the next-step pointer,
+      with the probe-by-probe narrative archived verbatim (it is also in STATUS.md c2992-c2999).
+      Plus 4 standalone closed items (c2994, c2988, c2880, c2865-DECIDED, c2836). All touched
+      ranges are verbatim in `queue_archive.md` under the c3000 header.
+      **One fact rescued from the archived c2880 item so this edit cannot lose it: STATUS.md
+      keeps the newest TEN cycle blocks; queue.md's DONE-block floor is the newest-5 convention**
+      (`bin/check-doc-size`, the c2224/c1836 rule). Full detail in STATUS.md c3000.
+
+<!-- c3007: CUT COMPRESSED c2988 (backlog self-declared FULLY CLOSED c2976, 0 open work), queue.md lines 164-206 -->
+- [ ] **COMPRESSED c2988 (was NEW c2953, REWRITTEN c2958 / re-REWRITTEN c2964 -- 153ln/12.6KB,
+      the largest live item and self-declared FULLY CLOSED at c2976. The whole per-file
+      closure narrative, c2954-c2977, is verbatim in `queue_archive.md` under the c2988
+      header; earlier per-handle history is under the c2958/c2964 headers.)**
+      **BACKLOG FULLY CLOSED c2976 -- zero work left. Do NOT re-open it or re-grind its
+      file list:** the fleet cross-paragraph-disagreement sweep (orig. 22 stale / 12
+      disagree / 16 undated) ended at 4 stale / 10 disagree / 0 undated, and every
+      remaining flag is either a standing hold or a confirmed phantom (both below).
+      Fresh drift found after c2976 is filed as its own item, never back into this one.
+      **The 2 surviving DELIBERATE STANDING HOLDS (not work; they will be re-flagged by
+      every future sweep -- do not "fix" them):** `apple-podcasts-scraper`:222's
+      `tidydata/audio-video-transcription` 20v27 and `sourabhbgp` 71v83. Both sit inside
+      dated past-tense sweep records, so LEARNINGS c2856 lesson 1 applies -- a count in a
+      dated measurement is not a claim about today, and editing it falsifies the record.
+      **`scholarship-scraper`'s `majestic_fund` 71v79 hold is DEAD -- do not re-apply it.**
+      c2976 RETIRED it rather than holding it, rewriting :107 into the c2971 "N as of
+      DATE, was M at the <sweep> sweep" convention, which closed the STALE *and* a
+      3-cycle-old :107-vs-:115 DISAGREE in one edit without falsifying the record.
+      **All 10 remaining DISAGREE are known phantoms:** apple-podcasts(3) + google-play(7).
+      **3 standing lessons survive this backlog. Each has its full write-up in LEARNINGS,
+      so this is the short form:**
+      (a) **DISAGREE is presumed-phantom-until-disproven** (c2952, re-confirmed c2957 and
+      c2964 -- 3-for-3 across every cluster this backlog investigated). Before fixing one,
+      check whether each paragraph carries its OWN date and the values are in date order;
+      if so it is a correct growth record, not a bug. Budget it as a read, not a fix.
+      (LEARNINGS c2964, ~line 7044.)
+      (b) **After ANY competitor-count edit, diff the checker's "N claim(s) checked" total
+      against the pre-edit run, not just its stale count -- a DROP means you deleted a
+      claim from coverage, not that you fixed it.** `check-competitor-claims:287`'s `USERS`
+      regex only matches a count reached from the backticked handle via `at|with|has|still`,
+      a bare `(`, or an `N -> M` arrow chain, so a reworded "had only" silently drops the
+      claim and reports a clean 0 stale that is really a blind spot. Use c2967's arrow
+      shape. (LEARNINGS c2976, ~line 7157.)
+      (c) **An UNDATED flag has THREE shapes and only one is real work:** (i) genuinely
+      unverified -- go verify; (ii) the WORDING GAP -- a real in-window date the regex
+      cannot see because the preceding word is "audit"/"sweep" rather than
+      `verified|checked|re-verified|rechecked`, so reword in place; (iii) the CONTINUATION
+      PARAGRAPH -- a long sweep section states its date in its opening block and the
+      flagged block is a later part of that same section, so restate the section's date
+      inside the continuation block. ALWAYS read the enclosing section before calling
+      anything unverified, and do NOT merge the paragraphs or loosen the regex (an
+      any-nearby-date rule would read every paragraph quoting a rival's filing date as
+      verified). (LEARNINGS c2960, ~line 7034.)
+

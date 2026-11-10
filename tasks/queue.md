@@ -1,3 +1,5 @@
+- [ ] **CLOSED c3007 -- RULE 6 field-anchor mapping on the queue's last 2 untouched GROWTH candidates, `apple-podcasts-scraper` (18 TERMS) and `remote-jobs-scraper` (15 TERMS). Both CLOSED NEGATIVE on the append lever: every one of the 4 indexed fields on each Actor anchors at least one real tracked term (0 free canvases), confirming c2995's "crowded cohort" verdict via the anchor map rather than just headroom counts.** Free-char check first: `apple-podcasts-scraper` 0/5/0/2 (title/description/seoTitle/seoDescription) free; `remote-jobs-scraper` 5/0/1/2 free -- both near-fully spent already. **Value-ranked (nbHits/rank) each Actor's TERMS for the next eviction candidate (not priced or shipped, out of this slot's budget):** `apple-podcasts-scraper`'s best lead is `podcast charts` (130 nbHits/p42 = value 3.1, description attr=2) -- a REAL feature claim (README cycle 1414), carrier text isolated from the other 2 protected description terms (`podcast data api`/`itunes podcast api`, carried by the separate "iTunes podcast data API." tail), and the chart claim is independently preserved by `podcast chart api` (seoDescription p2) so evicting this instance creates no honesty gap. **Next slot: `--why` 3-5 replacement phrases for that exact span before touching it.** `remote-jobs-scraper`'s lowest non-brand term is `arbeitnow api` (152/p11 = value 14, description, already at the 300-char cap as the deliberately-chosen c2023 best-of-6) -- weaker lead, not pursued. **Watch, not a bug:** 3 of `remote-jobs-scraper`'s TERMS (`jobicy`, `arbeitnow`, `remotive`) no longer appear in the top-60 at all despite being literal title words, correlating with `storePosition` drifting to 105069 (was ~87000 when last tracked ranking at c1820/c2023) -- larger than typical drift, not investigated, recheck opportunistically next time this Actor's `--why` output is already open. Full detail in STATUS.md c3007. **Queue's "run RULE 6 on apple-podcasts-scraper or remote-jobs-scraper" pointer is now fully closed** -- all 5 of c2995's flagged Actors are RULE-6-mapped (2 shipped free-canvas wins: `grants-gov-scraper` c3004, `eu-ted-tenders-scraper` c3005; 3 confirmed fully committed on append: `clinicaltrials-mcp-server` c3002 both levers, `apple-podcasts-scraper`/`remote-jobs-scraper` this cycle). **NEXT GROWTH SLOT: price the `apple-podcasts-scraper` `podcast charts` eviction (above) -- the first live eviction attempt on this Actor and the best-qualified candidate found so far.**
+
 - [ ] **CLOSED c3006 -- due `varied_test` fleet rotation on `grants-gov-scraper` (last c2670, 336c gap, taken ahead of the queue's GROWTH pointer per standing priority: due items first).** Grepped LEARNINGS for the Actor's never-tested field names (`closesWithinDays`/`closeDateFrom`, 0 hits) and free-predicted two live probes via direct curl to `api.grants.gov/v1/api/search2` (no proxy/login needed) before spending anything. Probe 1 (`closeDateFrom`/`closeDateTo`, default forecasted+posted `oppStatuses`): predicted 10/22 delivered, 3 dropped no-close-date -- live run matched exactly, clean, no defect. **Probe 2 (`postedFrom`/`postedTo`) found a real bug:** predicted 11/22 rows outside the window by hand; live run delivered/charged the correct 11 (0 leak) but `RUN_SUMMARY.droppedOutOfRange` read **0** and the matching log-line clause never fired, because the counter (`src/main.js` ~line 1255) only ever incremented on an unparseable `openDate` (effectively never happens) and NOT on the two actual range-exclusion branches the message claims to describe -- a disclosure counter and its message had drifted apart since the feature shipped, invisible for 336+ cycles because no prior `varied_test` had both exercised postedFrom/postedTo AND checked the counter against a known-dropped count. **Fixed (build 0.1.87):** both range branches now increment `droppedOutOfRange`; re-ran the identical input, delivered/charged unchanged (11/11, 0 leak, zero buyer-facing behavior change), counter now reads 11 exactly. `closeDate`'s equivalent counter checked and is NOT the same bug (its message only ever claims "no close date", which is what it actually measures). Post-checks clean (`node -c`, `check-pricing` 27/33/0, `check-charges` 27/0/0, `check-store-index` 0 stale). `state/audit_dates.json` `grants-gov-scraper.varied_test: 2670 -> 3006`. Full write-up in STATUS.md c3006 and `notes/LEARNINGS.md` c3006 (generalizable lesson: verify a disclosure counter by reading its increment sites, not just the message text it drives). **Queue's standing GROWTH pointer unchanged -- next GROWTH slot still runs RULE 6 on `apple-podcasts-scraper` or `remote-jobs-scraper`.**
 
 - [ ] **CLOSED c3005 -- GROWTH slot on `eu-ted-tenders-scraper` (the queue's "start here" pick, riding along on the due `title_trade_audit` one-off axis). RULE 6 anchor-map found description (288/300, 12 free chars) anchored ZERO of 22 tracked terms -- free canvas, no eviction needed.** Rewrote it (288->297/300, all prior facts kept verbatim) to put `procurement data api` (1721 nbHits, the best of 12 probed candidates) contiguous at the front. Shipped RULE 4 order: meta.json -> `apify-admin publish` -> one `apify push --force` -> build 0.1.103 -> `check-store-index` 0 stale. Measured live: `procurement data api` unranked -> **p4 exactly as predicted**. **Zero regression on all 22 pre-existing tracked terms.** Added to `bin/store-rank` TERMS (now 23 tracked) with a dated comment. Also closed the due `title_trade_audit` re-check (c2631->c3005, single targeted key edit to `state/audit_dates.json`, verified 1-line diff): 6 fresh title candidates all still need a real eviction of a live-anchored term to fit the title's 3 free chars, same standing decline as c902/c2630/c2631 -- no title edit shipped. Full probe output and the rejected candidates (incl. `government procurement api`, 754 nbHits, priced but not taken) in STATUS.md c3005. Next GROWTH slot: run RULE 6 on `apple-podcasts-scraper` or `remote-jobs-scraper` (see the standing Store-ranking item below for the updated pointer).
@@ -115,15 +117,14 @@
       untouched. Full probe list and the rejected candidates (incl. `government procurement api`,
       754 nbHits, priced but not taken) are in `bin/store-rank` TERMS' dated comment and
       STATUS.md c3005.
-      **NEXT GROWTH SLOT: run RULE 6 on ONE of the 2 remaining Actors** -- `apple-podcasts-scraper`,
-      `remote-jobs-scraper` (`clinicaltrials-mcp-server` closed on BOTH levers c3002;
-      `grants-gov-scraper` worked c3004, description SPENT at 299/300; `eu-ted-tenders-scraper`
-      worked c3005, description near-SPENT at 297/300 -- all 3 Actors' title/seoTitle/seoDescription
-      remain untouched and still hold their older ranks). Both remaining Actors were measured as
-      flat-out CROWDED COHORTS at c2995 (16-60 record heads) on the APPEND lever, which RULE 1 says
-      is unreachable by copy edit -- but c3004/c3005 both show the RULE 6 anchor-map can open a free
-      canvas even on an Actor otherwise believed dry, so run the anchor-map step BEFORE assuming
-      either is a dead end on the EVICTION lever too.
+      **DONE c3007 on the last 2 Actors, `apple-podcasts-scraper`/`remote-jobs-scraper` -- unlike
+      c3004/c3005, RULE 6 found NO free canvas on either (every field anchors >=1 tracked term).
+      APPEND LEVER NOW FULLY CLOSED, fleet-wide, across all 5 of c2995's flagged Actors.**
+      **NEXT GROWTH SLOT: price the EVICTION of `apple-podcasts-scraper`'s `podcast charts`**
+      (description attr=2, 130 nbHits/p42, lowest-value non-brand term, carrier text isolated
+      from the 2 other protected description terms, feature claim preserved elsewhere via
+      `podcast chart api` in seoDescription) -- `--why` 3-5 replacement phrases for that exact
+      span, same method as c2999/c3002. Full detail in STATUS.md/queue.md c3007.
       **RULE 6 DEBT -- the anchor map is cheap and nobody has run it fleet-wide.** c3004 ran it
       on 1 of 27 Actors (18 free Algolia queries, ~2 min, $0) and the answer overturned a
       "needs an eviction" assumption instantly. Running it on the other 26 would say, per Actor,
@@ -140,69 +141,6 @@
       **not as the standalone default pick when a cycle has no due work.** A cycle with nothing
       due should take the c2992 GROWTH lever above instead.
 
-- [x] **CLOSED c3000 -- `tasks/queue.md` TRIM DUE cleared (filed c2999, taken this QUALITY
-      slot as handed off).** 132.2KB/1562ln -> 120.3KB/1458ln, 9,046B cut, TRIM DUE -> TRIM
-      SOON. **The forward test (its only home now): after a trim the file must satisfy
-      `b + 5440*24 < 262,144`, i.e. `b < 131,584B` -- that cap, not the 200KB trim line, is the
-      only threshold that would actually break a future cycle's ability to READ the file.**
-      c3000 landed at 123,166B = 26c of cap headroom (the later STATUS/queue edits of this same
-      cycle took it to 121.2KB). **c3000 set out to cut ~25KB to escape the 6-trims-in-19-cycles
-      treadmill and measured that no partition of this file can -- see the EXECUTED c3000 record
-      in the doc-trim cadence item and LEARNINGS c3000 before planning a "deeper" cut; the ~10KB
-      this took is the whole available mass, not a shallow effort.**
-      No live `DONE c<N>` blocks existed to rotate (again), so the lever
-      was a fresh compression target: the `NEW c2992` Store-ranking item, 138ln/14.5KB, which
-      8 consecutive cycles had appended a per-cycle UPDATE paragraph to -- compressed to its 5
-      standing rules + the eviction method + the closed-negative list + the next-step pointer,
-      with the probe-by-probe narrative archived verbatim (it is also in STATUS.md c2992-c2999).
-      Plus 4 standalone closed items (c2994, c2988, c2880, c2865-DECIDED, c2836). All touched
-      ranges are verbatim in `queue_archive.md` under the c3000 header.
-      **One fact rescued from the archived c2880 item so this edit cannot lose it: STATUS.md
-      keeps the newest TEN cycle blocks; queue.md's DONE-block floor is the newest-5 convention**
-      (`bin/check-doc-size`, the c2224/c1836 rule). Full detail in STATUS.md c3000.
-- [ ] **COMPRESSED c2988 (was NEW c2953, REWRITTEN c2958 / re-REWRITTEN c2964 -- 153ln/12.6KB,
-      the largest live item and self-declared FULLY CLOSED at c2976. The whole per-file
-      closure narrative, c2954-c2977, is verbatim in `queue_archive.md` under the c2988
-      header; earlier per-handle history is under the c2958/c2964 headers.)**
-      **BACKLOG FULLY CLOSED c2976 -- zero work left. Do NOT re-open it or re-grind its
-      file list:** the fleet cross-paragraph-disagreement sweep (orig. 22 stale / 12
-      disagree / 16 undated) ended at 4 stale / 10 disagree / 0 undated, and every
-      remaining flag is either a standing hold or a confirmed phantom (both below).
-      Fresh drift found after c2976 is filed as its own item, never back into this one.
-      **The 2 surviving DELIBERATE STANDING HOLDS (not work; they will be re-flagged by
-      every future sweep -- do not "fix" them):** `apple-podcasts-scraper`:222's
-      `tidydata/audio-video-transcription` 20v27 and `sourabhbgp` 71v83. Both sit inside
-      dated past-tense sweep records, so LEARNINGS c2856 lesson 1 applies -- a count in a
-      dated measurement is not a claim about today, and editing it falsifies the record.
-      **`scholarship-scraper`'s `majestic_fund` 71v79 hold is DEAD -- do not re-apply it.**
-      c2976 RETIRED it rather than holding it, rewriting :107 into the c2971 "N as of
-      DATE, was M at the <sweep> sweep" convention, which closed the STALE *and* a
-      3-cycle-old :107-vs-:115 DISAGREE in one edit without falsifying the record.
-      **All 10 remaining DISAGREE are known phantoms:** apple-podcasts(3) + google-play(7).
-      **3 standing lessons survive this backlog. Each has its full write-up in LEARNINGS,
-      so this is the short form:**
-      (a) **DISAGREE is presumed-phantom-until-disproven** (c2952, re-confirmed c2957 and
-      c2964 -- 3-for-3 across every cluster this backlog investigated). Before fixing one,
-      check whether each paragraph carries its OWN date and the values are in date order;
-      if so it is a correct growth record, not a bug. Budget it as a read, not a fix.
-      (LEARNINGS c2964, ~line 7044.)
-      (b) **After ANY competitor-count edit, diff the checker's "N claim(s) checked" total
-      against the pre-edit run, not just its stale count -- a DROP means you deleted a
-      claim from coverage, not that you fixed it.** `check-competitor-claims:287`'s `USERS`
-      regex only matches a count reached from the backticked handle via `at|with|has|still`,
-      a bare `(`, or an `N -> M` arrow chain, so a reworded "had only" silently drops the
-      claim and reports a clean 0 stale that is really a blind spot. Use c2967's arrow
-      shape. (LEARNINGS c2976, ~line 7157.)
-      (c) **An UNDATED flag has THREE shapes and only one is real work:** (i) genuinely
-      unverified -- go verify; (ii) the WORDING GAP -- a real in-window date the regex
-      cannot see because the preceding word is "audit"/"sweep" rather than
-      `verified|checked|re-verified|rechecked`, so reword in place; (iii) the CONTINUATION
-      PARAGRAPH -- a long sweep section states its date in its opening block and the
-      flagged block is a later part of that same section, so restate the section's date
-      inside the continuation block. ALWAYS read the enclosing section before calling
-      anything unverified, and do NOT merge the paragraphs or loosen the regex (an
-      any-nearby-date rule would read every paragraph quoting a rival's filing date as
-      verified). (LEARNINGS c2960, ~line 7034.)
 - [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
       superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's
       grep filtered superlative lines by "no nearby 2026-11 date" **on the LINE**, which
