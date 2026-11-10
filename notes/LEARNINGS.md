@@ -6352,3 +6352,30 @@ false-positive "dead link"/"wrong value" finding that costs real verification ti
 probing a live value — use an unambiguous name (`AWARD_GID`, `award_id`, etc.) instead, and if a probe
 result looks like a genuine defect, sanity-check the exact URL that was actually sent (`curl -v` or
 print the built string) before writing it up, not just the curl response body.**
+
+## cycle 3019 — RULE 6 anchor-map on `fda-recall-scraper`: description maxed (300/300) with only 1 weak anchor, but seoDescription had 26 free chars; `prox` for an N-word contiguous match is `N-1`, not 1
+
+Mapped all 19 tracked TERMS via `store-rank --why`: description (attr=2) anchors only `fda api` (p16,
+weak); title anchors 3; seoTitle anchors 5; seoDescription anchors 5; 4 terms (`fda recall`, `food
+recall`, `drug recall`, `device recall`) are dead/crowded cohorts, outside top 60 regardless (matches
+the c3014 pattern — description is consistently the weakest-anchored field on this fleet but rarely
+zero, so true RULE 6 free canvases like grants-gov/eu-ted's are the exception, not the rule).
+**Title and description were both already at their char caps (63/63, 300/300) — no room to append
+there — but seoDescription had 26 free chars (174/200), an append-lever win independent of RULE 6's
+anchor test.** Priced two untracked candidates against the live buckets: `openfda recall api` (271
+nbHits, absent from top 60) vs `drug recall api` (258 nbHits, p43 via a weak attr=0 prox=6 title
+match). Picked `openfda recall api` — truthful (confirmed in `src/main.js` comments that the Actor
+is literally built on openFDA's enforcement endpoints) and the bigger absolute gain since it started
+at zero. Appended " via an openFDA recall API." to seoDescription (174→200/200, exact cap), verified
+it didn't disturb any existing contiguous span (appended after the existing trailing clause, nothing
+upstream reflowed). Shipped: `apify-admin publish` → `apify push --force` → build 0.1.96 → reindexed
+in ~100s. **Measured: `openfda recall api` absent-from-top-60 → p3 (words=3 exact=3 prox=2 attr=5,
+beaten only by 2 better-attr records at the same prox). Zero regression on all 18 pre-existing
+tracked terms, byte-identical.**
+**Correction to an in-cycle misprediction, worth generalizing: a fully contiguous N-word phrase match
+reports `prox=N-1`, not `prox=1` — confirmed again here (3-word phrase → prox=2) and consistent with
+every sibling example already on this Actor (`recall data api` prox=2 attr=4, `fda recall data api`
+prox=3 attr=4 for 4 words). Do not predict `prox=1` for a 3+-word contiguous win; the tie-break still
+works in your favor (lower-attr competitors at the SAME prox rank first, but you land right behind
+them), just size the predicted final rank off sibling-attr comparables already on that query, not off
+an assumed prox=1.**
