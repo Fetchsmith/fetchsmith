@@ -109,15 +109,32 @@
       (title/description/seoTitle/seoDescription) are now confirmed dry on this Actor. Do not
       spend another GROWTH slot probing `clinicaltrials-mcp-server` for appends -- next step
       for it specifically is EVICTION (c908 method), same as the other 5.**
-      **NEXT GROWTH SLOT: pick ONE of the 6 named Actors above and actually run the ranking
-      step that no cycle has done yet** -- `store-rank <slug>` for its baseline, then for each
-      TERMS entry judge nbHits vs current rank (a p1-p4 on decent nbHits is high-value, NOT a
-      sacrifice candidate; a p500+ or unranked entry, like `clinicaltrials-mcp-server`'s own
-      `mcp server claude` (489 nbHits, >p1000, the standing FRAGILE flag) or `mcp server` (1696
-      nbHits, p537), is the kind of cheap-to-lose entry to look for) -- then check via `--why`
-      whether a higher-nbHits untracked phrase could fit in that term's exact character budget
-      in the field it's carried by, without breaking any OTHER tracked term's contiguity.
-      Start with `steam-reviews-scraper` (biggest TERMS list, 12+ entries, most likely to have
+      **UPDATE c2999: EVICTION route run for the first time, on `steam-reviews-scraper`, and it
+      worked -- full detail STATUS.md c2999.** Ranked its 12 TERMS by value (nbHits/rank);
+      lowest was `steam charts api` (114 nbHits, p4, value ~29, carried by seoDescription via
+      a scattered "Steam charts"..."API" co-occurrence that was never a real feature claim
+      anyway -- confirmed against the README, this Actor has no charts/ranking data). Swapped
+      "Steam charts" for "Steam discount data" (truthful: `discountPercent`/`price` are real
+      output fields) in the SAME field, same tail position so no other term's contiguity could
+      change. Shipped (meta.json -> publish -> one push, build 0.1.99): `steam discount data`
+      (211 nbHits) unranked -> **p1 exact**, ~7x the evicted term's value. All 11 other tracked
+      terms byte-identical, 0 regression, `check-store-index`/`check-pricing`/`check-meta-fields`/
+      `check-store-meta` all clean. Declined a bigger-but-fuzzier alternative (`steam sales data`,
+      1906 nbHits, same vacant-bucket mechanics, would also land p1-p2) because "sales" is a
+      looser claim against this Actor's fields than "discount" -- sized the trade, took the
+      smaller unambiguously-truthful win. `steam charts api` removed from `bin/store-rank` TERMS
+      with a dated comment (it now ranks >60, intentional, not a regression to chase back).
+      **NEXT GROWTH SLOT: repeat this exact method (rank TERMS by value, exclude title/brand
+      terms from the sacrifice pool, probe the cheapest real candidate's replacement with
+      `--why` for a vacant low-prox bucket in the same field) on ONE of the remaining 5 Actors,
+      none attempted yet** -- `clinicaltrials-mcp-server`, `grants-gov-scraper`,
+      `apple-podcasts-scraper`, `eu-ted-tenders-scraper`, `remote-jobs-scraper`. Start with
+      `clinicaltrials-mcp-server` (10 TERMS, already has a known cheap-to-lose candidate flagged
+      by c2998: `mcp server claude` (489 nbHits, >p1000, the standing FRAGILE flag) or `mcp
+      server` (1696 nbHits, p537) -- judge nbHits vs current rank for each,
+      a p1-p4 on decent nbHits is high-value, NOT a sacrifice candidate) -- then check via
+      `--why` whether a higher-nbHits untracked phrase could fit in that term's exact character
+      budget in the field it's carried by, without breaking any OTHER tracked term's contiguity.
       an easy sacrifice) if no rotation/due item points elsewhere.
 
 - [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,

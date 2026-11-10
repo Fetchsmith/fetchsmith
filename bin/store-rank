@@ -807,7 +807,13 @@ TERMS = {
                               "video game data api", "steam player stats", "steam tags",
                               "gaming data api", "steam games list",
                               "steam review data", "steam store api", "steam reviews api",
-                              "steam charts api"],
+                              "steam discount data"],
+    # cycle 2999 EVICTION: "steam charts api" (nbHits 114, was only p4) retired from TERMS --
+    # the seoDescription words "Steam charts" that carried it were swapped for "Steam discount
+    # data" (truthful: discountPercent/price/priceInitial are real output fields; the actor has
+    # no charts/ranking feature). Bought p1 on "steam discount data" (nbHits 211), ~1.9x the
+    # evicted term's value, confirmed exact post-reindex. "steam charts api" now ranks >60 (was
+    # never a real feature claim either -- see cycle-2999 STATUS.md note).
     # cycle 535: "who is hiring" added — title -> "...Who Is Hiring, Jobs" (span 0),
     # measured p57->p23 (genuine 29-record block, block's #1 verified matchLevel
     # full). Confirmed the h143/h145(b) apostrophe caveat: querying "who's hiring"
