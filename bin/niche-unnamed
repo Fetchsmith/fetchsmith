@@ -44,6 +44,7 @@ terms = ns.TERM_VARIANTS.get(slug) or ns.auto_variants(base)
 # "0 unnamed" would be the most misleading output it could possibly produce.
 seen = {}
 failed_terms = []
+truncated_terms = []
 for term in terms:
     try:
         # Cycle 1780: 100 -> 1000, same fix and same reason as bin/niche-size's loop
@@ -52,7 +53,20 @@ for term in terms:
         # list it has printed was drawn from ~10% of the matchable Store.
         body, _st = ns.get_json(f"{ns.API}/store", params={"search": term, "limit": 1000},
                                 timeout=60)
-        items = ((body or {}).get("data") or {}).get("items") or []
+        data = (body or {}).get("data") or {}
+        items = data.get("items") or []
+        total = data.get("total")
+        # Cycle 3001: verified live that cycle 1780's "limit=1000 serves up to 1000 hits"
+        # is ALREADY FALSE -- a bare curl on this Actor's own `hacker news` term echoes
+        # `limit=1000` but returns `total=760, items=600` (cause undiagnosed, ~20% gap on
+        # every high-volume term, unrelated to the date below). SEPARATELY, the
+        # 2026-11-15 Apify notice (c2478/c2496, hardened in store-anon-rank/
+        # store-visibility but missed on this single-page caller) drops `total` entirely
+        # and caps the page at <=100 regardless of `limit` -- a much bigger cut than the
+        # gap above. Once `total` is gone, a page at/near that new ~100 ceiling is the
+        # only signal left.
+        if (total is not None and total > len(items)) or (total is None and len(items) >= 90):
+            truncated_terms.append((term, total, len(items)))
     except Exception as e:
         failed_terms.append(term)
         print(f"  ERR searching {term!r}: {e}", file=sys.stderr)
@@ -64,6 +78,11 @@ if failed_terms:
     print(f"  WARNING: INCOMPLETE SWEEP -- {len(failed_terms)} of {len(terms)} search "
           f"term(s) failed after retries; the unnamed list below is NOT complete and must "
           f"not be recorded as a clean audit.", file=sys.stderr)
+if truncated_terms:
+    print(f"  WARNING: POSSIBLY TRUNCATED -- {len(truncated_terms)} search term(s) got fewer "
+          f"items than `total` reports (pre-2026-11-15 gap, cause undiagnosed) or landed at/"
+          f"near the page cap with `total` gone (post-2026-11-15): {truncated_terms}; the "
+          f"unnamed list below may be missing rivals, not a clean audit.", file=sys.stderr)
 
 
 def stem(w):

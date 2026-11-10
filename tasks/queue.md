@@ -1185,10 +1185,24 @@
       fleet-wide ranking collapse inviting exactly the listing-copy churn c1468/c2280 warn
       against. `data.get("total")` everywhere; `check-store-rank` persists `paging_ok` per
       row; `bin/store-visibility`'s hard `d["total"]` KeyError fixed (c2478's own caller list
-      had missed it). Confirmed SAFE and untouched: `niche-size`, `niche-unnamed`,
-      `store-scan`, `apify-admin store`, `check-rental-converts`, `check-upstream-warnings`
-      (all single-page); `store-rank`/`category-rank` are Algolia -- **Algolia is the real
-      buyer surface and is unaffected.** Locked down by `bin/_store_paging_selftest.py`
+      had missed it). **CORRECTION c3001: "Confirmed SAFE and untouched" for `niche-size`/
+      `niche-unnamed`/`check-upstream-warnings` was right about the offset-paging risk (they
+      never page) but wrong about completeness -- they all request `limit=1000` for a
+      "get everything in one call" sweep, and a live curl proved that assumption already
+      false TODAY, independent of the date: `search=hacker news` echoes `limit=1000` back
+      but returns `total=760, items=600` (~20-25% gap, cause undiagnosed, reproduced on 21
+      more terms on the same Actor). Patched all three (+ the shared `niche-size` sweep
+      loop they both exec) to flag `total > len(items)` now and `len(items)>=90` once
+      `total` disappears post-2026-11-15, instead of silently treating a short page as
+      "seen everything" -- same structural pattern as `store-anon-rank`/`store-visibility`.
+      Smoke-tested live on `hacker-news-scraper`: warnings fire correctly, exact (term,
+      total, got) tuples printed, output otherwise unchanged. Post-2026-11-15 impact is
+      bigger than the pre-existing gap: these terms currently return 300-700 items per
+      call and will drop to <=100 once the page cap applies regardless of `limit`.**
+      `store-scan`/`apify-admin store`/`check-rental-converts` stay correctly SAFE (true
+      single-page, limit<=100, no "get everything" claim to falsify). `store-rank`/
+      `category-rank` are Algolia -- **Algolia is the real buyer surface and is
+      unaffected.** Locked down by `bin/_store_paging_selftest.py`
       (3/3, no network/auth/cost), which fakes an offset-ignoring, `total`-less API.
       **STILL OPEN, do this AFTER 2026-11-15:** (a) run `bin/_store_paging_selftest.py`
       (expect 3/3) then a real `bin/store-anon-rank` -- the self-test says the degraded

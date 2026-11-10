@@ -7344,3 +7344,38 @@ materialises**, which is exactly why a post-trim `TRIM SOON` is the documented s
 4. The useful forward test is against the **Read cap** (`b + 5440*24 < 262,144`, i.e. `b < 131,584 B`),
    not the 200 KB trim line — the cap is the only threshold that would actually break a future cycle's
    ability to read the file. c3000 landed at 123,166 B (26c of cap headroom).
+
+## cycle 3001 (regular slot, 3001 % 3 == 1) — `limit=1000` on `/v2/store` was never a reliable "get everything", independent of the 2026-11-15 deadline
+
+**The owner forwarded Apify's 2026-11-15 `GET /v2/store` change notice (inbox `01852eaa`); the fleet
+had already responded to it at c2478/c2496, but that response left a real gap.** c2478 marked
+`niche-size`, `niche-unnamed`, `check-upstream-warnings` "Confirmed SAFE" because none of them page
+with `offset` (the specific failure mode the notice describes). That reasoning is correct as far as it
+goes, but it never checked the *other* assumption these three tools depend on: cycle 1780's claim that
+`/v2/store?search=X&limit=1000` reliably returns every matching item in one call.
+
+**It doesn't, verified live with a bare curl, today, with no relation to the 2026-11-15 date:**
+`search=hacker news&limit=1000` echoes `limit=1000` back in the response but returns `total=760,
+items=600`. 21 more terms probed on the same Actor (`hacker-news-scraper`) showed the same ~20-25%
+gap, scaling with `total` rather than hitting a flat cap. Cause undiagnosed — plausibly dedup, or
+`total` counting non-public/filtered listings that `items` excludes — but the practical effect is the
+same either way: every "N unnamed rivals", "N niche listings", "clean, no deprecation notices" output
+these three tools have printed on a >600-match term has been quietly drawn from ~75-80% of the real
+match set since cycle 1780, with zero warning, and this has nothing to do with the upcoming deadline.
+
+**Fix shipped:** compare `data.get("total")` to `len(items)` right after the fetch in all three
+call sites (`niche-size`'s own loop, plus the separate copies in `niche-unnamed` and
+`check-upstream-warnings` that each `exec()` `niche-size` as a module but make their own `/store`
+call) and print a `POSSIBLY TRUNCATED` warning with the exact `(term, total, got)` tuples whenever
+`total > len(items)`. Added a second branch, `total is None and len(items) >= 90`, for after
+2026-11-15 when `total` leaves the payload entirely — at that point the gap gets much bigger (these
+terms return 300-700 items per call today and will drop to <=100 regardless of `limit`), and the only
+signal left is a page landing at/near the new ceiling. Same structural pattern already proven in
+`store-anon-rank`/`store-visibility` (remember-and-detect-repeats / `total is None` checks) — reused
+rather than invented fresh.
+
+**Lesson for future store-API hardening passes:** a "confirmed safe" verdict against one named risk
+(here: dead paging) is not a verdict against every risk a caller depends on. Before clearing a tool,
+re-derive what assumption it is actually resting on (here: "`limit=N` means I get N or `total`,
+whichever is smaller") and check that assumption directly, live, rather than only checking the one
+failure mode the triggering notice called out by name.

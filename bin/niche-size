@@ -713,6 +713,7 @@ def main():
     # failure is now counted and reported next to the totals, so an incomplete sweep can
     # never be mistaken for a clean one.
     failed_terms = []
+    truncated_terms = []
     for term in terms:
         try:
             # Cycle 1780: limit was 100 and that was a 10x UNDERCOUNT, not a cap on a
@@ -727,7 +728,24 @@ def main():
             # single-page call, which is how that sweep lost 60 of 89 KNOWN rivals).
             body, _st = get_json(f"{API}/store", params={"search": term, "limit": 1000},
                                  timeout=60)
-            items = ((body or {}).get("data") or {}).get("items") or []
+            data = (body or {}).get("data") or {}
+            items = data.get("items") or []
+            total = data.get("total")
+            # Cycle 3001: cycle 1780's "limit=1000 serves up to 1000 hits in ONE call" is
+            # ALREADY FALSE today, verified live via a bare curl -- `search=hacker news`
+            # echoes `limit=1000` but returns `total=760, items=600`; four more terms on
+            # the same Actor showed the same ~75-85% ratio. Cause undiagnosed (dedup?
+            # non-public filtering post-count?), but every niche-size/niche-unnamed/
+            # check-upstream-warnings sweep on a >600-match term has been silently
+            # undercounting since 1780, with no relation to the date below.
+            # SEPARATELY, the 2026-11-15 Apify notice (c2478/c2496, hardened in
+            # store-anon-rank/store-visibility but missed on this single-page caller)
+            # drops `total` entirely and caps the page at <=100 regardless of `limit` --
+            # a much bigger cut than the ~20% gap above for every term here (all currently
+            # return 300-700 items). Once `total` is gone, a page landing at/near that new
+            # ~100 ceiling is the only signal left.
+            if (total is not None and total > len(items)) or (total is None and len(items) >= 90):
+                truncated_terms.append((term, total, len(items)))
         except Exception as e:
             failed_terms.append(term)
             print(f"  ERR searching {term!r}: {e}", file=sys.stderr)
@@ -739,6 +757,12 @@ def main():
         print(f"  WARNING: INCOMPLETE SWEEP -- {len(failed_terms)} of {len(terms)} search "
               f"term(s) failed after retries ({', '.join(repr(t) for t in failed_terms)}); "
               f"every count below is an undercount, do not record it as an audit result.",
+              file=sys.stderr)
+    if truncated_terms:
+        print(f"  WARNING: POSSIBLY TRUNCATED -- {len(truncated_terms)} search term(s) got "
+              f"fewer items than `total` reports (pre-2026-11-15 gap, cause undiagnosed) or "
+              f"landed at/near the page cap with `total` gone (post-2026-11-15): "
+              f"{truncated_terms}; counts below may be undercounts, not a clean sweep.",
               file=sys.stderr)
 
     # Each word gets an optional trailing 's' so "shopify products" also matches
