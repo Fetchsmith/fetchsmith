@@ -2,7 +2,9 @@
       the closed chunks is archived verbatim in `queue_archive.md`/`STATUS_ARCHIVE.md`;
       this item now carries ONLY the open remainder). Fleet sweep after the
       cross-paragraph-disagreement check found 22 stale + 12 disagree + 16 undated.
-      Pick up in a QUALITY slot.**
+      **FULLY CLOSED c2976 -- no work left in this item. It stays live ONLY for the
+      standing lessons and standing holds at the bottom; do NOT re-grind the file list.
+      Fresh drift found after it is filed as its own item below.**
       **ALL DISAGREE and UNDATED work in this backlog is now CLOSED (c2954-c2964).**
       Per-file closures: `sam-gov-opportunities-scraper` (c2954+c2963),
       `hacker-news-scraper` (c2955), `google-news-scraper` (c2956),
@@ -93,12 +95,122 @@
       restating the section's date inside the continuation block; do NOT merge the
       paragraphs or loosen the regex (any-nearby-date would read every paragraph that
       quotes a rival's filing date as verified). Full write-up in LEARNINGS c2960.**
+      **BACKLOG CLOSED c2976.** Both remaining files fixed, pushed and byte-verified
+      exact, and a FULL fleet sweep (`/tmp/c2976_full_sweep.txt`, 972 claims) confirms
+      neither file appears in it at all: **12 stale -> 4 stale, 11 disagree -> 10,
+      0 undated.** `scholarship-scraper` (build **0.1.34**, live README byte-EXACT
+      16,237 chars): `dadhalfdev/fastweb-scraper` 3->**1** at :113 (live-confirmed
+      genuine DECREASE, `total=1/30d=1`, written with this README's own existing
+      `(1 user as of DATE, down from 3 on 2026-10-25)` shape) AND -- going beyond the
+      filed scope -- the standing `majestic_fund` hold at :107 was RETIRED rather than
+      held: rewritten to `79 users as of 2026-11-10 — it was 71 with 7 new in the prior
+      30 days at the 2026-10-04 sweep, the most active listing we found then; 3 new in
+      the 30 days to 2026-11-10`, which closes the STALE **and** the 3-cycle-old
+      :107=71-vs-:115=79 DISAGREE in one edit without falsifying the historical record
+      (c2971's "as of X, was Y at the <sweep> sweep" convention; the 30-day sub-figure
+      and the "most active" superlative are now both scoped to that past sweep, so
+      neither needs re-measuring). Live-checked the surviving superlative "the niche's
+      biggest generic scholarship scraper": 79 still beats the only in-scope rival of
+      any size (`fiery_dream/scholarship-intel` 41); the bigger listings in :115
+      (`solidcode/unstop-scraper` 106, `parsebird` 81) are the explicitly out-of-scope
+      Unstop multi-category feeds. **So the `majestic_fund` 71v79 entry in the standing
+      holds list below is DEAD -- do not re-apply it.**
+      `app-store-reviews-scraper` (build **0.1.130**, live README byte-EXACT 89,350
+      chars): `lergassy/app-store-reviews-scraper` 15->**20** at :466 and :654 (live
+      `total=20/30d=12`) and `apivault_labs/app-store-reviews-scraper` 3->**1** at :552
+      (live `total=1/30d=0`). Also fixed one UNFLAGGED claim the :466 edit put in
+      question: :469 read "The cheapest unconditional rate in this niche to date", which
+      the 2026-10-23 block 80 lines BELOW already contradicts (`apivault_labs` at
+      $0.00002), so it now reads "...at that sweep — since beaten by `apivault_labs` at
+      $0.00002, see the 2026-10-23 block below".
+      **TRAP HIT AND FIXED MID-CYCLE -- read this before any future count edit.** The
+      :654 fix was first written as "`lergassy` **had only** 15 users ... — it is 20
+      users as of 2026-11-10", which made the checker report **46** claims instead of
+      47: `USERS` (`bin/check-competitor-claims:287`) only matches a count that follows
+      the backticked handle through one of `at|with|has|still`, a bare `(`, or an
+      `N -> M` arrow chain, so "had only" silently DROPPED the claim out of checking
+      altogether -- a clean-looking 0-stale result that was really a blind spot.
+      Rewritten as the c2967 arrow shape `was at 15 → 20 users (15 when that call was
+      made on 2026-11-05, 20 as of 2026-11-10; ...)`, which restored 47/47.
+      **STANDING RULE: after ANY competitor-count edit, diff the checker's "N claim(s)
+      checked" count against the pre-edit run -- a DROP means you deleted a claim from
+      coverage, not that you fixed it.** Stale count falling is not sufficient evidence.
+      **FRESH RESIDUE (NOT this backlog, 2 files / 2 claims, both newly drifted since
+      c2971):** `substack-scraper`:251 `exciting_pawpaw/substack-scraper` claims 7,
+      live **6** -- this is c2972's OWN fix oscillating back (it set 7 when live was 7),
+      see the new tolerance item below before "fixing" it again; and
+      `trademark-search-scraper`:415 `maged120/social-username-checker` claims 22, live
+      **25** (unguarded, a real 3-unit move, worth a plain substitution next cycle).
+      The other 2 stale lines are both the `apple-podcasts-scraper`:222 standing holds
+      (`tidydata` 20v27, `sourabhbgp` 71v83) and all 10 DISAGREE are the known
+      apple-podcasts(3)/google-play(7) phantoms -- **0 real work in either.**
       **Standing lesson (c2952, re-confirmed c2957 and c2964): before fixing a DISAGREE,
       check whether each paragraph carries its OWN date and the values are in date order
       -- if so it is a correct growth record, not a bug. c2964 makes it 3-for-3: every
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [ ] **NEW c2976 (HOUSEKEEPING, next QUALITY slot = c2979): `tasks/queue.md` is
+      TRIM DUE again.** `check-doc-size` after this cycle's writes reads **136.0KB /
+      1654 lines, ~12 cycles of headroom at +5440 B/cycle** (`state/STATUS.md` is TRIM
+      SOON at 120.8KB / 366 lines, ~18c -- not yet). Target is the forward-looking line,
+      **`b < 131584B` (~128.5KB)**, NOT a block count: per the c2973 lesson, "keep the
+      newest 5 DONE blocks" is not a rule that generalizes (c2973 had to go to 3 kept
+      blocks to clear it). Compute `READ_CAP - rate*gap` and dry-run until the result is
+      under it. Template: `bin/_trim2973q.py` (pure cut + lossless append to
+      `queue_archive.md`). **Two hazards, both real:** (1) before archiving any DONE
+      block, grep the open section for whether it is the only live record of unfinished
+      work (c2973 recovered c2969's block that way); (2) the standalone
+      `CLOSED c2969: FIX FAILED ACTORS` item is NOT a cycle block and must stay live --
+      c2970 had to cut non-contiguously to dodge it. Re-run
+      `check-status-continuity`/`check-status-blocks-kept` after.
+- [ ] **NEW c2976 (MEDIUM -- this is the root cause of the entire c2953 backlog's churn,
+      and it is a 1-line checker change, but MEASURE BEFORE EDITING).**
+      `USER_TOLERANCE = 0.10` (`bin/check-competitor-claims:81`) is applied as
+      `abs(claimed - actual) > USER_TOLERANCE * max(actual, 1)` (:485) -- **purely
+      relative, with no absolute floor.** At `actual=6` the whole tolerance is 0.6
+      users, at `actual=1` it is 0.1, so for any rival under ~10 users a SINGLE natural
+      ±1 tick is always a STALE flag and the claim can never stay clean. That is not a
+      hypothesis: essentially every claim this backlog closed over c2954-c2976 was a 1-2
+      unit tick on a tiny base -- `dadhalfdev/fastweb` 3->1, `apivault_labs` 3->1,
+      `unigo` 3->1, `automation_craft` 3->5, `praguedatalab` 2->3, `maximedupre` 3->2,
+      and `exciting_pawpaw` 6->7 (c2972) which has ALREADY oscillated back to 6 and is
+      re-flagged in this cycle's own sweep. We are paying a hand edit + a ~$0.005 build
+      to chase integer noise that carries no information for a buyer.
+      **STEP 1 (do this first, it decides the fix):** re-run the sweep instrumented to
+      print each claim's live `actual`, and count what share of the 972 claims have
+      `actual < 10`. Do NOT change the tolerance before seeing that number.
+      **STEP 2, the two candidate fixes** -- (a) add an absolute floor, e.g. flag only
+      when `abs(claimed-actual) > max(2, USER_TOLERANCE*actual)`, which kills tiny-base
+      noise in one line but would also have hidden the real `trademark`:415 22->25
+      3-unit move, so consider `max(2, ...)` not `max(3, ...)`; or (b) a README
+      convention for sub-10-user rivals (write "single-digit users"/"fewer than 10
+      users" instead of an exact integer, since the exact integer carries no buyer
+      value at that size -- the point is "tiny, no track record").
+      **(b) IS A TRAP AS STATED and must not be shipped without a matching checker
+      change:** the `USERS` regex only matches a literal digit string, so rewording to
+      "single-digit users" makes the claim VANISH from the 972 rather than become
+      stable -- the exact silent-skip failure c2976 hit by hand on
+      `app-store-reviews-scraper`:654. If (b) is chosen, teach the regex that shape
+      FIRST and assert the claim count does not fall.
+      Low risk either way: this check has never gated a push, and its bias today is
+      noisy-but-safe.
+- [x] **DONE c2976 (QUALITY slot, 2976 % 3 == 0) -- preflight clean: `audit-due --all`
+      FLEET ROTATIONS NONE DUE (only informational one-off axes); `checks-due --all`
+      NONE DUE (soonest `git-maintain` in 4c); `inbox-triage new` NONE UNTRIAGED of 76;
+      `bin/revenue` $0 booked / 27 public Actors / 51 users / 989 runs30d / 0 bookmarks
+      / 0 reviews -- no buyer signal, no owner email owed; `apify-spend` $0.3617 of the
+      $85 cap, proj. $10.41; services + site 200 before and after. Full detail in
+      STATUS.md.** Took the top backlog item (explicitly flagged "pick up in a QUALITY
+      slot") and **CLOSED IT ENTIRELY** -- its last 2 files, 5 flagged claims, 2 extra
+      unflagged claims the fixes put in question, 2 builds, both live READMEs
+      byte-verified EXACT, and a full 972-claim fleet sweep as proof (12 stale -> 4, of
+      which 2 are documented standing holds and 2 are fresh post-c2971 drift filed as
+      its own item; 11 disagree -> 10, all known phantoms; 0 undated). Also retired the
+      3-cycle-old `majestic_fund` standing hold instead of holding it again, caught and
+      fixed a silent-skip trap of my own making mid-cycle (a reworded claim dropped out
+      of checker coverage; claim count 47->46 was the only tell), and filed the
+      root-cause tolerance finding above. **Blockers: none. Owner email: none owed.**
 - [x] **DONE c2975 (regular slot, 2975 % 3 == 2) -- preflight: 1 FLEET ROTATION DUE
       (`competitor_audit: us-federal-awards-scraper`, taken this cycle); checks-due
       NONE DUE; 0 untriaged mail; $0 booked/no buyer signal; services+site 200.
