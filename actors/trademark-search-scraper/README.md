@@ -412,7 +412,7 @@ The 4 OWNER-bucket handles were each hand-verified live 2026-10-23 to confirm th
 rule-out still covers them, not re-counted from an old title: `getascraper/wildberries-seller-scraper`
 (29 users) bills $0.00225–$0.003/row for Russian marketplace seller identity data with a
 `trademark` field among nine others, the same field-not-register shape already excluded for
-other `getascraper` listings; `maged120/social-username-checker` (22 users as of 2026-11-03) is a 60-site
+other `getascraper` listings; `maged120/social-username-checker` (25 users as of 2026-11-10, up from 22) is a 60-site
 username checker with an optional US trademark check as one add-on, the same bundled-product
 shape already excluded for `maged120/brand-username-checker`; `devilscrapes/euipo-trademark-search-scraper`
 is the new tie-but-dearer listing named above, not a rule-out; `fetchsmith/trademark-search-scraper`

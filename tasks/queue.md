@@ -140,7 +140,8 @@
       live **6** -- this is c2972's OWN fix oscillating back (it set 7 when live was 7),
       see the new tolerance item below before "fixing" it again; and
       `trademark-search-scraper`:415 `maged120/social-username-checker` claims 22, live
-      **25** (unguarded, a real 3-unit move, worth a plain substitution next cycle).
+      25 -- **CLOSED c2977**, live-confirmed 25 (`total=25/30d=4`), build 0.1.107,
+      byte-verified exact 90,769 chars both sides, claim-count denominator held at 22/22.
       The other 2 stale lines are both the `apple-podcasts-scraper`:222 standing holds
       (`tidydata` 20v27, `sourabhbgp` 71v83) and all 10 DISAGREE are the known
       apple-podcasts(3)/google-play(7) phantoms -- **0 real work in either.**
@@ -177,9 +178,29 @@
       and `exciting_pawpaw` 6->7 (c2972) which has ALREADY oscillated back to 6 and is
       re-flagged in this cycle's own sweep. We are paying a hand edit + a ~$0.005 build
       to chase integer noise that carries no information for a buyer.
-      **STEP 1 (do this first, it decides the fix):** re-run the sweep instrumented to
-      print each claim's live `actual`, and count what share of the 972 claims have
-      `actual < 10`. Do NOT change the tolerance before seeing that number.
+      **STEP 1 DONE c2977.** Instrumented sweep (`bin/_measure2977_tolerance.py`,
+      imported `check-competitor-claims` directly, backgrounded via `nohup` --
+      deleted after use, one-off): of 962 live-checked claims, **560 (58.2%) have
+      `actual < 10`**. But the CURRENT tolerance only flags 3 stale right now (not
+      the dozens the backlog implied -- most of c2954-c2976's churn was real drift
+      on bigger bases), and the candidate `max(2, 0.10*actual)` floor would stop
+      flagging exactly **1** of those 3: `exciting_pawpaw/substack-scraper` (6 vs 7,
+      diff=1 < floor 2) -- the exact oscillation this item was filed to explain. The
+      other 2 live-stale claims are real moves the floor still catches.
+      **DECIDED: ship fix (a)** -- `abs(claimed-actual) > max(2, USER_TOLERANCE*actual)`
+      at `bin/check-competitor-claims:485`. 1-line change, kills the one confirmed
+      false-positive, still catches a real diff>=3 move (verified against
+      `trademark-search-scraper`'s own 22->25 c2977 fix: diff=3 > max(2,2.5)`).
+      **Do NOT ship fix (b)** (wording convention) without teaching the `USERS` regex
+      first -- confirmed silent-skip trap, same class as this cycle's own
+      near-miss on the lergassy edit.
+      **Next cycle: implement fix (a)**, re-run a full fleet
+      `check-competitor-claims` sweep before/after (background it at the START of
+      the cycle per the c2970/c2971 240s-timeout precedent) and diff the stale/
+      disagree counts -- expect `exciting_pawpaw` to drop out and nothing else to
+      change. Then re-fix `exciting_pawpaw/substack-scraper` itself to the live
+      value (was oscillating 6<->7; the floor change stops it being re-flagged but
+      the text should still say whichever is current as of the fix).
       **STEP 2, the two candidate fixes** -- (a) add an absolute floor, e.g. flag only
       when `abs(claimed-actual) > max(2, USER_TOLERANCE*actual)`, which kills tiny-base
       noise in one line but would also have hidden the real `trademark`:415 22->25
@@ -195,6 +216,14 @@
       FIRST and assert the claim count does not fall.
       Low risk either way: this check has never gated a push, and its bias today is
       noisy-but-safe.
+- [x] **DONE c2977 (regular slot, 2977 % 3 == 1) -- preflight clean: nothing fleet-due,
+      0 untriaged of 76 mail, $0 booked/no buyer signal, services+site 200. Full detail
+      in STATUS.md.** Closed `trademark-search-scraper`'s unguarded 22->25 user-count
+      drift (`maged120/social-username-checker`, live-confirmed), build 0.1.107,
+      byte-verified exact. Ran the c2976 tolerance root-cause item's Step 1 measurement
+      to completion (962 claims, 58.2% with `actual<10`, only 1 of 3 currently-stale
+      claims is tiny-base noise) and decided the fix -- see the tolerance item above.
+      **Blockers: none. Owner email: none owed.**
 - [x] **DONE c2976 (QUALITY slot, 2976 % 3 == 0) -- preflight clean: `audit-due --all`
       FLEET ROTATIONS NONE DUE (only informational one-off axes); `checks-due --all`
       NONE DUE (soonest `git-maintain` in 4c); `inbox-triage new` NONE UNTRIAGED of 76;
