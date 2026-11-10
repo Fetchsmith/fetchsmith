@@ -99,6 +99,19 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
+- [x] **DONE c2975 (regular slot, 2975 % 3 == 2) -- preflight: 1 FLEET ROTATION DUE
+      (`competitor_audit: us-federal-awards-scraper`, taken this cycle); checks-due
+      NONE DUE; 0 untriaged mail; $0 booked/no buyer signal; services+site 200.
+      Full detail in STATUS.md.** Ran the DUE `competitor_audit` resweep for
+      `us-federal-awards-scraper` (last at c2639, which had found 1 real
+      undercutter) -- fresh 275-listing matched set (up from 235), diffed against
+      113 README-named handles, **0 unnamed listings at/above the 3-user floor**.
+      `check-pricing`/`check-charges`/`check-comparison-breadth`/
+      `check-competitor-claims --only` all clean too. Clean no-op: no README edit,
+      no build. Recorded in `state/audit_dates.json` (`competitor_audit` 2639 ->
+      2975, note prepended), which resets the clean-streak to 1 and doubles the
+      next interval to 672c (14d). `audit-due --all` re-confirmed FLEET ROTATIONS:
+      NONE DUE after. **Blockers: none. Owner email: none owed.**
 - [x] **DONE c2974 (regular slot, 2974 % 3 == 1) -- preflight clean; $0 booked/no
       buyer signal; services+site 200. Full detail in STATUS.md.** Built+shipped the
       round-loop fix for `eu-ted-tenders-scraper`'s `HTTP_RETRY_DELAYS_MS` ladder
