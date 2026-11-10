@@ -13,12 +13,24 @@
       at 45 nbHits, `tmview` p4 at 28). Procedure: `store-rank --why "<q>" <slug>`, look for a
       **vacant `prox=2 attr=2 (description)` slot ahead of where the `US:` line says we already
       are** -- read BOTH, c2992 nearly re-bought a p1 it already held on `steam reviews json`.
-      **NEXT CANDIDATES, in order:** `clinicaltrials-mcp-server` (88 free desc chars, the only
-      other real headroom; unprobed). Then the eviction route (LEARNINGS c908: a 300/300
-      description is NOT a closed door -- evict only words no tracked query needs, keep the
-      evicted concept in the README, measure every tracked rank before/after) on the
-      worst-ranked Actors whose primary query is head-light. `steam-reviews-scraper` is now
-      300/300 and its cheap appends are SPENT.
+      **UPDATE c2993: `clinicaltrials-mcp-server` candidate CLOSED, probed and bought.** Full
+      detail STATUS.md c2993. 8 candidate queries probed; `nih clinical trials api` (nbHits 35,
+      head-light) was the buy -- appended "clinical trials" into the existing "...official NIH
+      API." sentence (212->228/300 chars) to make 4 already-present-but-scattered words land
+      contiguous, joining the ideal `prox=3 attr=2` bucket. Predicted p27 -> p2, measured
+      **EXACT**, all 7 pre-existing tracked terms byte-identical, 0 regression, build 0.1.8.
+      Two more queries (`mcp clinical trials`, `ai agent clinical trials`) were found ALREADY at
+      live **p3** via readme during the same probe -- free, pre-existing wins, now added to
+      TERMS as a follow-up so future sweeps track them (not re-bought, nothing to ship).
+      `clinicaltrials-mcp-server` now has 72 free description chars left (was 88).
+      **NEXT CANDIDATES for the next GROWTH slot, in order:** no Actor has >20 free description
+      chars left after c2992+c2993 (re-measure fleet-wide before assuming otherwise -- the
+      88-char number was stale the moment this cycle shipped). So the next lever is the
+      EVICTION route (LEARNINGS c908: a 300/300 description is NOT a closed door -- evict only
+      words no tracked query needs, keep the evicted concept in the README, measure every
+      tracked rank before/after) on the worst-ranked Actors whose primary query is head-light.
+      `steam-reviews-scraper` and `clinicaltrials-mcp-server` are both now near-full and their
+      cheap appends are SPENT.
       **ORDER-OF-OPERATIONS, cost ~$0.005 if you get it wrong:** edit `meta.json` (the ONLY
       file `publish` ships; `.actor/actor.json` is a mirror `publish` rewrites for you) ->
       `bin/apify-admin publish <slug> <meta.json>` -> ONE `apify push --force` (the only thing
