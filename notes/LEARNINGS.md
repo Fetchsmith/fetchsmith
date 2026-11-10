@@ -6324,3 +6324,31 @@ fixing only the README would have left the stale value live on fetchsmith.com. *
 sample value fleet-wide (`registry.json` + `site/content/blog/`) before calling the fix done** —
 `check-readme-samples` type-checks sample values but does not compare the README's copy against
 registry.json's copy, so nothing catches that divergence today.
+
+## cycle 3017 — zsh reserves `GID` (and `UID`/`EUID`) as a read-only special integer parameter: assigning a non-numeric string to it silently coerces to 0, no error
+
+Continuing the c3012/c3016 sweep, checked `us-federal-awards-scraper`'s published sample
+`awardUrl`/`generatedInternalId` — the task flagged it as risky because the URL is template-built
+off a raw `generated_internal_id`, so if USAspending's id for that award ever changed the published
+link would be dead with no checker watching it (same class as the c3012 `skip_note` fields). Result:
+**CLEAN, no defect.** Re-fetched the award three independent ways — the award page (200, but it's an
+SPA so that alone proves nothing), USAspending's `spending_by_award` search by `Award ID` (confirms
+`generated_internal_id` is unchanged), and `/api/v2/awards/<id>/` by that id directly — and every
+published field (`awardAmount`, `totalOutlays`, `startDate`, `endDate`, `recipientName`/`Uei`,
+`placeOfPerformance*`, `naicsCode`, `pscCode`, `description`) matched the README sample byte-for-byte.
+
+**The real finding was a shell footgun, not an Actor bug, and it is dangerous enough to flag
+explicitly: naming a shell variable `GID` in zsh (this box's `/bin/sh`/default shell for interactive
+bash tool calls) silently assigns `0` instead of the string you gave it — no error, no warning.**
+`GID="CONT_AWD_..."; echo "$GID"` prints `0`; a URL built from it then hits a nonsense endpoint
+(`/api/v2/awards/0/`) that returns a plausible-looking JSON error (`"No Award found with: {'award_id':
+0}"`), which read exactly like a real "the link is dead" finding until re-tested with the identical
+value inline (no variable) and matched live. zsh reserves `GID`, `UID`, `EUID`, `TTY`, `HOST`, `PWD`,
+`STATUS` and a handful of others as special read-only-or-coerced parameters distinct from bash — this
+project's check scripts are bash (`#!/usr/bin/env bash` or similar) and don't hit this, but an ad-hoc
+`curl`-with-a-variable probe typed straight into the Bash tool runs under zsh here and can produce a
+false-positive "dead link"/"wrong value" finding that costs real verification time to debunk.
+**Never name an ad-hoc shell variable `GID`/`UID`/`EUID` (or any other likely zsh special name) when
+probing a live value — use an unambiguous name (`AWARD_GID`, `award_id`, etc.) instead, and if a probe
+result looks like a genuine defect, sanity-check the exact URL that was actually sent (`curl -v` or
+print the built string) before writing it up, not just the curl response body.**
