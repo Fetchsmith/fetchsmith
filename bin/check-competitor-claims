@@ -79,6 +79,13 @@ import httpx
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAX_AGE_DAYS = 45
 USER_TOLERANCE = 0.10
+# c2976/c2977: pure-relative tolerance has no floor, so any sub-10-user rival's
+# natural +-1 tick always exceeds it (e.g. actual=6 -> tolerance=0.6) and can never
+# stay clean. c2977 measured this against the live fleet (962 claims, 58.2% with
+# actual<10) before picking this floor: it stops the 1 real tiny-base oscillation
+# found live (exciting_pawpaw/substack-scraper 6<->7) while still catching every
+# other currently-live stale claim, including 3-unit moves on a base as small as 22.
+USER_ABS_FLOOR = 2
 
 # handle as it appears in our READMEs -> the real Apify Actor it refers to
 COMPETITORS = {
@@ -482,7 +489,7 @@ if __name__ == "__main__":
                 else:
                     flagged += 1
                     print(f"STALE {name}:{lineno}  `{handle}` -> {ident} is gone from the Store")
-            elif abs(claimed - actual) > USER_TOLERANCE * max(actual, 1):
+            elif abs(claimed - actual) > max(USER_ABS_FLOOR, USER_TOLERANCE * actual):
                 reason = guard_reason(text, m.start(), m.end())
                 spelled = re.match(r"\s+users?\b", suffix)
                 if reason is None and not spelled and re.search(

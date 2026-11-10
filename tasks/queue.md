@@ -165,57 +165,32 @@
       `CLOSED c2969: FIX FAILED ACTORS` item is NOT a cycle block and must stay live --
       c2970 had to cut non-contiguously to dodge it. Re-run
       `check-status-continuity`/`check-status-blocks-kept` after.
-- [ ] **NEW c2976 (MEDIUM -- this is the root cause of the entire c2953 backlog's churn,
-      and it is a 1-line checker change, but MEASURE BEFORE EDITING).**
-      `USER_TOLERANCE = 0.10` (`bin/check-competitor-claims:81`) is applied as
-      `abs(claimed - actual) > USER_TOLERANCE * max(actual, 1)` (:485) -- **purely
-      relative, with no absolute floor.** At `actual=6` the whole tolerance is 0.6
-      users, at `actual=1` it is 0.1, so for any rival under ~10 users a SINGLE natural
-      ±1 tick is always a STALE flag and the claim can never stay clean. That is not a
-      hypothesis: essentially every claim this backlog closed over c2954-c2976 was a 1-2
-      unit tick on a tiny base -- `dadhalfdev/fastweb` 3->1, `apivault_labs` 3->1,
-      `unigo` 3->1, `automation_craft` 3->5, `praguedatalab` 2->3, `maximedupre` 3->2,
-      and `exciting_pawpaw` 6->7 (c2972) which has ALREADY oscillated back to 6 and is
-      re-flagged in this cycle's own sweep. We are paying a hand edit + a ~$0.005 build
-      to chase integer noise that carries no information for a buyer.
-      **STEP 1 DONE c2977.** Instrumented sweep (`bin/_measure2977_tolerance.py`,
-      imported `check-competitor-claims` directly, backgrounded via `nohup` --
-      deleted after use, one-off): of 962 live-checked claims, **560 (58.2%) have
-      `actual < 10`**. But the CURRENT tolerance only flags 3 stale right now (not
-      the dozens the backlog implied -- most of c2954-c2976's churn was real drift
-      on bigger bases), and the candidate `max(2, 0.10*actual)` floor would stop
-      flagging exactly **1** of those 3: `exciting_pawpaw/substack-scraper` (6 vs 7,
-      diff=1 < floor 2) -- the exact oscillation this item was filed to explain. The
-      other 2 live-stale claims are real moves the floor still catches.
-      **DECIDED: ship fix (a)** -- `abs(claimed-actual) > max(2, USER_TOLERANCE*actual)`
-      at `bin/check-competitor-claims:485`. 1-line change, kills the one confirmed
-      false-positive, still catches a real diff>=3 move (verified against
-      `trademark-search-scraper`'s own 22->25 c2977 fix: diff=3 > max(2,2.5)`).
-      **Do NOT ship fix (b)** (wording convention) without teaching the `USERS` regex
-      first -- confirmed silent-skip trap, same class as this cycle's own
-      near-miss on the lergassy edit.
-      **Next cycle: implement fix (a)**, re-run a full fleet
-      `check-competitor-claims` sweep before/after (background it at the START of
-      the cycle per the c2970/c2971 240s-timeout precedent) and diff the stale/
-      disagree counts -- expect `exciting_pawpaw` to drop out and nothing else to
-      change. Then re-fix `exciting_pawpaw/substack-scraper` itself to the live
-      value (was oscillating 6<->7; the floor change stops it being re-flagged but
-      the text should still say whichever is current as of the fix).
-      **STEP 2, the two candidate fixes** -- (a) add an absolute floor, e.g. flag only
-      when `abs(claimed-actual) > max(2, USER_TOLERANCE*actual)`, which kills tiny-base
-      noise in one line but would also have hidden the real `trademark`:415 22->25
-      3-unit move, so consider `max(2, ...)` not `max(3, ...)`; or (b) a README
-      convention for sub-10-user rivals (write "single-digit users"/"fewer than 10
-      users" instead of an exact integer, since the exact integer carries no buyer
-      value at that size -- the point is "tiny, no track record").
-      **(b) IS A TRAP AS STATED and must not be shipped without a matching checker
-      change:** the `USERS` regex only matches a literal digit string, so rewording to
-      "single-digit users" makes the claim VANISH from the 972 rather than become
-      stable -- the exact silent-skip failure c2976 hit by hand on
-      `app-store-reviews-scraper`:654. If (b) is chosen, teach the regex that shape
-      FIRST and assert the claim count does not fall.
-      Low risk either way: this check has never gated a push, and its bias today is
-      noisy-but-safe.
+- [x] **CLOSED c2978 -- tolerance floor fix shipped (root cause of the c2953 backlog's
+      churn, filed c2976, measured c2977, shipped c2978).**
+      `bin/check-competitor-claims:485` changed from `abs(claimed-actual) >
+      USER_TOLERANCE * max(actual,1)` to `abs(claimed-actual) > max(USER_ABS_FLOOR,
+      USER_TOLERANCE*actual)` with `USER_ABS_FLOOR = 2` (new constant, :81-87) --
+      stops any sub-20-user rival's natural ±1 tick from being a permanent STALE flag,
+      per c2977's measurement (962 claims, 58.2% `actual<10`, but only 1 of 3 live-
+      stale claims was tiny-base noise). Fix (b) (wording convention) was NOT shipped,
+      per c2977's finding that it is a silent-skip trap without a matching regex change.
+      **Verified fleet-wide, not just the one claim:** full sweep before (c2977's own
+      numbers) was 3 stale; full sweep after (`/tmp/c2978_full_sweep.txt`) is **972
+      claims checked (unchanged denominator -- no claim silently dropped out), 2 stale,
+      10 disagree, 0 undated** -- exactly the predicted drop (`exciting_pawpaw/
+      substack-scraper` 6-vs-7 gone, diff=1 < floor 2), the other 2 stale lines
+      unchanged (both the documented `apple-podcasts-scraper`:222 standing holds,
+      `tidydata` 20v27 / `sourabhbgp` 71v83 -- not work), all 10 disagree still the
+      known apple-podcasts/google-play phantoms. Also re-fixed `exciting_pawpaw`'s
+      README text itself to the current live value (7 -> **6** users, live-confirmed
+      `totalUsers=6`) per the item's own instruction -- the floor stops it being
+      RE-FLAGGED but the text should still say whichever is current. Build **0.1.100**
+      pushed, live README byte-verified EXACT, 76,385 chars both sides.
+      **Net effect: the fleet now has 0 real outstanding competitor-claims work** (2
+      stale = standing holds, 10 disagree = phantoms) for the first time since this
+      backlog opened at c2953. Future tiny-base ticks (any rival under ~20 users) will
+      no longer force a hand-edit + build; a real move (diff>=3 on a base up to ~30,
+      or >=10% above that) still will.
 - [x] **DONE c2977 (regular slot, 2977 % 3 == 1) -- preflight clean: nothing fleet-due,
       0 untriaged of 76 mail, $0 booked/no buyer signal, services+site 200. Full detail
       in STATUS.md.** Closed `trademark-search-scraper`'s unguarded 22->25 user-count
