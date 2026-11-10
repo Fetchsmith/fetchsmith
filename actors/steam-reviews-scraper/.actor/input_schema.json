@@ -100,7 +100,7 @@
     "sortBy": {
       "title": "Sort / selection",
       "type": "string",
-      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking, funny = Steam's \"Funny\" tab, the reviews with the most funny votes (always all-time). Note: Steam itself defaults 'all' to only the last 30 days unless you also set 'Last N days' below.",
+      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking, funny = Steam's \"Funny\" tab, the reviews with the most funny votes. Since the 2026-10-23 source change 'all' and 'funny' are both all-time by default and no ordering has a date control, so 'Last N days' below does nothing; use 'Reviews after/before' for a date window.",
       "default": "recent",
       "enum": [
         "recent",
@@ -117,7 +117,7 @@
       "editor": "select"
     },
     "dayRange": {
-      "title": "Last N days (Most helpful only)",
+      "title": "Last N days (no longer supported — ignored)",
       "type": "integer",
       "description": "Currently a no-op (2026-10-23 source change — Steam's community review pages, which this Actor now reads, have no day-range control in any sort mode). Use 'Reviews after/before' with Sort = Most recent for a date window instead.",
       "minimum": 1,
@@ -127,7 +127,7 @@
     "reviewsAfter": {
       "title": "Reviews after (ISO date)",
       "type": "string",
-      "description": "e.g. 2024-01-01. Keep only reviews created on or after this date. Unlike 'Last N days', this reaches any point in a game's history, not just the last year. Forces Sort to 'Most recent' so the date window can be applied correctly.",
+      "description": "e.g. 2024-01-01. Keep only reviews created on or after this date. This is the ONLY working date filter (the old 'Last N days' is ignored), and it reaches any point in a game's history, not just the last year. Forces Sort to 'Most recent' so the date window can be applied correctly.",
       "editor": "textfield"
     },
     "reviewsBefore": {

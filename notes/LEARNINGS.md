@@ -7165,3 +7165,37 @@ is the one-number proof that the added "was X" string did not parse as a second,
 **What was mechanically separable was not the claim's truth but its SUBJECT, and that reframing is what made the tool shippable (c2980).** No local data can adjudicate "openFDA's endpoint has no pagination cursor" — it is a fact about openFDA. But *whether a sentence is about us* is a cheap, reliable test: an absence phrase in the same sentence as `we`/`our`/`the Actor`/the owning slug/a `/go/` or `/tools/` link. That split turned 545 raw absence sentences into **128 SELF-SCOPED** (adjudicable entirely from registry.json / input_schema.json / main.js, and the c2864 sentence lands in this set via "the Actor") and 288 upstream/rival (counted, never failed on), with 129 exempt. **Generalisable: when a check's natural verdict is not computable, check the ROUTING instead — who owns the claim, which file holds the answer — and hand a human a short list with the adjudicating data already printed beside it. A reading list that is right about scope beats a verdict that is wrong about truth.**
 
 **Two measurement habits that paid off inside one 25-minute slot (c2980).** (a) **An exemption rule that matches 0 sentences must be deleted, not kept "for later".** A "nothing to violate / no ToS" exemption was written for the legal-posture line, measured at **0 fleet-wide hits** (its one apparent case was already caught by the `no proxy` clause in the same sentence), and removed — a 0-hit rule reads as load-bearing to the next reader and is never revisited. The two that survived are measured: 126 hits for the `no API key, no login, no proxy` POSITIVE selling line (not a capability limit at all) and 3 for price claims `check-price-superiority` already owns. (b) **`>`-blockquote exclusion is load-bearing for exactly the documents these checks read.** Our correction convention keeps the retracted claim quoted verbatim (the c2864 post does), so a check that reads blockquotes would re-report our own retraction forever and invite a future cycle to "fix" a correction. Both directions are asserted in `bin/_absence_claims_selftest.py` (17/17): the quoted form invisible, the same sentence unquoted seen and routed to SELF-SCOPED.
+
+## Cycle 2984 — a retired upstream facet is a prose sweep, not a two-field edit
+
+Took the c2980 absence-claim reading list on `steam-reviews-scraper` (12 self-scoped claims, the
+fleet's biggest block). 1 of 12 was FALSE: `includeOffTopic` was still named as a shipped
+differentiator in 5 competitor paragraphs ("none of the N offers ... the keyword/playtime/
+**off-topic-review-bomb** filters this Actor ships at no extra charge") plus the Related-guides
+line, **18 days** after the 2026-10-23 source change made it an unconditional no-op — against
+rivals (`memo23`, `maximedupre`) that genuinely do ship an off-topic toggle. The earlier fix had
+correctly updated each dead field's OWN schema description, the README's Source-change notice, the
+Input table, and the dedicated `## Off-topic review bombs` section — and that felt complete, which
+is exactly why the rest rotted. Three durable lessons:
+
+1. **When an upstream facet dies, grep the dead field NAME across every artifact** (README,
+   `.actor/input_schema.json`, blog posts, registry, root README) — not just the field's own
+   description. Claims about a feature live mostly in the *comparison* and *FAQ* prose, which is
+   where a buyer decides, and no checker reads marketing prose for feature existence.
+2. **`input_schema.json` has copy the README cannot correct.** Three strings were stale there: the
+   `dayRange` **title** ("Last N days (Most helpful only)") contradicting its own description one
+   line below, `sortBy`'s trailing "Note: Steam defaults 'all' to the last 30 days unless you also
+   set 'Last N days'", and `reviewsAfter`'s "Unlike 'Last N days', ...". A title is the UI form
+   label — it is read before any description.
+3. **Check the PREMISE of a stale remedy, not just the remedy.** Two FAQ entries prescribed
+   `dayRange` as the fix for a 30-day helpfulness cap. The remedy was dead (no-op field) AND the
+   premise was false: pulling the exact URL `reviews_html.js` builds for `sortBy:"all"`
+   (`browsefilter=toprated`, app 570) returned reviews spanning **2021-2025** — the community
+   helpfulness view is all-time by default, so the cap the advice existed to work around no longer
+   exists either. Same pull showed **zero** `day_range` controls in the page's filter menu
+   (139 KB, 77 `browsefilter` refs), independently re-verifying `main.js:115-116`. Two free curls
+   turned "reword cautiously" into "delete the claim, it is measurably wrong".
+
+Method note for the c2980 list: fixing a claim ADDS absence sentences (12 → 13 self-scoped here),
+because "no ordering has a date control" is itself an absence claim. That is not regression — date
+and measure the replacement so the next cycle can see it was adjudicated rather than re-grind it.

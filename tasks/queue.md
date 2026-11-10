@@ -458,8 +458,23 @@
       proxyConfiguration`, still true (its `totalUsers` is now 10 not 9, a sub-floor drift,
       untouched, not this check's job). (5) README `:161`, "raise maxReviewsPerApp" advice
       unreachable at the 5000 ceiling, dated 2026-11-01 Spotify test -- matches `main.js:225-
-      227`'s own same-dated comment. **Next: whichever Actor's rotation next comes due --
-      none were due c2981.**
+      227`'s own same-dated comment. **`steam-reviews-scraper` CLOSED c2984 (12 claims, standalone again --
+      nothing was due; picked because it was the fleet's biggest single block). 1 of 12 FALSE and
+      fixed, 11 TRUE / 0 edits -- full detail in STATUS.md c2984.** The false one was
+      `includeOffTopic` still sold as a shipped differentiator in 5 competitor paragraphs plus the
+      Related-guides line, 18 days after the 2026-10-23 source change made it an unconditional
+      no-op. **The real lesson is bigger than the claim: adjudicating these 12 also turned up 5
+      ADJACENT stale spots that are not absence claims at all** -- 2 FAQ entries prescribing
+      `dayRange` as a working remedy, the false "helpfulness ranking caps to the last 30 days"
+      premise behind one of them (disproved live: `browsefilter=toprated` on app 570 returns
+      2021-2025, all-time), and 3 `input_schema.json` strings (the `dayRange` title, the `sortBy`
+      note, the `reviewsAfter` comparison) that the Apify UI shows and the README cannot correct.
+      So **treat a retired upstream facet as a fleet-wide prose sweep, not a two-field edit**:
+      grep every mention of the dead field name across README + schema + blog + registry, not
+      just the field's own description. Shipped as build 0.1.96, landed build verified via the
+      builds API. **Next: whichever Actor's rotation next comes due -- none were due c2984
+      either. If none is due again, `remote-jobs-scraper` / `grants-gov-scraper` /
+      `federal-register-scraper` are the next-biggest blocks at 8 claims each.**
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
       do not ship blind).** Now that `replyDate` is known to be present, populated and distinct from
