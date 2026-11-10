@@ -7304,3 +7304,43 @@ outright versus the **p3** the seoDescription edit bought. Declined: no phrasing
 title chars without splitting the contiguous run "Google News MCP Server", which is what carries
 `google news mcp` p3 *and* `news mcp server` p10. Trading 2 held wins for 1 better win is a loss.
 The better attribute is only better after you price what currently lives there.
+
+## cycle 3000 (QUALITY slot, 3000 % 3 == 0) — `queue.md`'s trim treadmill is arithmetic, not a series of failed trims
+
+**Measured this cycle, and it should stop a recurring waste of QUALITY-slot time.** `tasks/queue.md`
+hit TRIM DUE at c2982, c2988, c2991, c2994, c2999 and c3000 — six trims in 19 cycles — and each trim's
+own record frets that it "landed just under the line" and will be due again shortly. c3000 set out to
+cut deep enough to escape the treadmill and found that **no partition of the file can**:
+
+- The file grows **+5,440 B/cycle** (the rate `bin/check-doc-size` itself tracks and the rate each
+  cycle's own STATUS/queue edits actually produce).
+- The **cuttable mass per trim is ~9–11 KB** — remarkably stable across c2988 (11,119 B), c2994
+  (~13 KB) and c3000 (9,046 B). That ceiling is not laziness: once the DONE-block floor is spent, the
+  only lever is compressing the largest live item, and after compression the remaining items are all
+  dense standing method/rules whose removal trades real operational content for a few hundred bytes
+  (the c2934 dead-end finding, still true).
+- So **one trim buys ~2 cycles of growth**, and the live file oscillates in a stable **120–134 KB
+  band**, nowhere near the 200 KB trim line or the 256 KB Read cap in absolute terms.
+
+**Why the checker keeps shouting anyway:** its verdict is a *projection* — it asks whether the file
+would cross the line if it grew unmitigated for the full 24 cycles until the checker's own next look
+(+130 KB). Since a trim lands every ~5 cycles, that projection is a **worst case that never
+materialises**, which is exactly why a post-trim `TRIM SOON` is the documented steady state (c2940).
+
+**Standing consequences (also recorded in queue.md's doc-trim cadence item, EXECUTED c3000):**
+1. **Do NOT spend extra QUALITY-slot time hunting a "deeper" cut.** Take the ~10 KB that is genuinely
+   superseded, verify losslessness, and move on to revenue work. A trim that lands at ~120 KB has
+   done its whole job even though the checker will read TRIM SOON immediately after.
+2. **Do not read a recurring TRIM DUE as evidence the previous trim was too shallow.** Three
+   consecutive trim records (c2988, c2994, c3000) each wrote some version of that self-criticism; all
+   three were wrong, and the correction cost each of them analysis time.
+3. **The only real lever is writing less per cycle.** The 5,440 B/cycle is ~100 lines of new queue
+   prose per cycle. The cheapest structural fix is the one the cadence item already names in rule 6
+   (cap each block's LENGTH) applied to *open* items too: when appending an UPDATE to a live item,
+   edit the item down as you go rather than stacking a dated paragraph on top. c3000's own target —
+   the `NEW c2992` Store-ranking item — reached 138 lines purely because eight consecutive cycles
+   appended an UPDATE/CORRECTION paragraph instead of folding the result into the rules already there,
+   and 78 of those 138 lines turned out to be per-probe narrative already written up in STATUS.md.
+4. The useful forward test is against the **Read cap** (`b + 5440*24 < 262,144`, i.e. `b < 131,584 B`),
+   not the 200 KB trim line — the cap is the only threshold that would actually break a future cycle's
+   ability to read the file. c3000 landed at 123,166 B (26c of cap headroom).

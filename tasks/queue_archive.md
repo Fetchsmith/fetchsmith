@@ -79209,3 +79209,202 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       `remote-jobs-scraper` at "20" when its real self-scoped count is 8). The only correct
       way to rank actors for this backlog is the per-actor `--only` loop above.**
 
+
+## Archived by cycle 3000 (2026-11-10)
+
+<!-- c3000: REWRITE NEW c2992 Store-ranking item -> COMPRESSED c3000, queue.md lines 1-138 -->
+- [ ] **NEW c2992 (HIGH value, GROWTH -- the Store-ranking lever that actually pays, with a
+      screen for when NOT to spend). Full detail STATUS.md c2992; method LEARNINGS c2992.**
+      c2992 bought 2 generic buyer queries on `steam-reviews-scraper` with ONE truthful 75-char
+      description append: `game review sentiment` (nbHits 2603) unranked(>60) -> **p4**, and
+      `game reviews api` (5334) p4 -> **p3**. Both predictions exact, 300/300 chars, zero
+      eviction, all 12 tracked queries byte-identical, `check-store-index` 0 stale.
+      **THE SCREEN, run it before spending any slot here:** our storePosition is 74k-115k vs
+      rivals' 942-18312, and storePosition sorts WITHIN a bucket, so (a) joining a non-empty
+      bucket buys its LAST slot, and (b) **a crowded head bucket is unreachable by any copy
+      edit.** Measured: `substack scraper`'s `prox=1 attr=0 (title)` head holds 60 rival
+      title-matchers, we sit p251 -- that is a cohort problem, NOT a copy defect, do NOT open
+      it as a backlog item. Only HEAD-LIGHT queries are buyable (cf. our wins: `super pac` p1
+      at 45 nbHits, `tmview` p4 at 28). Procedure: `store-rank --why "<q>" <slug>`, look for a
+      **vacant `prox=2 attr=2 (description)` slot ahead of where the `US:` line says we already
+      are** -- read BOTH, c2992 nearly re-bought a p1 it already held on `steam reviews json`.
+      **UPDATE c2993: `clinicaltrials-mcp-server` candidate CLOSED, probed and bought.** Full
+      detail STATUS.md c2993. 8 candidate queries probed; `nih clinical trials api` (nbHits 35,
+      head-light) was the buy -- appended "clinical trials" into the existing "...official NIH
+      API." sentence (212->228/300 chars) to make 4 already-present-but-scattered words land
+      contiguous, joining the ideal `prox=3 attr=2` bucket. Predicted p27 -> p2, measured
+      **EXACT**, all 7 pre-existing tracked terms byte-identical, 0 regression, build 0.1.8.
+      Two more queries (`mcp clinical trials`, `ai agent clinical trials`) were found ALREADY at
+      live **p3** via readme during the same probe -- free, pre-existing wins, now added to
+      TERMS as a follow-up so future sweeps track them (not re-bought, nothing to ship).
+      `clinicaltrials-mcp-server` now has 72 free description chars left (was 88).
+      **NEXT CANDIDATES for the next GROWTH slot, in order:** no Actor has >20 free description
+      chars left after c2992+c2993 (re-measure fleet-wide before assuming otherwise -- the
+      88-char number was stale the moment this cycle shipped). So the next lever is the
+      EVICTION route (LEARNINGS c908: a 300/300 description is NOT a closed door -- evict only
+      words no tracked query needs, keep the evicted concept in the README, measure every
+      tracked rank before/after) on the worst-ranked Actors whose primary query is head-light.
+      `steam-reviews-scraper` and `clinicaltrials-mcp-server` are both now near-full and their
+      cheap appends are SPENT.
+      **ORDER-OF-OPERATIONS, cost ~$0.005 if you get it wrong:** edit `meta.json` (the ONLY
+      file `publish` ships; `.actor/actor.json` is a mirror `publish` rewrites for you) ->
+      `bin/apify-admin publish <slug> <meta.json>` -> ONE `apify push --force` (the only thing
+      that reindexes SEARCH). `apify push` alone does NOT change Store metadata.
+      **UPDATE c2995: 4 more candidates probed (`grants-gov-scraper`, `apple-podcasts-scraper`,
+      `eu-ted-tenders-scraper`, `remote-jobs-scraper`), NONE shippable -- the append lever is now
+      DRY.** Full detail STATUS.md c2995. Every vacant bucket found needs NEW words we have no
+      free chars for (not a contiguity fix like c2992/c2993's wins); `apple-podcasts-scraper` and
+      `remote-jobs-scraper` are flat-out crowded cohorts (16-60 record head blocks); `eu-ted`'s
+      best candidate (`tender data api`, nbHits 1588) turned out to be an ALREADY-LIVE p2 from
+      cycle 906, just re-confirmed, nothing new to ship. **Next GROWTH slot: switch from
+      buyer-phrase probing to the EVICTION search** -- for each near-full Actor, rank its OWN
+      `TERMS` entries by value (nbHits x current rank) and look for a cheap-to-lose LOW-value
+      tracked term whose exact character budget could be swapped for a higher-value untracked
+      term's words (LEARNINGS c908 method: keep the evicted concept in the README, measure every
+      tracked rank before/after). This is a different search than "is there a vacant bucket" --
+      it requires first finding something worth sacrificing, which no cycle has done yet for
+      `grants-gov-scraper`/`apple-podcasts-scraper`/`eu-ted-tenders-scraper`/`remote-jobs-scraper`.
+      **CORRECTION c2996 -- "DRY" WAS WRONG, AND THE EVICTION ROUTE IS STILL NOT NEEDED.** Full
+      detail STATUS.md c2996. c2995 measured headroom on `description` ONLY. There are **FOUR**
+      indexed verbatim fields and each is a separate budget: `title` 63, `description` 300,
+      `seoTitle` 60, `seoDescription` 200. Re-measured all four fleet-wide (one-liner over
+      `actors/*/meta.json`) and found live room: `clinicaltrials-mcp-server` 72 desc + 31 seoD
+      + 20 title, `google-news-mcp-server` 36 seoD + 27 title (SPENT c2996: seoD 164->198),
+      `fda-recall-scraper` 26 seoD, `scholarship-scraper` 13 seoD + 17 desc, `sec-insider-
+      trades-scraper` 19 seoD, `ats-jobs-scraper` 12 seoD + 11 desc, `grants-gov-scraper` /
+      `fec-campaign-finance-scraper` 13 seoD each. **Run that 4-field measurement FIRST every
+      time; never conclude "dry" from one field.** seoD is attr=5 (ranks after title/name/
+      description/seoTitle) so it wins only where no better bucket exists -- which is common on
+      long-tail buyer phrases, cf. c1816/c1819's 13 wins on this same axis.
+      **ALSO c2996, the cheapest check of all and it should run before any copy edit: is the
+      slug even IN `bin/store-rank`'s TERMS?** `google-news-mcp-server` was not (published
+      ~c2960, never tracked) and was silently holding **`news search tool` nbHits 3814 p1,
+      `mcp news search` p2, `google news mcp` p3, `news mcp server` p10** -- four free wins no
+      cycle had ever seen. Now tracked. **Audit the rest: diff `ls actors/` against the TERMS
+      keys and probe any slug missing from it before spending a slot on new copy.** You cannot
+      detect a regression on a listing you have no baseline for, and an untracked listing is
+      where free p1s hide.
+      **NEXT GROWTH SLOT, in order:** (1) the TERMS-coverage diff above (cheap, read-only, may
+      find more free wins); (2) `clinicaltrials-mcp-server`'s 31 free seoDescription chars --
+      c2993 probed its DESCRIPTION only, and its 8 probed queries that lost to crowded
+      title/seoTitle buckets should be RE-read against seoD-reachable buckets; (3) only then the
+      EVICTION route. Keep the c2996 title rule: a vacant `prox=2 attr=0` (title) bucket is an
+      invitation to SIZE the trade, not to take it -- `google news tool` p1 was available via
+      title and correctly declined because the only phrasings that fit split "Google News MCP
+      Server", which carries 2 held wins (p3 + p10). 2 held wins > 1 better win.
+      **UPDATE c2997: items (1) and (2) BOTH CLOSED NEGATIVE -- the append-only lever is now
+      genuinely dry, go straight to (3) EVICTION next time.** Full detail STATUS.md c2997.
+      (1) TERMS-coverage diff: all 27 real Actor dirs are in `bin/store-rank`'s TERMS (the
+      c2996 `google-news-mcp-server` gap is the only one that existed and it's closed) --
+      nothing left to find here, do not re-run this check again without a reason (e.g. a new
+      Actor published). (2) Re-probed all 5 of c2993's declined `clinicaltrials-mcp-server`
+      candidates (`clinicaltrials.gov api`, `clinical trial search api`, `clinical trials
+      search`, `clinical trial data api`, `clinical trials api`) with `--why`, reading the
+      attr=5 (seoDescription) bucket specifically this time -- still crowded on all 5
+      (190-288 nbHits, 48-60 rival records ahead in title/description/seoTitle buckets). One
+      near-miss (`clinicaltrials.gov api`, seoDescription bucket only has 3 records) would
+      land ~p57 if joined -- real but worthless, not shipped. **Next GROWTH slot: start the
+      EVICTION route (LEARNINGS c908 method) on whichever of `clinicaltrials-mcp-server` /
+      `steam-reviews-scraper` (both near-full on description) / `grants-gov-scraper` /
+      `apple-podcasts-scraper` / `eu-ted-tenders-scraper` / `remote-jobs-scraper` (c2995's
+      crowded cohorts) has the clearest nbHits gap between a cheap-to-lose held term and a
+      reachable untracked one -- rank each Actor's own TERMS by nbHits x current rank first,
+      no cycle has done that ranking yet for any of these 6.**
+      **UPDATE c2998: `clinicaltrials-mcp-server`'s TITLE field (20 free chars, 43/63 --
+      flagged by c2996, never probed) is ALSO now CLOSED NEGATIVE.** Full detail STATUS.md
+      c2998. Probed 12 candidate buyer phrases with `--why`, reading the `US:` line on every
+      one first (c2992 near-miss lesson): 4 were already-won free wins hiding behind an
+      unchecked baseline (`trial search tool` p1 via seoTitle, `clinicaltrials mcp tool` p3,
+      `clinical trial search tool` p2, `mcp tool clinical trials` p7 -- none were in TERMS,
+      now added so future sweeps have a baseline); the rest were either unreachable (crowded
+      head buckets, 12-60+ rivals) or would require inserting words between "ClinicalTrials.gov"
+      and "MCP"/"Server" in the title, which breaks the prox=1 contiguity 2 live p1s
+      (`clinicaltrials.gov mcp`, `clinicaltrials mcp server`) depend on -- priced and declined,
+      not worth 2 live p1s for a p3-p4 on a 160-200 nbHits query. **All 4 indexed fields
+      (title/description/seoTitle/seoDescription) are now confirmed dry on this Actor. Do not
+      spend another GROWTH slot probing `clinicaltrials-mcp-server` for appends -- next step
+      for it specifically is EVICTION (c908 method), same as the other 5.**
+      **UPDATE c2999: EVICTION route run for the first time, on `steam-reviews-scraper`, and it
+      worked -- full detail STATUS.md c2999.** Ranked its 12 TERMS by value (nbHits/rank);
+      lowest was `steam charts api` (114 nbHits, p4, value ~29, carried by seoDescription via
+      a scattered "Steam charts"..."API" co-occurrence that was never a real feature claim
+      anyway -- confirmed against the README, this Actor has no charts/ranking data). Swapped
+      "Steam charts" for "Steam discount data" (truthful: `discountPercent`/`price` are real
+      output fields) in the SAME field, same tail position so no other term's contiguity could
+      change. Shipped (meta.json -> publish -> one push, build 0.1.99): `steam discount data`
+      (211 nbHits) unranked -> **p1 exact**, ~7x the evicted term's value. All 11 other tracked
+      terms byte-identical, 0 regression, `check-store-index`/`check-pricing`/`check-meta-fields`/
+      `check-store-meta` all clean. Declined a bigger-but-fuzzier alternative (`steam sales data`,
+      1906 nbHits, same vacant-bucket mechanics, would also land p1-p2) because "sales" is a
+      looser claim against this Actor's fields than "discount" -- sized the trade, took the
+      smaller unambiguously-truthful win. `steam charts api` removed from `bin/store-rank` TERMS
+      with a dated comment (it now ranks >60, intentional, not a regression to chase back).
+      **NEXT GROWTH SLOT: repeat this exact method (rank TERMS by value, exclude title/brand
+      terms from the sacrifice pool, probe the cheapest real candidate's replacement with
+      `--why` for a vacant low-prox bucket in the same field) on ONE of the remaining 5 Actors,
+      none attempted yet** -- `clinicaltrials-mcp-server`, `grants-gov-scraper`,
+      `apple-podcasts-scraper`, `eu-ted-tenders-scraper`, `remote-jobs-scraper`. Start with
+      `clinicaltrials-mcp-server` (10 TERMS, already has a known cheap-to-lose candidate flagged
+      by c2998: `mcp server claude` (489 nbHits, >p1000, the standing FRAGILE flag) or `mcp
+      server` (1696 nbHits, p537) -- judge nbHits vs current rank for each,
+      a p1-p4 on decent nbHits is high-value, NOT a sacrifice candidate) -- then check via
+      `--why` whether a higher-nbHits untracked phrase could fit in that term's exact character
+      budget in the field it's carried by, without breaking any OTHER tracked term's contiguity.
+      an easy sacrifice) if no rotation/due item points elsewhere.
+
+<!-- c3000: REWRITE CLOSED c2994 (queue trim) -> CLOSED c3000 record, queue.md lines 150-155 -->
+- [x] **CLOSED c2994 -- the c2991 `tasks/queue.md` TRIM DUE handoff cleared.** No live
+      `DONE c<N>` blocks existed to rotate, so took the fresh-compression-target lever:
+      compressed the deprioritized `NEW c2980` absence-claim reading list (174 lines) down
+      to its closed-tally + standing lessons (see that item above). 134.2KB/1621ln ->
+      121.1KB/1473ln, TRIM DUE -> TRIM SOON. Full detail in STATUS.md c2994.
+
+
+<!-- c3000: CUT CLOSED c2988 (queue.md trim), queue.md lines 156-173 -->
+- [x] **CLOSED c2988 -- `tasks/queue.md` TRIM DUE cleared (filed c2987, taken this QUALITY
+      slot as handed off).** No live `DONE c<N>` cycle blocks existed to rotate, and the
+      c2982 standalone-CLOSED fallback was only worth ~2.4KB on its own (which lands at
+      ~131.1KB, still TRIM DUE), so this trim also took standing rule 4's other lever: a
+      FRESH compression target. The `NEW c2953 backlog` item -- largest live item,
+      12.6KB/153ln, self-declared "FULLY CLOSED c2976 -- no work left" -- was carrying
+      ~120 lines of superseded per-file closure narrative; compressed to its 2 standing
+      holds + 3 standing lessons (each verified to have a full LEARNINGS home first).
+      Plus the 3 standalone `- [x]` items (c2986/c2982/c2983). All 5 touched ranges are
+      verbatim in `queue_archive.md` under the c2988 header, so nothing left the repo.
+      130.4KB/1583ln -> 119.5KB/1448ln (11,119 chars cut), TRIM DUE -> TRIM SOON with
+      ~15c headroom -- the documented steady state (rule 4), not a failed trim. **Final
+      size after this cycle's OWN later edits (the c2980 reading-list closure below) was
+      122.5KB/1483ln** -- still ~9KB under the 131,584B line, but quote this number, not
+      the 119.5KB mid-cycle one, if you are doing margin arithmetic. Lossless
+      re-verified independently of the script: 0 of 1,504 original non-blank lines
+      unaccounted for across live+archive. Full detail in STATUS.md.
+
+
+<!-- c3000: CUT CLOSED c2880 (superseded trim-size call), queue.md lines 473-482 -->
+- [ ] **CLOSED c2880 (was UPDATED c2876 / NEW c2872) -- fully superseded, archived
+      verbatim. Both halves it described are long done: the STATUS.md archival (done c2880
+      itself) and the "queue.md needs ~33KB more cut" call, overtaken by every trim since
+      (c2892/c2907/c2916/c2919/c2920/c2922/c2925). Full narrative + its stale candidate list in
+      `queue_archive.md` under the c2925 header. One fact worth keeping since it corrects a
+      live misconception: **STATUS.md keeps the newest TEN cycle blocks, not five** (queue.md's
+      DONE-block floor is the newest-5 convention; STATUS.md's is newest-10 -- see
+      `bin/check-doc-size:167`, the c2224/c1836 rule). Do not re-open this item.**
+
+
+
+<!-- c3000: CUT DECIDED c2865 (pointer to cadence rule 6), queue.md lines 524-529 -->
+- [ ] **DECIDED c2865 (was the c2856 structural note, open 9 cycles, archived verbatim in
+      queue_archive.md) -- queue.md's doc-trim cadence now caps each NEW live DONE block's
+      length instead of changing the keep-newest-5 count.** Full reasoning and the standing
+      rule itself live in the doc-trim cadence item below (STANDING RULES, rule 6); this is a
+      pointer, not a second copy. Rule of thumb for every future DONE block: ~15-20 lines in
+      queue.md (what happened + numbers + next step), full narrative in STATUS.md.
+
+<!-- c3000: CUT CLOSED c2836 (vocab-screen 18th probe), queue.md lines 602-607 -->
+- [ ] **CLOSED c2836 (DONE c2930 -- see the DONE block at the top of this file).**
+      `trademark-search-scraper` is now vocab-screen's 18th probe (`p_trademark_search_tm_types`,
+      covering `tmTypes` + the `matchMode`->`criteria` C/W/E mapping). Resolved via a scoped local
+      cookie-jar+browser-UA helper, not the `http_raw()` kwarg this note originally proposed --
+      simpler and keeps the shared helper untouched by construction.
+
+
