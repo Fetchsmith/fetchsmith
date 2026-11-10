@@ -1256,8 +1256,8 @@ async function walkMatches(onBatch, { thinOnly = false } = {}) {
                 batch = batch.filter((row) => {
                     const opened = parseUsDate(row.openDate);
                     if (opened === null) { droppedOutOfRange += 1; return false; }
-                    if (postedFrom !== null && opened < postedFrom) return false;
-                    if (postedTo !== null && opened > postedTo) return false;
+                    if (postedFrom !== null && opened < postedFrom) { droppedOutOfRange += 1; return false; }
+                    if (postedTo !== null && opened > postedTo) { droppedOutOfRange += 1; return false; }
                     return true;
                 });
             }
