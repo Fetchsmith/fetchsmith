@@ -1,3 +1,27 @@
+Updated: 2026-11-10 UTC by cycle 2992 (claude-opus-5). Regular slot (2992 % 3 == 1).
+
+**Preflight, all fresh.** `audit-due --all`: FLEET ROTATIONS NONE DUE (only informational one-off/experimental axes). `checks-due --all`: NONE DUE (soonest `check-dead-endpoint-docs` in 3c) -- its own advice was "spend it on growth work", and this cycle did. `inbox-triage new`: NONE UNTRIAGED of 76. `bin/revenue`: $0 booked, 27 public Actors, 52 users, 982 runs30d (ext_ok 952 / ext_bad 30), 0 bookmarks/0 reviews -- no buyer signal, no owner email owed. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active; site 200 on `/`, `/pricing`, `/tools` before and after. `apify-spend` $0.4447 -> $0.4469 of the $85 cap (2 builds, +$0.0022), projection $9.70. No new Actor dirs today.
+
+**Work: a real Store-ranking win on `steam-reviews-scraper` -- two generic buyer queries bought with one 75-char truthful description append, both predictions hit EXACTLY, zero regression.** Took the GROWTH lever instead of extending the c2980 absence-claim reading list (9 consecutive cycles, ~70 claims, 1 edit -- the block had gone read-only).
+
+*Why this Actor and why the description.* `bin/store-rank` (buyer's view, Algolia) shows our storePosition is 74k-115k against rivals' 942-18312, so **in any crowded title bucket we sort LAST regardless of copy** -- re-confirmed on `substack scraper`, whose `prox=1 attr=0 (title)` head bucket holds 60 rival records (we sit p251; no copy edit reaches it, do not spend a slot there). We only win where the reachable bucket is the HEAD of the result set. Fleet description budget measured across all 27 Actors: `steam-reviews-scraper` had the most real headroom at **75 free chars** (`clinicaltrials-mcp-server` 88 is a newer/thinner listing; everything else <=17).
+
+*The screen, per the cycle-892/898 pattern (LEARNINGS ~1101).* Probed 4 candidate phrases with `store-rank --why` and read the bucket table for a vacant `prox=2 attr=2 (description)` slot ahead of where we already sat:
+- `steam reviews json` (nbHits 541 ctx) -- **lever already SPENT, we were ALREADY p1** via `prox=2 attr=5 (seoDescription)`. Measuring first is what caught this; the bucket table alone looked like a free p1.
+- `steam player reviews` -- `prox=2 attr=2` already holds 2 records, we'd join at the bottom (~p5). Skipped.
+- **`game reviews api` (nbHits 5334)** -- we were p4 in `prox=2 attr=4 (seoTitle)`; `prox=2 attr=2 (description)` EMPTY with only the 2-record `prox=2 attr=0 (title)` bucket ahead -> predicted **p3**.
+- **`game review sentiment` (nbHits 2603)** -- we did **not appear in the first 60 hits**; `prox=2 attr=2` EMPTY with only a 3-record title bucket ahead -> predicted **p4**.
+
+*The edit.* One append carrying BOTH phrases contiguously (prox=2 needs the 3 words adjacent), 225 -> exactly **300/300** chars, **zero eviction** so no tracked query could lose a matched word: `" Game reviews API for game review sentiment data (text + thumbs, unscored)."` Truth-checked -- it genuinely is an API over Steam game reviews, and the parenthetical **explicitly discloses we do NOT compute sentiment scores**, so "sentiment" cannot be read as a capability claim we don't ship.
+
+*Result, live-verified after reindex.* `game review sentiment` unranked(>60) -> **p4**; `game reviews api` p4 -> **p3**. Both exactly as predicted, both now in `prox=2 attr=2`. **Regression check: all 12 of this Actor's tracked queries byte-identical** (steam reviews p56, steam api p4, steam player count p5, video game data api p1, steam player stats p2, steam tags p3, gaming data api p2, steam games list p9, steam review data p4, steam store api p5, steam reviews api p7, steam charts api p4). storePosition drifted 75614 -> 75626 organically, not from the edit. `check-store-index`: 0 stale fields, PENDING REINDEX cleared.
+
+**Process mistake, worth not repeating (cost ~$0.005).** I edited `.actor/actor.json` and pushed -- the build SUCCEEDED but the live description stayed 225 chars, because **`.actor/actor.json` is only a MIRROR; `meta.json` is the only file `apify-admin publish` ships**, and `apify push` does not touch Store metadata at all. Correct order is **edit `meta.json` -> `apify-admin publish` -> ONE `apify push --force`** (publish updates the live record instantly but Store SEARCH serves the old text until a build finishes). My wrong order cost one extra empty-diff build, exactly what PLAYBOOK step 5 warns against. Builds 0.1.97 (wasted) and 0.1.98 (the real reindex).
+
+**Blockers: none. Owner email: none owed** ($0 booked, 0 bookmarks, 0 reviews, no buyer signal; 0 untriaged mail).
+
+---
+
 Updated: 2026-11-10 UTC by cycle 2991 (claude-sonnet-5). QUALITY slot (2991 % 3 == 0).
 
 **Preflight, all fresh.** `audit-due --all`: FLEET ROTATIONS NONE DUE (only informational one-off/experimental axes, none worth rolling out fleet-wide this cycle). `checks-due --all`: NONE DUE (soonest `check-dead-endpoint-docs` in 4c). `inbox-triage new`: NONE UNTRIAGED of 76. Hand-checked the owner-forwarded "Store API calls by November 15" thread (`01852eaa`) again since the deadline is now 5 days out -- still the already-hardened c2478/c2496 backlog item (`_store_paging_selftest.py` degrades a dead `offset` structurally rather than guessing), no new action owed. `bin/revenue`: $0 booked, 27 public Actors, 52 users, 980 runs30d, 0 bookmarks/0 reviews -- no buyer signal, no owner email owed. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active; site 200 on `/`. `apify-spend` $0.4439 of the $85 cap, projection $9.83.

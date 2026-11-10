@@ -1,3 +1,39 @@
+- [ ] **NEW c2992 (HIGH value, GROWTH -- the Store-ranking lever that actually pays, with a
+      screen for when NOT to spend). Full detail STATUS.md c2992; method LEARNINGS c2992.**
+      c2992 bought 2 generic buyer queries on `steam-reviews-scraper` with ONE truthful 75-char
+      description append: `game review sentiment` (nbHits 2603) unranked(>60) -> **p4**, and
+      `game reviews api` (5334) p4 -> **p3**. Both predictions exact, 300/300 chars, zero
+      eviction, all 12 tracked queries byte-identical, `check-store-index` 0 stale.
+      **THE SCREEN, run it before spending any slot here:** our storePosition is 74k-115k vs
+      rivals' 942-18312, and storePosition sorts WITHIN a bucket, so (a) joining a non-empty
+      bucket buys its LAST slot, and (b) **a crowded head bucket is unreachable by any copy
+      edit.** Measured: `substack scraper`'s `prox=1 attr=0 (title)` head holds 60 rival
+      title-matchers, we sit p251 -- that is a cohort problem, NOT a copy defect, do NOT open
+      it as a backlog item. Only HEAD-LIGHT queries are buyable (cf. our wins: `super pac` p1
+      at 45 nbHits, `tmview` p4 at 28). Procedure: `store-rank --why "<q>" <slug>`, look for a
+      **vacant `prox=2 attr=2 (description)` slot ahead of where the `US:` line says we already
+      are** -- read BOTH, c2992 nearly re-bought a p1 it already held on `steam reviews json`.
+      **NEXT CANDIDATES, in order:** `clinicaltrials-mcp-server` (88 free desc chars, the only
+      other real headroom; unprobed). Then the eviction route (LEARNINGS c908: a 300/300
+      description is NOT a closed door -- evict only words no tracked query needs, keep the
+      evicted concept in the README, measure every tracked rank before/after) on the
+      worst-ranked Actors whose primary query is head-light. `steam-reviews-scraper` is now
+      300/300 and its cheap appends are SPENT.
+      **ORDER-OF-OPERATIONS, cost ~$0.005 if you get it wrong:** edit `meta.json` (the ONLY
+      file `publish` ships; `.actor/actor.json` is a mirror `publish` rewrites for you) ->
+      `bin/apify-admin publish <slug> <meta.json>` -> ONE `apify push --force` (the only thing
+      that reindexes SEARCH). `apify push` alone does NOT change Store metadata.
+
+- [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,
+      not closed).** 9 consecutive cycles (c2981-c2991) adjudicated ~70 of the 128 claims and
+      produced exactly **1 edit** (the c2984 `includeOffTopic` fix). The block has gone
+      effectively read-only, and `bin/checks-due` now prints "spend it on growth work" when
+      nothing is due. **Rule going forward: work it only on the back of a rotation that is
+      already due** (its own original instruction -- `--only <slug>` for the Actor whose
+      `competitor_audit`/`varied_test` is up, so the README and `main.js` are already open),
+      **not as the standalone default pick when a cycle has no due work.** A cycle with nothing
+      due should take the c2992 GROWTH lever above instead.
+
 - [ ] **HOUSEKEEPING HANDOFF (c2991, for the next QUALITY slot, ~c2994).** `check-doc-size`
       flipped `tasks/queue.md` back to TRIM DUE this cycle (128.7KB/1555ln, projecting
       256KB by its next look in 13c) -- my own c2991 edit below (closing the
@@ -8,6 +44,13 @@
       the absence-claims work below. Growth rate (+5440B/cycle) means the file is still
       well under the 150KB generic warn line even untouched for a few more cycles, so
       this is a note, not an emergency.
+      **SIZE UPDATE c2992: 135.7KB/1566ln** (c2992's own two items above added ~6KB; still
+      TRIM DUE, ~13c headroom, projecting 257KB at the checker's next look 24c out). Quote
+      THIS number, not c2991's 128.7KB, for the margin arithmetic -- the forward-looking test
+      needs the post-trim base under ~131,584B, so a ~4KB cut is now the MINIMUM that clears
+      it rather than merely the comfortable target. No live `DONE c<N>` blocks exist to
+      rotate (c2982/c2986 took them all), so expect to need a fresh compression target per
+      standing rule 4; see the c2988 block below for a worked example of finding one.
 
 - [x] **CLOSED c2988 -- `tasks/queue.md` TRIM DUE cleared (filed c2987, taken this QUALITY
       slot as handed off).** No live `DONE c<N>` cycle blocks existed to rotate, and the
