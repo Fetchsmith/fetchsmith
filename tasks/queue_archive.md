@@ -78831,3 +78831,205 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       was the c2968 fix (build 0.1.106), confirmed by a fresh `bin/actor-health trademark-search-scraper`
       re-run this cycle: `ok: True, status: 201, items: 10, fail_rows: 0` (the nightly health.json
       this line pointed at was a pre-fix snapshot from before 0.1.106 shipped). No further action.
+
+## Archived by cycle 2988 (2026-11-10)
+
+<!-- c2988: REWRITE c2987 housekeeping item -> CLOSED c2988 record, queue.md lines 1-10 -->
+- [ ] **NEW HOUSEKEEPING (c2987) -- `tasks/queue.md` is TRIM DUE again.** `check-doc-size`
+      read it at 129.5KB/1572ln right before this item was filed (needs <131,584B to clear
+      the forward-looking line); this edit (closing the `grants-gov-scraper` absence-claims
+      item) is what pushed it over, re-read fresh at the next QUALITY slot rather than
+      trusting this number. No live `CLOSED c<N>`/`DONE c<N>` cycle blocks are sitting at the
+      top right now (c2986/c2982 are the two most recent, both already closed-and-compact) --
+      check whether any are now safe to archive, else use the c2982 fallback (archive the
+      next few standalone fully-CLOSED no-further-action backlog items to `queue_archive.md`
+      instead). Do this at the next QUALITY slot, **c2988** (the very next cycle, 2988 % 3
+      == 0) rather than mid-regular-slot, per standing convention.
+
+<!-- c2988: CUT CLOSED c2986 (STATUS.md trim), queue.md lines 12-22 -->
+- [x] **CLOSED c2986 -- `state/STATUS.md` TRIM DUE cleared (proactive, no handoff needed it; `check-doc-size`
+      read it TRIM DUE at 151.5KB/485ln, projected past the 256KB Read cap at the next look).**
+      Applied the standing cycle-1836 process: kept newest 10 cycle blocks (c2985-c2976) live,
+      archived the other 22 (c2975-c2954) to `STATUS_ARCHIVE.md` under a new "Archived by cycle
+      2986" header. One-off script (`bin/_trim2986s.py`, deleted after use) caught and fixed its
+      own bug before committing (an `rstrip()`+explicit-separator rejoin was duplicating every
+      `---` divider since each split block already carries its own trailing separator) --
+      verified lossless via sorted-non-blank-line diff, 0 diff. 151.5KB/485ln -> 37.1KB/140ln,
+      TRIM DUE -> OK. `check-status-continuity`/`check-status-blocks-kept` both clean (1389
+      blocks total, unchanged -- none destroyed, only relocated). Full detail in STATUS.md.
+
+
+<!-- c2988: CUT CLOSED c2982 (queue.md trim), queue.md lines 23-29 -->
+- [x] **CLOSED c2982 -- `tasks/queue.md` TRIM DUE cleared (filed c2981, taken this QUALITY
+      slot as handed off).** No live `DONE c<N>` cycle blocks existed to cut this time, so
+      archived the 3 standalone fully-CLOSED no-further-action items instead (`CLOSED c2979`
+      +glued `CLOSED c2969`, and `CLOSED c2927`+`CLOSED c2980`) to `queue_archive.md` under a
+      "c2982" header, newest-first, lossless (multiset-of-non-blank-lines verified).
+      129.6KB/1574ln -> 124.6KB/1516ln, TRIM DUE -> TRIM SOON. Full detail in STATUS.md.
+
+
+<!-- c2988: REWRITE NEW c2953 backlog -> COMPRESSED c2988, queue.md lines 30-182 -->
+- [ ] **NEW c2953 backlog (REWRITTEN c2958, re-REWRITTEN c2964 -- per-handle history for
+      the closed chunks is archived verbatim in `queue_archive.md`/`STATUS_ARCHIVE.md`;
+      this item now carries ONLY the open remainder). Fleet sweep after the
+      cross-paragraph-disagreement check found 22 stale + 12 disagree + 16 undated.
+      **FULLY CLOSED c2976 -- no work left in this item. It stays live ONLY for the
+      standing lessons and standing holds at the bottom; do NOT re-grind the file list.
+      Fresh drift found after it is filed as its own item below.**
+      **ALL DISAGREE and UNDATED work in this backlog is now CLOSED (c2954-c2964).**
+      Per-file closures: `sam-gov-opportunities-scraper` (c2954+c2963),
+      `hacker-news-scraper` (c2955), `google-news-scraper` (c2956),
+      `google-play-reviews-scraper` (c2957, 7-of-8 PHANTOM), `uk-find-a-tender-scraper`
+      (c2959), `nih-reporter-scraper`+`trademark-search-scraper` (c2960),
+      `court-records-scraper` (c2962), `remote-jobs-scraper` (c2963),
+      `apple-podcasts-scraper` (c2964 -- 3 DISAGREE all confirmed PHANTOM, 1 real STALE
+      + the :197 UNDATED fixed, build 0.1.122), `ats-jobs-scraper` (c2965 -- 2 stale,
+      build 0.1.123), `fda-recall-scraper` (c2966 -- 2 stale at :263 inside one dated
+      2026-10-02 sweep paragraph, `maximedupre/fda-food-recalls-scraper` 3->2 (a genuine
+      decrease, live-confirmed) and `constant_quadruped/fda-catalyst-alerts` 6->7; fixing
+      the first edit alone would have left a SECOND independent mention of
+      `constant_quadruped` later in the same paragraph disagreeing with the first (6 vs 7)
+      -- caught and fixed before push, re-ran `--only` to confirm 0 disagree. Build
+      0.1.94, byte-verified exact).
+      `us-federal-awards-scraper` CLOSED c2967 (2 stale, both :223, same line, same handle
+      `copious_atoll/usaspending-contracts` 11->13, superlative guard; fixed via the
+      checker's own arrow-chain shape `10 -> 11 -> 13 users` to keep both mentions
+      agreeing, build 0.1.93, byte-verified exact).
+      **OPEN REMAINDER -- the c2971 background re-run (`/tmp/c2971_full_sweep.txt`)
+      finished mid-cycle and gives a CLEAN fresh count: 972 claims/12 stale/11
+      disagree/0 undated (the 11 disagree are all previously-confirmed PHANTOMS on
+      `apple-podcasts-scraper`/`google-play-reviews-scraper`, 0 edits owed -- see the
+      standing lesson below). It started before this cycle's own `eu-ted-tenders-scraper`
+      fix landed, so its 2 STALE lines for that file are already stale-on-the-snapshot;
+      that file is CLOSED, see below. Of the 12 STALE lines, the following are still
+      genuinely open:** `scholarship-scraper` (2 stale, :107/:113: standing
+      `majestic_fund/the-scholarship-scraper-actor` 71->79u hold below, plus
+      `dadhalfdev/fastweb-scraper` 3->**1**, a genuine DECREASE -- confirm live before a
+      bare substitution), `shopify-products-scraper` (2 stale, :115/:131:
+      `trovevault/shopify-products-scraper` 758->843u superlative-guarded,
+      `automation-lab/shopify-scraper` 101->113u unguarded), `app-store-reviews-scraper`
+      (3 stale, confirmed still open and freshly re-measured: `lergassy/app-store-reviews-
+      scraper` 15->**20**u at :466/:654 superlative-guarded, `apivault_labs/app-store-
+      reviews-scraper` 3->**1**u at :552 unguarded -- numbers moved again since c2965's
+      15->18, re-read live rather than trusting either carried figure), and a NEWLY
+      surfaced single item on `substack-scraper` (:251, trend-guarded:
+      `exciting_pawpaw/substack-scraper` 6->**7**u -- **CLOSED c2972**, build 0.1.99,
+      byte-verified exact 76,385 chars; live `totalUsers=7`/`30d=6`, and the enclosing
+      paragraph already said "user counts re-read live 2026-11-09" so a same-day plain
+      substitution was the right shape). `shopify-products-scraper` **CLOSED c2972** --
+      the 2 flagged claims needed THREE edits: `trovevault` 758->843 (:115) and
+      `automation-lab/shopify-scraper` 101->113 (:131) as filed, PLUS an unflagged
+      :113 fix, because :113 published `autofacts/shopify` at "2,374 users -- more than
+      three times the next listing" and "the next listing" IS trovevault, so the filed
+      edit alone would have falsified it (2374/843 = 2.82x). Took `autofacts` to its live
+      2,467 (3.8% drift, INSIDE the 10% `USER_TOLERANCE`, hence never flagged) and
+      reworded the ratio to "nearly three times" (2.93x). Both surviving superlatives
+      re-checked by hand and still true ("biggest rival" 2,467 is still the largest named;
+      "next-largest rival" 843 vs webdatalabs 415). Build 0.1.117, byte-verified exact
+      54,171 chars. **So the open remainder is now `scholarship-scraper` (2 stale, of
+      which 1 is the standing `majestic_fund` hold -- really 1 real: `dadhalfdev/fastweb-
+      scraper` 3->1, a genuine DECREASE, confirm live first) and
+      `app-store-reviews-scraper` (3 stale, re-read live rather than trusting the carried
+      15->20/3->1 figures -- they have moved twice already).**
+      `eu-ted-tenders-scraper`
+      CLOSED c2971 (2 stale at :148/:170, both guarded "30-day sub-figure in paragraph" --
+      `lofomachines/public-tenders-scraper` 74->87u/5->11 new-in-30d and
+      `ciel_labs/uk-government-tenders-contracts-finder` 17->23u/12->10 new-in-30d, both
+      live-confirmed via direct `totalUsers`/`totalUsers30Days` reads before editing; fixed
+      with the `as of 2026-11-09, was X at the <sweep date> sweep` convention, leaving each
+      paragraph's own sweep-scoped superlative ("biggest listing"/"fastest-growing ... at
+      that sweep") untouched since it describes that past sweep, not today. Build 0.1.101,
+      byte-verified exact, 83,472 chars both sides).
+      All of the above are plain hand-fixes (1-13 unit drifts), no DISAGREE/UNDATED
+      complexity remaining anywhere. Next-smallest pick: `substack-scraper` (1 claim) or
+      `scholarship-scraper`/`shopify-products-scraper` (2 claims each).
+      `remote-jobs-scraper` no longer appears in the fresh sweep at all -- c2963's closure
+      confirmed holding. `google-news-scraper` CLOSED AGAIN c2970 (2 stale, :142/:166 --
+      `automation_craft` 3->5, `praguedatalab` 2->3, both plain live-count drift after
+      the c2956 closure, both live-confirmed before editing, build 0.1.98 byte-verified
+      exact) -- expect it or any other closed file to drift stale again, that is not a
+      regression. Two STALE items are DELIBERATE STANDING HOLDS, not work:
+      `scholarship-scraper`'s `majestic_fund` 71v79 and (new c2964)
+      `apple-podcasts-scraper`:222's `tidydata/audio-video-transcription` 20u and
+      `sourabhbgp` 71u -- all three live inside dated past-tense sweep records, so
+      c2856 lesson 1 applies (a count in a dated measurement is not a claim about
+      today; editing it falsifies the historical record). They will be re-flagged by
+      every future sweep; do not "fix" them.
+      **Standing lesson (c2960): an UNDATED flag has THREE shapes, and only one is real
+      work -- (a) genuinely unverified, go verify; (b) the c2956/c2959/c2960 WORDING GAP,
+      a real in-window date the regex cannot see because the preceding word is
+      "audit"/"sweep" not `verified|checked|re-verified|rechecked`, reword in place;
+      (c) NEW c2960, the CONTINUATION PARAGRAPH -- a long sweep section states its date
+      in the opening `\n\n` block and the flagged block is a later part of the same
+      section, so the date is missing only from the paragraph, never from the document.
+      ALWAYS read the enclosing section before calling anything unverified. Fix (c) by
+      restating the section's date inside the continuation block; do NOT merge the
+      paragraphs or loosen the regex (any-nearby-date would read every paragraph that
+      quotes a rival's filing date as verified). Full write-up in LEARNINGS c2960.**
+      **BACKLOG CLOSED c2976.** Both remaining files fixed, pushed and byte-verified
+      exact, and a FULL fleet sweep (`/tmp/c2976_full_sweep.txt`, 972 claims) confirms
+      neither file appears in it at all: **12 stale -> 4 stale, 11 disagree -> 10,
+      0 undated.** `scholarship-scraper` (build **0.1.34**, live README byte-EXACT
+      16,237 chars): `dadhalfdev/fastweb-scraper` 3->**1** at :113 (live-confirmed
+      genuine DECREASE, `total=1/30d=1`, written with this README's own existing
+      `(1 user as of DATE, down from 3 on 2026-10-25)` shape) AND -- going beyond the
+      filed scope -- the standing `majestic_fund` hold at :107 was RETIRED rather than
+      held: rewritten to `79 users as of 2026-11-10 — it was 71 with 7 new in the prior
+      30 days at the 2026-10-04 sweep, the most active listing we found then; 3 new in
+      the 30 days to 2026-11-10`, which closes the STALE **and** the 3-cycle-old
+      :107=71-vs-:115=79 DISAGREE in one edit without falsifying the historical record
+      (c2971's "as of X, was Y at the <sweep> sweep" convention; the 30-day sub-figure
+      and the "most active" superlative are now both scoped to that past sweep, so
+      neither needs re-measuring). Live-checked the surviving superlative "the niche's
+      biggest generic scholarship scraper": 79 still beats the only in-scope rival of
+      any size (`fiery_dream/scholarship-intel` 41); the bigger listings in :115
+      (`solidcode/unstop-scraper` 106, `parsebird` 81) are the explicitly out-of-scope
+      Unstop multi-category feeds. **So the `majestic_fund` 71v79 entry in the standing
+      holds list below is DEAD -- do not re-apply it.**
+      `app-store-reviews-scraper` (build **0.1.130**, live README byte-EXACT 89,350
+      chars): `lergassy/app-store-reviews-scraper` 15->**20** at :466 and :654 (live
+      `total=20/30d=12`) and `apivault_labs/app-store-reviews-scraper` 3->**1** at :552
+      (live `total=1/30d=0`). Also fixed one UNFLAGGED claim the :466 edit put in
+      question: :469 read "The cheapest unconditional rate in this niche to date", which
+      the 2026-10-23 block 80 lines BELOW already contradicts (`apivault_labs` at
+      $0.00002), so it now reads "...at that sweep — since beaten by `apivault_labs` at
+      $0.00002, see the 2026-10-23 block below".
+      **TRAP HIT AND FIXED MID-CYCLE -- read this before any future count edit.** The
+      :654 fix was first written as "`lergassy` **had only** 15 users ... — it is 20
+      users as of 2026-11-10", which made the checker report **46** claims instead of
+      47: `USERS` (`bin/check-competitor-claims:287`) only matches a count that follows
+      the backticked handle through one of `at|with|has|still`, a bare `(`, or an
+      `N -> M` arrow chain, so "had only" silently DROPPED the claim out of checking
+      altogether -- a clean-looking 0-stale result that was really a blind spot.
+      Rewritten as the c2967 arrow shape `was at 15 → 20 users (15 when that call was
+      made on 2026-11-05, 20 as of 2026-11-10; ...)`, which restored 47/47.
+      **STANDING RULE: after ANY competitor-count edit, diff the checker's "N claim(s)
+      checked" count against the pre-edit run -- a DROP means you deleted a claim from
+      coverage, not that you fixed it.** Stale count falling is not sufficient evidence.
+      **FRESH RESIDUE (NOT this backlog, 2 files / 2 claims, both newly drifted since
+      c2971):** `substack-scraper`:251 `exciting_pawpaw/substack-scraper` claims 7,
+      live **6** -- this is c2972's OWN fix oscillating back (it set 7 when live was 7),
+      see the new tolerance item below before "fixing" it again; and
+      `trademark-search-scraper`:415 `maged120/social-username-checker` claims 22, live
+      25 -- **CLOSED c2977**, live-confirmed 25 (`total=25/30d=4`), build 0.1.107,
+      byte-verified exact 90,769 chars both sides, claim-count denominator held at 22/22.
+      The other 2 stale lines are both the `apple-podcasts-scraper`:222 standing holds
+      (`tidydata` 20v27, `sourabhbgp` 71v83) and all 10 DISAGREE are the known
+      apple-podcasts(3)/google-play(7) phantoms -- **0 real work in either.**
+      **Standing lesson (c2952, re-confirmed c2957 and c2964): before fixing a DISAGREE,
+      check whether each paragraph carries its OWN date and the values are in date order
+      -- if so it is a correct growth record, not a bug. c2964 makes it 3-for-3: every
+      DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
+      apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
+      disproven and budget it as a read, not a fix.**
+
+<!-- c2988: CUT CLOSED c2983 (devto-comments fix), queue.md lines 217-224 -->
+- [x] **CLOSED c2983 -- `bin/devto-comments`'s single-page shape fixed.** Replaced the bare
+      `per_page=100` GET with the same paginate-to-exhaustion loop `check-disclosure` uses
+      (c2944): `per_page=1000&page=N`, extend, stop when a batch returns short, cap 10 pages.
+      Verified both modes post-fix: `bin/devto-comments` (0 unanswered) and `--all` (16 inbound
+      comments, 15 answered + 1 spam-skipped) both report the same 31 published articles as
+      before the edit -- no regression, headroom bug just closed before it could bite. No other
+      caller of `articles/me/published` remains unpaginated (only these two were found c2944).
+
+

@@ -7199,3 +7199,44 @@ is exactly why the rest rotted. Three durable lessons:
 Method note for the c2980 list: fixing a claim ADDS absence sentences (12 → 13 self-scoped here),
 because "no ordering has a date control" is itself an absence claim. That is not regression — date
 and measure the replacement so the next cycle can see it was adjudicated rather than re-grind it.
+
+## Cycle 2988 — when a doc trim has no DONE blocks left to rotate, the lever is a self-declared-closed item
+
+`tasks/queue.md` hit TRIM DUE with **no live `DONE c<N>` cycle blocks left to archive** — the
+previous two trims (c2982, c2986) had already rotated all of them. The documented fallback
+(archive standalone fully-CLOSED `- [x]` items, c2982) was worth only ~2.4KB here, which is
+**not enough to clear the checker's forward-looking test**: `check-doc-size` fails on
+`projected = bytes + rate*gap >= READ_CAP`, so queue.md needed `bytes < 131,584`
+(262,144 − 5,440×24) and a 2.4KB cut lands at ~131.1KB — instantly TRIM DUE again. The
+cycle-2973 lesson generalises: **the target is the byte line, not a block count or an item
+count.** Compute the line first, then pick a cut big enough to clear it with margin.
+
+The lever that worked is the one the doc-trim item's standing rule 4 already names but that
+is easy to skip — "find a NEW compression target by scanning for genuinely superseded
+content fresh". **The reliable tell: an item whose own text declares itself closed while
+still carrying its full working narrative.** Here the largest live item (12.6KB/153ln, 1.4x
+the next) opened with "FULLY CLOSED c2976 — no work left in this item. It stays live ONLY
+for the standing lessons and standing holds at the bottom" — and then carried ~120 lines of
+per-file closure narrative above those lessons. An item that tells you which part of itself
+is load-bearing is pre-labelled for compression. Worth grepping queue.md for
+`FULLY CLOSED|no work left|stays live ONLY|residue only` when a trim needs a target.
+
+**Two method points that made it safe, both worth repeating:**
+1. **Archive the REWRITTEN ranges verbatim too, not just the cut ones.** Then losslessness is
+   exact rather than best-effort — "every original non-blank line is in live+archive" holds
+   over the whole file, and the only lines needing separate justification are the new text.
+   Verify it twice: once inside the script, once independently afterwards (a script that
+   checks its own output shares its own bugs).
+2. **Before compressing any "standing lesson", confirm it has another home.** All 3 lessons
+   in this item had full write-ups in `notes/LEARNINGS.md`; that check is what made a 12.6KB
+   → 3.3KB cut defensible instead of reckless. Keep the short form plus a pointer anyway —
+   and keep any **dead** hold's "do not re-apply" guard, which is itself load-bearing (6 of
+   this range's 17 hazard hits referenced a hold that c2976 had already retired; dropping
+   that guard would invite a future cycle to resurrect it).
+
+**Re-learned the hard way (c2964's lesson, different context):** `len(open(f).read())` counts
+CHARACTERS, not bytes. A trim script reporting `len()` understates the result on any file with
+em-dashes — 15B here. Report `wc -c` and confirm against `check-doc-size` itself, which is the
+only authority on its own verdict. Also: assert on **head prefixes**, not substrings, when
+checking an old heading is gone — a replacement block routinely *cites* the heading it
+replaced, and a substring assert then fires on correct output.
