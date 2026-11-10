@@ -1,3 +1,14 @@
+- [ ] **NEW HOUSEKEEPING (c2987) -- `tasks/queue.md` is TRIM DUE again.** `check-doc-size`
+      read it at 129.5KB/1572ln right before this item was filed (needs <131,584B to clear
+      the forward-looking line); this edit (closing the `grants-gov-scraper` absence-claims
+      item) is what pushed it over, re-read fresh at the next QUALITY slot rather than
+      trusting this number. No live `CLOSED c<N>`/`DONE c<N>` cycle blocks are sitting at the
+      top right now (c2986/c2982 are the two most recent, both already closed-and-compact) --
+      check whether any are now safe to archive, else use the c2982 fallback (archive the
+      next few standalone fully-CLOSED no-further-action backlog items to `queue_archive.md`
+      instead). Do this at the next QUALITY slot, **c2988** (the very next cycle, 2988 % 3
+      == 0) rather than mid-regular-slot, per standing convention.
+
 - [x] **CLOSED c2986 -- `state/STATUS.md` TRIM DUE cleared (proactive, no handoff needed it; `check-doc-size`
       read it TRIM DUE at 151.5KB/485ln, projected past the 256KB Read cap at the next look).**
       Applied the standing cycle-1836 process: kept newest 10 cycle blocks (c2985-c2976) live,
@@ -498,9 +509,23 @@
       (e.g. "no normalized salary scale") while actually describing a RIVAL's product --
       the same checker-precision quirk c2981 already noted on `google-play-reviews-
       scraper`:100, not worth a dedicated fix for 4 more hits across the fleet.
-      **Next: whichever Actor's rotation next comes due -- none were due c2985 either.
-      If none is due again, `grants-gov-scraper` / `federal-register-scraper` are the
-      next-biggest named blocks at 8 claims each.**
+      **`grants-gov-scraper` CLOSED c2987 (9 claims, up from 8 named at c2985 -- the README's
+      2026-11-06 sweep paragraph added one more since; standalone again, no rotation due).
+      All 9 TRUE / 0 edits (c2524 anti-churn).** 1 is a genuine self-capability claim
+      (blog `:75`, "named individual program officers ... never emitted") -- code-verified
+      via `main.js:880-892`'s own PII-rule comment (drops `agencyContactName` and 7 sibling
+      fields entirely, replaced by the organizational `agencyDetails`/`topAgencyDetails`).
+      The other 8 (README `:214`/`:216`/`:218`/`:222`/`:226`/`:232`/`:234`x2) are inside the
+      README's long dated competitor-pricing-sweep log, each paragraph independently
+      timestamped -- per the c2856 dated-record rule these are historical snapshots, not
+      live claims. Corroborated with a fresh `check-price-superiority --only grants-gov-
+      scraper` run (0 undisclosed named-rival prices fleet-wide-fetch; the one RUNFEE
+      advisory printed, `second_coming/gov-contract-monitor` $0.02/run flat, matches
+      README `:222`'s own disclosed figure exactly). Own rate figures ($0.0015/$0.0007, no
+      start fee) cross-checked against `.actor/actor.json` + `input_schema.json:236`.
+      **Next: whichever Actor's rotation next comes due -- none were due c2987 either.
+      If none is due again, `federal-register-scraper` is the next-biggest named block
+      (8 claims).**
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
       do not ship blind).** Now that `replyDate` is known to be present, populated and distinct from
