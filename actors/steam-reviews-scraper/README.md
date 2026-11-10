@@ -59,7 +59,7 @@ else — review text, `recommended`, playtime, author identity, `votesUp`/`votes
 | `includeGameInfo` | boolean | `true` | Attach game name/developer/publisher/genres/release date to every review |
 | `includePlayerCount` | boolean | `false` | `games` mode: also fetch the live concurrent player count |
 | `includeOwnerEstimates` | boolean | `false` | `games` mode: add estimated owner range, peak concurrent players yesterday, and Steam's crowd-voted tags with vote counts — see below |
-| `searchLimit` | integer | `10` | Games taken from each search term |
+| `searchLimit` | integer | `10` | Games taken from each search term. Steam's store search returns **at most 10 matches per term** (no paging), so values above 10 have no effect — the run warns and lists `searchLimit` in `RUN_SUMMARY.ignoredInputs`. List extra games in `apps` instead. |
 | `watchLabel` | string | — | Turns this run into a [watch](#watch-mode--only-new-reviews-since-the-last-run) — only reviews posted since the last run under this label are returned and charged. Reviews mode only. Leave empty for normal runs. |
 | `watchEvents` | array | *(both)* | Watch mode only. Which change types to report: `new` and/or `recommendationChanged` (an already-delivered review whose thumbs-up/thumbs-down flipped). Leave empty for both. |
 | `webhookUrl` | string | — | Optional. An http(s) URL to POST a small JSON completion summary to when the run finishes — see FAQ. |

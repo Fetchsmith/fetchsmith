@@ -177,7 +177,7 @@
     "searchLimit": {
       "title": "Games per search term",
       "type": "integer",
-      "description": "How many games to take from each search term (max 50).",
+      "description": "How many games to take from each search term. Steam's own store search returns at most 10 matches per term and offers no paging, so any value above 10 has no effect — the run warns and reports it in RUN_SUMMARY.ignoredInputs when you set one. To cover more games, list them in \"apps\" as store URLs or App IDs.",
       "default": 10,
       "minimum": 1,
       "maximum": 50

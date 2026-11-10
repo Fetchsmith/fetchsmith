@@ -7458,3 +7458,59 @@ The due `varied_test` fleet rotation (last c2670, 336c gap) picked `grants-gov-s
 **Fix (build 0.1.87):** added `droppedOutOfRange += 1` to the two range-exclusion branches, matching what the message already claimed. Re-ran the identical `postedFrom`/`postedTo` input against the new build: delivered/charged unchanged (11/11, 0 leak), `droppedOutOfRange` now reads **11**, exact match to the free prediction. `closeDate`'s equivalent counter (`droppedNoCloseDate`) was checked and is NOT the same bug — its message only ever claims "no close date", which is exactly what `closes === null` measures; no fix needed there.
 
 **Generalizable: a status-message clause and the counter variable behind it can drift apart even when both are written in the same commit, because the counter was scoped to the rare parse-failure case and the message was written to describe the common range-exclusion case — read the INCREMENT sites, not just the message text, when verifying any dropped-row disclosure.** This is the same family of bug as c2412's "ignored inputs must be disclosed, not merely logged" (c2514 entry above) but one level more subtle: here the disclosure mechanism *existed* and *fired its branch condition correctly*, it just measured the wrong thing. `audit-due --type varied_test`'s own grep-for-the-field-name method (c3003) is what surfaced the gap — grep LEARNINGS for a field's name before assuming "many prior tests on this Actor" means every filter was exercised with a range that actually excludes something.
+
+## cycle 3008 — a schema `maximum` is a claim about the UPSTREAM, not just a validation bound
+
+`steam-reviews-scraper`'s `varied_test` (2672 -> 3008) took the first-ever test of
+`searchTerms`/`searchLimit` and of the `dataType:"games"` enrichment flags
+(`includePlayerCount`/`includeOwnerEstimates` — all three had zero prior LEARNINGS mentions, which is
+how they were picked). The input schema declared `searchLimit` as `maximum: 50` with the description
+"How many games to take from each search term (max 50)". **Steam's `/api/storesearch/` endpoint
+returns at most 10 matches per term and supports no paging at all, so every value from 11 to 50 was
+unreachable** — and nothing told the buyer: no `log.warning`, `ignoredInputs: []`, and a status
+message that read a bare "Pushed 10 results." A buyer who asked for 50 games per term got 10 and was
+told it was a complete answer.
+
+**The upstream cap was free to establish and settled the finding before any paid run.** Four paging
+guesses (`count=50`, `start=10`, `limit=50`, `page=2`) all returned the identical 10 items, and
+`total` itself read 10 on a broad term — which on its own is ambiguous, because a fixed 10-item page
+looks exactly like a 10-item cap. The disambiguator is a NARROW term: `"disco elysium"` returns 3 and
+`"factorio"` 5, so 10 is a ceiling, not a page size that could be walked. **Two terms of different
+breadth is the cheap test for "is this a cap or a page?" — one broad term cannot answer it.**
+
+**Generalizable: an input's `maximum` is a promise about what the upstream can deliver, and the two
+drift independently.** Our code's `Math.min(input.searchLimit ?? 10, 50)` is internally consistent
+and will never throw; the schema validates; every checker passes; and the number is still a lie
+because the ceiling lives in someone else's API. This is the same class as c2544's unreachable
+remedy on this same Actor — a remedy the buyer is told to reach for that the upstream cannot satisfy
+— but arrived at from the schema side rather than the message side. **When a `varied_test` picks an
+untested numeric input, probe the upstream's own ceiling FIRST (free) and compare it to the declared
+`maximum` before launching anything.**
+
+**Fixed (build 0.1.100) by disclosing, NOT by clamping — and the reason is worth keeping.** The
+obvious fix is `Math.min(..., 10)`, but `searchLimit` is part of this Actor's watch fingerprint, so
+re-scaling it would silently reset every live watch baseline for zero behaviour change. Lowering the
+schema's `maximum` to 10 is worse still: Apify would then hard-reject any saved task that already
+carries `searchLimit: 50`, turning a silent under-delivery into a broken run for an existing buyer.
+So the value is accepted unchanged and the run explains itself via the Actor's existing
+disclose-and-continue recipe (`log.warning` + `ignoredInputs.push(name)`, which carries it into every
+status-message branch via `ignoredSuffix` and into `RUN_SUMMARY.ignoredInputs`), with the schema
+description and README row corrected to state the real ceiling. **For an unreachable-cap finding,
+prefer disclosure over clamping whenever the value is load-bearing elsewhere (a fingerprint, a saved
+task, a price tier) — a clamp is a behaviour change dressed up as a bug fix.**
+
+Verified live both ways on the identical input: 10 rows and a 10/10 exact charge before AND after
+(never a billing bug, 0 leak), with the warning, the status-message NOTE and
+`ignoredInputs: ['searchLimit']` all present only after. Negative control (`searchLimit: 5`, term
+`"factorio"`) returned 5 rows and zero warnings — the default path, where `searchLimit` is exactly
+10, must not warn, and `> STORE_SEARCH_MAX` rather than `>=` is what keeps it quiet.
+
+**Clean on the rest of the never-tested surface, including one null that is NOT a defect.**
+`includePlayerCount` populated `currentPlayers` on all 10 rows (0–641) and `includeOwnerEstimates`
+populated `ownersMin`/`ownersMax`/`ownersEstimate` on all 10. `steamSpyTags` came back null on 9 of
+the 10, which looks like the classic always-null field bug — but SteamSpy itself returns `tags: []`
+for low-traffic apps (verified live on appId 4075620), so the null is an honest representation of an
+upstream empty. **A field that is null on a whole run of OBSCURE rows is a sampling artifact until
+you check the upstream for one of those exact ids; a broad search term selects for new/tiny games and
+therefore for sparse enrichment data.** Also noted, not fixed (queue follow-up): the games-mode
+`max-results` status message says "more reviews may exist" when the rows are games, not reviews.

@@ -121,6 +121,26 @@ const includePlayerCount = input.includePlayerCount === true;
 // run's status message. Collected by `.push()` at each warning site rather than as one literal
 // because the sites are spread across the input-parsing block AND the dataType:"games" branch.
 const ignoredInputs = [];
+// Steam's store-search endpoint hard-caps at 10 matches per term and supports no paging at all, so
+// any searchLimit above that is unreachable — while the schema advertised "max 50". Measured live
+// cycle 3008 against store.steampowered.com/api/storesearch/: `count`, `limit`, `start` and `page`
+// are all silently ignored, and a broad term ("roguelike") returns exactly 10 with `total` itself
+// reading 10, while narrower terms return 3 ("disco elysium") or 5 ("factorio") — so 10 is a hard
+// cap, not a page size that could be walked. The value is deliberately NOT clamped here, only
+// disclosed: `searchLimit` is part of the watch fingerprint below, so re-scaling it would reset
+// every live baseline for zero behaviour change (the slice at the search loop already yields at
+// most 10 either way). Same disclose-and-continue recipe as the date fields below.
+const STORE_SEARCH_MAX = 10;
+if (searchTerms.length && searchLimit > STORE_SEARCH_MAX) {
+  ignoredInputs.push('searchLimit');
+  log.warning(
+    `searchLimit=${searchLimit} cannot be reached: Steam's store-search endpoint returns at most `
+    + `${STORE_SEARCH_MAX} games per term and offers no paging, so no term in "searchTerms" can `
+    + `yield more than ${STORE_SEARCH_MAX} games — this run behaved exactly as searchLimit=`
+    + `${STORE_SEARCH_MAX}. To cover more games, add them to "apps" as store URLs or App IDs, or `
+    + 'split them across several more specific search terms.',
+  );
+}
 // An unparseable date string is TRUTHY but NaN, so it fails every `!isNaN` guard above: it sets no
 // window, contributes nothing to `hasDateWindow`, and therefore also skips the sortBy forcing at the
 // top of this file — the buyer gets a non-chronological population AND no date filter, then pays for
