@@ -6261,3 +6261,19 @@ to a few lines and put the narrative in STATUS.md. The correct response to a doc
 absorb its own maintenance note is ONE deep cut (≥7KB, cycle 1976's "clear the interval with room
 to spare"), not another shave — and note the easy lever is exhausted: rotating closure records
 dropped the live `CLOSED cNNNN` count to 4, below the newest-5 floor.
+
+## c3013: a line-keyed ALLOWLIST drifts with every unrelated edit above it -- re-verify on SUSPECT, don't assume a fresh flag is a fresh bug
+
+`bin/check-fail-ordering`'s `ALLOWLIST` is keyed on `(slug, line_number)` by design (LEARNINGS c1416:
+"a moved call must be re-read, not auto-trusted"), so any edit landing ABOVE a known-safe gate
+re-flags it as SUSPECT even though nothing about the gate changed. c3013 hit exactly this on two
+Actors at once (`apple-podcasts-scraper` 1404->1469, `app-store-reviews-scraper` 961->1157) and the
+checker's bare output ("2 suspect fail-before-save orderings") looks identical whether the cause is
+a real new defect or 65-196 lines of unrelated code landing above an old, already-proven-safe gate.
+The only way to tell them apart is to re-trace the chain fresh from the charge site outward (sole
+`Actor.charge(`/`chargeAndPush(` site -> its only callers -> confirm every caller sits below the
+fail, or behind a condition the fail's own guard already rules out) -- re-reading the guard's TEXT
+only proves the condition is unchanged, not that charge-capable code still can't reach above it.
+Both flags here traced out safe in <15 min each once the prior re-verification's method was reused
+verbatim; a "new" SUSPECT on a watch-mode Actor is first a bookkeeping staleness check, not
+automatically a dispatch-worthy incident.

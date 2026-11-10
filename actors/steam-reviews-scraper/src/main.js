@@ -1167,7 +1167,7 @@ if (timeBudgetExceeded) markIncomplete('time-budget', idsNotReached.length
   ? `the run was approaching the platform run timeout and stopped before finishing the id list — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}`
   : 'the run was approaching the platform run timeout and stopped early to return what it had');
 if (chargeLimitReached) markIncomplete('charge-limit', "the run's pay-per-event charge limit was reached");
-if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults} reached; more reviews may exist`);
+if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults} reached; more ${dataType === 'games' ? 'games' : 'reviews'} may exist`);
 if (watchMode && seeding && seedCapHit) markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-review cap; reviews past the cap will be delivered and charged as new on a later incremental run`);
 if (upstreamDegraded.length) markIncomplete('upstream-degraded', `Steam returned incomplete responses for: ${upstreamDegraded.join(', ')}`);
 if (depthCapped.length) markIncomplete('depth-cap', `maxReviewsPerApp (${perAppReviews}) was hit while filtering for: ${depthCapped.join(', ')} — matching reviews may sit deeper in the feed`);
