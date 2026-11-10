@@ -6179,3 +6179,24 @@ rankings api` (p4, 572 nbHits -- order-independent per the c3004 no-reverse-prox
 finding), `podcast chart rankings` (p5), `podcast rankings` (p17). None of these cost anything;
 they were already won and simply untracked, which is itself the regression risk the TERMS list
 exists to catch. Zero edits, zero spend, 7 new tracked terms (apple-podcasts-scraper: 18 -> 25).
+
+## Cycle 3010 — proving a cross-board dedup/ordering claim needs a real live collision, not a generic probe
+
+Closed `remote-jobs-scraper`'s due `varied_test` (2674 -> 3010) on `dedupe` and `resultOrder`,
+the last 2 untested filter/shape inputs on this Actor. Both CLEAN. The reusable part is the
+method, not the result: a generic "run it with some input" probe has maybe 1/36-ish odds of
+landing on a real cross-board duplicate on any given day, so instead of hoping, fetched Remotive
+and Working Nomads' raw feeds directly and ran the Actor's own `normCompany`/`norm` logic
+(copied verbatim into a throwaway Python snippet) over the combined set FIRST, for free. That
+found exactly one live collision (`Lemon.io` / `Senior Back-end Developer`, ~25h apart) and let
+the predicted charged counts (48 vs 49, dedupe true/false) and the predicted `alsoOn`/
+`duplicateUrls` content be written down before spending anything — both platform runs then
+matched byte-exact. Same trick for `resultOrder`: simulated the exact round-robin algorithm
+against live 3-board data to predict the first-10 order under `balanced` vs `newest`, then
+reproduced the README's own claimed failure mode live (`newest` on arbeitnow+workingnomads+
+remotive delivered 9 arbeitnow + 1 workingnomads + 0 remotive in the first 10; `balanced`
+represented all three), with the charged count unchanged (10/10 either way) as documented.
+General rule: before paying for a platform run meant to catch a cross-source interaction bug
+(dedup, ordering, merge), re-implement the relevant match/sort key locally against the live
+upstream feeds and compute the exact predicted output first — it is free, and it is the only way
+to know whether today's data even contains the interesting case before spending on it.
