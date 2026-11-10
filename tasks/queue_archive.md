@@ -79032,4 +79032,180 @@ re-check log into one line (rule stays live in queue.md; this is the pre-compres
       before the edit -- no regression, headroom bug just closed before it could bite. No other
       caller of `articles/me/published` remains unpaginated (only these two were found c2944).
 
+## Archived by cycle 2994 (2026-11-10)
+
+<!-- c2994: REWRITE NEW c2980 backlog -> COMPRESSED c2994, queue.md lines 394-567 -->
+- [ ] **NEW c2980 (MEDIUM -- a 128-item one-time reading list, NOT a bug list).**
+      `bin/check-absence-claims` reports **128 SELF-SCOPED absence claims** across the blog +
+      READMEs: sentences telling a buyer something about OUR OWN product is impossible. Nothing
+      has ever re-read any of them, and c2864 proved the failure mode is real and expensive (18
+      days live, wrong about our own output schema, `check-blog-claims` clean on that post then
+      and still clean now). **Do NOT clear 128 in one slot; a hit is an unreviewed sentence,
+      not a defect.** Work it per-Actor on the back of the existing rotation:
+      `--only <slug>` returns ~8 claims for the Actor whose `competitor_audit`/`varied_test` is
+      already up, and that cycle has the README and `main.js` open anyway. A claim confirmed
+      TRUE needs no edit (c2524 anti-churn). If a slot sees the same noisy shape twice, add an
+      EXEMPT entry (with its measured hit count) instead of re-reading it per Actor.
+      **`google-play-reviews-scraper` CLOSED c2981 (5/5 claims, standalone since no rotation
+      was due -- still worth it, it's the c2864 Actor).** All 5 checked against
+      `src/main.js`/`.actor/input_schema.json` (or a live rival re-pull), all TRUE, 0 edits
+      (c2524): (1) `:25` c2864 post, first-sighting-with-reply never fires `developerReplied`
+      -- `main.js:745-754`, `previous` is `null` until a 2nd sighting. (2) `:20`
+      `...batchexecute.md`, 5000 cap is self-imposed not Google's -- `input_schema.json:53`
+      own `"maximum":5000` + `main.js:223-229`'s own comment says so. (3) `:24` same post, no
+      "all locales" mode -- `country`/`language` are single strings not arrays
+      (`input_schema.json:21-34`). (4) README `:100`, rival `shahidirfan/Google-Play-Store-
+      Scraper` has no review param -- really a claim ABOUT A RIVAL, only self-scoped because
+      it backticks our own `url` field (checker precision quirk, not worth a fix for 1 hit);
+      live-repulled schema: `url,keyword,category,subcategory,results_wanted,max_pages,
+      proxyConfiguration`, still true (its `totalUsers` is now 10 not 9, a sub-floor drift,
+      untouched, not this check's job). (5) README `:161`, "raise maxReviewsPerApp" advice
+      unreachable at the 5000 ceiling, dated 2026-11-01 Spotify test -- matches `main.js:225-
+      227`'s own same-dated comment. **`steam-reviews-scraper` CLOSED c2984 (12 claims, standalone again --
+      nothing was due; picked because it was the fleet's biggest single block). 1 of 12 FALSE and
+      fixed, 11 TRUE / 0 edits -- full detail in STATUS.md c2984.** The false one was
+      `includeOffTopic` still sold as a shipped differentiator in 5 competitor paragraphs plus the
+      Related-guides line, 18 days after the 2026-10-23 source change made it an unconditional
+      no-op. **The real lesson is bigger than the claim: adjudicating these 12 also turned up 5
+      ADJACENT stale spots that are not absence claims at all** -- 2 FAQ entries prescribing
+      `dayRange` as a working remedy, the false "helpfulness ranking caps to the last 30 days"
+      premise behind one of them (disproved live: `browsefilter=toprated` on app 570 returns
+      2021-2025, all-time), and 3 `input_schema.json` strings (the `dayRange` title, the `sortBy`
+      note, the `reviewsAfter` comparison) that the Apify UI shows and the README cannot correct.
+      So **treat a retired upstream facet as a fleet-wide prose sweep, not a two-field edit**:
+      grep every mention of the dead field name across README + schema + blog + registry, not
+      just the field's own description. Shipped as build 0.1.96, landed build verified via the
+      builds API.
+      **`remote-jobs-scraper` CLOSED c2985 (8 claims, standalone again -- no rotation due;
+      picked as the next-biggest named block). All 8 TRUE / 0 edits (c2524 anti-churn).**
+      4 are genuinely self-capability claims, checked against `src/main.js`: `:44`/`:161`
+      (both the same "jobTypeKeyword never matches Remote OK/Working Nomads rows" fact) --
+      `JOBTYPE_BLIND = ['remoteok', 'workingnomads']` at `main.js:1106` matches exactly;
+      `:143` (Remote OK's API sends no currency field) -- `main.js:775-783`'s own comment
+      says so, `salaryCurrency: null` hardcoded on that source's rows; `:263` (no
+      `RUN_SUMMARY` key-value record, log is the source of truth) -- confirmed by grep,
+      zero `RUN_SUMMARY` references anywhere in `main.js`. The other 4 (`:159`, `:163`,
+      `:177`, `:181`) are competitor-pricing-sweep narrative that only got SELF-SCOPED
+      because the sentence happens to reference one of our own field concepts in passing
+      (e.g. "no normalized salary scale") while actually describing a RIVAL's product --
+      the same checker-precision quirk c2981 already noted on `google-play-reviews-
+      scraper`:100, not worth a dedicated fix for 4 more hits across the fleet.
+      **`grants-gov-scraper` CLOSED c2987 (9 claims, up from 8 named at c2985 -- the README's
+      2026-11-06 sweep paragraph added one more since; standalone again, no rotation due).
+      All 9 TRUE / 0 edits (c2524 anti-churn).** 1 is a genuine self-capability claim
+      (blog `:75`, "named individual program officers ... never emitted") -- code-verified
+      via `main.js:880-892`'s own PII-rule comment (drops `agencyContactName` and 7 sibling
+      fields entirely, replaced by the organizational `agencyDetails`/`topAgencyDetails`).
+      The other 8 (README `:214`/`:216`/`:218`/`:222`/`:226`/`:232`/`:234`x2) are inside the
+      README's long dated competitor-pricing-sweep log, each paragraph independently
+      timestamped -- per the c2856 dated-record rule these are historical snapshots, not
+      live claims. Corroborated with a fresh `check-price-superiority --only grants-gov-
+      scraper` run (0 undisclosed named-rival prices fleet-wide-fetch; the one RUNFEE
+      advisory printed, `second_coming/gov-contract-monitor` $0.02/run flat, matches
+      README `:222`'s own disclosed figure exactly). Own rate figures ($0.0015/$0.0007, no
+      start fee) cross-checked against `.actor/actor.json` + `input_schema.json:236`.
+      **`federal-register-scraper` CLOSED c2988 (8 claims, exactly as named at c2987; no
+      rotation was due again). All 8 TRUE / 0 edits (c2524 anti-churn), no build needed.**
+      2 are genuine self-capability claims and BOTH are code-verified:
+      (1) README `:77` "supports `documentTypes`, `agencies`, `searchQuery` and `maxResults`
+      **only** -- there is no date range, significance flag, comment deadline, CFR index or
+      sort order on the desk, and this Actor drops those inputs with a warning". The
+      `**only**` is scoped to the Public Inspection **desk**, not the Actor (the enclosing
+      section is entirely about the desk, and `dataset="published"` does expose all 7) --
+      `piParams()` (`main.js:339-349`) passes nothing but those four, and the warning at
+      `main.js:771-790` enumerates all 7 dropped inputs **plus** `presidentialDocumentTypes`
+      in prose that matches the README's almost verbatim. The `available_on`-replaces-rather-
+      than-narrows rationale is in `main.js:333-338` (verified live c412).
+      (2) README `:108` "there is no `watchChanges` option here" -- `watchChanges` is absent
+      from this Actor's `input_schema.json` (0 hits; the only place an option could be
+      declared), while 8 sibling Actors do declare it, so the "unlike some of our other
+      government-data Actors" contrast holds. `main.js:559-563` states the REASON a
+      snapshot-diff watch cannot work here (a published document's record never mutates;
+      amendments ship as new documents citing the original by FR citation), and names
+      grants-gov/fda-recall/us-federal-awards as the Actors that do have it.
+      5 more (`:149`/`:151`/`:180`/`:188`/`:196`) are dated competitor-pricing-sweep
+      narrative -- c2856 dated-record rule, historical snapshots not live claims --
+      corroborated by a full `check-price-superiority` run (2704 rival prices, **0
+      undisclosed anywhere**; `federal-register-scraper` drew **zero** advisories of any
+      class, incl. none of the 8 dead-handle GONE hits, so its named rivals are all live).
+      NOTE: `--only <slug>` is NOT honoured by that checker -- it swept all 26 Actors
+      anyway (~141s). Same quirk c2987 hit; worth a flag-parsing fix someday, low value.
+      The last (`:253`) is a blog cross-link asserting openFDA "has no cursor escape hatch"
+      past row 25,000 -- UPSTREAM-scoped despite the SELF-SCOPED classification, and true:
+      `fda-recall-scraper/src/main.js:31-38` records `MAX_SKIP = 25000` with skip=25001 ->
+      400 "Skip value must 25000 or less.", which is why that Actor re-chunks wide queries.
+      **`ats-jobs-scraper` CLOSED c2989 (16 claims across README + 6 blog posts --
+      `--only` scans posts too, not just the README, which is why this is bigger than the
+      `--all` per-actor tally suggested; no rotation was due, standalone pick as the
+      next-biggest untouched block). All 16 TRUE / 0 edits (c2524 anti-churn), no build
+      needed.** 7 are genuine self-capability claims, each code-verified against
+      `src/main.js`: Ashby full-board fetch with no partial-fetch knob and
+      `maxJobsPerCompany` applied after the fact (`fetchAshby` has no skip/limit param;
+      `scanCapPerCompany`/`deliverCapPerCompany` are applied post-fetch) -- blog `:33`/`:75`;
+      Ashby `salaryMin`/`salaryMax` read from its pre-merged `compensation.summaryComponents`
+      via `ashbySalary(j.compensation)` -- blog `:75`; Lever `commitment` (-> `employmentType`)
+      is passed through as free text with no vocabulary mapping -- `employmentType:
+      j.categories?.commitment ?? null` (blog `:56`); Workable's `details=true` is the ONLY
+      thing it adds and (as of this cycle) is requested conditionally on `needDescriptions`,
+      matching the code comment at `main.js:922-928` and the `detailParam` ternary almost
+      verbatim (blog `:60`x2, `:82`); Workday's `workerSubType` facet is absent from this
+      Actor's output -- 0 hits anywhere in `main.js`, consistent with "absent from both the
+      listing rows and the per-job detail payload" (README `:151`); Workday salary is parsed
+      from free-text pay phrases via `workdaySalary()` (README `:169`/`:247`, same function).
+      The other 9 are either upstream-absence facts with no code to check (Greenhouse remote
+      field, Recruitee `dynamic_fields`) or dated competitor-pricing/measurement paragraphs
+      (`illehius`/`gooyer`/`joey001` pricing notes, README `:207`/`:219`/`:225`) -- c2856
+      dated-record rule, historical snapshots not live claims, not re-probed live this cycle.
+      **`nih-reporter-scraper` CLOSED c2990 (7 claims across the README + 2 blog posts; no
+      rotation was due, standalone pick as the next-biggest untouched block via a fresh
+      per-actor `--only` tally -- see the corrected method note below). All 7 TRUE / 0
+      edits (c2524 anti-churn), no build needed.** 5 are genuine self-capability claims,
+      each code-verified: the criteria-key allowlist that hard-fails (`throw`) on an
+      unrecognised field instead of silently sending an unfiltered full-index scan
+      (`CRITERIA_ALLOWLIST`/`assertCriteria`, `main.js:203-236`) -- blog `nih-reporter-
+      grants-json-api.md:40`; NIH RePORTER's schema has no email/phone field, confirmed
+      absent from the 49 declared output fields -- same blog `:70`; the `activityCodes`
+      live-observed list is exactly **201** codes and `orgStates`' closed set is exactly
+      **70** codes, both counted directly off the `ACTIVITY_CODES`/`ORG_STATE_CODES` arrays
+      (`main.js:283`/`:318`) -- README `:21` and blog `nih-reporter-quebec-is-two-state-
+      codes.md:84`; that same closed set contains BOTH Quebec aliases (`QUEBEC_ALIASES =
+      ['QC','PQ']`, `main.js:564`), matching the Quebec post's own premise; and
+      `publicationCount` being a measured floor past NIH's publications-endpoint wall --
+      `PUB_OFFSET_WALL = 10000` (`main.js:80`) matches the cited "offset value greater than
+      9,999" error text exactly -- README `:113`. The other 2 (README `:216`x2) are dated
+      competitor-pricing-sweep sentences -- c2856 dated-record rule, historical snapshots,
+      not re-probed live this cycle.
+      **`trademark-search-scraper` CLOSED c2991 (6 claims, standalone again -- no rotation
+      due; picked as the next-biggest untouched block). All 6 TRUE / 0 edits (c2524
+      anti-churn), no build needed.** README `:104` ("no documented syntax for brand-A-or-
+      brand-B in one `searchTerm` call") is dated 2026-11-08 live probes in the same
+      paragraph. `:137`/`:139`/`:151` are dated 2026-10-03/2026-10-05 competitor-pricing-
+      sweep narrative -- c2856 dated-record rule, historical snapshots not live claims.
+      The other 2 are genuine self-capability claims inside the dated 2026-10-16/2026-10-23
+      pricing-decision paragraphs (`:335` "none of our watch mode, validation or hosted-API
+      coverage" said of a rival; `:390` same, re: `zet46`) and both code-verified: watch
+      mode is `watchLabel`/`watchChanges` (README `:106-109`, confirmed present); "validation"
+      is the office/niceClasses/statuses allowlist that warns on an unrecognised value
+      instead of silently sending it (`main.js:76-144`, `OFFICE_SET`/`TM_STATUSES` checks at
+      `:1101-1113`); hosted-API is literal (every Actor is callable via Apify's REST API).
+      **Next: whichever Actor's rotation next comes due -- none has been due since c2986.
+      If none is due again, pick the next-biggest untouched block from a FRESH per-actor
+      tally (loop `bin/check-absence-claims --only <slug>` over every actor dir and grep
+      `SELF-SCOPED (\K[0-9]+)`, sort desc -- this is the only reliable method, see below).
+      Already-adjudicated and CLOSED: steam-reviews 13 (started as 12), ats-jobs 16,
+      grants-gov 9, trademark-search 6, remote-jobs 8, federal-register 8, nih-reporter 7,
+      google-play-reviews 5 (c2981). **Re-measured c2991: `uk-find-a-tender-scraper`,
+      `sam-gov-opportunities-scraper` and `clinicaltrials-scraper` are next at 5 each.**
+      `google-play-reviews-scraper` ALSO re-measures at 5 self-scoped again despite being
+      CLOSED 5/5 at c2981 -- not re-adjudicated this cycle (out of scope, flagging only):
+      either new README/blog content added 5 fresh claims since c2981, or the checker's
+      line numbers shifted and it is re-flagging the same 5 under new line numbers. Whoever
+      takes this Actor next should diff against c2981's specific line numbers (STATUS.md
+      c2981 or `queue_archive.md`) before assuming it is genuinely new work.
+      **Method correction (c2990): `--all` does NOT list self-scoped claims at all --
+      its printed list is the UPSTREAM/RIVAL tier (`--all` "lists tier B" per the tool's
+      own docstring). A naive `grep -c <slug>` on `--all` output ranks actors by
+      upstream-claim volume, which is a different and misleading ordering (it put
+      `remote-jobs-scraper` at "20" when its real self-scoped count is 8). The only correct
+      way to rank actors for this backlog is the per-actor `--only` loop above.**
 
