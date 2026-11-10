@@ -513,6 +513,7 @@ let page = 1;
 let total = Infinity;
 let keepGoing = true;
 let httpError = null;
+let httpErrorRetries = 0; // actual fetchPageOnce() calls on the fetchPage() that set httpError, for the status message below -- no longer a fixed HTTP_RETRY_DELAYS_MS.length now that fetchPage() can run that ladder over several rounds
 // h287: an upstream error mid-walk must NOT exit the process before the watch
 // baseline is written. Rows already pushed have already been CHARGED, and the
 // baseline is the only record that they were delivered — dropping it makes the
@@ -535,6 +536,17 @@ let httpErrorBody = null; // raw TED error body for httpError, so upstreamAdvice
 // notices). Retry transient statuses here, honouring Retry-After when TED sends one.
 const TRANSIENT_STATUS = new Set([408, 425, 429, 500, 502, 503, 504]);
 const HTTP_RETRY_DELAYS_MS = [2000, 5000, 10000, 20000];
+// One ROUND is the ladder above (37s of waits plus up to 5 requests). Cycle 2968 found the
+// identical shape on trademark-search-scraper: a single exhausted ladder reported FAILED with
+// most of the run's time budget unspent, while telling the buyer to "re-run in a few minutes" --
+// which the run itself still had time to do. c2969's fleet audit flagged this ladder as the same
+// defect, latent here (not yet firing in ext_bad30d) because TED's transient-error spells are
+// rarer than Apify's proxy-exit-node flakiness, but the arithmetic is identical: a bounded ladder
+// terminates regardless of how much budget remains. So once the ladder is exhausted but
+// TRANSIENT_STATUS is still coming back, pause (escalating, capped) and run the whole ladder
+// again for as long as timeBudgetOk() allows, rather than returning the failure immediately.
+const ROUND_PAUSE_MS = [15000, 30000, 45000];
+const MAX_ROUNDS = 10; // safety net if timeoutAt is ever unset (remainingMs() == Infinity, cycle 2968 lesson)
 // A 4xx from TED is a rejected QUERY, not an outage: it is never retried above, and
 // re-running the same input will fail the same way forever. Telling the buyer "not a
 // problem with your input — re-run in a few minutes" (what every failure path said
@@ -605,17 +617,29 @@ function upstreamMessage(body) {
 // because TED actually answered with it again -- otherwise a lingering 429/503 status would
 // be misread as a real upstream error instead of a clock stop.
 async function fetchPage(pageNum, fieldsOverride) {
-  let resp = await fetchPageOnce(pageNum, fieldsOverride);
-  for (const fallbackMs of HTTP_RETRY_DELAYS_MS) {
-    if (!TRANSIENT_STATUS.has(resp.statusCode)) break;
+  let resp;
+  let attempts = 0;
+  const once = async () => { resp = await fetchPageOnce(pageNum, fieldsOverride); attempts += 1; httpErrorRetries = attempts - 1; return resp; };
+  for (let round = 0; round < MAX_ROUNDS; round += 1) {
+    await once();
+    for (const fallbackMs of HTTP_RETRY_DELAYS_MS) {
+      if (!TRANSIENT_STATUS.has(resp.statusCode)) return resp;
+      if (!timeBudgetOk()) return { ...resp, timeBudgetHit: true };
+      const retryAfterMs = Number(resp.headers?.['retry-after']) * 1000;
+      const waitMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? Math.min(retryAfterMs, 30000) : fallbackMs;
+      const cappedWaitMs = Math.max(Math.min(waitMs, remainingMs()), 0);
+      log.warning(`TED API returned ${resp.statusCode} on page ${pageNum} — retrying in ${cappedWaitMs}ms`);
+      await new Promise((r) => setTimeout(r, cappedWaitMs));
+      if (!timeBudgetOk()) return { ...resp, timeBudgetHit: true };
+      await once();
+    }
+    if (!TRANSIENT_STATUS.has(resp.statusCode)) return resp;
     if (!timeBudgetOk()) return { ...resp, timeBudgetHit: true };
-    const retryAfterMs = Number(resp.headers?.['retry-after']) * 1000;
-    const waitMs = Number.isFinite(retryAfterMs) && retryAfterMs > 0 ? Math.min(retryAfterMs, 30000) : fallbackMs;
-    const cappedWaitMs = Math.max(Math.min(waitMs, remainingMs()), 0);
-    log.warning(`TED API returned ${resp.statusCode} on page ${pageNum} — retrying in ${cappedWaitMs}ms`);
-    await new Promise((r) => setTimeout(r, cappedWaitMs));
+    const pauseMs = ROUND_PAUSE_MS[Math.min(round, ROUND_PAUSE_MS.length - 1)];
+    const cappedPauseMs = Math.max(Math.min(pauseMs, remainingMs()), 0);
+    log.warning(`TED API still returning ${resp.statusCode} on page ${pageNum} after a full retry ladder — pausing ${cappedPauseMs}ms and trying the ladder again (round ${round + 2}).`);
+    await new Promise((r) => setTimeout(r, cappedPauseMs));
     if (!timeBudgetOk()) return { ...resp, timeBudgetHit: true };
-    resp = await fetchPageOnce(pageNum, fieldsOverride);
   }
   return resp;
 }
@@ -1025,7 +1049,7 @@ if (seedError) {
   // argument (above) correctly record `failed-incremental` instead of a plain `incremental` for a
   // walk an HTTP error cut short.
   const retried = TRANSIENT_STATUS.has(httpError)
-    ? ` (retried ${HTTP_RETRY_DELAYS_MS.length} times)`
+    ? ` (retried ${httpErrorRetries} times)`
     : ''; // a 4xx is not in TRANSIENT_STATUS, so claiming retries here was simply false
   // `httpErrorMessage` (already capped at 120 chars) stays in the base so it truncates first if
   // the combination is still too long -- the "kept, not charged again" clause and the advice are

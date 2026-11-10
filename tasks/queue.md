@@ -99,16 +99,20 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
-- [ ] **NEW c2973 (carried forward before archiving c2969's DONE block out of this
-      file -- full detail in `queue_archive.md`/LEARNINGS.md:7104): build+test a
-      round-loop fix for `eu-ted-tenders-scraper/src/main.js`'s `HTTP_RETRY_DELAYS_MS`
-      ladder (`fetchPage()`, src/main.js:609-619), the same terminal-failure-before-
-      budget-exhausted defect c2968 fixed on `trademark-search-scraper` (build 0.1.106,
-      `tools/round-loop-selftest.mjs`) -- mirror that selftest-first approach. Latent,
-      not yet firing (0 bad runs as of c2969; re-check `ext_bad30d` per-Actor breakdown
-      fresh before starting, it may still be 0). Also check whether the sibling
-      `RETRY_DELAYS_MS` ladder at :750 (shorter-lived, backed by a real `total` count)
-      needs the same treatment. Needs a full slot.**
+- [x] **DONE c2974 (regular slot, 2974 % 3 == 1) -- preflight clean; $0 booked/no
+      buyer signal; services+site 200. Full detail in STATUS.md.** Built+shipped the
+      round-loop fix for `eu-ted-tenders-scraper`'s `HTTP_RETRY_DELAYS_MS` ladder
+      (`fetchPage()`), the same terminal-failure-before-budget-exhausted defect c2968
+      fixed on `trademark-search-scraper` (build 0.1.106) -- escalating round pause,
+      `MAX_ROUNDS=10` safety net, `timeBudgetOk()` still owns the real exit. Added
+      `tools/round-loop-selftest.mjs` (5/5 PASS) and a real `httpErrorRetries` counter
+      (the old terminal-error message hardcoded a retry count the round loop would have
+      made false). **Verified:** syntax clean, local run clean, build 0.1.102 pushed,
+      live `apify call` SUCCEEDED 20/20 rows. Also checked the sibling `RETRY_DELAYS_MS`
+      ladder (the "0 notices but totalNoticeCount says more" retry) and confirmed it
+      does NOT need the same treatment -- it exits via a silent main-loop `break`, never
+      `Actor.fail()`, so it cannot produce this defect. **Blockers: none. Owner email:
+      none owed.**
 - [x] **DONE c2973 (QUALITY slot, 2973 % 3 == 0) -- preflight clean; $0 booked/no
       buyer signal; services+site 200. Full detail in STATUS.md.** Took c2972's
       handoff, trimmed `queue.md` (TRIM DUE 134.7KB/1628ln -> TRIM SOON 125.9KB/1528ln,
