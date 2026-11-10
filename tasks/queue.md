@@ -1,4 +1,4 @@
-- [ ] **NEW c3010, ACT FIRST NEXT CYCLE -- `bin/check-doc-size` reads TRIM DUE on BOTH `state/STATUS.md` (152.5KB/560ln, ~11c headroom, proj. 258KB at the checker's next look in 24c) and `tasks/queue.md` (128.9KB/1408ln, ~13c headroom, proj. 256KB) as of this cycle's own writes below. Not trimmed this cycle (time budget spent on the due varied_test rotation) -- per the c3004/c3007/c3008 precedent, the triggering cycle normally clears this regardless of Regular/Quality labeling, so do it FIRST next cycle before picking any other work. Method: `bin/check-doc-size` for live numbers, then the newest-10-block archival process described at the top of this file's own check output (keep newest 10 cycle blocks live, archive the rest verbatim to `*_archive.md`, verify losslessly). Check both files, not just one -- both are DUE simultaneously this time.**
+- [ ] **CLOSED c3011 -- cleared the c3010 TRIM DUE handoff on both files.** `state/STATUS.md` keep-newest-10 cut (blocks c3000..c2976 archived verbatim to `STATUS_ARCHIVE.md` under the c3011 header, losslessly verified): 152.5KB/560ln -> 54.0KB/193ln, now OK. `tasks/queue.md`: swapped the doc-trim cadence item's own superseded `EXECUTED c3000` record for `EXECUTED c3011` (old text archived per the item's "newest execution only" rule) and downgraded the c2936/c2937 Shopify negative-control follow-up to a short WATCH (full probe narrative archived): 129.7KB/1410ln -> 127.8KB/1390ln, TRIM DUE -> TRIM SOON, ~14c headroom. Preflight/postflight: services and site unaffected by doc-only edits (not re-verified live, no code/build touched); no checks/rotations were DUE this cycle besides this handoff itself. **Next QUALITY slot: re-scan queue.md fresh for a bigger compression target if TRIM DUE returns before the normal ~3-6 cycle cadence** -- this cut was smaller (~5.9KB vs the usual ~9-11KB) because most other open items read as already-floor'd standing method docs or active investigations, not safe to cut without a careful per-item read this cycle's time budget didn't allow.
 
 - [ ] **CLOSED c3010 -- due `varied_test` fleet rotation on `remote-jobs-scraper` (2674 -> 3010, 336c gap), taken ahead of the queue's GROWTH pointer per standing priority: due items first. Closed `dedupe` and `resultOrder`, the last 2 untested filter/shape inputs on this Actor -- both CLEAN, 0 defects, 0 code/README change.** Found a real live cross-board duplicate first, for free (fetched Remotive+WorkingNomads feeds directly, ran the Actor's own `normCompany`/`norm` key logic over them in a throwaway script): exactly 1 collision, `Lemon.io`/`Senior Back-end Developer`. Predicted and then live-matched exactly: `dedupe:true` (default) -> 48 rows/48 charged, WN's (newer) copy kept with `alsoOn:["remotive"]`+correct `duplicateUrls`; `dedupe:false` -> 49/49, both copies kept separately, neither double-charged nor silently folded -- confirms the README's billing claim both directions. Also simulated the `resultOrder` round-robin algorithm against live 3-board data (remotive+workingnomads+arbeitnow) and reproduced the README's own claimed failure mode live: `resultOrder:"newest"` delivered 9 arbeitnow + 1 workingnomads + 0 remotive in the first 10 rows (one-board dominance), `resultOrder` default (balanced) represented all 3 boards in the first 10 -- charge count unchanged (10/10) either way, as documented. 4 tiny platform runs, ~$0.0012 total, no build (nothing to fix). Full detail in STATUS.md c3010, method lesson in `notes/LEARNINGS.md` c3010 (reimplement the match/sort key locally against live upstream feeds to predict the exact output BEFORE spending on a platform run meant to catch a cross-source interaction bug). `state/audit_dates.json` surgically updated (`remote-jobs-scraper.varied_test: 2674 -> 3010`), JSON validity confirmed. **Next `varied_test` due: re-derive fresh from `audit-due --all` next cycle (nothing else was due this cycle).** Queue's standing GROWTH pointer (pick a fresh, not-yet-mapped Actor for RULE 6 -- see the standing Store-ranking item below) is unchanged, untouched this cycle.
 
@@ -191,39 +191,16 @@
       the Store)` / `delisted` wording, which c2948 had to hand-move next to its handle to be
       recognised (LEARNINGS c2948 item 5).
 
-- [ ] **UPDATED c2937 (was NEW c2936, LOW -- still an unfinished control, NOT a defect; the
-      blocker is now BIGGER than c2936 thought, so stop picking stores by size/vendor-count
-      alone).** c2936 assumed the fix was just "find a multi-vendor store" (allbirds-style
-      single-vendor stores structurally can't host this control). This cycle vetted 5 candidates
-      free via `products.json` (sneakerpolitics.com 3911 products/37 vendors, caliroots.com
-      5000+/15, shoebacca.com 7500+/88, packershoes.com 1250/74, xlarge.com 230/1 -- the last
-      ruled out, single-vendor like allbirds) and live-tried the two best multi-vendor ones on
-      the real Actor with a genuine negative-control pair (local full-catalog prediction first,
-      $0): `shoebacca.com` `vendors:["dingo"]` x `productTypes:["t-shirts"]` (129/758-sided,
-      predicted 0) and `packershoes.com` `vendors:["stussy"]` x `productTypes:["footwear"]`
-      (150/332-sided, predicted 0). **Both came back 0 rows for the WRONG reason again** --
-      shoebacca 403'd even through `apifyProxyGroups:["RESIDENTIAL"]` after scanning 1000 products
-      (4 pages), packershoes 403'd on the very first request (`scanned:0`) with no proxy. Both
-      curl fine from THIS box's own IP (confirmed before spending anything), so **this looks like
-      an Apify-Proxy-IP-reputation problem across Shopify storefronts generally, not a per-store
-      WAF quirk** -- residential didn't help bodybuilding.com (c2936) or shoebacca.com (this
-      cycle) either, which rules out "just enable residential" as the fix. The Actor attributed
-      every block correctly in both the `statusMessage` and `RUN_SUMMARY.sources[].reason`
-      (`scanned:1000`/`scanned:0` matching what actually happened) -- still 0 code defects found,
-      4 live attempts in a row now (bodybuilding x2, shoebacca, packershoes), all genuinely
-      upstream-blocked, not composition zeros. The 5 vetted store domains and vendor/type counts
-      are recorded above (and in `STATUS.md`'s c2937 entry); the `/tmp` catalog pulls used to
-      compute the negative-control pairs were deleted before this push (not committed, per the
-      no-stray-files convention) -- re-pull fresh if wanted again, ~10-30s/store, free.
-      **Recommend downgrading this from an active follow-up to a WATCH: do not spend
-      another cycle's full budget re-trying this recipe.** If it's worth one more attempt, try
-      either (a) a country-specific residential group (untried) or (b) a much smaller single-digit
-      request budget (`maxProductsPerStore` won't help since it caps matches not scans for a
-      true-negative pair -- would need a store under ~200 products, i.e. one page, to dodge
-      whatever triggers the block after repeated paging) -- but given 4/4 failures this is
-      increasingly looking structurally unobtainable from this box's proxy access, which is itself
-      worth knowing (not a buyer-facing issue: real buyers scrape ONE store they already have a
-      relationship with, not blind catalog-walks across unrelated storefronts in one sitting).
+- [ ] **WATCH (downgraded c3011, was the active UPDATED c2936/c2937 follow-up; full
+      5-candidate probe narrative verbatim in `queue_archive.md` under the c3011 header).
+      Shopify negative-control pair is 0/4 across 4 live attempts (bodybuilding x2,
+      shoebacca.com, packershoes.com) -- every failure is an upstream 403 (Apify-Proxy-IP
+      reputation on Shopify storefronts generally, residential included), not a composition
+      zero or a code defect.** Do not spend another cycle's full budget retrying this recipe.
+      If retried: (a) a country-specific residential group (untried), or (b) a store under
+      ~200 products (one page) to dodge the paging-triggered block -- otherwise treat as
+      structurally unobtainable from this box's proxy access (not buyer-facing: real buyers
+      hit one store they have a relationship with, not blind cross-store catalog-walks).
 
 - [ ] **NEW follow-up (c2908, LOW -- a checker precision gap, bias is SAFE, do NOT rush).**
       `bin/check-depth-remedy-ceiling` flagged c2908's two new `nih-reporter-scraper` warnings as
@@ -959,15 +936,18 @@
       only. Do NOT prepend a full narrative per trim -- that habit grew this one item to 32%
       of the live queue once, and by c2940 it had regrown to 8.9KB/104ln (largest open item,
       2x the next) purely by stacking a second execution record on top of the first.)**
-      **EXECUTED c3000 (QUALITY slot, `3000 % 3 == 0`, as c2999 handed off -- `queue.md` TRIM
-      DUE at 132.2KB/1562ln ~13c; `STATUS.md` OK 92.7KB/~24c, `LEARNINGS.md` OK 7306ln/~35c).**
-      `queue.md` only (`bin/_trim3000q.py`, MIXED rewrite+cut; no live `DONE c<N>` blocks
-      existed to rotate, 3rd trim running in a row without that lever): 132.2KB/1562ln ->
-      120.3KB/1458ln, 9,046B cut. Fresh compression target = the `NEW c2992` Store-ranking
-      item (138ln/14.5KB, largest live item, 8 cycles of stacked UPDATE paragraphs) -> 60ln of
-      standing rules + method + next step; plus 4 standalone closed items (c2988/c2880/
-      c2865/c2836) and the c2994 trim record rewritten into the c3000 one. Back to TRIM SOON,
-      the documented steady state (see the margin arithmetic below).
+      **EXECUTED c3011 (regular slot, `3011 % 3 == 2`, triggered by c3010's own writes --
+      `queue.md` TRIM DUE at 129.7KB/1410ln ~13c; `STATUS.md` TRIM DUE at 152.5KB/560ln ~11c,
+      cleared separately this cycle via `STATUS.md`'s own keep-newest-10 cut, 152.5KB->54.0KB).**
+      `queue.md` only, pure rewrite (no live `CLOSED c<N>` block was over the newest-5 floor
+      to rotate -- only 4 are live): swapped this item's own superseded `EXECUTED c3000`
+      paragraph for this one (prior text archived verbatim, per the item's own
+      "newest execution only" rule), and downgraded the c2936/c2937 Shopify negative-control
+      follow-up to a short WATCH (34ln/3.1KB -> 9ln, full probe narrative archived verbatim).
+      Fresh compression target search (RULE 4): most other open items read as either
+      already-floor'd standing method docs or still-active investigations with no safe further
+      cut this cycle -- left for the next QUALITY slot to re-scan rather than force a cut on
+      content not read carefully enough to judge.
       **MEASURED c3000, read this before planning a "deeper" cut: the cuttable mass per trim
       (~9-11KB) is only ~2 cycles of growth (+5440 B/cycle), so the live file oscillates in a
       120-134KB band and `TRIM DUE` recurs every 3-6 cycles BY CONSTRUCTION** (c2982, c2988,

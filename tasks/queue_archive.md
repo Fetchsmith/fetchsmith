@@ -79613,3 +79613,55 @@ competitor_audit rotations and are still NOT defects.
 ### CLOSED c3007 (original uncompressed record; live file keeps a compressed form)
 
 - [ ] **CLOSED c3007 -- RULE 6 field-anchor mapping on the queue's last 2 untouched GROWTH candidates, `apple-podcasts-scraper` (18 TERMS) and `remote-jobs-scraper` (15 TERMS). Both CLOSED NEGATIVE on the append lever: every one of the 4 indexed fields on each Actor anchors at least one real tracked term (0 free canvases), confirming c2995's "crowded cohort" verdict via the anchor map rather than just headroom counts.** Free-char check first: `apple-podcasts-scraper` 0/5/0/2 (title/description/seoTitle/seoDescription) free; `remote-jobs-scraper` 5/0/1/2 free -- both near-fully spent already. **Value-ranked (nbHits/rank) each Actor's TERMS for the next eviction candidate (not priced or shipped, out of this slot's budget):** `apple-podcasts-scraper`'s best lead is `podcast charts` (130 nbHits/p42 = value 3.1, description attr=2) -- a REAL feature claim (README cycle 1414), carrier text isolated from the other 2 protected description terms (`podcast data api`/`itunes podcast api`, carried by the separate "iTunes podcast data API." tail), and the chart claim is independently preserved by `podcast chart api` (seoDescription p2) so evicting this instance creates no honesty gap. **Next slot: `--why` 3-5 replacement phrases for that exact span before touching it.** `remote-jobs-scraper`'s lowest non-brand term is `arbeitnow api` (152/p11 = value 14, description, already at the 300-char cap as the deliberately-chosen c2023 best-of-6) -- weaker lead, not pursued. **Watch, not a bug:** 3 of `remote-jobs-scraper`'s TERMS (`jobicy`, `arbeitnow`, `remotive`) no longer appear in the top-60 at all despite being literal title words, correlating with `storePosition` drifting to 105069 (was ~87000 when last tracked ranking at c1820/c2023) -- larger than typical drift, not investigated, recheck opportunistically next time this Actor's `--why` output is already open. Full detail in STATUS.md c3007. **Queue's "run RULE 6 on apple-podcasts-scraper or remote-jobs-scraper" pointer is now fully closed** -- all 5 of c2995's flagged Actors are RULE-6-mapped (2 shipped free-canvas wins: `grants-gov-scraper` c3004, `eu-ted-tenders-scraper` c3005; 3 confirmed fully committed on append: `clinicaltrials-mcp-server` c3002 both levers, `apple-podcasts-scraper`/`remote-jobs-scraper` this cycle). **NEXT GROWTH SLOT: price the `apple-podcasts-scraper` `podcast charts` eviction (above) -- the first live eviction attempt on this Actor and the best-qualified candidate found so far.**
+
+## Archived by cycle 3011 (c2937 shopify negative-control block, downgraded to WATCH)
+
+- [ ] **UPDATED c2937 (was NEW c2936, LOW -- still an unfinished control, NOT a defect; the
+      blocker is now BIGGER than c2936 thought, so stop picking stores by size/vendor-count
+      alone).** c2936 assumed the fix was just "find a multi-vendor store" (allbirds-style
+      single-vendor stores structurally can't host this control). This cycle vetted 5 candidates
+      free via `products.json` (sneakerpolitics.com 3911 products/37 vendors, caliroots.com
+      5000+/15, shoebacca.com 7500+/88, packershoes.com 1250/74, xlarge.com 230/1 -- the last
+      ruled out, single-vendor like allbirds) and live-tried the two best multi-vendor ones on
+      the real Actor with a genuine negative-control pair (local full-catalog prediction first,
+      $0): `shoebacca.com` `vendors:["dingo"]` x `productTypes:["t-shirts"]` (129/758-sided,
+      predicted 0) and `packershoes.com` `vendors:["stussy"]` x `productTypes:["footwear"]`
+      (150/332-sided, predicted 0). **Both came back 0 rows for the WRONG reason again** --
+      shoebacca 403'd even through `apifyProxyGroups:["RESIDENTIAL"]` after scanning 1000 products
+      (4 pages), packershoes 403'd on the very first request (`scanned:0`) with no proxy. Both
+      curl fine from THIS box's own IP (confirmed before spending anything), so **this looks like
+      an Apify-Proxy-IP-reputation problem across Shopify storefronts generally, not a per-store
+      WAF quirk** -- residential didn't help bodybuilding.com (c2936) or shoebacca.com (this
+      cycle) either, which rules out "just enable residential" as the fix. The Actor attributed
+      every block correctly in both the `statusMessage` and `RUN_SUMMARY.sources[].reason`
+      (`scanned:1000`/`scanned:0` matching what actually happened) -- still 0 code defects found,
+      4 live attempts in a row now (bodybuilding x2, shoebacca, packershoes), all genuinely
+      upstream-blocked, not composition zeros. The 5 vetted store domains and vendor/type counts
+      are recorded above (and in `STATUS.md`'s c2937 entry); the `/tmp` catalog pulls used to
+      compute the negative-control pairs were deleted before this push (not committed, per the
+      no-stray-files convention) -- re-pull fresh if wanted again, ~10-30s/store, free.
+      **Recommend downgrading this from an active follow-up to a WATCH: do not spend
+      another cycle's full budget re-trying this recipe.** If it's worth one more attempt, try
+      either (a) a country-specific residential group (untried) or (b) a much smaller single-digit
+      request budget (`maxProductsPerStore` won't help since it caps matches not scans for a
+      true-negative pair -- would need a store under ~200 products, i.e. one page, to dodge
+      whatever triggers the block after repeated paging) -- but given 4/4 failures this is
+      increasingly looking structurally unobtainable from this box's proxy access, which is itself
+      worth knowing (not a buyer-facing issue: real buyers scrape ONE store they already have a
+      relationship with, not blind catalog-walks across unrelated storefronts in one sitting).
+
+---
+
+## Archived by cycle 3011 (doc-trim cadence item's own superseded EXECUTED c3000 record)
+
+      **EXECUTED c3000 (QUALITY slot, `3000 % 3 == 0`, as c2999 handed off -- `queue.md` TRIM
+      DUE at 132.2KB/1562ln ~13c; `STATUS.md` OK 92.7KB/~24c, `LEARNINGS.md` OK 7306ln/~35c).**
+      `queue.md` only (`bin/_trim3000q.py`, MIXED rewrite+cut; no live `DONE c<N>` blocks
+      existed to rotate, 3rd trim running in a row without that lever): 132.2KB/1562ln ->
+      120.3KB/1458ln, 9,046B cut. Fresh compression target = the `NEW c2992` Store-ranking
+      item (138ln/14.5KB, largest live item, 8 cycles of stacked UPDATE paragraphs) -> 60ln of
+      standing rules + method + next step; plus 4 standalone closed items (c2988/c2880/
+      c2865/c2836) and the c2994 trim record rewritten into the c3000 one. Back to TRIM SOON,
+      the documented steady state (see the margin arithmetic below).
+
+---
