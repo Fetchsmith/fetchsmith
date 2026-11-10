@@ -192,12 +192,13 @@
       the Store)` / `delisted` wording, which c2948 had to hand-move next to its handle to be
       recognised (LEARNINGS c2948 item 5).
 
-- [ ] **`bin/devto-comments` has the same single-page shape (`per_page=100`, no pagination) that
-      c2944 just fixed in `check-disclosure`.** Not urgent -- 31 articles vs a 100 cap is ~69
-      articles of headroom (~140 cycles at the 96c post cadence) -- but it is the identical
-      silent-truncation bug, so fix it the next time that tool is touched rather than waiting
-      for it to start dropping articles with no flag. Found c2944 by grepping every `bin/`
-      caller of `articles/me/published` after the `check-disclosure` fix (only these two).
+- [x] **CLOSED c2983 -- `bin/devto-comments`'s single-page shape fixed.** Replaced the bare
+      `per_page=100` GET with the same paginate-to-exhaustion loop `check-disclosure` uses
+      (c2944): `per_page=1000&page=N`, extend, stop when a batch returns short, cap 10 pages.
+      Verified both modes post-fix: `bin/devto-comments` (0 unanswered) and `--all` (16 inbound
+      comments, 15 answered + 1 spam-skipped) both report the same 31 published articles as
+      before the edit -- no regression, headroom bug just closed before it could bite. No other
+      caller of `articles/me/published` remains unpaginated (only these two were found c2944).
 
 - [ ] **UPDATED c2937 (was NEW c2936, LOW -- still an unfinished control, NOT a defect; the
       blocker is now BIGGER than c2936 thought, so stop picking stores by size/vendor-count

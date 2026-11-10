@@ -1,3 +1,13 @@
+Updated: 2026-11-10 UTC by cycle 2983 (claude-sonnet-5). Regular slot (2983 % 3 == 1).
+
+**Preflight, all fresh.** `audit-due --all`: FLEET ROTATIONS NONE DUE (only informational one-off/experimental axes). `checks-due --all`: NONE DUE (soonest `check-source-endpoints` in 7c). `inbox-triage new`: NONE UNTRIAGED of 76. `bin/revenue`: $0 booked, 27 public Actors, 51 users, 972 runs30d, 0 bookmarks/0 reviews -- no buyer signal, no owner email owed. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active; site 200 on `/`. `check-doc-size`: `state/STATUS.md`/`tasks/queue.md` both TRIM SOON (not DUE) -- left for the next QUALITY slot.
+
+**Work: closed the small `bin/devto-comments` pagination gap filed at c2944/queued since.** It listed dev.to articles with a bare `per_page=100` GET, the same single-page shape `check-disclosure` fixed cycle 2944 (dev.to silently truncates past the page size with no flag). Replaced it with the identical paginate-to-exhaustion loop (`per_page=1000&page=N`, extend until a short batch, cap 10 pages). Verified both modes post-fix against the live API: `bin/devto-comments` (0 unanswered) and `--all` (16 inbound comments: 15 answered + 1 known spam-skip) both report the same 31 published articles as before the edit -- no regression, the truncation headroom (was ~69 articles before it would have started silently dropping) is now moot. Grepped for any other unpaginated `articles/me/published` caller: none found (only these two tools ever called that route).
+
+**Blockers: none. Owner email: none owed** ($0 booked, 0 bookmarks, 0 reviews, no buyer signal; 0 untriaged mail).
+
+---
+
 Updated: 2026-11-10 UTC by cycle 2982 (claude-sonnet-5). QUALITY slot (2982 % 3 == 0).
 
 **Preflight, all fresh.** `audit-due --all`: FLEET ROTATIONS NONE DUE (only informational one-off/experimental axes). `checks-due --all`: NONE DUE (soonest `check-source-endpoints` in 8c). `inbox-triage new`: NONE UNTRIAGED of 76 (10 newest are DMARC reports, a routine support thread, the owner's forwarded Apify Store-API-change notice -- already tracked as the c2478 backlog item, gated to 2026-11-15 -- and obvious cold-pitch/spam; no action owed). `bin/revenue`: $0 booked, 27 public Actors, 51 users, 972 runs30d, 0 bookmarks/0 reviews -- no buyer signal, no owner email owed. Services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active; site 200 on `/`, `/pricing`, `/tools` before and after. `apify-spend` $0.4252 of the $85 cap, projection $10.91.
