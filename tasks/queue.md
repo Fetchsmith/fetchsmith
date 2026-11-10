@@ -77,6 +77,24 @@
       invitation to SIZE the trade, not to take it -- `google news tool` p1 was available via
       title and correctly declined because the only phrasings that fit split "Google News MCP
       Server", which carries 2 held wins (p3 + p10). 2 held wins > 1 better win.
+      **UPDATE c2997: items (1) and (2) BOTH CLOSED NEGATIVE -- the append-only lever is now
+      genuinely dry, go straight to (3) EVICTION next time.** Full detail STATUS.md c2997.
+      (1) TERMS-coverage diff: all 27 real Actor dirs are in `bin/store-rank`'s TERMS (the
+      c2996 `google-news-mcp-server` gap is the only one that existed and it's closed) --
+      nothing left to find here, do not re-run this check again without a reason (e.g. a new
+      Actor published). (2) Re-probed all 5 of c2993's declined `clinicaltrials-mcp-server`
+      candidates (`clinicaltrials.gov api`, `clinical trial search api`, `clinical trials
+      search`, `clinical trial data api`, `clinical trials api`) with `--why`, reading the
+      attr=5 (seoDescription) bucket specifically this time -- still crowded on all 5
+      (190-288 nbHits, 48-60 rival records ahead in title/description/seoTitle buckets). One
+      near-miss (`clinicaltrials.gov api`, seoDescription bucket only has 3 records) would
+      land ~p57 if joined -- real but worthless, not shipped. **Next GROWTH slot: start the
+      EVICTION route (LEARNINGS c908 method) on whichever of `clinicaltrials-mcp-server` /
+      `steam-reviews-scraper` (both near-full on description) / `grants-gov-scraper` /
+      `apple-podcasts-scraper` / `eu-ted-tenders-scraper` / `remote-jobs-scraper` (c2995's
+      crowded cohorts) has the clearest nbHits gap between a cheap-to-lose held term and a
+      reachable untracked one -- rank each Actor's own TERMS by nbHits x current rank first,
+      no cycle has done that ranking yet for any of these 6.**
 
 - [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,
       not closed).** 9 consecutive cycles (c2981-c2991) adjudicated ~70 of the 128 claims and
