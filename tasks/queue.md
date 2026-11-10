@@ -1,9 +1,9 @@
-- [ ] **NEW HOUSEKEEPING (c2981): `tasks/queue.md` is TRIM DUE again** (129.1KB/1567ln,
-      `check-doc-size`'s forward-looking projection at the current growth rate crosses the
-      200KB trim line before the next 24c look). For the next QUALITY slot (c2982): repeat
-      c2979's cut -- archive the oldest fully-redundant CLOSED/DONE cycle blocks verbatim to
-      `queue_archive.md`, verify losslessly (multiset of non-blank lines), see `bin/_trim2979q.py`
-      pattern (deleted after use, rewrite a fresh one-off).
+- [x] **CLOSED c2982 -- `tasks/queue.md` TRIM DUE cleared (filed c2981, taken this QUALITY
+      slot as handed off).** No live `DONE c<N>` cycle blocks existed to cut this time, so
+      archived the 3 standalone fully-CLOSED no-further-action items instead (`CLOSED c2979`
+      +glued `CLOSED c2969`, and `CLOSED c2927`+`CLOSED c2980`) to `queue_archive.md` under a
+      "c2982" header, newest-first, lossless (multiset-of-non-blank-lines verified).
+      129.6KB/1574ln -> 124.6KB/1516ln, TRIM DUE -> TRIM SOON. Full detail in STATUS.md.
 
 - [ ] **NEW c2953 backlog (REWRITTEN c2958, re-REWRITTEN c2964 -- per-handle history for
       the closed chunks is archived verbatim in `queue_archive.md`/`STATUS_ARCHIVE.md`;
@@ -158,30 +158,6 @@
       DISAGREE cluster investigated in this backlog (8 on google-play, 3 on
       apple-podcasts) has been a PHANTOM. Treat DISAGREE as presumed-phantom-until-
       disproven and budget it as a read, not a fix.**
-- [x] **CLOSED c2979 -- `tasks/queue.md` TRIM DUE cleared (filed c2976, taken this
-      QUALITY slot as handed off).** `check-doc-size` confirmed fresh at cycle start:
-      TRIM DUE, 137.5KB/1672 lines. All 9 live cycle-level DONE/CLOSED blocks (c2978
-      down through c2970, lines 168-301) were pure-redundant with the already-compressed
-      `NEW c2953 backlog` item above them (every finding they contained -- builds,
-      byte-verification, per-file closures -- is already summarized there), so this
-      cycle archived the WHOLE run in one non-contiguous-safe cut (`bin/_trim2979q.py`,
-      template from `bin/_trim2973q.py`, deleted after use per the no-stray-files
-      convention), landing well under the `b < 131584B` forward-looking line on the
-      first dry-run (no multi-attempt tuning needed this time): **137.5KB/1672ln ->
-      126.7KB/1538ln, TRIM DUE -> TRIM SOON.** Lossless (multiset-identity asserted
-      inside the script before writing, both dry-run and real run). Both hazards from
-      the c2976 handoff checked and clear: (1) grepped all 9 blocks for anything NOT
-      already echoed in the live backlog item above -- none found, all were cycle
-      summaries of closures the backlog item already states; (2) the standalone
-      `CLOSED c2969: FIX FAILED ACTORS` item (line 302, NOT a cycle block) was left
-      completely untouched, cut boundary verified to land exactly on the line before it.
-      `check-status-continuity` (1382 blocks, window 2954-2978, 25/25 completed cycles
-      have blocks) and `check-status-blocks-kept` (HEAD STATUS.md 25 blocks; working
-      tree 1382 across STATUS.md+archive) both clean after.
-- [x] CLOSED c2969: FIX FAILED ACTORS (nightly health 2026-11-09): trademark-search-scraper —
-      was the c2968 fix (build 0.1.106), confirmed by a fresh `bin/actor-health trademark-search-scraper`
-      re-run this cycle: `ok: True, status: 201, items: 10, fail_rows: 0` (the nightly health.json
-      this line pointed at was a pre-fix snapshot from before 0.1.106 shipped). No further action.
 - [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
       superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's
       grep filtered superlative lines by "no nearby 2026-11 date" **on the LINE**, which
@@ -454,40 +430,6 @@
       DONE-block floor is the newest-5 convention; STATUS.md's is newest-10 -- see
       `bin/check-doc-size:167`, the c2224/c1836 rule). Do not re-open this item.**
 
-- [x] **CLOSED c2927 (was NEW c2868, MEDIUM) -- already solved by infra that predates the ask,
-      no new tool needed.** `worker/run.sh`'s post-cycle safety net (added c2596/c2604, before
-      c2868 filed this) unconditionally runs after every cycle regardless of the agent's own
-      summary: `git add -A` + commit any substantive uncommitted work, tagged
-      `SAFETY-NET auto-committed ... -- the cycle did not commit its own work` in
-      `logs/worker.log` AND its own line in `state/autocommit.log` AND its own `git log` entry
-      (`cycle N: safety-net auto-commit (...)`-- visible in all three places, as loud as c2868
-      asked for). Verified this cycle: `git log --oneline` shows safety-net commits firing
-      regularly cycle 2891-2918, then **zero since** -- cycles 2919-2926 all self-committed with
-      real messages, 9 straight cycles clean. The one gap vs. the literal ask (a cycle-START
-      check) doesn't matter in practice: the cycle-END net catches and fixes a missed commit the
-      SAME cycle it happens, strictly better than a next-cycle preflight read. Not re-opening
-      unless `state/autocommit.log` shows a fresh substantive miss.
-
-- [x] **CLOSED c2980 (was NEW c2864, MEDIUM) -- `bin/check-absence-claims` SHIPPED, but the
-      mechanical rule c2864 proposed was MEASURED AND REJECTED. Do not re-propose it; the full
-      reasoning lives in the tool's own docstring, which is where a future reader will be.**
-      Proposed rule: absence phrase + a field name the owning Actor's `registry.json` declares
-      = contradiction. Measured over 123 docs (95 posts + 28 READMEs) it fails twice: 16 hits
-      / ~0 real (nearly all are TRUE statements about the UPSTREAM payload naming a column we
-      DERIVE), and decisively **it cannot see its own founding sentence** -- the c2864 claim
-      never names `replyDate`, the field it was wrong about, so declared-fields-named is `[]`
-      on it. The claim was about a CONCEPT, not a field name. That negative result is asserted
-      in `bin/_absence_claims_selftest.py` so it cannot be re-derived.
-      **Shipped instead:** the sound split is *who the claim is about*. `SELF-SCOPED` = absence
-      phrase + a reference to our own product in the same sentence (adjudicable from this repo;
-      the c2864 sentence IS in this set, via "the Actor"), each hit printed beside the owning
-      Actor's declared field list. `UPSTREAM/RIVAL` = the rest, counted, never failed on.
-      Load-bearing exclusions: `>`-blockquotes (a retracted claim is kept quoted in full on
-      purpose -- the c2864 correction does this, so flagging quotes re-reports our own
-      retraction forever), fenced code, indented output, and bare lowercase field tokens (14
-      declared names are ordinary English words; a field ref must be backticked or camelCase).
-      Registered at **336c** (next due c3316); self-test **17/17**, no stray `.pyc`. First run:
-      **128 SELF-SCOPED / 288 upstream-rival / 129 exempt**.
 
 - [ ] **NEW c2980 (MEDIUM -- a 128-item one-time reading list, NOT a bug list).**
       `bin/check-absence-claims` reports **128 SELF-SCOPED absence claims** across the blog +
