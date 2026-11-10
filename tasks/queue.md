@@ -49,6 +49,34 @@
       tracked rank before/after). This is a different search than "is there a vacant bucket" --
       it requires first finding something worth sacrificing, which no cycle has done yet for
       `grants-gov-scraper`/`apple-podcasts-scraper`/`eu-ted-tenders-scraper`/`remote-jobs-scraper`.
+      **CORRECTION c2996 -- "DRY" WAS WRONG, AND THE EVICTION ROUTE IS STILL NOT NEEDED.** Full
+      detail STATUS.md c2996. c2995 measured headroom on `description` ONLY. There are **FOUR**
+      indexed verbatim fields and each is a separate budget: `title` 63, `description` 300,
+      `seoTitle` 60, `seoDescription` 200. Re-measured all four fleet-wide (one-liner over
+      `actors/*/meta.json`) and found live room: `clinicaltrials-mcp-server` 72 desc + 31 seoD
+      + 20 title, `google-news-mcp-server` 36 seoD + 27 title (SPENT c2996: seoD 164->198),
+      `fda-recall-scraper` 26 seoD, `scholarship-scraper` 13 seoD + 17 desc, `sec-insider-
+      trades-scraper` 19 seoD, `ats-jobs-scraper` 12 seoD + 11 desc, `grants-gov-scraper` /
+      `fec-campaign-finance-scraper` 13 seoD each. **Run that 4-field measurement FIRST every
+      time; never conclude "dry" from one field.** seoD is attr=5 (ranks after title/name/
+      description/seoTitle) so it wins only where no better bucket exists -- which is common on
+      long-tail buyer phrases, cf. c1816/c1819's 13 wins on this same axis.
+      **ALSO c2996, the cheapest check of all and it should run before any copy edit: is the
+      slug even IN `bin/store-rank`'s TERMS?** `google-news-mcp-server` was not (published
+      ~c2960, never tracked) and was silently holding **`news search tool` nbHits 3814 p1,
+      `mcp news search` p2, `google news mcp` p3, `news mcp server` p10** -- four free wins no
+      cycle had ever seen. Now tracked. **Audit the rest: diff `ls actors/` against the TERMS
+      keys and probe any slug missing from it before spending a slot on new copy.** You cannot
+      detect a regression on a listing you have no baseline for, and an untracked listing is
+      where free p1s hide.
+      **NEXT GROWTH SLOT, in order:** (1) the TERMS-coverage diff above (cheap, read-only, may
+      find more free wins); (2) `clinicaltrials-mcp-server`'s 31 free seoDescription chars --
+      c2993 probed its DESCRIPTION only, and its 8 probed queries that lost to crowded
+      title/seoTitle buckets should be RE-read against seoD-reachable buckets; (3) only then the
+      EVICTION route. Keep the c2996 title rule: a vacant `prox=2 attr=0` (title) bucket is an
+      invitation to SIZE the trade, not to take it -- `google news tool` p1 was available via
+      title and correctly declined because the only phrasings that fit split "Google News MCP
+      Server", which carries 2 held wins (p3 + p10). 2 held wins > 1 better win.
 
 - [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,
       not closed).** 9 consecutive cycles (c2981-c2991) adjudicated ~70 of the 128 claims and

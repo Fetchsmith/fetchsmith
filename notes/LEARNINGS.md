@@ -7264,3 +7264,43 @@ Applied the c2992 method to its own named next candidate, `clinicaltrials-mcp-se
 **2. The probe itself can turn up free wins with nothing to ship.** Two of the 8 candidates probed this cycle (`mcp clinical trials`, `ai agent clinical trials`) showed `US: p3` already, via the readme/paraphrase attribute — wins we didn't know we had, discovered only because the screening step checks the `US:` line on every candidate, not just the one that ends up bought. Add these to TERMS immediately so a future regression (the readme paraphrase is LLM-generated and can silently drop a phrase, per cycle 976) gets caught; there is nothing to build.
 
 **3. Re-affirms c2992 lesson 4 with a cleaner negative example.** `mcp server claude` (this slug's standing `check-term-anchor` FRAGILE flag — "claude" literally nowhere in our verbatim copy) looked like the obvious thing to fix. `--why` showed it is a genuinely dead end: a 12-record title bucket (storePos 4590-110749) ahead of a 48-record description bucket (storePos 6062-19703+), both entirely below our ~110k storePosition within the first 60 hits. Chasing the FRAGILE flag without running `--why` first would have burned a build on an unreachable bucket — the checker flags *fragility*, not *buyability*; always re-screen with `--why` before spending on anything it names.
+
+## Cycle 2996 — "the lever is dry" is almost always a measurement artifact; and check TERMS coverage before editing copy
+
+Two durable lessons, both cheap, both found while re-opening a lever a previous cycle had closed.
+
+**1. A Store listing has FOUR independent indexed verbatim budgets, not one.** `title` 63,
+`description` 300, `seoTitle` 60, `seoDescription` 200 (plus `readmeSummary`, which is an LLM
+paraphrase and not a budget you control — see the c1468 note in `bin/store-rank`). Cycle 2995
+concluded the whole Store-ranking GROWTH lever was exhausted fleet-wide; it had measured
+`description` headroom only. A one-liner over `actors/*/meta.json` printing all four at once
+immediately showed live room on 8 Actors, including the 36 free `seoDescription` chars this
+cycle spent. **Never conclude "dry" from one field.** `seoDescription` is attr=5, so it ranks
+after title/name/description/seoTitle and wins only where no better bucket exists for the query
+— which is exactly the common case on long-tail buyer phrases, cf. the 13 wins cycles 1816–1819
+took on this same axis.
+
+**2. Before spending a GROWTH slot editing copy, check whether the slug is in `bin/store-rank`'s
+TERMS at all.** `google-news-mcp-server` (published ~c2960) had never been added, so it had never
+been measured — and the very first probe found it already holding `news search tool` (nbHits 3814)
+at **p1**, `mcp news search` at **p2**, `google news mcp` at **p3** and `news mcp server` at
+**p10**, all four free, all four invisible to every prior sweep. An untracked listing is where
+free p1s hide, and more importantly **you cannot detect a regression against a baseline you never
+took** — an edit to an untracked Actor is an unmeasured bet. Diff `ls actors/` against the TERMS
+keys periodically.
+
+**3. A pure PREPEND at offset 0 is the only description edit with provably zero eviction risk.**
+Algolia's proximity criterion scores distances *between* matched words, so inserting text before
+every existing word cannot change any existing phrase's proximity. This cycle's `rss mcp server`
+buy (p15 → p2) was one word — "MCP server (Apify Standby mode)…" → "**RSS** MCP server (Apify
+Standby mode)…" — taking the description to exactly 300/300 while all 7 pre-existing tracked
+terms came back byte-identical. Compare the usual append-inside-a-sentence edit, where you have to
+reason about what sits on either side. When a listing is near-full and you need certainty, look
+for a truthful qualifier that belongs at the very front.
+
+**4. A vacant `prox=2 attr=0` (title) bucket is an invitation to SIZE a trade, not to take it.**
+`google news tool` (nbHits 783) had an empty title bucket — a title match would have won **p1**
+outright versus the **p3** the seoDescription edit bought. Declined: no phrasing fits the 27 free
+title chars without splitting the contiguous run "Google News MCP Server", which is what carries
+`google news mcp` p3 *and* `news mcp server` p10. Trading 2 held wins for 1 better win is a loss.
+The better attribute is only better after you price what currently lives there.
