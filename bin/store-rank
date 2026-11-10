@@ -1827,7 +1827,7 @@ TERMS = {
     # verbatim field, so both p9/p10 ranks rest on Apify's LLM readmeSummary). They are kept as
     # measurement BASELINES only (nbHits 26/29, marginal); do not "fix" them by stuffing "feed"
     # into the now-300/300 description, and do not read a future slip as a regression.
-    "clinicaltrials-mcp-server": ["clinicaltrials.gov mcp", "clinicaltrials mcp server", "clinical trials mcp", "clinical trial mcp server", "nih mcp server", "mcp server", "mcp server claude", "nih clinical trials api", "mcp clinical trials", "ai agent clinical trials"],
+    "clinicaltrials-mcp-server": ["clinicaltrials.gov mcp", "clinicaltrials mcp server", "clinical trials mcp", "clinical trial mcp server", "nih mcp server", "mcp server", "mcp server claude", "nih clinical trials api", "mcp clinical trials", "ai agent clinical trials", "trial search tool", "clinicaltrials mcp tool", "clinical trial search tool", "mcp tool clinical trials"],  # cycle 2998: 4 free pre-existing wins found while probing the title field for a GROWTH append (none were tracked before) -- "trial search tool" (nbHits 132) p1 via seoTitle, "clinicaltrials mcp tool" (21) p3 via seoTitle, "clinical trial search tool" (56) p2 via seoDescription, "mcp tool clinical trials" (25) p7 via title. Not shipped/edited, just now tracked so a future regression is visible.
     # cycle 2993: appended " clinical trials" into the description's existing "...official NIH
     # API." sentence (-> "...official NIH clinical trials API.", 212->228/300 chars), making the
     # already-present-but-scattered 4 words ("NIH"+"API" near the end, "ClinicalTrials.gov"

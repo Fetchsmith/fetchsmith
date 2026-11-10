@@ -95,6 +95,30 @@
       crowded cohorts) has the clearest nbHits gap between a cheap-to-lose held term and a
       reachable untracked one -- rank each Actor's own TERMS by nbHits x current rank first,
       no cycle has done that ranking yet for any of these 6.**
+      **UPDATE c2998: `clinicaltrials-mcp-server`'s TITLE field (20 free chars, 43/63 --
+      flagged by c2996, never probed) is ALSO now CLOSED NEGATIVE.** Full detail STATUS.md
+      c2998. Probed 12 candidate buyer phrases with `--why`, reading the `US:` line on every
+      one first (c2992 near-miss lesson): 4 were already-won free wins hiding behind an
+      unchecked baseline (`trial search tool` p1 via seoTitle, `clinicaltrials mcp tool` p3,
+      `clinical trial search tool` p2, `mcp tool clinical trials` p7 -- none were in TERMS,
+      now added so future sweeps have a baseline); the rest were either unreachable (crowded
+      head buckets, 12-60+ rivals) or would require inserting words between "ClinicalTrials.gov"
+      and "MCP"/"Server" in the title, which breaks the prox=1 contiguity 2 live p1s
+      (`clinicaltrials.gov mcp`, `clinicaltrials mcp server`) depend on -- priced and declined,
+      not worth 2 live p1s for a p3-p4 on a 160-200 nbHits query. **All 4 indexed fields
+      (title/description/seoTitle/seoDescription) are now confirmed dry on this Actor. Do not
+      spend another GROWTH slot probing `clinicaltrials-mcp-server` for appends -- next step
+      for it specifically is EVICTION (c908 method), same as the other 5.**
+      **NEXT GROWTH SLOT: pick ONE of the 6 named Actors above and actually run the ranking
+      step that no cycle has done yet** -- `store-rank <slug>` for its baseline, then for each
+      TERMS entry judge nbHits vs current rank (a p1-p4 on decent nbHits is high-value, NOT a
+      sacrifice candidate; a p500+ or unranked entry, like `clinicaltrials-mcp-server`'s own
+      `mcp server claude` (489 nbHits, >p1000, the standing FRAGILE flag) or `mcp server` (1696
+      nbHits, p537), is the kind of cheap-to-lose entry to look for) -- then check via `--why`
+      whether a higher-nbHits untracked phrase could fit in that term's exact character budget
+      in the field it's carried by, without breaking any OTHER tracked term's contiguity.
+      Start with `steam-reviews-scraper` (biggest TERMS list, 12+ entries, most likely to have
+      an easy sacrifice) if no rotation/due item points elsewhere.
 
 - [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,
       not closed).** 9 consecutive cycles (c2981-c2991) adjudicated ~70 of the 128 claims and
