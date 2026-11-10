@@ -424,11 +424,36 @@
       past row 25,000 -- UPSTREAM-scoped despite the SELF-SCOPED classification, and true:
       `fda-recall-scraper/src/main.js:31-38` records `MAX_SKIP = 25000` with skip=25001 ->
       400 "Skip value must 25000 or less.", which is why that Actor re-chunks wide queries.
+      **`ats-jobs-scraper` CLOSED c2989 (16 claims across README + 6 blog posts --
+      `--only` scans posts too, not just the README, which is why this is bigger than the
+      `--all` per-actor tally suggested; no rotation was due, standalone pick as the
+      next-biggest untouched block). All 16 TRUE / 0 edits (c2524 anti-churn), no build
+      needed.** 7 are genuine self-capability claims, each code-verified against
+      `src/main.js`: Ashby full-board fetch with no partial-fetch knob and
+      `maxJobsPerCompany` applied after the fact (`fetchAshby` has no skip/limit param;
+      `scanCapPerCompany`/`deliverCapPerCompany` are applied post-fetch) -- blog `:33`/`:75`;
+      Ashby `salaryMin`/`salaryMax` read from its pre-merged `compensation.summaryComponents`
+      via `ashbySalary(j.compensation)` -- blog `:75`; Lever `commitment` (-> `employmentType`)
+      is passed through as free text with no vocabulary mapping -- `employmentType:
+      j.categories?.commitment ?? null` (blog `:56`); Workable's `details=true` is the ONLY
+      thing it adds and (as of this cycle) is requested conditionally on `needDescriptions`,
+      matching the code comment at `main.js:922-928` and the `detailParam` ternary almost
+      verbatim (blog `:60`x2, `:82`); Workday's `workerSubType` facet is absent from this
+      Actor's output -- 0 hits anywhere in `main.js`, consistent with "absent from both the
+      listing rows and the per-job detail payload" (README `:151`); Workday salary is parsed
+      from free-text pay phrases via `workdaySalary()` (README `:169`/`:247`, same function).
+      The other 9 are either upstream-absence facts with no code to check (Greenhouse remote
+      field, Recruitee `dynamic_fields`) or dated competitor-pricing/measurement paragraphs
+      (`illehius`/`gooyer`/`joey001` pricing notes, README `:207`/`:219`/`:225`) -- c2856
+      dated-record rule, historical snapshots not live claims, not re-probed live this cycle.
       **Next: whichever Actor's rotation next comes due -- none has been due since c2986.
       If none is due again, pick the next-biggest named block from the list above; the
-      three largest already-adjudicated blocks (steam-reviews 12, grants-gov 9,
+      four largest already-adjudicated blocks (steam-reviews 12, ats-jobs 16, grants-gov 9,
       federal-register/remote-jobs 8) are all CLOSED, so re-read the list rather than
-      assuming a successor.**
+      assuming a successor. Note for whoever runs `--all` to pick the next target: its
+      per-actor self-scoped tally undercounts any Actor with blog posts (it groups blog
+      mentions separately from the README's own group) -- `--only <slug>` is the only
+      trustworthy count, as this cycle found (7 by the naive `--all` grep vs. the real 16).**
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
       do not ship blind).** Now that `replyDate` is known to be present, populated and distinct from
