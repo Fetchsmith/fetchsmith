@@ -446,14 +446,40 @@
       field, Recruitee `dynamic_fields`) or dated competitor-pricing/measurement paragraphs
       (`illehius`/`gooyer`/`joey001` pricing notes, README `:207`/`:219`/`:225`) -- c2856
       dated-record rule, historical snapshots not live claims, not re-probed live this cycle.
+      **`nih-reporter-scraper` CLOSED c2990 (7 claims across the README + 2 blog posts; no
+      rotation was due, standalone pick as the next-biggest untouched block via a fresh
+      per-actor `--only` tally -- see the corrected method note below). All 7 TRUE / 0
+      edits (c2524 anti-churn), no build needed.** 5 are genuine self-capability claims,
+      each code-verified: the criteria-key allowlist that hard-fails (`throw`) on an
+      unrecognised field instead of silently sending an unfiltered full-index scan
+      (`CRITERIA_ALLOWLIST`/`assertCriteria`, `main.js:203-236`) -- blog `nih-reporter-
+      grants-json-api.md:40`; NIH RePORTER's schema has no email/phone field, confirmed
+      absent from the 49 declared output fields -- same blog `:70`; the `activityCodes`
+      live-observed list is exactly **201** codes and `orgStates`' closed set is exactly
+      **70** codes, both counted directly off the `ACTIVITY_CODES`/`ORG_STATE_CODES` arrays
+      (`main.js:283`/`:318`) -- README `:21` and blog `nih-reporter-quebec-is-two-state-
+      codes.md:84`; that same closed set contains BOTH Quebec aliases (`QUEBEC_ALIASES =
+      ['QC','PQ']`, `main.js:564`), matching the Quebec post's own premise; and
+      `publicationCount` being a measured floor past NIH's publications-endpoint wall --
+      `PUB_OFFSET_WALL = 10000` (`main.js:80`) matches the cited "offset value greater than
+      9,999" error text exactly -- README `:113`. The other 2 (README `:216`x2) are dated
+      competitor-pricing-sweep sentences -- c2856 dated-record rule, historical snapshots,
+      not re-probed live this cycle.
       **Next: whichever Actor's rotation next comes due -- none has been due since c2986.
-      If none is due again, pick the next-biggest named block from the list above; the
-      four largest already-adjudicated blocks (steam-reviews 12, ats-jobs 16, grants-gov 9,
-      federal-register/remote-jobs 8) are all CLOSED, so re-read the list rather than
-      assuming a successor. Note for whoever runs `--all` to pick the next target: its
-      per-actor self-scoped tally undercounts any Actor with blog posts (it groups blog
-      mentions separately from the README's own group) -- `--only <slug>` is the only
-      trustworthy count, as this cycle found (7 by the naive `--all` grep vs. the real 16).**
+      If none is due again, pick the next-biggest untouched block from a FRESH per-actor
+      tally (loop `bin/check-absence-claims --only <slug>` over every actor dir and grep
+      `SELF-SCOPED (\K[0-9]+)`, sort desc -- this is the only reliable method, see below).
+      Already-adjudicated and CLOSED: steam-reviews 13 (started as 12), ats-jobs 16,
+      grants-gov 9, remote-jobs 8, federal-register 8, nih-reporter 7, google-play-reviews
+      5. Re-measured c2990 with the corrected per-actor loop; next-biggest untouched are
+      `trademark-search-scraper` (6) and `uk-find-a-tender-scraper`/`sam-gov-opportunities-
+      scraper`/`google-play-reviews-scraper`/`clinicaltrials-scraper` (5 each).
+      **Method correction (c2990): `--all` does NOT list self-scoped claims at all --
+      its printed list is the UPSTREAM/RIVAL tier (`--all` "lists tier B" per the tool's
+      own docstring). A naive `grep -c <slug>` on `--all` output ranks actors by
+      upstream-claim volume, which is a different and misleading ordering (it put
+      `remote-jobs-scraper` at "20" when its real self-scoped count is 8). The only correct
+      way to rank actors for this backlog is the per-actor `--only` loop above.**
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
       do not ship blind).** Now that `replyDate` is known to be present, populated and distinct from
