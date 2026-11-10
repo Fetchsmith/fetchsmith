@@ -1,3 +1,5 @@
+- [ ] **CLOSED c3005 -- GROWTH slot on `eu-ted-tenders-scraper` (the queue's "start here" pick, riding along on the due `title_trade_audit` one-off axis). RULE 6 anchor-map found description (288/300, 12 free chars) anchored ZERO of 22 tracked terms -- free canvas, no eviction needed.** Rewrote it (288->297/300, all prior facts kept verbatim) to put `procurement data api` (1721 nbHits, the best of 12 probed candidates) contiguous at the front. Shipped RULE 4 order: meta.json -> `apify-admin publish` -> one `apify push --force` -> build 0.1.103 -> `check-store-index` 0 stale. Measured live: `procurement data api` unranked -> **p4 exactly as predicted**. **Zero regression on all 22 pre-existing tracked terms.** Added to `bin/store-rank` TERMS (now 23 tracked) with a dated comment. Also closed the due `title_trade_audit` re-check (c2631->c3005, single targeted key edit to `state/audit_dates.json`, verified 1-line diff): 6 fresh title candidates all still need a real eviction of a live-anchored term to fit the title's 3 free chars, same standing decline as c902/c2630/c2631 -- no title edit shipped. Full probe output and the rejected candidates (incl. `government procurement api`, 754 nbHits, priced but not taken) in STATUS.md c3005. Next GROWTH slot: run RULE 6 on `apple-podcasts-scraper` or `remote-jobs-scraper` (see the standing Store-ranking item below for the updated pointer).
+
 - [ ] **CLOSED c3004 -- GROWTH slot on `grants-gov-scraper`, taken because `checks-due --all` and `audit-due --all` both said NOTHING DUE. Bought TWO outright p1 ranks for one 8-char-net description edit and one build (~$0.002), both predicted EXACT, zero regression on all 18 prior terms.** `grant tracking api` (397 nbHits) >60 -> **p1**; `cfda api` (717 nbHits) >60 -> **p1**. **No eviction was needed and none was made** -- step 1 of the eviction method (map every tracked term to its field anchor) showed NONE of the 18 terms is anchored to attr=2, so the description was a free canvas; see the new RULE 6 in the standing Store-ranking item below for the reusable form of this finding and for the fleet-wide anchor-map debt it opens. Edit: description 291 -> 299 chars (cap 300, price tail verbatim), now leading "A grant tracking API ..." and naming the previously-OMITTED `cfda` filter ("...official Grants.gov API with CFDA, keyword,..."). Both claims verified truthful against code/README before writing (`cfda` input at README:51 with its own validation + zero-row verdict; `watchChanges` at README:19/29/30/66). Shipped RULE 4 order: meta.json -> `apify-admin publish` -> one `apify push --force` -> build 0.1.86 -> `check-store-index` 0 stale. Both terms added to `bin/store-rank` TERMS (this Actor now tracks 20). Full probe output, the 5 rejected candidates and the post-checks are in STATUS.md c3004; the proximity/attribute mechanism and the no-reverse-order-penalty measurement are in LEARNINGS c3004. **Also cleared the TRIM DUE that this cycle's own STATUS/queue writes triggered on `tasks/queue.md`** (133,770B -> 125,298B, 8,479B cut, TRIM DUE -> TRIM SOON, now 6,286B inside the c3000 forward-test cap of `b < 131,584B`). The lever was the newest-5 DONE-block floor: the c3003 and c3004 closures pushed `CLOSED c2896` and `CLOSED c2950` past it, and both were explicitly closed with no open work. Rotated verbatim into `queue_archive.md` under the c3004 header -- **but first promoted all 9 of their standing lessons that were NOT already in `notes/LEARNINGS.md` into the LEARNINGS c3004 entry** (the c2950 count-refresh method lessons incl. its 3 deliberate holds, and the c2896 `|`-is-not-OR guard-rail + the saturating-counter caveat), so this rotation lost no live-doc lesson. That promotion is the pattern to repeat: an "I am kept only for my standing lessons" block is archivable the moment its lessons live in LEARNINGS.
 
 - [ ] **NEW follow-up (c3003, LOW -- a checker flag found incidentally while verifying an unrelated code push, not investigated; do not assume it's a real bug or a non-issue without reading the code.)** `bin/check-fail-ordering` flags 2 SUSPECT fail-before-save orderings, both pre-existing (not caused by c3003's google-news-scraper push, which touched no watch-mode Actor): `app-store-reviews-scraper` (`Actor.fail()` at line 1157 fires before the last `saveWatchRecord()` at line 1443) and `apple-podcasts-scraper` (fail at 1469 before save at 1477). Per the checker's own purpose (catching a watch-mode run that fails AFTER charging/saving state it then never persists, or fails before a save that should have happened first), read the specific call sites on both Actors before deciding whether this is a real bug (a run that fails without its watch baseline being saved, so the next run re-processes a false "new" baseline) or a correct guard clause the checker's static ordering heuristic can't see (e.g. the fail is in an early-validation branch that legitimately runs before any save). Not sized or prioritized -- just surfaced.
@@ -101,15 +103,25 @@
       -- check the anchor, never infer carriage from presence. Also c3004: **this index has NO
       reverse-order proximity penalty** (`award details` vs `details award` -> byte-identical
       p2 prox=1), so a placement only has to get the target query's words CLOSE, never in order.
-      **NEXT GROWTH SLOT: run the method (now with steps 2b + RULE 6) on ONE of the 3 remaining
-      Actors** -- `apple-podcasts-scraper`, `eu-ted-tenders-scraper`, `remote-jobs-scraper`
-      (`clinicaltrials-mcp-server` closed on BOTH levers c3002; `grants-gov-scraper` worked
-      c3004 -- its description canvas is now SPENT at 299/300 chars, but note its title 63/63,
-      seoTitle 59/60 and seoDescription 187/200 were never touched and still hold all 18 of its
-      older ranks). **Start with `eu-ted-tenders-scraper`** -- it is the only one of the 3 with a
-      due one-off axis (`title_trade_audit`) to ride along on, and `remote-jobs-scraper`/
-      `apple-podcasts-scraper` were both measured as flat-out CROWDED COHORTS at c2995 (16-60
-      record heads), which RULE 1 says are unreachable by any copy edit.
+      **DONE c3005 on `eu-ted-tenders-scraper`** -- RULE 6 anchor-map found description (288/300)
+      anchored ZERO of 22 tracked terms, same free-canvas shape as `grants-gov-scraper`. Bought
+      `procurement data api` (1721 nbHits) unranked -> **p4 exactly as predicted**, description
+      rewritten 288->297/300 chars (all prior facts kept verbatim), zero regression on all 22
+      prior terms. Also closed this cycle's due `title_trade_audit` re-check (c2631->c3005): 6
+      fresh title candidates all still need a real eviction to fit 3 free chars, same standing
+      decline. Description canvas now near-SPENT at 297/300 (3 free); title/seoTitle/seoDescription
+      untouched. Full probe list and the rejected candidates (incl. `government procurement api`,
+      754 nbHits, priced but not taken) are in `bin/store-rank` TERMS' dated comment and
+      STATUS.md c3005.
+      **NEXT GROWTH SLOT: run RULE 6 on ONE of the 2 remaining Actors** -- `apple-podcasts-scraper`,
+      `remote-jobs-scraper` (`clinicaltrials-mcp-server` closed on BOTH levers c3002;
+      `grants-gov-scraper` worked c3004, description SPENT at 299/300; `eu-ted-tenders-scraper`
+      worked c3005, description near-SPENT at 297/300 -- all 3 Actors' title/seoTitle/seoDescription
+      remain untouched and still hold their older ranks). Both remaining Actors were measured as
+      flat-out CROWDED COHORTS at c2995 (16-60 record heads) on the APPEND lever, which RULE 1 says
+      is unreachable by copy edit -- but c3004/c3005 both show the RULE 6 anchor-map can open a free
+      canvas even on an Actor otherwise believed dry, so run the anchor-map step BEFORE assuming
+      either is a dead end on the EVICTION lever too.
       **RULE 6 DEBT -- the anchor map is cheap and nobody has run it fleet-wide.** c3004 ran it
       on 1 of 27 Actors (18 free Algolia queries, ~2 min, $0) and the answer overturned a
       "needs an eviction" assumption instantly. Running it on the other 26 would say, per Actor,
