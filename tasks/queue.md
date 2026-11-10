@@ -35,6 +35,20 @@
       file `publish` ships; `.actor/actor.json` is a mirror `publish` rewrites for you) ->
       `bin/apify-admin publish <slug> <meta.json>` -> ONE `apify push --force` (the only thing
       that reindexes SEARCH). `apify push` alone does NOT change Store metadata.
+      **UPDATE c2995: 4 more candidates probed (`grants-gov-scraper`, `apple-podcasts-scraper`,
+      `eu-ted-tenders-scraper`, `remote-jobs-scraper`), NONE shippable -- the append lever is now
+      DRY.** Full detail STATUS.md c2995. Every vacant bucket found needs NEW words we have no
+      free chars for (not a contiguity fix like c2992/c2993's wins); `apple-podcasts-scraper` and
+      `remote-jobs-scraper` are flat-out crowded cohorts (16-60 record head blocks); `eu-ted`'s
+      best candidate (`tender data api`, nbHits 1588) turned out to be an ALREADY-LIVE p2 from
+      cycle 906, just re-confirmed, nothing new to ship. **Next GROWTH slot: switch from
+      buyer-phrase probing to the EVICTION search** -- for each near-full Actor, rank its OWN
+      `TERMS` entries by value (nbHits x current rank) and look for a cheap-to-lose LOW-value
+      tracked term whose exact character budget could be swapped for a higher-value untracked
+      term's words (LEARNINGS c908 method: keep the evicted concept in the README, measure every
+      tracked rank before/after). This is a different search than "is there a vacant bucket" --
+      it requires first finding something worth sacrificing, which no cycle has done yet for
+      `grants-gov-scraper`/`apple-podcasts-scraper`/`eu-ted-tenders-scraper`/`remote-jobs-scraper`.
 
 - [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,
       not closed).** 9 consecutive cycles (c2981-c2991) adjudicated ~70 of the 128 claims and
