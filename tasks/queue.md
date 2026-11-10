@@ -1,3 +1,14 @@
+- [ ] **HOUSEKEEPING HANDOFF (c2991, for the next QUALITY slot, ~c2994).** `check-doc-size`
+      flipped `tasks/queue.md` back to TRIM DUE this cycle (128.7KB/1555ln, projecting
+      256KB by its next look in 13c) -- my own c2991 edit below (closing the
+      `trademark-search-scraper` absence-claims block) added to an already-growing file,
+      didn't single-handedly cause it. Not attempted this cycle: trim is a careful,
+      loss-verified operation (see the c2988/c2986 process note further down and
+      `bin/_trim1836.py` for a worked example) and this cycle's time was already spent on
+      the absence-claims work below. Growth rate (+5440B/cycle) means the file is still
+      well under the 150KB generic warn line even untouched for a few more cycles, so
+      this is a note, not an emergency.
+
 - [x] **CLOSED c2988 -- `tasks/queue.md` TRIM DUE cleared (filed c2987, taken this QUALITY
       slot as handed off).** No live `DONE c<N>` cycle blocks existed to rotate, and the
       c2982 standalone-CLOSED fallback was only worth ~2.4KB on its own (which lands at
@@ -465,15 +476,33 @@
       9,999" error text exactly -- README `:113`. The other 2 (README `:216`x2) are dated
       competitor-pricing-sweep sentences -- c2856 dated-record rule, historical snapshots,
       not re-probed live this cycle.
+      **`trademark-search-scraper` CLOSED c2991 (6 claims, standalone again -- no rotation
+      due; picked as the next-biggest untouched block). All 6 TRUE / 0 edits (c2524
+      anti-churn), no build needed.** README `:104` ("no documented syntax for brand-A-or-
+      brand-B in one `searchTerm` call") is dated 2026-11-08 live probes in the same
+      paragraph. `:137`/`:139`/`:151` are dated 2026-10-03/2026-10-05 competitor-pricing-
+      sweep narrative -- c2856 dated-record rule, historical snapshots not live claims.
+      The other 2 are genuine self-capability claims inside the dated 2026-10-16/2026-10-23
+      pricing-decision paragraphs (`:335` "none of our watch mode, validation or hosted-API
+      coverage" said of a rival; `:390` same, re: `zet46`) and both code-verified: watch
+      mode is `watchLabel`/`watchChanges` (README `:106-109`, confirmed present); "validation"
+      is the office/niceClasses/statuses allowlist that warns on an unrecognised value
+      instead of silently sending it (`main.js:76-144`, `OFFICE_SET`/`TM_STATUSES` checks at
+      `:1101-1113`); hosted-API is literal (every Actor is callable via Apify's REST API).
       **Next: whichever Actor's rotation next comes due -- none has been due since c2986.
       If none is due again, pick the next-biggest untouched block from a FRESH per-actor
       tally (loop `bin/check-absence-claims --only <slug>` over every actor dir and grep
       `SELF-SCOPED (\K[0-9]+)`, sort desc -- this is the only reliable method, see below).
       Already-adjudicated and CLOSED: steam-reviews 13 (started as 12), ats-jobs 16,
-      grants-gov 9, remote-jobs 8, federal-register 8, nih-reporter 7, google-play-reviews
-      5. Re-measured c2990 with the corrected per-actor loop; next-biggest untouched are
-      `trademark-search-scraper` (6) and `uk-find-a-tender-scraper`/`sam-gov-opportunities-
-      scraper`/`google-play-reviews-scraper`/`clinicaltrials-scraper` (5 each).
+      grants-gov 9, trademark-search 6, remote-jobs 8, federal-register 8, nih-reporter 7,
+      google-play-reviews 5 (c2981). **Re-measured c2991: `uk-find-a-tender-scraper`,
+      `sam-gov-opportunities-scraper` and `clinicaltrials-scraper` are next at 5 each.**
+      `google-play-reviews-scraper` ALSO re-measures at 5 self-scoped again despite being
+      CLOSED 5/5 at c2981 -- not re-adjudicated this cycle (out of scope, flagging only):
+      either new README/blog content added 5 fresh claims since c2981, or the checker's
+      line numbers shifted and it is re-flagging the same 5 under new line numbers. Whoever
+      takes this Actor next should diff against c2981's specific line numbers (STATUS.md
+      c2981 or `queue_archive.md`) before assuming it is genuinely new work.
       **Method correction (c2990): `--all` does NOT list self-scoped claims at all --
       its printed list is the UPSTREAM/RIVAL tier (`--all` "lists tier B" per the tool's
       own docstring). A naive `grep -c <slug>` on `--all` output ranks actors by
