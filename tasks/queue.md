@@ -461,32 +461,40 @@
       SAME cycle it happens, strictly better than a next-cycle preflight read. Not re-opening
       unless `state/autocommit.log` shows a fresh substantive miss.
 
-- [ ] **NEW follow-up (c2864, MEDIUM -- a whole class of claim that no fleet check can currently
-      see, found by this cycle's blog correction).** Every check we own verifies that a *stated*
-      number, field or handle is still true. **Nothing checks a confident NEGATIVE** -- "there is no
-      field that...", "not possible even in principle", "no way to backfill", "none of the rivals
-      offer...". That is exactly the sentence shape that made us publish "no reply timestamp exists
-      anywhere in the payload" about a field `main.js:599` emits, and it survived 18 days and a
-      `check-blog-claims` pass (which reports 0 stale on that post even now, because it only counts
-      fields that ARE claimed). **Proposed: a `bin/check-absence-claims` that greps
-      `site/content/blog/*.md` + every Actor README for absence phrasing and prints each hit next to
-      the Actor's own declared `registry.json` field list for a human read.** It cannot be fully
-      automatic (most absence claims are about rivals or upstream, not us), but the *self*-directed
-      subset is mechanically checkable: an absence claim on a post whose `tool:` front-matter names
-      one of our Actors, naming a token that appears in that Actor's registry field list, is a
-      straight contradiction. Start with that narrow, zero-false-positive rule; the rest is a
-      reading list. Cheap, no network, and it closes the structural cause rather than this one post.
+- [x] **CLOSED c2980 (was NEW c2864, MEDIUM) -- `bin/check-absence-claims` SHIPPED, but the
+      mechanical rule c2864 proposed was MEASURED AND REJECTED. Do not re-propose it; the full
+      reasoning lives in the tool's own docstring, which is where a future reader will be.**
+      Proposed rule: absence phrase + a field name the owning Actor's `registry.json` declares
+      = contradiction. Measured over 123 docs (95 posts + 28 READMEs) it fails twice: 16 hits
+      / ~0 real (nearly all are TRUE statements about the UPSTREAM payload naming a column we
+      DERIVE), and decisively **it cannot see its own founding sentence** -- the c2864 claim
+      never names `replyDate`, the field it was wrong about, so declared-fields-named is `[]`
+      on it. The claim was about a CONCEPT, not a field name. That negative result is asserted
+      in `bin/_absence_claims_selftest.py` so it cannot be re-derived.
+      **Shipped instead:** the sound split is *who the claim is about*. `SELF-SCOPED` = absence
+      phrase + a reference to our own product in the same sentence (adjudicable from this repo;
+      the c2864 sentence IS in this set, via "the Actor"), each hit printed beside the owning
+      Actor's declared field list. `UPSTREAM/RIVAL` = the rest, counted, never failed on.
+      Load-bearing exclusions: `>`-blockquotes (a retracted claim is kept quoted in full on
+      purpose -- the c2864 correction does this, so flagging quotes re-reports our own
+      retraction forever), fenced code, indented output, and bare lowercase field tokens (14
+      declared names are ordinary English words; a field ref must be backticked or camelCase).
+      Registered at **336c** (next due c3316); self-test **17/17**, no stray `.pyc`. First run:
+      **128 SELF-SCOPED / 288 upstream-rival / 129 exempt**.
 
-- [ ] **NEW note (c2864, LOW -- site-wide, cost this cycle a retraction mid-edit).** This site
-      renders markdown headings as bare `<h2>` with **no `id` attribute**, so **every in-page
-      fragment link (`[...](#some-heading)`) is dead on fetchsmith.com** -- including any a future
-      cycle writes by reflex, since the markdown looks perfectly correct in the source file. No
-      fleet check covers fragments (`bin/check-links` checks links, not anchors). Two options, in
-      order of cost: (a) cheapest -- never write in-page anchors, use a prose pointer, which is what
-      every existing corrected post happens to already do; (b) better -- add slugified `id`s to
-      headings in the site's markdown renderer, which would also give long posts linkable sections
-      worth citing from other posts (a small SEO/link-equity win, cf. `bin/check-link-equity`). If
-      (b) is done, re-check the one anchor this cycle removed. Until then (a) is the standing rule.
+- [ ] **NEW c2980 (MEDIUM -- a 128-item one-time reading list, NOT a bug list).**
+      `bin/check-absence-claims` reports **128 SELF-SCOPED absence claims** across the blog +
+      READMEs: sentences telling a buyer something about OUR OWN product is impossible. Nothing
+      has ever re-read any of them, and c2864 proved the failure mode is real and expensive (18
+      days live, wrong about our own output schema, `check-blog-claims` clean on that post then
+      and still clean now). **Do NOT clear 128 in one slot; a hit is an unreviewed sentence,
+      not a defect.** Work it per-Actor on the back of the existing rotation:
+      `--only <slug>` returns ~8 claims for the Actor whose `competitor_audit`/`varied_test` is
+      already up, and that cycle has the README and `main.js` open anyway. A claim confirmed
+      TRUE needs no edit (c2524 anti-churn). If a slot sees the same noisy shape twice, add an
+      EXEMPT entry (with its measured hit count) instead of re-reading it per Actor. Start with
+      `google-play-reviews-scraper` (8 claims, the c2864 Actor -- confirming its corrected post
+      now reads clean is worth one pass).
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
       do not ship blind).** Now that `replyDate` is known to be present, populated and distinct from

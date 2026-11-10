@@ -1,0 +1,306 @@
+#!/usr/bin/env python3
+"""Flag confident NEGATIVE claims — the one sentence shape no other fleet check can see.
+
+Every check we own verifies that a *stated* positive is still true: `check-blog-claims`
+diffs field COUNTS and feature lists, `check-competitor-claims` diffs rival user counts,
+`check-registry-fields` diffs output FIELDS. All of them read a claim that something IS
+the case and ask the world whether it still is. **Nothing reads a claim that something is
+NOT the case** — "there is no field that...", "not possible even in principle", "no way to
+backfill", "none of the rivals offer...".
+
+Why that gap cost us (cycle 2864, the incident this check exists for). The post
+`google-play-developer-replied-event-only-fires-for-future-replies.md` shipped
+2026-10-20 asserting "There's no field anywhere in the Play Store review payload that
+says *when* a reply was posted ... the only timestamp the Actor ... can see is the
+review's own `date`, not the reply's." Google Play ships `replyDate`, and
+`google-play-reviews-scraper` had been emitting it on every output row since before the
+post went up — it is in registry.json, the README sample output and the dataset field
+list. The claim was wrong about OUR OWN PRODUCT, survived 18 days, and `check-blog-claims`
+reported (and still reports) 0 stale claims on that post, because a field that is wrongly
+said NOT to exist is never counted by a check that only looks at fields that ARE claimed.
+It was caught by a human re-reading the post, not by any tool.
+
+**The obvious mechanical rule does not work, and cycle 2980 measured that before
+shipping one — do not re-propose it.** The rule queued at c2864 was: flag an absence
+sentence that names a field the owning Actor's registry.json declares, and call that a
+zero-false-positive contradiction. Measured over 123 documents it produced 16 hits of
+which ~0 were real (nearly every one is a TRUE statement about the UPSTREAM payload that
+happens to name a column we DERIVE — "There's no `currency` field on the product payload
+itself", "a `parentCommentId` field that doesn't exist in the raw response"), and — the
+decisive part — **it does not catch the sentence it was designed for.** The c2864 claim
+was "There's no field anywhere in the Play Store review payload that says *when* a reply
+was posted"; the field it was wrong about, `replyDate`, is not named in it at all. The
+claim was about a CONCEPT, not a field name. Re-run of that sentence through this file's
+own matchers: absence phrase True, declared-fields-named `[]`. So the rule misses it, and
+fires only on the following sentence's correct, affirmative mention of `` `date` ``. A
+check that cannot catch its founding incident must not be a gate.
+
+What IS separable mechanically is **who the claim is about**, and that is the whole value
+here. Two tiers:
+
+  SELF-SCOPED (tier A — the c2864 class, small, every hit needs a human read)
+      An absence phrase in the same sentence as a reference to our own product ("the
+      Actor", "we", "our", the owning slug, a `/go/<slug>` or `/tools/<slug>` link). These
+      are the claims we are ANSWERABLE for: the data to adjudicate them is in this repo
+      (registry.json, input_schema.json, main.js), so a reader can settle each one without
+      leaving the box. The c2864 sentence is in this set. Each hit prints the owning
+      Actor's declared field list beside it so the adjudication is one glance, not a
+      cross-reference by hand.
+
+  UPSTREAM/RIVAL (tier B — counted, listed only with --all)
+      Every other absence phrase. These are facts about openFDA, Greenhouse, a rival
+      listing — no local data can adjudicate them and nothing in this repo should pretend
+      to. Counted so the ratio stays visible, listed on request, never failed on.
+
+Neither tier exits non-zero by default: an absence claim is not a defect, it is a
+sentence that was never reviewed. `--strict` exits 1 if tier A is non-empty, for a
+caller that wants the reading list enforced.
+
+What is deliberately NOT flagged, and why:
+
+  * blockquote lines (`>`-prefixed). A retracted claim is kept quoted in full on purpose
+    (the c2864 correction does exactly this, under "Why the event can't fire
+    retroactively"), so a quoted absence claim is a RECORD of a wrong claim, not a live
+    one. Flagging it would permanently re-report the very incident this check was built
+    from. Same reasoning as the LEARNINGS c2856 dated-record rule.
+  * fenced code blocks and indented sample output — a comment inside a snippet is not
+    customer-facing prose.
+  * a bare lowercase field token. A field reference counts only if it is BACKTICKED or
+    unambiguously camelCase, because 14 of the fleet's declared field names are ordinary
+    English words (`date`, `title`, `price`, `free`, `text`, `description`, `summary`,
+    `score`, `url`, `version`, `language`, `updated`, `released`, `installs`) and matching
+    those bare would flag every sentence in the blog. The c2864 claim still trips the
+    rule: it wrote `` `date` `` in backticks, which is the house style for a field.
+
+Read-only. No network, no auth, no platform cost.
+
+Usage:
+  bin/check-absence-claims                   # tier A listed, tier B counted
+  bin/check-absence-claims --all             # list tier B too
+  bin/check-absence-claims --only <slug>     # restrict to one Actor's post(s)/README
+  bin/check-absence-claims --fields <slug>   # print that Actor's declared field list
+  bin/check-absence-claims --strict          # exit 1 if tier A is non-empty
+"""
+import glob
+import json
+import os
+import re
+import sys
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Sellable fields = registry entries minus the internal `_`-prefixed watch columns, the
+# same definition check-blog-claims uses (its docstring note 1b, cycle 2300): the tool
+# pages and READMEs never sell `_watchChangeType`/`_watchPrevious` as fields.
+REG = {t["slug"]: [f for f in t.get("output_fields", []) if not f.startswith("_")]
+       for t in json.load(open(os.path.join(ROOT, "actors/registry.json")))["tools"]}
+
+# Confident-negative vocabulary. Each pattern is a claim that something does not or
+# cannot exist, as opposed to a hedge ("may not", "we don't currently") -- a hedge is
+# not the failure class (it invites a re-check by its own wording).
+ABSENCE = [
+    r"\bthere(?:'s| is| are| exists?)? no\b",
+    r"\bno (?:\w+[- ]){0,3}(?:field|column|key|attribute|timestamp|parameter|endpoint|cursor|flag)s?\b",
+    r"\bno way to\b",
+    r"\bnot? possible\b",
+    r"\beven in principle\b",
+    r"\bnothing (?:in|on|about) the\b",
+    r"\bnever (?:exposed?|returned?|emitted?|populated?|set|present)\b",
+    r"\bnone of (?:the|our|its|them)\b",
+    r"\bno such\b",
+    r"\bdoes(?:n't| not) exist\b",
+    r"\bis(?:n't| not) exposed\b",
+    r"\bisn't anywhere\b",
+    r"\bcannot be (?:recovered|backfilled|derived|reconstructed)\b",
+    r"\bno (?:API|api) (?:for|that)\b",
+    r"\bimpossible\b",
+]
+ABSENCE_RE = re.compile("|".join(ABSENCE), re.I)
+
+# Shapes that match the absence vocabulary but are NOT an unreviewed capability claim.
+# Each is exempt because another check already owns it, or because it is not a negative
+# claim at all. Measured on the first full run (c2980): 126 + 3 hits, cutting the
+# self-scoped reading list 185 -> 128 without dropping a capability claim. A third
+# candidate ("nothing to violate" / "no ToS", the legal-posture line owned by
+# check-disclosure) was written and then DELETED because it matched 0 sentences fleet-wide
+# -- its one apparent hit was already caught by the no-proxy clause in the same sentence.
+# Do not re-add a rule here without measuring its own hit count first.
+EXEMPT = [
+    # "No API key, no login, no proxy" is the fleet's standard POSITIVE selling line --
+    # a statement about what the buyer does not have to supply, not a limit on us.
+    (r"\bno (?:API |api )?key\b|\bno login\b|\bno proxy\b|\bno auth\b|\bno sign[- ]?up\b",
+     "positive 'no key/login/proxy' selling line, not a capability limit"),
+    # "there is no run size / no plan on which we are the cheaper choice" is a live price
+    # comparison, owned by check-price-superiority + check-unit-matched-price.
+    (r"\bno (?:run size|plan|tier|volume)\b.{0,60}\bcheaper\b|\bcheaper choice\b",
+     "price comparison -- owned by check-price-superiority"),
+]
+EXEMPT_RE = [(re.compile(p, re.I), why) for p, why in EXEMPT]
+
+
+def exempt(sentence):
+    for rx, why in EXEMPT_RE:
+        if rx.search(sentence):
+            return why
+    return None
+
+# A field reference is a backticked token or an unambiguously camelCase bare word.
+# Bare lowercase words are ignored on purpose -- see the docstring.
+BACKTICKED = re.compile(r"`([A-Za-z_][\w.\[\]]*)`")
+CAMEL = re.compile(r"\b([a-z]+[A-Z]\w*)\b")
+
+SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z`*\"])")
+
+
+def front_matter(text):
+    """The `key: value` block between the leading --- fences, or {}."""
+    if not text.startswith("---"):
+        return {}
+    end = text.find("\n---", 3)
+    if end < 0:
+        return {}
+    fm = {}
+    for line in text[3:end].splitlines():
+        if ":" in line and not line.startswith(" "):
+            k, _, v = line.partition(":")
+            fm[k.strip()] = v.strip().strip('"').strip("'")
+    return fm
+
+
+def prose_lines(text):
+    """(lineno, line) for customer-facing prose only: no front matter, no fenced code,
+    no `>` blockquote, no 4-space-indented sample output."""
+    out, in_fence, in_fm = [], False, False
+    for i, line in enumerate(text.splitlines(), 1):
+        s = line.strip()
+        if i == 1 and s == "---":
+            in_fm = True
+            continue
+        if in_fm:
+            if s == "---":
+                in_fm = False
+            continue
+        if s.startswith("```") or s.startswith("~~~"):
+            in_fence = not in_fence
+            continue
+        if in_fence or s.startswith(">") or line.startswith("    ") or not s:
+            continue
+        out.append((i, line))
+    return out
+
+
+# "this claim is about US". First-person and this-Actor references only -- a bare mention
+# of the upstream vendor ("Greenhouse", "openFDA") is NOT self-scope, which is the whole
+# point of the split. `/go/<slug>` is the click-logged CTA form every blog product link
+# has used since cycle 1509; `/tools/<slug>` is the on-site tool page.
+SELF = re.compile(
+    r"\b(?:we|we're|we've|our|ours|us|this Actor|the Actor|our Actor|this scraper|"
+    r"fetchsmith)\b|/go/|/tools/", re.I)
+
+
+def self_scoped(sentence, owner):
+    """True if the sentence refers to our own product. Matching the owning slug or its
+    words counts too (`google-play-reviews-scraper`, 'this Actor', '[ats-jobs-scraper]')."""
+    if SELF.search(sentence):
+        return True
+    return bool(owner) and owner in sentence
+
+
+def field_refs(sentence, fields):
+    """Declared fields of `fields` that this sentence references in a form precise enough
+    to be a field reference (backticked, or camelCase)."""
+    seen = set(BACKTICKED.findall(sentence)) | set(CAMEL.findall(sentence))
+    # a backticked `obj.replyDate` or `row['replyDate']` still names the field
+    for tok in list(seen):
+        for part in re.split(r"[.\[\]'\"]+", tok):
+            if part:
+                seen.add(part)
+    return [f for f in fields if f in seen]
+
+
+def scan(path, owner):
+    """Absence-phrased sentences in one document. owner = slug this doc is about, or None."""
+    text = open(path, encoding="utf-8").read()
+    hits = []
+    for lineno, line in prose_lines(text):
+        for sent in SENTENCE_SPLIT.split(line):
+            if not ABSENCE_RE.search(sent):
+                continue
+            sent = sent.strip()
+            if exempt(sent):
+                continue
+            own = field_refs(sent, REG.get(owner, [])) if owner else []
+            hits.append((lineno, sent, own, self_scoped(sent, owner)))
+    return hits
+
+
+def main(argv):
+    only, show_all, strict = None, False, False
+    args = argv[1:]
+    while args:
+        a = args.pop(0)
+        if a == "--only":
+            only = args.pop(0)
+        elif a == "--all":
+            show_all = True
+        elif a == "--strict":
+            strict = True
+        elif a == "--fields":
+            slug = args.pop(0)
+            if slug not in REG:
+                sys.exit("unknown slug %r -- not in registry.json" % slug)
+            print("%s declares %d sellable field(s):" % (slug, len(REG[slug])))
+            print("  " + ", ".join(REG[slug]))
+            return 0
+        else:
+            sys.exit(__doc__)
+
+    docs = []  # (path, owner_slug_or_None, label)
+    for p in sorted(glob.glob(os.path.join(ROOT, "site/content/blog/*.md"))):
+        tool = front_matter(open(p, encoding="utf-8").read()).get("tool") or None
+        docs.append((p, tool if tool in REG else None, "blog"))
+    for p in sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))):
+        slug = os.path.basename(os.path.dirname(p))
+        docs.append((p, slug if slug in REG else None, "readme"))
+
+    selfscoped, upstream = [], []
+    scanned = 0
+    for path, owner, label in docs:
+        if only and owner != only:
+            continue
+        scanned += 1
+        rel = os.path.relpath(path, ROOT)
+        for lineno, sent, own, mine in scan(path, owner):
+            (selfscoped if mine else upstream).append((rel, lineno, label, owner, own, sent))
+
+    print("SELF-SCOPED (%d) -- absence claims about OUR OWN product. Adjudicate each from"
+          " this repo (registry.json / input_schema.json / main.js); an absence claim is"
+          " not a defect, it is a sentence nothing has ever re-read." % len(selfscoped))
+    lastdoc = None
+    for rel, lineno, label, owner, own, sent in selfscoped:
+        if rel != lastdoc:
+            lastdoc = rel
+            if owner:
+                print("\n  %s  [%s, %d declared field(s)]" % (rel, owner, len(REG[owner])))
+                print("      fields: %s" % ", ".join(REG[owner]))
+            else:
+                print("\n  %s  [no owning Actor]" % rel)
+        print("    :%d  %s" % (lineno, sent[:400]))
+        if own:
+            print("         ^ names own declared field(s): %s" % ", ".join(own))
+
+    if show_all:
+        print("\nUPSTREAM/RIVAL (%d) -- about openFDA/Greenhouse/a rival listing; no local"
+              " data can settle these:" % len(upstream))
+        for rel, lineno, label, owner, own, sent in upstream:
+            print("  %s:%d  %s" % (rel, lineno, sent[:200]))
+    else:
+        print("\nUPSTREAM/RIVAL: %d (not about us -- pass --all to list)." % len(upstream))
+
+    print("\n%d document(s) scanned, %d self-scoped, %d upstream/rival."
+          % (scanned, len(selfscoped), len(upstream)))
+    return 1 if (strict and selfscoped) else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
