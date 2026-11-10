@@ -1,3 +1,10 @@
+- [ ] **NEW HOUSEKEEPING (c2981): `tasks/queue.md` is TRIM DUE again** (129.1KB/1567ln,
+      `check-doc-size`'s forward-looking projection at the current growth rate crosses the
+      200KB trim line before the next 24c look). For the next QUALITY slot (c2982): repeat
+      c2979's cut -- archive the oldest fully-redundant CLOSED/DONE cycle blocks verbatim to
+      `queue_archive.md`, verify losslessly (multiset of non-blank lines), see `bin/_trim2979q.py`
+      pattern (deleted after use, rewrite a fresh one-off).
+
 - [ ] **NEW c2953 backlog (REWRITTEN c2958, re-REWRITTEN c2964 -- per-handle history for
       the closed chunks is archived verbatim in `queue_archive.md`/`STATUS_ARCHIVE.md`;
       this item now carries ONLY the open remainder). Fleet sweep after the
@@ -492,9 +499,24 @@
       `--only <slug>` returns ~8 claims for the Actor whose `competitor_audit`/`varied_test` is
       already up, and that cycle has the README and `main.js` open anyway. A claim confirmed
       TRUE needs no edit (c2524 anti-churn). If a slot sees the same noisy shape twice, add an
-      EXEMPT entry (with its measured hit count) instead of re-reading it per Actor. Start with
-      `google-play-reviews-scraper` (5 claims after exemptions, the c2864 Actor -- confirming its corrected post
-      now reads clean is worth one pass).
+      EXEMPT entry (with its measured hit count) instead of re-reading it per Actor.
+      **`google-play-reviews-scraper` CLOSED c2981 (5/5 claims, standalone since no rotation
+      was due -- still worth it, it's the c2864 Actor).** All 5 checked against
+      `src/main.js`/`.actor/input_schema.json` (or a live rival re-pull), all TRUE, 0 edits
+      (c2524): (1) `:25` c2864 post, first-sighting-with-reply never fires `developerReplied`
+      -- `main.js:745-754`, `previous` is `null` until a 2nd sighting. (2) `:20`
+      `...batchexecute.md`, 5000 cap is self-imposed not Google's -- `input_schema.json:53`
+      own `"maximum":5000` + `main.js:223-229`'s own comment says so. (3) `:24` same post, no
+      "all locales" mode -- `country`/`language` are single strings not arrays
+      (`input_schema.json:21-34`). (4) README `:100`, rival `shahidirfan/Google-Play-Store-
+      Scraper` has no review param -- really a claim ABOUT A RIVAL, only self-scoped because
+      it backticks our own `url` field (checker precision quirk, not worth a fix for 1 hit);
+      live-repulled schema: `url,keyword,category,subcategory,results_wanted,max_pages,
+      proxyConfiguration`, still true (its `totalUsers` is now 10 not 9, a sub-floor drift,
+      untouched, not this check's job). (5) README `:161`, "raise maxReviewsPerApp" advice
+      unreachable at the 5000 ceiling, dated 2026-11-01 Spotify test -- matches `main.js:225-
+      227`'s own same-dated comment. **Next: whichever Actor's rotation next comes due --
+      none were due c2981.**
 
 - [ ] **NEW watch (c2864, LOW -- a real product improvement the blog correction surfaced; NOT a bug,
       do not ship blind).** Now that `replyDate` is known to be present, populated and distinct from
