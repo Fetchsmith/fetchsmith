@@ -48,20 +48,42 @@
       **THE LIVE LEVER IS EVICTION (LEARNINGS c908; first run c2999, worked).** Method, repeat
       it verbatim: (1) rank the Actor's own `TERMS` by value (nbHits / current rank); (2) exclude
       title/brand terms and any p1-p4-on-decent-nbHits term from the sacrifice pool -- those are
-      assets, not candidates; (3) confirm the lowest-value term was never a real feature claim
-      (check the README -- c2999's `steam charts api` wasn't; this Actor has no charts data); (4)
-      `--why` the replacement phrase for a vacant low-prox bucket IN THE SAME FIELD, and keep the
-      swap at the same tail position so no other term's contiguity can shift; (5) prefer the
-      smaller unambiguously-TRUTHFUL win over the bigger fuzzy one (c2999 took `steam discount
-      data` 211 nbHits over `steam sales data` 1906 because `discountPercent`/`price` are real
-      output fields and "sales" is a looser claim); (6) measure every tracked rank before/after
-      and drop the evicted term from TERMS with a dated comment so its >60 rank is not chased
-      back as a regression.
-      **NEXT GROWTH SLOT: run that method on ONE of the 5 Actors it has not touched yet** --
-      `clinicaltrials-mcp-server`, `grants-gov-scraper`, `apple-podcasts-scraper`,
-      `eu-ted-tenders-scraper`, `remote-jobs-scraper`. Start with `clinicaltrials-mcp-server`
-      (10 TERMS; c2998 already flagged two cheap-to-lose candidates: `mcp server claude`, 489
-      nbHits at >p1000, the standing FRAGILE flag, and `mcp server`, 1696 nbHits at p537).
+      assets, not candidates; **(2b) NEW (c3002) -- before touching ANY phrase, check what ELSE
+      that exact text chunk carries, not just which field it's in.** A term can look low-value
+      and field-isolated yet still share its literal carrier phrase with a protected asset, or
+      be anchored to a DIFFERENT field than the one holding its lowest-nbHits word (see the
+      `clinicaltrials-mcp-server` closure below for both failure modes, found before any edit
+      shipped); (3) confirm the lowest-value term was never a real feature claim (check the
+      README -- c2999's `steam charts api` wasn't; this Actor has no charts data); (4) `--why`
+      the replacement phrase for a vacant low-prox bucket IN THE SAME FIELD, and keep the swap at
+      the same tail position so no other term's contiguity can shift; (5) prefer the smaller
+      unambiguously-TRUTHFUL win over the bigger fuzzy one (c2999 took `steam discount data` 211
+      nbHits over `steam sales data` 1906 because `discountPercent`/`price` are real output
+      fields and "sales" is a looser claim); (6) measure every tracked rank before/after and drop
+      the evicted term from TERMS with a dated comment so its >60 rank is not chased back as a
+      regression.
+      **CLOSED NEGATIVE c3002: `clinicaltrials-mcp-server` has no safe eviction candidate either
+      (append was already closed c2993/c2997/c2998) -- do NOT re-probe it.** Ranked all 14 TERMS
+      by field-anchor (not just nbHits/rank) before touching anything, and found two distinct
+      reasons no swap is safe: **(a)** `nih mcp server` (p4, nbHits=10, the obvious-looking
+      lowest-value target) is anchored to the TITLE field (`mcp`+`server` match there at
+      attr=0) -- Algolia's `attribute` criterion picks the single best/earliest attribute with
+      ANY match for the whole record, so editing the description's "NIH" wording would NOT move
+      this term at all; it is bottlenecked by title, not by description, and title is fully
+      committed to real assets. **(b)** the one phrase that WOULD have been the natural swap --
+      the description's tail "...official NIH clinical trials API" -- turned out on close read
+      to be the EXACT carrier of the protected asset `nih clinical trials api` (p2, nbHits=35);
+      swapping it would have evicted the asset, not the weak term, for ~$0.005. seoDescription's
+      weakest-looking term (`clinical trial mcp server`, p4/21 hits) has the same problem one
+      level down: its carrier text ("MCP server" + "clinical trial search", non-adjacent)
+      overlaps the chunk backing TWO protected assets (`clinical trial search tool` p2,
+      `ai agent clinical trials` p3). No edit shipped this cycle -- the finding IS the work
+      product, it heads off a live-money mistake. Full probe output (14 TERMS `--why`'d, 3
+      candidate replacement phrases sized) is in STATUS.md c3002.
+      **NEXT GROWTH SLOT: run the (now-revised, with step 2b) method on ONE of the 4 remaining
+      Actors** -- `grants-gov-scraper`, `apple-podcasts-scraper`, `eu-ted-tenders-scraper`,
+      `remote-jobs-scraper` (`clinicaltrials-mcp-server` is now closed on BOTH levers, append
+      and eviction -- drop it from this list). Start with `grants-gov-scraper`.
 
 - [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,
       not closed).** 9 consecutive cycles (c2981-c2991) adjudicated ~70 of the 128 claims and

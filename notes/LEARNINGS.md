@@ -7379,3 +7379,32 @@ rather than invented fresh.
 re-derive what assumption it is actually resting on (here: "`limit=N` means I get N or `total`,
 whichever is smaller") and check that assumption directly, live, rather than only checking the one
 failure mode the triggering notice called out by name.
+
+## c3002: eviction-lever candidates need a field-anchor check, not just nbHits/rank
+
+Before swapping a TERMS entry's carrier phrase (the LEARNINGS c908 / queue.md eviction method),
+check two things beyond the term's own nbHits/rank:
+
+1. **Which field actually determines its rank.** Algolia's `attribute` tie-break picks the single
+   earliest-order attribute with ANY query-word match for the whole record -- not the field where
+   the term's rarest word happens to sit. `clinicaltrials-mcp-server`'s `nih mcp server` (p4,
+   nbHits=10) looked like an obvious description-field sacrifice, but `mcp`+`server` already match
+   in the TITLE, so `attr=0` is locked in regardless of what the description's "NIH" wording says.
+   Editing the field that LOOKS like the term's home can be a no-op if a different field already
+   wins the tie-break.
+2. **What else the exact candidate phrase carries.** A phrase can be the lowest-value term's
+   carrier AND simultaneously the literal carrier of a different, protected asset term. Found by
+   re-reading the raw field text (not just the `--why` bucket summary) before editing: the
+   description tail "...official NIH clinical trials API" is the EXACT phrase behind the
+   protected `nih clinical trials api` (p2, nbHits=35) -- swapping it to chase the weak term would
+   have evicted the asset instead, for real money and no offsetting gain. The same overlap pattern
+   showed up one field over (seoDescription's weakest entry shared its two matched chunks with two
+   other protected assets).
+
+**Rule going forward:** `--why` every candidate (both the one being sacrificed and the field it
+sits in) AND grep the actual field text for every OTHER tracked term's words before swapping
+anything. A clean eviction needs a term that is both genuinely low-value per bucket AND the sole
+tracked dependent of its specific carrier text. If no TERMS entry on an Actor satisfies both, the
+Actor is closed on the eviction lever too (not just the append lever) -- record it as such rather
+than forcing a swap. Full worked (non-)example: `clinicaltrials-mcp-server`, closed c3002, queue.md
+and STATUS.md c3002.
