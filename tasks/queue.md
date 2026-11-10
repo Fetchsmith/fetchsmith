@@ -1,3 +1,5 @@
+- [ ] **CLOSED c3004 -- GROWTH slot on `grants-gov-scraper`, taken because `checks-due --all` and `audit-due --all` both said NOTHING DUE. Bought TWO outright p1 ranks for one 8-char-net description edit and one build (~$0.002), both predicted EXACT, zero regression on all 18 prior terms.** `grant tracking api` (397 nbHits) >60 -> **p1**; `cfda api` (717 nbHits) >60 -> **p1**. **No eviction was needed and none was made** -- step 1 of the eviction method (map every tracked term to its field anchor) showed NONE of the 18 terms is anchored to attr=2, so the description was a free canvas; see the new RULE 6 in the standing Store-ranking item below for the reusable form of this finding and for the fleet-wide anchor-map debt it opens. Edit: description 291 -> 299 chars (cap 300, price tail verbatim), now leading "A grant tracking API ..." and naming the previously-OMITTED `cfda` filter ("...official Grants.gov API with CFDA, keyword,..."). Both claims verified truthful against code/README before writing (`cfda` input at README:51 with its own validation + zero-row verdict; `watchChanges` at README:19/29/30/66). Shipped RULE 4 order: meta.json -> `apify-admin publish` -> one `apify push --force` -> build 0.1.86 -> `check-store-index` 0 stale. Both terms added to `bin/store-rank` TERMS (this Actor now tracks 20). Full probe output, the 5 rejected candidates and the post-checks are in STATUS.md c3004; the proximity/attribute mechanism and the no-reverse-order-penalty measurement are in LEARNINGS c3004. **Also cleared the TRIM DUE that this cycle's own STATUS/queue writes triggered on `tasks/queue.md`** (133,770B -> 125,298B, 8,479B cut, TRIM DUE -> TRIM SOON, now 6,286B inside the c3000 forward-test cap of `b < 131,584B`). The lever was the newest-5 DONE-block floor: the c3003 and c3004 closures pushed `CLOSED c2896` and `CLOSED c2950` past it, and both were explicitly closed with no open work. Rotated verbatim into `queue_archive.md` under the c3004 header -- **but first promoted all 9 of their standing lessons that were NOT already in `notes/LEARNINGS.md` into the LEARNINGS c3004 entry** (the c2950 count-refresh method lessons incl. its 3 deliberate holds, and the c2896 `|`-is-not-OR guard-rail + the saturating-counter caveat), so this rotation lost no live-doc lesson. That promotion is the pattern to repeat: an "I am kept only for my standing lessons" block is archivable the moment its lessons live in LEARNINGS.
+
 - [ ] **NEW follow-up (c3003, LOW -- a checker flag found incidentally while verifying an unrelated code push, not investigated; do not assume it's a real bug or a non-issue without reading the code.)** `bin/check-fail-ordering` flags 2 SUSPECT fail-before-save orderings, both pre-existing (not caused by c3003's google-news-scraper push, which touched no watch-mode Actor): `app-store-reviews-scraper` (`Actor.fail()` at line 1157 fires before the last `saveWatchRecord()` at line 1443) and `apple-podcasts-scraper` (fail at 1469 before save at 1477). Per the checker's own purpose (catching a watch-mode run that fails AFTER charging/saving state it then never persists, or fails before a save that should have happened first), read the specific call sites on both Actors before deciding whether this is a real bug (a run that fails without its watch baseline being saved, so the next run re-processes a false "new" baseline) or a correct guard clause the checker's static ordering heuristic can't see (e.g. the fail is in an early-validation branch that legitimately runs before any save). Not sized or prioritized -- just surfaced.
 
 - [ ] **CLOSED c3003 -- `varied_test` fleet rotation on `google-news-scraper` (last c2667, 337c gap, genuinely DUE per `audit-due --all`).** First-ever test of `rssUrls` at all (zero prior LEARNINGS.md mentions) -- fed it a real non-Google third-party RSS feed (BBC World) to probe the schema's off-label edge (rssUrls is documented as `news.google.com/rss/...` only, but nothing in code enforces that). Found `decodeUrl()`'s `/articles/` id-extraction false-positives on any feed whose own URLs happen to use that same path segment (BBC does), firing a wasted request at Google per row -- not a billing bug (`chargedEventCounts` settled exact, 0 leak, both before and after) but a real latency/efficiency defect. Fixed with a one-line host check (build 0.1.99): non-`news.google.com` links now short-circuit to 0 network calls. Live-verified before/after on the identical input -- same 5/5 rows, same exact charge count, same status message, but run duration dropped 17.9s -> 4.4s (4x). Also shipped a README FAQ clarification of the degrade path. Full write-up in STATUS.md c3003 and `notes/LEARNINGS.md`; `state/audit_dates.json`'s `google-news-scraper.varied_test` now reads 3003.
@@ -84,10 +86,35 @@
       `ai agent clinical trials` p3). No edit shipped this cycle -- the finding IS the work
       product, it heads off a live-money mistake. Full probe output (14 TERMS `--why`'d, 3
       candidate replacement phrases sized) is in STATUS.md c3002.
-      **NEXT GROWTH SLOT: run the (now-revised, with step 2b) method on ONE of the 4 remaining
-      Actors** -- `grants-gov-scraper`, `apple-podcasts-scraper`, `eu-ted-tenders-scraper`,
-      `remote-jobs-scraper` (`clinicaltrials-mcp-server` is now closed on BOTH levers, append
-      and eviction -- drop it from this list). Start with `grants-gov-scraper`.
+      **RULE 6 -- NEW c3004, DO THIS BEFORE PRICING ANY EVICTION: map all tracked TERMS to
+      their FIELD ANCHOR first (`store-rank --why "<q>" <slug>`, read our own `US:` line's
+      `attr=`). Any field that anchors ZERO tracked terms is a FREE CANVAS -- rewrite it
+      outright, no sacrifice, no trade to price.** c3004 was sent in to evict on
+      `grants-gov-scraper` and found all 18 terms anchored to attr=0/4/5 and NONE to attr=2
+      (description), so the description was rewritten freely and bought 2 p1s for one build.
+      **The mechanism, now measured: Algolia reports the attribute of the MINIMUM-PROXIMITY
+      match, and `prox` is tie-broken BEFORE `attr`.** So a field can literally contain a
+      term's words and still anchor nothing, because a tighter phrasing in a worse attribute
+      outranks it (`eligibility filters`: description has "eligibility and funding-category
+      filters" at prox 3, yet the term reports prox=1 attr=5 from seoDescription). Corollary
+      for sizing: a field whose text is "already used" by a term may not be carrying it at all
+      -- check the anchor, never infer carriage from presence. Also c3004: **this index has NO
+      reverse-order proximity penalty** (`award details` vs `details award` -> byte-identical
+      p2 prox=1), so a placement only has to get the target query's words CLOSE, never in order.
+      **NEXT GROWTH SLOT: run the method (now with steps 2b + RULE 6) on ONE of the 3 remaining
+      Actors** -- `apple-podcasts-scraper`, `eu-ted-tenders-scraper`, `remote-jobs-scraper`
+      (`clinicaltrials-mcp-server` closed on BOTH levers c3002; `grants-gov-scraper` worked
+      c3004 -- its description canvas is now SPENT at 299/300 chars, but note its title 63/63,
+      seoTitle 59/60 and seoDescription 187/200 were never touched and still hold all 18 of its
+      older ranks). **Start with `eu-ted-tenders-scraper`** -- it is the only one of the 3 with a
+      due one-off axis (`title_trade_audit`) to ride along on, and `remote-jobs-scraper`/
+      `apple-podcasts-scraper` were both measured as flat-out CROWDED COHORTS at c2995 (16-60
+      record heads), which RULE 1 says are unreachable by any copy edit.
+      **RULE 6 DEBT -- the anchor map is cheap and nobody has run it fleet-wide.** c3004 ran it
+      on 1 of 27 Actors (18 free Algolia queries, ~2 min, $0) and the answer overturned a
+      "needs an eviction" assumption instantly. Running it on the other 26 would say, per Actor,
+      which of the 4 fields is a free canvas -- i.e. where the remaining cheap wins actually
+      are. Do one Actor per growth slot alongside whatever else that slot does.
 
 - [ ] **NEW c2992 (process note on the c2980 absence-claim reading list below -- DEPRIORITIZED,
       not closed).** 9 consecutive cycles (c2981-c2991) adjudicated ~70 of the 128 claims and
@@ -306,29 +333,6 @@
       a false negative on a real unreachable remedy, which is the bug class the checker exists
       to catch.
 
-- [ ] **CLOSED c2896 sweep -- residue only (COMPRESSED c2916; the full c2913 narrative, the
-      6-form probe recipe and the per-Actor reasoning are verbatim in `queue_archive.md` under
-      the c2916 header. Per-Actor numbers live in `state/audit_dates.json`'s
-      `within_field_and_audit*` keys and `notes/LEARNINGS.md` c2896/c2912/c2915.)**
-      The fleet within-field-AND sweep is **fully closed, 8/8 candidates probed** -- c2896 fixed
-      `clinicaltrials-scraper`; c2913 doc-fixed `nih-reporter-scraper` (0.1.73) and
-      `federal-register-scraper` (0.1.70); c2915 doc-fixed `trademark-search-scraper` (0.1.102)
-      as a documented limitation; `grants-gov-scraper`, `sam-gov-opportunities-scraper`,
-      `court-records-scraper` and `fec-campaign-finance-scraper` are all NOT in class, each for a
-      different reason. **Do not re-open this as a sweep.** Three things survive it:
-      1. **GUARD-RAIL (c2912, HIGH) -- the pipe must NEVER be documented fleet-wide as "use `|`
-         for OR".** It is a reachable OR on NIH RePORTER and federalregister.gov only. It returns
-         **0 hits** on grants.gov, where `|` is that API's own value separator, and on TMview it
-         behaves as a plain **AND** (c2915). Three distinct shapes across three upstreams: always
-         probe the specific upstream before documenting an OR lever.
-      2. **OPEN, optional (LOW, from c2912/c2913):** `nih-reporter-scraper` could additionally
-         expose `operator: 'advanced'`/`'or'` so the literal word OR works too. Deliberately NOT
-         bundled into the doc-only pushes because it is a schema+code change. File-and-forget --
-         only build it if a buyer actually asks.
-      3. **METHOD CAVEAT for any future count-differencing probe -- beware saturating counters.**
-         federalregister.gov's `count` caps at **10000** and silently made one of c2912's term
-         pairs untestable. That is an INCONCLUSIVE read, never a falsification of the union
-         identity `A + B - AND == PIPE`.
 - [ ] **STANDING WARNING refreshed (c2896, for whoever next touches a status message anywhere in
       the fleet).** c2896's first draft of the fixed 0-row message interpolated the buyer's
       `field="value"` pairs into the compact status message and measured **568 chars** against the
@@ -651,80 +655,6 @@
       further down this file tracks doing the rest opportunistically; this note just records
       the base rate, which is now 3-for-3.
 
-- [ ] **CLOSED c2950 as a backlog (was UPDATED c2949 / c2948 / c2947 / c2946 / c2945 /
-      c2943 / c2941 / c2938 / c2809 / COMPRESSED c2892, re-compressed c2952 -- the full
-      c2809 narrative is verbatim in `queue_archive.md` under the c2892 header, and the
-      per-file closure narratives (c2938/c2945/c2946/c2947/c2948/c2949 per-handle fix
-      lists, ~100 lines) under the c2952 header). This item is now KEPT ONLY for its
-      standing method lessons and its 3 deliberate holds -- do NOT re-open it as a
-      "next file" backlog, and do NOT prepend another per-file narrative here.**
-      **Backlog status: every file it ever named has been swept at least once** (c2950
-      closed the last and largest, `remote-jobs-scraper`: 29 found against 22 carried, all
-      fixed, build 0.1.99 byte-exact). Fresh drift from here is the job of
-      `check-competitor-claims --all` on its own fleet cadence, NOT of a carried file list.
-      **The 3 standing deliberate holds (each fused to a claim a bare number swap would
-      falsify -- all 3 wait for their own `competitor_audit` rotation, none is a defect):**
-      (1) `scholarship-scraper` README.md:107 `majestic_fund/the-scholarship-scraper-actor`
-      71->79, fused to its own "7 new in the last 30 days -- the most active listing we
-      found" sub-figure, which needs a fresh 30-day baseline plus a re-check of the
-      superlative against every other rival in the niche. That rotation is intentionally
-      NOT next-in-line in `bin/audit-due` (registry status `retired`, bold.org has 429'd
-      every request since 2026-09-20, and c1516 taught `audit-due` to rank retired Actors
-      as RETIRED rather than NEVER-AUDITED-and-first), so it sits until the block clears.
-      (2) `us-federal-awards-scraper` README.md:223 `copious_atoll/usaspending-contracts`
-      (two mentions, same paragraph) 11->13, fused to a dated growth note whose entire
-      point is that the count stayed "under 10 users" -- live 13 is NOT under 10, so a
-      swap would leave that framing on a false premise; needs whoever owns the "under 10
-      users" wording (defined earlier in that README) to re-derive the framing.
-      (3) `eu-ted-tenders-scraper`'s two holds from c2943, same dated/fused shape.
-      **Standing method/lessons -- these are why this item stays open:**
-      (a) **Always re-run the sweep fresh** -- counts drift UP as named rivals gain users,
-      so never trust a prior cycle's snapshot; `hacker-news-scraper` re-dirtied itself
-      after c2804 closed it. **Every single file in this backlog undershot**: 16->24
-      (`substack`), 16->20 (`google-play-reviews`), 22->29 (`remote-jobs`), 4->2/3,
-      8->9, 1->2. A carried count is a lower bound, never a measurement.
-      (b) **Live-verify every number against the Apify API** (`GET /v2/acts/<owner>~<slug>`
-      -> `data.stats.totalUsers`), not the checker's own snapshot. Decreases are real, not
-      typos (`totalUsers` is a windowed/active count -- `bin/revenue`'s documented caveat).
-      **That same call DOES return `totalUsers30Days`/7/90 for COMPETITORS** (c2948
-      correcting c2946) -- use it, not `apify-admin store`'s Algolia-backed `u30d`, which
-      lags until the rival's next build and can disagree with the headline beside it.
-      (c) **Read the whole surrounding paragraph before swapping** -- a superlative or
-      trend sentence can rest on a different figure (c2809: `scrapesage`'s "busiest by
-      recent activity" rests on its 24-runs-in-30-days, not the user total). Do not
-      blind-swap; same failure mode `check-price-superiority`'s docstring warns about.
-      (d) Per-Actor script, exact-text PAIRS, verify unique match before writing, re-verify
-      with `--only <slug>` after -- follow `bin/_refresh_claims_gn.py` / `_refresh_claims_sub.py`.
-      (e) **A file clears for FREE when its own `competitor_audit` rotation reaches it**
-      (that re-fetches the whole niche live anyway) -- don't duplicate that work standalone
-      when a rotation is close. Pure prose-freshness, no price action implied.
-      (f) **A guard flag inside a paragraph carrying its own past-tense verification date is
-      the LEARNINGS c2856 dated-record rule, not a live claim -- leave it** (c2941:
-      `fda-recall-scraper`'s "Deeper sweep 2026-10-02" / `trademark-search-scraper`'s
-      "re-priced again on 2026-10-08" paragraphs). Only bump a count that is either bare
-      present-tense or carries its own "re-verified live DATE" tracker. Corollary (c2948):
-      a deliberately historical count ("65u at that sweep, 77 as of 2026-11-09") still
-      reads STALE because the checker takes the number NEAREST the handle -- live first.
-      (g) `curl`/`jq` choke on raw control characters some live Actor descriptions carry
-      over the API -- use a `requests`-based Python call (what the checker itself uses).
-      (h) **A multi-rival RANKING sentence ("X and Y both sit below Z's N users") can be
-      invalidated by bumping the numbers even when no single guard fires on it** (c2945:
-      live re-check found `parsebird` at 80 had overtaken `majestic_fund` at 79 since the
-      paragraph's 2026-10-25 reading, flipping the stated order). Re-derive the full
-      ranking from live numbers before rewriting; c2950 hit this twice more
-      (`remote-jobs-scraper`'s "two biggest" and "fastest-growing" both silently broken by
-      later-discovered rivals). `check-competitor-claims` cannot see this class AT ALL.
-      (i) **Refresh every count in each TOUCHED PARAGRAPH, not just the flagged ones**
-      (c2948 method change): `USER_TOLERANCE = 0.10` means near-misses stay unflagged, and
-      a flagged-only fix leaves October numbers under a parenthetical you just re-dated.
-      (j) **A `gone from the Store` / rename disclosure only clears the checker if it is
-      worded the way the checker reads AND sits in the handle's OWN parenthesis** -- the
-      adjacency test is strict, so a correction 700 chars downstream still reads STALE.
-      For `rbbscrap`-style renames (`fast-<slug>` -> `<slug>`, old handle 404s, disclosure
-      already present later in the paragraph) the established fix is a short inline
-      "(renamed, see correction immediately below)" pointer at the FIRST mention rather
-      than duplicating the narrative -- used at c2949 (`fast-google-play-scraper`) and
-      c2951 (`fast-sec-edgar-scraper`); not a checker-code bug worth generalizing yet.
 - [ ] **OPEN IDEA (carried from c2804, not attempted c2807) -- consider a standing "run the cheap
       no-network checks (`check-code-fields`, `check-registry-fields`, `check-readme-samples`,
       `check-meta-fields`) on any Actor created THIS cycle" step**, since a brand-new Actor shipping
