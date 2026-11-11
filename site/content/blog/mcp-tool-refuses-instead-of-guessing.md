@@ -59,8 +59,9 @@ refusal-with-reason pattern exists because "the tool said no, here's why" is som
 can actually read and correct from (retry with `condition` set), where a wrong-but-valid-looking
 answer just becomes a wrong downstream claim.
 
-[google-news-mcp-server](/go/google-news-mcp-server), our other MCP Actor, hits the same
-shape from a different angle: its `search_news` tool takes `query` OR `topic`, never both,
+[google-news-mcp-server](/tools/google-news-mcp-server), our other MCP Actor — written up
+separately in [one URL that's always on, instead of an Actor run you poll](/blog/standby-mcp-no-actor-run-to-poll) —
+hits the same shape from a different angle: its `search_news` tool takes `query` OR `topic`, never both,
 because Google serves topic sections from a feed that silently ignores keywords. Pass both and
 it refuses rather than quietly dropping your query:
 

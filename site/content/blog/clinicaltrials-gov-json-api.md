@@ -69,6 +69,8 @@ Two `centralContacts[]` and per-location `contacts[]` blocks come back on every 
 
 If you just want the rows — with phase/status/site filters, a `rowsPerStudy: "site"` mode for one-row-per-trial-site output, and the contact fields already stripped — [clinicaltrials-scraper](/go/clinicaltrials-scraper) runs on Apify at $0.0015/result, no start fee.
 
+If you want this registry as a live tool for an agent rather than as a batch of rows, the same API sits behind [clinicaltrials-mcp-server](/tools/clinicaltrials-mcp-server): one `search_clinical_trials` tool over Streamable HTTP, a flat $0.005 per call, and no charge when the call is ambiguous or returns nothing. Why it refuses an underspecified call instead of guessing at one is in [an MCP tool that refuses bad calls instead of guessing](/blog/mcp-tool-refuses-instead-of-guessing).
+
 There's a fourth trap that's quieter than any of these, and it lives in the date filters rather than the query parameters: about 42% of sponsor-entered dates in this registry carry no day at all, and inside a `RANGE[]` filter that month collapses onto the 1st — so a window starting on the 5th silently drops every one of them. Measurements and the workaround are in [why a 4-day window returns more trials than a 21-day one](/blog/clinicaltrials-month-precision-dates).
 
 The silent `pageSize` cap above is the same class of failure as openFDA's skip cap and NIH RePORTER's offset wall — see [Eight government JSON APIs that need no key](/blog/free-government-data-json-apis-no-key) for the cross-API comparison across all eight government APIs we build against.

@@ -111,6 +111,8 @@ Nothing here is rate-limited in a way that showed up across the ~30 requests thi
 
 [Google News Scraper on Apify](/go/google-news-scraper) wraps all four URL shapes: multiple queries or topics per run, locale (`hl`/`gl`/`ceid`) as plain inputs, `when:`/`site:`/exclusion handling, redirect-link decoding to the publisher's real URL, and optional article-text extraction — so the six-field item above arrives as a row with the publisher URL already resolved. Pay only per item returned, no API key, no headless browser.
 
+For an agent asking one live news question mid-conversation, the batch shape is the wrong one — there's a 10-second run to start and poll before any answer comes back. [google-news-mcp-server](/tools/google-news-mcp-server) wraps the same feeds as a single `search_news` MCP tool running in Apify Standby mode: a fixed always-on URL, no run to start, a flat $0.005 per call. The latency difference and the request shape are in [one URL that's always on, instead of an Actor run you poll](/blog/standby-mcp-no-actor-run-to-poll).
+
 The same no-key pattern holds for [Hacker News](/blog/hacker-news-two-public-apis-no-key), [Substack](/blog/substack-full-text-json-api) and [App Store reviews](/blog/app-store-reviews-public-json-api-no-key); the full catalogue is at [fetchsmith.com/tools](https://fetchsmith.com/tools).
 
 ---
