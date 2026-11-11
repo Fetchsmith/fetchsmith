@@ -189,8 +189,9 @@ if (timeSuffix && fixedFeedCount) {
 // answer.
 //
 // The surviving variant — a UNION of two differently-biased sentinel'd requests deduped by article
-// id — was MEASURED cycle 3052 and came back POSITIVE and safe (bin/_rec3052.py + _rec3052b.py, raw
-// in LEARNINGS `## cycle 3052`; NOT yet shipped, see tasks/queue.md `NEW c3052` for the exact spec).
+// id — was MEASURED cycle 3052 (bin/_rec3052.py + _rec3052b.py, raw in LEARNINGS `## cycle 3052`)
+// and SHIPPED cycle 3053 (see the `unionEligible` branch at the `feeds` construction below and the
+// `url2` merge/cap in the feed loop — do not re-measure or re-spec this, it is live code now).
 // Narrow (cutoff-2y) ∪ wide (cutoff-20y), de-duped by /articles/<id>, beat the BEST single request
 // on 5/5 query shapes (+6 climate, +5 bitcoin, +19 python, +1 web scraping, +16 electric vehicles =
 // +47 in-window articles), never lost, and the two requests overlap only 30-65% (Jaccard .296-.654)
@@ -475,8 +476,40 @@ async function decodeUrl(gnUrl) {
   } catch (e) { log.debug(`decode failed: ${e.message}`); decodeFailed += 1; return null; }
 }
 
+// Union-of-two-sentinels (measured cycle 3052, shipped per the `NEW c3052` spec in
+// tasks/queue.md): a bare `before:` alone leaks items newer than its cutoff on Google's RSS
+// search, and worse, different `after:` values return materially different item sets even at
+// identical counts — the ~100-item cap is NOT the limiter. Pairing `before:` with an `after:`
+// sentinel makes Google honour the window exactly (cycle 788/3040), so sending TWO differently
+// biased sentinels and merging by guid recovers in-window articles a single request misses
+// (+47 across 5 query shapes in testing, never a loss). Only fires when `publishedBefore` is the
+// ONLY global date field set — `publishedAfter` already defines a narrower, correctly-honoured
+// window on its own — and the query carries no when:/after:/before: of its own (a customer's own
+// operator always wins, same rule `timeSuffix` already follows below).
+const UNION_NARROW_YEARS = 2;
+const UNION_WIDE_YEARS = 20;
+const unionEligible = Boolean(publishedBefore) && !publishedAfter;
+function yearsBeforeDate(dateStr, years) {
+  const d = new Date(`${dateStr}T00:00:00Z`);
+  d.setUTCFullYear(d.getUTCFullYear() - years);
+  return d.toISOString().slice(0, 10);
+}
+const searchUrl = (q, suffix) => `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix + siteSuffix + suffix)}&hl=${hl}&gl=${gl}&ceid=${ceid}`;
 const feeds = [
-  ...queries.map((q) => ({ query: q, topic: null, url: `https://news.google.com/rss/search?q=${encodeURIComponent(q + excludeSuffix + siteSuffix + (hasOwnTimeOp(q) ? '' : timeSuffix))}&hl=${hl}&gl=${gl}&ceid=${ceid}` })),
+  ...queries.map((q) => {
+    if (unionEligible && !hasOwnTimeOp(q)) {
+      // Both sentinels are derived from the buyer's own cutoff, never from "now" — a 2026 run and
+      // a 2030 run against the same publishedBefore must fetch the same two feeds.
+      const narrowAfter = yearsBeforeDate(publishedBefore, UNION_NARROW_YEARS);
+      const wideAfter = yearsBeforeDate(publishedBefore, UNION_WIDE_YEARS);
+      return {
+        query: q, topic: null,
+        url: searchUrl(q, ` after:${narrowAfter} before:${publishedBefore}`),
+        url2: searchUrl(q, ` after:${wideAfter} before:${publishedBefore}`),
+      };
+    }
+    return { query: q, topic: null, url: searchUrl(q, hasOwnTimeOp(q) ? '' : timeSuffix) };
+  }),
   ...rssUrls.map((u) => ({ query: null, topic: null, url: u })),
   ...topics.map((t) => ({ query: null, topic: t, url: `https://news.google.com/rss/headlines/section/topic/${t}?hl=${hl}&gl=${gl}&ceid=${ceid}` })),
   ...topicsHashed.map((t) => ({ query: null, topic: t, url: `https://news.google.com/rss/topics/${t}?hl=${hl}&gl=${gl}&ceid=${ceid}` })),
@@ -490,7 +523,7 @@ let feedsSkipped = 0; // queries/feeds never reached because the cap/budget stop
 for (const [feedIdx, feed] of feeds.entries()) {
   if (!keepGoing) { feedsSkipped = feeds.length - feedIdx; break; }
   if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
-  log.info(`Fetching feed: ${feed.url}`);
+  log.info(`Fetching feed: ${feed.url}${feed.url2 ? ` (+ wide sentinel: ${feed.url2})` : ''}`);
   let items = [];
   try { items = parseRss((await http(feed.url)).body).slice(0, perQuery); }
   catch (e) {
@@ -499,10 +532,24 @@ for (const [feedIdx, feed] of feeds.entries()) {
     if (timeBudgetExceeded) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); break; }
     log.warning(`Feed failed (${feed.url}): ${e.message}`); erroredFeeds.push(feed.query || feed.topic || feed.url); continue;
   }
+  // The sibling sentinel is additive, never load-bearing: if it fails for any reason (429, time
+  // budget, transient network), fall back to the narrow feed's own results alone rather than
+  // failing a query that already has a perfectly good answer. One logical feed either way, so
+  // this never inflates emptyFeeds/erroredFeeds/dedupedFeeds or reads as "2 queries" below.
+  if (feed.url2 && timeBudgetOk()) {
+    try {
+      const wideItems = parseRss((await http(feed.url2)).body).slice(0, perQuery);
+      const guids = new Set(items.map((i) => i.guid));
+      for (const wi of wideItems) if (!guids.has(wi.guid)) { items.push(wi); guids.add(wi.guid); }
+    } catch (e) {
+      log.debug(`Wide sentinel feed failed (${feed.url2}): ${e.message} — continuing with the narrow window's results only.`);
+    }
+  }
   log.info(`${items.length} items`);
   if (!items.length) { emptyFeeds.push(feed.query || feed.topic || feed.url); continue; }
   const pushedBefore = pushed;
   let allDuped = true;
+  let feedPushed = 0; // caps THIS query's output at perQuery even when url2 doubled the candidate pool
   for (const [idx, it] of items.entries()) {
     if (!timeBudgetOk()) { log.warning('Approaching the run timeout — stopping early and returning what has been collected so far.'); keepGoing = false; break; }
     if (seen.has(it.guid)) continue; seen.add(it.guid);
@@ -543,6 +590,11 @@ for (const [feedIdx, feed] of feeds.entries()) {
       : {};
     keepGoing = await pushResult({ ...it, url, ...articleRow, ...tickers, position: idx + 1, query: feed.query, topic: feed.topic, feedUrl: feed.url, language: hl, country: gl, scrapedAt: new Date().toISOString() });
     if (!keepGoing) break;
+    feedPushed += 1;
+    // No-op for a normal single-request feed (its raw item count is already <= perQuery), but for
+    // a url2-merged feed this is the only thing stopping the union from doubling the buyer's
+    // "Max articles per query" cap.
+    if (feedPushed >= perQuery) break;
   }
   if (allDuped && pushed === pushedBefore) dedupedFeeds.push(feed.query || feed.topic || feed.url);
 }
