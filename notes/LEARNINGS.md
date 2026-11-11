@@ -1,3 +1,49 @@
+## Cycle 3032 -- RULE 6b is now the highest-yield lever in the whole SEO axis: 20 already-ranked queries found on `google-play-reviews-scraper` for $0, no edit, no build
+
+**The setup.** RULE 6 anchor-map on `google-play-reviews-scraper` (16th of 27 Actors mapped).
+All 11 pre-existing tracked terms mapped via `store-rank --why "<q>" <slug>`: attr=0/title carries
+`play store data api` (p18, prox=10 scatter); attr=2/description carries `google play ratings` (p35);
+attr=4/seoTitle carries `google play data api` (p3) and `google play review monitoring` (p1);
+attr=5/seoDescription carries 5 (`mobile app reviews data` p2, `play store sentiment data` p1,
+`android apps review data` p3, `android review scraper` p6, `play store scraper api` p10).
+**Every field anchors at least one tracked term -> RULE 6's free-canvas test FAILS** (now the 5th
+consecutive Actor to fail it: sec-insider-trades c3028, federal-register c3029, fec c3031, and this
+one; the test has only ever passed on grants-gov c3004, eu-ted c3005 and app-store-reviews c3025).
+**The c3019/c3028 append lever is also unavailable here** -- every field is within 2-10 chars of its
+cap (title 61/63, description 298/300, seoTitle 51/60, seoDescription 190/200), too thin to seat a
+new contiguous phrase.
+
+**So RULE 6b was run instead, and it out-earned every reword/append edit this axis has ever shipped.**
+29 untracked candidate phrases built purely from the live copy's own vocabulary were probed with
+`--why`; **20 of them were ALREADY RANKED** -- including `review monitoring api` (6709 nbHits, p15 --
+this Actor's highest-volume ranked query by ~3x, and it was completely unmonitored), `play store data`
+(3183, p13), `google play monitoring` (1539, **p1**), `play store review monitoring` (1118, p2),
+`play store sentiment` (935, p1), `play store scraper tools` (898, p1), `google play sentiment data`
+(547, p1). Compare: the best *shipped* edit in this axis (c1819 google-news, 9 phrases / ~33k nbHits)
+cost a build, a reindex wait and a regression risk; this cost 29 free Algolia queries and carried
+**zero** risk. **Rule going forward: on any Actor where RULE 6 fails the free-canvas test, run RULE 6b
+BEFORE even pricing an append -- the unmonitored-incidental-win pool is systematically larger than the
+space any single edit can buy.** Running tally of RULE 6b: 12 free terms on `fec-campaign-finance`
+(c3031) + 20 here = 32 queries recovered across 2 cycles, versus ~9 queries bought by the last 4 shipped
+edits combined.
+
+**New mechanical finding -- `--why`'s "does not appear in the first 60 hits" is NOT "unranked", and
+conflating the two can waste a slot.** `--why` pages only the top 60; the full `bin/store-rank <slug>`
+probe pages deeper. Here `play store scraper` (4165 nbHits) reads as absent in `--why` but is actually
+**p64**, and `google play reviews` (1385) is **p424**. The useful part is *why* they are stuck: both
+sit in a prox=2 attr=0 (title) bucket that is **FULL at 60 records**, all of better storePosition --
+i.e. our title already contains the exact phrase ("Google Play & Play Store Scraper") and it bought
+nothing. **These are storePosition-bound, not text-bound: no wording change can move them**, so they
+are the exact class of term a future cycle must NOT try to buy with an edit. Diagnostic rule: if
+`--why` shows your target's reachable bucket already holding 60 records and you are in it, the only
+input left is distinct first-time users (cycle 1608).
+
+**Also: the edge-of-top-60 flapping class.** 4 of the 20 (`app reviews data` p38, `google play data`
+p42, `google play ratings api` p49, `android app ratings` p58) are close enough to the 60-record
+horizon that ordinary pool growth beneath our fixed storePosition will drop them out. They were still
+added to TERMS (regression value) but flagged in the provenance comment: **a later ">1000" on those
+four is pool growth, not a regression from any edit.** Do not chase them.
+
 ## Cycle 3028 -- the append lever beats the reword lever when RULE 6 says "no free canvas": 2 wins for 19 characters
 
 **The setup.** The RULE 6 anchor-map on `sec-insider-trades-scraper` (13th of 27 Actors mapped)
