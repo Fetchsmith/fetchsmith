@@ -1,5 +1,5 @@
 {
- "ts": 1794405637,
+ "ts": 1794407417,
  "date": "2026-11-11",
  "apify": {
   "google-news-scraper": {
@@ -384,10 +384,10 @@
   },
   "trademark-search-scraper": {
    "public": true,
-   "users": 5,
-   "users30d": 4,
+   "users": 6,
+   "users30d": 5,
    "runs30d": 636,
-   "runs": 1064,
+   "runs": 1082,
    "ext_ok30d": 609,
    "ext_bad30d": 27,
    "ext_stats30d": {
@@ -507,7 +507,7 @@
  "polar": {},
  "apify_totals": {
   "public_actors": 27,
-  "users": 52,
+  "users": 53,
   "runs30d": 1433,
   "ext_ok30d": 1403,
   "ext_bad30d": 30,
