@@ -173,14 +173,22 @@ if (timeSuffix && fixedFeedCount) {
 // "honoured on their own" could narrow this backstop to fire only when excludeSites is set, which
 // would ship the 79/100 case straight to customers. Do not narrow it.
 //
-// NOT DONE, deliberately (see tasks/queue.md, cycle 3040): sending a wide sentinel `after:` whenever
-// only `publishedBefore` is set, to get the window honoured server-side. Measured as a real but
-// NON-uniform win, which is why it is not a one-line patch: on `trump before:2018-01-01` the sentinel
-// lifted in-window items 77 -> 100 of the ~100 ceiling, but on `climate before:2015-01-01` in-window
-// yield was identical (21 both ways) — and, decisively, a NARROWER sentinel returned MORE items than a
-// wider one there (`after:2010-01-01` 28 vs `after:1990-01-01` 21), so the sentinel value changes
-// Google's result SELECTION and not merely its filtering. A hardcoded early sentinel is therefore not
-// strictly dominant and needs the PLAYBOOK two-cycle measurement before shipping.
+// NOT DONE, and now CLOSED NEGATIVE (see tasks/queue.md, `NEW c3047`): sending a wide sentinel
+// `after:` whenever only `publishedBefore` is set, to get the window honoured server-side. cycle 3040
+// measured it as a real but NON-uniform win from one sample — on `trump before:2018-01-01` the
+// sentinel lifted in-window items 77 -> 100 of the ~100 ceiling, but on `climate before:2015-01-01`
+// in-window yield was identical (21 both ways), and a NARROWER sentinel returned MORE items than a
+// wider one there (`after:2010-01-01` 28 vs `after:1990-01-01` 21) — so it queued the PLAYBOOK
+// two-cycle sweep before shipping. cycle 3047 RAN that sweep (2 independent sweeps, 5 query shapes,
+// 40 data points, raw in LEARNINGS `## cycle 3047`) and found NO dominant constant exists: absolute
+// years never won outright (`2010` peaked climate/python, `2015` peaked bitcoin, `1990` never), and
+// relative offsets flip direction per query (`climate` peaks at the SMALLEST offset from the cutoff,
+// `bitcoin`/`web scraping` at the LARGEST, `python` in the middle, `trump` ceiling-saturated at ~100
+// regardless). Do NOT re-open this as "just pick the right sentinel value" — that question has no
+// answer. The only untried variant is a UNION of two differently-biased sentinel'd requests deduped
+// by article id, which is monotonically safe where one constant is not; `NEW c3047` lists what must
+// be measured first (real de-dup overlap, and how often this input shape occurs, since it doubles
+// compute/proxy cost on every run that hits this branch).
 // The tolerance is deliberately a full day, not zero: Google evaluates `after:`/`before:` in its own
 // (US Pacific) timezone while `publishedAt` is UTC, so up to ~8h of legitimately in-window articles
 // sit just outside the UTC window at each edge (7-15 in 100 on every query shape, including the ones

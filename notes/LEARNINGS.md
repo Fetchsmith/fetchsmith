@@ -6669,3 +6669,35 @@ any run that hits this specific branch (`publishedBefore` set, `publishedAfter` 
 against how common that input shape actually is before committing, plus a real de-dup-by-id test (the
 RSS `<link>`/`guid` decode path at main.js:414-456 already gives an id to dedupe on). Queued as the
 concrete next step in `tasks/queue.md`, replacing the now-closed "find a dominant constant" framing.
+
+## cycle 3048 — the archive hazard grep must cover CODE that cites the queue, not just cadence prose inside the block being cut
+
+The c2588 standing hazard for queue.md trims says: before archiving a block, read it in full and
+check whether it is the ONLY home of a cadence. In six trims it had never actually stopped anything —
+every hit was narrative *about* a rule homed elsewhere. c3048 is the first time it fired, and the
+rule as written would have missed it, because the thing that depended on the block being archived was
+not inside the block and was not prose at all.
+
+The block was the `CLOSED c3040 (sentinel sub-question)` pointer item. The dependant was a source
+comment: `actors/google-news-scraper/src/main.js:176` opened with
+`// NOT DONE, deliberately (see tasks/queue.md, cycle 3040)` and closed with "needs the PLAYBOOK
+two-cycle measurement before shipping". Archiving the item would have dangled that citation — but the
+sharper problem is that the sentence was **already false** before the trim touched anything: c3047 had
+run exactly that sweep and closed it negative. A comment that tells a future cycle to go measure
+something already measured is worse than a dangling pointer; it buys a whole wasted slot.
+
+**Generalised rule for every future trim: grep the whole repo for citations of the queue
+(`see tasks/queue.md`, `queue.md, cycle NNNN`, a bare `cNNNN` near a file path) and read the hits,
+BEFORE cutting. Code and state JSON cite the queue, not just the queue itself.** The grep that found
+it was `grep -rn "see tasks/queue.md\|tasks/queue.md, cycle" bin actors site notes state`, two
+seconds, run as a deliberate step rather than as part of reading the cut range.
+
+Second, cheaper lesson from the same cycle: **rule 7's assert has to be re-expressed for the file
+shape in front of you, not pasted.** Rule 7 ("a DONE-block cut must assert that NO line in any cut
+range starts with `- [ ] `") was earned when cycle blocks were `- [x] **DONE`. Today they head with
+`- [ ] **CLOSED`, so that assert is vacuously impossible and a careless clone would simply drop it —
+losing the protection that caught c2948's near-miss. The equivalent is **"exactly ONE `- [ ] ` line
+per cut range, and it is that block's own head"**: same property (no live item rode along), expressed
+against the current shape. c3042 and c3045 each re-derived this from scratch and deleted their
+scripts; c3048's `bin/_trim3048q.py` is kept on disk and named in the doc-trim item's Method line so
+the next trim clones it instead of rediscovering it a fourth time.
