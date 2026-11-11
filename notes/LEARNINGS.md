@@ -6894,3 +6894,35 @@ burning a round-trip on a guaranteed-dead path and, worse, telling buyers in the
 "Re-run with proxyConfiguration enabled (residential group)" -- advice that would cost them money
 and cannot work. **Before writing a proxy/retry fallback, confirm the group is in
 `plan.availableProxyGroups`, and never emit remediation advice the account cannot actually perform.**
+
+## c3068 -- RULE 6b: the batch tool's reliability is ACTOR-dependent, not nbHits-dependent; and a phrase a past cycle "measured and declined" is still an untracked win
+
+**Two cycles, opposite results, same tool.** c3059 found `bin/store-price`'s `live`/`pred` columns
+flat wrong on 6 of 24 candidates and blamed nbHits, writing a caveat that batch-vs-`--why` agreement
+is "untested on any candidate with nbHits above ~1000". c3067 then found a false positive at only
+187 nbHits, killing that threshold as a bound. This cycle, on `remote-jobs-scraper`, batch and
+`--why` agreed **24/24 -- byte-identical on all 6 keepers and all 18 rejections, including four
+candidates at nbHits 6689-12065.** So the variable is not the query's popularity: it is the Actor
+(c3067's `clinicaltrials-mcp-server` disagreed on 7 of 22, this one on 0 of 24). **There is no
+cheap predictor of which case you are in, so the operational rule does not relax -- `--why` every
+candidate, including the ones batch screens out. At ~1.5s per call, 24 candidates is ~36 seconds;
+the cost of skipping it is publishing a provenance comment full of ranks that do not exist.**
+
+**The more valuable, more general lesson: a declined EDIT is not a reason to leave a live RANK
+untracked.** The biggest keeper of this slot -- `remote job postings`, 6689 nbHits -- was not a new
+discovery. Cycle 1820 had measured it itself, at p27, and written it into the provenance comment as
+"already ranked p27, too crowded to improve cheaply". That judgement was correct *about the edit*
+and c1820 rightly spent its characters elsewhere. But it then never added the phrase to `TERMS`, so
+a live top-40 ranking went unmonitored for ~1250 cycles (and has since drifted p27 -> p39, which is
+exactly the kind of movement `TERMS` exists to catch). **TERMS is a monitoring list, not a trophy
+case -- it should hold every query we rank on, whether we earned it deliberately, inherited it, or
+decided it was not worth improving. When sweeping an Actor, grep its own older provenance comments
+for measured-and-declined phrases before curating new n-grams; they are the cheapest keepers on the
+board because someone already did the measurement.**
+
+**Also calibrate 6b payout expectations by prior-shopping depth.** This slot kept 6, against 13-20
+on recent 6b slots, and that is not a failed cycle: `remote-jobs-scraper` is the most heavily worked
+Actor on the c3056 backlog (c1820 shortlisted 36 candidates and shipped a 10-phrase
+seoTitle/seoDescription rewrite; c2023 spent its description field to the 300/300 char cap). The
+cheap vocabulary really was mostly taken. Expect low single digits on any Actor with a prior
+SEO-attribute sweep on record, and do not chase a bigger number by loosening the top-60 bar.
