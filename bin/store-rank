@@ -988,7 +988,36 @@ TERMS = {
     # (3463 hits, p13), "pay once per product" (2306, p1), "watch restocks" (158, p1) — left
     # untracked here since store-rank only probes TERMS entries and these are protect-only, not
     # growth targets, but verified live via `store-rank --query`.
-    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "shopify collection scraper", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data", "inventory tracking api", "retail price data", "price tracking api", "pricing data api", "product pricing data"],
+    "shopify-products-scraper": ["shopify products", "shopify product data", "shopify csv", "shopify collection scraper", "product feed api", "shopify competitor monitoring", "shopify catalog api", "shopify inventory data", "inventory tracking api", "retail price data", "price tracking api", "pricing data api", "product pricing data", "charge per product", "stock counts availability", "collection prices", "counts availability images"],
+    # cycle 3026 (GROWTH, RULE 6 anchor-map, 12th of 27 Actors mapped): ran `--why` on all
+    # 13 pre-existing TERMS -- title(attr=0) carries 4, seoTitle(attr=4) carries 2,
+    # seoDescription(attr=5) carries 7, description(attr=2) carries ZERO, which by RULE 6's
+    # simple test flags description as a free canvas. **It is NOT actually free: RULE 6b,
+    # new finding this cycle** -- a field with zero TRACKED anchors can still be fully
+    # loaded with HIGH-VALUE UNTRACKED incidental wins. Generated every contiguous 2-4 word
+    # n-gram of the live 297/300-char description (123 candidates) and priced all of them
+    # with `store-price --attr 2`: dozens are already p1-p13 live via attr=2, several at
+    # meaningful nbHits -- "charge per product" (8239 hits, p1), "stock counts
+    # availability" (2517, p1), "collection prices" (11587, p7), "counts availability
+    # images" (4524, p6), plus many smaller ones (e.g. "brand type or stock" 1213 p1, "by
+    # price sale brand" 3944 p1) nested in the same two sentences. The field was already
+    # densely optimized by the pre-RULE-6 item (r)/README-era sweeps; RULE 6's anchor test
+    # only screens the TRACKED list, so it cannot see this. A full reword (the RULE 6
+    # playbook's normal move on a free canvas) would need to evict words from one of these
+    # two sentences to fit new target phrases (`shopify price data` 1342/p6->p1,
+    # `shopify sku data` 748/p9->p1, `shopify data api` 903/p9->p2, `shopify stock
+    # scraper` 1429/p6->p3, `shopify variant data` 1036/p59->p1 were all priced as
+    # tgtN=0-1 wins) and verifying 123+ n-grams individually for regressions is more
+    # per-cycle budget than this slot had -- **CLOSED NEGATIVE on the edit, deliberately
+    # not shipped this cycle to avoid a rushed, unverified reword of a field this dense.**
+    # Added the 4 highest-value untracked wins above to TERMS so they are now regression-
+    # protected by this script for any future edit attempt. **Standing rule for RULE 6
+    # going forward: before rewriting a "0 tracked anchors" field, batch-price its own
+    # n-grams first (python one-liner: tokenize the field, generate 2-4-word windows,
+    # `store-price --attr N` the lot) -- a field can be a free canvas for the tracked
+    # list and still be a minefield in practice.** If a future cycle wants the actual
+    # reword, start from this cycle's candidate list and re-verify with `--desc` against
+    # ALL n-grams (not just TERMS) before shipping, the way `--desc` surfaces `!! LOSES`.
     # cycle 1480 (GROWTH, biggest single-cycle visibility gain in this round): the TITLE
     # here was already saturated/maxed, but `seoTitle` (attr=4) and `seoDescription`
     # (attr=5) are SEPARATE verbatim-indexed attributes with their OWN proximity buckets,
