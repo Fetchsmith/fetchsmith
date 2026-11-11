@@ -148,13 +148,39 @@ if (timeSuffix && fixedFeedCount) {
   else log.warning(`${dateFieldsPhrase} applied to your ${queries.length} search quer${queries.length > 1 ? 'ies' : 'y'} only — your other ${feedsPhrase} ${manyFeeds ? 'are fixed feeds and come' : 'is a fixed feed and comes'} back unfiltered.`);
 }
 
-// Backstop for a measured Google bug (cycle 788): `after:`/`before:` are honoured on their own, with
-// `-word` exclusions and with a positive `site:` (0 far-out-of-window items in 100 on each), but
-// combining them with a `-site:` exclusion — i.e. setting `excludeSites` together with an explicit
-// date window — makes the feed leak articles months to YEARS outside the window (7 in 100 measured,
-// incl. a 2011 item). `when:Nd` + `-site:` does not leak, so this is specific to the explicit-date
-// operators. Those rows are pay-per-result items that flatly contradict the filter the customer set,
-// so drop them before decoding/charging rather than bill for them.
+// Backstop for a measured Google bug (cycle 788): combining an explicit date window with a `-site:`
+// exclusion — i.e. setting `excludeSites` together with `publishedAfter`/`publishedBefore` — makes
+// the feed leak articles months to YEARS outside the window (7 in 100 measured, incl. a 2011 item).
+// `when:Nd` + `-site:` does not leak, so the leak is specific to the explicit-date operators. Those
+// rows are pay-per-result items that flatly contradict the filter the customer set, so drop them
+// before decoding/charging rather than bill for them.
+//
+// CORRECTION (cycle 3040): cycle 788's companion claim — that `after:`/`before:` "are honoured on
+// their own (0 far-out-of-window items in 100 on each)" — is FALSE for a BARE `before:`, and the
+// `-site:` framing above must NOT be read as the only trigger. Re-measured live 2026-11-11 across 8
+// queries with no `-site:`, no `excludeSites` and no exclusions of any kind: `before:` alone leaked
+// items newer than its cutoff on 6 of 8 (`climate before:2015-01-01` 79/100 violations, newest item
+// dated the day BEFORE the measurement; `trump before:2018-01-01` 23/100; `bitcoin before:2016-01-01`
+// 9/34; `python before:2020-01-01` 7/42; `web scraping before:2020-01-01` 6/30 and `before:2024-01-01`
+// 6/52). The 2 clean queries were the 2 lowest-volume ones, so it holds where you don't need it.
+// `after:` alone re-verified exact (0 violations in 3 queries), and `after:`+`before:` TOGETHER
+// re-verified exact (0 violations in all 7 range queries tested) — pairing is what makes Google treat
+// `before:` as a bound rather than a ranking hint.
+//
+// Customer impact of the correction: NIL on billing — a publishedBefore-only run sets dropBeforeMs
+// below, so `farOutsideWindow` already discards these before decoding/charging (verified by reading
+// the path, not re-run). The reason the comment still had to be fixed is scope: anyone who trusted
+// "honoured on their own" could narrow this backstop to fire only when excludeSites is set, which
+// would ship the 79/100 case straight to customers. Do not narrow it.
+//
+// NOT DONE, deliberately (see tasks/queue.md, cycle 3040): sending a wide sentinel `after:` whenever
+// only `publishedBefore` is set, to get the window honoured server-side. Measured as a real but
+// NON-uniform win, which is why it is not a one-line patch: on `trump before:2018-01-01` the sentinel
+// lifted in-window items 77 -> 100 of the ~100 ceiling, but on `climate before:2015-01-01` in-window
+// yield was identical (21 both ways) — and, decisively, a NARROWER sentinel returned MORE items than a
+// wider one there (`after:2010-01-01` 28 vs `after:1990-01-01` 21), so the sentinel value changes
+// Google's result SELECTION and not merely its filtering. A hardcoded early sentinel is therefore not
+// strictly dominant and needs the PLAYBOOK two-cycle measurement before shipping.
 // The tolerance is deliberately a full day, not zero: Google evaluates `after:`/`before:` in its own
 // (US Pacific) timezone while `publishedAt` is UTC, so up to ~8h of legitimately in-window articles
 // sit just outside the UTC window at each edge (7-15 in 100 on every query shape, including the ones

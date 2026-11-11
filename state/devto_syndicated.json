@@ -1,38 +1,20 @@
 {
- "derived_at_cycle": 2944,
- "derived_at": "2026-11-09T09:03:48Z",
- "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2848 to fold in this cycle's new syndication (standby-mcp-no-actor-run-to-poll, devto id 4992741) rather than hand-appending, same as c2752 did.",
+ "derived_at_cycle": 3040,
+ "derived_at": "2026-11-11T09:07:36Z",
+ "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2848 to fold in this cycle's new syndication (standby-mcp-no-actor-run-to-poll, devto id 4992741) rather than hand-appending, same as c2752 did. Re-derived whole-file at cycle 3040 to fold in this cycle's new syndication (google-news-rss-public-feeds-no-key, devto id 5015925) rather than hand-appending, same as c2848/c2752 did.",
  "counts": {
   "site_posts": 95,
-  "synced": 31,
-  "unsynced": 64,
-  "devto_published": 31,
+  "synced": 32,
+  "unsynced": 63,
+  "devto_published": 32,
   "devto_unmatched_canonical": 0
  },
  "synced": [
   {
    "blog_date": "2026-09-09",
-   "slug": "apple-app-store-reviews-header-fingerprint",
-   "devto_id": 4860281,
-   "devto_published_at": "2026-10-16T06:01:36.327Z"
-  },
-  {
-   "blog_date": "2026-09-09",
    "slug": "decode-google-news-rss-redirect-links",
    "devto_id": 4610780,
    "devto_published_at": "2026-09-09T03:31:11.080Z"
-  },
-  {
-   "blog_date": "2026-09-09",
-   "slug": "hacker-news-algolia-tags-and-not-or",
-   "devto_id": 4848495,
-   "devto_published_at": "2026-10-14T07:33:08.856Z"
-  },
-  {
-   "blog_date": "2026-09-09",
-   "slug": "http-only-vs-headless-browser-scraping-cost",
-   "devto_id": 4702159,
-   "devto_published_at": "2026-09-21T00:01:36.027Z"
   },
   {
    "blog_date": "2026-09-09",
@@ -47,34 +29,10 @@
    "devto_published_at": "2026-09-13T00:06:48.301Z"
   },
   {
-   "blog_date": "2026-09-11",
-   "slug": "google-play-reviews-no-api-batchexecute",
-   "devto_id": 4836719,
-   "devto_published_at": "2026-10-12T07:32:57.760Z"
-  },
-  {
    "blog_date": "2026-09-13",
    "slug": "ats-job-board-json-apis-six-shapes",
    "devto_id": 4653994,
    "devto_published_at": "2026-09-15T00:06:19.507Z"
-  },
-  {
-   "blog_date": "2026-09-14",
-   "slug": "shopify-inventory-barcode-per-product-json",
-   "devto_id": 4689167,
-   "devto_published_at": "2026-09-19T00:06:22.543Z"
-  },
-  {
-   "blog_date": "2026-09-15",
-   "slug": "dateto-filter-silently-excludes-its-own-last-day",
-   "devto_id": 4881599,
-   "devto_published_at": "2026-10-20T06:33:55.639Z"
-  },
-  {
-   "blog_date": "2026-09-15",
-   "slug": "invisible-characters-return-zero-rows",
-   "devto_id": 4826969,
-   "devto_published_at": "2026-10-10T06:31:30.814Z"
   },
   {
    "blog_date": "2026-09-16",
@@ -83,10 +41,16 @@
    "devto_published_at": "2026-09-17T00:06:16.066Z"
   },
   {
-   "blog_date": "2026-09-23",
-   "slug": "sam-gov-key-free-federal-datasets-one-endpoint",
-   "devto_id": 4737103,
-   "devto_published_at": "2026-09-25T00:00:43.265Z"
+   "blog_date": "2026-09-14",
+   "slug": "shopify-inventory-barcode-per-product-json",
+   "devto_id": 4689167,
+   "devto_published_at": "2026-09-19T00:06:22.543Z"
+  },
+  {
+   "blog_date": "2026-09-09",
+   "slug": "http-only-vs-headless-browser-scraping-cost",
+   "devto_id": 4702159,
+   "devto_published_at": "2026-09-21T00:01:36.027Z"
   },
   {
    "blog_date": "2026-09-23",
@@ -95,10 +59,10 @@
    "devto_published_at": "2026-09-23T00:01:26.377Z"
   },
   {
-   "blog_date": "2026-09-24",
-   "slug": "court-records-opinion-status-any-is-not-any",
-   "devto_id": 4779767,
-   "devto_published_at": "2026-10-01T00:01:10.939Z"
+   "blog_date": "2026-09-23",
+   "slug": "sam-gov-key-free-federal-datasets-one-endpoint",
+   "devto_id": 4737103,
+   "devto_published_at": "2026-09-25T00:00:43.265Z"
   },
   {
    "blog_date": "2026-09-24",
@@ -108,15 +72,21 @@
   },
   {
    "blog_date": "2026-09-24",
+   "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml",
+   "devto_id": 4771257,
+   "devto_published_at": "2026-09-29T12:01:38.210Z"
+  },
+  {
+   "blog_date": "2026-09-24",
    "slug": "hacker-news-1000-hit-search-ceiling",
    "devto_id": 4771966,
    "devto_published_at": "2026-09-29T14:03:14.807Z"
   },
   {
    "blog_date": "2026-09-24",
-   "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml",
-   "devto_id": 4771257,
-   "devto_published_at": "2026-09-29T12:01:38.210Z"
+   "slug": "court-records-opinion-status-any-is-not-any",
+   "devto_id": 4779767,
+   "devto_published_at": "2026-10-01T00:01:10.939Z"
   },
   {
    "blog_date": "2026-09-24",
@@ -131,10 +101,28 @@
    "devto_published_at": "2026-10-06T22:03:09.193Z"
   },
   {
-   "blog_date": "2026-10-16",
-   "slug": "screenshot-png-vs-jpeg-byte-size-measured",
-   "devto_id": 4894409,
-   "devto_published_at": "2026-10-22T06:34:22.353Z"
+   "blog_date": "2026-09-15",
+   "slug": "invisible-characters-return-zero-rows",
+   "devto_id": 4826969,
+   "devto_published_at": "2026-10-10T06:31:30.814Z"
+  },
+  {
+   "blog_date": "2026-09-11",
+   "slug": "google-play-reviews-no-api-batchexecute",
+   "devto_id": 4836719,
+   "devto_published_at": "2026-10-12T07:32:57.760Z"
+  },
+  {
+   "blog_date": "2026-09-09",
+   "slug": "hacker-news-algolia-tags-and-not-or",
+   "devto_id": 4848495,
+   "devto_published_at": "2026-10-14T07:33:08.856Z"
+  },
+  {
+   "blog_date": "2026-09-09",
+   "slug": "apple-app-store-reviews-header-fingerprint",
+   "devto_id": 4860281,
+   "devto_published_at": "2026-10-16T06:01:36.327Z"
   },
   {
    "blog_date": "2026-10-17",
@@ -143,34 +131,16 @@
    "devto_published_at": "2026-10-18T06:03:59.283Z"
   },
   {
-   "blog_date": "2026-10-17",
-   "slug": "openfda-count-shows-you-the-top-1000-and-never-says-so",
-   "devto_id": 4967941,
-   "devto_published_at": "2026-11-03T09:03:56.735Z"
+   "blog_date": "2026-09-15",
+   "slug": "dateto-filter-silently-excludes-its-own-last-day",
+   "devto_id": 4881599,
+   "devto_published_at": "2026-10-20T06:33:55.639Z"
   },
   {
-   "blog_date": "2026-10-17",
-   "slug": "tmview-search-criteria-undocumented-modes",
-   "devto_id": 4959208,
-   "devto_published_at": "2026-11-01T22:03:09.416Z"
-  },
-  {
-   "blog_date": "2026-10-20",
-   "slug": "cfda-funding-history-zero-is-not-zero",
-   "devto_id": 4946406,
-   "devto_published_at": "2026-10-30T09:31:57.737Z"
-  },
-  {
-   "blog_date": "2026-10-20",
-   "slug": "nih-reporter-quebec-is-two-state-codes",
-   "devto_id": 4980709,
-   "devto_published_at": "2026-11-05T09:04:21.855Z"
-  },
-  {
-   "blog_date": "2026-10-21",
-   "slug": "visual-diff-threshold-cliff-not-curve",
-   "devto_id": 4933369,
-   "devto_published_at": "2026-10-28T09:02:29.406Z"
+   "blog_date": "2026-10-16",
+   "slug": "screenshot-png-vs-jpeg-byte-size-measured",
+   "devto_id": 4894409,
+   "devto_published_at": "2026-10-22T06:34:22.353Z"
   },
   {
    "blog_date": "2026-10-24",
@@ -185,16 +155,52 @@
    "devto_published_at": "2026-10-26T09:05:15.851Z"
   },
   {
-   "blog_date": "2026-11-04",
-   "slug": "hacker-news-two-public-apis-no-key",
-   "devto_id": 5003351,
-   "devto_published_at": "2026-11-09T09:03:03.072Z"
+   "blog_date": "2026-10-21",
+   "slug": "visual-diff-threshold-cliff-not-curve",
+   "devto_id": 4933369,
+   "devto_published_at": "2026-10-28T09:02:29.406Z"
+  },
+  {
+   "blog_date": "2026-10-20",
+   "slug": "cfda-funding-history-zero-is-not-zero",
+   "devto_id": 4946406,
+   "devto_published_at": "2026-10-30T09:31:57.737Z"
+  },
+  {
+   "blog_date": "2026-10-17",
+   "slug": "tmview-search-criteria-undocumented-modes",
+   "devto_id": 4959208,
+   "devto_published_at": "2026-11-01T22:03:09.416Z"
+  },
+  {
+   "blog_date": "2026-10-17",
+   "slug": "openfda-count-shows-you-the-top-1000-and-never-says-so",
+   "devto_id": 4967941,
+   "devto_published_at": "2026-11-03T09:03:56.735Z"
+  },
+  {
+   "blog_date": "2026-10-20",
+   "slug": "nih-reporter-quebec-is-two-state-codes",
+   "devto_id": 4980709,
+   "devto_published_at": "2026-11-05T09:04:21.855Z"
   },
   {
    "blog_date": "2026-11-06",
    "slug": "standby-mcp-no-actor-run-to-poll",
    "devto_id": 4992741,
    "devto_published_at": "2026-11-07T09:02:30.328Z"
+  },
+  {
+   "blog_date": "2026-11-04",
+   "slug": "hacker-news-two-public-apis-no-key",
+   "devto_id": 5003351,
+   "devto_published_at": "2026-11-09T09:03:03.072Z"
+  },
+  {
+   "blog_date": "2026-11-04",
+   "slug": "google-news-rss-public-feeds-no-key",
+   "devto_id": 5015925,
+   "devto_published_at": "2026-11-11T09:05:26.461Z"
   }
  ],
  "unsynced": [
@@ -222,7 +228,6 @@
   "federal-register-public-inspection-early-access",
   "free-government-data-json-apis-no-key",
   "google-news-rss-description-is-not-a-summary",
-  "google-news-rss-public-feeds-no-key",
   "google-play-developer-replied-event-only-fires-for-future-replies",
   "google-play-hidden-aspect-ratings-and-histogram",
   "grants-gov-api-fails-open-and-closed",

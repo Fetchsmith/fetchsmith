@@ -6,6 +6,19 @@ tags: webscraping, google-news, rss, api
 tool: google-news-scraper
 ---
 
+> **Correction, 2026-11-11.** The operator list below said `before:YYYY-MM-DD` works. Re-measuring
+> every claim in this post before syndicating it showed that **bare `before:` is not a bound** — it
+> leaked items newer than the cutoff on 6 of 8 queries tested, worst case `climate before:2015-01-01`
+> returning 79 of 100 items post-cutoff with the newest dated *the day before the measurement*.
+> `after:` was honoured exactly (0 violations on 3 queries). Pairing the two fixes it: the same
+> cutoffs with a wide `after:` bolted on returned **0 violations on all 7** range queries tested.
+> The rule to use is **never send `before:` without an `after:`**. Details and the full tables are in
+> [the dev.to write-up](https://dev.to/fetchsmith/google-news-rss-ignored-our-before-date-filter-on-6-of-8-queries-pairing-it-with-after-3ejm).
+> Every other structural claim in this post re-verified unchanged (the two `/rss/topics/` hashes
+> byte-identical, the 302/301 behaviours, the ignored paging params, the ~100 ceiling, the six-field
+> item shape); the corpus counts and byte sizes all drifted, as expected, and are noted inline where
+> they are load-bearing.
+
 The Google News Search API was deprecated in 2011 and nothing official replaced it. Every "Google News API" you can sign up for today is a third-party reseller wrapping the same thing you can call yourself: **four public RSS URLs on `news.google.com`, no key, no login, no quota form.** Here is what each one actually returns, measured live while writing this.
 
 ## The four URL shapes (which are really three endpoints)
@@ -60,7 +73,7 @@ Every paging-ish parameter is ignored silently — same count, no error, no hint
 
 The obvious workaround — slice the query by date so each slice stays under the ceiling — **only helps if the slice itself is under the ceiling.** `q=ai when:1h` still returned **100**: one hour of "ai" news already saturates it. For a term that busy, no date window short enough exists; you have to narrow the *term* (add `site:`, add required words) rather than the window. For an ordinary term, slicing works fine.
 
-Query operators that do work, measured: `when:1h` / `when:1d` / `when:1y`, `after:YYYY-MM-DD` and `before:YYYY-MM-DD`, `site:<domain>`, and `-word` exclusion (`web scraping` 63 items → `web scraping -python` **53**).
+Query operators that do work, measured: `when:1h` / `when:1d` / `when:1y`, `after:YYYY-MM-DD`, `site:<domain>`, and `-word` exclusion (`web scraping` 63 items → `web scraping -python` **53**). **`before:YYYY-MM-DD` is the exception — it is only honoured when paired with an `after:`** (see the correction at the top); on its own it reads as a ranking hint and returns items newer than the cutoff.
 
 ## The search feed is not a "latest news" feed
 
@@ -101,6 +114,7 @@ Three things follow from that shape:
 |---|---|
 | Today's front page, one locale | `/rss?hl=..&gl=..&ceid=..` |
 | Keyword monitoring | `/rss/search?q=<term> when:1d` — not bare `q=`, see above |
+| A specific date range | `after:<date> before:<date>` — **both**, never `before:` alone |
 | A whole subject area (tech, business, sport) | `/rss/headlines/section/topic/<NAME>` — follow the 302 |
 | One city or country's local news | `/rss/headlines/section/geo/<PLACE>` — same 302, same hash space |
 | More than ~100 results for one term | Not possible in one query; narrow the term, then union the feeds |
