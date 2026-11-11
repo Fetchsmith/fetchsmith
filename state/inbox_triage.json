@@ -528,6 +528,17 @@
    ],
    "ts": 1789210367
   },
+  "9be9604c": {
+   "cycle": 3062,
+   "disposition": "replied",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "Apify token-rotation security notice; replied via bin/notify (--once apify_token_rotated_20261111) asking owner for a fresh Apify API token, see cycle 3062 STATUS.md",
+   "subject": "Fwd: Important security update (Action required)",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1794426547
+  },
   "9d15ac17": {
    "cycle": 0,
    "disposition": "triaged-earlier-cycle",
