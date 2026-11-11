@@ -1627,7 +1627,7 @@
     },
     {
       "slug": "google-news-mcp-server",
-      "title": "Google News MCP Server for AI Agents",
+      "title": "Google News MCP Server for AI Agents, News Search API",
       "summary": "MCP server (Apify Standby mode) exposing Google News search as a live tool call for an AI agent: keyword search with Google's own operators, or any of 20 topic sections, in any language edition. Flat fee per call, no start fee. For full article text and resolved publisher URLs in bulk, use google-news-scraper.",
       "status": "live",
       "mcp": true,
