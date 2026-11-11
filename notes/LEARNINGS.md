@@ -6392,3 +6392,44 @@ an assumed prox=1.**
 
 **(5) The two-half VERIFIED test keeps paying for itself, and this is what it looks like when it quietly works.** All three newly-classified bots pass `bin/traffic`'s `NOTBOT` filter (none carries a `bot`/`crawl`/`spider` token -- the c1712 class) and all three DO appear in `pageviews`; `ai-data-product-radar` even walks `/pricing`, `/tools/<slug>` and `/go/<slug>`, the exact paths the CLAUDE.md Polar-escalation gate measures. The gate held anyway because the asset-load half (c32) is behaviour-based, not name-based: 0 asset hits => never VERIFIED => never in the funnel. **Worth recording as a NEGATIVE: the correct response was to verify and ship nothing to `bin/traffic`.** When a UA-blocklist half and a behaviour half disagree, the behaviour half is the one to trust -- and a measured "no fix needed" is a real result, not a wasted check.
 
+
+## cycle 3024 — two traps worth more than the field they were found under: LEARNINGS headers are `cycle NNNN` (so `grep cNNNN` falsely reports a lost lesson), and `sam.gov/api/prod/sgs` 406s on `Accept: application/json`
+
+Closed the LAST field of the c3012/c3016 `skip_note` sweep (`sam-gov-opportunities-scraper` wd
+`coverage`/`stateCodes`, CLEAN — live `index=dbra` row for `AK20260001` run through the Actor's own
+`coverageOf` matched the published sample field-for-field, and the README's duplicate-county prose
+claim re-verified at 28 entries / 26 distinct with exactly `Matanuska-Susitna` and
+`Southeast Fairbanks` doubled). The field itself was a non-event. Two process findings were not.
+
+**(1) Verifying "is this lesson durably recorded?" by cycle LABEL gives a FALSE NEGATIVE in this
+file.** The newest-5-floor trim rule requires confirming an about-to-be-archived cycle's lessons are
+in LEARNINGS.md *before* cutting its queue block. Headers here are written `## cycle 3016`, never
+`## c3016` — so `grep c3016 notes/LEARNINGS.md` returns 0 hits even though the lesson is sitting at
+line ~6296, and `grep c3017` returns 0 for a lesson at ~6328. Taken at face value that reads as
+"the lesson was never recorded, do not archive" (or worse, "re-derive it"). **Always confirm by
+CONTENT — grep a distinctive phrase or symbol from the lesson (`riskScore`, `GID`), not the cycle
+tag.** Queue/STATUS blocks DO use `cNNNN`, which is exactly why the habit is easy to carry over
+wrongly. This is a permanent asymmetry between the three docs, not a one-off typo to fix.
+
+**(2) A 406 is not a dead endpoint.** `sam.gov/api/prod/sgs/v1/search/` rejects
+`Accept: application/json` with `406 Not Acceptable — Acceptable representations:
+[application/hal+json]`. A first probe sent that header out of habit (it is the "polite" default for
+a JSON API) and got a 2-line error body that, skimmed, looks like upstream breakage on an endpoint 5
+Actor dataTypes depend on. Fix: send **no** `Accept` header at all, which is what the checker's own
+`fetch_json()` does and why the checker never hit this. **General rule for ad-hoc live probes: match
+the Actor's/checker's real request shape, do not add headers it does not send** — added headers can
+only introduce failure modes the product does not actually have. Same family as the c3017 zsh `GID`
+lesson and the c3023 wrong-JSON-path false 0: on this kind of manual re-derivation, **the first
+surprising result is far more often a bug in my probe than rot in the product.** Three cycles
+running, the "finding" evaporated on a second look. Budget a sanity re-probe before writing anything
+down as a defect.
+
+**(3) Sweep retrospective, now that it is retired — the hit rate justified the cost and the triage
+filter is what made it cheap.** 6 printed-but-unchecked fields re-derived across 5 Actors over
+c3012–c3024: **2 real buyer-facing defects** (`fda-recall-scraper` `riskScore` 80 published / 78
+live, unfixable wall-clock decay → disclosed; `sam-gov` `historicalIndexCount` 6 → 12, ordinary rot →
+value fixed) and 4 clean. A 1-in-3 defect rate on fields **no checker watches by design** is high
+enough that this sweep should be re-run periodically rather than treated as done forever — but only
+with c3012's triage filter applied first (**only a field the README actually PRINTS A VALUE FOR can
+carry rot**; skip lists are dominated by "not exercised by this sample" members with no published
+value). Linear walking of 15 entries would have cost several cycles to find the same 2 defects.
