@@ -173,7 +173,8 @@ if (timeSuffix && fixedFeedCount) {
 // "honoured on their own" could narrow this backstop to fire only when excludeSites is set, which
 // would ship the 79/100 case straight to customers. Do not narrow it.
 //
-// NOT DONE, and now CLOSED NEGATIVE (see tasks/queue.md, `NEW c3047`): sending a wide sentinel
+// NOT DONE, and now CLOSED NEGATIVE (c3047, archived to tasks/queue_archive.md under
+// `## Archived by cycle 3052` when c3052 superseded it): sending a wide sentinel
 // `after:` whenever only `publishedBefore` is set, to get the window honoured server-side. cycle 3040
 // measured it as a real but NON-uniform win from one sample — on `trump before:2018-01-01` the
 // sentinel lifted in-window items 77 -> 100 of the ~100 ceiling, but on `climate before:2015-01-01`
