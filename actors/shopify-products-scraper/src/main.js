@@ -367,6 +367,22 @@ async function residentialProxyUrlFor(sessionId) {
   const pc = await residentialProxyConfigPromise;
   return pc ? pc.newUrl(sessionId) : undefined;
 }
+// A single residential IP is not a guaranteed bypass — measured live cycle 3065, 1 of 3 one-shot
+// `residentialProxyUrlFor()` calls (no sessionId, so Apify's gateway picks any residential exit
+// without stickiness) against allbirds.com still came back 403. The old code tried exactly one
+// session and, if that one happened to be blocked too, surfaced the 403 to the buyer even though
+// the RESIDENTIAL group itself works fine (verified live: `GET /v2/users/me` → `plan.availableProxyGroups`
+// only lists reserved/dedicated pools and omits RESIDENTIAL, but that field is NOT "can I use this
+// group" — `enabledPlatformFeatures` includes `PROXY_RESIDENTIAL` and the plan carries a real
+// `maxMonthlyResidentialProxyGbytes: 10` allowance at `PROXY_RESIDENTIAL_TRANSFER_GBYTES: $8/GB`
+// beyond it, and a live request through the group returned 200). An explicit counter forces a
+// genuinely NEW session (new exit IP) on every retry instead of hoping the implicit no-session
+// call happens to rotate. Bandwidth risk is low: a blocked attempt's response is a small
+// bot-check page, not the real catalog, and only the one attempt that finally succeeds pays for
+// the full page.
+let residentialSessionCounter = 0;
+const freshResidentialUrl = () => residentialProxyUrlFor(`r${(residentialSessionCounter += 1)}`);
+const RESIDENTIAL_FALLBACK_ATTEMPTS = 3;
 // Origins confirmed this run to 403 a direct connection — once known, every further request to
 // that origin goes straight to the residential retry instead of paying for a doomed direct
 // attempt first (a blocked origin blocks every page of that store, not just the first).
@@ -447,28 +463,38 @@ const request = async (url, headers, proxyUrlOverride) => {
   }
   throw lastErr;
 };
+const fetchOnce = async (url, proxyUrlOverride) => {
+  try { return await request(url, { 'accept-language': '' }, proxyUrlOverride); }
+  catch (e) { return request(url, {}, proxyUrlOverride); } // a store that rejects the empty header still gets served, just without sale prices
+};
 const http = async (url) => {
   const origin = new URL(url).origin;
   // Already confirmed this run that `origin` 403s a direct connection — skip straight to the
-  // residential retry instead of paying for a doomed direct attempt on every subsequent page.
-  const forcedProxyUrl = (!proxyInUse && residentialFallbackOrigins.has(origin)) ? await residentialProxyUrlFor() : undefined;
-  const res = await (async () => {
-    try { return await request(url, { 'accept-language': '' }, forcedProxyUrl); }
-    catch (e) { return request(url, {}, forcedProxyUrl); } // a store that rejects the empty header still gets served, just without sale prices
-  })();
+  // residential retries instead of paying for a doomed direct attempt on every subsequent page.
+  const cached = !proxyInUse && residentialFallbackOrigins.has(origin);
+  let res = cached ? undefined : await fetchOnce(url);
   // got-scraping doesn't throw on 4xx (see throwIfStorefrontError below), so a 403 shows up as a
   // normal response here, not an exception — safe to inspect res.statusCode directly. Only
   // self-heal the default/direct case; a buyer-configured proxy already gets its own "switch
   // groups" advice in STOREFRONT_STATUS[403] instead of a silent override of their choice.
-  if (res.statusCode === 403 && !proxyInUse && forcedProxyUrl === undefined) {
-    const residentialUrl = await residentialProxyUrlFor();
-    if (residentialUrl) {
-      log.warning(`${origin}: 403 on a direct connection — retrying through the RESIDENTIAL proxy group (and routing the rest of this store's requests through it too).`);
+  if (cached || (res.statusCode === 403 && !proxyInUse)) {
+    if (!cached) {
       residentialFallbackOrigins.add(origin);
-      try {
-        return await request(url, { 'accept-language': '' }, residentialUrl);
-      } catch (e) { /* residential attempt failed at the network level — fall through to the original 403 so the buyer gets the real reason */ }
+      log.warning(`${origin}: 403 on a direct connection — escalating to the RESIDENTIAL proxy group (and routing the rest of this store's requests through it too).`);
     }
+    for (let i = 0; i < RESIDENTIAL_FALLBACK_ATTEMPTS; i += 1) {
+      const residentialUrl = await freshResidentialUrl();
+      if (!residentialUrl) break; // group truly unavailable this run — stop early, report what we have
+      res = await fetchOnce(url, residentialUrl);
+      if (res.statusCode !== 403) return res;
+      if (i < RESIDENTIAL_FALLBACK_ATTEMPTS - 1) {
+        log.warning(`${origin}: residential attempt ${i + 1}/${RESIDENTIAL_FALLBACK_ATTEMPTS} also 403'd — trying a fresh session.`);
+      }
+    }
+    // Either every residential session also 403'd, or the group was unavailable this run and we
+    // skipped the direct attempt above (`cached`) — either way `res` may still be undefined here
+    // only in the skipped-direct-and-no-residential-at-all case. Get one real response to report.
+    if (res === undefined) res = await fetchOnce(url);
   }
   return res;
 };
@@ -498,9 +524,13 @@ const STOREFRONT_STATUS = {
   // The proxy-dependent half of the 403/429 advice is resolved against `proxyInUse` (set above, so
   // it is already known here) rather than assuming a default, so the tool never tells a buyer to
   // take a step they have already taken. Since the default flipped to a direct connection
-  // (2026-11-04) the usual branch is "enable proxyConfiguration"; when a datacenter proxy IS
-  // already in play the useful next step is a different group, not enabling it.
-  403: `this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. ${residentialInUse ? 'The RESIDENTIAL proxy group was already in use, so there is no cleaner pool to switch to: this store blocks at the store level. Try a country-specific residential group, or drop this URL.' : proxyInUse ? 'A proxy was already in use, so switch proxyConfiguration to the RESIDENTIAL group to get a different IP.' : 'Re-run with proxyConfiguration enabled (residential group) to get a different IP.'}`,
+  // (2026-11-04) the direct case no longer needs to tell the buyer to "enable proxyConfiguration"
+  // at all — `http()` already auto-escalates through RESIDENTIAL_FALLBACK_ATTEMPTS fresh sessions
+  // on a direct 403 before this message is ever reached, so a buyer-facing 403 here means that
+  // ALL of those sessions were also blocked, not that a step remains undone. When a datacenter
+  // proxy IS already in play the useful next step is still a different group, since `http()`'s
+  // auto-escalation only fires on the direct path (`!proxyInUse`).
+  403: `this storefront refused the request (403) — a bot check or a geo/IP block, not a missing endpoint. ${residentialInUse ? 'The RESIDENTIAL proxy group was already in use, so there is no cleaner pool to switch to: this store blocks at the store level. Try a country-specific residential group, or drop this URL.' : proxyInUse ? 'A proxy was already in use, so switch proxyConfiguration to the RESIDENTIAL group to get a different IP.' : `We already auto-escalated through ${RESIDENTIAL_FALLBACK_ATTEMPTS} different RESIDENTIAL IP sessions and this store blocked all of them — a persistent, store-level block rather than one bad IP. Re-running later sometimes clears it (Shopify/Cloudflare's edge rules change), or drop this URL.`}`,
   404: 'there is no Shopify store at this URL (404 "Not Found") — check the domain/handle for a typo, or the store has been deleted.',
   429: `this storefront rate-limited us (429) — a transient per-IP throttle, not a missing or disabled products.json. Re-run with fewer storeUrls${residentialInUse ? ', or simply retry: the RESIDENTIAL group was already in use, so there is no less-throttled group to switch to and the throttle lifts on its own' : proxyInUse ? ', or switch proxyConfiguration to the RESIDENTIAL group so each request comes from a different IP (the shared datacenter pool this run used is rate-limited by some storefronts)' : ', or with proxyConfiguration enabled so each request comes from a different IP'}.`,
 };
