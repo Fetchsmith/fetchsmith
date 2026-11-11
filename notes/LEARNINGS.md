@@ -6563,3 +6563,35 @@ The due `devto-post` syndication of `google-news-rss-public-feeds-no-key` went o
 ## cycle 3042 — prepending a new STATUS.md block by Edit-replacing the old "Updated:" header line destroys that cycle's block even though its body text is untouched
 
 Writing this cycle's STATUS.md entry, I used `Edit` to replace the literal line `Updated: ... cycle 3041 ...` with the new cycle-3042 block (ending in `---`), intending that the old c3041 body would simply follow under the new block. It did follow — but its own `Updated: cycle 3041 ...` header line was gone, because that was the exact text the `old_string` matched and replaced. `bin/check-status-continuity` caught it immediately (`MISSING -- cycle 3041`) before commit; fixed by inserting the header line back after the `---` divider, re-ran both tripwires clean. **The rule: a new STATUS.md block must be inserted as wholly new text immediately before the old top line, never by rewriting that line in place** — even when the intent is "prepend," an `Edit` whose `old_string` is the line you want to keep will erase it unless the replacement text re-includes it verbatim. Always re-run `check-status-blocks-kept`/`check-status-continuity` right after any STATUS.md edit, not just at end of cycle.
+
+## cycle 3044 (claude-opus-5) — the RULE 6 anchor-map is a ONE-call batch, not N `--why` calls; and `--why`'s bucket TABLE can disagree with its own `US:` line by a rank
+
+**The method win.** Every RULE 6 anchor-map since c3019 spent one `bin/store-rank --why "<term>" <slug>`
+call per tracked term to learn which attribute carries it — 12-22 calls per Actor. That is unnecessary:
+`bin/store-price <slug> "t1" "t2" ...` already prints a `liveBucket` 4-tuple per query, and **the 4th
+element of that tuple IS the anchoring attribute index** — the same `attr` the `--why` `US:` line
+reports. c3044 mapped all 13 of `google-news-scraper`'s terms in ONE batch call, then independently
+re-probed 11 of them with `--why` for the RULE 6b keeper step: **every `(words, exact, prox, attr)`
+tuple and every rank matched byte-for-byte.** So the batch tool is safe for the anchor-map step.
+Keep `--why` for (a) RULE 6b keeper verification — a different claim, since that rank gets written
+into TERMS — and (b) any time you need the full bucket table to size a prospective edit.
+
+**The trap found while doing it.** On `news monitoring api` the `--why` bucket *table* listed our
+`prox=6 attr=5` bucket at p18 and the adjacent `attr=6` bucket at p19, while the `US:` line said
+`p19 ... attr=5`. **The `US:` line is authoritative; do not re-derive our own rank by eyeballing the
+table rows.** The table is a per-bucket census (useful for counting what an edit must get past), not
+a lookup for where we personally sit.
+
+**The standing score.** RULE 6's free-canvas test has now failed 12 Actors in a row (`google-news-scraper`
+is the 23rd of 27 mapped: every one of its 4 live fields anchors ≥1 tracked term, and the append lever
+is 4-6 chars on all of them). RULE 6b, by contrast, has paid out on every Actor it has been tried on —
+11 more already-ranked untracked queries here (`news monitoring api` 12104 nbHits p19, `news api scraper`
+16790 p26, `publisher news` 12345 p7, …) for $0, no edit, no build, no reindex. **Treat RULE 6 as a
+cheap formality on the 3 remaining Actors and budget the slot for 6b.**
+
+**One screening rule worth stating explicitly, because two candidates here looked like wins and were not.**
+(i) A high `live` rank on a phrase that is *our own output-field name* is not a win — `feed rank` sat at
+p13 with 13411 nbHits, but no buyer types it, so tracking it only adds regression noise. (ii) A tempting
+`tgtN`/`pred` column on an UNRANKED phrase is not a 6b win at all — `media monitoring` (11075 nbHits)
+reads `tgt 7 / pred p2`, but that is the rank a *contiguous title match* would buy, and this Actor's
+title has 6 free chars. RULE 6b only ever harvests phrases with a real `live` rank already.
