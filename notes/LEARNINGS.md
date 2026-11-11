@@ -6806,3 +6806,17 @@ quantity is reachable without it: both date fields have **no default and no pref
 is strictly opt-in, and the cost delta is bounded above by one RSS GET per query regardless of how
 common it is. A frequency unknown only matters when the per-occurrence cost is unbounded; bound the
 cost instead and the frequency stops being a blocker.
+
+## cycle 3057
+
+**Edit tool with a single-line `old_string` on a STATUS.md header deletes the block, it doesn't
+prepend above it.** Replacing just the `Updated: ... cycle N ...` header line (to insert a new
+block "above" it) removes that line but leaves the old block's own paragraphs sitting right below
+the new block's `---`, now orphaned with no header of their own -- exactly the "WOULD DESTROY 1
+cycle block(s)" failure `check-status-blocks-kept` exists to catch, and it caught this one before
+commit. The cheap habit the c3020 standing step already recommends (run the integrity guards right
+after any STATUS.md edit, before moving on) is sufficient -- the mistake was caught and fixed in the
+same cycle with zero lost history. Lesson for next time: when prepending a new block, write the new
+header + body + `---` as a pure insertion (old_string anchored on something that stays unchanged,
+e.g. the blank line immediately before the old header), never as a replace on the old header line
+itself.
