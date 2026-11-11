@@ -427,7 +427,12 @@ TERMS = {
                               "site selection data", "trial data feed", "research study data api",
                               "study results data", "clinical research data",
                               "medical research api", "trial site data", "trial monitoring api",
-                              "trial enrollment data"],
+                              "trial enrollment data", "clinicaltrials.gov scraper",
+                              "scrape clinicaltrials.gov", "nih api", "clinical trials data",
+                              "clinical trials data api", "research data api", "clinical data api",
+                              "trial registry", "lead sponsor", "sponsor filters",
+                              "no contact pii", "trial data", "research study data",
+                              "facility filters"],
     # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
     # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not
     # inside the top cluster") is RESOLVED and was never an anomaly — dumping the full
@@ -457,6 +462,44 @@ TERMS = {
     # (p14 -> ABSENT from top 60). The appended README sentence was an addition, not a
     # reword, matching the decayed shape 1468 found -- do not cite this entry as a live
     # h904 win. See the file-top 1468 warning before sizing another attr=6 edit here.
+    # cycle 3049 (GROWTH, RULE 6 anchor-map + RULE 6b): this Actor was ERRONEOUSLY counted
+    # as mapped by c3046's "27th/27 FLEET ANCHOR-MAP SWEEP COMPLETE" claim -- it was never
+    # actually mapped (grep for "RULE 6"/"anchor-map" in this entry's prior comments found
+    # zero hits before this cycle). Ran the real anchor-map via one `store-price` batch on
+    # all 19 pre-existing TERMS: attr=0(title) carries 4 (`clinical trials`,
+    # `clinicaltrials.gov`, `patient recruitment`, `nct id`), attr=4(seoTitle) carries 5
+    # (`covid data`, `clinical research api`, `clinical trial registry`, `site selection
+    # data`, `trial data feed`), attr=5(seoDescription) carries 9 (the rest), attr=6
+    # (readme) carries 1 (`covid trials`) -- attr=2 (description) anchors ZERO of the 19.
+    # RULE 6 CLOSED NEGATIVE despite the zero-anchor description, same pattern as c3043's
+    # substack-scraper finding: description is maxed at 300/300 with no append room, AND
+    # RULE 6b (below) shows it densely carries untracked value already, so it is not
+    # actually a free canvas. **RULE 6b found 14 already-ranked untracked wins for
+    # $0/no edit/no build**, each individually re-verified via `store-rank --why` (matched
+    # the batch tool's `live` column exactly on all 14): `clinicaltrials.gov scraper`
+    # (274 nbHits, p41, attr=0), `scrape clinicaltrials.gov` (58, p10, attr=2), `nih api`
+    # (146, p13, attr=2), `clinical trials data` (276, p41, attr=5), `clinical trials data
+    # api` (197, p6, attr=5), `research data api` (23782, p5, attr=5 -- by far this
+    # Actor's highest-volume ranked query, a genuine match on "research study data API"
+    # not a misleading generic claim), `clinical data api` (710, p7, attr=5), `trial
+    # registry` (282, p56, attr=5 -- FLAPPING FLAG per the c3031 rule, sits right inside
+    # the 60-record horizon, a later >60 is pool growth not a regression), `lead sponsor`
+    # (1602, p42, attr=2), `sponsor filters` (548, p5, attr=2), `no contact pii` (40, p1,
+    # attr=2 -- low volume but a true differentiator claim, kept), `trial data` (882, p34,
+    # attr=4), `research study data` (3422, p1, attr=5), `facility filters` (783, p33,
+    # attr=2). Screened out and deliberately NOT tracked: `data lookups` (9028 nbHits,
+    # live p48 -- a tokenizer artifact off "trial enrollment data lookups registry", too
+    # generic/niche-disconnected as a standalone buyer query); `studies new` (1752, p6 --
+    # artifact off "studies new since your last run", wrong word order for a real buyer
+    # query); `clinical trials api` (p70), `clinicaltrials.gov api` (p163), `date windows`
+    # (p103), `one row per site` (p65) all outside top-60; `location filters`, `new since
+    # last run`, `nih reporter` (wrong niche entirely), `nct number`, `watchlabel mode`
+    # (5 nbHits, our own field name) all unranked or too low-volume. All 14 added to
+    # TERMS with this comment as dated provenance; `ast.parse` clean; full 33-term probe
+    # re-run post-edit, **zero regressions on the 19 pre-existing terms** (all
+    # byte-identical rank/bucket). $0 spent, no edit/build/publish/reindex shipped --
+    # pure measurement + TERMS bookkeeping. See `tasks/queue.md` NEW c3046 for the
+    # correction to the false "27/27 complete" claim this cycle's finding requires.
     "us-federal-awards-scraper": ["usaspending", "federal contracts", "subaward", "government spending", "government spending scraper", "spending data", "spending data api", "contract data api", "contract award data", "procurement data api", "grants data api", "federal contract data", "government contracts data api", "federal contracts api", "government contract leads", "federal awards data", "govt spending data"],  # cycle 1835 (BUILD, item (r) SEO-attribute sweep, 14th Actor swept): protect step on all 8 pre-existing tracked terms found none carried by seoTitle/seoDescription (all attr=0, or unranked beyond top-60) -- both SEO fields fully free. Shipped seoTitle "Contract Award Data, Procurement Data API, Grants Data API" (58/60, build 0.1.71) + seoDescription "A USAspending data API: federal contract data, government contracts data api, federal contracts api, government contract leads, federal awards data, govt spending data, and contract data api exports." (199/200). All 10 predictions landed, 9 of them exactly (contract award data 1 off: predicted p8, landed p12): contract data api (TRACKED, 7353 hits, the biggest-volume term in this Actor's set) unranked -> **p10**; government contracts data api (575) p143->p3; government contract leads (493) p173->p3; federal awards data (470) p143->p14; federal contracts api (546) unranked->p15; federal contract data (739) p21->p16; govt spending data (228) p17->p1; procurement data api (1138) p200->p4; grants data api (430) p59->p3; contract award data (1831) unranked->p12. Zero regressions on the 7 untouched tracked terms (byte-identical storePosition 67226; usaspending/federal contracts drift p122->p104/p284->p291 is ordinary competitor churn, confirmed via store-price's "(live still holds from attr X)" annotations before shipping, not caused by this edit). ~13,500 combined new/improved nbHits. # cycle 906 (GROWTH, README-lever): `--why "contract data api"` (nbHits 26680, the biggest-volume query ever landed by this method) showed us absent from the top 60, with a reachable prox=2 attr=6 (readme) bucket of 7 records and our storePosition sorting to the bottom of it (~p14-17). Added one sentence to the README intro -- "In short, a contract data API for USAspending.gov you can call from Apify without hosting anything yourself." -- a pure truthful addition, 0 words evicted. Published via `apify push --force` (build 0.1.43, README-only, no meta.json edit). Live-verified ~90s post-reindex: absent-from-top-60 -> exactly **p14** on a 26.7k-hit query. All 7 pre-existing tracked queries held byte-identical rank (p59/p175/p2/p1/p1/p2/p2), storePosition byte-identical at 51476 -- 0 regression. This closes the item 904/900 backlog note that called this query "priced-but-unshippable" for lack of title/description room -- the README has no such cap. # spending data api (nbHits 7735) added cycle 900 after a description append took it p61->p2; subaward p20->p2 cycle 532 (title edit); usaspending/federal contracts capped by storePosition (already in title block); spending data (nbHits 8796, highest-volume tracked query in the fleet) added cycle 878 after the title edit put us at p3 (was not in top 60 at all)
     # cycle 872 (FIRST --attr BATCH probe on this Actor; 19 queries). Title
     # "USAspending Scraper — US Federal Contracts, Grants & Subawards" (62/63) ->
