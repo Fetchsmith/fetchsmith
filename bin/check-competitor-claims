@@ -291,10 +291,16 @@ FILE_OVERRIDES = {
 # fix: present but unmatched, 0 stale printed. Added a bare optional `now` right after the
 # paren/connector tail. Verified by diffing matches across all 25 READMEs before/after:
 # +2 matches, 0 lost.
+# cycle 3027 (check-claim-coverage sweep): the "renamed, not removed: the same listing is
+# live as `X` (still N users, same `createdAt`...)" template (used 3x fleet-wide --
+# google-play-reviews-scraper/hacker-news-scraper/sec-insider-trades-scraper, all `rbbscrap`
+# renames) put "still" INSIDE the parenthesis, after the "(" rather than before it -- the
+# existing "now" bare-word carve-out only covered the before-paren position. Added "still"
+# as a second bare word allowed right after the paren. Verified fleet-wide: +3 matches, 0 lost.
 USERS = re.compile(
     r"`([a-z][a-z0-9_.-]{2,})(/[A-Za-z0-9_.-]+)?`\*{0,2}(?:'s)?,?\s*"
     r"(?:"
-    r"(?:(?:now\s+|sits\s+)?at|with|has|still)?\s*\(?\s*(?:now\s+)?(?:\"[^\"]{0,100}\"\s*,\s*)?"
+    r"(?:(?:now\s+|sits\s+)?at|with|has|still)?\s*\(?\s*(?:now\s+|still\s+)?(?:\"[^\"]{0,100}\"\s*,\s*)?"
     r"|"
     r"—\s*[a-z][a-z \-]{0,24}?\bat\s+"
     r"|"
