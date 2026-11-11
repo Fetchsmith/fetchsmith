@@ -807,7 +807,48 @@ TERMS = {
                               "video game data api", "steam player stats", "steam tags",
                               "gaming data api", "steam games list",
                               "steam review data", "steam store api", "steam reviews api",
-                              "steam discount data"],
+                              "steam discount data",
+                              # cycle 3038 (GROWTH, RULE 6 anchor-map + RULE 6b n-gram batch-
+                              # price, 20th/27 Actor mapped). Anchor-mapped all 12 pre-existing
+                              # TERMS via `--why`: title(attr=0) carries "steam reviews" p58,
+                              # "steam api" p4, "steam player count" p5; description(attr=2)
+                              # carries "steam review data" p5, "steam store api" p5, "steam
+                              # reviews api" p7; seoTitle(attr=4) carries "steam player stats" p2,
+                              # "steam tags" p3; seoDescription(attr=5) carries "video game data
+                              # api" p1, "gaming data api" p2, "steam games list" p9, "steam
+                              # discount data" p1. Every field anchors >=1 tracked term --
+                              # RULE 6 CLOSED NEGATIVE, 9th straight Actor to fail the free-canvas
+                              # test. Append lever also too thin: title/description both maxed
+                              # (63/63, 300/300); seoTitle 54/60 (6 free), seoDescription 197/200
+                              # (3 free) -- neither enough to seat a new contiguous phrase.
+                              # RULE 6b n-gram batch-price of all 4 live fields' own vocabulary
+                              # found 14 already-ranked untracked wins for $0/no edit/no build,
+                              # each individually re-verified via `--why` (not trusting the batch
+                              # tool's `live` column alone): standout "game data api" (14928
+                              # nbHits, this Actor's highest-volume ranked query by ~3x, already
+                              # p8), "games mode" (12992, p5), "sentiment data" (8200, p31),
+                              # "review sentiment data" (5103, p2), "review type filters" (3853,
+                              # p1), "video game data" (3611, p8), "game review sentiment" (2630,
+                              # p5), "game review sentiment data" (2255, p1), "gaming data" (947,
+                              # p6), "steam game reviews api" (384, p2), "steam discount" (254,
+                              # p4), "helpfulness votes" (298, p10), "thumbs up down" (197, p2),
+                              # "player count playtime" (123, p1). Screened and correctly left
+                              # untracked (unnatural connective-word artifacts from the n-gram
+                              # tokenizer, not real buyer search phrases, even though several
+                              # ranked well): "keyword or review type", "review type games",
+                              # "owners tags", "genres owners", "game prices genres", "data api
+                              # gaming", "filter by playtime" (75 nbHits, too low-volume to matter
+                              # on top of being an artifact). "steam games" (2223 nbHits) screened
+                              # OUT -- live p65, outside top-60, more crowded than the already-
+                              # tracked "steam games list". All 14 added here with dated
+                              # provenance; `ast.parse` clean; full 26-term probe re-run post-edit,
+                              # top-20 on 21/26, zero regressions on the 12 pre-existing terms
+                              # (all re-measured byte-identical bucket/rank).
+                              "game data api", "games mode", "sentiment data",
+                              "review sentiment data", "review type filters", "video game data",
+                              "game review sentiment", "game review sentiment data",
+                              "gaming data", "steam game reviews api", "steam discount",
+                              "helpfulness votes", "thumbs up down", "player count playtime"],
     # cycle 2999 EVICTION: "steam charts api" (nbHits 114, was only p4) retired from TERMS --
     # the seoDescription words "Steam charts" that carried it were swapped for "Steam discount
     # data" (truthful: discountPercent/price/priceInitial are real output fields; the actor has
