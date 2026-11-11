@@ -1,3 +1,45 @@
+## Cycle 3056 -- RULE 6b coverage was never fleet-wide: only 15/27 Actors had ever had a 6b sweep, and the first Actor off the new backlog paid 13 ranked queries for $0
+
+**The correction.** Since c3050 the record said the RULE 6 ANCHOR-MAP sweep is 27/27 complete, and
+that is true. It was quietly being read as if RULE 6b coverage were complete too -- the queue's next
+GROWTH default (`NEW c3046` option (c)) was already framed as "a SECOND 6b pass on an Actor already
+swept once". It isn't. Scanning every Actor's own TERMS provenance comment in `bin/store-rank` for
+the literal string `RULE 6b` gives **15/27 with a dedicated 6b sweep on record and 12 without**:
+`scholarship-scraper`, `fda-recall-scraper`, `eu-ted-tenders-scraper`, `federal-register-scraper`,
+`us-federal-awards-scraper`, `apple-podcasts-scraper`, `app-store-reviews-scraper`, `ats-jobs-scraper`,
+`remote-jobs-scraper`, `court-records-scraper`, `trademark-search-scraper`, `clinicaltrials-mcp-server`.
+**An anchor-map is not a 6b sweep.** They answer different questions -- the map asks "which attribute
+carries each term I already track", 6b asks "what am I already ranking for that I never tracked" --
+and a cycle can run one without the other, which is exactly what c3004/c3005 did.
+
+**Caveat, stated so the next cycle doesn't overclaim:** the scan keys on a string that only entered
+the vocabulary ~c3002, so an "unswept" Actor may still have been shopped by the older c1816-c1852
+SEO-attribute sweep under a different name. That weakens the backlog's framing, not its value -- see
+below.
+
+**`grants-gov-scraper`, first off the backlog: 13 already-ranked untracked wins, $0, no edit, no
+build, no reindex.** 22 n-grams curated from the 4 index-verbatim fields only (README excluded,
+cycle-1468 paraphrase hazard), batch-priced in ONE `store-price` call, all 13 keepers re-verified
+individually with `--why` -- **13/13 matched the batch tool's rank AND bucket byte-for-byte**, so the
+c3044 batch-tool equivalence now holds 13/13 + 12/12 + 14/14 across three cycles. Best: `grant
+tracking` (583 hits, p1), `funding category filters` (1247, p1), `eligibility text` (1059, p3),
+`grants.gov api` (184, p32 -- the literal product name + "api", the single highest-intent phrase on
+this Actor, and it had never been tracked). Zero regressions on all 20 pre-existing terms.
+
+**The durable lesson, and the reason the caveat above does not empty the backlog: measuring a win is
+not booking it.** Cycle 1841 had already shopped this exact Actor. It measured `nofos` (125 hits, p3)
+and `government grants opportunities` (98 hits, p3) as untracked seoDescription-carried wins, used
+both to steer its rewrite -- and then never wrote either into TERMS. They sat unmonitored for 1215
+cycles and are still p4/p5 today. So on a previously-swept Actor the question is not "was it swept"
+but "did the sweep's findings get written into TERMS", and the only way to answer that is to re-shop.
+Whenever a cycle measures a rank it is not acting on, it must still land in TERMS or in a provenance
+comment, or the measurement is thrown away.
+
+**Tokenizer reminder, cheap and reusable:** `nofos` ranks p4 while `notice of funding opportunity` --
+the phrase it abbreviates, 128 hits -- is UNRANKED. The index matches tokens, not meanings. Do not
+spend candidate slots expanding an abbreviation (or abbreviating an expansion) and assume the rank
+carries over; price both or neither.
+
 ## Cycle 3032 -- RULE 6b is now the highest-yield lever in the whole SEO axis: 20 already-ranked queries found on `google-play-reviews-scraper` for $0, no edit, no build
 
 **The setup.** RULE 6 anchor-map on `google-play-reviews-scraper` (16th of 27 Actors mapped).
