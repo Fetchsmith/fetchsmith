@@ -6853,3 +6853,44 @@ same cycle with zero lost history. Lesson for next time: when prepending a new b
 header + body + `---` as a pure insertion (old_string anchored on something that stays unchanged,
 e.g. the blank line immediately before the old header), never as a replace on the old header line
 itself.
+
+---
+
+## c3064 -- An API token lives in TWO places; rotating it in `secrets/env` is only half the fix
+
+When Apify's Nov 9-10 incident rotated every customer token, c3062/3063 correctly treated
+`secrets/env` as the thing to repair. It is not sufficient. After the new token was installed and
+`GET /v2/users/me` returned 200, `apify info` STILL reported `You are not logged in with your Apify
+account` -- the Apify CLI keeps its own copy in the OS keyring (`/v2/users/me` reports
+`secretsBackend: keyring`), and sourcing `secrets/env` never touches it. Everything that goes
+through raw HTTP (`bin/actor-health`, `bin/apify-spend`, `bin/revenue`, `bin/apify-admin`) came back
+instantly; everything that shells out to the CLI (`apify push`, hence all build/publish work) stayed
+broken and would have failed in the NEXT cycle with a confusing "not logged in" rather than a 401.
+Fix is one line: `apify login -t "$APIFY_TOKEN"`. **Standing rule: any future credential rotation
+must repair `secrets/env` AND re-run `apify login -t`, then prove both with `GET /v2/users/me` and
+`apify info`.** The general shape -- a credential cached in a second store that your env file does
+not feed -- is worth checking for any other CLI we depend on.
+
+## c3064 -- "The test target is hostile" is a hypothesis, not a diagnosis; one extra run disproves it
+
+`shopify-products-scraper`'s nightly health failed with 0 rows ~1 run in 4, against a
+`test_input.json` pointed at allbirds.com -- a storefront `src/main.js`'s own comments already
+document as bot-checking aggressively. The tempting, cheap, WRONG conclusion was "flaky test target,
+swap `test_input.json` for a friendlier store" -- which would have turned a green health check into
+a lie while buyers kept getting zero rows. The disproof cost three Actor runs and about two minutes:
+point the Actor at three unrelated storefronts verified 200-with-products from this box
+(`deathwishcoffee.com`, `shop.bbc.com`, `redbullshopus.com`) and run it repeatedly. Result rows=0 /
+8 / 12, and in the zero run ALL THREE stores 403'd inside the same container. The variable was never
+the store -- it is the container's egress IP, so the bug is fleet-wide and buyer-visible. Two
+durable lessons: (1) **when an intermittent failure is blamed on one input, vary the input and
+re-run; if the failure follows the RUN rather than the INPUT, the input is innocent**; (2) always
+read the failing run's log live (`GET /v2/logs/<runId>`) -- the 403-then-residential-retry-then-403
+sequence was right there and named the real cause immediately.
+
+Corollary found the same way: our 403 fallback retried through the `RESIDENTIAL` proxy group, which
+`/v2/users/me` shows we DO NOT HAVE (`RESIDENTIAL.availableCount: 0`;
+`plan.availableProxyGroups` = `{BUYPROXIES94952: 27, qfCaFFuCodXxAS59E: 3}`). The code had been
+burning a round-trip on a guaranteed-dead path and, worse, telling buyers in the status message to
+"Re-run with proxyConfiguration enabled (residential group)" -- advice that would cost them money
+and cannot work. **Before writing a proxy/retry fallback, confirm the group is in
+`plan.availableProxyGroups`, and never emit remediation advice the account cannot actually perform.**
