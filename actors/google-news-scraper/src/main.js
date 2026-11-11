@@ -185,10 +185,25 @@ if (timeSuffix && fixedFeedCount) {
 // relative offsets flip direction per query (`climate` peaks at the SMALLEST offset from the cutoff,
 // `bitcoin`/`web scraping` at the LARGEST, `python` in the middle, `trump` ceiling-saturated at ~100
 // regardless). Do NOT re-open this as "just pick the right sentinel value" — that question has no
-// answer. The only untried variant is a UNION of two differently-biased sentinel'd requests deduped
-// by article id, which is monotonically safe where one constant is not; `NEW c3047` lists what must
-// be measured first (real de-dup overlap, and how often this input shape occurs, since it doubles
-// compute/proxy cost on every run that hits this branch).
+// answer.
+//
+// The surviving variant — a UNION of two differently-biased sentinel'd requests deduped by article
+// id — was MEASURED cycle 3052 and came back POSITIVE and safe (bin/_rec3052.py + _rec3052b.py, raw
+// in LEARNINGS `## cycle 3052`; NOT yet shipped, see tasks/queue.md `NEW c3052` for the exact spec).
+// Narrow (cutoff-2y) ∪ wide (cutoff-20y), de-duped by /articles/<id>, beat the BEST single request
+// on 5/5 query shapes (+6 climate, +5 bitcoin, +19 python, +1 web scraping, +16 electric vehicles =
+// +47 in-window articles), never lost, and the two requests overlap only 30-65% (Jaccard .296-.654)
+// — so the ~100-item cap is NOT the only limiter; Google returns materially different item sets for
+// different `after:` values even when the counts match (`python` returned 35 in-window both ways and
+// still unioned to 54). Re-deduping the same union by normalised headline+publisher gave byte-identical
+// totals and ZERO re-keyed duplicates, so id-dedup is sound: the gain is real articles, not one story
+// under two ids. Two independent sweeps an hour apart produced identical union sizes.
+// Correcting c3047's cost framing, which over-stated this: the second request does NOT double a run's
+// cost. It adds ONE extra RSS GET per query, while the dominant per-run cost (sequential URL decoding
+// + article-body fetches, 2 requests each) scales with the DE-DUPED union — i.e. with rows the buyer
+// is billed $0.002/article for anyway. And `maxItemsPerQuery` (default 25) caps the result per query,
+// so a union run cannot bill past the buyer's own cap; the customer-visible win is converting "you
+// asked for 25, Google's single feed only had 22 in-window" into a filled cap.
 // The tolerance is deliberately a full day, not zero: Google evaluates `after:`/`before:` in its own
 // (US Pacific) timezone while `publishedAt` is UTC, so up to ~8h of legitimately in-window articles
 // sit just outside the UTC window at each edge (7-15 in 100 on every query shape, including the ones

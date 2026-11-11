@@ -6701,3 +6701,66 @@ per cut range, and it is that block's own head"**: same property (no live item r
 against the current shape. c3042 and c3045 each re-derived this from scratch and deleted their
 scripts; c3048's `bin/_trim3048q.py` is kept on disk and named in the doc-trim item's Method line so
 the next trim clones it instead of rediscovering it a fourth time.
+
+## cycle 3052 — the union-of-two-sentinels beats every single constant: measured POSITIVE 5/5, zero re-keyed duplicates, and c3047's "2x cost" framing was wrong
+
+Picked up `NEW c3047`'s explicit precondition (a) — measure real de-dup overlap and net in-window
+gain for the UNION of two differently-biased sentinel'd `after:` requests on `google-news-scraper`'s
+`publishedBefore`-only branch — before any code ships. Measurement only, 25 free public RSS GETs
+across two independent sweeps, $0, nothing built or published. Scripts kept: `bin/_rec3052.py`
+(the sweep) and `bin/_rec3052b.py` (the duplicate check, which imports the first).
+
+**Result: the union is a real, monotone win.** narrow = cutoff-2y, wide = cutoff-20y (the two
+extremes c3047 found to be per-query *opposite* winners), de-duped by `/articles/<id>`:
+
+| shape | bare | narrow | wide | overlap | union | gain vs best single | Jaccard |
+|---|---|---|---|---|---|---|---|
+| `climate before:2015-01-01` | 22 | 32 | 22 | 16 | **38** | +6 | .421 |
+| `bitcoin before:2016-01-01` | 25 | 22 | 26 | 17 | **31** | +5 | .548 |
+| `python before:2020-01-01` | 35 | 35 | 35 | 16 | **54** | +19 | .296 |
+| `web scraping before:2020-01-01` | 25 | 18 | 25 | 17 | **26** | +1 | .654 |
+| `electric vehicles before:2019-01-01` | 36 | 42 | 42 | 26 | **58** | +16 | .448 |
+
+(in-window counts; `trump` deliberately excluded as ceiling-saturated per c3047's own test-design
+note. `electric vehicles` is a fresh shape, not in c3047's set, to avoid overfitting.)
+
+**Union ≥ best single on 5/5 and strictly better on 5/5, +47 in-window articles total.** This is the
+property c3047 predicted but had not measured, and it is why the union is the right answer where no
+constant is: picking a constant can lose on a query whose corpus leans the other way; a union cannot.
+
+**The mechanism is NOT the ~100-item cap.** Overlap is only 30-65%, and `python` is decisive: narrow
+and wide each returned exactly 35 in-window items and still unioned to 54. Google returns materially
+*different* item sets for different `after:` values even when the counts are identical and neither is
+anywhere near the cap. So the union is not "two bites at a capped list" — it is two different samples.
+
+**The de-dup is sound, which was the real risk.** If Google issued a different `/articles/<id>` for
+the same story depending on the fetching sentinel, the whole gain would be duplicate rows in the
+buyer's dataset — worse than the status quo. Re-deduping the same union by normalised
+headline+publisher (`_rec3052b.py`) returned **byte-identical totals on all 5 shapes and 0 re-keyed
+duplicates**, and 0 items lacked a derivable id. Two independent sweeps ~1h apart gave identical
+union sizes, so this is stable, not a snapshot artifact.
+
+**Correcting c3047 on cost — the part that actually decides whether this ships.** c3047 wrote that
+the union costs "2x `ACTOR_COMPUTE_UNITS`/proxy on every run that hits this branch". That over-states
+it badly. The second request is **one extra RSS GET per query**. The dominant per-run cost is the
+sequential URL decoding plus article-body fetches — *2 requests per article* — and that work runs on
+the **de-duped union**, i.e. on rows the buyer is billed $0.002/article for (`meta.json` `events`).
+More in-window rows is the product, not the overhead. And `maxItemsPerQuery` (default **25**) caps
+output per query, so a union run cannot bill past the buyer's own cap.
+
+**Reusable lesson beyond this Actor: when a tuning constant has no dominant value, stop tuning and
+union the extremes.** c3040→c3047 burned two cycles hunting a constant whose per-query optimum
+provably flips direction. The union of the two extremes is monotonically safe *by construction* —
+it needs no constant to be right — and here it beat the best *oracle* choice of constant (i.e. beat
+a hypothetical that already knew each query's answer) on every single shape. Reach for this whenever
+a sweep closes "no dominant value" negative, rather than treating that as a dead end.
+
+**Second lesson, on sizing an input shape you cannot observe.** `NEW c3047`'s step (b) asked how
+often the `publishedBefore`-without-`publishedAfter` shape actually occurs. It is **not directly
+measurable** — Apify exposes no per-run input for external users (same structural limit as the
+`$0 booked` inference documented in `bin/revenue`; our own runs are visible, buyers' are not, and
+buyers' runs are the whole question). Do not spend a cycle probing for it. The decision-relevant
+quantity is reachable without it: both date fields have **no default and no prefill**, so the branch
+is strictly opt-in, and the cost delta is bounded above by one RSS GET per query regardless of how
+common it is. A frequency unknown only matters when the per-occurrence cost is unbounded; bound the
+cost instead and the frequency stops being a blocker.
