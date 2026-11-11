@@ -1552,7 +1552,53 @@ TERMS = {
     # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
-    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data", "sec filings data api", "form 4 data api", "sec insider data", "sec edgar insider data", "insider transactions data", "insider trade data", "insider trading research", "executive trading data", "insider sentiment data", "sec form 4 api"],
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data", "sec filings data api", "form 4 data api", "sec insider data", "sec edgar insider data", "insider transactions data", "insider trade data", "insider trading research", "executive trading data", "insider sentiment data", "sec form 4 api", "form 4 scraper api", "form 4 scraper", "sentiment data exports"],
+    # cycle 3028 (Regular/GROWTH, RULE 6 anchor-map, 13th of 27 Actors mapped): ran
+    # `--why` on all 19 tracked TERMS. Anchor split: title(attr=0) carries 4, description
+    # (attr=2) carries 3 (insider buying/insider selling/stock insider), seoTitle(attr=4)
+    # carries 5, seoDescription(attr=5) carries 7. **description is NOT a RULE 6 free
+    # canvas** (3 real anchors), so the usual reword lever was unavailable -- but
+    # seoDescription sat at 181/200, i.e. 19 free chars, which is the c3019 APPEND lever
+    # (independent of RULE 6: an append evicts nothing, and Algolia proximity is a
+    # minimum-window so added words can only help).
+    # **RULE 6b re-confirmed, and for the FIRST time on seoDescription rather than
+    # description:** before touching the field, batch-priced all 69 contiguous 2-4-word
+    # n-grams of the live text with `store-price --attr 5`. It is densely loaded with
+    # untracked incidental wins from the c1846-era item-(r) sweep -- `sentiment data
+    # exports` (2350 nbHits, p3), `research executive` (2111, p1), `data insider` (1207,
+    # p3), `trading data and` (2708, p1), `data api sec` (6572, p16), `an sec` (6583, p22).
+    # In particular the trailing word "exports" looked like 8 free chars for the taking and
+    # is actually the anchor of a 2350-nbHits p3 win, so **any eviction here is CLOSED
+    # NEGATIVE** -- append-only is the only safe lever on this field.
+    # Shipped: removed the Oxford comma in "executive trading data, and" (frees exactly 1
+    # char, word sequence byte-identical, no token moved) and appended " Form 4 scraper
+    # API." -> 200/200 exactly. Truth-checked first: `src/main.js` handles Form 3/4/5 on 13
+    # lines and the slug is live in fetchsmith.com `/api/v1/tools` (26 tools), so both
+    # "Form 4 scraper" and "API" are true claims, not SEO filler.
+    # **Two wins for 19 chars, both predictions exact, measured live post-reindex (build
+    # 0.1.77):** `form 4 scraper api` (1137 nbHits) p41 -> **p2** (words=4 exact=4 prox=3
+    # attr=5) and `form 4 scraper` (2029 nbHits) p32 -> **p14** (words=3 exact=3 prox=2
+    # attr=5) -- the second is a page-2 -> page-1 crossing on the highest-volume query this
+    # Actor has ever ranked. **Zero bucket regressions: all 19 pre-existing tracked terms
+    # re-measured with byte-identical (words, exact, prox, attr) tuples**, and all 7
+    # seoDescription-anchored ones held byte-identical RANK too (p5/p1/p3/p2/p1/p1/p1).
+    # THIRD confirmed instance of the c2088 `--desc` first-occurrence false-pessimism bug,
+    # and the first seen at attr=5: the simulator flagged `form 4 scraper api` as prox=24
+    # -> p168 and `sentiment data exports` as "!! WORSE than live p3" -> p201, both because
+    # it scores from each token's FIRST occurrence ("API"/"data" both appear early in the
+    # field) instead of the best window. Per the c2089 rule it was disregarded because the
+    # protected anchor substring was unchanged -- and it held: `sentiment data exports`
+    # re-measured p3 with exact=3 prox=2, and the target landed the predicted p2. The
+    # trustworthy column in that output is `contig`/`tgtN`, not the `-> pred` narrative.
+    # The 3 new TERMS above are the 2 wins plus `sentiment data exports` (promoted purely
+    # so the eviction trap that nearly cost it is caught by a regression run next time).
+    # NEXT GROWTH SLOT: fresh unmapped candidates are `nih-reporter-scraper`,
+    # `federal-register-scraper` (only 8 TERMS, cheap map), `clinicaltrials-scraper`,
+    # `uk-find-a-tender-scraper`, `substack-scraper`, `fec-campaign-finance-scraper`
+    # (seoDesc 187/200 = 13 free chars, same append lever), `sam-gov-opportunities-scraper`,
+    # `hacker-news-scraper`, `google-play-reviews-scraper` (seoDesc 190/200 AND seoTitle
+    # 51/60 = two append levers). Run the RULE 6b n-gram batch-price on the target field
+    # FIRST in every case.
     # cycle 1853 (item r2, BLIND-SPOT CLOSURE): `sec form 4 api` (216 hits) was promoted p22 ->
     # p12 at cycle 1838 (named below as an untracked win) but never added to this list, so it
     # went unmonitored for 15 cycles -- same gap class as trademark-search-scraper at 1852.

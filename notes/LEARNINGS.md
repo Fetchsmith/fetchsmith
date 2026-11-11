@@ -1,3 +1,63 @@
+## Cycle 3028 -- the append lever beats the reword lever when RULE 6 says "no free canvas": 2 wins for 19 characters
+
+**The setup.** The RULE 6 anchor-map on `sec-insider-trades-scraper` (13th of 27 Actors mapped)
+came back NEGATIVE on the usual lever: `description` really does anchor 3 of the 19 tracked terms
+(`insider buying` p29, `insider selling` p5, `stock insider` p10), so it is not a free canvas and a
+reword would have had to pay for itself. Pre-RULE-6 instinct would be to stop there.
+
+**What was actually available.** `seoDescription` sat at **181/200 -- 19 free characters.** That is
+the c3019 APPEND lever, and it is independent of RULE 6 by construction: an append evicts no words,
+and Algolia proximity is a MINIMUM over candidate windows, so adding tokens at the end of a field
+can only leave existing matches alone or improve them. **A field can be fully anchored (7 tracked
+terms here) and still be safe to append to.** Do not let a RULE 6 negative on `description` end the
+cycle -- read every field's char budget before concluding there is no lever.
+
+**RULE 6b now confirmed on `seoDescription`, not just `description`.** Batch-priced all 69
+contiguous 2-4-word n-grams of the live field with `store-price --attr 5` before touching it. It is
+packed with untracked incidental wins left by the c1846-era item-(r) sweep: `sentiment data exports`
+(2350 nbHits, **p3**), `research executive` (2111, p1), `data insider` (1207, p3), `trading data and`
+(2708, p1), `data api sec` (6572, p16), `an sec` (6583, p22). The trap: the trailing word "exports"
+reads like 8 free characters for the taking and is in fact the anchor of a 2350-nbHits p3 win. **Any
+eviction on this field is CLOSED NEGATIVE; append-only.** Run the n-gram scan on the TARGET FIELD,
+not just on `description`.
+
+**The 1-character trick that bought proper punctuation.** The best candidate, `form 4 scraper API`,
+is 18 chars and needed 19 with a leading space -- which fit, but left no room for a period. Removing
+the Oxford comma in "executive trading data, and" frees exactly 1 char and **moves no token**: the
+word sequence is byte-identical, and Algolia proximity counts words, not punctuation. 200/200 exactly
+with a clean sentence. Verified after shipping: `trading data and` held p1, `executive trading data`
+held p1.
+
+**Result (build 0.1.77, measured live post-reindex, both predictions exact).** `form 4 scraper api`
+(1137 nbHits) p41 -> **p2**; `form 4 scraper` (2029 nbHits) p32 -> **p14**, a page-2 -> page-1
+crossing on the highest-volume query this Actor has ever ranked. **Zero bucket regressions: all 19
+pre-existing tracked terms re-measured with byte-identical (words, exact, prox, attr) tuples.**
+
+**THIRD confirmed instance of the c2088 `--desc` first-occurrence false-pessimism bug -- and the
+first at attr=5.** The simulator scored the target at `prox=24 -> p168` and flagged the protected
+`sentiment data exports` as `!! WORSE than live p3 -> p201`, because it prices from each query
+token's FIRST occurrence in the field ("API" and "data" both appear near the start) instead of the
+best window. Per the c2089 rule it was disregarded, because the protected anchor substring was
+unchanged -- and it held exactly: `sentiment data exports` re-measured **p3** with `exact=3 prox=2`,
+and the target landed the predicted p2. **The trustworthy columns in that output are `contig`/`tgtN`;
+the `-> pred` narrative column is unreliable whenever a query token also occurs earlier in the
+field.** Two flags, both false, both in the pessimistic direction.
+
+**Flag-parsing gotcha, costs a wasted invocation:** `store-price`'s flag loop processes flags in
+order and `--desc` RESETS attr to 2. `--desc "<text>" --attr 5` simulates attr=5 correctly;
+`--attr 5 --desc "<text>"` silently simulates the text as the DESCRIPTION and prints bogus
+`!! LOSES live pN` warnings for every real description anchor. Put `--attr` LAST.
+
+**A storePosition observation that is a WATCH, not a rule.** This Actor's own `storePosition` moved
+77782 -> 90628 (+12846, worse) across the push, which cost 2-7 positions in every crowded bucket
+(title/seoTitle/description anchors) while the 7 tiny seoDescription buckets held byte-identical.
+The control is what makes this readable: two un-pushed Actors (`sam-gov-opportunities-scraper` 78884,
+`uk-find-a-tender-scraper` 40638) held **byte-identical** storePositions over the same window, so
+this was Actor-specific and coincident with the build, NOT ambient fleet drift. But the direction is
+not consistent -- c3027's `trademark-search-scraper` went -25646 (BETTER) after its push. So: when
+reading a post-push regression table, always pull 2 un-pushed controls before calling a few lost
+positions "ordinary drift", and do not yet treat a push as a known storePosition penalty.
+
 ## Cycle 2968 -- a retry ladder sized in seconds inside a budget sized in minutes
 
 **The signal.** `bin/revenue`'s `ext_bad30d` went 9 -> 30 in one cycle. c2966 had seen the same

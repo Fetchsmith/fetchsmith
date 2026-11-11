@@ -6610,5 +6610,200 @@
     "storePosition": 60622
    }
   ]
+ },
+ {
+  "ts": 1794366120,
+  "date": "2026-11-11",
+  "rows": [
+   {
+    "slug": "app-store-reviews-scraper",
+    "query": "app store reviews",
+    "rank": 309,
+    "nbHits": 2144,
+    "storePosition": 86768
+   },
+   {
+    "slug": "apple-podcasts-scraper",
+    "query": "apple podcasts",
+    "rank": 130,
+    "nbHits": 335,
+    "storePosition": 108870
+   },
+   {
+    "slug": "ats-jobs-scraper",
+    "query": "recruitee",
+    "rank": 379,
+    "nbHits": 12757,
+    "storePosition": 74513
+   },
+   {
+    "slug": "clinicaltrials-mcp-server",
+    "query": "clinicaltrials.gov mcp",
+    "rank": 1,
+    "nbHits": 32,
+    "storePosition": 110567
+   },
+   {
+    "slug": "clinicaltrials-scraper",
+    "query": "clinical trials",
+    "rank": 138,
+    "nbHits": 354,
+    "storePosition": 76524
+   },
+   {
+    "slug": "court-records-scraper",
+    "query": "docket scraper",
+    "rank": 13,
+    "nbHits": 642,
+    "storePosition": 108443
+   },
+   {
+    "slug": "eu-ted-tenders-scraper",
+    "query": "ted tenders",
+    "rank": 212,
+    "nbHits": 671,
+    "storePosition": 107685
+   },
+   {
+    "slug": "fda-recall-scraper",
+    "query": "fda recall",
+    "rank": 90,
+    "nbHits": 382,
+    "storePosition": 76665
+   },
+   {
+    "slug": "fec-campaign-finance-scraper",
+    "query": "super pac",
+    "rank": 1,
+    "nbHits": 46,
+    "storePosition": 74206
+   },
+   {
+    "slug": "federal-register-scraper",
+    "query": "federal register",
+    "rank": 91,
+    "nbHits": 706,
+    "storePosition": 76528
+   },
+   {
+    "slug": "google-news-mcp-server",
+    "query": "news search tool",
+    "rank": 1,
+    "nbHits": 3835,
+    "storePosition": 110989
+   },
+   {
+    "slug": "google-news-scraper",
+    "query": "google news",
+    "rank": 300,
+    "nbHits": 4211,
+    "storePosition": 81353
+   },
+   {
+    "slug": "google-play-reviews-scraper",
+    "query": "google play reviews",
+    "rank": 424,
+    "nbHits": 1385,
+    "storePosition": 75456
+   },
+   {
+    "slug": "grants-gov-scraper",
+    "query": "grants.gov",
+    "rank": 151,
+    "nbHits": 222,
+    "storePosition": 109268
+   },
+   {
+    "slug": "hacker-news-scraper",
+    "query": "hacker news",
+    "rank": 317,
+    "nbHits": 766,
+    "storePosition": 75461
+   },
+   {
+    "slug": "nih-reporter-scraper",
+    "query": "nih reporter",
+    "rank": 32,
+    "nbHits": 90,
+    "storePosition": 109756
+   },
+   {
+    "slug": "remote-jobs-scraper",
+    "query": "jobicy",
+    "rank": 91,
+    "nbHits": 232,
+    "storePosition": 105069
+   },
+   {
+    "slug": "sam-gov-opportunities-scraper",
+    "query": "sam.gov opportunities",
+    "rank": 10,
+    "nbHits": 354,
+    "storePosition": 78884
+   },
+   {
+    "slug": "scholarship-scraper",
+    "query": "scholarship",
+    "rank": 17,
+    "nbHits": 49,
+    "storePosition": 114886
+   },
+   {
+    "slug": "sec-insider-trades-scraper",
+    "query": "sec insider trading",
+    "rank": 19,
+    "nbHits": 232,
+    "storePosition": 77782
+   },
+   {
+    "slug": "shopify-products-scraper",
+    "query": "shopify products",
+    "rank": 45,
+    "nbHits": 2332,
+    "storePosition": 29868
+   },
+   {
+    "slug": "steam-reviews-scraper",
+    "query": "steam reviews",
+    "rank": 57,
+    "nbHits": 1555,
+    "storePosition": 75662
+   },
+   {
+    "slug": "substack-scraper",
+    "query": "substack scraper",
+    "rank": 252,
+    "nbHits": 548,
+    "storePosition": 108746
+   },
+   {
+    "slug": "trademark-search-scraper",
+    "query": "tmview",
+    "rank": 2,
+    "nbHits": 28,
+    "storePosition": 6314
+   },
+   {
+    "slug": "uk-find-a-tender-scraper",
+    "query": "find a tender",
+    "rank": 7,
+    "nbHits": 2221,
+    "storePosition": 40638
+   },
+   {
+    "slug": "us-federal-awards-scraper",
+    "query": "usaspending",
+    "rank": 291,
+    "nbHits": 375,
+    "storePosition": 76351
+   },
+   {
+    "slug": "website-screenshot-scraper",
+    "query": "website screenshot",
+    "rank": 105,
+    "nbHits": 807,
+    "storePosition": 60764
+   }
+  ]
  }
 ]

@@ -2,7 +2,7 @@
   "title": "SEC Insider Trading Scraper - Form 4 Insider Trades & Buys",
   "description": "Scrape SEC EDGAR Form 3/4/5 stock insider trades: insider buying and selling — from the official filings: one flat row per transaction with insider name, role, decoded code, shares, price, signed USD value and shares held after. No API key, no fee. Signed USD separates insider selling from buys.",
   "seoTitle": "Insider Trading API, SEC Filings Data API, Form 4 Data API",
-  "seoDescription": "An SEC insider data API: sec edgar insider data, insider transactions data, insider trade data, insider trading research, executive trading data, and insider sentiment data exports.",
+  "seoDescription": "An SEC insider data API: sec edgar insider data, insider transactions data, insider trade data, insider trading research, executive trading data and insider sentiment data exports. Form 4 scraper API.",
   "categories": ["BUSINESS", "LEAD_GENERATION"],
   "events": {
     "result": { "eventTitle": "Insider transaction", "eventDescription": "One reported Form 3/4/5 transaction row returned to the dataset.", "eventPriceUsd": 0.0018 }
