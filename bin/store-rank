@@ -1770,6 +1770,46 @@ TERMS = {
                                       "wage determination api",       # 37 hits, p4 -> p1 (seoDescription, exact)
                                       "contract opportunities api",   # 1317 hits, p156 -> p15 (seoDescription, exact)
                                       "set aside filters",            # 565 hits, p6 -> p6 PROTECTED (see WORSE-flag note below)
+                                      # cycle 3034 (RULE 6 anchor-map GROWTH sweep, this Actor newly mapped): anchor-mapped
+                                      # all 19 pre-existing tracked terms with `store-rank --why` -- title(attr=0) carries
+                                      # `sam.gov opportunities` p10, `federal procurement` p4, `government bids` p29;
+                                      # description(attr=2) carries `wage determination` p7; seoDescription(attr=5) carries
+                                      # `rfp data api` p2 plus the 10 terms added at cycle 1840 above. 4 tracked terms are
+                                      # unranked regardless of field (`sam gov opportunities`, `sam.gov scraper`,
+                                      # `federal rfp`, `excluded parties list`). No tracked term anchors seoTitle --
+                                      # looked like a free canvas by RULE 6's narrow test, but RULE 6b (n-gram batch-price
+                                      # of all 4 fields' own vocabulary) found seoTitle is actually densely carrying
+                                      # UNTRACKED value already in TERMS from cycle 1840 (`government contracts api` p11,
+                                      # `bid data api` p4, `procurement data api` p8) plus `bid data`/`procurement data`
+                                      # below -- rewording it would risk evicting real wins for no net gain, and every
+                                      # field is similarly packed (description/seoDescription both near their char caps
+                                      # too, 1-3 free chars, too thin for even an append). RULE 6 CLOSED NEGATIVE fleet-wide
+                                      # on this Actor (free canvas AND append lever both unavailable); this is the 6th
+                                      # straight Actor to fail RULE 6's test since sec-insider-trades c3028 (see c3032's
+                                      # queue.md note), reinforcing that RULE 6b should run first. RULE 6b n-gram probe of
+                                      # all 4 fields found 14 genuinely NEW (not already tracked) already-ranked wins for
+                                      # $0/no edit/no build, added below with their measured 2026-11-11 rank (storePosition
+                                      # 78884). Screened and correctly left OUT (ranked only beyond p60, more fragile):
+                                      # `procurement data` (3094 hits, p74, attr=4), `government procurement` (1083, p82,
+                                      # attr=5), `naics set-aside` (305, p91, attr=0), `sam.gov contract` (385, p167,
+                                      # attr=5), `sam.gov contract opportunities` (339, p138, attr=5), `watch mode` (11841,
+                                      # p106, attr=0 -- too generic/shared across the whole fleet's watch-mode feature to
+                                      # attribute cleanly); `government contracts` (1663), `exclusion list api` (822) and
+                                      # `excluded parties` (165) are unranked entirely (absent from top 200).
+                                      "exclusion records",              # 2557 hits, p7 (description)
+                                      "bid data",                       # 2539 hits, p19 (seoTitle)
+                                      "contracting data",                # 1069 hits, p4 (seoDescription)
+                                      "contracting opportunities",      # 545 hits, p3 (description)
+                                      "solicitation data",              # 371 hits, p5 (seoDescription)
+                                      "sam.gov solicitations",          # 272 hits, p10 (description)
+                                      "rfp data",                       # 247 hits, p10 (seoDescription)
+                                      "federal contracting opportunities", # 237 hits, p2 (description)
+                                      "us federal contracting",         # 202 hits, p3 (description)
+                                      "cfda grant",                      # 179 hits, p1 (description)
+                                      "sources sought",                 # 228 hits, p45 (description, edge-of-top-60)
+                                      "wage determinations",            # 75 hits, p7 (description, plural variant)
+                                      "grant loan programs",            # 68 hits, p1 (description)
+                                      "federal contracting",            # 345 hits, p6 (description)
                                       ],  # cycle 964: p14 p32 p9 p14 p1 p3 p15 p2 p2
     # cycle 1840 TOOL TRAP (new, costlier than the known flag-order one): `store-price --desc/--title`
     # UNDERCOUNTS nbExactWords by 1 whenever the query's LAST word sits immediately before
