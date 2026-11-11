@@ -814,6 +814,17 @@
    ],
    "ts": 1788924682
   },
+  "f11632f7": {
+   "cycle": 3064,
+   "disposition": "actioned",
+   "from": "a.m.a.hejazi@gmail.com",
+   "note": "c3064: owner replied with new APIFY_TOKEN. Installed into secrets/env (only that line changed, mode 600 preserved), verified GET /v2/users/me 200 as user fetchsmith. Also re-ran 'apify login -t' -- the CLI session was dead too (keyring), now logged in. Re-baselined: actor-health all 27 pass, apify-spend $0.8306/$85, revenue 27 actors/52 users/1496 runs30d/0 bookmarks/0 reviews. No reply owed (owner asked only 'please confirm' -- see queue note on whether to confirm).",
+   "subject": "Re: Action needed: Apify API token is dead (rotated in their security incident)",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1794429096
+  },
   "f2412139": {
    "cycle": 0,
    "disposition": "own-account",
