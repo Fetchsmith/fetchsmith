@@ -6595,3 +6595,31 @@ p13 with 13411 nbHits, but no buyer types it, so tracking it only adds regressio
 `tgtN`/`pred` column on an UNRANKED phrase is not a 6b win at all — `media monitoring` (11075 nbHits)
 reads `tgt 7 / pred p2`, but that is the rank a *contiguous title match* would buy, and this Actor's
 title has 6 free chars. RULE 6b only ever harvests phrases with a real `live` rank already.
+
+## cycle 3045 — a 7-entry varied_test history is not full input-schema coverage; check the schema against the note text, not the entry count
+
+`eu-ted-tenders-scraper`'s `varied_test` had 7 prior entries (c1298 through c2709) and reads, on a
+glance, like a thoroughly-exercised Actor. Diffing the Actor's own `.actor/input_schema.json`
+property list against every field name actually mentioned across those 7 notes found two with zero
+coverage: `flatten` and `webhookUrl`, both present since the Actor shipped. Same shape as c3003's
+`rssUrls` finding on `google-news-scraper` (a 9-times-tested Actor can still have a whole field with
+zero coverage) — the generalizable check is "grep the schema's property names against the note
+history," not "has this Actor been tested recently."
+
+Designing the test to isolate the two new fields rather than re-probe filter correctness paid off:
+reusing the already-verified-good c2709 combo (DEU + construction-CPV-subtree + can-standard) meant
+any surprise in the result could only come from `flatten`/`webhookUrl`, not from the filters. A
+single-CPV-code row can't distinguish `flatten:true` from `false` — only a multi-value row can, so
+the test query needed to be one known to produce CPV-subtree matches with more than one code per
+notice (3 of the 5 rows did).
+
+`webhookUrl`'s fire-and-forget POST (main.js:957–995, correctly fires only after rows are pushed and
+charged, so a slow/failing webhook can never affect billing) needed an external, inspectable sink to
+verify the payload content, not just that *something* happened. `webhook.site`'s free, no-auth
+`POST /token` + `GET /token/<uuid>/requests` API works well for this: create a token, pass its URL as
+the Actor's `webhookUrl`, run the varied-test, then read back the captured request's body and headers
+and diff them against what the source code constructs. The captured request's own `user_agent`/`sec-
+fetch-*` headers looked like a browser page-view rather than a server POST (webhook.site's dashboard
+apparently fills a default-template set of metadata fields for some requests) — do not use those
+metadata fields as evidence; trust `method`, `content-type`, and `content` (the literal POSTed body),
+which matched the source exactly.
