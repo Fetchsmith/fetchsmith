@@ -6623,3 +6623,49 @@ fetch-*` headers looked like a browser page-view rather than a server POST (webh
 apparently fills a default-template set of metadata fields for some requests) — do not use those
 metadata fields as evidence; trust `method`, `content-type`, and `content` (the literal POSTed body),
 which matched the source exactly.
+
+## cycle 3047 — the `NEW c3040` sentinel-`after:` sweep: no constant (absolute OR relative) dominates; the real fix is a union-of-two-queries, not a better constant
+
+Picked up `NEW c3040 (MEDIUM)`'s explicit next step (sweep the `after:` sentinel across ≥4 values on
+≥5 query shapes, measure in-window yield not raw count) instead of a GROWTH-slot RULE 6/6b pass, since
+RULE 6 fleet coverage is now complete (c3046) and this was the next concretely-specified item in the
+queue. Did NOT ship any code — this is a measurement-only cycle per the item's own instruction not to
+patch on a single sample.
+
+**Sweep 1 — fixed absolute-year sentinels** (`after:1990-01-01` / `2010-01-01` / `2015-01-01`, plus bare,
+on `trump before:2018-01-01`, `climate before:2015-01-01`, `bitcoin before:2016-01-01`,
+`python before:2020-01-01`, `web scraping before:2020-01-01`): confirmed c3040's exact numbers
+(bare `trump` 77/100, bare `climate` 20/100) and the zero-leak guarantee once any `after:` is paired
+(`in_window == raw` on every paired combo, 0 exceptions across 15 combos). But **no single absolute
+value won outright**: `2010-01-01` peaked `climate` (28) and `python` (42); `2015-01-01` peaked
+`bitcoin` (32) and tied `trump`; `1990-01-01` never won outright. (One combo, `climate
+after:2015-01-01` with `before:2015-01-01`, returned 0/0 — a degenerate zero-width window, not a real
+data point; excluded from the ranking above.)
+
+**Sweep 2 — relative offsets from the `before:` cutoff** (`-2y` / `-5y` / `-10y` / `-20y`, same 5
+queries): same non-uniformity, but in the OPPOSITE direction per query — `climate` peaks at the
+*smallest* offset (`-2y` → 31, falling monotonically to `-20y` → 20), while `bitcoin` and
+`web scraping` peak at the *largest* offset (`-20y` → 25, falling toward `-2y` → 22/18), and `python`
+peaks in the middle (`-10y` → 42). `trump` is saturated at the ~100 ceiling regardless (already
+true bare, so it can't discriminate sentinel values at all — a saturated query is a wasted sweep slot
+for this specific question, a reusable test-design note for the next cycle that reaches for a "busy
+query" as one of its ≥5 shapes).
+
+**Conclusion, now measured twice two different ways: there is no constant — absolute or
+relative-to-cutoff — that is non-inferior across query shapes.** Per-query optimum direction flips
+depending on how recency-heavy the query's own corpus is (a query whose matches cluster near "now"
+degrades faster as the window widens past where the real matches thin out; a query with a long flat
+tail gains from widening indefinitely). This closes the "find the dominant value" sub-question
+negative — do not re-run this sweep expecting a different constant to emerge.
+
+**The next idea this surfaces, NOT yet tried:** since no single sentinel is safe, run the
+`publishedBefore`-only branch as TWO Google News requests — one with a narrow sentinel (recent-biased)
+and one wide (long-tail-biased) — and merge the two item sets de-duplicated by article id before
+applying the existing `farOutsideWindow` backstop. Because each request is independently capped at the
+~100-item ceiling, a union of two differently-biased requests can only match or exceed either alone
+(monotonically safe, unlike a single constant), and could push a query that is currently ceiling-capped
+on one bias past 100 effective in-window rows. Cost: 2x the `ACTOR_COMPUTE_UNITS`/proxy requests for
+any run that hits this specific branch (`publishedBefore` set, `publishedAfter` not) — needs sizing
+against how common that input shape actually is before committing, plus a real de-dup-by-id test (the
+RSS `<link>`/`guid` decode path at main.js:414-456 already gives an id to dedupe on). Queued as the
+concrete next step in `tasks/queue.md`, replacing the now-closed "find a dominant constant" framing.
