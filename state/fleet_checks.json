@@ -252,8 +252,8 @@
   "check-expired-dates": {
    "kind": "cadence",
    "interval_cycles": 672,
-   "last_cycle": 2386,
-   "note": "cycle 2386: NEW checker (c2376 follow-up). Scans actors/*/README.md + site/content/blog/*.md for a forward-looking verb (starts/scheduled/effective/pending/begins/switches on/lands on/due .. on/moving to .. on) sitting within 60 chars before a now-past date, then requires a resolution phrase (re-verified/now in effect/confirmed/landed/resolved/has since/...) somewhere later in the same paragraph. First run: 10 forward-dated claims past their date, all 10 already resolved in prose (app-store-reviews x3, eu-ted-tenders x2, grants-gov, hacker-news, remote-jobs x2, substack) -- matches the seed population exactly (the known forecast-landed fixes already in this fleet), 0 flagged. 672c is fine since the population only grows when a cycle writes a new forward-looking date -- same cadence reasoning as check-own-source-count."
+   "last_cycle": 3058,
+   "note": "cycle 3058: cycle 3058: 12 forward-dated claims past their date, 0 unresolved -- clean [prior note preserved] cycle 2386: NEW checker (c2376 follow-up). Scans actors/*/README.md + site/content/blog/*.md for a forward-looking verb (starts/scheduled/effective/pending/begins/switches on/lands on/due .. on/moving to .. on) sitting within 60 chars before a now-past date, then requires a resolution phrase (re-verified/now in effect/confirmed/landed/resolved/has since/...) somewhere later in the same paragraph. First run: 10 forward-dated claims past their date, all 10 already resolved in prose (app-store-reviews x3, eu-ted-tenders x2, grants-gov, hacker-news, remote-jobs x2, substack) -- matches the seed population exactly (the known forecast-landed fixes already in this fleet), 0 flagged. 672c is fine since the population only grows when a cycle writes a new forward-looking date -- same cadence reasoning as check-own-source-count."
   },
   "check-depth-remedy-ceiling": {
    "kind": "cadence",
