@@ -907,7 +907,35 @@ TERMS = {
                             "yc startup news", "hacker news comments api",
                             "hacker news stories api", "developer jobs api",
                             "startup jobs api", "hacker news monitoring",
-                            "tech news alerts", "upvotes api"],
+                            "tech news alerts", "upvotes api",
+                            "hacker news api", "news comments api", "news data feeds",
+                            "jobs threads", "developer jobs", "developer news", "tech news",
+                            "keyword monitoring", "news alerts", "news api", "startup news api"],
+    # cycle 3041: RULE 6 anchor-map (18/27->21/27 fleet coverage) + RULE 6b n-gram re-probe,
+    # $0/no edit/no build. RULE 6 CLOSED NEGATIVE, 10th straight Actor to fail the free-canvas
+    # test: all 18 pre-existing tracked terms anchor to attr=0/title (`hn api` p2, `tech news
+    # api` p1, `who is hiring` p53), attr=2/description (`startup news` p13, `hacker news jobs`
+    # p26, `keyword monitoring api` p2), attr=4/seoTitle (`hacker news scraper api` p27,
+    # `developer news api` p1, `tech jobs api` p21), or attr=5/seoDescription (the remaining 8,
+    # p1-p20) -- `hacker news` alone is unranked beyond p60. Every field anchors >=1 term, and
+    # all 4 are near their char caps (title 59/63, description 298/300, seoTitle 58/60,
+    # seoDescription 194/200 -- 2-6 free chars, too thin for a new contiguous phrase).
+    # RULE 6b found 11 already-ranked untracked wins for $0, from a curated shortlist of the 4
+    # live fields' own n-gram vocabulary batch-priced with `store-price`, each individually
+    # re-verified via `store-rank --why` (not trusting the batch tool's `live` column alone --
+    # all 11 matched exactly): `keyword monitoring` (24092 nbHits, this Actor's highest-volume
+    # ranked query by far, p36), `news api` (17771, p54), `news alerts` (9918, p52), `news data
+    # feeds` (10971, p4), `news comments api` (3414, p5), `developer news` (3297, p12), `tech
+    # news` (2079, p11), `developer jobs` (1137, p35), `hacker news api` (550, p10), `startup
+    # news api` (547, p9), `jobs threads` (376, p3). Screened and correctly left untracked:
+    # `jobs api hacker news` (310 nbHits, p1 -- an n-gram-tokenizer artifact crossing a sentence
+    # boundary, not a phrase a buyer would type), plus 6 candidates ranked outside the top 60
+    # (`algolia api` p66, `monitoring api` p71, `stories api` p62, `news feeds` p70, `data
+    # feeds` p134, `who's hiring` p71) and 5 unranked entirely (`hacker news scraper`, `startup
+    # jobs`, `tech jobs`, `jobs api`, `comments api`, `scraper api`, `api search`, `full text
+    # search`, `hacker news data`, `news stories comments`). All 11 wins added to TERMS above
+    # with this provenance; `python3 -c "import ast; ast.parse(...)"` clean; full 29-term probe
+    # re-run post-edit, zero regressions on the 18 pre-existing terms (all byte-identical).
     # cycle 890 (final 44 free chars, pure append, 0 words evicted, 256->298/300):
     # appended " Also a keyword monitoring API for alerts." — verified true against
     # the existing `watchLabel` feature (README already calls it a "scheduled keyword
