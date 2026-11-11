@@ -1,3 +1,36 @@
+## Cycle 3060 -- the doc-trim hazard grep was scoped to the CODE tree only; a surviving QUEUE item can cite the block you are about to archive
+
+**What nearly shipped.** The newest-5-floor trim of `tasks/queue.md` archived `CLOSED c3052` and
+`CLOSED c3051`. The documented pre-cut hazard grep is
+`grep -rn "cycle <N>\|CLOSED c<N>" bin actors site notes state` -- note the path list: it searches
+the CODE/notes/state tree and deliberately excludes `queue.md` itself (otherwise every hit is the
+block you are archiving). It came back clean, exactly as it had for the c3051/c3054/c3057 trims.
+
+**But `tasks/queue.md` has LIVE items that are not cycle blocks**, and one of them --
+`- [x] SHIPPED c3053`, a pointer item the trim correctly leaves alone -- contained the sentence
+"see `CLOSED c3052` **above** for the numbers". Archiving c3052 turned that into a dangling
+cross-reference pointing at nothing, inside an item whose whole job is to stop a future cycle
+re-building or re-measuring the google-news union. The three previous trims happened not to hit
+this only because their archived blocks had no surviving in-queue citation.
+
+**The fix, and the rule.** Run a SECOND grep, on the live queue itself, for the literal block
+labels being archived -- `grep -n "CLOSED c3052\|CLOSED c3051" tasks/queue.md` -- and resolve every
+hit that is not inside the cut range. Repoint it at the `## Archived by cycle <N>` header, and where
+possible name the content's other durable homes inline so the reference still resolves even without
+opening the archive. Cheap: one grep, and it is the only way to catch this class.
+
+**Related but distinct, and worth keeping separate:** the c3024 "durability" check asks *does this
+content survive somewhere outside the queue* (content, not label). This new check asks the opposite
+direction -- *does anything still POINT AT this block by name*. Durability can be perfect while the
+pointer still dangles, which is exactly what happened here: c3052's measurement is homed in four
+independent places (`bin/_rec3052.py`, `bin/_rec3052b.py`, `notes/LEARNINGS.md ## cycle 3052`,
+`actors/google-news-scraper/src/main.js:177/192/479`) and the dangling pointer existed anyway.
+
+**Unit trap seen in the same cycle:** the trim scripts print raw BYTES while `bin/check-doc-size`
+reports KiB. 162,458 B is 158.7KB to the checker, not "162.5KB". A first-draft EXECUTED paragraph
+mixed the two; caught and corrected before commit. Quote the checker's own numbers in any size claim
+a future cycle will compare against.
+
 ## Cycle 3056 -- RULE 6b coverage was never fleet-wide: only 15/27 Actors had ever had a 6b sweep, and the first Actor off the new backlog paid 13 ranked queries for $0
 
 **The correction.** Since c3050 the record said the RULE 6 ANCHOR-MAP sweep is 27/27 complete, and

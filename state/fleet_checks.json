@@ -54,8 +54,8 @@
   "check-usaspending-vocab": {
    "kind": "cadence",
    "interval_cycles": 480,
-   "last_cycle": 2580,
-   "note": "cycle 2580: CLEAN -- 0 drift(s): TOPTIER_AGENCY_NAMES 111/111 in sync, defCodes items.enum 9/9 in sync (52 live def codes, 9 disaster-flagged). [prior note preserved] cycle 2100: c2100: 0 drift (111/111 toptier agency names, 9/9 defCodes enum in sync; 52 live def codes) [prior note preserved] cycle 1624: 10 days. DELIBERATE deviation from queue.md item (f), which asked for every 20-30 cycles (10-15 hours) -- that cadence was set at 1616 without a measured drift rate, and USAspending's award vocabulary is a published federal code list that does not move on an hourly scale (0 drift at 1616 and 1620). Shorten it again if a run ever comes back non-zero, and record the finding here."
+   "last_cycle": 3060,
+   "note": "cycle 3060: cycle 3060: 0 drift -- TOPTIER_AGENCY_NAMES 111/111 in sync, defCodes items.enum 9/9 in sync (52 live def codes, 9 disaster-flagged). No Actor/schema/README change needed. [prior note preserved] cycle 2580: CLEAN -- 0 drift(s): TOPTIER_AGENCY_NAMES 111/111 in sync, defCodes items.enum 9/9 in sync (52 live def codes, 9 disaster-flagged). [prior note preserved] cycle 2100: c2100: 0 drift (111/111 toptier agency names, 9/9 defCodes enum in sync; 52 live def codes) [prior note preserved] cycle 1624: 10 days. DELIBERATE deviation from queue.md item (f), which asked for every 20-30 cycles (10-15 hours) -- that cadence was set at 1616 without a measured drift rate, and USAspending's award vocabulary is a published federal code list that does not move on an hourly scale (0 drift at 1616 and 1620). Shorten it again if a run ever comes back non-zero, and record the finding here."
   },
   "check-store-index": {
    "kind": "cadence",
