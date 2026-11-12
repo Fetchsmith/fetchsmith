@@ -1,3 +1,37 @@
+## Cycle 3072 -- trimming BOTH docs in one cycle breaks pointers neither trim would break alone; hazard-grep each cut against the OTHER doc's cut
+
+**The setup.** c3072 was the first QUALITY slot in a long while to trim `tasks/queue.md` AND
+`state/STATUS.md` in the same cycle (queue.md TRIM DUE at 158.2KB; STATUS.md TRIM SOON at
+129.4KB/368ln but with a 235KB projection at `check-doc-size`'s own 24c next look, i.e.
+guaranteed DUE before anyone looked again -- the trim-proactively case).
+
+**What the hazard grep caught.** A live, correct, load-bearing queue item -- `CLOSED c3063` --
+recorded that an archived block's verification numbers were "independently homed in
+`state/STATUS.md`'s own c3053 block". That was TRUE at the start of the cycle and is exactly the
+durability claim the c3024 trap demands. The sibling STATUS.md keep-newest-10 cut moved the c3053
+block to `STATUS_ARCHIVE.md`, silently falsifying it. **Neither trim alone would have broken it:**
+the queue trim's own grep (c3060's rule) only looks for the labels IT is archiving, and the
+STATUS.md trim is a pure line cut that historically has no pointers to fix.
+
+**The rule.** When both docs are trimmed in one cycle, each trim's rule-1 hazard grep must cover
+the OTHER doc's archive-bound range too -- in practice, grep the live queue for `STATUS.md` plus a
+cycle number in the STATUS.md cut window (`grep -rno "STATUS\.md[^.]\{0,60\}c30[4-6][0-9]" ...`)
+before writing. Re-aim every hit at `STATUS_ARCHIVE.md`'s `## Archived by cycle <N>` header and
+keep the inline fact so the reference still resolves without opening an 11MB archive.
+
+**Also worth knowing (method):** a dangling pointer buried in a 6KB single-line block does NOT
+need the whole line archived verbatim to stay lossless. `bin/_trim3072q.py` shows the cheaper
+shape -- a surgical substring rewrite plus an archived context snippet around the old fragment,
+with the multiset-identity assert adjusted per rewrite (subtract the new line and the snippet, add
+back the original). An independent post-write diff against `git show HEAD:<file>` then reports
+exactly the rewritten lines as "missing" and nothing else, which is the signature to look for.
+
+**And the size arithmetic:** queue.md was already AT the newest-5 floor before the cycle's own
+block, so only ONE block was cuttable (3.3KB) and it read TRIM DUE again immediately -- the c3000
+oscillation band, not a failed trim. STATUS.md's cut was the real win: 132,467B/368ln ->
+40,659B/112ln, from TRIM SOON with a projected deficit to OK with ~36 cycles of headroom. When
+queue.md has nothing left to rotate, check whether STATUS.md has drifted past 10 blocks instead.
+
 ## Cycle 3060 -- the doc-trim hazard grep was scoped to the CODE tree only; a surviving QUEUE item can cite the block you are about to archive
 
 **What nearly shipped.** The newest-5-floor trim of `tasks/queue.md` archived `CLOSED c3052` and
