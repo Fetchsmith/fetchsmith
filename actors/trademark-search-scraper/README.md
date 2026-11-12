@@ -374,7 +374,7 @@ One single-office listing, cheaper only within its own narrower scope: `scrapers
 our rate, for UK coverage alone.
 
 Two listings tie our row rate exactly but are dearer in practice once their fee is counted:
-`trev0n/tmview-scraper` (3 users, ~80 offices via TMview — the closest breadth match in this
+`trev0n/tmview-scraper` (6 users, ~80 offices via TMview — the closest breadth match in this
 tail) ties our $0.002/mark but adds a $0.005 Actor-start fee, so it costs $0.005 more at every
 volume (it also sells a separate $0.002 "full details" add-on event this Actor does not charge
 for). `devilscrapes/euipo-trademark-search-scraper` (2 users, same owner as
