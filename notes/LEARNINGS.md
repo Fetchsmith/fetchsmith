@@ -1,3 +1,43 @@
+## Cycle 3116 -- the sub-phrase lever was scoped to one head-word (`api`) by accident; widening it to any generic head more than doubled the fleet backlog
+
+**What happened.** c3112 found the lever (the 2-gram prefix of a tracked 3-gram `... api` term is a
+different, far-better-ranked query) and c3115 generalised it to a fleet-wide scan -- but both
+cycles generated candidates only off the literal trailing word `api`, because that was the shape
+the original find happened to have. c3116 widened the generator to **any tracked 3-gram-or-longer
+whose FIRST or LAST word is a generic head** (`api, data, database, databases, reports, projects,
+research, feed, json, search, monitoring, tracking, alerts, scraper`), taking both the prefix (drop
+the trailing head) and the suffix (drop the leading head). On `nih-reporter-scraper` this turned 7
+candidates into 16, and **9 of the 13 keepers came from the widened part** -- `research projects`
+(13330 nbHits, p35, the highest-nbHits term ever tracked on that Actor), `funding database` (1868,
+p2), `funding reports` (1617, p5), `funded research` (771, p17), `grants database` (456, p11) and
+four more. The pure `api` prefixes paid 5 keepers and produced both screen-outs.
+
+**Why the narrow scope persisted for three cycles.** Nothing was wrong with the mechanism anyone
+wrote down -- c3112's own explanation is head-word-agnostic ("dropping the generic head-word
+collapses nbHits by one to two orders of magnitude while our record keeps a contiguous match at the
+same attribute"). What propagated was the **candidate GENERATOR**, which was written as a literal
+`w[-1] == 'api'` test and then reused verbatim by the next two cycles, including in a fleet-wide
+scan whose output (~100 candidates, "~19 Actors untouched") became the sized backlog. Re-running
+the same scan with the head-word set generalised gives **211 candidates across 26 Actors**. Lesson
+that generalises past SEO: when a finding's STATED mechanism is broader than the CODE that found
+it, the code is the thing that gets copied forward, and the written mechanism never re-reads
+itself. A fleet-wide count produced by a narrow generator is a floor, and should be labelled one.
+
+**Two cautions the widened pass earned, both measured.** (i) A sub-phrase is NOT automatically
+better than the longer term it came from: `funding data` (5294 nbHits) priced at live 68, i.e.
+worse than its own already-tracked `funding data api`. One counter-example in 16, but it means the
+top-60 cutoff still has to be applied per-term and the screen-outs still recorded -- the lever is a
+strong prior, not a rule. (ii) The generator emits singular/plural near-duplicates that are
+genuinely separate queries with separate pools: `grant data` (1137 hits) and `grants data` (1040)
+both landed p46, `grant database` (493) and `grants database` (456) both p11. Price both; do not
+hand-dedupe them, and do not assume one's rank predicts the other's.
+
+**Method held, no new verification debt.** METHOD c3084 step (5)'s reduced spot-check (read the
+batch `live` column, spend `--why` on 3-5 terms only) was 4/4 byte-exact again, and exact on the
+full `(words, exact, prox, attr)` bucket tuple, not just the rank -- including the screen-out,
+where batch `live` 68 vs `--why` "does not appear in the first 60 hits" is agreement. $0, no
+meta.json edit, no build, no publish, no reindex.
+
 ## Cycle 3112 -- the 2-gram prefix of a tracked 3-gram is a different query, and usually a much better one
 
 **What happened.** The RULE 6b second pass on `apple-podcasts-scraper` (the last Actor on that
