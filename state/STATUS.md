@@ -1,3 +1,15 @@
+Updated: 2026-11-12 UTC by cycle 3110 (claude-sonnet-5). Regular/GROWTH slot (3110 % 3 == 2, recomputed by hand per `NEW watch c2875`).
+
+**Preflight re-run fresh.** `inbox-triage new` NONE UNTRIAGED of 81. `bin/revenue` $0 booked, 27 public Actors, 54 users, 1486 runs30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed. `bin/apify-spend` $1.8558/$85 (12.8% elapsed, proj $14.53). Services active; site 200 on `/` and `/tools`. `git log` named c3109's `6134fe28`. `checks-due --all` showed **3 fleet checks DUE NOW**; `audit-due --all` NONE DUE.
+
+**Work: ran all 3 due fleet checks (the top unblocked task this slot) -- all came back clean after live verification, no Actor code touched.** `check-row-floor`: 2 flags on a 52m-old cached snapshot (`sec-insider-trades-scraper` 8/10, `shopify-products-scraper` 0/10) -- both **CLEARED** on `--recheck` (fresh live runs: 8/10, 10/10), confirming the tool's own "diagnose with --recheck before touching code" guidance rather than chasing a stale reading. `check-upstream-warnings`: 23 niches swept, **CLEAN**, all 8 pre-existing acks (steam `appreviews` retirement, 3x shopify-products merchant-migration false positives, google-news rival self-deprecation) still hold with no copy/date drift. `check-source-endpoints`: 1 `DEVIATION` (`hn.algolia.com` `ReadTimeout` vs the tool's 10.0s `TIMEOUT`) -- verified live by direct curl (HTTP 200 twice, 8.5s/9.9s -- genuinely slow that minute, not down) rather than assuming outage; an immediate plain re-run of the checker itself came back 0 DEVIATION. All 3 recorded via `bin/checks-due --ran` with notes; next due `check-source-endpoints` c3134, `check-row-floor`/`check-upstream-warnings` c3158.
+
+**Caught and fixed my own arithmetic mistake before committing:** a first draft wrote "3110 % 3 == 1" (copying c3109's label rather than recomputing) and named c3113 as the next QUALITY slot. Python confirmed `3110 % 3 == 2` and **c3111 is the actual next QUALITY slot** (`3111 % 3 == 0`) -- corrected in both this file and `queue.md` before commit. Exactly the drift `NEW watch c2875` warned about (don't copy-paste the previous cycle's formula text).
+
+**Blockers: none. Owner email: none owed.** Pure monitoring cycle, $0 new spend (only cached health data + live curl/checker probes, no new Apify runs). **Next cycle (c3111) is a QUALITY slot** -- run the routine `queue.md` newest-5 rotation (count live `CLOSED c3` blocks first per STANDING RULE 6b) plus other QUALITY defaults. Full detail in `queue.md`'s `CLOSED c3110` block.
+
+<!-- ---- cycle 3109 ---- -->
+
 Updated: 2026-11-12 UTC by cycle 3109 (claude-sonnet-5). Regular/GROWTH slot (3109 % 3 == 1).
 
 **Preflight re-run fresh.** `inbox-triage new` NONE UNTRIAGED of 81. `bin/revenue` $0 booked, 27 public Actors, 54 users, 1486 runs30d, 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed. `bin/apify-spend` $1.8546 -> $1.8557/$85 (12.7% elapsed, proj $14.58). Services active; site 200 on `/` and `/tools`. `git log` named c3108's `705c24f1`. `checks-due --all`/`audit-due --all` both NONE DUE (soonest `check-row-floor` c3110).
