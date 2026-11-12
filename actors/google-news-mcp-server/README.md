@@ -62,21 +62,24 @@ attempts.
 A 100-article call costs the same $0.005 as a 1-article call, so set `limit` to what you actually
 want to read.
 
-Prices read live from each Actor's own `pricingInfos` record (checked 2026-11-05, re-confirmed on
-the `latest news mcp` / `news mcp server` / `google news mcp` queries):
+Prices read live from each Actor's own `pricingInfos` record (checked 2026-11-05, re-verified live
+2026-11-12 on the `latest news mcp` / `news mcp server` / `google news mcp` queries):
 
-| Actor | Users (u30d) | Closest event | Price/call | vs. ours |
+| Actor | Users (u30d) | Closest event | Price | vs. ours |
 | --- | --- | --- | --- | --- |
-| **fetchsmith/google-news-mcp-server** | — | `search_news` | **$0.005** | — |
-| `mrbridge/latest-news-mcp-server` | 118 (35) | `tool-read` | $0.008 (FREE) tiered down to $0.005 (GOLD+), plus a second `tool-enriched` event at $0.015→$0.008 and a $0.00005 start fee | **matches** our price only at its best tier; 60% dearer on a FREE-plan caller, plus a start fee we don't charge |
-| `nexgendata/news-mcp-server` | 20 (4) | `tool-call` | $0.02 + $0.00005 start fee | **4x** dearer, plus a start fee we don't charge |
-| `quodlibetical_buffalo/google-news-mcp` | 2 (1) | — (no PPE pricing record found) | — | direct title collision, but no measurable traction or disclosed price to compare |
+| **fetchsmith/google-news-mcp-server** | — | `search_news` | **$0.005/call, flat** | — |
+| `mrbridge/latest-news-mcp-server` | 118 (33) | `tool-read` | $0.008/call (FREE) tiered down to $0.005/call (GOLD+), plus a second `tool-enriched` event at $0.015→$0.008 and a $0.00004–0.00005 start fee | **matches** our price only at its best tier; 60% dearer on a FREE-plan caller, plus a start fee we don't charge |
+| `nexgendata/news-mcp-server` | 20 (4) | `tool-call` | $0.02/call + $0.00005 start fee | **4x** dearer, plus a start fee we don't charge |
+| `quodlibetical_buffalo/google-news-mcp` | 2 (1) | `news-item` | **$0.0035 per article returned** (not per call) | cheaper than us for a 1-article call, but our `limit` defaults to 10 — at the default, a typical call costs **7x** ours ($0.035 vs $0.005) and scales worse the more articles you ask for |
 
-`mrbridge/latest-news-mcp-server` is the clear demand leader in this corner (u30d=35, second only
+`mrbridge/latest-news-mcp-server` is the clear demand leader in this corner (u30d=33, second only
 to ESPN across every MCP listing we've measured) and the one worth beating: our flat $0.005 beats
 its entry-tier FREE-plan price by 37% and never requires a start fee or a second enrichment charge
-to reach parity. `nexgendata/news-mcp-server` is a flat 4x dearer. Neither offers `relatedCoverage`
-(what other publishers ran the same story) or a `topic` browse mode — both are query-only.
+to reach parity. `nexgendata/news-mcp-server` is a flat 4x dearer. `quodlibetical_buffalo/google-news-mcp`
+picked up real PPE pricing since our last sweep (previously undisclosed) — it bills per article
+instead of per call, so it only beats us on a single-article request and loses badly past that.
+None of the three offers `relatedCoverage` (what other publishers ran the same story) or a `topic`
+browse mode — all three are query-only.
 
 ## Use cases
 
