@@ -440,6 +440,17 @@
    ],
    "ts": 1789122514
   },
+  "805fc1d7": {
+   "cycle": 3095,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "Google DMARC aggregate report, consistent with recent pattern (c9ffd606/5fbc9dcd), not inspected for per-row detail (routine)",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 15325331168879493183",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1794485347
+  },
   "84237906": {
    "cycle": 2708,
    "disposition": "backscatter",
