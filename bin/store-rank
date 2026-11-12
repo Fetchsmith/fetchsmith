@@ -100,6 +100,65 @@ Usage:
                                                  # flagging when it differs from the
                                                  # ideal the bucket table assumes.
 Exit 0 always (informational); prints a summary line.
+
+*** READ THIS BEFORE CITING ANY "BATCH TOOL IS UNRELIABLE" CLAIM -- CYCLE 3096 ***
+`bin/store-price` prints TWO rank columns and they answer DIFFERENT QUESTIONS:
+  `live`  = where we rank for that query RIGHT NOW. This is the only column
+            comparable to `--why`'s `US:` line. It is NOT capped at 60 -- it happily
+            reports 91, 147, 197 -- so to compare it against `--why` (which only
+            walks the top 60) you must APPLY THE TOP-60 CUTOFF YOURSELF: a `live` of
+            91 and a `--why` of "NOT in the first 60" AGREE.
+  `tgtN`/`pred` = the rank we WOULD get IF the query became a contiguous TITLE match
+            (target bucket words=n exact=n prox=n-1 attr=0). It is an EDIT
+            SIMULATION for an edit that was never shipped. A `pred` of p1 on a query
+            we do not rank for at all is the tool working correctly, NOT a false
+            positive.
+CYCLE 3096 AUDIT (closes the `NEW c3092` queue item): every cycle that ever reported
+a low batch-vs-`--why` agreement rate on the RULE 6b backlog was comparing `pred`,
+not `live`. Audited all six, re-pricing the ambiguous ones live this cycle:
+  c3059 app-store-reviews   "6/24 mismatch" -> ARTIFACT. Its own comment records the
+        live column for 5 of the 6 (194 / 94 / 100 / bare `-` / 189 -- all outside
+        top 60, all agreeing with `--why`'s "not in top 60"), and the 6th
+        (`app store rating`, batch live=50) agrees EXACTLY with `--why`'s p50; only
+        `pred` (p50/p1/p2/p14/p55/p8) disagreed. Live agreement 24/24.
+  c3067 clinicaltrials-mcp  "7/22" -> ARTIFACT. 2 of its 7 were screened with no
+        mismatch at all; of the 5 real ones, 3 record live=91/111/86 (outside 60) and
+        the 2 ambiguous ones re-priced c3096 at live=`-`/`-` (`no start fee` 3651
+        hits, `no scraping` 11187). Live agreement 22/22.
+  c3070 court-records       "4/22" -> ARTIFACT, already proven by c3092 (22/22 on
+        live + 3/3 on its own screened-out terms).
+  c3071 us-federal-awards   "6/25" -> ARTIFACT. Re-priced c3096: `federal awards api`
+        live=91, `naics psc` 109, `psc code data` 147, `cfda number` 71,
+        `filter by agency` 83, `filter by keyword` `-`. All outside top 60, all
+        agreeing with `--why`. Live agreement 25/25.
+  c3079 us-federal-awards   "6/25" -> ARTIFACT. Re-priced c3096: `psc code` live=197,
+        `contract award scraper` 79, `federal contract scraper` 169,
+        `government contracts scraper` 76, `procurement data scraper` 169,
+        `naics code` `-`. Live agreement 25/25.
+  c3082 remote-jobs 2nd     "3/25, worst on record" -> ARTIFACT, and the clearest
+        case: its own comment spells out the comparison it made ("seven public boards
+        pred p1 vs live p2"), i.e. pred-vs-`--why`. Re-priced all 25 live c3096
+        against the ranks it wrote down: 12 of 14 keepers BYTE-EXACT, the other 2 off
+        by exactly 1 (`seven public boards` p2->1, `recruitment data` p34->35, both
+        with nbHits that also moved, 630->632 and 3603->3582 -- ordinary 14-cycle
+        organic drift, same class as c3092's `case law search` p59->p62, NOT a column
+        artifact), and all 11 screened-out terms still outside the top 60
+        (live `-` or 79-180). Live agreement 25/25, 23/25 byte-exact.
+CONSEQUENCE: there is NO surviving measured evidence that the `live` column has ever
+disagreed with `--why` on a top-60 in/out call, on any Actor, on this backlog. Every
+cycle that actually compared `live` got 100% (c3044 13/13, c3068 24/24, c3091 22/22,
+c3092 22/22, c3095 32/32, plus the five re-audited above). `METHOD c3084`'s
+"agreement is Actor-dependent and unknowable in advance" claim rested entirely on the
+artifact range and IS WITHDRAWN -- see tasks/queue.md.
+WHAT THIS DOES *NOT* LICENSE: `pred` remains untrustworthy as a live rank (that was
+never its job), and the c3001/c2478 caveat that a single-call fetch can under-walk a
+very large result pool is UNTESTED against the live column, so keep a cheap tripwire.
+Reduced verify step, effective c3096: read the `live` column with the top-60 cutoff
+applied, and spend `--why` calls on a SPOT-CHECK of (i) the highest-nbHits keeper,
+(ii) anything whose `live` lands in 50-65, i.e. straddling the cutoff and the c3031
+FLAPPING band, and (iii) one term the batch screened out. ~3-5 calls per pass instead
+of ~22. If any spot-check ever disagrees on `live`, STOP and re-verify that pass in
+full, and amend this block.
 """
 import json
 import os
