@@ -1,7 +1,7 @@
 import { Actor, log } from 'apify';
 import { gotScraping } from 'got-scraping';
 import { createHash } from 'node:crypto';
-import { reviewsPageUrl, homeContentUrl, parseReviewsPage } from './reviews_html.js';
+import { reviewsPageUrl, homeContentUrl, parseReviewsPage, trendBucketFor } from './reviews_html.js';
 
 await Actor.init();
 // apps/searchTerms carry no length cap, and each app can cost up to 200 sequential paginated review
@@ -110,11 +110,19 @@ const includePlayerCount = input.includePlayerCount === true;
 // populated on all of them, while SteamSpy's playtime fields (average_forever / median_forever /
 // *_2weeks) are a flat 0 on every single one — dead since Valve hid profile playtime. So this ships
 // owners/peak-CCU/tags and deliberately does NOT claim playtime estimates.
-// dayRange had a real HTML path while this Actor used the JSON appreviews API (day_range only
-// applied in the most-helpful ordering). Valve retired that API 2026-10-22; the
-// steamcommunity.com HTML fallback this Actor now scrapes has no day-range control at all —
-// not even in its "most helpful" (toprated) view — so this is now an unconditional no-op,
-// not merely conditional on sortBy. Say so once, up front.
+// dayRange had a real path while this Actor used the JSON appreviews API (day_range only applied
+// in the most-helpful ordering), and when Valve retired that API 2026-10-22 the first read of its
+// steamcommunity.com HTML replacement (2026-10-23, re-asserted as still true 2026-11-12) found no
+// day-range control anywhere, including "most helpful" — WRONG, found live 2026-11-12 (later the
+// same day): the "Most Helpful" filter's dropdown has 6 day-windowed siblings
+// (trendday/trendweek/trendmonth/trendthreemonths/trendsixmonths/trendyear next to the
+// all-time "toprated" option), reachable only via the menu's `SelectContentFilter(...)` onclick
+// handlers rather than any <a href> or query-string permalink — which is why both the earlier
+// read and this Actor's own claims text missed them. Decisively confirmed as real time-windowing
+// (not just menu labels) on two apps: trendday returns only today/yesterday, trendweek only the
+// last ~7 days, vs toprated spanning 2018-2025. So dayRange is live again, but ONLY when
+// sortBy="all" — it buckets into the nearest of those 6 fixed windows (rounding UP, never
+// narrower than asked), not an exact day count. Every other sortBy still has no window at all.
 // Every input this run accepted but could not act on, as bare field names. The per-warning message
 // lists below stay as they are (each is prose aimed at one cause); this is the machine-readable
 // aggregate, because a `log.warning` is invisible to a pipeline and to a buyer who reads only the
@@ -167,12 +175,21 @@ for (const [name, raw] of invalidDates) {
     + 'forced to "recent".',
   );
 }
-if (dayRange && dataType === 'reviews') {
+if (dayRange && dataType === 'reviews' && sortBy === 'all') {
+  const bucket = trendBucketFor(dayRange);
+  log.info(
+    `"Last N days" (${dayRange}) with Sort = Most helpful maps to Steam's own "${bucket}" time window `
+    + '(one of 6 fixed windows: day/week/month/3 months/6 months/year — rounded UP to the narrowest '
+    + 'one that still covers the request, since Steam has no exact-day control here, only these '
+    + 'buckets). For an exact day count, use "Reviews after/before" with Sort = Most recent instead.',
+  );
+} else if (dayRange && dataType === 'reviews') {
   ignoredInputs.push('dayRange');
   log.warning(
-    `"Last N days" (${dayRange}) is ignored — Steam's review HTML page has no day-range control `
-    + '(the JSON API this Actor used to call had one, but Valve retired that API 2026-10-22 and the '
-    + 'replacement HTML source has no equivalent). Use "Reviews after/before" with sortBy="recent" for a date window instead.',
+    `"Last N days" (${dayRange}) is ignored — it only has an effect when Sort = Most helpful `
+    + `(sortBy: "all"); current sort is "${sortBy}", which Steam's review HTML page has no day-range `
+    + 'control for. Use "Reviews after/before" with sortBy="recent" for a date window instead, or set '
+    + 'sortBy="all" to use this field.',
   );
 }
 const includeOwnerEstimates = input.includeOwnerEstimates === true;
@@ -815,7 +832,7 @@ async function scrapeReviews(appId) {
     let html;
     try {
       html = await getHtml(page === 0
-        ? reviewsPageUrl(appId, { reviewType, sortBy, language })
+        ? reviewsPageUrl(appId, { reviewType, sortBy, language, dayRange })
         : homeContentUrl(appId, next));
     } catch (e) { log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`); break; }
     const parsed = parseReviewsPage(html, appId);

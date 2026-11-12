@@ -100,7 +100,7 @@
     "sortBy": {
       "title": "Sort / selection",
       "type": "string",
-      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking, funny = Steam's \"Funny\" tab, the reviews with the most funny votes. Since the first 2026-10-23 source change 'all' and 'funny' are both all-time by default and no ordering has a date control, so 'Last N days' below does nothing; use 'Reviews after/before' for a date window (re-verified live 2026-11-12, still the case).",
+      "description": "recent = newest first, updated = most recently edited first, all = Steam's helpfulness ranking (all-time by default, or pair with 'Last N days' below for one of Steam's own bucketed time windows), funny = Steam's \"Funny\" tab, the reviews with the most funny votes, always all-time. 'recent'/'updated'/'funny' have no date control at all; 'all' is the one exception (found live 2026-11-12, reachable only via the filter menu's onclick handlers, not a link — an earlier same-day check missed it). For an exact day count instead of a bucket, use 'Reviews after/before'.",
       "default": "recent",
       "enum": [
         "recent",
@@ -117,9 +117,9 @@
       "editor": "select"
     },
     "dayRange": {
-      "title": "Last N days (no longer supported — ignored)",
+      "title": "Last N days (Most helpful sort only — bucketed)",
       "type": "integer",
-      "description": "Currently a no-op (first 2026-10-23 source change — Steam's community review pages, which this Actor now reads, have no day-range control in any sort mode; re-verified live 2026-11-12, still absent). Use 'Reviews after/before' with Sort = Most recent for a date window instead.",
+      "description": "Only has an effect when Sort = Most helpful (sortBy: \"all\") — Steam exposes 6 fixed day-windows there (day/week/month/3 months/6 months/year), not an exact day count, so this rounds UP to the narrowest window that still covers your request (e.g. 5 -> week). Ignored for every other Sort. Use 'Reviews after/before' with Sort = Most recent for an exact day window instead.",
       "minimum": 1,
       "maximum": 365,
       "editor": "number"

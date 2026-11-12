@@ -1,5 +1,5 @@
 // Live + fixture checks for reviews_html.js. Run: node src/_reviews_html_selftest.mjs
-import { parseReviewsPage, parsePostedDate, steamIdFromMiniprofile, reviewsPageUrl, homeContentUrl } from './reviews_html.js';
+import { parseReviewsPage, parsePostedDate, steamIdFromMiniprofile, reviewsPageUrl, homeContentUrl, trendBucketFor, browseFilterFor } from './reviews_html.js';
 let fail = 0;
 const ok = (c, m) => { console.log(`${c ? 'PASS' : 'FAIL'}  ${m}`); if (!c) fail++; };
 const UA = { 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64)' };
@@ -20,6 +20,15 @@ ok(parsePostedDate('Posted: October 22', now) === Date.UTC(2026, 9, 22) / 1000, 
 ok(parsePostedDate('Posted: December 20, 2023', now) === Date.UTC(2023, 11, 20) / 1000, 'AJAX-page month-then-day, explicit past year');
 ok(reviewsPageUrl(1145360, { reviewType: 'positive', sortBy: 'recent', language: 'english' }).includes('/positivereviews/?browsefilter=mostrecent'), 'review_type is a path segment, sort maps to browsefilter');
 ok(reviewsPageUrl(1145360, { reviewType: 'negative', sortBy: 'all' }).includes('/negativereviews/?browsefilter=toprated'), 'negative + toprated mapping');
+// trend* buckets: found live 2026-11-12 as siblings of "toprated" under sortBy="all" only —
+// rounds UP to the narrowest window that still covers the request, never narrower than asked.
+ok(trendBucketFor(1) === 'trendday' && trendBucketFor(7) === 'trendweek' && trendBucketFor(8) === 'trendmonth'
+  && trendBucketFor(30) === 'trendmonth' && trendBucketFor(40) === 'trendthreemonths'
+  && trendBucketFor(365) === 'trendyear', 'dayRange buckets round up to the narrowest covering window');
+ok(browseFilterFor('all', null) === 'toprated', 'sortBy=all with no dayRange stays all-time (toprated)');
+ok(browseFilterFor('all', 5) === 'trendweek', 'sortBy=all + dayRange buckets into trend*');
+ok(browseFilterFor('recent', 5) === 'mostrecent' && browseFilterFor('funny', 5) === 'funny',
+  'dayRange has no effect on any sortBy other than "all"');
 
 // --- live page 1 ------------------------------------------------------------
 const APP = 1145360;

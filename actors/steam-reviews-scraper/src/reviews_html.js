@@ -20,15 +20,37 @@ const REVIEW_TYPE_PATH = { all: 'reviews', positive: 'positivereviews', negative
 // its own `browsefilter` names. Values confirmed present in the page's filter menu.
 const SORT_TO_BROWSEFILTER = { recent: 'mostrecent', updated: 'recentlyupdated', all: 'toprated', funny: 'funny' };
 
-export const browseFilterFor = (sortBy) => SORT_TO_BROWSEFILTER[sortBy] ?? 'mostrecent';
+// `browsefilter=toprated` ("Most Helpful") has 6 sibling day-windowed variants, found live
+// 2026-11-12 by reading the filter dropdown's own onclick handlers (`SelectContentFilter(
+// '?browsefilter=trendweek&p=1' )` etc.) rather than its hrefs — the widget carries no plain
+// <a href> or query-string permalink for them, which is almost certainly why earlier sweeps
+// (schema/README text dated 2026-11-12 "re-verified live, still absent") missed them: those
+// looked for a conventional link/param and found none. Decisively confirmed as REAL
+// time-windowing, not just menu labels: app 730 `trendday` returned only today/yesterday
+// reviews, `trendweek` only the last ~7 days, vs `toprated` (no window) spanning 2018-2025 —
+// reproduced on a second app (413150) with a bare curl, no cookies/UA needed. Only "all"
+// (Most Helpful) has these variants; Most Recent/Recently Updated/Funny do not (menu has no
+// trend* siblings under them).
+const TREND_BUCKETS = [
+  [1, 'trendday'], [7, 'trendweek'], [30, 'trendmonth'],
+  [90, 'trendthreemonths'], [180, 'trendsixmonths'], [365, 'trendyear'],
+];
+
+// Rounds UP to the narrowest bucket that still covers the requested window, so a buyer never
+// gets a narrower result than they asked for (e.g. dayRange:5 -> trendweek, not trendday).
+export const trendBucketFor = (dayRange) => (TREND_BUCKETS.find(([days]) => dayRange <= days) ?? TREND_BUCKETS.at(-1))[1];
+
+export const browseFilterFor = (sortBy, dayRange = null) => (
+  sortBy === 'all' && dayRange != null ? trendBucketFor(dayRange) : SORT_TO_BROWSEFILTER[sortBy] ?? 'mostrecent'
+);
 export const reviewTypePath = (reviewType) => REVIEW_TYPE_PATH[reviewType] ?? 'reviews';
 
 // `?p=N` on the /reviews/ page is a NO-OP on content (verified live: p=1..5 all served the
 // same 10 cards). Real paging is the "Show More" GET form -> /app/<id>/homecontent/ carrying
 // a `userreviewscursor`. Only the first page comes from this URL; every later page comes from
 // homeContentUrl() below.
-export function reviewsPageUrl(appId, { reviewType = 'all', sortBy = 'recent', language = 'all' } = {}) {
-  const p = new URLSearchParams({ browsefilter: browseFilterFor(sortBy), filterLanguage: language, l: 'english' });
+export function reviewsPageUrl(appId, { reviewType = 'all', sortBy = 'recent', language = 'all', dayRange = null } = {}) {
+  const p = new URLSearchParams({ browsefilter: browseFilterFor(sortBy, dayRange), filterLanguage: language, l: 'english' });
   return `https://steamcommunity.com/app/${appId}/${reviewTypePath(reviewType)}/?${p.toString()}`;
 }
 
