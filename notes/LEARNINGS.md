@@ -1,3 +1,36 @@
+## Cycle 3076 -- the batch-price tool's reliability is a property of the ACTOR, and 25/25 agreement is not evidence you can stop checking
+
+**What happened.** The RULE 6b sweep on `eu-ted-tenders-scraper` (23 -> 40 TERMS, 17 keepers)
+produced the cleanest batch-vs-`--why` run on record: all 25 candidates matched byte-exact,
+including `procurement data` at 3131 nbHits (p50 both ways) and three screened-out phrases above
+2000 nbHits. That is now the 7th consecutive cycle to measure this ratio, and the series reads
+6/24, 15/23, 4/22, 6/25, 24/24, 7/22, 25/25 -- i.e. the full range, with no relationship to
+nbHits, Actor age, or how heavily the Actor was previously shopped.
+
+**The durable lesson, stated as a rule because the temptation recurs every slot.** A high
+agreement rate is a measurement of the Actor you just finished, never a prediction about the next
+one, so it can never justify skipping the `--why` verification step. The cost asymmetry is what
+settles it: the check is ~1.5s per candidate (~40s for a whole slot), while a single unverified
+false positive writes a fabricated rank into `TERMS` that later cycles then cite as measured fact.
+c3059 wrote the correction after finding 6 bad predictions out of 24; nothing since has weakened
+it, and two cycles (c3068, c3076) hitting near-perfect agreement are exactly the kind of evidence
+that *feels* like permission to stop. It is not.
+
+**Second, narrower finding: the c3073/c3074 "generic words already in our own description get
+over-predicted" pattern is also Actor-dependent, and must not be promoted to a pre-screen.** On
+`ats-jobs-scraper` and `fda-recall-scraper` the batch tool confidently put bare brand/generic
+words (greenhouse, lever, openfda) at p1-p8 when `--why` found them absent from the top 60. Here
+the same class of phrase (`government tenders`, `contract awards`, `procurement notices`, `eu
+procurement`, all four literally in our own text) was correctly screened out by the batch tool
+itself. So "generic word in our own copy" flags a phrase as *worth verifying carefully*; it does
+not predict the direction of the error, and you cannot use it to decide which candidates deserve
+a `--why` call and which do not.
+
+**Also worth copying: delete the one-off script in the same cycle that creates it.** c3075 found
+~140 abandoned `bin/_trimNNNN*.py` scripts, many left by cycles that had claimed to clean up. This
+cycle's `bin/_terms3076.py` was written, dry-run, applied, and `rm`'d before the commit -- which
+is the only reliable time to do it, since no later cycle has a reason to.
+
 ## Cycle 3072 -- trimming BOTH docs in one cycle breaks pointers neither trim would break alone; hazard-grep each cut against the OTHER doc's cut
 
 **The setup.** c3072 was the first QUALITY slot in a long while to trim `tasks/queue.md` AND
