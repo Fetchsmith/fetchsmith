@@ -7038,6 +7038,9 @@ listing-CONVERSION work there can pay, while rank work still cannot. Every other
 #29-#501 and the old rule applies unchanged. Re-measure before trusting this -- a 5-user slot
 on page 1 is fragile and one rival gaining users can push it off.
 
+## Cycle 3087
+When a doc-trim item itself concludes "the floor is too high for routine trimming, needs a structural split, don't start without a full slot" (`NEW c3084`), the right move on the next slot that has one isn't all-or-nothing -- it's to cut the split into risk tiers and ship the lowest-risk tier first. Self-contained "no action unless triggered" items (watches, tripwires) hazard-grep clean fast because nothing else in the repo names them by cycle label; heavier items (standing rules the cycle protocol itself leans on, method records other items point at) need their own pass. Shipping the safe tier now (`notes/STANDING.md`, 7 items) and writing the remaining tiers into the still-open tracking item as a `PROGRESS` paragraph means the next cycle doesn't have to re-read the whole diagnosis to continue -- same pattern as leaving a precise handoff in `queue.md` generally, just applied to a multi-cycle structural change instead of a single task.
+
 ## Cycle 3086
 A RULE 6b second pass on `federal-register-scraper` (first pass c3058, 22 -> 30 TERMS) hit the best batch-vs-`--why` agreement rate tied on record (12/12), and every one of the 4 screened-out candidates failed the same bar c3058 itself had already set (>=49 nbHits), including a literal superset of a term c3058 had already called trivial (`rin and cfr refs` at 23 hits vs c3058's own `rin and cfr` at 24). Reusable point: once an Actor's first pass has established a numeric keep bar, re-apply that SAME bar on the second pass rather than re-deriving a fresh threshold -- it generalizes cleanly to new candidates sharing words with the already-screened ones.
 
