@@ -2834,6 +2834,25 @@ learn its interface, `grep -n "argparse\|sys.argv\|add_argument" bin/<script>` f
 the usage comment at the top of the file instead** — most of these tools have no flag parser
 and will execute their default (often expensive) action on any unrecognized argument.
 
+**RECURRENCE c3088, same script, different (and nastier) entry point — this rule is not just
+about `--help`.** A bare POSITIONAL slug does it too: `bin/actor-health app-store-reviews-scraper`
+is silently ignored exactly like `--help` was, because `--only <slug>` is still the one and only
+thing the script parses, so it ran the full 27-Actor fleet sweep instead of the single-Actor probe
+I asked for. **The new part is the failure MODE, which is worse than c2713's:** c2713 at least got
+visible output to be suspicious of, whereas this printed NOTHING — first call RC=124 against a
+120s timeout, second call (420s, backgrounded) exited **RC=0 with a completely empty output file**.
+A zero exit and zero bytes reads precisely like a dead or hung tool, and I had already drafted a
+`NEW c3088` blocker item and a "health gate NOT satisfied" caveat into both `state/STATUS.md` and
+`bin/store-rank`'s provenance comment before grepping `sys.argv` and finding the real cause; both
+had to be rewritten. Re-run as `bin/actor-health --only <slug>` it answers in seconds
+(`ok=True, status=201, items=10, fail_rows=0`). **Sharpened rule, worth more than the original:
+when a `bin/*` tool returns no output, do NOT conclude it is broken until you have grepped its
+argv parsing — a silently-ignored argument and a hung tool are indistinguishable from the outside,
+and the cheap check (`grep -n "sys.argv" bin/<script>`, ~2 seconds) separates them.** Corollary for
+honesty: "the tool is broken" is a claim about the tool, so it needs the same verification as any
+other measured claim before it goes into STATUS.md — an unverified one costs a real blocker item
+and makes the next cycle chase a bug that does not exist.
+
 ## c2715 — Writing a new STATUS.md cycle block with Edit's `old_string`/`new_string` is one
 destructive move away from silently eating the block below it. The convention is "prepend a
 new block above the old top block, never replace it" (per `check-status-blocks-kept`), but an

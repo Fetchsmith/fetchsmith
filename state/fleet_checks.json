@@ -264,8 +264,8 @@
   "check-schema-claims": {
    "kind": "cadence",
    "interval_cycles": 480,
-   "last_cycle": 2608,
-   "note": "cycle 2608: FIRST RUN (built c2608 from the c2592 follow-up). 26 schemas: anchored claims 8 fresh / 5 AGING / 13 STALE (>=30d); 27 UNDATED measured claims (no date or cycle to re-measure against); 1 anchor-adjacent date skipped as predating cycle 1. Interval 480c (~10d) = under a third of the 30d STALE threshold, so a claim cannot cross into STALE unseen; read-only, no network, $0. The 13 STALE + 27 UNDATED are filed as a remediation follow-up in queue.md -- this tool FLAGS only, it cannot know the true current number."
+   "last_cycle": 3088,
+   "note": "cycle 3088: CLEAN: 26 schemas, 30 fresh / 5 AGING / 0 STALE; 27 undated (inventory); 8 HISTORY superseded. AGING = remote-jobs resultOrder (25d, STALE ~2026-11-17) + 4x steam-reviews source-change claims (20d, STALE ~2026-11-22). [prior note preserved] cycle 2608: FIRST RUN (built c2608 from the c2592 follow-up). 26 schemas: anchored claims 8 fresh / 5 AGING / 13 STALE (>=30d); 27 UNDATED measured claims (no date or cycle to re-measure against); 1 anchor-adjacent date skipped as predating cycle 1. Interval 480c (~10d) = under a third of the 30d STALE threshold, so a claim cannot cross into STALE unseen; read-only, no network, $0. The 13 STALE + 27 UNDATED are filed as a remediation follow-up in queue.md -- this tool FLAGS only, it cannot know the true current number."
   },
   "check-dead-endpoint-docs": {
    "kind": "cadence",
