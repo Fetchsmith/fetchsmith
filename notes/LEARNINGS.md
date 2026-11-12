@@ -7210,3 +7210,37 @@ an undercutter -- the only direction that matters) and it surfaced only because 
 printed the start-fee classification per event instead of the resolved unit price. Filed
 LOW as `NEW note c3104`; do not widen `is_start_fee` on key-name substrings, which would
 collide with real per-row events like `job-post`/`search-term` in neighbouring niches.
+
+**c3108 -- a measurement claim can go stale by REDISTRIBUTING rather than by being wrong,
+and "the claim is false" is often the least useful thing to write down.**
+`remote-jobs-scraper.resultOrder`'s 2026-10-18 anchor said the top 100 of a 7-board
+`newest` merge was **100% Arbeitnow**. Re-measured live 2026-11-12 on a real run
+(`h03g1WlhLozkGoP9H`, $0.00005): himalayas 40 / jobicy 29 / wwr 22 / arbeitnow 9. The
+headline number is dead -- but the *defect* the `balanced` default exists to fix is
+completely intact, and only the run LOG showed why: all 7 boards fetched fine (376
+postings), yet 3 of 7 contributed ZERO rows to the cap, **Remote OK among them despite
+contributing 98 of those 376**, because himalayas/jobicy/wwr have since started stamping
+their feeds inside the current crawl window too (all 100 delivered rows carried a same-day
+`publishedAt`, clustered 13:04-17:41 UTC). Had the schema just been date-bumped or the
+claim deleted, a future cycle would have read "the one-board bug is gone" and had a
+plausible case for dropping the round-robin code. **So when a re-measure overturns a
+number, re-derive the MECHANISM before writing the new prose: check whether the hazard
+moved rather than ended, and look at the per-source counts in the run log, not only the
+delivered rows.** Written up as a `first measured ... re-measured live ...` HISTORY clause
+in the schema, a dated sentence in the README FAQ (which had asserted the one-board
+mechanism in the present tense), and a `RE-MEASURED c3108` note on the `src/main.js`
+design comment ending "Do NOT read the 100%-Arbeitnow figure as current" -- the comment
+matters most, since that is what a future cycle reads before deciding the code is dead.
+
+**c3108 -- never round-trip a hand-formatted `.actor/*.json` through a JSON serialiser.**
+The first attempt at the one-line schema fix above used `json.dumps(indent=4)` and
+reformatted all 136 lines (this fleet writes these files at 2-space indent with inline
+`items` objects; no serialiser reproduces that): `164 insertions / 136 deletions` for a
+single prose change. Caught by reading `git diff --stat` BEFORE the push, reverted, redone
+as a surgical replace against the raw escaped text (`\"Global newest-first\"` -- the
+backslashes are in the file). **The usual post-push verification would NOT have caught
+this**: a whole-file reformat still compares byte-identical live-vs-local, so the check
+would have gone green while the diff buried the real change in noise. `git diff --stat`
+every schema edit before `apify push`. Also re-learned PLAYBOOK rule (2) for free:
+`fields=postedAt` returned `None` for all 100 rows because the real output field is
+`publishedAt` -- read `registry.json`'s `output_fields` instead of reading nulls as data.

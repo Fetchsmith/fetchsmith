@@ -1209,7 +1209,12 @@ try {
   // dates reaching back weeks or months. Sorting those together puts the whole of Arbeitnow above
   // every other board's newest row, so the top of the merged list is pure Arbeitnow: measured
   // against all six live feeds on 2026-10-18, the top 10 / 25 / 50 / 100 were 100% Arbeitnow and
-  // the first non-Arbeitnow row appeared at rank 145. maxResults DEFAULTS to 100 -- so a buyer
+  // the first non-Arbeitnow row appeared at rank 145. RE-MEASURED c3108 (2026-11-12, real run
+  // h03g1WlhLozkGoP9H): the same "newest" merge now returns himalayas=40 / jobicy=29 / wwr=22 /
+  // arbeitnow=9 in its top 100 -- Arbeitnow stopped monopolising the head, but the defect class
+  // is unchanged and still justifies this code: 3 of 7 boards get ZERO rows (remoteok fetched 98
+  // of the run's 376 postings and landed none), because himalayas/jobicy/wwr now stamp their
+  // feeds inside the crawl window too. Do NOT read the 100%-Arbeitnow figure as current. maxResults DEFAULTS to 100 -- so a buyer
   // selecting all seven boards was being charged for a dataset from one of them, and the README
   // FAQ's "ask for at least 50 results to see all seven represented" was measurably false.
   //
