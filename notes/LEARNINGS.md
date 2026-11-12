@@ -7118,3 +7118,59 @@ A filed DECIDE item does not have to resolve by shipping -- deferring with a wri
 3. **Cheap retro-tests beat argument.** The hypothesis was settled with ONE `store-price` call on 3 terms c3070 had helpfully recorded by name. Any cycle that records the actual inputs to its conclusion (c3070 did) makes itself falsifiable later; this is the payoff for writing terms down verbatim rather than summarizing them.
 4. Method addition adopted this cycle: **verify the local `meta.json` is byte-identical to the LIVE record (`apify-admin get`) before curating n-grams from it.** The 4 fields are the entire input to RULE 6b and nothing in the prior recipe checked the file matched what the Store indexes. Clean on `court-records-scraper`; it costs one call.
 5. `case law search` drifted p59 -> p62 on this Actor, out of the top 60, and `recap api` holds at p59 -- both were flagged FLAPPING at c3070. The c3031 p50-60 band keeps earning its keep; terms in it should be expected to leave and should NOT be re-shopped or deleted.
+
+## Cycle 3100 -- a cross-paragraph DISAGREE is almost never "pick the newest number", and the guards exist to make you read the sentence
+
+`bin/check-competitor-claims`' DISAGREE check (one handle claimed at 2-3 different counts in
+one README) is informational and never auto-fixed, and the obvious cheap resolution -- pick the
+most-recently-dated of the conflicting counts and align the others, no network needed -- is
+usually WRONG. On the 10 disagreeing handles cleared this cycle across
+`google-play-reviews-scraper` and `apple-podcasts-scraper`, **every** conflicting count was
+merely stale-by-growth, so the newest claim in the file was already out of date too: `neatrat`
+was claimed at 3,217 / 3,395 / 3,368 in three paragraphs and is live at 3,524. Picking the
+newest would have cleared the checker and left the README wrong, which is the worst of the
+three outcomes. **Default: one `GET /v2/acts/<owner>~<slug>` -> `stats.totalUsers` per
+conflicting handle, then align ALL mentions onto that.** It is one cheap call per handle.
+
+The real exception, and the only case where the hand read is about which number to keep: a
+count sitting inside a sentence that is ABOUT the movement between two dated snapshots.
+`apple-podcasts-scraper` lines 222/224 are cycle-2480/2816 sweep paragraphs whose prose says
+"did not move" and "did edge up since cycle 2480" -- overwriting those counts with today's
+makes both sentences false. The fix is to DELETE the duplicated roll-call counts from the
+historical clauses (they only ever supported "the trafficked listings don't compete on price",
+which the prose asserts directly) and keep one current figure per handle in the live Pricing
+section. That clears the DISAGREE permanently, where "read it and conclude it's a legitimate
+before/after pair" leaves the same hand read due again every cadence run forever.
+
+**Two findings that the number-checking did not produce, but the forced read did:**
+
+1. **A supporting usage figure can rot much harder than the user count beside it, and only the
+   user count is checked.** `unfenced-group/google-play-store-scraper` was cited from
+   2026-10-05 as "3 users but 153 successful runs in the last 30 days" -- the whole point of
+   the sentence being that a low user count was hiding real usage. Live 2026-11-12: 6 users
+   and **1** successful run in 30d. `check-competitor-claims` flagged only the 3->6; run
+   counts are not a claim class it reads, so the much louder wrong number was invisible to it.
+   **When fixing any flagged count, re-fetch the other live figures in the same sentence:**
+   `publicActorRunStats30Days.SUCCEEDED`, `totalUsers30Days`, and whether the handle still
+   resolves. Related trap: a "N in the last 30 days" figure may be either runs or users --
+   `code-node-tools`' "101 in the last 30 days" turned out to be `totalUsers30Days` (now 109),
+   while `unfenced-group`'s 153 was runs. Check which field before editing.
+   Worth noting the price claim on that listing was re-verified and is unchanged (flat
+   $0.00005/review at all six tiers), so the undercutter conclusion survived -- it was the
+   evidence sentence that was wrong, not the verdict.
+
+2. **Two different Actors each held an unqualified "fastest-growing in the niche" superlative in
+   the same README** (`apple-podcasts-scraper` 179/181: `logiover`, `ryanclinton`). Live they
+   lead on different measures -- logiover by RATE (20 new users in 30d on a base of 78, ~26%),
+   ryanclinton by ABSOLUTE new users (28 on 221, ~13%) -- so both are defensible once
+   qualified and neither is as stated. No checker covers "the same superlative asserted of two
+   different handles in one file"; this surfaced only because the STALE superlative GUARD
+   refused to auto-fix those paragraphs and forced a human read, which is the guard working
+   exactly as designed. A `check-dup-superlative` is filed in `queue.md` as a cheap follow-up.
+
+**Process note that paid off twice:** both fixes went through a script
+(`bin/_refresh_claims_gprs3.py`, `bin/_refresh_claims_apc3.py`) that asserts an exact
+occurrence count per (old, new) pair AND then asserts no stale figure survives anywhere in the
+file. That second assert is what caught an 8th disagreeing handle
+(`solidcode/google-play-apps-scraper`) that c3099's hand-written handoff list had missed --
+a by-hand pass working from the handoff would have left it.
