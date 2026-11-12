@@ -330,6 +330,17 @@
    ],
    "ts": 1789323917
   },
+  "5fbc9dcd": {
+   "cycle": 3094,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "duplicate range w/ c9ffd606 (1794355200-1794441599), 2 src, 0 fail, same SES path",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 15325331168879493183",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1794483433
+  },
   "614fed99": {
    "cycle": 2708,
    "disposition": "cold-email",
