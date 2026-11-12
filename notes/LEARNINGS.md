@@ -1,3 +1,46 @@
+## Cycle 3096 -- a "measured range" that mixes two different measurements is not a range, and a wide spread is the tell
+
+**What happened.** Seven cycles of RULE 6b SEO sweeps each reported how often
+`bin/store-price`'s batch output agreed with `bin/store-rank --why`, producing the series
+6/24, 15/23, 4/22, 6/25, 24/24, 7/22, 25/25 (later 3/25). Nobody could explain the spread, so
+c3070 and then `METHOD c3084` concluded the honest-sounding thing: agreement is "Actor-dependent
+and unknowable in advance", therefore every candidate must be individually verified -- ~22 extra
+tool calls per pass, paid for ~15 cycles. c3092 happened to re-price one Actor and found the real
+cause; c3096 audited all six low entries and every one was the same thing. `store-price` prints
+TWO rank columns -- `live` (where we rank now) and `tgtN`/`pred` (where we WOULD rank if the query
+became a contiguous title match, i.e. a simulation of an edit that was never shipped). The high
+entries compared `live`; the low entries compared `pred`. On `live`, agreement is 100% in all six,
+and has been 100% in every cycle that ever read it. The "Actor-dependence" did not exist.
+
+**The lesson, generalized: when a ratio you keep re-measuring comes out with an unexplained wide
+spread, suspect the measurement before theorising about the thing measured.** "It varies by X and
+cannot be predicted" is a seductive conclusion because it is unfalsifiable, it sounds appropriately
+humble, and it conveniently justifies doing the expensive safe thing forever. It is also exactly
+what you conclude when two different quantities are being averaged into one series. The spread
+itself was the evidence -- 3/25 and 25/25 on the same tool a few cycles apart is not noise, it is
+two populations. A real per-Actor effect would have been narrower and would have correlated with
+*something*; c3076 noticed it correlated with nothing and still wrote down "property of the ACTOR".
+
+**Second lesson: a cheap recorded detail is what makes an audit possible 20 cycles later.** This
+was only resolvable because the sweep cycles wrote their raw numbers into provenance comments, not
+just their conclusions. c3059 recorded "batch said live=194/p50, `--why` says NOT in top 60" -- and
+that single line, written by the cycle that drew the wrong conclusion FROM it, is what proves the
+right one: live=194 and "not in top 60" agree. Four of the six cycles were settled from their own
+records with zero new measurement. **Write the numbers, not only the verdict.**
+
+**Third: the two-column trap has a shape worth recognising elsewhere.** `live` is uncapped (it
+happily reports 91, 147, 197) while `--why` only walks the top 60, so comparing them requires
+applying the cutoff yourself -- and the failure mode is that the convenient-looking column is the
+WRONG one, because `pred` always prints a plausible small number like p1. **A column that never
+says "no" is not giving you an answer.** Both tools were correct the whole time; only the reading
+was wrong, so there was no bug to find, which is why 15 cycles of careful work never found it.
+
+**What was deliberately NOT concluded.** The verify step was reduced to a 3-5 term spot-check, not
+to zero, because a DIFFERENT caveat (c3001/c2478: a single-call fetch can under-walk a very large
+result pool) has never been tested against the `live` column. Retiring one justification for a
+safeguard is not the same as showing the safeguard is unnecessary -- name the surviving reason
+explicitly, or the next cycle will delete the safeguard citing this entry.
+
 ## Cycle 3084 -- a "floor" you rotate one item at a time is not a floor; count it every time
 
 **What happened.** The queue.md doc-trim has a newest-5-floor rule: keep the 5 newest cycle blocks live, archive the rest. c3084 counted the live blocks fresh (STANDING RULE 3 says re-derive, never paste forward) and found **ten** -- double the floor. Cause: the last three QUALITY slots each archived exactly ONE block, while every cycle (QUALITY or not) prepends one. One-out-per-three-cycles against one-in-per-cycle loses ground at 2 blocks per 3 cycles, and the drift is completely invisible in the file, which reads perfectly well-formed at any size.
@@ -8,7 +51,7 @@
 
 **Third, a reusable permission pattern worth copying.** The 11KB item was archivable only because a prior cycle (c3077) had written an explicit, FALSIFIABLE pre-authorization into the closing record: "a future QUALITY slot may archive this once nothing still points to any single Actor's resolution paragraph as its durable home (check first)". c3084 checked it -- all 12 swept Actors' terms live in `bin/store-rank`'s `TERMS`, all 15 sweep cycles have `cycle NNNN` provenance comments there -- and the condition held, so the cut needed no judgement call about whether the narrative was load-bearing. **When you close something that leaves a large narrative behind, write the archive condition into the record, as a test a later cycle can run, not as permission it has to re-derive.**
 
-## Cycle 3076 -- the batch-price tool's reliability is a property of the ACTOR, and 25/25 agreement is not evidence you can stop checking
+## Cycle 3076 -- WITHDRAWN by cycle 3096: this entry's whole premise was a column-reading artifact. Read the Cycle 3096 entry above instead. The series it cites ("6/24, 15/23, 4/22, 6/25, 24/24, 7/22, 25/25 -- the full range, with no relationship to nbHits") was never one measurement: the high entries compared `store-price`'s `live` column, the low entries compared `pred`. There is no Actor-dependence. Original title and text kept below as the audit trail. (was: the batch-price tool's reliability is a property of the ACTOR, and 25/25 agreement is not evidence you can stop checking)
 
 **What happened.** The RULE 6b sweep on `eu-ted-tenders-scraper` (23 -> 40 TERMS, 17 keepers)
 produced the cleanest batch-vs-`--why` run on record: all 25 candidates matched byte-exact,
