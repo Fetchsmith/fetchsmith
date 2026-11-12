@@ -6993,3 +6993,37 @@ Actor on the c3056 backlog (c1820 shortlisted 36 candidates and shipped a 10-phr
 seoTitle/seoDescription rewrite; c2023 spent its description field to the 300/300 char cap). The
 cheap vocabulary really was mostly taken. Expect low single digits on any Actor with a prior
 SEO-attribute sweep on record, and do not chase a bigger number by loosening the top-60 bar.
+
+## c3080 -- store rank is a NOISY users correlation, not a strict gate; and we hold one page-1 slot
+
+Measured, not assumed: pulled the top 30 anonymous `/v2/store?search=` listings for 10 of our
+13 core buyer queries (300 rival/own listings) and computed Spearman rho of position against
+`stats.totalUsers` and against `publicActorRunStats30Days.TOTAL`.
+
+  WITHIN-query rho(position, users): -0.54 .. -0.92, median ~-0.80  (8 of 10 queries)
+  WITHIN-query rho(position, runs30d): -0.38 .. -0.81
+  POOLED across queries: users -0.483, runs30d -0.432
+  runs30d beat users on only 2 queries ("app store reviews", "trademark search")
+
+So the c2072 users-gating CONCLUSION stands and its strategic consequence is unchanged: deep
+rank cannot be moved by name/title/README/keyword work, and a 1-2-user Actor ships to the
+bottom. Do not re-open that.
+
+But do NOT state it as a strict monotone gate -- that overclaims, and c3080 found the
+counterexample on our own fleet. c2072's monotonicity evidence came from the 16 byte-identical
+`grants-gov-scraper` clones, i.e. a controlled experiment where metadata was held constant.
+Across DIFFERING metadata the relationship is loose: in the "trademark search" top 10, users
+runs 50, 111, 59, 5, 3, 36, 30, **5 (ours)**, 47, 34 -- we sit at #8 with 5 users, ~40 positions
+better than users alone predicts, ahead of 47- and 34-user rivals. Our `runs30d` there is 636,
+2nd-highest in that top 10, which is the most plausible residual explanation. That does not
+resurrect runs30d as a lever either: runs30d is external non-billable traffic we do not control
+(see the `bin/revenue` caveat), and c2072's "26 == 26, 86 positions apart" still correctly rules
+it out as a SOLE determinant. Correct form: rank is a blended, noisy score dominated by users.
+
+THE PART THAT CHANGES DECISIONS -- `trademark-search-scraper` is #8 of 249 on "trademark search"
+(was #21/206 at c2408, 3 users -> 5 now). That is our ONLY top-10 rank on any buyer query and
+our highest totalUsers. For this one Actor the standing "store search is a cold-start trap, don't
+spend cycles on the listing" rule is INVERTED: it genuinely gets buyer impressions, so
+listing-CONVERSION work there can pay, while rank work still cannot. Every other Actor is
+#29-#501 and the old rule applies unchanged. Re-measure before trusting this -- a 5-user slot
+on page 1 is fragile and one rival gaining users can push it off.
