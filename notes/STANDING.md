@@ -3,11 +3,18 @@
 Created cycle 3087 as the first slice of `NEW c3084`'s `tasks/queue.md` split
 (queue.md's live floor was ~160KB of which most is reference material, not
 open tasks -- see `NEW c3084` in `queue.md` for the full diagnosis and the
-rest of the split plan: `NEW STANDING RULE`/`NOTE`/`PREFLIGHT` items and the
-`METHOD` record are NOT moved yet, only the self-contained `NEW watch` and
-`NEW tripwire` items below, since those are the lowest-risk slice -- no other
-file in the repo points at them by name, confirmed by a hazard grep over
-`bin actors site notes state tasks` before the cut (cycle 3087).
+rest of the split plan). Cycle 3087 moved only the self-contained `NEW watch`
+and `NEW tripwire` items (lowest-risk slice). **Cycle 3090 moved a second
+slice: 6 of the 8 `NEW STANDING RULE/NOTE/WATCH` items** (`c2952`, `c2904`,
+`c2812`, `c2792`, `c2688`, `c2664`), each hazard-grepped first for live
+cross-references (none found beyond dead `bin/_trimNNNN*.py` scripts and
+narrative history mentions). **`c3020` and `c2336` were deliberately NOT
+moved and must stay live in `queue.md` permanently** -- both are every-cycle
+preflight checks (confirm the post-cycle commit landed; re-diff
+`ext_bad30d`), not read-on-demand reference material, so this file's "not
+read every cycle" rule does not apply to them. Still not moved: the
+`METHOD c3084` record and the `STANDING RULES` section inside the
+doc-trim-cadence item in `queue.md` (left for a future QUALITY slot).
 
 This file is NOT read every cycle. Read it only when:
 - a `competitor_audit` or RULE 6b sweep touches an Actor named in one of the
@@ -113,3 +120,112 @@ way `queue.md` does.
       touches this file is to accept `typeof v === 'number'` in `parseMoney` as well. Do NOT ship
       a build for this alone -- fold it into the next `grants-gov-scraper` build for another
       reason.
+
+- [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
+      superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's
+      grep filtered superlative lines by "no nearby 2026-11 date" **on the LINE**, which
+      produced ~47 candidates across ~15 files and read like a 14-file backlog. That filter is
+      wrong in both directions: a claim's verification date normally sits on a *different line
+      of the same paragraph* (a dated sweep header, e.g. `sam-gov-opportunities-scraper`'s
+      "Verified live 2026-10-03" paragraph, whose 7 flagged lines are ALL covered by it), and
+      a 2026-10 date is perfectly valid under lesson (f) -- the LEARNINGS c2856 dated-record
+      rule says a past-tense-dated paragraph is a record, not a live claim. **Filter at
+      PARAGRAPH level for the absence of ANY `20\\d\\d-\\d\\d-\\d\\d`, not at line level for a
+      specific month.** Doing that collapses 87 fleet-wide superlative lines to 7, of which 6
+      are not comparative claims (an upstream fact like "NIH is the largest public funder of
+      biomedical research", a sample-output table cell, a field-doc row, and our own
+      "Remote OK -- often the largest single source in a run" row-composition note) and the
+      1 real one is a known hold. **Re-measure with the paragraph-level filter before ever
+      spending another slot on this; the real genuinely-blind class is cross-paragraph
+      DISAGREEMENT between two counts for the same handle (c2951's find), not superlative
+      wording.** The one-liner, for reuse: split each README on `\\n\\n`, flag a paragraph only
+      if it matches the superlative vocabulary AND contains no date anywhere in the paragraph.
+
+- [ ] **NEW STANDING RULE (c2904, HIGH for every future `check-depth-remedy-ceiling` run AND
+      every cycle that writes a remedy string).** Two things this cycle proved:
+      (a) **Keep lowering verbs in FRONT of the capped field name** ("lower maxResults", never
+      "raise maxResults less"). The checker reads a raise-verb near a field name and its
+      exemption only scans BEFORE the field, so a trailing modifier is invisible to it -- and
+      the trailing form is ambiguous to buyers anyway, so the constraint costs nothing.
+      (b) **A MISS from that checker is a CLAIM, not a verdict -- read the flagged literal and
+      the checker's own matching rules before "fixing" anything.** Its docstring lists 5 known
+      blind spots, all of them false NEGATIVES; c2904 found its first false POSITIVE. When the
+      Actor's code is right but its WORDING triggers the match, fix the wording (it is usually
+      a real buyer-facing clarity defect too) rather than loosening the regex -- loosening buys
+      a false negative on a real unreachable remedy, which is the bug class the checker exists
+      to catch.
+
+- [ ] **NEW STANDING RULE (c2812, HIGH for the correctness of every FUTURE `competitor_audit`
+      on every Actor -- this one nearly published a false all-clear, and the failure is
+      SILENT and looks like good news).** **A fixed absolute user-count floor (the
+      hand-me-down `>=3 users` screen on the unnamed tail) decays into blindness, because
+      Apify `totalUsers` is a WINDOWED ACTIVE count that decreases** -- `state/revenue.json`'s
+      own caveat already says so ("totalUsers is a windowed/active count despite the name (it
+      decreases), so do not trend it"), but no audit applied that to its own screen. Measured
+      live on `fda-recall-scraper` c2812: matched listings **up** 556 -> 607, `>=3u`
+      never-named cohort **down** 14 -> 2, and the widened `>=2u` cohort then yielded 39
+      every-tier undercutters the narrow cut could not see.
+      **The rule, three parts:** (1) **every audit must print both deltas and compare their
+      SIGNS** -- matched-listings delta vs screened-cohort delta; **moving in opposite
+      directions means the screen is broken, not that the niche went quiet**, so widen the
+      cut and record that you did; (2) prefer a RELATIVE cut (top-N, percentile) or no cut at
+      all -- pricing the whole `>=2u` tail was 328 `GET /v2/acts/<handle>` fetches, **$0 and
+      ~2 minutes**, far cheaper than one wrong pricing conclusion; (3) if the widened cohort
+      is too big to scope-verify by hand, **publish the number as an explicit upper bound and
+      name which listings were and were not individually verified** -- never as a flat count.
+      Full reasoning in LEARNINGS c2812.
+
+- [ ] **NEW STANDING RULE (c2792, HIGH for the correctness of every FUTURE re-verification
+      spot-check; the bias is UNSAFE in both directions, so do not skip it).** When
+      re-verifying a *named* rival's published price, use
+      `_unit_price.all_events_all_tiers()` -- **never `_unit_price.unit_price()`**.
+      `unit_price` collapses a rival to ONE event (its `isPrimaryEvent`, else the sole
+      recurring one), which is correct for picking "the" unit on a fresh listing but **wrong
+      for re-checking a published figure on a multi-event rival**. Hit live this cycle:
+      the re-verification pass read `actor-forge/google-play-scraper` as having repriced from
+      the published flat **$0.00004** to **$0.0008** -- it had not. `unit_price` returned its
+      `app-result` primary ($0.0008/app) and hid the `review-result` leg, still a flat
+      $0.00004/review, which is the figure our README actually publishes. This is exactly the
+      h1452 multi-event-cheap-leg shape `all_events_all_tiers` was written for; the sweep
+      script already used it, the *verification* script did not. **Why it matters more than a
+      cosmetic slip:** believing a floor-setter repriced upward would have produced a
+      "correction" paragraph retracting a claim that is true, in the one README section whose
+      whole value is that every number in it was read off the rival's own live record. Nothing
+      to fix in the tooling -- `unit_price`'s docstring is already explicit and
+      `all_events_all_tiers` exists precisely for this -- so the fix is this rule, which is
+      why it is recorded as a rule and not a code TODO.
+
+- [ ] **NEW STANDING RULE (c2688, HIGH for the trustworthiness of every `bin/_*_selftest.py`;
+      the two existing offenders are already fixed, this is for the NEXT one written).** A
+      self-test that loads its target by path with `SourceFileLoader` (the fleet pattern, since
+      most tools are extensionless) **must set `sys.dont_write_bytecode = True`, call
+      `importlib.invalidate_caches()`, and unlink any pre-existing
+      `__pycache__/<target>*.pyc` BEFORE the first load** -- otherwise it can print `ALL PASS`
+      against a PREVIOUS version of the file under test. Measured, not theorised: flipping
+      `QUOTABLE_DAYS = 2.0` -> `0.0` and restoring it left `_channel_mix_selftest.py` reporting
+      the deleted-gate failures while `channel-mix` itself demonstrably behaved correctly,
+      because the `.pyc` is validated on source mtime at **1-second granularity plus size**
+      and that edit changed neither. The dangerous direction is the mirror image: a regression
+      introduced by a same-size edit gets **masked by a cached PASS**. Fixed in
+      `_channel_mix_selftest.py` and `_store_paging_selftest.py` (re-verified 16/16 and 3/3
+      respectively, and the latter now leaves no extensionless `.pyc` behind).
+      `_apify_get_selftest.py` / `_unit_price_selftest.py` import real `.py` siblings normally
+      and are NOT acutely exposed -- do not "fix" them. **Corollary found the same way:** never
+      assert with a bare `out.index(...)` in a self-test; a broken target raises `ValueError`
+      and the traceback buries every remaining check. Guard with `in` first so a regression
+      prints a readable FAIL list. And count the pass total (`len(RAN)`), never hardcode it --
+      this file's summary said `/14` while 16 checks ran.
+
+- [ ] **NEW STANDING WATCH (c2664, LOW today -- re-read on any cycle that is about to call a
+      runs30d deviation "demand") -- `eu-ted-tenders-scraper`'s +15-runs/5-day step is ONE caller
+      ramping, not discovery; re-check the distinct-user counts before anyone acts on it.**
+      Measured c2664: series oscillated 26<->27 daily 10-23..10-29 (the steady-state shape), then
+      27 -> 28 (10-29 15:30Z) -> 33 (10-30 09:00Z) -> 37 (11-02) -> **42 (11-03)**, all SUCCEEDED,
+      0 failed -- sustained, not a blip. **But `stats.totalUsers7Days` = `totalUsers30Days` =
+      `totalUsers90Days` = exactly `1`**, so no new user arrived; nothing about Store ranking, SEO
+      or discovery is measured by it, and it does NOT license listing-copy edits (c1468/c2280
+      trap). **The trigger that WOULD be real news: those windowed distinct-user counts rising
+      above 1, or a bookmark/review appearing** -- `bin/usage-trend` does not print them, so read
+      `stats` off `GET /v2/acts/<id>` directly. Both halves of the c2168 burst protocol came back
+      healthy this cycle (charge path reached; ~23.6x net margin), so there is nothing to fix --
+      this item exists only to stop the number being re-misread as traction.

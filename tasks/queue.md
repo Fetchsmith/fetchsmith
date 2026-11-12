@@ -1,3 +1,5 @@
+- [ ] **CLOSED c3090 -- QUALITY slot (3090 % 3 == 0). Preflight all clean:** tree matched HEAD `e03bd4c4` (c3089 safety-net commit); `inbox-triage new` NONE UNTRIAGED of 78; `bin/revenue` $0 booked, 27 public Actors, 54 users, 1486 runs30d, `ext_bad30d` 31 (still the documented decaying baseline, not re-opened), 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed; `bin/apify-spend` $1.7175/$85 (11.4% elapsed, proj $15.08); services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active, site 200 on `/` and `/tools`; `checks-due --all` NONE DUE (soonest `check-dead-endpoint-docs` in 1c, c3091). **Work: resumed `NEW c3084`'s queue.md/STANDING.md split (second slice), per c3089's handoff.** Re-read the 8 deferred `NEW STANDING RULE/NOTE/PREFLIGHT/WATCH` items first and corrected the plan: `c3020` (confirm post-cycle commit landed) and `c2336` (`ext_bad30d` re-diff) are BOTH every-cycle preflight checks, not read-on-demand reference material -- this cycle's own preflight actually exercised both. **Moved only 6 of the 8** (`c2952`, `c2904`, `c2812`, `c2792`, `c2688`, `c2664`) to `notes/STANDING.md`, after hazard-grepping each label over `bin actors site notes state tasks` (all hits were dead `bin/_trimNNNN*.py` scripts or narrative history mentions, none a stale-able pointer). `c3020`/`c2336` stay live in queue.md permanently, documented in both files so this is not re-attempted. Cut via self-verifying `bin/_trim3090q.py` (multiset-diff dry run before write, modeled on `bin/_trim1836.py`). **Result: queue.md 164.9KB/1317ln -> 157.7KB/1206ln (still TRIM DUE, ~8c headroom); STANDING.md 8.8KB -> 18.7KB.** Structural asserts green (both retained items present as top-level bullets, all 6 moved labels present in STANDING.md and absent as `NEW STANDING` bullets in queue.md). $0 spent, doc-only. **Blockers: none. Owner email: none owed.** Services/site re-verified 200 post-work. **Next cycle: c3091 is Regular/GROWTH (3091 % 3 == 1)** -- `check-dead-endpoint-docs` due. `tasks/queue.md` still TRIM DUE: next QUALITY slot should take the remaining riskier slice (`METHOD c3084` record, then the `STANDING RULES` section) or a plain rotation. Remaining RULE 6b second-pass candidates by sweep age, oldest first: `clinicaltrials-mcp-server` (c3067), `court-records-scraper` (c3070), `fda-recall-scraper` (c3074), `eu-ted-tenders-scraper` (c3076), `apple-podcasts-scraper` (c3077, read its standing audit watch in `notes/STANDING.md` first). `NEW c3088` (5 AGING schema claims) remains open. 2026-11-15 Apify deadline is 2 days out.
+
 - [ ] **CLOSED c3089 -- Regular/GROWTH slot (3089 % 3 == 2). Preflight all clean:** tree matched HEAD `beac8d8d` (c3088); `inbox-triage new` NONE UNTRIAGED of 78; `bin/revenue` $0 booked, 27 public Actors, 54 users, 1485 runs30d, `ext_bad30d` 31 (still the documented decaying `trademark-search-scraper` baseline, no new Actor name, not re-opened), 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed; `bin/apify-spend` $1.7145/$85 (11.3% elapsed, proj $15.14); services `fetchsmith-web`/`fetchsmith-mail`/`caddy` active, site 200 on `/` and `/tools`; `checks-due --all` NONE DUE (soonest `check-dead-endpoint-docs` in 2c, c3091). **Work: RULE 6b SECOND PASS on `trademark-search-scraper`** (c3088 handoff's first-named candidate by sweep age; first pass c3061, 33 TERMS). Health-gated first (`actor-health --only`, ok=True, 10 items, 0 fail_rows). Read the 4 live `meta.json` fields verbatim, curated 20 NEW n-grams skipping all 33 tracked terms plus the 2 prior screened-out terms (`uspto api`, `applicant data`), batch-priced all 20 in ONE `store-price` call, then individually re-verified EVERY one with `store-rank --why` per the standing c3059 correction. **14/20 matched the batch tool's p1 prediction byte-exact; 6/20 mismatched in rank but were still confirmed real top-60 wins; 1/20 was a true false positive.** **19 keepers shipped (33 -> 52 TERMS)**: `search registered trademarks` (101, p1), `registered trademarks across` (62, p1), `official tmview database` (2, p1), `22 fields` (109, p6), `nice classes applicant` (92, p1), `applicant expiration` (65, p1), `expiration opposition dates` (55, p1), `expiration dates` (1335, p8), `no start fee` (3637, p58 -- **FLAPPING FLAG per c3031**, 50-60 band), `70+ offices` (38, p9), `70+ national and regional offices` (7, p1), `access trademark filing data` (5, p1), `across 70+ offices` (23, p1), `offices via tmview` (10, p5), `status nice classes` (153, p4), `trademark search api with brand protection` (35, p1), `brand protection api and ip monitoring` (47, p1), `filing data trademark registration data` (71, p1), `trademark registration data and trademark classification data` (41, p1). **Screened out 1 false positive**: `start fee` (6813 nbHits, batch pred p1, `--why` confirmed absent from top 60) -- recorded in `bin/store-rank`'s cycle-3089 provenance comment. `ast.parse` clean + `SourceFileLoader` re-import (52 terms, 52 unique, no duplicate); full 52-term probe re-run post-edit, all 19 new terms matched the written (nbHits, rank) exactly, the 33 pre-existing terms byte-identical (append-only). $0 spent, no `meta.json` edit, no build, no publish, no reindex -- doc-only (`bin/store-rank`, `tasks/queue.md`, `state/STATUS.md`). **Blockers: none. Owner email: none owed.** Services/site re-verified 200 post-work. **Next cycle: c3090 is the next QUALITY slot (3090 % 3 == 0)** -- per c3087's `PROGRESS` note on `NEW c3084`, resume the queue.md/STANDING.md split (8 `NEW STANDING*` items, then `METHOD c3084`, then the `STANDING RULES` section, in increasing risk order); re-check `check-doc-size` on both `tasks/queue.md` and `state/STATUS.md` (both flagged TRIM SOON/DUE before this block, which grows both further). Remaining RULE 6b second-pass candidates by sweep age, oldest first: `clinicaltrials-mcp-server` (c3067), `court-records-scraper` (c3070), `fda-recall-scraper` (c3074), `eu-ted-tenders-scraper` (c3076), `apple-podcasts-scraper` (c3077, read its standing audit watch in `notes/STANDING.md` first). `NEW c3088` (5 AGING schema claims) remains open, not yet due to re-flag (checker next due c3568). 2026-11-15 Apify deadline is 3 days out; `NEW (c2478)`'s post-deadline work becomes actionable c3090+.
 
 - [ ] **CLOSED c3088 -- Regular/GROWTH slot (3088 % 3 == 1). Preflight all clean:** tree matched HEAD `92ba4604` (c3087); `inbox-triage new` NONE UNTRIAGED of 78; `bin/revenue` $0 booked, 27 public Actors, 54 users, 1485 runs30d, `ext_bad30d` 31 (the documented decaying `trademark-search-scraper` baseline, no new Actor name, not re-opened), 0 bookmarks, 0 reviews -- no buyer signal, no owner email owed; `bin/apify-spend` $1.6479/$85 (proj $14.65); services/site 200. **`NEW (c2478)`'s 2026-11-15 deadline is 3 days out and its remaining work is explicitly "do this AFTER 2026-11-15" -- re-read, correctly not actionable yet.** **1 check was due and ran: `check-schema-claims` (last c2608, 480-cycle gap) -- CLEAN, 26 schemas, 30 fresh / 5 AGING / 0 STALE, 27 undated (inventory), 8 HISTORY correctly suppressed; recorded via `checks-due --ran`, next due c3568.** The 5 AGING claims are filed below as `NEW c3088`. **Work: RULE 6b SECOND pass on `app-store-reviews-scraper`** (c3087's first-named candidate by sweep age; first pass c3059, 28 TERMS). Health-gated first (`--only`, ok=True, 10 items, 0 fail_rows). Curated 25 new n-grams from the 4 live `meta.json` fields, skipping all 28 tracked terms and both prior screened-out lists (c3059's 6, cycle 554's); batch-priced all 25 in ONE `store-price` call; individually re-verified EVERY one with `store-rank --why`. **All 25 ranked in the top 60 and all 25 matched the batch tool byte-for-byte on rank AND on the full (words, exact, prox, attr) tuple -- 25/25, on the very Actor that produced c3059's worst-ever 6/24 disagreement.** **15 keepers shipped (28 -> 43 TERMS)**, best: `any country` (6632 nbHits, p22 -- highest-volume term this Actor has ever tracked), `store review monitoring` (4593, p5), `per star ratings` (4685, p8), `watch mode monitoring` (4059, p2), `app store review monitoring` (1361, p5). **10 screened out as NOISE, not as unranked -- all 10 ARE live in the top 60**, applying c3059's own `feed rank` rule (output-field/sort-enum names and 6-8 word prose fragments nobody types); their measured ranks are recorded in `bin/store-rank` so no future pass re-shops them. None of the 15 is in the p50-60 FLAPPING band. `ast.parse` clean + `SourceFileLoader` re-import (43 terms, 43 unique, no duplicate); full 43-term probe re-run post-edit, RC=0, 43 rows, every new term re-measured at the rank `--why` gave it. $0 spent, doc-only -- no `meta.json` edit, no build, no publish, no reindex. **Blockers: none. Owner email: none owed.** **Next cycle: c3089 is Regular/GROWTH (3089 % 3 == 2).** Remaining second-pass candidates by sweep age, oldest first: `trademark-search-scraper` (c3061), `clinicaltrials-mcp-server` (c3067), `court-records-scraper` (c3070), `fda-recall-scraper` (c3074), `eu-ted-tenders-scraper` (c3076), `apple-podcasts-scraper` (c3077 -- read its standing audit watch, now in `notes/STANDING.md`, first). c3090 is the next QUALITY slot: resume `NEW c3084`'s split per c3087's `PROGRESS` note, and re-check `check-doc-size` (this block grows both docs). **Note for the next QUALITY slot: c3087 left a `PROGRESS` note on `NEW c3084` but did NOT write its own `CLOSED c3087` cycle block in this file** -- `check-status-blocks-kept`/`check-status-continuity` only guard `state/STATUS.md` (both CLEAN this cycle, 26 blocks, none missing), so queue.md's block series has a one-cycle hole that is invisible to tooling. Not worth back-filling; worth knowing before anyone counts blocks here.
@@ -28,7 +30,9 @@
 
 - [ ] **NEW c3084 (HIGH, structural -- the doc-trim cadence can no longer clear `tasks/queue.md`, and no amount of running it harder will fix that. Take this on a QUALITY slot INSTEAD of a routine trim.)** c3084 ran both available levers in one slot (newest-5 rotation of five blocks at once + an 11KB compression of the largest line) and still landed at **160.8KB / `TRIM DUE` with ~7c headroom**. The arithmetic is now unarguable: the checker wants post-trim size under ~70KB to clear its own 24c look interval, and **the live content floor is ~160KB**, so the gap is not a trim backlog, it is the file's composition. **Measured c3084, this is the lever:** of 88 live items / 160.8KB, only **4 items (7.2KB) are actionable `NEW cNNNN` tasks**. The other 84 are reference material filed in a task queue -- 22 `NEW follow-up` (30.0KB), 12 `NEW note` (9.6KB), 8 `NEW standing` (14.4KB), 5 `NEW watch` (5.5KB), 2 `NEW tripwire` (2.4KB), plus the CLOSED/COMPRESSED/MERGED/RETIRED/SHIPPED/DECIDED/RESOLVED closed records (~58KB). **Proposed split, which attacks the growth RATE the way STANDING RULE 6 intended rather than re-cutting the stock:** move the standing rules / tripwires / watches / method records to a `notes/STANDING.md` (read on demand, not every cycle) and leave `queue.md` as an actual prioritized queue of open tasks plus the newest-5 cycle blocks. That plausibly takes queue.md under 70KB in one slot and keeps it there, because the recurring per-cycle growth is cycle blocks (rotated) and new follow-ups (which would land in notes). **Do NOT start this without budgeting a full QUALITY slot** -- it is a hazard-grep-heavy move (every cross-item `see NEW cNNNN` pointer has to be re-aimed at the new file, and STANDING RULE 1 says grep first, then cut), and the `STANDING RULES` section in the doc-trim item plus the guarded `c2478` (live 2026-11-15 deadline) and `c2336` (live triage tripwire) must stay reachable. **Interim rule for any QUALITY slot that does a routine trim before this lands: COUNT the live cycle blocks rather than assuming the floor held** -- c3084 found ten, double the floor, because rotating one block per QUALITY slot does not keep up with one block added per cycle, and the drift is invisible unless counted.
 
-**PROGRESS c3087: first slice of the split shipped.** Created `notes/STANDING.md` and moved the 7 lowest-risk items -- the 5 `NEW watch` + 2 `NEW tripwire` items (~7.9KB) -- verbatim, chosen because a hazard grep over `bin actors site notes state tasks` for each item's cycle-label found zero live functional cross-references (only narrative mentions inside other cycle blocks, which describe history and don't break). Verified lossless by multiset diff (every non-blank line from the pre-edit file is findable in queue.md + STANDING.md + queue_archive.md). Also ran the routine newest-5-floor rotation in the same slot (8 live blocks -> 5, archived `CLOSED c3080`/`c3079`/`c3078` to `queue_archive.md` under `## Archived by cycle 3087`). **Result: 166.2KB -> 155.0KB, still TRIM DUE (6c -> 8c headroom) -- as this item predicted, neither lever alone clears it.** **NOT yet moved** (left for a future QUALITY slot, in increasing order of risk/size): the 8 `NEW STANDING RULE/NOTE/PREFLIGHT/WATCH` items (~14.4KB, excluding the guarded `c2336` triage tripwire which must stay reachable per this item's own instruction), then the `METHOD c3084` record (~4KB) and the `STANDING RULES` section inside the doc-trim-cadence item itself -- those carry more cross-references and deserve their own hazard grep pass before cutting. `notes/STANDING.md` is NOT read every cycle; it's referenced from its own header for when a `competitor_audit`/RULE-6b sweep touches an Actor named in one of its items.
+**PROGRESS c3087: first slice of the split shipped.** Created `notes/STANDING.md` and moved the 7 lowest-risk items -- the 5 `NEW watch` + 2 `NEW tripwire` items (~7.9KB) -- verbatim, chosen because a hazard grep over `bin actors site notes state tasks` for each item's cycle-label found zero live functional cross-references (only narrative mentions inside other cycle blocks, which describe history and don't break). Verified lossless by multiset diff (every non-blank line from the pre-edit file is findable in queue.md + STANDING.md + queue_archive.md). Also ran the routine newest-5-floor rotation in the same slot (8 live blocks -> 5, archived `CLOSED c3080`/`c3079`/`c3078` to `queue_archive.md` under `## Archived by cycle 3087`). **Result: 166.2KB -> 155.0KB, still TRIM DUE (6c -> 8c headroom) -- as this item predicted, neither lever alone clears it.**
+
+**PROGRESS c3090: second slice shipped, with a correction to the c3087 plan.** Re-read all 8 `NEW STANDING RULE/NOTE/PREFLIGHT/WATCH` items (the slice c3087 deferred) before moving anything and found **2 of the 8 are every-cycle preflight checks, not read-on-demand reference material** -- `NEW STANDING PREFLIGHT STEP (c3020)` ("add to the cycle-protocol step-1 skim... read the LAST `post-cycle commit:` line") and `NEW STANDING TRIPWIRE (c2336)` ("re-diff `ext_bad30d`... at the start of every cycle") are both things this and every recent cycle's preflight actually does (confirmed: this cycle's own preflight re-diffed `ext_bad30d` and checked the post-cycle commit line). Moving either into `notes/STANDING.md`, which its own header says is explicitly "NOT read every cycle," would silently drop them from the cycle protocol -- the opposite of the split's goal. **So the split is not "8 items minus the guarded c2336," it's 6: `c2336` and `c3020` both stay live in queue.md permanently, not just for this slot.** Hazard-grepped the remaining 6 (`c2952`, `c2904`, `c2812`, `c2792`, `c2688`, `c2664`) for live cross-references over `bin actors site notes state tasks`: all hits were either dead one-off `bin/_trimNNNN*.py` scripts or narrative mentions in `notes/LEARNINGS.md`/`notes/PLAYBOOK.md`/`state/fleet_checks.json`/`state/audit_dates.json` that name the cycle label in a history note, not a `see queue.md item cXXXX` pointer that would go stale -- safe to move. Cut via a self-verifying script (`bin/_trim3090q.py`, dry-run multiset-diff before writing, modeled on `bin/_trim1836.py`/`bin/_trim3048q.py`). **Result: queue.md 164.9KB -> 156.1KB (verified via `check-doc-size` post-edit), STANDING.md 8.8KB -> 17.8KB.** Structural asserts green: both `c3020` and `c2336` still present as top-level `- [ ]` bullets in queue.md, all 6 moved labels present in STANDING.md, none of the 6 still present as a `NEW STANDING` bullet in queue.md. **Still NOT moved** (left for a future QUALITY slot, in increasing order of risk/size): the `METHOD c3084` record (~4KB) and the `STANDING RULES` section inside the doc-trim-cadence item itself -- those carry more cross-references and deserve their own hazard-grep pass. `notes/STANDING.md` is NOT read every cycle; it's referenced from its own header for when a `competitor_audit`/RULE-6b sweep touches an Actor named in one of its items, or when the cycle protocol/queue.md explicitly points there.
 
 - [ ] **METHOD c3084 (was `NEW c3056`, the 12-Actor RULE 6b first-pass backlog -- that backlog is FULLY RESOLVED and this item is now the METHOD + LESSONS record only; the 11KB per-Actor roll-call it used to carry is archived verbatim under `## Archived by cycle 3084` in `queue_archive.md`).** **There is NO named candidate left: all 12 first passes closed by c3077** (grants-gov c3056, federal-register c3058, app-store-reviews c3059, trademark-search c3061, clinicaltrials-mcp c3067, remote-jobs c3068, court-records c3070, us-federal-awards c3071, ats-jobs c3073, fda-recall c3074, eu-ted-tenders c3076, apple-podcasts c3077; `scholarship-scraper` SKIPPED -- `bin/actor-health` shows it retired/429-blocked since 2026-09-20, **do not re-pick until the block clears**), **and the three follow-on SECOND passes are done too** (us-federal-awards c3079 19 keepers, remote-jobs c3082 14, ats-jobs c3083 13). **Next GROWTH slot: do NOT hunt for another unswept Actor here -- pick a fresh lever from `NEW c3046`'s option list** (option (d): re-examine eviction candidates on RULE-6-closed Actors, or find a genuinely new lever). **Durable home for every number this backlog produced is `bin/store-rank` itself** -- each sweep wrote a dated `cycle NNNN` provenance comment carrying its keepers with (nbHits, rank, attr) and its screened-out list, and the terms are live in that file's `TERMS` dict; verified c3084 before archiving the narrative. **THE METHOD (~8-10 tool calls, ~15-20 min, $0, no build/publish/reindex -- `bin/store-rank` is a local tracking script, not a live listing):** (1) check `bin/actor-health` FIRST for retired/paused/blocked status (the scholarship-scraper lesson) and read the live `actors/<slug>/meta.json`, taking ONLY title/description/seoTitle/seoDescription -- never README, cycle-1468 paraphrase hazard; (2) curate ~20-25 contiguous and near-contiguous n-grams from that vocabulary that a buyer would actually type, skipping anything already in TERMS and anything a prior pass already screened out; (3) batch-price all of them in ONE `bin/store-price <slug> "q1" "q2" ...` call (c3044: the 4th element of `liveBucket` IS the anchoring attr, so no per-term `--why` is needed for the RULE 6 anchor-map step); (4) note which look like keepers at p60-or-better with non-trivial nbHits, but do NOT stop there; **(5) STANDING CORRECTION c3059, reconfirmed by every sweep since -- re-verify EVERY candidate with `store-rank --why "<q>" <slug>`, including ones the batch tool ranked deep or screened out, NOT just the apparent keepers, and NOT only the high-nbHits ones;** (6) keep anything `--why` confirms in the top 60 with non-trivial nbHits, flag p50-60 as FLAPPING per c3031; (7) append to TERMS with a dated provenance comment carrying the measured (nbHits, rank) per term AND the screened-out list with their ranks/reasons -- the screened-out list is what stops the next cycle re-shopping the same dead phrases; (8) `ast.parse` + module re-import (needs an explicit `SourceFileLoader`, c3082: `bin/store-rank` has no `.py` extension so plain `spec_from_file_location` fails to infer a loader), then re-run the full `bin/store-rank <slug>` probe -- note an append-only edit CANNOT regress an existing term's live rank, so phrase it as "no existing term's string was touched", not as a re-measured byte-identical claim, unless you actually captured a pre-edit baseline. **WHY STEP 5 IS NON-NEGOTIABLE (the single most expensive lesson here): batch-vs-`--why` agreement is ACTOR-dependent, not nbHits-dependent, and cannot be known before you spend the calls.** Measured range across the sweep: best 25/25 byte-exact (c3076 `eu-ted-tenders`, including every high-nbHits query) and 24/24 (c3068 `remote-jobs`); worst 3/25 (c3082 `remote-jobs` second pass) and 4/22 (c3070 `court-records`, 3 outright false positives where batch predicted p1-p3 and the real rank was outside the top 60); mid 6/24, 15/23, 19/25. c3067 found a false positive at only **187 nbHits**, so c3059's original "~1000 nbHits" framing is NOT a safe bound -- there is no threshold below which you may skip the call. **KNOWN BLIND SPOT (c3073/c3074), also Actor-dependent:** single bare generic words that are already present in our own live description (ATS brand names greenhouse/ashby/lever/workable/workday; `openfda`) get batch-predicted p1-p2 yet `--why` finds them absent from the top 60 entirely, because they are common words with thousands of unrelated competitors -- but c3076 saw batch screen generic phrases correctly, so **do NOT use this pattern as a pre-screen to skip `--why` calls**, only as a prior on what will turn out to be a false positive. **REUSABLE PATTERN (c3068): grep the Actor's own older provenance comments for phrases a past cycle MEASURED and then DECLINED to act on** -- `remote job postings` (6689 hits) had been measured at p27 by c1820, never added to TERMS, and sat untracked ~1250 cycles; a declined EDIT is not a reason to leave a live rank untracked. **A SECOND pass is NOT exhausted after the first** (c3079/c3082/c3083 shipped 19/14/13 keepers on already-swept Actors), and **a thin payout is pre-shopping, not method failure** -- expect low single digits on Actors the c1816-c1852 SEO sweep already worked. **CAVEAT on any future "unswept Actor" scan:** it keys on the literal string `RULE 6b`, which only entered the vocabulary around c3002, so an Actor can read "unswept" while an older cycle shopped some of its phrases under a different name -- approach any such candidate as "re-shop with the mature method", not virgin ground. **`apple-podcasts-scraper` carries a standing audit watch of its own (`NEW watch c2816`, due ~c3152) -- read that item before editing anything but `TERMS` on it.**
 
@@ -149,26 +153,6 @@
       **not as the standalone default pick when a cycle has no due work.** A cycle with nothing
       due should take the c2992 GROWTH lever above instead.
 
-- [ ] **NEW STANDING NOTE (c2952, HIGH value for anyone tempted to re-open the "stale ordinal
-      superlative" sweep -- it is CLOSED, do not re-derive it from c2951's number).** c2951's
-      grep filtered superlative lines by "no nearby 2026-11 date" **on the LINE**, which
-      produced ~47 candidates across ~15 files and read like a 14-file backlog. That filter is
-      wrong in both directions: a claim's verification date normally sits on a *different line
-      of the same paragraph* (a dated sweep header, e.g. `sam-gov-opportunities-scraper`'s
-      "Verified live 2026-10-03" paragraph, whose 7 flagged lines are ALL covered by it), and
-      a 2026-10 date is perfectly valid under lesson (f) -- the LEARNINGS c2856 dated-record
-      rule says a past-tense-dated paragraph is a record, not a live claim. **Filter at
-      PARAGRAPH level for the absence of ANY `20\\d\\d-\\d\\d-\\d\\d`, not at line level for a
-      specific month.** Doing that collapses 87 fleet-wide superlative lines to 7, of which 6
-      are not comparative claims (an upstream fact like "NIH is the largest public funder of
-      biomedical research", a sample-output table cell, a field-doc row, and our own
-      "Remote OK -- often the largest single source in a run" row-composition note) and the
-      1 real one is a known hold. **Re-measure with the paragraph-level filter before ever
-      spending another slot on this; the real genuinely-blind class is cross-paragraph
-      DISAGREEMENT between two counts for the same handle (c2951's find), not superlative
-      wording.** The one-liner, for reuse: split each README on `\\n\\n`, flag a paragraph only
-      if it matches the superlative vocabulary AND contains no date anywhere in the paragraph.
-
 - [ ] **NEW c2948 (low priority, checker-precision): `check-competitor-claims` verifies only the
       user-count INTEGER, so every other fact riding in the same parenthetical is unchecked and
       rots silently.** c2948 found `saswave/substack-leaderboard-profile-scraper` documented as
@@ -237,7 +221,6 @@
       `reachableMatches` describe one run's delivery instead of the Actor's ceiling, which is a
       different and less useful field -- and would silently change a documented output.
 
-
 - [ ] **NEW note (c2904, TRIVIAL -- saves the queued c2900 fleet sweep one Actor's work).**
       `sam-gov-opportunities-scraper` is **CLEAN** for the c2900 "warning predicts an upstream
       limit a nearer own-cap makes unreachable" class, checked this cycle, for two independent
@@ -255,20 +238,6 @@
       ONE wording for every time-budget stop so the three sites "cannot drift apart"
       (main.js:267-270) -- and per-site wording would contradict it for a 1-of-3 clause. Only
       revisit if a buyer actually reports confusion on a watch-mode seed run.
-
-- [ ] **NEW STANDING RULE (c2904, HIGH for every future `check-depth-remedy-ceiling` run AND
-      every cycle that writes a remedy string).** Two things this cycle proved:
-      (a) **Keep lowering verbs in FRONT of the capped field name** ("lower maxResults", never
-      "raise maxResults less"). The checker reads a raise-verb near a field name and its
-      exemption only scans BEFORE the field, so a trailing modifier is invisible to it -- and
-      the trailing form is ambiguous to buyers anyway, so the constraint costs nothing.
-      (b) **A MISS from that checker is a CLAIM, not a verdict -- read the flagged literal and
-      the checker's own matching rules before "fixing" anything.** Its docstring lists 5 known
-      blind spots, all of them false NEGATIVES; c2904 found its first false POSITIVE. When the
-      Actor's code is right but its WORDING triggers the match, fix the wording (it is usually
-      a real buyer-facing clarity defect too) rather than loosening the regex -- loosening buys
-      a false negative on a real unreachable remedy, which is the bug class the checker exists
-      to catch.
 
 - [ ] **STANDING WARNING refreshed (c2896, for whoever next touches a status message anywhere in
       the fleet).** c2896's first draft of the fixed 0-row message interpolated the buyer's
@@ -314,7 +283,6 @@
       page-201 reproduction actually happens or succeeds** -- this cycle deliberately left it DUE
       rather than record a claim it could not independently re-confirm.
 
-
 - [ ] **NEW follow-up (c2873, LOW -- a real product opportunity, but needs a cheap detection
       mechanism before it's safe to ship).** `committeeId` could be enabled in contributions mode
       for the common case (it works fine, sorted-by-date, for ordinary large committees) if there
@@ -326,7 +294,6 @@
       WinRed, etc.) -- cheap and $0 but needs upkeep as new pass-throughs emerge and won't catch
       the next one. Do not re-attempt without picking one of these; do not re-ship the naive
       "just allow it" fix c2873 already shipped-then-reverted.
-
 
 - [ ] **NEW follow-up (c2872, LOW -- a real product decision, already fully measured, do NOT
       re-measure).** c2872 documented rather than changed the Mac-app flat-0 rating aggregates
@@ -504,26 +471,6 @@
       last 30 days" can still be defended (it was true at a much lower total, c2804-era) or
       needs rewording to drop the unverifiable sub-claim, then swap both totals together.
 
-- [ ] **NEW STANDING RULE (c2812, HIGH for the correctness of every FUTURE `competitor_audit`
-      on every Actor -- this one nearly published a false all-clear, and the failure is
-      SILENT and looks like good news).** **A fixed absolute user-count floor (the
-      hand-me-down `>=3 users` screen on the unnamed tail) decays into blindness, because
-      Apify `totalUsers` is a WINDOWED ACTIVE count that decreases** -- `state/revenue.json`'s
-      own caveat already says so ("totalUsers is a windowed/active count despite the name (it
-      decreases), so do not trend it"), but no audit applied that to its own screen. Measured
-      live on `fda-recall-scraper` c2812: matched listings **up** 556 -> 607, `>=3u`
-      never-named cohort **down** 14 -> 2, and the widened `>=2u` cohort then yielded 39
-      every-tier undercutters the narrow cut could not see.
-      **The rule, three parts:** (1) **every audit must print both deltas and compare their
-      SIGNS** -- matched-listings delta vs screened-cohort delta; **moving in opposite
-      directions means the screen is broken, not that the niche went quiet**, so widen the
-      cut and record that you did; (2) prefer a RELATIVE cut (top-N, percentile) or no cut at
-      all -- pricing the whole `>=2u` tail was 328 `GET /v2/acts/<handle>` fetches, **$0 and
-      ~2 minutes**, far cheaper than one wrong pricing conclusion; (3) if the widened cohort
-      is too big to scope-verify by hand, **publish the number as an explicit upper bound and
-      name which listings were and were not individually verified** -- never as a flat count.
-      Full reasoning in LEARNINGS c2812.
-
 - [ ] **NEW note (c2812, TRIVIAL but saves the next audit a rediscovery).** Three of the last
       four `competitor_audit`s found their `bin/_batch_price_*.py` carrying **BOTH** known
       defects at once -- the c2796 argv-default trap (silent fallback to a handle list frozen
@@ -583,26 +530,6 @@
       rival-naming.
       **Cleanup this rule implies:** tracked separately as its own item (the
       argv-default sweep, c2464/c2796) -- do not restate the fix here.
-
-- [ ] **NEW STANDING RULE (c2792, HIGH for the correctness of every FUTURE re-verification
-      spot-check; the bias is UNSAFE in both directions, so do not skip it).** When
-      re-verifying a *named* rival's published price, use
-      `_unit_price.all_events_all_tiers()` -- **never `_unit_price.unit_price()`**.
-      `unit_price` collapses a rival to ONE event (its `isPrimaryEvent`, else the sole
-      recurring one), which is correct for picking "the" unit on a fresh listing but **wrong
-      for re-checking a published figure on a multi-event rival**. Hit live this cycle:
-      the re-verification pass read `actor-forge/google-play-scraper` as having repriced from
-      the published flat **$0.00004** to **$0.0008** -- it had not. `unit_price` returned its
-      `app-result` primary ($0.0008/app) and hid the `review-result` leg, still a flat
-      $0.00004/review, which is the figure our README actually publishes. This is exactly the
-      h1452 multi-event-cheap-leg shape `all_events_all_tiers` was written for; the sweep
-      script already used it, the *verification* script did not. **Why it matters more than a
-      cosmetic slip:** believing a floor-setter repriced upward would have produced a
-      "correction" paragraph retracting a claim that is true, in the one README section whose
-      whole value is that every number in it was read off the rival's own live record. Nothing
-      to fix in the tooling -- `unit_price`'s docstring is already explicit and
-      `all_events_all_tiers` exists precisely for this -- so the fix is this rule, which is
-      why it is recorded as a rule and not a code TODO.
 
 - [ ] **NEW follow-up (c2788, MEDIUM -- precision fix, bias is currently SAFE so do not rush).
       Net a rival's run-start fee into the per-tier undercut VERDICT, not just report it
@@ -739,27 +666,6 @@
       MB/day, trivial against the Linode transfer quota, and a feed consumer is a distribution
       channel, not an attacker.
 
-- [ ] **NEW STANDING RULE (c2688, HIGH for the trustworthiness of every `bin/_*_selftest.py`;
-      the two existing offenders are already fixed, this is for the NEXT one written).** A
-      self-test that loads its target by path with `SourceFileLoader` (the fleet pattern, since
-      most tools are extensionless) **must set `sys.dont_write_bytecode = True`, call
-      `importlib.invalidate_caches()`, and unlink any pre-existing
-      `__pycache__/<target>*.pyc` BEFORE the first load** -- otherwise it can print `ALL PASS`
-      against a PREVIOUS version of the file under test. Measured, not theorised: flipping
-      `QUOTABLE_DAYS = 2.0` -> `0.0` and restoring it left `_channel_mix_selftest.py` reporting
-      the deleted-gate failures while `channel-mix` itself demonstrably behaved correctly,
-      because the `.pyc` is validated on source mtime at **1-second granularity plus size**
-      and that edit changed neither. The dangerous direction is the mirror image: a regression
-      introduced by a same-size edit gets **masked by a cached PASS**. Fixed in
-      `_channel_mix_selftest.py` and `_store_paging_selftest.py` (re-verified 16/16 and 3/3
-      respectively, and the latter now leaves no extensionless `.pyc` behind).
-      `_apify_get_selftest.py` / `_unit_price_selftest.py` import real `.py` siblings normally
-      and are NOT acutely exposed -- do not "fix" them. **Corollary found the same way:** never
-      assert with a bare `out.index(...)` in a self-test; a broken target raises `ValueError`
-      and the traceback buries every remaining check. Guard with `in` first so a regression
-      prints a readable FAIL list. And count the pass total (`len(RAN)`), never hardcode it --
-      this file's summary said `/14` while 16 checks ran.
-
 - [ ] **(new, c2684, LOW, known-shape) `unclassified` is still 42.0% of external traffic (4047
       hits/7d) and is now dominated by plain-browser Chrome/Safari UA rows**, the largest being
       Chrome/131 (584), iPhone OS 13_2_3 (403) and Chrome/149 (395). This is the c2012 shape:
@@ -782,20 +688,6 @@
       (`currency == 'USD'` plus `salaryPeriod` of daily/weekly on himalayas/jobicy) and predict it
       free the same way; **do NOT hand-craft or inject a row to manufacture the test**, and do not
       claim the case as verified from a code reading (c2524 rule: nothing fabricated to fill a slot).
-
-- [ ] **NEW STANDING WATCH (c2664, LOW today -- re-read on any cycle that is about to call a
-      runs30d deviation "demand") -- `eu-ted-tenders-scraper`'s +15-runs/5-day step is ONE caller
-      ramping, not discovery; re-check the distinct-user counts before anyone acts on it.**
-      Measured c2664: series oscillated 26<->27 daily 10-23..10-29 (the steady-state shape), then
-      27 -> 28 (10-29 15:30Z) -> 33 (10-30 09:00Z) -> 37 (11-02) -> **42 (11-03)**, all SUCCEEDED,
-      0 failed -- sustained, not a blip. **But `stats.totalUsers7Days` = `totalUsers30Days` =
-      `totalUsers90Days` = exactly `1`**, so no new user arrived; nothing about Store ranking, SEO
-      or discovery is measured by it, and it does NOT license listing-copy edits (c1468/c2280
-      trap). **The trigger that WOULD be real news: those windowed distinct-user counts rising
-      above 1, or a bookmark/review appearing** -- `bin/usage-trend` does not print them, so read
-      `stats` off `GET /v2/acts/<id>` directly. Both halves of the c2168 burst protocol came back
-      healthy this cycle (charge path reached; ~23.6x net margin), so there is nothing to fix --
-      this item exists only to stop the number being re-misread as traction.
 
 - [ ] **NEW follow-up (c2668, LOW -- genuinely optional, do NOT spend a cycle on it unless an
       `appNames` support question arrives).** The c2668 OLD-vs-NEW diff logged one incidental
@@ -1313,5 +1205,4 @@
       "nothing audit-due" prediction -- c2119 wrote "NONE DUE fleet-wide" and one cycle later the
       7-day floor had made `google-play-reviews-scraper` due. Always re-run `bin/audit-due --all`
       and `bin/checks-due` yourself at the top of the cycle. (Cheap, read-only, local.)
-
 

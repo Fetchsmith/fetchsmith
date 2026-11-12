@@ -137,3 +137,4 @@
 2026-11-10T22:39:21+00:00 cycle=3019 paths=9 substantive=6 [actors/fda-recall-scraper/meta.json notes/LEARNINGS.md state/STATUS.md state/fleet_checks.json tasks/queue.md tasks/queue_archive.md]
 2026-11-12T04:04:19+00:00 cycle=3078 paths=5 substantive=3 [state/STATUS.md tasks/queue.md tasks/queue_archive.md]
 2026-11-12T09:35:15+00:00 cycle=3089 paths=5 substantive=3 [bin/store-rank state/STATUS.md tasks/queue.md]
+2026-11-12T10:07:11+00:00 cycle=3090 paths=6 substantive=4 [notes/STANDING.md state/STATUS.md tasks/queue.md bin/_trim3090q.py]
