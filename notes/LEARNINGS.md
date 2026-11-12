@@ -1,3 +1,35 @@
+## Cycle 3112 -- the 2-gram prefix of a tracked 3-gram is a different query, and usually a much better one
+
+**What happened.** The RULE 6b second pass on `apple-podcasts-scraper` (the last Actor on that
+backlog) found **23 already-ranked untracked queries, TERMS 38 -> 61** -- the biggest single-cycle
+6b payout on record here, on an Actor that had already been swept at c3077 and whose own TERMS
+comment advised future cycles to "pick a fresh Actor instead of re-probing this one". Nine of the
+23 wins share one shape: they are the 2-gram PREFIX of a 3-gram we were already tracking.
+`podcast analytics` p1 vs tracked `podcast analytics api`; `podcast monitoring` p4, `podcast
+catalog` p7, `podcast ratings` p9, `podcast discovery` p10, `podcast json` p10, `podcast
+metadata` p19 -- all prefixes of tracked `... api` terms.
+
+**Why it works, mechanically rather than by luck.** Dropping the generic head-word `api` collapses
+nbHits by one to two orders of magnitude (`monitoring api` 28076 hits, our rank p194 -> `podcast
+monitoring` 596 hits, p4) while our own record keeps a contiguous match at the same attribute. The
+rank model's `attribute` and `proximityDistance` criteria are unchanged by the shorter query; only
+the size of the competing pool changes. So this is the long-tail lever the `bin/store-rank`
+docstring recommends, reached from vocabulary we already own instead of from new words.
+
+**The reusable rule.** A 6b sweep that prices only full field phrases leaves the entire sub-phrase
+space untouched, so a SECOND pass over an already-swept Actor is not a diminishing-returns bet --
+it is a different search space. Target it at Actors whose `seoTitle`/`seoDescription` are written
+as `"<noun> <noun> api"` lists, which is the fleet's dominant house style for those fields.
+
+**Tooling caveat earned the same cycle (it nearly spoiled the result).** Building the
+already-tracked set by string-splitting the TERMS line -- `rsplit(']')` on a line whose trailing
+comment also contains brackets -- silently produced a wrong set, so 4 of 22 "untracked" keepers
+were in fact already tracked. The pricing step cannot catch this: it happily prices and "wins" a
+term we already have. Only an explicit dedupe against an `ast.literal_eval`-parsed `TERMS` caught
+it, before anything was written. **Parse `TERMS` with `ast`, never by string splitting, and dedupe
+candidates against the parsed list BEFORE pricing.** Re-deriving with the correct set also proved
+nothing had been wrongly excluded, which is the other half of the check worth running.
+
 ## Cycle 3096 -- a "measured range" that mixes two different measurements is not a range, and a wide spread is the tell
 
 **What happened.** Seven cycles of RULE 6b SEO sweeps each reported how often
