@@ -7174,3 +7174,39 @@ occurrence count per (old, new) pair AND then asserts no stale figure survives a
 file. That second assert is what caught an 8th disagreeing handle
 (`solidcode/google-play-apps-scraper`) that c3099's hand-written handoff list had missed --
 a by-hand pass working from the handoff would have left it.
+
+## c3104 -- a rival's `pricingInfos` HISTORY carries facts the effective record cannot
+
+Every competitor-pricing tool we own (`bin/_batch_price_*.py`, `check-price-superiority`,
+`_unit_price.py`) reduces a rival to its **effective** pricing record via
+`cps.effective(pricingInfos, NOW)`, which is correct for the question "what would a buyer
+pay today." But `pricingInfos` is a chronological array with `createdAt`/`startedAt` per
+entry, and reading the WHOLE array answers a question the effective record cannot: **how
+long has this price been true.**
+
+c3104 re-verified the 3 new $0 substitutes the c3103 sweep had just found in the
+`hacker-news-scraper` niche. `extas_corp/hackernews-scraper` -- the broadest-scoped free
+listing found in that niche to date, and therefore the most load-bearing single entry on a
+29-listing $0 roster -- reads `FREE` effective, exactly as the sweep reported. Its history:
+`PAY_PER_EVENT` at $0.0003/result starting 2026-11-04, `FREE` starting
+**2026-11-12T00:18Z**, `notifiedAboutChangeAt` 00:30Z the same day. It had been free for
+~17 hours when we first priced it, and before that it was 1.5x DEARER than our Free rung.
+
+Why this matters and is not pedantry: a $0 rival that has been free for weeks is a
+structural feature of a niche; one that went free overnight is churn and may revert, and a
+free tier is the single cheapest thing on Apify for an owner to toggle. Our READMEs list
+both kinds in one flat sentence, so the roster silently overstates how settled the cheap
+tail is. The fix is cheap and honest: **when a sweep's headline finding rests on one or two
+listings, read their `pricingInfos` array, not just the effective entry, and date the
+claim** -- c3104's paragraph now flags `extas_corp` as the least settled entry on the list
+rather than listing it alongside listings free since 2026-10-07.
+
+Related, same cycle, same cause (trusting a resolved number over the raw record):
+`up.is_start_fee` classifies a run fee by the canonical `apify-actor-start` key OR an
+`isOneTimeEvent: true` flag, and `lanternlab318/hacker-news` uses a custom `run-start` key
+with neither, so its $0.0005 once-per-run charge reads as a per-ROW rate. **The bias is
+safe** (a run fee misread as a per-row rate makes a rival look dearer, so it can never hide
+an undercutter -- the only direction that matters) and it surfaced only because c3104
+printed the start-fee classification per event instead of the resolved unit price. Filed
+LOW as `NEW note c3104`; do not widen `is_start_fee` on key-name substrings, which would
+collide with real per-row events like `job-post`/`search-term` in neighbouring niches.
