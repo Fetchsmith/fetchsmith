@@ -69,18 +69,18 @@ platform run to babysit, no per-study multiplier — a call returning 500 studie
 as one returning 1.
 
 **This is the only MCP server on the Apify Store dedicated to ClinicalTrials.gov** (checked
-2026-11-05 across the `clinical trial`, `mcp server`, `medical mcp` and `pubmed` queries — the
-19 other ClinicalTrials.gov listings are all batch scrapers, a different product shape). Trial
-search does exist as *one tool inside* a broader compliance bundle, and that is the honest
-comparison to make. Prices read live from each Actor's own `pricingInfos` record on 2026-11-05,
-not from Store marketing copy:
+2026-11-05, re-verified live 2026-11-12, across the `clinical trial`, `mcp server`, `medical mcp`
+and `pubmed` queries — the other ClinicalTrials.gov listings are all batch scrapers, a different
+product shape). Trial search does exist as *one tool inside* a broader compliance bundle, and
+that is the honest comparison to make. Prices read live from each Actor's own `pricingInfos`
+record on 2026-11-05, re-verified live 2026-11-12, not from Store marketing copy:
 
 | Actor | Users (u30d) | Closest event | Price/call | vs. ours |
 | --- | --- | --- | --- | --- |
 | **fetchsmith/clinicaltrials-mcp-server** | — | `tool-call` | **$0.005** | — |
 | `red.cars/healthcare-compliance-mcp` | 2 (1) | `search_clinical_trials` | $0.05 + $0.00005 start fee | **10x** dearer, plus a start fee we don't charge |
 | `red.cars/pharma-pipeline-intelligence-mcp` | 8 (1) | `search_drug_pipeline` | $0.05 | **10x** dearer |
-| `themineworks/academic-research-mcp` | 33 (29) | `search_pubmed` | $0.0625 + $0.005 start fee | **12.5x** dearer, plus a start fee we don't charge |
+| `themineworks/academic-research-mcp` | 33 → 38 (29 → 33) users as of 2026-11-05 → 2026-11-12 | `search_pubmed` | $0.0625 + $0.005 start fee (now tiered FREE-DIAMOND $0.0625→$0.04375, re-verified 2026-11-12) | **12.5x** dearer at its FREE tier, plus a start fee we don't charge |
 
 All three are genuinely broader than this Actor. `healthcare-compliance-mcp` exposes 9 tools
 over FDA MAUDE adverse events, 510(k) clearances and recalls — including a
