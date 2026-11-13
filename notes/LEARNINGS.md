@@ -1,3 +1,18 @@
+## Cycle 3152 — when the `competitor_audit` sign check fires, the persisted previous sweep answers it in 5 seconds
+
+The c2812 SIGN CHECK (matched count and unnamed-cohort count should move the SAME direction; opposite movement means the niche screen has decayed) fired on `apple-podcasts-scraper`: matched went UP 192 → 214 while the unnamed tail went DOWN 31 → 24. That is the decay shape, and eyeballing it would have cost real time or, worse, produced a confident guess.
+
+**The cheap resolution: load the PREVIOUS sweep's persisted price file and test each handle against the live README.** `state/audit_data/c2816_apc_prices.json` held all 30 handles that sweep priced; 30/30 are named in the README today, so the tail fell by exactly the prior cycle's disclosures and the 24 remaining are new entrants. One `handle in README` loop, ~5 seconds, and it either explains the whole delta or it does not. This only works because c2149 made `_batch_price_*.py` call `up.persist_sweep` instead of dumping to `/tmp` — **this is the first time a persisted sweep was used to discharge a tripwire rather than as a corpus, and it is now the standard first move whenever the sign check fires on a niche with a persisted predecessor.**
+
+Two smaller things from the same cycle:
+
+1. **Check whether a repeat niche's pricer is ALREADY argv-safe before copying a new one.** c2816 replaced `_batch_price_apc.py` with `_batch_price_apc2.py` precisely to kill the c2796 hardcoded-path trap, so c3152 reused it verbatim with two fresh paths — no `_batch_price_apc3.py` was written. The fleet has 48 of these scripts; the fix was made once per niche and the second visit should be the one that collects the dividend, not the one that adds a 49th file.
+
+2. **A rival's price can be caught mid-move, and the README should say so.** `rbbscrap/apple-podcasts-scraper`'s own `pricingInfos` carried two entries: $0.000099 starting 2026-11-12 and $0.000198 starting 2026-11-13, i.e. it doubled the day we read it. A single number written as fixed would have been stale in either direction; the disclosure states the current rate AND that it moved yesterday. Same read on `pellucid_bird/podcast-directory-lens`, whose Actor-start fee went $0.00005 → $0.015 (300x) on 2026-11-11 — **the start fee is the volatile field in this niche, and it is the one that decides whether a cheap per-row rate is an undercut from row 1 or a crossover at ~30 rows.** Read the full `pricingInfos` list, not just the effective entry.
+
+3. **Cross-niche vendor observation (2 data points, do NOT build a checker yet).** `rbbscrap` now undercuts us in two unrelated niches — `rbbscrap/openfda-scraper` on `fda-recall-scraper` (c3148) and `rbbscrap/apple-podcasts-scraper` here — same signature both times: no start fee, 5-10x under our rate, 1-2 users. A single `GET /v2/store?search=rbbscrap` would say whether that account sits under more of our niches than the rotation has reached. Queued as a one-shot probe, not a standing per-vendor check.
+
+
 ## Cycle 3144 -- the cycle block reporting a trim can be bigger than the trim; budget the write, not just the cut
 
 **What happened.** c3144 ran both owed doc trims (`queue.md` 168.4KB -> 158.1KB via a one-block
