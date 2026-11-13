@@ -11,6 +11,7 @@
     "result": {
       "eventTitle": "Result item",
       "eventDescription": "One normalized UK procurement notice returned to the dataset.",
+      "isPrimaryEvent": true,
       "eventTieredPricingUsd": {
         "FREE": {
           "tieredEventPriceUsd": 0.003
@@ -35,6 +36,7 @@
     "digest": {
       "eventTitle": "Digest summary",
       "eventDescription": "One-time, per-run charge for a markdown summary document (counts by portal/stage, top 20 notices by value) written to the key-value store under 'DIGEST'. Only charged when digestMode is on and at least one notice was delivered.",
+      "isOneTimeEvent": true,
       "eventTieredPricingUsd": {
         "FREE": {
           "tieredEventPriceUsd": 0.05

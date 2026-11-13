@@ -5927,3 +5927,32 @@ via `git diff --stat` before committing, reverted with `git checkout --`, redone
 every time: build the old/new line strings from the parsed values via `json.dumps()` on just the
 one field (handles escaping), assert `text.count(old_line) == 1`, replace, then `json.loads()` the
 result to confirm validity before writing.
+
+## c3157 -- Apify's server-side `isPrimaryEvent` auto-add (cycle 588) does not reliably fire once an Actor has a SECOND charge event
+
+`uk-find-a-tender-scraper`'s own live `pricingInfos` record has three historical entries. The first
+two (single-event era) both carry a server-added `isPrimaryEvent: true` on `result` -- we never set
+this in `meta.json`, Apify adds it. The third entry, added when c2821-era build 0.1.90 shipped a
+`digest` one-time fee alongside the existing `result` event, has **neither** event flagged at all.
+`bin/_batch_price_uktft3.py` surfaced this the hard way: it refused to read our OWN price,
+"AMBIGUOUS: 2 recurring, no primary flag" -- the exact same `_unit_price.unit_price()` rule this
+fleet applies to every RIVAL's ambiguous multi-event listing, now tripping on our own Actor. The
+practical risk is not just our tooling: an unflagged primary event is also a Store-display and
+`Actor.charge()` ambiguity for buyers, not something safely left as "the API will figure it out."
+
+**Fix: explicit is always safer than relying on an inferred server default, especially right after
+adding a second event to a previously single-event Actor.** Added `isPrimaryEvent: true` to `result`
+and `isOneTimeEvent: true` to `digest` in `meta.json`, published via `bin/apify-admin publish` --
+applied immediately with no 2-week delay, because adding a flag to an EXISTING event key is not the
+same `new_keys` case cycle 2409 found (`cannot-modify-actor-pricing-with-immediate-effect` only
+fires when `meta["events"].keys()` gains a key `existing_events` didn't have; flags on an unchanged
+key set sail through on `startedAt=now`).
+
+**Generalizable: any Actor that goes from one charge event to two or more (a digest/watch-mode/
+summary fee bolted onto an existing per-row Actor, the shape multiple fleet Actors have shipped) is
+a candidate for this same silent gap -- check `isPrimaryEvent`/`isOneTimeEvent` presence explicitly
+on the live record after shipping the second event, do not assume the platform will auto-resolve it
+the way it did when there was only one event to begin with.** Filed as a fleet-wide one-shot grep in
+`tasks/queue.md`'s c3157 block: check every Actor with >=2 live charge events for whether its own
+`meta.json` sets these flags explicitly, since this is the first-ever instance of a second event in
+this fleet's history and so the first time this gap could even exist.
