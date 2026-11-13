@@ -78,6 +78,17 @@
       "acked_date": "2026-10-26"
     },
     {
+      "fp": "7a0ebf379c05",
+      "slug": "steam-reviews-scraper",
+      "handle": "consequential_programmer/steam-reviews-scraper",
+      "verb": "retired",
+      "dates": [],
+      "context": "e Steam game reviews via Valve's official GetAppReviews API - still working after the old appreviews feed was retired. Get review text, rating, playtime, language, Steam Deck, hardware & dev replies, with date, playtime and language filters, plus",
+      "note": "Keyword false positive, same resolved situation as the 6 existing steam-reviews-scraper acks (c2129/c2196/c2292/c2436/c2628): rival is announcing that IT still works after Valve retired the appreviews JSON API (store.steampowered.com/appreviews/<id>?json=1, retired 2026-10-22) -- not reporting a NEW upstream break. Re-verified live c3158: grep of actors/steam-reviews-scraper/src/ shows every remaining 'appreviews' string is a comment explaining the 2026-10-22 retirement, zero call sites; reviews run on the steamcommunity.com HTML path (reviews_html.js). state/health.json (ts read this cycle) shows this Actor ok=True, items=10/10, fail_rows=0, real review fields populated. Rival marketing copy ('GetAppReviews API') is permanent text referencing the same already-resolved migration and would otherwise re-flag on every daily run.",
+      "acked_cycle": 3158,
+      "acked_date": "2026-11-13"
+    },
+    {
       "fp": "c7ab7d26eb5f",
       "slug": "steam-reviews-scraper",
       "handle": "s_actors/steam-reviews-scraper",

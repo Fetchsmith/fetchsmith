@@ -574,6 +574,49 @@ offices here. **Pricing decision: HOLD $0.002, no start fee** — the one new un
 users, far under this fleet's 20-user re-price threshold, and it is a multi-data-type bundle, not
 a pure trademark-register competitor at our scope.
 
+**Audit refreshed 2026-11-13 (cycle 3158): the niche grew to 187 matched listings (up from 172 at
+cycle 2822), and six more undercutters surfaced, one of them genuinely free.** Own price re-read
+live first, unchanged: flat $0.002/result, no start fee. **DELTA method** — c2822 already
+live-priced 17 of the then-unnamed tail 336 cycles ago, so rather than re-price the whole 24-handle
+unnamed cohort, this audit diffed the handle sets: **19 new since c2822** (the other 12 of the
+earlier 17 have left the unnamed list, already accounted for by c2822's own disclosure or scope
+exclusion above). All 19 live-priced (`state/audit_data/c3158_tms_prices.json`), **19==19**
+cross-check against `niche-unnamed`'s own count, 0 unresolvable.
+
+Six undercutters, all at the niche's 2-3-user floor: `dami_studio/trademark-search-scraper` is the
+deepest, a flat **$0.00005 per record** ($0.05/1,000) plus a $0.0001 start — 40x under us.
+`apex-b2b-data/uspto-trademark-brand-leads` tiers $0.0015 (FREE) down to $0.00105 (GOLD+) with a
+$0.00005 start, undercutting at every tier, though its own description also bills "brand intent
+score" and attorney-lead fields outside this Actor's pure-register scope. `apex-nexus/uspto-
+trademark-application-monitor` carries no `pricingInfos` at all (confirmed live) and no description
+text either, so it is genuinely **$0** on a title-only USPTO match. `aurelix/uspto-trademark-search`
+tiers $0.001 (FREE) down to $0.00064 (GOLD+) behind a $0.0023 start fee, crossing under our
+no-start-fee rate by about row 2-3 at every tier. `rbbscrap/uspto-trademark-scraper` is flat $0.0009
+(FREE) to $0.00063 (GOLD+), no start fee — a second listing from a vendor account already named in
+this README (`rbbscrap/euipo-trademarks-scraper`, $0.0029 flat, dearer) and now undercutting a
+**fourth** unrelated niche across this fleet, alongside `sam-gov-opportunities-scraper`,
+`fda-recall-scraper` and `apple-podcasts-scraper`. `thirdwatch/uspto-trademark-watch` is a narrower
+shape — it compares Gazette/status records for serial numbers you already hold, not a name search —
+tiered $0.0025 (FREE) down to $0.00175 (GOLD/PLATINUM/DIAMOND only, where it undercuts); FREE,
+BRONZE and SILVER stay above our floor. `fanndev/trademark-search-scraper` is the closest structural
+match (TMview, 70+ offices, like us) and ties our $0.002 flat on FREE — where our lack of a start
+fee keeps us cheaper at any volume — but tiers down from there behind a $0.005 start fee: BRONZE
+$0.0018 crosses under us around row 25, SILVER $0.0016 around row 13, GOLD/PLATINUM/DIAMOND $0.0014
+around row 9.
+
+The remaining 12 of 19 are dearer at every tier (`aboo.script/branddb-wipo-int-scraper` $0.0028-
+$0.004, `greyridge-signals/uspto-trademark-batch` $0.003, `hydrocore/uspto-trademark-search`
+$0.0045-$0.006, `pshivam/uspto-trademark-search-scraper` $0.014-$0.02, `rjmacarthy/uspto-trademark-
+scraper` $0.005, `mosaicked_sponge/uspto-new-trademark-leads` $0.003, `leons0016/india-trademark-
+journal-watch` $0.12-$0.15) or a different product entirely, matched on boilerplate or adjacent
+wording rather than a register search: `ferrolark/brand-name-checker`, `luke-main/brand-domain-
+availability-checker` and `turboextract/brand-availability-check` check domain/social-handle
+availability, not trademark registers; `gmpsignal/global-trademark-brand-ip-monitor` monitors
+Certificate Transparency logs and RDAP domain registries, not a trademark office; `deadmist/
+microstock-metadata-generator` matched only on stock-photo keyword boilerplate and sells nothing
+trademark-related. **Pricing decision: HOLD $0.002, no start fee** — every one of the six
+undercutters sits at 2-3 users, far under this fleet's 20-user re-price threshold.
+
 **Cheaper than us once a run is big enough to amortise their start fee** (all four verified 2026-10-03). `automation-lab` (86 users as of 2026-11-11, re-verified live 2026-11-11, `automation-lab/euipo-tmview-trademarks-scraper`) charges a $0.005 start plus $0.0000355/record (FREE, down to $0.00001 on DIAMOND), so any run returning more than about 3 records costs less there — and it also offers application-date bounds and several search terms per run, which this Actor currently does not. `fetch_cat/uspto-trademarks-scraper` is the same shape against USPTO only: $0.005 start plus $0.00002875/record (FREE, to $0.000015 on GOLD+), crossing us at about 3 rows. `sian.agency/uspto-trademark-scraper` (34 users as of 2026-11-03) undercuts us only on the upper plans: its record price tiers from $0.009 (FREE, 4.5× ours) through $0.003 (BRONZE) and $0.00225 (SILVER) down to $0.0015 on **GOLD, PLATINUM and DIAMOND** — an earlier version of this sentence said PLATINUM and DIAMOND only, which understated by one plan — and on those three tiers its $0.005 start is repaid at about 10 rows; on FREE, BRONZE or SILVER it costs more than we do at every volume, and its start fee is itself tiered at **$0.05 on FREE** (not the $0.005 this section used to quote flat, which is the BRONZE-and-above figure). It never leaves the US register, but it adds availability checks, class suggestions and a detail event. `jungle_synthesizer/euipo-trademark-scraper` matches our $0.002 on FREE, and its $0.10 start fee means it undercuts us only on large runs on its top tiers. Its filed price change took effect at **09:23 UTC on 2026-10-04**, and it moves against the buyer, not for them: FREE/BRONZE ($0.002), SILVER ($0.0018) and GOLD ($0.0016) are untouched, while PLATINUM went $0.0014 → $0.0016 and DIAMOND $0.0012 → $0.0016. Before that moment its DIAMOND rate of $0.0012 beat ours above roughly 125 rows; from it, the three top tiers are flattened onto one $0.0016 price and the volume at which it undercuts us moves out to about **250 rows**. Both schedules were read live from the listing on 2026-10-04 and are filed exactly as described here.
 
 **2026-10-07 cleanup:** dropped every sub-20-user rival count from this README per the standing rule (an exact count is only published at 20+ users, since `totalUsers` churns in both directions and a one-user tick under 20 is automatically STALE at the checker's 10% tolerance) — 35 bare counts removed across the sweeps above, every price claim, scope exclusion and feature comparison left intact. Four of the 35 were decorated in shapes a plain `` `owner/slug` (N users) `` grep cannot see and were caught by reading the paragraphs: two where the count sits between a bare owner handle and the full slug (`scrapers_lat`, `jdepablos`, both of which now lead with the slug instead) and two bare-comma prose mentions (`khadinakbar/uspto-trademark-batch-search`, `nexgendata/india-trademark-search`). Where a count shared its parentheses with a scope or price note, only the count went: `unrivaled_fortress/wipo-global-trademark-brand-watch` still reads "(newly registered WIPO-international and US filings)", `accountable_eel/trademark-filing-watch` "(USPTO **and** EUIPO new applications by Nice class)", `stefano_seggio/kipris-patent-trademark-status-monitor` "(Korea KIPRIS)" and `dev00/uspto-trademark-text-check-api` "($0.005 per text check)". No superlative in this section was premised on a sub-20 count, so none needed rewording — the three that are premised on a count (`dltik/euipo-trademarks-scraper` busiest TMview-based, `parseforge/tmview-trademarks-scraper` second-busiest, `hanamira/patent-trademark-search` biggest trademark listing on the Store) all sit well above the threshold. Counts at 20 and above are untouched (`hanamira` 81, `crawlerbros/importyeti-scraper` 88 (that listing has since been delisted — the 2026-10-07 reading above is left as the dated record it was), `dltik/euipo-trademarks-scraper` 73, `dev00/uspto-trademark-api` 68, `alizarin_refrigerator-owner` 64, `fortuitous_pirate` 57, `nexgendata/uspto-trademark-search` 49, `nexgendata/euipo-esearch-trademarks` 38, `sian.agency/uspto-trademark-scraper` 30, `memo23` 29, `parseforge/tmview-trademarks-scraper` 24, `automation-lab` 23), as are the sweeps' structural cohort statements about where the small competition sits (the "1–2 users" bands and the "1–2-user tail" heading), which are dated findings about a swept cohort rather than live per-listing claims. This edit only removes numbers, it does not restate any — but every count left standing was re-verified against the live Store records on 2026-10-07, and none of them is stale.
