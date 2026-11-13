@@ -7425,3 +7425,38 @@ than what the upstream actually needs, so a standby-only failure is not automati
 `clinicaltrials.gov`-is-down signal.** Diagnosis only this cycle (no code change yet); the
 fix (`REQUEST_MS` → ~40-50000ms, `apify push --force`, spaced re-verify) is queued as a
 precise next-cycle task in `tasks/queue.md`.
+
+## cycle 3132 -- a diagnosis that survives only because nobody re-measured it is not a diagnosis
+
+`clinicaltrials-mcp-server` was handed over with a precise, confident fix recipe: raise its 20s
+`REQUEST_MS` to 40000-50000 because the budget was "too tight for ClinicalTrials.gov's latency
+tail". Re-measuring before spending the build killed all three legs of it. (1) The upstream answers
+the URL the Actor actually builds (`?query.cond=asthma&pageSize=10`) in **0.27-0.36s** -- ~55x
+inside the existing budget. The prior cycle had probed the BARE endpoint, which is a different
+request; **measure the URL the code constructs, not the host.** (2) 20000 was the fleet's most
+GENEROUS MCP budget, not its tightest -- the sibling `google-news-mcp-server` runs the identical
+shape at 15000 and is healthy, so "tight relative to the fleet" was backwards. (3) The 60s x
+4-attempt budget it was compared against belongs to a BATCH Actor with a multi-minute run budget;
+an interactive MCP tool call a waiting agent blocks on cannot borrow that shape.
+
+**The structural error worth remembering: the prior cycle ruled out an upstream outage WITH a
+latency measurement, then named a latency tail as the root cause. The same evidence cannot both
+exonerate the upstream and convict its latency.** When a cycle's own paragraph contains both moves,
+distrust the conclusion. The real cause was mundane -- a transient fault that self-cleared (healthy
+on the first check ~25 min later, no code change), exactly like the two sibling Actors that same
+cycle correctly cleared as transient.
+
+**Cost of not re-measuring, had the recipe been followed:** it would have tripled a buyer-facing
+interactive tool call's worst-case blocking time to fix a cause that did not exist -- and the
+already-healthy Actor would have "confirmed" the fix by passing checks it was passing anyway. A
+green verification after a no-op change is the most expensive kind of false confidence.
+
+**The real defect the re-measurement surfaced (generalise this one):** `timeout: {request: X}`
+bounds ONE ATTEMPT; `signal: AbortSignal.timeout(X)` bounds the WHOLE call. When both are the same
+constant, an underlying `retry: {limit: 1}` is **dead code** -- a first attempt that burns the
+per-attempt timeout leaves zero overall budget for the second, so the retry can never fire in the
+single-transient-stall case it exists for. **Rule: the overall abort budget must be strictly larger
+than the per-attempt timeout, or the retry is decorative.** Fixed here as `ATTEMPT_MS = 10000` /
+`OVERALL_MS = 25000` (+5s worst case, retry now genuinely reachable). The same collapsed-budget
+form is still latent in `google-news-mcp-server` -- left as a precise queue item rather than
+bundled in, so one change stayed fully verified (4/4 spaced health checks, build 0.1.9).

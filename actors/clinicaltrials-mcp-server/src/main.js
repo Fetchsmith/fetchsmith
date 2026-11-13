@@ -16,7 +16,12 @@ const API = 'https://clinicaltrials.gov/api/v2/studies';
 // pageSize clamp matches clinicaltrials-scraper (cycle 120): pageSize=1001 returns 200 with only
 // the first 1000 honored, so a caller-supplied value above this would silently under-deliver.
 const MAX_PAGE_SIZE = 1000;
-const REQUEST_MS = 20000;
+// Two budgets, not one (cycle 3132). ATTEMPT_MS bounds a single HTTP attempt; OVERALL_MS is the
+// hard ceiling on the whole tool call. They must DIFFER: when both were 20000 the `retry.limit: 1`
+// below was dead code -- a first attempt that burned the full per-attempt timeout left zero budget
+// for the retry, so the one transient-stall case retrying exists for could never actually retry.
+const ATTEMPT_MS = 10000;
+const OVERALL_MS = 25000;
 
 async function searchClinicalTrials({ condition, intervention, maxResults }) {
     const params = new URLSearchParams();
@@ -25,14 +30,16 @@ async function searchClinicalTrials({ condition, intervention, maxResults }) {
     params.set('pageSize', String(Math.min(Math.max(Number(maxResults) || 10, 1), MAX_PAGE_SIZE)));
     const url = `${API}?${params.toString()}`;
     // got applies `timeout.request` per ATTEMPT, and got's own internal retries multiply it (~4x),
-    // so a plain `timeout: {request}` is not a bound on one call -- cycle 2646 proved this fleet-wide;
-    // google-news-mcp-server ships the correct form, copied here (c2776 follow-up).
+    // so a plain `timeout: {request}` is not a bound on one call -- cycle 2646 proved this fleet-wide,
+    // and the AbortSignal is what actually tears the socket down. c2776 copied google-news-mcp-server's
+    // form verbatim, which collapses both budgets onto one constant; c3132 split them here so the
+    // retry is reachable. google-news-mcp-server still has the collapsed form (see queue.md c3132).
     const res = await gotScraping({
         url,
         responseType: 'json',
-        timeout: { request: REQUEST_MS },
+        timeout: { request: ATTEMPT_MS },
         retry: { limit: 1 },
-        signal: AbortSignal.timeout(REQUEST_MS),
+        signal: AbortSignal.timeout(OVERALL_MS),
     });
     const studies = res.body?.studies ?? [];
     return studies.map((s) => {
