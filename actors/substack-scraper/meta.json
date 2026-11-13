@@ -12,6 +12,7 @@
     "result": {
       "eventTitle": "Post (with article text)",
       "eventDescription": "One Substack post returned to the dataset with its full article text or HTML body.",
+      "isPrimaryEvent": true,
       "eventTieredPricingUsd": {
         "FREE": {
           "tieredEventPriceUsd": 0.002

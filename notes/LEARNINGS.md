@@ -5956,3 +5956,44 @@ the way it did when there was only one event to begin with.** Filed as a fleet-w
 `tasks/queue.md`'s c3157 block: check every Actor with >=2 live charge events for whether its own
 `meta.json` sets these flags explicitly, since this is the first-ever instance of a second event in
 this fleet's history and so the first time this gap could even exist.
+
+## Cycle 3160 -- term-based rival screens are blind to broad-fleet vendors; pivot on the OWNER
+
+Two lessons, both measured this cycle, both reusable.
+
+**1. A platform auto-fix can hide a bug in your own source of truth.** Apify auto-adds
+`isPrimaryEvent: true` when an Actor has exactly ONE charge event (bin/apify-admin
+SERVER_ADDED, c588). So a `meta.json` that never declares the flag still looks correct
+live -- until the Actor gains a second event, when the auto-add silently stops. c3157
+caught the ACTIVE form of this (uk-find-a-tender's live record had genuinely lost the
+flag). c3160's fleet grep found the LATENT form on 3 more Actors: live fine, meta.json
+silent. That is arguably worse, because `meta.json` is the publish payload -- the next
+routine `apify push` would have overwritten a good live record with a flagless one. The
+general rule: when a platform silently repairs your input, your input is no longer being
+tested, so diff DECLARED against LIVE in both directions, not just live against expected.
+`bin/check-event-flags --live` does this; it was negative-tested (delete a flag, add a
+bogus one) rather than just run clean, which is the only way to know a guard can fail.
+
+**2. Our per-niche TERM screens cannot see a vendor who publishes one thin listing per
+niche.** `check-price-superiority`, `niche-size`, `niche-unnamed` and the `_batch_price_*`
+family all start from a niche VOCABULARY search. A rival surfaces only if its title or
+description matches terms we thought to search. `rbbscrap` has 100+ live listings spread
+across ~100 unrelated niches at 2-7 users each; each individual listing is thin enough to
+miss most term screens, so the vendor evades ALL of them simultaneously. Hard evidence,
+not a hypothesis: three of its listings (clinicaltrials, google-news, substack -- each
+cheaper than us at every tier) were live on 2026-11-10/11, and c3159's full fleet-wide
+`check-price-superiority` run on 2026-11-13 still reported "0 undisclosed anywhere".
+
+**The VENDOR PIVOT closes it, and costs one call.** Take an owner we ALREADY disclose
+somewhere, `GET /v2/store?search=<owner>`, then cross-grep that whole catalogue against
+`actors/*/README.md` + `site/`. This found 3 real disclosure gaps that two consecutive
+clean fleet sweeps missed. It works because disclosure is per-HANDLE but competition is
+per-OWNER: the moment a vendor is worth naming once, their entire catalogue is a
+candidate set we have already justified looking at. Note the paging trap -- `limit=100`
+returned exactly 100, so that is a FLOOR, not a count; page it properly when this becomes
+a standing check (queued NEW c3160).
+
+Also re-confirmed, cheaply: before trusting a rival's headline rate, run `all_events` on
+it. 7 of these 9 price on the generic `apify-default-dataset-item`, which is the exact
+shape of the c1176 westerly_breaker trap -- here all 9 turned out to be genuinely
+single-event, but checking cost one extra pass and converts "probably real" into "real".

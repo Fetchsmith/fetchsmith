@@ -12,6 +12,7 @@
     "result": {
       "eventTitle": "Opportunity (enriched)",
       "eventDescription": "One Grants.gov opportunity returned with its full detail record joined in: award ceiling/floor, eligibility text, funding instrument/category and the full synopsis.",
+      "isPrimaryEvent": true,
       "eventPriceUsd": 0.0015
     },
     "opportunity-thin": {

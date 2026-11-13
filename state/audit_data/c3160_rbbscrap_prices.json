@@ -1,0 +1,191 @@
+{
+ "rbbscrap/app-store-scraper": {
+  "headline": [
+   0.0006,
+   "apify-default-dataset-item"
+  ],
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.0006
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): apify-default-dataset-item"
+  ],
+  "all_events": {
+   "apify-default-dataset-item": {
+    "price": 0.0006,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/clinicaltrials-scraper": {
+  "headline": [
+   0.0009,
+   "apify-default-dataset-item"
+  ],
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.0009
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): apify-default-dataset-item"
+  ],
+  "all_events": {
+   "apify-default-dataset-item": {
+    "price": 0.0009,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/google-news-scraper": {
+  "headline": [
+   0.0006,
+   "apify-default-dataset-item"
+  ],
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.0006
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): apify-default-dataset-item"
+  ],
+  "all_events": {
+   "apify-default-dataset-item": {
+    "price": 0.0006,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/indeed-jobs-scraper": {
+  "headline": [
+   0.001,
+   "apify-default-dataset-item"
+  ],
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): apify-default-dataset-item"
+  ],
+  "all_events": {
+   "apify-default-dataset-item": {
+    "price": 0.001,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/linkedin-jobs-scraper": {
+  "headline": [
+   0.0012,
+   "apify-default-dataset-item"
+  ],
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.0012
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): apify-default-dataset-item"
+  ],
+  "all_events": {
+   "apify-default-dataset-item": {
+    "price": 0.0012,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/naukri-jobs-scraper": {
+  "headline": [
+   0.0005,
+   "job-scraped"
+  ],
+  "event": "job-scraped",
+  "tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): job-scraped"
+  ],
+  "all_events": {
+   "job-scraped": {
+    "price": 0.0005,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/steam-scraper": {
+  "headline": [
+   0.0006,
+   "apify-default-dataset-item"
+  ],
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.0006
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): apify-default-dataset-item"
+  ],
+  "all_events": {
+   "apify-default-dataset-item": {
+    "price": 0.0006,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/stepstone-jobs-scraper": {
+  "headline": [
+   0.0005,
+   "job-scraped"
+  ],
+  "event": "job-scraped",
+  "tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): job-scraped"
+  ],
+  "all_events": {
+   "job-scraped": {
+    "price": 0.0005,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ },
+ "rbbscrap/substack-scraper": {
+  "headline": [
+   0.0006,
+   "apify-default-dataset-item"
+  ],
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.0006
+  },
+  "start_fee": [
+   null,
+   "has per-row event(s): apify-default-dataset-item"
+  ],
+  "all_events": {
+   "apify-default-dataset-item": {
+    "price": 0.0006,
+    "primary": true,
+    "onetime": false
+   }
+  }
+ }
+}

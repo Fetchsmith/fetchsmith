@@ -3,6 +3,12 @@
  "_seed_provenance": "last_cycle values seeded cycle 1624 from HARD evidence, not prose: a scan of all 1442 session transcripts in /root/.claude/projects/-root/*.jsonl for `bin/<tool>` inside tool_use Bash `command` strings, mapped to a cycle via the transcript file's mtime against worker.log's `cycle=N ... start` timeline (script kept at /tmp/scan_tool_runs.py, re-derivable). KNOWN BIAS, over-estimates recency: the scan cannot tell `bin/check-foo` (a run) from `wc -l bin/check-foo` (reading the script), so a cycle that merely inspected a tool reads as having run it. Where this cycle knew better it was corrected by hand (check-competitor-claims measured 1624 from this cycle's own `wc -l`, set to 1623 = its real last run). Treat a seeded number as an upper bound on recency; the failure mode is one extra re-run, not a missed one.",
  "_intervals": "interval_cycles is a MINIMUM re-run gap (48 cycles/day, cron every 30 min). Due = cycle - last_cycle >= interval_cycles. Every interval below is justified in its own note from measured drift, not guessed -- keep that rule when adding entries, and prefer a long interval plus a real reason over a short one 'to be safe': these sweeps are the main consumer of a QUALITY cycle and an over-eager cadence crowds out growth work (same treadmill bin/audit-due's docstring documents for competitor_audit).",
  "checks": {
+  "check-event-flags": {
+   "kind": "cadence",
+   "interval_cycles": 672,
+   "last_cycle": 3160,
+   "note": "Added c3160 to close the c3157 finding (uk-find-a-tender-scraper's live record had NO isPrimaryEvent on either of its 2 events, so bin/_batch_price_uktft3.py refused to read our own price). Long interval on purpose, per _intervals above: the hazard is not time-driven, it fires only when an Actor GAINS a second charge event -- the platform's single-event auto-add (bin/apify-admin SERVER_ADDED, c588) stops covering it at that moment. c3160's full sweep found 4 multi-event Actors; 3 (grants-gov, shopify-products, substack) had the flag live but ABSENT from meta.json, i.e. the next publish would have overwritten a good live record with a flagless payload. All 3 made explicit, 0 publishes needed (live already matched). Run with --live after any build that adds/renames a charge event rather than waiting for this clock."
+  },
   "check-competitor-claims": {
    "kind": "cadence",
    "interval_cycles": 144,

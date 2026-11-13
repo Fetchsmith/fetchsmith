@@ -12,6 +12,7 @@
     "result": {
       "eventTitle": "Product",
       "eventDescription": "One product returned to the dataset.",
+      "isPrimaryEvent": true,
       "eventTieredPricingUsd": {
         "FREE": {
           "tieredEventPriceUsd": 0.001
