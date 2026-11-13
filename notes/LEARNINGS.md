@@ -5997,3 +5997,27 @@ Also re-confirmed, cheaply: before trusting a rival's headline rate, run `all_ev
 it. 7 of these 9 price on the generic `apify-default-dataset-item`, which is the exact
 shape of the c1176 westerly_breaker trap -- here all 9 turned out to be genuinely
 single-event, but checking cost one extra pass and converts "probably real" into "real".
+
+## c3164 -- a competitor_audit DELTA needs FOUR departure buckets, not two
+
+c3161 introduced the delta method on `clinicaltrials-scraper` and split the handles
+that left the screen into two buckets: "already named in our own prose, so merely
+reclassified" and "genuinely delisted, confirmed by a direct 404". On
+`google-news-scraper` (474 matched, 351 unnamed, 21 departures) those two buckets
+covered only 19 of 21, and the two leftovers are the interesting ones:
+
+- `dariandanciu/google-news-scraper` still returns **200**, so a liveness-only check
+  passes it, but its record now carries `isDeprecated: true`. It was an every-tier
+  undercutter in the previous sweep, so it has to be WITHDRAWN from the running
+  undercutter count without being described as dead -- those are different claims and
+  the README has to make the distinction or it is asserting something false.
+- `glitchbound/news-scraper` is 200, undeprecated, and still cheaper than us at every
+  rung, but the term screen simply stopped matching it (title/description drift on the
+  rival's side). It left the cohort without anything about it changing competitively.
+
+**Transferable rule: HTTP status, `isDeprecated`, and term-match are three independent
+axes and a delta audit must read all three.** A 200 is not evidence a rival is still a
+live competitor; a screen drop is not evidence the rival is gone. Both mistakes push in
+the same direction -- they quietly shrink the undercutter count the README publishes,
+which is the one number in that paragraph a buyer could check for themselves. Cost to do
+it right: one extra `GET` per departure, ~20 calls for a 21-handle departure set.
