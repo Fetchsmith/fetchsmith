@@ -1,0 +1,6499 @@
+[
+ {
+  "handle": "gmpsignal/fda-recalls-enforcement",
+  "title": "FDA Recalls & Enforcement - Drugs, Devices, Food",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "recall record"
+   }
+  },
+  "desc": "Official FDA recall and enforcement records for drugs, medical devices and food in one normalized feed. Filter by keyword, recalling firm, recall class, status, country, state and report date. ISO dates, class severity explained, no API key needed."
+ },
+ {
+  "handle": "unnoted/openfda-recalls",
+  "title": "FDA Recalls Scraper \u2013 openFDA Enforcement API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall"
+   }
+  },
+  "desc": "Get FDA recall enforcement reports for drugs, medical devices and food from openFDA. Search by product, firm or reason and filter by class I, II or III, status and date. Recall number, firm, product, reason, quantity, distribution and dates. Unofficial."
+ },
+ {
+  "handle": "zinin/fda-food-recall-monitor",
+  "title": "FDA Food Recall Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.002375,
+   "SILVER": 0.00225,
+   "GOLD": 0.002125,
+   "PLATINUM": 0.002125,
+   "DIAMOND": 0.002125
+  },
+  "start_fee": 0.002,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-found": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.002375,
+     "SILVER": 0.00225,
+     "GOLD": 0.002125,
+     "PLATINUM": 0.002125,
+     "DIAMOND": 0.002125
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Food recall record"
+   }
+  },
+  "desc": "Find official openFDA food enforcement recalls by product, recalling firm, state, and date range for supply-chain and retail compliance workflows."
+ },
+ {
+  "handle": "datamole/fda-recalls-scraper",
+  "title": "FDA Recall Scraper: Food, Drug & Device Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Get FDA food, drug and device recalls with class, status, hazard (listeria, salmonella, allergens), undeclared allergen, states reached, UPC codes and the company announcement link. Filter by state, hazard or company and monitor new recalls."
+ },
+ {
+  "handle": "vizellie/fda-recall-monitor",
+  "title": "US FDA Recall Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Saved recall"
+   }
+  },
+  "desc": "Recent US FDA food, drug, and device enforcement reports from openFDA. One row per recall. A schedule can keep only recall numbers that were not saved before."
+ },
+ {
+  "handle": "accommodating_aptitude/fda-recalls",
+  "title": "FDA Recalls (openFDA food + drug enforcement)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-found",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-found": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Recall found"
+   }
+  },
+  "desc": "ABD FDA'n\u0131n resmi, a\u00e7\u0131k, anahtars\u0131z openFDA API'sinden g\u0131da ve ila\u00e7 geri \u00e7a\u011f\u0131rma (enforcement) kay\u0131tlar\u0131n\u0131 \u00e7eker."
+ },
+ {
+  "handle": "cheerful_term/openfda-recalls",
+  "title": "FDA Recalls (Food, Drugs, Devices)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall"
+   }
+  },
+  "desc": "FDA enforcement reports for food, drug and medical-device recalls via openFDA: recalling firm, product, reason, classification (I/II/III), status, distribution pattern, quantity, dates and location. Filter by type, date, class, state, firm or keyword."
+ },
+ {
+  "handle": "arachnus/drug-safety-report-fda-label-recalls-side-effects",
+  "title": "Drug Safety Report: FDA Label, Recalls, Side Effects",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Type a drug name, get one report: FDA label and boxed warning, recall history, most reported side effects, and RxNorm ID. Plus 20 single-source lookups (FDA, RxNorm, DailyMed, NPI, Europe PMC). No API keys."
+ },
+ {
+  "handle": "bosco_labs/product-recalls",
+  "title": "Product Recall Check API: CPSC, NHTSA, FDA & EU Safety Gate",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product-check",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "product-check": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Product check"
+   }
+  },
+  "desc": "Recalled yes/no, with each recall's date, hazard, remedy and official link, for a product name, brand, model, UPC/EAN or VIN. Checks US CPSC, NHTSA vehicle recalls, FDA enforcement reports (food, drugs, devices) and EU Safety Gate in one call. Lists every source checked."
+ },
+ {
+  "handle": "tidydata69/openfda-recalls-events",
+  "title": "openFDA Recalls & Adverse Events",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "record": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "FDA record"
+   }
+  },
+  "desc": "Fetch FDA recall/enforcement reports and optional FAERS adverse events via openFDA (api.fda.gov). Public domain (CC0) with attribution."
+ },
+ {
+  "handle": "arachnus/public-api-gateway-science-health-law-safety-open-data",
+  "title": "Public API Gateway: Science, Health, Law, Safety, Open Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "One Actor, 34 free public data sources as clean JSON rows. Papers, drugs and FDA recalls, CVEs, species, proteins, companies (LEI), Wikipedia and more. Pick a mode, send queries. No API keys."
+ },
+ {
+  "handle": "yakeddgraph/openfda-drug-adverse-events-recalls-scraper",
+  "title": "OpenFDA Drug Recalls & Adverse Events Scraper [$1/1K]",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 1e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extracts US FDA drug/device enforcement recalls and adverse event reports via the official openFDA API. Returns recall classifications, product descriptions, manufacturer names, distribution patterns, and voluntary/mandated status."
+ },
+ {
+  "handle": "cemented_jest/openfda-recall-enforcement-monitor",
+  "title": "FDA Food, Drug & Device Recall Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-scraped",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "record-scraped": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Delivered record"
+   }
+  },
+  "desc": "Search openFDA food, drug and device recall enforcement reports. Export recall classifications, reasons, firms and status changes."
+ },
+ {
+  "handle": "pandadad0214/product-recall-monitor",
+  "title": "Product Recall Monitor: FDA Food, Drug, Device & CPSC Recalls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-returned",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-returned": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Recall returned"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Get one feed of US product recalls from FDA (food, drugs, medical devices) and CPSC (consumer products). Product, reason or hazard, firm, class, status, distribution, lots, UPCs, retailers and remedy; filter by keyword, firm, class, state, date. Excel."
+ },
+ {
+  "handle": "signalloom/product-recalls-feed",
+  "title": "Product Recalls Feed \u2014 FDA, CPSC & NHTSA Recall Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall returned"
+   }
+  },
+  "desc": "Get US product recalls from FDA (food, drugs, medical devices), CPSC (consumer products) and NHTSA (vehicles) in one clean schema. Filter by keyword, brand, category, date and FDA class; new-only mode for recall alerts. $0.003 per recall."
+ },
+ {
+  "handle": "wooden_scanner_c1n/cross-border-recall-watch",
+  "title": "Product Recall Search: FDA, CPSC, NHTSA, UK, Canada, EU",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall returned"
+   }
+  },
+  "desc": "Product, food, vehicle, drug and medical-device recalls from FDA, CPSC, NHTSA, Health Canada, UK OPSS/MHRA/FSA and EU Safety Gate in one normalised schema. Keyword and brand watchlists, date filter and 'only new since last run' mode. Source and licence on every record."
+ },
+ {
+  "handle": "dennydevelops/recall-radar",
+  "title": "Recall Radar - FDA, CPSC & NHTSA Recalls in One Feed",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.002,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Recall returned"
+   }
+  },
+  "desc": "New product recalls from the FDA (food, drugs, medical devices), CPSC (consumer products) and NHTSA (vehicles and equipment) in one normalized feed: company, product, reason, severity, units, distribution and link. Filter by keyword, company or class; only-new mode for alerts."
+ },
+ {
+  "handle": "saffo/food-recall-allergy-alerts",
+  "title": "Food Recall & Allergy Alerts: US, UK, Canada, Australia",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-notice",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.0036,
+   "GOLD": 0.0032,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0032
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-notice,run-started",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "run-started": {
+    "tiers": {
+     "FREE": 0.0125,
+     "BRONZE": 0.01,
+     "SILVER": 0.009,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run started"
+   },
+   "recall-notice": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.004,
+     "SILVER": 0.0036,
+     "GOLD": 0.0032,
+     "PLATINUM": 0.0032,
+     "DIAMOND": 0.0032
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall notice"
+   }
+  },
+  "desc": "Official food recall and allergy alert notices from the US FDA, the UK FSA, Canada's CFIA and Australia's FSANZ in one schema, one row per recall."
+ },
+ {
+  "handle": "bosco_labs/drug-safety",
+  "title": "Drug Safety API: FDA adverse events, label, recalls, EMA status",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "dossier",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dossier,drug-query",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "dossier": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Drug dossier"
+   },
+   "drug-query": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Drug query"
+   }
+  },
+  "desc": "Drug safety dossier for one drug name as one sourced JSON row: FDA adverse events (top FAERS reaction counts), boxed warning and indications, US recalls and shortages (openFDA), EU authorisation, EPAR link and EU shortages (EMA). Or one cheaper sub-query. Not medical advice."
+ },
+ {
+  "handle": "apex-b2b-data/openfda-recalls-adverse-events-510k",
+  "title": "openFDA Medical Device 510(k), Drug & Food Recalls Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract official FDA Medical Device 510(k) clearances and Drug, Device & Food Enforcement Recalls from the official openFDA REST API. Filter by dataset, state, recall classification (Class I, II, III), applicant/firm name, and date range. Includes risk severity scores, regulatory contacts, and direc"
+ },
+ {
+  "handle": "grandiose_envelope_0fj/openfda-510k-pma-medical-device-clearances-scraper",
+  "title": "FDA 510(k) Clearances + Startup Stage & Review Signals",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0032
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0032
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Cross-Joined Enriched Lead / Record"
+   }
+  },
+  "desc": "\ud83d\udd17 [Multi-Source Cross-Joined] Extract newly cleared FDA 510(k) medical devices with applicant contact person, cross-joined Device Class (I/II/III), FEI number, Applicant Lifetime 510(k) Count (First-Time MedTech Startup vs Enterprise OEM), and FDA Review Duration days."
+ },
+ {
+  "handle": "gmpsignal/global-product-recalls",
+  "title": "Global Product Recalls - CPSC, FSIS, EU Safety Gate",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "recall record"
+   }
+  },
+  "desc": "Product recalls from three official government databases in one normalized feed: US CPSC consumer product recalls, USDA FSIS food recalls and EU Safety Gate alerts. Filter by keyword and date. Hazard, firm, units, distribution and official links included."
+ },
+ {
+  "handle": "lx112/canada-recalls",
+  "title": "Canada Recalls Scraper: Food, Product & Vehicle Recalls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall"
+   }
+  },
+  "desc": "Search all Government of Canada recalls and safety alerts: food (CFIA), consumer products, vehicles (Transport Canada), medical devices and drugs. Filter by keyword, source and date; updated daily from official open data."
+ },
+ {
+  "handle": "vizellie/eu-safety-gate-monitor",
+  "title": "EU Safety Gate Product Recall Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "alert",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): alert",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "alert": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Saved alert"
+   }
+  },
+  "desc": "Recent non-food product alerts from the European Commission Safety Gate, the successor to RAPEX. One row per alert, with a link back to the official page. A schedule can keep only alerts that were not saved before."
+ },
+ {
+  "handle": "dpo-atom/dpo-biomedical-recall-lab-surplus-scout",
+  "title": "Biomedical Recall, Hospital Closure & Lab Surplus Scout",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "OpenFDA device recalls, hospital closures, and university/NIH laboratory equipment liquidations (SEC SIC-7370)."
+ },
+ {
+  "handle": "pj_pai/openfda-ndc-lookup",
+  "title": "OpenFDA NDC Lookup: Drug Products & Packaging",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "product": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Product"
+   }
+  },
+  "desc": "Search the FDA NDC Directory by brand, generic, NDC or labeler. Returns product NDC, dosage form, route, ingredients and packaging. Official openFDA, CC0, keyless. $1 per 1,000 products."
+ },
+ {
+  "handle": "scrapesmart/clinical-fda-pipeline-radar",
+  "title": "ClinicalTrials.gov & openFDA Biotech Pipeline Radar (MCP)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clinical-trial-enriched",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-trial-enriched",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "clinical-trial-enriched": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Enriched commercial clinical trial record with direct study contacts & openFDA approvals"
+   }
+  },
+  "desc": "Deterministic ClinicalTrials.gov v2 & openFDA intelligence engine. Discovers active commercial biotech trials, extracts direct investigator contacts, enriches with FDA approvals, and scores CRO B2B opportunities."
+ },
+ {
+  "handle": "groundplanes/openfda-pma-class3-medtech-scraper",
+  "title": "FDA PMA Class III Medical Device Approvals Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Approval"
+   }
+  },
+  "desc": "Scrape official FDA Premarket Approval (PMA) Class III medical device approvals, supplements, sponsor details, and review duration from openFDA. Keyless or with free API key."
+ },
+ {
+  "handle": "groundplanes/openfda-maude-adverse-event-scraper",
+  "title": "FDA MAUDE Medical Device Adverse Events & Malfunctions Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Report"
+   }
+  },
+  "desc": "Scrape official FDA MAUDE medical device adverse event reports, malfunctions, patient outcomes, and manufacturer narratives from openFDA. Unverified submissions disclaimer applied."
+ },
+ {
+  "handle": "groundplanes/openfda-drugsfda-anda-approval-scraper",
+  "title": "FDA Drugs@FDA, Generic ANDA & Orange Book Patent Cliff Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Application"
+   }
+  },
+  "desc": "Scrape FDA NDA new drug and ANDA generic approvals, patent expirations, exclusivity dates, and therapeutic equivalence (TE) codes from Drugs@FDA and official Orange Book archives."
+ },
+ {
+  "handle": "cheerful_term/openfda-device-clearances",
+  "title": "FDA 510(k) Medical Device Clearances",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Clearance"
+   }
+  },
+  "desc": "FDA 510(k) premarket clearances via openFDA: K number, device name, applicant and contact address, product code, decision and date, review panel, device class and specialty, with a link to the FDA record."
+ },
+ {
+  "handle": "quanmatrix/fda-510k-predicate-network-intelligence",
+  "title": "FDA 510(k) Clearance Search & Applicant Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.0135,
+   "SILVER": 0.012,
+   "GOLD": 0.0105,
+   "PLATINUM": 0.0105,
+   "DIAMOND": 0.0105
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.0135,
+     "SILVER": 0.012,
+     "GOLD": 0.0105,
+     "PLATINUM": 0.0105,
+     "DIAMOND": 0.0105
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Retrieve actual FDA 510(k) submissions by date, applicant or device product code from the public openFDA API, without an upstream spreadsheet."
+ },
+ {
+  "handle": "zinin/fda-ndc-product-directory",
+  "title": "FDA NDC Product Directory",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0018,
+   "GOLD": 0.0017,
+   "PLATINUM": 0.0017,
+   "DIAMOND": 0.0017
+  },
+  "start_fee": 0.002,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-found": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0018,
+     "GOLD": 0.0017,
+     "PLATINUM": 0.0017,
+     "DIAMOND": 0.0017
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "NDC product found"
+   }
+  },
+  "desc": "Search the official openFDA NDC catalogue by brand, generic name, labeler or NDC and retrieve products, packages, dosage forms, routes and marketing categories."
+ },
+ {
+  "handle": "zinin/fda-adverse-event-aggregate",
+  "title": "FDA Adverse Event Aggregate",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.03,
+   "BRONZE": 0.0285,
+   "SILVER": 0.027,
+   "GOLD": 0.0255,
+   "PLATINUM": 0.0255,
+   "DIAMOND": 0.0255
+  },
+  "start_fee": 0.002,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-found": {
+    "tiers": {
+     "FREE": 0.03,
+     "BRONZE": 0.0285,
+     "SILVER": 0.027,
+     "GOLD": 0.0255,
+     "PLATINUM": 0.0255,
+     "DIAMOND": 0.0255
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Reaction count"
+   }
+  },
+  "desc": "Aggregate openFDA adverse-event report counts and reported reaction counts by drug brand or generic name and date period. Official API, no key required."
+ },
+ {
+  "handle": "rel8ble/fda-device-suppliers-scraper",
+  "title": "FDA Medical Device Suppliers & Manufacturers Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "FDA medical device registration scraper and API (openFDA): find manufacturers and suppliers by device word, country and role. One result = one listing: firm, address, owner, brand names, product codes, class, 510(k). No login. $0.50 per 1,000."
+ },
+ {
+  "handle": "cemented_jest/cpsc-product-recall-monitor",
+  "title": "CPSC Product Recall Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-scraped",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "record-scraped": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Delivered record"
+   }
+  },
+  "desc": "Collect US consumer-product recalls, affected products, hazards, remedies and manufacturers. Compare recall updates across scheduled runs."
+ },
+ {
+  "handle": "paramount_torch/vin-recall-checker",
+  "title": "Bulk VIN Decoder & NHTSA Recall Lookup",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vin-decoded",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0014,
+   "SILVER": 0.0012,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vin-decoded",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "vin-decoded": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0014,
+     "SILVER": 0.0012,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "VIN decoded"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Decode VINs in bulk with the official NHTSA vPIC database: year, make, model, trim, body, engine, fuel, drive and plant. Adds NHTSA safety recalls for each make, model and year. For used car dealers, fleets, insurers and auto apps. JSON, CSV or Excel, no API key, no scraping."
+ },
+ {
+  "handle": "quanmatrix/nhtsa-defect-escalation-intelligence",
+  "title": "NHTSA Vehicle Recall Lookup & Risk Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0108,
+   "SILVER": 0.0096,
+   "GOLD": 0.0084,
+   "PLATINUM": 0.0084,
+   "DIAMOND": 0.0084
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.0108,
+     "SILVER": 0.0096,
+     "GOLD": 0.0084,
+     "PLATINUM": 0.0084,
+     "DIAMOND": 0.0084
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Search real NHTSA recalls by vehicle make, model and model year; receive affected units, component, campaign ID and official records."
+ },
+ {
+  "handle": "vizellie/nhtsa-vehicle-recall-check",
+  "title": "US Vehicle Recall Check",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Saved recall"
+   }
+  },
+  "desc": "NHTSA recall campaigns for one make, model, and model year. One row per campaign, with the official campaign API link. A schedule can keep only campaign numbers that were not saved before."
+ },
+ {
+  "handle": "cheerful_term/cpsc-product-recalls",
+  "title": "CPSC Consumer Product Recalls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall"
+   }
+  },
+  "desc": "Consumer product recalls from the US Consumer Product Safety Commission: recall number and date, title, products and units, hazards, remedies, manufacturers, retailers, importers, countries of manufacture, injuries and images."
+ },
+ {
+  "handle": "latamdatatools/vin-decoder-recalls",
+  "title": "VIN Decoder Bulk + Recalls & Complaints (NHTSA Official)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vin",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vin,vin-recalls",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "vin": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Decoded VIN"
+   },
+   "vin-recalls": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "VIN recall check"
+   }
+  },
+  "desc": "Decode thousands of VINs with the official NHTSA vPIC database: make, model, year, trim, body, engine, transmission, plant and safety features, plus safety recalls and owner complaints for each make, model and year. No API key."
+ },
+ {
+  "handle": "tec5uport/nhtsa-vehicle-safety",
+  "title": "NHTSA Vehicle Safety: VIN, Recalls, Complaints, Ratings",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vehicle-report",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vehicle-report",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "vehicle-report": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Vehicle Safety report"
+   }
+  },
+  "desc": "Public U.S. NHTSA vehicle safety data from a VIN or year/make/model: decoded specs, model-level recalls (not VIN-specific), owner complaints, and NCAP crash ratings as compact JSON plus markdown. No API key. Not affiliated with NHTSA. Built for AI agents."
+ },
+ {
+  "handle": "groundplanes/cpsc-product-recall-upc-importer-scraper",
+  "title": "CPSC Product Recalls Scraper: UPCs, Importers & Retailers",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall"
+   }
+  },
+  "desc": "Pull US Consumer Product Safety Commission (CPSC) recalls from the official SaferProducts.gov API: products, UPCs, hazards, remedies, manufacturers, importers, where sold, and recall notice links, one flat row per recall."
+ },
+ {
+  "handle": "mdcurt/cannabis-regulator-notice-signals",
+  "title": "Cannabis Regulator Notices: Rules, License Windows, Recalls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.15,
+   "BRONZE": 0.135,
+   "SILVER": 0.12,
+   "GOLD": 0.105,
+   "PLATINUM": 0.105,
+   "DIAMOND": 0.105
+  },
+  "start_fee": 0.0035,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.004,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.15,
+     "BRONZE": 0.135,
+     "SILVER": 0.12,
+     "GOLD": 0.105,
+     "PLATINUM": 0.105,
+     "DIAMOND": 0.105
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Regulator notice signal"
+   }
+  },
+  "desc": "State cannabis regulator bulletins, rulemaking stages, license application notices and recalls as dated signals with state, kind and source link. Public regulator pages only, no login, pay per signal."
+ },
+ {
+  "handle": "drewtuzson/nhtsa-vin-commercial-fleet-decoder",
+  "title": "NHTSA Commercial Truck & Fleet VIN Decoder, Recall Checker",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vin-decoded",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vin-decoded",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "vin-decoded": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "NHTSA Commercial Truck & Fleet VIN Decoder + Recall Checker"
+   }
+  },
+  "desc": "Decode 17-character commercial truck, tractor, and trailer VINs via live US DOT NHTSA vPIC feeds with GVWR class, engine specs, and compliance links to https://fastentityfiling.com and https://verifygrid.io."
+ },
+ {
+  "handle": "neuton/cpsc-product-recalls-scraper",
+  "title": "CPSC Product Recalls Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract official U.S. Consumer Product Safety Commission recalls for product safety monitoring, ecommerce compliance, and brand risk research."
+ },
+ {
+  "handle": "neuton/openfda-device-udi-scraper",
+  "title": "openFDA Device UDI Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract FDA medical device UDI records for device identification, product-code enrichment, manufacturer intelligence, and compliance workflows."
+ },
+ {
+  "handle": "neuton/openfda-drugsfda-applications-scraper",
+  "title": "openFDA Drugs@FDA Applications Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract Drugs@FDA application, sponsor, product, and submission records for pharmaceutical regulatory intelligence and drug approval research."
+ },
+ {
+  "handle": "neuton/openfda-drug-adverse-events-scraper",
+  "title": "openFDA Drug Adverse Events Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search FDA FAERS drug adverse event reports through openFDA by drug name, reaction, country, seriousness, or report date. Export safety report IDs, drugs, reactions, outcomes, dates, and demographics."
+ },
+ {
+  "handle": "neuton/openfda-device-adverse-events-scraper",
+  "title": "openFDA Device Adverse Events Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search FDA MAUDE medical device adverse event records through openFDA. Export report numbers, event types, dates, manufacturers, device names, patient outcomes, and narrative text."
+ },
+ {
+  "handle": "neuton/openfda-food-adverse-events-scraper",
+  "title": "openFDA Food Adverse Events Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract FDA CAERS food adverse event reports from openFDA for product safety monitoring, supplement research, and consumer-health risk analysis."
+ },
+ {
+  "handle": "neuton/openfda-drug-labels-scraper",
+  "title": "openFDA Drug Labels Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract official FDA drug labeling records, warnings, indications, dosage text, manufacturers, product NDCs, and SPL identifiers."
+ },
+ {
+  "handle": "neuton/openfda-drug-shortages-scraper",
+  "title": "openFDA Drug Shortages Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract FDA drug shortage records for current shortage monitoring, supply-chain workflows, pharma operations, and healthcare procurement."
+ },
+ {
+  "handle": "samwise.agency/openfda-drug-labels",
+  "title": "FDA Drug Labels \u2014 Indications, Warnings & Ingredients",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search FDA drug labeling data from openFDA by brand name, generic name, route, or manufacturer. Indications, warnings, dosage, active/inactive ingredients, and more. Official openFDA data, no API key."
+ },
+ {
+  "handle": "samwise.agency/fda-device-maude",
+  "title": "FDA MAUDE \u2014 Medical Device Adverse Event & Malfunction Reports",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search FDA MAUDE (Manufacturer and User Facility Device Experience) adverse event reports for medical devices. Report numbers, device names, manufacturer names, event types, dates, patient outcomes, and product problems. Official openFDA data, no API key."
+ },
+ {
+  "handle": "parseforge/clinical-trial-multi-source-scraper",
+  "title": "Clinical Trial Multi-Source Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.020202,
+   "SILVER": 0.019446,
+   "GOLD": 0.01869,
+   "PLATINUM": 0.016821,
+   "DIAMOND": 0.014952
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.020202,
+     "SILVER": 0.019446,
+     "GOLD": 0.01869,
+     "PLATINUM": 0.016821,
+     "DIAMOND": 0.014952
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result item"
+   }
+  },
+  "desc": "Scrapes clinical trial records from ClinicalTrials.gov, WHO ICTRP, OpenFDA, and ClinVar. Returns each trial as a flat row with registry ID, phase, status, enrollment, and eligibility criteria."
+ },
+ {
+  "handle": "neuton/nhtsa-vehicle-recalls-scraper",
+  "title": "NHTSA Vehicle Recalls Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search official NHTSA recall records by vehicle make, model, year, or campaign number. Export recall summaries, components, remedies, dates, and campaign IDs for automotive safety monitoring."
+ },
+ {
+  "handle": "ponderable_hydrometer/vin-decoder",
+  "title": "VIN Decoder & Vehicle Data \u2014 NHTSA",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Decode any VIN into make, model, year, engine, trim, body and plant \u2014 plus vehicle catalog (models by make/year) and recalls, complaints & safety ratings. Free, no key."
+ },
+ {
+  "handle": "zentrafoundry/fda-safety-signal-monitor",
+  "title": "FDA Device Recall Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "report-generated"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "Live openFDA device enforcement and recall rows: firm, product, official link. US FDA only \u2014 not a safety certification. $0.02 / row."
+ },
+ {
+  "handle": "red.cars/fda-recalls-pro",
+  "title": "FDA Recalls Pro - Food, Drug & Device Recall Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Monitor every FDA recall from one actor: food, drug and medical-device enforcement data, with classification, state, status and date-window filters. Built on openFDA. No key, no login."
+ },
+ {
+  "handle": "parseforge/fda-recalls-scraper",
+  "title": "FDA Recalls Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0065,
+   "BRONZE": 0.00633,
+   "SILVER": 0.00617,
+   "GOLD": 0.006,
+   "PLATINUM": 0.0054,
+   "DIAMOND": 0.0048
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0065,
+     "BRONZE": 0.00633,
+     "SILVER": 0.00617,
+     "GOLD": 0.006,
+     "PLATINUM": 0.0054,
+     "DIAMOND": 0.0048
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes FDA recall records for food, drugs, and medical devices. Returns each recall as a flat row with reason, classification, recalling firm, and distribution pattern. Filter by product type, keyword, classification, status, state, or date range."
+ },
+ {
+  "handle": "rbbscrap/openfda-scraper",
+  "title": "OpenFDA Scraper \u2014 Drug Recalls, Adverse Events & Approvals",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.00072,
+   "SILVER": 0.00064,
+   "GOLD": 0.00056,
+   "PLATINUM": 0.00056,
+   "DIAMOND": 0.00056
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.00072,
+     "SILVER": 0.00064,
+     "GOLD": 0.00056,
+     "PLATINUM": 0.00056,
+     "DIAMOND": 0.00056
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "FDA adverse event / drug recall extracted"
+   }
+  },
+  "desc": "Ultra-fast FDA pharmaceutical and drug safety intelligence scraper. Extract FDA drug recalls (Class I, II, III), adverse event safety signals (FAERS), NDC drug approvals, and manufacturer details without browser bloat."
+ },
+ {
+  "handle": "mouadapi/company-check",
+  "title": "Company & Supplier Check \u2014 LEI, Recalls, Food Alerts, SSL",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company-check",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0013,
+   "SILVER": 0.00115,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "company-check": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.00115,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Company checked"
+   }
+  },
+  "desc": "Returns one record per company with its LEI status, U.S. FDA recalls, UK FSA food alerts and domain SSL/DNS health in one call; failed and unchanged rows are never charged. Not affiliated with or endorsed by GLEIF, the U.S. FDA or the UK FSA."
+ },
+ {
+  "handle": "weirworks/food-recall-tracker",
+  "title": "Food Recall Tracker: FDA & USDA",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall"
+   }
+  },
+  "desc": "US food recalls from the FDA and USDA FSIS (meat, poultry, eggs) in one feed: product, reason, classification, firm, distribution and lot/UPC codes, with brand and UPC watchlists and daily monitoring."
+ },
+ {
+  "handle": "zentrafoundry/marketplace-seller-risk-bundle",
+  "title": "openFDA Device Enforcement Snapshot",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,qualified-commerce-signal,record-saved,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "0.01"
+   },
+   "qualified-commerce-signal": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Qualified Commerce Signal"
+   },
+   "dataset-processed": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Successful dataset run"
+   },
+   "record-saved": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Saved result"
+   },
+   "enriched-record": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Enriched result"
+   }
+  },
+  "desc": "openFDA device/enforcement.json (firm + product). Not a marketplace seller-risk score. $0.01."
+ },
+ {
+  "handle": "scrapers_lat/fda-drug-device-recalls-scraper",
+  "title": "openFDA Drug, Device & Biologics Recall Scraper (USA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0111,
+   "SILVER": 0.0102,
+   "GOLD": 0.0092,
+   "PLATINUM": 0.0092,
+   "DIAMOND": 0.0092
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.0111,
+     "SILVER": 0.0102,
+     "GOLD": 0.0092,
+     "PLATINUM": 0.0092,
+     "DIAMOND": 0.0092
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape FDA drug, medical device and biologics recalls and enforcement reports from the official openFDA API. Extract recall number, hazard class, product, reason, recalling firm, location, dates, product codes and 510(k) numbers. Export JSON, CSV or Excel."
+ },
+ {
+  "handle": "nexgendata/fda-pharma-catalyst-pipeline",
+  "title": "FDA Pharma Pipeline Tracker \u2014 Milestone Data API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "pharma-record",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): pharma-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "pharma-record": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Pharma record"
+   }
+  },
+  "desc": "Track biotech catalysts: clinical-trial readouts, FDA drug approvals, and recalls in one feed from official ClinicalTrials.gov + openFDA data. For pharma intelligence and biotech investors."
+ },
+ {
+  "handle": "red.cars/healthcare-compliance-mcp",
+  "title": "Healthcare Compliance MCP \u2014 AI Agent FDA Device Intelligence",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 1e-05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,assess_manufacturer_quality,generate_compliance_report,get_device_510k_clearance,get_device_recalls,get_trial_details,screen_device_compliance,search_clinical_trials,search_device_events",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   },
+   "search_device_events": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search Device Events"
+   },
+   "get_device_510k_clearance": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "510k Clearance"
+   },
+   "get_device_recalls": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Device Recalls"
+   },
+   "search_clinical_trials": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search Clinical Trials"
+   },
+   "get_trial_details": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Trial Details"
+   },
+   "screen_device_compliance": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Screen Device Compliance"
+   },
+   "assess_manufacturer_quality": {
+    "tiers": {
+     "FREE": 0.08
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Assess Manufacturer Quality"
+   },
+   "generate_compliance_report": {
+    "tiers": {
+     "FREE": 0.15
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Generate Compliance Report"
+   }
+  },
+  "desc": "Query FDA MAUDE adverse events, 510(k) clearances, and device recalls. One tool call for AI agent medical device compliance research."
+ },
+ {
+  "handle": "maximedupre/fda-medical-device-recalls",
+  "title": "FDA Medical Device Recalls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "fda-medical-device-recall-retrieved",
+  "unit_tiers": {
+   "FREE": 0.0018
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fda-medical-device-recall-retrieved",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "fda-medical-device-recall-retrieved": {
+    "tiers": {
+     "FREE": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Device recall"
+   }
+  },
+  "desc": "Search public U.S. FDA medical-device recalls by phrase, firm, class, status, area, or date. Get structured recall evidence with lifecycle dates, risk context, and official source links."
+ },
+ {
+  "handle": "inexhaustible_glass/global-product-recalls",
+  "title": "\ud83d\udea8 Global Product Recalls \u2014 CPSC + FDA (Food/Drug/Device)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "One unified, normalized feed of official product-safety recalls: US CPSC consumer products + FDA food, drug & medical-device enforcement. Search by brand, product, company, hazard or date. Product, manufacturer, hazard, severity, remedy, injuries, UPC, country, images & official URL. Free, no key."
+ },
+ {
+  "handle": "constant_quadruped/clinical-trials-fda-scraper",
+  "title": "Clinical Trials FDA Scraper",
+  "users": 2,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {},
+  "desc": "Extract clinical trials from ClinicalTrials.gov and FDA data from openFDA APIs. Search by condition, drug, sponsor, or NCT ID. Get adverse events, drug labels, recalls, and device data. For pharma research and regulatory monitoring."
+ },
+ {
+  "handle": "parseforge/openfda-scraper",
+  "title": "OpenFDA Drug Adverse Events & Recall Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes drug adverse events, drug labels, and food enforcement recalls from the openFDA public API. Returns each record as a flat row with full FDA payload."
+ },
+ {
+  "handle": "nexgenwatch/fda-drug-approvals",
+  "title": "FDA Drug Approvals (Drugs@FDA) Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "drug_approval",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.045,
+   "SILVER": 0.04,
+   "GOLD": 0.0335,
+   "PLATINUM": 0.0335,
+   "DIAMOND": 0.0335
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): drug_approval",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "drug_approval": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.045,
+     "SILVER": 0.04,
+     "GOLD": 0.0335,
+     "PLATINUM": 0.0335,
+     "DIAMOND": 0.0335
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Drug Approval"
+   }
+  },
+  "desc": "Clean, structured records of FDA drug approvals, sourced live from the official openFDA Drugs@FDA API (https://api.fda.gov/drug/drugsfda.json) \u2014 an anonymous, documented U.S. Food & Drug Administration endpoint."
+ },
+ {
+  "handle": "nexgenwatch/fda-ndc-product-directory",
+  "title": "FDA NDC Product Directory",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "drug_product_record",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.018,
+   "SILVER": 0.016,
+   "GOLD": 0.0134,
+   "PLATINUM": 0.0134,
+   "DIAMOND": 0.0134
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): drug_product_record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "drug_product_record": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.018,
+     "SILVER": 0.016,
+     "GOLD": 0.0134,
+     "PLATINUM": 0.0134,
+     "DIAMOND": 0.0134
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "FDA NDC Product Directory"
+   }
+  },
+  "desc": "One drug_product_record per product in the official FDA National Drug Code (NDC) Directory via openFDA \u2014 keyless, logged-out."
+ },
+ {
+  "handle": "nexgenwatch/fda-device-establishment-listings",
+  "title": "FDA Device Establishment Listings",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "establishment_record",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.018,
+   "SILVER": 0.016,
+   "GOLD": 0.0134,
+   "PLATINUM": 0.0134,
+   "DIAMOND": 0.0134
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): establishment_record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "establishment_record": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.018,
+     "SILVER": 0.016,
+     "GOLD": 0.0134,
+     "PLATINUM": 0.0134,
+     "DIAMOND": 0.0134
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "FDA Device Establishment Listings"
+   }
+  },
+  "desc": "One establishment_record per FDA device establishment registration from the official openFDA endpoint \u2014 keyless, logged-out."
+ },
+ {
+  "handle": "scrapers_lat/fda-510k-clearances-scraper",
+  "title": "FDA 510(k) Premarket Clearances Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0132,
+   "BRONZE": 0.01296,
+   "SILVER": 0.01272,
+   "GOLD": 0.01248,
+   "PLATINUM": 0.01224,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_summary,applicant_profile,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0132,
+     "BRONZE": 0.01296,
+     "SILVER": 0.01272,
+     "GOLD": 0.01248,
+     "PLATINUM": 0.01224,
+     "DIAMOND": 0.012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "applicant_profile": {
+    "tiers": {
+     "FREE": 0.0132,
+     "BRONZE": 0.01296,
+     "SILVER": 0.01272,
+     "GOLD": 0.01248,
+     "PLATINUM": 0.01224,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Applicant regulatory profile"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.0132,
+     "BRONZE": 0.01296,
+     "SILVER": 0.01272,
+     "GOLD": 0.01248,
+     "PLATINUM": 0.01224,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI plain-English clearance summary"
+   }
+  },
+  "desc": "Scrape FDA 510(k) premarket clearances from the official openFDA database. Filter by device, applicant, product code, medical specialty, state, country, clearance type and decision date. Enrich with device class and regulation. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "nexgenwatch/fda-510k-device-clearances",
+  "title": "FDA 510(k) Device Clearances Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "device_clearance",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.045,
+   "SILVER": 0.04,
+   "GOLD": 0.0335,
+   "PLATINUM": 0.0335,
+   "DIAMOND": 0.0335
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): device_clearance",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "device_clearance": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.045,
+     "SILVER": 0.04,
+     "GOLD": 0.0335,
+     "PLATINUM": 0.0335,
+     "DIAMOND": 0.0335
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Device Clearance"
+   }
+  },
+  "desc": "Clean, structured records of medical-device 510(k) clearances, sourced live from the official openFDA device 510(k) API (https://api.fda.gov/device/510k.json) \u2014 an anonymous, documented U.S. Food & Drug Administration endpoint."
+ },
+ {
+  "handle": "s-r/fda-drug-labels",
+  "title": "FDA Drug Labels Scraper - openFDA, NDC & Approvals",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "drug_label",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): drug_label",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "drug_label": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Drug label returned"
+   }
+  },
+  "desc": "Search FDA drug labels by brand, generic name, NDC, UPC, manufacturer or application number. Export flat SPL sections, warnings, ingredients and Drugs@FDA approval dates with NDC and GTIN join keys, for pharmacovigilance, formulary and compliance teams."
+ },
+ {
+  "handle": "s-r/fda-adverse-events",
+  "title": "FAERS Adverse Events Scraper - FDA Drugs and MAUDE Devices",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "adverse_event",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): adverse_event,event_count",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "adverse_event": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Adverse event report"
+   },
+   "event_count": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Event count bucket"
+   }
+  },
+  "desc": "Search openFDA FAERS drug reports and MAUDE device events, export reactions, seriousness, demographics and trend counts, and connect suspect medicines to drug labels and recalls."
+ },
+ {
+  "handle": "parseforge/usda-recall-watch-scraper",
+  "title": "USDA FSIS Food Recall Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.019,
+   "DIAMOND": 0.019
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.019,
+     "DIAMOND": 0.019
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes USDA FSIS food recall alerts by year or classification. Returns each recall as a flat row with reason, pounds affected, and dates."
+ },
+ {
+  "handle": "zentrafoundry/food-supplements-recall-monitor",
+  "title": "Food Supplement Recalls (CPSC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "qualified-alert"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "Live US CPSC recalls matching vitamin, supplement or dietary text. Keyword filter, not medical advice. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/google-maps-business-leads-pain-score",
+  "title": "openFDA Food Recall Snapshot",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.029
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.029
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "openFDA food enforcement (firm + product). Not Maps leads, emails or pain scores. $0.029."
+ },
+ {
+  "handle": "dalbian/product-recall-monitor",
+  "title": "French Product Recall Monitor \u2014 RappelConso Alerts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search-run",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-returned,search-run",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "search-run": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Search run"
+   },
+   "recall-returned": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Recall returned"
+   }
+  },
+  "desc": "Daily digest of official French product recalls from RappelConso: food, toys, vehicles, cosmetics and more, filtered by category, brand, risk, barcode or keyword, with the reason, the batches and the official notice."
+ },
+ {
+  "handle": "scrapers_lat/eu-safety-gate-recalls-scraper",
+  "title": "EU Safety Gate (RAPEX) Product Recalls & Alerts Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_severity,ai_summary,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.0114,
+     "SILVER": 0.0108,
+     "GOLD": 0.0102,
+     "PLATINUM": 0.0102,
+     "DIAMOND": 0.0102
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI recall summary"
+   },
+   "ai_severity": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI severity / risk score"
+   },
+   "ai_extract": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.015,
+     "SILVER": 0.015,
+     "GOLD": 0.015,
+     "PLATINUM": 0.015,
+     "DIAMOND": 0.015
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI structured extract"
+   }
+  },
+  "desc": "Scrape EU Safety Gate (RAPEX) dangerous non-food product alerts: alert number, product, brand, risk type, measures (recall/withdrawal/ban), origin & notifying country, importer. JSON/CSV/Excel."
+ },
+ {
+  "handle": "whitel1ght/unified-product-recalls",
+  "title": "Product Recalls API - CPSC, NHTSA, USDA, EU, UK",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "recall"
+   }
+  },
+  "desc": "Search product recalls from US CPSC, NHTSA, USDA FSIS, EU Safety Gate and UK FSA in one unified JSON schema, with an only-new mode for monitoring."
+ },
+ {
+  "handle": "mouadapi/uk-food-alerts",
+  "title": "UK Food Alerts API: Allergy & Product Recall Watch (FSA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "alert",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0013,
+   "SILVER": 0.00115,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): alert",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "alert": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.00115,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Alert returned"
+   }
+  },
+  "desc": "UK food allergy alerts and product recalls from the Food Standards Agency's public API, or only new and updated alerts since your last run; failed or unchanged rows are never charged. Not affiliated with or endorsed by the Food Standards Agency."
+ },
+ {
+  "handle": "parseforge/openfda-food-events-scraper",
+  "title": "openFDA Food Adverse Events Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes food adverse event reports from the openFDA CAERS database using Lucene search queries. Returns each report as a flat row with product details, reactions, and outcomes."
+ },
+ {
+  "handle": "scrapers_lat/mhra-drug-device-alerts-scraper",
+  "title": "MHRA UK Drug & Device Safety Alerts & Recalls Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0132,
+   "BRONZE": 0.01296,
+   "SILVER": 0.01272,
+   "GOLD": 0.01248,
+   "PLATINUM": 0.01224,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.002,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.0132,
+     "BRONZE": 0.01296,
+     "SILVER": 0.01272,
+     "GOLD": 0.01248,
+     "PLATINUM": 0.01224,
+     "DIAMOND": 0.012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "details": {
+    "tiers": {
+     "FREE": 0.0088,
+     "BRONZE": 0.00864,
+     "SILVER": 0.00848,
+     "GOLD": 0.00832,
+     "PLATINUM": 0.00816,
+     "DIAMOND": 0.008
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "details"
+   }
+  },
+  "desc": "Scrape MHRA UK drug & medical device safety alerts and recalls: Field Safety Notices, National Patient Safety Alerts, Device Safety Information, medicines recalls. Filter by alert type, date, keyword, product."
+ },
+ {
+  "handle": "zentrafoundry/product-recall-risk-scorer",
+  "title": "US Product Recall Risk Scorer",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,recall-alert,record-saved",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Enriched Record"
+   },
+   "dataset-processed": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Successful dataset run"
+   },
+   "record-saved": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Saved result"
+   },
+   "enriched-record": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Enriched result"
+   }
+  },
+  "desc": "Daily CPSC + openFDA recall rows with keyword/brand scores. US official sources. Not a certification. $0.02 / row."
+ },
+ {
+  "handle": "parseforge/openfda-vet-events-scraper",
+  "title": "openFDA Animal & Veterinary Events Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes animal and veterinary adverse event reports from openFDA. Returns each event as a flat row with drug, reaction, animal, and outcome fields. Supports Lucene search and max items control."
+ },
+ {
+  "handle": "zentrafoundry/local-business-bad-website-lead-finder",
+  "title": "openFDA NDC Snapshot",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.029
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.029
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "openFDA NDC brand names. Not SSL/mobile scores from Google Maps. $0.029 / product."
+ },
+ {
+  "handle": "zentrafoundry/ema-shortage-escalation-mapper",
+  "title": "US Drug Shortage Snapshot (openFDA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,ema-shortage-scan,enriched-record,record-saved,result-delivered,shortage-escalation-delta",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "ema-shortage-scan": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Ema Shortage Scan"
+   },
+   "shortage-escalation-delta": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Shortage Escalation Delta"
+   },
+   "dataset-processed": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Successful dataset run"
+   },
+   "record-saved": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Saved result"
+   },
+   "enriched-record": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Enriched result"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "openFDA drug-shortage rows. Last run: Leflunomide Tablet \u2014 To Be Discontinued. Not EMA. Not medical advice. $0.01."
+ },
+ {
+  "handle": "devilscrapes/openfda-adverse-events-scraper",
+  "title": "openFDA Adverse Events Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-row",
+  "unit_tiers": {
+   "BRONZE": 0.00384,
+   "DIAMOND": 0.00352,
+   "FREE": 0.004,
+   "GOLD": 0.00352,
+   "PLATINUM": 0.00352,
+   "SILVER": 0.00368
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-row",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-row": {
+    "tiers": {
+     "BRONZE": 0.00384,
+     "DIAMOND": 0.00352,
+     "FREE": 0.004,
+     "GOLD": 0.00352,
+     "PLATINUM": 0.00352,
+     "SILVER": 0.00368
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result row emitted"
+   }
+  },
+  "desc": "openFDA Adverse Events Scraper: export FDA FAERS adverse-event reports as flat, one-row-per-reaction rows \u2014 drug names, seriousness flags, patient demographics and reaction outcome \u2014 from the public openFDA API. Self-reported, unvalidated data for research, never for medical-care decisions."
+ },
+ {
+  "handle": "scrapers_lat/fda-pma-device-approvals-scraper",
+  "title": "FDA PMA Medical Device Approvals Scraper (openFDA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007855,
+   "SILVER": 0.007709,
+   "GOLD": 0.007564,
+   "PLATINUM": 0.007418,
+   "DIAMOND": 0.007273
+  },
+  "start_fee": 0.009091,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,ai_summary,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.009818,
+     "SILVER": 0.009636,
+     "GOLD": 0.009455,
+     "PLATINUM": 0.009273,
+     "DIAMOND": 0.009091
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.007855,
+     "SILVER": 0.007709,
+     "GOLD": 0.007564,
+     "PLATINUM": 0.007418,
+     "DIAMOND": 0.007273
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "PMA approval record"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.011782,
+     "SILVER": 0.011564,
+     "GOLD": 0.011345,
+     "PLATINUM": 0.011127,
+     "DIAMOND": 0.010909
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI plain-English summary"
+   },
+   "ai_classify": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.011782,
+     "SILVER": 0.011564,
+     "GOLD": 0.011345,
+     "PLATINUM": 0.011127,
+     "DIAMOND": 0.010909
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI device classification"
+   }
+  },
+  "desc": "Scrape FDA Premarket Approval (PMA) medical device decisions from openFDA. Get PMA number, applicant, trade and generic name, product code, specialty, supplement type, decision and dates. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "devilscrapes/openfda-drug-labels-scraper",
+  "title": "openFDA Drug Labels Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "BRONZE": 0.00288,
+   "DIAMOND": 0.00264,
+   "FREE": 0.003,
+   "GOLD": 0.00264,
+   "PLATINUM": 0.00264,
+   "SILVER": 0.00276
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "BRONZE": 0.00288,
+     "DIAMOND": 0.00264,
+     "FREE": 0.003,
+     "GOLD": 0.00264,
+     "PLATINUM": 0.00264,
+     "SILVER": 0.00276
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result emitted"
+   }
+  },
+  "desc": "Export the openFDA Structured Product Labeling drug-label corpus as clean, flat rows \u2014 filterable by brand name, generic name, manufacturer, product NDC, or route, with control over which label sections (active ingredient, warnings, dosage, and more) land in your dataset as JSON, CSV, or Excel."
+ },
+ {
+  "handle": "maydit/fda-drug-shortages-monitor",
+  "title": "FDA Drug Shortages Monitor - openFDA Shortage Status & Updates",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0016,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.002,
+     "SILVER": 0.0016,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Pull current and historical FDA drug shortage records from the official openFDA shortages API. Filter by status, generic name or company. No API key."
+ },
+ {
+  "handle": "parseforge/openfda-drug-labels-scraper",
+  "title": "openFDA Drug Labels Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes drug labels from the openFDA API by search expression. Returns each label as a flat row with indications, warnings, dosage, and more."
+ },
+ {
+  "handle": "parseforge/openfda-drug-events-scraper",
+  "title": "openFDA Drug Adverse Events Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.024,
+   "BRONZE": 0.022,
+   "SILVER": 0.02,
+   "GOLD": 0.018,
+   "PLATINUM": 0.0162,
+   "DIAMOND": 0.0144
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.024,
+     "BRONZE": 0.022,
+     "SILVER": 0.02,
+     "GOLD": 0.018,
+     "PLATINUM": 0.0162,
+     "DIAMOND": 0.0144
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrapes adverse event reports from the FDA's openFDA API. Filter by drug name, reaction term, date range, and seriousness. Returns each report as a flat row."
+ },
+ {
+  "handle": "parseforge/openfda-drug-ndc-scraper",
+  "title": "openFDA Drug NDC Directory Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.016,
+   "BRONZE": 0.01467,
+   "SILVER": 0.01333,
+   "GOLD": 0.012,
+   "PLATINUM": 0.0108,
+   "DIAMOND": 0.0096
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.016,
+     "BRONZE": 0.01467,
+     "SILVER": 0.01333,
+     "GOLD": 0.012,
+     "PLATINUM": 0.0108,
+     "DIAMOND": 0.0096
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrapes the FDA National Drug Code Directory via openFDA. Returns drug listings with NDC, brand name, generic name, manufacturer, and product type as flat rows."
+ },
+ {
+  "handle": "parseforge/openfda-device-event-scraper",
+  "title": "openFDA Medical Device Events Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.024,
+   "BRONZE": 0.022,
+   "SILVER": 0.02,
+   "GOLD": 0.018,
+   "PLATINUM": 0.0162,
+   "DIAMOND": 0.0144
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.024,
+     "BRONZE": 0.022,
+     "SILVER": 0.02,
+     "GOLD": 0.018,
+     "PLATINUM": 0.0162,
+     "DIAMOND": 0.0144
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrapes medical device adverse event reports from the openFDA database. Returns each event as a flat row with device, manufacturer, event type, and date."
+ },
+ {
+  "handle": "parseforge/openfda-tobacco-problem-bus-scraper",
+  "title": "openFDA Tobacco Problem Reports Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0085,
+   "BRONZE": 0.00817,
+   "SILVER": 0.00783,
+   "GOLD": 0.0075,
+   "PLATINUM": 0.00675,
+   "DIAMOND": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0085,
+     "BRONZE": 0.00817,
+     "SILVER": 0.00783,
+     "GOLD": 0.0075,
+     "PLATINUM": 0.00675,
+     "DIAMOND": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Collects tobacco product problem reports from the openFDA API by product category or keyword search. Returns each adverse event or product complaint as a flat row with product category, reported issue, health outcome, and submission date."
+ },
+ {
+  "handle": "parseforge/openfda-tobacco-problem-scraper",
+  "title": "openFDA Tobacco Problem Reports Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0085,
+   "BRONZE": 0.00817,
+   "SILVER": 0.00783,
+   "GOLD": 0.0075,
+   "PLATINUM": 0.00675,
+   "DIAMOND": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0085,
+     "BRONZE": 0.00817,
+     "SILVER": 0.00783,
+     "GOLD": 0.0075,
+     "PLATINUM": 0.00675,
+     "DIAMOND": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Collects tobacco problem reports from the openFDA API by optional product or keyword query. Returns each report as a flat row with product type, health problem, and submission date."
+ },
+ {
+  "handle": "scrapers_lat/openfda-device-establishments-scraper",
+  "title": "FDA Registered Medical Device Establishments Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0165,
+   "BRONZE": 0.0162,
+   "SILVER": 0.0159,
+   "GOLD": 0.0156,
+   "PLATINUM": 0.0153,
+   "DIAMOND": 0.015
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.002,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.0165,
+     "BRONZE": 0.0162,
+     "SILVER": 0.0159,
+     "GOLD": 0.0156,
+     "PLATINUM": 0.0153,
+     "DIAMOND": 0.015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Directory of FDA-registered medical device establishments: manufacturers, importers, sterilizers and contract makers with owner/operator, US agent contact (name, phone, email), full address, FEI/registration number and listed products. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "dataio/openfda-510k-device-clearances",
+  "title": "FDA 510(k) Scraper - Device Clearances Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clearance-extracted",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.0054,
+   "SILVER": 0.0048,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clearance-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "clearance-extracted": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.0054,
+     "SILVER": 0.0048,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Clearance"
+   }
+  },
+  "desc": "Scrape FDA 510(k) medical device clearances from openFDA with the actual review time in days, plus the applicant's address and contact. Filter by product code, company, decision date, state and decision. Track competitors' clearances and regulatory timelines."
+ },
+ {
+  "handle": "parseforge/openfda-drugsfda-scraper",
+  "title": "Drugs@FDA Approvals Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.01833,
+   "SILVER": 0.01667,
+   "GOLD": 0.015,
+   "PLATINUM": 0.0135,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.01833,
+     "SILVER": 0.01667,
+     "GOLD": 0.015,
+     "PLATINUM": 0.0135,
+     "DIAMOND": 0.012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrapes drug approval records from the FDA's Drugs@FDA database. Filter by application number, sponsor name, or product name and get each drug as a flat row with marketing status, active ingredients, and approval history."
+ },
+ {
+  "handle": "devilscrapes/fda-510k-clearances-scraper",
+  "title": "FDA 510k Clearances Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "BRONZE": 0.00192,
+   "DIAMOND": 0.00176,
+   "FREE": 0.002,
+   "GOLD": 0.00176,
+   "PLATINUM": 0.00176,
+   "SILVER": 0.00184
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "BRONZE": 0.00192,
+     "DIAMOND": 0.00176,
+     "FREE": 0.002,
+     "GOLD": 0.00176,
+     "PLATINUM": 0.00176,
+     "SILVER": 0.00184
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result emitted"
+   }
+  },
+  "desc": "Export openFDA 510(k) premarket device clearance records \u2014 applicant, device name, decision date and code, product code, advisory committee, device class and regulation number \u2014 filterable by applicant, device, product code, committee, class or decision-date range, as clean JSON, CSV or Excel."
+ },
+ {
+  "handle": "pink_comic/fda-drugs-at-fda-approvals-product-search",
+  "title": "FDA Drug Approvals Scraper API - Drugs@FDA Products",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0018,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0018,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "FDA Drugs@FDA Approvals & Product Search Scraper A evidence item"
+   }
+  },
+  "desc": "Search official openFDA Drugs@FDA application, product, and action records by brand, generic, sponsor, application, route, status, and date. Returns source-linked applications with nested products and submissions. FDA administrative evidence\u2014not medical advice or proof of current availability."
+ },
+ {
+  "handle": "pink_comic/fda-ndc-drug-directory",
+  "title": "FDA NDC Drug Directory Scraper & API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0018,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0018,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "FDA NDC Drug Directory Scraper & API evidence item"
+   }
+  },
+  "desc": "Search FDA's openFDA National Drug Code Directory by product/package NDC, drug names, labeler, ingredient, route, dosage form, marketing category, application number, status, and dates. Returns normalized source-linked labeler-submitted listing evidence."
+ },
+ {
+  "handle": "parseforge/fda-orange-book-scraper",
+  "title": "FDA Orange Book Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes FDA Orange Book drug product records by openFDA search expression. Returns each product as a flat row with application number, patent, exclusivity, and marketing status."
+ },
+ {
+  "handle": "nexgendata/fda-drug-approvals",
+  "title": "FDA Drug Approvals Tracker \u2014 NDA/BLA/ANDA API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "FDA approval record"
+   }
+  },
+  "desc": "Track FDA drug approvals via openFDA \u2014 NDA / BLA / ANDA / supplements with priority review, breakthrough, accelerated approval, orphan drug, fast track flags. Indication, dosage form, route, manufacturer. EvaluatePharma / Citeline / GlobalData alternative for pharma analysts."
+ },
+ {
+  "handle": "maydit/us-fda-adverse-events-scraper",
+  "title": "FDA Adverse Events Scraper - FAERS + MAUDE Export",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0032,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.004,
+     "SILVER": 0.0032,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape FDA adverse events from FAERS (drugs) and MAUDE (devices) via openFDA. Deeply nested reports flattened to one clean row each. Export to CSV, JSON, or Excel."
+ },
+ {
+  "handle": "scrapemint/fda-approval-catalyst-pipeline",
+  "title": "FDA Approval Catalyst: Approvals Plus Insider Buying",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "watch",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): accumulation,approval_confirmed,watch",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "watch": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Watch event"
+   },
+   "accumulation": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Accumulation signal"
+   },
+   "approval_confirmed": {
+    "tiers": {
+     "FREE": 0.18
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Approval confirmed catalyst"
+   }
+  },
+  "desc": "For each ticker, correlates recent FDA wins on openFDA (drug approvals, device PMA, 510(k) clearances) with insider open-market buying around the decision date, scores conviction 0 to 100, and tiers each as approval_confirmed, accumulation, or watch."
+ },
+ {
+  "handle": "zentrafoundry/fda-510k-competitor-clearance-tracker",
+  "title": "FDA 510(k) Clearance Tracker",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clearance-watchlist-scan,dataset-processed,enriched-record,matched-clearance,record-saved,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "clearance-watchlist-scan": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Clearance Watchlist Scan"
+   },
+   "matched-clearance": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Matched Clearance"
+   },
+   "dataset-processed": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Successful dataset run"
+   },
+   "record-saved": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Saved result"
+   },
+   "enriched-record": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Enriched result"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "Live openFDA 510(k) rows. Try includes Electrical Muscle Stimulator K261131. Not a predicate decision. $0.02 / row."
+ },
+ {
+  "handle": "datapilot/similarweb-scraper",
+  "title": "Similarweb Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-scrape",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-scrape",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-scrape": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Scraped Result"
+   }
+  },
+  "desc": "Search and collect FDA drug approval records from the openFDA API. Extracts approval ID, drug name, sponsoring company, approval date, and official FDA application link. Supports keyword-based searches, pagination, duplicate filtering, automatic retries,"
+ },
+ {
+  "handle": "parseforge/us-drug-med-reference-pro-scraper",
+  "title": "US Drug & Medical Reference Pro Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Queries openFDA drug labels, FDA Orange Book, FDA warning letters, MedlinePlus, Medscape, and eMedicine from one keyword. Returns each result as a flat row with source name, title, URL, and full body text."
+ },
+ {
+  "handle": "zentrafoundry/cosmetics-recall-monitor",
+  "title": "Cosmetics Recall Monitor (CPSC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "qualified-alert"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "CPSC recalls keyword-filtered for cosmetics/skincare. Keyword, not a cosmetics classifier \u2014 toys can still match. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/electronics-marketplace-recall-monitor",
+  "title": "Electronics Recall Monitor (CPSC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "qualified-alert"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "CPSC recalls keyword-filtered for electronics/battery/charger. Keyword, not SKU matching. $0.02 / recall."
+ },
+ {
+  "handle": "johnatan029/cpsc-recalls-monitor",
+  "title": "CPSC Product Recalls & Safety Data Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall result"
+   }
+  },
+  "desc": "Monitor US consumer product recalls from public CPSC data. Filter by date, product, manufacturer, retailer, or keywords and export hazards, injuries, remedies, retailers, manufacturers, images, and UPCs when reported \u2014 with health checks, schedules, and structured output."
+ },
+ {
+  "handle": "zentrafoundry/recall-alert-monitor",
+  "title": "CPSC Recall Snapshot",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,recall-alert,record-saved,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "0.01"
+   },
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Change Alert"
+   },
+   "dataset-processed": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Successful dataset run"
+   },
+   "record-saved": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Saved result"
+   },
+   "enriched-record": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Enriched result"
+   }
+  },
+  "desc": "CPSC saferproducts.gov recalls JSON since 2026-08-01. Not EU Safety Gate. $0.01 / recall."
+ },
+ {
+  "handle": "zentrafoundry/eu-battery-charger-recall-monitor",
+  "title": "Battery and Charger Recalls (CPSC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "qualified-alert"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "US CPSC recalls matching battery, charger or lithium text. Safety Gate is not public JSON from this IP. $0.02."
+ },
+ {
+  "handle": "zentrafoundry/eu-toy-safety-recall-monitor",
+  "title": "Toy Safety Recalls (CPSC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "qualified-alert"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "US CPSC recalls matching toy, infant or doll text. Keyword filter, not an age-grade classifier. $0.02 / recall."
+ },
+ {
+  "handle": "weirworks/vehicle-recall-checker",
+  "title": "Vehicle Recall Checker: VIN & Model (NHTSA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall,vehicle-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall"
+   },
+   "vehicle-check": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Vehicle check"
+   }
+  },
+  "desc": "Check open NHTSA safety recalls for any vehicle by VIN or make/model/year, plus owner complaint counts (crashes, fires, injuries) by component. Bulk VIN lists for fleets and dealers, with new-recall monitoring."
+ },
+ {
+  "handle": "thirdwatch/nhtsa-vehicle-safety-scraper",
+  "title": "NHTSA Vehicle Safety Scraper - Recalls & Complaints",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.003,
+   "SILVER": 0.0025,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.0025,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Export official U.S. vehicle recalls and owner complaints by year, make, and model. Get campaign IDs, components, defects, remedies, incidents, injuries, and source links."
+ },
+ {
+  "handle": "nexgendata/consumer-product-recall-intelligence",
+  "title": "CPSC Recalls \u2014 Consumer Product Recalls & Safety Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-record": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall record"
+   }
+  },
+  "desc": "CPSC recalls from official Consumer Product Safety Commission data: US consumer product recalls with product, hazard, injuries, manufacturers and retailers. For marketplaces delisting recalled items, product-liability attorneys and compliance teams."
+ },
+ {
+  "handle": "nexgendata/nhtsa-vehicle-safety-intelligence",
+  "title": "NHTSA Vehicle Safety \u2014 Recalls & Complaints API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "safety-record",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): safety-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "safety-record": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Safety record"
+   }
+  },
+  "desc": "Pull the full safety history of any US vehicle \u2014 NHTSA recalls and owner complaints (crashes, fires, injuries, deaths) \u2014 by make, model, and year. For lemon-law attorneys, auto insurers, dealers, and researchers."
+ },
+ {
+  "handle": "scrapers_lat/cpsc-recalls-scraper",
+  "title": "CPSC Product Recalls Scraper: Safety Recall Data API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_severity,ai_summary,details,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.007385,
+     "SILVER": 0.006769,
+     "GOLD": 0.006154,
+     "PLATINUM": 0.006154,
+     "DIAMOND": 0.006154
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "details": {
+    "tiers": {
+     "FREE": 0.009231,
+     "BRONZE": 0.008615,
+     "SILVER": 0.008,
+     "GOLD": 0.007385,
+     "PLATINUM": 0.007385,
+     "DIAMOND": 0.007385
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "details"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI recall summary"
+   },
+   "ai_severity": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI severity / risk score"
+   },
+   "ai_extract": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.015,
+     "SILVER": 0.015,
+     "GOLD": 0.015,
+     "PLATINUM": 0.015,
+     "DIAMOND": 0.015
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI structured extract"
+   }
+  },
+  "desc": "Scrape US CPSC consumer product recalls from SaferProducts.gov, no API key. Filter by keyword, date, hazard, product type, manufacturer, retailer or recall number. Get recall number, date, products, hazards, injuries, remedies, manufacturers, importers, UPCs, images. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "mouadapi/cpsc-product-recalls",
+  "title": "CPSC Product Recalls API \u2014 US Consumer Product Recall Watch",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0013,
+   "SILVER": 0.00115,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "recall": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.00115,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall returned"
+   }
+  },
+  "desc": "US product recalls from the CPSC database by product words and date, or only new and updated ones: products, hazards, injuries, remedy, firms and the recall page; failed or unchanged rows are never charged. Not affiliated with or endorsed by the U.S. Consumer Product Safety Commission (CPSC)."
+ },
+ {
+  "handle": "johnatan029/nhtsa-safety-intelligence",
+  "title": "NHTSA Recall, Complaint & Safety Spike Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "intelligence-event",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): intelligence-event",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "intelligence-event": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Intelligence event"
+   }
+  },
+  "desc": "Monitor official NHTSA data for new recalls, complaints, and statistically defined complaint spikes by vehicle or component. Get severity scores, crash/fire/injury/death signals, before/after context, and auditable spike math. Stateful baselines prevent historical records from appearing as new."
+ },
+ {
+  "handle": "benthepythondev/nhtsa-safety-ratings-scraper",
+  "title": "NHTSA Safety Ratings Scraper - Vehicle Scores",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0017,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 4.5e-05,
+     "SILVER": 4.25e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 3.75e-05,
+     "DIAMOND": 3.5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0017,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Look up vehicle variants and export NHTSA overall, front, side and rollover ratings plus safety technology, complaint, recall and investigation counts."
+ },
+ {
+  "handle": "nexgenwatch/australia-accc-product-recall-watch",
+  "title": "Australia ACCC Product Recalls Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-delta",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.045,
+   "SILVER": 0.04,
+   "GOLD": 0.0335,
+   "PLATINUM": 0.0335,
+   "DIAMOND": 0.0335
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-delta,source-check",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "source-check": {
+    "tiers": {
+     "FREE": 0.1,
+     "BRONZE": 0.09,
+     "SILVER": 0.08,
+     "GOLD": 0.067,
+     "PLATINUM": 0.067,
+     "DIAMOND": 0.067
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Source check"
+   },
+   "recall-delta": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.045,
+     "SILVER": 0.04,
+     "GOLD": 0.0335,
+     "PLATINUM": 0.0335,
+     "DIAMOND": 0.0335
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall Delta"
+   }
+  },
+  "desc": "Scrape Australian ACCC product recalls: product, supplier, hazard, remedy and recall date from the official register. Every run returns the current records as a dataset. Optional watch mode returns only what changed since your last run. Pay per result."
+ },
+ {
+  "handle": "hichemdev/product-recalls-scraper",
+  "title": "Product Recall Scraper \u2014 CPSC Safety Recalls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "recall"
+   }
+  },
+  "desc": "Scrape official US CPSC product safety recalls: recall number and date, product, units affected, hazard, injuries reported, remedy (refund, repair, replace), recalling firm, importers, country of manufacture, where it was sold and product images. Filter by date, product or keyword. No API key."
+ },
+ {
+  "handle": "parseforge/nhtsa-vehicle-recalls-scraper",
+  "title": "NHTSA Vehicle Recalls & Complaints Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0055,
+   "BRONZE": 0.00533,
+   "SILVER": 0.00517,
+   "GOLD": 0.005,
+   "PLATINUM": 0.0045,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0055,
+     "BRONZE": 0.00533,
+     "SILVER": 0.00517,
+     "GOLD": 0.005,
+     "PLATINUM": 0.0045,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Collects NHTSA vehicle safety recall records and consumer complaints filtered by make, model, and model year. Returns each recall or complaint as a structured flat row with official defect and remedy details."
+ },
+ {
+  "handle": "nexgendata/nhtsa-vehicle-recall-defect-tracker",
+  "title": "NHTSA Recall & Defect Investigation Tracker API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "recall-record": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall record"
+   }
+  },
+  "desc": "VIN-range + investigation-stage + severity-classified feed of NHTSA vehicle recalls. Severity buckets (fire/crash/FMVSS), affected-unit counts, NCAP rating join, complaint signal. For lemon-law / product-liability firms, auto insurers, fleet managers, analysts."
+ },
+ {
+  "handle": "zentrafoundry/eu-recall-lookup-api",
+  "title": "CPSC Recall Lookup",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): lookup-result,recall-alert,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-alert": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "standby request"
+   },
+   "lookup-result": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "lookup-result"
+   },
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Result delivered"
+   }
+  },
+  "desc": "Official CPSC recall JSON. Try is Cade Finger Light Toys. Not Safety Gate, not EUDAMED. $0.02 / recall."
+ },
+ {
+  "handle": "nexgendata/cpsc-product-recalls",
+  "title": "CPSC Product Recalls & Safety Tracker API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Product recall record"
+   }
+  },
+  "desc": "CPSC consumer product recalls (saferproducts.gov): recalled products, hazards, remedies, manufacturers, injuries, and dates. For retailers, product-safety/QA, insurers, and class-action researchers."
+ },
+ {
+  "handle": "scrapemint/vehicle-defect-tracker",
+  "title": "Vehicle Defect Tracker, Complaints & Recall Gaps",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "complaint",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): complaint,component_trend",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "complaint": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Defect complaint"
+   },
+   "component_trend": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Component trend"
+   }
+  },
+  "desc": "Every owner complaint filed with NHTSA for a vehicle, keyless, with crash, fire, injury and death flags and the full narrative. Roll them up by component and see which failures owners keep reporting that no recall covers. Deduped properly, so counts are real."
+ },
+ {
+  "handle": "weirworks/consumer-product-recall-tracker",
+  "title": "Consumer Product Recall Tracker (CPSC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall"
+   }
+  },
+  "desc": "US consumer product recalls from the CPSC: product, hazard, remedy, injuries, units, UPCs, manufacturers and the retailers that sold them, with brand/UPC/retailer watchlists for sellers and daily monitoring."
+ },
+ {
+  "handle": "johnatan029/nhtsa-vehicle-recalls-complaints",
+  "title": "NHTSA Vehicle Recalls & Complaints Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-result",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): complaint-result,recall-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "recall-result": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Recall result"
+   },
+   "complaint-result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Complaint result"
+   }
+  },
+  "desc": "Look up NHTSA vehicle recall campaigns and owner complaints by make, model, and year for up to 200 vehicles per run. Export campaign details, remedies, crash/fire flags, injuries, deaths, dates, and normalized safety data from official NHTSA public APIs."
+ },
+ {
+  "handle": "thirdwatch/cpsc-product-recalls-scraper",
+  "title": "CPSC Product Recalls Scraper - Hazards, UPCs & Remedies",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.003,
+   "SILVER": 0.0025,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.0025,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search official U.S. consumer-product recalls. Export affected products, UPCs, manufacturers, retailers, hazards, injuries, remedies, images, dates, and source links."
+ },
+ {
+  "handle": "scrapers_lat/usda-fsis-recalls-scraper",
+  "title": "USDA FSIS Meat & Poultry Recalls Scraper (USA)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.0114,
+     "SILVER": 0.0108,
+     "GOLD": 0.0102,
+     "PLATINUM": 0.0102,
+     "DIAMOND": 0.0102
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape USDA FSIS meat, poultry and egg product recalls and public health alerts. Get recall number, hazard class (Class I/II/III), company, reason, states, products, quantity, status, contacts and press release URL. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "mooseandraven/nhtsa-vehicle-safety-monitor",
+  "title": "NHTSA Vehicle Safety API - Recalls, Complaints & Crash Ratings",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): complaint-record,monitor-run,recall-record,safety-rating-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "recall-record": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Recall record"
+   },
+   "complaint-record": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Complaint record"
+   },
+   "safety-rating-record": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Safety rating record"
+   },
+   "monitor-run": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Monitor run"
+   }
+  },
+  "desc": "Look up NHTSA vehicle recalls, owner complaints, and 5-Star crash-test safety ratings by make/model/year via official NHTSA and vPIC APIs. No API key required."
+ },
+ {
+  "handle": "dalbian/vin-decoder-vehicle-data",
+  "title": "VIN Decoder \u2014 Specs, Recalls, Complaints, Safety Ratings",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vehicle-decoded",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): complaint-returned,recall-returned,vehicle-decoded",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "vehicle-decoded": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Vehicle decoded"
+   },
+   "recall-returned": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Recall returned"
+   },
+   "complaint-returned": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Complaint returned"
+   }
+  },
+  "desc": "Decode any North-American VIN into full factory specifications, then attach the open safety recalls, the owner complaints filed with NHTSA and the official crash-test ratings for that vehicle. Free government data, no key, no scraping."
+ },
+ {
+  "handle": "devilscrapes/cpsc-product-recalls-scraper",
+  "title": "CPSC Product Recalls Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-row",
+  "unit_tiers": {
+   "BRONZE": 0.00384,
+   "DIAMOND": 0.00352,
+   "FREE": 0.004,
+   "GOLD": 0.00352,
+   "PLATINUM": 0.00352,
+   "SILVER": 0.00368
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-row",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-row": {
+    "tiers": {
+     "BRONZE": 0.00384,
+     "DIAMOND": 0.00352,
+     "FREE": 0.004,
+     "GOLD": 0.00352,
+     "PLATINUM": 0.00352,
+     "SILVER": 0.00368
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result row"
+   }
+  },
+  "desc": "CPSC Product Recalls Scraper: export US Consumer Product Safety Commission (CPSC) recall records via the public, keyless SaferProducts.gov REST service \u2014 products, hazards, remedies, retailers, injuries and images \u2014 as clean flattened JSON rows for any bounded date window."
+ },
+ {
+  "handle": "zentrafoundry/recall-feed-to-s3-r2",
+  "title": "CPSC Recall Export Dry-Run",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): export-delivered,result-delivered",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result-delivered": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "0.01"
+   },
+   "export-delivered": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "export-delivered"
+   }
+  },
+  "desc": "Same CPSC recall JSON as the snapshot Actor. Try does not write S3 or R2. $0.01 / recall."
+ },
+ {
+  "handle": "hichemdev/vehicle-recalls-scraper",
+  "title": "Car Recall Scraper \u2014 NHTSA Recalls, Complaints & VIN",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "record"
+   }
+  },
+  "desc": "Scrape official US vehicle safety data from NHTSA: recalls with component, consequence and remedy, owner complaints with crash, fire, injury and death counts, VIN decoding with 40+ specs, and crash-test star ratings. Search by make, model and year, or by VIN. No API key."
+ }
+]

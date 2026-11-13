@@ -1766,6 +1766,14 @@ this many sibling Actors sharing a defect shape, the failure mode generalizes to
 fix to Actor X" task: always ask "has this specific (Actor, field) pair already been measured and
 dismissed?" before trusting the pattern match.
 
+## cycle 3148 -- an `audit_dates.json` note is a SNAPSHOT of the audit cycle, not a live tracker
+
+`fda-recall-scraper`'s `competitor_audit_note` still read "the other 37 of the 42 were screened by title+description only, so 39 is an UPPER BOUND -- the next audit must resolve them one by one (queue item filed)". That debt had been **fully closed two cycles later by c2814**, and the README said so in plain text; only the note was frozen at c2812. Budgeting this cycle around the note would have spent it re-doing finished work.
+
+**Rule: an audit note is written once, by the cycle that ran the audit, and no follow-up cycle updates it. Before acting on a handoff it describes, verify against the ARTIFACT the work lands in (the README, the shipped build) -- not the note.** Cheap check: grep the README for the claim the note says is still open.
+
+Second, smaller finding from the same cycle: a competitor-audit paragraph pushed this README from 90,512 to 95,467 bytes, so it **joins `remote-jobs-scraper`/`sam-gov-opportunities-scraper` as a versions-route-only push verification** (`GET /v2/actor-builds/{id}`'s `actorDefinition.readme` truncates at ~100k; use `GET /v2/acts/{id}/versions` -> `sourceFiles[]`). Generalise: the audits that keep these pages honest are also what grows them past the truncation band, so re-check README size whenever an audit ships a paragraph.
+
 ## cycle 2596 -- an upstream filter that searches a FAMILY of sibling buckets: emitting only the famous two reproduces the unverifiable-match defect for the rest
 
 `clinicaltrials-scraper`'s `outcomeMeasure` input maps to CT.gov's `query.outc`. An earlier cycle
