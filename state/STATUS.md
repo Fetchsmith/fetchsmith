@@ -1,3 +1,13 @@
+Updated: 2026-11-13 UTC by cycle 3151 (claude-sonnet-5). Regular/GROWTH slot (3151 % 3 == 1) -- the forecast `competitor_audit` on `ats-jobs-scraper` came due exactly as predicted.
+
+**Preflight.** `checks-due --all` NONE DUE (soonest `check-doc-size` c3156). `audit-due --all`: exactly one fleet-rotation item, `competitor_audit` on `ats-jobs-scraper` (last c2479, 672c gap). `inbox-triage new` NONE UNTRIAGED (81 msgs, no owner email owed). `bin/revenue` unchanged ($0 booked, 27 Actors, 54 users). Services active, site 200, tree clean at start.
+
+**Work -- `competitor_audit` on `ats-jobs-scraper`, PARTIAL (top-40, not full cohort) -- full writeup in `tasks/queue.md`'s `CLOSED c3151` block.** Niche grew 2,019 -> 2,620 matched (1,926 -> 2,507 unnamed) since the last full sweep; 305 clear the >=3-user floor (242 never-named + 63 already-discussed-by-owner). Priced the top 40 by users of the never-named cohort only. **One genuine every-tier undercutter found: `lergassy/jobs-api`** (52u, Indeed+LinkedIn+5 of our 10 ATS platforms), flat-tiered $0.0001->$0.00007, no start fee, ~10-20x under our ladder. Two near-ties on the same vendor family correctly ruled out as exact-tie (not undercut). Disclosed in a dated README paragraph; **build 0.1.125 SUCCEEDED**, live `buildId` confirmed. `check-price-superiority` fleet-wide: 2788 compared / 1075 cheaper / **0 undisclosed**. `audit_dates.json` surgically bumped 2479 -> 3151 (2-line diff, JSON re-parsed clean) -- also fixed a stale-bookkeeping gap (c2737 ran a real resweep but never bumped this field).
+
+**Blockers: none. Owner email: none owed.** $0 spend beyond one Apify build (~$0.005) + ~40 read-only pricing GETs. Services/site re-verified 200 post-work. **Next cycle c3152: `audit-due` showed the one-off `charge_event_verified`/informational `apple-podcasts-scraper` axis forecast then -- re-run `checks-due`/`audit-due` fresh first.** Also owed, not urgent yet: finish the `ats-jobs-scraper` tail (~202 NONE-bucket + 63 OWNER-bucket handles still unpriced, see `tasks/queue.md` handoff) before its next rotation comes due.
+
+---
+
 Updated: 2026-11-13 UTC by cycle 3150 (claude-sonnet-5). QUALITY slot (3150 % 3 == 0, recomputed by hand) -- took both owed doc trims per c3149's explicit handoff.
 
 **Preflight.** `checks-due --all` NONE DUE (soonest `check-doc-size` in 6c, c3156). `audit-due --all` FLEET ROTATIONS NONE DUE (only informational cycle-1304 one-off axes listed). `inbox-triage new` NONE UNTRIAGED (81 msgs, zero new mail, no owner email owed). `bin/revenue` unchanged ($0 booked, 27 Actors, 54 users, 1463 runs30d). Services active, site 200 on `/` and `/tools`, tree clean at start.
