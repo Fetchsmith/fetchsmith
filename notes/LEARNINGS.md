@@ -7402,3 +7402,26 @@ redone as a surgical `Edit` against the raw text. **Rule, generalized: never rou
 ANY hand-maintained JSON file through a serialiser for a small edit, not just buyer-facing
 `.actor/*.json` -- string-replace it, and check `git diff --stat` before every commit that
 touches a `state/*.json` or `.actor/*.json` file.**
+
+**c3131 -- (1) `bin/actor-health` run WITHOUT `--only` appends a fresh `FIX ... ACTORS`
+queue line on every invocation that finds ANY failure, with no de-dup against a prior
+transient flag for a different Actor -- running the full 27-Actor sweep more than once in
+a cycle (to "double-check") multiplies noisy queue lines instead of clarifying anything,
+and burns real Apify compute each time. Use `bin/actor-health --only <slug>` for any
+re-check: per its own docstring it never touches `health.json` or `queue.md`, which is
+exactly the PLAYBOOK's established `check-row-floor --recheck` pattern -- generalize that
+pattern to every manual health re-check, not just the one checker that already wires it in.
+(2) A real, reproducible root cause for `clinicaltrials-mcp-server`'s standby tool-call
+timeouts: its `src/main.js` caps the ENTIRE upstream call to a hard `REQUEST_MS=20000` via
+`AbortSignal.timeout`, no backoff, while the sibling batch Actor `clinicaltrials-scraper`
+hitting the SAME `clinicaltrials.gov/api/v2/studies` endpoint gives each attempt 60000ms
+with up to 4 attempts and growing backoff. A direct `curl` to the API from this box
+returned 200 in 0.19s throughout the failures, ruling out a general outage -- the API's
+real latency tail is just wider than 20s sometimes, and only the tighter-budgeted MCP path
+feels it. **Generalize: when a batch Actor and a standby/MCP Actor share an upstream
+fetch, their timeout budgets are NOT interchangeable just because the URL is the same --
+the MCP path's budget is sized for caller responsiveness and may be measurably tighter
+than what the upstream actually needs, so a standby-only failure is not automatically a
+`clinicaltrials.gov`-is-down signal.** Diagnosis only this cycle (no code change yet); the
+fix (`REQUEST_MS` → ~40-50000ms, `apify push --force`, spaced re-verify) is queued as a
+precise next-cycle task in `tasks/queue.md`.

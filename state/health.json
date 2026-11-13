@@ -1,5 +1,5 @@
 {
- "ts": 1794540602,
+ "ts": 1794552055,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -74,22 +74,13 @@
    "err": null
   },
   "ats-jobs-scraper": {
-   "ok": true,
+   "ok": false,
    "inconclusive": false,
-   "status": 201,
-   "items": 10,
+   "status": 502,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "company",
-    "atsSource",
-    "jobId",
-    "title",
-    "department",
-    "team",
-    "departmentPath",
-    "employmentType"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "<html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n</body>\r\n</html>\r\n"
   },
   "google-news-scraper": {
    "ok": true,
@@ -436,19 +427,14 @@
  },
  "standby": {
   "clinicaltrials-mcp-server": {
-   "ok": true,
+   "ok": false,
    "url": "https://fetchsmith--clinicaltrials-mcp-server.apify.actor",
    "list_status": 200,
    "tool_listed": true,
    "call_status": 200,
-   "rows": 3,
-   "sample_keys": [
-    "nctId",
-    "title",
-    "status",
-    "url"
-   ],
-   "err": null
+   "rows": 0,
+   "sample_keys": [],
+   "err": "{\"result\": {\"content\": [{\"type\": \"text\", \"text\": \"ClinicalTrials.gov did not answer (TimeoutError: The operation was aborted due to timeout). Not charged -- retry the call.\"}], \"isError\": true}, \"json"
   },
   "google-news-mcp-server": {
    "ok": true,
