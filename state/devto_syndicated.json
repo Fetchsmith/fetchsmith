@@ -1,206 +1,245 @@
 {
- "derived_at_cycle": 3040,
- "derived_at": "2026-11-11T09:07:36Z",
+ "derived_at_cycle": 3136,
+ "derived_at": "2026-11-13T09:07:02Z",
  "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2848 to fold in this cycle's new syndication (standby-mcp-no-actor-run-to-poll, devto id 4992741) rather than hand-appending, same as c2752 did. Re-derived whole-file at cycle 3040 to fold in this cycle's new syndication (google-news-rss-public-feeds-no-key, devto id 5015925) rather than hand-appending, same as c2848/c2752 did.",
  "counts": {
   "site_posts": 95,
-  "synced": 32,
-  "unsynced": 63,
-  "devto_published": 32,
+  "synced": 33,
+  "unsynced": 62,
+  "devto_published": 33,
   "devto_unmatched_canonical": 0
  },
  "synced": [
   {
-   "blog_date": "2026-09-09",
-   "slug": "decode-google-news-rss-redirect-links",
-   "devto_id": 4610780,
-   "devto_published_at": "2026-09-09T03:31:11.080Z"
-  },
-  {
-   "blog_date": "2026-09-09",
-   "slug": "json-ld-article-extraction-fails-on-real-news-sites",
-   "devto_id": 4627420,
-   "devto_published_at": "2026-09-11T00:32:33.870Z"
-  },
-  {
-   "blog_date": "2026-09-10",
-   "slug": "apple-podcasts-public-json-api",
-   "devto_id": 4641373,
-   "devto_published_at": "2026-09-13T00:06:48.301Z"
-  },
-  {
-   "blog_date": "2026-09-13",
-   "slug": "ats-job-board-json-apis-six-shapes",
-   "devto_id": 4653994,
-   "devto_published_at": "2026-09-15T00:06:19.507Z"
-  },
-  {
-   "blog_date": "2026-09-16",
-   "slug": "incremental-api-watch-mode-four-traps",
-   "devto_id": 4670994,
-   "devto_published_at": "2026-09-17T00:06:16.066Z"
-  },
-  {
-   "blog_date": "2026-09-14",
-   "slug": "shopify-inventory-barcode-per-product-json",
-   "devto_id": 4689167,
-   "devto_published_at": "2026-09-19T00:06:22.543Z"
-  },
-  {
-   "blog_date": "2026-09-09",
-   "slug": "http-only-vs-headless-browser-scraping-cost",
-   "devto_id": 4702159,
-   "devto_published_at": "2026-09-21T00:01:36.027Z"
-  },
-  {
-   "blog_date": "2026-09-23",
-   "slug": "watch-baseline-eviction-rebilling",
-   "devto_id": 4719842,
-   "devto_published_at": "2026-09-23T00:01:26.377Z"
-  },
-  {
-   "blog_date": "2026-09-23",
-   "slug": "sam-gov-key-free-federal-datasets-one-endpoint",
-   "devto_id": 4737103,
-   "devto_published_at": "2026-09-25T00:00:43.265Z"
-  },
-  {
-   "blog_date": "2026-09-24",
-   "slug": "government-apis-fail-open-on-a-dropped-filter-name",
-   "devto_id": 4753165,
-   "devto_published_at": "2026-09-27T01:02:07.118Z"
-  },
-  {
-   "blog_date": "2026-09-24",
-   "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml",
-   "devto_id": 4771257,
-   "devto_published_at": "2026-09-29T12:01:38.210Z"
-  },
-  {
-   "blog_date": "2026-09-24",
-   "slug": "hacker-news-1000-hit-search-ceiling",
-   "devto_id": 4771966,
-   "devto_published_at": "2026-09-29T14:03:14.807Z"
-  },
-  {
-   "blog_date": "2026-09-24",
-   "slug": "court-records-opinion-status-any-is-not-any",
-   "devto_id": 4779767,
-   "devto_published_at": "2026-10-01T00:01:10.939Z"
-  },
-  {
-   "blog_date": "2026-09-24",
-   "slug": "tmview-trademark-search-api-no-key",
-   "devto_id": 4797175,
-   "devto_published_at": "2026-10-04T19:02:03.528Z"
-  },
-  {
-   "blog_date": "2026-10-06",
    "slug": "apify-tiered-pricing-nested-dict-reads-as-free",
+   "blog_date": "2026-10-06",
    "devto_id": 4809157,
+   "devto_url": "https://dev.to/fetchsmith/a-rivals-price-was-nested-two-dicts-deep-and-the-obvious-min-read-20-competitors-as-free-1jnl",
    "devto_published_at": "2026-10-06T22:03:09.193Z"
   },
   {
-   "blog_date": "2026-09-15",
-   "slug": "invisible-characters-return-zero-rows",
-   "devto_id": 4826969,
-   "devto_published_at": "2026-10-10T06:31:30.814Z"
-  },
-  {
-   "blog_date": "2026-09-11",
-   "slug": "google-play-reviews-no-api-batchexecute",
-   "devto_id": 4836719,
-   "devto_published_at": "2026-10-12T07:32:57.760Z"
-  },
-  {
-   "blog_date": "2026-09-09",
-   "slug": "hacker-news-algolia-tags-and-not-or",
-   "devto_id": 4848495,
-   "devto_published_at": "2026-10-14T07:33:08.856Z"
-  },
-  {
-   "blog_date": "2026-09-09",
    "slug": "apple-app-store-reviews-header-fingerprint",
+   "blog_date": "2026-09-09",
    "devto_id": 4860281,
+   "devto_url": "https://dev.to/fetchsmith/apples-app-store-review-feed-has-holes-and-whether-you-hit-one-depends-on-your-http-client-oc0",
    "devto_published_at": "2026-10-16T06:01:36.327Z"
   },
   {
-   "blog_date": "2026-10-17",
    "slug": "apple-podcasts-episode-archive-is-not-there",
+   "blog_date": "2026-10-17",
    "devto_id": 4870429,
+   "devto_url": "https://dev.to/fetchsmith/apples-podcast-api-tells-you-a-show-has-2752-episodes-and-then-hands-you-44-4b50",
    "devto_published_at": "2026-10-18T06:03:59.283Z"
   },
   {
-   "blog_date": "2026-09-15",
-   "slug": "dateto-filter-silently-excludes-its-own-last-day",
-   "devto_id": 4881599,
-   "devto_published_at": "2026-10-20T06:33:55.639Z"
+   "slug": "apple-podcasts-public-json-api",
+   "blog_date": "2026-09-10",
+   "devto_id": 4641373,
+   "devto_url": "https://dev.to/fetchsmith/apple-podcasts-has-four-public-json-apis-no-key-required-and-a-fifth-everyone-assumes-exists-nm3",
+   "devto_published_at": "2026-09-13T00:06:48.301Z"
   },
   {
-   "blog_date": "2026-10-16",
-   "slug": "screenshot-png-vs-jpeg-byte-size-measured",
-   "devto_id": 4894409,
-   "devto_published_at": "2026-10-22T06:34:22.353Z"
+   "slug": "ats-job-board-json-apis-six-shapes",
+   "blog_date": "2026-09-13",
+   "devto_id": 4653994,
+   "devto_url": "https://dev.to/fetchsmith/six-ats-job-boards-publish-their-jobs-as-public-json-and-no-two-agree-what-a-job-is-5e57",
+   "devto_published_at": "2026-09-15T00:06:19.507Z"
   },
   {
-   "blog_date": "2026-10-24",
-   "slug": "scraper-filter-silently-ignored-looks-like-a-match",
-   "devto_id": 4909344,
-   "devto_published_at": "2026-10-24T08:03:07.616Z"
-  },
-  {
-   "blog_date": "2026-10-26",
-   "slug": "watch-mode-new-review-count-included-a-snapshot-row",
-   "devto_id": 4920453,
-   "devto_published_at": "2026-10-26T09:05:15.851Z"
-  },
-  {
-   "blog_date": "2026-10-21",
-   "slug": "visual-diff-threshold-cliff-not-curve",
-   "devto_id": 4933369,
-   "devto_published_at": "2026-10-28T09:02:29.406Z"
-  },
-  {
-   "blog_date": "2026-10-20",
    "slug": "cfda-funding-history-zero-is-not-zero",
+   "blog_date": "2026-10-20",
    "devto_id": 4946406,
+   "devto_url": "https://dev.to/fetchsmith/a-zero-in-federal-program-funding-history-doesnt-mean-zero-dollars-283l",
    "devto_published_at": "2026-10-30T09:31:57.737Z"
   },
   {
-   "blog_date": "2026-10-17",
-   "slug": "tmview-search-criteria-undocumented-modes",
-   "devto_id": 4959208,
-   "devto_published_at": "2026-11-01T22:03:09.416Z"
+   "slug": "court-records-opinion-status-any-is-not-any",
+   "blog_date": "2026-09-24",
+   "devto_id": 4779767,
+   "devto_url": "https://dev.to/fetchsmith/courtlisteners-any-opinion-status-wasnt-any-and-the-published-only-default-hides-a-different-4gmn",
+   "devto_published_at": "2026-10-01T00:01:10.939Z"
   },
   {
-   "blog_date": "2026-10-17",
-   "slug": "openfda-count-shows-you-the-top-1000-and-never-says-so",
-   "devto_id": 4967941,
-   "devto_published_at": "2026-11-03T09:03:56.735Z"
+   "slug": "dateto-filter-silently-excludes-its-own-last-day",
+   "blog_date": "2026-09-15",
+   "devto_id": 4881599,
+   "devto_url": "https://dev.to/fetchsmith/when-a-dateto-filter-silently-excludes-its-own-last-day-and-which-government-data-apis-actually-2ka5",
+   "devto_published_at": "2026-10-20T06:33:55.639Z"
   },
   {
-   "blog_date": "2026-10-20",
-   "slug": "nih-reporter-quebec-is-two-state-codes",
-   "devto_id": 4980709,
-   "devto_published_at": "2026-11-05T09:04:21.855Z"
+   "slug": "decode-google-news-rss-redirect-links",
+   "blog_date": "2026-09-09",
+   "devto_id": 4610780,
+   "devto_url": "https://dev.to/fetchsmith/google-news-rss-gives-you-encoded-redirect-links-heres-how-to-resolve-them-56jd",
+   "devto_published_at": "2026-09-09T03:31:11.080Z"
   },
   {
-   "blog_date": "2026-11-06",
-   "slug": "standby-mcp-no-actor-run-to-poll",
-   "devto_id": 4992741,
-   "devto_published_at": "2026-11-07T09:02:30.328Z"
-  },
-  {
+   "slug": "google-news-rss-public-feeds-no-key",
    "blog_date": "2026-11-04",
+   "devto_id": 5015925,
+   "devto_url": "https://dev.to/fetchsmith/google-news-rss-ignored-our-before-date-filter-on-6-of-8-queries-pairing-it-with-after-3ejm",
+   "devto_published_at": "2026-11-11T09:05:26.461Z"
+  },
+  {
+   "slug": "google-play-reviews-no-api-batchexecute",
+   "blog_date": "2026-09-11",
+   "devto_id": 4836719,
+   "devto_url": "https://dev.to/fetchsmith/google-play-has-no-reviews-api-and-the-endpoint-it-does-have-cant-tell-a-typo-from-an-empty-app-1n86",
+   "devto_published_at": "2026-10-12T07:32:57.760Z"
+  },
+  {
+   "slug": "government-apis-fail-open-on-a-dropped-filter-name",
+   "blog_date": "2026-09-24",
+   "devto_id": 4753165,
+   "devto_url": "https://dev.to/fetchsmith/the-filter-that-isnt-there-three-government-apis-return-the-whole-index-when-a-filter-name-is-3a83",
+   "devto_published_at": "2026-09-27T01:02:07.118Z"
+  },
+  {
+   "slug": "hacker-news-1000-hit-search-ceiling",
+   "blog_date": "2026-09-24",
+   "devto_id": 4771966,
+   "devto_url": "https://dev.to/fetchsmith/hn-search-silently-caps-every-query-at-1000-hits-nbhits-lies-about-it-and-the-safe-slice-width-3pk2",
+   "devto_published_at": "2026-09-29T14:03:14.807Z"
+  },
+  {
+   "slug": "hacker-news-algolia-tags-and-not-or",
+   "blog_date": "2026-09-09",
+   "devto_id": 4848495,
+   "devto_url": "https://dev.to/fetchsmith/hacker-newss-search-api-commas-mean-and-not-or-and-it-changes-how-you-should-query-it-40gl",
+   "devto_published_at": "2026-10-14T07:33:08.856Z"
+  },
+  {
    "slug": "hacker-news-two-public-apis-no-key",
+   "blog_date": "2026-11-04",
    "devto_id": 5003351,
+   "devto_url": "https://dev.to/fetchsmith/hacker-news-has-two-public-json-apis-neither-needs-a-key-and-only-half-their-numbers-are-safe-to-19ek",
    "devto_published_at": "2026-11-09T09:03:03.072Z"
   },
   {
-   "blog_date": "2026-11-04",
-   "slug": "google-news-rss-public-feeds-no-key",
-   "devto_id": 5015925,
-   "devto_published_at": "2026-11-11T09:05:26.461Z"
+   "slug": "http-only-vs-headless-browser-scraping-cost",
+   "blog_date": "2026-09-09",
+   "devto_id": 4702159,
+   "devto_url": "https://dev.to/fetchsmith/we-timed-http-only-scraping-against-a-headless-browser-on-the-same-page-it-wasnt-close-5bfj",
+   "devto_published_at": "2026-09-21T00:01:36.027Z"
+  },
+  {
+   "slug": "incremental-api-watch-mode-four-traps",
+   "blog_date": "2026-09-16",
+   "devto_id": 4670994,
+   "devto_url": "https://dev.to/fetchsmith/eight-ways-an-only-new-since-last-run-watch-mode-silently-stops-working-3gh0",
+   "devto_published_at": "2026-09-17T00:06:16.066Z"
+  },
+  {
+   "slug": "invisible-characters-return-zero-rows",
+   "blog_date": "2026-09-15",
+   "devto_id": 4826969,
+   "devto_url": "https://dev.to/fetchsmith/four-ways-an-invisible-character-makes-a-scraper-return-zero-rows-all-found-in-our-own-code-k9h",
+   "devto_published_at": "2026-10-10T06:31:30.814Z"
+  },
+  {
+   "slug": "json-ld-article-extraction-fails-on-real-news-sites",
+   "blog_date": "2026-09-09",
+   "devto_id": 4627420,
+   "devto_url": "https://dev.to/fetchsmith/we-tested-json-ld-only-article-extraction-against-8-real-news-sites-it-got-0-1377",
+   "devto_published_at": "2026-09-11T00:32:33.870Z"
+  },
+  {
+   "slug": "nih-reporter-quebec-is-two-state-codes",
+   "blog_date": "2026-10-20",
+   "devto_id": 4980709,
+   "devto_url": "https://dev.to/fetchsmith/nih-reporter-codes-quebec-as-two-different-states-and-asking-for-the-valid-one-returns-2-1fjf",
+   "devto_published_at": "2026-11-05T09:04:21.855Z"
+  },
+  {
+   "slug": "openfda-count-shows-you-the-top-1000-and-never-says-so",
+   "blog_date": "2026-10-17",
+   "devto_id": 4967941,
+   "devto_url": "https://dev.to/fetchsmith/openfdas-count-aggregation-shows-you-the-top-1000-values-and-never-tells-you-it-stopped-d7c",
+   "devto_published_at": "2026-11-03T09:03:56.735Z"
+  },
+  {
+   "slug": "sam-gov-key-free-federal-datasets-one-endpoint",
+   "blog_date": "2026-09-23",
+   "devto_id": 4737103,
+   "devto_url": "https://dev.to/fetchsmith/samgovs-exclusions-list-looked-key-gated-the-dataset-wasnt-the-endpoint-was-2237",
+   "devto_published_at": "2026-09-25T00:00:43.265Z"
+  },
+  {
+   "slug": "scraper-filter-silently-ignored-looks-like-a-match",
+   "blog_date": "2026-10-24",
+   "devto_id": 4909344,
+   "devto_url": "https://dev.to/fetchsmith/your-scrapers-filter-did-nothing-and-the-run-looked-perfect-3l5n",
+   "devto_published_at": "2026-10-24T08:03:07.616Z"
+  },
+  {
+   "slug": "screenshot-png-vs-jpeg-byte-size-measured",
+   "blog_date": "2026-10-16",
+   "devto_id": 4894409,
+   "devto_url": "https://dev.to/fetchsmith/png-to-jpeg-saved-15-63-on-a-full-page-screenshot-depending-on-the-page-cropping-beat-both-51mk",
+   "devto_published_at": "2026-10-22T06:34:22.353Z"
+  },
+  {
+   "slug": "sec-form-4-is-the-only-actor-that-parses-raw-xml",
+   "blog_date": "2026-09-24",
+   "devto_id": 4771257,
+   "devto_url": "https://dev.to/fetchsmith/we-checked-every-other-government-data-actor-for-sec-form-4s-boolean-trap-none-of-them-could-3ppc",
+   "devto_published_at": "2026-09-29T12:01:38.210Z"
+  },
+  {
+   "slug": "shopify-inventory-barcode-per-product-json",
+   "blog_date": "2026-09-14",
+   "devto_id": 4689167,
+   "devto_url": "https://dev.to/fetchsmith/one-shopify-variant-reported-999999-units-in-stock-and-it-wasnt-a-bug-3fa3",
+   "devto_published_at": "2026-09-19T00:06:22.543Z"
+  },
+  {
+   "slug": "standby-mcp-no-actor-run-to-poll",
+   "blog_date": "2026-11-06",
+   "devto_id": 4992741,
+   "devto_url": "https://dev.to/fetchsmith/standby-mcp-one-url-thats-always-on-instead-of-an-actor-run-you-poll-45en",
+   "devto_published_at": "2026-11-07T09:02:30.328Z"
+  },
+  {
+   "slug": "tmview-search-criteria-undocumented-modes",
+   "blog_date": "2026-10-17",
+   "devto_id": 4959208,
+   "devto_url": "https://dev.to/fetchsmith/tmviews-trademark-search-has-three-match-modes-not-one-and-two-of-them-are-misnamed-3mca",
+   "devto_published_at": "2026-11-01T22:03:09.416Z"
+  },
+  {
+   "slug": "tmview-trademark-search-api-no-key",
+   "blog_date": "2026-09-24",
+   "devto_id": 4797175,
+   "devto_url": "https://dev.to/fetchsmith/one-key-free-api-searches-trademarks-in-70-offices-and-its-worst-failure-returns-no-http-status-2lp",
+   "devto_published_at": "2026-10-04T19:02:03.528Z"
+  },
+  {
+   "slug": "visual-diff-threshold-cliff-not-curve",
+   "blog_date": "2026-10-21",
+   "devto_id": 4933369,
+   "devto_url": "https://dev.to/fetchsmith/we-swept-a-visual-diff-threshold-from-002-to-03-expecting-a-curve-we-measured-a-cliff-23i0",
+   "devto_published_at": "2026-10-28T09:02:29.406Z"
+  },
+  {
+   "slug": "watch-baseline-eviction-rebilling",
+   "blog_date": "2026-09-23",
+   "devto_id": 4719842,
+   "devto_url": "https://dev.to/fetchsmith/we-nearly-charged-our-own-buyers-twice-for-rows-theyd-already-paid-for-1pde",
+   "devto_published_at": "2026-09-23T00:01:26.377Z"
+  },
+  {
+   "slug": "watch-mode-new-review-count-included-a-snapshot-row",
+   "blog_date": "2026-10-26",
+   "devto_id": 4920453,
+   "devto_url": "https://dev.to/fetchsmith/a-watch-alert-said-2-new-reviews-one-of-them-never-changes-4dcp",
+   "devto_published_at": "2026-10-26T09:05:15.851Z"
+  },
+  {
+   "slug": "website-screenshot-api-no-key-compared",
+   "blog_date": "2026-11-05",
+   "devto_id": 5028684,
+   "devto_url": "https://dev.to/fetchsmith/three-keyless-screenshot-apis-re-measured-8-days-later-the-one-i-called-blocked-works-and-the-221a",
+   "devto_published_at": "2026-11-13T09:06:26.862Z"
   }
  ],
  "unsynced": [
@@ -264,7 +303,6 @@
   "usaspending-federal-awards-json-api",
   "uspto-trademark-api-needs-a-key",
   "watchchanges-blind-filter-amount-and-end-date",
-  "website-screenshot-api-no-key-compared",
   "workable-job-board-json-api",
   "workday-career-site-json-api"
  ]
