@@ -493,7 +493,34 @@ TERMS = {
                               "clinical trials data api", "research data api", "clinical data api",
                               "trial registry", "lead sponsor", "sponsor filters",
                               "no contact pii", "trial data", "research study data",
-                              "facility filters"],
+                              "facility filters",
+                              # cycle 3119 (GROWTH, RULE 6b sub-phrase pass, widened generic-head
+                              # generator per c3116/c3119). Health-gated first (ok=True/10 items/
+                              # 0 fail_rows); local meta.json confirmed byte-identical to the live
+                              # record on all 4 buyer-facing fields. Candidates = any tracked
+                              # 3-gram+ whose first/last word is a generic head (data/database/
+                              # reports/projects/research/api/awards/exports/leads/scraper) with
+                              # the resulting sub-phrase not already tracked -- 14 derived fresh
+                              # via ast-parse of this file's own TERMS (not trusting c3118's cited
+                              # "14"). Batch-priced all 14 in ONE store-price call, then verified
+                              # EVERY candidate individually via store-rank --why (14/14 exact
+                              # agreement on the live column, including both screen-outs).
+                              # 12 keepers at live<=60 (nbHits, rank): "clinical research" (934,
+                              # p11), "study results" (1740, p3), "medical data" (1037, p23),
+                              # "site selection" (11588, p19), "study data api" (1912, p1),
+                              # "medical research" (697, p28), "trial site" (633, p24), "trial
+                              # monitoring" (562, p3), "trial enrollment" (213, p4), "clinical
+                              # data" (1388, p27), "study data" (4161, p10), "research study"
+                              # (6138, p8). All 12 already rank today off the existing title/
+                              # description/seoTitle/seoDescription -- no edit, no build, no
+                              # publish, no reindex, $0. 2 screened out, confirmed absent from the
+                              # first 60 hits by --why: "data api" (41935 hits, batch live=-),
+                              # "research data" (56482 hits, batch live=p200 -- already outside
+                              # top-60 by the batch tool's own number, not a disagreement).
+                              "clinical research", "study results", "medical data",
+                              "site selection", "study data api", "medical research",
+                              "trial site", "trial monitoring", "trial enrollment",
+                              "clinical data", "study data", "research study"],
     # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
     # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not
     # inside the top cluster") is RESOLVED and was never an anomaly — dumping the full
