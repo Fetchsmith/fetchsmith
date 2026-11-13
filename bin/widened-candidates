@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""widened-candidates — fleet triage for the RULE 6b widened-generic-head lever (`NEW c3116`).
+
+Added cycle 3128. Every GROWTH slot that runs this lever has been re-deriving the same
+generator by hand and then picking the Actor with the LARGEST raw candidate count. That
+ranking is wrong, and it cost c3127 most of a cycle: `us-federal-awards-scraper` topped the
+raw list at 11 candidates, but all 11 were byte-identical to the 11 phrases c3118 had
+already priced and screened out on that same Actor. A raw count measures how many
+sub-phrases the generator CAN emit, not how many are still unpriced.
+
+So this prints both columns:
+
+    fresh   candidates whose exact string does NOT appear anywhere in that Actor's own
+            provenance comment in bin/store-rank  -> the ones most likely to be virgin
+    total   raw generator output (what every prior cycle ranked on)
+
+THE `fresh` COLUMN IS A TRIAGE AID, NOT A VERDICT. It is a plain substring test against one
+line of comment prose, so it errs in BOTH directions and must never be shipped on directly:
+
+  * OVER-counts (says fresh when it isn't): a screened-out phrase recorded only in
+    tasks/queue.md or state/STATUS.md and never written into the store-rank comment reads
+    as fresh here. Measured c3128: `form 4`/`sec form 4` on sec-insider-trades-scraper read
+    fresh even though c3125 screened both out.
+  * UNDER-counts (says seen when it is fresh): a candidate that is a substring of some
+    LONGER phrase the comment happens to mention reads as seen. Measured c3128: 3 of
+    grants-gov-scraper's 10 matched this way, and reading the comment showed only ONE
+    (`grant opportunities`, p159, dead) was a real screen-out -- `federal grant` had been
+    "declined" on a *pred* read with its live rank never actually read (the column confusion
+    c3096 retired), and `funding opportunity` was a live p61 near-miss worth re-pricing 72
+    cycles later. Both were correctly re-priced, and `federal grant` turned out unranked.
+
+Hence the workflow this tool is built for (METHOD c3084 step 2, unchanged):
+  1. run this, take an Actor with a high `fresh`;
+  2. with --show, READ that Actor's store-rank provenance comment yourself and classify
+     every flagged candidate as dead / pred-only-decline / near-miss-worth-re-pricing;
+  3. then batch-price the survivors in ONE `bin/store-price` call.
+
+Why an un-tracked, un-mentioned phrase is worth pricing at all: these are queries we may
+ALREADY rank on off existing listing copy, so a keeper costs no edit, no build, no publish,
+no reindex and $0 -- it just stops being invisible to us.
+
+Usage:
+  bin/widened-candidates                 # fleet table, sorted by fresh desc
+  bin/widened-candidates --show          # ... and list each Actor's fresh candidates
+  bin/widened-candidates <slug>          # one Actor: fresh + already-mentioned, split out
+"""
+import importlib.util
+import re
+import sys
+from importlib.machinery import SourceFileLoader
+
+STORE_RANK = "/root/agent/bin/store-rank"
+
+# The head set that measured well at c3116. Dropping a LEADING or TRAILING generic head off
+# any tracked 3-gram-or-longer is the whole generator; c3116 found 9 of 13 keepers on
+# nih-reporter-scraper came from the widened (suffix-drop) half that c3112/c3115 never had.
+HEADS = {"api", "data", "database", "databases", "reports", "projects", "research",
+         "feed", "json", "search", "monitoring", "tracking", "alerts", "scraper"}
+
+
+def load_terms():
+    # bin/store-rank has no .py extension, so spec_from_file_location cannot infer a loader
+    # (c3082) -- name the SourceFileLoader explicitly.
+    loader = SourceFileLoader("store_rank_wc", STORE_RANK)
+    mod = importlib.util.module_from_spec(importlib.util.spec_from_loader(loader.name, loader))
+    loader.exec_module(mod)
+    return mod.TERMS
+
+
+def load_comments():
+    """slug -> lowercased provenance prose that follows its TERMS list on the same line."""
+    out = {}
+    for line in open(STORE_RANK):
+        stripped = line.strip()
+        m = re.match(r'"([a-z0-9.\-]+)":\s*\[', stripped)
+        if m and "]," in line:
+            out[m.group(1)] = line[line.index("],") + 2:].lower()
+    return out
+
+
+def candidates(terms):
+    """Widened-head sub-phrases of `terms`, de-duped against `terms` itself, order-stable.
+
+    c3116 caution (ii): the generator emits singular/plural near-duplicates (`grant data`
+    and `grants data`) that are SEPARATELY ranked real queries -- c3128 measured both at
+    p10. Do not hand-dedupe them; price both.
+    """
+    tracked = {t.lower() for t in terms}
+    found = []
+    for term in terms:
+        words = term.lower().split()
+        if len(words) < 3:
+            continue
+        subs = []
+        if words[-1] in HEADS:
+            subs.append(" ".join(words[:-1]))   # drop trailing head
+        if words[0] in HEADS:
+            subs.append(" ".join(words[1:]))    # drop leading head
+        for sub in subs:
+            if sub not in tracked and sub not in found:
+                found.append(sub)
+    return found
+
+
+def main():
+    args = [a for a in sys.argv[1:] if a != "--show"]
+    show = "--show" in sys.argv[1:]
+    terms, comments = load_terms(), load_comments()
+
+    if args:
+        slug = args[0]
+        if slug not in terms:
+            sys.exit(f"no TERMS entry for {slug!r} in bin/store-rank")
+        cands = candidates(terms[slug])
+        comment = comments.get(slug, "")
+        fresh = [c for c in cands if c not in comment]
+        seen = [c for c in cands if c in comment]
+        print(f"{slug}: {len(terms[slug])} tracked, {len(cands)} widened candidate(s)\n")
+        print(f"FRESH ({len(fresh)}) -- not mentioned in this Actor's provenance comment:")
+        for c in fresh:
+            print(f"  {c}")
+        print(f"\nALREADY MENTIONED ({len(seen)}) -- READ the comment before dropping any of"
+              " these; the match may be against a longer phrase, or a pred-only decline:")
+        for c in seen:
+            print(f"  {c}")
+        print("\nNeither column is a verdict -- see this file's docstring.")
+        return
+
+    rows = []
+    for slug, tl in terms.items():
+        cands = candidates(tl)
+        if not cands:
+            continue
+        comment = comments.get(slug, "")
+        fresh = [c for c in cands if c not in comment]
+        rows.append((len(fresh), len(cands), slug, fresh))
+    rows.sort(key=lambda r: (-r[0], -r[1], r[2]))
+
+    print(f"{'fresh':>5} {'total':>5}  slug")
+    for n_fresh, n_total, slug, fresh in rows:
+        print(f"{n_fresh:5d} {n_total:5d}  {slug}")
+        if show and fresh:
+            print(f"        {', '.join(fresh)}")
+    print(f"\n{len(rows)} Actor(s) with candidates; "
+          f"{sum(r[0] for r in rows)} fresh / {sum(r[1] for r in rows)} total.")
+    print("`fresh` is a triage aid, NOT a verdict -- it over- AND under-counts. Read the "
+          "target Actor's store-rank comment (bin/widened-candidates <slug>) before pricing.")
+
+
+if __name__ == "__main__":
+    main()

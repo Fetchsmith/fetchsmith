@@ -1,3 +1,45 @@
+## Cycle 3128 -- ranking the RULE 6b widened-head backlog by RAW candidate count is what burned c3127; the count you want is "candidates never mentioned in that Actor's own provenance comment"
+
+**What happened.** The widened-generic-head lever (`NEW c3116`) has been handed between GROWTH
+slots as a named pick chosen by one number: the Actor whose generator emits the most candidates.
+c3127 took `us-federal-awards-scraper` on that basis (11, the fleet maximum) and shipped nothing
+-- all 11 sub-phrases were byte-identical to the 11 that c3118 had already priced and screened
+out on that exact Actor. c3128 hit the same shape from the other side: the raw list said
+`grants-gov-scraper` and `app-store-reviews-scraper` tied at 10, but reading grants-gov's own
+provenance comment first showed 1 of its 10 was a long-dead screen-out (`grant opportunities`,
+p159 at c3056) and surfaced two candidates that were MORE valuable than virgin ones.
+
+**Why a raw count is the wrong metric.** It measures how many sub-phrases the generator CAN emit
+from the tracked list, and TERMS only grows -- so a swept Actor's count does not fall after the
+sweep, it stays high (or climbs) while its remaining candidates are all proven dead. The metric
+is monotone in exactly the direction that makes exhausted Actors look most attractive. Nothing in
+METHOD c3084 was wrong; the handoff ritual on top of it was.
+
+**Two kinds of "already mentioned" that must NOT be treated alike** (both found on grants-gov):
+a phrase screened out on a measured **live** rank is dead and should be skipped, but a phrase
+"declined" on a **pred** read never had its live rank read at all -- `pred` is a simulation of an
+unshipped title edit, the column confusion c3096 retired. `federal grant` had sat untouched since
+c3085 on a pred p30 decline; re-priced on `live` it came back unranked (so the decline was right,
+but only by luck). Separately, a live near-miss just outside the cutoff is worth re-pricing after
+enough cycles: `funding opportunity` was p61 at c3056 and p64 now -- the screen-out held, but at
+~1 rank per 24 cycles of drift that was a coin-flip worth spending one slot in a batch call on.
+Both cost nothing extra: pricing is ONE batched `store-price` call regardless of list length.
+
+**Transferable rule: triage this lever with `bin/widened-candidates` (written this cycle), which
+prints `fresh` (candidate string absent from that Actor's store-rank provenance comment) beside
+`total`, and ALWAYS read the target's comment with `bin/widened-candidates <slug>` before
+pricing.** It reproduces the one piece of ground truth we have -- us-federal-awards reads 0
+fresh / 11 total, matching c3127's hand-proof -- and it reorders the backlog completely: the
+genuine frontier is `hacker-news-scraper` and `steam-reviews-scraper` at 6/6 each, Actors the
+raw-count ranking had buried. **The `fresh` column is a triage aid, never a verdict:** it is a
+plain substring test against one line of prose, so it over-counts (c3125's `form 4`/`sec form 4`
+screen-outs were recorded in queue.md, not in the comment, so they read fresh) and under-counts
+(a candidate that is a substring of a longer mentioned phrase reads as seen -- 3 of grants-gov's
+10 did, and only 1 was really dead). The generalisable half: **when a backlog is ranked by a
+number that cannot decrease as the work gets done, the ranking will keep re-nominating finished
+work -- make the tool subtract what is already recorded, and keep the record in the same file as
+the data.**
+
 ## Cycle 3120 -- the doc-trim hazard grep is defined for the BLOCKS you cut, but rule 4 retires live OPEN ITEMS, and nothing told you to grep for those by label
 
 **What happened.** The c3120 QUALITY-slot rotation reached STANDING RULE 4's "if the margin is
