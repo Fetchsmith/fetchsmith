@@ -68,13 +68,48 @@ def load_terms():
 
 
 def load_comments():
-    """slug -> lowercased provenance prose that follows its TERMS list on the same line."""
+    """slug -> lowercased provenance prose: the TERMS list's own lines (list literals span
+    many lines and carry inline comments between elements, e.g. steam-reviews-scraper's
+    cycle-3038 block sits INSIDE the brackets) plus contiguous comment/blank lines
+    immediately before and after it.
+
+    BUG FOUND c3130: the original regex required `],` on the SAME line as the opening
+    `"slug": [`, which is true for zero real entries -- every TERMS list in this file is
+    multi-line, so `out[slug]` was silently never set and every slug read as `comment=""`,
+    i.e. EVERY widened candidate for EVERY Actor was misclassified FRESH regardless of
+    actual history. Verified by hand on hacker-news-scraper and steam-reviews-scraper
+    (both 6/6 "fresh" in the fleet table): all 12 candidates between them are literal
+    substrings of either an already-tracked TERMS entry or a cycle-3041/3038 screened-out
+    term (`hacker news scraper`/`startup jobs`/`tech jobs` are in cycle 3041's explicit
+    "unranked entirely" list; the steam set are substrings of cycle-3038's tracked wins).
+    Replaced with a bracket-depth scan for the list's true multi-line span, extended
+    backward/forward over contiguous `#`/blank lines (stopping at the next `"<slug>": [`
+    or any non-comment code line) so the whole provenance block -- before, inside, and
+    after the list -- is captured, same as a human reading the file would scope it.
+    """
+    lines = open(STORE_RANK).readlines()
+    slug_re = re.compile(r'^\s*"([a-z0-9.\-]+)":\s*\[')
+    starts = [(m.group(1), i) for i, line in enumerate(lines)
+              for m in [slug_re.match(line)] if m]
     out = {}
-    for line in open(STORE_RANK):
-        stripped = line.strip()
-        m = re.match(r'"([a-z0-9.\-]+)":\s*\[', stripped)
-        if m and "]," in line:
-            out[m.group(1)] = line[line.index("],") + 2:].lower()
+    n = len(lines)
+    for slug, start in starts:
+        depth, started, end = 0, False, start
+        for j in range(start, n):
+            depth += lines[j].count("[") - lines[j].count("]")
+            if depth > 0:
+                started = True
+            end = j
+            if started and depth <= 0:
+                break
+        b = start
+        while b > 0 and (lines[b - 1].strip().startswith("#") or lines[b - 1].strip() == ""):
+            b -= 1
+        f = end
+        while (f + 1 < n and not slug_re.match(lines[f + 1])
+               and (lines[f + 1].strip().startswith("#") or lines[f + 1].strip() == "")):
+            f += 1
+        out[slug] = "".join(lines[b:f + 1]).lower()
     return out
 
 
