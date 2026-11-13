@@ -1,0 +1,763 @@
+[
+ {
+  "handle": "aboo.script/business-humanrights-org-scraper",
+  "title": "Business & Human Rights Centre Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Business & Human Rights Centre scraper that works on Cloudflare-protected pages. No login, no API key. Get news, company responses, lawsuits and briefings by keyword or URL with date, country, company and language filters: companies, sectors, countries, issues, source and full text."
+ },
+ {
+  "handle": "apish/google-scholar-api",
+  "title": "Google Scholar API by APISH",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-credit",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-credit",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-credit": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Credit"
+   }
+  },
+  "desc": "Search Google Scholar and read papers, cited-by counts, author profiles, citation formats, journal rankings and case law as JSON, via APISH. Pay per credit; failed calls are free."
+ },
+ {
+  "handle": "bosco_labs/dutch-case-law",
+  "title": "Dutch Case Law API (Rechtspraak): court rulings by ECLI",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "decision",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): decision",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "decision": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Court decision"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Dutch court rulings (uitspraken) by ECLI or by keyword, court and date: case numbers, legal area, summary (inhoudsindicatie), appeal/cassation links, law references, full text on request. Hoge Raad (Supreme Court), Raad van State, appeal and district courts. Official Rechtspraak Open Data, sourced."
+ },
+ {
+  "handle": "brdatahub/brazil-djen-court-gazette",
+  "title": "Brazil Court Gazette & Lawsuit Notices API (CNJ DJEN)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "court-notice-extracted",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): court-notice-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "court-notice-extracted": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Judicial court notice extracted"
+   }
+  },
+  "desc": "Monitor official Brazilian court publications, subpoenas, and judicial notices from CNJ Di\u00e1rio de Justi\u00e7a Eletr\u00f4nico Nacional (DJEN) across TJSP, TJRJ, TJMG, TRFs, TRTs & STJ. Search by Lawyer OAB, Party/Company Name, or CNJ Case Number."
+ },
+ {
+  "handle": "davidcondrey/wl-accessibility-patcher",
+  "title": "ADA / WCAG Lawsuit Shield & DOM Auto-Patcher",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "agent-call",
+  "unit_tiers": {
+   "FREE": 0.94
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): agent-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "agent-call": {
+    "tiers": {
+     "FREE": 0.94
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "ADA / WCAG Lawsuit Shield & DOM Auto-Patcher run"
+   }
+  },
+  "desc": "Audits a page's DOM for the WCAG failures most cited in ADA demand letters (alt text, form labels, empty buttons/links, lang, headings, landmarks, skip links, zoom), returns a litigation risk score, per-element patched HTML, and a drop-in interim <script> hotfix."
+ },
+ {
+  "handle": "legaltech/altas-cortes-co",
+  "title": "Colombia Case Law: Constitutional Court & Council of State",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Colombian high-court case law: Constitutional Court rulings and orders (Relator\u00eda) and Council of State rulings (SAMAI), by text, ruling number, topic, section, rapporteur and dates."
+ },
+ {
+  "handle": "legaltech/conseil-etat",
+  "title": "French Administrative Case Law - Conseil d'\u00c9tat, CAA, TA",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search French administrative case law (Conseil d'\u00c9tat, CAA, TA) in the official open data: boolean full-text search, Lebon status, passages, full text."
+ },
+ {
+  "handle": "legaltech/juportal",
+  "title": "Juportal - Belgian Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Belgian case law (Cassation, Constitutional Court, Council of State, courts) in the official Juportal database: ECLI, summaries, thesaurus, legal bases."
+ },
+ {
+  "handle": "legaltech/justicia-ad",
+  "title": "Just\u00edcia Andorra - Andorran Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Andorran case law (Tribunal Superior de Just\u00edcia, Tribunal de Corts, Batllia) in the official search engine of the Consell Superior de la Just\u00edcia: ECLI, ROJ, AI summary, descriptors, related legislation and full text."
+ },
+ {
+  "handle": "legaltech/rechtsinformationen-bund",
+  "title": "German Federal Courts - Case Law Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search decisions of the German federal courts (BVerfG, BGH, BVerwG, BFH, BAG, BSG, BPatG) via the official API: Leitsatz, Tenor, cited statutes, full text."
+ },
+ {
+  "handle": "legaltech/sjf-scjn",
+  "title": "Mexico Case Law Search (SCJN: Theses, Precedents, Rulings)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search Mexican case law in the SCJN's official Buscador Jur\u00eddico: SJF theses (jurisprudencia and tesis aisladas), precedents and Supreme Court rulings, by text, registry number and court."
+ },
+ {
+  "handle": "legaltech/tedh",
+  "title": "European Court of Human Rights - Case Law Search (HUDOC)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.04,
+     "SILVER": 0.03,
+     "GOLD": 0.02,
+     "PLATINUM": 0.02,
+     "DIAMOND": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search ECHR judgments and decisions in HUDOC (official): full text with AND/OR/NOT, filters by state, article, violation, importance; headnote and operative part."
+ },
+ {
+  "handle": "moment-data/uk-gazette-insolvency-notices-feed",
+  "title": "UK Company Insolvency Feed: Gazette Winding-up & Liquidations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "notice-record": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Insolvency notice record"
+   }
+  },
+  "desc": "Daily UK corporate insolvency notices from The Gazette: winding-up petitions & orders, CVL/MVL liquidations, administrations. Company number, court case, postcode district. No API key."
+ },
+ {
+  "handle": "owlabee/pacer-docket-monitor",
+  "title": "PACER RSS Docket Monitor \u2014 New Federal Court Filings",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "case-matched",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): case-matched,court-feed-run,docket-entry-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "case-matched": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "matching filing"
+   },
+   "docket-entry-scraped": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "docket record"
+   },
+   "court-feed-run": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.0045,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "court feed check"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Monitor new federal court filings from the public PACER RSS feeds of 140+ federal courts (district, bankruptcy, appeals and more): new complaints, bankruptcies, motions and orders, filtered by party name, case number or entry type, with links to the docket. No PACER account. Pay per docket entry."
+ },
+ {
+  "handle": "pushbuild/company-dossier",
+  "title": "Company Dossier API - SEC, 13F, Patents, Courts in One Call",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "record": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Company dossier"
+   }
+  },
+  "desc": "One call by company name, ticker, CIK or ID returns its SEC profile and latest filings, 13F institutional holders, US patent grants, state business registrations, licenses, federal court cases, federal awards and local contracts, each with a source link."
+ },
+ {
+  "handle": "scrape_api/eu-case-law",
+  "title": "European Case Law Scraper - ECLI, EUR-Lex and Court Cases",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Case law result"
+   }
+  },
+  "desc": "Search five European case law registers in one format. Look up ECLI identifiers, filter by court and dates, and export decisions, publication citations, outgoing references and optional full judgment text."
+ },
+ {
+  "handle": "siteacs/brazil-case-law",
+  "title": "Brazil Court Decisions & Case Law (STJ, STF Jurisprud\u00eancia)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Decision"
+   }
+  },
+  "desc": "Search Brazilian court decisions (jurisprud\u00eancia, ac\u00f3rd\u00e3os) from the STJ and STF, the superior courts (tribunal superior), by keyword, party, lawyer or company CNPJ. Get ementa, relator, parties, dates, legislation cited and inteiro teor, from the courts' official search services."
+ },
+ {
+  "handle": "siteacs/brazil-case-law-mcp",
+  "title": "Brazil Case Law & Legal Research MCP: STJ, STF Jurisprud\u00eancia",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): search,search-with-full-text",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "search": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Search"
+   },
+   "search-with-full-text": {
+    "tiers": {
+     "FREE": 0.06
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Search with full text"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Legal research MCP server and LLM tool for official Brazilian case law (jurisprud\u00eancia) from the STJ and STF. Search by legal terms, party, lawyer or company CNPJ; one search returns the newest matching decisions as compact JSON: citation, parties, ementa summary, tese, links. Priced per search."
+ }
+]
