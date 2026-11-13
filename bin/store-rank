@@ -1795,7 +1795,18 @@ TERMS = {
     # even after joining the block). "stock insider" p136 -> ~p5 predicted is the one
     # real remaining prize but needs "Stock Insider" adjacent and the title is out of
     # budget; revisit only if a word frees up.
-    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data", "sec filings data api", "form 4 data api", "sec insider data", "sec edgar insider data", "insider transactions data", "insider trade data", "insider trading research", "executive trading data", "insider sentiment data", "sec form 4 api", "form 4 scraper api", "form 4 scraper", "sentiment data exports"],
+    "sec-insider-trades-scraper": ["sec insider trading", "insider trading scraper", "insider trades", "form 4 insider", "insider buying", "insider selling", "stock insider", "insider trading api", "form 4 data", "sec filings data api", "form 4 data api", "sec insider data", "sec edgar insider data", "insider transactions data", "insider trade data", "insider trading research", "executive trading data", "insider sentiment data", "sec form 4 api", "form 4 scraper api", "form 4 scraper", "sentiment data exports",
+    # c3125 RULE 6b widened-generic-head sub-phrase pass (NEW c3116 generator, METHOD c3084):
+    # 10 candidates re-derived via ast-parse, batch-priced in one store-price call, 8
+    # keepers at live<=60 (nbHits, rank, attr): "sec filings data" (1224, p10, a4
+    # seoTitle), "insider trading" (338, p51, a0 title), "sec insider" (446, p39, a0
+    # title), "sec edgar insider" (400, p25, a5 seoDescription), "insider transactions"
+    # (356, p59, a5 seoDescription), "insider trade" (587, p33, a0 title), "executive
+    # trading" (307, p2, a5 seoDescription), "insider sentiment" (189, p3, a5
+    # seoDescription). 2 screened out, both outside top 60: "form 4" (6996, live=103),
+    # "sec form 4" (574, live=112). 5/5 spot-check exact via --why. $0, no edit beyond
+    # TERMS.
+    "insider trading", "sec filings data", "sec insider", "sec edgar insider", "insider transactions", "insider trade", "executive trading", "insider sentiment"],
     # cycle 3028 (Regular/GROWTH, RULE 6 anchor-map, 13th of 27 Actors mapped): ran
     # `--why` on all 19 tracked TERMS. Anchor split: title(attr=0) carries 4, description
     # (attr=2) carries 3 (insider buying/insider selling/stock insider), seoTitle(attr=4)
