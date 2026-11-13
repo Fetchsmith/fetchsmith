@@ -1,0 +1,372 @@
+{
+ "our_result_ladder": {
+  "FREE": 0.0002,
+  "BRONZE": 0.00017,
+  "SILVER": 0.00013,
+  "GOLD": 0.0001,
+  "PLATINUM": 0.0001,
+  "DIAMOND": 0.0001
+ },
+ "listings": [
+  {
+   "handle": "lx112/hacker-news-scraper",
+   "title": "Hacker News Scraper: Stories, Comments & Who's Hiring",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_event": "item",
+   "unit_tiers": {
+    "FREE": 0.0003
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "cmp_vs_result": {
+    "compared": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "cheaper_at": [],
+    "dearer_at": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "every_rung": false
+   },
+   "legacy_every_tier_vs_our_FREE": false,
+   "runfee": null,
+   "runfee_label": "has per-row event(s): item",
+   "runfee_crossover_rows": null,
+   "future_pricing": [],
+   "events": {
+    "apify-actor-start": {
+     "tiers": {
+      "FREE": 5e-05
+     },
+     "primary": null,
+     "onetime": true,
+     "title": "Actor Start"
+    },
+    "item": {
+     "tiers": {
+      "FREE": 0.0003
+     },
+     "primary": true,
+     "onetime": false,
+     "title": "Item scraped"
+    }
+   },
+   "desc": "Hacker News stories, comments and job posts from the official HN API and HN Search, no login: front-page lists (top, new, best, Ask, Show, jobs), keyword search with date and points filters, full comment threads, and monthly Who is hiring? posts parsed into company, location and remote."
+  },
+  {
+   "handle": "consequential_programmer/hacker-news-scraper",
+   "title": "Hacker News Scraper - Stories, Comments & Who's Hiring Jobs",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_event": "story",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "cmp_vs_result": {
+    "compared": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "cheaper_at": [],
+    "dearer_at": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "every_rung": false
+   },
+   "legacy_every_tier_vs_our_FREE": false,
+   "runfee": null,
+   "runfee_label": "has per-row event(s): comment,job-post,story",
+   "runfee_crossover_rows": null,
+   "future_pricing": [],
+   "events": {
+    "apify-actor-start": {
+     "tiers": {
+      "FREE": 5e-05
+     },
+     "primary": null,
+     "onetime": true,
+     "title": "Actor Start"
+    },
+    "story": {
+     "tiers": {
+      "FREE": 0.0005
+     },
+     "primary": true,
+     "onetime": false,
+     "title": "Story scraped"
+    },
+    "comment": {
+     "tiers": {
+      "FREE": 0.0001
+     },
+     "primary": null,
+     "onetime": false,
+     "title": "Comment scraped"
+    },
+    "job-post": {
+     "tiers": {
+      "FREE": 0.003
+     },
+     "primary": null,
+     "onetime": false,
+     "title": "Hiring post parsed"
+    }
+   },
+   "desc": "Scrape Hacker News with the official APIs: keyword search with date, points & author filters, front page, new, best, Ask & Show HN, full comment threads, plus monthly Who is hiring? posts parsed into jobs (company, role, remote, salary, tech stack, apply link). No login."
+  },
+  {
+   "handle": "lowcountrytech/hacker-news-scraper",
+   "title": "Hacker News Scraper (top, new, best, Show, Ask)",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_event": "story",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "cmp_vs_result": {
+    "compared": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "cheaper_at": [],
+    "dearer_at": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "every_rung": false
+   },
+   "legacy_every_tier_vs_our_FREE": false,
+   "runfee": null,
+   "runfee_label": "has per-row event(s): story",
+   "runfee_crossover_rows": null,
+   "future_pricing": [],
+   "events": {
+    "apify-actor-start": {
+     "tiers": {
+      "FREE": 5e-05
+     },
+     "primary": null,
+     "onetime": null,
+     "title": "Actor Start"
+    },
+    "story": {
+     "tiers": {
+      "FREE": 0.0005
+     },
+     "primary": true,
+     "onetime": null,
+     "title": "Story"
+    }
+   },
+   "desc": "Export Hacker News stories from the front page (top), new, best, Ask HN, Show HN or job lists: title, link, domain, points, comment count, date, rank and Ask/Show text. Official HN API. Filter by points and keywords. Pay only per story."
+  },
+  {
+   "handle": "felixgoldwin/hacker-news-scraper",
+   "title": "Hacker News Scraper \u2014 Posts, Comments & Search",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_event": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "cmp_vs_result": {
+    "compared": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "cheaper_at": [],
+    "dearer_at": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "every_rung": false
+   },
+   "legacy_every_tier_vs_our_FREE": false,
+   "runfee": null,
+   "runfee_label": "has per-row event(s): apify-default-dataset-item",
+   "runfee_crossover_rows": null,
+   "future_pricing": [],
+   "events": {
+    "apify-actor-start": {
+     "tiers": {
+      "FREE": 0.005
+     },
+     "primary": null,
+     "onetime": true,
+     "title": "Actor Start"
+    },
+    "apify-default-dataset-item": {
+     "tiers": {
+      "FREE": 0.001
+     },
+     "primary": true,
+     "onetime": false,
+     "title": "Result"
+    }
+   },
+   "desc": "Search public Hacker News posts and comments by keyword, date, author or discussion. Export text, scores, reply counts and links. No account required."
+  },
+  {
+   "handle": "dabooti/hacker-news-scraper",
+   "title": "Hacker News Scraper",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_event": "item",
+   "unit_tiers": {
+    "FREE": 0.0003
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "cmp_vs_result": {
+    "compared": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "cheaper_at": [],
+    "dearer_at": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "every_rung": false
+   },
+   "legacy_every_tier_vs_our_FREE": false,
+   "runfee": null,
+   "runfee_label": "has per-row event(s): item",
+   "runfee_crossover_rows": null,
+   "future_pricing": [],
+   "events": {
+    "apify-actor-start": {
+     "tiers": {
+      "FREE": 5e-05
+     },
+     "primary": null,
+     "onetime": true,
+     "title": "Actor Start"
+    },
+    "item": {
+     "tiers": {
+      "FREE": 0.0003
+     },
+     "primary": true,
+     "onetime": false,
+     "title": "Item"
+    }
+   },
+   "desc": "Search and export Hacker News stories, comments, Ask HN, Show HN and job posts: title, URL, points, comment count, author, date and text. Filter by front page, author, points and date range."
+  },
+  {
+   "handle": "tenfoldfleet/brand-mentions-monitor",
+   "title": "Brand Mentions Monitor - Bluesky, Hacker News & Mastodon",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_event": "mention",
+   "unit_tiers": {
+    "FREE": 0.0025
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "cmp_vs_result": {
+    "compared": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "cheaper_at": [],
+    "dearer_at": [
+     "FREE",
+     "BRONZE",
+     "SILVER",
+     "GOLD",
+     "PLATINUM",
+     "DIAMOND"
+    ],
+    "every_rung": false
+   },
+   "legacy_every_tier_vs_our_FREE": false,
+   "runfee": null,
+   "runfee_label": "has per-row event(s): keyword-scan,mention",
+   "runfee_crossover_rows": null,
+   "future_pricing": [],
+   "events": {
+    "apify-actor-start": {
+     "tiers": {
+      "FREE": 5e-05
+     },
+     "primary": null,
+     "onetime": null,
+     "title": "Actor Start"
+    },
+    "mention": {
+     "tiers": {
+      "FREE": 0.0025
+     },
+     "primary": true,
+     "onetime": null,
+     "title": "Mention"
+    },
+    "keyword-scan": {
+     "tiers": {
+      "FREE": 0.001
+     },
+     "primary": null,
+     "onetime": null,
+     "title": "Keyword scan"
+    }
+   },
+   "desc": "Monitor brand mentions on Bluesky, Hacker News and Mastodon: each run returns only posts and comments new since the last run. Rows: source, keyword, text, author, link, date, likes, replies. $2.50 per 1,000 new mentions + $0.001 per keyword per run; repeats and errors are free."
+  }
+ ]
+}

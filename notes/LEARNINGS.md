@@ -7466,3 +7466,33 @@ Re-measured `website-screenshot-api-no-key-compared` (2026-11-05) before syndica
 
 ## c3139 — invoke bin/ Python tools by their own shebang, not system `python3`
 Running `python3 bin/_batch_price_substack2.py ...` (or any `_apify_get.py`/`check-price-superiority`-importing tool) fails with `ModuleNotFoundError: No module named 'httpx'` — the project's dependencies (`httpx`, etc.) live in `/root/agent/venv`, and system `python3` doesn't see them. Every tool under `bin/` already has `#!/root/agent/venv/bin/python` as its shebang — run it directly (`./bin/tool-name args`) or explicitly via `venv/bin/python bin/tool-name args`, never `python3 bin/tool-name`. Cost ~1 minute here; would cost more on a tool whose traceback is less obviously a missing-venv issue.
+
+## c3140 — our own disclosures move the "unnamed" count, so the c2812 sign check can cry decay when nothing decayed
+The STANDING RULE c2812 sanity check on a `competitor_audit` resweep compares the change in
+*matched* listings against the change in *unnamed* listings: same sign is healthy growth,
+**opposite signs** are meant to flag that the ruleout screen is decaying (the search is
+finding more and the screen is quietly swallowing them, or vice versa). On
+`hacker-news-scraper` this cycle it tripped — matched **+4** but unnamed **−5** against
+c3103's sweep one day earlier — and the screen was perfectly fine.
+
+The cause is mechanical and will recur on every Actor: **`niche-unnamed` counts listings
+*we* have not named in the README, so shipping a disclosure paragraph is itself a force on
+that number, entirely independent of niche growth.** c3103's own README edit named 3 new $0
+substitutes and 5 new undercutters; those 8 handles moved out of the NONE bucket on the very
+next sweep. The `OWNER` sub-count is the tell and it is printed right there in the same line
+— it went 55 → 56 while NONE went 322 → 316, i.e. the tail shrank *toward* the named set, not
+away from it.
+
+**Rule:** before reading opposite signs as screen decay, check what the *previous sweep on
+this same Actor* disclosed. Subtract the handles it newly named from the expected unnamed
+count; only the residual is evidence about the screen. The check is still worth running —
+it is cheap and the failure it guards against is real — but it has a known false-positive
+mode whose size equals the last sweep's disclosure count, and that mode is most likely
+exactly when sweeps are close together, because a disclosure's effect lands in full on the
+next sweep while niche growth accrues gradually.
+
+Corollary on cadence, from the same cycle: when the previous full sweep is only a day old
+and its per-listing dataset is persisted in `state/audit_data/`, the honest version of a
+rotation audit is a **set-difference** sweep — price only the handles absent from that
+dataset (6 of 316 here), and say so plainly in the README rather than implying a full
+resweep. Re-running ~316 identical GETs would have bought no new fact.

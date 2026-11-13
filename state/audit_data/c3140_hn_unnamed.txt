@@ -1,0 +1,749 @@
+  WARNING: POSSIBLY TRUNCATED -- 22 search term(s) got fewer items than `total` reports (pre-2026-11-15 gap, cause undiagnosed) or landed at/near the page cap with `total` gone (post-2026-11-15): [('hacker news', 789, 624), ('hacker news scraper', 765, 601), ('hacker news monitor', 582, 468), ('hacker news api', 563, 443), ('hacker news tracker', 38, 33), ('hacker news crawler', 765, 601), ('hacker news data', 492, 399), ('hacker news feed', 398, 321), ('hacker news export', 185, 159), ('hacker news alerts', 170, 149), ('hacker news tool', 198, 154), ('hackernews', 730, 570), ('hn scraper', 558, 444), ('hn api', 461, 366), ('algolia hn', 304, 240), ('ask hn', 362, 297), ('show hn', 360, 293), ('hn jobs', 352, 282), ('hn who is hiring', 183, 152), ('y combinator news', 191, 174), ('hn comments', 464, 369), ('hn search', 398, 332)]; the unnamed list below may be missing rivals, not a clean audit.
+772 seen, 502 matched, README names 149 handles
+--- NONE: owner never mentioned, by users (316) ---
+   10 u30d=   2 lokki/news-finder-monitor
+      News Finder & Monitor
+    7 u30d=   0 david_flagg/ai-news-aggregator
+      AI News Aggregator
+    4 u30d=   3 spherical_tact/hn-who-wants-to-be-hired
+      HN Who wants to be hired — AI Structured Candidates
+    3 u30d=   2 blazing_stake/hackernews-scraper
+      Hacker News Scraper
+    3 u30d=   0 obsidian937/hacker-news-intel
+      Hacker News Intel: Jobs, Show HN Launches & Keyword Monitor
+    3 u30d=   2 originalvi/hacker-news-scraper
+      Hacker News Scraper
+    3 u30d=   2 betterscrapers/the-better-hacker-news-scraper
+      The Better Hacker News Scraper
+    3 u30d=   2 nicolas_izquierdo/mentions-monitor
+      Mentions Monitor - Hacker News, GitHub & Reddit Alerts
+    3 u30d=   2 bgfc97/hacker-news-scraper
+      Hacker News Scraper
+    3 u30d=   2 davidbenittah/hn-who-is-hiring-monitor
+      Hacker News Who Is Hiring Monitor & Scraper
+    3 u30d=   2 nominated_tupelo/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments, Users & Search
+    3 u30d=   1 oblanceolate_mandola/hacker-news-monitor
+      Hacker News Search — Stories & Mentions to JSON
+    3 u30d=   1 pear_fight/hackernews-scraper
+      Hacker News Scraper - Stories & Comments
+    3 u30d=   2 automly/hacker-news-trends-api
+      Hacker News Scraper
+    3 u30d=   2 claudethegoat/hacker-news-trend-aggregator
+      Hacker News Trend Aggregator
+    3 u30d=   2 rupom888/hackernews-scraper
+      Hacker News Scraper
+    3 u30d=   2 brunofin/hacker-news-story-stats
+      Hacker News Story Stats
+    3 u30d=   2 northglasslabs/hackernews-scraper
+      Hacker News Scraper - Search Stories & Comments
+    3 u30d=   1 devilscrapes/hacker-news-scraper
+      Hacker News Scraper
+    3 u30d=   2 agentictools/hacker-news-search
+      Hacker News Search & Monitor
+    3 u30d=   2 hichemdev/hn-monitor
+      Hacker News Monitor & Who's-Hiring Leads
+    3 u30d=   2 f0rty7even/hackernews-scraper
+      Hacker News Scraper: Stories, Comments & Search API
+    3 u30d=   2 ef12/hacker-news-scraper
+      Hacker News Scraper
+    3 u30d=   2 oneary/hackernews-scraper
+      Hacker News Scraper — Stories, Comments & Trends
+    3 u30d=   2 pankajbhatia/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments & Who Is Hiring Jobs
+    3 u30d=   2 usefulapi/hacker-news-who-is-hiring-scraper
+      Hacker News Who is Hiring Scraper: HN Jobs [USD 0.99/1K]
+    3 u30d=   2 precious_bathmat/emerging-launch-radar
+      Emerging Launch Radar: GitHub Trending + Hacker News Momentum
+    3 u30d=   2 gazidev/hacker-news-data
+      Hacker News Scraper – Stories, Comments, Search & Who's Hiring
+    3 u30d=   2 constanciodev/hacker-news-who-is-hiring
+      Hacker News Jobs Scraper: Who is Hiring, Classified
+    3 u30d=   2 panda_studio/hacker-news-monitor
+      Hacker News Scraper & Keyword Monitor (Stories + Comments)
+    3 u30d=   1 0xgollum/news-trending-detector
+      News Trending Detector
+    2 u30d=   1 thriftykiwi/hacker-news-scraper
+      Hacker News Scraper — Top Stories, Comments, Jobs & More
+    2 u30d=   1 data_api/hacker-news-scraper-cheap
+      Hacker News Scraper (Cheap)
+    2 u30d=   1 omao/hackernews
+      Hacker News Scraper — Stories & Comments Search
+    2 u30d=   1 slate_spool/hacker-news-web-scraper
+      Hacker News Web Scraper
+    2 u30d=   1 xqfech/hacker-news-scraper
+      Hacker News Scraper — Stories, Comments & Brand Mention Alerts
+    2 u30d=   1 gochujang/hacker-news-tracker
+      Hacker News Tracker — Top Stories, Score & Keyword Filter
+    2 u30d=   1 woven_dimple/my-actor
+      Hacker News Trend & Tech Lead Scraper
+    2 u30d=   1 scrapesage/hacker-news-scraper
+      Hacker News Scraper - Stories, Jobs & Comments
+    2 u30d=   1 om_kh/hacker-news-scraper
+      Hacker News Scraper - Posts, Points, Comment Count
+    2 u30d=   1 straightforward_hydra/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 goat255/hackernews-scraper
+      Hacker News Scraper - Posts, Comments & Users
+    2 u30d=   1 thirdwatch/hacker-news-scraper
+      Hacker News Scraper - Top, New, Ask, Show & Jobs
+    2 u30d=   1 aiqlabs/hacker-news-link-rot
+      Hacker News Scraper: Dead Links & Archived Copies
+    2 u30d=   1 pixflor/hacker-news-scraper
+      Hacker News Scraper — Stories, Comments & Hiring Jobs
+    2 u30d=   1 great_pistachio/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 glowing_glove/hacker-news-signal-monitor
+      Hacker News Post Scraper
+    2 u30d=   1 skootle/hackernews-watchlist
+      Hacker News Watchlist and Story Monitor
+    2 u30d=   1 kawsar/hacker-news-data-scraper
+      Hacker News Data Scraper
+    2 u30d=   1 legend006/hackernews-scraper
+      Hacker News Scraper - Stories, Comments & Search
+    2 u30d=   1 solidscrape/hacker-news-scraper
+      Hacker News Scraper - Stories, Comments, Polls & Users
+    2 u30d=   1 technicaldost/hackernews-scraper
+      Hacker News Scraper
+    2 u30d=   1 sthiven_r/hacker-news-search-scraper
+      Hacker News Search Scraper
+    2 u30d=   1 piposlab/hacker-news-scraper
+      Hacker News Scraper - Stories, Comments, Jobs, Users
+    2 u30d=   1 vertaizen/tech-community-monitor
+      Hacker News Monitor — Brand & Keyword Mention Tracker
+    2 u30d=   1 troy_007/hn-keyword-monitor
+      Hacker News Keyword & Mention Monitor
+    2 u30d=   1 sweet_rebel/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 velvety_bedbug/hacker-news-scraper
+      Hacker News Scraper — No Login, $0.84/1k
+    2 u30d=   0 taroyamada/hacker-news-intelligence
+      Hacker News Stories Scraper — Comments & RAG JSON
+    2 u30d=   0 santamaria-automations/ycombinator-scraper
+      Hacker News Scraper — Submissions, Jobs, Users & Comments
+    2 u30d=   1 viniman27/hacker-news-startup-signal-tracker
+      Hacker News Startup Signal Tracker
+    2 u30d=   1 fortuitous_pirate/hackernews-scraper
+      Hackernews Scraper — No Login
+    2 u30d=   1 scrapepilot/hacker-news-scraper----stories-search-front-page-data
+      Hacker News Scraper — Stories, Search & Front Page Data
+    2 u30d=   1 troy_007/hn-who-is-hiring-extractor
+      Hacker News - Who Is Hiring Structured Job Extractor
+    2 u30d=   1 dedicated_crest/hacker-news-search-hiring
+      Hacker News Scraper – Who Is Hiring Jobs, Search & Comments
+    2 u30d=   1 datadesk-io/product-hunt-hacker-news-launches
+      Product Hunt & Hacker News Launches Scraper
+    2 u30d=   1 kravennagen/hacker-news-scraper
+      Hacker News (HN) Stories, Show HN & Jobs Scraper
+    2 u30d=   1 teddythebuilder/hacker-news-scraper
+      Hacker News Scraper - Who Is Hiring Jobs & Stories API
+    2 u30d=   1 keepable_injera/hacker-news-monitor
+      Hacker News Monitor & Keyword Alerts
+    2 u30d=   1 adaptive_nightmare/hn-hiring-scraper
+      Hacker News Who is Hiring Job Extractor
+    2 u30d=   1 atesen-software/hacker-news-search-comments
+      Hacker News Search & Comments API
+    2 u30d=   1 bachiembmt/hacker-news-product-hunt-substack-scraper
+      Hacker News, Product Hunt & Substack Scraper
+    2 u30d=   1 tidydata/hacker-news-scraper
+      Hacker News Scraper — $0.20/1k · Stories, Comments & Search
+    2 u30d=   1 cloud-data-labs/fast-hackernews-trends-scraper
+      Hacker News Discussions (Fast YC Trends)
+    2 u30d=   1 api-co/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments, Show HN & HN Jobs
+    2 u30d=   1 slanlabs/hackernews-monitor
+      Hacker News Search & Monitor - Official API
+    2 u30d=   1 oneshotventure/hn-trends
+      Hacker News Watch — Keyword Mentions & Trend Monitor
+    2 u30d=   1 shawndunn/hacker-news-scraper
+      Hacker News Scraper: Search, Brand Monitoring & Who Is Hiring
+    2 u30d=   1 winterlock/hacker-news-scraper
+      Hacker News Scraper: Stories, Search, Comments & Users
+    2 u30d=   1 mediapro-tools/hacker-news-intel
+      Hacker News Scraper: Search, Feeds, Comments & Who's Hiring
+    2 u30d=   1 ninja.dev/hacker-news-who-is-hiring-jobs
+      Hacker News Scraper + Who Is Hiring Jobs
+    2 u30d=   1 gmoran/hacker-news-job-feed-extractor
+      Hacker News Job Feed Extractor
+    2 u30d=   1 soilair/hacker-news-item-state-evidence-api
+      Hacker News Item State Evidence API
+    2 u30d=   1 noniner/hn-community-intelligence
+      Hacker News Intelligence — Mentions, Trends & AI
+    2 u30d=   1 ahmed_jasarevic/news-ycombinator-scraper
+      Hacker News Scraper [$1.9💰] | Trends | Show HN | Data
+    2 u30d=   1 accountable_eel/hn-who-is-hiring-parser
+      Hacker News Who Is Hiring: Parsed Job Posts by Month
+    2 u30d=   1 arthursbuisness/hacker-news-stories-comments-jobs
+      Hacker News Scraper — stories, comments, jobs, Who is hiring
+    2 u30d=   1 chris_elder/hacker-news-search
+      Hacker News Scraper – Search Stories, Comments & Show HN
+    2 u30d=   1 lepidata/hacker-news
+      Hacker News Scraper: Stories, Comments & Who is Hiring
+    2 u30d=   1 fabrikit/hacker-news-scraper
+      Hacker News Scraper - Stories, Comments, Search, Jobs
+    2 u30d=   1 tali-works/hacker-news-scraper
+      Hacker News Scraper: Search, Comments & Who Is Hiring Jobs
+    2 u30d=   1 pushbuild/hacker-news
+      Hacker News Scraper - Search, Front Page & Users
+    2 u30d=   1 jpmarketdata/hacker-news-keyword-story-search-export
+      Hacker News Keyword Story Search Export
+    2 u30d=   1 snappytools/hackernews-algolia-scraper
+      Hacker News Search & Who-Is-Hiring Extractor
+    2 u30d=   1 pagecraft/hacker-news-scraper
+      Hacker News Scraper (Stories, Comments, Ask HN, Show HN)
+    2 u30d=   1 laborious_rumor/social-viral-trend-reddit-hn-pulse-scraper
+      Reddit & Hacker News Scraper: Viral Social T [🎁 1,000 Free]
+    2 u30d=   1 spotless_studios/hacker-news-scraper
+      Hacker News Scraper — Stories, Ask/Show HN, Comments & Discu
+    2 u30d=   1 zerobreak/hacker-news-search-scraper
+      Hacker News Search Scraper
+    2 u30d=   1 beerkaydgn/hackernews-launches-jobs-scraper
+      Hacker News Show HN Launches, Founders & YC Jobs Scraper
+    2 u30d=   1 deepaksheoran172/hacker-news-launch-and-trend-monitor
+      Hacker News Trends, Show HN & Developer Tech Radar
+    2 u30d=   1 vashiiq/hacker-news
+      Hacker News Scraper
+    2 u30d=   1 pj_pai/hn-whos-hiring-jobs
+      Hacker News Who's Hiring Jobs Scraper (Remote, Visa, Stack)
+    2 u30d=   1 laborious_rumor/hackernews-who-is-hiring-job-lead-parser
+      Hacker News Who Is Hiring Scraper [🎁 1,000 Free]
+    2 u30d=   1 brightish_ascent/hacker-news-keyword-monitor
+      Hacker News Scraper & Keyword Monitor (Stories, Comments)
+    2 u30d=   1 martin10291/hacker-news-scraper
+      Hacker News Who Is Hiring Scraper - $1/1k, Visa, Salary
+    2 u30d=   1 zinjaink/hackernews-yc-startup-and-founder-leads
+      Y Combinator & Hacker News Show HN Startup Founder Leads
+    2 u30d=   1 openfetch/hacker-news-search-api
+      Hacker News Search: stories, comments, Show HN, Ask HN
+    2 u30d=   1 elaborate_guide/intent-monitor
+      Buying-Intent Monitor: Hacker News + Bluesky Alerts
+    2 u30d=   1 magnova/buyer-intent-lead-finder
+      Buyer Intent Lead Finder: Bluesky, Hacker News, Forums, Lemmy
+    2 u30d=   1 inimi/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments, Search & Users
+    2 u30d=   1 fernandosord/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments, Search, Jobs
+    2 u30d=   1 aetheronix-lab/hackernews-b2b-intent-scraper
+      hackernews-b2b-intent-scraper
+    2 u30d=   1 dataspryva/hacker-news-story-comment-and-karma-scraper
+      Hacker News Story, Comment & Karma Scraper
+    2 u30d=   1 rsiddiq95/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 devteamdrew/hacker-news-scraper
+      Hacker News Scraper – Stories, Comments & Jobs
+    2 u30d=   1 plusonets/hacker-news-data
+      Hacker News Data (unofficial)
+    2 u30d=   1 eins332570/hackernews-scraper
+      Hacker News Scraper — Stories, Points & Search
+    2 u30d=   1 parth-tools/hacker-news-scraper
+      Hacker News Scraper: Search, Comments & Who's Hiring
+    2 u30d=   1 reverend_sal/hacker-news-scraper
+      Hacker News Scraper — Stories, Search & Comments API
+    2 u30d=   1 jeffev/hacker-news-scraper
+      Hacker News Scraper — Stories, Comments & Who Is Hiring Jobs
+    2 u30d=   1 physealabs/hackernews-intelligence-scraper
+      Hacker News Scraper: Stories, Search & Comment Analysis
+    2 u30d=   1 sysco32/hacker-news-scraper
+      Hacker News Scraper & Who Is Hiring Jobs Parser
+    2 u30d=   1 liora-tools/hn-who-is-hiring
+      Hacker News 'Who is Hiring?' Jobs Parser
+    2 u30d=   1 bibian/hackernews-jobs-scraper
+      Hacker News Scraper · Who Is Hiring Threads
+    2 u30d=   1 iveeeeeen/hacker-news-scraper-api
+      Hacker News Scraper: Who Is Hiring & API
+    2 u30d=   1 zhucl1006/hacker-news-search-monitor
+      Hacker News Search & Monitor - Stories, Comments, Show HN, Jobs
+    2 u30d=   1 zaiq/brand-mention-monitor
+      Brand Mention Monitor: News, Reddit, YouTube & Hacker News
+    2 u30d=   1 adaptive_nightmare/hacker-news-stories-radar
+      Hacker News Top Stories and Discussions Radar
+    2 u30d=   1 tali-works/hacker-news-mention-monitor
+      Hacker News Mention Monitor - Keyword, Brand & Domain Alerts
+    2 u30d=   1 latamdatatools/hacker-news-monitor
+      Hacker News Scraper & Keyword Monitor: Stories + Comments
+    2 u30d=   1 yiafirm/hn-hiring-jobs
+      Hacker News Who's Hiring Jobs Parser
+    2 u30d=   1 lucacelli/hackernews-tech-launch-lead-monitor
+      Hacker News Scraper
+    2 u30d=   1 pennydata/hn-whoishiring-parser
+      Hacker News Who Is Hiring Scraper: HN Jobs to JSON
+    2 u30d=   1 kirozhang/brand-mentions-monitor
+      Brand Mentions Monitor – Hacker News, Bluesky, News & GitHub
+    2 u30d=   1 cybermax/hacker-news
+      Hacker News Scraper: Front Page & Search [$0.30/1K 💰]
+    2 u30d=   1 jobsapi/hackernews-jobs-search-scraper
+      Hacker News Jobs Scraper
+    2 u30d=   1 highbrow_fame/hacker-news-stories
+      Hacker News API & Scraper — Stories, Comments & Search
+    2 u30d=   1 keyman98/hacker-news-live-api
+      Hacker News Scraper — Stories, Comments & Who Is Hiring
+    2 u30d=   1 harvestworks/hacker-news-monitor
+      Hacker News Monitor — Keyword Alerts for Stories & Comments
+    2 u30d=   1 67-labs/hacker-news-search-scraper
+      Hacker News Search Scraper
+    2 u30d=   1 vellumlabs/hn-threads-and-hiring
+      Hacker News Who is Hiring Scraper & HN Threads to Markdown
+    2 u30d=   1 abdulwhab95/hacker-news-topic-change-monitor
+      Hacker News Topic Monitor — Stories & Engagement
+    2 u30d=   1 codeyouknowadmin/hacker-news-scraper
+      Hacker News Scraper - search, feeds, comments, Who is Hiring
+    2 u30d=   1 jpmarketdata/hackernews-technology-radar
+      Hacker News Technology Radar
+    2 u30d=   1 cynix_dev/hacker-news-scraper
+      Hacker News Scraper: Front Page, Search & Ask
+    2 u30d=   1 jobscrawler/hacker-news-jobs-scraper
+      Hacker News Jobs Scraper
+    2 u30d=   1 jobscrawler/hacker-news-who-is-hiring-scraper
+      Hacker News Who Is Hiring Scraper
+    2 u30d=   1 jobscrawler/hacker-news-search-scraper
+      Hacker News Search Scraper
+    2 u30d=   1 jobscrawler/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 jobscrawler/hacker-news-data-scraper
+      Hacker News Data Scraper
+    2 u30d=   1 usta/hn-who-is-hiring-jobs
+      Hacker News Who Is Hiring Jobs, Every Month
+    2 u30d=   1 gochujang/hacker-news-scraper
+      Hacker News Scraper — Top, New, Best, Ask, Show Stories
+    2 u30d=   1 jtpalms/hacker-news
+      Hacker News Scraper: Stories, Comments, Search & Alerts
+    2 u30d=   1 alaudinburki/hacker-news-search
+      Hacker News Search — Stories, Comments, Ask/Show HN
+    2 u30d=   1 pepeschuster/hackernews-user-scraper
+      Hacker News User Activity Scraper
+    2 u30d=   1 axery/hackernews-trends-scraper
+      Hacker News Trends, Show HN & Startups Hiring Scraper
+    2 u30d=   1 pepeschuster/hackernews-frontpage-monitor
+      Hacker News Front-Page Monitor
+    2 u30d=   1 pepeschuster/hackernews-search
+      Hacker News Search Scraper
+    2 u30d=   1 webdatatools/remote-jobs-aggregator
+      Remote Jobs Aggregator (RemoteOK, WWR, Hacker News)
+    2 u30d=   1 webdatatools/hacker-news-scraper
+      Hacker News Search & Front Page Scraper
+    2 u30d=   1 robinworld/viral-content-story-source
+      Viral Reddit & Hacker News Scraper – Shorts & Blog Story
+    2 u30d=   1 literate_universe/hacker-news-search-scraper
+      Hacker News Search Scraper
+    2 u30d=   1 arched_friend/hn-brand-monitor
+      Hacker News Brand Monitor
+    2 u30d=   1 robinworld/show-hn-early-stage-product-hunter
+      Show HN Startup Hunter – Hacker News Launches & Deals API
+    2 u30d=   1 lost.fany/hacker-news-search-scraper
+      Hacker News Search API - Stories, Comments, Show HN
+    2 u30d=   1 neuro-scraper/hacker-news-stories-comments-scraper
+      Hacker News Stories & Comments Scraper
+    2 u30d=   1 upward_enterprises/public-mention-monitor
+      Mention Monitor: Hacker News, Mastodon, Bluesky, YouTube
+    2 u30d=   1 unrivaled_fortress/hacker-news-top-stories-comments-api
+      📰 Hacker News Top Stories, Discussions & Comments API
+    2 u30d=   1 unrivaled_fortress/hacker-news-user-karma-profile-api
+      👤 Hacker News User Profiles, Karma & Submissions API
+    2 u30d=   1 retrainmap/hackernews-stories
+      Hacker News Scraper - top, new and search stories, comments
+    2 u30d=   1 lofomachines/hacker-news-buyer-intent-finder
+      Hacker News Buyer Intent & Pain Point Finder
+    2 u30d=   1 chorelet/hacker-news-scraper
+      Hacker News Scraper — Search, Front Page, Comments, Ask/Show HN
+    2 u30d=   1 steadydata/hacker-news-comments
+      Hacker News Comments Scraper: full thread text by story, bulk
+    2 u30d=   1 insight.solutions/hacker-news-api
+      Hacker News API: Search, Comments, Users & Who Is Hiring
+    2 u30d=   1 steadydata/hacker-news-search
+      Hacker News Scraper: stories by keyword, points, comments
+    2 u30d=   1 unrivaled_fortress/tech-trends-hacker-news-github-mcp
+      Tech Trends: Hacker News & GitHub Radar (MCP Server)
+    2 u30d=   1 ludoe11/hn-who-is-hiring-scraper
+      Hacker News Who Is Hiring Scraper
+    2 u30d=   1 trusted_tech_spot/hacker-news-scraper
+      Hacker News Top Stories, Ask HN, Show HN & Comments Scraper
+    2 u30d=   1 litezero/hackernews-user-profile-scraper
+      Hacker News User Profiles & Karma Scraper
+    2 u30d=   1 nonstop_poacher/hacker-news
+      Hacker News Scraper - Keyword Story Search
+    2 u30d=   1 ctriolab/hackernews-scraper
+      Hacker News Scraper: Who Is Hiring Jobs, Stories, Comments
+    2 u30d=   1 datagrit/hacker-news-hiring-history
+      Hacker News Who Is Hiring: Jobs & Hiring History
+    2 u30d=   1 openharvest/hacker-news-scraper
+      Hacker News Scraper – Stories, Comments & Who Is Hiring Jobs
+    2 u30d=   1 maydit/hacker-news-mentions-scraper
+      Hacker News Mentions Scraper - Stories, Comments & Evidence
+    2 u30d=   1 northbell/hacker-news-scraper
+      Hacker News Scraper — Who Is Hiring Jobs, Stories & Comments
+    2 u30d=   1 cliqtomedia/hacker-news-stories-comments-scraper
+      Hacker News Scraper: Stories, Comments & Parent IDs
+    2 u30d=   1 w3crawler/hackernews-jobs-scraper
+      Hacker News Jobs Scraper
+    2 u30d=   1 w3crawler/hackernews-tech-stories-scraper
+      Hacker News Tech Stories Scraper
+    2 u30d=   1 titan_coder/hacker-news-trend-delta
+      Hacker News Trend & Velocity Delta Monitor
+    2 u30d=   1 tommyonebig/hacker-news-scraper
+      Hacker News Scraper: Front Page, Search & Who's Hiring Jobs
+    2 u30d=   1 vincentkirui/hacker-news-scraper
+      Hacker News Scraper — search, front page, comments & users
+    2 u30d=   1 kamerozkan/hacker-news-jobs-hiring-scraper
+      Hacker News Jobs & Startup Hiring Scraper (Who Is Hiring)
+    2 u30d=   1 litezero/hackernews-who-is-hiring-scraper
+      Hacker News Who is Hiring Tech Jobs Scraper
+    2 u30d=   1 swiftkit/hacker-news
+      Hacker News Scraper: Search, Threads & Who Is Hiring Jobs
+    2 u30d=   1 litezero/hacker-news-scraper
+      Hacker News Top Stories & Discussions Extractor
+    2 u30d=   1 brick_joey_yto/hackernews-monitor
+      Hacker News Monitor & Scraper
+    2 u30d=   1 oswaldocarabano/hn-who-is-hiring-scraper
+      Hacker News Who is Hiring Scraper: Jobs, Emails & Salary
+    2 u30d=   1 axiomworks/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 accountable_eel/hackernews-mentions-monitor
+      Hacker News Mentions Monitor: Keyword and Domain Alerts
+    2 u30d=   1 datadesk-io/hn-whoishiring-jobs-scraper
+      Hacker News Who Is Hiring Scraper: Startup Jobs
+    2 u30d=   1 capable_coach/hacker-news-scraper
+      Hacker News Scraper — Stories, Comments & Scores API
+    2 u30d=   1 darcklo/hackernews-who-is-hiring-lead-scraper
+      Hacker News (HN) Who Is Hiring Startup & Email Scraper (MCP)
+    2 u30d=   1 localwire/hacker-news
+      Hacker News API: Stories, Comments, Search & Who's Hiring Jobs
+    2 u30d=   1 adaptive_nightmare/hacker-news-show-hn-radar
+      Hacker News Show HN Startup & Creation Launches Radar
+    2 u30d=   1 adaptive_nightmare/hacker-news-ask-hn-radar
+      Hacker News Ask HN Community Questions & Debates Radar
+    2 u30d=   1 amygraphics/hacker-news-intelligence
+      Hacker News Scraper: Search, Threads & Monitoring
+    2 u30d=   1 conversational_kermis/hacker-news-scraper
+      Hacker News Scraper - Search, Comments & Front Page
+    2 u30d=   1 lx112/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments & Who's Hiring
+    2 u30d=   1 consequential_programmer/hacker-news-scraper
+      Hacker News Scraper - Stories, Comments & Who's Hiring Jobs
+    2 u30d=   1 unbounded_seed/hacker-news-search-scraper
+      Hacker News Search Scraper
+    2 u30d=   1 data-done-right/hacker-news-search
+      Hacker News Search & Threads: Stories, Comments & Users
+    2 u30d=   1 joesimo/hacker-news
+      Hacker News Scraper: Stories, Comments, Show HN and Jobs
+    2 u30d=   1 appley_rhodolite/hn-toolkit
+      Hacker News Scraper: Search, Front Page and Who Is Hiring
+    2 u30d=   1 axlymxp/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 lepone31/hackernews-trends-scraper
+      Hacker News Intelligence & Trending Tech Radar
+    2 u30d=   1 hermeskd/hacker-news-story-metrics
+      Hacker News Story Metrics — Scores, Comment Counts, Timestamps
+    2 u30d=   1 private_image_hg9/hacker-news-scraper
+      Hacker News Scraper: Search, Stories & Comments
+    2 u30d=   1 cuddly_wattle/hacker-news-scraper
+      Hacker News Scraper - Stories, Comments & Who Is Hiring Jobs
+    2 u30d=   1 precious_bathmat/hn-whos-hiring-jobs
+      Hacker News Who Is Hiring: Startup Jobs & Tech Trends
+    2 u30d=   1 tuper/hacker-news
+      Hacker News Scraper & API: Stories, Who is Hiring
+    2 u30d=   1 integraiia/hacker-news
+      Hacker News Scraper (stories + search)
+    2 u30d=   1 gogumaa/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 danielmichalek/hacker-news-trend-exporter
+      Hacker News Trends Exporter
+    2 u30d=   1 tidydata69/hacker-news-algolia-search
+      Hacker News Algolia Search
+    2 u30d=   1 tenderwire/hacker-news
+      Hacker News Scraper: Stories, Comments, Who is Hiring
+    2 u30d=   1 yakeddgraph/hackernews-frontpage-launches-scraper
+      Hacker News Frontpage & Show HN Launches Scraper [$1/1K]
+    2 u30d=   1 lowcountrytech/hacker-news-scraper
+      Hacker News Scraper (top, new, best, Show, Ask)
+    2 u30d=   1 mellora/hacker-news-stories-comments-scraper
+      Hacker News Stories & Comments Scraper
+    2 u30d=   1 saliga/hacker-news-scraper
+      Hacker News Scraper — Front Page, Show HN, Ask HN & Search
+    2 u30d=   1 crawl_craft/hacker-news-data-scraper
+      Hacker News Data Scraper
+    2 u30d=   1 ghimli/hacker-news-search
+      Hacker News Search: Stories, Comments and Mentions
+    2 u30d=   1 hereditary_model/hn-launch-radar
+      HN Launch & Hiring Radar
+    2 u30d=   1 skootle/social-comment-buyer-intent-intelligence
+      HN Buyer Intent Signals
+    2 u30d=   1 unrivaled_fortress/internet-drama-digest
+      🔥 Internet Drama Digest - Top Controversial Threads
+    2 u30d=   1 changeable_peddler/startup-funding-signal-report
+      Startup Funding Signal Report - SEC Form D and Traction API
+    2 u30d=   1 automly/news-api
+      News API - BBC, CNN, NYT & Google News Headlines
+    2 u30d=   0 tagadanar/brand-news-monitor
+      Brand & News Monitor 📰 (Google News alerts to Slack & API)
+    2 u30d=   0 datapilot/saas-launch-monitor
+      SaaS Launch Monitor
+    2 u30d=   1 dadhalfdev/y-combinator-news-scraper
+      Y Combinator News Scraper
+    2 u30d=   1 ahmad_mahameed/brand-mentions-monitor
+      Brand Mentions Monitor (Reddit, News, YouTube, HN, Bluesky)
+    2 u30d=   1 contributory_garnet_hyz/freelance-lead-radar
+      Freelance Lead Radar — No-Noise Job Leads with ROI Score
+    2 u30d=   1 mortenm/social-trends-radar
+      Google Trends Trending Now + Bluesky, Wikipedia & Songs
+    2 u30d=   1 yzy001/cross-network-trend-radar
+      Cross-Network Trend Radar - Rising Topics
+    2 u30d=   1 fei.yang/remote-tech-jobs-aggregator
+      Remote Tech Jobs Aggregator (HN + V2EX)
+    2 u30d=   1 fei.yang/tech-ai-trend-radar
+      Tech & AI Trend Radar (HN + Lobsters + GitHub)
+    2 u30d=   1 yzy001/hn-hiring-jobs
+      HN Who Is Hiring: Structured Jobs
+    2 u30d=   1 kurtholes/krakt-wishwire
+      Krakt Wishwire
+    2 u30d=   1 kurtholes/krakt-threadtrack
+      Krakt Threadtrack
+    2 u30d=   1 bibian/remote-jobs-worldwide-scraper
+      Remote Jobs Worldwide · 8 Boards, One Schema
+    2 u30d=   1 bibian/north-america-jobs-scraper
+      North America Jobs Scraper · USA & Canada, 6 Boards, One Schema
+    2 u30d=   1 greyridge-signals/unified-jobs-aggregator
+      Job Aggregator — Dedup Company ATS + LinkedIn in One Feed
+    2 u30d=   1 pandabear/trending-topics-aggregator
+      Trending Topics Scraper - Google Trends, HN, Bluesky & More
+    2 u30d=   1 sndzcc/brand-mentions-radar
+      Brand Monitoring API - Mentions Radar for News & Reddit
+    2 u30d=   1 realai_pl/show-hn-launch-rank
+      Show HN Launch Rank
+    2 u30d=   1 unrivaled_fortress/hn-whos-hiring-talent-pool-radar
+      💼 HN Who is Hiring Talent Pool & Salary Radar
+    2 u30d=   1 agent_muse/hn-hiring-scraper
+      HN Who is Hiring Scraper — monthly job posts
+    2 u30d=   1 unrivaled_fortress/reddit-hn-brand-share-of-voice-tracker
+      📣 Reddit + HN Brand Share-of-Voice & Sentiment Tracker
+    2 u30d=   1 gochujang/startup-funding-tracker
+      Startup Funding Tracker - VC Deals & Investor Activity
+    2 u30d=   1 gochujang/tech-news-aggregator
+      Tech News Aggregator
+    2 u30d=   1 leadsbrary/open-knowledge-search-for-agents
+      Open Knowledge Search for AI Agents — Wikipedia, arXiv, HN
+    2 u30d=   1 p.khoa90/trend-scout
+      Trend Scout
+    2 u30d=   1 scrapeai/ai-agent-news-aggregator
+      AI Agent News Aggregator
+    2 u30d=   1 spherical_tact/hn-who-is-hiring-ai
+      HN Who is Hiring — AI Structured Jobs
+    2 u30d=   1 mambalabs/multi-platform-social-posts-comments
+      Multi Platform Social Posts and Comments
+    2 u30d=   1 capable_coach/ycombinator-jobs-scraper
+      Y Combinator Jobs Scraper — Startup Job Posts API
+    2 u30d=   1 solidactors/remote-ai-jobs-feed
+      Remote and AI-Training Jobs Feed
+    2 u30d=   1 grandiose_envelope_0fj/yc-startups-hiring-leads-scraper
+      YC Startups + SEC Form D & HN Launch Relational Intelligence
+    2 u30d=   1 agentsgearbox/remote-jobs-scraper
+      Remote Jobs Scraper · 6 Boards, One Schema, Only New
+    2 u30d=   1 cleanfeedsapi/hn-who-is-hiring
+      HN Who Is Hiring Jobs API | $2/1K
+    1 u30d=   0 nogards95/hacker-news-scraper
+      Hacker News Scraper
+    1 u30d=   1 alleserojje/hacker-news-search-scraper
+      Hacker News Search Scraper
+    1 u30d=   1 invaluable_rondeau/hacker-news-search-scraper
+      Hacker News Scraper — Hacker News Search & Show HN API
+    1 u30d=   0 datawell/hackernews-scraper
+      Hacker News Scraper — Full Archive | $4/1K
+    1 u30d=   1 lentic_clockss/hacker-news-scraper
+      Hacker News Scraper - Stories, Jobs & Comments
+    1 u30d=   0 glowing_glove/hacker-news-lead-scraper
+      Hacker News Lead Scraper
+    1 u30d=   1 fascinating_lentil/hacker-news-intelligence-scraper
+      Hacker News Scraper & Monitor - Launch Trends
+    1 u30d=   0 zenolvepro/hn-yc-jobs-tracker
+      Hacker News / YC Jobs Tracker (PPE)
+    1 u30d=   0 fast_api/hackernews-scraper
+      Hacker News Scraper — HN Jobs, Stories & Comments
+    1 u30d=   1 navy_currant/deal-radar
+      Hacker News Keyword Monitor
+    1 u30d=   0 datamule/hacker-news-keyword-monitor
+      Hacker News Keyword Monitor
+    1 u30d=   1 chrisp1211/hackernews-scraper-max
+      Hacker News Search Scraper (Algolia API)
+    1 u30d=   0 navy_currant/hacker-news-trend-aggregator
+      Hacker News Trend Aggregator
+    1 u30d=   0 ponderable_hydrometer/hackernews-scraper
+      Hacker News Scraper — Stories & Comments
+    1 u30d=   1 foxlabs/hackernews-intelligence
+      Hacker News Scraper — Stories, Comments, Ask HN, Show HN
+    1 u30d=   0 glitchbound/hackernews-scraper
+      Hacker News Scraper: Stories, Comments & Mentions
+    1 u30d=   1 rl1987/hacker-news-scraper
+      Hacker News Scraper
+    1 u30d=   0 signalengine/hn-lead-finder
+      Hacker News Lead Finder — Buyer-Intent Posts
+    1 u30d=   0 quaffable_mettle/hacker-news
+      Hacker News Trending Tracker - Track Rising Stories
+    1 u30d=   0 gazidev/news-mcp-server
+      News MCP Server – Hacker News, Wikipedia, RSS & GDELT
+    1 u30d=   0 appdata-labs/trending-now-aggregator
+      What's Trending Now - Google, Wikipedia & Hacker News
+    1 u30d=   1 church_of_loujess/hackernews-producthunt-leads-scraper
+      Hacker News & Product Hunt Startup Founder Leads Scraper
+    1 u30d=   0 jpmarketdata/hacker-news-story-comment-tree-export
+      Hacker News Story & Comment Tree Export
+    1 u30d=   1 arturpl6/hacker-news-hiring-scraper
+      Hacker News Who is Hiring & Tech Jobs Scraper
+    1 u30d=   1 signalscope-data/hn-hiring-parser
+      Hacker News Who Is Hiring Scraper - Structured Jobs
+    1 u30d=   1 s-r/hacker-news
+      Hacker News Scraper - Stories, Comments and Hiring
+    1 u30d=   1 haketa/hackernews-scraper
+      Hacker News Scraper — Stories, Comments, Jobs & Users
+    1 u30d=   0 zinin/hacker-news-stories-comments-scraper
+      Hacker News Stories and Comments Scraper
+    1 u30d=   0 gubidonius/hn-search
+      Hacker News Search and Mention Monitor
+    1 u30d=   0 synthetic.ia/hacker-news
+      Hacker News API — stories, items & search (no key)
+    1 u30d=   0 felixgoldwin/hacker-news-scraper
+      Hacker News Scraper — Posts, Comments & Search
+    1 u30d=   0 blueberry_rainstorm/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments, Show HN & Jobs
+    1 u30d=   0 dabooti/hacker-news-scraper
+      Hacker News Scraper
+    1 u30d=   0 zinin/hacker-news-jobs-scraper
+      Hacker News Jobs Feed — Current Posts [$1.70/1K]
+    1 u30d=   0 tenfoldfleet/brand-mentions-monitor
+      Brand Mentions Monitor - Bluesky, Hacker News & Mastodon
+    1 u30d=   0 vamsi-krishna/signalfinder-pro
+      Signalfinder Pro
+    1 u30d=   0 getdataforme/wantstobehired-parser-spider
+      Wantstobehired Parser Spider
+    1 u30d=   1 ramsford/reddit-forum-sentiment-analyzer
+      Reddit & Forum Sentiment Analyzer
+    1 u30d=   0 yodeling/ph-ai-scout
+      HN AI Product Scout �� Show HN Scraper for AI Product Discovery
+    1 u30d=   0 catalini82/hn-whos-hiring-ai-infra
+      HN Who’s Hiring AI Infrastructure Extractor
+    1 u30d=   0 ef12/dev-radar-mcp
+      Dev Radar MCP Server
+    1 u30d=   0 bakos_bence/show-hn-launch-radar
+      Show HN Launch Radar
+    1 u30d=   0 thedeadpoet/remote-jobs-feed-api-himalayas-remotive-arbeitnow
+      Remote Jobs Feed API - Himalayas, Remotive, Arbeitnow
+    1 u30d=   1 scrapersdelight/yc-company-founder-contact-scraper
+      Y Combinator Scraper - YC Companies, Founders & Open Jobs
+    1 u30d=   0 tiger19935/remote-tech-jobs-aggregator
+      Remote Tech Jobs Aggregator - 7 Job Boards, One Feed
+    1 u30d=   0 titan_coder/social-ecom-ads-intelligence-hub
+      Social, E-commerce & Ads Intelligence Hub
+    1 u30d=   0 church_of_loujess/market-news-sentiment-mcp
+      Yahoo Finance, Trends, News & Reddit MCP — Claude & Cursor
+--- OWNER: owner mentioned elsewhere in prose, verify ruleout covers this listing, by users (56) ---
+   19 u30d=   5 angaba92/hacker-news-who-wants-to-be-hired-scraper
+      Resume Scraper & Candidate Sourcing - Hacker News
+    9 u30d=   1 nomad-agent/american-jobs-bundle
+      American Jobs Scraper: 8 US & Remote Boards in One
+    5 u30d=   1 scrapemint/emerging-launch-radar-pipeline
+      Emerging Launch Radar: GitHub Trending + Hacker News Momentum
+    5 u30d=   1 cryptosignals/hn-top-stories
+      HN Top Stories Scraper
+    3 u30d=   2 scrapemint/hacker-news-scraper
+      Hacker News Scraper: Stories, Comments & Search
+    3 u30d=   1 hata1234/hn-scraper
+      Hacker News Enhanced Scraper - Stories, Comments & Search
+    3 u30d=   2 samwise.agency/hacker-news-scraper
+      Hacker News Scraper — Search, Front Page, Comments & Alerts
+    3 u30d=   2 scrapemint/hn-hiring-company-leads
+      Hacker News Who is Hiring Company Leads
+    3 u30d=   2 moving_beacon-owner1/my-actor-76
+      Hacker News Scraper
+    3 u30d=   2 leftwinglautus/hacker-news-scraper
+      Hacker News Scraper
+    3 u30d=   2 lulzasaur/hn-scraper
+      Hacker News Scraper
+    3 u30d=   1 scrapemint/buyer-intent-radar-pipeline
+      Buyer Intent Radar: Reddit, Stack Overflow, HN Leads
+    3 u30d=   1 nexgendata/hn-show-hn-tracker
+      Show HN Tracker — New Launch Feed API
+    3 u30d=   2 lsso/ai-startup-radar
+      Y Combinator Scraper – YC Companies + Traction Score
+    2 u30d=   1 scrapers_lat/hacker-news-scraper
+      Hacker News Scraper - Stories, Points & Comments
+    2 u30d=   1 trisert/hacker-news-front-page
+      Hacker News Front Page Scraper | JSON Export
+    2 u30d=   0 lafuan/hacker-news-scraper
+      Hacker News Top Stories
+    2 u30d=   1 trisert/hackernews-ask-hn-jobs
+      Hacker News Ask HN Jobs Scraper | JSON
+    2 u30d=   1 benthepythondev/hacker-news-topstories-scraper
+      Hacker News Topstories Scraper
+    2 u30d=   1 benthepythondev/hacker-news-newstories-scraper
+      Hacker News Newstories Scraper
+    2 u30d=   1 benthepythondev/hacker-news-ask-ids-scraper
+      Hacker News Ask Ids Scraper
+    2 u30d=   1 muzafferkadir/hacker-news-scraper
+      Hacker News Scraper | Stories, Comments, Ask & Show HN
+    2 u30d=   1 benthepythondev/hacker-news-askstories-scraper
+      Hacker News Askstories Scraper
+    2 u30d=   1 benthepythondev/hacker-news-showstories-scraper
+      Hacker News Showstories Scraper
+    2 u30d=   1 benthepythondev/hacker-news-jobstories-scraper
+      Hacker News Jobstories Scraper
+    2 u30d=   1 benthepythondev/hacker-news-beststories-scraper
+      Hacker News Beststories Scraper
+    2 u30d=   1 benthepythondev/hacker-news-newstories-list2-scraper
+      Hacker News Newstories List2 Scraper
+    2 u30d=   1 benthepythondev/hacker-news-beststories-list2-scraper
+      Hacker News Beststories List2 Scraper
+    2 u30d=   1 benthepythondev/hacker-news-topstories-list2-scraper
+      Hacker News Topstories List2 Scraper
+    2 u30d=   0 dami_studio/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 parseforge/hackernews-items-scraper
+      Hacker News Items Scraper
+    2 u30d=   1 angaba92/hacker-news-scraper
+      Hacker News Scraper
+    2 u30d=   1 zentrafoundry/social-trend-radar-reddit-x-youtube
+      Hacker News Story Snapshot
+    2 u30d=   1 zentrafoundry/reddit-pain-point-buyer-intent-miner
+      Hacker News Ask HN Snapshot
+    2 u30d=   1 micro-tool-factory/hacker-news-search
+      Hacker News Search
+    2 u30d=   1 reaperoak/hacker-news-who-is-hiring-parser
+      Hacker News Who Is Hiring: Structured Job Posts
+    2 u30d=   1 tidyharvest/hacker-news-who-is-hiring-scraper
+      Hacker News 'Who is Hiring' Scraper
+    2 u30d=   1 leadgenguy/hn-hiring-leads
+      Hacker News "Who is Hiring" Leads: Companies, Roles, Emails
+    2 u30d=   1 transparent_meteorite/hacker-news-search-scraper
+      Hacker News Scraper: Stories, Comments, Who Is Hiring
+    2 u30d=   1 actor-forge/dev-community-mentions
+      Brand Mentions Monitor: Hacker News, Bluesky, GitHub, Lemmy
+    2 u30d=   1 intelscrape/hacker-news-scraper
+      Hacker News Scraper — Stories, Comments & Front Page by Keyword
+    2 u30d=   1 hipersoft/hackernews-scraper
+      Hacker News Scraper — Search, Front Page, Users & Comments
+    2 u30d=   1 pinkish_armada/hacker-news-scraper
+      Hacker News Scraper – Stories, Comments, Search & Monitor
+    2 u30d=   0 parseforge/hackernews-stories-scraper
+      Hacker News Stories Scraper
+    2 u30d=   1 scrapemint/smart-money-buzz-pipeline
+      Smart Money Buzz: Insider Buying Plus Reddit and HN Chatter
+    2 u30d=   1 scrapemint/event-buzz-radar-pipeline
+      Event Buzz Radar: Material 8-K Plus Reddit and HN Chatter
+    2 u30d=   1 joey001/microsaas-sideproject-finder
+      Micro-SaaS & Side Project Ideas Finder 🚀
+    2 u30d=   1 jedii_123/news-monitor
+      News Monitor
+    1 u30d=   0 quarry/brand-mentions-scraper
+      Brand Mentions Scraper — News, Reddit & Hacker News
+    1 u30d=   0 m_ctim/hacker-news-keyword-tracker
+      Hacker News Mention Tracker by Keyword
+    1 u30d=   0 delectable_incubator/hacker-news-by-keywords-scraper-low-cost
+      Hacker News (By Keywords) Scraper - Low-cost💲🔥🔍📰
+    1 u30d=   1 logiover/hacker-news-historical-archive-scraper
+      Hacker News Historical Archive Scraper — Old Stories by Date
+    1 u30d=   1 angaba92/hacker-news-who-is-hiring-scraper
+      Hacker News Who is Hiring Scraper - Developer Jobs
+    1 u30d=   0 actor-forge/hn-who-is-hiring
+      HN Who Is Hiring Scraper — Structured Hacker News Jobs
+    1 u30d=   0 scrapemint/brand-mention-monitor
+      Brand Mention Monitor: News, Reddit, HN & Telegram
+    1 u30d=   0 khadinakbar/brandwatch-alternative
+      Brand Mention Monitor — Brandwatch Alternative
+--- 372 unnamed of 502 matched (316 NONE, 56 OWNER) ---
