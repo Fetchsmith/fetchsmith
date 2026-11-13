@@ -24,12 +24,18 @@ const TOPICS = [
     'CELEBRITIES', 'ARTS', 'SOCCER', 'BASKETBALL',
 ];
 const MAX_LIMIT = 100;
+// Two budgets, not one (cycle 3133, mirroring clinicaltrials-mcp-server's c3132 fix). ATTEMPT_MS
+// bounds a single HTTP attempt; OVERALL_MS is the hard ceiling on the whole tool call. They must
+// DIFFER: when both were 15000 the `retry.limit: 1` below was dead code -- a first attempt that
+// burned the full per-attempt timeout left zero budget for the retry, so the one transient-stall
+// case retrying exists for could never actually retry.
 // got applies `timeout.request` per ATTEMPT, and got's own internal retries multiply it (~4x),
 // so a plain `timeout: {request}` is not a bound on one call -- cycle 2646 proved this for real
 // on remote-jobs-scraper and the fleet fix was AbortSignal, which tears the socket down
 // externally. An MCP tool call is synchronous to the caller's agent, so a real bound matters
 // more here than in a batch run.
-const REQUEST_MS = 15000;
+const ATTEMPT_MS = 8000;
+const OVERALL_MS = 20000;
 
 // Google News RSS titles always arrive as "Headline - Publisher" (verified live on 204/204 items,
 // cycle 264), which is noise once `publisher` already carries it.
@@ -84,9 +90,9 @@ async function searchNews({ query, topic, limit, language, country }) {
     const res = await gotScraping({
         url,
         headers: { 'accept-language': hl },
-        timeout: { request: REQUEST_MS },
+        timeout: { request: ATTEMPT_MS },
         retry: { limit: 1 },
-        signal: AbortSignal.timeout(REQUEST_MS),
+        signal: AbortSignal.timeout(OVERALL_MS),
     });
     return parseRss(res.body).slice(0, n);
 }
