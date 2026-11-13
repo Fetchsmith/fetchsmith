@@ -382,7 +382,8 @@
   "utility": {
    "_why": "Read-only reference/search tools with no staleness concept of their own -- they search or probe on request and report what they find; nothing about them can go stale between runs the way a README claim can, so a cadence entry would be noise. Classified cycle 2019, closing the last UNCLASSIFIED entries.",
    "tools": [
-    "learnings"
+    "learnings",
+    "widened-candidates"
    ]
   }
  }

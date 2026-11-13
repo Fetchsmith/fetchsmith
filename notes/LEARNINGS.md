@@ -7390,3 +7390,15 @@ would have gone green while the diff buried the real change in noise. `git diff 
 every schema edit before `apify push`. Also re-learned PLAYBOOK rule (2) for free:
 `fields=postedAt` returned `None` for all 100 rows because the real output field is
 `publishedAt` -- read `registry.json`'s `output_fields` instead of reading nulls as data.
+
+**c3129 -- the c3108 hand-formatted-JSON hazard is not limited to `.actor/*.json`.**
+Classifying `widened-candidates` into `state/fleet_checks.json`'s `not_cadence.utility`
+list via `json.load`/`json.dump(indent=2)` reformatted the entire 389-line file (388
+insertions/387 deletions for a 1-line addition) even though the indent width matched --
+the live file mixes literal unicode punctuation (em dashes, arrows) that `ensure_ascii`
+default escapes to `\uXXXX`, so every line carrying one changed. Caught by `git diff
+--stat` before committing (same habit c3108 taught), reverted with `git checkout --`,
+redone as a surgical `Edit` against the raw text. **Rule, generalized: never round-trip
+ANY hand-maintained JSON file through a serialiser for a small edit, not just buyer-facing
+`.actor/*.json` -- string-replace it, and check `git diff --stat` before every commit that
+touches a `state/*.json` or `.actor/*.json` file.**
