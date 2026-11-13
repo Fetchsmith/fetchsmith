@@ -1,0 +1,191 @@
+#!/root/agent/venv/bin/python
+"""Vendor-pivot discovery sweep (NEW c3160, promoted to standing cycle 3162).
+
+WHY THIS EXISTS. `check-price-superiority` and the per-niche `niche-size`/`niche-unnamed`
+sweeps all screen by TERM: a rival surfaces only if its title/description matches the
+vocabulary a niche audit happens to search. Cycle 3160 found a real blind spot this
+creates: `rbbscrap` was already a visibly multi-listing owner in our own READMEs (7
+disclosed handles across 7 different niches) when a single pivot call --
+`GET /v2/store?search=rbbscrap`, then cross-grep its full catalogue against every
+README -- turned up 100 live listings, 9 more of them undisclosed and landing on
+niches we sell into, 3 of them genuine every-tier undercutters. Two consecutive clean
+fleet-wide `check-price-superiority` runs (c3159, c3161 vintage) had already said
+"0 undisclosed anywhere" and were blind to all 3 by construction: a broad-fleet vendor
+publishing one thin listing per niche evades every per-niche term screen at once, no
+matter how many niches get swept.
+
+METHOD. Read every `owner/slug` handle any README already names (the same
+`FULL_HANDLE`/`SKIP_PREFIX` convention `check-primary-event` uses, kept in sync by
+inspection rather than import since both scripts carry their own file-specific
+context). Reduce to the owners named >= MIN_NAMED times -- a cheap proxy for "this
+looks like a multi-listing operator, not a one-off", which is exactly the shape that
+made the c3160 pivot pay off and is far cheaper than probing all ~1050 distinct named
+owners every cycle (counted directly at cycle 3162: 1051 distinct owners fleet-wide,
+483 of them named >= 2x, 302 named >= 3x -- this script defaults to the >= 3x cohort).
+One `GET /v2/store?search=<owner>&limit=100` per owner (filtered to exact `username`
+match, verified cycle 3162 that the search endpoint returns ONLY that owner's own
+listings for an owner-shaped query term -- no false-positive cross-owner matches seen
+in testing) returns `currentPricingInfo` and `stats` inline, so this needs exactly one
+GET per owner, no second per-Actor fetch.
+
+NICHE FILTER, added after the first live run exposed the real cost of skipping it.
+`andok` alone (one of 302 owners in the >=3x cohort) runs 63 listings, only a handful
+of them anywhere near a niche we sell into (the rest: SEO auditors, crypto trackers,
+sanctions screening, DNS tools) -- an unfiltered run flagged 863 "undisclosed" handles
+from the first 15 owners alone, which is not a discovery sweep a human can read, it is
+noise that would bury the 3-per-100-listings signal c3160 actually found. Reuses
+`bin/niche-size`'s own `NICHE_TERMS`/`TERM_VARIANTS`/`MATCH_SYNONYMS` (same exec-as-
+module trick `bin/niche-unnamed` uses, so this never drifts from what the per-niche
+sweeps already call "in the niche") as a vocabulary: a listing's title+description is
+kept only if it substring-matches at least one term belonging to at least one of our
+niches. This can still MISS a real rival whose copy avoids every curated term (the same
+false-negative risk every niche-size sweep already carries) and can still keep a false
+positive (e.g. a generic "government data" listing matching on an overly broad synonym)
+-- it trades recall for a result a human will actually finish reading, and the posture
+below stays DISCOVERY, not verdict.
+
+This is a DISCOVERY sweep, not a verdict -- same posture as `check-primary-event`,
+`check-rental-converts`, `check-comparison-breadth`. A FLAG means "an owner we already
+trust enough to have named repeatedly has a listing, not in any README, whose own text
+matches one of our niches' vocabulary" -- never "this is a confirmed undercutter".
+Pricing comparison still needs a human (or a future cycle) to read the flagged handle's
+own README/description and price, exactly as c3160 did for the 9 it found.
+
+COST. >= 3x cohort is 302 owners at cycle 3162 (will grow slowly as the fleet adds
+disclosures). Threaded 8-way, read-only, no Actor runs, no file writes. Give this a
+LONG interval in `state/fleet_checks.json` (see `_intervals` note there) -- the hazard
+is "an existing named owner published a new listing", which does not have a daily
+cadence, and this is the single most expensive item a QUALITY cycle would run.
+
+Read-only: GET /v2/store?search=<owner> only. No Actor runs, no writes.
+"""
+import glob
+import importlib.util
+import os
+import re
+import sys
+import urllib.parse
+from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from _apify_get import API, get_data  # noqa: E402
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
+SKIP_PREFIX = ("bin/", "cpvCodes/", "field/", "src/", "state/", "actors/", "notes/", "logs/")
+MIN_NAMED = 3
+
+
+def our_handles():
+    """Map each full owner/slug named anywhere in a README to the file(s) that name it."""
+    hs = {}
+    for p in sorted(glob.glob(os.path.join(ROOT, "actors/*/README.md"))):
+        txt = open(p).read()
+        for h in set(FULL_HANDLE.findall(txt)):
+            owner, rest = h.split("/", 1)
+            if h.startswith(SKIP_PREFIX) or "." in owner or len(rest) < 3:
+                continue
+            hs.setdefault(h, set()).add(p)
+    return hs
+
+
+def niche_vocab():
+    """slug -> set of lowercase terms, built from niche-size's own curated lists
+    (same exec-as-module trick bin/niche-unnamed uses, so "in the niche" never drifts
+    between the per-niche sweeps and this fleet-wide one)."""
+    spec = importlib.util.spec_from_loader("ns", loader=None)
+    ns = importlib.util.module_from_spec(spec)
+    src = open(os.path.join(ROOT, "bin/niche-size")).read().replace(
+        'if __name__ == "__main__":\n    sys.exit(main())\n', "")
+    ns.__dict__["__file__"] = os.path.join(ROOT, "bin/niche-size")
+    exec(compile(src, "niche-size", "exec"), ns.__dict__)
+    vocab = {}
+    for slug, base in ns.NICHE_TERMS.items():
+        terms = {base.lower()}
+        terms.update(t.lower() for t in ns.TERM_VARIANTS.get(slug, []))
+        terms.update(t.lower() for t in ns.MATCH_SYNONYMS.get(slug, []))
+        vocab[slug] = terms
+    return vocab
+
+
+def _contains_term(text, term):
+    """Boundary-safe substring test. A bare `in` check lets short acronym terms like
+    "nct" (clinicaltrials-scraper) match INSIDE unrelated words -- "sanctions" contains
+    "anct", so a raw substring test flagged `amygraphics/sanctions-screening` as a
+    clinicaltrials rival (caught live, cycle 3162). niche-size's own sweep never hits
+    this because it uses these terms as Apify SEARCH queries (relevance-ranked, not
+    raw substring); reusing them for a text-contains test needs this guard that
+    niche-size itself does not need."""
+    return re.search(r"(?<![a-z0-9])" + re.escape(term) + r"(?![a-z0-9])", text) is not None
+
+
+def matching_niches(text, vocab):
+    text = text.lower()
+    return sorted(slug for slug, terms in vocab.items() if any(_contains_term(text, t) for t in terms))
+
+
+def search_owner(owner):
+    """One GET /v2/store search, reduced to listings whose username is an exact match."""
+    url = f"{API}/store?search={urllib.parse.quote(owner)}&limit=100"
+    data = get_data(url)
+    items = (data or {}).get("items") or []
+    return owner, [i for i in items if i.get("username") == owner]
+
+
+def main():
+    hs = our_handles()
+    vocab = niche_vocab()
+    owner_count = Counter(h.split("/", 1)[0] for h in hs)
+    owners = sorted(o for o, c in owner_count.items() if c >= MIN_NAMED)
+
+    if "--limit" in sys.argv:
+        n = int(sys.argv[sys.argv.index("--limit") + 1])
+        owners = owners[:n]
+
+    print(f"check-vendor-catalogue: {len(owner_count)} distinct owners named fleet-wide, "
+          f"{len(owners)} named >= {MIN_NAMED}x pivoted on, {len(vocab)} niche vocabularies "
+          f"loaded from niche-size"
+          + (" (--limit applied)" if "--limit" in sys.argv else ""))
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = dict(pool.map(search_owner, owners))
+
+    total_listings = off_niche = flagged = unreachable = 0
+    for owner in owners:
+        items = results.get(owner)
+        if items is None:
+            unreachable += 1
+            continue
+        total_listings += len(items)
+        for it in items:
+            name = it.get("name")
+            if not name:
+                continue
+            handle = f"{owner}/{name}"
+            if handle in hs:
+                continue
+            text = f"{it.get('title', '')} {it.get('description', '')}"
+            niches = matching_niches(text, vocab)
+            if not niches:
+                off_niche += 1
+                continue
+            flagged += 1
+            pi = it.get("currentPricingInfo") or {}
+            model = pi.get("pricingModel", "FREE/none")
+            users = (it.get("stats") or {}).get("totalUsers", "?")
+            print(f"  FLAG {handle}  (owner named {owner_count[owner]}x already; "
+                  f"niche={'/'.join(niches)}; title={it.get('title', '')!r}; "
+                  f"model={model}; users={users})")
+
+    print(f"\ncheck-vendor-catalogue: {len(owners)} owner(s) probed ({unreachable} search "
+          f"call(s) failed), {total_listings} total listing(s) seen, {off_niche} undisclosed "
+          f"but no niche-vocabulary match (skipped), {flagged} undisclosed handle(s) from an "
+          f"already-named owner landing on a niche we sell into. Read each flagged handle's "
+          f"own README/pricing before deciding whether it is a genuine competitor -- this is "
+          f"a DISCOVERY sweep, not a verdict.")
+    return 1 if flagged else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
