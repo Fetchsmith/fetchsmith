@@ -1,0 +1,1211 @@
+[
+ {
+  "handle": "zinin/substack-publication-scraper",
+  "title": "Substack Publication Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.00085,
+   "PLATINUM": 0.00082,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER"
+   ],
+   "dearer_at": [
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE",
+    "BRONZE"
+   ],
+   "dearer_at": [
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00475,
+     "SILVER": 0.0045,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "DIAMOND": 0.004
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-found": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00082,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Publication post delivered"
+   }
+  },
+  "desc": "Read recent posts from any Substack publication's own domain \u2014 title, date, full HTML body, comment count and paywall status (audience) \u2014 via the official but undocumented JSON API. No login, no API key."
+ },
+ {
+  "handle": "clearpath/substack-scraper",
+  "title": "Substack Scraper - Whole Archives, Comments & Notes",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.00199,
+   "BRONZE": 0.00179,
+   "SILVER": 0.00169,
+   "GOLD": 0.00139,
+   "PLATINUM": 0.00139,
+   "DIAMOND": 0.00139
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE",
+    "BRONZE"
+   ],
+   "dearer_at": [
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): comment,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.00199,
+     "BRONZE": 0.00179,
+     "SILVER": 0.00169,
+     "GOLD": 0.00139,
+     "PLATINUM": 0.00139,
+     "DIAMOND": 0.00139
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   },
+   "comment": {
+    "tiers": {
+     "FREE": 0.00059,
+     "BRONZE": 0.00055,
+     "SILVER": 0.00049,
+     "GOLD": 0.00039,
+     "PLATINUM": 0.00039,
+     "DIAMOND": 0.00039
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Comment"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Export every post of any Substack, not just the newest 480: full text as Markdown, HTML and plain text, reactions, comments with replies, Notes, profiles and publication data with subscriber counts, paid plans and analytics. Custom domains, deep keyword search for posts and Notes. No login."
+ },
+ {
+  "handle": "aurenic/newsletter-author-contacts",
+  "title": "Newsletter Author Contacts",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "author_email_verified",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): author_email_verified",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "author_email_verified": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Contact email found"
+   }
+  },
+  "desc": "Extract Substack newsletter author contacts, emails and publication stats. Keyless, HTTP-only, no login."
+ },
+ {
+  "handle": "juryless_lens/ai-training-data-scraper",
+  "title": "AI Training Data Scraper (Substack / Medium)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.03
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Extract clean, structured text data from Substack and Medium publications \u2014 formatted as Markdown or Plain Text \u2014 ready for LLM fine-tuning, RAG pipelines, and content analysis."
+ },
+ {
+  "handle": "neronbaez/substack-scraper",
+  "title": "Substack Scraper \u2014 Posts, Full Text, Stats & Comments",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post",
+  "unit_tiers": {
+   "FREE": 1e-05,
+   "BRONZE": 0.002,
+   "SILVER": 0.002,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE"
+   ],
+   "dearer_at": [
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE"
+   ],
+   "dearer_at": [
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): comment,post",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "post": {
+    "tiers": {
+     "FREE": 1e-05,
+     "BRONZE": 0.002,
+     "SILVER": 0.002,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Post"
+   },
+   "comment": {
+    "tiers": {
+     "FREE": 1e-05,
+     "BRONZE": 0.0005,
+     "SILVER": 0.0005,
+     "GOLD": 0.0005,
+     "PLATINUM": 0.0005,
+     "DIAMOND": 0.0005
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Comment"
+   }
+  },
+  "desc": "Scrape any Substack newsletter: all posts with full text (free posts), likes, comments, restacks, word count, authors and dates, plus comment threads. Works with custom domains. No login, fast JSON API. Pay per result. Works with AI agents via MCP."
+ },
+ {
+  "handle": "data_direct/substack-note-scraper",
+  "title": "Substack Note Details Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Run"
+   }
+  },
+  "desc": "Get a Note with its replies"
+ },
+ {
+  "handle": "data_direct/substack-post-comments-scraper",
+  "title": "Substack Post Comments Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Run"
+   }
+  },
+  "desc": "Get a post's comment thread"
+ },
+ {
+  "handle": "data_direct/substack-user-scraper",
+  "title": "Substack User Profile Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Run"
+   }
+  },
+  "desc": "Get an author's profile"
+ },
+ {
+  "handle": "data_direct/substack-user-posts-scraper",
+  "title": "Substack User Posts Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "api-request",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "api-request": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Page"
+   }
+  },
+  "desc": "Get an author's posts"
+ },
+ {
+  "handle": "adaptive_nightmare/substack-scraper",
+  "title": "Substack Newsletters and Creator Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER"
+   ],
+   "dearer_at": [
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE"
+   ],
+   "dearer_at": [
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract Substack Newsletters and Creator data in clean JSON or CSV. Query by categories, leaderboardType, startUrls for records, engagement metrics, and metadata. Export datasets, run via API or Python/Node.js SDK, schedule runs, or integrate with webhooks with zero proxy fees."
+ },
+ {
+  "handle": "matidepa22/newsletter-sponsor-finder",
+  "title": "Newsletter Sponsor Finder: Substack Sponsors & Ad Leads",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "newsletter",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): newsletter",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "newsletter": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Newsletter analyzed"
+   }
+  },
+  "desc": "Find Substack newsletters in any niche that sell sponsorships. Get subscribers, posting cadence, engagement and the brands already sponsoring them: ready-made leads for newsletter advertising and sponsorship sales."
+ },
+ {
+  "handle": "kamerozkan/substack-scraper-posts-notes",
+  "title": "Substack Scraper - Posts, Substack Notes & Newsletter Archive",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.00108,
+   "SILVER": 0.00102,
+   "GOLD": 0.00096,
+   "PLATINUM": 0.00096,
+   "DIAMOND": 0.00096
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER"
+   ],
+   "dearer_at": [
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "item": {
+    "tiers": {
+     "FREE": 0.0012,
+     "BRONZE": 0.00108,
+     "SILVER": 0.00102,
+     "GOLD": 0.00096,
+     "PLATINUM": 0.00096,
+     "DIAMOND": 0.00096
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Post or note"
+   }
+  },
+  "desc": "Substack scraper for posts and Substack Notes: paste publication URLs or profile handles and get every post with title, date, paywall flag, likes, restacks, comments, tags, authors and the full text of free posts, plus Notes with text, likes, restacks and replies. No login, no API key."
+ },
+ {
+  "handle": "s-r/substack-scraper",
+  "title": "Substack Scraper: Posts, Comments & Newsletter Profiles",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER"
+   ],
+   "dearer_at": [
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [
+    "FREE"
+   ],
+   "dearer_at": [
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor_start,comment,post,post_content,profile",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "actor_start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "post": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Post"
+   },
+   "post_content": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Post full text"
+   },
+   "comment": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Comment"
+   },
+   "profile": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Profile"
+   }
+  },
+  "desc": "Collect Substack newsletter posts, writer and publication profiles, subscriber estimates and comment threads. Search by keyword, filter by date, and optionally export public article text. Paid content is limited to its public preview."
+ },
+ {
+  "handle": "clearpath/newsletter-list-cleaner",
+  "title": "Newsletter List Cleaner - Validate & Score Subscribers",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00799,
+   "BRONZE": 0.00749,
+   "SILVER": 0.00699,
+   "GOLD": 0.00599,
+   "PLATINUM": 0.00599,
+   "DIAMOND": 0.00599
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00799,
+     "BRONZE": 0.00749,
+     "SILVER": 0.00699,
+     "GOLD": 0.00599,
+     "PLATINUM": 0.00599,
+     "DIAMOND": 0.00599
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Email validated"
+   }
+  },
+  "desc": "Clean and validate your newsletter subscriber list. Upload exports from Mailchimp, Beehiiv, Substack, ConvertKit, Ghost, ActiveCampaign, MailerLite, or Buttondown. Get quality scores, keep/re-engage/remove recommendations, and a full list health report."
+ },
+ {
+  "handle": "delectable_incubator/substack-people-scraper-low-cost",
+  "title": "Substack People Scraper - Low-cost\ud83d\udcb2\ud83d\udd25\u270d\ufe0f\ud83d\udcec",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00238,
+   "BRONZE": 0.00236,
+   "SILVER": 0.00235,
+   "GOLD": 0.00228,
+   "PLATINUM": 0.00228,
+   "DIAMOND": 0.00228
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "cmp_vs_result": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "cmp_vs_metadata": {
+   "compared": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "cheaper_at": [],
+   "dearer_at": [
+    "FREE",
+    "BRONZE",
+    "SILVER",
+    "GOLD",
+    "PLATINUM",
+    "DIAMOND"
+   ],
+   "every_rung": false
+  },
+  "legacy_every_tier_vs_our_FREE": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00238,
+     "BRONZE": 0.00236,
+     "SILVER": 0.00235,
+     "GOLD": 0.00228,
+     "PLATINUM": 0.00228,
+     "DIAMOND": 0.00228
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "\u270d\ufe0f\ud83d\udd0d Extract Substack creator profiles by keyword with ease. Collect names, handles, bios, publications, social links, profile images, setup dates, profile URLs, and creator metadata. Ideal for creator discovery, newsletter research, influencer analysis, lead generation &  audience intelligence \ud83d\udcca\ud83d\ude80"
+ }
+]
