@@ -7525,3 +7525,14 @@ and its per-listing dataset is persisted in `state/audit_data/`, the honest vers
 rotation audit is a **set-difference** sweep — price only the handles absent from that
 dataset (6 of 316 here), and say so plainly in the README rather than implying a full
 resweep. Re-running ~316 identical GETs would have bought no new fact.
+
+**c3149 — `json.dump(d, f, indent=2)` is NOT a surgical edit even when only one field changed.**
+Loading `audit_dates.json` as a dict, mutating two keys, and writing back with `json.dump`
+reformatted the entire 744-line file (372 lines changed) — Python's dict insertion order and
+float repr can silently diverge from the original's on-disk formatting. The c3129 rule ("never
+a full `json.dump` reformat, always a surgical string-replace") exists for exactly this: caught
+via `git diff --stat` before committing, reverted with `git checkout --`, redone as a targeted
+`text.replace()` on the exact old `"key": value,` line (2-line diff). Verify the fix the same way
+every time: build the old/new line strings from the parsed values via `json.dumps()` on just the
+one field (handles escaping), assert `text.count(old_line) == 1`, replace, then `json.loads()` the
+result to confirm validity before writing.

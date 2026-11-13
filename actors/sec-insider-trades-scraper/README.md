@@ -476,6 +476,40 @@ The remaining 79 of the 86 are dearer at every tier or out of scope (generic mul
 EDGAR wrappers, non-comparable bundled units, or a different regulator) — the same ruling every
 prior sweep has given this shape.
 
+**Nineteenth sweep, delta since cycle 2813, checked live 2026-11-13.** Own price re-verified
+unchanged (flat $0.0018/`result`, no start fee). Niche grew to 183 matched (up from 175); the
+unnamed tail held flat at 89 of 183 (88 NONE + 1 OWNER-overlap false positive) only because
+disclosing the six undercutters plus `pintostudio`/`maged120` above moved 8 handles into the
+named bucket the same cycle 11 brand-new listings appeared — a wash, not stalled growth. All 11
+new-since-2813 handles were live-priced (`state/audit_data/c3149_sit_prices.json`).
+
+**One new per-filing rival, the deepest yet in this shape:** `tacps126/sec-filings` (1 user,
+created 2026-11-11) bills a flat **$0.0004 per filing across every SEC form type** (10-K, 10-Q,
+8-K and Form 4 alike — its own listing states "$0.40 per 1,000 filings"). Using this page's own
+break-even method (its rate ÷ our $0.0018), it beats us once a Form 4 filing carries more than
+**0.22 transactions — i.e. essentially always**, since a Form 4 filing reports at least one
+transaction by construction. Far more aggressive than the three per-filing rivals already named
+above (1.67–1.94).
+
+**One new per-company-flat rival, same shape as `jdepablos/insider-trading-feed` above but
+cheaper:** `accquantic/insider-trades-for-agents` (2 users) charges a flat **$0.01 per company**
+regardless of row count ("One flat price per company" per its own listing), no separate start
+fee. It beats our $0.0018/row once a company's requested window returns more than **~6**
+transactions (vs `jdepablos`'s ~11) but is dearer than us for anything smaller, so — like
+`jdepablos` — it is not counted as a flat undercutter.
+
+**Remaining 9 of the 11 are dearer at every tier or out of scope:** two MCP servers bundling
+Form 4 with 13F or 10-K/10-Q/8-K/XBRL access behind their own non-comparable units
+(`edgarflow/sec-edgar-insider-13f-mcp`, `vesper26/sec-edgar-filings-mcp-server`); one multi-source
+Form D + Form 4 + material-events lead-gen wrapper with contact enrichment
+(`apex-b2b-data/sec-edgar-form-d-insider-leads`); one per-ticker "equity intelligence" bundle
+sourced from `api.nasdaq.com` rather than EDGAR (`brick_joey_yto/nasdaq-trader-intel`); a
+cluster-signal detector and a cluster-buy MCP, both a different output granularity like
+`johnveds15` above (`donzely/sec-insider-signals`, `mcp_collector/us-stock-insider-cluster-buy-mcp`);
+and three flat dearer-at-every-tier single-purpose Form 4 scrapers at $0.004/row
+(`epicscrapers/sec-insider-trading-scraper`, `moment-data/sec-insider-transactions-feed`,
+`mooseandraven/sec-edgar-filing-monitor`).
+
 ## Notes on the source
 
 - **Filings older than June 2003 are not machine-readable at all, and this Actor says so rather
