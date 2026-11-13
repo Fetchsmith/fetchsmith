@@ -1,0 +1,6261 @@
+[
+ {
+  "handle": "abotapi/wellfound-jobs-scraper",
+  "title": "Wellfound Jobs Scraper - Startup Roles, Salaries & Remote Jobs",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.0016,
+   "SILVER": 0.0013,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0018,
+     "BRONZE": 0.0016,
+     "SILVER": 0.0013,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Dataset item"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.06,
+     "BRONZE": 0.05,
+     "SILVER": 0.04,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape startup jobs from Wellfound.com by keyword, location, role, or remote status. Extract job details, compensation, company badges, and other listing data, with MCP connector export support."
+ },
+ {
+  "handle": "abotapi/we-work-remotely-jobs-scraper",
+  "title": "WeWorkRemotely Scraper - Remote Jobs, Salaries & Companies",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.0016,
+   "SILVER": 0.0013,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.03,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,detail-enrichment",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0018,
+     "BRONZE": 0.0016,
+     "SILVER": 0.0013,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "detail-enrichment": {
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.0007,
+     "SILVER": 0.0006,
+     "GOLD": 0.0005,
+     "PLATINUM": 0.0005,
+     "DIAMOND": 0.0005
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Detail enrichment"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.06,
+     "BRONZE": 0.05,
+     "SILVER": 0.04,
+     "GOLD": 0.03,
+     "PLATINUM": 0.03,
+     "DIAMOND": 0.03
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract current remote job listings from weworkremotely.com. Use keyword search or WWR feed, category, and remote-jobs URLs. Returns clean job rows with title, company, category, region, tags, salary text, description matches, and filtered structured output."
+ },
+ {
+  "handle": "accountable_eel/remote-jobs-unified-search",
+  "title": "Remote Jobs Search: RemoteOK, WWR, Himalayas and More Boards",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-returned",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.00195,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-returned": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00255,
+     "SILVER": 0.00195,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job returned"
+   }
+  },
+  "desc": "Search six remote job boards in one run: Remote OK, We Work Remotely, Himalayas, Working Nomads, Jobgether and Y Combinator. One deduplicated row per job with salary, tags and link, plus a new-jobs-only monitoring mode."
+ },
+ {
+  "handle": "ahmed_jasarevic/remoteok-scraper",
+  "title": "RemoteOK Scraper [$0.9/1K\ud83d\udcb0] | Remote Jobs | Salary Data",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "GOLD": 0.00087,
+   "SILVER": 0.0008799999999999999,
+   "FREE": 0.0009,
+   "DIAMOND": 0.00087,
+   "BRONZE": 0.00089,
+   "PLATINUM": 0.00087
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "GOLD": 0.00087,
+     "SILVER": 0.0008799999999999999,
+     "FREE": 0.0009,
+     "DIAMOND": 0.00087,
+     "BRONZE": 0.00089,
+     "PLATINUM": 0.00087
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract RemoteOK remote job listings with salary ranges and tech tags for job market research"
+ },
+ {
+  "handle": "authoritative_glen/remoteok-jobs-salaries-leads-radar",
+  "title": "RemoteOK Tech Jobs, Salaries & Hiring Leads Radar",
+  "users": 3,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {},
+  "desc": "Extract live remote tech jobs, verified salary benchmarks (min/max USD), hiring companies, tags, and direct apply links from RemoteOK. MCP & AI Agent ready."
+ },
+ {
+  "handle": "automly/stepstone-xing-jobs-scraper",
+  "title": "StepStone & Xing Jobs Scraper - Germany, Austria, Switzerland",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0007,
+   "BRONZE": 0.0006,
+   "SILVER": 0.0005,
+   "GOLD": 0.0004,
+   "PLATINUM": 0.0004,
+   "DIAMOND": 0.0004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job,job-details",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.0007,
+     "BRONZE": 0.0006,
+     "SILVER": 0.0005,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job"
+   },
+   "job-details": {
+    "tiers": {
+     "FREE": 0.00095,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.00065,
+     "PLATINUM": 0.00065,
+     "DIAMOND": 0.00065
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Job with full details"
+   }
+  },
+  "desc": "Scrape StepStone and XING jobs in Germany, Austria and Switzerland by keyword, location, radius, date, employment type, remote work, experience, salary or company, or from any link: title, company, salary, location, full description, requirements, benefits and company profile."
+ },
+ {
+  "handle": "axery/remoteok-jobs-scraper",
+  "title": "RemoteOK Jobs Scraper \u2014 Official Feed, Verified Remote",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.00081,
+   "SILVER": 0.00072,
+   "GOLD": 0.000603,
+   "PLATINUM": 0.000603,
+   "DIAMOND": 0.000603
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0009,
+     "BRONZE": 0.00081,
+     "SILVER": 0.00072,
+     "GOLD": 0.000603,
+     "PLATINUM": 0.000603,
+     "DIAMOND": 0.000603
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape Remote OK's official public job feed with repaired text encoding, verified-remote detection, and the attribution their API terms require."
+ },
+ {
+  "handle": "benthepythondev/eu-jobs-intelligence",
+  "title": "\ud83c\uddea\ud83c\uddfa Arbeitnow EU Jobs Scraper - Tech & Remote Jobs",
+  "users": 17,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.00425,
+   "GOLD": 0.004,
+   "PLATINUM": 0.00375,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.00425,
+     "GOLD": 0.004,
+     "PLATINUM": 0.00375,
+     "DIAMOND": 0.0035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 4.5e-05,
+     "SILVER": 4.25e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 3.75e-05,
+     "DIAMOND": 3.5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract job listings from Arbeitnow, one of Europe's leading job boards with thousands of tech positions. Get developer roles, startup jobs, and enterprise opportunities remote worldwide. Includes full job descriptions, company info, skills/tags, and direct application URLs"
+ },
+ {
+  "handle": "benthepythondev/jobicy-remote-jobs-intelligence",
+  "title": "\ud83d\udcbc Jobicy Remote Jobs Intelligence - AI Scoring",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.018,
+   "SILVER": 0.017,
+   "GOLD": 0.016,
+   "PLATINUM": 0.015,
+   "DIAMOND": 0.014
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.018,
+     "SILVER": 0.017,
+     "GOLD": 0.016,
+     "PLATINUM": 0.015,
+     "DIAMOND": 0.014
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 4.5e-05,
+     "SILVER": 4.25e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 3.75e-05,
+     "DIAMOND": 3.5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract remote job listings with AI-powered opportunity scoring. Find the best remote work opportunities across industries, locations, and experience levels without needing any API authentication."
+ },
+ {
+  "handle": "benthepythondev/remote-jobs-intelligence",
+  "title": "\ud83d\udcbc RemoteOK Jobs Scraper - Remote Roles with Salaries",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.00425,
+   "GOLD": 0.004,
+   "PLATINUM": 0.00375,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.00425,
+     "GOLD": 0.004,
+     "PLATINUM": 0.00375,
+     "DIAMOND": 0.0035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 4.5e-05,
+     "SILVER": 4.25e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 3.75e-05,
+     "DIAMOND": 3.5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Returns the newest remote jobs on RemoteOK, about 100 at a time: title, company, location, skill tags, salary range, posting date, job page and apply link, with clean text. Filter by skill tag, company or location. For several job boards in one run, use Remote Jobs Aggregator."
+ },
+ {
+  "handle": "benthepythondev/remotive-jobs-intelligence",
+  "title": "\ud83d\udcbc Remotive Remote Jobs Intelligence - AI-Scored",
+  "users": 63,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.018,
+   "BRONZE": 0.0162,
+   "SILVER": 0.0153,
+   "GOLD": 0.0144,
+   "PLATINUM": 0.0135,
+   "DIAMOND": 0.0126
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.018,
+     "BRONZE": 0.0162,
+     "SILVER": 0.0153,
+     "GOLD": 0.0144,
+     "PLATINUM": 0.0135,
+     "DIAMOND": 0.0126
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 4.5e-05,
+     "SILVER": 4.25e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 3.75e-05,
+     "DIAMOND": 3.5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Returns remote jobs from Remotive with an opportunity score from 0 to 100 on every job: title, company, salary range, tags, location requirement and posting date, optionally with the full description. Filter by category, job type, minimum salary, location and keywords. No API key, no login."
+ },
+ {
+  "handle": "benthepythondev/workingnomads-jobs-scraper",
+  "title": "Working Nomads Jobs Scraper - Remote Job Data",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 4e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 4.5e-05,
+     "SILVER": 4.25e-05,
+     "GOLD": 4e-05,
+     "PLATINUM": 4e-05,
+     "DIAMOND": 4e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.00255,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Working Nomads remote jobs: title, company, category, tags, location, published date, job URL and description."
+ },
+ {
+  "handle": "blackfalcondata/kariera-scraper",
+  "title": "Kariera Scraper \u2014 Greek Job Listings",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape kariera.gr \u2014 Greece's leading job portal for structured job listings with filters for seniority level \u00b7 employment type \u00b7 remote work \u00b7 company details per posting. Incremental mode flags new and changed jobs across scheduled runs."
+ },
+ {
+  "handle": "blackfalcondata/remotive-scraper",
+  "title": "Remotive Scraper \u2014 remote job listings",
+  "users": 10,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape remotive.com \u2014 curated remote-job board with structured salary data across every role \u00b7 date-range filtering for fresh postings \u00b7 a single run that needs no account or login. Incremental mode tracks new and changed jobs across scheduled runs."
+ },
+ {
+  "handle": "bovi/weworkremotely-scraper",
+  "title": "WeWorkRemotely Scraper | $1/1K \u2014 7 Categories, No Login",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00099,
+   "SILVER": 0.00098,
+   "GOLD": 0.00097,
+   "PLATINUM": 0.00097,
+   "DIAMOND": 0.00097
+  },
+  "start_fee": 4.85e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 4.95e-05,
+     "SILVER": 4.9e-05,
+     "GOLD": 4.85e-05,
+     "PLATINUM": 4.85e-05,
+     "DIAMOND": 4.85e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00099,
+     "SILVER": 0.00098,
+     "GOLD": 0.00097,
+     "PLATINUM": 0.00097,
+     "DIAMOND": 0.00097
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "WeWorkRemotely Scraper | $1.50/1K \u2014 7 Categories, No Login"
+   }
+  },
+  "desc": "Collect remote job listings from WeWorkRemotely public RSS feeds. Get structured records with company, role, category, location, dates, skills, and descriptions. Run with category, keyword, limit, and description inputs. Pricing: $0.001 per result on Free, plus $0.00005 per Actor Start event."
+ },
+ {
+  "handle": "c0nst/remote-jobs-scraper-2",
+  "title": "Remote Developer Jobs Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-found",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-found",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-found": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "job"
+   }
+  },
+  "desc": "Scrape remote job listings from multiple sources \u2014 remote.com, remoteok.com, and weworkremotely.com \u2014 with a single keyword search. Filter by programming language, technology, or role and get structured results including title, company, location, salary, and tags."
+ },
+ {
+  "handle": "chimerical_quicklime/remotive-scraper",
+  "title": "Remotive Scraper \u2014 No Login, $0.93/1k",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001163
+  },
+  "start_fee": 0.001,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001163
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape live remote job postings from Remotive \u2014 title, company, category, tags, salary, location requirement, and direct apply URL. Powered by the public Remotive API. No login or cookies. MCP-ready for AI agents. $0.93 per 1,000 records."
+ },
+ {
+  "handle": "cirkit/indeed-jobs-scraper",
+  "title": "Indeed Jobs Scraper",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Indeed.com job listings with salaries, company ratings, descriptions, and remote work info. Full JSON output, fast, residential-proxy-ready."
+ },
+ {
+  "handle": "cleanfeedsapi/remote-jobs-feed",
+  "title": "Remote Jobs API: RemoteOK, Arbeitnow | $2/1K",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.002,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job row"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Public remote-job JSON from RemoteOK and Arbeitnow in one feed. Title, company, location, remote flag, tags, salary, URL, posted date, id. No login, no HTML scrape, no proxies. $2 per 1,000 jobs."
+ },
+ {
+  "handle": "cleanrowdata/remote-jobs-api",
+  "title": "Remote Jobs API & Scraper: Remote Jobs by Region, Hourly",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.002,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job result"
+   }
+  },
+  "desc": "Remote-only jobs straight from 17,000+ company career sites (Greenhouse, Lever, Workday, Ashby...), refreshed hourly. Filter by where you can work from (US, Canada, Europe, UK, LATAM, APAC, anywhere), function, seniority and minimum salary. Aggregators removed, duplicates merged."
+ },
+ {
+  "handle": "corvuslab/hellowork-scraper",
+  "title": "HelloWork Jobs Scraper | France Jobs, Salaries & All Filters",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00075
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00075
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape HelloWork (hellowork.com) job listings across France with every site filter: contract, remote work, job function, industry, experience, employer type, radius, min salary. 74 fields per job: salary incl. estimates, skills, education, company headcount & revenue. Incremental mode + alerts."
+ },
+ {
+  "handle": "crawlpilot/working-nomads-scraper",
+  "title": "Working Nomads Jobs Scraper with Company Details",
+  "users": 27,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes jobs from Working Nomads with full descriptions, company profiles, benefits & social links, etc.."
+ },
+ {
+  "handle": "crowdpull/crowdpull-ziprecruiter-jobs-scraper",
+  "title": "ZipRecruiter Jobs Scraper \u2014 Remote Jobs, Salaries & Details",
+  "users": 15,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-extracted",
+  "unit_tiers": {
+   "FREE": 0.00375
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-extracted",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-extracted": {
+    "tiers": {
+     "FREE": 0.00375
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job Extracted"
+   }
+  },
+  "desc": "Extract ZipRecruiter jobs by keyword, location, or direct URL. Supports remote filters, salary and apply fields, detail enrichment, US residential proxy defaults, and in-run deduplication."
+ },
+ {
+  "handle": "cryptosignals/weworkremotely-scraper",
+  "title": "Weworkremotely Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result scraped"
+   }
+  },
+  "desc": "Extract remote job listings from We Work Remotely. Get job title, company, category, location restrictions, salary, posting date, and apply URL. Ideal for remote job aggregators and talent research. PPE pricing \u2014 pay only for results."
+ },
+ {
+  "handle": "dami_studio/remotive-jobs-scraper",
+  "title": "Remotive Jobs Scraper",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00198,
+   "SILVER": 0.00196,
+   "GOLD": 0.00194,
+   "PLATINUM": 0.00194,
+   "DIAMOND": 0.00194
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job,request",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.00198,
+     "SILVER": 0.00196,
+     "GOLD": 0.00194,
+     "PLATINUM": 0.00194,
+     "DIAMOND": 0.00194
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job"
+   },
+   "request": {
+    "tiers": {
+     "FREE": 0.0016
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Request"
+   }
+  },
+  "desc": "Remotive jobs scraper for remote jobs from Remotive's public feed. Each row has the title, company, category, job type, the region the employer hires from, salary text, tags, date, apply URL and full description. The feed is small and returns every job whatever you search. $2.00 per 1,000 jobs."
+ },
+ {
+  "handle": "dataforgehq/remote-jobs-aggregator",
+  "title": "Remote Jobs Aggregator: Remote OK, We Work Remotely & 3 more",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "job": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job"
+   }
+  },
+  "desc": "Remote jobs from 5 boards (Remote OK, We Work Remotely, Jobicy, Working Nomads, Arbeitnow) in one normalized, de-duplicated feed. Filter by keyword, region, seniority, salary and date; only-new mode for daily alerts. $1 per 1,000 jobs."
+ },
+ {
+  "handle": "datascraperes/jobright-jobs-scraper",
+  "title": "Jobright Jobs Scraper | Salary & Company Data",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.00075,
+   "PLATINUM": 0.00075,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "job-result": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.00075,
+     "PLATINUM": 0.00075,
+     "DIAMOND": 0.00075
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job result"
+   }
+  },
+  "desc": "Extract Jobright.ai jobs by title, city and country. Filter by remote work, seniority and H1B sponsorship. Export unique postings with salaries, skills and company details to JSON, CSV or Excel for recruiting and job-market research. No login required."
+ },
+ {
+  "handle": "delectable_incubator/working-nomads-jobs-scraper-low-cost",
+  "title": "Working Nomads Jobs Scraper - Low-cost\ud83d\udcb2\ud83d\udd25\ud83c\udf0d\ud83d\udcbc",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00199,
+   "BRONZE": 0.00199,
+   "SILVER": 0.00199,
+   "GOLD": 0.00149,
+   "PLATINUM": 0.00149,
+   "DIAMOND": 0.00149
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00199,
+     "BRONZE": 0.00199,
+     "SILVER": 0.00199,
+     "GOLD": 0.00149,
+     "PLATINUM": 0.00149,
+     "DIAMOND": 0.00149
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "\ud83d\udd0d Scrape Working Nomads remote jobs from any category page. Extract job listings across AI, software engineering, data, design, product, DevOps, marketing, customer support, sales, finance & more. Perfect for remote job research, recruitment, hiring intelligence and market analysis."
+ },
+ {
+  "handle": "deriverge/instahyre-jobs-scraper",
+  "title": "Instahyre Jobs Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0003,
+   "BRONZE": 0.00024,
+   "SILVER": 0.000195,
+   "GOLD": 0.00015,
+   "PLATINUM": 0.00015,
+   "DIAMOND": 0.00015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.0003,
+     "BRONZE": 0.00024,
+     "SILVER": 0.000195,
+     "GOLD": 0.00015,
+     "PLATINUM": 0.00015,
+     "DIAMOND": 0.00015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job"
+   }
+  },
+  "desc": "Jobs from Instahyre in India, each with the company's tagline, founding year, size band and the job's skill tags. Search by skill or by any of the 107 job functions, then filter by city, remote work, company size and years of experience."
+ },
+ {
+  "handle": "devrod/himalayas-app-jobs",
+  "title": "Himalayas Jobs Scraper: Remote Jobs & Salaries",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.0008,
+   "SILVER": 0.00072,
+   "GOLD": 0.00064,
+   "PLATINUM": 0.00064,
+   "DIAMOND": 0.00064
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.0008,
+     "SILVER": 0.00072,
+     "GOLD": 0.00064,
+     "PLATINUM": 0.00064,
+     "DIAMOND": 0.00064
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape remote jobs from Himalayas by keyword and country, or read the latest feed: title, company, salary range, seniority, job type, countries and time zones. Unofficial."
+ },
+ {
+  "handle": "easyapi/indeed-jobs-scraper",
+  "title": "Indeed Jobs Scraper",
+  "users": 139,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 0.09,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00299
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.09
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "A powerful Indeed.com scraper that extracts detailed job listings including salaries, company information, and work benefits. Perfect for job market analysis, recruitment research, and tracking remote work opportunities. Real-time data streaming with comprehensive output."
+ },
+ {
+  "handle": "eiv/indeed-jobs-scraper",
+  "title": "Indeed Jobs Scraper - Salaries, Remote & Company Ratings",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0013,
+   "SILVER": 0.0011,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): description-fetched,job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.0009,
+     "PLATINUM": 0.0009,
+     "DIAMOND": 0.0009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job scrape"
+   },
+   "description-fetched": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Description fetch"
+   }
+  },
+  "desc": "Scrape Indeed job search results in 23 countries: parsed salary ranges as numbers, remote work model, employer rating and review count, posting date and full descriptions. No login, no API key. Tells you when Indeed quietly ignored your location."
+ },
+ {
+  "handle": "fast_data_asap/job-search-api",
+  "title": "Arbeitsagentur Job Scraper & Job Search API \u2013 DE + Remote",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.0021,
+   "GOLD": 0.0019,
+   "PLATINUM": 0.0019,
+   "DIAMOND": 0.0019
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.0025,
+     "SILVER": 0.0021,
+     "GOLD": 0.0019,
+     "PLATINUM": 0.0019,
+     "DIAMOND": 0.0019
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Job"
+   }
+  },
+  "desc": "Search jobs by keyword, city and radius and get one de-duplicated JSON list from Bundesagentur f\u00fcr Arbeit (Germany), Arbeitnow, Remote OK, Himalayas and company career pages. Remote filter, salaries where given. Built for AI agents and job boards. $2.50 per 1,000 jobs."
+ },
+ {
+  "handle": "feedforge/weworkremotely-scraper",
+  "title": "We Work Remotely Scraper - Remote Jobs, Salaries & Companies",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape remote job listings from We Work Remotely. Titles, companies, salaries, locations and full descriptions as JSON, CSV or Excel."
+ },
+ {
+  "handle": "fetch_cat/himalayas-remote-jobs-scraper",
+  "title": "Himalayas Remote Jobs Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.00012099,
+   "BRONZE": 0.00010521,
+   "SILVER": 8.2066e-05,
+   "GOLD": 6.3127e-05,
+   "PLATINUM": 4.2085e-05,
+   "DIAMOND": 2.9459e-05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run started"
+   },
+   "item": {
+    "tiers": {
+     "FREE": 0.00012099,
+     "BRONZE": 0.00010521,
+     "SILVER": 8.2066e-05,
+     "GOLD": 6.3127e-05,
+     "PLATINUM": 4.2085e-05,
+     "DIAMOND": 2.9459e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Item extracted"
+   }
+  },
+  "desc": "Scrape public Himalayas remote job listings with companies, salaries, locations, tags, descriptions, and application links."
+ },
+ {
+  "handle": "fetch_cat/remoteok-jobs-scraper",
+  "title": "RemoteOK Jobs Scraper & Remote Jobs API",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.000575,
+   "BRONZE": 0.0005,
+   "SILVER": 0.00039,
+   "GOLD": 0.0003,
+   "PLATINUM": 0.0002,
+   "DIAMOND": 0.00014
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run started"
+   },
+   "item": {
+    "tiers": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0002,
+     "DIAMOND": 0.00014
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job extracted"
+   }
+  },
+  "desc": "Export public RemoteOK jobs by feed, tag, keyword, company, location, salary, and date. Get clean text and HTML descriptions, category, seniority, worldwide status, salary metadata, company logos, and apply links."
+ },
+ {
+  "handle": "getascraper/onlinejobs-ph-scraper",
+  "title": "OnlineJobs.ph Scraper: Philippines Remote Jobs with Pay Filters",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045,
+   "BRONZE": 0.00405,
+   "SILVER": 0.00369,
+   "GOLD": 0.003375,
+   "PLATINUM": 0.003375,
+   "DIAMOND": 0.003375
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,job-details",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0045,
+     "BRONZE": 0.00405,
+     "SILVER": 0.00369,
+     "GOLD": 0.003375,
+     "PLATINUM": 0.003375,
+     "DIAMOND": 0.003375
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job posting"
+   },
+   "job-details": {
+    "tiers": {
+     "FREE": 0.0008,
+     "BRONZE": 0.00072,
+     "SILVER": 0.000656,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Job details"
+   }
+  },
+  "desc": "Scrape OnlineJobs.ph remote job postings for Filipino virtual assistants and freelancers by keyword, skill, job type, posting date and hourly rate. Pay comes as numbers with an hourly USD rate. Exclude keywords, new-posting monitor, full details, JSON/CSV/Excel. No login."
+ },
+ {
+  "handle": "ghostgrid/remoteco-job-scraper",
+  "title": "Remote.co Job Scraper",
+  "users": 17,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "dataset-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "dataset-record": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job Scraped"
+   }
+  },
+  "desc": "Extract remote job listings from Remote.co with title, company, location, job type, posted date, description, and job URL."
+ },
+ {
+  "handle": "gio21/arbeitnow-jobs-scraper",
+  "title": "Arbeitnow Jobs Scraper - EU/DACH Jobs, No Login, $0.002/Job",
+  "users": 126,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job scraped"
+   }
+  },
+  "desc": "Scrape tech and remote jobs from Arbeitnow (EU/DACH). Reads the public job feed directly, no login or browser needed. Title, company, location, remote flag, visa sponsorship, tags, description and apply URL. $0.002 per job."
+ },
+ {
+  "handle": "gio21/remoteok-jobs-scraper",
+  "title": "RemoteOK Jobs Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job scraped"
+   }
+  },
+  "desc": "Scrape remote job listings from RemoteOK. Role, company, salary range, location, tags, description, apply URL. Pay per job."
+ },
+ {
+  "handle": "gio21/weworkremotely-scraper",
+  "title": "We Work Remotely Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job scraped"
+   }
+  },
+  "desc": "Scrape remote jobs from weworkremotely.com - a leading remote-jobs board. Title, company, region, category, tags, apply URL. Pay per job."
+ },
+ {
+  "handle": "glasswing/linkedin-jobs-scraper",
+  "title": "LinkedIn Jobs Scraper \u2014 Remote Jobs, No Login | $0.50/1k",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-16T05:18:12.000Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape LinkedIn job postings without an account: title, company, location, date posted, salary, seniority, employment type, industries, applicants and the full description. Keyword, location, company and date filters."
+ },
+ {
+  "handle": "gocreative.ai/remote-job-company-radar",
+  "title": "Companies Hiring Scraper \u2014 Remote Job B2B Sales Leads",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.011184,
+   "SILVER": 0.010392,
+   "GOLD": 0.0096,
+   "PLATINUM": 0.0096,
+   "DIAMOND": 0.0096
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.011184,
+     "SILVER": 0.010392,
+     "GOLD": 0.0096,
+     "PLATINUM": 0.0096,
+     "DIAMOND": 0.0096
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape companies actively hiring remote roles to build B2B sales leads \u2014 company name, open role, tech-stack tags, salary range, and job URL. Hiring activity = buying intent: surface growth-stage companies with budget. CSV / JSON / Excel, pay per result."
+ },
+ {
+  "handle": "haketa/internshala-scraper",
+  "title": "Internshala Scraper - India Internships & Fresher Jobs",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0023,
+   "SILVER": 0.002,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.0023,
+     "SILVER": 0.002,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Internshala.com internships and fresher jobs in India. Extract role title, hiring company, stipend or salary, location including work from home, duration and listing URL by search or category URL. Export JSON, CSV, Excel for recruitment and job-market research."
+ },
+ {
+  "handle": "happitap/remoteok-jobs-scraper",
+  "title": "RemoteOK Jobs Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.25,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.25
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract remote tech jobs, salaries, tags, and hiring companies from RemoteOK. Fast, reliable  crawler"
+ },
+ {
+  "handle": "hello.datawizards/stepstone-jobs-scraper",
+  "title": "Stepstone Jobs Scraper",
+  "users": 49,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "The Stepstone Jobs Scraper Actor extracts detailed job listings from Stepstone in JSON, including titles, companies, and remote work options. Ideal for job market analysis, recruitment, and skills tracking, it supports custom queries and proxies. Built by DataWizards for efficient data collection."
+ },
+ {
+  "handle": "hichemdev/remote-jobs-scraper",
+  "title": "Remote Jobs Scraper \u2014 RemoteOK, Greenhouse & Lever",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "job"
+   }
+  },
+  "desc": "Scrape remote jobs from RemoteOK and live openings from any company's Greenhouse or Lever careers board: title, company, location, tags, salary and apply URL. No API key."
+ },
+ {
+  "handle": "hipersoft/himalayas-scraper",
+  "title": "Himalayas Remote Jobs Scraper \u2014 Salary, Filters & Bulk",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0008,
+   "SILVER": 0.00065,
+   "GOLD": 0.0005,
+   "PLATINUM": 0.0005,
+   "DIAMOND": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-request,job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0008,
+     "SILVER": 0.00065,
+     "GOLD": 0.0005,
+     "PLATINUM": 0.0005,
+     "DIAMOND": 0.0005
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Job scraped"
+   },
+   "api-request": {
+    "tiers": {
+     "FREE": 0.0004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "API request"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape remote jobs from Himalayas: title, company, salary range, seniority, location & timezone restrictions, categories and description. Filter by keyword, category, seniority or type. Bulk export up to tens of thousands."
+ },
+ {
+  "handle": "hipersoft/onlinejobs-scraper",
+  "title": "OnlineJobs.ph Scraper \u2014 Philippine Remote VA Jobs",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0024,
+   "SILVER": 0.00195,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0024,
+     "SILVER": 0.00195,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Job"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape remote jobs from OnlineJobs.ph, the top marketplace for hiring Filipino virtual assistants: title, job type, salary, hours per week, posting date, skills, summary and full description. Search by keyword. Export CSV/JSON."
+ },
+ {
+  "handle": "hoholabs/arbeitnow-scraper",
+  "title": "Arbeitnow.com Scraper",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Browse job listings from Arbeitnow.com \u2014 Germany/Europe-focused with remote and English-language jobs. No API key required."
+ },
+ {
+  "handle": "hoholabs/himalayas-scraper",
+  "title": "Himalayas.app Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Search 100,000+ remote job listings on Himalayas.app by keyword, location, seniority, and employment type. No API key required."
+ },
+ {
+  "handle": "hoholabs/weworkremotely-scraper",
+  "title": "WeWorkRemotely.com Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "igolaizola/remoteok-jobs-scraper",
+  "title": "RemoteOK Jobs Scraper ($0.5 per 1000 results)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0005,
+   "SILVER": 0.0004,
+   "GOLD": 0.0003,
+   "PLATINUM": 0.0003,
+   "DIAMOND": 0.0003
+  },
+  "start_fee": 0.0003,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0005,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003,
+     "SILVER": 0.0004
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0005,
+     "SILVER": 0.0004,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "$0.5/1K \ud83d\udcb8 Remote OK scraper for remote job listings from remoteok.com with tags, locations, salaries, benefits, and sort filters. Extract jobs, companies, salaries, locations, apply links, and descriptions for recruiting dashboards."
+ },
+ {
+  "handle": "intelscrape/we-work-remotely-jobs-scraper",
+  "title": "We Work Remotely Jobs Scraper \u2014 Remote Salaries & Leads",
+  "users": 3,
+  "model": "FREE",
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {},
+  "desc": "Scrape We Work Remotely remote jobs \u2014 title, company, location, apply URL. Filter by keyword. RSS with demo fallback. Pay per job."
+ },
+ {
+  "handle": "jobsapi/flexjobs-jobs-search-scraper",
+  "title": "Flexjobs Jobs Search Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00299
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Flexjobs Job Record"
+   }
+  },
+  "desc": "Scrape remote, hybrid, and flexible job listings from FlexJobs. Extract job titles, companies, locations, schedule types, career levels, and salary information for remote work recruitment and market analysis."
+ },
+ {
+  "handle": "jobsapi/jobgether-remote-jobs-search-scraper",
+  "title": "Jobgether Remote Jobs Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00299
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Jobgether Remote Job Record"
+   }
+  },
+  "desc": "Extract public Jobgether remote jobs with company, location, dates, employment type, descriptions, requirements, skills, and source links."
+ },
+ {
+  "handle": "jobsapi/remotive-jobs-search-scraper",
+  "title": "Remotive Search Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00299
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Remotive Remote Job Record"
+   }
+  },
+  "desc": "Scrape remote job listings from Remotive.com, a leading remote job board. Extract job titles, companies, locations, categories, salary ranges, and descriptions for remote recruitment."
+ },
+ {
+  "handle": "jobscrawler/onlinejobsph-scraper",
+  "title": "OnlineJobs.ph Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00199
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00199
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape job listings from OnlineJobs.ph, the Philippines' largest remote work and virtual assistant marketplace."
+ },
+ {
+  "handle": "jp_data_tools/remoteok-scraper",
+  "title": "RemoteOK Scraper - Remote Job Listings API",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Extract remote job listings from RemoteOK.com using their official public API. Get job titles, companies, salaries, tags, and descriptions. No proxy needed."
+ },
+ {
+  "handle": "jp_data_tools/weworkremotely-scraper",
+  "title": "We Work Remotely Scraper - Remote Job Listings",
+  "users": 22,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape remote job listings from WeWorkRemotely.com. Extract job titles, companies, descriptions, salaries, and application links across multiple categories."
+ },
+ {
+  "handle": "kadi_bence/remote-jobs-scraper",
+  "title": "Remote Jobs Scraper [$0.90/1k] - RemoteOK, Himalayas & WWR",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00081,
+   "GOLD": 0.00072,
+   "PLATINUM": 0.00072,
+   "DIAMOND": 0.00072
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job": {
+    "tiers": {
+     "FREE": 0.0009,
+     "BRONZE": 0.0009,
+     "SILVER": 0.00081,
+     "GOLD": 0.00072,
+     "PLATINUM": 0.00072,
+     "DIAMOND": 0.00072
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job"
+   }
+  },
+  "desc": "$0.90 per 1,000 jobs. Search remote jobs on We Work Remotely, RemoteOK, Himalayas, Jobicy and Arbeitnow via official APIs/feeds, de-duplicated. Input: keywords, boards, locations, job types, min salary, posted within. Returns per job: title, company, location, salary, date, source, URL."
+ },
+ {
+  "handle": "kaitoeasyapi/remote-jobs-board-aggregator-scraper",
+  "title": "Remote Jobs Aggregator Scraper (Global WFH Feed) | $0.25/1K",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.00035,
+   "BRONZE": 0.00032,
+   "SILVER": 0.0003,
+   "GOLD": 0.00028,
+   "PLATINUM": 0.00028,
+   "DIAMOND": 0.00028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.00035,
+     "BRONZE": 0.00032,
+     "SILVER": 0.0003,
+     "GOLD": 0.00028,
+     "PLATINUM": 0.00028,
+     "DIAMOND": 0.00028
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Remote Job Posting Result"
+   }
+  },
+  "desc": "Scrape verified 100% remote and work-from-home job postings across Greenhouse, Lever, Ashby, Workday & 30+ ATS boards with salary ranges, hiring company domains, tech stack & direct apply URLs. Only $0.25/1K jobs."
+ },
+ {
+  "handle": "kalirobot/tecnoempleo-scraper",
+  "title": "Tecnoempleo Scraper: Extract Tech Jobs",
+  "users": 18,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "job"
+   }
+  },
+  "desc": "Fast and robust scraper for Tecnoempleo.com. Extract job listings with detailed data including salary, technologies, experience, and direct application links. Supports filtering by keyword, location, role, and remote work."
+ },
+ {
+  "handle": "khadinakbar/apec-jobs-scraper",
+  "title": "APEC Jobs Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job scraped"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape APEC.fr French executive (cadre) job postings by keyword, d\u00e9partement/city or pasted APEC search URL: title, company, salary range, location, contract type, remote work and apply URL. No login needed."
+ },
+ {
+  "handle": "lepidata/new-jobs-feed",
+  "title": "Greenhouse, Lever & Ashby Jobs Scraper & API: Postings to JSON",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0009
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.0009
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job result"
+   }
+  },
+  "desc": "Greenhouse, Lever and Ashby jobs: search new postings from 9,500+ companies' career sites by title, location and posted date. Daily-updated job board API, no API key, no LinkedIn. Job alerts, remote jobs, hiring signals."
+ },
+ {
+  "handle": "lergassy/lever-jobs-scraper",
+  "title": "Lever Jobs Scraper & API \u2014 Job Boards, Remote Jobs, Salaries",
+  "users": 31,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.00108,
+   "SILVER": 0.00096,
+   "GOLD": 0.00084,
+   "PLATINUM": 0.00084,
+   "DIAMOND": 0.00084
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.0012,
+     "BRONZE": 0.00108,
+     "SILVER": 0.00096,
+     "GOLD": 0.00084,
+     "PLATINUM": 0.00084,
+     "DIAMOND": 0.00084
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job"
+   }
+  },
+  "desc": "Lever jobs scraper and Lever postings API alternative: every open job from any company's jobs.lever.co board in one request. Title, team, locations, country, remote / hybrid / on-site, commitment, salary when posted, date, full description, apply link and emails in the posting. No login."
+ },
+ {
+  "handle": "lexis-solutions/arbetsformedlingen-se-scraper",
+  "title": "Arbetsformedlingen.se Scraper",
+  "users": 29,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.009,
+   "BRONZE": 0.008,
+   "SILVER": 0.0072,
+   "GOLD": 0.0064,
+   "PLATINUM": 0.0064,
+   "DIAMOND": 0.0064
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.009,
+     "BRONZE": 0.008,
+     "SILVER": 0.0072,
+     "GOLD": 0.0064,
+     "PLATINUM": 0.0064,
+     "DIAMOND": 0.0064
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape job listings across Sweden using keywords, regions, and filters like remote work, education, and employment type. Ideal for building job boards, market research, or tracking trends. Fast, structured, and customizable job data from official sources."
+ },
+ {
+  "handle": "logiover/arbeitnow-jobs-scraper",
+  "title": "Arbeitnow Jobs Scraper \u2013 arbeitnow.com",
+  "users": 41,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00116667,
+   "SILVER": 0.00083333,
+   "GOLD": 0.0005,
+   "PLATINUM": 0.0005,
+   "DIAMOND": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00116667,
+     "SILVER": 0.00083333,
+     "GOLD": 0.0005,
+     "PLATINUM": 0.0005,
+     "DIAMOND": 0.0005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Arbeitnow job listings without an API or login. Arbeitnow API alternative that exports remote jobs to CSV/JSON datasets."
+ },
+ {
+  "handle": "logiover/internshala-scraper",
+  "title": "Internshala Scraper \u2014 Internships, Jobs, Stipends & Companies",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.001333,
+   "SILVER": 0.001167,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.001333,
+     "SILVER": 0.001167,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Internshala scraper: export internships and fresher jobs with stipend or salary as numbers, duration, experience, locations, work from home, apply-by and posting dates, applicants, openings, skills, perks, full description and company details. Search by keyword, category, city or URL. No login."
+ },
+ {
+  "handle": "logiover/jobicy-remote-jobs-scraper",
+  "title": "Jobicy Remote Jobs Scraper - Jobs to CSV/JSON",
+  "users": 27,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045,
+   "BRONZE": 0.004,
+   "SILVER": 0.0035,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0045,
+     "BRONZE": 0.004,
+     "SILVER": 0.0035,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Jobicy remote jobs without login via this unofficial Jobicy API alternative. Export remote job listings to CSV or JSON; filter by industry & level."
+ },
+ {
+  "handle": "lost.fany/remote-jobs-scraper",
+  "title": "Remote Jobs API - Remotive, RemoteOK, Himalayas, Jobicy",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0033,
+   "BRONZE": 0.0028,
+   "SILVER": 0.0017,
+   "GOLD": 0.0011,
+   "PLATINUM": 0.0011,
+   "DIAMOND": 0.0011
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0001,
+     "SILVER": 0.0001,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.0033,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0017,
+     "GOLD": 0.0011,
+     "PLATINUM": 0.0011,
+     "DIAMOND": 0.0011
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job row"
+   }
+  },
+  "desc": "Remote job listings from Remotive, Remote OK, Himalayas, Jobicy and Arbeitnow in one normalized dataset: title, company, salary, tags, location and link. Duplicates merged. dryRun prices a run before you pay; charged only for jobs delivered."
+ },
+ {
+  "handle": "lukehunter/remote-jobs-aggregator",
+  "title": "Remote Jobs Scraper - RemoteOK, Himalayas & WWR ($1.50/1K)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job"
+   }
+  },
+  "desc": "Scrape remote job listings from RemoteOK, Himalayas, Jobicy and We Work Remotely in one run. Deduplicated, filterable by keyword, salary, location and date. Turn on job alerts and run on a schedule to get only new listings each time, billed once each."
+ },
+ {
+  "handle": "lulzasaur/weworkremotely-scraper",
+  "title": "We Work Remotely Scraper - Remote Jobs",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape remote job listings from WeWorkRemotely.com. Get job titles, companies, categories, regions, and descriptions across 10 job categories."
+ },
+ {
+  "handle": "madeingermany/apify-hiring-cafe-scraper",
+  "title": "Hiring.Cafe Remote Job Scraper - AI Tech Jobs & Salary Filters",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00125
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00125
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract job listings, descriptions, salary ranges, requirements, and company data from Hiring.cafe via fast HTTP crawler with zero browser overhead."
+ },
+ {
+  "handle": "makework36/weworkremotely-scraper",
+  "title": "We Work Remotely Scraper - Remote Jobs",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-standard",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-standard",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-standard": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job scraped"
+   }
+  },
+  "desc": "Scrape remote jobs from We Work Remotely (WWR): title, company, category, type, region, description and URL. Pure HTTP via public RSS feeds - fast and cheap. Filter by category and keyword."
+ },
+ {
+  "handle": "mighty_monk/job-board-aggregator",
+  "title": "Job Board Aggregator",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job listing"
+   }
+  },
+  "desc": "Aggregate remote and on-site job listings from Remotive, Arbeitnow, and custom job board URLs. Extract title, company, location, salary, remote flag, description, and apply URL."
+ },
+ {
+  "handle": "mlg14/arbeitnow-scraper",
+  "title": "Arbeitnow Jobs Scraper \u00b7 Visa & remote filters \u00b7 $1.6/1K",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0016
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Collect Arbeitnow job listings for job market research, recruiting and relocation searches in Germany and Europe. Filter by keyword, location, remote and visa sponsorship. Returns descriptions, job types, tags and dates. $1.6/1K jobs."
+ },
+ {
+  "handle": "moving_beacon-owner1/remoteok-job-scraper",
+  "title": "RemoteOK Job Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape remote job listings from RemoteOK with filters for keywords, tags, location, and salary range. Extracts job titles, company details, salary data, tags, descriptions, and apply links, with support for sorting and result limits."
+ },
+ {
+  "handle": "muhammadafzal/jobspresso-remote-jobs-scraper",
+  "title": "Jobspresso Remote Jobs Scraper \u2014 Jobs API & Apply Links",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.019,
+   "SILVER": 0.018,
+   "GOLD": 0.017,
+   "PLATINUM": 0.017,
+   "DIAMOND": 0.017
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.02,
+     "BRONZE": 0.019,
+     "SILVER": 0.018,
+     "GOLD": 0.017,
+     "PLATINUM": 0.017,
+     "DIAMOND": 0.017
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Remote job record"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape Jobspresso remote jobs by keyword, location, and category: title, company, description, apply link. A remote jobs API for job boards. $20 per 1,000."
+ },
+ {
+  "handle": "neuro-scraper/job-board-aggregator-scraper",
+  "title": "Job Board Aggregator Scraper (multi-board)",
+  "users": 10,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.00299,
+   "BRONZE": 0.00289,
+   "SILVER": 0.00269,
+   "GOLD": 0.00249,
+   "PLATINUM": 0.00249,
+   "DIAMOND": 0.00249
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.00299,
+     "BRONZE": 0.00289,
+     "SILVER": 0.00269,
+     "GOLD": 0.00249,
+     "PLATINUM": 0.00249,
+     "DIAMOND": 0.00249
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Job Board Aggregator Scraper (multi-board) SD - Job Board Aggregator Scraper (multi-board) is a job data tool that extracts jobs from LinkedIn, Indeed, Glassdoor, Dice, Reed, Remote OK, Himalayas, Jobicy and Arbeitnow in one run: title, company, salary, job type and description."
+ },
+ {
+  "handle": "nexgendata/weworkremotely-jobs-scraper",
+  "title": "We Work Remotely Jobs Scraper \u2014 Remote Jobs API",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.04
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.04
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job posting"
+   }
+  },
+  "desc": "Scrape WeWorkRemotely remote jobs across all categories \u2014 title, company, URL, posted date, full description HTML, category, region. Programming, design, marketing, customer support, product, sales, all-other. Remote-first recruiters, indie founders, job aggregators, talent platforms."
+ },
+ {
+  "handle": "nightwave-owner/sweden-job-ads-platsbanken",
+  "title": "Platsbanken Scraper: Sweden Job Ads from Arbetsf\u00f6rmedlingen",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-ad",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-ad",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job-ad": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Job ad"
+   }
+  },
+  "desc": "Returns Swedish job ads from Platsbanken (Arbetsf\u00f6rmedlingen) via the open JobTech API, one clean row per ad with employer, organisation number, location, occupation and deadline, without contact persons. Filter by keyword, county, municipality, occupation field and remote work. Supports onlyNew."
+ },
+ {
+  "handle": "nomad-agent/dynamitejobs-scraper",
+  "title": "Dynamite Jobs Scraper: Remote Jobs + Only New Jobs",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 0.0001,
+   "SILVER": 7.5e-05,
+   "GOLD": 5e-05,
+   "PLATINUM": 5e-05,
+   "DIAMOND": 5e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,result",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.0001,
+     "BRONZE": 0.0001,
+     "SILVER": 7.5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job result"
+   },
+   "actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Actor start"
+   }
+  },
+  "desc": "$0.1/1K jobs | Extract Dynamite Jobs remote-only listings in bulk with full descriptions, employment type and salary when public. Filter by keyword, country and posting age. No login or API key."
+ },
+ {
+  "handle": "orgupdate/we-work-remotely-jobs-scraper",
+  "title": "We Work Remotely Jobs Scraper",
+  "users": 109,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "jobs"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "The latest and most advanced We Work Remotely Jobs Scraper. Our We Work Remotely Jobs Scraper extracts real-time job postings at scale from all over the world. A new research tool built for recruitment, insights and HR."
+ },
+ {
+  "handle": "parsebird/jobicy-remote-jobs-scraper",
+  "title": "Jobicy Remote Jobs Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.00399,
+   "BRONZE": 0.00349,
+   "SILVER": 0.00299,
+   "GOLD": 0.00249,
+   "PLATINUM": 0.00249,
+   "DIAMOND": 0.00249
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.00399,
+     "BRONZE": 0.00349,
+     "SILVER": 0.00299,
+     "GOLD": 0.00249,
+     "PLATINUM": 0.00249,
+     "DIAMOND": 0.00249
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job scraped"
+   }
+  },
+  "desc": "Scrape remote job listings from Jobicy \u2014 titles, salaries, industries, job type, seniority, and full descriptions via the public jobs API."
+ },
+ {
+  "handle": "parseforge/arbeitnow-jobs-scraper",
+  "title": "Arbeitnow Jobs Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.016,
+   "BRONZE": 0.01467,
+   "SILVER": 0.01333,
+   "GOLD": 0.012,
+   "PLATINUM": 0.0108,
+   "DIAMOND": 0.0096
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.016,
+     "BRONZE": 0.01467,
+     "SILVER": 0.01333,
+     "GOLD": 0.012,
+     "PLATINUM": 0.0108,
+     "DIAMOND": 0.0096
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrapes Arbeitnow job listings by keyword, tag, or remote-only flag. Returns each job as a flat row with title, company, location, tags, remote status, and apply URL."
+ },
+ {
+  "handle": "parseforge/flexjobs-scraper",
+  "title": "FlexJobs Remote Jobs Scraper - Salary & Schedule",
+  "users": 36,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.00299,
+   "BRONZE": 0.00299,
+   "SILVER": 0.00299,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.002691,
+   "DIAMOND": 0.002392
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.00299,
+     "BRONZE": 0.00299,
+     "SILVER": 0.00299,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.002691,
+     "DIAMOND": 0.002392
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   }
+  },
+  "desc": "Scrapes FlexJobs job listings by keyword, category, remote level, schedule, or location. Returns each job as a flat row with title, location, salary, schedule and remote details. FlexJobs hides the employer name on public listings."
+ },
+ {
+  "handle": "parseforge/jobspresso-scraper",
+  "title": "Jobspresso Remote Jobs Scraper",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.0204,
+   "SILVER": 0.0197,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.00445,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.0204,
+     "SILVER": 0.0197,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result Item"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00481,
+     "SILVER": 0.00463,
+     "GOLD": 0.00445,
+     "PLATINUM": 0.00445,
+     "DIAMOND": 0.00445
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrapes Jobspresso remote job listings by category. Returns each job as a flat row with title, company, tags, and full description. Export to CSV, JSON, Excel, or XML."
+ },
+ {
+  "handle": "parseforge/nodesk-remote-jobs-scraper",
+  "title": "NoDesk Remote Jobs Scraper - Salary & Full Description",
+  "users": 30,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.00445,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00481,
+     "SILVER": 0.00463,
+     "GOLD": 0.00445,
+     "PLATINUM": 0.00445,
+     "DIAMOND": 0.00445
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrapes remote job listings from NoDesk by category, region, job type or skill page. Returns title, company, salary, tags and apply link, plus the full description from each job page when detail fetching is on."
+ },
+ {
+  "handle": "parseforge/specialized-job-boards-scraper",
+  "title": "RemoteOK Jobs Scraper",
+  "users": 11,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.00567,
+   "SILVER": 0.00533,
+   "GOLD": 0.005,
+   "PLATINUM": 0.0045,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.00567,
+     "SILVER": 0.00533,
+     "GOLD": 0.005,
+     "PLATINUM": 0.0045,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes remote job listings from RemoteOK filtered by a keyword. Each row returns the job title, company, tags, and apply URL."
+ },
+ {
+  "handle": "parseforge/weworkremotely-scraper",
+  "title": "We Work Remotely Jobs Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes remote job listings from We Work Remotely by category. Returns each listing as a flat row with title, company, description, and apply link."
+ },
+ {
+  "handle": "parseforge/workingnomads-scraper",
+  "title": "Working Nomads Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.021,
+   "BRONZE": 0.02033,
+   "SILVER": 0.01967,
+   "GOLD": 0.019,
+   "PLATINUM": 0.0171,
+   "DIAMOND": 0.0152
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.021,
+     "BRONZE": 0.02033,
+     "SILVER": 0.01967,
+     "GOLD": 0.019,
+     "PLATINUM": 0.0171,
+     "DIAMOND": 0.0152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Export remote jobs from Working Nomads: title, company, category, tags, and locations. Download as CSV, Excel, JSON, or XML."
+ },
+ {
+  "handle": "piotrv1001/we-work-remotely-scraper",
+  "title": "We Work Remotely Scraper",
+  "users": 60,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "The We Work Remotely Scraper extracts job listings from search URLs, capturing job titles, company names, logos, categories, and direct links\u2014ideal for remote job tracking and market analysis."
+ },
+ {
+  "handle": "powerai/workingnomads-jobs-scraper",
+  "title": "Working Nomads Jobs Scraper",
+  "users": 48,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00499
+  },
+  "start_fee": 0.09,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00499
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.09
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape remote job listings from Working Nomads by providing a search URL, with automatic pagination and comprehensive job information extraction."
+ },
+ {
+  "handle": "powerbox/remote-jobslisting-scraper",
+  "title": "Remote.com Jobs Listing Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00399
+  },
+  "start_fee": 0.09,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.09
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00399
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape remote job listings from Remote.com by providing a search URL, with automatic pagination and comprehensive remote job information extraction."
+ },
+ {
+  "handle": "rel8ble/remote-jobs-aggregator",
+  "title": "Remote Jobs Scraper & Aggregator: Remote OK, WWR, Himalayas",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.00025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.00025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Remote jobs scraper and aggregator API: Remote OK, We Work Remotely, Remotive, Himalayas, Jobicy, Working Nomads and Arbeitnow in one list. Filter by keyword, location, salary, days. One result = one job: title, company, salary, who can apply, type, date, URLs. No login. $0.25 per 1,000."
+ },
+ {
+  "handle": "retrainmap/remoteok-jobs",
+  "title": "RemoteOK remote jobs feed (public API, attribution)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "run-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor run"
+   },
+   "record": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record"
+   }
+  },
+  "desc": "Newest remote job postings from Remote OK's public JSON API, one row per job: company, position, tags, location, salary range, date, URL and description text, plus the source attribution Remote OK's terms require. Filter by tag (one request each) and keyword. Default: the newest 100 postings."
+ },
+ {
+  "handle": "santamaria-automations/remotive-scraper",
+  "title": "Remotive Scraper - Remote Jobs & Salaries | $3/1K Jobs",
+  "users": 37,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job"
+   }
+  },
+  "desc": "Extract remote jobs from Remotive.com. 25 fields: salary (min/max), full description (text + HTML), skills/tags, job type, category, company (logo/website/tagline/profile/open positions). Remote job search data extraction for Software dev, design, marketing, DevOps, QA, product and similar roles."
+ },
+ {
+  "handle": "santamaria-automations/weworkremotely-scraper",
+  "title": "WeWorkRemotely Scraper - Remote Jobs & Company Data | $3/1K",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract remote job listings from WeWorkRemotely.com. Returns 26 fields: job title, company, salary (min/max), full description, category, location, apply URL, posting date, website and more. Covers programming, design, DevOps, marketing, product, etc. Pay-per-result: $3 per 1,000 extracted jobs."
+ },
+ {
+  "handle": "sashaebashu/job-postings-scraper",
+  "title": "Jobs Scraper \u2014 Greenhouse, Lever, Workday, Ashby & Remote",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape jobs from 9 ATS \u2014 Greenhouse, Lever, Ashby, SmartRecruiters, Workable, Recruitee, Workday, Teamtailor, Breezy \u2014 plus 9 remote job boards. Titles, departments, locations, remote flags, dates and apply URLs. Hiring-signal data for sales intelligence and recruiting."
+ },
+ {
+  "handle": "saswave/himalayas-job-company-scraper",
+  "title": "Himalayas Job & Company Scraper",
+  "users": 20,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.001,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.001,
+     "GOLD": 0.0009,
+     "PLATINUM": 0.0009,
+     "DIAMOND": 0.0009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract Job and Company listings from himalayas website. Input accepts a search url for Jobs or Companies.\nGet data like social account, company website, job salary, tech stack, benefits and more"
+ },
+ {
+  "handle": "saswave/wellfound-company-job-scraper",
+  "title": "Wellfound Company & Job Scraper",
+  "users": 132,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "$0.8 / 1000 results. Data extractor for Wellfound (formerly AngelList Talent). Extract structured startup job postings, company profiles, compensation data, equity offerings, and remote work policies directly from search URLs or direct links."
+ },
+ {
+  "handle": "scrapers_lat/himalayas-scraper",
+  "title": "Himalayas Remote Jobs Scraper - Salaries, Jobs Data & API",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_jd_summary,ai_skills,details,result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.007385,
+     "SILVER": 0.006769,
+     "GOLD": 0.006154,
+     "PLATINUM": 0.006154,
+     "DIAMOND": 0.006154
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "details": {
+    "tiers": {
+     "FREE": 0.009231,
+     "BRONZE": 0.008615,
+     "SILVER": 0.008,
+     "GOLD": 0.007385,
+     "PLATINUM": 0.007385,
+     "DIAMOND": 0.007385
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "details"
+   },
+   "ai_jd_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI job summary"
+   },
+   "ai_skills": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI required skills"
+   }
+  },
+  "desc": "Scrape remote jobs from Himalayas.app worldwide, no API key. Get job title, company, salary range and currency, seniority, employment type, location and timezone restrictions, categories, skills tags and full description. Filter by keyword, category, seniority or country. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/weworkremotely-jobs-scraper",
+  "title": "We Work Remotely Jobs & Salary Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.007385,
+     "SILVER": 0.006769,
+     "GOLD": 0.006154,
+     "PLATINUM": 0.006154,
+     "DIAMOND": 0.006154
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "details": {
+    "tiers": {
+     "FREE": 0.009231,
+     "BRONZE": 0.008615,
+     "SILVER": 0.008,
+     "GOLD": 0.007385,
+     "PLATINUM": 0.007385,
+     "DIAMOND": 0.007385
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Detail record"
+   }
+  },
+  "desc": "Scrape remote jobs from We Work Remotely by category. Extract job title, company, region, category, job type, salary range, apply URL, company website and full description. Export JSON, CSV or Excel. No login or API key."
+ },
+ {
+  "handle": "shahidirfan/flexjobs-scraper",
+  "title": "FlexJobs Scraper",
+  "users": 95,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00099
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00099
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape Flexjobs remote job listings instantly. Extract job titles, salaries, descriptions, requirements, and company info for job board aggregation, career research, and workforce analytics. Get flexible work opportunities data at scale."
+ },
+ {
+  "handle": "silentflow/glassdoor-jobs-scraper",
+  "title": "Glassdoor Jobs Scraper",
+  "users": 18,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0017,
+   "BRONZE": 0.0015,
+   "SILVER": 0.0014,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0017,
+     "BRONZE": 0.0015,
+     "SILVER": 0.0014,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job Result"
+   }
+  },
+  "desc": "Extract Glassdoor job listings with salary ranges, company ratings, remote status, and 30+ structured fields per job. Search across 23 countries with advanced filters for job type, seniority level, remote work, salary range, industry, and company size. Multi-keyword search with deduplication."
+ },
+ {
+  "handle": "silentflow/linkedin-jobs-scraper",
+  "title": "LinkedIn Jobs Scraper",
+  "users": 13,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00097,
+   "SILVER": 0.00093,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00097,
+     "SILVER": 0.00093,
+     "GOLD": 0.0009,
+     "PLATINUM": 0.0009,
+     "DIAMOND": 0.0009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract LinkedIn job listings with salary data, company details, full descriptions, and 22+ structured fields per job. Search multiple titles across multiple locations with advanced filters for job type, experience level, remote work, Easy Apply, and posting date. No login required for use."
+ },
+ {
+  "handle": "skilled_glee/remote-jobs",
+  "title": "Remote Jobs",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-extracted",
+  "unit_tiers": {
+   "FREE": 0.0045
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-extracted",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job-extracted": {
+    "tiers": {
+     "FREE": 0.0045
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Job extracted"
+   }
+  },
+  "desc": "Single source: Remotive's public job API. Remote job listings search API. Returns job titles, companies, locations, and descriptions. NOTE: relevance scoring is currently degraded. Deterministic search, no AI."
+ },
+ {
+  "handle": "solidcode/freelancermap-scraper",
+  "title": "Freelancermap Scraper",
+  "users": 61,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0096,
+   "BRONZE": 0.00905,
+   "SILVER": 0.0085,
+   "GOLD": 0.008,
+   "PLATINUM": 0.008,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0096,
+     "BRONZE": 0.00905,
+     "SILVER": 0.0085,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $8.00 / 1K] Extract freelance and contract project listings from freelancermap.com \u2014 search by keyword, country, category, and remote work, and get titles, skills, rates, durations, and company contacts."
+ },
+ {
+  "handle": "solidcode/nofluffjobs-scraper",
+  "title": "No Fluff Jobs Scraper",
+  "users": 12,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.00085,
+   "SILVER": 0.0008,
+   "GOLD": 0.00075,
+   "PLATINUM": 0.00075,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0009,
+     "BRONZE": 0.00085,
+     "SILVER": 0.0008,
+     "GOLD": 0.00075,
+     "PLATINUM": 0.00075,
+     "DIAMOND": 0.00075
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $0.75 / 1K] Extract IT and tech job listings from No Fluff Jobs across 6 European site editions. Search by keyword and filter by category, seniority, employment type, city, salary, and remote work to get structured jobs with salary ranges, tech stack, company, and a direct job link on every row."
+ },
+ {
+  "handle": "solidcode/peopleperhour-scraper",
+  "title": "PeoplePerHour Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0036,
+   "BRONZE": 0.0034,
+   "SILVER": 0.0032,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0036,
+     "BRONZE": 0.0034,
+     "SILVER": 0.0032,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $3.00 / 1K] Extract freelance project and job postings from PeoplePerHour. Search by keyword, browse a category, or paste URLs, then filter by price type, experience level, and remote work. Get titles, budgets, currencies, categories, skills, posting dates, proposal counts, and client details."
+ },
+ {
+  "handle": "solidcode/profesia-sk-scraper",
+  "title": "Profesia.sk Jobs Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00155,
+   "BRONZE": 0.0015,
+   "SILVER": 0.0014,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00155,
+     "BRONZE": 0.0015,
+     "SILVER": 0.0014,
+     "GOLD": 0.0013,
+     "PLATINUM": 0.0013,
+     "DIAMOND": 0.0013
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.30 / 1K] Extract job listings from Profesia.sk, Slovakia's largest job board. Search by keyword or URL, filter by region, employment type, salary, remote work and date, and get full descriptions, salary and company details."
+ },
+ {
+  "handle": "solidcode/profession-hu-scraper",
+  "title": "Profession.hu Job Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00215,
+   "BRONZE": 0.002,
+   "SILVER": 0.0019,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00215,
+     "BRONZE": 0.002,
+     "SILVER": 0.0019,
+     "GOLD": 0.0018,
+     "PLATINUM": 0.0018,
+     "DIAMOND": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.8 / 1K] Extract job listings from profession.hu, Hungary's largest job board. Filter by category, location, employment type, remote work, and experience level. Returns title, company, location, salary, posted date, full description, skills, and the apply link per job."
+ },
+ {
+  "handle": "solidcode/remoteok-scraper",
+  "title": "RemoteOK Jobs Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.00113,
+   "SILVER": 0.001065,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0012,
+     "BRONZE": 0.00113,
+     "SILVER": 0.001065,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.0 / 1K] Extract remote jobs from RemoteOK by category, keyword, salary, tags, location, and posted-within window. Returns structured data with normalized salaries, ISO dates, and clean descriptions."
+ },
+ {
+  "handle": "solidcode/robota-ua-scraper",
+  "title": "Robota.ua Scraper",
+  "users": 12,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00215,
+   "BRONZE": 0.002,
+   "SILVER": 0.0019,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00215,
+     "BRONZE": 0.002,
+     "SILVER": 0.0019,
+     "GOLD": 0.0018,
+     "PLATINUM": 0.0018,
+     "DIAMOND": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.8 / 1K] Extract job listings from robota.ua, Ukraine's largest job board. Search by keyword and location, filter by experience, work schedule, salary, and remote work, and get structured jobs with titles, companies, salaries, descriptions, contacts, and apply links."
+ },
+ {
+  "handle": "solidcode/weworkremotely-scraper",
+  "title": "We Work Remotely Jobs Scraper",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.00113,
+   "SILVER": 0.001065,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0012,
+     "BRONZE": 0.00113,
+     "SILVER": 0.001065,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.00 / 1K] Extract remote job listings from We Work Remotely. Filter by keyword, category, region, employment type and recency. Get titles, companies, every region a role is open to, salary bands, exact posting times, full descriptions and listing URLs."
+ },
+ {
+  "handle": "solidcode/workingnomads-scraper",
+  "title": "Working Nomads Jobs Scraper",
+  "users": 30,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0048,
+   "BRONZE": 0.0045,
+   "SILVER": 0.00425,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0048,
+     "BRONZE": 0.0045,
+     "SILVER": 0.00425,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $4 / 1K] Extract remote jobs from Working Nomads \u2014 title, company, category, tags, location, posting date, description, and apply URL. Filter across 15 categories, keywords, location, and recency."
+ },
+ {
+  "handle": "steadyscrape/dynamite-jobs-scraper",
+  "title": "Dynamite Jobs Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "FREE",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company,job",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Remote job"
+   },
+   "company": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Company profile"
+   }
+  },
+  "desc": "Scrape Dynamite Jobs (dynamitejobs.com) remote job data: title, company and website, salary, category, skills, the countries a candidate may live in, full description and dates, plus company profiles with LinkedIn. Search by keyword, category or country. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "stealth_mode/daraz-product-search-scraper",
+  "title": "Daraz Product Search Scraper",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.0012,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.0012,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.005,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape comprehensive job listings from NoFluffJobs.pl, Poland's leading tech recruitment platform. Extract IT job postings with transparent salaries, tech stacks, remote work options, and seniority levels. Perfect for recruitment agencies, tech talent analysis, and Polish IT market intelligence."
+ },
+ {
+  "handle": "stealth_mode/nofluffjobs-jobs-search-scraper",
+  "title": "Nofluffjobs Jobs Search Scraper",
+  "users": 13,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.005,
+     "GOLD": 0.005,
+     "PLATINUM": 0.005,
+     "DIAMOND": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape comprehensive job listings from NoFluffJobs.pl, Poland's leading tech recruitment platform. Extract IT job postings with transparent salaries, tech stacks, remote work options, and seniority levels. Perfect for recruitment agencies, tech talent analysis, and Polish IT market intelligence."
+ },
+ {
+  "handle": "tagadanar/linkedin-remote-jobs",
+  "title": "LinkedIn Remote Jobs Scraper \ud83c\udf0d (clean feed, no login)",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,job-details,job-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job-scraped": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job scraped"
+   },
+   "job-details": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Job details"
+   },
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Actor start"
+   }
+  },
+  "desc": "Remote-only LinkedIn job postings by keyword and region, in clean JSON. Every result is pre-filtered to remote work, no toggle to forget. Hiring company, location, posting date and optional full description. One all-in price per job, no API key, no login."
+ },
+ {
+  "handle": "technicaldost/internshala-internships-jobs-scraper",
+  "title": "Internshala Internships & Jobs Scraper",
+  "users": 10,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "job": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job listing"
+   }
+  },
+  "desc": "Scrape Internshala internships and fresher jobs by keyword, city or work from home: stipend or salary, duration, skills, company, posting age and link. New-listings-only mode for schedules."
+ },
+ {
+  "handle": "technicaldost/job-listing-aggregator",
+  "title": "Job Listing Aggregator",
+  "users": 13,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Returns tech and remote job listings from the Remotive, Himalayas and Arbeitnow job APIs: title, company, location, salary, job type, tags, posting date and apply link, deduplicated. Input: keywords and an optional location."
+ },
+ {
+  "handle": "tiger19935/remote-tech-jobs-aggregator",
+  "title": "Remote Tech Jobs Aggregator - 7 Job Boards, One Feed",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018667,
+   "SILVER": 0.0017333,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "job": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018667,
+     "SILVER": 0.0017333,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job delivered"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Remote jobs scraper and tech jobs aggregator: RemoteOK, Remotive, Arbeitnow, Himalayas, Jobicy, We Work Remotely and Hacker News in one clean, de-duplicated feed. Filter by keyword, seniority, location and salary. Pay only per job delivered."
+ },
+ {
+  "handle": "trev0n/onlinejobs-ph-scraper",
+  "title": "OnlineJobs.ph Scraper | Filipino Remote Jobs & VA Postings",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,job-details",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Job"
+   },
+   "job-details": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Full job page"
+   }
+  },
+  "desc": "Scrape OnlineJobs.ph, the top board for Filipino VAs and remote workers: title, job type, salary parsed into min/max/currency/period, skills, posting time, hours and full description. Search by keyword or skill, filter by type and age, or watch for new jobs."
+ },
+ {
+  "handle": "trovevault/cost-of-living-scraper",
+  "title": "Cost of Living Scraper - Remote Work Score & Budget",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.002375,
+   "SILVER": 0.00225,
+   "GOLD": 0.002125,
+   "PLATINUM": 0.002125,
+   "DIAMOND": 0.002125
+  },
+  "start_fee": 0.00085,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.002375,
+     "SILVER": 0.00225,
+     "GOLD": 0.002125,
+     "PLATINUM": 0.002125,
+     "DIAMOND": 0.002125
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "City"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Compare cost of living across cities worldwide with purchasing power calculations, salary stretch factors, and a Remote Work Score. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "unfenced-group/jobindex-dk-scraper",
+  "title": "Jobindex.dk Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00149,
+   "BRONZE": 0.00149,
+   "SILVER": 0.00134,
+   "GOLD": 0.00119,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.00089
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [
+   "DIAMOND",
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00149,
+     "BRONZE": 0.00149,
+     "SILVER": 0.00134,
+     "GOLD": 0.00119,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.00089
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Extract Danish job listings from Jobindex.dk. Filter by keyword, location, employment type, and remote work. Pay only for what you scrape."
+ },
+ {
+  "handle": "unfenced-group/remote-co-scraper",
+  "title": "Remote.co Jobs Scraper",
+  "users": 72,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00149
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "FREE"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00149
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes remote job listings from Remote.co across all ~100 job categories. No proxy required \u2014 runs on datacenter IPs. Returns: title, company, location, salary (min/max/currency/period), job type, remote type, date posted."
+ },
+ {
+  "handle": "unfenced-group/remoteok-scraper",
+  "title": "RemoteOK Scraper \u2014 Remote Jobs with Salary & Tags",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00099,
+   "BRONZE": 0.00099,
+   "SILVER": 0.00089,
+   "GOLD": 0.00079,
+   "PLATINUM": 0.00066,
+   "DIAMOND": 0.00059
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00099,
+     "BRONZE": 0.00099,
+     "SILVER": 0.00089,
+     "GOLD": 0.00079,
+     "PLATINUM": 0.00066,
+     "DIAMOND": 0.00059
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape remote job listings from RemoteOK. Filter by tags (python, devops, react), posting age and result count. Returns salary ranges, company, tags, direct apply URLs and full job descriptions."
+ },
+ {
+  "handle": "unfenced-group/simplyhired-scraper",
+  "title": "SimplyHired Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00199,
+   "BRONZE": 0.00199,
+   "SILVER": 0.00179,
+   "GOLD": 0.00159,
+   "PLATINUM": 0.00133,
+   "DIAMOND": 0.00119
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "legacy_every_tier_one_key": false,
+  "legacy_undercuts_tiers": [],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00199,
+     "BRONZE": 0.00199,
+     "SILVER": 0.00179,
+     "GOLD": 0.00159,
+     "PLATINUM": 0.00133,
+     "DIAMOND": 0.00119
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape job listings from SimplyHired.com with salary, job type, and full descriptions. Keyword + location search, daysOld filter, remote jobs, and startUrls support."
+ },
+ {
+  "handle": "unfenced-group/weworkremotely-scraper",
+  "title": "We Work Remotely Scraper",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00089,
+   "BRONZE": 0.00089,
+   "SILVER": 0.0008,
+   "GOLD": 0.00071,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.00053
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "legacy_every_tier_one_key": true,
+  "legacy_undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00089,
+     "BRONZE": 0.00089,
+     "SILVER": 0.0008,
+     "GOLD": 0.00071,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.00053
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Scrapes all active remote job listings from weworkremotely.com via public RSS feeds. No proxy required. Returns 400+ unique jobs across 10 categories with company info, skills, region, type, apply URL and more."
+ }
+]
