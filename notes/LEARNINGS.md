@@ -76,6 +76,41 @@ number that cannot decrease as the work gets done, the ranking will keep re-nomi
 work -- make the tool subtract what is already recorded, and keep the record in the same file as
 the data.**
 
+## Cycle 3156 -- the doc-trim rotation is arithmetically incapable of clearing its own check: measure the file's COMPOSITION before spending a slot on the mandated lever
+
+**What was measured.** After a correct, floor-clean newest-5 rotation of `tasks/queue.md` (11 live
+blocks -> 5, 163.1KB -> 146.5KB), `check-doc-size` STILL read `TRIM DUE`. Rather than assume the cut
+was too shallow, c3156 measured what the file is actually made of: **the 5 live CLOSED cycle blocks
+are 16.6KB (11%); the 80 OPEN items are 129.9KB (89%).**
+
+**Why that settles it.** The cadence item mandates exactly one routine lever -- rotate cycle blocks
+down to the newest five. That lever's lifetime ceiling is therefore ~17KB, against a measured growth
+of +5.4KB/cycle: about three cycles of runway. **A perfectly executed trim cannot clear the check,
+and no future cycle running it "properly" will do better.** c3084 reached this conclusion
+qualitatively ("the cadence can no longer clear the file"); the composition split is the number that
+makes it unarguable, and it points at the specific lever -- RULE 4, retire/compress OPEN items --
+which the rule ordering currently treats as an afterthought ("checked, nothing free" is the standard
+line in every recent EXECUTED paragraph, including c3150's).
+
+**The generalisable habit.** When a maintenance task's own checker still fires right after you did
+the task correctly, that is evidence about the TASK, not about your execution -- stop and measure the
+composition of the thing you are maintaining before spending another slot on the same lever. The cost
+here was one `python3` heredoc over the file's item heads; the payoff is that every future doc slot
+knows which 89% to attack.
+
+**The trap that stops this being a size-ranked cut.** The two largest self-declared-done items
+(`CLOSED c3105` "split COMPLETE, all 3 slices shipped", `SHIPPED c3053`) read as free and are not:
+they are POINTER items whose whole job is to stop a future cycle re-building or re-measuring finished
+work, and the cycle-3060 entry below already records a trim correctly leaving `SHIPPED c3053` alone
+because it carries a live in-queue cross-reference. **RULE 4 retirement is a read-each-item task, not
+a sort-by-bytes task** -- prefer the oldest items (c2380 at 776 cycles, c2336 at 820) over the
+largest.
+
+**Also re-earned this cycle:** the c3060 SECOND grep (for the archived block labels, run on the live
+`queue.md` itself, not just the code tree) is easy to skip because the documented RULE 1/8 pass looks
+complete on its own. It ran here and came back empty, but it is the only pass that would have caught
+a surviving open item citing a block being archived.
+
 ## Cycle 3120 -- the doc-trim hazard grep is defined for the BLOCKS you cut, but rule 4 retires live OPEN ITEMS, and nothing told you to grep for those by label
 
 **What happened.** The c3120 QUALITY-slot rotation reached STANDING RULE 4's "if the margin is
