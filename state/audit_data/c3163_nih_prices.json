@@ -1,0 +1,144 @@
+[
+ {
+  "handle": "groundplanes/nih-reporter-biomedical-grant-pi-scraper",
+  "title": "NIH RePORTER Biomedical Grant Awards & Lab Funding Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape official NIH RePORTER v2 API for biomedical research grants, award amounts, project abstracts, funded institutions, and principal investigators. Keyless official REST API with pagination slicing."
+ },
+ {
+  "handle": "zhucl1006/nih-reporter-funded-projects",
+  "title": "NIH RePORTER Funded Projects - Awards, PIs and Organizations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "funded-project",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): funded-project",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search awarded NIH grants from the official RePORTER Project API. No API key. Returns project number, title, PI, organization, award amount and dates. One charge per funded project. This is awarded funding, not open Grants.gov opportunities."
+ },
+ {
+  "handle": "grandiose_envelope_0fj/clinical-trials-leads-scraper",
+  "title": "ClinicalTrials.gov PI Emails + NIH Grant & CRO Signals",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "\ud83d\udd17 [Multi-Source Cross-Joined] Extract recruiting clinical trials from ClinicalTrials.gov v2 + Cross-Join NIH RePORTER grant funding ($) + Harvest ALL multi-center PI direct emails/phones + Compute CRO Patient Recruitment Bottleneck & Site Burden scores."
+ },
+ {
+  "handle": "grandiose_envelope_0fj/nih-grant-winners-leads-scraper",
+  "title": "NIH Grant Winners + Verified PI Emails (NSF & PubMed Join)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0042
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "\ud83d\udd17 [Entity-Pure Relational LEFT JOIN: NIH RePORTER \u00d7 NSF Awards \u00d7 Europe PMC Author Affiliations] 1 Row = 1 NIH Grant Lab enriched with that exact PI's cross-agency NSF funding ($), verified .edu email, phone, budget burn urgency, and inferred equipment spend tags."
+ },
+ {
+  "handle": "moment-data/research-grant-awards-feed",
+  "title": "NIH & NSF Research Grant Awards Feed (new awards, daily)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "New NIH and NSF research grant awards in one feed: institution, amount, title, abstract, funding institute, award type and dates. Filter by keyword, institution, state or amount. 'New since last run' mode for lab-supply, CRO and research-sales lead alerts."
+ },
+ {
+  "handle": "joesimo/pubmed-articles",
+  "title": "PubMed Scraper: Abstracts, Authors, MeSH, DOIs, Citations",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Search PubMed through the official NCBI E-utilities API or look up PMIDs, PMCIDs and DOIs. Get titles, abstracts, authors, affiliations, journals, MeSH terms, DOIs, PMC links and NIH iCite citation counts. No login. Failed or empty inputs are free."
+ },
+ {
+  "handle": "actor-forge/grants-funding-search",
+  "title": "Grants Search \u2014 Grants.gov, NIH, NSF & EU Funding Calls",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "grant-result",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant-result",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Open grant opportunities and funded projects in one table: Grants.gov forecasts and open calls, EU Funding & Tenders calls, NIH RePORTER and NSF awards. Deadline, award ceiling/floor, eligibility, CFDA, funder, link. For grant writers, nonprofits, startups, universities. $1 per 1,000 results."
+ }
+]
