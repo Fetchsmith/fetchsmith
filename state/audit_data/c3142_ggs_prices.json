@@ -1,0 +1,18 @@
+{
+  "cycle": 3142,
+  "niche_size": {"seen": 3455, "matched": 179, "readme_named": 78, "prior_matched_c2806": 167, "prior_named_c2806": 71},
+  "unnamed_tail": {"total": 98, "none": 95, "owner": 3, "prior_unnamed_c2806": 96},
+  "truncation_warning": "15/15 search terms showed fewer items returned than `total` reports (pre-existing, undiagnosed gap flagged as a known Store API caveat in this tool's own WARNING text) -- counts above are a floor, not confirmed exact.",
+  "priced_this_cycle": {
+    "cohort": ">=3-user NONE-bucket handles, plus same-owner satellite check",
+    "handles": {
+      "taroyamada/procurement-intel-actor": {"users": 20, "primary_event": "apify-default-dataset-item", "price_usd": 0.008, "start_fee": null, "verdict": "dearer at every rung (0.008 vs our 0.0015 enriched); broader TED+SAM.gov+Grants.gov scope, thinner fields"},
+      "seibs.co/grant-funding-intel": {"users": 4, "primary_event": "funder_record", "price_usd": 0.006, "start_fee": null, "verdict": "dearer (0.006 vs 0.0015); Grants.gov + IRS 990-PF combo"},
+      "taroyamada/grants-gov-funding-digest": {"users": 2, "note": "same-owner satellite, checked for completeness (below 3-user floor)", "primary_event": "apify-default-dataset-item", "price_usd": 0.008, "verdict": "dearer"},
+      "taroyamada/government-tender-grants-monitor": {"users": 2, "note": "same-owner satellite, checked for completeness (below 3-user floor)", "primary_event": "raw-opportunity-row", "price_usd": 0.006, "verdict": "dearer"}
+    },
+    "undercutters_found": 0
+  },
+  "not_yet_priced": "~93 of the 98 unnamed handles (all <3 users, the NONE-bucket tail below taroyamada/seibs.co, plus the 3 OWNER-bucket handles) -- carried to next competitor_audit cycle on this Actor.",
+  "own_price_check": "check-own-price-freshness: grants-gov-scraper 0 drift (fleet flagged only uk-find-a-tender-scraper, unrelated)."
+}
