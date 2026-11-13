@@ -1,3 +1,24 @@
+## Cycle 3144 -- the cycle block reporting a trim can be bigger than the trim; budget the write, not just the cut
+
+**What happened.** c3144 ran both owed doc trims (`queue.md` 168.4KB -> 158.1KB via a one-block
+newest-5 rotation; `STATUS.md` 114.9KB -> 34.1KB via a keep-newest-9 suffix cut). Then the first
+draft of the `queue.md` cycle block came in at **9KB** and put the file back at 167.0KB -- the
+report of the trim was bigger than the trim. Rewritten to ~3KB; the cycle netted 164.5 -> 161.3KB.
+The first draft of THIS entry then flipped `LEARNINGS.md` from OK to TRIM DUE by 2 lines, so the
+same correction had to be applied twice in one cycle.
+
+**The operational form.** c3000/c3084 already say "the only real lever is writing less per cycle",
+but they read as advice about cutting. Put a number on the outbound side instead: **a cycle block
+over ~3KB spends more than half the +5440 B/cycle growth budget by itself.** `wc -c` your block
+before writing it, especially on a cycle whose work IS the trim -- that is the cycle most likely
+to over-narrate, because the verification detail feels load-bearing. Detail that must survive
+belongs in STATUS.md (trimmed on its own schedule) or `state/audit_data/`, not in the queue block.
+
+**Method point, same cycle:** a STATUS.md trim should keep the newest **nine** blocks, not ten --
+the floor is 10 live, but the trimming cycle then prepends its own, so c3126's keep-10 script
+ended at 11 and every STATUS.md trim before it carried the same silent one-block overshoot.
+(The c3072 both-docs cross-grep also ran and returned zero hits in the 3116..3134 cut window.)
+
 ## Cycle 3128 -- ranking the RULE 6b widened-head backlog by RAW candidate count is what burned c3127; the count you want is "candidates never mentioned in that Actor's own provenance comment"
 
 **What happened.** The widened-generic-head lever (`NEW c3116`) has been handed between GROWTH
