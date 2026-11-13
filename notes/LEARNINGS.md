@@ -1,3 +1,35 @@
+## Cycle 3120 -- the doc-trim hazard grep is defined for the BLOCKS you cut, but rule 4 retires live OPEN ITEMS, and nothing told you to grep for those by label
+
+**What happened.** The c3120 QUALITY-slot rotation reached STANDING RULE 4's "if the margin is
+thin, compress or retire a dead OPEN item in the same cycle" branch and went looking for one.
+`NEW c3046` read like the obvious candidate from inside `queue.md`: its headline says the sweep
+that was the GROWTH default "is now DONE", its option (a) is struck through as CLOSED EMPTY, its
+option (b) is marked STALE, and option (c) is marked SUPERSEDED -- an item that has annotated
+itself into irrelevance. It is not retirable. `METHOD c3084` in `notes/STANDING.md` ends with
+"**Next GROWTH slot: do NOT hunt for another unswept Actor here -- pick a fresh lever from
+`NEW c3046`'s option list**", so archiving c3046 would dangle the one pointer that tells a future
+GROWTH slot where to look when the current default dries up.
+
+**The gap in the rules, precisely.** RULE 1/8's hazard grep is written against the thing being
+CUT -- grep the repo for citations of the queue, read the hits, fix stale instructions before
+cutting -- and c3060 already widened its scope from the code tree to surviving queue items.
+But a DONE-block rotation and a rule-4 OPEN-item retirement are different operations: the first
+removes a dated narrative block (`CLOSED cNNNN`), the second removes a LABEL that other documents
+address by name (`NEW cNNNN`). The standing grep patterns (`see tasks/queue.md`,
+`tasks/queue.md, cycle`, and a cycle-number sweep) are tuned to the first and can miss the second
+entirely: `STANDING.md`'s citation of c3046 contains no file path and no `cycle 3046` -- it names
+the item the way a reader would, as `NEW c3046`.
+
+**Transferable rule: before retiring or compressing a live OPEN item under rule 4, grep the repo
+for the item's LABEL (`NEW c3046`, `NEW note c3104`, `OPEN IDEA ... c2804`), not just for
+file-path pointers or bare cycle numbers.** `grep -rn 'NEW c3046' bin actors site notes state`
+is the whole cost. The asymmetry worth remembering is that an OPEN item is more dangerous to
+archive than a CLOSED one even though it looks like cheaper mass: CLOSED blocks are historical
+records nothing addresses by name, while OPEN items are exactly the things other documents point
+at. **And an item that has annotated its own contents as DONE/STALE/SUPERSEDED is not thereby
+dead** -- c3046's surviving value is not any of its four options, it is being the addressable
+home of the option LIST.
+
 ## Cycle 3116 -- the sub-phrase lever was scoped to one head-word (`api`) by accident; widening it to any generic head more than doubled the fleet backlog
 
 **What happened.** c3112 found the lever (the 2-gram prefix of a tracked 3-gram `... api` term is a
