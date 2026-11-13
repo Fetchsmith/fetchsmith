@@ -1,0 +1,1523 @@
+[
+ {
+  "handle": "dltik/boamp-fr-scraper",
+  "title": "BOAMP Scraper: French Public Tenders & Marches Publics",
+  "users": 12,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraped",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-analyzed,tender-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "tender-scraped": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tender scraped"
+   },
+   "tender-analyzed": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "AI tender analysis (premium)"
+   }
+  },
+  "desc": "Scrape French national public procurement tenders from BOAMP (Bulletin Officiel des Annonces de Marches Publics), the official DILA open-data feed. Filter by keyword, CPV, department, region, buyer, date. Get buyer, deadline, estimated value, procedure and source URL. $5/1K tenders."
+ },
+ {
+  "handle": "publicmoney/boamp-tender-scraper",
+  "title": "BOAMP France Tender Scraper",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract French public procurement notices from BOAMP (Bulletin officiel des annonces de marches publics): notice id, object, buyer, publication and response deadline dates, procedure, contract nature. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/marchespublics-morocco-scraper",
+  "title": "Marches Publics Morocco Contract Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Moroccan public procurement consultations from marchespublics.gov.ma: reference, procedure type, category, publication date, deadline, purchasing entity, estimated value, object and consultation link. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/ezamowienia-poland-scraper",
+  "title": "e-Zamowienia Poland Tender Scraper",
+  "users": 7,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Polish public procurement notices from the e-Zamowienia Public Procurement Bulletin board: BZP notice number, notice type, order object, CPV code, contracting authority, offer deadline and notice PDF link. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/peru-oece-scraper",
+  "title": "Peru OECE Tender Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Peruvian public procurement processes from the OECE open contracting API: OCID, tender id, title, description, buyer, procuring entity, procurement method, category, value, tender and enquiry periods. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "neuton/uk-contracts-finder-notices-scraper",
+  "title": "UK Contracts Finder Notices Scraper",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape UK Contracts Finder opportunities from the official OCDS API for SME supplier leads, bid alerts, and public procurement analytics."
+ },
+ {
+  "handle": "foxlabs/ukraine-prozorro-tenders",
+  "title": "Ukraine ProZorro Tenders \u2014 Buyers, Suppliers & Values",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "tender": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tender"
+   }
+  },
+  "desc": "Search Ukraine's ProZorro public procurement \u2014 tenders, buyers, awarded suppliers, values, items (CPV) and status from the official OpenProcurement API. Filter by keyword, category, value and date; ideal for reconstruction-contract monitoring. Open data, no key."
+ },
+ {
+  "handle": "publicmoney/find-a-tender-scraper",
+  "title": "UK Find a Tender Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract UK above-threshold procurement notices from Find a Tender (OCDS API): notice id, title, description, buyer, value, CPV classification, procurement method, deadlines, awards and suppliers. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "studio-amba/belgian-procurement-scraper",
+  "title": "Belgian Public Procurement Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.012
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result scraped"
+   }
+  },
+  "desc": "Scrape Belgian public procurement tenders from e-Notification (enot.publicprocurement.be). Extract tender titles, deadlines, buyers, CPV codes, estimated values, and procedure types. No login required."
+ },
+ {
+  "handle": "publicmoney/place-spain-scraper",
+  "title": "PLACE Spain Tender Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Spanish public procurement notices from the Plataforma de Contratacion del Sector Publico syndication feed: expedient id, title, status, contracting body, contract type, budget, CPV codes. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/nuevo-leon-mexico-scraper",
+  "title": "Nuevo Leon Mexico Tender Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Nuevo Leon public procurement releases from the state open contracting API: OCID, tender title, procuring entity, procurement method, category, value, items, tenderers, awards and contracts. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/eojn-croatia-scraper",
+  "title": "EOJN Croatia Contract Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Croatian public contract records from the EOJN electronic public procurement notices archive: OCID, tender id, title, description, value, category, procuring entity, procurement method, buyer. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/decp-france-scraper",
+  "title": "DECP France Contract Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract French public contract data from the DECP consolidated files: contract nature, object, procedure, amount, CPV code, buyer, place of execution, duration, notification and publication dates, offers received. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "studio-amba/e-licitatie-ro-scraper",
+  "title": "e-licitatie.ro Scraper \u2014 Romanian Public Procurement Tenders",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.012,
+   "SILVER": 0.009,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.009,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result scraped"
+   }
+  },
+  "desc": "Search and extract Romanian public procurement tenders from e-licitatie.ro (SEAP/SICAP), Romania's national tender platform. Filter by keyword, CPV code, contracting authority or date range. Returns buyer, deadline, CPV codes, estimated value and procedure type. No cookies, no login required."
+ },
+ {
+  "handle": "snow_leo_data/government-tenders-scraper",
+  "title": "Government Tenders Scraper - TED, SAM.gov, Procurement Data",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0029,
+   "BRONZE": 0.00246,
+   "SILVER": 0.00203,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0029,
+     "BRONZE": 0.00246,
+     "SILVER": 0.00203,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   }
+  },
+  "desc": "19,795 notices in one week from the EU TED Tenders Electronic Daily API, where paged search stops at 15,000; 48 buyer countries in one measured window. UK and US SAM.gov notices with buyer email and phone. Government tenders API, SAM.gov contract opportunities search, public procurement database."
+ },
+ {
+  "handle": "scrapers_lat/comprar-argentina-scraper",
+  "title": "Argentina COMPR.AR Public Procurement & Tenders Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,ai_translate,result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.0114,
+     "SILVER": 0.0108,
+     "GOLD": 0.0102,
+     "PLATINUM": 0.0102,
+     "DIAMOND": 0.0102
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   },
+   "ai_summary": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI summary"
+   },
+   "ai_extract": {
+    "tiers": {
+     "FREE": 0.015,
+     "BRONZE": 0.015,
+     "SILVER": 0.015,
+     "GOLD": 0.015,
+     "PLATINUM": 0.015,
+     "DIAMOND": 0.015
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI structured extract"
+   },
+   "ai_translate": {
+    "tiers": {
+     "FREE": 0.012,
+     "BRONZE": 0.012,
+     "SILVER": 0.012,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI translate to English"
+   }
+  },
+  "desc": "Scrape Argentina national government procurement from the COMPR.AR portal: published tenders with process number, object, procedure type, buying agency, bid opening date and status. Filter by keywords. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "publicmoney/public-contracts-scotland-scraper",
+  "title": "Public Contracts Scotland Contract Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Scottish public sector contract notices from Public Contracts Scotland: OCID, notice title and description, buyer, CPV classification, lots, procurement category, legal basis, deadlines and notice link. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/prozorro-ukraine-scraper",
+  "title": "Prozorro Ukraine Tender Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Ukrainian public procurement tenders from Prozorro: tender ID, title, description, status, procurement method, value, tender period, procuring entity, contacts and lot items. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/nen-czech-scraper",
+  "title": "NEN Czech Republic Tender Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Czech public procurement procedures from the National Electronic Tool (NEN): NEN system number, procedure name, current state, contracting authority, offer submission deadline and procedure detail link. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/mendoza-compras-scraper",
+  "title": "Mendoza Argentina Contract Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract public procurement releases published by the province of Mendoza, Argentina, in Open Contracting format: OCID, tender title, status, procuring entity, procurement method, value, tender period, items. Export data, run via API, schedule and monitor runs, or integrate with other tools."
+ },
+ {
+  "handle": "publicmoney/enarocanje-slovenia-scraper",
+  "title": "Slovenia Public Procurement Scraper (enarocanje.si)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-scraper",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00125,
+   "GOLD": 0.001,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): schema-org,tender-scraper",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender-scraper": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00125,
+     "GOLD": 0.001,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "schema-org": {
+    "tiers": {
+     "FREE": 1,
+     "BRONZE": 0.9,
+     "SILVER": 0.8,
+     "GOLD": 0.7,
+     "PLATINUM": 0.6,
+     "DIAMOND": 0.5
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Schema.org block"
+   }
+  },
+  "desc": "Extract Slovenian public procurement notices from the Public Procurement Portal (enarocanje.si): buyer, CPV, value, deadline, lots, tenders received, winners and contracts."
+ },
+ {
+  "handle": "orange_briefcase_hrj/france-boamp-tender-alerts",
+  "title": "France Public Tender Alerts - BOAMP API (March\u00e9s Publics)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "notice": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00135,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Tender notice"
+   },
+   "summary": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run summary"
+   }
+  },
+  "desc": "$1.50 per 1,000 notices. Daily French public tender alerts (appels d'offres, march\u00e9s publics) from BOAMP's official open data (Licence Ouverte 2.0). Filter by keyword, CPV, department or region, contract type, value and deadline; only new notices are returned."
+ },
+ {
+  "handle": "nefes-tools/uk-tenders",
+  "title": "UK Tenders \u2014 Find a Tender + Contracts Finder, Awards & Alerts",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "notice": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender notice"
+   }
+  },
+  "desc": "New UK government tenders and contract awards from Find a Tender and Contracts Finder in one table, no API key needed. Filter by region, CPV, keyword, value and SME suitability; see who won what for how much. Daily alerts with only-new mode. Pay per notice."
+ },
+ {
+  "handle": "jungle_synthesizer/mercadopublico-chile-public-procurement-scraper",
+  "title": "Chile Public Procurement Database \u2014 Mercado P\u00fablico Tenders",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record,orbtop-actor-start",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "orbtop-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Chile's national procurement source, ChileCompra Mercado P\u00fablico \u2014 tenders, awards, bidder counts and purchase orders in one feed. Includes winning supplier RUT, buyer unit RUT, awarded amounts, and convenio-marco purchase orders that never appear as a tender."
+ },
+ {
+  "handle": "ivladimir/ted-eu-tenders",
+  "title": "TED EU Public Tenders Scraper (Official API)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Scrape EU public tenders from the official TED API v3. Filter by keywords, CPV codes, buyer countries, notice types and publication dates. Up to 15,000 notices per run."
+ },
+ {
+  "handle": "intimate_pacu/eu-tender-match-api",
+  "title": "EU Tender Match API",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender match"
+   }
+  },
+  "desc": "Find public EU TED procurement notices by keyword, CPV, country, deadline, and publication date. Returns clean JSON for B2B sales and procurement agents."
+ },
+ {
+  "handle": "fetchwerk/eu-award-radar",
+  "title": "EU Contract Award Radar (TED)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "award-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Award record"
+   },
+   "digest-created": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Digest summary"
+   }
+  },
+  "desc": "Track who wins EU public contracts. Scrape TED contract-award notices with winner, contract value and number of bidders. Filter by CPV, country, winner and minimum value. Normalized output + digest mode."
+ },
+ {
+  "handle": "adobeflex/contracts-finder-uk-lite",
+  "title": "UK Contracts Finder API \u2014 Public Procurement",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice_row",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice_row,search_run",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "search_run": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Contracts Finder search"
+   },
+   "notice_row": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Notice row"
+   }
+  },
+  "desc": "UK government Contracts Finder notices via official REST API. tender.v1 schema."
+ }
+]
