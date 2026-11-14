@@ -463,7 +463,7 @@ five listings whose event set was too ambiguous for the batch script. The honest
 
 Cheaper than us at **every** account plan with **no start fee** (strictly cheaper at any run size):
 
-- `lergassy/app-store-reviews-scraper` (20 users as of 2026-11-10, up from 15 on 2026-11-05; price re-verified 2026-10-19) — **$0.00008 (Free) → $0.000072 (Bronze) →
+- `lergassy/app-store-reviews-scraper` (24 users as of 2026-11-14, up from 20 on 2026-11-10 and 15 on 2026-11-05; price re-verified 2026-11-14, unchanged since its 2026-09-30 publish) — **$0.00008 (Free) → $0.000072 (Bronze) →
   $0.000064 (Silver) → $0.000056 (Gold+)** per review, no fee: **20% to 44% cheaper than us at
   every volume.** A pure per-review App Store export with country and star filters, i.e. a direct
   substitute on features as well as price. The cheapest unconditional rate in this niche at that
@@ -653,7 +653,7 @@ rate that looked competitive to a Free-tier shopper. The new tiers keep the Free
 (still ties the historical volume leaders `thewolves`/`theagents`), and make every paying tier
 cheaper than the old flat rate — Silver ties `workstream`'s unconditional $0.00008, and Gold+ sits
 one tick above `lergassy`'s $0.000056 Gold+ rate rather than matching it exactly, since `lergassy`
-was at 15 → 20 users (15 when that call was made on 2026-11-05, 20 as of 2026-11-10; price re-verified 2026-10-19) and had little track record, and losing 0.000014/review to the cheapest listing known at that date (since beaten by `apivault_labs` at $0.00002 — see the 2026-10-23 block above) in a
+was at 15 → 20 → 24 users (15 when that call was made on 2026-11-05, 20 as of 2026-11-10, 24 as of 2026-11-14; price re-verified 2026-11-14, unchanged) and had little track record, and losing 0.000014/review to the cheapest listing known at that date (since beaten by `apivault_labs` at $0.00002 — see the 2026-10-23 block above) in a
 crowded niche is a reasonable price for not having raced to the bottom. **Platform finding, not
 previously documented:** Apify's tiered-pricing API silently collapses GOLD/PLATINUM/DIAMOND to one
 value — a publish that set PLATINUM to $0.00006 and DIAMOND to $0.000056 came back live with both
