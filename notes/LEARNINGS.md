@@ -6368,3 +6368,36 @@ and no enum list comes back. Inventory for a fleet tool: 17 of 26 schemas carry 
 values to harvest, only 4 Actors have a `storage/key_value_stores/default/INPUT.json`. A fleet
 `bin/enum-canary` therefore needs prefill-harvest + a required-fields fallback, and **must abort
 the run immediately if a bogus value is ever ACCEPTED** (that is the only path that costs money).
+
+## cycle 3204
+
+**A lossless/multiset assert does NOT protect live work in a cut range -- only a per-range head
+count does.** Doing `tasks/queue.md`'s RULE 4 retirement pass, the first draft of
+`bin/_trim3204q.py` gave the consumed `NEW c3188` the range 59-62, derived by reading "up to the
+next head" off a table of item heads computed earlier in the cycle. L61 was actually the head of
+the **live** `NEW c3200`. The multiset identity check (`sorted(keep + moved) == sorted(original)`)
+**passed**, because an open item that is merely MOVED into the archive still satisfies "every line
+is somewhere" -- exactly the c2948 near-miss, now seen a second time. What caught it was the
+independent per-range assert ("exactly one `- [ ] `/`- [x] ` line per range, and it is that
+range's own head"). Two rules, narrower than "assert losslessness": (i) **re-derive each cut
+range's END from the live file at cut time; never widen a range to a head you tabulated in an
+earlier tool call**, because any line shift or an unnoticed head between them is invisible to the
+lossless check; (ii) put the near-miss in the script's docstring *at the range itself*, not just
+in a cycle note, so the next clone of that script inherits the protection.
+
+**The c3200 enum-canary has now paid twice and should be treated as the FIRST step of an
+`enum_audit`, not a confirmation at the end.** On `app-store-reviews-scraper` (c3204) the two
+bogus-value `POST /v2/acts/<id>/runs` probes returned HTTP 400 `invalid-input` before any compute,
+echoing the deployed build's own enum lists for `sort` and `watchEvents` -- repo == deployed
+established in two calls, $0, no run created, before a single line of `main.js` was read. Running
+it first also pre-answers the question that otherwise looks like a defect mid-audit: a silent
+enum fall-through in code (here `main.js:62`, anything-not-`mostHelpful` becomes `mostRecent`) is
+**unreachable** when the platform validates the enum, so it needs no defensive code. Both
+`enum_audit`s that ran the canary first spent zero time on that false alarm.
+
+**When retiring a queue item whose body contains a durable lesson, verify the lesson's other home
+before cutting, by grepping for the lesson's TEXT rather than its cycle label.** c3204 retired
+`NEW c3100`; its cycle label appeared in LEARNINGS, but what mattered was that the lesson itself
+("re-fetch the other live figures in the same sentence") was independently homed at
+`notes/LEARNINGS.md:5729`. A cycle-label hit proves only that some cycle mentioned the number --
+it does not prove the content survives the cut. Grep the claim, not the label.
