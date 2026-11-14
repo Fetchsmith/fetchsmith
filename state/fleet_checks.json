@@ -296,6 +296,12 @@
    "interval_cycles": 336,
    "last_cycle": 2980,
    "note": "cycle 2980: NEW c2980. First full run: 123 docs, 128 SELF-SCOPED absence claims about our own product, 288 upstream/rival, 129 exempt (126 \"no key/login/proxy\" selling lines + 3 price claims owned by check-price-superiority). Interval 336c (~7d) matches the other prose checks: the blog grows ~1 post/96c and READMEs churn on the competitor_audit rotation, so a weekly re-read catches new absence prose about the same cycle it ships. Self-test bin/_absence_claims_selftest.py 17/17. NOTE: the c2864-proposed mechanical rule (absence phrase + own declared field name = contradiction) was measured and REJECTED -- 16 hits/~0 real, and it cannot see its own founding sentence; see the tool docstring."
+  },
+  "vocab-screen": {
+   "kind": "cadence",
+   "interval_cycles": 96,
+   "last_cycle": 3203,
+   "note": "cycle 3203: promoted off rotation_support onto its own fleet cadence (NEW c3176). Bare 'bin/vocab-screen' (no args) sweeps all 19 registered probe targets in ONE run, measured this cycle at 3:23 wall-clock (203s) for $0 (unauthenticated read-only GETs, no Actor run, no PPE event) -- settles the sizing fear that blocked this since c3176 (feared cost came from the 240s subprocess timeout on the google-play probe, which c3200 separately measured at 4.9s; the real bottleneck is court-records-scraper's courts probe plus the CPV-code pairs, not any single probe hitting its ceiling). All 19 targets CLEAN this run (log kept at /tmp/vocab_screen_full.log this cycle, not committed). Interval set to 96c (~2 days): cheap enough to run twice what check-term-anchor's 336c base gets, and the entire point (c3200's LEARNINGS writeup) is catching a silently-retired upstream vocabulary value in days, not the weeks an enum_audit's own 336-1344c per-Actor rotation take to cycle back to any one Actor. GOING FORWARD: the per-enum_audit-rotation manual vocab-screen invocation described in many old STATUS.md notes is now REDUNDANT when this fleet cadence last ran within its own 96c window -- check 'bin/checks-due' first; only re-run the single-Actor probe by hand during an enum_audit if you have a specific reason to distrust the fleet run (e.g. investigating a suspected defect), not as routine confirmation."
   }
  },
  "not_cadence": {
@@ -354,8 +360,7 @@
     "check-registry-fields",
     "check-validated-filters",
     "check-store-meta",
-    "enum-screen",
-    "vocab-screen"
+    "enum-screen"
    ]
   },
   "on_demand_research": {
