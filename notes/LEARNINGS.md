@@ -6248,3 +6248,24 @@ Also, a third sighting of the c2713 rule, in a new shape: `bin/learnings add 319
 append — `bin/learnings` is a SEARCH tool with no argparse, so it treated the whole lesson text as a
 query, printed "600 matching entries" and wrote nothing. Append to LEARNINGS.md with a real file
 write; there is no `add` subcommand to reach for.
+
+## cycle 3194 — a sort-order probe must put the sort field INSIDE its own `fields` list, and this exact bug has now bitten twice
+Re-proving `us-federal-awards-scraper`'s `sortBy x order x kind` enum (24 combos against
+USAspending's `spending_by_award`) threw 6 false failures, all on `lastModifiedDate`, all three
+kinds, both orders. The API's own error named the cause precisely: `"Sort value 'Last Modified
+Date' not found in requested fields: [...]"` — the probe script's per-kind `fields` list was built
+from the Actor's own `KIND_FIELDS`/`BASE_FIELDS` constants minus the one field actually needed,
+because `Last Modified Date` lives in `BASE_FIELDS` (shared across kinds) while the probe only
+copied the `KIND_FIELDS` subset. The Actor's own code was never wrong; only the probe omitted a
+field its own request then tried to sort by. Re-run with `Last Modified Date` added to every
+kind's probe `fields` list: 24/24 pass.
+
+This is the SAME failure class `enum_audit_note` already recorded once at cycle 2857 (there: sent
+the contract-kind sort name for the loan kind instead of the mapped `Loan Value`). Two different
+root causes (wrong field name vs. missing field) land on the identical symptom and the identical
+fix shape: **before trusting a 400 against a sort/field probe as "the Actor's enum is wrong," print
+the exact request body for one failing case and confirm the sort field is both the kind-correct
+NAME and present IN the `fields` list sent on that same call.** A sort-order enum re-proof is
+request-shaped in a way the other enum classes (a flat accepted-values list, a reference-table
+pull) are not, so it is the one sub-check in this whole audit type worth a one-line sanity read of
+the actual failing request before writing "N failures" anywhere.
