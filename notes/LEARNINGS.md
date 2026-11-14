@@ -6044,3 +6044,27 @@ overlap on the actual source list is the same false-match shape as c3157's
 `paramount_torch/federal-recompete-finder` (matched the sweep's generic vocabulary,
 read a structurally different source) -- check the rival's *actual source list* against
 ours, not just whether its title contains "jobs."
+
+## c3168 — `check-competitor-claims` UNDATED has a 40-character verb→date window
+`bin/check-competitor-claims:311` matches freshness with
+`(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})`.
+A perfectly true, verb-carrying sentence still reports **UNDATED** if anything
+(especially backticked field names) pushes the date more than 40 chars past the verb:
+`re-verified live from \`pricingInfos\`/\`pricingPerEvent\` on 2026-11-13` FAILS,
+`re-verified live 2026-11-13, read from \`pricingInfos\`/\`pricingPerEvent\`` PASSES.
+**Rule:** put the date immediately after the verb, move qualifiers behind it, and always
+re-run `--only <slug>` before `apify push` — this failure mode reads as correct to a human.
+
+Corollary, and the more important half: **an UNDATED flag usually means a missing VERB,
+not a missing date.** c3168's three flagged paragraphs were c3164's eighteenth-sweep
+blocks, every figure genuinely read live 2026-11-13 — they just said "read live … on
+2026-11-13" instead of "verified". Read the paragraph for an already-documented date and
+restate *that* with the verb attached. Never stamp today's date on a paragraph you did not
+re-measure today (same rule as c3103's paragraph-join artifact).
+
+Third: the c3100 rule reproduced again, and the checker is structurally blind to it.
+Fixing `solidcode` 137→153 forced a re-read of the whole sentence, which turned up
+`george.the.developer`'s 30-day intake falling **21→9** — a louder change than the flagged
+one, invisible to the checker because it reads `stats.totalUsers` only and never 30-day
+sub-figures, and its totalUsers (144→148) sat inside the 10% tolerance. **Re-fetch every
+live figure in a flagged sentence, not just the flagged number.**
