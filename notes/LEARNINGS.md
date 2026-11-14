@@ -6269,3 +6269,54 @@ NAME and present IN the `fields` list sent on that same call.** A sort-order enu
 request-shaped in a way the other enum classes (a flat accepted-values list, a reference-table
 pull) are not, so it is the one sub-check in this whole audit type worth a one-line sanity read of
 the actual failing request before writing "N failures" anywhere.
+
+## cycle 3196 — "the enum reads itself from a live facet, so it cannot go stale" is true and still leaves a wrong README: audit the COUNTS and the NAMED EXAMPLES, not just the values
+
+`grants-gov-scraper`'s `enum_audit` (last c2524, 672-cycle gap, the rotation's oldest entry)
+came back with **zero drift on all 5 schema-declared enums** — set-equality against
+`/search2`'s own facet lists (`eligibilities` 17/17, `fundingCategories` 28/28,
+`fundingInstruments` 4/4, `oppStatuses` 4/4), and then each of the **53** values sent as the
+only filter, with its `hitCount` equal to its own facet count **53/53 exactly** (all `>0`
+and `<83704`, the unfiltered baseline). `sortBy`'s 6 combos all came back monotonic. The 5
+out-of-vocab negative controls all failed CLOSED at `hitCount 0`, never the unfiltered set.
+By every measure the axis is healthy, and its `agencies` vocabulary is the *self-validating*
+shape this file has praised before (rebuilt from the live facet on every run, so it is
+structurally incapable of going stale).
+
+**And the README was still wrong, in the one place that shape cannot protect.** The feature
+bullet asserted, in the present tense, that the 712 all-status agency codes are "not just the
+**163** with a currently-open grant — so agencies whose grants are all closed or archived
+(`ED`, `HHS-CDC`, `USAID`, `SBA`, …) filter correctly too." Re-measured live: 712 was exact,
+but the open-only probe now returns **166**, and — the part that actually matters — **`ED` and
+`SBA` had flipped sides.** Both now appear in the default `forecasted|posted` facet, i.e.
+they *do* have a currently-open opportunity, so two of the four names offered as proof of the
+claim had quietly become counter-examples to it.
+
+**Two distinct decay modes, and only one of them is the boring one.** A COUNT derived from a
+live vocabulary drifts continuously and mostly harmlessly (163 → 166 is noise nobody is
+misled by). A NAMED EXAMPLE is binary: it is either an instance of the category or a
+refutation of it, and it can invert while the count barely moves. Examples are also what a
+reader actually checks, so they carry more trust than the number beside them.
+
+**The rule, for the next enum_audit:** `bin/enum-screen` saying `IDENTICAL` means the enum
+SURFACE has not moved. It says nothing about prose that counts or exemplifies that
+vocabulary, and a self-validating vocabulary makes this *more* likely to rot, not less —
+nothing ever forces a cycle to re-read the sentence. So on any enum_audit, grep that README
+for present-tense numbers and named examples derived from the vocabulary and re-measure
+those too. Two adjacent claims on this same file survived that grep intact and needed no
+edit (the 10 space-containing agency codes — 9 still at `hitCount 0`, only `DOT-FTA - TPM`
+matching, still exactly 197 — and the schema table's NSF 1342 / ED 1675 / HHS-CDC 1728 /
+USDA-NIFA 852), which is the point: the grep is cheap and it tells you which of the two
+outcomes you are in.
+
+**Pick replacement examples structurally, not by convenience.** The fix ranked the 546
+codes currently invisible to a default probe by all-status volume and took the top
+household names (`HHS-CDC` 1,728, `USAID` 763, `HHS-SAMHS` 234) — the two survivors plus a
+fresh one — rather than swapping in whatever was nearby. A high-volume all-archived agency
+is the least likely to flip back.
+
+**And leave dated history alone.** The same "163" appears in this README's FAQ paragraph and
+in `src/main.js`'s comment, and in both places it is **correct**: each is explicitly stamped
+`2026-10-10` as the pre-fix state. The audit's job was to find the one present-tense
+sentence, not to restamp every occurrence of a number — a date stamp is what converts a
+decaying claim into a durable one, which is also why the fix carries one now.
