@@ -1,0 +1,255 @@
+#!/root/agent/venv/bin/python
+"""bin/enum-canary [--actor <slug>] [--quiet] -- prove the DEPLOYED build's enum lists
+match the repo's, fleet-wide, for $0.  Added cycle 3212 (spec'd at c3200).
+
+WHY THIS EXISTS. `bin/enum-screen` and `bin/vocab-screen` only ever audit the REPO:
+enum-screen diffs this checkout's input_schema.json against an older revision of the
+same file, and vocab-screen probes the UPSTREAM site's vocabulary. Neither one can see
+the schema a buyer actually meets. A push that silently failed, a build that errored
+after the commit landed, or a run pinned to an older build are all invisible to them --
+the repo says one thing and the Store says another, and every enum_audit that trusted
+the repo signed off on a schema nobody deployed.
+
+THE MECHANISM (measured c3200 on google-play-reviews-scraper, re-measured c3212 on
+google-news-scraper + fda-recall-scraper). `POST /v2/acts/<id>/runs` with one
+deliberately-bogus enum value is rejected at HTTP 400 `invalid-input` BEFORE any
+compute is allocated -- no run object is created, nothing is billable -- and the
+message echoes the allowed list out of the DEPLOYED build's own schema:
+
+    Input is not valid: Field input.timePeriod must be equal to one of the allowed
+    values: "", "1h", "6h", "12h", "1d", "7d", "30d", "90d", "1y"
+
+Array-item enums are validated too, and the field path carries the index, so they are
+canaryable on the same path (hypothesis closed at c3200, re-confirmed c3212):
+
+    Field input.productTypes.0 must be equal to one of the allowed values: ...
+
+THREE GOTCHAS, ALL PAID FOR IN REAL MONEY OR NEAR-MISSES:
+
+ (1) THE BASE INPUT MUST BE VALID ENOUGH THAT THE ENUM ERROR IS THE *ONLY* ERROR.
+     Apify reports one validation failure at a time. With a required field missing, the
+     400 names THAT field and no enum list comes back -- which reads like a parse
+     failure, not a missing prefill. Only 2 of 25 schemas declare `required`
+     (ats-jobs-scraper.companies, shopify-products-scraper.storeUrls) and only 4 Actors
+     have storage/key_value_stores/default/INPUT.json, so the base is harvested from
+     each property's own `prefill`/`default`/`example` instead. When the 400 names a
+     field OTHER than the canary target, that is not a finding: this tool heals by
+     adding that field from its prefill and retrying (up to MAX_HEAL times), and only
+     reports BASE INVALID if it runs out of material. Never read a foreign field name
+     as enum drift.
+
+ (2) IT MUST ABORT IMMEDIATELY IF A BOGUS VALUE IS EVER *ACCEPTED*. Acceptance is the
+     one path that costs money, and c3212 walked straight into it three times while
+     pinning down the message format: every canary field name was typed BY HAND and
+     every one was wrong (`language`, `watchEvents`, `sortBy` -- none is an enum field
+     on the Actor it was sent to), Apify silently ignored the unknown key exactly as
+     LEARNINGS says it does, and all three POSTs returned 201 and started a real,
+     uncapped, billable run. Aborted within seconds for $0.0009 of our own compute
+     total, $0 PPE. Hence two rules here, not one: canary field names are read
+     PROGRAMMATICALLY out of the schema and never typed, and a 201 is aborted on the
+     spot via POST /v2/actor-runs/<id>/abort before anything else happens.
+
+ (3) AN ACCEPTANCE IS ITSELF THE HEADLINE FINDING. If the deployed build no longer
+     declares the field (older build, failed push), the bogus value is silently
+     dropped and the run starts -- which is precisely the repo-vs-deployed drift this
+     tool exists to catch. So ACCEPTED is reported as DRIFT, not as a tool error.
+
+Exit 0 = every deployed enum list matches the repo. Exit 1 = any drift, acceptance, or
+unresolvable base. Order-only differences are reported but do NOT fail the check: the
+set is what the platform enforces.
+"""
+import json
+import os
+import re
+import sys
+import time
+
+import httpx
+
+R = "/root/agent"
+API = "https://api.apify.com/v2"
+CANARY = "__FETCHSMITH_CANARY__"
+MAX_HEAL = 4          # how many foreign required fields we will heal past (gotcha 1)
+TIMEOUT = 60
+
+env = dict(l.rstrip("\n").split("=", 1) for l in open(R + "/secrets/env")
+           if "=" in l and not l.startswith("#"))
+T = env["APIFY_TOKEN"]
+
+# "Field input.<name>[.<idx>] must be equal to one of the allowed values: <list>"
+ERR_RE = re.compile(r"Field input\.([A-Za-z0-9_]+)(?:\.\d+)?"
+                    r" must be equal to one of the allowed values:\s*(.+?)\s*$")
+# Any other single-field complaint, used to learn which field to heal (gotcha 1).
+FIELD_RE = re.compile(r"Field input\.([A-Za-z0-9_]+)")
+
+
+def enum_fields(schema):
+    """Every enum-bearing property, as (name, values, is_array). Array-item enums are
+    declared under items.enum, which the platform validates per element."""
+    out = []
+    for k, v in (schema.get("properties") or {}).items():
+        if not isinstance(v, dict):
+            continue
+        vals, arr = v.get("enum"), False
+        if vals is None and isinstance(v.get("items"), dict):
+            vals, arr = v["items"].get("enum"), True
+        if vals:
+            out.append((k, [str(x) for x in vals], arr))
+    return out
+
+
+def seed(schema, name):
+    """A value for `name` good enough to get past validation, from the schema itself."""
+    p = (schema.get("properties") or {}).get(name) or {}
+    for key in ("prefill", "default", "example"):
+        if key in p and p[key] not in (None, [], {}):
+            return p[key]
+    # Last resort: synthesise something type-correct rather than giving up, so a
+    # required field with no prefill still cannot block the whole Actor's canaries.
+    t = p.get("type")
+    if t == "array":
+        iv = (p.get("items") or {}).get("enum")
+        return [iv[0]] if iv else ["https://example.com"]
+    if t == "boolean":
+        return False
+    if t == "integer":
+        return int(p.get("minimum") or 1)
+    if t == "object":
+        return {}
+    if t == "string":
+        return (p.get("enum") or ["x"])[0]
+    return None
+
+
+def parse_allowed(msg):
+    """The echoed allowed list -> (field, [values]). Values are double-quoted and
+    comma-separated; the empty string is a legitimate member on several Actors, so the
+    scan must keep "" rather than filtering falsy entries out."""
+    m = ERR_RE.search(msg)
+    if not m:
+        return None, None
+    return m.group(1), re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(2))
+
+
+def abort(run_id):
+    """Gotcha 2. The only money path. Fire and report, never swallow."""
+    try:
+        r = httpx.post(f"{API}/actor-runs/{run_id}/abort", params={"token": T},
+                       timeout=TIMEOUT)
+        d = r.json().get("data", {})
+        return f"ABORTED status={d.get('status')} charge=${d.get('usageTotalUsd', '?')}"
+    except Exception as e:                                   # noqa: BLE001
+        return f"ABORT FAILED ({e}) -- CHECK CONSOLE, run {run_id} may still be live"
+
+
+def canary(slug, schema, field, repo_vals, arr):
+    """One field. Returns (verdict, detail). Never raises on HTTP trouble."""
+    base, healed = {}, []
+    for attempt in range(MAX_HEAL + 1):
+        payload = dict(base)
+        payload[field] = [CANARY] if arr else CANARY
+        try:
+            r = httpx.post(f"{API}/acts/fetchsmith~{slug}/runs",
+                           params={"token": T}, json=payload, timeout=TIMEOUT)
+        except Exception as e:                               # noqa: BLE001
+            return "ERROR", f"POST failed: {e}"
+
+        if r.status_code < 300:
+            # Gotcha 2 + 3: billable, and a real finding. Abort before anything else.
+            rid = (r.json().get("data") or {}).get("id", "?")
+            return "DRIFT", ("bogus value ACCEPTED -- deployed build does not validate "
+                             f"`{field}` (field missing from deployed schema? stale "
+                             f"build?); run {rid} {abort(rid)}")
+
+        try:
+            msg = r.json()["error"]["message"]
+        except Exception:                                    # noqa: BLE001
+            return "ERROR", f"HTTP {r.status_code}, unparseable body: {r.text[:160]}"
+
+        got_field, allowed = parse_allowed(msg)
+        if allowed is not None and got_field == field:
+            if allowed == repo_vals:
+                return "OK", f"{len(allowed)} values, exact match (order incl.)"
+            if sorted(allowed) == sorted(repo_vals):
+                return "ORDER", (f"same {len(allowed)} values, different order; "
+                                 f"deployed={allowed} repo={repo_vals}")
+            extra = [v for v in allowed if v not in repo_vals]
+            miss = [v for v in repo_vals if v not in allowed]
+            return "DRIFT", ("deployed enum != repo enum"
+                             + (f"; deployed has extra {extra}" if extra else "")
+                             + (f"; repo has {miss} the deployed build lacks" if miss else "")
+                             + f"; deployed={allowed} repo={repo_vals}")
+
+        # Gotcha 1: the 400 is about some OTHER field. Heal it and retry; this is not
+        # a finding about `field` and must never be reported as one.
+        other = FIELD_RE.search(msg)
+        name = other.group(1) if other else None
+        if not name or name == field or name in healed or attempt == MAX_HEAL:
+            return "BASE INVALID", (f"could not isolate the enum error; last 400: "
+                                    f"{msg[:200]}"
+                                    + (f" (healed {healed})" if healed else ""))
+        base[name] = seed(schema, name)
+        healed.append(name)
+    return "BASE INVALID", "heal loop exhausted"
+
+
+def main():
+    argv = sys.argv[1:]
+    quiet = "--quiet" in argv
+    argv = [a for a in argv if a != "--quiet"]
+    only = None
+    if argv and argv[0] == "--actor":
+        only = argv[1]
+    elif argv:
+        only = argv[0]
+
+    slugs = sorted(d for d in os.listdir(R + "/actors")
+                   if d != "_template"
+                   and os.path.exists(f"{R}/actors/{d}/.actor/input_schema.json"))
+    if only:
+        if only not in slugs:
+            sys.exit(f"no such Actor with an input schema: {only}")
+        slugs = [only]
+
+    t0 = time.time()
+    tot = bad = 0
+    findings = []
+    print("enum-canary: deployed-vs-repo enum proof via HTTP 400 echo "
+          f"({len(slugs)} Actor(s))")
+    for slug in slugs:
+        schema = json.load(open(f"{R}/actors/{slug}/.actor/input_schema.json"))
+        fields = enum_fields(schema)
+        if not fields:
+            if not quiet:
+                print(f"  {slug:34s} no enum fields")
+            continue
+        lines = []
+        for field, vals, arr in fields:
+            verdict, detail = canary(slug, schema, field, vals, arr)
+            tot += 1
+            if verdict not in ("OK", "ORDER"):
+                bad += 1
+                findings.append(f"{slug}.{field}: {verdict} -- {detail}")
+            if verdict != "OK" or not quiet:
+                lines.append(f"      {verdict:13s} {field}{'[]' if arr else ''}  {detail}")
+        if lines:
+            print(f"  {slug:34s} {len(fields)} enum field(s)")
+            for l in lines:
+                print(l)
+        elif not quiet:
+            print(f"  {slug:34s} {len(fields)} enum field(s) all OK")
+
+    print(f"\n{tot} enum field(s) canaried on the deployed builds in "
+          f"{time.time() - t0:.0f}s, {bad} finding(s). "
+          "Every rejection was a pre-compute HTTP 400: $0, no run created.")
+    if findings:
+        print("\nFINDINGS (deployed schema disagrees with this checkout):")
+        for f in findings:
+            print("  * " + f)
+        return 1
+    print("CLEAN -- every deployed enum list matches the repo exactly.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
