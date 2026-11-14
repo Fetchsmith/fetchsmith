@@ -483,20 +483,26 @@ disclosing the six undercutters plus `pintostudio`/`maged120` above moved 8 hand
 named bucket the same cycle 11 brand-new listings appeared — a wash, not stalled growth. All 11
 new-since-2813 handles were live-priced (`state/audit_data/c3149_sit_prices.json`).
 
-**One new per-filing rival, the deepest yet in this shape:** `tacps126/sec-filings` (1 user,
-created 2026-11-11) bills a flat **$0.0004 per filing across every SEC form type** (10-K, 10-Q,
-8-K and Form 4 alike — its own listing states "$0.40 per 1,000 filings"). Using this page's own
-break-even method (its rate ÷ our $0.0018), it beats us once a Form 4 filing carries more than
-**0.22 transactions — i.e. essentially always**, since a Form 4 filing reports at least one
-transaction by construction. Far more aggressive than the three per-filing rivals already named
-above (1.67–1.94).
+**One new per-filing rival, corrected after re-reading the live pricing in full:**
+`tacps126/sec-filings` (2 users, created 2026-11-11, checked live 2026-11-13) was first read
+against the wrong event. Its cheap **$0.0004 FREE → $0.00032 DIAMOND** tiered rate sits on its
+primary "Filing" event — raw filing-listing metadata rows, not insider-trade transactions. Form 4
+insider trades come out through a separate, non-primary "Insider trade" event priced **$0.002
+FREE → $0.0016 DIAMOND**, the unit that actually matches our one-row-per-transaction `result`.
+Measured against that unit instead: it is dearer than us at FREE/BRONZE ($0.002/$0.0019 vs our
+$0.0018), tied at SILVER ($0.0018), and only undercuts at GOLD+ (**$0.0016, 11% cheaper**) — and
+it also carries a **$0.005 one-time Actor Start fee per run** (one event per GB of memory) that we
+don't charge, which at the GOLD+ rate only pays for itself past **~25 transaction rows in a single
+run**. Not counted as an undercutter; the earlier "beats us once a filing carries more than 0.22
+transactions" reading compared our transaction price to their filing-metadata price — a different
+row — and is withdrawn.
 
 **One new per-company-flat rival, same shape as `jdepablos/insider-trading-feed` above but
-cheaper:** `accquantic/insider-trades-for-agents` (2 users) charges a flat **$0.01 per company**
-regardless of row count ("One flat price per company" per its own listing), no separate start
-fee. It beats our $0.0018/row once a company's requested window returns more than **~6**
-transactions (vs `jdepablos`'s ~11) but is dearer than us for anything smaller, so — like
-`jdepablos` — it is not counted as a flat undercutter.
+cheaper:** `accquantic/insider-trades-for-agents` (2 users, checked live 2026-11-13) charges a flat
+**$0.01 per company** regardless of row count ("One flat price per company" per its own listing),
+plus a negligible **$0.00005** one-time Actor Start fee. It beats our $0.0018/row once a company's
+requested window returns more than **~6** transactions (vs `jdepablos`'s ~11) but is dearer than
+us for anything smaller, so — like `jdepablos` — it is not counted as a flat undercutter.
 
 **Remaining 9 of the 11 are dearer at every tier or out of scope:** two MCP servers bundling
 Form 4 with 13F or 10-K/10-Q/8-K/XBRL access behind their own non-comparable units
