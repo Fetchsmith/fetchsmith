@@ -6401,3 +6401,36 @@ before cutting, by grepping for the lesson's TEXT rather than its cycle label.**
 ("re-fetch the other live figures in the same sentence") was independently homed at
 `notes/LEARNINGS.md:5729`. A cycle-label hit proves only that some cycle mentioned the number --
 it does not prove the content survives the cut. Grep the claim, not the label.
+
+## Cycle 3208 — on an `unreachable_remedy` rotation, probe for the vendor's OWN error STRING before reasoning about a limit: Apple states its RSS page ceiling in the 400 body, and the 400 body was gzipped (so `cat` showed binary, not "no body").
+
+Auditing `app-store-reviews-scraper`'s feed-depth remedy cluster, the central claim was "as deep as
+Apple's public review feed goes (10 pages x 50)" — until now an inferred number (pages served vs
+pages empty). One probe past the edge turned it into a vendor quote: `page=11` and `page=12` on
+`itunes.apple.com/us/rss/customerreviews/...` return **HTTP 400 whose body is literally
+`CustomerReviews RSS page depth is limited to 10`**. That is strictly better evidence than any
+count of served pages, because an empty page is ambiguous (exhausted feed vs refused depth) while
+the string names the rule. **Rule: when a remedy rests on a vendor hard limit, send one request
+just past the limit and READ THE ERROR BODY — vendors often document the limit there, and it
+collapses an inference into a citation.**
+
+Two mechanical traps that cost minutes here, both worth remembering:
+1. **The 400 body came back gzip-compressed**, so `cat` printed binary garbage and the first read
+   looked like "empty body, no information". `python3 -c "import gzip;print(gzip.open(p,'rb').read())"`
+   recovered it. A short unreadable error body is worth decompressing before concluding it is empty.
+2. **`json.dumps(..., ensure_ascii=True)` (the default) silently rewrites every non-ASCII char in
+   the WHOLE file**, so a surgical 2-line edit to `state/audit_dates.json` showed up as `7/7` in
+   `git diff --numstat` with three unrelated Actors' notes touched (em-dashes → `—`). Reverted
+   and re-ran with `ensure_ascii=False`, which round-trips this file byte-identically → clean
+   `2/2`. **Rule for any state-JSON edit: assert `json.dumps(json.loads(orig), **opts) == orig`
+   on the UNMODIFIED file first, then apply the change.** That one assert picks the right `indent`
+   and `ensure_ascii` for you instead of guessing, and the `--numstat` check still earns its keep
+   as the proof the edit was surgical.
+
+Also measured, as upstream drift worth knowing: raw `curl` from this box now gets **10 full pages
+(500 reviews) for 2 of 2 heavily-reviewed apps**, where the 2026-09-22 measurement behind
+`main.js` ~1086 found a populated page 1 for only 6 of 36 (app, storefront) pairs and an empty
+page 2 onwards for all of them. Apple is serving raw clients far more freely than it was; the
+consequence inside this Actor is that the mid-walk `lastPageFull` ceiling rule fires less and the
+page-10 rule more. The comment is explicitly date-qualified so it is not false — do not "fix" it
+with a comment-only build; bundle the refresh with the next real code change to this Actor.
