@@ -231,7 +231,7 @@ if (searchMode === 'contributions' && !donorName && !donorEmployer && !donorOccu
   && !donorZip && !state && minAmount === undefined && maxAmount === undefined
   && !contributionDateFrom && !contributionDateTo) {
   await failInput(
-    'searchMode "contributions" with no narrowing filter set matches roughly 173 million rows -- '
+    'searchMode "contributions" with no narrowing filter set matches roughly 206 million rows -- '
     + "the FEC's own API times out serving page 1 of that scan, so this run would fail anyway after "
     + 'burning its request budget. Set at least one of: donorName, donorEmployer, donorOccupation, '
     + 'donorCity, donorZip, state, minAmount, maxAmount, contributionDateFrom, contributionDateTo.',
