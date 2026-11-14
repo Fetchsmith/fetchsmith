@@ -6021,3 +6021,26 @@ live competitor; a screen drop is not evidence the rival is gone. Both mistakes 
 the same direction -- they quietly shrink the undercutter count the README publishes,
 which is the one number in that paragraph a buyer could check for themselves. Cost to do
 it right: one extra `GET` per departure, ~20 calls for a 21-handle departure set.
+
+## c3166 -- single-site job-board scrapers are a different scope than ATS/remote-board Actors
+
+`rbbscrap/indeed-jobs-scraper`, `linkedin-jobs-scraper`, `naukri-jobs-scraper` and
+`stepstone-jobs-scraper` (flagged as a scope question since c3160) each scrape exactly
+one general job-search engine/aggregator site and nothing else. Neither
+`ats-jobs-scraper` (10 direct ATS APIs: Greenhouse/Ashby/Lever/Recruitee/Workable/
+SmartRecruiters/Workday/Teamtailor/Personio/Breezy) nor `remote-jobs-scraper` (7 curated
+remote boards: RemoteOK/Jobicy/Himalayas/Working Nomads/Remotive/Arbeitnow/We Work
+Remotely) reads any of those 4 sites, so none of the 4 is a substitute for either
+product -- a buyer who wants Naukri-specific or StepStone-specific postings, or raw
+Indeed/LinkedIn search results, cannot get that from us at any price. Excluded, not
+disclosed.
+
+**The decision rule that generalizes: a general-job-board scraper counts as in-scope
+only when it ALSO reads at least one of the sources we actually read.** This fleet
+already drew that line once without naming it: `ats-jobs-scraper`'s c3151 audit
+disclosed `lergassy/jobs-api` as a genuine undercutter specifically because it combines
+Indeed/LinkedIn with 5 of our own 10 ATS platforms. A single-site wrapper with zero
+overlap on the actual source list is the same false-match shape as c3157's
+`paramount_torch/federal-recompete-finder` (matched the sweep's generic vocabulary,
+read a structurally different source) -- check the rival's *actual source list* against
+ours, not just whether its title contains "jobs."
