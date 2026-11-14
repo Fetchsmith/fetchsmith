@@ -1,5 +1,5 @@
 {
-  "_source": "CourtListener /api/rest/v4/courts/?in_use=true (472 courts, harvested 2026-09-19) + /courts/?in_use=false (2887 courts, harvested 2026-09-28 via bin/harvest-courtlistener-courts, 1 raw 'St' jurisdiction value normalized to 'ST') + OPTIONS jurisdiction choices (23 codes, confirmed 2026-09-19). In-use courts are authoritative on any id collision (none occurred). 3359 courts = CourtListener's own full declared court count (verified live 2026-09-28: /courts/?page_size=1 reports count=3359), so presence of a key here is an exhaustive test of whether a court id exists upstream. 'ohctapp1' has a blank jurisdiction upstream and is mapped to null rather than omitted, so that a real court is never mistaken for an unknown id.",
+  "_source": "CourtListener /api/rest/v4/courts/?in_use=true (472 courts, harvested 2026-09-19) + /courts/?in_use=false (2891 courts, harvested 2026-09-28 via bin/harvest-courtlistener-courts, 1 raw 'St' jurisdiction value normalized to 'ST'; 4 courts added 2026-11-14 via enum_audit cycle 3170 -- cbca/calctapp4d1/calctapp4d2/calctapp4d3, found via CourtListener's date_modified__gte filter against the 2026-09-28 harvest date rather than a full 36-min re-crawl, fetched individually from the single-resource endpoint, count matched exactly 2887+4=2891) + OPTIONS jurisdiction choices (23 codes, confirmed 2026-09-19). In-use courts are authoritative on any id collision (none occurred). 3363 courts = CourtListener's own full declared court count (re-verified live 2026-11-14: /courts/?page_size=1 reports count=3363), so presence of a key here is an exhaustive test of whether a court id exists upstream. 'ohctapp1' has a blank jurisdiction upstream and is mapped to null rather than omitted, so that a real court is never mistaken for an unknown id.",
   "codes": {
     "F": "Federal Appellate",
     "FD": "Federal District",
@@ -102,6 +102,9 @@
     "calctapp2d": "SA",
     "calctapp3d": "SA",
     "calctapp4d": "SA",
+    "calctapp4d1": "SA",
+    "calctapp4d2": "SA",
+    "calctapp4d3": "SA",
     "calctapp5d": "SA",
     "calctapp6d": "SA",
     "caldistct": "ST",
@@ -255,6 +258,7 @@
     "casb": "FB",
     "casd": "FD",
     "cavc": "FS",
+    "cbca": "FS",
     "cc": "FS",
     "ccpa": "FS",
     "cgcomilrev": "MA",
