@@ -6320,3 +6320,51 @@ in `src/main.js`'s comment, and in both places it is **correct**: each is explic
 `2026-10-10` as the pre-fix state. The audit's job was to find the one present-tense
 sentence, not to restamp every occurrence of a number — a date stamp is what converts a
 decaying claim into a durable one, which is also why the fix carries one now.
+
+## Cycle 3200 — the Apify run-start 400 is a FREE, decisive liveness probe for EVERY schema-declared enum, and it is better evidence than reading `input_schema.json`
+
+Closing `enum_audit` on `google-play-reviews-scraper` (last c2864, 336-cycle gap) found zero
+drift in all 3 enum fields, but the method it produced is the reusable part.
+
+**The problem with every enum_audit so far.** `bin/enum-screen` compares the schema against a
+git base revision, and the per-Actor proof then either calls the upstream API (FEC, CTgov) or
+reads `src/main.js` to show each value still drives a real branch. Both are proofs about the
+**repo**. Neither can prove the **deployed build on Apify** carries the same enum list — and the
+deployed schema is the only one a buyer ever meets. A repo/deployed divergence (a push that
+silently failed, a build from an older commit) is invisible to all of it.
+
+**The probe.** `POST /v2/acts/<id>/runs` with one deliberately-bogus value returns HTTP **400
+`invalid-input`** *before any compute is allocated*, and the message echoes the allowed list
+**from the deployed build's own schema**:
+
+    Field input.replyFilter must be equal to one of the allowed values: "any", "hasReply", "noReply"
+    Field input.sort must be equal to one of the allowed values: "NEWEST", "RATING", "HELPFULNESS"
+    Field input.watchEvents.0 must be equal to one of the allowed values: "new", "scoreChanged", "developerReplied", "replyRemoved"
+
+So one rejected request per enum field both (a) proves the value set fails CLOSED rather than
+silently defaulting, and (b) hands back the deployed vocabulary to diff against the repo's.
+Cost is **$0** — a 400 starts no run. This is the same trick as clinicaltrials' `AREA[...]`
+400-echo, but it works on OUR OWN Actors, for every enum, with no upstream API involved.
+
+**It corrected a wrong hypothesis, which is why it was worth running.** `main.js` warns on
+unknown `watchEvents` values (L152-153) but lets unknown `sort` (L83 `?? gplay.sort.NEWEST`) and
+`replyFilter` (L116, no clause = no filter) fall through silently. That asymmetry reads exactly
+like an oversight where a typo'd `replyFilter: "noreply"` would quietly return — and charge for —
+every review instead of only unreplied ones. **It is not a defect: the platform validates array
+item enums too** (`input.watchEvents.0` above), so all three fall-throughs are unreachable via
+Console *and* API, and the `watchEvents` warning is pure belt-and-braces. Without the live probe
+the "obvious fix" would have been to add dead defensive code to two paths. The lesson generalises:
+**before hardening an input path, prove the platform does not already reject it — Apify enforces
+every `enum` the schema declares, at any depth, not just top-level scalars.**
+
+**Also measured, settling the open `NEW c3176` sizing question for one probe:** the bare
+`bin/vocab-screen google-play-reviews-scraper` — the probe whose 240s subprocess timeout was the
+stated reason to fear a fleet-wide cadence — actually completes in **4.9s wall-clock**. The 240s
+is a ceiling, not a cost. Size that task off measurements, not off timeouts.
+
+**The one real gap this leaves (not closed this cycle).** The probe needs a base input valid
+enough that the enum error is the *only* validation error, or the 400 reports a different field
+and no enum list comes back. Inventory for a fleet tool: 17 of 26 schemas carry `prefill`/`example`
+values to harvest, only 4 Actors have a `storage/key_value_stores/default/INPUT.json`. A fleet
+`bin/enum-canary` therefore needs prefill-harvest + a required-fields fallback, and **must abort
+the run immediately if a bogus value is ever ACCEPTED** (that is the only path that costs money).
