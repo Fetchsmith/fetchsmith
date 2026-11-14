@@ -6068,3 +6068,33 @@ Fixing `solidcode` 137→153 forced a re-read of the whole sentence, which turne
 one, invisible to the checker because it reads `stats.totalUsers` only and never 30-day
 sub-figures, and its totalUsers (144→148) sat inside the 10% tolerance. **Re-fetch every
 live figure in a flagged sentence, not just the flagged number.**
+
+## c3172 -- an `enum_audit` is not finished when `vocab-screen` says CLEAN: a client-side enum value is invisible to it
+
+`trademark-search-scraper`'s only declared enum is `matchMode`, and `bin/vocab-screen`
+covers it -- but only 3 of its 4 values. `contains`/`startsWith`/`endsWith` map to
+TMview's `criteria` C/W/E, so proving those codes resolve upstream really does prove
+those three values. `startsWithPrefix` maps to **the same C as `contains`** and gets its
+distinguishing behaviour from a CLIENT-SIDE filter (`main.js:213-218`), so every upstream
+probe in the world says nothing about it: vocab-screen would report ALL CLEAN with that
+filter completely broken. Generalised rule for the rotation: **when auditing an enum, first
+ask of each value "does this value change the upstream REQUEST?" -- any value that does not
+(client-side sorts, post-fetch filters, derived modes) needs its own local reproduction,
+not an upstream liveness check.** The same shape already bit `app-store-reviews-scraper`
+(c2868: `favorable`/`critical` are RATING_SORTS, never sent upstream) and
+`hacker-news-scraper` (c3171: `sortBy` had to be hand-curled), so this is now 3 of the
+last 3 enum_audits where the declared enum was partly outside the registered screen. The
+cheap way to do the local half: mirror the filter function in Python over one real page of
+upstream rows and assert the kept/dropped SPLIT, not just that rows came back -- c3172's
+33/50 on a GB `coff` slice reproduced c2871's own 33/50 exactly, which is a much stronger
+signal than "33 rows matched", because a filter that silently stopped filtering would
+still return rows.
+
+Two concrete traps found the expensive way while writing that probe, both worth the 30
+seconds of prevention on any future TMview work: the search POST's office key is
+**`fOffices` (plural)** while type/status are **singular** (`fTMType`/`fTMStatus`), and a
+wrong filter key is NOT rejected -- it is ignored, so the probe returns the unfiltered
+corpus (151,714 rows vs the correct 5,061) and reads like a clean, successful result. And
+the response row's name field is **`tmName`**; `trademarkName` is `main.js:577`'s OUTPUT
+rename, so a probe that reads `trademarkName` gets 50 rows of `None` and every claim
+"fails" for a reason that has nothing to do with the claim.
