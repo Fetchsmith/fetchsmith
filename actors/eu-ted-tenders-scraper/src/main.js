@@ -127,9 +127,14 @@ function buildQuery() {
 // where "widen publishedWithinDays" is an unreachable remedy even at the ceiling, so the advice
 // has to name publicationDateFrom specifically. Re-measure on each enum_audit; a code leaving
 // this set (new publications resuming) is harmless, a code JOINING it needs adding here.
+// RE-PROVED cycle 3188 (2026-11-14), full 40-value sweep again: all 40 still accepted (a bogus
+// code still 400s — control query run), the same 11 are still 0-in-365d, and every since-2023
+// count above came back IDENTICAL to the c2852 reading, so the set has 0 drift after 336 cycles.
+// No code joined or left. The 29 live codes range from procedure-type open (688,933 in 365d) down
+// to notice-type can-tran (44).
 const HISTORICAL_ONLY_NOTICE_TYPES = new Set(['corr', 'subco']);
 const HISTORICAL_ONLY_PROCEDURE_TYPES = new Set(['4', '9', 'V', 'E', 'Z', '6', 'A', 'F', '8']);
-const HISTORICAL_ONLY_MEASURED = '2026-11-07';
+const HISTORICAL_ONLY_MEASURED = '2026-11-14';
 // An OR-group whose EVERY value is historical-only pins the whole query to pre-cutover notices,
 // because the groups are AND-ed together (see buildQuery) — one live value in the group is
 // enough to make the group reachable, so a mixed selection is not a trap.

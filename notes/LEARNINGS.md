@@ -6164,3 +6164,36 @@ runs (≤25 notices it bills $0 and we bill $0.0015/row). **Read `eventTitle`/`e
 just the price numbers, when folding a rival into a comparison.** Disclosed with the honest hedge it
 needs: it is the listing's self-reported behaviour, not a platform-enforced rung, and we have not run
 the Actor to confirm it.
+
+## cycle 3188 — a failed probe binned as a zero fabricated a 3-code regression; and the money path still had the cycle-1404 crash
+
+**(a) In any per-value live sweep, carry the STATUS next to the count and never let a failed probe
+default to 0.** The `enum_audit` on `eu-ted-tenders-scraper` re-proves 40 TED enum codes by asking
+for `totalNoticeCount` twice per code (`publication-date>=today(-365)` vs `>=20230101`); a code that
+reads 0-in-365d but non-zero-since-2023 is "historical-only" and gets a buyer-facing run-start
+warning. The first pass ran those 80 probes 4-way concurrent, TED answered 5 of them with a
+retry-exhausted error (status recorded as -1), and the classifier wrote `if not v["d365"]` — so
+`None` fell into the same bucket as a real 0 and the sweep reported `veat`, `brin-eeig` and
+`innovation` as codes that had newly gone dark. Re-probed sequentially they are at **8,815 / 46 / 88
+notices in the last 365 days** — thoroughly live. Had that been believed it would have shipped a
+warning telling buyers that `veat` (voluntary ex-ante transparency, one of TED's commonest notice
+types) cannot be reached by `publishedWithinDays`. This is exactly the "SILENT SKIP" shape
+`bin/_apify_get.py`'s docstring describes for `check-price-superiority`, reproduced from scratch in a
+throwaway script because the throwaway did not use the module. **Two rules: probe api.ted.europa.eu
+SEQUENTIALLY (4 concurrent workers is enough to get throttled into retry exhaustion), and in a
+classify-by-count sweep treat `None` as "unknown, re-probe", never as a count.** The control that
+makes the whole axis meaningful is cheap and worth repeating every time: query one deliberately
+bogus code (`notice-type=zzz-bogus` → HTTP 400 `QUERY_UNSUPPORTED_FIELD_VALUE`), which is what
+proves a 200 means "accepted" rather than "ignored".
+
+**(b) When a shared hardening module is written, grep ALL of `bin/` for the raw shape — not just the
+tools in the incident report.** `bin/revenue` died twice in a row this cycle with the verbatim
+cycle-1404 traceback (`JSONDecodeError` out of `httpx.get(...).json()` on a per-Actor GET) and then
+ran clean seconds later. `_apify_get.py` was written 1,784 cycles ago *for that exact failure* and
+its docstring lists the six tools that were converted — all six are checkers. Nobody looked at the
+money path, where the blast radius is worse than in a checker: a traceback means no snapshot is
+appended to `state/revenue_history.json` **and** the bookmark/review/Polar-order `notify` gates at
+the bottom of the script never execute, so a transient blip on the one cycle a first-money event
+lands would swallow it silently. All three GETs (Actor list, per-Actor, Polar orders) now go through
+`get_json`/`get_data`; the per-Actor loop also surfaces a `FINAL_MISSING` 401/403/404 as
+`snap["apify_unreadable"]` + a stderr warning instead of quietly lowering `public_actors`.

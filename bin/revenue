@@ -1,12 +1,27 @@
 #!/root/agent/venv/bin/python
 """Daily revenue/usage snapshot: Apify actor stats (users/runs by others) + Polar orders. Emails owner on first-money events."""
-import json, os, time, subprocess, httpx
+import json, os, sys, time, subprocess
+sys.path.insert(0, "/root/agent/bin")
+from _apify_get import get_data, get_json  # noqa: E402  (retrying JSON GET, cycle 1404)
 env = dict(l.rstrip("\n").split("=", 1) for l in open("/root/agent/secrets/env") if "=" in l and not l.startswith("#"))
 T = env["APIFY_TOKEN"]; H = {"Authorization": f"Bearer {T}"}; API = "https://api.apify.com/v2"
 snap = {"ts": int(time.time()), "date": time.strftime("%Y-%m-%d"), "apify": {}, "polar": {}}
-acts_list = httpx.get(f"{API}/acts?my=true&limit=1000", headers=H).json()["data"]["items"]
+# cycle 3188: these three GETs were bare `httpx.get(...).json()`, the exact cycle-1404 shape --
+# this script died twice in a row on a 200-with-non-JSON body (JSONDecodeError at the per-Actor
+# line) and then succeeded unchanged seconds later. That is worse here than in a checker: this
+# is the per-cycle money check, and a traceback means no snapshot is appended to
+# revenue_history.json AND the bookmark/review/Polar-order notify gates below never run, so a
+# transient blip could silently swallow a first-money event. Routed through _apify_get.
+acts_list = (get_data(f"{API}/acts?my=true&limit=1000", headers=H) or {}).get("items", [])
 # The list endpoint omits isPublic/stats fields; fetch each actor individually for accurate data.
-acts = [httpx.get(f"{API}/acts/{a['id']}", headers=H).json()["data"] for a in acts_list]
+acts = [d for a in acts_list if (d := get_data(f"{API}/acts/{a['id']}", headers=H))]
+# get_data returns None only for a FINAL 401/403/404/410 (a transient blip is retried, then
+# raises). Dropping such an Actor silently is the "silent skip" trap in _apify_get's docstring --
+# it would quietly lower public_actors -- so surface the gap in the snapshot and on stderr.
+if len(acts) < len(acts_list):
+    missing = [a["name"] for a in acts_list if a["id"] not in {d.get("id") for d in acts}]
+    snap["apify_unreadable"] = missing
+    print(f"WARNING: {len(missing)} Actor(s) unreadable (401/403/404): {missing}", file=sys.stderr)
 tot_users = tot_runs = tot_ok = tot_bad = tot_bm = tot_rev = 0
 # NOTE (cycle 172): there is NO `totalRuns30Days` key in Apify's actor stats object -- the old
 # code read it with a .get() default of 0, so `runs30d` printed a hardcoded zero for ~170 cycles.
@@ -65,7 +80,11 @@ snap["apify_totals"] = {"public_actors": sum(1 for a in acts if a.get("isPublic"
 pt = env.get("POLAR_ACCESS_TOKEN")
 if pt:
     try:
-        r = httpx.get("https://api.polar.sh/v1/orders/", headers={"Authorization": f"Bearer {pt}"}, params={"limit": 100}, timeout=30).json()
+        # Retried too (cycle 3188): a transient 429/5xx here used to land in snap["polar"]["error"],
+        # which makes a real order read as "no orders" for that snapshot and skips the notify gate.
+        r, st = get_json("https://api.polar.sh/v1/orders/", headers={"Authorization": f"Bearer {pt}"}, params={"limit": 100}, timeout=30)
+        if r is None:
+            raise RuntimeError(f"polar orders HTTP {st}")
         items = r.get("items", []); snap["polar"] = {"orders": len(items), "gross_usd": sum(o.get("total_amount", 0) for o in items) / 100, "net_usd": sum(o.get("net_amount", o.get("total_amount", 0)) for o in items) / 100}
     except Exception as e:
         snap["polar"] = {"error": str(e)[:200]}
