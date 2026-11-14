@@ -78,7 +78,7 @@
     "transactionCodes": {
       "title": "Transaction codes",
       "type": "array",
-      "description": "Keep only rows whose SEC transaction code is in this list; leave empty for all. Most of a Form 4 feed is compensation plumbing -- select P and S for open-market buys and sells only. Filtered rows are never returned and never charged. All 20 official codes are supported. Holding rows have no code, so this filter excludes them.",
+      "description": "Keep only rows whose SEC transaction code is in this list; leave empty for all. Most of a Form 4 feed is compensation plumbing -- select P and S for open-market buys and sells only. Filtered rows are never returned and never charged. All 20 official codes are supported. K (equity swap) and V (voluntarily reported early) are valid SEC codes but essentially unused in practice: 0 occurrences of either across all US Form 4/5 filings in SEC's own last 5 quarterly structured datasets (2025-Q3 through 2026-Q3, verified live 2026-11-14) -- selecting only one of these will very likely return 0 rows regardless of issuer or date range, reflecting real-world filing behavior rather than a bug. Holding rows have no code, so this filter excludes them.",
       "editor": "select",
       "items": {
         "type": "string",
