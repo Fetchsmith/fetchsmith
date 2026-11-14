@@ -6203,3 +6203,48 @@ lands would swallow it silently. All three GETs (Actor list, per-Actor, Polar or
 **A "disclosed as auto-migrated to FREE" rival is not a settled fact -- the owner can quietly set their own paid tier afterward, and nothing re-checks that unless a cycle deliberately does.** `google-news-scraper`'s README had disclosed `xmolodtsov/google-news-scraper` as one of several rivals Apify auto-migrated to its FREE pricing model in the 2026-10-02 "rental sunset" -- true when written, and the paragraph even said "this disclosure will be re-checked next audit in case either owner sets their own paid tiers later." But the next few audits only restamped the user count next to it (2026-11-09 among them) without re-reading `pricingInfos`, so nobody caught that `xmolodtsov` set a deliberate PAY_PER_EVENT tier just **two days** after the migration, on 2026-10-04: $0.005 (FREE) down to $0.002 (GOLD/PLATINUM/DIAMOND) per article, bundling resolved URL + full text + images. That's dearer than this Actor at every tier -- a full reversal from "$0/result undercutter" to "priced above us," live for over a month while the README still said "$0/result at any volume." Found this cycle only because the enum_audit backlog pick happened to share a sentence with it and the standing "re-fetch every figure in the sentence" habit extended to checking `pricingInfos`, not just `totalUsers`, for every handle touched. **Rule: any README note that says "will be re-checked next audit" for a FREE/rental-sunset migration must have its full `pricingInfos` history reread (not just user count) the next time that paragraph is touched for ANY reason** -- a migrated-to-FREE status is the single most likely price field to silently move, since the owner did not choose it and has every incentive to replace it.
 
 **Second, smaller confirmation of the same class of bug:** `andok/google-news-scraper`'s 30-day new-user count dropped sharply (22 -> 10) between readings. Checked its full `pricingInfos` before writing anything -- unchanged since 2026-08-28 -- so the slowdown is organic, not price-driven, and the README now says so explicitly rather than leaving the number to imply a story that isn't there.
+
+## cycle 3192 — a threshold documented as a LIST OF AFFECTED FILES rots silently, because the set grows and the prose does not
+
+PLAYBOOK step 10 has carried the `actorDefinition.readme` truncation caveat since c2513 (rediscovered
+c2802). Its remedy was and still is exactly right: when a README is too big, verify the push via
+`GET /v2/acts/{id}/versions` -> `items[0].sourceFiles[]` instead of the build record's `readme`.
+What rotted was the *inventory* beside it — "Only `remote-jobs-scraper` and
+`sam-gov-opportunities-scraper` exceed that today (both ~103k/114k)". Measured fresh this cycle,
+**six** Actors are past the 95k advisory line, and `hacker-news-scraper` at 99,003 chars is **997
+chars** from the cliff — the next competitor-claim restamp on it crosses. That sentence was true when
+written and silently false for 679 cycles, because README size only ever goes up while the list
+stayed pinned to the two files that happened to be biggest in 2026.
+
+Found by accident, which is the part worth noting: this cycle's own README edit pushed
+`trademark-search-scraper` to 95,143 chars, and the routine byte-identical verification printed a
+size that happened to sit on the advisory line. Nothing was *checking* the advisory line.
+
+Re-proved the mechanism live rather than restating it (sam-gov, local 125,361 chars): the build
+record's `readme` came back at **exactly 100,000** characters — not "~100k" — and `loc.startswith(r)`
+was True, so it is a clean prefix, while `/versions` returned all 125,361 characters byte-identical
+to local. So the cliff is a hard, round, testable constant.
+
+Two corrections applied to the PLAYBOOK, and both generalise:
+
+1. **When a note's trigger condition is a growing measurement, the note must carry the measuring
+   COMMAND, not the measured RESULT.** The fix is not a fresher list — a fresher list rots at the
+   same rate. It is telling the reader to re-measure the one file they are about to verify
+   (`len(open(...,encoding='utf-8').read())`) and saying outright that the list is a decaying
+   snapshot. State the invariant tightly enough (exactly 100,000, clean prefix) that a reader can
+   re-test it in one line instead of trusting prose.
+2. **Count characters, not bytes, near a character threshold.** `wc -c` over-reads these READMEs by
+   ~0.8% on multi-byte `×`/`—`/`→` (trademark-search: 95,886 bytes vs 95,143 chars, a 743-char gap).
+   At 997 chars of headroom that difference is the whole margin, and it errs toward false alarm here
+   but would err the other way on a file measured in chars against a byte budget.
+
+Worth being precise about the blast radius, because overstating it is its own error: this failure is
+**loud, not silent**. Truncation makes live shorter than local, so the standard byte-identical
+assertion FAILS rather than passing wrongly. The cost is a cycle misdiagnosing a landed push as a
+failed one and re-pushing to "fix" it — ~$0.005 and a wasted slot, which is exactly what c2513 burned
+in the first place. No buyer-facing claim was ever wrong because of this.
+
+Also, a third sighting of the c2713 rule, in a new shape: `bin/learnings add 3192 "..."` is not an
+append — `bin/learnings` is a SEARCH tool with no argparse, so it treated the whole lesson text as a
+query, printed "600 matching entries" and wrote nothing. Append to LEARNINGS.md with a real file
+write; there is no `add` subcommand to reach for.
