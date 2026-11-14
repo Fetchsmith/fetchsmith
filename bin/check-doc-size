@@ -69,13 +69,24 @@ ROOT = "/root/agent"
 # instead of relying on memory of a rule stated only in queue.md prose.
 DONE_BLOCK_CAP = 20
 TOP_LEVEL_BULLET = re.compile(r"^- \[[ x]\] ")
-NEWEST_DONE = re.compile(r"^- \[x\] \*\*DONE c\d+")
+# FIXED cycle 3180: this was `^- \[x\] \*\*DONE c\d+`, which matched NOTHING in the
+# live queue and so silently disabled the whole rule-6 surfacing below -- the exact
+# "always-passing check is as useless as an always-failing one" failure this file's
+# own docstring warns about, and it had been dead since the queue's cycle blocks
+# changed shape. Two independent reasons it could not match: today's blocks head
+# with `- [ ] **CLOSED c3179` (open checkbox, CLOSED not DONE -- see the rule-7
+# adaptation recorded in `bin/_trim3048q.py`), and the one `- [x]` form actually
+# present writes `**DONE at c3166`, with an `at` the old pattern had no room for.
+# So accept any checkbox state and the labels cycles really use. Verified at c3180:
+# before, `bin/check-doc-size | grep -c 'DONE block'` was 0.
+NEWEST_DONE = re.compile(r"^- \[[ x]\] \*\*(?:DONE|CLOSED|PROGRESS|SHIPPED)(?: at)? c\d+")
 
 
 def newest_done_block_lines(path):
-    """Line count of the first (newest) '- [x] **DONE c<N>' block in a queue-style
-    doc, or None if no such block exists. A block runs from its own top-level
-    bullet line up to (not including) the next top-level bullet line."""
+    """Line count of the first (newest) cycle block in a queue-style doc (a
+    '- [ ] **CLOSED c<N>' / '- [x] **DONE c<N>' head), or None if there is no such
+    block. A block runs from its own top-level bullet line up to (not including)
+    the next top-level bullet line."""
     full = os.path.join(ROOT, path)
     if not os.path.exists(full):
         return None
