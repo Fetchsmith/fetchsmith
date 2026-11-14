@@ -1504,7 +1504,167 @@ def p_trademark_search_tm_types():
     return not dead, out
 
 
+def p_apple_podcasts_chart_genres():
+    """apple-podcasts-scraper's `chartGenre` is a DECLARED 111-value enum (110 genres + ''),
+    so `enum-screen` sees its surface and has always said IDENTICAL -- but that surface check
+    is exactly limb 2 of this tool's docstring, and here limb 2 is the sharpest in the fleet.
+    main.js:83-85 documents the reason: the itunes RSS Generator does NOT error on an
+    unrecognized genre id, it silently falls back to the OVERALL top chart with HTTP 200.  So
+    a genre Apple retires does not fail loudly -- the buyer pays for rows labelled "Comedy's
+    top chart" and silently receives the front page.  No empty dataset, no warning, no clue.
+
+    Added c3176, whose enum_audit (c2840 -> c3176, 336c) is the measurement this probe pins.
+    Two halves, matching what that audit ran by hand:
+
+      1. BIDIRECTIONAL SET DIFF against Apple's own genre tree (MZStoreServices ws/genres?id=26,
+         the same authority main.js:87-88 cites).  Asserts zero drift in BOTH directions, no
+         duplicate ids, schema enum keys == main.js CHART_GENRE_IDS keys, and every enumTitle
+         still matching Apple's live node name.  Also asserts the documented tree SHAPE
+         (19 top-level of which 4 are childless -- Government/History/Technology/True Crime --
+         plus 91 second-level = 110), because README :chartGenre publishes "19 top-level + 91
+         leaf subgenres = 110 values" as a literal count.
+
+      2. SILENT-FALLBACK LIVENESS: fetch each sampled genre's real chart and assert it DIFFERS
+         from the overall chart.  This is the only half that can catch a retired id, and it
+         cannot be done from the genre tree alone -- a node can sit in the tree while its chart
+         feed stops being distinct.  c3176 ran all 110 (110/110 genre-specific, 0 fallbacks,
+         0 empty feeds); a routine fleet run samples a ROTATING 10 keyed to the day of year, so
+         the full map is covered every ~11 days without paying 110 requests per run.  Set
+         VOCAB_SCREEN_APC_FULL=1 to force the exhaustive 110-id sweep.
+
+    Like the google-play probe, this transcribes a rule that lives in the Actor rather than
+    upstream, so it also asserts the load-bearing whitelist gate is still in main.js: if
+    someone lets a raw chartGenre through instead of mapping it, the fallback becomes
+    reachable again and this probe must be re-read rather than keep testing a stale rule."""
+    out = []
+    slug = "apple-podcasts-scraper"
+    dead = []
+
+    src = open(f"{R}/actors/{slug}/src/main.js").read()
+    # The gate that makes the silent fallback unreachable: only a mapped key is ever sent.
+    for name, needle in (("whitelist gate", "CHART_GENRE_IDS[input.chartGenre] ? input.chartGenre : null"),
+                         ("genre URL built from the map", "genre=${CHART_GENRE_IDS[chartGenre]}")):
+        present = needle in src
+        out.append(f"  main.js {name} still present: {present}")
+        if not present:
+            dead.append(f"main.js {name} changed -- re-read the chartGenre path before trusting this probe")
+
+    m = re.search(r"const CHART_GENRE_IDS = \{(.*?)\n\};", src, re.S)
+    if not m:
+        return False, out + ["  could not locate CHART_GENRE_IDS in main.js"]
+    ours = {k: str(v) for k, v in re.findall(r"(\w+)\s*:\s*'?(\d+)'?", m.group(1))}
+
+    # ---- half 1: bidirectional diff against Apple's own genre tree
+    tree = http("https://itunes.apple.com/WebObjects/MZStoreServices.woa/ws/genres?id=26")
+    nodes = {}
+
+    def walk(n, depth):
+        for gid, node in (n or {}).items():
+            if not isinstance(node, dict):
+                continue
+            nodes[str(gid)] = {"name": node.get("name"), "depth": depth,
+                               "nchild": len(node.get("subgenres") or {})}
+            walk(node.get("subgenres"), depth + 1)
+
+    walk({"26": tree.get("26") or tree}, 0)
+    nonroot = {k: v for k, v in nodes.items() if k != "26"}
+    top = [k for k, v in nonroot.items() if v["depth"] == 1]
+    second = [k for k, v in nonroot.items() if v["depth"] == 2]
+    childless = sorted(nonroot[k]["name"] for k in top if nonroot[k]["nchild"] == 0)
+    out.append(f"  Apple tree: {len(nonroot)} non-root nodes = {len(top)} top-level "
+               f"({len(childless)} childless: {', '.join(childless)}) + {len(second)} second-level")
+    if (len(nonroot), len(top), len(second)) != (110, 19, 91):
+        dead.append(f"tree shape moved: {len(nonroot)}/{len(top)}/{len(second)} != 110/19/91 "
+                    f"-- README publishes '19 top-level + 91 leaf subgenres = 110 values'")
+    if childless != ["Government", "History", "Technology", "True Crime"]:
+        dead.append(f"childless top-level set moved: {childless}")
+
+    ours_ids, apple_ids = set(ours.values()), set(nonroot)
+    extra = sorted(ours_ids - apple_ids)
+    missing = sorted(f"{i}:{nonroot[i]['name']}" for i in apple_ids - ours_ids)
+    out.append(f"  map: {len(ours)} entries, {len(ours_ids)} unique ids | "
+               f"ids we offer that Apple dropped: {extra or 'none'} | "
+               f"Apple nodes we never expose: {missing or 'none'}")
+    if extra:
+        dead.append(f"chartGenre ids no longer in Apple's tree: {extra} -- these silently "
+                    f"fall back to the overall chart")
+    if missing:
+        dead.append(f"Apple genres missing from CHART_GENRE_IDS: {missing}")
+    if len(ours_ids) != len(ours):
+        dead.append("duplicate genre ids in CHART_GENRE_IDS")
+
+    cg = field(slug, "chartGenre")
+    keys = [k for k in cg["enum"] if k]
+    titles = dict(zip(cg["enum"], cg["enumTitles"]))
+    k_only, m_only = sorted(set(keys) - set(ours)), sorted(set(ours) - set(keys))
+    out.append(f"  schema: {len(keys)} non-empty keys (+'' overall) | schema-only: "
+               f"{k_only or 'none'} | map-only: {m_only or 'none'}")
+    if k_only or m_only:
+        dead.append(f"schema enum and CHART_GENRE_IDS disagree: schema-only={k_only} map-only={m_only}")
+
+    def fold(s):
+        return str(s or "").lower().replace("&", "and").replace("-", "").replace(" ", "")
+
+    bad_titles = [f"{k}({ours[k]}): {titles[k]!r} vs live {nonroot[ours[k]]['name']!r}"
+                  for k in keys if k in ours and ours[k] in nonroot
+                  and fold(titles[k].split("—")[-1]) != fold(nonroot[ours[k]]["name"])]
+    out.append(f"  enumTitles vs live Apple node names: "
+               f"{len(keys) - len(bad_titles)}/{len(keys)} match")
+    if bad_titles:
+        dead.append(f"enumTitles no longer match Apple's own names: {bad_titles[:5]}")
+
+    # ---- half 2: silent-fallback liveness on the real chart feed
+    def chart_ids(url):
+        st, body = http_raw(url)
+        if st != 200:
+            return st, None
+        e = (json.loads(body).get("feed") or {}).get("entry") or []
+        if isinstance(e, dict):
+            e = [e]
+        return st, [((x.get("id") or {}).get("attributes") or {}).get("im:id") for x in e]
+
+    st, overall = chart_ids("https://itunes.apple.com/us/rss/toppodcasts/limit=10/json")
+    if not overall:
+        return False, out + [f"  overall us chart unavailable (status {st}) -- cannot test fallback"]
+
+    ordered = sorted(ours)
+    if os.environ.get("VOCAB_SCREEN_APC_FULL"):
+        sample = ordered
+    else:
+        n, step = len(ordered), 10
+        start = (dt.date.today().timetuple().tm_yday * step) % n
+        sample = [ordered[(start + i) % n] for i in range(step)]
+    fell_back, empty, errs, ok = [], [], [], 0
+    for k in sample:
+        st, ids = chart_ids(f"https://itunes.apple.com/us/rss/toppodcasts/limit=10/genre={ours[k]}/json")
+        if ids is None:
+            errs.append(f"{k}({ours[k]}):HTTP{st}")
+        elif not ids:
+            empty.append(f"{k}({ours[k]})")
+        elif ids == overall:
+            fell_back.append(f"{k}({ours[k]})")
+        else:
+            ok += 1
+        time.sleep(0.15)
+    out.append(f"  live charts: {ok}/{len(sample)} genre-specific "
+               f"({'FULL 110-id sweep' if len(sample) == len(ordered) else f'rotating sample of {len(sample)}'})"
+               f" | identical-to-overall: {fell_back or 'none'} | empty: {empty or 'none'}"
+               f" | errors: {errs or 'none'}")
+    if fell_back:
+        dead.append(f"genre chart IDENTICAL to the overall chart (the silent fallback of "
+                    f"main.js:83-85 -- buyer is charged for the front page): {fell_back}")
+    if empty:
+        dead.append(f"genre chart came back empty: {empty}")
+    if errs:
+        dead.append(f"genre chart endpoint errored: {errs}")
+
+    if dead:
+        out.append(f"  MISMATCHES: {dead}")
+    return not dead, out
+
+
 PROBES = {
+    "apple-podcasts-scraper": ("chartGenre", p_apple_podcasts_chart_genres),
     "federal-register-scraper": ("agencies", p_federal_register_agencies),
     "hacker-news-scraper": ("tags", p_hacker_news_tags),
     "nih-reporter-scraper": ("agencyIcCodes", p_nih_agency_ic_codes),

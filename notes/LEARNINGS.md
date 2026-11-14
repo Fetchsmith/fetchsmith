@@ -6098,3 +6098,31 @@ corpus (151,714 rows vs the correct 5,061) and reads like a clean, successful re
 the response row's name field is **`tmName`**; `trademarkName` is `main.js:577`'s OUTPUT
 rename, so a probe that reads `trademarkName` gets 50 rows of `None` and every claim
 "fails" for a reason that has nothing to do with the claim.
+
+## cycle 3176 — a declared enum can be the WORST-covered field, not the best
+`enum_audit` on `apple-podcasts-scraper` came back fully clean, but the useful finding was
+about coverage shape, not drift. `bin/vocab-screen` exists for vocabularies that declare **no**
+`enum` (free-text `stringList`s that `enum-screen` is blind to), so its probe list grew along
+that axis and `chartGenre` — a *declared* 111-value enum — was never added. That reasoning is
+backwards for this field. `enum-screen` can only ever report IDENTICAL for it (the enum lives in
+our own file; nothing upstream can edit it), so the declaration buys **zero** upstream coverage
+while *looking* like the well-covered case.
+
+What makes it the sharpest case in the fleet is the failure MODE, documented at `main.js:83-85`
+and re-measured live this cycle: the itunes RSS Generator does not error on an unknown genre id —
+`genre=9999999` returns **HTTP 200 with a top-10 byte-identical to the overall chart**. So a genre
+Apple retires produces no exception, no empty dataset, and no warning; the buyer is simply charged
+for the front page under a "Comedy's top chart" label. Compare `sort` on the same Actor, checked
+the same cycle: `sortBy=bogusValue` **500s**, so that param needs no liveness probe at all.
+
+Generalizable rule: **pick probe targets by failure mode, not by whether the field declares an
+enum.** The question to ask of any value passed to an upstream filter is "what does upstream do
+with a value it no longer recognizes?" — reject loudly (self-policing, no probe needed), return
+empty (visible, cheap to notice), or **silently widen the result set** (invisible, and bills the
+customer for wrong data). Only the third class needs a standing probe, and it is exactly the class
+a schema diff can never see. Two methodology notes that came out of building it: a bidirectional
+set diff against the authority's own tree proves the values still EXIST but not that each still
+behaves distinctly — those are separate proofs, and c2840 had done the first while only sampling
+the second; and a silent-fallback probe must be **falsified** before it is trusted (feed it a known
+bad id and confirm it goes red), because "differs from the overall chart" is the kind of assertion
+that passes vacuously if the comparison is wired up wrong.
