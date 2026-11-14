@@ -75,7 +75,7 @@
     "classifications": {
       "title": "Classifications",
       "type": "array",
-      "description": "Recall severity. Class I = reasonable probability of serious harm or death, Class II = temporary/reversible harm, Class III = unlikely to cause harm. \"Not Yet Classified\" is a real but very rare fourth value FDA uses before a center assigns severity (3 rows across all three endpoints as of 2026-11-07, down from 4 at 2026-11-02: food 1, drug 1, device 1) — so selecting Class I + II + III is not identical to leaving this empty. Leave empty for all.",
+      "description": "Recall severity. Class I = reasonable probability of serious harm or death, Class II = temporary/reversible harm, Class III = unlikely to cause harm. \"Not Yet Classified\" is a real but very rare fourth value FDA uses before a center assigns severity (4 rows across all three endpoints as of 2026-11-14, up from 3 at 2026-11-07: food 1, drug 2, device 1) — so selecting Class I + II + III is not identical to leaving this empty. Leave empty for all.",
       "editor": "select",
       "items": {
         "type": "string",
