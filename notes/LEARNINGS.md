@@ -6136,3 +6136,31 @@ behaves distinctly — those are separate proofs, and c2840 had done the first w
 the second; and a silent-fallback probe must be **falsified** before it is trusted (feed it a known
 bad id and confirm it goes red), because "differs from the overall chart" is the kind of assertion
 that passes vacuously if the comparison is wired up wrong.
+
+## Cycle 3184 — a STALE user-count finding is a prompt to re-read the rival's WHOLE price record, and a restamped count silently re-dates the price beside it
+
+`bin/check-competitor-claims` tracks competitor **user counts** only. Its method rule (ii) already
+says to re-fetch every live figure in a flagged sentence, not just the flagged number; c3184 is the
+clearest case yet of why, and it adds a specific failure shape worth naming.
+
+`apple-podcasts-scraper/README.md:222` carried "`tidydata/audio-video-transcription` (32u as of
+2026-11-12) $0.003/min" inside a paragraph whose own footer reads "All prices read live 2026-10-30".
+Live, the handle is at **37 users** and has been at **$0.005 → $0.004/min since 2026-11-05** — a 67%
+rise at Free. The price sentence was *true on 2026-10-30*, so no price checker was wrong and the
+paragraph's own date was honest. **The defect was created by an earlier cycle's count fix:** stamping
+`(32u as of 2026-11-12)` into the same parenthetical put a date 13 days NEWER than the paragraph
+immediately next to a price that had changed in between, so a reader takes the price as current to
+2026-11-12. Rule to carry forward: **when restamping a count that sits in the same parenthetical or
+clause as a price, either re-verify that price to the new date or state the price's own date
+explicitly.** A count stamp is not scoped to the count; it re-dates its whole neighbourhood.
+
+Second find, same cycle, different shape: `eu-ted-tenders-scraper/README.md:170` priced
+`ciel_labs/uk-government-tenders-contracts-finder` at "$0.008/notice with no start fee, over 5x our
+rate" — correct on every price FIELD (unchanged since its 2026-07-06 publish), but its
+`eventDescription` string says **"first 25 records of every run are free."** A free-row allowance
+like that lives only in the event's prose, never in `eventPriceUsd`/`eventTieredPricingUsd`, so every
+price-comparison tool we own is structurally blind to it — and it inverts the comparison on small
+runs (≤25 notices it bills $0 and we bill $0.0015/row). **Read `eventTitle`/`eventDescription`, not
+just the price numbers, when folding a rival into a comparison.** Disclosed with the honest hedge it
+needs: it is the listing's self-reported behaviour, not a platform-enforced rung, and we have not run
+the Actor to confirm it.
