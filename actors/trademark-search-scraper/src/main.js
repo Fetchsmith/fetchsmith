@@ -610,6 +610,7 @@ async function fetchPage(page) {
 
   let lastErr;
   let outOfTime = false;
+  let roundsCapped = false;
   let round = 0;
   // One ROUND is the full ladder below (PROXY_ROTATIONS fresh exit nodes, then one direct
   // attempt). A single round is cheap: measured on run m6yx4Y87ooaDWhvXa (2026-11-09 nightly
@@ -695,7 +696,10 @@ async function fetchPage(page) {
       }
       return res.body ?? {};
     }
-    if (outOfTime || round >= MAX_ROUNDS) break;
+    if (outOfTime) break;
+    // Cycle 3236 (unreachable_remedy): WHICH of the two ceilings stopped the loop decides what
+    // advice is even actionable, so record it instead of letting both exits share one message.
+    if (round >= MAX_ROUNDS) { roundsCapped = true; break; }
     const pause = Math.min(ROUND_PAUSE_MS * (round + 1), ROUND_PAUSE_MAX_MS);
     // A round is only worth starting if the pause AND one real attempt both fit in what is left,
     // so the last thing this loop ever does is report — never get killed mid-pause.
@@ -717,23 +721,52 @@ async function fetchPage(page) {
     // TMview/proxy failure and keep the rows already pushed instead of failing the whole run
     // (cycle 1892: cycle 1061 stopped the hard KILL but still reported a clock stop as a FAILURE,
     // so a buyer who had already been charged for 1,000 rows saw a red run and no status message).
+    // Cycle 3236 (unreachable_remedy): this used to advise "300s+ is a safe default for this
+    // Actor". The Actor's real defaultRunOptions.timeoutSecs is 3600 (read live from the Apify
+    // API), so a default-input buyer is already 12x past that number -- and a buyer who followed
+    // the advice down to 300s would get FEWER retry rounds (4 instead of 9, measured in
+    // tools/round-loop-selftest.mjs), i.e. the remedy was not just unreachable but backwards.
+    // Raising the timeout only helps someone who lowered it; on a deep walk the lever is the
+    // row cap or a narrower search, so name both.
     const err = new Error(
       `This run's own time limit ran out while fetching page ${page} from TMview`
       + `${lastErr ? ` (last network error: ${lastErr.message})` : ''}. `
       + 'TMview behind Apify Proxy has spells of transient 590 UPSTREAM502 errors, and each retry on a '
-      + 'fresh proxy session costs up to 30s. Raise the run timeout (Input > Run options; 300s+ is a '
-      + 'safe default for this Actor), or re-run in a few minutes — the proxy route usually clears.',
+      + 'fresh proxy session costs up to 30s. This Actor\'s default run timeout is 3600s: if you lowered '
+      + 'it, raise it back (Input > Run options). If you are already at the default, the walk itself is '
+      + 'too long for one run — lower maxResults, or narrow the search with office, Nice-class or status '
+      + 'filters so fewer pages are needed. Either way, rows already fetched are valid and charged for.',
     );
     err.timeBudget = true;
     throw err;
   }
-  throw new Error(
-    'Could not reach TMview (tmdn.org) through any network path this run: '
-    + `${round + 1} round(s) of ${PROXY_ROTATIONS} Apify Proxy session(s) plus a direct connection all failed `
-    + `transport-level, spread over this run's whole time budget — last error: ${lastErr?.message}. `
+  // Cycle 3236 (unreachable_remedy): this throw has TWO exits and used to hand both the same
+  // text -- "spread over this run's whole time budget ... give the run a longer timeout so it can
+  // keep retrying". On the MAX_ROUNDS exit both halves are false, and that is the exit a
+  // default-input buyer actually gets: at this Actor's real default timeout of 3600s the loop
+  // exhausts all 8 rounds after ~675s and reports with ~2910s (81%) of the budget NEVER SPENT
+  // (measured in tools/round-loop-selftest.mjs). Raising the timeout cannot help there, because
+  // the binding ceiling is our own round cap, not the clock -- the same wrong-limit shape cycle
+  // 2968 fixed for the single ladder, reintroduced one level up by the cap 2968 added. Only the
+  // budget-bound exit can honestly ask for a longer timeout.
+  const ladderSummary = `${round + 1} round(s) of ${PROXY_ROTATIONS} Apify Proxy session(s) plus a direct `
+    + `connection all failed transport-level — last error: ${lastErr?.message}. `
     + 'TMview itself is frequently reachable when this happens, so it is usually a flaky exit node rather '
-    + 'than an outage — but it did not clear within this run, so either TMview is genuinely down right now '
-    + 'or give the run a longer timeout (Input > Run options) so it can keep retrying.',
+    + 'than an outage';
+  if (roundsCapped) {
+    throw new Error(
+      `Could not reach TMview (tmdn.org) through any network path this run: ${ladderSummary}, `
+      + `but it did not clear across all ${MAX_ROUNDS} retry rounds this Actor will attempt (~${
+        Math.round((ROUND_PAUSE_MS + ROUND_PAUSE_MS * 2 + ROUND_PAUSE_MAX_MS * (MAX_ROUNDS - 2)) / 1000)
+      }s of waiting, spread over this run). That round cap — not this run's timeout — is what stopped the `
+      + 'retrying, so a longer timeout will NOT help: TMview is most likely genuinely unreachable right '
+      + 'now. Re-run in a few minutes, and if it still fails, check status at tmdn.org before retrying again.',
+    );
+  }
+  throw new Error(
+    `Could not reach TMview (tmdn.org) through any network path this run: ${ladderSummary}, `
+    + 'and this run ran out of time to keep retrying before the spell cleared. Give the run a longer '
+    + 'timeout (Input > Run options) so it can wait the flaky exit nodes out, or re-run in a few minutes.',
   );
 }
 
@@ -821,7 +854,7 @@ try {
         + 'prefix search), and is a PRE-FILTER number -- only the marks whose name BEGINS with '
         + `"${searchTerm}" are delivered and charged. Expect delivered << ${declaredMatches}, and expect this run `
         + 'to read more pages per delivered row than the other modes; RUN_SUMMARY reports the exact '
-        + 'scanned/filtered/delivered split. Give the run 300s+ (Input > Run options) on a broad term.',
+        + 'scanned/filtered/delivered split. This Actor\'s default 3600s run timeout is ample for this; do not lower it below ~300s on a broad term.',
       );
     }
 
@@ -926,8 +959,8 @@ if (watchMode && seeding && (timeBudgetStopped || pageDepthLimitStopped) && runE
       + 'own page limit, then run again -- a baseline run charges nothing, so re-seeding is free.'
     : `This run's own time limit ran out while seeding the baseline for watch label "${watchLabel}", `
       + `after recording ${watchSeen.size} mark(s). No baseline was saved -- a partial one would make the next `
-      + 'run treat every mark it never reached as new and charge you for the whole match set. Raise the run '
-      + 'timeout (Input > Run options; 300s+ is a safe default, more for a broad search) or narrow the search '
+      + 'run treat every mark it never reached as new and charge you for the whole match set. This Actor\'s default run '
+      + 'timeout is 3600s -- if you lowered it, raise it back (Input > Run options); otherwise narrow the search '
       + '(tighter term, fewer offices, specific Nice classes or statuses), then run again -- a baseline run '
       + 'charges nothing, so re-seeding is free.';
 }
@@ -997,7 +1030,8 @@ if (watchMode && !skipBaselineSave) {
         `Incomplete (time budget): watch label "${watchLabel}" delivered ${pushed} new mark(s) but this run's own `
         + `time limit ran out after ${pagesFetched} page(s), so it did NOT finish checking for new marks -- do not `
         + 'read this as "nothing new". The marks it did deliver are saved to the baseline and will not be charged '
-        + 'again. Raise the run timeout (Input > Run options; 300s+ is a safe default) or narrow the search, then '
+        + 'again. This Actor\'s default run timeout is 3600s -- if you lowered it, raise it back '
+        + '(Input > Run options); otherwise narrow the search -- then '
         + `run again to cover the rest.${evictionSuffix}`,
       );
     } else if (pageDepthLimitStopped) {
@@ -1132,8 +1166,9 @@ if (timeBudgetStopped && !watchMode) {
     + `${declaredMatches?.toLocaleString('en-US') ?? 'an unknown number of'} match(es) TMview declared, from `
     + `${pagesFetched} page(s), then stopped because THIS run's own time limit ran out -- not because TMview `
     + 'ran out of results or failed. Everything delivered is complete and correct as far as it goes, and it '
-    + 'stopped itself cleanly instead of being killed part-way. Raise the run timeout (Input > Run options; '
-    + '300s+ is a safe default, more for a broad search) or narrow the search to finish the rest. See RUN_SUMMARY.'
+    + 'stopped itself cleanly instead of being killed part-way. This Actor\'s default run timeout is 3600s -- if you lowered '
+    + 'it, raise it back (Input > Run options); otherwise lower maxResults or narrow the search to finish the '
+    + 'rest. See RUN_SUMMARY.'
     + preFilterNote
     + (zeroRowFilterCauses.length > 0
       ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`

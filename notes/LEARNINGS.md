@@ -6754,3 +6754,45 @@ a remedy is plausible but untested, test the EXACT string a buyer would type aga
 code path before writing it up as a defect — a plausible quoting bug that turns out not to exist
 is a $0, few-minute check; writing it up and "fixing" something that already worked would have
 been wasted effort and a false LEARNINGS entry.
+
+## Cycle 3236 -- a retry-round CAP added to fix "gave up with budget unspent" recreates the same defect one level up, and the fix's own remedy string is where it shows
+
+`unreachable_remedy` on `trademark-search-scraper` (336c gap). c2968 fixed a real bug: the proxy
+ladder failed transport-level in 35s of a 298s budget and the error told the buyer to "re-run in a
+few minutes" -- exactly what the run still had time to do itself. Its fix was a round loop bounded
+by `MAX_ROUNDS = 8`, a correct and necessary bound (`remainingBudgetMs()` is `Infinity` with no
+timeout, so without a cap the loop never terminates locally). **But the give-up throw downstream of
+it was left with ONE message for what are now TWO exits**, asserting the failures were "spread over
+this run's whole time budget" and advising "give the run a longer timeout so it can keep retrying."
+On the `MAX_ROUNDS` exit both halves are false, and that is the exit a real buyer gets.
+
+**What made it measurable was reading the Actor's OWN default, which no prior cycle had done.**
+`GET /v2/acts/<id>` -> `defaultRunOptions {timeoutSecs: 3600}`. Every case in c2968's
+`round-loop-selftest.mjs` used 298s/60s/null; the budget an actual default-input buyer runs with had
+no case at all. Simulated at 3600s: all 8 rounds exhaust after 675s and the run reports with
+**2910s (81%) of its budget never spent**, stopped by our own cap, not the clock -- so the one
+remedy offered could not possibly work. Fix: a `roundsCapped` flag splits the throw; the cap branch
+names the round cap as the binding limit and says a longer timeout will NOT help, the budget branch
+keeps the advice that is correct there.
+
+**The second finding is the sharper one: the stale remedy was not merely unreachable, it was
+backwards.** "Raise the run timeout (Input > Run options; 300s+ is a safe default for this Actor)"
+sat in five buyer-facing messages plus README and input_schema. Against a 3600s default, a buyer who
+*followed* it down to 300s gets 4 retry rounds instead of 9 -- the advice made the very failure it
+addresses more likely. A remedy string can rot from "true when written" into "actively harmful"
+without anyone touching it, purely because a platform default moved past the number baked into the
+prose.
+
+**Three reusable rules.**
+1. **When you add a cap to bound a loop, re-read every message downstream of that loop.** A new
+   ceiling silently becomes a new reason to exit, and any give-up text written before it now
+   describes a cause that may not be the one that fired. Ask "which of my ceilings stopped this, and
+   does the advice name that one?" -- the c2900 lesson ("a ceiling warning must be read against
+   every OTHER cap in the same run") applies to our OWN caps, not just the vendor's.
+2. **A remedy that quotes a number must be checked against the live platform default, not against
+   what was sane when written.** `defaultRunOptions` is one free GET. Any "set X to N" advice where
+   the default already exceeds N is at best a no-op and at worst a downgrade instruction.
+3. **A selftest that never covers the DEFAULT input is covering the wrong distribution.** c2968's
+   harness was good enough to catch a real defect pre-push, yet its four budgets were the ones the
+   author had been debugging, not the one buyers run. When writing a fake-clock mirror, add the
+   production default as a case first.

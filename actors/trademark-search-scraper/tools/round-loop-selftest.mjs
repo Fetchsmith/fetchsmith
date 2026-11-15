@@ -27,6 +27,7 @@ function simulate({ budgetMs, outcomes, attemptMs = 10000 }) {
   let proxyUrl = 'http://proxy';
   let lastErr;
   let outOfTime = false;
+  let roundsCapped = false;
   let round = 0;
 
   for (;;) {
@@ -53,7 +54,8 @@ function simulate({ budgetMs, outcomes, attemptMs = 10000 }) {
       if (outcome === 'ok') return { result: 'ok', attempts, rounds: round + 1, now, log };
       lastErr = new Error('transport');
     }
-    if (outOfTime || round >= MAX_ROUNDS) break;
+    if (outOfTime) break;
+    if (round >= MAX_ROUNDS) { roundsCapped = true; break; }
     const pause = Math.min(ROUND_PAUSE_MS * (round + 1), ROUND_PAUSE_MAX_MS);
     if (remaining() < pause + MIN_ATTEMPT_MS) break;
     round += 1;
@@ -62,7 +64,12 @@ function simulate({ budgetMs, outcomes, attemptMs = 10000 }) {
     proxyUrl = 'http://proxy'; // rotateProxy() re-arms the session for the new round
   }
   return {
-    result: outOfTime ? 'outOfTime' : 'failed', attempts, rounds: round + 1, now, log, lastErr,
+    // `exit` is what decides which give-up message the real fetchPage() throws (cycle 3236):
+    // 'roundsCapped' means our own MAX_ROUNDS stopped the retrying with budget possibly to spare,
+    // so advising a longer timeout there is unreachable; 'budget' means the clock really did bind.
+    result: outOfTime ? 'outOfTime' : 'failed',
+    exit: outOfTime ? 'outOfTime' : (roundsCapped ? 'roundsCapped' : 'budget'),
+    attempts, rounds: round + 1, now, log, lastErr,
   };
 }
 
@@ -103,6 +110,29 @@ check('short budget still reports instead of being killed', d.rounds === 1 && d.
 check('a new round re-arms the proxy', a.log.includes('r1: attempt 0 (proxy)'),
   `round-1 opening attempt was: ${a.log.find((l) => l.startsWith('r1: attempt 0'))}`);
 
+// 7. Cycle 3236: the exit a REAL buyer hits had no case here -- every budget above is 298s/60s/
+//    null, but the Actor's live defaultRunOptions.timeoutSecs is 3600. At the default the loop is
+//    stopped by MAX_ROUNDS, not by the clock, with most of the budget unspent. The give-up message
+//    must therefore NOT tell this buyer to raise the timeout.
+const DEFAULT_TIMEOUT_MS = 3600000;
+const e = simulate({ budgetMs: DEFAULT_TIMEOUT_MS, outcomes: [] });
+const unspent = (DEFAULT_TIMEOUT_MS - DEADLINE_RESERVE_MS) - e.now;
+check('default 3600s run is stopped by MAX_ROUNDS, not by its clock', e.exit === 'roundsCapped',
+  `got exit=${e.exit} after ${e.rounds} round(s), ${e.now / 1000}s`);
+check('MAX_ROUNDS exit leaves most of the default budget unspent (so "raise the timeout" is unreachable)',
+  unspent > DEFAULT_TIMEOUT_MS / 2, `only ${unspent / 1000}s unspent`);
+// 8. The budget-bound exit is the ONLY one that may honestly ask for a longer timeout.
+check('a 298s run really is budget-bound', a.exit === 'budget', `got exit=${a.exit}`);
+// 9. Lowering the timeout to the old "300s+ is a safe default" advice must be shown to be worse
+//    than the real default -- this is why that remedy string was removed.
+const f = simulate({ budgetMs: 300000, outcomes: [] });
+check('the retired "set 300s" advice yields fewer retry rounds than the 3600s default',
+  f.rounds < e.rounds, `300s gave ${f.rounds} round(s) vs ${e.rounds} at the default`);
+
 console.log(`\ntrace of case 1:\n  ${a.log.join('\n  ')}\n  -> ${a.result} after ${a.attempts} attempts, ${a.now / 1000}s`);
+console.log(`\ncycle-3236 measurement (default 3600s buyer): exit=${e.exit}, ${e.rounds} rounds, `
+  + `${e.attempts} attempts, elapsed ${e.now / 1000}s, UNSPENT ${unspent / 1000}s `
+  + `(${Math.round((100 * unspent) / (DEFAULT_TIMEOUT_MS - DEADLINE_RESERVE_MS))}% of budget); `
+  + `300s instead gives only ${f.rounds} round(s).`);
 console.log(bad === 0 ? '\nALL PASS' : `\n${bad} FAILURE(S)`);
 process.exit(bad === 0 ? 0 : 1);
