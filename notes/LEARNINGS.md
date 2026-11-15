@@ -6547,3 +6547,25 @@ the result) rather than trusting that a tighter regex caught it by luck.** Fixed
 source this cycle (rewrote the 4 `[x]` heads back to `[ ]`, applied after the multiset-identity
 check per the established in-place-rewrite discipline) so the next trim's plain `grep -c` reads
 the truth again without needing this same re-derivation.
+
+---
+
+Cycle 3227: the `sort_order` 2x-reach trick (c3220, `/publications/search`) does NOT
+automatically generalize to every offset-walled endpoint -- measure depth+performance, not
+just mechanism, before assuming a second walk is free. On `nih-reporter-scraper`'s
+`/projects/search` (`OFFSET_WALL=15000`), the mechanism checked out exactly like the
+publications endpoint (sort_field/sort_order are honored inputs, bogus field -> 500, explicit
+`sort_field:"appl_id"` gives a provably exact mirror between ASC and DESC on a small criteria
+set). But two things broke the naive fix: (1) the *default* sort (what production actually
+uses today, since no `sort_field` is ever passed) is NOT a simple reverse between ASC and DESC
+near the wall -- on an 85k-row real query, default-ASC@14999 and default-DESC@14999 landed in
+the same low-appl_id neighborhood, not opposite ends, so just flipping `sort_order` without an
+explicit field buys nothing; and (2) the one sort key that IS provably correct and tie-free
+(`appl_id`, a unique per-project integer) is also too slow at offset ~15000 on a realistic large
+query -- it completed in ~90s using the default sort but timed out completely at 120s (twice)
+once an explicit `sort_field` was added at that same depth. Lesson: when checking whether an
+offset-wall "no cursor, the rest can't be reached" claim has an escape hatch via `sort_order`,
+add a timing check at the real offset depth on a realistic (large) total as a required step,
+not an afterthought -- a mechanism that is honored and even provably correct can still be
+unshippable if the deep page it requires routinely blows the platform run timeout. Full
+measurement citations: `tasks/queue.md`, `CLOSED c3227` under `NEW c3220b`.
