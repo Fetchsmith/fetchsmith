@@ -193,6 +193,16 @@ $0.01/result down to $0.007 at GOLD and above, 3.5x–5x our flat $0.002, with n
 diff mode. All other previously-named rivals re-verified live this sweep (counts updated above);
 no pricing drift found anywhere in the fleet of 16.
 
+**One more rival, surfaced 2026-11-15 by a vendor-catalogue cross-check rather than a full
+resweep:** `fetch_cat/website-screenshot-generator` (37 users) does bulk screenshots and PDF with
+full-page, element, mobile, dark-mode and overlay-hiding controls — real overlap, and
+overlay-hiding (auto-dismissing cookie banners/popups before capture) is one we don't have — but
+it charges a one-time $0.005 start fee plus $0.008/capture at its lowest tier down to $0.0066 at
+DIAMOND, today **4x–3.3x our flat $0.002 with no start fee**, and it has no raw-HTML input,
+OG-card preset or diff mode. Its own `pricingInfos` already schedules a rise effective
+**2026-11-19** to a $0.031 start fee plus $0.035 down to $0.026/capture at GOLD and above —
+**17.5x–13x our price** once that lands. Not a threat today, and the gap only widens.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
