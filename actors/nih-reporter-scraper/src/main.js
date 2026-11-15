@@ -851,7 +851,7 @@ async function fetchPublications(coreNums) {
     //                  pages are not wasted before re-fetching per project.
     //   'truncated' -- a single project really does have more papers than the wall can reach;
     //                  its count is a floor and nothing else can be done about it.
-    async function walkPubBatch(batch, allowSplit) {
+    async function walkPubBatch(batch, allowSplit, order) {
         let offset = 0;
         let batchTotal = null;
         for (;;) {
@@ -859,10 +859,17 @@ async function fetchPublications(coreNums) {
             // the wall is served 200-and-truncated, so the clamp is what makes the last ~499
             // reachable rows reachable. offset < PUB_OFFSET_WALL is guaranteed here, so limit >= 1.
             const limit = Math.min(PAGE_LIMIT, PUB_OFFSET_WALL - offset);
+            // sort_field/sort_order are honoured INPUTS, not ignored (verified live cycle 3220: a
+            // bogus sort_field -> HTTP 500; pmid asc/desc start at provably different rows). Sort on
+            // pmid specifically, never the default coreproject: within a single project every row
+            // ties on coreproject, so the default has no guaranteed order at all and an asc/desc pair
+            // sorted on it would not be mirrors of each other.
             const page = await apiPost('/publications/search', {
                 criteria: { core_project_nums: batch },
                 limit,
                 offset,
+                sort_field: 'pmid',
+                sort_order: order,
             });
             if (page === null) return { status: 'failed', total: batchTotal };
             if (typeof page?.meta?.total === 'number') batchTotal = page.meta.total;
@@ -896,20 +903,44 @@ async function fetchPublications(coreNums) {
         );
     }
 
-    function reportTruncated(core, total) {
+    // `floor` is the actual number of DISTINCT pmids in hand when the floor was declared --
+    // PUB_OFFSET_WALL-ish when only one sort direction could be walked (the mirror failed), or up
+    // to 2*PUB_OFFSET_WALL once both directions have been walked -- see resolveTruncated() below.
+    // Report the real known count rather than assuming a round number: pmid ties across the
+    // asc/desc seam (gotcha 4, cycle 3220) can make the true union a little short of 2*WALL.
+    function reportTruncated(core, total, floor, bothWalked) {
         pubBatchesTruncated += 1;
+        const wallNote = bothWalked
+            ? "NIH's publications offset wall in BOTH pmid sort directions"
+            : `NIH's ${PUB_OFFSET_WALL}-row publications offset wall`;
         log.warning(
-            `Publication lookup for ${core} hit NIH's ${PUB_OFFSET_WALL}-row publications offset wall at `
-            + `${PUB_OFFSET_WALL} of ${total ?? 'an unknown number of'} paper(s); its publicationCount is a floor, `
-            + 'not a total. There is no cursor on this endpoint, so the rest cannot be reached.',
+            `Publication lookup for ${core} hit ${wallNote}, reaching ${floor} of `
+            + `${total ?? 'an unknown number of'} paper(s); its publicationCount is a floor, not a total. `
+            + 'There is no further cursor on this endpoint, so the rest cannot be reached.',
         );
+    }
+
+    // A forward (pmid-asc) walk hit the wall. Before reporting a floor, try the mirror: a
+    // pmid-desc walk reaches a second, disjoint PUB_OFFSET_WALL-row block (proven disjoint live,
+    // cycle 3220: 0 pmid overlap between the two directions on a real project). The two walks'
+    // union covers ranks 1..total exactly when total <= 2*PUB_OFFSET_WALL, so a project that size
+    // or smaller is now fully reachable instead of reporting a floor at all; above that there is
+    // genuinely no third sort direction, so it is still a floor, just one close to 2*PUB_OFFSET_WALL
+    // instead of PUB_OFFSET_WALL. Only report a single-direction floor if the mirror itself failed.
+    async function resolveTruncated(core, ascTotal) {
+        const desc = await walkPubBatch([core], false, 'desc');
+        const bothWalked = desc.status !== 'failed';
+        const total = desc.total ?? ascTotal;
+        const known = map.has(core) ? map.get(core).size : 0;
+        if (bothWalked && total !== null && total <= 2 * PUB_OFFSET_WALL && known >= total) return; // exact
+        reportTruncated(core, total, known, bothWalked);
     }
 
     for (let i = 0; i < coreNums.length; i += PUB_BATCH) {
         const batch = coreNums.slice(i, i + PUB_BATCH);
-        const res = await walkPubBatch(batch, batch.length > 1);
+        const res = await walkPubBatch(batch, batch.length > 1, 'asc');
         if (res.status === 'failed') { reportFailed(batch); continue; }
-        if (res.status === 'truncated') { reportTruncated(batch[0], res.total); continue; }
+        if (res.status === 'truncated') { await resolveTruncated(batch[0], res.total); continue; }
         if (res.status !== 'split') continue;
         // NIH returns a batch's papers GROUPED BY PROJECT (verified live c2576: the first 200 rows
         // of a 2-project batch were all one project), so a batch cut off at the wall is NOT a
@@ -922,9 +953,9 @@ async function fetchPublications(coreNums) {
             + 'really are over the wall report a floor.',
         );
         for (const core of batch) {
-            const one = await walkPubBatch([core], false);
+            const one = await walkPubBatch([core], false, 'asc');
             if (one.status === 'failed') reportFailed([core]);
-            else if (one.status === 'truncated') reportTruncated(core, one.total);
+            else if (one.status === 'truncated') await resolveTruncated(core, one.total);
         }
     }
     return { map, unknown };

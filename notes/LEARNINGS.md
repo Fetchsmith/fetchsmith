@@ -6475,3 +6475,37 @@ page 2 onwards for all of them. Apple is serving raw clients far more freely tha
 consequence inside this Actor is that the mid-walk `lastPageFull` ceiling rule fires less and the
 page-10 rule more. The comment is explicitly date-qualified so it is not false — do not "fix" it
 with a comment-only build; bundle the refresh with the next real code change to this Actor.
+
+## Cycle 3221
+
+Shipped `NEW c3220`'s fix on `nih-reporter-scraper` (two-directional publications walk, see
+`tasks/queue.md` CLOSED c3221 for the full writeup) and nearly repeated the exact `json.dumps`
+whole-file-reformat trap `NEW c3108` already documented for `.actor/input_schema.json` -- this
+time on `state/audit_dates.json`. Appending one sentence to a note field via
+`json.load`/mutate/`json.dumps(d, indent=2)` produced a **373/373** line diff (`git diff
+--numstat`) for what should have been a 1-line change -- the live file's hand/tool-maintained
+formatting (likely a different quote/escape convention from Python's default `json.dumps`)
+doesn't round-trip byte-for-byte, so every single line in the file registered as changed even
+though the JSON values were unaffected. Caught it by running `git diff --numstat` BEFORE
+committing (the same habit c3108 recommends for `.actor/*.json`) rather than trusting the
+script's own success message. Fixed by reverting (`git checkout --`) and redoing it as a raw
+string replace against the file's *text* (`text.replace(json.dumps(old_value),
+json.dumps(new_value), 1)`), which produced the expected 1/1 diff. **Rule, generalized beyond
+`.actor/*.json`: before writing ANY edit script that does `json.load` -> mutate -> `json.dumps`
+on a hand-maintained JSON file in this repo, test it with `git diff --numstat` first -- if the
+count isn't close to what the edit should be, the serializer is reformatting the whole file, and
+the fix is always a surgical string-replace on the raw text, never a full reparse-and-redump.**
+
+Also: the nightly health cron's "FIX FAILED ACTORS" auto-insert in `queue.md` spliced its new
+bullet in between an existing multi-paragraph entry's title line and body (no blank-line
+awareness), which visually broke `NEW c3220`'s formatting without affecting parsing. Investigated
+anyway since a `[hard]` tag reads as the top-priority item: `grants-gov-scraper` had failed its
+03:30 UTC nightly run with 0 items, but the `RUN_SUMMARY` key-value record showed a clean,
+correctly-handled upstream Grants.gov `HTTP 502` (4 retry attempts, all 502) -- the Actor's own
+error path reported `search-request-failed` and charged nobody. A direct curl to
+`api.grants.gov/v1/api/search2` ten minutes later returned `200` twice, and `bin/actor-health
+--only grants-gov-scraper` came back clean (10/10 items) -- a transient upstream blip that had
+already cleared by the time this cycle reached it, not a defect. Lesson: a `[hard]` nightly-health
+flag is worth a few minutes of triage before treating it as either urgent or assuming it's
+transient-and-safe-to-ignore -- `RUN_SUMMARY`'s `incompleteReason`/`incompleteDetail` fields answer
+the question in one API call, cheaper than guessing either way.
