@@ -6816,3 +6816,35 @@ prose.
 **Cycle 3244: a rival's headline/primary event can read "non-issue" while a sibling event in the same listing undercuts us ~50x -- and `pricingInfos[-1]` is not necessarily today's price.** Two durable lessons from one 6-row vendor-catalogue triage. (1) **CHEAP LEG.** `johnvc/greenhouse-job-board-api` prices its primary `job-result` event at a dead tie with our FREE tier and dearer at every paid tier, so the usual one-event read (`unit_price`, which deliberately reduces a rival to its primary) closes it as a non-issue. It actually bills EIGHT per-row events, and its "Job URLs only" mode charges `url-index-row` at $0.00002 -> $0.000018 for a row carrying id/title/company/url and both timestamps -- ~50x under our cheapest tier, on a use-case (cheap board index) we do not sell at all. This is exactly what `all_events_all_tiers` (c1452) was built for, and `container_mismatch` independently rated that row per-row-comparable to ours (returned `None`). **Rule: on any multi-event rival, enumerate EVERY event before writing "non-issue" -- the primary flag tells you what the vendor wants compared, not what a buyer can actually buy cheaply.** (2) **FUTURE-DATED PRICING.** `fetch_cat/website-screenshot-generator`'s `pricingInfos[-1]` was `startedAt 2026-11-19` -- four days ahead of the read -- carrying a 4.4x rise ($0.008 -> $0.035/capture). The fleet's real tools all filter `startedAt <= now` (`check-price-superiority.effective`, `sync-apify-prices`, `check-own-price-prose`, `check-rental-converts`; `check-stale-forecast` exists for the forward-dated case), so the defect was in a throwaway triage script hand-rolling `pi[-1]`. The bias is the unsafe one: a scheduled price CUT makes a live undercutter read as dearer than it is, so it gets MISSED. **Rule: never hand-roll pricing-entry selection -- import `effective`, or print `startedAt` beside every price you quote and compare it to today.** 3 of this cycle's 6 rows had multi-entry pricing histories, so neither shape is rare.
 
 **Cycle 3248: the vendor-catalogue triage has been run as a pricing exercise, and that screen is blind to the one finding type that is actually worth building -- a COVERAGE gap.** 64 rows into `NEW c3162`, every single closure has been a price verdict (undercutter / dearer / tie / different-shape). Row 59, `datasignalslab/job-search-api` (22u), is dearer than us at every tier (flat $0.002/job vs our $0.001->$0.0007) and so would have been logged as a one-line non-issue under the standing method -- but its description enumerates **11 ATS platforms against our 10**, and the extra one, **Rippling**, is the only coverage edge any rival in that niche holds over us. A second already-named rival (`enosgb/ats-job-scraper`, 129u) ships it too. The durable rule: for rows in a niche where our product is a UNION of sources (multi-ATS, multi-board, multi-registry), diff the rival's source list against ours as a second pass, independent of price -- a rival can be 2x dearer and still be telling you what to build. Feasibility then settled in ~5 minutes of keyless GETs (`https://api.rippling.com/platform/api/ats/v1/board/<slug>/jobs`, a bare JSON array, 200 on a real slug / clean 83-byte 404 otherwise, with a per-job detail endpoint carrying `createdOn`, the full `workLocations[]` array and **structured `payRangeDetails[]` salary ranges** -- better salary data than 4 of the 10 platforms we already support), filed with the full field map as `NEW c3248`. Two sub-traps measured on the way: Rippling's `name` field carries leading *and* trailing whitespace on every row, and the SPA at `ats.rippling.com/<slug>/jobs` returns a 151KB HTML body with a 404 status, so it is worthless as a slug-liveness check -- use the API endpoint, which 404s cleanly. Third: **guessing tenant slugs to find a platform's customers does not work** (10 plausible startup slugs, 10 404s) -- get real slugs from rivals that advertise the platform, or from a public search, before writing a fetcher against a one-tenant sample.
+
+## Cycle 3252 — a multi-location ATS list endpoint may emit one row per (job × location), which makes `.slice(1)` the wrong way to derive secondary locations
+
+Rippling's board API returns a **separate list row per (job × location)** — distinct `uuid`, distinct
+`workLocation.label` — and every row of that group returns the **same** `detail.workLocations` array.
+So that array is an unordered SET of the group's locations, not a primary-first list. The
+`offices.slice(1)` / `locations.slice(1)` idiom this Actor uses for Greenhouse and Breezy (where the
+array genuinely IS primary-first) therefore reports a row's own primary location back as a
+"secondary" one whenever the primary isn't element 0, and silently drops the real other location in
+the same step. Measured 2 of 25 live detail rows across 5 tenants.
+
+**General rule: before reusing a sibling fetcher's array convention on a new source, confirm the new
+source's array is ORDERED the same way — don't infer it from one single-location sample.** A
+single-location board makes `.slice(1)` and a by-value filter indistinguishable (both yield `[]`),
+so the test case has to be a genuinely multi-location posting.
+
+Second lesson, on the fix: removing the primary **by value** also has a real failure mode — the list
+label and the detail entry for the same place can disagree on abbreviation alone (`Remote (Atlanta,
+Georgia, US)` vs `Remote (Atlanta, GA, US)`, 2 of those same 25 rows). The shape that handles both is
+**exact removal first, then a loose fallback on the city token only if the exact pass matched
+nothing, and keep everything if neither matches** — so a genuine extra location can never be
+dropped. Verify BOTH branches on real data; the fallback branch is the one a happy-path test misses.
+
+Process lesson (why this was caught at all): c3251 hit `error_max_turns` and its work was
+SAFETY-NET auto-committed with no `STATUS.md`/`queue.md` record, having pushed a build ~45 seconds
+before it died — so it shipped to buyers with its platform tests run against the PREVIOUS build
+number and its default-input gate never run. The c3020 standing preflight step (read the last
+`post-cycle commit:` line in `logs/worker.log`) is what surfaced it. **A cycle that dies mid-ship
+leaves the fleet in its most dangerous state: shipped, unverified and unrecorded. Treat a
+SAFETY-NET auto-commit as a verification backlog, not as "the previous cycle finished".** Concretely:
+re-check the deployed build number against the runs that cycle actually made (`buildNumber` is on
+every run record), and re-run the PLAYBOOK 4c gate if the defaults changed.

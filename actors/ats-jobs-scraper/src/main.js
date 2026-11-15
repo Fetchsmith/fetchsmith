@@ -1113,6 +1113,32 @@ function ripplingLocation(label) {
   const workplaceType = m[1].toLowerCase().replace(/-/g, '');
   return { place: m[2] || null, workplaceType, isRemote: workplaceType === 'remote' };
 }
+// `detail.workLocations[]` is the UNORDERED set of every location the posting group covers, NOT a
+// primary-first list: Rippling's list endpoint emits one row per (job x location), each row with
+// its own uuid and its own `workLocation.label`, and every row of the group returns the SAME
+// `workLocations` array (measured live cycle 3252 on findhelp: both "Customer Success Associate"
+// rows return `["Austin, TX", "Madison, WI"]`, one row labelled Austin and the other Madison). So
+// the primary must be removed BY VALUE, not by index — a `.slice(1)` reports the row's own primary
+// back as a secondary location whenever the primary is not element 0, and drops the real other
+// location in the same move (hit 2 of 25 live detail rows, cycle 3252).
+// Exact string removal covers 23 of those 25; the other 2 are the abbreviation disagreement c3251
+// measured (list "Remote (Atlanta, Georgia, US)" vs detail "Remote (Atlanta, GA, US)", same for
+// Chicago/Illinois vs IL), which is why there is a loose fallback on the city token alone. The
+// fallback only runs when exact removal found nothing, so a genuinely-extra location is never
+// dropped by it; if neither pass matches, every entry really is additional and all are kept.
+function ripplingPlaceKey(label) {
+  const place = ripplingLocation(label).place ?? '';
+  return place.split(',')[0].toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+function ripplingSecondaryLocations(primaryLabel, workLocations) {
+  const all = (workLocations ?? []).map((l) => String(l));
+  if (!primaryLabel) return all;
+  const exact = all.filter((l) => l !== primaryLabel);
+  if (exact.length < all.length) return exact;
+  const key = ripplingPlaceKey(primaryLabel);
+  const loose = key ? all.filter((l) => ripplingPlaceKey(l) !== key) : all;
+  return loose.length < all.length ? loose : all;
+}
 async function fetchRipplingDetail(slug, uuid) {
   try {
     const { status, body } = await getJson(`https://api.rippling.com/platform/api/ats/v1/board/${encodeURIComponent(slug)}/jobs/${encodeURIComponent(uuid)}`);
@@ -1163,15 +1189,10 @@ async function fetchRippling(slug) {
         job.descriptionText = textOf(html);
         job.publishedAt = detail.createdOn ? new Date(detail.createdOn).toISOString() : null;
         job.employmentType = detail.employmentType?.id ?? null;
-        // Same "first entry is the primary, the rest are secondary" convention as
-        // Greenhouse's `offices.slice(1)` / Breezy's `locations.slice(1)` above — NOT a
-        // not-equal-to-primary filter, which looked right but produced a false secondary
-        // location on every single-location job: the list row's `workLocation.label` and the
-        // detail row's matching `workLocations[0]` routinely disagree on abbreviation alone
-        // ("Hybrid (Chicago, Illinois, US)" vs "Hybrid (Chicago, IL, US)" for the exact same
-        // place, measured live cycle 3251), so a strict string-inequality filter kept that
-        // single real location as a bogus "secondary" one instead of dropping it.
-        job.secondaryLocations = (detail.workLocations ?? []).slice(1);
+        // NOT Greenhouse's `offices.slice(1)` / Breezy's `locations.slice(1)` convention —
+        // Rippling's array is unordered, so the primary is removed by value. See
+        // ripplingSecondaryLocations above for the live measurement behind that.
+        job.secondaryLocations = ripplingSecondaryLocations(job.location, detail.workLocations);
         // Pick the pay tier matching this job's own remote-ness when more than one geo tier is
         // published and it's ambiguous which applies; otherwise the first entry. Never average or
         // sum across tiers — that would invent a number no tier actually posted.
