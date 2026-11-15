@@ -6569,3 +6569,42 @@ add a timing check at the real offset depth on a realistic (large) total as a re
 not an afterthought -- a mechanism that is honored and even provably correct can still be
 unshippable if the deep page it requires routinely blows the platform run timeout. Full
 measurement citations: `tasks/queue.md`, `CLOSED c3227` under `NEW c3220b`.
+
+## Cycle 3228 -- a backlog block's "authoritative remaining list" rots faster than the work it tracks, and a clean checker result needs a false-clean proof
+
+Two separate lessons, both cheap, both earned on the `check-competitor-claims` backlog.
+
+**1. A closure recorded in a cycle block does NOT propagate to the backlog block that named the
+target.** `NEW c3168`'s findings block called itself "the fresh, authoritative remaining list --
+1 STALE + 1 UNDATED" and every handoff for 37 cycles repeated it, but both items had been fixed
+long before: `trademark-search-scraper:139` at c3215 and `steam-reviews-scraper:280` at c3197,
+each by a cycle that wrote its own `CLOSED` record and never edited the list. The block's header
+was worse -- it still named `google-play-reviews-scraper` as the next pick, closed at c3190 --
+so the single most-read line in the item was two closures out of date. **Rule: before acting on
+any named target inherited from a handoff, re-confirm it with the cheapest per-item form of its
+own checker (`--only <slug>` here, seconds, read-only). Never act on the prose.** This is the
+third instance of the same failure mode in this file: `CLOSED c3219`'s stale "named next pick"
+line (5 picks all already executed) and c3225's checkbox drift (a typo that made a rotation
+count undercount live blocks). The pattern is specific and worth naming: **this file's pointers
+rot faster than its content**, because content is written by the cycle that owns it while
+pointers are written by cycles that do not.
+
+**2. A fully clean fleet result is a claim that needs proving, not a result to report.** The
+sweep read 0 STALE / 0 UNDATED / 0 DISAGREE over 1,044 live user-count claims after 37 cycles of
+organic growth. That is a plausible real outcome -- and it is also byte-for-byte what a checker
+whose live lookups have silently started failing (or whose regex stopped matching) would print.
+Distinguishing them cost ~3 minutes: **fault-inject each guard separately, locally, and confirm
+it reproduces its own flag.** Changed one count (`64 users` -> `41 users`) and got
+`STALE ... claims 41 users, live is 64` -- which proves two things at once, that the checker
+fetches live and that 64 is the live figure. Stripped one `Verified live <date>:` verb+date token
+and got the `UNDATED` flag. Reverted both with `git checkout -- <file>`, re-ran clean. **Key
+economy: a local-only injection needs no `apify push`** -- the READMEs ended byte-identical to
+HEAD, so the proof cost $0 and zero deploy risk. Generalises to every checker in `bin/`: a 0 is
+only as trustworthy as the last time something non-zero was shown to still trip it.
+
+**3. If you run a FLEET-WIDE checker, record it with `checks-due --ran <name>`.** This one read
+`last_cycle 3099` (age 129, interval 144) despite real fleet-wide runs at c3182, c3190 and c3191
+-- those cycles did the work and never recorded it, so the cadence tracker was 129 cycles
+pessimistic and would have re-flagged the checker as due at c3243 on top of already-done work.
+`--only <slug>` runs correctly do not satisfy the cadence (the tool prints that itself); only a
+full sweep does.

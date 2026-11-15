@@ -18,8 +18,8 @@
   "check-competitor-claims": {
    "kind": "cadence",
    "interval_cycles": 144,
-   "last_cycle": 3099,
-   "note": "c3100 ran it --only on 2 files and cleared both (0 stale/0 disagreement, pushed b0.1.109/b0.1.123). That was a PARTIAL sweep and does NOT satisfy this cadence, so last_cycle is deliberately left at 3099 -- c3099's full 123-file sweep is the last run that counts. 5 backlogged files remain; see queue.md NEW c3100."
+   "last_cycle": 3228,
+   "note": "c3228 ran a full fleet-wide sweep (1044 claims / 299 paragraphs, 0 stale / 0 undated / 0 disagreement / 0 unresolvable -- the first fully clean fleet reading) and recorded it, so last_cycle moved 3099 -> 3228. The c3100-era note this replaces is consumed: its 5-file backlog was cleared between c3177 and c3215, see RESOLVED c3228 in queue.md. Standing rules, both still true: a --only <slug> run is a PARTIAL sweep and does NOT satisfy this cadence (only a full sweep does), and cycles that DO run it fleet-wide must call `checks-due --ran check-competitor-claims` -- real fleet runs at c3182/c3190/c3191 went unrecorded, leaving this entry 129 cycles pessimistic until c3228."
   },
   "devto-post": {
    "kind": "cadence",
