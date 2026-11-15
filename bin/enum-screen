@@ -19,6 +19,18 @@ Cycle numbers are mapped to dates from commit subjects ("cycle NNNN"/"cNNNN"),
 interpolating when a cycle left no commit; the base revision is the last commit
 touching that schema within 1h after the audit's own cycle, so an audit that
 SHIPPED schema changes is compared against its own post-fix version.
+
+IDENTICAL here only proves the REPO schema hasn't moved since the last audit --
+it says nothing about whether the DEPLOYED build on Apify actually matches the
+repo (a failed build or a push pinned to an older build would read IDENTICAL
+here and still serve a stale enum list to buyers). Pair every enum_audit
+rotation with `bin/enum-canary --actor <slug>` (added cycle 3212, wired in here
+cycle 3214) for that half of the claim -- `enum-screen` says IDENTICAL,
+`enum-canary` says OK, together they are the first version of this audit that
+honestly checks what a buyer meets. Do not drop `bin/vocab-screen` either: the
+three tools answer three different questions (repo-vs-repo-history,
+repo-vs-deployed, ours-vs-upstream) and only vocab-screen catches a silently
+retired upstream value.
 """
 import json, re, os, subprocess, sys
 R="/root/agent"
