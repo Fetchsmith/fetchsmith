@@ -731,8 +731,14 @@ function matchesVendorType(p) {
   }
   return true;
 }
-// `/meta.json` supplies nothing but the optional `currency` output field — every failure path here
-// already falls back to null, and prices are returned in the store's own currency either way. So it
+// `/meta.json` supplies nothing WE CONSUME but the optional `currency` output field — every failure
+// path here already falls back to null, and prices are returned in the store's own currency either
+// way. (Corrected cycle 3232: the payload ALSO carries an exact `published_products_count` —
+// measured equal to the fully-paginated catalog to the unit on two stores, 312 on allbirds and
+// 10,415 on gymshark over 42 pages with 0 duplicate ids — so a total DOES exist and the blog post
+// claiming otherwise was wrong. Deliberately still not used to pre-compute the page count: the
+// measurement in the next paragraph is exactly why a pager must not take a dependency on this
+// endpoint. Keep `currency` the only thing read from it.) So it
 // must NEVER be routed through `http()`'s full retry ladder like a load-bearing product fetch:
 // that is up to 3 outer attempts x 40s, run twice over by http()'s accept-language fallback.
 // Measured live 2026-09-29 (cycle 992): one transient Apify Proxy UPSTREAM502 on

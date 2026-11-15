@@ -6,6 +6,18 @@ tags: webscraping, shopify, ecommerce, api
 tool: shopify-products-scraper
 ---
 
+> **Correction, 2026-11-15.** Two claims below were re-measured live and are false. (1) This post says
+> "Shopify doesn't return a total count ... so 'empty page' is the only reliable end-of-catalog marker."
+> There *is* an exact total: `/meta.json`'s `published_products_count`, measured equal to the
+> fully-paginated catalog to the unit on two stores (312 on `www.allbirds.com`, 10,415 on
+> `gymshark.com` over 42 pages with zero duplicate product ids). You can pre-compute
+> `ceil(n/250)` pages and fetch them in parallel. (2) This post says there is no `Link` header on
+> `/products.json`. There is one now — `</.well-known/ucp>; rel="ucp"; version="2026-08-25"` — but it
+> is *not* pagination; it points at a keyless UCP/MCP endpoint exposing 16 catalog/cart/checkout
+> tools on every store. Full re-measurement, including the three distinct refusal shapes a
+> catalog-disabled store returns:
+> [We said you can't pre-compute Shopify's catalog page count. We were wrong](https://dev.to/fetchsmith/we-said-you-cant-pre-compute-shopifys-catalog-page-count-we-were-wrong-the-number-was-in-the-20op).
+
 Shopify storefronts ship their entire product catalog as plain JSON, at a URL every store has, with no authentication and no rate-limit key. If you can load the store's homepage in a browser, you can fetch its full catalog with `curl`.
 
 ## The endpoint

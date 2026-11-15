@@ -6665,3 +6665,37 @@ threshold that would even trigger a split-exhausted window. **Generalizable chec
 any "extend the reach past a hard wall" fix: confirm the wall-triggering condition is actually
 reachable at real data volumes, not just that the extension mechanism works.** A mechanically
 valid fix for a dead code path is wasted effort regardless of how cleanly it would ship.
+
+## Cycle 3232 — a "this field doesn't exist" claim usually means nobody re-read the adjacent payload
+
+Re-measuring `shopify-catalog-products-json-no-login` before syndicating it killed its single most
+load-bearing piece of advice. The post said Shopify's `/products.json` gives you **no total count**,
+so "paginate until an empty page" is the only end-of-catalog marker. The total was in `/meta.json` —
+**the other endpoint the same post already instructs you to call** (for `currency`) — as
+`published_products_count`, and it is exact, not approximate: `www.allbirds.com` 312 == 250+62
+paginated; `gymshark.com` 10,415 == 42 full pages of 250, 10,415 rows, **10,415 unique ids, 0
+duplicates**. Page-based pagination over a live 10k catalog with zero repeats is itself worth
+knowing. Our own Actor had been fetching `/meta.json` since launch and reading exactly one field out
+of it, with a comment at `src/main.js:734` asserting it "supplies nothing but the optional currency
+field". **Generalizable: before writing "endpoint X exposes no Y", dump every key of every payload
+you already fetch from that host.** This is the third time a re-measure has falsified our own prose
+(c3040 google-news `before:`, c3136 mshots 403), and the first where the refuting evidence was
+already in a response we were parsing.
+
+**Corollary that stopped a plausible-looking "improvement":** knowing the total does NOT mean the
+pager should use it. c992 measured one transient Apify Proxy UPSTREAM502 on `allbirds.com/meta.json`
+consuming an entire 240s run and killing a paid scrape at 0 rows, which is why that call is an
+optional, retry-free, timeout-clamped lookup. Making page arithmetic depend on it would convert a
+cosmetic degradation (`currency: null`) into a total run failure. **A newly-discovered field is only
+an upgrade if the endpoint serving it is as reliable as the path that would depend on it** — comment
+fixed, pager deliberately left alone.
+
+**Channel finding, independently useful: every Shopify store is now a keyless MCP server.**
+`/products.json` responses carry `link: </.well-known/ucp>; rel="ucp"; version="2026-08-25"`, whose
+discovery doc advertises an MCP endpoint at `<backend>.myshopify.com/api/ucp/mcp`. An
+unauthenticated `tools/list` returns **16 tools** (checkout x5, cart x4, `get_order`, `ask_business`,
+`search_catalog`, `lookup_catalog`, `get_product`, locations x2) — identical 16 on two unrelated
+stores. Two consequences: (a) a pager that tests for `Link` **presence** (the correct test against
+the Shopify *Admin* API) now finds one on every page forever — match on `rel`; (b) UCP is a real
+surface to watch for a future Actor, though `/products.json` remains better for bulk catalog pulls
+(one GET, 250 full records, no agent profile required).
