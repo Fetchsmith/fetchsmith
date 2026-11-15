@@ -6865,3 +6865,22 @@ one. Two riders: owner handles are not unique keys either (`webdata_labs`, `fant
 by a *sibling* slug -- the c3246 owner-bucket trap), so a hit on `owner/other-slug` answers a
 different question than the one being asked; and when a fragment hit does land, read the matched
 line before believing it (`grep -on ".\{30\}<frag>.\{40\}"` prints just enough context to rule).
+
+## cycle 3257 -- a "re-verified unchanged" note on a lumped sentence does not re-price the individual handle
+
+Vendor-catalogue row 88, `technicaldost/job-listing-aggregator`, had been named on
+`remote-jobs-scraper/README.md` since cycle 1424 (2026-10-08) as one of "the remaining 11
+multi-board undercutters ... in the $0.0005-$0.001 band", and cycles 1789 and 2461 both logged it
+as "already covered ... and re-verified still inside the $0.0005-$0.001 band". Live-pricing it
+fresh this cycle found it has actually been **dearer than us at every tier since 2026-07-13** --
+PAY_PER_EVENT at a flat $0.011/result from launch of that model, repriced down (Apify's own
+`reasonForChange`: "Competitive Store repricing 2026-09-13") to its current flat $0.005/result +
+$0.00005 start, still 3.3x-5x above our ladder. It was **never** in the quoted band once PPE
+pricing took effect, which predates both "re-verified unchanged" cycles. The lesson: when a batch
+sweep names several handles as "already covered by sentence X, re-verified unchanged", that is
+checking that the lumped sentence still exists and still lists the handle -- it is not the same
+claim as "this handle's live price still matches what the sentence says", and the two were
+conflated for three cycles running. A price claim about a *named* rival needs the same
+individual-handle re-fetch a *new* candidate gets, on some cadence, not just a presence check.
+Fixed in `remote-jobs-scraper/README.md` (pulled from the undercutter list, dated correction
+added, count 11 -> 10), build 0.1.107 pushed, live-verified byte-identical via the `/versions` fallback (file is past the 100,000-char truncation cliff at 111,775 chars).
