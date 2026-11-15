@@ -504,11 +504,11 @@ function buildSearch(from, to) {
         // Valid on all three endpoints' index mappings but only ever populated on drug rows --
         // food/device rows simply never match, same as any other filter with no data behind it,
         // verified live (not a 400, a normal empty match set): `_exists_:openfda.brand_name`
-        // is 0 of 29586 food and 0 of 40450 device rows (re-measured 2026-11-08).
+        // is 0 of 29598 food and 0 of 40481 device rows (re-verified 2026-11-15).
         // These three filters also reach only a MINORITY of drug rows: openFDA's NDC
-        // cross-reference exists on just 2977 of 18076 drug rows (16.5%), and the fill rate is
-        // strongly recency-skewed (by report_date year: 2016 6%, 2019 9%, 2022 22%, 2024 40%,
-        // 2025 48%, 2026 56%; 45 of the newest 100 drug rows). So a drug-name filter over an
+        // cross-reference exists on just 2934 of 18110 drug rows (16.2%), and the fill rate is
+        // strongly recency-skewed (by report_date year: 2016 6%, 2019 9%, 2022 21%, 2024 40%,
+        // 2025 47%, 2026 54%; 33 of the newest 100 drug rows). So a drug-name filter over an
         // older window is expected to return far fewer rows than the same window unfiltered --
         // that is upstream coverage, not a filter bug. Disclosed in the README FAQ.
         if (brandName) clauses.push(`openfda.brand_name:${quote(brandName)}`);
@@ -939,14 +939,14 @@ async function firmRecallCount(productType, firm) {
 }
 
 async function normalize(r, productType) {
-    // `openfda` appears on drug rows ONLY -- 0 of 29586 food and 0 of 40450 device rows carry
-    // it (`_exists_:openfda`, re-measured live 2026-11-08), so these flattened fields are
+    // `openfda` appears on drug rows ONLY -- 0 of 29598 food and 0 of 40481 device rows carry
+    // it (`_exists_:openfda`, re-verified live 2026-11-15), so these flattened fields are
     // advertised for drug recalls only and come back null for the other two product types.
-    // But it is NOT on all drug rows: only 2977 of 18076 (16.5%) have an `openfda` block at
+    // But it is NOT on all drug rows: only 2934 of 18110 (16.2%) have an `openfda` block at
     // all. An earlier version of this comment read "verified 5/5 drug rows populated", which
-    // was a lucky n=5 draw off the newest page (fill there is ~45%, not 100%) and badly
+    // was a lucky n=5 draw off the newest page (fill there is ~33%, not 100%) and badly
     // overstated coverage. Fill is strongly recency-skewed by report_date year: 2016 6%,
-    // 2019 9%, 2022 22%, 2024 40%, 2025 48%, 2026 56%. Null openfda fields on a drug row are
+    // 2019 9%, 2022 21%, 2024 40%, 2025 47%, 2026 54%. Null openfda fields on a drug row are
     // therefore normal and expected, especially pre-2020 -- do NOT treat them as a
     // parse/mapping bug.
     //
@@ -955,12 +955,13 @@ async function normalize(r, productType) {
     // (brand_name/generic_name/manufacturer_name) is present on exactly those same rows --
     // the block is all-or-nothing per row", which is true of those three but was read as
     // covering the whole block (the README said "and the rest") and is false for half of it.
-    // `_exists_` per subfield, of the 2977 openfda-bearing drug rows, measured 2026-11-08:
-    //   brand_name 2977, generic_name 2977, manufacturer_name 2977, product_ndc 2977,
-    //   package_ndc 2977, spl_set_id 2977   <- these 6 really are all-or-nothing together
-    //   application_number 2929 (98.4%), route 2928 (98.4%), unii 2914 (97.9%),
-    //   substance_name 2912 (97.8%), rxcui 2862 (96.1%), upc 1425 (47.9%)  <- sparser
-    // `upc` is the outlier by far: 1552 rows carry a filled brand_name with NO upc, and 0 rows
+    // `_exists_` per subfield, of the 2934 openfda-bearing drug rows, re-verified 2026-11-15
+    // (2026-11-08 figures in parentheses -- every ratio held, the archive itself shrank):
+    //   brand_name 2934, generic_name 2934, manufacturer_name 2934, product_ndc 2934,
+    //   package_ndc 2934, spl_set_id 2934   <- these 6 really are all-or-nothing together
+    //   application_number 2886 (98.4%), route 2887 (98.4%), unii 2872 (97.9%),
+    //   substance_name 2872 (97.9%), rxcui 2828 (96.4%), upc 1408 (48.0%)  <- sparser
+    // `upc` is the outlier by far: 1526 rows carry a filled brand_name with NO upc, and 0 rows
     // carry a upc without a brand_name (so upc is a strict subset, never an independent hit).
     // A null `upc` next to a filled `brandName` is upstream sparsity, not a flattening bug.
     const o = r.openfda ?? {};
@@ -1517,9 +1518,9 @@ if (pushed === 0 && watchMode && !seeding) {
     // The generic list only said those filters "only ever match drug recalls", which diagnoses
     // nothing for the buyer most likely to hit this: someone who already selected
     // productTypes=["drug"] and searched a name over an older window. The real cause is
-    // coverage, and it is measured -- openFDA's NDC cross-reference exists on just 2977 of
-    // 18076 drug rows (16.5%, 2026-11-08) and is strongly recency-skewed (2016 6%, 2019 9%,
-    // 2022 22%, 2024 40%, 2025 48%, 2026 56%) -- and it has a real workaround, so both go in
+    // coverage, and it is measured -- openFDA's NDC cross-reference exists on just 2934 of
+    // 18110 drug rows (16.2%, 2026-11-15) and is strongly recency-skewed (2016 6%, 2019 9%,
+    // 2022 21%, 2024 40%, 2025 47%, 2026 54%) -- and it has a real workaround, so both go in
     // the message at the point of failure rather than only in the README FAQ.
     const nameFilters = [brandName && 'brandName', genericName && 'genericName',
         manufacturerName && 'manufacturerName'].filter(Boolean);
@@ -1529,17 +1530,17 @@ if (pushed === 0 && watchMode && !seeding) {
         // the workaround cut off, which is the one part the buyer needs.
         zeroRowMessage = `No recalls matched (scanned ${scanned}). Most likely: `
             + `${nameFilters.length > 1 ? 'the drug-name filters' : nameFilters[0]} can only match `
-            + 'the 16.5% of DRUG rows carrying openFDA\'s NDC '
-            + 'cross-reference (2977 of 18076, worse pre-2020); no food or device row can match them '
+            + 'the 16.2% of DRUG rows carrying openFDA\'s NDC '
+            + 'cross-reference (2934 of 18110, worse pre-2020); no food or device row can match them '
             + 'at all. Fix: filter recallingFirm instead (all rows, all years) and match the drug name '
             + 'client-side on productDescription, or widen to a recent window. Also: filters are ANDed; '
             + `dates run on ${dateField}; states = the FIRM's state; searchQuery is a phrase match.`;
         log.warning(
             `No recalls matched. Scanned ${scanned} rows. The most likely cause is the `
             + `${nameFilters.join('/')} filter, not your other filters: openFDA only cross-references `
-            + 'brand/generic/manufacturer name for DRUG recalls, and even there on only 2977 of 18076 '
-            + 'drug rows — 16.5% (measured live 2026-11-08). Coverage is strongly recency-skewed by '
-            + 'report_date year: 2016 6%, 2019 9%, 2022 22%, 2024 40%, 2025 48%, 2026 56%. So a '
+            + 'brand/generic/manufacturer name for DRUG recalls, and even there on only 2934 of 18110 '
+            + 'drug rows — 16.2% (re-verified live 2026-11-15). Coverage is strongly recency-skewed by '
+            + 'report_date year: 2016 6%, 2019 9%, 2022 21%, 2024 40%, 2025 47%, 2026 54%. So a '
             + 'drug-name search over an older window is EXPECTED to return few or no rows even when the '
             + 'recall is really there — that is upstream coverage, not a filter bug. Workaround: drop '
             + 'the name filter, filter on recallingFirm instead (populated on all three product types '
