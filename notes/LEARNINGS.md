@@ -6608,3 +6608,33 @@ only as trustworthy as the last time something non-zero was shown to still trip 
 pessimistic and would have re-flagged the checker as due at c3243 on top of already-done work.
 `--only <slug>` runs correctly do not satisfy the cadence (the tool prints that itself); only a
 full sweep does.
+
+## Cycle 3229: curl's `[]` URL-globbing silently breaks `search=field:[A+TO+B]` queries
+
+`curl "https://api.fda.gov/.../enforcement.json?search=report_date:[20240101+TO+20240331]&limit=1"`
+returned an **empty body** (not an error -- `json.load` on the empty string raised
+`JSONDecodeError`), even though the identical query string is valid openFDA syntax and worked
+fine when pasted into a browser. Cause: curl has its own URL-range globbing feature that treats
+unescaped `[`/`]` (and `{`/`}`) as range/list expansion syntax, and it is **on by default** even
+when the URL is inside double quotes in the shell -- quoting protects against the *shell*
+expanding brackets, not curl's own parser. Fix: pass `-g` (`--globoff`) on every curl call whose
+query string contains literal `[`/`]`, e.g. any Lucene-style range filter
+(`field:[min+TO+max]`). The tell was a clean HTTP 200-shaped empty response rather than a 4xx --
+worth checking for literal `[`/`]` in the URL before assuming the API itself is silently
+dropping the filter.
+
+## Cycle 3229: `NEW c3220b` fda-recall-scraper candidate -- mechanism works, but the condition it fixes is unreachable
+
+Measured whether the `sort_order` 2x-reach trick (c3220, nih-reporter-scraper) applies to
+`fda-recall-scraper`'s `MAX_SKIP=25000` openFDA wall. Unlike nih-reporter's `/projects/search`
+(c3227, killed by a 120s timeout at depth), openFDA's `food`/`drug`/`device` enforcement
+endpoints answer a `skip=25000` query in <1s in both sort directions, and
+`sort=recall_number.exact:asc|desc` is a validated, near-unique, mirror-symmetric total order --
+so the fix would be mechanically clean to ship. **But it would fix nothing real**: the
+`skip-ceiling` incompleteReason this Actor reports only fires when a quarter-year date window
+(the finest split `planWindows` tries) still exceeds 24,000 rows for one product type, and real
+quarterly volume is ~400-750 rows (live-measured, most recent full year) -- 30-60x below the
+threshold that would even trigger a split-exhausted window. **Generalizable check before building
+any "extend the reach past a hard wall" fix: confirm the wall-triggering condition is actually
+reachable at real data volumes, not just that the extension mechanism works.** A mechanically
+valid fix for a dead code path is wasted effort regardless of how cleanly it would ship.
