@@ -1,6 +1,7 @@
 // ATS Jobs Scraper: pulls live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable,
-// SmartRecruiters and Workday company boards and normalizes them into one cross-ATS schema. No
-// headless browser — every source is a documented, no-auth, no-login JSON endpoint.
+// SmartRecruiters, Workday, Teamtailor, Personio, Breezy and Rippling company boards and
+// normalizes them into one cross-ATS schema. No headless browser — every source is a documented,
+// no-auth, no-login JSON endpoint.
 import { createHash } from 'crypto';
 import { Actor, log } from 'apify';
 import * as cheerio from 'cheerio';
@@ -10,11 +11,14 @@ import { parseLocation } from './location.js';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
-const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday', 'teamtailor', 'personio', 'breezy'];
+const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday', 'teamtailor', 'personio', 'breezy', 'rippling'];
 // Workday's slug is "<host>/<site>", not a bare company name, so it can't be guessed from a slug
 // alone and is excluded from auto-detection. Order is a fixed priority for the rare case where the
 // same slug string happens to exist as a real, populated board on more than one platform.
-const AUTO_DETECT_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'teamtailor', 'personio', 'breezy'];
+// Rippling slugs are bare company names just like the other auto-detectable ATSes (verified live,
+// cycle 3250: findhelp/joinroot/nocd/capacity/skillable-careers all resolve), and a collision check
+// across the other 9 auto-detected slugs turned up no overlap, so it is included here too.
+const AUTO_DETECT_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'teamtailor', 'personio', 'breezy', 'rippling'];
 const DEFAULT_COMPANIES = [
   { ats: 'greenhouse', slug: 'airbnb' },
   { ats: 'ashby', slug: 'ramp' },
@@ -26,6 +30,7 @@ const DEFAULT_COMPANIES = [
   { ats: 'teamtailor', slug: 'oatly' },
   { ats: 'personio', slug: 'ottonova' },
   { ats: 'breezy', slug: 'the-san-francisco-standard' },
+  { ats: 'rippling', slug: 'findhelp' },
 ];
 const seenCompanies = new Set();
 const companies = (Array.isArray(input.companies) && input.companies.length ? input.companies : DEFAULT_COMPANIES)
@@ -128,6 +133,15 @@ const needDescriptions = includeDescriptions || !!descriptionKeyword || !!descri
 const workdayNeedsDetail = needDescriptions
   || !!employmentTypeKeyword || !!departmentKeyword || !!postedAfter || !!postedBefore
   || !!locationKeyword || !!locationExcludeKeyword
+  || hasSalary || minSalary != null || maxSalary != null;
+// Rippling's list payload already carries department AND a usable location (workLocation.label,
+// see fetchRippling) — unlike Workday, where almost nothing is on the list row — so, unlike
+// workdayNeedsDetail above, this deliberately does NOT include departmentKeyword/locationKeyword/
+// locationExcludeKeyword. Only employmentType, description, published-date and salary are
+// detail-only on Rippling (verified live cycle 3250/3251: list rows carry exactly
+// uuid/name/department/url/workLocation and nothing else).
+const ripplingNeedsDetail = needDescriptions
+  || !!employmentTypeKeyword || !!postedAfter || !!postedBefore
   || hasSalary || minSalary != null || maxSalary != null;
 const maxJobsPerCompany = Math.min(Number(input.maxJobsPerCompany ?? 50), 5000);
 const maxResults = Math.min(Number(input.maxResults ?? 300), 100000);
@@ -1071,6 +1085,111 @@ async function fetchBreezy(slug) {
   };
 }
 
+// Rippling's board API is public and keyless, confirmed cross-tenant live (cycle 3248/3250/3251 on
+// `rippling` itself plus 5 third-party boards found via WebSearch — findhelp, joinroot, nocd,
+// capacity, skillable-careers): `GET /platform/api/ats/v1/board/<slug>/jobs` returns a bare JSON
+// array, each row carrying exactly `uuid`/`name`/`department.label`/`url`/`workLocation.label` and
+// nothing else — no pagination observed up to 717 rows. The per-job detail call
+// (`.../jobs/<uuid>`) is the only source of the description (`description.company` +
+// `description.role`, both HTML — the "company" block is boilerplate, the "role" block is the
+// actual posting body, confirmed on 5 live tenants), `employmentType` (its `.id` is the
+// human-readable string, e.g. "Salaried, full-time" — `.label` is Rippling's own internal enum
+// code like "SALARIED_FT", the REVERSE of every other ATS this Actor reads), `createdOn`
+// (publication date, full ISO-8601 with a numeric offset), the full `workLocations[]` array, and
+// `payRangeDetails[]` (structured salary: `location`/`currency`/`frequency`/`rangeStart`/
+// `rangeEnd`/`isRemote` per geo tier — `frequency` is an upper-case word like "YEAR" that
+// normalizeInterval already lower-cases and matches). Same shape-split as SmartRecruiters/Workday
+// below, so the pre-filter + per-company cap runs BEFORE the detail call.
+//
+// `workLocation.label` wraps remote/hybrid postings as `"Remote (<place>)"` / `"Hybrid (<place>)"`
+// (e.g. "Hybrid (Chicago, Illinois, US)") or, with no place at all, a bare `"Remote"` — a format
+// `parseLocation` does not recognise on its own (verified live: both forms parse to three nulls).
+// Stripped here, not in location.js, since it is this one ATS's own convention, not a cross-board
+// one — see the "Remote (...)"/"Hybrid (...)" open gap c3248 flagged.
+function ripplingLocation(label) {
+  if (!label) return { place: null, workplaceType: null, isRemote: false };
+  const m = String(label).match(/^(remote|hybrid|on-?site)\s*(?:\(([^)]*)\))?$/i);
+  if (!m) return { place: label, workplaceType: null, isRemote: /remote/i.test(label) };
+  const workplaceType = m[1].toLowerCase().replace(/-/g, '');
+  return { place: m[2] || null, workplaceType, isRemote: workplaceType === 'remote' };
+}
+async function fetchRipplingDetail(slug, uuid) {
+  try {
+    const { status, body } = await getJson(`https://api.rippling.com/platform/api/ats/v1/board/${encodeURIComponent(slug)}/jobs/${encodeURIComponent(uuid)}`);
+    return status === 200 ? body : null;
+  } catch {
+    return null;
+  }
+}
+async function fetchRippling(slug) {
+  const { status, body } = await getJson(`https://api.rippling.com/platform/api/ats/v1/board/${encodeURIComponent(slug)}/jobs`);
+  if (status === 404 || !Array.isArray(body)) return { jobs: [], notFound: true };
+  const raw = body;
+
+  const mapped = raw.map((j) => {
+    const loc = ripplingLocation(j.workLocation?.label ?? null);
+    const geo = parseLocation(loc.place);
+    return {
+      company: slug, atsSource: 'rippling', jobId: j.uuid ?? null, title: j.name?.trim() ?? null,
+      department: j.department?.label ?? null, team: null, departmentPath: null, employmentType: null,
+      workplaceType: loc.workplaceType, isRemote: loc.isRemote,
+      location: j.workLocation?.label ?? null, secondaryLocations: [],
+      country: geo.country, region: geo.region, city: geo.city,
+      salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
+      publishedAt: null, updatedAt: null,
+      jobUrl: j.url ?? null, applyUrl: j.url ?? null,
+      descriptionHtml: null, descriptionText: null,
+      _uuid: j.uuid,
+    };
+  });
+
+  const kept = [];
+  for (const job of mapped) {
+    if (!passesFilters(job, RIPPLING_DEFERRED)) continue;
+    kept.push(job);
+    if (kept.length >= scanCapPerCompany) break;
+  }
+  if (ripplingNeedsDetail) {
+    for (const job of kept) {
+      if (!timeBudgetOk()) break;
+      // An already-delivered posting is dropped before any push/charge, so a detail request on
+      // it is pure waste — same skip SmartRecruiters/Workday already make on an incremental watch
+      // run above.
+      if (watchMode && !seeding && watchSeen.has(String(watchIdFor(job)))) continue;
+      const detail = await fetchRipplingDetail(slug, job._uuid);
+      if (detail) {
+        const html = [detail.description?.company, detail.description?.role].filter(Boolean).join('');
+        job.descriptionHtml = html || null;
+        job.descriptionText = textOf(html);
+        job.publishedAt = detail.createdOn ? new Date(detail.createdOn).toISOString() : null;
+        job.employmentType = detail.employmentType?.id ?? null;
+        // Same "first entry is the primary, the rest are secondary" convention as
+        // Greenhouse's `offices.slice(1)` / Breezy's `locations.slice(1)` above — NOT a
+        // not-equal-to-primary filter, which looked right but produced a false secondary
+        // location on every single-location job: the list row's `workLocation.label` and the
+        // detail row's matching `workLocations[0]` routinely disagree on abbreviation alone
+        // ("Hybrid (Chicago, Illinois, US)" vs "Hybrid (Chicago, IL, US)" for the exact same
+        // place, measured live cycle 3251), so a strict string-inequality filter kept that
+        // single real location as a bogus "secondary" one instead of dropping it.
+        job.secondaryLocations = (detail.workLocations ?? []).slice(1);
+        // Pick the pay tier matching this job's own remote-ness when more than one geo tier is
+        // published and it's ambiguous which applies; otherwise the first entry. Never average or
+        // sum across tiers — that would invent a number no tier actually posted.
+        const ranges = detail.payRangeDetails ?? [];
+        const pay = ranges.find((r) => r.isRemote === job.isRemote) ?? ranges[0];
+        if (pay) {
+          job.salaryMin = pay.rangeStart ?? null;
+          job.salaryMax = pay.rangeEnd ?? null;
+          job.salaryCurrency = pay.currency ?? null;
+          job.salaryInterval = normalizeInterval(pay.frequency);
+        }
+      }
+    }
+  }
+  kept.forEach((j) => { delete j._uuid; });
+  return { jobs: kept, rawCount: raw.length };
+}
+
 // SmartRecruiters' list endpoint (`/postings`) does not carry the job description — that only
 // comes back from a per-job detail call (`/postings/<id>`, `jobAd.sections`). To avoid one HTTP
 // request per posting on large boards (BMWDealerCareers alone has 194), filter on the cheap
@@ -1320,7 +1439,7 @@ async function fetchWorkday(slug) {
 const FETCHERS = {
   greenhouse: fetchGreenhouse, ashby: fetchAshby, lever: fetchLever, recruitee: fetchRecruitee,
   workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters, workday: fetchWorkday,
-  teamtailor: fetchTeamtailor, personio: fetchPersonio, breezy: fetchBreezy,
+  teamtailor: fetchTeamtailor, personio: fetchPersonio, breezy: fetchBreezy, rippling: fetchRippling,
 };
 
 // Tries every auto-detectable platform for one slug in parallel and keeps the largest populated
@@ -1389,6 +1508,9 @@ const SMARTRECRUITERS_DEFERRED = ['description'];
 // would otherwise drop every Workday row on a salary filter before the detail call ever ran — the
 // same deferred-field bug class this Actor has already hit (and fixed) on each of the other 5.
 const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'published', 'location', 'salary'];
+// Rippling's list row already carries department AND a usable location (unlike Workday's), so only
+// the fields its detail call alone fills are deferred here — matches ripplingNeedsDetail above.
+const RIPPLING_DEFERRED = ['description', 'employmentType', 'published', 'salary'];
 // Workday's closed `timeType` vocabulary, already stripSep'd/lowercased to compare against
 // employmentTypeKeyword directly — see the warning at the company loop for the live evidence.
 const WORKDAY_TIME_TYPES = ['fulltime', 'parttime'];
