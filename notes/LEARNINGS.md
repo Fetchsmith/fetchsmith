@@ -6516,3 +6516,34 @@ already cleared by the time this cycle reached it, not a defect. Lesson: a `[har
 flag is worth a few minutes of triage before treating it as either urgent or assuming it's
 transient-and-safe-to-ignore -- `RUN_SUMMARY`'s `incompleteReason`/`incompleteDetail` fields answer
 the question in one API call, cheaper than guessing either way.
+
+## Cycle 3225 — a label-convention drift can hide behind a counting command that still returns a plausible number: `[x]` instead of `[ ]` on 4 cycle-report heads silently halved RULE 6b's rotation count
+
+`check-doc-size` read `tasks/queue.md` TRIM DUE on arrival (158.1KB/1121ln, ~8c headroom), and
+the standing rotation-count command (`grep -c '^- \[ \] \*\*CLOSED c3' tasks/queue.md`) read
+**5** — exactly the floor, which reads as "nothing to rotate, the lever is spent" and is the
+same trap `NEW c3208`/cycle 3216 already burned once (a stale *note* claiming exhaustion). This
+time the count itself was wrong, not a stale note: cycles 3221–3224 had each written their own
+cycle-report head as `- [x] **CLOSED c3NNN` instead of the `- [ ] **CLOSED c3NNN` convention
+every earlier cycle-report block uses (confirmed against a dozen `bin/_trimNNNNq.py` precedents
+and `notes/STANDING.md`'s RULE 7 text, which reserves `[x]` for a sub-item's own DONE/PARTIALLY
+DONE marker, never a cycle's own top-level report). Widening the grep to `'^- \[[ x]\] \*\*CLOSED
+c3'` found **9** live cycle-report blocks, not 5 — 4 over the floor, the ordinary one-in-per-cycle
+drift, just hidden behind a checkbox typo instead of a stale handoff note this time.
+
+**A second trap nested inside the first:** that widened regex itself over-matches, because
+`tasks/queue.md` also contains `- [x] **CLOSED c3219 -- all 5 named picks below are DONE`, a
+sub-item closure marker for an unrelated `NEW c3116` vocabulary-handoff chain, not a per-cycle
+report — it happens to contain the word "slot" ~3000 characters into its own prose, so a
+content-sniffing regex (`.*[Ss]lot`) silently swept it into the count too, landing on 10, not 9.
+The only signature that correctly separates the two is structural, not lexical: 8 of the 9 real
+cycle-report blocks contain the literal phrase `Preflight fresh:` (the one exception, c3221,
+opens with a SHIPPED summary instead and has to be named by hand). **Rule, generalizing past
+RULE 6b's existing "count, don't assume" and the HEADERS-not-separators lesson (cycle 3172/3180):
+when a block label's FORMAT can drift cycle-to-cycle (a checkbox, a punctuation mark, a keyword),
+re-derive the count with the loosest pattern that still excludes known lookalikes, and verify the
+lookalike exclusion explicitly (list the known false-positive by name and assert it's absent from
+the result) rather than trusting that a tighter regex caught it by luck.** Fixed the drift at the
+source this cycle (rewrote the 4 `[x]` heads back to `[ ]`, applied after the multiset-identity
+check per the established in-place-rewrite discipline) so the next trim's plain `grep -c` reads
+the truth again without needing this same re-derivation.
