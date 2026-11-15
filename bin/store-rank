@@ -520,7 +520,38 @@ TERMS = {
                               "clinical research", "study results", "medical data",
                               "site selection", "study data api", "medical research",
                               "trial site", "trial monitoring", "trial enrollment",
-                              "clinical data", "study data", "research study"],
+                              "clinical data", "study data", "research study",
+                              # cycle 3219 (QUALITY/GROWTH, free-vocabulary brainstorm beyond
+                              # c3119's mechanical head-trim -- that pass exhausted the pure
+                              # prefix/suffix generator (12 keepers/2 screen-outs, confirmed
+                              # unchanged this cycle: "data api" absent, "research data" absent,
+                              # both re-measured live). Correcting a stale queue.md pointer:
+                              # `NEW c3116`'s named picks (us-federal-awards-scraper,
+                              # clinicaltrials-scraper) were BOTH already executed at c3118/c3119
+                              # -- this Actor took a genuinely different lever instead, curating
+                              # 16 candidates straight from the live title/description/seoTitle/
+                              # seoDescription vocabulary (not just mechanical trims), health-
+                              # gated first (actor-health ok=True, 10 items, 0 fail_rows). Batch-
+                              # priced all 16 in ONE store-price call, 4/4 spot-checked exact via
+                              # --why (data lookups p50, research study data p1 [already tracked,
+                              # not re-added], one row per site absent, data api absent). 8 NEW
+                              # keepers at live<=60 (nbHits, rank): "official nih api" (93, p7),
+                              # "data lookups" (9479, p50 -- FLAPPING band per c3031, the highest-
+                              # nbHits keeper this pass), "watchlabel mode" (4, p1), "watch label
+                              # mode" (1536, p1), "six date windows" (110, p1), "lead sponsor
+                              # filters" (219, p1), "no contact pii ever" (22, p1), "trial
+                              # enrollment data lookups" (15, p1). 4 NEW screen-outs, confirmed
+                              # NOT in top 60: "lookups registry" (3454, p140), "no start fee"
+                              # (3809, absent), "date windows" (8703, p123), "one row per site"
+                              # (8888, p72, spot-checked -- a 60-record prox=3 attr=2 competitor
+                              # bucket we do not appear in). None of the 8 keepers are yet in the
+                              # live README/meta.json fields -- tracking-only, no meta.json edit,
+                              # no build/publish/reindex, $0 spend. ast.parse clean, full 53-term
+                              # probe re-run post-edit: all 45 pre-existing terms byte-identical,
+                              # append-only.
+                              "official nih api", "data lookups", "watchlabel mode",
+                              "watch label mode", "six date windows", "lead sponsor filters",
+                              "no contact pii ever", "trial enrollment data lookups"],
     # cycle 552 brainstorm. FIRST: the cycle-523 "unexplained anomaly" noted in attr()'s
     # docstring ("our title literally contains ClinicalTrials.gov yet we sit at p61, not
     # inside the top cluster") is RESOLVED and was never an anomaly — dumping the full
