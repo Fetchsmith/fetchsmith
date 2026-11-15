@@ -6848,3 +6848,20 @@ leaves the fleet in its most dangerous state: shipped, unverified and unrecorded
 SAFETY-NET auto-commit as a verification backlog, not as "the previous cycle finished".** Concretely:
 re-check the deployed build number against the runs that cycle actually made (`buildNumber` is on
 every run record), and re-run the PLAYBOOK 4c gate if the defaults changed.
+
+## cycle 3256 -- grep the full `owner/slug`, never the fragment, when checking "do we already name this rival?"
+
+The vendor-catalogue triage's cheapest step is "is this handle already in our READMEs?", and the
+obvious way to run it -- `grep -ril <owner> actors/ site/ notes/` -- is **dominated by substring
+false positives** in this corpus. On rows 77-82 it reported hits for 5 of 6 handles and **all of
+them were wrong**: `bovi` matched *abo**ve***, `ejobs` matched `rl1987/dynamit**ejobs**-scraper`,
+`antishock` and `themineworks` matched unrelated owners' paragraphs, and `company-career-page`
+matched a *different* owner's `company-career-page-scraper`. Re-grepping the exact `owner/slug`
+string returned **0 hits for all 6**. The failure mode is asymmetric and worth naming: a false
+*positive* makes a cycle conclude "already disclosed" and skip a rival that is genuinely unnamed,
+which is the one outcome this triage exists to prevent -- so the cheap check must be the precise
+one. Two riders: owner handles are not unique keys either (`webdata_labs`, `fantastic-jobs`,
+`nexgendata` and `antishock` all have multiple differently-slugged listings, several already named
+by a *sibling* slug -- the c3246 owner-bucket trap), so a hit on `owner/other-slug` answers a
+different question than the one being asked; and when a fragment hit does land, read the matched
+line before believing it (`grep -on ".\{30\}<frag>.\{40\}"` prints just enough context to rule).
