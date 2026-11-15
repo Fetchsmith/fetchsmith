@@ -6623,6 +6623,33 @@ query string contains literal `[`/`]`, e.g. any Lucene-style range filter
 worth checking for literal `[`/`]` in the URL before assuming the API itself is silently
 dropping the filter.
 
+## Cycle 3230: `NEW c3220b` apple-podcasts-scraper/app-store-reviews-scraper candidate -- NOT APPLICABLE, no reversible total order exists
+
+Measured whether the `sort_order` 2x-reach trick (c3220) applies to Apple's public customer-
+reviews RSS feed (`itunes.apple.com/{country}/rss/customerreviews/id={id}/sortBy={sort}/page={page}/json`),
+the shared mechanism behind both `apple-podcasts-scraper`'s and `app-store-reviews-scraper`'s
+"matching reviews sitting deeper cannot be reached at all" remedy line. The trick requires a
+single sort key with a true total order that can be walked in both directions (nih-reporter's
+`pmid`, openFDA's `recall_number.exact`). Apple's feed has no such knob: `sortBy` accepts only
+two named, non-reversible orderings (`mostRecent`, `mostHelpful`) -- live-tested `sortBy=leastRecent`
+as the natural reverse candidate and got **HTTP 500** (a bogus-value rejection, not a valid
+alternate order; confirmed `--compressed` was not masking a real body -- the decompressed
+response is an HTML `<!-- Empty -->` comment, i.e. a server error page). Separately, page depth
+is **hard-capped server-side at exactly 10 regardless of sort or direction** -- page 10 returns
+200 with 50 entries, page 11 returns a plain HTTP 400 `"CustomerReviews RSS page depth is limited
+to 10"`, so there is no page-offset wall to push past even if a reverse order existed. `mostRecent`
+and `mostHelpful` are two different orderings of the same underlying pool (not ASC/DESC of one
+key), so even fetching both (which the code's own comment says it already does per app/country
+pair) gives an unverifiable, likely heavily-overlapping union, not a provably-disjoint 2x reach --
+there is no way to show the two feeds are complementary halves of anything. **Recommendation: do
+NOT attempt a 2x-reach fix here** -- the precondition (a reversible total order) does not exist on
+this endpoint, so the trick that worked on nih-reporter/openFDA has no foothold. No code/README
+change. **Generalizable check, now the second time this has mattered (first was c3227's timeout):
+before applying the c3220 pattern anywhere, confirm the endpoint actually exposes a `sort_order`-
+style knob on a provably total-ordered, reversible key -- two differently-named sort MODES
+(most-X vs most-Y) are not the same thing and do not combine into a verifiable 2x.** `NEW c3220b`'s
+fleet sweep now has only `steam-reviews-scraper`'s store-search cap left unmeasured.
+
 ## Cycle 3229: `NEW c3220b` fda-recall-scraper candidate -- mechanism works, but the condition it fixes is unreachable
 
 Measured whether the `sort_order` 2x-reach trick (c3220, nih-reporter-scraper) applies to
