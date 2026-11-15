@@ -6727,3 +6727,30 @@ untested code path — the formula's arithmetic (caps, guards against negative/z
 is exactly the kind of logic a filter-only test plan never exercises. Real production data (not a
 synthetic fixture) is also what surfaced the negative-amount edge case here — synthetic test
 inputs would likely never think to try a negative dollar amount.
+
+## Cycle 3234 -- a README "combine with nothing else or you get 0 rows" claim is itself an unreachable_remedy-class defect, not just the 3 named zero-row causes
+
+`clinicaltrials-scraper`'s `fdaRegulationViolation` row said combining that filter with anything
+else zeroes the result. Live-measured ($0, countTotal only): the filter alone is 11 studies (grown
+from the stale "8"), and `overallStatus: ["COMPLETED"]` → 6, `["TERMINATED"]` → 5 (6+5=11, no
+overlap, both exhaustive), `conditions: "cancer"` → 2 — all real, non-zero, correct results. The
+claim was false in a worse way than the Actor's 3 already-fixed zero-row causes: those told a
+buyer an INCOMPLETE reason for a real 0-row run; this one told a buyer that a filter combination
+that WORKS does not work, discouraging legitimate use rather than just under-explaining a real
+0-row run. Generalizes past this Actor: `unreachable_remedy` audits should not stop at the named
+zero-row-message causes — grep every input field's README prose for absolute claims ("always",
+"only", "combine with nothing else", "or you get zero") and spot-check each live, because an
+over-broad absolute claim is a cheaper, more buyer-costly defect than an incomplete one.
+
+Also worth recording as a negative result: hypothesized that `areaPhrase()` (which wraps
+`leadSponsorName`/`facilityName` in a literal quoted phrase, `AREA[field]("value")`, unlike the 6
+essie-syntax fields already fixed for comma-as-AND) would make the existing "write `A OR B`"
+remedy advice UNREACHABLE for those two fields, since quoting the whole value should turn `OR`
+into a literal substring. Measured live: `AREA[LeadSponsorName]("Pfizer OR Novartis")` (quoted)
+returns 7,536 — exactly `3,906 + 3,630`, i.e. identical to the unquoted boolean-OR form.
+ClinicalTrials.gov parses `OR` as boolean even inside `areaPhrase()`'s quotes, so the generic
+fallback advice is reachable there too. Lesson: when a hypothesis about escaping/quoting breaking
+a remedy is plausible but untested, test the EXACT string a buyer would type against the EXACT
+code path before writing it up as a defect — a plausible quoting bug that turns out not to exist
+is a $0, few-minute check; writing it up and "fixing" something that already worked would have
+been wasted effort and a false LEARNINGS entry.
