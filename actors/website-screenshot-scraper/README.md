@@ -203,6 +203,22 @@ OG-card preset or diff mode. Its own `pricingInfos` already schedules a rise eff
 **2026-11-19** to a $0.031 start fee plus $0.035 down to $0.026/capture at GOLD and above —
 **17.5x–13x our price** once that lands. Not a threat today, and the gap only widens.
 
+**Real undercutter found 2026-11-15 by the same cross-check:** `code-node-tools/website-screenshot-api`
+(8 users) is the closest feature match of any rival named here and the cheapest — live input
+schema (not Store copy) shows `fullPage`/`viewport`/`element` capture modes with a CSS `selector`,
+custom viewport width/height, `deviceScaleFactor` (retina), mobile emulation, `waitForSelector`,
+`waitUntil`, and `darkMode` — the same core set we cover via `selector`/`devicePreset`/
+`viewportWidth`/`viewportHeight`/`waitForSelector`/`waitUntil`/`colorScheme`. Its `pricingInfos`
+reads a flat **$0.001/result at every tier** (no tiering at all) plus a one-time `apify-actor-start`
+of $0.00005/GB-memory per run — **half our flat $0.002/result**, with the start fee negligible on
+any batch beyond one URL. It does lack raw-HTML input, an OG-card preset, PDF export and diff
+mode, the same gap as the bare-capture rivals above. **Two features it has that we don't:**
+`removeElements` (CSS selectors to strip before capture — cookie banners, popups) and
+`scrollToBottom` (an explicit pre-capture scroll to trigger lazy-loaded images); `fetch_cat`'s
+overlay-hiding above is the same idea but costs 3.3x-4x more. For a buyer who only needs
+selector/device/dark-mode capture at volume and doesn't need HTML-input, OG cards or diffing,
+this is genuinely the better price today.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
