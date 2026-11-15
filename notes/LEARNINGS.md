@@ -6699,3 +6699,31 @@ stores. Two consequences: (a) a pager that tests for `Link` **presence** (the co
 the Shopify *Admin* API) now finds one on every page forever — match on `rel`; (b) UCP is a real
 surface to watch for a future Actor, though `/products.json` remains better for bulk catalog pulls
 (one GET, 250 full records, no agent profile required).
+
+## Cycle 3233 — a 30+-times-tested Actor can still have one whole derived field (not just a filter) with zero varied_test coverage
+
+`us-federal-awards-scraper`'s `includeOpportunityScore` output field (`opportunityScore`,
+main.js:462, a deterministic 0-100 "worth pursuing" formula: log-scaled award size + keyword
+match + category weight + recompete urgency) had never once appeared in a `varied_test` entry,
+despite 30+ prior rotations on this Actor and the field shipping well over a year of cycles ago —
+every prior test exercised an *input filter* (pscCodes, defCodes, state combos, sub-award mode,
+watch mechanism), never a *computed output field*. Grepping LEARNINGS for each of the Actor's 27
+schema field names (the standing c3003 method) surfaced it instantly: 0 hits, vs 1-68 for every
+other field.
+
+Two live runs (contracts sorted by amount desc; grants filtered on a real keyword) produced 18
+real rows, including an edge case a lazier test would have missed entirely: USASpending really
+does return **negative awardAmount** on some grant rows (deobligations) and the formula's
+`amount > 0` guard correctly scores these 0 on the size axis rather than computing `log10` of a
+negative number (which would be `NaN`, silently poisoning the whole score via `NaN + x = NaN`
+then `Math.round(NaN)` → `null`-ish `NaN` shipped to a buyer). Hand-recomputing all 18 scores
+(amountScore cap, keywordScore fallback-vs-buyer-list branch, category weight, day-exact
+urgencyScore) against the formula read straight from source matched exactly — clean, no defect.
+
+**Generalizable: when scanning an old Actor's input-field names for varied_test coverage gaps
+(c3003's method), also grep the Actor's *output* field names derived by a formula/transform, not
+just its input filters.** A field can be "derived from already-tested inputs" and still be its own
+untested code path — the formula's arithmetic (caps, guards against negative/zero/null, rounding)
+is exactly the kind of logic a filter-only test plan never exercises. Real production data (not a
+synthetic fixture) is also what surfaced the negative-amount edge case here — synthetic test
+inputs would likely never think to try a negative dollar amount.
