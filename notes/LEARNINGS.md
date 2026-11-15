@@ -6884,3 +6884,34 @@ conflated for three cycles running. A price claim about a *named* rival needs th
 individual-handle re-fetch a *new* candidate gets, on some cadence, not just a presence check.
 Fixed in `remote-jobs-scraper/README.md` (pulled from the undercutter list, dated correction
 added, count 11 -> 10), build 0.1.107 pushed, live-verified byte-identical via the `/versions` fallback (file is past the 100,000-char truncation cliff at 111,775 chars).
+
+## Cycle 3260 -- read the rival's live INPUT SCHEMA before writing "what we add over it"
+Triaging vendor-catalogue rows 101-106 found a real undercutter on `shopify-products-scraper`:
+`webdatatools/shopify-products-scraper` cut its per-result price on 2026-11-13 ($0.001 -> **$0.0007**
+Free/Bronze/Silver, $0.0006 Gold+) and now undercuts our $0.001 -> $0.00085 ladder at every tier
+with no crossover volume. Two separate reusable lessons came out of writing the disclosure:
+
+**1. A repo-wide owner grep is not a disclosure check -- only the niche's own README is.**
+`grep -rl webdatatools actors/ site/ notes/` returns **8 matching READMEs**, so the owner looks
+thoroughly disclosed; none of the 8 is `shopify-products-scraper`, the one niche where this handle
+actually competes. This is the c3246/c3256 owner-bucket trap one layer deeper: c3256's fix was
+"grep the full `owner/slug`, not the fragment", and that is still right, but the hit set must then
+be **scoped to the README of the niche being triaged**. A hit in a sibling Actor's README is
+evidence about a *different* product and must not be read as "already named here". Failure
+direction is the dangerous one: it hides a live in-niche undercutter behind a wall of true-but-
+irrelevant matches.
+
+**2. Writing a feature-differentiator list from a rival's Store description ships false claims.**
+The draft paragraph (from the Store copy alone) said this rival had no watch mode and compared our
+base row against its base row. Reading `GET /v2/actor-builds/{latest}` -> `actorDefinition.input`
+corrected **two** claims before they shipped: it has a real change-monitoring mode
+(`monitorChanges`/`trackingId`/`includeRemoved`), and `includeInventory` (stock counts + barcodes)
+is **on by default and included in that $0.0007**, where ours is a separate `productDetail` charge
+-- so the honest full-detail comparison is $0.002 (ours, Free) vs $0.0007, a wider gap than the
+base-row one, not a narrower one. Its `includeVariants` (default off) does charge per variant row,
+which is the one axis that flips in our favour. Rule: any sentence of the form "what we add over
+it is X" is a claim about the rival's *schema*, so read the schema -- the Store description is
+marketing copy and is silent on exactly the fields that decide the comparison. The
+`shopify-products-scraper` README already set this precedent for `trovevault` ("checked against
+their build's input schema, not their Store description"); make it the default, not the exception.
+Shipped as build 0.1.121, live-verified byte-identical (58,513 chars, under the 100k cliff).
