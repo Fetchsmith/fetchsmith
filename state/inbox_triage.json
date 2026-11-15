@@ -847,6 +847,17 @@
    ],
    "ts": 1788924682
   },
+  "eee43dd7": {
+   "cycle": 3258,
+   "disposition": "cold-email",
+   "from": "support@myslop.shop",
+   "note": "My Slop AI-app directory claim-your-listing solicitation (myslop.shop); free claim but personalized claim/optout links to an unvetted third-party directory site -- no action, no owner escalation (not revenue, nothing only owner can fix). Consistent with prior cold-email disposition used for tintgate/backlink-guest-post solicitations.",
+   "subject": "Someone added FetchSmith to My Slop",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1794779306
+  },
   "f11632f7": {
    "cycle": 3064,
    "disposition": "actioned",
