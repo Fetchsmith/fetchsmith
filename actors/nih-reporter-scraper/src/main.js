@@ -1011,10 +1011,33 @@ function changesBetween(prev, next) {
 // trusted. The criteria fingerprint is part of the key on purpose: if the buyer edits a
 // filter, that is a different question and gets its own baseline, instead of dumping
 // every row the old narrower filter happened to exclude as if it were brand new.
+// Deep deterministic serialiser: sorts object keys at EVERY nesting level. Cycle 3264 fixed a real
+// shipped defect here. This used to hash `JSON.stringify(criteria, Object.keys(criteria).sort())`,
+// meaning to get a stable key order -- but an ARRAY in JSON.stringify's second position is a
+// property ALLOWLIST, not a key order, and it applies at every depth. Since the allowlist held only
+// the TOP-level criteria names, every nested value was stripped before hashing: `advanced_text_search`
+// (keyword), `pi_names` (PI), `award_amount_range` (min/max) and `award_notice_date` (from/to) all
+// serialised as `{}`. Two runs sharing a watchLabel but differing ONLY in keyword, PI name, amount
+// bound or date bound therefore produced the SAME key and shared one baseline -- so the second
+// question suppressed every project the first had already delivered as "already seen" and reported
+// "nothing new", which is the exact failure the fingerprint exists to prevent.
+function stableStringify(value) {
+    if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+    if (value && typeof value === 'object') {
+        return `{${Object.keys(value).sort().map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
+    }
+    return JSON.stringify(value) ?? 'null';
+}
+
 function watchKeyFor(label, criteria) {
     const safe = label.toLowerCase().replace(/[^a-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'default';
-    const fp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
-    return { key: `watch-${safe}-${fp}`, fingerprint: fp };
+    const fp = createHash('sha1').update(stableStringify(criteria)).digest('hex').slice(0, 10);
+    // The pre-fix key, kept so an existing buyer's baseline can be ADOPTED instead of silently
+    // re-seeding (one wasted zero-row run) the day this fix ships. Adoption is gated on the stored
+    // criteria matching exactly -- see the watchMode block -- because the legacy key is precisely
+    // the colliding one, so migrating it unconditionally would re-import the wrong baseline once.
+    const legacyFp = createHash('sha1').update(JSON.stringify(criteria, Object.keys(criteria).sort())).digest('hex').slice(0, 10);
+    return { key: `watch-${safe}-${fp}`, fingerprint: fp, legacyKey: `watch-${safe}-${legacyFp}` };
 }
 
 const watchMode = watchLabel.length > 0;
@@ -1366,9 +1389,35 @@ const watchCriteria = searchId ? { search_id: searchId } : rootCriteria;
 
 if (watchMode) {
     watchStore = await Actor.openKeyValueStore(WATCH_STORE);
-    const { key, fingerprint } = watchKeyFor(watchLabel, watchCriteria);
+    const { key, fingerprint, legacyKey } = watchKeyFor(watchLabel, watchCriteria);
     watchKey = key;
-    const existing = await watchStore.getValue(key);
+    let existing = await watchStore.getValue(key);
+    // No record under the fixed key: a label seeded before the cycle-3264 fingerprint fix lives
+    // under `legacyKey`. Adopt it ONLY if the criteria it recorded are byte-identical to this run's
+    // -- that is the whole safety check, since the legacy key is the colliding one and a mismatch
+    // means the stored baseline answers a DIFFERENT question and must not suppress these rows.
+    // saveWatchRecord() writes to `watchKey` (the new key), so adoption migrates it in place.
+    if (!existing && legacyKey !== key) {
+        const legacy = await watchStore.getValue(legacyKey);
+        if (legacy && Array.isArray(legacy.seenIds)) {
+            if (legacy.criteria !== undefined
+                && stableStringify(legacy.criteria) === stableStringify(watchCriteria)) {
+                existing = { ...legacy, fingerprint };
+                log.info(
+                    `Watch mode "${watchLabel}": adopted the pre-fix baseline stored under ${legacyKey} `
+                    + `(its recorded filters match this run exactly) and migrated it to ${key}. No re-seed needed.`,
+                );
+            } else {
+                log.warning(
+                    `Watch label "${watchLabel}" has a pre-fix baseline under ${legacyKey}, but its recorded `
+                    + 'filters do NOT match this run, so it was NOT adopted -- this run seeds a fresh baseline. '
+                    + 'Before cycle 3264 the baseline key ignored the keyword, PI name, award-amount bound and '
+                    + 'award-notice-date bound, so one label could share a baseline across genuinely different '
+                    + 'questions and under-report new projects. Each filter set now gets its own baseline.',
+                );
+            }
+        }
+    }
     if (existing && Array.isArray(existing.seenIds)) {
         watchRecord = existing;
         // Pre-watchChanges records stored `seenIds` as a flat array of ids -- handled here so an
