@@ -1225,10 +1225,14 @@ async function fetchRippling(slug) {
   });
 
   const kept = [];
+  // NEW c3292: true only when the cap actually cut the scan short (more of `mapped` was left
+  // unlooked-at), not when `mapped` simply ran out at the same count -- same distinction the
+  // outer per-company loop makes for the fetchers that don't pre-filter internally.
+  let cappedByScan = false;
   for (const job of mapped) {
     if (!passesFilters(job, RIPPLING_DEFERRED)) continue;
     kept.push(job);
-    if (kept.length >= scanCapPerCompany) break;
+    if (kept.length >= scanCapPerCompany) { cappedByScan = true; break; }
   }
   if (ripplingNeedsDetail) {
     for (const job of kept) {
@@ -1263,7 +1267,7 @@ async function fetchRippling(slug) {
     }
   }
   kept.forEach((j) => { delete j._uuid; });
-  return { jobs: kept, rawCount: raw.length };
+  return { jobs: kept, rawCount: raw.length, cappedByScan };
 }
 
 // BambooHR's careers-widget API is public and keyless, confirmed live cycle 3263 on 3 real tenants
@@ -1311,10 +1315,11 @@ async function fetchBambooHr(slug) {
   });
 
   const kept = [];
+  let cappedByScan = false; // NEW c3292: true only when the cap cut the scan short, see Rippling's fetcher above
   for (const job of mapped) {
     if (!passesFilters(job, BAMBOOHR_DEFERRED)) continue;
     kept.push(job);
-    if (kept.length >= scanCapPerCompany) break;
+    if (kept.length >= scanCapPerCompany) { cappedByScan = true; break; }
   }
   if (bambooHrNeedsDetail) {
     for (const job of kept) {
@@ -1338,7 +1343,7 @@ async function fetchBambooHr(slug) {
     }
   }
   kept.forEach((j) => { delete j._id; });
-  return { jobs: kept, rawCount: raw.length };
+  return { jobs: kept, rawCount: raw.length, cappedByScan };
 }
 
 // SmartRecruiters' list endpoint (`/postings`) does not carry the job description — that only
@@ -1399,10 +1404,11 @@ async function fetchSmartRecruiters(slug) {
   });
 
   const kept = [];
+  let cappedByScan = false; // NEW c3292: true only when the cap cut the scan short, see Rippling's fetcher above
   for (const job of mapped) {
     if (!passesFilters(job, SMARTRECRUITERS_DEFERRED)) continue;
     kept.push(job);
-    if (kept.length >= scanCapPerCompany) break;
+    if (kept.length >= scanCapPerCompany) { cappedByScan = true; break; }
   }
   if (needDescriptions) {
     for (const job of kept) {
@@ -1425,7 +1431,7 @@ async function fetchSmartRecruiters(slug) {
   kept.forEach((j) => { delete j._rawId; });
   // `rawCount` is the board's size BEFORE passesFilters ran above. fetchAuto uses it (not
   // jobs.length) to decide whether the board exists at all — see the note there.
-  return { jobs: kept, rawCount: raw.length };
+  return { jobs: kept, rawCount: raw.length, cappedByScan };
 }
 
 // Workday's slug is not a single company identifier like the other five ATSes — its public
@@ -1516,10 +1522,11 @@ async function fetchWorkday(slug) {
   });
 
   const kept = [];
+  let cappedByScan = false; // NEW c3292: true only when the cap cut the scan short, see Rippling's fetcher above
   for (const job of mapped) {
     if (!passesFilters(job, WORKDAY_DEFERRED)) continue;
     kept.push(job);
-    if (kept.length >= scanCapPerCompany) break;
+    if (kept.length >= scanCapPerCompany) { cappedByScan = true; break; }
   }
   if (workdayNeedsDetail) {
     for (const job of kept) {
@@ -1584,7 +1591,7 @@ async function fetchWorkday(slug) {
   // `rawCount` is the board's size BEFORE the `passesFilters` pre-filter above ran, same shape as
   // SmartRecruiters' `rawCount` (h928) — Workday pre-filters internally too, so `jobs.length` alone
   // is already post-filter and cannot answer "does this board exist" or label a log line honestly.
-  return { jobs: kept, partial, rawCount: raw.length };
+  return { jobs: kept, partial, rawCount: raw.length, cappedByScan };
 }
 
 const FETCHERS = {
@@ -1755,6 +1762,13 @@ const erroredCompanies = [];
 const partialCompanies = []; // Workday: a later page failed after retries, so this company's jobs are an undercount, not a clean zero
 const skippedCompanies = []; // never even attempted -- maxResults was already reached by an earlier company in the list
 const cutOffCompanies = []; // c2924: stopped early (or never asked) to protect the untried companies' share of the run time budget
+// A company that WAS checked and had more postings pass the filters than `maxJobsPerCompany`
+// (default 50) allowed through. Distinct from skippedCompanies (never checked at all) -- this one
+// falls through pushedCauses() entirely today (NEW c3292): the board answered, rows got delivered
+// and charged, but the ones past the cap vanish with only a log line ("N postings, M kept after
+// filters") that also bundles the cap in with the buyer's own filters, so neither is tellable from
+// the other without reading the log.
+const cappedCompanies = [];
 let runError = null;
 // Board sizes before filters, and how many postings passed passesFilters, summed over every
 // company. A zero-row run has to tell "no board answered" apart from "the boards are empty" and
@@ -1838,9 +1852,19 @@ try {
     }
     let scannedForCompany = 0;
     let deliveredForCompany = 0;
+    // Set true only when the cap that actually stopped the scan early is `maxJobsPerCompany`
+    // (a buyer-visible, buyer-raisable input) -- NOT watch mode's internal SEED_CAP scan bound
+    // (scanCapPerCompany is SEED_CAP=5000 whenever watchMode is true, a cost guard unrelated to
+    // maxJobsPerCompany; hitting that is a separate, far rarer case this cause does not cover).
+    // Rippling/BambooHR/SmartRecruiters/Workday apply this same cap INSIDE their fetcher (their
+    // `kept` array, built from a DEFERRED filter, already stops at scanCapPerCompany before
+    // `result.jobs` ever reaches this loop) -- `result.cappedByScan` is that fetcher's own version
+    // of the same break, carried out here because the outer loop's own break below can never fire
+    // on an array that was already pre-truncated to at most scanCapPerCompany entries.
+    let cappedByJobLimit = !watchMode && result.cappedByScan === true;
     for (const job of result.jobs) {
-      if (scannedForCompany >= scanCapPerCompany) break;
-      if (!seeding && deliveredForCompany >= deliverCapPerCompany) break;
+      if (scannedForCompany >= scanCapPerCompany) { if (!watchMode) cappedByJobLimit = true; break; }
+      if (!seeding && deliveredForCompany >= deliverCapPerCompany) { cappedByJobLimit = true; break; }
       if (!passesFilters(job)) continue;
       scannedForCompany += 1;
       // A description fetched only to filter on (or, on Workday, only because the detail call had
@@ -1852,6 +1876,11 @@ try {
       const keepGoing = await pushResult(job, watchMode ? watchIdFor(job) : null);
       if (pushed > before) deliveredForCompany += 1;
       if (!keepGoing) break;
+    }
+    // Not seeding: a seed run pushes/charges nothing, so "capped" has no buyer-facing consequence
+    // there (the SEED_CAP note at the baseline status message already covers that run's own cap).
+    if (cappedByJobLimit && !seeding) {
+      cappedCompanies.push({ ats, slug, delivered: deliveredForCompany });
     }
     // `rawCount` (board size before SmartRecruiters'/Workday's internal pre-filter) when present,
     // else `jobs.length` (already the raw size for the other five fetchers, which pre-filter nothing).
@@ -2047,6 +2076,12 @@ function pushedCauses() {
       ? 'maxResults is already at this Actor\'s maximum of 100000, so raising it is not an option — reorder the list, or split it into separate runs to get their postings'
       : 'raise maxResults, reorder the list, or split it into separate runs to get their postings';
     causes.push(`${skippedCompanies.length} of the ${companies.length} compan(ies) you listed (${skippedCompanies.map((c) => `${c.ats}:${c.slug}`).join(', ')}) were never checked at all, because "maxResults" (${maxResults}) was already reached by companies earlier in your list — ${remedy}`);
+  }
+  // NEW c3292: a company that WAS checked and had more postings pass the filters than
+  // "maxJobsPerCompany" let through — distinct from skippedCompanies (never checked at all).
+  // Defaults to 50, so this bites buyers who never touched the field.
+  if (cappedCompanies.length) {
+    causes.push(`${cappedCompanies.length} compan(ies) had more open postings than "maxJobsPerCompany" (${maxJobsPerCompany}) let through (${cappedCompanies.map((c) => `${c.ats}:${c.slug} — ${c.delivered} kept`).join(', ')}) — raise maxJobsPerCompany to get the rest`);
   }
   if (chargeBlocked) {
     causes.push("this run's pay-per-event budget ran out partway through, so delivery stopped early and the postings you got are only the ones that fit the budget — raise the run's maximum cost in the Actor's billing settings to get the rest");
