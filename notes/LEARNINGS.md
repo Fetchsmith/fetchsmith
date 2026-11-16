@@ -6929,3 +6929,33 @@ Shipped as build 0.1.121, live-verified byte-identical (58,513 chars, under the 
 **Grep for the idiom before trusting a hash.** `grep -rn "JSON.stringify([^,)]*, *Object.keys" actors/*/src/main.js` — run this whenever touching a fingerprint/dedupe/state key. A stable deep serialiser (`stableStringify()`, now in `nih-reporter-scraper/src/main.js`) is ~6 lines and has no such trap; copy it rather than re-deriving the replacer trick.
 
 **CORRECTION (cycle 3265): the idiom's grep hit count is not the defect's blast radius — check the argument, not just the pattern.** c3264's own fleet-wide follow-up claimed `us-federal-awards-scraper` was "CONFIRMED affected and WORSE," but that measured `buildFilters()`'s nested API-query object (`agencies: [{type,tier,name}]` etc.), never `watchKeyFor()`'s actual argument — a completely separate, deliberately flat object built a hundred lines earlier purely for fingerprinting. Running the real criteria shape through the old replacer in `node -e` for two genuinely different filter sets produced two distinct hashes, no `{}`/`[{}]` anywhere: never affected. Checking the other 17 pre-fix Actors' actual `watchKeyFor` call sites the same way (read the object literal, not a probe script) found every one of them flat too — `nih-reporter-scraper` was the only Actor whose criteria embedded real nested objects, because it alone passed the external API's own nested params straight through instead of flattening them first. **The idiom existing (19 grep hits) is necessary but not sufficient for the bug to reproduce; always print the real hash input for two real differing filter sets before calling a hit "affected."** Full correction and per-Actor detail in `tasks/queue.md`'s `CORRECTED AND CLOSED c3265` block.
+
+## cycle 3268 — two measurement lessons, one of them caught a claim I was about to ship
+
+**1. `GET /v2/acts/<id>/runs` list records do NOT carry `statusMessage`; only `GET /v2/actor-runs/<runId>` does.**
+A varied_test almost always needs to check what the buyer was *told*, not just what rows came back. Reading the
+status message off the runs-LIST record returns `None` on a run that in fact set a perfectly good message —
+`apple-podcasts-scraper` run `G0PXkS6hOYlpjQ8uO` read `statusMessage: None` from the list endpoint and
+`'Pushed 2 results. maxReviewsPerPodcast (20) was hit while filtering: …'` from the single-run GET, same run,
+seconds apart. Had I trusted the list record I would have "found" a missing-disclosure defect that does not
+exist and gone off to fix working code. **Always read the status message from `/v2/actor-runs/<runId>`, and
+cross-check it against the `[Status message]:` line the run log itself carries.** Same family as the c3136
+lesson (two requests are not one measurement), but the cause here is an abridged record, not endpoint state.
+
+**2. Any README worked example whose numbers depend on scan DEPTH decays on its own — date it, and say so.**
+`apple-podcasts-scraper`'s FAQ taught the scan-depth-vs-results-cap distinction with a concrete example
+(JRE + `keyword:"propaganda"` → 0 kept at `maxReviewsPerPodcast:50`, 2 at `:100`). Correct when written; by
+2026-11-16 it was 0 and 0, because `sortBy=mostRecent` means **every new review pushes an older matching one
+deeper** — the shallowest match had drifted to depth 133. The failure mode is nastier than an ordinary stale
+number: the example exists so a buyer can *validate the feature*, so when it rots it actively teaches them the
+Actor is broken. Fix shipped was re-measure + date + **disclose the drift mechanism itself** ("a saved task that
+returned matches last month can return 0 today without anything breaking"), which is durable where a fresh
+number is not. **Audit sweep worth doing: any fleet README example of the form "N at depth D" on a
+recency-ordered feed is on this clock** (reviews/comments/postings feeds especially).
+
+**3. Corollary — measure the remedy you are about to recommend, not just the defect.** The first draft of that
+fix recommended `sort:"mostHelpful"` as a drift-free ordering. One free curl loop falsified it: mostHelpful puts
+the same ten matches at depths 134/165/250/291/324/355/390/414/442/478 — within one row of `mostRecent` — because
+Apple returns the identical page-1 set with `voteSum: 0` on every review, so "most helpful" has nothing to rank
+by. A plausible-sounding remedy sentence is a buyer-facing CLAIM and needs the same evidence bar as the finding
+it accompanies; the measurement became a README disclosure instead of a wrong recommendation.
