@@ -219,6 +219,19 @@ overlay-hiding above is the same idea but costs 3.3x-4x more. For a buyer who on
 selector/device/dark-mode capture at volume and doesn't need HTML-input, OG cards or diffing,
 this is genuinely the better price today.
 
+**Second real undercutter, surfaced 2026-11-16 by the same vendor-catalogue triage:**
+`locaihost/screenshot` (7 users) is the closest feature match found yet in this niche — live
+input schema shows a dedicated `og_image` 1200×630 device-preset entry (our `ogCard`), raw-HTML
+input that also batches up to 100 HTML documents in one run (ours takes a single document),
+PNG/JPEG/WebP/PDF output, 11 named device presets (ours has 4: `custom`/`desktop`/`iphone`/
+`pixel`/`ipad`), and dark-mode/geolocation/timezone emulation matching our own `colorScheme`/
+`geolocation`/`timezoneId`. Its `pricingInfos` prices a plain `screenshot` event at a flat
+**$0.00089** — under even `code-node-tools`'s $0.001 above — rising only for a separate
+`screenshot-full-page` event, flat **$0.002**, a tie with our own all-capture-types rate. So it
+undercuts us on every capture type except full-page, where we tie, while matching every feature
+we use to differentiate from the cheaper bare-capture rivals above. It has no visual-diff mode —
+the one feature left that still sets this Actor apart from every rival named on this page.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
