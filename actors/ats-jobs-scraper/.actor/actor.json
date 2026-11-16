@@ -1,8 +1,8 @@
 {
   "actorSpecification": 1,
   "name": "ats-jobs-scraper",
-  "title": "ATS Jobs Openings Scraper – 11 ATS Platforms, One Schema",
-  "description": "Live jobs from 11 ATS platforms — Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio, Breezy and Rippling — in one schema. Department, team, city/region/country and salary parsed where the ATS exposes it. Filter before you pay. Recruitee jobs API included.",
+  "title": "ATS Jobs Openings Scraper – 12 ATS Platforms, One Schema",
+  "description": "Live jobs from 12 ATS platforms — Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio, Breezy, Rippling and BambooHR — in one schema. Department, team, city/region/country and salary parsed where the ATS exposes it. Filter before you pay. Recruitee jobs API included.",
   "version": "0.1",
   "buildTag": "latest",
   "dockerfile": "../Dockerfile",

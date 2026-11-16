@@ -1,5 +1,5 @@
 // ATS Jobs Scraper: pulls live job postings from Greenhouse, Ashby, Lever, Recruitee, Workable,
-// SmartRecruiters, Workday, Teamtailor, Personio, Breezy and Rippling company boards and
+// SmartRecruiters, Workday, Teamtailor, Personio, Breezy, Rippling and BambooHR company boards and
 // normalizes them into one cross-ATS schema. No headless browser — every source is a documented,
 // no-auth, no-login JSON endpoint.
 import { createHash } from 'crypto';
@@ -11,14 +11,18 @@ import { parseLocation } from './location.js';
 await Actor.init();
 const input = (await Actor.getInput()) ?? {};
 
-const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday', 'teamtailor', 'personio', 'breezy', 'rippling'];
+const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday', 'teamtailor', 'personio', 'breezy', 'rippling', 'bamboohr'];
 // Workday's slug is "<host>/<site>", not a bare company name, so it can't be guessed from a slug
 // alone and is excluded from auto-detection. Order is a fixed priority for the rare case where the
 // same slug string happens to exist as a real, populated board on more than one platform.
 // Rippling slugs are bare company names just like the other auto-detectable ATSes (verified live,
 // cycle 3250: findhelp/joinroot/nocd/capacity/skillable-careers all resolve), and a collision check
 // across the other 9 auto-detected slugs turned up no overlap, so it is included here too.
-const AUTO_DETECT_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'teamtailor', 'personio', 'breezy', 'rippling'];
+// BambooHR slugs are also bare company names (the subdomain in `<slug>.bamboohr.com/careers`,
+// verified live cycle 3263 on acino/californiaclosets/prentkeromich), and a non-existent tenant
+// 302-redirects to www.bamboohr.com rather than returning a 200 — see getJsonStrict below — so a
+// collision with another platform's slug fails cleanly instead of being mistaken for a real board.
+const AUTO_DETECT_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'teamtailor', 'personio', 'breezy', 'rippling', 'bamboohr'];
 const DEFAULT_COMPANIES = [
   { ats: 'greenhouse', slug: 'airbnb' },
   { ats: 'ashby', slug: 'ramp' },
@@ -31,6 +35,7 @@ const DEFAULT_COMPANIES = [
   { ats: 'personio', slug: 'ottonova' },
   { ats: 'breezy', slug: 'the-san-francisco-standard' },
   { ats: 'rippling', slug: 'findhelp' },
+  { ats: 'bamboohr', slug: 'californiaclosets' },
 ];
 const seenCompanies = new Set();
 const companies = (Array.isArray(input.companies) && input.companies.length ? input.companies : DEFAULT_COMPANIES)
@@ -142,6 +147,13 @@ const workdayNeedsDetail = needDescriptions
 // uuid/name/department/url/workLocation and nothing else).
 const ripplingNeedsDetail = needDescriptions
   || !!employmentTypeKeyword || !!postedAfter || !!postedBefore
+  || hasSalary || minSalary != null || maxSalary != null;
+// BambooHR's list row carries department, employmentStatusLabel and city/state already, but NOT
+// country (`location.addressCountry` is detail-only, verified live cycle 3263 — the list's
+// `atsLocation` sibling is null on every row seen) or the posting date/compensation prose, so a
+// location/date/salary filter needs the detail call even though employmentType/department do not.
+const bambooHrNeedsDetail = needDescriptions
+  || !!locationKeyword || !!locationExcludeKeyword || !!postedAfter || !!postedBefore
   || hasSalary || minSalary != null || maxSalary != null;
 const maxJobsPerCompany = Math.min(Number(input.maxJobsPerCompany ?? 50), 5000);
 const maxResults = Math.min(Number(input.maxResults ?? 300), 100000);
@@ -552,6 +564,20 @@ async function getText(url) {
   return { status: res.statusCode, body: res.body };
 }
 
+// A non-existent BambooHR tenant 302s to www.bamboohr.com instead of 404ing (verified live cycle
+// 3263 on a made-up subdomain) — plain `getJson`'s default redirect-following would land on that
+// HTML page and throw a JSON-parse error there instead of surfacing a clean "not found" the way
+// every other fetcher's 404 does, so this disables redirects and reads the status directly.
+async function getJsonStrict(url) {
+  const res = await requestWithRetry({ url, timeout: BOARD_TIMEOUT, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), responseType: 'text', followRedirect: false });
+  if (res.statusCode !== 200) return { status: res.statusCode, body: null };
+  try {
+    return { status: res.statusCode, body: JSON.parse(res.body) };
+  } catch {
+    return { status: res.statusCode, body: null };
+  }
+}
+
 // Greenhouse's `content` field comes back HTML-entity-encoded (e.g. "&lt;div&gt;") rather than
 // raw HTML — decode it once so descriptionHtml is actually usable HTML, not escaped text.
 function decodeEntities(s) {
@@ -746,6 +772,35 @@ function workdaySalary(text) {
     max: Math.max(...ok),
     currency: sawCad && !sawUsd ? 'CAD' : (sawUsd ? 'USD' : null),
     interval,
+  };
+}
+
+// BambooHR's `compensation` detail field is a short, employer-typed free-text string, not a prose
+// description to search inside like Workday's — measured live cycle 3263 on 20 populated postings
+// across californiaclosets/prentkeromich: "$50,000-$80,000 per year", "$18-$22 Hourly DOE",
+// "$100k - $150k", "$20-$24/hr", always exactly one range (never more than two figures). The ONLY
+// unit seen on every sample is "k" meaning thousands (e.g. "$100k" = 100000) — parseMoney alone
+// would misread that as 100.
+const BAMBOOHR_MONEY = /\$?\s?\d[\d,.]*\s?[kK]?/g;
+const BAMBOOHR_CURRENCY_SYMBOLS = { $: 'USD', '£': 'GBP', '€': 'EUR', '₹': 'INR' };
+function bambooHrSalary(raw) {
+  const none = { min: null, max: null, currency: null, interval: null };
+  if (!raw) return none;
+  const text = String(raw);
+  const figures = (text.match(BAMBOOHR_MONEY) ?? [])
+    .map((tok) => {
+      const isK = /[kK]\s*$/.test(tok);
+      const n = parseMoney(tok.replace(/[kK]\s*$/, ''));
+      return n == null ? null : (isK ? n * 1000 : n);
+    })
+    .filter((n) => n != null);
+  if (!figures.length) return none;
+  const symbol = (text.match(/[$£€₹]/) ?? [])[0];
+  return {
+    min: figures[0],
+    max: figures.length > 1 ? figures[figures.length - 1] : figures[0],
+    currency: symbol ? BAMBOOHR_CURRENCY_SYMBOLS[symbol] : null,
+    interval: periodWord(text),
   };
 }
 
@@ -1211,6 +1266,81 @@ async function fetchRippling(slug) {
   return { jobs: kept, rawCount: raw.length };
 }
 
+// BambooHR's careers-widget API is public and keyless, confirmed live cycle 3263 on 3 real tenants
+// (acino, californiaclosets, prentkeromich): `GET /careers/list` returns `{meta:{totalCount},
+// result:[{id,jobOpeningName,departmentId,departmentLabel,employmentStatusLabel,employmentType,
+// location:{city,state},atsLocation:{...always null},isRemote,locationType}]}`, no pagination seen
+// up to 43 rows. `employmentStatusLabel` is NOT a reliable employment-type field — on acino it
+// reads "Active" (a job-open/closed status), while on californiaclosets/prentkeromich it reads
+// "Full-Time"/"Full Time" (an actual employment type); `employmentType` itself was null on every
+// row checked on all 3 tenants. Passed through as-is (same honest-disclosure call as Rippling's
+// reversed label/id convention above) rather than guessed at. `isRemote`/`locationType` were null
+// or an unexplained small integer on every row seen, so no workplaceType/isRemote is derived from
+// them here — a wrong remote flag is worse than a missing one.
+// The per-job detail call (`/careers/{id}/detail`) is the only source of the description
+// (`description`, HTML), the posting date (`datePosted`, `YYYY-MM-DD`), the compensation prose
+// (see bambooHrSalary above) and — unlike Rippling — the COUNTRY: `location.addressCountry` is
+// detail-only; the list's own `location` has city/state but no country at all, and `atsLocation`
+// is null on every row seen. See bambooHrNeedsDetail/BAMBOOHR_DEFERRED for how that is handled.
+async function fetchBambooHrDetail(slug, id) {
+  const { status, body } = await getJsonStrict(`https://${encodeURIComponent(slug)}.bamboohr.com/careers/${encodeURIComponent(id)}/detail`);
+  return status === 200 ? body?.result?.jobOpening ?? null : null;
+}
+async function fetchBambooHr(slug) {
+  const { status, body } = await getJsonStrict(`https://${encodeURIComponent(slug)}.bamboohr.com/careers/list`);
+  if (status !== 200 || !Array.isArray(body?.result)) return { jobs: [], notFound: true };
+  const raw = body.result;
+
+  const mapped = raw.map((j) => {
+    const place = [j.location?.city, j.location?.state].filter(Boolean).join(', ') || null;
+    const geo = parseLocation(place);
+    return {
+      company: slug, atsSource: 'bamboohr', jobId: j.id != null ? String(j.id) : null,
+      title: j.jobOpeningName?.trim() ?? null,
+      department: j.departmentLabel ?? null, team: null, departmentPath: null,
+      employmentType: j.employmentType ?? j.employmentStatusLabel ?? null,
+      workplaceType: null, isRemote: j.isRemote === true,
+      location: place, secondaryLocations: [],
+      country: geo.country, region: geo.region ?? j.location?.state ?? null, city: geo.city ?? j.location?.city ?? null,
+      salaryMin: null, salaryMax: null, salaryCurrency: null, salaryInterval: null,
+      publishedAt: null, updatedAt: null,
+      jobUrl: `https://${slug}.bamboohr.com/careers/${j.id}`, applyUrl: `https://${slug}.bamboohr.com/careers/${j.id}`,
+      descriptionHtml: null, descriptionText: null,
+      _id: j.id,
+    };
+  });
+
+  const kept = [];
+  for (const job of mapped) {
+    if (!passesFilters(job, BAMBOOHR_DEFERRED)) continue;
+    kept.push(job);
+    if (kept.length >= scanCapPerCompany) break;
+  }
+  if (bambooHrNeedsDetail) {
+    for (const job of kept) {
+      if (!timeBudgetOk()) break;
+      if (watchMode && !seeding && watchSeen.has(String(watchIdFor(job)))) continue;
+      const detail = await fetchBambooHrDetail(slug, job._id);
+      if (detail) {
+        job.descriptionHtml = detail.description ?? null;
+        job.descriptionText = textOf(detail.description);
+        job.publishedAt = detail.datePosted ? new Date(detail.datePosted).toISOString() : null;
+        const country = detail.location?.addressCountry ?? null;
+        if (country) job.country = country;
+        job.region ??= detail.location?.state ?? null;
+        job.city ??= detail.location?.city ?? null;
+        const pay = bambooHrSalary(detail.compensation);
+        job.salaryMin = pay.min;
+        job.salaryMax = pay.max;
+        job.salaryCurrency = pay.currency;
+        job.salaryInterval = pay.interval;
+      }
+    }
+  }
+  kept.forEach((j) => { delete j._id; });
+  return { jobs: kept, rawCount: raw.length };
+}
+
 // SmartRecruiters' list endpoint (`/postings`) does not carry the job description — that only
 // comes back from a per-job detail call (`/postings/<id>`, `jobAd.sections`). To avoid one HTTP
 // request per posting on large boards (BMWDealerCareers alone has 194), filter on the cheap
@@ -1461,6 +1591,7 @@ const FETCHERS = {
   greenhouse: fetchGreenhouse, ashby: fetchAshby, lever: fetchLever, recruitee: fetchRecruitee,
   workable: fetchWorkable, smartrecruiters: fetchSmartRecruiters, workday: fetchWorkday,
   teamtailor: fetchTeamtailor, personio: fetchPersonio, breezy: fetchBreezy, rippling: fetchRippling,
+  bamboohr: fetchBambooHr,
 };
 
 // Tries every auto-detectable platform for one slug in parallel and keeps the largest populated
@@ -1532,6 +1663,10 @@ const WORKDAY_DEFERRED = ['description', 'employmentType', 'department', 'publis
 // Rippling's list row already carries department AND a usable location (unlike Workday's), so only
 // the fields its detail call alone fills are deferred here — matches ripplingNeedsDetail above.
 const RIPPLING_DEFERRED = ['description', 'employmentType', 'published', 'salary'];
+// BambooHR's list row already carries department AND employmentType (see fetchBambooHr), but NOT
+// country (location-only deferred for the part this platform can't answer pre-detail — see
+// bambooHrNeedsDetail), description, published date or salary.
+const BAMBOOHR_DEFERRED = ['description', 'location', 'published', 'salary'];
 // Workday's closed `timeType` vocabulary, already stripSep'd/lowercased to compare against
 // employmentTypeKeyword directly — see the warning at the company loop for the live evidence.
 const WORKDAY_TIME_TYPES = ['fulltime', 'parttime'];

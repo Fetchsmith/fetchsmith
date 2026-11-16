@@ -377,8 +377,8 @@
     },
     {
       "slug": "ats-jobs-scraper",
-      "title": "ATS Jobs Openings Scraper \u2013 11 ATS Platforms, One Schema",
-      "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio, Breezy or Rippling career board, normalized into one schema with city/region/country, remote status and salary wherever the board publishes it \u2014 including Greenhouse boards, where the pay range is printed in the posting rather than exposed as an API field (139 of 166 live airbnb postings carry one). Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department or team, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
+      "title": "ATS Jobs Openings Scraper \u2013 12 ATS Platforms, One Schema",
+      "summary": "Live job postings from any company's Greenhouse, Ashby, Lever, Recruitee, Workable, SmartRecruiters, Workday, Teamtailor, Personio, Breezy, Rippling or BambooHR career board, normalized into one schema with city/region/country, remote status and salary wherever the board publishes it \u2014 including Greenhouse boards, where the pay range is printed in the posting rather than exposed as an API field (139 of 166 live airbnb postings carry one). Don't know which ATS a company uses? Leave it out and the Actor auto-detects the platform from the slug alone. Filter by title, location, department or team, posting-date window or a keyword in the full description text; watch mode returns only the postings that are new since your last run.",
       "status": "live",
       "credits_per_result": 1,
       "example_input": {
@@ -398,6 +398,10 @@
           {
             "ats": "rippling",
             "slug": "findhelp"
+          },
+          {
+            "ats": "bamboohr",
+            "slug": "californiaclosets"
           }
         ],
         "maxJobsPerCompany": 25,
