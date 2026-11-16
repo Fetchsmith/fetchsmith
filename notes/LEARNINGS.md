@@ -7056,3 +7056,44 @@ trims. Pass (c) — grep the KEPT lines for references into the CUT ranges — f
 including a live standing item pointing at a block that was about to disappear. c3240 already said this;
 it held again. One new false-positive shape for the record: `node_modules/axios/CHANGELOG.md` matches a
 bare `c3270` as a commit-hash substring, so scope the by-name pass away from `node_modules`.
+
+## Cycle 3284 — a rotted depth example drifts in the direction its feed is ORDERED, not just "down"
+
+The `NEW c3268` lever (any README worked example of the shape "N results at depth D" is on a
+decay clock) went 4 for 4 this cycle on `substack-scraper`. But the hit arrived with the
+opposite sign from the three before it, and that is the reusable part.
+
+The first three hits (`apple-podcasts-scraper`, `google-play-reviews-scraper`,
+`app-store-reviews-scraper`) were all **newest-first** feeds. There, new rows push existing
+matches deeper, so the SHALLOW number decays toward 0 and the example eventually inverts its
+own lesson — a buyer who runs it sees the Actor fail to find what the docs promise.
+
+`substack-scraper`'s example passes a `searchQuery`, and Substack returns search matches in
+**relevance order**. New matching posts therefore enter the ranked TOP band rather than being
+appended below it. Measured live 2026-11-16: the claim "2 posts at depth 50 but 23 at depth
+100" now reads **8 and 23** — the shallow number INFLATED 4x while the deep number held
+*exactly*, because the reshuffling happened entirely inside the top 100.
+
+Two rules out of this:
+
+1. **Re-measure BOTH numbers, never just the deep one.** The natural shortcut is to check the
+   headline/deep figure, see it match byte-for-byte, and wave the example through. On a
+   relevance-ordered feed that is precisely the number that does NOT move, so the shortcut has
+   a blind spot aimed at the only half that rotted.
+2. **Classify the feed's ordering before predicting the drift.** "Recency-ordered" was too
+   coarse a premise. Ask what the endpoint sorts by *given the inputs the example actually
+   uses* — the same Actor can be newest-first without a `searchQuery` and relevance-ordered
+   with one, which is a property of the example, not of the Actor.
+
+Fix shape unchanged and still right: re-measure, DATE it, add extra rungs (here 150 -> 40 and
+200 -> 56) so the *shape* of the lesson survives the next drift even once the exact figures
+rot again, and state the mechanism so the next rot explains itself.
+
+Free side-catch from the same session, worth generalising: while replicating the Actor's fetch
+to get a trustworthy measurement, the replication itself 400'd — Substack had quietly capped
+the archive endpoint's `limit` at 25 (30/40/50 all return
+`400 {"param":"limit","msg":"Invalid value"}`). Our code was fine (`pageSize = 25` all along),
+but the README had been advertising "paginated 50 at a time". **Replicating an Actor's own
+fetch by hand is a cheap liveness test of every endpoint fact its README states**, not only of
+the one number you set out to check — so read the whole surrounding paragraph for other claims
+while you are already holding a live response.
