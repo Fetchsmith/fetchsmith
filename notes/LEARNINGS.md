@@ -7180,3 +7180,49 @@ rows; run `zo60rn3S2nzlJhYmn` (charts + chartGenre) emits **zero** warnings, 3 c
 so no false positive was introduced. Also measured in passing: `:135` is defensive-only —
 `chartGenre` is enum-constrained (111 values), so Apify's input validation 400s an unrecognized
 value at `POST /v2/acts/.../runs` before the Actor process ever starts.
+
+## Cycle 3291: donor-attribution audits must tell SIBLING coverage from NESTED coverage
+
+Applied c3288's donor-attribution method (`bin/_msw3288_attrib.py`'s pattern) to a second
+membership-shaped fleet check, `check-zero-row-message`. That check already documents its own
+blind spot: a message-like variable (`...Msg`/`...Message`) declared anywhere in `main.js`
+counts as reaching ANY branch that assigns it, even across unrelated functions. Wrote
+`bin/_zrm3291_attrib.py` to find every zero-row branch that doesn't call `setStatusMessage`
+directly and check whether its assigned message-var genuinely reaches a real call elsewhere.
+
+25 indirect-donor branches fleet-wide, 6 needed hand review. 5 of 6 were legitimate PASSes of a
+specific, nameable shape: the branch's cause is restated by a **broader unconditional block that
+is guaranteed to fire on the same precondition** a few lines later in the same file (e.g.
+`nih-reporter-scraper`'s `!complete` branch is covered by the file's own later `if (!complete)`
+fallback; `us-federal-awards-scraper`'s zero-match `log.warning` is covered by a separate
+top-level `if (!watchMode) { if (pushed===0) {...} }` block right after it). That is exactly the
+"narrower diagnostic sub-branch inside a broader block that already sets a message" rationale
+`check-zero-row-message`'s own per-ACTOR (not per-branch) design comment describes, and it held
+up on inspection every time.
+
+The 6th, `federal-register-scraper:938`/`:946`, did NOT fit that shape and was a real live bug.
+Its zero-row `if`/`else if` chain has 3 mutually-exclusive arms: `watchMode` (calls
+`setStatusMessage`), `publicInspection` (log.warning only), default search (log.warning only).
+The check's per-actor "any branch passes" logic treated the watchMode arm's pass as covering the
+whole actor — but `else if` siblings are **mutually exclusive**, so one arm passing provides
+literally zero coverage for the others. Verified live before fixing: a default-mode run with a
+guaranteed-0-match `searchQuery` finished SUCCEEDED, `chargedEventCounts {result:0}`,
+`statusMessage: null` — the exact silent-zero-row Console experience this whole check exists to
+prevent, hiding in a Actor this very check had been reporting as "no MISS" because of an
+unrelated sibling branch. Fixed by adding the missing `setStatusMessage` call to both silent
+arms (build 0.1.73), verified live in 3 directions (both zero-row arms now report, a normal
+delivering run is unchanged).
+
+**The durable, transferable part:** a textual donor match ("some `setStatusMessage` call
+elsewhere in this file mentions a variable with this name") cannot by itself distinguish two
+control-flow shapes that look identical to the check's regex but are opposite in safety —
+(a) a NESTED sub-diagnostic inside, or an unconditional fallback guaranteed to fire after, the
+SAME precondition (safe — this is what the check's own design comment assumes) vs. (b) an `else
+if` SIBLING of the passing branch (unsafe — mutually exclusive, so the pass never actually runs
+when the miss-condition is true). Any future attribution audit of a membership-shaped check that
+has an "another part of the file already covers this" escape hatch needs to check which of these
+two shapes it actually is, by hand, every time — the check cannot tell them apart on its own, and
+neither can a probe that just counts textual donors without reading the surrounding `if`/`else`
+structure. `check-filter-reach` and `check-charges` are the two remaining `NEW c3288` candidates;
+expect this same distinction to matter there too if either has a similar "covered elsewhere"
+design.

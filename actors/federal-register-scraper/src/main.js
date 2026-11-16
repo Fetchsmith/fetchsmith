@@ -943,6 +943,16 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'federal holidays. Run it on a daily schedule with watchLabel rather than expecting a hit on any one run, '
         + 'or switch to dataset="published" to search the full archive back to 1994.',
     );
+    // c3291: this non-watch branch is an else-if SIBLING of the watchMode one above, which already
+    // calls setStatusMessage -- but that call does not reach HERE, so a plain (non-watch) empty
+    // Public Inspection run left the Console on the bare default "Succeeded" with nothing to explain
+    // an empty dataset. Verified live cycle 3291 before this fix (run on the sibling branch below).
+    await Actor.setStatusMessage(clampStatusMessage(
+        'Nothing is on the Public Inspection desk for these filters right now -- the desk holds only ~100-150 '
+        + 'documents at a time and is empty on weekends/holidays, so this is expected on most days. See the log '
+        + 'for detail, or switch to dataset="published" to search the full archive.',
+        unknownAgencyNote(),
+    ));
 } else if (pushed === 0 && !seeding) {
     log.warning(
         `No documents matched. Scanned ${scanned} rows. Most common causes, in order: `
@@ -963,6 +973,17 @@ if (pushed === 0 && watchMode && !seeding) {
         + 'window from ~90 days ago narrowed to 3 with commentsOpenOnly). presidentialDocumentTypes set without '
         + 'PRESDOCU in documentTypes throws before reaching this message.',
     );
+    // c3291: same gap as the publicInspection branch above -- this is the ordinary default-mode
+    // zero-match case (dataset="published", no watchLabel) and it had NO setStatusMessage call
+    // anywhere in the file, on any path, so a buyer's genuinely-empty search looked identical to a
+    // crashed or stalled run on the Console. Verified live (run GJK5iJvbPhN0IX7Nw, searchQuery
+    // "zzqxnonexistentgibberishtermxyz123", 0 charged, statusMessage was null before this fix).
+    await Actor.setStatusMessage(clampStatusMessage(
+        'No documents matched these filters. Most likely causes: the filters are ANDed (try dropping one), the '
+        + 'publication-date window defaults to the last 90 days (the archive goes back to 1994), or significantOnly '
+        + 'is narrowing to a rare document type. See the log above for the full checklist.',
+        unknownAgencyNote(),
+    ));
 }
 
 log.info(`Done. Pushed ${pushed} documents over ${pages} page(s) (scanned ${scanned} rows).`);
