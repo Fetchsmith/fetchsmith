@@ -668,6 +668,13 @@ let lastApiFailure = null;
 // an unread feed means zero press-release guids in the baseline, which would make the first
 // incremental run deliver and CHARGE the whole feed as "new" (h289).
 let pressReleaseFetchFailed = null;
+// Set when the feed was compatible and requested but never even read, because the enforcement
+// walk had already filled maxResults. Distinct from pressReleaseFetchFailed (which means we
+// asked and got nothing): here we never asked. Needed because the feed is read LAST, so on the
+// DEFAULT maxResults=100 over the default rolling-365-day window -- 5,293 enforcement matches
+// measured 2026-11-16 -- the cap is always reached first and the fresher source silently
+// contributes nothing to a run that asked for it.
+let pressReleasesSkippedByCap = false;
 const typeSummaries = new Map();
 function summaryFor(productType) {
     let s = typeSummaries.get(productType);
@@ -1381,7 +1388,18 @@ if (watchMode && seeding) {
 
     for (const reader of readers) log.info(`${reader.productType}: pushed ${reader.pushed} recalls.`);
 
-    if (runPressReleases && pushed < maxResults) {
+    if (runPressReleases && pushed >= maxResults) {
+        // The buyer paid for the flag and got none of it. Say so on every channel rather than
+        // letting the "on" line in the effective-config log stand as the last word.
+        pressReleasesSkippedByCap = true;
+        log.warning(
+            `includePressReleases is on, but maxResults=${maxResults} was already filled by enforcement `
+            + 'records before the press-release feed is read (the feed is read last), so NO press releases '
+            + 'are in this run. The feed is the FRESHER source, so this silently costs you exactly the rows '
+            + 'you turned it on for: raise maxResults, or narrow the enforcement side so it fits under the '
+            + 'cap (a recent reportDateFrom is the usual fix).',
+        );
+    } else if (runPressReleases) {
         const items = await fetchPressReleases();
         scanned += items.length;
         let prPushed = 0;
@@ -1587,13 +1605,22 @@ const typeIncomplete = types.find((s) => !s.complete) ?? null;
 // no typeSummaries entry to mark incomplete -- without this the run reports complete:true while
 // silently missing every press release the buyer asked for (and, on a seed, leaves them out of
 // the baseline so they are all charged as "new" later).
+// Same argument for the cap case: the feed was requested and compatible but never read, so the
+// run is short of what the buyer asked for on a source that has no typeSummaries entry to say so.
 const feedIncomplete = runPressReleases && pressReleaseFetchFailed
     ? {
         incompleteReason: 'press-release-feed-failed',
         incompleteDetail: `Press releases were requested but ${pressReleaseFetchFailed}, so none are in this run.`
             + (seeding ? ' No baseline was saved for this label.' : ''),
     }
-    : null;
+    : (pressReleasesSkippedByCap
+        ? {
+            incompleteReason: 'press-release-feed-not-reached',
+            incompleteDetail: `Press releases were requested but maxResults=${maxResults} was filled by `
+                + 'enforcement records before the feed was read, so none are in this run. Raise maxResults '
+                + 'or narrow the enforcement filters to reach the fresher press-release source.',
+        }
+        : null);
 const firstIncomplete = typeIncomplete ?? feedIncomplete;
 const runSummary = {
     finishedAt: new Date().toISOString(),
@@ -1624,7 +1651,11 @@ const runSummary = {
     baselineTruncated: watchMode ? baselineTruncated : null,
     baselineTruncatedTotal: watchMode ? baselineTruncatedTotal : null,
     pressReleasesRequested: includePressReleases,
-    pressReleasesIncluded: runPressReleases,
+    // "Was the feed actually read?", not "was it requested and filter-compatible?" -- the two
+    // diverge whenever maxResults is filled first, and a pipeline reading `true` on a run that
+    // never touched the feed would conclude the fresh source had nothing new.
+    pressReleasesIncluded: runPressReleases && !pressReleasesSkippedByCap,
+    pressReleasesSkippedByCap,
     pressReleaseFeedError: pressReleaseFetchFailed,
     productTypes: types,
 };
