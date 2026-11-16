@@ -1769,6 +1769,13 @@ const cutOffCompanies = []; // c2924: stopped early (or never asked) to protect 
 // filters") that also bundles the cap in with the buyer's own filters, so neither is tellable from
 // the other without reading the log.
 const cappedCompanies = [];
+// A company whose OWN `result.jobs` still had postings left unlooked-at when the run-wide
+// `maxResults` cap was reached mid-company (NEW c3293) -- distinct from skippedCompanies
+// (companies after this one, never attempted at all) and from cappedCompanies
+// (maxJobsPerCompany, a buyer-raisable per-company input). Without this, a buyer who sets a low
+// maxResults directly only ever sees "companies after this one were never checked" and nothing
+// about this company's own undelivered remainder.
+const truncatedByMaxResultsCompanies = [];
 let runError = null;
 // Board sizes before filters, and how many postings passed passesFilters, summed over every
 // company. A zero-row run has to tell "no board answered" apart from "the boards are empty" and
@@ -1862,7 +1869,13 @@ try {
     // of the same break, carried out here because the outer loop's own break below can never fire
     // on an array that was already pre-truncated to at most scanCapPerCompany entries.
     let cappedByJobLimit = !watchMode && result.cappedByScan === true;
-    for (const job of result.jobs) {
+    // Set true only when `pushed >= maxResults` -- the run-wide cap -- is what actually stopped
+    // this company's own loop before `result.jobs` was exhausted. Guarded off chargeBlocked (that
+    // cause is already disclosed separately) so this never fires on the pay-per-event-budget path.
+    let truncatedByMaxResultsForCompany = false;
+    const jobsForCompany = result.jobs;
+    for (let ji = 0; ji < jobsForCompany.length; ji += 1) {
+      const job = jobsForCompany[ji];
       if (scannedForCompany >= scanCapPerCompany) { if (!watchMode) cappedByJobLimit = true; break; }
       if (!seeding && deliveredForCompany >= deliverCapPerCompany) { cappedByJobLimit = true; break; }
       if (!passesFilters(job)) continue;
@@ -1875,12 +1888,20 @@ try {
       const before = pushed;
       const keepGoing = await pushResult(job, watchMode ? watchIdFor(job) : null);
       if (pushed > before) deliveredForCompany += 1;
-      if (!keepGoing) break;
+      if (!keepGoing) {
+        if (!chargeBlocked && pushed >= maxResults && ji < jobsForCompany.length - 1) {
+          truncatedByMaxResultsForCompany = true;
+        }
+        break;
+      }
     }
     // Not seeding: a seed run pushes/charges nothing, so "capped" has no buyer-facing consequence
     // there (the SEED_CAP note at the baseline status message already covers that run's own cap).
     if (cappedByJobLimit && !seeding) {
       cappedCompanies.push({ ats, slug, delivered: deliveredForCompany });
+    }
+    if (truncatedByMaxResultsForCompany && !seeding) {
+      truncatedByMaxResultsCompanies.push({ ats, slug, delivered: deliveredForCompany });
     }
     // `rawCount` (board size before SmartRecruiters'/Workday's internal pre-filter) when present,
     // else `jobs.length` (already the raw size for the other five fetchers, which pre-filter nothing).
@@ -2082,6 +2103,16 @@ function pushedCauses() {
   // Defaults to 50, so this bites buyers who never touched the field.
   if (cappedCompanies.length) {
     causes.push(`${cappedCompanies.length} compan(ies) had more open postings than "maxJobsPerCompany" (${maxJobsPerCompany}) let through (${cappedCompanies.map((c) => `${c.ats}:${c.slug} — ${c.delivered} kept`).join(', ')}) — raise maxJobsPerCompany to get the rest`);
+  }
+  // NEW c3293: distinct from skippedCompanies (companies after this one, never attempted) and from
+  // cappedCompanies (the per-company maxJobsPerCompany input) — this is the run-wide "maxResults"
+  // cap landing MID-company, which left that company's own remaining postings unlooked-at.
+  if (truncatedByMaxResultsCompanies.length) {
+    const maxResultsAtCeiling = maxResults >= 100000;
+    const remedy = maxResultsAtCeiling
+      ? 'maxResults is already at this Actor\'s maximum of 100000, so raising it is not an option — split your company list into separate runs to get the rest'
+      : 'raise maxResults, or split your company list into separate runs, to get the rest';
+    causes.push(`${truncatedByMaxResultsCompanies.length} compan(ies) still had open postings of their own in this list when the run-wide "maxResults" (${maxResults}) cap was reached mid-company (${truncatedByMaxResultsCompanies.map((c) => `${c.ats}:${c.slug} — ${c.delivered} kept`).join(', ')}) — ${remedy}`);
   }
   if (chargeBlocked) {
     causes.push("this run's pay-per-event budget ran out partway through, so delivery stopped early and the postings you got are only the ones that fit the budget — raise the run's maximum cost in the Actor's billing settings to get the rest");
