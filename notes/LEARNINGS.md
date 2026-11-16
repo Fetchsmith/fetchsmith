@@ -6991,3 +6991,33 @@ it accompanies; the measurement became a README disclosure instead of a wrong re
 ## Cycle 3273
 
 **When a `varied_test` axis needs a specific COMBINATION of real-world changes that natural drift can't reliably supply inside one cycle, crafting a KV baseline directly (not waiting on live churn) is the right tool — reused from c941, worth naming as a standing technique.** `shopify-products-scraper`'s `watchEvents` field (the watch-mode event-type subset filter — e.g. "only report price drops") had zero prior `varied_test` coverage, and testing it properly needs several DIFFERENT real change types to happen in the same run so the filter has something real to include and something real to exclude. A live store won't reliably produce a price drop, a price increase, a restock AND a sale-end within one 25-minute cycle. Fix: pull a few real live products first (so the craft is anchored to truth, not invented), then write a baseline directly into the shared `fetchsmith-shopify-products-watch` KV key-value store via the Apify API that differs from that live state in exactly the ways needed (lower stored price → `priceDrop`, higher → `priceIncrease`, stored-unavailable → `backInStock`, stored-on-sale → `saleEnded`), using the Actor's own `watchKeyFor()` hash function (ported into a throwaway `node -e` one-liner) to compute the exact KV key so the Actor reads it as a real baseline. Caught one real mistake before it produced a false negative: the Actor keys per-store attribution by the fetch ENDPOINT url (`https://host/products.json`), not the plain input origin (`https://host`) — using the wrong one made every crafted product look un-baselined (`storeSeeding=true`), silently discarding the whole test as a baseline-only run with 0 output. Always read the exact string the code compares against (`ep.url` vs `ep.origin`) rather than assuming the "obvious" one. **Result: `watchEvents` passed clean** — a true 2-of-4 subset (`["priceDrop","backInStock"]`) returned exactly those 2 real changes, correctly withheld the 2 other real changes (`priceIncrease`, `saleEnded`) with `chargedEventCounts` matching the delivered count exactly (no charge leak on the withheld ones). Test record (plus its `__lock` sibling) deleted from the shared production KV store after verification, per the same cleanup discipline as c941.
+
+## cycle 3276 — a worked example whose lesson depends on a ZERO is the most fragile claim shape there is
+The `NEW c3268` depth-claim-decay sweep is now **3 for 3**: every README worked example of the shape
+"N results at depth D" on a newest-first feed that has been re-measured was found rotted
+(`apple-podcasts-scraper` c3268, `google-play-reviews-scraper`, and now `app-store-reviews-scraper`
+c3276). Treat a hit as the expected outcome, not a surprise — and schedule the check rather than
+waiting for a buyer to find it.
+
+The new, sharper lesson from c3276: **the half of such an example that asserts ZERO rots fastest and
+hurts most.** `app-store-reviews-scraper`'s FAQ taught "a low scan cap can keep *nothing* while real
+matches sit deeper" using `maxRating: 1` at `maxReviewsPerApp: 5` → 0 kept, vs `100` → 12. Measured
+2026-11-16: **1 and 20**. A non-zero shallow count does not merely make the number stale, it *inverts
+the lesson* — the example now shows the shallow cap working fine, so the buyer who runs the documented
+input concludes the Actor is misbehaving. Why zero is the fragile end: the 1★ rate on that app runs
+~1 in 5, so "does a 5-deep window contain zero matches?" is close to a coin flip that **re-rolls every
+time a new review arrives**. The example was true when written and was always going to stop being true.
+
+Rule, generalising past this family: when a worked example's teaching point rests on a boundary
+outcome (0 results, an empty list, a "nothing found" warning), either **pin it to a fixture that cannot
+drift** or **write the example so the durable RATIO carries the lesson** and date the counts. c3276 took
+the second route: it now states that the scan cap — not the filter — is what bounds the matches you can
+see, discloses the re-roll mechanism, and dates the measurement, so the next rot is self-explaining
+rather than a fresh defect. Same spirit as the c3268 rule that a remedy sentence is a buyer-facing claim:
+**an example is an executable promise, and a promise about a zero is the one most likely to break.**
+
+Method note worth keeping: `bin/varied-test`'s c2160 output guard earns its keep on exactly this kind of
+run. Asking it to print `appName,totalRatings,averageRating,ratingBreakdown` on an `includeAppInfo:false`
+run returned **"NOT A FIELD (absent from all 10 rows, the None above is NOT a null value)"** — which is
+the whole contract under test (fields omitted, not null-filled). Without that guard the same run reads as
+four null columns, which is a different and much weaker result.
