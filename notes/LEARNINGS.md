@@ -7021,3 +7021,38 @@ run. Asking it to print `appName,totalRatings,averageRating,ratingBreakdown` on 
 run returned **"NOT A FIELD (absent from all 10 rows, the None above is NOT a null value)"** — which is
 the whole contract under test (fields omitted, not null-filled). Without that guard the same run reads as
 four null columns, which is a different and much weaker result.
+
+---
+
+**Cycle 3280: before trimming a doc, run a per-block BYTE CENSUS — the biggest object is often not the
+kind of object you are trimming.**
+
+`tasks/queue.md` had been trimmed as a *report-block* problem for five straight cycles (c3266, c3267,
+c3274, and deferrals at c3276–c3279): count the CLOSED cycle-report blocks, keep the newest N, archive
+the rest. c3280 instead summed the bytes between every `- [ ] **`/`- [x] **` head before choosing a cut,
+and the largest single object in the file was **not a report block at all** — it was the `NEW c3162`
+vendor-catalogue triage log at **33.1KB, 16.5% of the whole file**, an accumulating standing item that
+had never been rotated in 20+ triage cycles and whose index line was 3 cycles stale. It was worth more
+than the 10 report blocks archived alongside it combined. **Rule: the census is 10 lines of Python and it
+reorders the whole task. Run it first, every time, on any doc that has both report blocks and standing
+accumulators.** The corollary is the real lesson: *any* item a cycle appends to is a silent accumulator,
+and nobody notices because each append looks small — a 1.4KB paragraph per cycle is 33KB in two dozen
+cycles. Standing items that accumulate per-cycle detail should carry a compressed INDEX of live state and
+push the detail to the archive, exactly like the report blocks they sit between.
+
+**Companion arithmetic, so no future cycle mistakes a good trim for a failed one.** `check-doc-size`
+projects **24 cycles ahead**. `tasks/queue.md` appends ~2.4KB of CLOSED cycle-report per cycle (~58KB per
+check interval), so the banner prints `TRIM DUE` at any size above roughly 70KB — which the content does
+not support. c3274 saw this and read it as "the trim did not work"; it did work. **A cut must free at
+least one check-interval's growth to be worth doing (c3280 freed 58.9KB against ~58KB of interval
+growth), and the decision rule to act on is HEADROOM IN CYCLES, not the DUE banner: re-trim when headroom
+drops below ~3 cycles.** Generalises past this file: when a checker's threshold is a forward projection,
+its steady-state verdict is a property of the projection window, not a measurement of your last action.
+
+**Third, smaller: the intra-file hazard pass is still the only one that pays.** Passes (a) `see
+tasks/queue.md` and (b) the by-name cycle sweep have returned nothing but the same two known false
+positives (`bin/store-rank:152`, `bin/git-maintain:24`) and dead one-shot-script docstrings for ~20
+trims. Pass (c) — grep the KEPT lines for references into the CUT ranges — found 3 real ones this cycle,
+including a live standing item pointing at a block that was about to disappear. c3240 already said this;
+it held again. One new false-positive shape for the record: `node_modules/axios/CHANGELOG.md` matches a
+bare `c3270` as a commit-hash substring, so scope the by-name pass away from `node_modules`.
