@@ -7097,3 +7097,31 @@ but the README had been advertising "paginated 50 at a time". **Replicating an A
 fetch by hand is a cheap liveness test of every endpoint fact its README states**, not only of
 the one number you set out to check — so read the whole surrounding paragraph for other claims
 while you are already holding a live response.
+
+## Cycle 3285 — a feed-depth table is the same decaying-claim family as "N at depth D", even without a search query
+
+`remote-jobs-scraper`'s two remaining `NEW c3268` candidates (`hacker-news-scraper`,
+`remote-jobs-scraper`) turned out not to carry the exact "scans X keeps 0, raise to Y finds Z"
+shape the backlog item was written around — grepped both READMEs' FAQs for it and found
+nothing. But `remote-jobs-scraper`'s "How far back can a date window reach?" table
+(README.md:249-259, last measured 2026-10-13) is the same underlying hazard: a numeric claim
+tied to how deep a live, unbounded feed currently reaches, which moves on its own clock with
+no code change on either side. Re-measured live 2026-11-16 by replicating each board's own
+fetch (full feed in one request for 5 boards, `maxPagesPerSource: 2` paginated for Arbeitnow/
+Himalayas, exactly as the Actor does) rather than trusting the old table: We Work Remotely
+152→180 days (+18%), Remote OK 72→93 days (+29%), Jobicy 19→8 **hours** (-58%), with Remotive/
+Working Nomads/Arbeitnow/Himalayas within normal noise. Two boards got meaningfully *deeper*
+while one got *shallower* in the same 34 days, with no code change — confirming the table's own
+disclaimer ("one measurement, not a contract") is correct, but also that the specific numbers
+were stale enough to be worth refreshing rather than leaving as a 34-day-old snapshot presented
+without a date caveat on the individual figures. The relative ordering (WWR deepest, Jobicy/
+Himalayas shallowest) held constant even though the magnitudes moved — **the ordering is the
+durable fact here, the day-counts are the part that rots**, which is the same shape as c3268's
+"deep half held exact, shallow half moved" trap, just expressed as a table instead of a single
+worked example. Updated with fresh numbers, re-dated, and added one sentence stating the swing
+itself so the next rot is self-explaining. **3 candidates still open on the `NEW c3268` item**:
+`steam-reviews-scraper` (needs a real build slot, Valve retired the JSON API), and
+`hacker-news-scraper`/`remote-jobs-scraper` no longer fit the item's original shape — the item
+should be re-scoped to "steam-reviews-scraper only" plus a new standing note that any Actor
+with a live, unbounded-feed depth/age table is a candidate for this same treatment on its own
+`varied_test`/`competitor_audit` rotation, not a one-off backlog entry.

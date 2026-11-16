@@ -246,19 +246,19 @@ Guards after this pass, verified 2026-10-30: `check-price-superiority` run fleet
 
 **Are both date bounds inclusive?** Yes. `postedAfter` starts at 00:00:00.000Z of that day and `postedBefore` ends at 23:59:59.999Z, so a job posted at 14:00Z on your end date is included.
 
-**How far back can a date window reach?** **Only as far as each board's own feed goes — and that varies by three orders of magnitude, so a historical window returns a result set weighted toward the deep boards and silent on the shallow ones.** Measured 2026-10-13 at the default `maxPagesPerSource: 2`, oldest posting reachable per board:
+**How far back can a date window reach?** **Only as far as each board's own feed goes — and that varies by three orders of magnitude, so a historical window returns a result set weighted toward the deep boards and silent on the shallow ones.** Re-measured live 2026-11-16 (previously 2026-10-13) at the default `maxPagesPerSource: 2`, oldest posting reachable per board:
 
 | Board | Oldest reachable | Depth lever |
 | --- | --- | --- |
-| We Work Remotely | ~152 days | whole feed in one request |
-| Remote OK | ~72 days | whole feed in one request |
-| Remotive | ~28 days | whole feed in one request |
-| Working Nomads | ~29 days | whole feed in one request |
-| Arbeitnow | ~6 days | `maxPagesPerSource` (max 20) |
-| Jobicy | ~19 **hours** | whole feed in one request (publishes only the last 7 days) |
-| Himalayas | ~2 **hours** (~6 at `maxPagesPerSource: 20`) | `maxPagesPerSource` (max 20) |
+| We Work Remotely | ~180 days (was ~152) | whole feed in one request |
+| Remote OK | ~93 days (was ~72) | whole feed in one request |
+| Remotive | ~30 days (was ~28) | whole feed in one request |
+| Working Nomads | ~27 days (was ~29) | whole feed in one request |
+| Arbeitnow | ~4 days (was ~6) | `maxPagesPerSource` (max 20) |
+| Jobicy | ~8 **hours** (was ~19) | whole feed in one request (publishes only the last 7 days) |
+| Himalayas | ~2 **hours** (~6 at `maxPagesPerSource: 20`, not re-verified this round) | `maxPagesPerSource` (max 20) |
 
-These are one measurement, not a contract — a board's feed depth moves with its posting volume, and the two shallow boards are shallow precisely *because* they are high-volume. The practical consequences: a window like "all of last week" cannot return Himalayas or Jobicy rows at any legal input, and **a run where a board contributes nothing because of this now logs a warning naming the board and its oldest reachable date** (plus the `maxPagesPerSource` hint where raising it would actually help), so a thin result is distinguishable from a genuinely empty search. For anything older than a couple of days on the shallow boards, the answer is a **scheduled `watchLabel` run** that accumulates postings as they appear — history you did not capture at the time cannot be back-filled from these feeds. Note `postedAfter` set to *yesterday* for a daily run (see "Use cases") is well inside every board's reach and is unaffected.
+These are one measurement, not a contract — a board's feed depth moves with its posting volume, and the two shallow boards are shallow precisely *because* they are high-volume. The month-over-month swing itself makes that point: Remote OK and We Work Remotely both got meaningfully *deeper* (+29%/+18%) while Jobicy got *shallower* (-58%), with no code change on either side — only the relative ordering (WWR deepest, Jobicy/Himalayas shallowest) held constant, so treat the ordering as the durable fact and the day-counts as a snapshot. The practical consequences: a window like "all of last week" cannot return Himalayas or Jobicy rows at any legal input, and **a run where a board contributes nothing because of this now logs a warning naming the board and its oldest reachable date** (plus the `maxPagesPerSource` hint where raising it would actually help), so a thin result is distinguishable from a genuinely empty search. For anything older than a couple of days on the shallow boards, the answer is a **scheduled `watchLabel` run** that accumulates postings as they appear — history you did not capture at the time cannot be back-filled from these feeds. Note `postedAfter` set to *yesterday* for a daily run (see "Use cases") is well inside every board's reach and is unaffected.
 
 **My watch says "nothing new" every single run — is it broken?** Check whether you set `postedBefore`. A watch combined with a fixed upper date bound is a dead end: every brand-new posting is dated "now", so once the calendar passes your cutoff no new posting can ever satisfy it again, and the run honestly reports zero new rows forever. Such a run now logs two warnings and sets `watchDeadDateBound: true` in the `webhookUrl` payload so a scheduled watch can alert on it instead of trusting the quiet. Fix it by removing `postedBefore` from the watched query — keep `postedAfter` if you want a floor — or drop `watchLabel` if you genuinely wanted a one-off historical window rather than an ongoing watch. (Changing the filter starts a fresh free baseline, since `postedBefore` is part of the watch fingerprint.)
 
