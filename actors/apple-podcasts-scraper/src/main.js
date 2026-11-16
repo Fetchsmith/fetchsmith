@@ -132,7 +132,16 @@ const CHART_GENRE_IDS = {
   afterShows: 1562, filmHistory: 1564, filmInterviews: 1565, filmReviews: 1563, tvReviews: 1561,
 };
 let chartGenre = input.chartGenre && CHART_GENRE_IDS[input.chartGenre] ? input.chartGenre : null;
-if (input.chartGenre && !chartGenre) log.warning(`Unknown "chartGenre" value "${input.chartGenre}" — ignored, using the overall top chart. Valid values: ${Object.keys(CHART_GENRE_IDS).join(', ')}.`);
+// Gated on dataType "charts" (cycle 3288, same rule as the chartCount clamp warning at :149,
+// cycle 2454): outside charts mode no chart is fetched at all, so "using the overall top chart"
+// would be a false promise, and it would print back-to-back with the new chartsOnlyIgnored
+// warning below saying the field was ignored entirely. No coverage is lost, for two independent
+// reasons: that warning keys off raw `input.chartGenre` so an unknown genre in a non-charts run
+// is still disclosed once, AND this branch is defensive-only to begin with — `chartGenre` is
+// enum-constrained (111 values) in input_schema.json, so Apify's own input validation rejects an
+// unrecognized value with a 400 before the Actor process starts (measured live c3288:
+// `chartGenre:"notagenre"` 400s at POST /v2/acts/.../runs, the run is never created).
+if (dataType === 'charts' && input.chartGenre && !chartGenre) log.warning(`Unknown "chartGenre" value "${input.chartGenre}" — ignored, using the overall top chart. Valid values: ${Object.keys(CHART_GENRE_IDS).join(', ')}.`);
 // Only the shows chart has a genre-specific endpoint; there is no per-genre Trending Episodes
 // feed. Dropped loudly rather than silently, so nobody pays for an "overall" chart they asked
 // to have narrowed (same rule as the federal-register PI desk, cycle 412).
@@ -232,7 +241,19 @@ if (episodeOnlyIgnored.length) {
 // `chartCount` carries a schema default (50), same c2204 trap as `sort`/`maxPodcastsPerPublisher`
 // above — compare against the default value, not bare presence, so a non-charts run that never
 // touched the field doesn't get warned on every single run.
+// `chartGenre` added cycle 3288. Its schema description has promised "Charts only:" since the
+// field shipped, but the only two warnings that ever named it were an UNKNOWN-VALUE warning
+// (:135) and the chartType-"episodes" drop (:140) — neither fires for a non-charts run, so
+// `dataType:"episodes" + chartGenre:"comedy"` returned a normal, unnarrowed result set and said
+// nothing, which is exactly the c989/c2219 silent-drop class. It read as covered to
+// `bin/check-mode-scope-warning` because those two sibling warnings mention `chartGenre`, so the
+// field name was donated without any non-charts disclosure existing; found by the per-field
+// donor-attribution audit in `bin/_msw3288_attrib.py`, not by the check's own flag count.
+// Keyed off RAW `input.chartGenre`, not the resolved `chartGenre` (which is null for an unknown
+// value), so an unknown genre in a non-charts run is still disclosed once :135 is gated below.
+// Its schema default is `""`, so bare truthiness is already non-default-safe (no c2204 trap).
 const chartsOnlyIgnored = dataType === 'charts' ? [] : [
+  input.chartGenre ? '"chartGenre"' : null,
   input.chartCount !== undefined && Number(input.chartCount) !== 50 ? '"chartCount"' : null,
 ].filter(Boolean);
 if (chartsOnlyIgnored.length) {

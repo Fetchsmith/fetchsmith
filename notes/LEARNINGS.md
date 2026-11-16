@@ -7125,3 +7125,58 @@ itself so the next rot is self-explaining. **3 candidates still open on the `NEW
 should be re-scoped to "steam-reviews-scraper only" plus a new standing note that any Actor
 with a live, unbounded-feed depth/age table is a candidate for this same treatment on its own
 `varied_test`/`competitor_audit` rotation, not a one-off backlog entry.
+
+## Cycle 3288 — a 0-flag set-membership check proves each field is named by SOME warning, never that the warning is ITS OWN
+
+Ten consecutive clean runs of `bin/check-mode-scope-warning` (c2712, c2808, c2904, c3000,
+c3096, c3192, c3288 — always the identical "25 Actors, 44 mode-scoped fields, 0 flags") were
+hiding a real buyer-facing silent drop in `apple-podcasts-scraper`. `chartGenre` has promised
+**"Charts only:"** in its schema description since the field shipped, but the only two warnings
+that ever named it were an unknown-value warning (`src/main.js:135`) and the
+chartType-`"episodes"` drop (`:140`) — and **both require charts mode**. So
+`dataType:"episodes" + chartGenre:"comedy"` returned a normal, unnarrowed result set, charged
+per row, and said nothing: the exact c989/c2219 class the check exists to catch. It passed
+because two *sibling* fields' disclosure warnings mention `chartGenre` in passing. c2452's
+`IGNORE_WORD` gate stops an unrelated-**topic** warning from donating a name (fec's
+`committeeId` network error), but it cannot stop a related-topic warning in which this field is
+merely **context** — "`chartGenre` is ignored for chartType `episodes`" donates both names, and
+only one of them is the subject.
+
+**The method that found it is the transferable part, and it applies to any check whose verdict
+is set membership ("is X present in the set of things reachable from Y?").** Do not re-run and
+bank the streak — audit the ATTRIBUTION. `bin/_msw3288_attrib.py` re-implements the check's own
+donation rule per-call and asks, for each field, *how many distinct gated warning calls donate
+this name*. 38 of 44 had exactly 1 donor — uniquely attributable, zero review surface. The 6
+with >1 are the entire hand-review set, and **1 of those 6 was the bug**. A membership check
+cannot tell a 1-donor pass from a 6-donor pass; the count is identical. Attribution is cheap
+(one short probe reusing the check's own functions via `exec` of everything above `def main(`,
+so the rule under audit is the real one, not a paraphrase of it) and it converts an opaque
+streak into a 6-item list.
+
+**Corollary 1 — fault injection proves non-vacuity only along the path you inject on, and a
+non-flag on a second injection is a LEAD, not a pass.** Injection A (delete `minReleaseDate`
+from apple-podcasts' `episodeOnlyIgnored` DECL array) flagged exactly it, confirming the
+DECL-resolution half is live. Injection B (unquote `chartType` from its own `:78` scope warning)
+did **not** flag. The tempting reading is "covered by another warning, fine". Chasing *why*
+instead is what surfaced the sibling-donation hole and then the real bug one field over. Pick a
+different Actor than the last non-vacuity proof used (c3192 used fec; this used apple-podcasts)
+— the same injection on the same file re-proves only the same path.
+
+**Corollary 2 — resist allowlisting a benign pass to make the count converge.** `podcasts` also
+reads as mode-scoped, but its description restricts one accepted **value shape** (a raw RSS feed
+URL) to episodes mode, not the field, and that restriction IS honestly disclosed at
+`src/main.js:1124`. `state/mode_scope_allow.json` exists for exactly this judgment and is still
+empty — but an entry there would permanently mask the *removal* of `:1124`, trading a live
+tripwire for a prettier denominator. The judgment went in the check's `fleet_checks.json` note
+instead. Allowlist a field when the code path cannot regress; note it when the pass depends on a
+line that can be deleted.
+
+Fix shipped in builds 0.1.128/0.1.129: `chartGenre` added to `chartsOnlyIgnored` keyed off
+**raw** `input.chartGenre` (the resolved `chartGenre` is null for an unknown value), and `:135`
+gated on `dataType === 'charts'` per the c2454 contradictory-back-to-back-warnings rule. Proved
+live in both directions, which is the only acceptable standard for a warning fix: run
+`IBngG3t0LhF5xCFGv` (episodes + chartGenre) emits the new warning exactly once, 2 charged == 2
+rows; run `zo60rn3S2nzlJhYmn` (charts + chartGenre) emits **zero** warnings, 3 charged == 3 rows,
+so no false positive was introduced. Also measured in passing: `:135` is defensive-only —
+`chartGenre` is enum-constrained (111 values), so Apify's input validation 400s an unrecognized
+value at `POST /v2/acts/.../runs` before the Actor process ever starts.
