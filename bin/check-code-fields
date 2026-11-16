@@ -74,7 +74,27 @@ FIELD_SUPPRESS = {
     # pushed row) and fixed that by destructuring it out; suppressed only AFTER the leak was fixed
     # and a live run on build 0.1.52 confirmed the field is absent from every pushed row while
     # `tickers` still resolves from the full body.
-    'google-news-scraper': {'articleBodyTickers'},
+    # Cycle 3292 added `url2`: it is a key on the internal FEED DESCRIPTOR literal built in the
+    # `feeds` array (main.js ~line 505) -- the second "wide sentinel" RSS URL of the union-eligible
+    # query pair (cycle 3052/3053's `after:` sentinel work). It is read only as `feed.url2` to fetch
+    # and merge the wide feed (~lines 526/539/541), and the pushed row carries `feedUrl: feed.url`
+    # -- the NARROW url, already declared -- never `url2` under its own name. Flagged because that
+    # descriptor literal shares `query`/`topic`/`url` with real dataset field names, tipping it over
+    # MIN_OVERLAP. Confirmed live cycle 3292 against 6 SUCCEEDED run datasets (36 pushed rows,
+    # newest FygMU5CpWRnqL8Zo6): `url2` absent from every row.
+    'google-news-scraper': {'articleBodyTickers', 'url2'},
+    # place is a key on ripplingLocation()'s three `return {...}` literals (main.js ~lines
+    # 1165-1169), an internal 3-tuple that splits Rippling's own `"Remote (<place>)"` /
+    # `"Hybrid (<place>)"` label convention. Flagged because the other two keys it returns
+    # (`workplaceType`, `isRemote`) ARE real dataset fields, so the helper's return reads as a row
+    # shape. It is never emitted under its own name: callers destructure it (`const loc =
+    # ripplingLocation(...)`) and feed it to `parseLocation(loc.place)` to derive the declared
+    # country/region/city, while the row sets `location: j.workLocation?.label` from the raw label.
+    # The bamboohr mapper's local `const place = ...` (~line 1295) is the same pattern, consumed
+    # into the declared `location` field. Confirmed live cycle 3292 the decisive way -- a run on the
+    # Rippling path itself (run 6izSjM6gENVvmcPrd, rippling:findhelp, 5 rows, charges {job: 5}):
+    # `place` absent from every row while `location`/`city` carry its value ("Austin, TX"/"Austin").
+    'ats-jobs-scraper': {'place'},
     # eligHash is an internal watch-snapshot fingerprint (KV store only, cycle 534) -- never
     # pushed to the dataset. Flagged because snapshotOf()'s `return {...}` shares 6/7 keys with
     # real dataset fields, so it reads as a row shape rather than a suppressed non-row literal.
