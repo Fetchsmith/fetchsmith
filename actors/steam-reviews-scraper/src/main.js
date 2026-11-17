@@ -635,11 +635,24 @@ async function getReviewTotals(appId) {
   let totals = null;
   try {
     const body = await getJson(`https://store.steampowered.com/appreviewhistogram/${appId}?l=english`);
+    // A histogram with NO buckets at all is "unknown", never a confident zero (cycle 3356).
+    // Measured live during a steamcommunity.com 503 outage: the histogram for app 1145360
+    // (Hades, ~200k reviews) still answered HTTP 200 with
+    // {"success":1,"results":{"start_date":"1575997560","end_date":"1575997560","weeks":[]}} --
+    // no `rollups` key and an empty `weeks`, which summed to totalReviews: 0. That fed the
+    // reviews-mode zero-row branch below and made it tell the buyer the app "has no Steam
+    // reviews at all yet (that is Steam's data, not a scrape failure)" about one of the
+    // most-reviewed games on the platform, and made games-mode rows ship totalReviews: 0.
+    // An app that genuinely has no reviews yet is indistinguishable from this response, so
+    // "unknown" is the only honest reading -- and both callers already handle null (games
+    // mode warns and nulls the fields; the degenerate test below treats null as falsy).
     if (body?.success === 1) {
       const buckets = [...(body.results?.rollups ?? []), ...(body.results?.weeks ?? [])];
-      const totalPositive = buckets.reduce((s, b) => s + (b.recommendations_up || 0), 0);
-      const totalNegative = buckets.reduce((s, b) => s + (b.recommendations_down || 0), 0);
-      totals = { totalReviews: totalPositive + totalNegative, totalPositive, totalNegative };
+      if (buckets.length > 0) {
+        const totalPositive = buckets.reduce((s, b) => s + (b.recommendations_up || 0), 0);
+        const totalNegative = buckets.reduce((s, b) => s + (b.recommendations_down || 0), 0);
+        totals = { totalReviews: totalPositive + totalNegative, totalPositive, totalNegative };
+      }
     }
   } catch (e) { log.debug(`review histogram failed for ${appId}: ${e.message}`); }
   histogramCache.set(appId, totals);
@@ -844,6 +857,13 @@ async function scrapeReviews(appId) {
   let newForApp = 0;
   const seen = new Set();
   let degenerate = false;
+  // The reason page 1 could not be fetched at all, carried out of the loop rather than being left
+  // as a bare log line (cycle 3356). Without this the caller sees only `got === 0` and cannot tell
+  // a transient upstream failure from Steam honestly answering "this app has no reviews" -- which
+  // is exactly how a steamcommunity.com 503 came to be reported as a SUCCEEDED run whose log said
+  // the app "has no Steam reviews at all yet". Page 1 only: a failure on a later page leaves a
+  // partial but real result, which is the separate incomplete-run path below.
+  let firstPageError = null;
   let next = null; // homecontent's replayed form fields for page 2+; unused on page 0
   // numperpage is 10 here, not the dead API's 100 — a given maxReviewsPerApp now costs ~10x the
   // page fetches, so the page-count ceiling scales with it instead of a flat 200.
@@ -855,7 +875,16 @@ async function scrapeReviews(appId) {
       html = await getHtml(page === 0
         ? reviewsPageUrl(appId, { reviewType, sortBy, language, dayRange })
         : homeContentUrl(appId, next));
-    } catch (e) { log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`); break; }
+    } catch (e) {
+      log.warning(`review page ${page + 1} failed for ${appId}: ${e.message}`);
+      // Normalised and capped because this string is quoted verbatim into the run's status message,
+      // which is a single line a buyer reads in the run list: OpenSSL/socket errors arrive with
+      // embedded newlines and file paths (an injected-fault run measured a 150-char TLS alert ending
+      // in "\n", which rendered as "...SSL alert number 80\n)"), and a multi-app outage concatenates
+      // one of these per app. HTTP errors -- the common case -- are short and unaffected.
+      if (page === 0) firstPageError = e.message.replace(/\s+/g, ' ').trim().slice(0, 200);
+      break;
+    }
     const parsed = parseReviewsPage(html, appId);
     if (page === 0 && parsed.cardCount === 0) {
       // Unlike the dead JSON API, the HTML page has no query_summary to distinguish "really no
@@ -950,7 +979,7 @@ async function scrapeReviews(appId) {
   // was hit and some scanned reviews were dropped by a filter, matching reviews may still sit
   // deeper in the feed and were never looked at.
   const capReached = got >= perAppReviews;
-  return { got, considered, filteredOut, capReached, degenerate, newForApp, appSeeding };
+  return { got, considered, filteredOut, capReached, degenerate, newForApp, appSeeding, firstPageError };
 }
 
 // ---- resolve targets -------------------------------------------------------
@@ -993,6 +1022,12 @@ const emptyIds = [];
 // Apps where Steam itself served an incomplete review response (see looksDegenerate) — kept apart
 // from emptyIds so an upstream fault is never reported to the user as "no reviews match".
 const upstreamDegraded = [];
+// Apps whose review page could not be FETCHED at all (HTTP 5xx/timeout on page 1), as {id, reason}.
+// Distinct from upstreamDegraded, where Steam did answer but with an incomplete body: here there is
+// no answer to read, so the run knows nothing about the app's review count. Both fail the run; they
+// are reported separately because "Steam is down, re-run" and "Steam answered oddly, re-run" are
+// different things to see in a status message, and the file's convention is one bucket per cause.
+const fetchFailed = [];
 // Apps where maxReviewsPerApp was hit while the keyword/minPlaytimeHours filter was still
 // discarding reviews — reviews deeper in Steam's feed were never scanned.
 const depthCapped = [];
@@ -1054,7 +1089,7 @@ if (dataType === 'games') {
     if (!timeBudgetOk()) { keepGoing = false; log.warning(TIME_BUDGET_WARNING); break; }
     idsAttempted.add(String(id));
     const before = pushed;
-    const { got, considered, filteredOut, capReached, degenerate, newForApp, appSeeding } = await scrapeReviews(id);
+    const { got, considered, filteredOut, capReached, degenerate, newForApp, appSeeding, firstPageError } = await scrapeReviews(id);
     log.info(appSeeding
       ? `${id}: ${got} reviews fetched, ${newForApp} recorded in the watch baseline (0 delivered, 0 charged).`
       : watchMode
@@ -1091,9 +1126,23 @@ if (dataType === 'games') {
         + `reviews. This is an upstream Steam fault, not a filter problem and not a sign that the app has `
         + `no reviews; re-run this input later.`,
       );
+    } else if (firstPageError) {
+      // The review page itself could not be fetched, so this run learned NOTHING about whether the
+      // app has reviews. Kept out of emptyIds (which means "Steam answered, with nothing") so the
+      // buyer is never told their app has no reviews on the strength of a failed request, and so
+      // the run fails rather than reporting an empty success -- same reasoning as upstreamDegraded.
+      fetchFailed.push({ id, reason: firstPageError });
+      log.warning(
+        `App ${id}: could not fetch the review page — ${firstPageError} This run therefore says `
+        + `NOTHING about how many reviews this app has; it is not a statement that the app has none, `
+        + `and not a problem with your input. Re-run this input later.`,
+      );
     } else if (got === 0) {
       emptyIds.push(id);
       const totals = await getReviewTotals(id);
+      // `totals === null` is "the histogram did not tell us" (fetch failed, or it answered with no
+      // buckets at all -- see getReviewTotals), NOT a zero. Only an explicit, bucket-backed 0 earns
+      // the confident "has no reviews at all yet" claim.
       log.warning(totals && totals.totalReviews === 0
         ? `App ${id} has no Steam reviews at all yet (that is Steam's data, not a scrape failure).`
         : `Steam returned no reviews for app ${id} with language="${language}", review_type="${reviewType}" — try language "all" or a different filter.`);
@@ -1153,10 +1202,21 @@ if (filteredOutOnly.length) {
 }
 
 let runError = null;
-if (pushed === 0 && upstreamDegraded.length) {
-  runError = `Steam's review API returned incomplete responses (success, but no reviews and no review `
-    + `totals) for: ${upstreamDegraded.join(', ')} — after 2 retries each. This is an upstream Steam `
-    + `fault, not a problem with your input; please re-run later.`;
+if (pushed === 0 && (upstreamDegraded.length || fetchFailed.length)) {
+  const faultCauses = [];
+  if (upstreamDegraded.length) {
+    faultCauses.push(`Steam's review API returned incomplete responses (success, but no reviews and `
+      + `no review totals) for: ${upstreamDegraded.join(', ')} — after 2 retries each`);
+  }
+  // The reason is quoted verbatim ("steamcommunity.com returned HTTP 503. …") rather than flattened
+  // to "could not be fetched": a 503 and a timeout call for the same action but a 403 does not, and
+  // the buyer cannot see our log lines from the run list -- only this status message.
+  if (fetchFailed.length) {
+    faultCauses.push(`Steam's review pages could not be fetched for: `
+      + `${fetchFailed.map((f) => `${f.id} (${f.reason})`).join('; ')}`);
+  }
+  runError = `${faultCauses.join('. ')}. This is an upstream Steam fault, not a problem with your `
+    + `input, and NOT a sign that these apps have no reviews; please re-run later.`;
   // The other causes have to survive into the FAILED run's status message too: Actor.fail(runError)
   // at the tail overwrites whatever status message the block below set, so without this a run where
   // one app was degraded AND another genuinely has no reviews reads as a pure upstream fault and the
@@ -1208,6 +1268,7 @@ if (chargeLimitReached) markIncomplete('charge-limit', "the run's pay-per-event 
 if (pushed >= maxResults) markIncomplete('max-results', `maxResults=${maxResults} reached; more ${dataType === 'games' ? 'games' : 'reviews'} may exist`);
 if (watchMode && seeding && seedCapHit) markIncomplete('seed-cap', `the baseline stopped at the ${SEED_CAP}-review cap; reviews past the cap will be delivered and charged as new on a later incremental run`);
 if (upstreamDegraded.length) markIncomplete('upstream-degraded', `Steam returned incomplete responses for: ${upstreamDegraded.join(', ')}`);
+if (fetchFailed.length) markIncomplete('fetch-failed', `Steam's review pages could not be fetched for: ${fetchFailed.map((f) => `${f.id} (${f.reason})`).join('; ')}`);
 if (depthCapped.length) markIncomplete('depth-cap', `maxReviewsPerApp (${perAppReviews}) was hit while filtering for: ${depthCapped.join(', ')} — matching reviews may sit deeper in the feed`);
 // Coverage of the REQUESTED input was incomplete even if every id that parsed answered fully, so a
 // pipeline reading `complete` must not treat a mixed URL/name list as a full delivery.
@@ -1223,9 +1284,12 @@ const baselinedSuffix = baselinedInPlace.length
 // Watch-mode branches build their message from suffixes, not from partialCauses, so without this
 // an unparseable entry vanishes from every watch run's status line.
 const unparsedSuffix = unparsedCause ? ` Also: ${unparsedCause}.` : '';
-const degradedSuffix = upstreamDegraded.length
+const degradedSuffix = (upstreamDegraded.length
   ? ` Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input; those apps were skipped, re-run them later.`
-  : '';
+  : '')
+  + (fetchFailed.length
+    ? ` Steam's review pages could not be fetched for: ${fetchFailed.map((f) => `${f.id} (${f.reason})`).join('; ')} — an upstream fault, not your input and not a sign those apps have no reviews; re-run them later.`
+    : '');
 // Inputs this run accepted but could not act on (dead upstream facet, or wrong dataType). Until
 // now these were `log.warning` only, so a buyer who set `purchaseType` or `dayRange`, read a green
 // "Succeeded" beside a full dataset and never opened the log believed a filter had been applied
@@ -1306,7 +1370,7 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
           : 'the run stopped before any review could be returned; see the log and RUN_SUMMARY for the stopping reason')
         : 'no valid Steam App IDs could be parsed from your input';
   await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}${ignoredSuffix}`);
-} else if (upstreamDegraded.length || depthCapped.length || allFilteredIds.length
+} else if (upstreamDegraded.length || fetchFailed.length || depthCapped.length || allFilteredIds.length
   || emptyIds.length || emptySearches.length || unparsedApps.length) {
   // Partial success: other apps produced rows, so the run is not a failure, but the buyer still
   // needs to know which specific apps fell short and why. Accumulated for the same reason as
@@ -1319,6 +1383,9 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   if (unparsedCause) partialCauses.push(unparsedCause);
   if (upstreamDegraded.length) {
     partialCauses.push(`Steam's review API returned incomplete responses for: ${upstreamDegraded.join(', ')} — an upstream fault, not your input, so re-run those later`);
+  }
+  if (fetchFailed.length) {
+    partialCauses.push(`Steam's review pages could not be fetched for: ${fetchFailed.map((f) => `${f.id} (${f.reason})`).join('; ')} — an upstream fault, not your input and not a sign those apps have no reviews, so re-run those later`);
   }
   if (depthCapped.length) {
     partialCauses.push(`maxReviewsPerApp (${perAppReviews}) was hit while filtering: ${depthCapped.join(', ')} — some matching reviews may sit deeper in the feed${depthAtCeiling ? MAX_DEPTH_HINT : ', so raise maxReviewsPerApp to search further'}`);
@@ -1372,6 +1439,10 @@ const runSummary = {
   emptySearches,
   emptyIds,
   upstreamDegraded,
+  // Apps whose review page could not be fetched at all, as [{id, reason}] — distinct from
+  // upstreamDegraded (Steam answered, incompletely) and from emptyIds (Steam answered "nothing"):
+  // a pipeline must be able to tell "retry this later" from "this app really has no reviews".
+  fetchFailed,
   depthCapped,
   // Apps whose whole returned feed was rejected by the filters — distinct from emptyIds and
   // depthCapped so a pipeline can tell "loosen the filter" from "no data" and "raise the cap".

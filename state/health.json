@@ -1,5 +1,5 @@
 {
- "ts": 1794954667,
+ "ts": 1794956773,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -200,22 +200,13 @@
    "err": null
   },
   "steam-reviews-scraper": {
-   "ok": true,
+   "ok": false,
    "inconclusive": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "type",
-    "appId",
-    "reviewId",
-    "review",
-    "language",
-    "recommended",
-    "createdAt",
-    "updatedAt"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "eu-ted-tenders-scraper": {
    "ok": true,
