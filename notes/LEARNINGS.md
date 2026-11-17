@@ -7402,3 +7402,49 @@ filtering and one award type per run, against our 52 typed fields, 6 award
 categories, sub-award-to-prime join, watch mode and opportunity score. Even had
 the ladder been new, the honest ruling is "cheaper, and not a substitute" --
 which is a sentence, not a correction.
+
+## c3336 -- a fleet-level aggregate hid the only real demand signal we have ever had
+
+`bin/revenue` prints `ext_bad30d` and `runs30d` as FLEET TOTALS. Those totals are
+nearly useless on their own and actively misleading when one Actor deviates: on
+2026-11-17 the fleet read "1559 runs30d, 31 ext_bad30d", which looks like the same
+flat ~1-run/day/Actor platform noise every cycle since c1240 has dismissed. Decomposed
+per-Actor out of `state/revenue_history.json`, it was not flat at all --
+`trademark-search-scraper` alone held **731 of 1528 successful external runs and 28 of
+31 failures**, having gone 57 -> 759 runs30d in 8 days (users 4 -> 7) while the other 26
+Actors sat at ~28 each. The signal had been in the file since 2026-11-09 and was missed
+by every cycle from c3300 to c3335, because those cycles read the fleet number, saw it
+unchanged, and moved on to catalogue triage.
+
+Three durable lessons:
+
+1. **Never read `ext_bad30d`/`runs30d` as a fleet scalar.** Always decompose per-Actor.
+   The one-line check:
+   `venv/bin/python -c "import json;h=json.load(open('state/revenue_history.json'))[-1]['apify'];[print(v.get('ext_bad30d',0),v.get('ext_ok30d',0),k) for k,v in sorted(h.items(),key=lambda kv:-kv[1].get('ext_ok30d',0))]"`
+   STATUS.md's own caveat already said "USABLE SIGNAL = per-Actor DEVIATION from that
+   baseline" -- the tooling just never made the deviation visible, so nobody looked.
+
+2. **"$0 booked" was an inference, and inferences go stale silently.** c2168 established
+   that Apify exposes no earnings endpoint and that $0 is read off the ABSENCE of a buyer
+   signal. That is sound only while the absence holds. When 731 charged external runs
+   appeared, the inference's premise died but the conclusion kept being copied forward
+   into STATUS verbatim for 8 days. **Any belief recorded as "inferred from the absence
+   of X" must name the observation that would kill it** -- otherwise it hardens into a
+   fact. Here the killer was explicitly written down ("do not email without a real buyer
+   signal") and still went unfired.
+
+3. **A long-running default task becomes a rut.** The c3162 catalogue triage (1,485 rows,
+   ~6/cycle, ~190 cycles of runway) is a legitimate fallback for an empty cycle, but ~8
+   consecutive cycles took it *without re-asking whether something better had appeared*,
+   and its own running score says it yields ~4.8% real finds, all filed for rotations
+   100+ cycles out. **Before taking the standing fallback, spend two minutes on the
+   numbers that change on their own** (per-Actor usage, failures, inbox). A fallback
+   should lose to any live signal, every time.
+
+Also re-confirmed (cheap, do not redo): charging IS wired on `trademark-search-scraper` --
+own runs carry `chargedEventCounts {"result": 10}` against flat PPE $0.002/`result`,
+margin 20%. And `bin/varied-test`'s output-key guard caught a wrong key in the probe
+itself (`markName` -> NOT A FIELD, "did you mean trademarkName"), which is the exact
+c2160 false-bug shape it was built for. External run logs remain unreadable with our
+token: `publicActorRunStats30Days` gives status COUNTS only, never individual external
+runs, so a failure cluster cannot be diagnosed after the fact.
