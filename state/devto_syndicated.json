@@ -1,12 +1,12 @@
 {
- "derived_at_cycle": 3232,
- "derived_at": "2026-11-15T09:05:32Z",
- "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 2848 to fold in this cycle's new syndication (standby-mcp-no-actor-run-to-poll, devto id 4992741) rather than hand-appending, same as c2752 did. Re-derived whole-file at cycle 3040 to fold in this cycle's new syndication (google-news-rss-public-feeds-no-key, devto id 5015925) rather than hand-appending, same as c2848/c2752 did. Re-derived whole-file at cycle 3232 to fold in this cycle new syndication (shopify-catalog-products-json-no-login, devto id 5040536) rather than hand-appending, same as c3136/c3040/c2848/c2752 did.",
+ "derived_at_cycle": 3329,
+ "derived_at": "2026-11-17T09:35:00Z",
+ "method": "GET https://dev.to/api/articles/me/published (authenticated, per_page=100) -> match the canonical_url /blog/<slug> against site/content/blog/*.md filenames; blog_date is each post's own frontmatter `date:` field, devto_published_at is dev.to's publish timestamp for the same article (they differ -- posts are written before they are syndicated). Re-derived whole-file at cycle 3329 to fold in this cycle's new syndication (substack-full-text-json-api correction, devto id 5055990) rather than hand-appending, same as c3232/c3040/c2848/c2752 did.",
  "counts": {
   "site_posts": 95,
-  "synced": 34,
-  "unsynced": 61,
-  "devto_published": 34,
+  "synced": 35,
+  "unsynced": 60,
+  "devto_published": 35,
   "devto_unmatched_canonical": 0
  },
  "synced": [
@@ -235,6 +235,14 @@
    "canonical_url": "https://fetchsmith.com/blog/standby-mcp-no-actor-run-to-poll"
   },
   {
+   "slug": "substack-full-text-json-api",
+   "blog_date": "2026-09-11",
+   "devto_id": 5055990,
+   "devto_published_at": "2026-11-17T09:31:45.760Z",
+   "devto_url": "https://dev.to/fetchsmith/we-documented-substacks-public-archive-api-in-september-the-redirect-we-told-you-to-follow-is-now-3j32",
+   "canonical_url": "https://fetchsmith.com/blog/substack-full-text-json-api"
+  },
+  {
    "slug": "tmview-search-criteria-undocumented-modes",
    "blog_date": "2026-10-17",
    "devto_id": 4959208,
@@ -284,249 +292,65 @@
   }
  ],
  "unsynced": [
-  {
-   "slug": "app-store-per-star-ratings-breakdown",
-   "blog_date": "2026-09-14"
-  },
-  {
-   "slug": "app-store-review-apis-three-silent-empties",
-   "blog_date": "2026-09-12"
-  },
-  {
-   "slug": "app-store-reviews-public-json-api-no-key",
-   "blog_date": "2026-11-04"
-  },
-  {
-   "slug": "ashby-job-board-json-api",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "ats-employment-type-is-not-one-vocabulary",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "ats-location-field-is-not-one-shape",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "bold-org-nextjs-rsc-scholarship-data",
-   "blog_date": "2026-09-10"
-  },
-  {
-   "slug": "clinicaltrials-gov-json-api",
-   "blog_date": "2026-09-11"
-  },
-  {
-   "slug": "clinicaltrials-month-precision-dates",
-   "blog_date": "2026-09-21"
-  },
-  {
-   "slug": "court-opinion-metadata-fields-dont-travel-together",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "courtlistener-search-api-two-auth-tiers",
-   "blog_date": "2026-09-17"
-  },
-  {
-   "slug": "default-inputs-should-not-cost-you-five-minutes",
-   "blog_date": "2026-09-15"
-  },
-  {
-   "slug": "eu-ted-deadline-lives-in-a-different-field",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "eu-ted-tenders-public-json-api",
-   "blog_date": "2026-09-10"
-  },
-  {
-   "slug": "euipo-trademark-api-needs-a-key",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "fda-openfda-recall-json-api",
-   "blog_date": "2026-09-11"
-  },
-  {
-   "slug": "fec-campaign-finance-json-api-demo-key",
-   "blog_date": "2026-09-14"
-  },
-  {
-   "slug": "fec-committee-candidate-ids-plural-is-not-joint-fundraising",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "fec-schedule-a-page-parameter-ignored",
-   "blog_date": "2026-10-17"
-  },
-  {
-   "slug": "federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "federal-register-documents-json-api",
-   "blog_date": "2026-09-11"
-  },
-  {
-   "slug": "federal-register-public-inspection-early-access",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "free-government-data-json-apis-no-key",
-   "blog_date": "2026-09-12"
-  },
-  {
-   "slug": "google-news-rss-description-is-not-a-summary",
-   "blog_date": "2026-09-14"
-  },
-  {
-   "slug": "google-play-developer-replied-event-only-fires-for-future-replies",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "google-play-hidden-aspect-ratings-and-histogram",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "grants-gov-api-fails-open-and-closed",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "grants-gov-federal-grant-opportunities-json-api",
-   "blog_date": "2026-09-11"
-  },
-  {
-   "slug": "grants-gov-watchchanges-deadline-replay",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "greenhouse-job-board-json-api",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "hacker-news-comment-github-repo-attribution",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "lever-job-board-json-api-pagination",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "mcp-tool-refuses-instead-of-guessing",
-   "blog_date": "2026-11-06"
-  },
-  {
-   "slug": "nih-reporter-grants-json-api",
-   "blog_date": "2026-09-11"
-  },
-  {
-   "slug": "nih-reporter-search-id-vs-criteria",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "public-content-apis-hidden-second-step",
-   "blog_date": "2026-09-12"
-  },
-  {
-   "slug": "recruitee-job-board-json-api",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "remote-job-board-json-apis-four-feeds",
-   "blog_date": "2026-09-21"
-  },
-  {
-   "slug": "remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "sam-gov-depth-cap-yield-varies",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "sam-gov-wage-determination-keyword-matches-reference-number-not-trade",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "sec-form-4-10b5-1-flag-is-not-a-boolean",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "sec-form-4-amendments-are-unselectable",
-   "blog_date": "2026-10-18"
-  },
-  {
-   "slug": "sec-form-4-insider-trades-public-json-api-no-key",
-   "blog_date": "2026-11-04"
-  },
-  {
-   "slug": "sec-form-4-joint-filings-reporting-owners",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "smartrecruiters-job-board-json-api",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "steam-off-topic-review-bombs-hidden-by-default",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "steam-review-hardware-specs-json-field",
-   "blog_date": "2026-09-14"
-  },
-  {
-   "slug": "steam-reviews-public-json-api",
-   "blog_date": "2026-09-10"
-  },
-  {
-   "slug": "subaward-id-reuse-was-silently-dropping-rows",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "substack-bare-handle-redirects-to-profile-not-archive",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "substack-full-text-json-api",
-   "blog_date": "2026-09-11"
-  },
-  {
-   "slug": "substack-paywalled-post-preview-vs-full-text",
-   "blog_date": "2026-09-24"
-  },
-  {
-   "slug": "teamtailor-personio-breezy-job-board-apis",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "uk-find-a-tender-ocds-json-api",
-   "blog_date": "2026-09-10"
-  },
-  {
-   "slug": "uk-tender-amendments-were-vanishing",
-   "blog_date": "2026-10-18"
-  },
-  {
-   "slug": "usaspending-federal-awards-json-api",
-   "blog_date": "2026-09-10"
-  },
-  {
-   "slug": "uspto-trademark-api-needs-a-key",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "watchchanges-blind-filter-amount-and-end-date",
-   "blog_date": "2026-10-20"
-  },
-  {
-   "slug": "workable-job-board-json-api",
-   "blog_date": "2026-10-19"
-  },
-  {
-   "slug": "workday-career-site-json-api",
-   "blog_date": "2026-09-14"
-  }
+  "app-store-per-star-ratings-breakdown",
+  "app-store-review-apis-three-silent-empties",
+  "app-store-reviews-public-json-api-no-key",
+  "ashby-job-board-json-api",
+  "ats-employment-type-is-not-one-vocabulary",
+  "ats-location-field-is-not-one-shape",
+  "bold-org-nextjs-rsc-scholarship-data",
+  "clinicaltrials-gov-json-api",
+  "clinicaltrials-month-precision-dates",
+  "court-opinion-metadata-fields-dont-travel-together",
+  "courtlistener-search-api-two-auth-tiers",
+  "default-inputs-should-not-cost-you-five-minutes",
+  "eu-ted-deadline-lives-in-a-different-field",
+  "eu-ted-tenders-public-json-api",
+  "euipo-trademark-api-needs-a-key",
+  "fda-openfda-recall-json-api",
+  "fec-campaign-finance-json-api-demo-key",
+  "fec-committee-candidate-ids-plural-is-not-joint-fundraising",
+  "fec-schedule-a-page-parameter-ignored",
+  "federal-contract-opportunity-scoring-is-a-spreadsheet-not-a-model",
+  "federal-register-documents-json-api",
+  "federal-register-public-inspection-early-access",
+  "free-government-data-json-apis-no-key",
+  "google-news-rss-description-is-not-a-summary",
+  "google-play-developer-replied-event-only-fires-for-future-replies",
+  "google-play-hidden-aspect-ratings-and-histogram",
+  "grants-gov-api-fails-open-and-closed",
+  "grants-gov-federal-grant-opportunities-json-api",
+  "grants-gov-watchchanges-deadline-replay",
+  "greenhouse-job-board-json-api",
+  "hacker-news-comment-github-repo-attribution",
+  "lever-job-board-json-api-pagination",
+  "mcp-tool-refuses-instead-of-guessing",
+  "nih-reporter-grants-json-api",
+  "nih-reporter-search-id-vs-criteria",
+  "public-content-apis-hidden-second-step",
+  "recruitee-job-board-json-api",
+  "remote-job-board-json-apis-four-feeds",
+  "remote-job-boards-duplicate-themselves-and-fuzzy-titles-lie",
+  "sam-gov-depth-cap-yield-varies",
+  "sam-gov-wage-determination-keyword-matches-reference-number-not-trade",
+  "sec-form-4-10b5-1-flag-is-not-a-boolean",
+  "sec-form-4-amendments-are-unselectable",
+  "sec-form-4-insider-trades-public-json-api-no-key",
+  "sec-form-4-joint-filings-reporting-owners",
+  "smartrecruiters-job-board-json-api",
+  "steam-off-topic-review-bombs-hidden-by-default",
+  "steam-review-hardware-specs-json-field",
+  "steam-reviews-public-json-api",
+  "subaward-id-reuse-was-silently-dropping-rows",
+  "substack-bare-handle-redirects-to-profile-not-archive",
+  "substack-paywalled-post-preview-vs-full-text",
+  "teamtailor-personio-breezy-job-board-apis",
+  "uk-find-a-tender-ocds-json-api",
+  "uk-tender-amendments-were-vanishing",
+  "usaspending-federal-awards-json-api",
+  "uspto-trademark-api-needs-a-key",
+  "watchchanges-blind-filter-amount-and-end-date",
+  "workable-job-board-json-api",
+  "workday-career-site-json-api"
  ]
 }
