@@ -144,7 +144,16 @@ if (reviewsAfterDate && requestedSort === 'mostHelpful') log.warning('"reviewsAf
 // anyway, and mostRecent is the only feed order that also supports reviewsAfter's early-stop.
 const sort = (reviewsAfterDate || ratingSort) ? 'mostRecent' : requestedSort;
 if ((minVoteSum != null || minVoteCount != null) && sort === 'mostRecent') {
-  log.warning('"minVoteSum"/"minVoteCount" filter on Apple\'s helpfulness votes, which are only populated on the "mostHelpful" feed — under sort "mostRecent" every review comes back with 0 votes, so a floor above 0 will keep nothing. Set sort to "mostHelpful" (and drop "reviewsAfter", which forces mostRecent) to use them.');
+  // Two independent inputs can force mostRecent (reviewsAfter, or sort:favorable/critical) --
+  // name whichever actually fired rather than hardcoding one, or a buyer using the other gets
+  // told to drop an input they never set (live-caught cycle 3345: sort:"favorable" alone with no
+  // reviewsAfter still printed "drop reviewsAfter, which forces mostRecent").
+  let remedy;
+  if (reviewsAfterDate && ratingSort) remedy = `Drop "reviewsAfter" and change "sort" from "${ratingSort}" to "mostHelpful" — both force mostRecent — to use them.`;
+  else if (reviewsAfterDate) remedy = 'Drop "reviewsAfter" (it forces mostRecent) and set "sort" to "mostHelpful" to use them.';
+  else if (ratingSort) remedy = `Change "sort" from "${ratingSort}" to "mostHelpful" — "${ratingSort}" also forces mostRecent — to use them.`;
+  else remedy = 'Set "sort" to "mostHelpful" to use them.';
+  log.warning(`"minVoteSum"/"minVoteCount" filter on Apple's helpfulness votes, which are only populated on the "mostHelpful" feed — under sort "mostRecent" every review comes back with 0 votes, so a floor above 0 will keep nothing. ${remedy}`);
 }
 if (!apps.length && !appNames.length) await Actor.fail('Provide at least one app URL/ID in "apps" or a name in "appNames".');
 
