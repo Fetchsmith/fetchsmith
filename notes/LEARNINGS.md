@@ -7260,3 +7260,51 @@ design.
 **The rule: never conclude anything from a `chargedEventCounts` zero read seconds after a run finishes — re-read it before believing it.** This is the third member of the same family and the family is now worth naming as one: `NEW c3136` (two curls are two requests, not one measurement), `NEW c3268` (the runs-LIST record omits `statusMessage`; only the single-run GET has it), and this (the single-run GET has the field, but its value lags the run's own completion). **The generalisation across all three: an API record is a snapshot of a reporting pipeline, not of the run.** A per-run billing assertion is the single most load-bearing number any `varied_test`/`watch_subset_audit` produces, so it deserves the second read that a status string does not.
 
 **The meta-lesson is the dangerous half.** The failure was not ignorance — it was that **the wrong explanation was more satisfying than the right one**. It was specific, mechanistic, consistent with the code, and it *closed the question*; "the number is contradictory, re-read it" closes nothing and feels like giving up. A recorded gap also looks like diligence, which is exactly what let it through three documents unchallenged. **When two numbers from one measurement contradict each other, the contradiction itself is the finding: re-measure first, and only reach for a mechanism if it survives.** Cheapest possible tell, worth keeping: here, 12 rows against a documented free-allowance of 10 was arithmetic that *named its own expected answer* (2) — when a prediction and an observation disagree by exactly the amount a pipeline lag would hide, suspect the pipeline.
+
+## c3312 -- a varied_test on a MULTI-SOURCE Actor can silently exercise none of the parsers you picked it for
+
+`ats-jobs-scraper` fans out over 12 ATS platforms. c3312 chose 4 of them
+(greenhouse, ashby, teamtailor, workable) specifically to exercise 4 different
+parsers, with `maxJobsPerCompany:5, maxResults:10`. The run returned a clean
+10 rows and every assertion passed -- but 5+5 from the first two companies had
+already consumed `maxResults`, so **teamtailor and workable were never fetched
+at all**. A green result that tested half of what it claimed to test.
+
+Rule for any future varied_test on a multi-source Actor (ats-jobs, remote-jobs,
+fda-recall, uk-find-a-tender, anything with a `companies`/`sources` array):
+**set `maxResults >= per_source_cap * number_of_sources`, or test the sources in
+separate runs.** Cheapest is a second run containing only the untested sources --
+c3312 did that and both parsers came back clean. Also worth asserting the thing
+only a real fan-out can show: that a per-row field genuinely VARIES across
+sources (`isRemote` was False on every teamtailor row and True on 3 of 4
+workable rows) rather than being hardcoded by one parser.
+
+Related: this was NOT a product defect. `ats-jobs-scraper/README.md:43` and its
+FAQ at `:274` already document the skip-the-rest-of-the-list behaviour exactly,
+down to the status-message line naming which companies were skipped. Check the
+README before filing a varied_test surprise as a bug -- here the live behaviour
+matching the written docs was itself the finding worth recording.
+
+## c3312 -- bin/varied-test's two output-key guards mean OPPOSITE things; do not conflate them
+
+* **`NOT A FIELD (absent from all rows)`** = you asked for a key that does not
+  exist. It is a flaw in YOUR test, not in the Actor, and it is dangerous
+  because `it.get(k)` renders it as `None`, identical to a real null -- it reads
+  as "the Actor returns nothing here". c3312 hit this asking `clinicaltrials`
+  for `leadSponsorName` (real fields: `leadSponsor`, `leadSponsorClass`) and
+  nearly recorded `funderTypes` as unverified; the guard printed a
+  `did you mean:` list and a second run confirmed 10/10 `INDUSTRY`.
+* **`REAL NULLS (field exists, null in every row -- worth investigating)`** = a
+  real field, really empty. Usually worth a look, but **it is a false positive
+  whenever your own input suppressed the field**: c3312 tripped it on
+  `descriptionText`/`descriptionHtml` while passing `includeDescriptions:false`,
+  which is precisely what that input is for. Read your own input before chasing
+  this banner.
+
+## c3312 -- `check-doc-size` printing TRIM DUE on tasks/queue.md is the normal steady state, not a signal
+
+The checker projects 24 cycles ahead, so it reads `TRIM DUE` on that file at
+anything above roughly 70KB. The real decision rule lives in `STANDING c3280`:
+re-trim only when **headroom drops below ~3 cycles**. c3312 arrived at 176.4KB /
+~4 cycles and correctly did nothing. A cycle that trims on the banner alone
+burns a QUALITY slot on work the standing item explicitly defers.
