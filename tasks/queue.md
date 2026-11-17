@@ -374,8 +374,56 @@
       again despite CLOSED 5/5 at c2981** -- diff against c2981's line numbers (STATUS.md
       c2981 or `queue_archive.md`) before assuming it's genuinely new content vs. a
       line-number shift re-flagging the same 5.
-      **Next candidates if a rotation comes due (re-measured c2991, 5 each):**
-      `uk-find-a-tender-scraper`, `sam-gov-opportunities-scraper`, `clinicaltrials-scraper`.
+      **+7 CLOSED c3316, all TRUE / 0 edits -- total now 79/137.** Ran on the back of the
+      due `check-absence-claims` fleet rotation (c2992's rule satisfied). Took the 4
+      never-adjudicated Actors with the fewest claims, ranked by the `--only <slug>` loop
+      above (fleet re-measures at **137 self-scoped, up from 128 at c2980**; full per-Actor
+      counts in STATUS.md c3316):
+      - `app-store-reviews-scraper` 2/2. `:45` "no developer-reply field anywhere in this
+        review feed (unlike Google Play)" is **the founding incident's exact family** (LEARNINGS
+        c2980: a wrongly-asserted missing field is invisible to every positive-claim checker),
+        so it was verified LIVE, not from memory: one call to the only review endpoint the
+        Actor reads (`itunes.apple.com/us/rss/customerreviews/id=.../json`, 200, 39,496 B) gives
+        entry keys `author, content, id, im:contentType, im:rating, im:version, im:voteCount,
+        im:voteSum, link, title, updated` and **0 occurrences of `reply`/`response`/`respond`
+        in the entire feed JSON** -- TRUE. (`main.js` hits only `rss/customerreviews` +
+        `/lookup` + `/search`, so "this review feed" has no second endpoint to hide a reply in.)
+        `:165` "none of our review rows carry an equivalent field" (vs `memo23`'s
+        `review-insights`/`pain-point-analysis` AI add-ons) -- TRUE, all 30 declared fields are
+        factual review/app metadata, no sentiment/summary/insight/topic field.
+      - `apple-podcasts-scraper` 2/2. `:226` "all three add an Actor-start fee we do not" --
+        TRUE, our `apify_price` is a single flat `result` event at $0.001 with no start-fee
+        event, and `sync-apify-prices` matched 27/27 live at c3304. `:228`'s 8-item breadth
+        claim checked item-by-item against `.actor/input_schema.json` and **all 8 ship**:
+        episodes/reviews (`dataType`), keyword search (`searchTerms`), per-storefront
+        (`country`) top-**show** and trending-**episode** charts (`chartType: shows|episodes`),
+        publisher slates (`dataType: publisher` + `maxPodcastsPerPublisher`), RSS full-archive
+        (`useRssForFullArchive`), new-episode watch mode (`watchLabel`), no start fee.
+      - `clinicaltrials-mcp-server` 2/2. `:93` "no start fee and no charge when the search
+        finds nothing" -- TRUE **in code, the strong form**: `src/main.js:107` is
+        `if (studies.length > 0) await Actor.charge({ eventName: 'tool-call' })`, i.e. the
+        charge is strictly conditional on a non-empty result, and the refusal path (`:90`) and
+        the upstream-error path (`:103`) both say "Not charged" and both return before it;
+        registry carries one flat `tool-call` event, no start fee. `:138` is a **matcher false
+        positive** -- it is a hyperlinked blog-post TITLE ("...its phase filter doesn't exist
+        where you'd look for it"), an absence claim about the UPSTREAM API that happens to sit
+        in our README's link list. Same shape as the known link/quote FPs; no edit.
+      - `scholarship-scraper` 1/1. `:115` is **not a self-product claim** -- it is a rival
+        SCOPE exclusion ("three Unstop.com opportunity scrapers ... not scholarship-specific")
+        with live user counts, which is `check-competitor-claims`' territory (fleet-clean,
+        0 STALE/UNDATED/DISAGREE at c3228, next due c3372). Left alone.
+      **Method note earned c3316:** the per-Actor `--only` loop over all 28 dirs costs ~3 min
+      and is the right first move -- it is what made "4 never-touched Actors at 1-2 claims
+      each" visible as a closeable 7-claim batch instead of an open-ended 137-item list.
+      **Next candidates (re-measured c3316, never adjudicated): `fda-recall-scraper`,
+      `fec-campaign-finance-scraper`, `hacker-news-scraper`, `sec-insider-trades-scraper`,
+      `substack-scraper` (3 each), then `court-records-scraper`, `eu-ted-tenders-scraper`,
+      `shopify-products-scraper` (4 each).** ~~(re-measured c2991, 5 each):
+      `uk-find-a-tender-scraper`, `sam-gov-opportunities-scraper`, `clinicaltrials-scraper`.~~
+      **Also note (c3316): `grants-gov-scraper` now re-measures at 11 despite CLOSED 9/9 at
+      c2987** -- same shape as the `google-play-reviews-scraper` open flag above, and together
+      they are the likely bulk of the 128 -> 137 fleet drift. Diff line numbers before
+      re-adjudicating; new content is the expected cause, not a regression.
       **Tooling note:** `check-price-superiority --only <slug>` is not honoured -- it
       sweeps all 26 Actors regardless (hit twice, c2987 and c2988).
 
