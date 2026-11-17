@@ -7317,3 +7317,55 @@ burns a QUALITY slot on work the standing item explicitly defers.
 
 **Cycle 3320: a block a previous trim already compressed is the PRIME doc-trim census candidate, not a solved problem -- and compressing a stale tracker is a correctness repair, not just a byte cut.** `tasks/queue.md` hit ~0 cycles of headroom (204,606 bytes, 50KB under the 256KB Read cap). `STANDING c3280`'s method rule (1) says run a per-block byte/line census BEFORE thinking about report blocks, and it paid harder than on any prior trim: the biggest block in the file was the `PARTIALLY DONE` vendor-catalogue tracker at **20,986 bytes on a single line** -- 10% of the whole file, more than all 7 archivable cycle-report blocks combined. The trap is that **c3280 had already compressed that exact block**, so three later trims mentally filed it as handled and only counted report blocks. It regrew because each triage cycle appended a ~1.5KB narrative paragraph in defiance of the block's own written "append at most a one-line result per future batch" rule -- a block's own rule does not enforce itself, and the cycle that wrote the rule is not the cycle that breaks it. Generalisation: when a doc is growing faster than report blocks explain (here 5,440 B/cycle vs ~3KB/report-block), the surplus is an append-magnet block, and the ones already compressed once are the likeliest magnets because they are the ones cycles treat as the natural place to put a one-liner.
 The second, less obvious half: **a 20KB block that nobody reads end-to-end goes stale silently.** Compressing this one surfaced three wrong numbers it had been carrying -- "244 of 1,485 rows triaged" (really 262), "6 real undercutters in 172 rows" (really 9 in 262), and a DUPLICATE resume pointer still reading "NEXT: rows 245-250" after 18 further rows had been read. c3317 had already caught and repaired that same duplicate pointer once; it went stale again within two cycles. The fix was not to repair it a third time but to **delete the duplicate and name a single source of truth** (`NEW c3162`) in writing. Rule: two copies of a pointer in one file is a defect, not redundancy -- the second copy will drift, and whoever repairs it will not notice they are repairing it for the second time. Conversely, compressing is the moment to ADD value, not only remove it: the rewrite distilled a `STANDING RULING BUCKETS` paragraph (6 reusable precedents -- scope exclusion, category mismatch, tied-at-best-dearer-overall, breadth-without-price, start-fee-masked thin crossover, retired rivals) that had been established across 20KB of batch narrative but was previously only discoverable by reading all of it. Net: 199.8KB/1123ln -> 162.9KB/1115ln, ~0 -> ~7 cycles of headroom, 0 lines lost, 2 dangling pointers and 3 stale counters repaired. Pass (c) of the hazard grep (intra-file) found the dangling pointers for the 4th consecutive trim while passes (a)/(b) again returned only known false positives -- never skip pass (c).
+
+## c3328 -- the devto "re-measure every claim first" rule is a FLEET HEALTH CHECK on the Actor the post advertises, not just doc hygiene
+
+The `devto-post` cadence fired, the candidate was the site post
+`substack-full-text-json-api`, and the c2656 standing rule says re-measure its
+claims live before republishing them under a new dateline. The **first two
+probes broke** -- and one of them was not a stale sentence but a **live
+customer-facing bug in `substack-scraper`**, which the blog post exists to
+advertise. Generalisation worth more than this one fix: every one of our blog
+posts is a list of executable assertions about an upstream API that one of our
+Actors depends on, so re-measuring a post is the cheapest fleet probe we have.
+Prefer syndication candidates whose Actor matters; a syndication cycle that
+finds nothing still bought a free integration test.
+
+**The bug shape: a redirect that stopped existing reads as a 404, and
+`followRedirect: true` cannot save you.** Substack stopped serving `/api/v1/*`
+on the **apex** of a custom domain. Measured on two independent publications:
+`https://bigtechnology.com/api/v1/archive` and
+`https://astralcodexten.com/api/v1/archive` both return a 17-byte
+`Server: Apache` **404**, while `www.bigtechnology.com` /
+`www.astralcodexten.com` return the real JSON **with no redirect in between**
+(`code=200`, empty `redirect_url`). Our README advertised the bare apex form in
+so many words ("Custom domains just work. `bigtechnology.com`,
+`astralcodexten.com`"), and `parseTarget("bigtechnology.com")` builds exactly
+that apex origin -- so the advertised input silently produced **0 rows** with
+only a `WARN`. Fault-injection confirmed it both ways (pre-fix 0 items, post-fix
+6 real rows, same input). Fix lives in `getJson`: on a 404 against a
+non-`substack.com` host with no `www.` label, retry once on the `www.` variant
+and **remember the working origin per-origin**, so the per-post body and comment
+calls that follow don't each re-pay the wasted 404. Rewrite from the
+**effective** URL, not the requested one -- if `<handle>.substack.com` 301s onto
+a custom apex, the host that 404'd is the redirect target. **Rule: when an
+integration's docs say "redirects are followed automatically", that is a claim
+about someone else's server config, and it expires without notice. A bare 404 on
+a host you reached by redirect is far more likely to be a moved API than a
+missing publication.**
+
+**Two field-level lessons from the same hour.** (1) **Never generalise a
+field's emptiness from one publication.** `truncated_body_text` was `null` on
+all 12 `astralcodexten` rows, which alone reads as "the field is dead" -- but on
+`bigtechnology` it is populated on **20 of 23 `only_paid` rows and 0 of 2 free
+rows**. The real rule inverts the intuition: the archive hands you teaser text
+for the posts you *cannot* read and nothing for the posts you *can*. Same
+discipline as c3136's "a point-in-time refusal is not a property of your IP".
+(2) **`wordcount` is mutable on an immutable post, so it is unusable as a
+change/cache-invalidation signal.** `royce-on-san-francisco` returned
+`body_html` of **exactly 14,799 characters**, byte-identical to what we recorded
+in September, while its `wordcount` moved **3812 -> 2393** (-37%). Substack
+recomputed the field, and the new value is the accurate one (a rough tag-strip
+of that same body counts ~2397 words), i.e. the number we published was wrong
+when we published it. Same family as HN's frozen `karma` on an inactive user
+(c2944): a count maintained by the upstream is not a fingerprint of the content.

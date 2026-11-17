@@ -189,7 +189,31 @@ async function pushResult(item, eventName = 'result') {
 // same copied pattern here). Clamp both the per-attempt timeout and the retry count to what's
 // actually left so no single call can outlive the run.
 const MIN_REQUEST_MS = 3000; // below this a request is not worth starting; stop instead
-async function getJson(url) {
+
+// Substack stopped serving /api/v1/* on the APEX of a custom domain. Measured live cycle 3328
+// (2026-11-17) on two independent publications: https://bigtechnology.com/api/v1/archive and
+// https://astralcodexten.com/api/v1/archive both return a 17-byte `Server: Apache` 404, while
+// www.bigtechnology.com and www.astralcodexten.com return the real JSON -- with NO redirect in
+// between (code=200, empty redirect_url), so `followRedirect` cannot save us and the 404 is not
+// a "publication does not exist" signal. Our own README advertised the bare apex form
+// ("Custom domains just work. bigtechnology.com, astralcodexten.com"), so that input silently
+// produced 0 rows with only a warning. On a 404 against a non-substack.com host that has no
+// `www.` label, retry once on the www. variant and REMEMBER the working origin, so the per-post
+// body and comment calls that follow don't each pay for the same wasted 404.
+const originFixes = new Map();
+function wwwVariant(url) {
+  let u;
+  try { u = new URL(url); } catch { return null; }
+  if (/(^|\.)substack\.com$/i.test(u.hostname)) return null; // substack.com hosts serve the API directly
+  if (/^www\./i.test(u.hostname)) return null; // already tried the www. form
+  u.hostname = `www.${u.hostname}`;
+  return u.toString();
+}
+
+async function getJson(url, { allowOriginFix = true } = {}) {
+  const asked = new URL(url);
+  const fix = originFixes.get(asked.origin);
+  if (fix) url = url.replace(asked.origin, fix);
   const left = remainingMs();
   if (left <= MIN_REQUEST_MS) { timeBudgetExceeded = true; throw new Error('run time budget exhausted before the request could be made'); }
   const perRequest = Math.max(MIN_REQUEST_MS, Math.min(45000, left));
@@ -202,6 +226,19 @@ async function getJson(url) {
     followRedirect: true, // <handle>.substack.com often 301s to a custom domain
     headers: { accept: 'application/json' },
   });
+  if (res.statusCode === 404 && allowOriginFix) {
+    // Rewrite from the EFFECTIVE url: if <handle>.substack.com 301s onto a custom apex, the
+    // host that 404'd is the redirect target, not what we asked for.
+    const candidate = wwwVariant(res.url ?? url);
+    if (candidate) {
+      try {
+        const body = await getJson(candidate, { allowOriginFix: false });
+        originFixes.set(asked.origin, new URL(candidate).origin);
+        log.info(`${asked.origin} serves no JSON API on its apex domain (404); using ${new URL(candidate).origin} for the rest of this run.`);
+        return body;
+      } catch { /* fall through and report the original 404 below */ }
+    }
+  }
   if (res.statusCode >= 400) {
     // got-scraping sets throwHttpErrors:false by default, so a 4xx/5xx response lands here as
     // a normal return (its JSON error body parsed like any other), not a caught exception --

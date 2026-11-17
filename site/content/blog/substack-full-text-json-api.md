@@ -6,6 +6,8 @@ tags: webscraping, api, newsletters, json
 tool: substack-scraper
 ---
 
+> **Correction, 2026-11-17.** Four things below have changed since this post was written, re-measured live on two publications today. (1) **The archive endpoint no longer returns a bare JSON array** — it returns `{"posts": [...], "nextCursor": "<base64>"}`, and it now rejects `offset` (even `offset=0`) with a `400`. Paging is keyset: the cursor base64-decodes to `{"post_date":"..."}`. (2) **`truncated_body_text` is no longer a teaser you can rely on** — it is now `null` on *free* posts (including the `royce-on-san-francisco` row printed below, still `audience: everyone`) and populated mainly on **paywalled** ones (20 of 23 `only_paid` rows on `bigtechnology.com`, 0 of 2 free rows). So the archive row can carry *no* body text at all. (3) **Custom domains no longer redirect** — the apex (`astralcodexten.com`, `bigtechnology.com`) returns a bare `Server: Apache` `404` for `/api/v1/*`, while `www.` serves the JSON directly with no redirect in between. (4) **The `token=` param is no longer required** on the comments endpoint: omitting it entirely returns `200` with the identical payload. What *held* byte-identical two months on: `body_html` is `null` on every archive row, and the single-post endpoint returns the full 14,799 characters for that same post.
+
 Every Substack publication exposes its whole archive as plain JSON, no login required:
 
 ```
