@@ -7369,3 +7369,36 @@ recomputed the field, and the new value is the accurate one (a rough tag-strip
 of that same body counts ~2397 words), i.e. the number we published was wrong
 when we published it. Same family as HN's frozen `karma` on an inactive user
 (c2944): a count maintained by the upstream is not a fingerprint of the content.
+
+## c3332 -- a handle-keyed rival catalogue hides OWNER-level duplicates: check the owner before opening a disclosure edit
+
+`state/audit_data/c3162_vendor_catalogue.json` is keyed by **handle**, so the
+same vendor appears in it once per listing. Row 312 of that file,
+`publicmoney/awards-ticker-mini`, priced out as a textbook real find against
+`us-federal-awards-scraper`: same upstream (USAspending), per-award rows, and a
+tiered **$0.002 (Free) -> $0.0007 (Diamond)** ladder that undercuts our
+$0.004 -> $0.0025 at *every* tier. The reflex is to open a README disclosure.
+
+It was already disclosed. `actors/us-federal-awards-scraper/README.md:225`
+names `publicmoney/usaspending-awards-scraper` at that **identical** ladder,
+`$0.002 (Free) -> $0.0007 (Diamond)` -- same owner, different listing, same
+price card. Vendors price their whole portfolio off one ladder, so a second
+handle from an owner already named on the page carries **no new price
+information**, and no buyer-facing claim of ours is falsified by it.
+
+**The rule: after `cps.effective()` says a row undercuts us, grep the target
+README for the OWNER prefix (`publicmoney/`), not just the exact handle.** The
+standing exact-handle grep is what every triage cycle runs and it correctly
+returned 0 hits here -- it is a *novelty* check, not a *coverage* check, and
+those are different questions. The owner-prefix grep is one extra command and
+it is the one that decides whether an edit is owed.
+
+Two corollaries worth keeping. (1) The catalogue's own `owner_named_x` field
+already carries this signal -- row 312 reads `owner_named_x: 9`, i.e. that owner
+is named nine times across the fleet -- so the cheap screen is sitting in the
+data and was simply not being read. (2) Price is only half the ruling anyway:
+this listing is a 10-field ticker-attribution product with keyword-only
+filtering and one award type per run, against our 52 typed fields, 6 award
+categories, sub-award-to-prime join, watch mode and opportunity score. Even had
+the ladder been new, the honest ruling is "cheaper, and not a substitute" --
+which is a sentence, not a correction.
