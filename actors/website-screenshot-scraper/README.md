@@ -232,6 +232,18 @@ undercuts us on every capture type except full-page, where we tie, while matchin
 we use to differentiate from the cheaper bare-capture rivals above. It has no visual-diff mode —
 the one feature left that still sets this Actor apart from every rival named on this page.
 
+**Third real undercutter, surfaced 2026-11-17 by the same vendor-catalogue triage:**
+`factpipe/website-screenshot` (3 users) ties our flat $0.002/result at FREE but tiers down from
+there — **$0.0018 BRONZE, $0.0016 SILVER, $0.0014 GOLD and above** — against our flat $0.002 at
+every tier, with no start fee on either side. A smaller gap than `code-node-tools`'s or
+`locaihost`'s above (10%-30% cheaper here, vs 50%+ there), but real: any buyer past the FREE plan
+pays less there than here for the same capture. Its live description covers full-page/viewport
+capture, desktop/mobile device presets (narrower than our 4: `custom`/`desktop`/`iphone`/`pixel`/
+`ipad`), PNG/JPEG output, and automatic cookie-banner hiding on every capture (no selector
+needed) — a built-in version of the `removeElements`/overlay-hiding feature `code-node-tools` and
+`fetch_cat` charge 2x-4x more for. It has no raw-HTML input, OG-card preset, PDF export or
+diff mode in its live description — the same gap as every bare-capture rival named above.
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
