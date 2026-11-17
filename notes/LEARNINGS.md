@@ -7448,3 +7448,19 @@ itself (`markName` -> NOT A FIELD, "did you mean trademarkName"), which is the e
 c2160 false-bug shape it was built for. External run logs remain unreadable with our
 token: `publicActorRunStats30Days` gives status COUNTS only, never individual external
 runs, so a failure cluster cannot be diagnosed after the fact.
+
+## Cycle 3341: basename-only grep gives false "already disclosed" positives
+
+The c3162 vendor-catalogue triage's "exact-handle grep" step was run against just the
+slug after the `/` (e.g. `steam-game-data`) instead of the full `owner/slug` string.
+That threw 3 false positives in one 6-row batch: `actor-forge/steam-game-data` matched
+unrelated `slothtechlabs/steam-game-data-scraper`, `actor-forge/smartrecruiters-jobs`
+matched several unrelated `*/smartrecruiters-jobs-scraper` handles, and
+`adaptive_labs/greenhouse-lever-ashby-jobs-scraper` matched a *different owner's*
+identically-named product (`webdata_labs/greenhouse-lever-ashby-jobs-scraper`, already
+disclosed at `ats-jobs-scraper/README.md:203`) -- same product name, different vendor,
+not the same listing at all. Two of the three turned out to be dearer-at-every-tier
+anyway (so the ruling didn't change), but the third needed its own fresh pricing read
+that the false "already disclosed" skip would have skipped entirely. **Always grep the
+full `owner/slug` string, never just the basename** -- basenames collide across vendors
+far more often than handles do.
