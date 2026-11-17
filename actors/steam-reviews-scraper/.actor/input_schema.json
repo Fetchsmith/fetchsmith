@@ -119,7 +119,7 @@
     "dayRange": {
       "title": "Last N days (Most helpful sort only — bucketed)",
       "type": "integer",
-      "description": "Only has an effect when Sort = Most helpful (sortBy: \"all\") — Steam exposes 6 fixed day-windows there (day/week/month/3 months/6 months/year), not an exact day count, so this rounds UP to the narrowest window that still covers your request (e.g. 5 -> week). Ignored for every other Sort. Use 'Reviews after/before' with Sort = Most recent for an exact day window instead.",
+      "description": "Only has an effect when Sort = Most helpful (sortBy: \"all\") — Steam exposes 6 fixed day-windows there (day/week/month/3 months/6 months/year), not an exact day count, so this rounds UP to the narrowest window that still covers your request (e.g. 5 -> week). Ignored for every other Sort. Use 'Reviews after/before' with Sort = Most recent for an exact day window instead. Mutually exclusive with 'Reviews after/before': a date window forces Sort to 'Most recent', which disables this field (the run says so). Keep the date window if you need an exact day range; drop it if you want the bucketed most-helpful window.",
       "minimum": 1,
       "maximum": 365,
       "editor": "number"

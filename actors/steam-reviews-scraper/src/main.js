@@ -85,7 +85,16 @@ let sortBy = SORTS.includes(input.sortBy) ? input.sortBy : 'recent';
 // vanishes from disclosure instead of being named. Found live this cycle: dataType:"games" +
 // sortBy:"funny" + reviewsAfter together printed the ignoredInGames list WITHOUT sortBy in it,
 // while sortBy:"funny" alone (no date window) correctly named it.
-if (dataType === 'reviews' && hasDateWindow && sortBy !== 'recent') {
+// Remembered because the dayRange disclosure further down reads `sortBy` AFTER this forcing and
+// cannot otherwise tell "the buyer asked for a sort with no day-window" apart from "the buyer DID
+// ask for sortBy=all and we took it away" — the two need different remedies, and the generic one is
+// unreachable in the second case (it tells you to set the very value you set). Live-reproduced
+// cycle 3344 on app 730: sortBy:"all" + dayRange:7 + reviewsAfter:"2026-11-01" printed "current
+// sort is \"recent\" ... set sortBy=\"all\" to use this field" one line under the warning that had
+// just overridden sortBy="all", AND advised "use Reviews after/before" — which the run was already
+// doing. Same dead-remedy class as cycle 3008's searchLimit and cycle 2544's off-by-one here.
+const sortForcedByDateWindow = dataType === 'reviews' && hasDateWindow && sortBy !== 'recent';
+if (sortForcedByDateWindow) {
   log.warning(`Sort was "${sortBy}" but "Reviews after/before" requires chronological order — using "recent" instead.`);
   sortBy = 'recent';
 }
@@ -182,6 +191,18 @@ if (dayRange && dataType === 'reviews' && sortBy === 'all') {
     + '(one of 6 fixed windows: day/week/month/3 months/6 months/year — rounded UP to the narrowest '
     + 'one that still covers the request, since Steam has no exact-day control here, only these '
     + 'buckets). For an exact day count, use "Reviews after/before" with Sort = Most recent instead.',
+  );
+} else if (dayRange && dataType === 'reviews' && sortForcedByDateWindow) {
+  // The buyer DID set sortBy="all"; the date window above took it away. Naming the sort as the
+  // cause here would be false, and both of the generic remedies below are dead in this state.
+  ignoredInputs.push('dayRange');
+  log.warning(
+    `"Last N days" (${dayRange}) is ignored — not because of your Sort, but because "Reviews `
+    + 'after/before" forced Sort to "recent" (see the warning above), and Steam only offers its 6 '
+    + 'day-windows under Sort = Most helpful. Your date window is still applied and is strictly more '
+    + `precise than "Last N days" (an exact day range vs. one of 6 fixed buckets), so the only thing `
+    + 'lost is the helpfulness ranking. To get the bucketed most-helpful window instead, remove '
+    + '"Reviews after/before" and keep sortBy="all" — you cannot have both.',
   );
 } else if (dayRange && dataType === 'reviews') {
   ignoredInputs.push('dayRange');
