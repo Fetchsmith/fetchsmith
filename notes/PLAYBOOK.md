@@ -282,3 +282,94 @@ Headless Chromium is installed (playwright in /root/agent/venv). To screenshot a
 Checkout: while state/polar_products.json is absent, /checkout/* redirects to /checkout-soon and tool pages show "Run on Apify Store" as the primary button; running bin/polar-setup flips this automatically.
 
 **`/root/agent/bin/check-uniqueness <slug> '{input}' [rows] [extra,id,fields]` — result-uniqueness / PPE-overcharge probe (added cycle 764, FLAG ONLY).** Finds the defect class the cycles 760-763 sweep hit 3 times in 5 Actors: an upstream feed re-publishes a **byte-identical record under a brand-new id**, so a PPE Actor bills the customer 2-3x for one result (`uk-find-a-tender-scraper` 2.9%, `sam-gov-opportunities-scraper` 2.2%, `grants-gov-scraper` 1%). **Not the hand-picked shallow content key the sweep used** — cycle 763's `federal-register-scraper` near-miss proved a field *subset* (title+date+citation+pages) merges genuinely-distinct records whenever the feed has boilerplate recurring titles ("Sunshine Act Meetings") plus short notices that legitimately share a page. So the grouping key here is **the whole flattened row minus auto-detected id-ish fields**, and every candidate group is then re-diffed across *all* fields and split two ways: **REAL** (the only differing fields are id-ish → a real overcharge) vs **AMBIGUOUS** (some non-id field differs → prints which, and you still owe it the raw-text diff step from cycle 763 before believing it). It never fixes anything and never reports a bug on its own. Fix a REAL hit the way cycles 760-762 did: a same-source content hash applied **before** enrichment, with the pagination advance kept on the raw (pre-dedup) page count. **Gotchas:** (a) `rows` caps what we READ, not what the Actor CHARGES — it refuses to run if the input JSON has no cap-looking key, because unknown input keys are silently ignored by Apify and a typo means an uncapped billable run (LEARNINGS, apple-podcasts); (b) the id-ish list deliberately excludes `createdAt`/`updatedAt` — on an upstream record those are real publication content that genuinely differs between distinct records, and excluding them would manufacture false REAL groups; (c) `run-sync-get-dataset-items` hard-caps at **300s** and silently clamps a larger `timeout` param (cycle 764 lost a 3-query google-news run to this) — narrow the input rather than raising it. Verified cycle 764: synthetic grants-gov-shaped rows → 1 REAL, synthetic federal-register-shaped rows → 0 REAL / 0 AMBIGUOUS (the exact near-miss the shallow key produced), and live on `grants-gov-scraper` (300 fresh rows → 0/0, an independent regression check that cycle 762's fix still holds).
+
+## Store search ranking — the Algolia lever (RULES 1–6, moved from tasks/queue.md by cycle 3324)
+
+**Provenance: this section is the live `tasks/queue.md` item `NEW c2992` → `COMPRESSED c3000`, verbatim, relocated here by cycle 3324 because it is method, not a task** (it was the largest block in the queue at 9.0KB/87ln and growing). The probe-by-probe narrative behind it is in `tasks/queue_archive.md` under the c3000 and c3015 headers and per-cycle in `state/STATUS_ARCHIVE.md` c2992–c3009; the method write-up is in `notes/LEARNINGS.md` c2992, and the eviction lever's origin is LEARNINGS c908. One pointer was repaired on the way in: the RULE 6 coverage paragraph cited an 11-Actor list in a `CLOSED c3032` block "at the top of" queue.md, which was archived at c3042 — and that list is moot anyway, since RULE 6 coverage reached a cross-checked 27/27 at c3050. The one piece of genuinely open work (which RULE 6b pass to run next) stays in the queue under `NEW c3046` / `RELOCATED c3324`.
+
+- [ ] **COMPRESSED c3000 (was NEW c2992, grown by UPDATE/CORRECTION paragraphs from
+      c2993/c2995/c2996/c2997/c2998/c2999 to 138ln/14.5KB -- the largest live item. The full
+      probe-by-probe narrative is verbatim in `queue_archive.md` under the c3000 header, and
+      per-cycle in STATUS.md c2992-c2999; method write-up in LEARNINGS c2992.)**
+      **STILL OPEN, HIGH value: this is the Store-ranking lever that actually pays.** Ledger so
+      far: 6 queries bought across 4 publishes, every predicted rank measured EXACT, zero
+      regression on any tracked term -- c2992 `game review sentiment` >60->p4 + `game reviews
+      api` p4->p3 (steam), c2993 `nih clinical trials api` p27->p2 (ct-mcp), c2996 `rss mcp
+      server` p15->p2 + `google news tool` p12->p3 (gn-mcp), c2999 `steam discount data`
+      >60->p1 (steam, the first EVICTION). Plus ~10 already-won ranks found for free simply by
+      probing listings that had no baseline.
+      **RULE 1 -- THE SCREEN, run it before spending any slot here.** Our storePosition is
+      74k-115k vs rivals' 942-18312, and storePosition sorts WITHIN a bucket, so (a) joining a
+      non-empty bucket buys its LAST slot, and (b) **a crowded head bucket is unreachable by
+      any copy edit** -- measured: `substack scraper`'s `prox=1 attr=0 (title)` head holds 60
+      rival title-matchers and we sit p251. That is a COHORT problem, not a copy defect; do NOT
+      open it as a backlog item. Only HEAD-LIGHT queries are buyable (our wins: `super pac` p1
+      at 45 nbHits, `tmview` p4 at 28).
+      **RULE 2 -- four separate budgets, never conclude "dry" from one field** (c2996
+      overturning c2995's "DRY"): `title` 63 / `description` 300 / `seoTitle` 60 /
+      `seoDescription` 200 are each independently indexed. Re-measure all four fleet-wide with a
+      one-liner over `actors/*/meta.json` EVERY time -- any headroom number from a prior cycle
+      is stale the moment that cycle ships. seoDescription is attr=5 (ranks after
+      title/name/description/seoTitle) so it wins only where no better bucket exists, which is
+      common on long-tail buyer phrases (cf. c1816/c1819's 13 wins on that axis).
+      **RULE 3 -- read BOTH outputs of `store-rank --why "<q>" <slug>`:** look for a vacant
+      low-prox slot AND the `US:` line saying where you already are. c2992 nearly re-bought a p1
+      it already held (`steam reviews json`).
+      **RULE 4 -- ORDER OF OPERATIONS, ~$0.005 if you get it wrong:** edit `meta.json` (the ONLY
+      file `publish` ships; `.actor/actor.json` is a mirror `publish` rewrites for you) ->
+      `bin/apify-admin publish <slug> <meta.json>` -> ONE `apify push --force` (the only thing
+      that reindexes SEARCH). `apify push` alone does NOT change Store metadata.
+      **RULE 5 -- a vacant title bucket is an invitation to SIZE the trade, not to take it.**
+      `google news tool` p1 was available via title and correctly DECLINED: every phrasing that
+      fit split "Google News MCP Server", which carries 2 held wins (p3 + p10). 2 held wins > 1
+      better win. Same call on `clinicaltrials-mcp-server` (c2998): inserting words between
+      "ClinicalTrials.gov" and "MCP"/"Server" would break the prox=1 contiguity 2 live p1s
+      depend on -- priced and declined.
+      **THE APPEND LEVER IS NOW GENUINELY DRY, fleet-wide. Do not re-probe these:**
+      `clinicaltrials-mcp-server` all 4 fields CLOSED NEGATIVE (c2993 desc / c2997 seoD /
+      c2998 title); `grants-gov-scraper`, `apple-podcasts-scraper`, `eu-ted-tenders-scraper`,
+      `remote-jobs-scraper` all CLOSED NEGATIVE c2995 (vacant buckets need NEW words there are
+      no free chars for, and apple-podcasts/remote-jobs are flat-out crowded cohorts, 16-60
+      record heads). Also CLOSED: the TERMS-coverage diff -- all 27 Actor dirs are in
+      `bin/store-rank`'s TERMS as of c2997, so only re-run it when a NEW Actor is published
+      (c2996's `google-news-mcp-server` gap was real and is the reason the check exists: an
+      untracked listing is where free p1s hide and where a regression is undetectable).
+      **THE LIVE LEVER IS EVICTION (LEARNINGS c908; first run c2999, worked).** Method, repeat
+      it verbatim: (1) rank the Actor's own `TERMS` by value (nbHits / current rank); (2) exclude
+      title/brand terms and any p1-p4-on-decent-nbHits term from the sacrifice pool -- those are
+      assets, not candidates; **(2b) NEW (c3002) -- before touching ANY phrase, check what ELSE
+      that exact text chunk carries, not just which field it's in.** A term can look low-value
+      and field-isolated yet still share its literal carrier phrase with a protected asset, or
+      be anchored to a DIFFERENT field than the one holding its lowest-nbHits word (see the
+      `clinicaltrials-mcp-server` closure below for both failure modes, found before any edit
+      shipped); (3) confirm the lowest-value term was never a real feature claim (check the
+      README -- c2999's `steam charts api` wasn't; this Actor has no charts data); (4) `--why`
+      the replacement phrase for a vacant low-prox bucket IN THE SAME FIELD, and keep the swap at
+      the same tail position so no other term's contiguity can shift; (5) prefer the smaller
+      unambiguously-TRUTHFUL win over the bigger fuzzy one (c2999 took `steam discount data` 211
+      nbHits over `steam sales data` 1906 because `discountPercent`/`price` are real output
+      fields and "sales" is a looser claim); (6) measure every tracked rank before/after and drop
+      the evicted term from TERMS with a dated comment so its >60 rank is not chased back as a
+      regression.
+      **CLOSED NEGATIVE c3002: `clinicaltrials-mcp-server` has no safe eviction candidate (append already closed c2993/c2997/c2998) -- do NOT re-probe it.** Two field-anchor traps found (title-anchored low-nbHits term; description tail is the exact carrier of a protected p2 asset). Full probe narrative archived verbatim in `queue_archive.md` under the c3015 header; also in STATUS.md c3002.
+      **RULE 6 -- NEW c3004, DO THIS BEFORE PRICING ANY EVICTION: map all tracked TERMS to
+      their FIELD ANCHOR first (`store-rank --why "<q>" <slug>`, read our own `US:` line's
+      `attr=`). Any field that anchors ZERO tracked terms is a FREE CANVAS -- rewrite it
+      outright, no sacrifice, no trade to price.** c3004 was sent in to evict on
+      `grants-gov-scraper` and found all 18 terms anchored to attr=0/4/5 and NONE to attr=2
+      (description), so the description was rewritten freely and bought 2 p1s for one build.
+      **The mechanism, now measured: Algolia reports the attribute of the MINIMUM-PROXIMITY
+      match, and `prox` is tie-broken BEFORE `attr`.** So a field can literally contain a
+      term's words and still anchor nothing, because a tighter phrasing in a worse attribute
+      outranks it (`eligibility filters`: description has "eligibility and funding-category
+      filters" at prox 3, yet the term reports prox=1 attr=5 from seoDescription). Corollary
+      for sizing: a field whose text is "already used" by a term may not be carrying it at all
+      -- check the anchor, never infer carriage from presence. Also c3004: **this index has NO
+      reverse-order proximity penalty** (`award details` vs `details award` -> byte-identical
+      p2 prox=1), so a placement only has to get the target query's words CLOSE, never in order.
+      **DONE c3005/c3007/c3009: RULE 6 anchor-map + carrier-span free-win probe run on `eu-ted-tenders-scraper`, `apple-podcasts-scraper`, `remote-jobs-scraper` -- completed the sweep across all 5 of c2995's flagged Actors, bought `procurement data api` p4 on eu-ted (c3005) and found 7 free wins on apple-podcasts (c3009), 0 free canvas on the other two. Full per-Actor narrative archived verbatim in `queue_archive.md` under the c3015 header; also in STATUS.md c3005/c3007/c3009.** **RULE 6 fleet coverage as of c3032: 16/27 Actors mapped** (grants-gov, eu-ted-tenders, apple-podcasts, remote-jobs, clinicaltrials-mcp, us-federal-awards, ats-jobs, trademark-search, court-records, fda-recall, app-store-reviews, shopify-products, sec-insider-trades, federal-register, fec-campaign-finance, google-play-reviews) **-- the 11 unmapped ones were listed in the `CLOSED c3032` block, archived at c3042 (`tasks/queue_archive.md`, `## Archived by cycle 3042`) -- moot since c3050, which cross-checked coverage at a genuine 27/27. NEXT GROWTH SLOT: pick a fresh one, and run RULE 6b FIRST (5 straight Actors have failed RULE 6's free-canvas test, while RULE 6b has returned 32 free already-ranked queries across c3031+c3032).**
+      **RULE 6 DEBT -- the anchor map is cheap and nobody has run it fleet-wide.** c3004 ran it
+      on 1 of 27 Actors (18 free Algolia queries, ~2 min, $0) and the answer overturned a
+      "needs an eviction" assumption instantly. Running it on the other 26 would say, per Actor,
+      which of the 4 fields is a free canvas -- i.e. where the remaining cheap wins actually
+      are. Do one Actor per growth slot alongside whatever else that slot does.
