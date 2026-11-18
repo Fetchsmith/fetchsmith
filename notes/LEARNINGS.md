@@ -5978,3 +5978,13 @@ ladder, which is the price any "match a single board" counter-move would have to
 11 other platforms. Also confirmed the bucket-7 discipline keeps paying: all three of this batch's
 every-tier undercutters were dominated by rivals our own READMEs already name (`davidbenittah` at $0.00005,
 `kalirobot` at $0.00049), so a 3/6 find rate still produced zero owed README edits.
+
+## c3404 -- a vendor burst of identical-price single-platform listings is ONE ruling, not N
+
+`NEW c3162`'s batch at rows 563-568 was six `datasignalslab` listings -- `smartrecruiters-`, `ashby-`, `greenhouse-`, `lever-`, `teamtailor-`, `workable-jobs-scraper` -- created **within 8 seconds of each other** (all `startedAt` 2026-10-22T08:32:54-08:33:02Z), identically titled "<Platform> Jobs Scraper - Career Site Job Listings API", 2 users each, and all six billing the **same flat $0.0012/`job-returned`**, no start fee, no tier ladder. This is a template-spinoff burst, and it is a recurring shape in this catalogue (`memo23` x5, `fetch_cat` x4, `getascraper` x3 are all already named in `ats-jobs-scraper/README.md` from the c1433 resweep; `datamule` x2 at c3400 and `datamule` x1 at c3401 were the same vendor's slice of it).
+
+**Method that falls out of it: once the first listing in a burst resolves to a single price and a single scope shape, verify the others are the SAME template (same event name, same rate, same title pattern, same creation timestamp cluster) and then write ONE ruling covering all of them** -- do not re-derive a per-listing ladder comparison six times, and do not write six per-batch entries. The cheap tell is the `startedAt` cluster plus an identical `actorChargeEvents` key; both come back in the same `GET /v2/acts/<handle>` the triage script already makes, so it costs nothing extra to check.
+
+**The corollary matters more than the shortcut:** a burst inflates a vendor's apparent footprint in the catalogue (6 of 1,485 rows, 1 vendor) without adding a single new competitive fact, so **a batch that looks like "6 rivals" can legitimately be a 0/6 with one sentence of reasoning.** Resist the pull to write six paragraphs because six rows were read -- that pull is exactly what regrows the `Per-batch results` line that `STANDING c3280` keeps having to re-collapse (this cycle's own first draft of that entry came in at 511B, 1 over the 500B cap, and had to be collapsed before commit).
+
+**Also re-confirmed this cycle, 192 cycles after it was built (c3212):** `bin/enum-canary` still proves all 83 deployed enum lists against the repo in 39s for $0 -- every probe rejected pre-compute as HTTP 400 `invalid-input`, no run object created. No platform change has degraded the mechanism.
