@@ -43,6 +43,23 @@ STOREFRONT_CODE = re.compile(r"\((\d{3})\)")
 PROXY_UPSTREAM_CODE = re.compile(r"UPSTREAM(\d{3})")
 KNOWN_TRANSIENT_STOREFRONT = {"403", "429"}
 KNOWN_TRANSIENT_PROXY = {"502", "504"}
+# Added c3369 (nightly 2026-11-18, grants-gov-scraper FAILED/0-items): the multi-source
+# `sources[].reason` shape above does not cover the fleet's OTHER shared RUN_SUMMARY
+# convention -- a single-source Actor's own `incompleteReason`/`incompleteDetail` pair
+# (confirmed shared verbatim, not grants-gov-only: clinicaltrials-scraper calls
+# `markIncomplete(failureReason('search-request-failed'), lastApiError)` with the exact
+# same reason string). Live-verified same cycle: grants.gov's OWN `/search2` endpoint
+# (not an Apify-proxy wrapper, so PROXY_UPSTREAM_CODE's "UPSTREAM503" shape never
+# appears here) answered 200/200/502 on three successive direct probes seconds apart --
+# genuinely time-varying upstream flakiness, not a code regression. Gated narrowly to
+# the ONE reason string that names an upstream HTTP-request failure (never
+# `charge-limit`/`max-results`/`time-budget`/`seed-cap`, which are caps the Actor hit on
+# purpose, not upstream faults) and to codes classically transient for a bare JSON API
+# (503 included here, unlike KNOWN_TRANSIENT_PROXY above, because there is no
+# storefront-side 503 being double-counted through a proxy wrapper on this shape).
+UPSTREAM_HTTP_CODE = re.compile(r"\bHTTP (\d{3})\b")
+KNOWN_TRANSIENT_UPSTREAM_API = {"502", "503", "504"}
+TRANSIENT_INCOMPLETE_REASONS = {"search-request-failed"}
 def inconclusive_blocked(slug):
     try:
         runs = httpx.get(f"{API}/acts/{user}~{slug}/runs", params={"token": T, "desc": "true", "limit": 1}, timeout=30).json()["data"]["items"]
@@ -50,18 +67,23 @@ def inconclusive_blocked(slug):
         kv_id = runs[0]["defaultKeyValueStoreId"]
         r = httpx.get(f"{API}/key-value-stores/{kv_id}/records/RUN_SUMMARY", params={"token": T}, timeout=30)
         if r.status_code != 200: return False
-        sources = r.json().get("sources")
-        if not isinstance(sources, list) or not sources: return False
-        for s in sources:
-            if not isinstance(s, dict): return False
-            if s.get("complete"): return False  # at least one source actually worked -- a real failure
-            reason = s.get("reason") or ""
-            m1 = STOREFRONT_CODE.search(reason)
-            m2 = PROXY_UPSTREAM_CODE.search(reason)
-            if m1 and m1.group(1) in KNOWN_TRANSIENT_STOREFRONT: continue
-            if m2 and m2.group(1) in KNOWN_TRANSIENT_PROXY: continue
-            return False  # a cause we didn't recognize -- don't soften it
-        return True
+        rs = r.json()
+        sources = rs.get("sources")
+        if isinstance(sources, list) and sources:
+            for s in sources:
+                if not isinstance(s, dict): return False
+                if s.get("complete"): return False  # at least one source actually worked -- a real failure
+                reason = s.get("reason") or ""
+                m1 = STOREFRONT_CODE.search(reason)
+                m2 = PROXY_UPSTREAM_CODE.search(reason)
+                if m1 and m1.group(1) in KNOWN_TRANSIENT_STOREFRONT: continue
+                if m2 and m2.group(1) in KNOWN_TRANSIENT_PROXY: continue
+                return False  # a cause we didn't recognize -- don't soften it
+            return True
+        if rs.get("incompleteReason") in TRANSIENT_INCOMPLETE_REASONS:
+            m = UPSTREAM_HTTP_CODE.search(rs.get("incompleteDetail") or "")
+            if m and m.group(1) in KNOWN_TRANSIENT_UPSTREAM_API: return True
+        return False
     except Exception:
         return False
 reg = json.load(open("/root/agent/actors/registry.json")).get("tools", [])
