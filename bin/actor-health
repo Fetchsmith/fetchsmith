@@ -20,10 +20,29 @@ T = env["APIFY_TOKEN"]; API = "https://api.apify.com/v2"; user = httpx.get(f"{AP
 # HTTP cause; read it back for the run that just happened (run-sync-get-dataset-items returns
 # no run-id header, so look up the most recent run for this Actor instead -- safe because
 # run.sh's lock keeps this to one worker/one run at a time) and, ONLY if every source's reason
-# names 403 or 429 and none succeeded, mark the result INCONCLUSIVE rather than FAILED. Any
-# other code (401/402/404/503/missing RUN_SUMMARY/anything we can't read) leaves `ok` exactly
-# as it was -- this can only soften a false alarm, never hide a real one.
+# names a known-transient storefront or proxy code and none succeeded, mark the result
+# INCONCLUSIVE rather than FAILED. Any other code (401/402/404/503-from-the-storefront/missing
+# RUN_SUMMARY/anything we can't read) leaves `ok` exactly as it was -- this can only soften a
+# false alarm, never hide a real one.
+#
+# Extended c3362 (FIX FAILED ACTORS, nightly 2026-11-18): the SAME reputation-block phenomenon
+# can also surface BELOW the storefront-status layer, as Apify Proxy's own synthetic `590`
+# wrapper failing to reach the origin at all (`"Proxy responded with 590 UPSTREAM504: 0 bytes"`)
+# -- no parenthesized code for STOREFRONT_CODE to catch, so this shape fell through to FAILED
+# even though it is literally the same stores (allbirds/gymshark/bombas, all three named in the
+# c2742 measurement above) going through the same time-varying block, just observed as a proxy
+# timeout instead of an explicit 403/429. Live re-check same cycle: deathwishcoffee/brooklinen/
+# rothys/nativecos all returned products through this Actor at the same moment allbirds/
+# gymshark/bombas all threw this exact message -- store-specific, not code-wide. Matched against
+# `PROXY_UPSTREAM_CODE` and gated to {502, 504} only -- the two codes actually measured live (502
+# here at c992/trademark-search-scraper's h913/h825/h826, 504 here at c3362) -- deliberately NOT
+# 503, since `UPSTREAM503` would just be the storefront's own 503 relayed through the proxy
+# wrapper, the one code the storefront-side rule above was written to keep OUT of the softened
+# set.
 STOREFRONT_CODE = re.compile(r"\((\d{3})\)")
+PROXY_UPSTREAM_CODE = re.compile(r"UPSTREAM(\d{3})")
+KNOWN_TRANSIENT_STOREFRONT = {"403", "429"}
+KNOWN_TRANSIENT_PROXY = {"502", "504"}
 def inconclusive_blocked(slug):
     try:
         runs = httpx.get(f"{API}/acts/{user}~{slug}/runs", params={"token": T, "desc": "true", "limit": 1}, timeout=30).json()["data"]["items"]
@@ -33,14 +52,16 @@ def inconclusive_blocked(slug):
         if r.status_code != 200: return False
         sources = r.json().get("sources")
         if not isinstance(sources, list) or not sources: return False
-        codes = set()
         for s in sources:
             if not isinstance(s, dict): return False
             if s.get("complete"): return False  # at least one source actually worked -- a real failure
-            m = STOREFRONT_CODE.search(s.get("reason") or "")
-            if not m: return False  # a cause we didn't recognize -- don't soften it
-            codes.add(m.group(1))
-        return codes and codes <= {"403", "429"}
+            reason = s.get("reason") or ""
+            m1 = STOREFRONT_CODE.search(reason)
+            m2 = PROXY_UPSTREAM_CODE.search(reason)
+            if m1 and m1.group(1) in KNOWN_TRANSIENT_STOREFRONT: continue
+            if m2 and m2.group(1) in KNOWN_TRANSIENT_PROXY: continue
+            return False  # a cause we didn't recognize -- don't soften it
+        return True
     except Exception:
         return False
 reg = json.load(open("/root/agent/actors/registry.json")).get("tools", [])
