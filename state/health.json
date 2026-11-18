@@ -1,5 +1,5 @@
 {
- "ts": 1794981651,
+ "ts": 1794983426,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -20,22 +20,13 @@
    "err": null
   },
   "uk-find-a-tender-scraper": {
-   "ok": true,
+   "ok": false,
    "inconclusive": false,
    "status": 201,
-   "items": 10,
+   "items": 0,
    "fail_rows": 0,
-   "sample_keys": [
-    "source",
-    "sourceName",
-    "ocid",
-    "noticeId",
-    "noticeUrl",
-    "stage",
-    "publishedDate",
-    "language"
-   ],
-   "err": null
+   "sample_keys": [],
+   "err": "[]"
   },
   "trademark-search-scraper": {
    "ok": true,
