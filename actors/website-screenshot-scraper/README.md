@@ -244,6 +244,26 @@ needed) — a built-in version of the `removeElements`/overlay-hiding feature `c
 `fetch_cat` charge 2x-4x more for. It has no raw-HTML input, OG-card preset, PDF export or
 diff mode in its live description — the same gap as every bare-capture rival named above.
 
+**Fourth real undercutter, and the new price floor in this niche, surfaced 2026-11-18 by the same
+vendor-catalogue triage:** `bepolabs/website-screenshot` (1 user) charges a flat **$0.00045 per
+saved file at every tier, with no start fee** — **4.4x below our flat $0.002**, and under every
+rival named above including `locaihost`'s $0.00089 and `code-node-tools`'s $0.001. Read from its
+live README rather than its Store title, the overlap is real and wide: full-page / first-screen /
+single-CSS-element capture, PNG, JPEG **and PDF** (and its PDF takes a page size — A4, Letter, A3
+or Legal — where ours renders at the captured viewport with no page-size input), four device
+presets (desktop 1440px, laptop 1280px @2x, tablet 820px, phone 390px @3x — matching our own four
+`desktop`/`iphone`/`pixel`/`ipad`; its README names no arbitrary-viewport option like our
+`custom` + `viewportWidth`/`viewportHeight`), a pre-capture scroll so lazy images load, your own
+CSS selectors to hide elements,
+automatic dismissal of eight named consent walls (OneTrust, Cookiebot, Didomi, Quantcast,
+Usercentrics, TrustArc, Google Funding Choices, Sourcepoint — a longer list than `factpipe`'s
+generic cookie-banner hiding), and the same failures-are-free billing shape we use. **What it does
+not have:** raw-HTML input (our `html`), the Open Graph 1200×630 card preset (our `ogCard`), and
+visual-diff mode (our `compareUrl`/`diffThreshold`/`diffRegionMinPixels`) — that last one is still
+the single feature no rival named on this page offers. For a buyer who only needs volume capture
+of live URLs, this is now the cheapest honest option in the niche; our case is the three features
+above plus per-row `byteSize`/status/final-URL reporting (verified live 2026-11-18).
+
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
 
