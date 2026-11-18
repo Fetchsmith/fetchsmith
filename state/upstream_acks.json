@@ -34,6 +34,39 @@
       "acked_date": "2026-10-27"
     },
     {
+      "fp": "337255cd0d00",
+      "slug": "shopify-products-scraper",
+      "handle": "asunoki/shopify-variant-reconciliation",
+      "verb": "migration",
+      "dates": [],
+      "context": "Shopify Variant Reconciliation: catalog migration audit Read-only audit of two Shopify product CSVs (before and after a migration, or last week's and this week's re-import): missi",
+      "note": "Keyword false positive, same shape as the existing practical_ai_lab_jp [migration] acks (c2388/c2436) and this cycle's pal-shopify-product-json-csv-export ack: the [migration] hit is the rival's own USE-CASE copy (comparing two Shopify product CSVs 'before and after a migration' for SKU/barcode reconciliation) -- a MERCHANT's own catalog migration audit, not a Shopify platform API change. Our upstream re-verified LIVE this cycle (c3398): curl of https://www.allbirds.com/products.json?limit=5 returned HTTP 200; no non-transient check-row-floor flag on shopify-products-scraper. Rival copy is permanent marketing text and would otherwise re-flag on every daily run.",
+      "acked_cycle": 3398,
+      "acked_date": "2026-11-18"
+    },
+    {
+      "fp": "67f5f16f22e7",
+      "slug": "shopify-products-scraper",
+      "handle": "practical_ai_lab_jp/pal-shopify-product-json-csv-export",
+      "verb": "migration",
+      "dates": [],
+      "context": "ts and variants to Excel-ready CSV/JSON. Audit missing SKUs and barcodes, prices and availability for catalog migration or merchandising QA. Up to 5 authorized storefronts; no admin login, protected inventory or customer data. NONE",
+      "note": "Keyword false positive, same shape as the existing practical_ai_lab_jp acks (0cb17d1f28cd/dc4d26a61d8d, c2388/c2436): the [migration] hit is the rival's own USE-CASE copy ('catalog migration or merchandising QA') -- a MERCHANT auditing their own catalog export, not a Shopify platform API migration/deprecation. Our upstream re-verified LIVE this cycle (c3398): curl of https://www.allbirds.com/products.json?limit=5 returned HTTP 200; bin/actor-health --only shopify-products-scraper returned a transient-proxy INCONCLUSIVE (status 201, known Apify-Proxy timeout shape, not a route change), and bin/check-row-floor found no non-transient flag on this Actor. Rival copy is permanent marketing text and would otherwise re-flag on every daily run.",
+      "acked_cycle": 3398,
+      "acked_date": "2026-11-18"
+    },
+    {
+      "fp": "8c4dd0250222",
+      "slug": "shopify-products-scraper",
+      "handle": "asunoki/shopify-variant-reconciliation",
+      "verb": "migration",
+      "dates": [],
+      "context": "riant Reconciliation: catalog migration audit Read-only audit of two Shopify product CSVs (before and after a migration, or last week's and this week's re-import): missing, duplicate and mismatched variants by SKU and barcode, with review files. Opt",
+      "note": "Keyword false positive, same shape as the existing practical_ai_lab_jp [migration] acks (c2388/c2436) and this cycle's pal-shopify-product-json-csv-export ack: the [migration] hit is the rival's own USE-CASE copy (comparing two Shopify product CSVs 'before and after a migration' for SKU/barcode reconciliation) -- a MERCHANT's own catalog migration audit, not a Shopify platform API change. Our upstream re-verified LIVE this cycle (c3398): curl of https://www.allbirds.com/products.json?limit=5 returned HTTP 200; no non-transient check-row-floor flag on shopify-products-scraper. Rival copy is permanent marketing text and would otherwise re-flag on every daily run.",
+      "acked_cycle": 3398,
+      "acked_date": "2026-11-18"
+    },
+    {
       "fp": "dc4d26a61d8d",
       "slug": "shopify-products-scraper",
       "handle": "practical_ai_lab_jp/pal-shopify-product-collection-export",

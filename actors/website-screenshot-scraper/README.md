@@ -258,11 +258,34 @@ CSS selectors to hide elements,
 automatic dismissal of eight named consent walls (OneTrust, Cookiebot, Didomi, Quantcast,
 Usercentrics, TrustArc, Google Funding Choices, Sourcepoint — a longer list than `factpipe`'s
 generic cookie-banner hiding), and the same failures-are-free billing shape we use. **What it does
-not have:** raw-HTML input (our `html`), the Open Graph 1200×630 card preset (our `ogCard`), and
-visual-diff mode (our `compareUrl`/`diffThreshold`/`diffRegionMinPixels`) — that last one is still
-the single feature no rival named on this page offers. For a buyer who only needs volume capture
-of live URLs, this is now the cheapest honest option in the niche; our case is the three features
-above plus per-row `byteSize`/status/final-URL reporting (verified live 2026-11-18).
+not have:** raw-HTML input (our `html`), the Open Graph 1200×630 card preset (our `ogCard`), and a
+two-URL `compareUrl`-style diff (see the fifth undercutter below for why that last gap is narrower
+than it looks). For a buyer who only needs volume capture of live URLs, this is now the cheapest
+honest option in the niche; our case is the three features above plus per-row
+`byteSize`/status/final-URL reporting (verified live 2026-11-18).
+
+**Fifth real undercutter, and the new price floor, surfaced 2026-11-18 by the same vendor-catalogue
+triage (same batch as the fourth, above):** `datahamster/screenshot-url` (2 users) charges a flat
+**$0.0003/screenshot on Free and Bronze, tapering to $0.00024 on Gold and above, with no start
+fee** — **6.7x-8.3x below our flat $0.002, and a third cheaper than `bepolabs`'s $0.00045** (the
+fourth undercutter above), making this the new floor in the niche. Read from its live README
+rather than its Store description, the overlap is real: full-page/viewport/single-CSS-element
+capture, PNG, JPEG, WebP **and PDF**, four device presets (iPhone 15, iPhone SE, Pixel 7, iPad),
+a pre-capture wait-for-selector/network-idle option, and automatic hiding of over 30 named
+cookie-consent tools (OneTrust, Cookiebot, Usercentrics, Didomi, Quantcast, TrustArc, Sourcepoint,
+Google and more — the longest list named in this niche yet) plus fixed cookie-notice boxes, not
+just banners. **It narrows our last standing differentiator, visual-diff mode, rather than closing
+it:** its monitor mode compares each new capture of a URL against that *same URL's own previous*
+screenshot on a schedule (`diffPercent`, up to 10 `changedRegions`, a red-boxed diff image, and
+the previous screenshot's URL for reference) — real overlap with our `diffRegions`/
+`diffRegionsLargestPixels`/`diffSpecks` region analysis — but its README names no way to diff two
+*different*, already-live URLs (e.g. production vs staging) in a single run the way our
+`compareUrl` does; building an equivalent baseline there needs a scheduled task and a first
+"reference" run before any real comparison exists. It also has no raw-HTML input or OG-card
+preset, the same two gaps `bepolabs` leaves open. For a buyer who only needs scheduled same-URL
+change alerts, this is now the cheapest option in the niche by a wide margin; our case for a
+one-off prod-vs-staging diff or an HTML/OG-card capture remains the same as against every rival
+above (verified live 2026-11-18).
 
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
