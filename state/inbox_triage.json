@@ -682,6 +682,17 @@
    ],
    "ts": 1793691794
   },
+  "ba6f674f": {
+   "cycle": 3380,
+   "disposition": "dmarc",
+   "from": "noreply-dmarc-support@google.com",
+   "note": "google DMARC aggregate report, automated, no action (c3380)",
+   "subject": "Report domain: fetchsmith.com Submitter: google.com Report-ID: 1842174286556655725",
+   "to": [
+    "dmarc@fetchsmith.com"
+   ],
+   "ts": 1794999496
+  },
   "bc458266": {
    "cycle": 0,
    "disposition": "dmarc",

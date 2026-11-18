@@ -147,9 +147,13 @@ def time_share(**over):
             rs[dotted] = val
     return rs
 check("real c3376 nightly (fts yielded + cf starved)", REAL_C3376, True)
-# (a) the reason string is the gate: a run that truly ran out of clock says `time-budget`
-# (main.js:1050) and must stay FAILED -- it is the slowdown c3372 refused to soften.
-check("time-share: time-budget reason not softened", time_share(incompleteReason="time-budget"), False)
+# (a) the reason string is the gate. REWRITTEN c3380: `time-budget` is no longer rejected on the
+# string alone (the c3380 block below softens its one benign shape), so this payload now stays
+# FAILED for the OTHER reason -- it carries `sliceExceeded: true`, a yield this Actor cannot emit
+# under `time-budget`. Both halves matter, so both are pinned: the string is still load-bearing
+# for every reason outside the two clock ones, and a claimed yield still blocks the new branch.
+check("time-share: time-budget reason + a claimed yield not softened",
+      time_share(incompleteReason="time-budget"), False)
 check("time-share: source-failed reason not softened", time_share(incompleteReason="source-failed"), False)
 check("time-share: reason absent", time_share(incompleteReason=None), False)
 # (b) one source worked -> 0 rows is a real signal, exactly as in the c3372 branch.
@@ -175,6 +179,73 @@ check("time-share: empty lastError alongside the yield", time_share(cf__lastErro
 # that genuinely errored stays FAILED. Pinned so neither branch quietly starts covering it.
 check("time-share: 502 alongside the yield stays FAILED in both branches",
       time_share(cf__lastError=BAD_GATEWAY), False)
+
+# --- c3380: the same 0-page double starve reported as `incompleteReason: "time-budget"` ---
+# REAL payload, verbatim from nightly run NGZEudAM87mFi9zEt (2026-11-18T10:31:35Z, SUCCEEDED,
+# 0 rows) -- the run that opened c3379's FIX FAILED ACTORS task against working code (an
+# immediate re-run returned 10 rows). Identical to REAL_C3376 except that NOBODY yielded: both
+# portals starved at 0 pages, so the first `markIncomplete` came from the `timeBudgetExceeded`
+# arm (main.js:1049) instead of the `sliceExceeded` one (main.js:1041).
+REAL_C3380 = {
+    "mode": "search",
+    "sources": {
+        "fts": {"label": "Find a Tender", "pages": 0, "scanned": 0, "delivered": 0,
+                "exhausted": False, "failed": True, "sliceExceeded": False, "lastError": STARVED},
+        "cf": {"label": "Contracts Finder", "pages": 0, "scanned": 0, "delivered": 0,
+               "exhausted": False, "failed": True, "sliceExceeded": False, "lastError": STARVED},
+    },
+    "sourcesRequested": ["fts", "cf"], "sourcesFailed": ["fts", "cf"],
+    "scanned": 0, "delivered": 0, "pages": 0, "pageCap": 50, "complete": False,
+    "incompleteReason": "time-budget",
+    "incompleteDetail": ("the run ran out of time after 0 page(s) with Find a Tender still "
+                         "paging; its remaining notices are missing from this run"),
+}
+def time_budget(**over):
+    """REAL_C3380 with one field overridden -- each call below is one gate condition."""
+    rs = {**REAL_C3380, "sources": {k: dict(v) for k, v in REAL_C3380["sources"].items()}}
+    for dotted, val in over.items():
+        if "__" in dotted:
+            src, field = dotted.split("__", 1)
+            rs["sources"][src][field] = val
+        else:
+            rs[dotted] = val
+    return rs
+check("real c3380 nightly (both portals starved at 0 pages)", REAL_C3380, True)
+# (a) every guard the c3376 branch already carried still applies on this reason string.
+check("time-budget: one portal ok", time_budget(cf__failed=False), False)
+check("time-budget: a portal did fetch a page", time_budget(fts__pages=2), False)
+check("time-budget: a portal did scan rows", time_budget(cf__scanned=15), False)
+# A 502 + starved sibling IS softened on this payload -- but by c3372's branch, not this one
+# (this one rejects the 502 as an unrecognized cause and falls through). Asserted True so the
+# hand-off between the two branches is pinned, and labelled so a future reader does not read it
+# as evidence that the c3380 branch accepts upstream errors. It does not: drop the 502 to an
+# unrecognized string instead (next check) and the whole classifier says FAILED.
+check("time-budget: 502 + starved sibling -- softened by the c3372 branch, not this one",
+      time_budget(fts__lastError=BAD_GATEWAY), True)
+check("time-budget: parse error not softened",
+      time_budget(cf__lastError="Unexpected token < in JSON at position 0"), False)
+check("time-budget: empty lastError", time_budget(fts__lastError=""), False)
+# (b) a claimed yield is a payload main.js cannot emit under this reason -- model mismatch, so
+# FAILED. Pinned on the STRUCTURED flag alone (message untouched) as well as on the message.
+check("time-budget: sliceExceeded flag alone blocks it", time_budget(fts__sliceExceeded=True), False)
+check("time-budget: yield message + flag blocks it",
+      time_budget(fts__sliceExceeded=True, fts__lastError=YIELDED), False)
+check("time-budget: yield message without the flag", time_budget(fts__lastError=YIELDED), False)
+# (c) a single source timing out at 0 pages held the whole clock itself -- the one-portal
+# slowdown c3372 refused to soften, so it stays FAILED even though the shape otherwise matches.
+check("time-budget: single source is not a race", {
+    **REAL_C3380, "sources": {"fts": dict(REAL_C3380["sources"]["fts"])},
+    "sourcesRequested": ["fts"], "sourcesFailed": ["fts"]}, False)
+# (d) the reason string is still load-bearing for every OTHER reason on this exact payload.
+check("time-budget: source-failed on the starved payload falls through",
+      time_budget(incompleteReason="source-failed"), False)
+check("time-budget: a cap on the starved payload", time_budget(incompleteReason="charge-limit"), False)
+check("time-budget: reason absent", time_budget(incompleteReason=None), False)
+# (e) the c3376 payload must NOT have become reason-agnostic: `source-time-share` still demands
+# a yield, so the double starve under THAT string stays FAILED (the c3376 (e) control, re-pinned
+# here because the two branches now share one function and one could leak into the other).
+check("time-budget: double starve under source-time-share still FAILED",
+      time_budget(incompleteReason="source-time-share"), False)
 
 # --- the two pre-existing shapes must still behave exactly as c2743/c3362/c3369 left them ---
 check("list: all reasons transient storefront", {"sources": [
@@ -213,5 +284,5 @@ if FAILS:
     for f in FAILS:
         print("  " + f)
     sys.exit(1)
-print("ALL PASS -- actor-health INCONCLUSIVE classifier: 4 RUN_SUMMARY shapes, "
-      "3 real recorded payloads, 23 negative controls.")
+print("ALL PASS -- actor-health INCONCLUSIVE classifier: 5 RUN_SUMMARY shapes, "
+      "4 real recorded payloads, 37 negative controls.")

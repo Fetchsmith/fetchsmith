@@ -119,10 +119,40 @@ STARVED_BY_SIBLING_STALL = "run-timeout budget exceeded"
 #     sibling that never got to make a request. Any other cause is unrecognized, hence FAILED.
 SLICE_YIELD_PREFIX = "stopped early to leave run time for"
 TIME_SHARE_REASON = "source-time-share"
+# Extended c3380 (nightly 2026-11-18, uk-find-a-tender-scraper FAILED/0-items a THIRD time --
+# run NGZEudAM87mFi9zEt, fourth shape in the c3362/c3369/c3372/c3376 series). Byte-for-byte the
+# same benign payload the c3376 branch above was written for -- BOTH portals `failed: true` with
+# `pages: 0, scanned: 0` and `lastError: "run-timeout budget exceeded"`, nothing fetched, nothing
+# parsed -- but reported under this Actor's OTHER clock reason: `incompleteReason: "time-budget"`
+# (main.js:1049) instead of `"source-time-share"` (main.js:1041). Which string you get is decided
+# purely by WHICH stop the first-cause-wins `markIncomplete` saw first: a source cut off so its
+# sibling could still be tried says `source-time-share`, a source still paging when the real run
+# clock expired says `time-budget`. c3376's branch is gated on the exact string, so this run read
+# FAILED. Confirmed not a code fault the same cycle: an immediate `--only` re-run returned
+# `ok: true, items: 10` seconds later.
+# Gating, deliberately NARROWER than "accept both reason strings" -- `time-budget` is also the
+# string on c3372's GENUINE one-portal slowdown, which must stay FAILED:
+#   - Every condition the `source-time-share` path already demands still applies unchanged
+#     (every source failed; every source fetched NOTHING, so no capture/parse path ran and a
+#     filter/parse regression is off the table; no unrecognized failure cause anywhere).
+#   - The yield must be ABSENT, checked on the structured `sliceExceeded` flag and not the text.
+#     Under `time-budget` a claimed yield is a payload this Actor cannot emit (the first source to
+#     set `sliceExceeded` calls `markIncomplete('source-time-share')` on the spot, and once the
+#     real clock is gone every later stop takes the `timeBudgetExceeded` arm), so seeing one means
+#     our model of main.js is wrong -- the one situation where softening is least defensible.
+#   - At least TWO sources must be in the map. With a single source there is no sibling that could
+#     have taken the clock, so "timed out before page 1" IS that portal's own slowdown -- exactly
+#     what c3372 refused to soften. The health check runs both portals (test_input.json sets no
+#     `sources`), so this costs nothing on the shape actually observed.
+TIME_BUDGET_REASON = "time-budget"
 def time_share_race(rs, sources):
     """True only for a 0-page, 0-row run in which the portals did nothing but hand the clock
-    to each other -- see the gating notes above. Pure; selftested in bin/_actor_health_selftest.py."""
-    if rs.get("incompleteReason") != TIME_SHARE_REASON: return False
+    to each other (`source-time-share`) or ran out of it before either fetched a page
+    (`time-budget`, c3380) -- see the gating notes above. Pure; selftested in
+    bin/_actor_health_selftest.py."""
+    reason = rs.get("incompleteReason")
+    if reason not in (TIME_SHARE_REASON, TIME_BUDGET_REASON): return False
+    if reason == TIME_BUDGET_REASON and len(sources) < 2: return False  # c3380, gated above
     saw_yield = False
     for s in sources.values():
         if not isinstance(s, dict): return False
@@ -135,6 +165,10 @@ def time_share_race(rs, sources):
             continue
         if err == STARVED_BY_SIBLING_STALL: continue  # never got to make a request
         return False  # a cause we didn't recognize -- don't soften it
+    if reason == TIME_BUDGET_REASON:
+        # No source may claim the deliberate yield, by flag or by message -- an unemittable
+        # payload, so treat it as a model mismatch and leave the run FAILED.
+        return not (saw_yield or any(s.get("sliceExceeded") for s in sources.values()))
     return saw_yield
 def classify_inconclusive(rs):
     """Pure predicate over a RUN_SUMMARY record: may this 0-row run be softened to INCONCLUSIVE?
