@@ -88,6 +88,54 @@ TRANSIENT_INCOMPLETE_REASONS = {"search-request-failed"}
 #     that function's other wall-clock stop ('stopped early to leave run time for the other
 #     portal'), where the sibling did get its slice.
 STARVED_BY_SIBLING_STALL = "run-timeout budget exceeded"
+# Added c3376 (nightly 2026-11-18, uk-find-a-tender-scraper FAILED/0-items AGAIN -- run
+# VYGUmIoWSzqZS0BDe, third shape in the c3362/c3369/c3372 series). Same per-source MAP as
+# c3372, but with NO upstream error anywhere: `fts` was stopped at 0 pages with
+# `sliceExceeded: true` so `cf` could have a turn (main.js:824/841), then `cf` hit
+# `run-timeout budget exceeded` before its first request, and the run ends
+# `incompleteReason: "source-time-share"` (main.js:1041) with 0 rows. c3372's branch needs at
+# least one classically-transient HTTP code, so a pure two-portal clock race fell through to
+# FAILED. Live-verified at c3375 that this is NOT a regression: direct probes of both origins
+# returned 200/200 and two manual `--only` re-runs each delivered 10 rows from `fts` -- the
+# race is against the health check's deliberately tight 180s `health_timeout_secs`, a budget
+# ~20x smaller than the Actor's real 3600s production timeout.
+# Gating, deliberately narrower than the queue item asked for -- a clock-only stop is exactly
+# the case c3372 refused to soften ("a genuine slowdown worth investigating"), so this branch
+# must not re-open that door by text alone:
+#   - `incompleteReason` must be EXACTLY `source-time-share`. The Actor's first-cause-wins
+#     `markIncomplete` reserves that string for the sibling-yield path; a run that truly ran
+#     out of clock reports `time-budget` and stays FAILED.
+#   - EVERY source must have `failed: true` (same reason as the c3372 branch: one working
+#     source means the capture path works and 0 rows is a real signal).
+#   - EVERY source must have fetched NOTHING (`pages`/`scanned` both 0). This is what keeps a
+#     real slowdown visible: if any portal did fetch and parse a page and still delivered 0
+#     rows, the capture path ran, so a filter/parse regression is on the table and the run
+#     must stay FAILED no matter what stopped the siblings. Both sources read 0/0 in the real
+#     payload, so softening the run that motivated this costs nothing.
+#   - At least ONE source must carry the yield stop, and trusted via the STRUCTURED
+#     `sliceExceeded` flag, not just the message (c3372's hard-won lesson: `lastError` is
+#     never cleared, so error text alone is not evidence of this run's outcome).
+#   - Every remaining failure may only be `run-timeout budget exceeded` -- the yielded-to
+#     sibling that never got to make a request. Any other cause is unrecognized, hence FAILED.
+SLICE_YIELD_PREFIX = "stopped early to leave run time for"
+TIME_SHARE_REASON = "source-time-share"
+def time_share_race(rs, sources):
+    """True only for a 0-page, 0-row run in which the portals did nothing but hand the clock
+    to each other -- see the gating notes above. Pure; selftested in bin/_actor_health_selftest.py."""
+    if rs.get("incompleteReason") != TIME_SHARE_REASON: return False
+    saw_yield = False
+    for s in sources.values():
+        if not isinstance(s, dict): return False
+        if not s.get("failed"): return False
+        if (s.get("pages") or 0) or (s.get("scanned") or 0): return False
+        err = s.get("lastError") or ""
+        if err.startswith(SLICE_YIELD_PREFIX):
+            if not s.get("sliceExceeded"): return False  # trust the flag, not the text
+            saw_yield = True
+            continue
+        if err == STARVED_BY_SIBLING_STALL: continue  # never got to make a request
+        return False  # a cause we didn't recognize -- don't soften it
+    return saw_yield
 def classify_inconclusive(rs):
     """Pure predicate over a RUN_SUMMARY record: may this 0-row run be softened to INCONCLUSIVE?
 
@@ -107,6 +155,7 @@ def classify_inconclusive(rs):
             return False  # a cause we didn't recognize -- don't soften it
         return True
     if isinstance(sources, dict) and sources:
+        if time_share_race(rs, sources): return True  # c3376, gated above
         saw_transient_upstream = False
         for s in sources.values():
             if not isinstance(s, dict): return False
