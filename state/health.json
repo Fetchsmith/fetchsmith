@@ -1,5 +1,5 @@
 {
- "ts": 1794990631,
+ "ts": 1794997866,
  "results": {
   "court-records-scraper": {
    "ok": true,
@@ -86,7 +86,7 @@
    "ok": true,
    "inconclusive": false,
    "status": 201,
-   "items": 8,
+   "items": 9,
    "fail_rows": 0,
    "sample_keys": [
     "title",
