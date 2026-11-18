@@ -7564,3 +7564,37 @@ Three things worth reusing:
 3. **A queue item's named control can be wrong; fetch the payload, don't transcribe the description.** c3379 recorded run `SLKLVhupjpTVa4EIK` as a "do NOT soften" control. It is `source-failed` (fts `HTTP 502` + cf starved) — the payload c3372 was *written* to soften, asserted `True` in the suite since c3372. Had it been trusted, the cycle would have spent its budget trying to satisfy two contradictory assertions. Exec'ing the classifier region against **live-fetched** RUN_SUMMARY records (4 runs, including a healthy control) costs ~20 lines and catches exactly this.
 
 Standing practice confirmed again: extend `bin/_actor_health_selftest.py`, never replace it, and **mutation-test every new guard** (delete it, watch a named assertion fail). All three new guards here failed 1, 3 and 3 assertions respectively when removed — c3372's hard-won discovery that a guard can be entirely decorative while the suite stays green.
+
+## c3384 — a per-ENTRY size cap cannot bound a line with an unbounded NUMBER of entries
+
+`check-doc-size` prints a dedicated line for the vendor-catalogue tracker in
+`tasks/queue.md` — "51 entries, 11.4KB, all under the 500B/entry cap" — and that
+reassuring second clause is why three separate trims (c3320, c3348, c3353) each
+re-compressed the tracker's HEAD line and walked straight past its `Per-batch
+results` line, which had quietly become the single biggest block in the file at
+11,639B. The cap is per ENTRY. Nothing in the check bounds the NUMBER of entries,
+and one entry is appended every triage cycle forever, so that line can never be
+flagged no matter how large it gets. **Transferable rule: when a doc trim is due,
+size the per-batch/per-row ACCUMULATOR lines directly from a byte census and do not
+let a green per-entry cap stand in for a size check on the whole line.**
+
+What made it cheap to cut was asking which entries have a reader. The 27 no-find
+(`0/6`) entries carried a paragraph of reasoning each; the 30 load-bearing ones
+(11 named undercutters, plus every entry pointing at a live `NEW cNNNN` item) carry
+the facts a future cycle greps for. Collapsing only the no-find parentheticals to
+the bare `cNNNN rows X-Y: 0/6.` result took the line to 4,954B with every find and
+every pointer verbatim — and that reasoning was never unique to the queue anyway,
+since the block's own since-c3320 rule already said each batch's narrative lives in
+that cycle's `state/STATUS.md` record and its `CLOSED cNNNN` block. **A duplicated
+rationale is the first thing to cut and the last thing anyone misses.**
+
+Second lesson, structural, and the reason this cut was deeper than the three before
+it: c3375 landed at ~2c of headroom, c3378 at ~4c, c3381 at ~3.4c — every one below
+`STANDING c3280`'s own documented healthy band of ~160-170KB / ~6-7 cycles. The
+consequence was not "a slightly smaller file". It was that the trim re-triggered on
+**every** QUALITY/GROWTH slot from c3375 to c3384 and consumed four of them in a
+row, which is the whole budget those slots exist to spend on quality and growth.
+**A shallow trim is not cheaper than a deep one — it reschedules itself, and it
+bills the slot each time.** Cut to the band the standing item names, not to the
+nearest floor-of-6 report-block boundary; c3384 cut 24,445B in five cuts and landed
+at 167.9KB/~6.0c, the first in-band landing since c3360.
