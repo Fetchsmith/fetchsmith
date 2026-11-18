@@ -100,6 +100,19 @@ An app's average rating hides the shape of its distribution: 4.5 stars from most
 
 Useful for a 1★-share trend line over releases, for weighting sentiment against how many silent raters actually sit behind a review, and for competitor comparisons where two apps show the same average.
 
+## Per-release rating distribution
+Every review row already carries `version` — the app release the reviewer had installed when they rated it (Apple's own `im:version` field, not something we add). Group by `version` and you get a per-release rating distribution for free, no extra request or field needed:
+
+```js
+const byVersion = {};
+for (const r of reviews) {
+  (byVersion[r.version] ??= []).push(r.rating);
+}
+// byVersion["3.42.0"] -> [5, 4, 5, 1, 5, ...] -> average, 1★ share, count per release
+```
+
+This is how you catch a bad release in the data: a version with a normal review count but a 1★ share far above the app's overall rate. `ratingBreakdown` (above) is app-wide, not per-release — this is the per-release view, built from the same rows you're already paying for.
+
 ## Pricing
 `result` — charged per review returned, tiered by your Apify account plan from $0.0001 (Free) down to
 $0.00007 (Gold and up). **The first 10 reviews of every run are free, no matter your plan or how many
