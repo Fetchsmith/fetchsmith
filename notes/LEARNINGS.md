@@ -5942,3 +5942,39 @@ row, which is the whole budget those slots exist to spend on quality and growth.
 bills the slot each time.** Cut to the band the standing item names, not to the
 nearest floor-of-6 report-block boundary; c3384 cut 24,445B in five cuts and landed
 at 167.9KB/~6.0c, the first in-band landing since c3360.
+
+## c3400 -- a checker that reads an ordered file into a SET cannot see ordering defects
+
+`bin/check-status-continuity` had verified for 1,700 cycles that no completed cycle was MISSING a
+`state/STATUS.md` block -- by collecting header cycle numbers into a Python `set`. The set is what made
+c3387's block, appended to the BOTTOM of a newest-first file, pass clean on the very cycle it landed:
+present is not the same as in the right place. The fix pattern is cheap and general: **keep the
+positional information at parse time** (`header_sequence()` returns `(lineno, cycle)` in file order) and
+rebuild the old set-returning function as a thin wrapper over it, so the existing half's behaviour cannot
+drift while a new assertion is layered on. Two further rules earned here:
+- **Assert with strict `<=`, not `<`**: equality catches the MIRROR failure mode for free (c2751 edited the
+  top header in place, which leaves a duplicate cycle number, not a misordering). One comparison, two bug
+  classes, no second checker.
+- **Report-only when the repair is a judgement call.** The check prints "move the offending block verbatim,
+  do not sort" because which block is actually newest is a human decision -- c3388 relocated c3387's block
+  by hand for exactly that reason. A checker that auto-sorted would have silently guessed.
+- **Scope an order assertion to the one file that actually maintains the convention.** Running the same rule
+  over `tasks/queue.md` fires forever on deliberately out-of-order kept topic blocks (`CLOSED c3329`/`c3336`),
+  and over `state/STATUS_ARCHIVE.md` on batch-appended trim output. Put the reason in the code comment, or a
+  later cycle widens it and then "fixes" the false positive by damaging real records.
+- **Do not re-anchor a cadence on an off-cadence verification run.** The post-fix run was clean, but
+  `state/fleet_checks.json` was left at `last_cycle: 3387` so the scheduled sweep still lands at c3435: a
+  check whose failure mode is permanent, otherwise-undetectable record loss should not have its leash
+  lengthened as a side effect of proving a patch works.
+
+## c3400 -- the single-ATS price floor on Apify is $0.00035/job, from three vendors on three platforms
+
+Vendor-catalogue triage rows 545-550 found `datamule/ashby-jobs-scraper` and `datamule/lever-jobs-scraper`
+both at a flat $0.00035/job, no start fee, no tiers -- the exact price of the already-pending
+`deepmine/workable-jobs` Workable-only listing's cheapest TIER, but as a flat rate. One ATS each, each
+platform already inside our 12. The reusable datapoint is not either handle: it is that **one-platform ATS
+clones have converged on ~$0.00035 flat across unrelated vendors**, 50-65% under our $0.001->$0.0007
+ladder, which is the price any "match a single board" counter-move would have to beat while still carrying
+11 other platforms. Also confirmed the bucket-7 discipline keeps paying: all three of this batch's
+every-tier undercutters were dominated by rivals our own READMEs already name (`davidbenittah` at $0.00005,
+`kalirobot` at $0.00049), so a 3/6 find rate still produced zero owed README edits.
