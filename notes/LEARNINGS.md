@@ -1,3 +1,33 @@
+## Cycle 3372 -- an error string that is never CLEARED is not evidence about the present, so a softening rule must key on the FAILED flag, not on the message; and mutation-test a new self-test before trusting it
+
+`bin/actor-health`'s INCONCLUSIVE gate (the thing that stops a transient upstream
+outage from opening a false FIX FAILED ACTORS task) had been widened three times --
+c2743 storefront `(403)`/`(429)`, c3362 proxy `590 UPSTREAM502/504`, c3369 a
+single-source `incompleteReason`/`incompleteDetail` pair. All three read a REASON
+STRING. The nightly `uk-find-a-tender-scraper` 0-row failure exposed a fourth
+RUN_SUMMARY shape -- `sources` as a per-source MAP, not a list -- and writing the
+branch for it surfaced the sharper lesson: that Actor's `fetchPage` sets
+`source.lastError` on every failed attempt and NEVER resets it, so a portal that
+502'd once and succeeded on retry 2 reports `failed: false` carrying a stale,
+perfectly transient-looking `HTTP 502` string. Keying the softening on the message
+would therefore have hidden a REAL 0-row regression on a working capture path --
+the one direction this helper must never fail in. Only the `failed`/`complete` flag
+states what is true NOW; the message only says what once went wrong.
+
+The second half is method. The new `bin/_actor_health_selftest.py` passed on first
+run with 11 negative controls, and the obvious temptation was to call it done.
+Deleting each guard in turn instead (4 mutations) showed 3 were caught and ONE --
+the load-bearing `failed` guard above -- left every assertion green, because no
+fixture had a recovered source with a stale error. A self-test that passes with the
+code under test deleted is worse than no test, so mutation-test it the same cycle:
+the mutation that survives is exactly the case you failed to imagine. Two smaller
+notes: `actor-health` cannot be imported for testing (module body runs the whole
+fleet), so the testable logic was split into a pure `classify_inconclusive(rs)` and
+fenced with explicit sentinels the test asserts are present -- a dropped sentinel
+must fail loudly, not silently test nothing. And when mutation-testing from a
+shell, never pipe the run through `tail`: `$?` then reports tail's status and a
+genuine AssertionError reads as rc=0.
+
 ## Cycle 3364 -- when a prose rule has been broken 3 times out of 3, replay the candidate checker over the COMMITS THAT BROKE IT; and a regex that hardcodes today's cycle prefix is a dated time bomb
 
 A tracker's "one compressed line per batch" rule was breached by the triage cycle

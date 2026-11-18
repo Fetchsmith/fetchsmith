@@ -39,6 +39,9 @@ T = env["APIFY_TOKEN"]; API = "https://api.apify.com/v2"; user = httpx.get(f"{AP
 # 503, since `UPSTREAM503` would just be the storefront's own 503 relayed through the proxy
 # wrapper, the one code the storefront-side rule above was written to keep OUT of the softened
 # set.
+# --- selftest region start (execed verbatim by bin/_actor_health_selftest.py; it needs only
+# `re`, so keep everything down to the matching end sentinel free of network, token and
+# filesystem access -- that is what lets the classifier be regression-tested for free) ---
 STOREFRONT_CODE = re.compile(r"\((\d{3})\)")
 PROXY_UPSTREAM_CODE = re.compile(r"UPSTREAM(\d{3})")
 KNOWN_TRANSIENT_STOREFRONT = {"403", "429"}
@@ -60,6 +63,67 @@ KNOWN_TRANSIENT_PROXY = {"502", "504"}
 UPSTREAM_HTTP_CODE = re.compile(r"\bHTTP (\d{3})\b")
 KNOWN_TRANSIENT_UPSTREAM_API = {"502", "503", "504"}
 TRANSIENT_INCOMPLETE_REASONS = {"search-request-failed"}
+# Added c3372 (nightly 2026-11-18, uk-find-a-tender-scraper FAILED/0-items). A THIRD shared
+# RUN_SUMMARY shape, missed by both branches above: `sources` as a per-source MAP
+# ({fts: {label, pages, delivered, failed, lastError}, cf: {...}}, built by that Actor's
+# `sources: Object.fromEntries(cursors.map(...))`), not a list of `{complete, reason}`. The list
+# branch is typed on `isinstance(list)` so it skipped the map entirely, and the fallthrough
+# needs `incompleteReason == 'search-request-failed'` whereas the multi-source convention here
+# is `source-failed` -- so a pure upstream outage was reported as a code failure.
+# Live-diagnosed that cycle from the failing run's own record: Find a Tender answered
+# `HTTP 502: <html>...502 Bad Gateway...` on page 0 (its OWN origin, no Apify-proxy wrapper, so
+# PROXY_UPSTREAM_CODE never matches here) and its retry ladder then burned the run-timeout
+# budget, leaving Contracts Finder starved at `run-timeout budget exceeded` before its first
+# request. 30 minutes later the identical input returned 10 rows with BOTH portals
+# `failed: false` -- time-varying portal flakiness, not a regression.
+# Gating, deliberately narrow (same doctrine as c3369):
+#   - EVERY source in the map must have failed. One source with `failed: false` means the
+#     capture path works and a 0-row run is a real signal (empty window or a filter/parse
+#     regression) -- exactly what the list branch's `complete` test preserves.
+#   - At least ONE failure must name a classically-transient upstream code, so a run that only
+#     ran out of clock (a genuine slowdown worth investigating) is never softened.
+#   - The remaining failures may only be `run-timeout budget exceeded`, which `fetchPage` sets
+#     purely off the wall clock (main.js:822/839) and which is never evidence of a parse fault:
+#     it is the stalled sibling's collateral damage, not an independent cause. NOT extended to
+#     that function's other wall-clock stop ('stopped early to leave run time for the other
+#     portal'), where the sibling did get its slice.
+STARVED_BY_SIBLING_STALL = "run-timeout budget exceeded"
+def classify_inconclusive(rs):
+    """Pure predicate over a RUN_SUMMARY record: may this 0-row run be softened to INCONCLUSIVE?
+
+    Separated from the fetch in c3372 so the three shapes can be regression-tested offline
+    against real recorded payloads -- see bin/_actor_health_selftest.py."""
+    if not isinstance(rs, dict): return False
+    sources = rs.get("sources")
+    if isinstance(sources, list) and sources:
+        for s in sources:
+            if not isinstance(s, dict): return False
+            if s.get("complete"): return False  # at least one source actually worked -- a real failure
+            reason = s.get("reason") or ""
+            m1 = STOREFRONT_CODE.search(reason)
+            m2 = PROXY_UPSTREAM_CODE.search(reason)
+            if m1 and m1.group(1) in KNOWN_TRANSIENT_STOREFRONT: continue
+            if m2 and m2.group(1) in KNOWN_TRANSIENT_PROXY: continue
+            return False  # a cause we didn't recognize -- don't soften it
+        return True
+    if isinstance(sources, dict) and sources:
+        saw_transient_upstream = False
+        for s in sources.values():
+            if not isinstance(s, dict): return False
+            if not s.get("failed"): return False  # a source actually worked -- a real failure
+            err = s.get("lastError") or ""
+            m = UPSTREAM_HTTP_CODE.search(err)
+            if m and m.group(1) in KNOWN_TRANSIENT_UPSTREAM_API:
+                saw_transient_upstream = True
+                continue
+            if err == STARVED_BY_SIBLING_STALL: continue  # never got to make a request
+            return False  # a cause we didn't recognize -- don't soften it
+        return saw_transient_upstream
+    if rs.get("incompleteReason") in TRANSIENT_INCOMPLETE_REASONS:
+        m = UPSTREAM_HTTP_CODE.search(rs.get("incompleteDetail") or "")
+        if m and m.group(1) in KNOWN_TRANSIENT_UPSTREAM_API: return True
+    return False
+# --- selftest region end ---
 def inconclusive_blocked(slug):
     try:
         runs = httpx.get(f"{API}/acts/{user}~{slug}/runs", params={"token": T, "desc": "true", "limit": 1}, timeout=30).json()["data"]["items"]
@@ -67,23 +131,7 @@ def inconclusive_blocked(slug):
         kv_id = runs[0]["defaultKeyValueStoreId"]
         r = httpx.get(f"{API}/key-value-stores/{kv_id}/records/RUN_SUMMARY", params={"token": T}, timeout=30)
         if r.status_code != 200: return False
-        rs = r.json()
-        sources = rs.get("sources")
-        if isinstance(sources, list) and sources:
-            for s in sources:
-                if not isinstance(s, dict): return False
-                if s.get("complete"): return False  # at least one source actually worked -- a real failure
-                reason = s.get("reason") or ""
-                m1 = STOREFRONT_CODE.search(reason)
-                m2 = PROXY_UPSTREAM_CODE.search(reason)
-                if m1 and m1.group(1) in KNOWN_TRANSIENT_STOREFRONT: continue
-                if m2 and m2.group(1) in KNOWN_TRANSIENT_PROXY: continue
-                return False  # a cause we didn't recognize -- don't soften it
-            return True
-        if rs.get("incompleteReason") in TRANSIENT_INCOMPLETE_REASONS:
-            m = UPSTREAM_HTTP_CODE.search(rs.get("incompleteDetail") or "")
-            if m and m.group(1) in KNOWN_TRANSIENT_UPSTREAM_API: return True
-        return False
+        return classify_inconclusive(r.json())
     except Exception:
         return False
 reg = json.load(open("/root/agent/actors/registry.json")).get("tools", [])
