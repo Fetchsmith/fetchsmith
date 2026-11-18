@@ -53,13 +53,26 @@ LOG = "/root/agent/logs/worker.log"
 HEADER_RE = re.compile(r"^\w+:.*?by cycle (\d+)|^PRIOR \(cycle (\d+)", re.MULTILINE)
 
 
-def header_cycles(path):
+def header_sequence(path):
+    """Block cycle numbers in FILE ORDER (with 1-based line numbers), not a set.
+
+    Cycle 3400: added for the ORDER half of this check (queue item `NEW c3388`).
+    state/STATUS.md is newest-first, so the sequence must be strictly descending;
+    c3387 appended its block to the BOTTOM and no checker noticed, because the
+    MISSING half below reads header cycles as a SET and a misplaced block is still
+    present. Line numbers are carried so the report names where to look.
+    """
     with open(path) as f:
         text = f.read()
-    out = set()
+    out = []
     for m in HEADER_RE.finditer(text):
-        out.add(int(m.group(1) or m.group(2)))
+        lineno = text.count("\n", 0, m.start()) + 1
+        out.append((lineno, int(m.group(1) or m.group(2))))
     return out
+
+
+def header_cycles(path):
+    return set(c for _, c in header_sequence(path))
 
 
 def completed_cycles():
@@ -68,8 +81,18 @@ def completed_cycles():
     return set(int(n) for n in re.findall(r"cycle=(\d+) rc=0", text))
 
 
+def order_violations(seq):
+    """Pairs of ADJACENT blocks that are not strictly descending (newest-first)."""
+    return [
+        (seq[i], seq[i + 1])
+        for i in range(len(seq) - 1)
+        if seq[i][1] <= seq[i + 1][1]
+    ]
+
+
 def main():
-    live = header_cycles(STATUS)
+    live_seq = header_sequence(STATUS)
+    live = set(c for _, c in live_seq)
     archived = header_cycles(ARCHIVE)
     if not live:
         print("No block headers found in STATUS.md -- check the regex, don't trust this run.")
@@ -86,16 +109,39 @@ def main():
     expected = {c for c in done if lo <= c <= hi}
     missing = sorted(expected - retained)
 
+    # ORDER half (cycle 3400, queue `NEW c3388`). LIVE FILE ONLY, deliberately:
+    # STATUS_ARCHIVE.md is a different shape (trimmed-off ranges appended in batches,
+    # so its own block order is not a convention anybody maintains), and tasks/queue.md
+    # has legitimately out-of-order kept TOPIC blocks near its foot (`CLOSED c3329`,
+    # `CLOSED c3336`) that would make it fire forever. Report only; this is NOT a
+    # reorder tool -- deciding which block is newest is a judgement call (c3388 moved
+    # c3387's block by hand for exactly that reason).
+    disorder = order_violations(live_seq)
+
     print(f"Retained block window: cycle {lo}..{hi} ({len(retained)} blocks found).")
     print(f"Successfully-completed cycles in that window (worker.log rc=0): {len(expected)}.")
+    print(f"STATUS.md block order: {len(live_seq)} header(s) read in file order.")
+    bad = False
     if missing:
+        bad = True
         print(f"\nMISSING -- {len(missing)} cycle(s) completed but have NO STATUS.md/ARCHIVE block:")
         for c in missing:
             print(f"  cycle {c}")
         print("\nRecovery: git log --all --oneline | grep 'cycle <N>' then `git show <hash> -- state/STATUS.md`.")
-        sys.exit(1)
     else:
         print("\nNONE MISSING -- every completed cycle in the retained window has a block.")
+    if disorder:
+        bad = True
+        print(f"\nOUT OF ORDER -- {len(disorder)} adjacent pair(s) in state/STATUS.md are not strictly")
+        print("descending (the file is newest-first; a block was appended/inserted in the wrong place):")
+        for (ln_a, c_a), (ln_b, c_b) in disorder:
+            rel = "duplicated" if c_a == c_b else "below an older block"
+            print(f"  line {ln_a} cycle {c_a}  then  line {ln_b} cycle {c_b}   ({rel})")
+        print("\nFix BY HAND: move the offending block verbatim, do not sort -- which block is")
+        print("newest is a judgement call. See queue `NEW c3388` (c3387's appended-to-bottom block).")
+    else:
+        print("ORDER OK -- STATUS.md block headers are strictly descending (newest first).")
+    sys.exit(1 if bad else 0)
 
 
 if __name__ == "__main__":
