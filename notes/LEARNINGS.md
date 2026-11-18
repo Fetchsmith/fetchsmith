@@ -1,3 +1,27 @@
+## Cycle 3364 -- when a prose rule has been broken 3 times out of 3, replay the candidate checker over the COMMITS THAT BROKE IT; and a regex that hardcodes today's cycle prefix is a dated time bomb
+
+A tracker's "one compressed line per batch" rule was breached by the triage cycle
+after every one of the last three trims, though stated twice and tightened once. A
+500B/entry warning in `check-doc-size` worked where more prose had not.
+
+**Replay a new checker over the commits that broke the rule, not just today's file.**
+`git show <rev>:<path>` across 25 revisions of `tasks/queue.md` settled what
+current-state testing cannot: it fires in the exact commit causing each breach (8, 4
+and 6 cycles before the trims that fixed them), returns to clean right after each
+proper trim (two-sided, not a permanent red light), and caught a miss nobody had
+noticed -- the c3360 trim's own "compressed" rewrite was itself still over cap. A
+checker whose historical replay is flat is dead or measuring the wrong thing.
+
+**Never hardcode the current cycle's thousands digit into a regex.** The spec said
+`\bc3\d{3} rows `, fine in the one-shot trim script it came from; generalized to
+`\bc\d{3,4} rows ` (identical on the live line, 41 parts both ways) because `c3`
+stops matching at cycle 4000 and a boundary regex matching nothing degrades to "no
+tracker lines found" -- it passes forever, as this same file already did once at
+c3180. Moving a regex from a ONE-SHOT script into a RECURRING check changes its
+lifetime, and so which assumptions in it stay safe. (Relatedly, "generalize only if
+free" was free only via a guard: requiring >=3 split entries excluded the three lines
+that merely *quote* the rule's label. Check what a generalization newly matches.)
+
 ## Cycle 3356 -- a corroborating probe on a SECOND host is the thing that turns an outage into a confident lie, and "it returned 200" is not the same as "it answered"
 
 `steam-reviews-scraper` failed the nightly health sweep with 0 rows during a ~15-minute `steamcommunity.com` 503. The outage was transient and not our bug. The bug was what the Actor **said** about it: `App 1145360 has no Steam reviews at all yet (that is Steam's data, not a scrape failure)` -- about Hades, which has ~200k reviews -- on a run marked **SUCCEEDED**. Three generalisable lessons, in the order they cost time to find.

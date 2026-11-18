@@ -102,6 +102,66 @@ def newest_done_block_lines(path):
     return end - start
 
 
+# Compressed-tracker entry cap (added cycle 3364). A "one line each" tracker line
+# collapses one entry per cycle onto a single physical line so a long-running batch
+# job costs ~25-300B/batch instead of a full paragraph. That rule is stated TWICE
+# inside the vendor-catalogue block and was tightened once (c3320), and it has still
+# been breached by the triage cycles following EVERY one of the last three trims:
+# c3348 fixed c3340/c3341, c3353 fixed c3349-c3352, c3360 fixed c3354-c3359 (4,529B
+# of a 10,314B line). Prose did not work, so this is a checker instead -- it runs in
+# the 24c cadence that already reads this file, needs no new state and no network,
+# and would have caught all three breaches in the cycle that caused them rather than
+# 5-6 cycles later at ~1.5KB/batch.
+#
+# NON-ESCALATING, like the rule-6 DONE-block warning above: an oversized entry is a
+# style regression to fix in passing, not a reason to fail the trim check.
+#
+# Two deliberate scope choices:
+#  - The boundary regex is `\bc\d{3,4} rows `, NOT the `\bc3\d{3} rows ` that
+#    bin/_trim3360q.py uses. Verified identical on the live line (41 parts both
+#    ways), but the `c3` form silently stops matching at cycle 4000 -- ~636 cycles
+#    out, i.e. inside this checker's lifetime -- and would then read as "no tracker
+#    lines found", the always-passing failure this file's docstring warns about.
+#  - Generalizing to ANY `one line each` line is only free because of MIN_ENTRIES.
+#    Three other queue.md lines quote that label while merely DESCRIBING this
+#    tracker (the c3360/c3348 tasks and STANDING c3280); all three split to 0
+#    entries, so requiring >=3 excludes them without naming line numbers. Going
+#    further -- a generic entry boundary for a future tracker that does not use the
+#    `cNNNN rows N-M:` shape -- is NOT free and was not attempted.
+ENTRY_CAP = 500          # bytes; the established entries on the live line run 25-450B
+MIN_ENTRIES = 3          # below this it is prose about a tracker, not a tracker
+ONE_LINE_EACH = "one line each"
+ENTRY_SPLIT = re.compile(r"(?=\bc\d{3,4} rows )")
+ENTRY_LABEL = re.compile(r"^(c\d{3,4}) rows ([\d-]+)")
+
+
+def oversized_tracker_entries(path, cap=ENTRY_CAP):
+    """Entries over `cap` bytes on each compressed 'one line each' tracker line.
+
+    Yields (lineno, n_entries, line_bytes, [(label, rows, bytes), ...]) per tracker
+    line found, newest-first within the line as it is written.
+    """
+    full = os.path.join(ROOT, path)
+    if not os.path.exists(full):
+        return
+    with open(full, encoding="utf-8") as f:
+        lines = f.read().split("\n")
+    for i, ln in enumerate(lines, 1):
+        if ONE_LINE_EACH not in ln:
+            continue
+        parts = ENTRY_SPLIT.split(ln)
+        entries = [p for p in parts if ENTRY_LABEL.match(p)]
+        if len(entries) < MIN_ENTRIES:
+            continue
+        over = []
+        for p in entries:
+            nb = len(p.encode("utf-8"))
+            if nb > cap:
+                m = ENTRY_LABEL.match(p)
+                over.append((m.group(1), m.group(2), nb))
+        yield i, len(entries), len(ln.encode("utf-8")), over
+
+
 def size(path):
     full = os.path.join(ROOT, path)
     if not os.path.exists(full):
@@ -176,6 +236,21 @@ def main():
             print("    Put the full narrative in STATUS.md instead and keep this file's")
             print("    copy to the cap -- this is the rate rule 6 governs, measured cycle")
             print("    2916 as the main driver of queue.md's byte growth above.")
+
+    for lineno, n, line_bytes, over in oversized_tracker_entries("tasks/queue.md"):
+        tag = f"tasks/queue.md:{lineno}"
+        if not over:
+            print(f"  compressed tracker {tag}: {n} entries, {line_bytes/1024:.1f}KB, "
+                  f"all under the {ENTRY_CAP}B/entry cap")
+            continue
+        print(f"  compressed tracker {tag}: {n} entries, {line_bytes/1024:.1f}KB -- "
+              f"{len(over)} OVER the {ENTRY_CAP}B/entry cap (one line each):")
+        for label, rows, nb in over:
+            print(f"    {label} rows {rows}: {nb}B")
+        print("    These are full paragraphs pasted onto a line whose own rule is one")
+        print("    compressed line per batch. The narrative is correct and belongs in")
+        print("    state/STATUS.md and the cycle's own CLOSED block -- recompress the")
+        print("    entries named above in the style of the older ones on the same line.")
 
     for live, arch, maxl, rate in LINE_DOCS:
         b, lines = size(live)
