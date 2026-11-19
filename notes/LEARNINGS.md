@@ -6313,3 +6313,13 @@ charge, and the one with a genuine scope superset (`jobs-search-api`: six of our
 remote boards plus LinkedIn and Dice) is 3.5-3.8x our rate. Nothing to disclose, nothing
 to do -- but expect this vendor to keep surfacing in the catalogue and price it live
 each time rather than assuming the last ruling still holds.
+
+Cycle 3441: self-correction, not a new finding -- `GET /v2/acts/<id>` (the Actor record)
+never carries `actorDefinition` at all; that field lives on `GET /v2/actor-builds/<id>`
+(the build record) or `GET /v2/acts/<id>/builds/latest`. Queried the wrong endpoint first,
+read the resulting `None` as "this Actor's shape is special," and nearly logged a false
+"third route" lesson before checking PLAYBOOK.md item 10 / LEARNINGS_ARCHIVE, which already
+document both real routes (`actor-builds/<id>` for <100k chars, `/v2/acts/<id>/versions` ->
+`sourceFiles[]` for the >100k truncation band). Used the versions route directly for
+`sec-insider-trades-scraper` (byte-identical, 80,570 chars both) -- it works regardless of
+size, so it is also just a safe default when you don't want to look up a build ID first.
