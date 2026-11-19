@@ -120,10 +120,10 @@
   "status": 200
  },
  "hn.algolia.com": {
-  "bucket": "ok",
-  "content_type": "text/html",
+  "bucket": "error",
+  "content_type": "",
   "final_host": "hn.algolia.com",
-  "status": 200
+  "status": null
  },
  "itunes.apple.com": {
   "bucket": "ok",
@@ -270,10 +270,10 @@
   "status": 200
  },
  "www.grants.gov": {
-  "bucket": "ok",
-  "content_type": "text/html",
+  "bucket": "error",
+  "content_type": "",
   "final_host": "www.grants.gov",
-  "status": 200
+  "status": null
  },
  "www.sec.gov": {
   "bucket": "ok",
