@@ -6191,3 +6191,36 @@ value, 4 of 6 new handles would have been scored "already disclosed" and skipped
 `vendor/slug`, or resolve each hit with `grep -on '[a-z0-9_-]*/[a-z0-9_-]*<slug>'` before concluding
 anything.** Same family as c3420's `awk`-offset trap: the reassuring-looking hit came from a line that was
 never about the thing being checked.
+
+## Cycle 3428 — the `NEW c3162` catalogue's 2-user tail is VENDOR-GROUPED, and a vendor ships ONE price template across every listing it owns
+
+Measured on indices 632-655 of `state/audit_data/c3162_vendor_catalogue.json`: once `users` flattens to 2
+(which it has for every remaining row), the sort is **grouped by vendor handle**, not by niche — `fantastic-jobs` x2,
+`feedforge` x2, `felixgoldwin` x6 (indices 637-642, spanning c3427's batch AND c3428's), `forgedata` x2,
+`foxlabs` x6 (649-654). Note the grouping is by *vendor*, not strictly alphabetical *within* a vendor:
+`felixgoldwin` runs cpsc → federal-register → greenhouse → apple → google-play → steam, so do not assume
+slug order inside a block.
+
+**The payoff: a vendor's listings share one price template, so the FIRST row of a vendor block predicts the rest.**
+All three `felixgoldwin` review scrapers priced this cycle (apple-app-store / google-play / steam, all created
+2026-11-11) carry a byte-identical ladder — `$0.005` start + `$0.001` per dataset item, **flat, no tiers at any
+plan** — which is also what c3427 found on the same vendor's other three. Against our tiered rates that is
+10x / 10x / 1.7-3.3x dearer plus a start fee we don't charge: a whole vendor block resolved by one bucket.
+
+**How to use it without breaking the triage's discipline:** read the vendor block's FIRST row fully (live
+`pricingInfos`, description, scope), then price the siblings anyway — it is the same single API call per row and
+the catalogue has already produced vendors who price *differently* per niche. What the grouping actually buys is
+a **prior**, not a skip: it tells you in advance whether a block is likely to be one ruling or six, so you can size
+the batch and reach for the right standing bucket first instead of re-deriving it per row. The failure mode it
+prevents is the opposite of a skip — writing six near-identical ruling paragraphs where one vendor-level
+sentence plus the per-row ladders is the honest and much shorter record.
+
+**Second, narrower find from the same batch, worth keeping because it nearly became a disclosure:**
+`fguiraud/himalayas-jobs-scraper` is a genuine every-rung undercutter of `remote-jobs-scraper`
+($0.0008 → $0.00064/job vs our $0.0015 → $0.001, 1.88x-1.56x) and still correctly a **silent skip** — it fails
+bucket 1 (Himalayas is 1 of our 7 boards, and the standing ruling says cheaper-at-volume-within-scope-exclusion
+does NOT override) *and* bucket 7 (already dominated by the disclosed `nivlekk/remote-jobs-aggregator` $0.0005 and
+`silicatelabs/JobsFlow` $0.00001, both re-verified live/public/non-deprecated 2026-11-19). **Two independent
+buckets firing on one row is the signal to stop and NOT write the paragraph** — the arithmetic being real is
+exactly what makes this shape tempting, and bucket 7's own precedent (c3338/c3340/c3343) was established on rows
+that looked this way.
