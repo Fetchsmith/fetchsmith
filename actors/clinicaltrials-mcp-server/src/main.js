@@ -27,7 +27,13 @@ async function searchClinicalTrials({ condition, intervention, maxResults }) {
     const params = new URLSearchParams();
     if (condition) params.set('query.cond', condition);
     if (intervention) params.set('query.intr', intervention);
-    params.set('pageSize', String(Math.min(Math.max(Number(maxResults) || 10, 1), MAX_PAGE_SIZE)));
+    // `Number(maxResults) || 10` (pre-cycle-3434 form) collapsed an EXPLICIT 0 to the 10 default,
+    // same as an unset value -- a caller probing "does this exist" with maxResults:0 got charged
+    // $0.005 for 10 rows it never asked for. Only null/undefined/NaN should fall back to 10; an
+    // explicit 0 should clamp to the documented minimum of 1, like any other out-of-range number.
+    const requested = Number(maxResults);
+    const n = (maxResults === undefined || maxResults === null || Number.isNaN(requested)) ? 10 : requested;
+    params.set('pageSize', String(Math.min(Math.max(n, 1), MAX_PAGE_SIZE)));
     const url = `${API}?${params.toString()}`;
     // got applies `timeout.request` per ATTEMPT, and got's own internal retries multiply it (~4x),
     // so a plain `timeout: {request}` is not a bound on one call -- cycle 2646 proved this fleet-wide,

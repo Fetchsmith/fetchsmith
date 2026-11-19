@@ -69,30 +69,47 @@ platform run to babysit, no per-study multiplier — a call returning 500 studie
 as one returning 1.
 
 **This is the only MCP server on the Apify Store dedicated to ClinicalTrials.gov** (checked
-2026-11-05, re-verified live 2026-11-12, across the `clinical trial`, `mcp server`, `medical mcp`
-and `pubmed` queries — the other ClinicalTrials.gov listings are all batch scrapers, a different
-product shape). Trial search does exist as *one tool inside* a broader compliance bundle, and
-that is the honest comparison to make. Prices read live from each Actor's own `pricingInfos`
-record on 2026-11-05, re-verified live 2026-11-12, not from Store marketing copy:
+2026-11-05, re-verified live 2026-11-12 and 2026-11-19, across the `clinical trial`, `mcp server`,
+`medical mcp` and `pubmed` queries — the other ClinicalTrials.gov listings are all batch
+scrapers, a different product shape). Two Store listings this cycle (`andrew_avina/clinicaltrials-intelligence-mcp`,
+`amygraphics/clinical-trials-monitor`) advertise a dedicated ClinicalTrials.gov MCP in their
+title, but neither has a live standby URL on the platform — no deployed MCP server to call,
+and both sit at 1 lifetime user with no runs in 90+ days. Their catalog prices read *cheaper*
+per unit than ours ($0.003/result-item and $0.001/clinical-trial-record respectively, vs our
+$0.005/call) — but a price nobody can actually pay, on a server nobody can actually reach, is
+not a competing offer. A title is not a running service, so neither counts as a real rival.
+Trial search does exist as *one tool inside* a broader compliance
+or multi-source bundle, and that is the honest comparison to make. Prices read live from each
+Actor's own `pricingInfos` record, not from Store marketing copy, re-verified 2026-11-19:
 
 | Actor | Users (u30d) | Closest event | Price/call | vs. ours |
 | --- | --- | --- | --- | --- |
 | **fetchsmith/clinicaltrials-mcp-server** | — | `tool-call` | **$0.005** | — |
 | `red.cars/healthcare-compliance-mcp` | 2 (1) | `search_clinical_trials` | $0.05 + $0.00005 start fee | **10x** dearer, plus a start fee we don't charge |
 | `red.cars/pharma-pipeline-intelligence-mcp` | 8 (1) | `search_drug_pipeline` | $0.05 | **10x** dearer |
-| `themineworks/academic-research-mcp` | 33 → 38 (29 → 33) users as of 2026-11-05 → 2026-11-12 | `search_pubmed` | $0.0625 + $0.005 start fee (now tiered FREE-DIAMOND $0.0625→$0.04375, re-verified 2026-11-12) | **12.5x** dearer at its FREE tier, plus a start fee we don't charge |
+| `themineworks/academic-research-mcp` | 33 → 38 → 39 (29 → 33 → 33) users as of 2026-11-05 → 2026-11-12 → 2026-11-19 | `search_pubmed` | $0.0625 + $0.005 start fee (tiered FREE-DIAMOND $0.0625→$0.04375, unchanged since 2026-11-11) | **12.5x** dearer at its FREE tier, plus a start fee we don't charge |
+| `mrbridge/clinical-pharma-mcp` | 1 (0), new 2026-10-05 | `tool-read` | $0.005 + $0.00005 start fee at FREE, tiered down to **$0.003** + $0.00003 start at GOLD+ | ties at FREE (marginally dearer, by the start fee); **genuinely cheaper than us at GOLD and above** |
+| `church_of_loujess/pharma-fda-clinical-trials-mcp` | 1 (0), new 2026-11-02 | `mcp-tool-call` | $0.05 at FREE, tiered down to $0.024 at GOLD+ | **10x** dearer at FREE, **4.8x** dearer at GOLD+ — no crossover |
 
-All three are genuinely broader than this Actor. `healthcare-compliance-mcp` exposes 9 tools
+All five are genuinely broader than this Actor. `healthcare-compliance-mcp` exposes 9 tools
 over FDA MAUDE adverse events, 510(k) clearances and recalls — including a
 `search_clinical_trials` of its own at $0.05 and a `get_trial_details` at $0.03;
 `pharma-pipeline-intelligence-mcp` exposes 8 (competitive landscape, adverse-event signals,
 patent exclusivity); `academic-research-mcp` exposes 6 across
-OpenAlex/Crossref/arXiv/OpenCitations/PubMed. If you want a device-compliance workflow or a
-multi-source literature report, buy theirs — this Actor does not try to be that.
+OpenAlex/Crossref/arXiv/OpenCitations/PubMed; `clinical-pharma-mcp` exposes 13 across
+ClinicalTrials.gov, openFDA and PubChem; `pharma-fda-clinical-trials-mcp` exposes 5 across
+ClinicalTrials.gov, OpenFDA and PubMed. If you want a device-compliance workflow or a
+multi-source literature/chemistry report, buy theirs — this Actor does not try to be that.
 
-What this Actor is, that none of them are: **the registry lookup on its own, at a tenth of the
-price, with no start fee and no charge when the search finds nothing.** If your agent asks
-trial questions often, the per-call difference is the whole cost of the feature.
+**Honest exception: `clinical-pharma-mcp`'s `tool-read` event undercuts our flat $0.005 once a
+buyer is on a paid Apify plan** ($0.003 at GOLD and above, vs. our unconditional $0.005) — the
+first time any named rival in this niche has beaten our per-call price at any tier. It is still
+1 lifetime user, 0 in the last 90 days, and bundles the trial-search tool inside 12 other
+openFDA/PubChem tools rather than offering it as a standalone product, so it is not yet a
+displacement risk — but it is tracked here rather than left for the next audit to rediscover.
+What this Actor is, that none of the other four are: **the registry lookup on its own, usually
+at a tenth of the price, with no start fee and no charge when the search finds nothing.** If
+your agent asks trial questions often, the per-call difference is the whole cost of the feature.
 
 ## Source and limits
 
