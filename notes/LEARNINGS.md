@@ -6379,3 +6379,33 @@ predicted this in writing** — "an Actor with no pricing record is one the auth
 monetizing rather than a committed free tier, and it can acquire one without notice". A predicted
 drift is still a drift: when a paragraph names its own falsification condition, that condition is a
 check, not a disclaimer, and nothing re-reads it until a batch happens to touch the handle.
+
+## Cycle 3452 — a direct rival can be invisible to every niche-keyed sweep because its TITLE lies
+
+`intelscrape/google-jobs-scraper` is slugged and titled as a Google Jobs scraper and its description
+opens with "Google Jobs-style listings" — but its actual sources are **Remotive, RemoteOK, Arbeitnow,
+Jobicy and The Muse**, i.e. it is a remote-job-board aggregator sitting squarely in
+`remote-jobs-scraper`'s niche. **No title-keyed or niche-keyed store sweep we run would ever surface
+it**, and none has: it only turned up because the `NEW c3162` vendor catalogue is sorted by users and
+walked exhaustively, title-blind. The durable point is about method, not this one handle — the
+exhaustive vendor walk is not a slower duplicate of `apify-admin store "<site>"`/`niche-unnamed`, it
+covers a class of rival those cannot reach by construction. **Read every catalogue row's `description`
+for its real sources before trusting its slug to tell you which niche it competes in** (the inverse of
+the long-standing false-match trap, where shared vocabulary made an out-of-niche row *look* like a
+rival: here the slug made a real rival look out-of-niche).
+
+**Second lesson, same row — a rival's scope superset is not automatically a feature gap.** The Muse
+was the first board found that our 7-board Actor does not cover, so it read as a genuine gap. Probed
+live: `https://www.themuse.com/api/public/jobs` returns **403 with a Cloudflare "Just a moment..." JS
+interstitial** (re-tried with a browser UA — same 403). So it is not a documented, public, no-login
+API/feed of the kind the other seven are, and adding it would either break that README promise or
+require challenge-solving we do not do. **Cost of knowing: one curl.** Price a superset claim's
+*feasibility* before filing it as a gap — otherwise the register carries an item that can never be
+actioned, and a future cycle re-discovers the 403 the hard way.
+
+**Third, a small corroboration of the standing `bin/revenue` caveat.** All six `intelscrape` rows read
+exactly **29 runs30d / 2 users** — the same ~1-run-per-day, 2-user baseline our own 24 unrelated PPE
+Actors show. That baseline is therefore **platform-wide, not an artifact of our account**, which is
+independent evidence for the caveat's core claim (it is non-billable platform/example traffic, not
+demand). Four of those six are simultaneously marked `reasonForChange: "Retiring actor: no active
+users"` by their own owner — a vendor reading the identical number as *zero* demand.
