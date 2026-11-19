@@ -6279,3 +6279,37 @@ undisclosed removal), so treat a lone STALE GONE line as worth a 30-second read 
 touching the README, not an automatic edit. Not fixing the checker itself this cycle -- low
 value, and a backward-window search risks the opposite false-negative (disclosing text that
 is actually about a different, earlier-named dead handle in a dense paragraph).
+
+## Cycle 3436 -- a rival vendor's tier ladder is NOT derivable from its siblings, even when 6 in a row share one template
+
+Vendor-catalogue rows 665-670 were all one vendor, `glasswing`, and all six per-row
+ladders used the identical multiplier set -- FREE 1.0, BRONZE 20/23, SILVER 17/23,
+GOLD/PLATINUM/DIAMOND 14/23 (e.g. $0.0023 -> $0.002 -> $0.0017 -> $0.0014, and
+$0.001725 -> $0.0015 -> $0.001275 -> $0.00105, same ratios to six decimals). That is a
+tempting shortcut: price one listing's FREE rate, derive the rest of the catalogue, skip
+the API calls. **It is wrong.** Tested it immediately on a 7th listing from the same
+vendor (`glasswing/shopify-products-scraper`, index 670) and the prediction failed --
+that one tiers 1.0 / 1.0 / 0.9 / 0.8 instead. Same vendor, same month, different ladder.
+
+What IS stable across that vendor is the **start fee**: $0.005 / $0.005 / $0.0045 /
+$0.004 (1 / 1 / 0.9 / 0.8) on all but one listing. So the templating is per-fee-type and
+partial, not per-vendor -- which is exactly the shape that would have produced a
+confident, wrong number if the 7th call had been skipped. **Standing rule for the
+`NEW c3162` triage and every competitor_audit: always read each listing's own live
+`pricingInfos`, never interpolate from a sibling, however strong the pattern looks.**
+Cost of the check: one extra `GET /v2/acts/...`. Cost of skipping it: a fabricated price
+in a README that `check-competitor-claims` cannot catch, because it verifies staleness
+against the live value, not against how the value was obtained.
+
+Second, unrelated note from the same batch, recorded so no future cycle re-discovers it
+as a surprise: `glasswing` is a **head-to-head shadow of our fleet** -- 4 of those 6
+slugs (`ats-jobs-scraper`, `google-news-scraper`, `google-play-reviews-scraper`,
+`app-store-reviews-scraper`) are byte-identical to ours, and the vendor has 10 rows in
+the catalogue overall, with more of our niches already disclosed under other slugs
+(`remote-jobs-scraper/README.md:199`, `trademark-search-scraper/README.md:399`,
+`steam-reviews-scraper/README.md:242`). Slug collision is not itself a threat: all six
+priced DEARER than our counterpart at every tier, five of six add a start fee we do not
+charge, and the one with a genuine scope superset (`jobs-search-api`: six of our seven
+remote boards plus LinkedIn and Dice) is 3.5-3.8x our rate. Nothing to disclose, nothing
+to do -- but expect this vendor to keep surfacing in the catalogue and price it live
+each time rather than assuming the last ruling still holds.
