@@ -107,7 +107,7 @@ Repeated URLs in one `urls` list are captured and charged once, not once per cop
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
 (10,291 users as of 2026-11-12) only does full-page/viewport PNG or JPEG — no element selector, device presets,
 OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
-`cheapapi/website-screenshot-api` (527 users as of 2026-11-12) and `moonweil/url-screenshot-api` (350 users as of 2026-11-12) both
+`cheapapi/website-screenshot-api` (591 users as of 2026-11-19) and `moonweil/url-screenshot-api` (350 users as of 2026-11-12) both
 already never charge for a failed capture and both support full-page, element and device-preset
 capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
 Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
@@ -193,17 +193,18 @@ $0.01/result down to $0.007 at GOLD and above, 3.5x–5x our flat $0.002, with n
 diff mode. All other previously-named rivals re-verified live this sweep (counts updated above);
 no pricing drift found anywhere in the fleet of 16.
 
-**One more rival, surfaced 2026-11-15 by a vendor-catalogue cross-check rather than a full
-resweep:** `fetch_cat/website-screenshot-generator` (37 users) does bulk screenshots and PDF with
-full-page, element, mobile, dark-mode and overlay-hiding controls — real overlap, and
-overlay-hiding (auto-dismissing cookie banners/popups before capture) is one we don't have — but
-it charges a one-time $0.005 start fee plus $0.008/capture at its lowest tier down to $0.0066 at
-DIAMOND, today **4x–3.3x our flat $0.002 with no start fee**, and it has no raw-HTML input,
-OG-card preset or diff mode. Its own `pricingInfos` already schedules a rise effective
-**2026-11-19** to a $0.031 start fee plus $0.035 down to $0.026/capture at GOLD and above —
-**17.5x–13x our price** once that lands. Not a threat today, and the gap only widens.
+**One more rival, surfaced 2026-11-15 and re-verified live 2026-11-19, by a vendor-catalogue
+cross-check rather than a full resweep:** `fetch_cat/website-screenshot-generator` (38 users) does
+bulk screenshots and PDF with full-page, element, mobile, dark-mode and overlay-hiding controls —
+real overlap, and overlay-hiding (auto-dismissing cookie banners/popups before capture) is one we
+don't have. When first surfaced it charged a one-time $0.005 start fee plus $0.008/capture at its
+lowest tier down to $0.0066 at DIAMOND; its scheduled rise has now landed on schedule — live as of
+today it charges a $0.031 start fee plus $0.035 down to $0.026/capture at GOLD and above —
+**17.5x–13x our flat $0.002 with no start fee**, and it still has no raw-HTML input, OG-card
+preset or diff mode. Not a threat, and the gap has only widened since it was first surfaced.
 
-**Real undercutter found 2026-11-15 by the same cross-check:** `code-node-tools/website-screenshot-api`
+**Real undercutter found 2026-11-15, pricing re-verified live 2026-11-19, by the same
+cross-check:** `code-node-tools/website-screenshot-api`
 (8 users) is the closest feature match of any rival named here and the cheapest — live input
 schema (not Store copy) shows `fullPage`/`viewport`/`element` capture modes with a CSS `selector`,
 custom viewport width/height, `deviceScaleFactor` (retina), mobile emulation, `waitForSelector`,
@@ -219,7 +220,8 @@ overlay-hiding above is the same idea but costs 3.3x-4x more. For a buyer who on
 selector/device/dark-mode capture at volume and doesn't need HTML-input, OG cards or diffing,
 this is genuinely the better price today.
 
-**Second real undercutter, surfaced 2026-11-16 by the same vendor-catalogue triage:**
+**Second real undercutter, surfaced 2026-11-16 and re-verified live 2026-11-19, by the same
+vendor-catalogue triage:**
 `locaihost/screenshot` (7 users) is the closest feature match found yet in this niche — live
 input schema shows a dedicated `og_image` 1200×630 device-preset entry (our `ogCard`), raw-HTML
 input that also batches up to 100 HTML documents in one run (ours takes a single document),
@@ -232,7 +234,8 @@ undercuts us on every capture type except full-page, where we tie, while matchin
 we use to differentiate from the cheaper bare-capture rivals above. It has no visual-diff mode —
 the one feature left that still sets this Actor apart from every rival named on this page.
 
-**Third real undercutter, surfaced 2026-11-17 by the same vendor-catalogue triage:**
+**Third real undercutter, surfaced 2026-11-17 and re-verified live 2026-11-19, by the same
+vendor-catalogue triage:**
 `factpipe/website-screenshot` (3 users) ties our flat $0.002/result at FREE but tiers down from
 there — **$0.0018 BRONZE, $0.0016 SILVER, $0.0014 GOLD and above** — against our flat $0.002 at
 every tier, with no start fee on either side. A smaller gap than `code-node-tools`'s or

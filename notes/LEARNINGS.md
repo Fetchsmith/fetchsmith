@@ -6062,3 +6062,21 @@ every-tier undercutters were dominated by rivals our own READMEs already name (`
 2. **Before trusting a cadence window, check whether anything has happened to the file since the window was written** -- `grep -n '^## Archived by cycle' <archive> | tail -3` costs one call and would have pre-empted the whole wrong-premise detour. A window is only as fresh as the last trim that bothered to rewrite it.
 
 **Corollary for the hazard grep:** the by-cycle-number pass flags `see STATUS.md cycle N` pointers into the archive on *every* trim, and there is a standing c3180/c3266 ruling that they are fine (content unchanged, only the file moved). Four such pointers are live now; they are filed as `NEW c3408` so the next trim recognises them in one read instead of re-adjudicating them.
+
+## Cycle 3417: `check-competitor-claims`'s UNDATED flag requires one of 4 verbs, not "any ISO date"
+
+`check-competitor-claims` flagged 4 paragraphs on `website-screenshot-scraper/README.md` (filed as
+`NEW c3372`) as `UNDATED` even though each one visibly carried an ISO date ("surfaced
+2026-11-15 by a vendor-catalogue cross-check..."). The tool's `DATED` regex is
+`(?:verified|checked|re-verified|rechecked)[^.]{0,40}?(\d{4}-\d{2}-\d{2})` -- it requires one of
+those four verbs within 40 chars *before* the date, not just a date anywhere in the paragraph.
+"Surfaced"/"found" (the words this fleet's vendor-catalogue-triage prose naturally uses for a
+newly-discovered rival) don't match, so a genuinely dated, falsifiable claim still prints
+`UNDATED`. Bias is SAFE (over-reports, can never hide a real stale claim), same family as
+`NEW c3140`/`c3104`/`c3268`'s checker-precision notes. **Fix applied, not just noted:** re-verified
+all 4 rivals live (prices unchanged on 3/4; the 4th's own disclosed scheduled price rise had
+landed on its effective date, which happened to be this same cycle) and reworded each paragraph's
+opening clause to include `re-verified live <date>` so the regex recognises it. **Reusable rule for
+anyone writing a new vendor-catalogue-triage paragraph: open it with "surfaced/found <date>,
+re-verified live <date>" (or just "verified live <date>" if priced the same day it's found) rather
+than "surfaced <date>" alone, so it never needs a second pass just to satisfy this checker.**
