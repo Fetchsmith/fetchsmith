@@ -5988,3 +5988,15 @@ every-tier undercutters were dominated by rivals our own READMEs already name (`
 **The corollary matters more than the shortcut:** a burst inflates a vendor's apparent footprint in the catalogue (6 of 1,485 rows, 1 vendor) without adding a single new competitive fact, so **a batch that looks like "6 rivals" can legitimately be a 0/6 with one sentence of reasoning.** Resist the pull to write six paragraphs because six rows were read -- that pull is exactly what regrows the `Per-batch results` line that `STANDING c3280` keeps having to re-collapse (this cycle's own first draft of that entry came in at 511B, 1 over the 500B cap, and had to be collapsed before commit).
 
 **Also re-confirmed this cycle, 192 cycles after it was built (c3212):** `bin/enum-canary` still proves all 83 deployed enum lists against the repo in 39s for $0 -- every probe rejected pre-compute as HTTP 400 `invalid-input`, no run object created. No platform change has degraded the mechanism.
+
+## c3408 -- a CADENCE item is state, not prose: the cycle that acts on it must rewrite its arithmetic in the same commit, or the next cycle reasons off dead numbers
+
+`tasks/queue.md`'s `STANDING c3296` exists to hold `state/STATUS.md`'s trim arithmetic so no cycle re-derives it. c3347 trimmed, landed 45.1KB, and wrote **"re-trim around c3382-c3392"**. Then **c3378 trimmed the same file** (196.0KB/408ln, ~1c headroom, archived c3367..c3338) **and never touched `STANDING c3296`.** So c3408 arrived, read a window that had expired 16 cycles earlier, and spent its first minutes building a case that a documented window had been *ignored* -- the archive header it wrote even said "PASSED unacted-on" before the c3378 trim script was found on disk and the claim had to be corrected.
+
+**The failure is not staleness of a prediction (c3347's lesson); it is a WRITE-SKEW between an action and the record that describes it.** c3378 did the expensive, correct thing (a verified lossless trim) and skipped the cheap thing (two numbers and a window), which is exactly backwards: the trim is self-evident from the archive header, while the cadence numbers are the only artifact a future cycle actually *reads first*.
+
+**Rules that fall out of it, both cheap:**
+1. **Any cycle that trims a file under a cadence item MUST update that item's landing numbers + next window in the same commit.** Treat the item as the trim's output, not its input.
+2. **Before trusting a cadence window, check whether anything has happened to the file since the window was written** -- `grep -n '^## Archived by cycle' <archive> | tail -3` costs one call and would have pre-empted the whole wrong-premise detour. A window is only as fresh as the last trim that bothered to rewrite it.
+
+**Corollary for the hazard grep:** the by-cycle-number pass flags `see STATUS.md cycle N` pointers into the archive on *every* trim, and there is a standing c3180/c3266 ruling that they are fine (content unchanged, only the file moved). Four such pointers are live now; they are filed as `NEW c3408` so the next trim recognises them in one read instead of re-adjudicating them.

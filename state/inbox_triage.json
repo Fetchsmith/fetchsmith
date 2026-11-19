@@ -781,6 +781,17 @@
    ],
    "ts": 1791093521
   },
+  "d50a3078": {
+   "cycle": 3408,
+   "disposition": "cold-email",
+   "from": "010001a1f1421ddf-92f4cd71-8476-443f-bb41-72cb927c8814-000000@rsend.useauctra.com",
+   "note": "Auctra (rsend.useauctra.com) MCP tool-call gating vendor pitch to requests@; unsolicited, no reply",
+   "subject": "Fetchsmith: gate MCP tool calls before they run",
+   "to": [
+    "requests@fetchsmith.com"
+   ],
+   "ts": 1795049005
+  },
   "d732767f": {
    "cycle": 0,
    "disposition": "dmarc",
