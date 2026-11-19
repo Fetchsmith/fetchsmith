@@ -6323,3 +6323,28 @@ document both real routes (`actor-builds/<id>` for <100k chars, `/v2/acts/<id>/v
 `sourceFiles[]` for the >100k truncation band). Used the versions route directly for
 `sec-insider-trades-scraper` (byte-identical, 80,570 chars both) -- it works regardless of
 size, so it is also just a safe default when you don't want to look up a build ID first.
+
+Cycle 3444: two doc-trim lessons, both about what a hazard grep does NOT catch.
+(1) **Classify entries by RULE IN THE SCRIPT, not by eye.** Compressing the
+vendor-catalogue `Per-batch results` line (15,841B, 88 entries) by an explicit
+keep/squeeze predicate -- keep anything with a `1/6`/`2/6`/`3/6` find, a `NEW cNNNN`
+fold-in tag, or a hand-listed exception -- forced every long `0/6` entry to be read
+before being squeezed, which is the only reason c3395's live OWED action surfaced
+(*name `datadesk-io/eu-ted-tenders-scraper` at `eu-ted-tenders-scraper`'s next
+`competitor_audit`*), buried inside an entry that opens "0/6, 1 vendor". An eyeball
+pass trusting the `0/6` prefix would have archived a live obligation away, silently
+and unrecoverably in practice. A `0/6` label describes the PRICE verdict for that
+batch; it does not mean the entry carries nothing owed.
+(2) **The 3-pass hazard grep checks what a CUT leaves dangling, never what a KEPT
+line was already pointing at.** c3443's per-batch entry cited a "`NEW c3443` fold-in
+register note" that has never existed anywhere in `queue.md` (5 hits on `c3443`, none
+in the FOLD-IN REGISTER). It was in the KEEP-VERBATIM set, so all three passes stayed
+clean and it was carried forward intact; it only turned up on an ad-hoc post-write
+check of pointers in the rewritten text. Add that as a fourth pass on any trim that
+REWRITES rather than deletes: grep the pointers inside the lines you kept.
+(3) Corollary found the same cycle, third recurrence of the c3408 failure: a
+"re-trim at cycle N" window computed from a cadence model goes stale the moment the
+cadence shifts. `STANDING c3296`'s c3435-c3443 STATUS.md window had passed with no
+trim, which looks like a miss but was correct -- measured headroom was ~25 cycles.
+Stop forwarding cycle-number windows as triggers; the trigger is measured headroom
+from a fresh `check-doc-size`, and a window is only a hint for when to look.
