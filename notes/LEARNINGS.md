@@ -6224,3 +6224,13 @@ does NOT override) *and* bucket 7 (already dominated by the disclosed `nivlekk/r
 buckets firing on one row is the signal to stop and NOT write the paragraph** — the arithmetic being real is
 exactly what makes this shape tempting, and bucket 7's own precedent (c3338/c3340/c3343) was established on rows
 that looked this way.
+
+Cycle 3429: `check-own-price-freshness`'s `uk-find-a-tender-scraper` LEG-A flags on $0.04/$0.05
+(the digest one-time event) are a FALSE POSITIVE, not stale pricing -- confirmed both numbers
+are already quoted verbatim in the README (lines 128/168, "$0.05 per run ... $0.04 on Gold and
+above"). The checker's own by-design rule only matches rates with >=3 decimals ("a per-unit
+rate in this fleet always has >=3 decimals... Totals and [2-decimal prices] are not"), so a
+genuinely-priced 2-decimal one-time fee is invisible to it by construction. This is the one
+Actor in the fleet with a real 2-decimal per-unit price (every other digest/start fee elsewhere
+is >=3 decimals), so the exception was never hit before. No action needed each time this
+prints -- read the two cited numbers against the README by hand before treating it as drift.
