@@ -61,6 +61,30 @@ import urllib.request
 USERNAME = "fetchsmith"
 MAX_SCAN = 600
 
+# THE ANONYMOUS FILTER CAME BACK 2026-11-19 (cycle 3416). See CONTROL note below.
+# Control query: its FULL anonymous result set is 29-30 items, i.e. one page with no
+# paging needed, and our trademark-search-scraper carries "TMview" in its own title, so
+# an authenticated caller finds it at #3 (measured c3416, same minute). If the anonymous
+# caller cannot see it in that complete sub-100 set, nothing is "ranked deep" -- our
+# Actors are being withheld from unauthenticated /v2/store, exactly the c168/517/580
+# state that c2072 found had lifted. Every per-query "NOT FOUND" line below is then an
+# artifact of the filter, not a ranking, so the tool must refuse to print them.
+CONTROL_QUERY = "tmview"
+CONTROL_SLUG = "trademark-search-scraper"
+
+
+def control_ok():
+    """Is the anonymous caller allowed to see our Actors at all?
+
+    Returns (visible, n_items). `visible` False with a sub-100 n_items is decisive
+    evidence of the withholding filter, NOT of a deep rank.
+    """
+    data = fetch(CONTROL_QUERY, 0)
+    items = data["items"]
+    found = any(i.get("username") == USERNAME and i.get("name") == CONTROL_SLUG
+                for i in items)
+    return found, len(items)
+
 # (store-search term a buyer would type, our slug that should answer it)
 QUERIES = [
     ("fda recall", "fda-recall-scraper"),
@@ -142,11 +166,40 @@ def main():
         print("no query matches %r -- known: %s" % (needle, ", ".join(q for q, _ in QUERIES)))
         return 2
 
+    try:
+        visible, n_items = control_ok()
+    except Exception as exc:                          # network hiccup, not a finding
+        print("control probe ERROR %s -- cannot tell filtered from deep; aborting" % exc)
+        return 2
+    if not visible and n_items < 100:
+        print("ANONYMOUS STORE FILTER IS ACTIVE -- no rank is measurable on this surface.")
+        print()
+        print("Control: /v2/store?search=%s returns %d items anonymously (the COMPLETE"
+              % (CONTROL_QUERY, n_items))
+        print("result set -- under one page, so no paging is involved) and %s/%s is NOT in"
+              % (USERNAME, CONTROL_SLUG))
+        print("it, even though that Actor's own TITLE contains \"TMview\" and the SAME query")
+        print("with an Authorization header ranks it #3. Our Actors are being withheld from")
+        print("unauthenticated /v2/store, not ranked deep -- the c168/517/580 state that")
+        print("cycle 2072 found had lifted has returned (re-measured cycle 3416).")
+        print()
+        print("THIS IS A MEASUREMENT-SURFACE LOSS, NOT A VISIBILITY REGRESSION. The real")
+        print("buyer-facing search box is Algolia, which is unaffected: bin/store-rank")
+        print("reported \"indexed and retrievable: yes\", top-20 on 9/27 queries, the same")
+        print("cycle. Do NOT read this as a store delisting, do NOT email the owner about")
+        print("it, and do NOT 'fix' Actor metadata in response. Use bin/store-rank.")
+        print()
+        print("Re-run this tool to retest the filter -- if the control Actor reappears, the")
+        print("filter lifted again and the per-query ranks below become meaningful.")
+        return 0
+
     worst = 0
     missing = 0
     unknown = 0
     print("anonymous /v2/store rank (no auth, no runs) -- deep rank is users-gated, "
           "NOT a metadata bug; see this file's docstring")
+    print("control: %s/%s visible anonymously on %r (%d items) -- filter not active"
+          % (USERNAME, CONTROL_SLUG, CONTROL_QUERY, n_items))
     print()
     for query, slug in pairs:
         try:

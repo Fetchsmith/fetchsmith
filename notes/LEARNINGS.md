@@ -1,3 +1,49 @@
+## Cycle 3416 -- the anonymous `/v2/store` filter CAME BACK; "absent" is only a rank claim if the result set you searched was COMPLETE
+
+`bin/store-anon-rank` printed `NOT FOUND` for 12 of 13 queries, which reads
+exactly like a ranking collapse against the c2072 baseline of #29-#354. It was
+not one. **Our Actors are being withheld from unauthenticated `/v2/store`
+again** -- the c168/517/580 state that c2072 found had lifted.
+
+**The test that settles it, and why it is the right one.** Pick a query whose
+FULL anonymous result set fits in one page, so paging is not a confound, and
+where one of our Actors matches by TITLE so a miss cannot be a relevance miss:
+`search=tmview` returns 29 items anonymously and `fetchsmith/trademark-search-scraper`
+(title: "Trademark Search -- USPTO, EUIPO, Nice Classification (TMview)") is
+absent from all 29. The SAME query with an `Authorization` header returns 30
+items with ours at **#3**. Auth is the only variable. Repeated on
+`nice classification trademark`: 61 items anon / absent, 62 items auth / **#2**.
+
+**The reusable discipline: "absent from the results" means nothing until you
+know whether you searched the whole set.** The tool's own docstring already
+warned that absence from page 1 means "ranked deep, never not matching" -- but
+that warning silently assumed the set was bigger than the scan. When `total`
+is under 100 and you are still missing, "deep" is not available as an
+explanation and the only remaining variable is who is asking. Two sub-100
+control queries cost ~4 HTTP calls and converted 12 scary rows into one
+diagnosis.
+
+**This is a MEASUREMENT-SURFACE loss, not a visibility regression -- do not
+act on it as one.** The buyer-facing search box is Algolia, not this REST
+endpoint, and `bin/store-rank` the same cycle reported "indexed and
+retrievable: yes", top-20 on 9/27 probed queries, trademark at p3. So: no
+owner email, no metadata "fixes", no delisting panic. `bin/store-anon-rank`
+now runs a `control_ok()` probe FIRST and refuses to print per-query rows at
+all while the filter is active, because the failure mode here was never a
+wrong number -- it was a plausible one.
+
+**Also found, unrelated except by name: `fetchsmith-labs` is NOT us.** A
+vendor under that handle (created 2026-10-11, 4 public Actors, 1-2 users each)
+is what an anonymous `search=fetchsmith` returns instead of our 27 -- a pure
+brand/namespace collision, no reference to fetchsmith.com anywhere in their
+listings, so nothing to pursue. Priced the two niches that overlap ours and
+neither undercuts: their `app-store-scraper` bills `review` at flat $0.0004
+(4-5.7x our $0.0001->$0.00007 ladder) with a per-`app` $0.002 primary event,
+and their `google-play-scraper` has no per-review event at all ($0.002/app,
+$0.0008/app-listing) -- the familiar **bucket 1** "primary billed unit is
+per-app, not per-review-row" shape. Their other two are contact/lead-gen
+products rule 1 puts out of scope for us permanently.
+
 ## Cycle 3412 -- `git-maintain` trips on loose-object SIZE, not COUNT, on this repo
 
 `bin/git-maintain` has two independent trip-wires (`loose >= 4000 objects` OR
