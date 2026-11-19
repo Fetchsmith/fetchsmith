@@ -6263,3 +6263,19 @@ owner-filed tier 48 days on -- i.e. a 623-user rival still undercuts us at $0/re
 That is only publishable because the paragraph had committed to re-checking it. Prefer
 rewriting such a hedge into a standing promise plus the dated negative result, over
 re-stamping the date and moving on.
+
+## Cycle 3435 -- check-competitor-claims' GONE-handle disclosure window only looks forward
+
+A dead handle's removal notice must appear WITHIN 400 CHARS *AFTER* the handle mention to
+register as `DISCLOSED` (`bin/check-competitor-claims:496-505`, the `window = text[m.end():
+m.end()+400]` scan). `hacker-news-scraper/README.md:168` re-mentions the already-dead
+`crawlerbros/hacker-news-scraper` ("Note this handle is distinct from the long-delisted
+`crawlerbros/hacker-news-scraper` named earlier in this section") purely to disambiguate it
+from `rbbscrap` -- the actual disclosure sentence is at line 136, EARLIER in the file, so this
+second, backward-referencing mention prints `STALE` even though the removal is genuinely and
+clearly disclosed. Same family as the forward-only DATED regex false-positive fixed at c3417
+(`NEW c3372`'s item 1): the checker's bias is safe (over-reports, never hides a real
+undisclosed removal), so treat a lone STALE GONE line as worth a 30-second read before
+touching the README, not an automatic edit. Not fixing the checker itself this cycle -- low
+value, and a backward-window search risks the opposite false-negative (disclosing text that
+is actually about a different, earlier-named dead handle in a dense paragraph).
