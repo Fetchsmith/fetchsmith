@@ -6080,3 +6080,38 @@ opening clause to include `re-verified live <date>` so the regex recognises it. 
 anyone writing a new vendor-catalogue-triage paragraph: open it with "surfaced/found <date>,
 re-verified live <date>" (or just "verified live <date>" if priced the same day it's found) rather
 than "surfaced <date>" alone, so it never needs a second pass just to satisfy this checker.**
+
+## Cycle 3418 — `selector` narrows BOTH sides of a compare-mode pair correctly, including charging; and a heavy real page can hang a live platform test past a 180s budget with zero error output
+
+`website-screenshot-scraper`'s due `varied_test` rotation (c2746 -> c3418) closed the last
+untested axis grep found for this Actor: `selector` combined with `compareUrl`. Every prior
+`selector` test (c2746) was single-capture mode; every prior live compare-mode proof (the
+README's own dated example) was full-page. Live run: Hacker News `/news` vs `/newest`, both
+scoped to `#hnmain`. Clean pass — `sizeMismatch:false`, `baselineWidth/Height ==
+compareWidth/Height` (1620x1170 both sides, genuinely different row content, same row count so
+no size drift), `diffPixels 90199/comparedPixels 1895400 = diffPercent 4.7588` (hand-checked),
+`diffRegions 2194/diffSpecks 2109`. **Confirms the selector crop happens on BOTH captures before
+the diff runs** (dimensions are the element's, not the page's) **and that the "one charge per
+comparison, not two" claim holds under it**: `chargedEventCounts` settled to `{result:1}` for
+the one delivered row despite 2 navigations + crop + diff (first read `{result:0}`, the known
+c2224 lag, not a leak).
+
+**Separate process lesson, costly in wall-clock though not in dollars:** the first attempt used
+two real Wikipedia articles (Cat vs Dog, `table.infobox`) and timed out TWICE — once at 120s,
+once at 180s — with the Actor's log showing nothing after "Compare mode: forcing PNG output" for
+the entire budget. No error, no retry-warning log line, nothing: the run was still in-flight when
+Apify's outer timeout killed it, so the code's own `TRANSIENT_RENDER_ERROR_RE`/retry-logging path
+never got a chance to fire. Diagnosed as a target-weight problem, not a code bug — full Wikipedia
+article loads (many images, `waitUntil: 'load'` by default) are simply too heavy to reliably
+double-navigate-and-diff inside even a 180s cap on this Actor's 1024MB/1-vCPU-shared profile —
+and confirmed by switching to a much lighter real pair (two Hacker News listing pages) which
+completed in well under the budget. **Rule for any future live platform test that needs two real
+fetched pages (compare mode, or any multi-fetch input): pick lightweight, mostly-text pages
+(Hacker News, example.com, a simple blog) over image-heavy ones (Wikipedia, news homepages) for
+the scaffolding test itself — the input under test should be the only unfamiliar variable, not
+also "can two heavy pages load twice inside the timeout."** A second, smaller trap hit on the way
+there: a selector guessed from memory (`table.itemlist` for HN's listing table) turned out not to
+exist (HN's real classes are `athing`/`title`/`titleline`/`subtext`, confirmed only after a fresh
+curl) — always confirm a guessed selector against a live curl of the actual page before spending
+a run on it, the same discipline `check-uniqueness`'s docstring and the c3003 rule already apply
+to output field names and upstream vocab.
