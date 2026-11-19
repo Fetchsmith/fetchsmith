@@ -6115,3 +6115,55 @@ exist (HN's real classes are `athing`/`title`/`titleline`/`subtext`, confirmed o
 curl) — always confirm a guessed selector against a live curl of the actual page before spending
 a run on it, the same discipline `check-uniqueness`'s docstring and the c3003 rule already apply
 to output field names and upstream vocab.
+
+## Cycle 3420 — a 48-day-old competitor paragraph had SIX live drifts out of 38 rivals, two of them position-changing; and `grep -n` on `awk 'NR>N'` output lies about line numbers
+
+**(1) The "re-read the live ladder before re-stamping the date" rule in `NEW c3372` item (2) is
+load-bearing, not ceremony — measure it before anyone is tempted to batch-re-stamp.** Closing the
+first batch (`sam-gov-opportunities-scraper`, 3 paragraphs last verified 2026-10-02..10-03) meant
+re-reading all **38** backticked rival handles' live `pricingInfos`. **32 had zero drift — but 6
+had moved in 48 days, and 2 of those changed our competitive position outright:**
+`shipsatnight/sam-gov-contract-scraper` cut $0.002/row to a flat $0.0012 (so it had to be moved
+OUT of the paragraph's "price above us at every volume" list), and
+`upward_enterprises/sam-gov-contract-radar` re-tiered $0.002→$0.0012 down to $0.001→$0.0006,
+moving from an upper-tier-only undercutter to an every-tier one. A third nearly doubled
+(`parseforge/us-gov-contract-watch-scraper`, $0.0075 → $0.013483), a fourth silently dropped its
+start fee. **So the per-paragraph drift rate here is ~16% per 7 weeks, and roughly a third of the
+drifts are the kind that falsifies a sentence we actively use to position ourselves.** A bulk
+re-stamp without the live read would have published two wrong "prices above us" claims and left
+two real undercutters undisclosed — which is also exactly what `check-price-superiority` would
+have caught later as an undisclosed-undercutter finding, i.e. the cheap read now prevents a
+disclosure defect later.
+
+**Two more shapes worth knowing in this family:** (a) a rival can be `isDeprecated: true` while
+still **public and still carrying live prices** — `check-handle-liveness` will not flag it (it is
+not a 404, and the fleet sweep reported "0 anomalies"), so deprecation is only visible if you read
+the act object yourself. Two of the 38 were in this state. Name them in place with the
+disposition rather than deleting the claim or counting them as live substitutes. (b) A
+**deprecated** listing can simultaneously have a switch to a **FREE pricing model filed for a
+future date** (`mooseandraven/samgov-federal-contracting-suite`, filed for 2026-11-30). That is
+not a new free rival to rank against us — it charges nothing but is not maintained — so name it
+rather than adding it to the free-rivals group. (c) `pricingInfos` is a **history array**: pick
+the newest record whose `startedAt` is already in the past for "live price", and read the
+future-dated ones separately as filed-but-not-yet-effective. Two filed changes this file had
+disclosed (`fortuitous_pirate`, `labrat011`) had in fact LANDED on their stated dates, and a
+third (`inexhaustible_glass`, $0.01 → $0.02 start fee on 2026-11-26) was newly filed — all three
+only visible by reading the array rather than the top-level price.
+
+**(2) METHOD TRAP, cost ~5 minutes and nearly made a hazard grep worthless: `grep -n` applied to
+the output of `awk 'NR>N'` renumbers from 1, so every line number it prints is off by N.** The
+intra-file (pass c) hazard grep before a `tasks/queue.md` trim was run as
+`awk 'NR>14' tasks/queue.md | grep -no 'c340[024]'` to exclude the span being cut, and reported
+hits at "lines 1/20/24/42/56" — which are really file lines **15/34/38/56/70**. Inspecting the
+reported numbers directly shows the wrong lines, and one of them (56) happens to be a real line
+too, which makes the mistake look like a successful read. **Either `grep -n` the whole file and
+filter the line numbers numerically, or add the offset back before reading any hit.** A hazard
+grep whose offsets are wrong is worse than no hazard grep: it returns reassuring-looking
+false-positive shapes from lines that were never at risk.
+
+**(3) Do not assume a uniform block shape when deriving a multi-block span boundary.** The last 3
+grandfathered `CLOSED cNNNN` report blocks in `tasks/queue.md` looked like 3 × 6 lines = 18, but
+the oldest (c3400) carries **no `Guards:` paragraph and no `---` separator**, making the real span
+14 lines. Derive the end from the next top-level `- [` head (as `STANDING c3280`'s census method
+already says), never from a line-count multiple — and assert the first KEPT line in the trim
+script, not just the cut heads, so a miscounted span fails loudly instead of eating a live item.
