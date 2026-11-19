@@ -6348,3 +6348,34 @@ cadence shifts. `STANDING c3296`'s c3435-c3443 STATUS.md window had passed with 
 trim, which looks like a miss but was correct -- measured headroom was ~25 cycles.
 Stop forwarding cycle-number windows as triggers; the trigger is measured headroom
 from a fresh `check-doc-size`, and a window is only a hint for when to look.
+
+## c3448 — the INVERTED LADDER: a rival 100x cheaper at FREE and dearer at every paid rung
+
+Standing bucket 3 covers the common shape — a rival **ties our FREE rung and is dearer above it**.
+Vendor `informed_almandine_vzb` (5 Actors, all listed 2026-11-10, one shadowing each of
+`ats-jobs`/`clinicaltrials`/`remote-jobs`/`shopify-products` plus a Workday specialist) ships the
+mirror image, identically on every row: **`$0.00001` at FREE, then a 100–150x step up to a flat
+`$0.0015`–`$0.005` at BRONZE and every tier above, plus a `$0.00005` start fee.** Treat it as its own
+shape, because it breaks two habits at once:
+
+1. **A price-sorted scan ranks it first and is right about the rung buyers SEE.** Apify's Store card
+   shows the FREE rung (c1083 corollary), so this is a real competitive fact, not a rounding artifact
+   — do NOT file it under bucket 3 as "ties us, dearer above". It beats us there by 100x.
+2. **But it is the dearest option for anyone who has ever upgraded**, so a single "cheaper/dearer"
+   verdict is unanswerable. Price BOTH ends explicitly, and say which plan each applies to.
+
+What resolved the batch was bucket 7 applied **at the FREE rung specifically**: 4 of the 5 are
+dominated by a rival already named in the same README that is `$0.00001` *flat at every tier*
+(`forgedata/workday-jobs`, `silicatelabs/JobsFlow`, `maximedupre/clinicaltrials-gov` — all three
+re-verified live this cycle). Only `shopify-products-scraper` had no such dominator, so only that one
+was disclosed. **Bucket 7's test is "cheaper-or-equal at the rung where the rival wins", not "cheaper
+on average".**
+
+**Corollary that cost nothing and paid immediately: re-pricing the claimed dominator is not a
+formality.** `titan_coder/shopify-products-delta-tracker` was our standing "free to run today"
+example; it acquired pricing on 2026-10-09 (`$0.005` start + `$0.01`/result, now the niche's dearest),
+so the paragraph was false and the free option it offered a buyer did not exist. **The README had
+predicted this in writing** — "an Actor with no pricing record is one the author has not finished
+monetizing rather than a committed free tier, and it can acquire one without notice". A predicted
+drift is still a drift: when a paragraph names its own falsification condition, that condition is a
+check, not a disclaimer, and nothing re-reads it until a batch happens to touch the handle.
