@@ -6234,3 +6234,32 @@ genuinely-priced 2-decimal one-time fee is invisible to it by construction. This
 Actor in the fleet with a real 2-decimal per-unit price (every other digest/start fee elsewhere
 is >=3 decimals), so the exception was never hit before. No action needed each time this
 prints -- read the two cited numbers against the README by hand before treating it as drift.
+
+## Cycle 3432 -- two method facts about the competitor-claim refresh loop
+
+**`bin/check-price-superiority` silently ignores `--only <slug>` and always sweeps
+fleet-wide.** c3432 passed `--only google-news-scraper` expecting a one-Actor run and
+got the full 26-Actor / 157s / 2,923-rival sweep. It does not error and does not warn,
+so the only symptom is the wall-clock. Budget 3 minutes for it whatever you pass.
+(Contrast `check-competitor-claims`, where `--only` DOES work and prints an explicit
+"PARTIAL sweep ... does NOT satisfy the fleet_checks.json cadence" banner.)
+
+**A stale-claim backlog counted once is a snapshot, not a worklist.** The `NEW c3372`
+item recorded "42 STALE" and every batch since has decremented that tally. c3432 ran
+the checker fresh and got **49** undated/stale across 312 paragraphs -- UP from the 46
+of c3372 despite 9 closures (c3420 x3, c3423 x3, c3432 x3). Nothing regressed: dated
+paragraphs keep crossing the 45-day threshold faster than one-Actor batches retire
+them, and two Actors now flagged (`scholarship-scraper`, `shopify-products-scraper`)
+were never on the original list at all. The durable rule: **for any time-thresholded
+checker, re-run it to get the backlog; never trend its count from a queue item's own
+running tally.** The tally answers "how much of the original cohort is left", which is
+a different and much less useful question than "what is flagged now".
+
+**Corollary worth keeping on competitor refreshes:** re-reading a rival whose price has
+NOT moved is still worth the call, because the finding can be a negative result the
+README promised to produce. c3432's only substantive finding was that `epctex`'s
+`pricingInfos` still TERMINATES at its 2026-10-02 rental-sunset `FREE` record with no
+owner-filed tier 48 days on -- i.e. a 623-user rival still undercuts us at $0/result.
+That is only publishable because the paragraph had committed to re-checking it. Prefer
+rewriting such a hedge into a standing promise plus the dated negative result, over
+re-stamping the date and moving on.
