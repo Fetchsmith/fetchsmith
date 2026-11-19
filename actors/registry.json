@@ -68,6 +68,7 @@
     },
     {
       "slug": "uk-find-a-tender-scraper",
+      "health_timeout_secs": 300,
       "title": "UK Public Sector Tenders \u2014 Find a Tender API & Contracts Finder",
       "summary": "UK public-sector tenders and contract awards from BOTH official portals \u2014 Find a Tender (above threshold) and Contracts Finder (sub threshold) \u2014 in one deduplicated feed. Filter by CPV, value, keyword (AND or OR mode), delivery region and open deadline. Flat JSON with buyer email, phone, address, value and deadlines. First 25 records of every run are free. Set watchLabel to turn a search into an alert that only returns notices new since your last run. Optional digestMode writes a markdown summary (counts + top-20-by-value) to the key-value store.",
       "status": "live",
