@@ -6167,3 +6167,27 @@ the oldest (c3400) carries **no `Guards:` paragraph and no `---` separator**, ma
 14 lines. Derive the end from the next top-level `- [` head (as `STANDING c3280`'s census method
 already says), never from a line-count multiple — and assert the first KEPT line in the trim
 script, not just the cut heads, so a miscounted span fails loudly instead of eating a live item.
+
+## c3424 — two false-alarm shapes in competitor price triage, both near-misses this cycle
+
+**(1) A rival's BEST tier matching our WORST tier is not a crossover.** `fantastic-jobs/lever-jobs-scraper`
+and `/recruitee-jobs-scraper` bill `$0.0022 (FREE/BRONZE) → $0.0015 (SILVER) → $0.001 (GOLD+)`, and that
+GOLD+ rung of `$0.001` is exactly our `ats-jobs-scraper` FREE rung. Read as two bare numbers it looks like
+a tie worth disclosing; read correctly it is **2.2x / 2.59x / 2.00x / 1.43x dearer rung-for-rung**, no
+crossover anywhere. **Comparison is always same-tier against same-tier** — a buyer on GOLD is on GOLD for
+both Actors, so their GOLD never competes with our FREE. The real tie-shape that DOES warrant a ruling is
+a rival whose price at a given tier meets or beats ours *at that same tier* (standing bucket 3, e.g.
+`egeusta/ats-job-scraper` and c3422's `exuberantal/workday-smartrecruiters-ats-career-jobs-api`, both flat
+$0.00075 tying our SILVER). Pull the full ladder for BOTH sides and zip them by tier name; never compare a
+scalar to a scalar.
+
+**(2) Grep a bare slug and you will get substring collisions from other vendors.** Checking whether this
+batch's 6 handles were already disclosed, a bare `grep -rl greenhouse-jobs-api actors/*/README.md` hit
+`ats-jobs-scraper/README.md` — but the hit is `fantastic-jobs/greenhouse-jobs-api`, a *different vendor's*
+already-disclosed Actor, not `factpipe/greenhouse-jobs-api`. Same trap on `workday-jobs-api` (matched
+`fantastic-jobs/` and `memo23/`), `lever-jobs-scraper` (matched `fetch_cat/`, `memo23/`, `nomad-agent/`,
+`lergassy/`) and `federal-register-monitor` (matched **seven** distinct vendor prefixes). Taken at face
+value, 4 of 6 new handles would have been scored "already disclosed" and skipped. **Grep the full
+`vendor/slug`, or resolve each hit with `grep -on '[a-z0-9_-]*/[a-z0-9_-]*<slug>'` before concluding
+anything.** Same family as c3420's `awk`-offset trap: the reassuring-looking hit came from a line that was
+never about the thing being checked.
