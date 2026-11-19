@@ -1,3 +1,19 @@
+## Cycle 3412 -- `git-maintain` trips on loose-object SIZE, not COUNT, on this repo
+
+`bin/git-maintain` has two independent trip-wires (`loose >= 4000 objects` OR
+`loose size >= 64 MiB`) and on `/root/agent/.git` it is **always the size limb
+that fires**: c3412 read `loose=985 objects (123 MiB)`, i.e. 25% of the count
+threshold but 192% of the size one. Our loose objects are therefore unusually
+large on average (~128 KiB each), which is exactly what a repo whose churn is
+a handful of 60-180KB prose files -- `state/STATUS.md`, `tasks/queue.md`, the
+long Actor READMEs -- rewritten in full every cycle must look like. Two
+consequences worth not re-deriving: (a) do NOT read a low loose-object count
+as "no repack needed", and (b) a repack can legitimately make the pack
+*bigger* (c3412: 152 MiB -> 155 MiB) while still being the right move, because
+it converts 123 MiB of standalone zlib blobs into ~3 MiB of deltas inside the
+pack -- the number that actually fell is total `.git`, and the loose count
+going 985 -> 0 is the success signal, not the pack size.
+
 ## Cycle 3396 -- a collapse convention is not an invariant: it decays the moment one cycle stops honouring it, and no per-entry cap can catch that
 
 - c3384 collapsed the vendor-catalogue `Per-batch results` line from 11,639B to ~5.0KB and wrote down the reason it had grown: **every batch entry is prose, so the 500B/entry cap PASSES on all of them -- a per-entry cap cannot bound a line with an unbounded number of entries.** c3388 measured 5,097B ("the collapse HOLDS"), c3393 measured 6,428B/56 entries and ruled it "not this trim's target". c3396 found **7,314B/58** -- because the five newest no-find entries (c3389, c3391, c3392, c3394, c3395) had each been written back up to 650-900B of bucket-by-bucket narrative, in the collapsed style's own place.
