@@ -1,0 +1,379 @@
+[
+ {
+  "handle": "brdatahub/brazil-company-kyb-lawsuit-risk",
+  "title": "Brazil 360\u00b0 Company KYB, CNPJ, Domain & Lawsuit Risk API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "kyb-company-dossier-generated",
+  "unit_tiers": {
+   "FREE": 0.025
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): kyb-company-dossier-generated",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "kyb-company-dossier-generated": {
+    "tiers": {
+     "FREE": 0.025
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "360-degree Brazilian KYB & litigation dossier generated"
+   }
+  },
+  "desc": "One-shot Brazilian B2B due diligence & fraud-prevention dossier: crosses Registro.br domain age, Receita Federal CNPJ & QSA partners, and CNJ DJEN court lawsuit notices into an automated 0\u2013100 KYB Trust Score."
+ },
+ {
+  "handle": "davidcondrey/wl-precedent-search",
+  "title": "Case-law precedent search (CourtListener, US)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "agent-call",
+  "unit_tiers": {
+   "FREE": 1.25
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): agent-call",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "agent-call": {
+    "tiers": {
+     "FREE": 1.25
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Case-law precedent search (CourtListener, US) run"
+   }
+  },
+  "desc": "Finds US court opinions most on point for a legal question or fact pattern: searches CourtListener's case-law index (optionally limited to courts and filing dates), reads the top opinions, and returns the best matches with a holding passage verified verbatim against the opinion\u2026"
+ },
+ {
+  "handle": "jungle_synthesizer/uk-gazette-insolvency-corporate-notices-scraper",
+  "title": "UK Gazette Insolvency & Corporate Notices Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record,orbtop-actor-start",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "orbtop-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Scrape UK Gazette insolvency and corporate notices (London, Edinburgh, Belfast). Output: Companies House number, company, notice type, insolvency practitioner and IP number, court case, petition, hearing and appointment dates, creditor deadline, registered office."
+ },
+ {
+  "handle": "nocturntools/ro-supplier-litigation",
+  "title": "Romania Supplier Litigation Monitor (portal.just.ro)",
+  "users": 2,
+  "model": "FREE",
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {},
+  "desc": "Court cases of Romanian companies by CUI from portal.just.ro: case counts, the company's role, matter, stage and factual flags (insolvency as debtor, active defendant, tax and labor disputes). Monitor mode reports only new or changed cases."
+ },
+ {
+  "handle": "spider_studio/tianyancha-dimension",
+  "title": "Tianyancha Risk Data Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "dimension-counts",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dimension-counts",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "dimension-counts": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Dimension Counts"
+   }
+  },
+  "desc": "Scrape Tianyancha company dimension counts by gid, including operating risks, lawsuits, administrative penalties, patents, trademarks, shareholders, and branches. Combine with Search, Basic Info, Dynamics, Shareholders, Listing, and News Actors for risk scoring, IP research, and company screening."
+ },
+ {
+  "handle": "spider_studio/tianyancha-dynamics",
+  "title": "Tianyancha Company Events Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company-dynamics",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-dynamics",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "company-dynamics": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Dynamic Event"
+   }
+  },
+  "desc": "Scrape recent Tianyancha company events by gid, including company record changes, lawsuits, administrative penalties, court announcements, and risk levels. Combine with Search, Basic Info, Risk, Shareholders, Listing, and News Actors for compliance, due diligence, monitoring, and alerts."
+ },
+ {
+  "handle": "unrivaled_fortress/courtlistener-opinion-alert-radar",
+  "title": "\u2696\ufe0f CourtListener Opinion & Docket Alert Radar",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00425,
+     "SILVER": 0.00375,
+     "GOLD": 0.00325,
+     "PLATINUM": 0.00325,
+     "DIAMOND": 0.00325
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search federal opinions and dockets by keyword via the free CourtListener API. Case-law monitoring for litigators without PACER fees per page."
+ },
+ {
+  "handle": "zinin/counterparty-risk-rollup",
+  "title": "Counterparty Risk Check \ud83d\udcb0$0.05/company \u2014 Sanctions",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0475,
+   "DIAMOND": 0.04,
+   "FREE": 0.05,
+   "GOLD": 0.0425,
+   "PLATINUM": 0.041,
+   "SILVER": 0.045
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "BRONZE": 0.00475,
+     "DIAMOND": 0.004,
+     "FREE": 0.005,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "SILVER": 0.0045
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-found": {
+    "tiers": {
+     "BRONZE": 0.0475,
+     "DIAMOND": 0.04,
+     "FREE": 0.05,
+     "GOLD": 0.0425,
+     "PLATINUM": 0.041,
+     "SILVER": 0.045
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Delivered counterparty evidence rollup"
+   }
+  },
+  "desc": "One row per company: OFAC SDN + EU sanctions hits and GLEIF LEI record (status, jurisdiction, address); optional court cases (US CourtListener, UK Find Case Law, Poland SAOS) and Greenhouse/Lever/Ashby hiring count; 0\u2013100 risk score. Not a compliance verdict. $0.05 per company + $0.005 start per GB."
+ },
+ {
+  "handle": "zinin/litigation-check",
+  "title": "Company Litigation Check \ud83d\udcb0$0.02/Country, Case Links",
+  "users": 14,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.019,
+   "DIAMOND": 0.016,
+   "FREE": 0.02,
+   "GOLD": 0.017,
+   "PLATINUM": 0.0164,
+   "SILVER": 0.018
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "BRONZE": 0.00475,
+     "DIAMOND": 0.004,
+     "FREE": 0.005,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "SILVER": 0.0045
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-found": {
+    "tiers": {
+     "BRONZE": 0.019,
+     "DIAMOND": 0.016,
+     "FREE": 0.02,
+     "GOLD": 0.017,
+     "PLATINUM": 0.0164,
+     "SILVER": 0.018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Delivered litigation source observation"
+   }
+  },
+  "desc": "Check companies for lawsuits and court cases by name: US federal PACER dockets via CourtListener (your own API token) and Polish court judgments via SAOS (no token). Get case counts, case numbers, courts, dates and links. $0.02 per company per country + $0.005 per run."
+ }
+]
