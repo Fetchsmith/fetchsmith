@@ -1,0 +1,1608 @@
+[
+ {
+  "handle": "adobeflex/grants-gov-lite",
+  "title": "Grants.gov Search API \u2014 US Federal Grants",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice_row",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice_row,search_run",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "search_run": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Search run"
+   },
+   "notice_row": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Opportunity row"
+   }
+  },
+  "desc": "Search US federal grant opportunities via grants.gov search2 API."
+ },
+ {
+  "handle": "alizarin_refrigerator-owner/grants-gov-api---federal-grant-opportunities",
+  "title": "Grants.gov API - Federal Grant Opportunities",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 1e-05
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,get_agencies,get_closing_soon,get_forecasted,get_opportunity,search_by_agency,search_by_category,search_by_eligibility,search_opportunities",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   },
+   "search_opportunities": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search Grant Opportunities"
+   },
+   "get_opportunity": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Opportunity Details"
+   },
+   "search_by_agency": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search by Agency"
+   },
+   "search_by_category": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search by Category"
+   },
+   "get_forecasted": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Forecasted Grants"
+   },
+   "get_closing_soon": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Closing Soon"
+   },
+   "search_by_eligibility": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Search by Eligibility"
+   },
+   "get_agencies": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Get Federal Agencies"
+   }
+  },
+  "desc": "Access Grants.gov for federal grant opportunities. Search $700+ billion in annual federal funding across all agencies. Find grants for research, nonprofits, education, healthcare, and small businesses."
+ },
+ {
+  "handle": "andrew_avina/grants-mcp",
+  "title": "Federal Grants: 10,000+ Active Grants.gov Opportunities",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result item returned"
+   }
+  },
+  "desc": "Search all active federal grant opportunities from Grants.gov. NIH, NSF, USDA, HUD, DOE, DOJ + 25 agencies. Returns ceiling, eligibility, close date. Filter by agency, keyword, amount, applicant type. MCP-native. Updated daily."
+ },
+ {
+  "handle": "aurumworks/us-federal-grant-scraper",
+  "title": "US Federal Grant Scraper",
+  "users": 15,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.009
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.009
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape the official US federal grants database (Grants.gov) to find available funding opportunities for your startup, research project, or organization. Input keywords and get structured data with relevance scoring."
+ },
+ {
+  "handle": "automation-lab/grants-gov-funding-opportunities-scraper",
+  "title": "Grants.gov Opportunities Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.004692,
+   "BRONZE": 0.00408,
+   "SILVER": 0.0031824,
+   "GOLD": 0.002448,
+   "PLATINUM": 0.001632,
+   "DIAMOND": 0.0011424
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run started"
+   },
+   "item": {
+    "tiers": {
+     "FREE": 0.004692,
+     "BRONZE": 0.00408,
+     "SILVER": 0.0031824,
+     "GOLD": 0.002448,
+     "PLATINUM": 0.001632,
+     "DIAMOND": 0.0011424
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Item extracted"
+   }
+  },
+  "desc": "Search official Grants.gov opportunities and export eligibility, deadlines, synopsis, Assistance Listings, award details, and source links."
+ },
+ {
+  "handle": "ayush.naa/grants-fit-deadline",
+  "title": "Grants.gov Fit and Deadline Feed",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Grant opportunity"
+   }
+  },
+  "desc": "Find open U.S. federal grant opportunities by topic, closing date, and published applicant type code. Results link to the source notice; eligibility requires human review."
+ },
+ {
+  "handle": "bakos_bence/grants-gov",
+  "title": "Grants.gov Federal Grant Opportunities",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00249,
+   "BRONZE": 0.002074,
+   "SILVER": 0.001661,
+   "GOLD": 0.001245,
+   "PLATINUM": 0.001245,
+   "DIAMOND": 0.001245
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.004,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.00249,
+     "BRONZE": 0.002074,
+     "SILVER": 0.001661,
+     "GOLD": 0.001245,
+     "PLATINUM": 0.001245,
+     "DIAMOND": 0.001245
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Search US federal grant opportunities on Grants.gov \u2014 title, agency, open/close dates, status, CFDA codes, and detail links via the official search2 API. Unofficial; not affiliated with Grants.gov."
+ },
+ {
+  "handle": "brightpath-data/grants-gov-search",
+  "title": "Grants.gov Search Scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Grant opportunity record"
+   }
+  },
+  "desc": "Grant writers and funding-research teams get current, forecasted and closed U.S. federal grant opportunities as flat records, not a slow government search form."
+ },
+ {
+  "handle": "caffein.dev/grants-actor",
+  "title": "Grant Opportunities Search Scraper",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "basic_result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): basic_result,duke_result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "basic_result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Basic Results"
+   },
+   "duke_result": {
+    "tiers": {
+     "FREE": 0.008
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Duke Results"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search grant opportunities by keyword across NIH RePORTER, Grants.gov, and Duke Research Funding. Returns a unified dataset with titles, sponsors, deadlines, amounts, eligibility, and source URLs. Great for grant discovery, dashboards, and automation."
+ },
+ {
+  "handle": "chorelet/government-tenders-scraper",
+  "title": "Government Tenders & RFPs \u2014 EU TED, UK, SAM.gov Contracts",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): detail,tender",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "tender": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender"
+   },
+   "detail": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Notice details"
+   }
+  },
+  "desc": "Public procurement notices from EU TED, UK Find a Tender, UK Contracts Finder, SAM.gov and grants.gov in one schema \u2014 title, buyer, country, CPV/NAICS, deadline and days left, value, documents and awardee. No API key, filter by keyword, code, country or date."
+ },
+ {
+  "handle": "constant_quadruped/research-grant-aggregator",
+  "title": "Research Grant Aggregator",
+  "users": 13,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {},
+  "desc": "Search NIH, NSF, Grants.gov & USASpending in one query. Get unified grant data with PI names, award amounts, organizations & keywords. Perfect for universities, grant writers, VCs tracking funded research. No API keys needed\u2014all public federal data."
+ },
+ {
+  "handle": "datalayer/grants-gov-funding",
+  "title": "Grants.gov Scraper - Federal Grants",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): agency_summary,closing_soon,opportunity",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Opportunity"
+   },
+   "closing_soon": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Closing soon"
+   },
+   "agency_summary": {
+    "tiers": {
+     "FREE": 0.05,
+     "BRONZE": 0.045,
+     "SILVER": 0.04,
+     "GOLD": 0.035,
+     "PLATINUM": 0.035,
+     "DIAMOND": 0.035
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Agency summary"
+   }
+  },
+  "desc": "Grants.gov search returns a title, an agency and a date. Award size, whether you must match funds, and who may actually apply live on a second endpoint that nothing on the store joins up. This does, and its deadline radar correctly excludes forecasts, which have no closing date yet by design."
+ },
+ {
+  "handle": "fetch_cat/grants-gov-opportunities-scraper",
+  "title": "Grants.gov Opportunities Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00285,
+   "SILVER": 0.00255,
+   "GOLD": 0.00225,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00285,
+     "SILVER": 0.00255,
+     "GOLD": 0.00225,
+     "PLATINUM": 0.0018,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Opportunity saved"
+   }
+  },
+  "desc": "Search and export public Grants.gov federal funding opportunities with optional detail enrichment."
+ },
+ {
+  "handle": "fiery_dream/scholarship-intel",
+  "title": "Scholarship Intel",
+  "users": 41,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 1e-05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "result"
+   }
+  },
+  "desc": "Enterprise-grade scholarship, grants, and university intelligence platform.\n\nFeatures\nUniversity Search: 6,400+ US institutions with detailed data\nFederal Grants: Real-time Grants.gov opportunities\nEducation Spending: USAspending grant awards data\nand more!"
+ },
+ {
+  "handle": "fortuitous_pirate/grants-gov-scraper",
+  "title": "Grants Gov Scraper \u2014 No Login, $4.38/1k",
+  "users": 6,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001395
+  },
+  "start_fee": 0.001,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001395
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Extract federal grant opportunities from Grants.gov. Search by keyword, filter by agency (NSF, NIH, DOE, etc.), status, and close date. Get grant titles, numbers, agencies, dates, and direct links. No login or cookies. MCP-ready for AI agents. $4.38 per 1,000 records."
+ },
+ {
+  "handle": "great_pistachio/grants-gov-scraper",
+  "title": "Grants Gov Scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search US federal grant opportunities from Grants.gov with no key. Filter by keyword, status (posted, forecasted, closed), agency, and eligibility. Returns opportunity number, title, agency, open/close dates, status, and CFDA numbers. For grant seekers, nonprofits, researchers, and consultants."
+ },
+ {
+  "handle": "gubidonius/grants-gov",
+  "title": "Grants.gov Funding Opportunity Search",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-returned",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,opportunity-returned",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Run started"
+   },
+   "opportunity-returned": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Opportunity returned"
+   }
+  },
+  "desc": "Searches US federal funding opportunities on Grants.gov and returns the agency contact, the award amounts and the real closing date. Grants.gov keeps two records per opportunity and the older one often has the higher version, so every row says which one its deadline came from."
+ },
+ {
+  "handle": "hridayrungta/grants-gov-scraper",
+  "title": "Federal Grants Database | Grants.gov Data | $1.5 / 1K",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-scraped",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-scraped",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "opportunity-scraped": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Opportunity scraped"
+   }
+  },
+  "desc": "Find federal grants from Grants.gov with no login or API key: agency, deadlines, award ceiling and floor, eligibility, ALN codes and attachments. Filter by keyword, agency, applicant type or status. $1.50 per 1,000 records."
+ },
+ {
+  "handle": "jungle_synthesizer/grants-gov-crawler",
+  "title": "Grants.gov Scraper \u2014 Federal Grant Opportunities Crawler",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.1,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Grants.gov scraper for federal grant opportunities (posted, forecasted, closed, archived). Crawl titles, agencies, CFDA numbers, funding amounts, eligibility, close dates, and grantor contacts. Filter by agency, category, instrument, eligibility, CFDA, keyword, or posted-date window."
+ },
+ {
+  "handle": "logiover/grants-gov-scraper",
+  "title": "Grants.gov Scraper \u2014 US Federal Grant Opportunities",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.00225,
+   "SILVER": 0.002,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.00225,
+     "SILVER": 0.002,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search and scrape US federal grant opportunities from Grants.gov by keyword, status, agency and category. Extract award amounts, deadlines, eligibility and agency contacts. No API key, no login."
+ },
+ {
+  "handle": "martc03/grant-finder-mcp",
+  "title": "Federal Grant & Funding Finder MCP Server",
+  "users": 3,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {},
+  "desc": "MCP server for federal grant opportunities. Gives AI assistants access to Grants.gov to search funding opportunities by agency, category, eligibility, and status."
+ },
+ {
+  "handle": "muzafferkadir/grants-gov-scraper",
+  "title": "Grants.gov Scraper | Federal Grants & Funding Search",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "opportunity"
+   }
+  },
+  "desc": "Scrape U.S. federal grant and funding opportunities from Grants.gov by keyword and status: title, agency, dates, CFDA, and detail links. Official API, no API key."
+ },
+ {
+  "handle": "nimble_flash/grant-fit-scout",
+  "title": "Grant Fit Scout - Grants.gov Grant Finder",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-opportunity",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,qualified-opportunity",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   },
+   "qualified-opportunity": {
+    "tiers": {
+     "FREE": 0.1
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Qualified opportunity"
+   }
+  },
+  "desc": "Find Grants.gov funding opportunities and score grant fit, deadlines, eligibility clues, award details, workload, and source links."
+ },
+ {
+  "handle": "parseforge/grants-gov-scraper",
+  "title": "Grants.gov Federal Grant Scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.0075,
+   "BRONZE": 0.00733,
+   "SILVER": 0.00717,
+   "GOLD": 0.007,
+   "PLATINUM": 0.0063,
+   "DIAMOND": 0.0056
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant-detail,result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "result-item": {
+    "tiers": {
+     "FREE": 0.0075,
+     "BRONZE": 0.00733,
+     "SILVER": 0.00717,
+     "GOLD": 0.007,
+     "PLATINUM": 0.0063,
+     "DIAMOND": 0.0056
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "grant-detail": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.00481,
+     "SILVER": 0.00463,
+     "GOLD": 0.00445,
+     "PLATINUM": 0.00445,
+     "DIAMOND": 0.00445
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Grant detail"
+   }
+  },
+  "desc": "Scrapes federal grant opportunities from Grants.gov by keyword, agency, category, eligibility, and close date. Returns each grant as a flat row with optional full details, contact info, and attachments."
+ },
+ {
+  "handle": "preservable_mocha/us-federal-grants-aggregator",
+  "title": "US Federal Grants Aggregator (Grants.gov)",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search Grants.gov and get clean, unified JSON: agency, status, open/close dates, CFDA codes, links. Keyless official open data."
+ },
+ {
+  "handle": "publicrecords/govcon-opportunity-feed",
+  "title": "Federal Government Contracts: SAM.gov + Grants.gov in one",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-record",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): delta-record,incumbent-record,opportunity-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "opportunity-record": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity record"
+   },
+   "delta-record": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Delta record"
+   },
+   "incumbent-record": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Incumbent record"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Which government contracts were posted today? Returns SAM.gov and Grants.gov notices in one feed, new-since-last-run deltas, and source links."
+ },
+ {
+  "handle": "scrapepilot/grant-foundation-opportunities-scraper",
+  "title": "Grant & Foundation Opportunities Scraper",
+  "users": 13,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-scrape",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-scrape",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result-scrape": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Scraped Grant Opportunity Result"
+   }
+  },
+  "desc": "Scrape grant and funding opportunities from grants.gov, fundsforngos.org, and any grant portal. Extracts 6 fields: grant_id, funder, amount, eligibility, deadline, and link. Exports to JSON, CSV, and Excel. Enable Demo Mode to preview 10 sample records instantly \u2014 no scraping needed."
+ },
+ {
+  "handle": "second_coming/gov-contract-monitor",
+  "title": "Government Contract & Grant Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.02,
+  "note": "no recurring event -- one-time/start-fee only",
+  "undercuts_tiers": [],
+  "runfee": 0.02,
+  "runfee_label": "scan",
+  "runfee_crossover_rows": 13,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "scan": {
+    "tiers": {
+     "FREE": 0.02
+    },
+    "primary": true,
+    "onetime": true,
+    "title": "Scan run"
+   }
+  },
+  "desc": "Monitor and search US government contract opportunities from SAM.gov and grant opportunities from Grants.gov. Filter by keywords, agency, value, and posting date."
+ },
+ {
+  "handle": "signalcrawl/federal-grant-fit-finder",
+  "title": "Federal Grant Fit Finder",
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Grant fit lead"
+   }
+  },
+  "desc": "Find Grants.gov funding opportunities and score them by applicant fit, deadline urgency, award value, eligibility, agencies, and grant-writer-ready notes."
+ },
+ {
+  "handle": "soilair/grants-gov-api",
+  "title": "Grants.gov API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "grant-result",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0013,
+   "SILVER": 0.00115,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "BRONZE",
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant-result",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "grant-result": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.00115,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Grant result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search and enrich official U.S. federal grant opportunities from Grants.gov with normalized agencies, dates, funding details, Assistance Listings, and synopsis data."
+ },
+ {
+  "handle": "solidcode/grants-gov-scraper",
+  "title": "Grants.gov Federal Grants Scraper",
+  "users": 9,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0096,
+   "BRONZE": 0.00905,
+   "SILVER": 0.0085,
+   "GOLD": 0.008,
+   "PLATINUM": 0.008,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0096,
+     "BRONZE": 0.00905,
+     "SILVER": 0.0085,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "[\ud83d\udcb0 $8.00 / 1K] Extract US federal grant opportunities from Grants.gov \u2014 titles, agencies, deadlines, award amounts, eligibility, and contacts. Filter by keyword, agency, category, applicant type, status, and posted date."
+ },
+ {
+  "handle": "springlike_meadowland/us-grant-opportunities-scraper",
+  "title": "US Grant Opportunities Scraper | Grants.gov Research",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Saved opportunity"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Search Grants.gov funding opportunities by keyword, agency, status and posting date. Export stable IDs, deadlines when published, award ranges, eligibility excerpts and source links to a clean table."
+ },
+ {
+  "handle": "tagadanar/us-grants-monitor",
+  "error": "unresolvable"
+ },
+ {
+  "handle": "thirdwatch/grants-gov-scraper",
+  "title": "Grants.gov Scraper - Federal Funding Opportunities",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.003,
+   "SILVER": 0.0025,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.0025,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Search U.S. federal grant opportunities and export agencies, deadlines, award ranges, eligibility, descriptions, assistance listings, contacts, and official source links. Built for research, diligence, and market intelligence."
+ },
+ {
+  "handle": "thoob/grants-gov-feed",
+  "title": "Grants Feed: Federal Grants from Grants.gov",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-record",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "opportunity-record": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity record"
+   }
+  },
+  "desc": "Enter filters, get clean, flat US federal grant opportunities from the official Grants.gov API, each row with award ceiling, eligibility, deadline and contact. Filter by keyword, agency, category and award size, with a changes-only mode. Billed per delivered opportunity."
+ },
+ {
+  "handle": "upward_enterprises/grants-gov-opportunity-finder",
+  "title": "Grants.gov Scraper: Federal Grant Opportunities (No API Key)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-detail",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity,opportunity-detail",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "opportunity-detail": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00135,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Grant Opportunity"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Grant Opportunity Summary"
+   }
+  },
+  "desc": "$3 per 1,000 full records, no API key. Federal grant opportunities from Grants.gov by keyword, agency, category, eligibility, and status: award ceiling and floor, deadlines, eligibility text, agency contacts, NOFO attachment links. Official public API. Summaries $1 per 1,000."
+ },
+ {
+  "handle": "vhsgreed/us-federal-contracts",
+  "title": "US Federal Contracts & Grants \u2014 SAM.gov + USAspending",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00184,
+   "SILVER": 0.00168,
+   "GOLD": 0.00152,
+   "PLATINUM": 0.00152,
+   "DIAMOND": 0.00152
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "events": {
+   "actor-start": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "record": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.00184,
+     "SILVER": 0.00168,
+     "GOLD": 0.00152,
+     "PLATINUM": 0.00152,
+     "DIAMOND": 0.00152
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Official US federal procurement data in one run: SAM.gov contract opportunities (RFPs, solicitations, sources sought, award notices), USAspending.gov award history, and Grants.gov funding opportunities. Filter by keyword, NAICS, agency, set-aside, place of performance and response deadline."
+ }
+]
