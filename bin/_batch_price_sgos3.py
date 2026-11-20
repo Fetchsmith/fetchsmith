@@ -98,6 +98,10 @@ for i, h in enumerate(handles, 1):
         "runfee_label": runfee_label,
         "runfee_crossover_rows": round(runfee / OURS_FLOOR) if runfee else None,
         "future_pricing": future,
+        # cycle 3491: all-events sub-floor scan, NOT derived from `unit_price` (which
+        # selects only ONE event). See up.cheap_legs and _batch_price_apc2.py c3488.
+        "cheap_legs": [{"event": k, "title": t, "tiers": tt}
+                       for k, t, tt in up.cheap_legs(events, OURS_FLOOR)],
         "events": {k: {"tiers": tiers_of(v), "primary": v.get("isPrimaryEvent"),
                        "onetime": v.get("isOneTimeEvent"), "title": v.get("eventTitle")}
                    for k, v in events.items()},
@@ -111,6 +115,13 @@ up.persist_sweep("sgos", out)
 amb = [o for o in out if "AMBIGUOUS" in (o.get("note") or "")]
 rf = [o for o in out if o.get("runfee")]
 bf = [o for o in out if o.get("below_floor")]
+cl = [o for o in out if o.get("cheap_legs")]
 print(f"priced {len(out)} listings -> {OUT_FILE} "
       f"({len(bf)} with a tier below our floor, {len(amb)} ambiguous need hand-reading, "
       f"{len(rf)} pure run-fee)")
+print(f"ALL-EVENTS SUB-FLOOR SCAN (c3488-pattern, the number to act on -- `below_floor` above "
+      f"reads only unit_price's ONE selected event): {len(cl)} listing(s) have a per-row event "
+      f"under our ${OURS_FLOOR} floor")
+for o in cl:
+    for leg in o["cheap_legs"]:
+        print(f"  {o['handle']}  {leg['event']} ({leg['title']}) {leg['tiers']}")

@@ -1,0 +1,1454 @@
+[
+ {
+  "handle": "actorfactory/us-federal-contracts",
+  "title": "SAM.gov Scraper: Federal Contracts, RFPs & USAspending Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "award",
+    "title": "Award",
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    }
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Opportunity"
+   },
+   "award": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Award"
+   }
+  },
+  "desc": "SAM.gov scraper for open US federal contract opportunities (RFPs, solicitations, Sources Sought) from SAM.gov's official public data extract, plus past contract awards from the USAspending API. Filter by keyword, NAICS, PSC, agency, set-aside and dates. No login, no API key."
+ },
+ {
+  "handle": "adaptationapps/samgov-matcher",
+  "title": "SAM.gov Opportunity Matcher \u2014 Contracts Ranked by Fit",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Matched opportunity"
+   }
+  },
+  "desc": "Finds open federal contract opportunities on SAM.gov and ranks them by fit to your NAICS codes, keywords, set-asides and states, with the reason each matched."
+ },
+ {
+  "handle": "alaudinburki/sam-opportunities",
+  "title": "SAM.gov Opportunities Alerts \u2014 Federal Contracts, No API Key",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "New US federal contract opportunities from SAM.gov's official public daily extract, filtered by keywords, NAICS codes, set-asides, states, notice types and agencies \u2014 with new-since-last-run alerts. No API key or account needed."
+ },
+ {
+  "handle": "askerka00/samgov-contracts-pro-scraper",
+  "title": "SAM.gov Federal Contracts & Contacts Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "contract-scraped",
+  "unit_tiers": {
+   "FREE": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): contract-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "contract-scraped",
+    "title": "SAM.gov Contract Scraped",
+    "tiers": {
+     "FREE": 0.0008
+    }
+   }
+  ],
+  "events": {
+   "contract-scraped": {
+    "tiers": {
+     "FREE": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "SAM.gov Contract Scraped"
+   }
+  },
+  "desc": "Extract active SAM.gov government contract opportunities, solicitations, NAICS codes, deadlines, agencies, and contracting officer emails & phones. No SAM API key required. $0 on errors."
+ },
+ {
+  "handle": "cherry_hippopotamus/federal-contract-opportunities",
+  "title": "Federal Contract Opportunities + Incumbent Intel",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.0025,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): incumbent-intel,opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.0025,
+     "SILVER": 0.0025,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity"
+   },
+   "incumbent-intel": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.01,
+     "SILVER": 0.01,
+     "GOLD": 0.01,
+     "PLATINUM": 0.01,
+     "DIAMOND": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Incumbent intel"
+   }
+  },
+  "desc": "New and recently posted U.S. federal contract opportunities from the official public SAM.gov extract, optionally joined to the last related USAspending award. No contact PII. No API key required."
+ },
+ {
+  "handle": "codepulsehq/us-federal-opportunities-api",
+  "title": "US Federal Contracts & Grants API: SAM.gov, Grants.gov, Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 5e-05,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Opportunity"
+   },
+   "award": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Award"
+   }
+  },
+  "desc": "Search US federal contract opportunities (SAM.gov), grants (Grants.gov) and past awards (USAspending) by keyword, NAICS, agency, state and set-aside. No API key. Schedule it for daily alerts."
+ },
+ {
+  "handle": "coveandcolumn/sam-gov-opportunities",
+  "title": "SAM.gov Contract Opportunities \u2013 Federal RFPs & Bids",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0025,
+   "SILVER": 0.002,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0025,
+     "SILVER": 0.002,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity"
+   }
+  },
+  "desc": "Find open U.S. federal contract opportunities from SAM.gov: solicitations, RFQs/RFPs, presolicitations, sources sought and award notices. Filter by keyword, NAICS, PSC, set-aside, agency, state and date. Contacts, deadlines and full descriptions."
+ },
+ {
+  "handle": "dabooti/sam-gov-opportunities-scraper",
+  "title": "SAM.gov Contract Opportunities Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity"
+   }
+  },
+  "desc": "Export US federal contract opportunities from SAM.gov: solicitations, sources sought, presolicitations and awards with agency, office, NAICS, set-aside, PSC, response deadline and link. Filter by keyword, notice type, NAICS and set-aside."
+ },
+ {
+  "handle": "datacrate/gov-contract-opportunities",
+  "title": "Government Contract & Tender Monitor: SAM.gov, UK, EU TED",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.00176,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.00176,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Contract notice"
+   }
+  },
+  "desc": "Government bid monitor: SAM.gov (bring your own free key), UK Contracts Finder and EU TED, with keyword/NAICS/CPV filters and a daily delta. Official APIs, no personal data."
+ },
+ {
+  "handle": "edenwood.ai/federal-contracts-grants",
+  "title": "US Federal Contracts & Grants Extractor (SAM.gov & Grants)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-extracted",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-extracted",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "opportunity-extracted": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity extracted"
+   }
+  },
+  "desc": "Extract US federal contract awards, open federal grant opportunities, and live SAM.gov solicitations into one clean schema. Works out-of-the-box with ZERO API keys on USAspending.gov & Grants.gov, plus optional SAM.gov v2 support."
+ },
+ {
+  "handle": "emailemail67/sam-gov-opportunities-monitor",
+  "title": "SAM.gov Opportunities Monitor \u2014 Federal Contracts Tracker",
+  "users": 1,
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "no recurring event -- one-time/start-fee only",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-11-29T07:14:01.000Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "cheap_legs": [],
+  "events": {},
+  "desc": "Use this to get US federal contract opportunities from SAM.gov. Input: your free SAM.gov API key (apiKey), plus keywords and an optional NAICS code. Returns title, agency, deadline, set-aside, and amendment state. Official API."
+ },
+ {
+  "handle": "griffie/sam-gov-contracts-tracker",
+  "title": "SAM.gov Contracts Tracker \u2014 Federal RFPs, Bids & Award Winners",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0025,
+   "SILVER": 0.002,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,expiring-contract,opportunity,opportunity-details",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "opportunity-details",
+    "title": "Opportunity details",
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0008,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    }
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0025,
+     "SILVER": 0.002,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity"
+   },
+   "opportunity-details": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0008,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Opportunity details"
+   },
+   "award": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.002,
+     "SILVER": 0.0015,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Award winner"
+   },
+   "expiring-contract": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.006,
+     "SILVER": 0.005,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Expiring contract (recompete)"
+   }
+  },
+  "desc": "Federal contract opportunities from SAM.gov (RFPs, RFQs, sources sought) with NAICS, set-aside, deadlines and contracting officer contacts, plus award winners and expiring contracts (recompetes) with incumbents from USAspending. Monitor mode, no API key."
+ },
+ {
+  "handle": "hoanle0126/sam-gov-contracts-leads-scraper",
+  "title": "SAM.gov Scraper - Federal Contracts, RFPs & Officer Emails",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0028,
+   "BRONZE": 0.00252,
+   "SILVER": 0.00224,
+   "GOLD": 0.00196,
+   "PLATINUM": 0.00196,
+   "DIAMOND": 0.00196
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0028,
+     "BRONZE": 0.00252,
+     "SILVER": 0.00224,
+     "GOLD": 0.00196,
+     "PLATINUM": 0.00196,
+     "DIAMOND": 0.00196
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Dataset item"
+   }
+  },
+  "desc": "Extract active SAM.gov federal contract opportunities, RFPs, Sources Sought, NAICS codes, Small Business Set-Asides, and Contracting Officer (.gov/.mil) emails & phones without SAM API keys."
+ },
+ {
+  "handle": "hyperfetch/sam-gov-contracts-leads-scraper",
+  "title": "SAM.gov Contracts Scraper: RFPs, Awards & Officer Emails",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract active US federal government contracts, RFPs, RFIs, Sources Sought, and Contract Awards from SAM.gov\u2014including Contracting Officer emails, phones, NAICS codes, and Small Business Set-Asides. No SAM API key required."
+ },
+ {
+  "handle": "leecrowesoftware/sam-gov-opportunities",
+  "title": "SAM.gov Federal Opportunities Finder (Official API + Awards)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-enrichment,opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity"
+   },
+   "award-enrichment": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Award history"
+   }
+  },
+  "desc": "Search official SAM.gov contract opportunities by NAICS, PSC, set-aside, agency and dates. Export a clean dataset with public notice links, add optional USAspending award history, and schedule \"what's new\" monitoring. Official SAM.gov API with your own free key, no scraping."
+ },
+ {
+  "handle": "loomwise/federal-contract-awards",
+  "title": "SAM.gov Contract Awards - USAspending Federal Winners",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "result",
+    "title": "Result",
+    "tiers": {
+     "FREE": 0.0009
+    }
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.0009
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Result"
+   }
+  },
+  "desc": "Federal contracts awarded, from official USAspending and FPDS data: who just won government contracts, with amount, agency, NAICS, set-aside and winner address. No API key."
+ },
+ {
+  "handle": "mossfetch/sam-gov-opportunities",
+  "title": "SAM.gov Contract Opportunities API: US Federal Bids & Awards",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "notice": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity"
+   }
+  },
+  "desc": "Get US federal contract opportunities, RFPs and awards from SAM.gov via the official API. Filter by keyword, NAICS, set-aside, state and notice type. Bring your own free SAM.gov key. $3 per 1,000."
+ },
+ {
+  "handle": "neatline/public-records-bundle",
+  "title": "U.S. Company Filings and UK Records, one schema",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): entity-match,record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "record": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record"
+   },
+   "entity-match": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Entity match"
+   }
+  },
+  "desc": "Search company names across U.S. public company filings (including Form D raises), UK Companies House and U.S. federal contract notices (SAM.gov, bring your own key). One normalized schema, organisation records only, with cross-source entity matching."
+ },
+ {
+  "handle": "pipeforge/us-federal-contract-awards-expiring-incumbents",
+  "title": "USAspending & SAM.gov Contracts \u2014 Zero Proxy, $4.50/1K",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0045
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Verified Federal Contract Lead"
+   }
+  },
+  "desc": "Zero-proxy USAspending.gov & SAM.gov federal contract awards & expiring incumbents ($4.50/1K, >99% success). Extracts $100K-$50M+ prime contracts expiring in 30-365 days & fresh prime awards with 100% Recipient UEI, 6-digit NAICS/PSC, agency & sales hooks."
+ },
+ {
+  "handle": "reverential_haw/sam-exclusions-screener",
+  "title": "SAM.gov Exclusions Screener \u2014 Debarment / Exclusion Check",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Exclusion record"
+   }
+  },
+  "desc": "Screen vendor names, UEI, or CAGE codes against active federal exclusion/debarment records via the official SAM.gov Exclusions API v4. Requires a free api.sam.gov API key. Not a contract-opportunities scraper."
+ },
+ {
+  "handle": "samgov-tools/samgov-opportunities",
+  "title": "SAM.gov Contract Opportunities API \u2014 Federal RFPs & Bids",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "opportunity": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Opportunity returned"
+   }
+  },
+  "desc": "Export SAM.gov RFPs, solicitations, sources sought and award notices to JSON/CSV. No API key needed: official public daily extract (up to ~1 day old), or live API with your own free key. Filter NAICS, set-aside, type, state, date. $2 per 1,000 results."
+ },
+ {
+  "handle": "scrapemole/us-gov-contracts-scraper",
+  "title": "US Federal Contracts Scraper (SAM + awards, hard cap)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0025,
+   "SILVER": 0.002,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "record": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0025,
+     "SILVER": 0.002,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Contract record delivered"
+   }
+  },
+  "desc": "Join public U.S. federal contract opportunities from SAM.gov with USAspending.gov award history: agency, NAICS/PSC, set-aside, deadlines, value and incumbent company names. User-supplied SAM API key; awards work with no key. Hard maxItems cap. No personal contacts. Pay per record."
+ },
+ {
+  "handle": "second_byte_surplus_llc/sam-gov-opportunities-incumbents",
+  "title": "SAM.gov Contract Opportunities + Likely Incumbent (USAspending)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): incumbent-found,result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "result": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Notice Returned"
+   },
+   "incumbent-found": {
+    "tiers": {
+     "FREE": 0.007
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Likely Incumbent Found"
+   }
+  },
+  "desc": "Open SAM.gov federal contract opportunities from the official daily public extract (no key, no proxy), each matched to the likely incumbent contractor, award value and end date via USAspending.gov. Filters: state, NAICS, PSC, set-aside, deadline; only-new alerts."
+ },
+ {
+  "handle": "sinaayo/government-tender-monitor",
+  "title": "Government Tender Monitor: EU, UK, US & Canada",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,tender",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 1e-05
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "result"
+   },
+   "tender": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Tender returned"
+   }
+  },
+  "desc": "Open government tenders from EU TED, UK Find a Tender and Contracts Finder, US SAM.gov and CanadaBuys in one clean format. Keyword and category alerts, buyer contacts, only-new mode and optional English AI summaries."
+ },
+ {
+  "handle": "spriggs-data/sam-gov-contract-opportunities",
+  "title": "SAM.gov Contract Opportunities: Federal Bids & RFP Leads",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0015,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "notice",
+    "title": "Contract opportunity",
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.0013,
+     "PLATINUM": 0.0013,
+     "DIAMOND": 0.0013
+    }
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "notice": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.0013,
+     "PLATINUM": 0.0013,
+     "DIAMOND": 0.0013
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Contract opportunity"
+   }
+  },
+  "desc": "New federal contract opportunities from SAM.gov's official public data: solicitations, RFPs, sources sought, awards. Filter by date, NAICS, PSC, set-aside, state, agency, keyword. Contact emails, deadlines, links. No API key."
+ },
+ {
+  "handle": "steadyscrape/government-tenders-scraper",
+  "title": "Government Tenders Scraper: SAM.gov, TED & UK Contracts",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender,us-daily-file",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "tender": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Notice delivered"
+   },
+   "us-daily-file": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "SAM.gov daily extract read"
+   }
+  },
+  "desc": "Government tenders and contract opportunities from SAM.gov (US federal), TED (EU) and the UK's Find a Tender and Contracts Finder in one search: buyer, deadline, value, CPV and NAICS codes, set-aside, contact email and phone. Public procurement data. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "syntrovia/federal-opportunities-sam-gov-extract",
+  "title": "SAM.gov Federal Contract Opportunities (Unofficial)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "notice": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Notice"
+   },
+   "run-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Run start"
+   }
+  },
+  "desc": "Unofficial tool. Get U.S. federal contract opportunities from the public daily extract file published on SAM.gov. Filter by NAICS, PSC, set-aside, state, agency and keywords, and schedule only-new runs for a daily bid feed. No API key, no contact-person data."
+ },
+ {
+  "handle": "taiw/government-bid-rfp-monitor",
+  "title": "Government Bid & RFP Monitor: State, Local & Federal",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "bid-returned",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bid-returned",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "bid-returned": {
+    "tiers": {
+     "FREE": 0.0025
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Bid returned"
+   }
+  },
+  "desc": "Government bid and RFP monitor: open solicitations from NYC, Los Angeles, Delaware, Baton Rouge and federal SAM.gov with keyword match, due dates and contacts. Schedule daily for new bids."
+ },
+ {
+  "handle": "thebadassgrokbot/gov-bid-feed",
+  "title": "US Government Bids & RFPs: SAM.gov + State & City (No API Key)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "bid-result",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bid-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "bid-result": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Bid returned"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Open US government bids, RFPs and RFQs from SAM.gov plus Delaware, New York City and Los Angeles-area agencies in one clean JSON feed. Filter by keyword, NAICS, state and posted date. No API key or login needed. Pay only per bid returned."
+ },
+ {
+  "handle": "topapi/sam-gov-scraper",
+  "title": "SAM.gov Scraper - Federal Contracts, RFPs, Contacts & Awards",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 4.5e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): amendment-history,attachment-file,attachments,opportunity",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "opportunity",
+    "title": "Notice",
+    "tiers": {
+     "FREE": 4.5e-05
+    }
+   },
+   {
+    "event": "attachments",
+    "title": "Attachment list",
+    "tiers": {
+     "FREE": 6.3e-05
+    }
+   },
+   {
+    "event": "amendment-history",
+    "title": "Version history",
+    "tiers": {
+     "FREE": 0.0009
+    }
+   },
+   {
+    "event": "attachment-file",
+    "title": "Attachment file saved",
+    "tiers": {
+     "FREE": 0.0009
+    }
+   }
+  ],
+  "events": {
+   "opportunity": {
+    "tiers": {
+     "FREE": 4.5e-05
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Notice"
+   },
+   "attachments": {
+    "tiers": {
+     "FREE": 6.3e-05
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Attachment list"
+   },
+   "amendment-history": {
+    "tiers": {
+     "FREE": 0.0009
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Version history"
+   },
+   "attachment-file": {
+    "tiers": {
+     "FREE": 0.0009
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Attachment file saved"
+   }
+  },
+  "desc": "Scrape SAM.gov federal contract opportunities: solicitations, RFPs, sources sought and award notices with contracting officer e-mail and phone, NAICS/PSC titles, set-aside, deadline, attachments and history. Filters, monitor mode, market counts. No API key. $0.045 per 1,000 notices."
+ },
+ {
+  "handle": "unique_dev/highergov-federal-state-sled-government-contract-rfps-scrap",
+  "title": "HigherGov Federal & State (SLED) Government Contract RFPs Scrap",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0045
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0045
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   }
+  },
+  "desc": "Extract Federal (SAM.gov, DIBBS) and State, Local & Education (SLED) government contract RFPs, grants, NAICS/PSC codes, set-asides, due dates, and enriched agency websites, procurement phone numbers, and contracting officer emails from HigherGov. Built for GovCon capture teams."
+ }
+]
