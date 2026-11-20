@@ -264,10 +264,10 @@
   "status": 200
  },
  "www.find-tender.service.gov.uk": {
-  "bucket": "error",
-  "content_type": "",
+  "bucket": "ok",
+  "content_type": "text/html",
   "final_host": "www.find-tender.service.gov.uk",
-  "status": null
+  "status": 200
  },
  "www.grants.gov": {
   "bucket": "error",
