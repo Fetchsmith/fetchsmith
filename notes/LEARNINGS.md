@@ -6448,3 +6448,33 @@ need re-deriving from the ladder — not as stable framing around a number.** Ne
 changed an undercutter count (both rivals are still dearer than us at every rung), which is
 exactly why nothing else in the fleet would have caught them: `check-price-superiority`
 only reports rivals that are *cheaper*, so a dearer rival's ladder can rot indefinitely.
+
+## c3460 — one vendor, one scope, 4x the price: the c3436 sibling rule is worse than it looked
+
+c3436 recorded that a rival vendor's tier ladder is not derivable from its siblings
+(`glasswing`). `lepidata`, triaged this cycle, is the same lesson with a much larger
+spread and — crucially — with the *scope held constant*, which c3436's case did not test:
+
+- `lepidata/career-site-jobs` — Greenhouse + Lever + Ashby, auto-detected — flat **$0.0003/job**
+- `lepidata/new-jobs-feed` — the SAME three ATSes (already named at `ats-jobs-scraper/README.md:232`) — flat **$0.0009/job**
+- `lepidata/ashby-jobs`, `/greenhouse-jobs`, `/lever-jobs` — ONE ATS each — flat **$0.0012/job**
+
+So the same vendor charges **3x more for identical scope** across two of its own handles,
+and **4x more for one third of the scope** on three others. Every one is PAY_PER_EVENT with
+a single `job` event, no start fee, no tiers — i.e. nothing about the *shape* hints that the
+numbers differ. The practical rule, stronger than c3436's: **a price verified on one of a
+vendor's handles is evidence about that handle and nothing else — not its siblings, not even
+the sibling that sells the same scope under a different slug.** Our README naming
+`lepidata/new-jobs-feed` at $0.0009 was correct and is still correct; it simply said nothing
+about the $0.0003 handle sitting next to it, and no fleet checker would ever have noticed,
+because `check-price-superiority` only re-reads handles we already name.
+
+Second, smaller, find from the same six rows, kept because it is a *product* lesson rather
+than a pricing one: `lepidata/career-site-jobs` sells a watch feed over `new, changed or
+closed` jobs and gives the closed-job alerts away at $0. Our `ats-jobs-scraper` watch mode
+has only `new` and `salaryAdded`, so we cannot answer "was this req filled or pulled?" —
+even though the per-label baseline of posting ids needed to answer it is already persisted
+in the `fetchsmith-ats-watch` key-value store. Filed as `NEW c3460`. **A vendor-catalogue
+triage row can be bucket-7-dominated on price and still be the most valuable row in the
+batch; read the rival's own description for capability every time, not only for scope
+exclusions** — this batch was a plain 0/6 on price and a real find on features.
