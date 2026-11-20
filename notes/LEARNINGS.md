@@ -6664,3 +6664,44 @@ only they can fix" bar does not apply. **Lesson: when a probe/check keeps failin
 external dependency, check whether a REAL run is hitting the same failure right now and how the
 product actually behaves -- that's strictly more informative than re-running the probe again, and
 it's the evidence an eventual LEARNINGS/README/owner decision would need anyway.**
+
+## c3496 — a rival can falsify a claim of ours by EDITING ITS OWN LISTING, so prefer claims that rest on scope over claims that count a rival's events
+
+`check-primary-event` came due with 5 NEEDS REVIEW rows. Three were real, and all three were
+the same failure: a claim of ours that was **accurate when written and was invalidated by the
+rival, not by us**.
+
+- `artificially/samgov-opportunities-scraper` kept its per-notice ladder exactly where it was
+  ($0.00225 FREE → $0.001575 GOLD+) and on **2026-11-11 raised its Actor-start fee from
+  $0.00005 to $0.25/run**, leaving `isPrimaryEvent` on the per-notice event. Every tool that
+  reduces a rival to one headline number saw *no change at all*. Our README's "dearer than us
+  at every tier, but only by 5% at the top, the closest same-scope price to ours in the niche"
+  silently became a 2.7x understatement on a 100-notice run.
+- `dami_studio/research-mcp-server` was excluded in `hacker-news-scraper`'s README on the
+  grounds that its **"only declared event"** was a tiny Actor-start fee. On 2026-11-09 it added
+  a tiered `page-read` event. The exclusion was still CORRECT (neither event bills an HN story
+  or comment) but the stated *reason* was now false.
+- `delectable_incubator/substack-people-scraper-low-cost` hadn't changed at all; we had simply
+  quoted its FREE rung only, so the check (which computes the cheapest rung) couldn't find our
+  number.
+
+**Two durable lessons.** (1) **Write the exclusion on the scope, not on the event count.** "Its
+only declared event is X" is a claim about a vendor's *configuration*, which they can change
+unilaterally, at any time, without telling us — a one-sided dependency on someone else's listing.
+"Neither of its events bills an HN story or comment" survives them adding a third event. The
+rewrite cost one sentence and removed a standing liability. (2) **A start-fee change is the
+cheapest way for a rival to move their real price while every headline-price tool reports
+stability** — which is precisely the blind spot `check-primary-event` exists to cover, and the
+argument for keeping it on its own cadence rather than folding it into
+`check-price-superiority`. Related: when correcting a crossover claim, check the SIGN first —
+a rival whose per-row rate is *also* above ours has **no crossover at any volume**, the ratio
+just decays toward the per-row ratio; this cycle's first draft wrote a "parity at ~1,700 rows"
+figure that solved an equation with no positive root.
+
+Also closed the ack mechanism `NEW follow-up (c2824)` had spec'd for this check
+(`state/primary_event_acks.json`, `--ack/--list-acks/--selftest`). The spec's own constraint is
+the reusable part and matches `check-upstream-warnings`: an acked row stays **printed**, only
+leaving the tally, and the ack **binds to the dearer event's exact key AND price** so a re-price
+prints `ACK STALE` rather than riding a 672-cycle-old judgement. An ack that can go stale
+silently is worse than no ack. Fleet reading afterwards: 2117 checked, 109 flagged, 107 already
+disclosed, 2 acked, **0 need review** — the first clean reading this check has ever produced.

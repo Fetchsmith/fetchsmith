@@ -44,6 +44,7 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ACK_FILE = os.path.join(ROOT, "state/primary_event_acks.json")
 GENERIC = {"apify-default-dataset-item", "apify-actor-start"}
 RATIO = 3.0
 FULL_HANDLE = re.compile(r"`([a-z][a-z0-9_.-]{2,}/[A-Za-z0-9_.-]+)`")
@@ -142,7 +143,122 @@ def disclosed_in(text, price):
                for s in price_strings(price))
 
 
+def load_acks():
+    """handle -> {cycle, reason, dear_event, dear_price}. Missing/corrupt file = no acks.
+
+    Added cycle 3496 (spec'd at c2824). Both of this check's permanent NEEDS REVIEW rows
+    were genuine NON-GAPS -- scope-exclusion mentions that quote no price for the rival at
+    all, so there is nothing for a disclosure check to find -- and they re-appeared on every
+    run, costing each cycle a re-derivation. An acked row stays PRINTED (as `[ACKED: ...]`,
+    same as `[ALREADY DISCLOSED]`); it only leaves the need-review tally. Never silently
+    dropped: that is how a real re-price would get hidden.
+    """
+    try:
+        with open(ACK_FILE) as f:
+            return {k: v for k, v in (json.load(f).get("acks") or {}).items()}
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def save_acks(acks):
+    with open(ACK_FILE, "w") as f:
+        json.dump({"acks": dict(sorted(acks.items()))}, f, indent=2, sort_keys=True)
+        f.write("\n")
+
+
+def ack_state(ack, dear_event, dear_price):
+    """'none' | 'acked' | 'stale'. An ack binds to the EXACT event key AND price it was
+    written against, so any re-price (or a new, dearer event taking over the slot) re-flags
+    the rival instead of riding the old judgement."""
+    if not ack:
+        return "none"
+    if ack.get("dear_event") == dear_event and ack.get("dear_price") == dear_price:
+        return "acked"
+    return "stale"
+
+
+def selftest():
+    a = {"cycle": 1, "reason": "r", "dear_event": "portal-page", "dear_price": 0.00829}
+    cases = [
+        (ack_state(None, "portal-page", 0.00829), "none"),
+        (ack_state({}, "portal-page", 0.00829), "none"),
+        (ack_state(a, "portal-page", 0.00829), "acked"),
+        (ack_state(a, "portal-page", 0.0083), "stale"),     # re-priced -> must re-flag
+        (ack_state(a, "portal-page", 0.001), "stale"),      # cheaper too -> still re-flag
+        (ack_state(a, "detail-filter-check", 0.00829), "stale"),  # new event in the slot
+    ]
+    bad = [(i, got, want) for i, (got, want) in enumerate(cases) if got != want]
+    for i, got, want in bad:
+        print(f"  FAIL case {i}: got {got!r}, want {want!r}")
+    print(f"selftest: {len(cases) - len(bad)}/{len(cases)} ack-state case(s) pass")
+    return 1 if bad else 0
+
+
+def do_ack(handle, reason, cycle):
+    """Record an ack using the rival's LIVE dearer event/price, never a hand-typed one."""
+    _, d = fetch(handle)
+    if d is None:
+        print(f"ack FAILED: no live Actor record for {handle}")
+        return 1
+    p = effective(d.get("pricingInfos"))
+    evs = (p or {}).get("pricingPerEvent", {}).get("actorChargeEvents", {}) or {}
+    flag = flag_for(evs)
+    if not flag:
+        print(f"ack FAILED: {handle} is not currently flagged by this check (nothing to ack)")
+        return 1
+    _, _, dear_event, dear_price = flag
+    acks = load_acks()
+    acks[handle] = {"cycle": cycle, "reason": reason,
+                    "dear_event": dear_event, "dear_price": dear_price}
+    save_acks(acks)
+    print(f"acked {handle}: {dear_event}@${dear_price:g} (cycle {cycle}) -- {reason}")
+    return 0
+
+
+def flag_for(evs):
+    """(head, head_price, dear_event, dear_price) if these events trip the check, else None."""
+    if len(evs) < 2:
+        return None
+    primary = [k for k, v in evs.items() if v.get("isPrimaryEvent")]
+    if primary:
+        head = primary[0]
+    else:
+        cands = [(price_of(v), k) for k, v in evs.items()
+                 if not v.get("isOneTimeEvent") and price_of(v) is not None]
+        if not cands:
+            return None
+        head = min(cands)[1]
+    hp = price_of(evs[head])
+    if hp is None or head not in GENERIC:
+        return None
+    worse = [(k, price_of(v)) for k, v in evs.items()
+             if k != head and not v.get("isOneTimeEvent") and price_of(v) is not None
+             and ((hp == 0 and price_of(v) > 0) or (hp > 0 and price_of(v) / hp >= RATIO))]
+    if not worse:
+        return None
+    dear_event, dear_price = max(worse, key=lambda x: x[1])
+    return head, hp, dear_event, dear_price
+
+
 def main():
+    if "--selftest" in sys.argv:
+        return selftest()
+    if "--list-acks" in sys.argv:
+        acks = load_acks()
+        print(f"{len(acks)} acknowledged non-gap(s) in {ACK_FILE}")
+        for h, a in sorted(acks.items()):
+            print(f"  {h}  {a['dear_event']}@${a['dear_price']:g}  (cycle {a['cycle']})")
+            print(f"       {a['reason']}")
+        return 0
+    if "--ack" in sys.argv:
+        i = sys.argv.index("--ack")
+        handle = sys.argv[i + 1]
+        reason = sys.argv[sys.argv.index("--reason") + 1] if "--reason" in sys.argv else ""
+        cycle = int(sys.argv[sys.argv.index("--cycle") + 1]) if "--cycle" in sys.argv else 0
+        if not reason:
+            print("ack FAILED: --reason is required (an ack with no stated reason is a silent drop)")
+            return 1
+        return do_ack(handle, reason, cycle)
     hs = our_handles()
     names = sorted(hs)
     limit = None
@@ -157,7 +273,8 @@ def main():
     fetched = sum(1 for v in records.values() if v is not None)
     print(f"check-primary-event: {fetched}/{len(names)} records fetched "
           f"({len(names) - fetched} unreachable/deleted, skipped)")
-    checked = flagged = disclosed = 0
+    acks = load_acks()
+    checked = flagged = disclosed = acked = 0
     for h in names:
         d = records.get(h)
         if d is None:
@@ -169,37 +286,35 @@ def main():
         if len(evs) < 2:
             continue
         checked += 1
-        primary = [k for k, v in evs.items() if v.get("isPrimaryEvent")]
-        if primary:
-            head = primary[0]
-        else:
-            cands = [(price_of(v), k) for k, v in evs.items()
-                     if not v.get("isOneTimeEvent") and price_of(v) is not None]
-            if not cands:
-                continue
-            head = min(cands)[1]
-        hp = price_of(evs[head])
-        if hp is None or head not in GENERIC:
+        flag = flag_for(evs)
+        if not flag:
             continue
-        worse = [(k, price_of(v)) for k, v in evs.items()
-                 if k != head and not v.get("isOneTimeEvent") and price_of(v) is not None
-                 and ((hp == 0 and price_of(v) > 0) or (hp > 0 and price_of(v) / hp >= RATIO))]
-        if not worse:
-            continue
+        head, hp, dear_event, dear_price = flag
         flagged += 1
         files = hs[h]
         all_text = " ".join(open(p).read() for _, p in files)
-        dear_price, dear_event = max(worse, key=lambda x: x[1])[1], max(worse, key=lambda x: x[1])[0]
         is_disclosed = disclosed_in(all_text, dear_price)
-        tag = "ALREADY DISCLOSED" if is_disclosed else "NEEDS REVIEW"
+        state = "none" if is_disclosed else ack_state(acks.get(h), dear_event, dear_price)
         if is_disclosed:
             disclosed += 1
+            tag = "ALREADY DISCLOSED"
+        elif state == "acked":
+            acked += 1
+            a = acks[h]
+            tag = f"ACKED c{a['cycle']}: {a['reason']}"
+        elif state == "stale":
+            a = acks[h]
+            tag = (f"NEEDS REVIEW -- ACK STALE (acked {a['dear_event']}@${a['dear_price']:g} "
+                   f"at c{a['cycle']}, now {dear_event}@${dear_price:g})")
+        else:
+            tag = "NEEDS REVIEW"
         ratio_str = "FREE headline" if hp == 0 else f"{dear_price/hp:.0f}x"
         print(f"  FLAG {h}  (named in: {', '.join(s for s, _ in files)}) [{tag}]")
         print(f"       headline={head}@${hp:g} (generic default)  dearer={dear_event}@${dear_price:g}"
               f"  ({ratio_str})")
     print(f"check-primary-event: {checked} multi-event rivals checked, {flagged} flagged, "
-          f"{disclosed} already disclosed in our own README, {flagged - disclosed} need review")
+          f"{disclosed} already disclosed in our own README, {acked} acked non-gap(s), "
+          f"{flagged - disclosed - acked} need review")
     return 0
 
 

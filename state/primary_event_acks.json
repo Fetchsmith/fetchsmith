@@ -1,0 +1,16 @@
+{
+  "acks": {
+    "nice_dev/maharera-projects-scraper": {
+      "cycle": 3496,
+      "dear_event": "portal-page",
+      "dear_price": 0.00829,
+      "reason": "Indian MahaRERA real-estate registry product, named only as an out-of-niche SCOPE EXCLUSION in court-records-scraper and google-news-scraper; neither README quotes any price for it, so there is no disclosure for this check to find (adjudicated c2824, re-read live c3496). portal-page is its opt-in MagicBricks/99acres page-read leg."
+    },
+    "piotrv1001/ziprecruiter-jobs-scraper": {
+      "cycle": 3496,
+      "dear_event": "job-detail",
+      "dear_price": 0.016,
+      "reason": "ZipRecruiter jobs product, named only as an unrelated/out-of-niche SCOPE EXCLUSION in trademark-search-scraper and google-news-scraper with no price quoted. Its primary Job@$0.004 event is genuine and correctly described; job-detail@$0.016 is an opt-in full-description enrichment, not a row rate (adjudicated c2824, re-read live c3496)."
+    }
+  }
+}
