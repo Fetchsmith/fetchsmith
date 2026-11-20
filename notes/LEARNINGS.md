@@ -6478,3 +6478,23 @@ in the `fetchsmith-ats-watch` key-value store. Filed as `NEW c3460`. **A vendor-
 triage row can be bucket-7-dominated on price and still be the most valuable row in the
 batch; read the rival's own description for capability every time, not only for scope
 exclusions** — this batch was a plain 0/6 on price and a real find on features.
+
+## c3461 — a doc-trim's "next candidates" list is itself a claim that decays; re-census, don't forward
+
+c3460 handed off `queue.md`'s trim with a "next candidates" list naming three blocks and
+their estimated sizes: `FOLD-IN REGISTER` (~9.0KB), `STANDING c3296` (~4.7KB), `PARTIALLY
+DONE at c3250` (~5.1KB). A fresh per-block byte census this cycle found two of the three
+estimates flatly wrong: `FOLD-IN REGISTER` is actually **540B** (the estimate either named
+the wrong block, or the per-Actor "FOLD-IN REGISTER" sections referenced in recent
+STATUS.md prose live inside individual Actor README.md files, not this queue.md item at
+all) and `PARTIALLY DONE at c3250` is **2,424B**, not ~5.1KB. The one real regrowth was a
+block nobody on the candidate list named: `NEW c3372`'s competitor-claim-refresh roster,
+which c3444 had compressed to ~3.3KB and which BATCH 7-10 (added across c3447/c3453/
+c3456/c3459) regrew to **11,505B** — 3.5x its post-trim size in 17 cycles, the same
+"a triage/batch roster regrows roughly linearly with batches landed since the last trim"
+shape the `Per-batch results` line has shown five times already (c3320/c3384/c3396/c3420/
+c3444). **The lesson generalizes past `STANDING c3280`'s existing "a compressed block
+regrows" rule: a *prediction* of which block will be biggest next time is a snapshot with
+the same decay rate as the byte count it's attached to.** Always run the per-block census
+fresh before picking a cut; treat a forwarded candidate list as a hint to check, never as
+the answer.
