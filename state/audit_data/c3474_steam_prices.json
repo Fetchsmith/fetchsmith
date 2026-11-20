@@ -1,0 +1,5646 @@
+{
+ "cohort": "c3474_fifteenth_sweep_unnamed163",
+ "results": [
+  {
+   "handle": "accountable_eel/cheapshark-game-deal-lookup",
+   "title": "CheapShark Game Deal Lookup: PC Game Prices and Savings",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "deal",
+   "unit_tiers": {
+    "FREE": 0.0004,
+    "BRONZE": 0.00034,
+    "SILVER": 0.00026,
+    "GOLD": 0.0002,
+    "PLATINUM": 0.0002,
+    "DIAMOND": 0.0002
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "deal",
+     "Deal returned",
+     {
+      "FREE": 0.0004,
+      "BRONZE": 0.00034,
+      "SILVER": 0.00026,
+      "GOLD": 0.0002,
+      "PLATINUM": 0.0002,
+      "DIAMOND": 0.0002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "accountable_eel/steam-review-monitor",
+   "title": "Steam Review Monitor: New Reviews Since Last Run",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review-new",
+   "unit_tiers": {
+    "FREE": 0.0015,
+    "BRONZE": 0.001275,
+    "SILVER": 0.000975,
+    "GOLD": 0.00075,
+    "PLATINUM": 0.00075,
+    "DIAMOND": 0.00075
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "review-new",
+     "Review returned",
+     {
+      "FREE": 0.0015,
+      "BRONZE": 0.001275,
+      "SILVER": 0.000975,
+      "GOLD": 0.00075,
+      "PLATINUM": 0.00075,
+      "DIAMOND": 0.00075
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "acquistion-automation/steam-store-scraper",
+   "title": "Steam Store Game Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result-item",
+   "unit_tiers": {
+    "FREE": 0.004,
+    "BRONZE": 0.00367,
+    "SILVER": 0.00333,
+    "GOLD": 0.003,
+    "PLATINUM": 0.003,
+    "DIAMOND": 0.003
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "result-item",
+     "result",
+     {
+      "FREE": 0.004,
+      "BRONZE": 0.00367,
+      "SILVER": 0.00333,
+      "GOLD": 0.003,
+      "PLATINUM": 0.003,
+      "DIAMOND": 0.003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "adaptive_nightmare/cheapshark-game-deals-radar",
+   "title": "CheapShark PC Game Deals & Steam Price Tracker",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0009
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0009
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "agent_muse/steam-discount-tracker",
+   "title": "Steam Discount Tracker \u2014 biggest Steam game discounts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.02,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.02
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "aggrometer/aggrometer-gaming-attention-data",
+   "title": "Aggrometer \u2014 Gaming Attention Data (players, viewers, hype)",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "query",
+   "unit_tiers": {
+    "FREE": 0.04
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 1e-05
+     }
+    ],
+    [
+     "query",
+     "Aggrometer data query",
+     {
+      "FREE": 0.04
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "ahmed_jasarevic/theknot-scraper",
+   "title": "The Knot Scraper [$1/1K\ud83d\udcb0] | Wedding Vendor Leads & Reviews",
+   "users": 4,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001,
+    "BRONZE": 0.001,
+    "SILVER": 0.00095,
+    "GOLD": 0.0009,
+    "PLATINUM": 0.0009,
+    "DIAMOND": 0.0009
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Vendor lead",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.001,
+      "SILVER": 0.00095,
+      "GOLD": 0.0009,
+      "PLATINUM": 0.0009,
+      "DIAMOND": 0.0009
+     }
+    ],
+    [
+     "profile-detail",
+     "Profile detail",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.00095,
+      "SILVER": 0.0009,
+      "GOLD": 0.00085,
+      "PLATINUM": 0.00085,
+      "DIAMOND": 0.00085
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0005,
+      "BRONZE": 0.0005,
+      "SILVER": 0.0004,
+      "GOLD": 0.0004,
+      "PLATINUM": 0.0004,
+      "DIAMOND": 0.0004
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "alaudinburki/cheapshark-deals",
+   "title": "CheapShark Game Deals \u2014 PC Game Prices Across Stores",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.0001,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.0001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "anyxsolutions/steam-scraper",
+   "title": "Steam Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0045,
+    "BRONZE": 0.00383,
+    "SILVER": 0.00317,
+    "GOLD": 0.0025,
+    "PLATINUM": 0.0025,
+    "DIAMOND": 0.0025
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0045,
+      "BRONZE": 0.00383,
+      "SILVER": 0.00317,
+      "GOLD": 0.0025,
+      "PLATINUM": 0.0025,
+      "DIAMOND": 0.0025
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "aolmo/steam-game",
+   "title": "Steam Game Scraper - Prices, Discounts & Game Details",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-scraped",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "game-scraped",
+     "Game scraped",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "price-changed",
+     "Price changed",
+     {
+      "FREE": 0.0005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "apex-b2b-data/steam-games-publishers-reviews-intel",
+   "title": "Steam & Itch.io Games, Publishers, Emails & Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0015,
+    "BRONZE": 0.00135,
+    "SILVER": 0.0012,
+    "GOLD": 0.00105,
+    "PLATINUM": 0.00105,
+    "DIAMOND": 0.00105
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0015,
+      "BRONZE": 0.00135,
+      "SILVER": 0.0012,
+      "GOLD": 0.00105,
+      "PLATINUM": 0.00105,
+      "DIAMOND": 0.00105
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "apt_marble/steam-game-reviews-scraper",
+   "title": "Steam Game Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0009,
+    "BRONZE": 0.0008,
+    "SILVER": 0.0007,
+    "GOLD": 0.0006,
+    "PLATINUM": 0.0006,
+    "DIAMOND": 0.0006
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Result scraped",
+     {
+      "FREE": 0.0009,
+      "BRONZE": 0.0008,
+      "SILVER": 0.0007,
+      "GOLD": 0.0006,
+      "PLATINUM": 0.0006,
+      "DIAMOND": 0.0006
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "apt_marble/steam-store-search-scraper",
+   "title": "Steam Store Search Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001,
+    "BRONZE": 0.0009,
+    "SILVER": 0.0008,
+    "GOLD": 0.0007,
+    "PLATINUM": 0.0007,
+    "DIAMOND": 0.0007
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Result scraped",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.0009,
+      "SILVER": 0.0008,
+      "GOLD": 0.0007,
+      "PLATINUM": 0.0007,
+      "DIAMOND": 0.0007
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "automation-lab/steam-community-discussions-scraper",
+   "title": "Steam Community Discussions Scraper",
+   "users": 12,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "item",
+   "unit_tiers": {
+    "FREE": 3.5889e-05,
+    "BRONZE": 3.1208e-05,
+    "SILVER": 2.4342e-05,
+    "GOLD": 1.8725e-05,
+    "PLATINUM": 1.2483e-05,
+    "DIAMOND": 1e-05
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "start",
+     "Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "item",
+     "Item processed",
+     {
+      "FREE": 3.5889e-05,
+      "BRONZE": 3.1208e-05,
+      "SILVER": 2.4342e-05,
+      "GOLD": 1.8725e-05,
+      "PLATINUM": 1.2483e-05,
+      "DIAMOND": 1e-05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "automation-lab/steam-game-statistics-export",
+   "title": "Steam Game Statistics Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "item",
+   "unit_tiers": {
+    "FREE": 0.002392,
+    "BRONZE": 0.00208,
+    "SILVER": 0.0016224,
+    "GOLD": 0.001248,
+    "PLATINUM": 0.001248,
+    "DIAMOND": 0.001248
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "start",
+     "Run started",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "item",
+     "Game statistics record",
+     {
+      "FREE": 0.002392,
+      "BRONZE": 0.00208,
+      "SILVER": 0.0016224,
+      "GOLD": 0.001248,
+      "PLATINUM": 0.001248,
+      "DIAMOND": 0.001248
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "automation-lab/steam-player-profile-lookup",
+   "title": "Steam Public Player Profile Lookup Scraper",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "item",
+   "unit_tiers": {
+    "FREE": 0.00184,
+    "BRONZE": 0.0016,
+    "SILVER": 0.001248,
+    "GOLD": 0.00096,
+    "PLATINUM": 0.00096,
+    "DIAMOND": 0.00096
+   },
+   "start_fee": 0.004,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "start",
+     "Run started",
+     {
+      "FREE": 0.004
+     }
+    ],
+    [
+     "item",
+     "Item extracted",
+     {
+      "FREE": 0.00184,
+      "BRONZE": 0.0016,
+      "SILVER": 0.001248,
+      "GOLD": 0.00096,
+      "PLATINUM": 0.00096,
+      "DIAMOND": 0.00096
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "ayeeyee/steam-game-studio-lead-extractor",
+   "title": "Steam Game Studio Lead Extractor",
+   "users": 4,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "studio_lead",
+   "unit_tiers": {
+    "FREE": 0.008,
+    "BRONZE": 0.006,
+    "SILVER": 0.004,
+    "GOLD": 0.003,
+    "PLATINUM": 0.00252,
+    "DIAMOND": 0.001512
+   },
+   "start_fee": 0.0001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.0001
+     }
+    ],
+    [
+     "studio_lead",
+     "Game Studio Lead with Contact",
+     {
+      "FREE": 0.008,
+      "BRONZE": 0.006,
+      "SILVER": 0.004,
+      "GOLD": 0.003,
+      "PLATINUM": 0.00252,
+      "DIAMOND": 0.001512
+     }
+    ],
+    [
+     "verified_email",
+     "Verified Studio Email",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.00225,
+      "SILVER": 0.0015,
+      "GOLD": 0.001125,
+      "PLATINUM": 0.000945,
+      "DIAMOND": 0.000567
+     }
+    ],
+    [
+     "studio_signal",
+     "Newly-Launched Studio Signal",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.00075,
+      "SILVER": 0.0005,
+      "GOLD": 0.000375,
+      "PLATINUM": 0.000315,
+      "DIAMOND": 0.000189
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "badboxx_newlife/steam-reviews-export-sentiment",
+   "title": "Steam Reviews Export with Sentiment (CSV/JSON)",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "sole recurring event (no primary flag)",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review",
+     "Review exported",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "bigibyte/cheapshark-game-deals-scraper",
+   "title": "Cheapshark Game Deals Scraper",
+   "users": 2,
+   "model": null,
+   "no_current_pricing": true
+  },
+  {
+   "handle": "bigibyte/gamerpower-giveaways-scraper",
+   "title": "Gamerpower Giveaways Scraper",
+   "users": 2,
+   "model": null,
+   "no_current_pricing": true
+  },
+  {
+   "handle": "blackfalcondata/steampowered-com-scraper",
+   "title": "Steam Store Search Scraper [\ud83d\udcb0$2] \u2014 Games, Prices & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.01,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.01
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Result",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "bonpleincapital/steam-review-sentiment-report",
+   "title": "Steam Reviews Scraper - Sentiment, Themes, Bug Alerts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.0027,
+    "SILVER": 0.00225,
+    "GOLD": 0.0018,
+    "PLATINUM": 0.0018,
+    "DIAMOND": 0.0018
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "result",
+     "Game report",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.0027,
+      "SILVER": 0.00225,
+      "GOLD": 0.0018,
+      "PLATINUM": 0.0018,
+      "DIAMOND": 0.0018
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "borisinc/gamedatakit-deals",
+   "title": "Steam Deals Ranker & Twitch Top Games Scraper (No OAuth)",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.005
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "borisinc/gamedatakit-steam",
+   "title": "Steam Scraper \u2014 Top Sellers, Players & Reviews (No API Key)",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.005
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "bravona/steam-reviews-and-store-data",
+   "title": "Steam Reviews and Store Data Scraper for Games",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0006
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "review",
+     "Review returned",
+     {
+      "FREE": 0.0006
+     }
+    ],
+    [
+     "game-details",
+     "Game details returned",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "c4m3r0n808/indie-game-intel",
+   "title": "Indie Game Intel - Steam Tag Trend Radar",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "primary",
+   "unit_tiers": {
+    "FREE": 0.1
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "primary",
+     "Tag report",
+     {
+      "FREE": 0.1
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "cemented_jest/steam-reviews-update-monitor",
+   "title": "Steam Reviews Scraper & Update Monitor",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "record-scraped",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "record-scraped",
+     "Delivered record",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "chrisp1211/steam-scraper-max",
+   "title": "Steam Game Data Scraper \u2014 Prices, Genres, Reviews, Metacritic",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-record",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game-record",
+     "Game record",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "cleanfeedsapi/steam-store-games",
+   "title": "Steam Store Games API: details, search, listings | $2/1K",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "app",
+   "unit_tiers": {
+    "FREE": 0.002,
+    "BRONZE": 0.002,
+    "SILVER": 0.0015,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "app",
+     "App row",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.002,
+      "SILVER": 0.0015,
+      "GOLD": 0.001,
+      "PLATINUM": 0.001,
+      "DIAMOND": 0.001
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "cleanscrape/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper for Steam Game Reviews and Store Data",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0005,
+    "BRONZE": 0.00045,
+    "SILVER": 0.000425,
+    "GOLD": 0.0004,
+    "PLATINUM": 0.0004,
+    "DIAMOND": 0.0004
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0005,
+      "BRONZE": 0.00045,
+      "SILVER": 0.000425,
+      "GOLD": 0.0004,
+      "PLATINUM": 0.0004,
+      "DIAMOND": 0.0004
+     }
+    ],
+    [
+     "game",
+     "Game row",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.0009,
+      "SILVER": 0.00085,
+      "GOLD": 0.0008,
+      "PLATINUM": 0.0008,
+      "DIAMOND": 0.0008
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "consequential_programmer/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper - Game Reviews, Scores & Playtime",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "review",
+     "Review scraped",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "game-summary",
+     "Game summary",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "constant_quadruped/steam-review-monitor",
+   "title": "Steam Review Monitor - Game Review, Score & Player Tracker",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.004
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Game record returned",
+     {
+      "FREE": 0.004
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "coolinbex/steam-reviews-scraper",
+   "title": "Steam Game Reviews & Ratings Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.005
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "dami_studio/steam-scraper",
+   "title": "Steam Scraper",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "item",
+   "unit_tiers": {
+    "FREE": 0.002,
+    "BRONZE": 0.00198,
+    "SILVER": 0.00196,
+    "GOLD": 0.00194,
+    "PLATINUM": 0.00194,
+    "DIAMOND": 0.00194
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "item",
+     "Item",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.00198,
+      "SILVER": 0.00196,
+      "GOLD": 0.00194,
+      "PLATINUM": 0.00194,
+      "DIAMOND": 0.00194
+     }
+    ],
+    [
+     "request",
+     "Request",
+     {
+      "FREE": 0.0016
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "data_foundry/review-scraper",
+   "title": "Review Scraper & Monitor - 11 Review Sources",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "subject-scanned",
+   "unit_tiers": {
+    "FREE": 0.01,
+    "BRONZE": 0.0095,
+    "SILVER": 0.009,
+    "GOLD": 0.008,
+    "PLATINUM": 0.008,
+    "DIAMOND": 0.008
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "subject-scanned",
+     "subject",
+     {
+      "FREE": 0.01,
+      "BRONZE": 0.0095,
+      "SILVER": 0.009,
+      "GOLD": 0.008,
+      "PLATINUM": 0.008,
+      "DIAMOND": 0.008
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "dataio/steam-regional-pricing-intelligence",
+   "title": "Steam Price Scraper - Regional Game Prices",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-country-row",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.0027,
+    "SILVER": 0.0024,
+    "GOLD": 0.002,
+    "PLATINUM": 0.002,
+    "DIAMOND": 0.002
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game-country-row",
+     "Game row",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.0027,
+      "SILVER": 0.0024,
+      "GOLD": 0.002,
+      "PLATINUM": 0.002,
+      "DIAMOND": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "dataio/steam-reviews-playtime-scraper",
+   "title": "Steam Reviews Scraper - With Playtime Data",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review-extracted",
+   "unit_tiers": {
+    "FREE": 0.002,
+    "BRONZE": 0.0018,
+    "SILVER": 0.0016,
+    "GOLD": 0.00133,
+    "PLATINUM": 0.00133,
+    "DIAMOND": 0.00133
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review-extracted",
+     "Review",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.0018,
+      "SILVER": 0.0016,
+      "GOLD": 0.00133,
+      "PLATINUM": 0.00133,
+      "DIAMOND": 0.00133
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "datalayer/steam-review-intelligence",
+   "title": "Steam Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.001,
+    "BRONZE": 0.0009,
+    "SILVER": 0.0008,
+    "GOLD": 0.0007,
+    "PLATINUM": 0.0007,
+    "DIAMOND": 0.0007
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.0009,
+      "SILVER": 0.0008,
+      "GOLD": 0.0007,
+      "PLATINUM": 0.0007,
+      "DIAMOND": 0.0007
+     }
+    ],
+    [
+     "analysis",
+     "Sentiment analysis",
+     {
+      "FREE": 0.05,
+      "BRONZE": 0.045,
+      "SILVER": 0.04,
+      "GOLD": 0.035,
+      "PLATINUM": 0.035,
+      "DIAMOND": 0.035
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "dataspryva/steam-game-reviews-and-playtime-extractor",
+   "title": "Steam Game Reviews & Playtime Extractor",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00099,
+    "BRONZE": 0.00082,
+    "SILVER": 0.00066,
+    "GOLD": 0.00049,
+    "PLATINUM": 0.00049,
+    "DIAMOND": 0.00049
+   },
+   "start_fee": 0.03,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.1,
+      "BRONZE": 0.077,
+      "SILVER": 0.053,
+      "GOLD": 0.03,
+      "PLATINUM": 0.03,
+      "DIAMOND": 0.03
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.00099,
+      "BRONZE": 0.00082,
+      "SILVER": 0.00066,
+      "GOLD": 0.00049,
+      "PLATINUM": 0.00049,
+      "DIAMOND": 0.00049
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "dataspryva/steam-game-specs-pricing-and-media-extractor",
+   "title": "Steam Game Specs, Pricing & Media Extractor",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00099,
+    "BRONZE": 0.00082,
+    "SILVER": 0.00066,
+    "GOLD": 0.00049,
+    "PLATINUM": 0.00049,
+    "DIAMOND": 0.00049
+   },
+   "start_fee": 0.03,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.1,
+      "BRONZE": 0.077,
+      "SILVER": 0.053,
+      "GOLD": 0.03,
+      "PLATINUM": 0.03,
+      "DIAMOND": 0.03
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.00099,
+      "BRONZE": 0.00082,
+      "SILVER": 0.00066,
+      "GOLD": 0.00049,
+      "PLATINUM": 0.00049,
+      "DIAMOND": 0.00049
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "decentralizer/steam-games",
+   "title": "Steam Games, Reviews & Player Counts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.002
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "deriverge/steam-games-scraper",
+   "title": "Steam Games Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.002,
+    "BRONZE": 0.0016,
+    "SILVER": 0.0013,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.0016,
+      "SILVER": 0.0013,
+      "GOLD": 0.001,
+      "PLATINUM": 0.001,
+      "DIAMOND": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "dottti/steam-reviews",
+   "title": "Steam Reviews Scraper - Reviews and Game Stats",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0004
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0004
+     }
+    ],
+    [
+     "game-summary",
+     "Game summary",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "eliai/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper API: Game Reviews, Playtime & Votes",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review-scraped",
+   "unit_tiers": {
+    "FREE": 0.000575,
+    "BRONZE": 0.000535,
+    "SILVER": 0.0005,
+    "GOLD": 0.00046,
+    "PLATINUM": 0.00046,
+    "DIAMOND": 0.00046
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review-scraped",
+     "Scraped reviews",
+     {
+      "FREE": 0.000575,
+      "BRONZE": 0.000535,
+      "SILVER": 0.0005,
+      "GOLD": 0.00046,
+      "PLATINUM": 0.00046,
+      "DIAMOND": 0.00046
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "extractlyspace/steam-games-scraper",
+   "title": "Steam Games & Reviews Scraper \u2013 Prices, Details & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "fabrikit/steam-store-scraper",
+   "title": "Steam Store Scraper - Games, Prices, Tags, Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-result",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "game-result",
+     "Game",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "fanndev/steam-review-sentiment-analyzer",
+   "title": "Steam Review & Sentiment Analyzer",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.0028,
+    "SILVER": 0.0026,
+    "GOLD": 0.0024,
+    "PLATINUM": 0.0024,
+    "DIAMOND": 0.0024
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "result",
+     "result",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.0028,
+      "SILVER": 0.0026,
+      "GOLD": 0.0024,
+      "PLATINUM": 0.0024,
+      "DIAMOND": 0.0024
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "fanndev/steam-sales-discount-tracker",
+   "title": "Steam Sales & Discount Tracker - Deals, Prices, Events",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.0028,
+    "SILVER": 0.0026,
+    "GOLD": 0.0024,
+    "PLATINUM": 0.0024,
+    "DIAMOND": 0.0024
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "result",
+     "result",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.0028,
+      "SILVER": 0.0026,
+      "GOLD": 0.0024,
+      "PLATINUM": 0.0024,
+      "DIAMOND": 0.0024
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "fatihtahta/steam-scraper",
+   "title": "Steam Scraper | Fast & Reliable",
+   "users": 8,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "outputrecord",
+   "unit_tiers": {
+    "FREE": 0.00199
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "outputrecord",
+     "Results",
+     {
+      "FREE": 0.00199
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "felixgoldwin/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper \u2014 Playtime, Refunds & Replies",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Review",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "felixgoldwin/steam-store-prices",
+   "title": "Steam Store Games & Regional Prices Scraper",
+   "users": 2,
+   "model": "FREE",
+   "no_current_pricing": true
+  },
+  {
+   "handle": "fjordlabs/steam-reviews",
+   "title": "Steam Reviews & Game Data Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0003,
+    "BRONZE": 0.00027,
+    "SILVER": 0.00024,
+    "GOLD": 0.00021,
+    "PLATINUM": 0.00021,
+    "DIAMOND": 0.00021
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0003,
+      "BRONZE": 0.00027,
+      "SILVER": 0.00024,
+      "GOLD": 0.00021,
+      "PLATINUM": 0.00021,
+      "DIAMOND": 0.00021
+     }
+    ],
+    [
+     "game-detail",
+     "Game detail",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "get_anything/steam-scraper",
+   "title": "Steam Scraper - Steam Games, Prices, Reviews & Store Data",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001,
+    "BRONZE": 0.0009,
+    "SILVER": 0.0008,
+    "GOLD": 0.0007,
+    "PLATINUM": 0.0007,
+    "DIAMOND": 0.0007
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.0009,
+      "SILVER": 0.0008,
+      "GOLD": 0.0007,
+      "PLATINUM": 0.0007,
+      "DIAMOND": 0.0007
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "gio21/steam-games-scraper",
+   "title": "Steam Games Scraper - Prices, Discounts, Reviews, No API Key",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "steam-game-result",
+   "unit_tiers": {
+    "FREE": 0.005
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "steam-game-result",
+     "Game result",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "gio21/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper - Playtime, Votes & Language, No Key",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "item-scraped",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "item-scraped",
+     "Review scraped",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "glitchbound/steam-scraper",
+   "title": "Steam Games Scraper: Prices, Discounts & Top Sellers",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.0024,
+    "SILVER": 0.0019,
+    "GOLD": 0.0015,
+    "PLATINUM": 0.0012,
+    "DIAMOND": 0.001
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "result",
+     "Game",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.0024,
+      "SILVER": 0.0019,
+      "GOLD": 0.0015,
+      "PLATINUM": 0.0012,
+      "DIAMOND": 0.001
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "goat255/steam-scraper",
+   "title": "Steam Player Count & Game Data Scraper",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.005,
+    "BRONZE": 0.005,
+    "SILVER": 0.004,
+    "GOLD": 0.004,
+    "PLATINUM": 0.004,
+    "DIAMOND": 0.004
+   },
+   "start_fee": 0.0008,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Game",
+     {
+      "FREE": 0.005,
+      "BRONZE": 0.005,
+      "SILVER": 0.004,
+      "GOLD": 0.004,
+      "PLATINUM": 0.004,
+      "DIAMOND": 0.004
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.0014,
+      "BRONZE": 0.0013,
+      "SILVER": 0.0012,
+      "GOLD": 0.001,
+      "PLATINUM": 0.0009,
+      "DIAMOND": 0.0008
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "gochujang/steam-game-tracker",
+   "title": "Steam Game Tracker \u2014 Players, Reviews, Price & Metadata",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "item-tracked",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "item-tracked",
+     "Item Tracked",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "great_pistachio/steam-scraper",
+   "title": "Steam Scraper",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.003
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "gubidonius/steam-reviews",
+   "title": "Steam Game Reviews Scraper",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review-returned",
+   "unit_tiers": {
+    "FREE": 0.0015
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "actor-start",
+     "Run started",
+     {
+      "FREE": 0.002
+     }
+    ],
+    [
+     "review-returned",
+     "Review returned",
+     {
+      "FREE": 0.0015
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "haketa/steam-game-scraper",
+   "title": "Steam Game & Review Scraper \u2014 Prices, Details & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0035,
+    "BRONZE": 0.0033,
+    "SILVER": 0.003,
+    "GOLD": 0.0025,
+    "PLATINUM": 0.0025,
+    "DIAMOND": 0.0025
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0035,
+      "BRONZE": 0.0033,
+      "SILVER": 0.003,
+      "GOLD": 0.0025,
+      "PLATINUM": 0.0025,
+      "DIAMOND": 0.0025
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "hgservices/douyin-live-chat-scraper",
+   "title": "Douyin Live Chat Scraper - Record Live Stream Comments",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "message",
+   "unit_tiers": {
+    "GOLD": 0.0006,
+    "PLATINUM": 0.0006,
+    "DIAMOND": 0.0006,
+    "SILVER": 0.0007,
+    "BRONZE": 0.0008,
+    "FREE": 0.0009
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "minute",
+     "Recorded minute",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "message",
+     "Live message",
+     {
+      "GOLD": 0.0006,
+      "PLATINUM": 0.0006,
+      "DIAMOND": 0.0006,
+      "SILVER": 0.0007,
+      "BRONZE": 0.0008,
+      "FREE": 0.0009
+     }
+    ],
+    [
+     "room",
+     "Checked room",
+     {
+      "FREE": 0.003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "hichemdev/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper \u2014 Game Reviews & Playtime",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "review",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "hichemdev/steam-scraper",
+   "title": "Steam Scraper \u2014 Games, Prices, Discounts & Reviews",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "game",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "hipersoft/cheapshark-scraper",
+   "title": "Game Deals Scraper \u2014 PC Game Prices & Discounts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "deal-scraped",
+   "unit_tiers": {
+    "FREE": 0.0002,
+    "BRONZE": 0.00016,
+    "SILVER": 0.00013,
+    "GOLD": 0.0001,
+    "PLATINUM": 0.0001,
+    "DIAMOND": 0.0001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "deal-scraped",
+     "Deal scraped",
+     {
+      "FREE": 0.0002,
+      "BRONZE": 0.00016,
+      "SILVER": 0.00013,
+      "GOLD": 0.0001,
+      "PLATINUM": 0.0001,
+      "DIAMOND": 0.0001
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "hipersoft/steam-games-scraper",
+   "title": "Steam Games Scraper \u2014 Prices, Genres, Metacritic",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-scraped",
+   "unit_tiers": {
+    "FREE": 0.0024,
+    "BRONZE": 0.00192,
+    "SILVER": 0.00156,
+    "GOLD": 0.0012,
+    "PLATINUM": 0.0012,
+    "DIAMOND": 0.0012
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game-scraped",
+     "Game scraped",
+     {
+      "FREE": 0.0024,
+      "BRONZE": 0.00192,
+      "SILVER": 0.00156,
+      "GOLD": 0.0012,
+      "PLATINUM": 0.0012,
+      "DIAMOND": 0.0012
+     }
+    ],
+    [
+     "api-request",
+     "API request",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "hydrocore/steam-reviews-game-data",
+   "title": "Steam Reviews Scraper: Game Data, Players & Prices",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.00049
+   },
+   "start_fee": 0.0025,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.00049
+     }
+    ],
+    [
+     "game",
+     "Game record",
+     {
+      "FREE": 0.00077
+     }
+    ],
+    [
+     "actor-start",
+     "Actor start",
+     {
+      "FREE": 0.0025
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "insight.solutions/steam-store-stats-api",
+   "title": "Steam Game Data API \u2014 Prices, Players & Charts",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.0012,
+    "BRONZE": 0.0012,
+    "SILVER": 0.00096,
+    "GOLD": 0.00072,
+    "PLATINUM": 0.00072,
+    "DIAMOND": 0.00072
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game profile returned",
+     {
+      "FREE": 0.0012,
+      "BRONZE": 0.0012,
+      "SILVER": 0.00096,
+      "GOLD": 0.00072,
+      "PLATINUM": 0.00072,
+      "DIAMOND": 0.00072
+     }
+    ],
+    [
+     "actor-start",
+     "Run started",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "chart-entry",
+     "Chart entry returned",
+     {
+      "FREE": 0.0003
+     }
+    ],
+    [
+     "search-result",
+     "Search result returned",
+     {
+      "FREE": 0.0003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "invaluable_rondeau/steam-reviews-games-scraper",
+   "title": "Steam Scraper \u2014 Steam Reviews Scraper, Playtime & Games",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "strategy-allocated",
+   "unit_tiers": {
+    "FREE": 0.004
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "strategy-allocated",
+     "Extracted Steam record",
+     {
+      "FREE": 0.004
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "istmobot/steam-game-intelligence",
+   "title": "Steam Game Intelligence \u2014 players, reviews, prices & owners",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "app-result",
+   "unit_tiers": {
+    "FREE": 0.002,
+    "BRONZE": 0.002,
+    "SILVER": 0.0018,
+    "GOLD": 0.0016,
+    "PLATINUM": 0.0016,
+    "DIAMOND": 0.0016
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "app-result",
+     "Game result",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.002,
+      "SILVER": 0.0018,
+      "GOLD": 0.0016,
+      "PLATINUM": 0.0016,
+      "DIAMOND": 0.0016
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "jacobsapi/google-maps-apify-actor",
+   "title": "Google Maps Review Scraper",
+   "users": 52,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "scraped-review",
+   "unit_tiers": {
+    "FREE": 0.00025
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "scraped-review",
+     "Review Scraped",
+     {
+      "FREE": 0.00025
+     }
+    ],
+    [
+     "scraped-place",
+     "Place Scraped",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "johnatan029/steam-game-data-monitor",
+   "title": "Steam Game Price, Discount & Review Monitor",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "change-event",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "change-event",
+     "Change event",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "app-result",
+     "App result",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "johnatan029/steam-review-monitor",
+   "title": "Steam Review Monitor & Player Feedback Alerts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "new-review",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "new-review",
+     "New review",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "jooah-code/steampowered-charts-scraper",
+   "title": "Steam Charts Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.004,
+    "BRONZE": 0.0036,
+    "SILVER": 0.0032,
+    "GOLD": 0.0028,
+    "PLATINUM": 0.0028,
+    "DIAMOND": 0.0028
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.004,
+      "BRONZE": 0.0036,
+      "SILVER": 0.0032,
+      "GOLD": 0.0028,
+      "PLATINUM": 0.0028,
+      "DIAMOND": 0.0028
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "jpmarketdata/steam-japan-game-price-watchlist",
+   "title": "Steam Japan Game Price Watchlist",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "app-price-delivered",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "app-price-delivered",
+     "App price facts delivered",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "jungle_synthesizer/cheapshark-multistore-game-deals-price-scraper",
+   "title": "Cheapshark Multistore Game Deals Price Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "data-record",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.1,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.1
+     }
+    ],
+    [
+     "data-record",
+     "Record scraped",
+     {
+      "FREE": 0.0005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "justfeel/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper - Sentiment & Review-Bomb Detection",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "kawsar/steamspy-stats-scraper",
+   "title": "Steamspy Stats Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00599,
+    "BRONZE": 0.00499,
+    "SILVER": 0.00399,
+    "GOLD": 0.00299,
+    "PLATINUM": 0.00299,
+    "DIAMOND": 0.00299
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.00599,
+      "BRONZE": 0.00499,
+      "SILVER": 0.00399,
+      "GOLD": 0.00299,
+      "PLATINUM": 0.00299,
+      "DIAMOND": 0.00299
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "keiwy/steam-store-page-auditor",
+   "title": "Steam Page Auditor - Bulk & API Steam store page audits",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "page-audit",
+   "unit_tiers": {
+    "FREE": 0.99
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "page-audit",
+     "Page audited",
+     {
+      "FREE": 0.99
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "kempt_horizon_yzk/steam-store-scraper",
+   "title": "Steam Scraper \u2013 Games, Prices, Reviews & Player Counts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": null,
+   "unit_tiers": {},
+   "start_fee": 0.001,
+   "note": "AMBIGUOUS: 2 recurring, no primary flag",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.0015
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "kestrel/steam-player-reviews",
+   "title": "Steam Reviews - Text, Ratings, Playtime & \u4e2d\u6587\u8bc4\u8bba",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review",
+     "Review snapshot",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "khadinakbar/scrape-steam-store",
+   "title": "Steam Store Scraper \u2014 App IDs & Regional Prices",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-scraped",
+   "unit_tiers": {
+    "FREE": 0.003
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "game-scraped",
+     "Steam game record",
+     {
+      "FREE": 0.003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "knagymate/apify-kayak-reviews-scraper",
+   "title": "Kayak Reviews Scraper",
+   "users": 30,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.00267,
+    "SILVER": 0.00233,
+    "GOLD": 0.002,
+    "PLATINUM": 0.002,
+    "DIAMOND": 0.002
+   },
+   "start_fee": 0.01,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.02,
+      "BRONZE": 0.01667,
+      "SILVER": 0.01333,
+      "GOLD": 0.01,
+      "PLATINUM": 0.01,
+      "DIAMOND": 0.01
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Review",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.00267,
+      "SILVER": 0.00233,
+      "GOLD": 0.002,
+      "PLATINUM": 0.002,
+      "DIAMOND": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "launchgulf/steam-store-scraper",
+   "title": "Steam Store Scraper: Games, Prices & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Game",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "lokki/steam-top-sellers-scraper",
+   "title": "Steam Market Intelligence: Top Sellers & Opportunity Tracker",
+   "users": 17,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.005
+   },
+   "start_fee": 0.05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "lucacelli/steam-store-pc-game-pricing-player-review-spy",
+   "title": "Steam Store PC Games, Pricing, Reviews & Studio [$0.9/1K]",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-analyzed",
+   "unit_tiers": {
+    "FREE": 0.0009
+   },
+   "start_fee": 0.0005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "game-analyzed",
+     "Steam Store Record",
+     {
+      "FREE": 0.0009
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "lulzasaur/isthereanydeal-scraper",
+   "title": "IsThereAnyDeal Scraper - Game Price Tracker",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.01
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.01
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "maximedupre/steam-games",
+   "title": "Steam Game Scraper - Reviews & Players",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.00265,
+    "BRONZE": 0.00265,
+    "SILVER": 0.00215,
+    "GOLD": 0.0016,
+    "PLATINUM": 0.0016,
+    "DIAMOND": 0.0016
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.00265,
+      "BRONZE": 0.00265,
+      "SILVER": 0.00215,
+      "GOLD": 0.0016,
+      "PLATINUM": 0.0016,
+      "DIAMOND": 0.0016
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "memo23/app-store-scraper",
+   "title": "App Store Reviews + AI Intelligence \u00b7 Dev Emails",
+   "users": 25,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Result row",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "additional-data",
+     "Contact email",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "detail-enrichment",
+     "Detail enrichment",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "review-insights",
+     "Review insights",
+     {
+      "FREE": 0.02
+     }
+    ],
+    [
+     "pain-point-analysis",
+     "AI pain-point analysis",
+     {
+      "FREE": 0.05
+     }
+    ],
+    [
+     "contact-email",
+     "Contact email found",
+     {
+      "FREE": 0.05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "memo23/google-play-scraper",
+   "title": "Google Play Reviews Scraper \u00b7 Apps, Search & Developer Emails",
+   "users": 44,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Result row",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "additional-data",
+     "Contact email",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "detail-enrichment",
+     "Detail enrichment",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "contact-email",
+     "Contact email found",
+     {
+      "FREE": 0.05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "mina_safwat/steam-scraper",
+   "title": "Steam Games & Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "moving_beacon-owner1/my-actor-79",
+   "title": "Steam Store Game Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.01
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.01
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "muzafferkadir/steam-mcp",
+   "title": "Steam Store Scraper MCP | Games, Reviews & Deals",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.01,
+   "note": "sole recurring event (no primary flag)",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.01
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "nanodata/steam-store-scraper",
+   "title": "Steam Store Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "steam-game-result",
+   "unit_tiers": {
+    "FREE": 0.0006
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "actor-start",
+     "Actor run started",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "steam-game-result",
+     "Steam game scraped",
+     {
+      "FREE": 0.0006
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "neuro-scraper/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.00149,
+    "BRONZE": 0.00139,
+    "SILVER": 0.00129,
+    "GOLD": 0.00119,
+    "PLATINUM": 0.00119,
+    "DIAMOND": 0.00119
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "result",
+     "Result",
+     {
+      "FREE": 0.00149,
+      "BRONZE": 0.00139,
+      "SILVER": 0.00129,
+      "GOLD": 0.00119,
+      "PLATINUM": 0.00119,
+      "DIAMOND": 0.00119
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "neuton/steam-game-reviews-scraper",
+   "title": "Steam Game Reviews Scraper",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.004
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.004
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "omkar-cloud/steam-scraper",
+   "title": "\ud83d\ude80 Steam Scraper \u00b7 5,000 Free Games/Month",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Game",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "details",
+     "Full game details",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "oneary/steam-scraper",
+   "title": "Steam Scraper \u2014 Game Prices, Reviews & Store Data",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0014
+   },
+   "start_fee": 0.1,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0014
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.1
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "openharvest/steam-scraper",
+   "title": "Steam Reviews & Games Scraper \u2013 Prices, Players & Top Sellers",
+   "users": 3,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.002
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "panda_studio/steam-reviews-monitor",
+   "title": "Steam Reviews Scraper & Monitor (by language)",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0008
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Review",
+     {
+      "FREE": 0.0008
+     }
+    ],
+    [
+     "game-checked",
+     "Game checked",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "parseforge/cheapshark-game-deals-scraper",
+   "title": "CheapShark Game Deals Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result-item",
+   "unit_tiers": {
+    "FREE": 0.001,
+    "BRONZE": 0.00093,
+    "SILVER": 0.00087,
+    "GOLD": 0.0008,
+    "PLATINUM": 0.00072,
+    "DIAMOND": 0.00064
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "result-item",
+     "result",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.00093,
+      "SILVER": 0.00087,
+      "GOLD": 0.0008,
+      "PLATINUM": 0.00072,
+      "DIAMOND": 0.00064
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "parseforge/sportsbook-review-scraper",
+   "title": "Sportsbook Review Scraper - NFL, NBA & MLB Odds, Betting Lines",
+   "users": 6,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-odds",
+   "unit_tiers": {
+    "FREE": 0.007,
+    "BRONZE": 0.006734,
+    "SILVER": 0.006482,
+    "GOLD": 0.00623,
+    "PLATINUM": 0.005607,
+    "DIAMOND": 0.004984
+   },
+   "start_fee": 0.04806,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "odds-page",
+     "Board page",
+     {
+      "FREE": 0.005,
+      "BRONZE": 0.00481,
+      "SILVER": 0.00463,
+      "GOLD": 0.00445,
+      "PLATINUM": 0.00445,
+      "DIAMOND": 0.00445
+     }
+    ],
+    [
+     "game-odds",
+     "Game row",
+     {
+      "FREE": 0.007,
+      "BRONZE": 0.006734,
+      "SILVER": 0.006482,
+      "GOLD": 0.00623,
+      "PLATINUM": 0.005607,
+      "DIAMOND": 0.004984
+     }
+    ],
+    [
+     "moneyline-odds",
+     "Moneyline block",
+     {
+      "FREE": 0.004,
+      "BRONZE": 0.003848,
+      "SILVER": 0.003704,
+      "GOLD": 0.00356,
+      "PLATINUM": 0.00356,
+      "DIAMOND": 0.00356
+     }
+    ],
+    [
+     "totals-odds",
+     "Totals block",
+     {
+      "FREE": 0.004,
+      "BRONZE": 0.003848,
+      "SILVER": 0.003704,
+      "GOLD": 0.00356,
+      "PLATINUM": 0.00356,
+      "DIAMOND": 0.00356
+     }
+    ],
+    [
+     "period-odds",
+     "Period block",
+     {
+      "FREE": 0.005,
+      "BRONZE": 0.00481,
+      "SILVER": 0.00463,
+      "GOLD": 0.00445,
+      "PLATINUM": 0.00445,
+      "DIAMOND": 0.00445
+     }
+    ],
+    [
+     "line-history",
+     "Line movement series",
+     {
+      "FREE": 0.006,
+      "BRONZE": 0.005772,
+      "SILVER": 0.005556,
+      "GOLD": 0.00534,
+      "PLATINUM": 0.00534,
+      "DIAMOND": 0.00534
+     }
+    ],
+    [
+     "matchup-stats",
+     "Team matchup stats",
+     {
+      "FREE": 0.008,
+      "BRONZE": 0.007696,
+      "SILVER": 0.007408,
+      "GOLD": 0.00712,
+      "PLATINUM": 0.00712,
+      "DIAMOND": 0.00712
+     }
+    ],
+    [
+     "futures-selection",
+     "Futures selection",
+     {
+      "FREE": 0.005,
+      "BRONZE": 0.00481,
+      "SILVER": 0.00463,
+      "GOLD": 0.00445,
+      "PLATINUM": 0.00445,
+      "DIAMOND": 0.00445
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.054,
+      "BRONZE": 0.051948,
+      "SILVER": 0.050004,
+      "GOLD": 0.04806,
+      "PLATINUM": 0.04806,
+      "DIAMOND": 0.04806
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "parselab/steam-games-data-scraper",
+   "title": "Steam Games Data Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result-item",
+   "unit_tiers": {
+    "FREE": 0.016,
+    "BRONZE": 0.01467,
+    "SILVER": 0.01333,
+    "GOLD": 0.012,
+    "PLATINUM": 0.012,
+    "DIAMOND": 0.012
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "result-item",
+     "Result",
+     {
+      "FREE": 0.016,
+      "BRONZE": 0.01467,
+      "SILVER": 0.01333,
+      "GOLD": 0.012,
+      "PLATINUM": 0.012,
+      "DIAMOND": 0.012
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "pedrofs85/steam-reviews-analyzer",
+   "title": "Steam Reviews Scraper + AI Analyzer",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0001
+   },
+   "start_fee": 0.05,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0001
+     }
+    ],
+    [
+     "analysis-report-own-key",
+     "AI analysis report",
+     {
+      "FREE": 0.05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "pikoulas/steam-games-reviews-scraper",
+   "title": "Steam Games Scraper: SteamSpy Owners, Reviews, Players & Tags",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.002
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "residential-traffic",
+     "Residential proxy traffic",
+     {
+      "FREE": 0.0012
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "ponderable_hydrometer/steam-scraper",
+   "title": "Steam Scraper \u2014 Games, Prices & Reviews",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "powerai/steampowered-search-scraper",
+   "title": "Steam Powered Search Scraper",
+   "users": 4,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00499
+   },
+   "start_fee": 0.09,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.00499
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.09
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "precious_bathmat/steam-reviews-scraper",
+   "title": "Steam Review Analysis: Game Reviews, Playtime & Sentiment",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "game-report",
+     "Game report",
+     {
+      "FREE": 0.01
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "prodiger/steam-scraper",
+   "title": "Steam Scraper (Pay-Per-Event)",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-scraped",
+   "unit_tiers": {
+    "FREE": 0.0023
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "actor-start",
+     "Actor start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "game-scraped",
+     "Game scraped",
+     {
+      "FREE": 0.0023
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "rainminer/steam-curators-scraper",
+   "title": "Steam Curator Followers & Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00199,
+    "BRONZE": 0.00179,
+    "SILVER": 0.00159,
+    "GOLD": 0.00149,
+    "PLATINUM": 0.00149,
+    "DIAMOND": 0.00149
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Curator",
+     {
+      "FREE": 0.00199,
+      "BRONZE": 0.00179,
+      "SILVER": 0.00159,
+      "GOLD": 0.00149,
+      "PLATINUM": 0.00149,
+      "DIAMOND": 0.00149
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "rbbscrap/steam-scraper",
+   "title": "Steam Scraper \u2014 Games, Discounts & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0006
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Scraped Steam Game",
+     {
+      "FREE": 0.0006
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "real-estate-api/Steam-Reviews-Scraper",
+   "title": "Steam Reviews Scraper",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00599,
+    "BRONZE": 0.00499,
+    "SILVER": 0.00399,
+    "GOLD": 0.00299,
+    "PLATINUM": 0.00299,
+    "DIAMOND": 0.00299
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.00599,
+      "BRONZE": 0.00499,
+      "SILVER": 0.00399,
+      "GOLD": 0.00299,
+      "PLATINUM": 0.00299,
+      "DIAMOND": 0.00299
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "retrainmap/steam-games",
+   "title": "Steam store games - search, details, prices (public store APIs)",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "record",
+   "unit_tiers": {
+    "FREE": 0.005
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "run-start",
+     "Actor run",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "record",
+     "Record",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "rowfeed/steam-game-data",
+   "title": "Steam API \u2013 Game Prices, Sales, Player Count & Top Sellers",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "rupom888/steam-reviews-scraper",
+   "title": "Steam Game Reviews Scraper",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Result",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "samwise.agency/steam-intel",
+   "title": "Steam Reviews Scraper \u2014 Review Text, Scores & Game Data",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.0001,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.0001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "sashaebashu/steam-monitor",
+   "title": "Steam Price & Market Monitor",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.006
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.006
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrapebench/nrc-reactor-licensing-tracker",
+   "title": "NRC Reactor License Applications & Amendments Tracker",
+   "users": 6,
+   "model": "PAY_PER_EVENT",
+   "unit_key": null,
+   "unit_tiers": {},
+   "start_fee": 0.005,
+   "note": "no recurring event -- one-time/start-fee only",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "record",
+     "Licensing record",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrapemint/steam-game-review-intelligence",
+   "title": "Steam Game and Review Intelligence Monitor",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review_extracted",
+   "unit_tiers": {
+    "FREE": 0.004
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review_extracted",
+     "Steam review extracted",
+     {
+      "FREE": 0.004
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrapemint/steam-game-studio-leads",
+   "title": "Steam Game Studio Lead Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "listing",
+   "unit_tiers": {
+    "FREE": 0.01
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "listing",
+     "Listing",
+     {
+      "FREE": 0.01
+     }
+    ],
+    [
+     "lead",
+     "Studio lead",
+     {
+      "FREE": 0.02
+     }
+    ],
+    [
+     "qualified_lead",
+     "Qualified studio lead",
+     {
+      "FREE": 0.05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrapepilot/steam-scraper----game-data-reviews-store-intelligence",
+   "title": "Steam Scraper \u2014 Game Data, Reviews & Store Intelligence",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result-scrape",
+   "unit_tiers": {
+    "FREE": 0.0015
+   },
+   "start_fee": 0.02,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.02
+     }
+    ],
+    [
+     "result-scrape",
+     "Scraped Game Result",
+     {
+      "FREE": 0.0015
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scraper0917/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper \u2014 reviews, playtime, tags, histogram",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0008
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0008
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrapers_lat/steam-games-scraper",
+   "title": "Steam Games Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.008,
+    "BRONZE": 0.0076,
+    "SILVER": 0.0072,
+    "GOLD": 0.0068,
+    "PLATINUM": 0.0068,
+    "DIAMOND": 0.0068
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "result",
+     "Result",
+     {
+      "FREE": 0.008,
+      "BRONZE": 0.0076,
+      "SILVER": 0.0072,
+      "GOLD": 0.0068,
+      "PLATINUM": 0.0068,
+      "DIAMOND": 0.0068
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrapewise/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper - Game Reviews, Playtime & Scores",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "avaliacao-entregue",
+   "unit_tiers": {
+    "FREE": 0.00018,
+    "BRONZE": 0.000171,
+    "SILVER": 0.000154,
+    "GOLD": 0.000137,
+    "PLATINUM": 0.000137,
+    "DIAMOND": 0.000137
+   },
+   "start_fee": 0.00425,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "avaliacao-entregue",
+     "Review delivered",
+     {
+      "FREE": 0.00018,
+      "BRONZE": 0.000171,
+      "SILVER": 0.000154,
+      "GOLD": 0.000137,
+      "PLATINUM": 0.000137,
+      "DIAMOND": 0.000137
+     }
+    ],
+    [
+     "jogo-entregue",
+     "Game details row",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.0019,
+      "SILVER": 0.0018,
+      "GOLD": 0.0017,
+      "PLATINUM": 0.0017,
+      "DIAMOND": 0.0017
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005,
+      "BRONZE": 0.00475,
+      "SILVER": 0.0045,
+      "GOLD": 0.00425,
+      "PLATINUM": 0.00425,
+      "DIAMOND": 0.00425
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrapingmonkey/steam-scraper",
+   "title": "Steam Community Scraper: Reviews & Workshop",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.001,
+    "SILVER": 0.001,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.001,
+      "SILVER": 0.001,
+      "GOLD": 0.001,
+      "PLATINUM": 0.001,
+      "DIAMOND": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "scrolahdata/steam-scraper",
+   "title": "Steam Reviews Scraper - Game Reviews, Prices & Player Counts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0003,
+    "BRONZE": 0.0003,
+    "SILVER": 0.00027,
+    "GOLD": 0.00024,
+    "PLATINUM": 0.00024,
+    "DIAMOND": 0.00024
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "DIAMOND",
+    "FREE",
+    "GOLD",
+    "PLATINUM",
+    "SILVER"
+   ],
+   "every_tier": true,
+   "all_events": [
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0003,
+      "BRONZE": 0.0003,
+      "SILVER": 0.00027,
+      "GOLD": 0.00024,
+      "PLATINUM": 0.00024,
+      "DIAMOND": 0.00024
+     }
+    ],
+    [
+     "game",
+     "Game details",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.002,
+      "SILVER": 0.0018,
+      "GOLD": 0.0016,
+      "PLATINUM": 0.0016,
+      "DIAMOND": 0.0016
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "seemuapps/steam-game-reviews-scraper",
+   "title": "Steam Game & Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0007
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0007
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "serpdownloaders/clientclub-downloader",
+   "title": "ClientClub Video Downloader | How to Download ClientClub Videos",
+   "users": 8,
+   "model": null,
+   "no_current_pricing": true
+  },
+  {
+   "handle": "shawndunn/steam-game-store-details",
+   "title": "Steam Store Game Details, Prices & Review Scores (Bulk)",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.0015
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.0015
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "signalcrawl/steam-review-alert-api",
+   "title": "Steam Review Alert API",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0015
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Review alert",
+     {
+      "FREE": 0.0015
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "solidcode/flipkart-scraper",
+   "title": "Flipkart Reviews Scraper",
+   "users": 25,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0018,
+    "BRONZE": 0.0017,
+    "SILVER": 0.0016,
+    "GOLD": 0.0015,
+    "PLATINUM": 0.0015,
+    "DIAMOND": 0.0015
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0018,
+      "BRONZE": 0.0017,
+      "SILVER": 0.0016,
+      "GOLD": 0.0015,
+      "PLATINUM": 0.0015,
+      "DIAMOND": 0.0015
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "somepineapple/steam-review-insights",
+   "title": "Steam Reviews Analyzer: Player Insights",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-analysed",
+   "unit_tiers": {
+    "FREE": 0.05
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game-analysed",
+     "Game analysed",
+     {
+      "FREE": 0.05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "stas_k/steam-game-price-api",
+   "title": "Steam Game Price API & Scraper - Live Store Prices",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.0009
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.0009
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "steadydata/steam-app-details",
+   "title": "Steam Game Details Scraper: price, reviews score, genres, bulk",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "app-detailed",
+   "unit_tiers": {
+    "FREE": 0.002,
+    "BRONZE": 0.0018,
+    "SILVER": 0.0016,
+    "GOLD": 0.0013,
+    "PLATINUM": 0.0013,
+    "DIAMOND": 0.0013
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "app-detailed",
+     "App detailed",
+     {
+      "FREE": 0.002,
+      "BRONZE": 0.0018,
+      "SILVER": 0.0016,
+      "GOLD": 0.0013,
+      "PLATINUM": 0.0013,
+      "DIAMOND": 0.0013
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "steadywren/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper & Patch Impact Report",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "review",
+     "review",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "game-report",
+     "game report",
+     {
+      "FREE": 0.002
+     }
+    ],
+    [
+     "ai-insights",
+     "ai insights",
+     {
+      "FREE": 0.03
+     }
+    ],
+    [
+     "reply-draft",
+     "reply draft",
+     {
+      "FREE": 0.003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "straightforward_hydra/steam-game-stats",
+   "title": "Steam Game Stats",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.005
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "straightforward_hydra/steam-reviews-scraper",
+   "title": "Steam Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "review",
+   "unit_tiers": {
+    "FREE": 0.002
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "synthetic.ia/steam-games",
+   "title": "Steam Games API \u2014 search, details, players & reviews (no key)",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "steam-query",
+   "unit_tiers": {
+    "FREE": 0.004,
+    "BRONZE": 0.003,
+    "SILVER": 0.0025,
+    "GOLD": 0.002,
+    "PLATINUM": 0.002,
+    "DIAMOND": 0.002
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "steam-query",
+     "Steam query",
+     {
+      "FREE": 0.004,
+      "BRONZE": 0.003,
+      "SILVER": 0.0025,
+      "GOLD": 0.002,
+      "PLATINUM": 0.002,
+      "DIAMOND": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "sysco32/game-release-news-tracker",
+   "title": "Game Release News Tracker: Reddit, Google News & YouTube",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "news-item",
+   "unit_tiers": {
+    "FREE": 0.0004
+   },
+   "start_fee": 0.002,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "BRONZE",
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "news-item",
+     "News item",
+     {
+      "FREE": 0.0004
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "sysco32/steam-scraper",
+   "title": "Steam Scraper: Games, Prices, Top Sellers & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-result",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.002,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game-result",
+     "Game result",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "review-result",
+     "Review result",
+     {
+      "FREE": 0.0003
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "technicaldost/steam-game-reviews-scraper",
+   "title": "Steam Game Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.003,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.003
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Successful review",
+     {
+      "FREE": 0.0005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "technicaldost/steam-patch-review-compare",
+   "title": "Steam Reviews Before & After a Patch",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.03
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Result delivered",
+     {
+      "FREE": 0.03
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "technicaldost/steam-scraper-games-prices-reviews",
+   "title": "Steam Scraper \u2014 Games, Prices, Discounts & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game",
+     "Game",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "review",
+     "Review",
+     {
+      "FREE": 0.0003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "thescrapelab/steam-review-changes-tracker",
+   "title": "Steam Review Tracker",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.003,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.003
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Review record delivered",
+     {
+      "FREE": 0.0005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "thriftykiwi/steam-app-reviews-scraper",
+   "title": "Steam App Review Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Result item",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "thriftykiwi/steam-game-store-scraper",
+   "title": "Steam Game Store Scraper - Prices & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-default-dataset-item",
+     "Result item",
+     {
+      "FREE": 0.001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "trusted_tech_spot/steam-community-workshop-items-scraper",
+   "title": "Steam Community Workshop & Mods Scraper",
+   "users": 2,
+   "model": null,
+   "no_current_pricing": true
+  },
+  {
+   "handle": "turboextract/steam-games-prices",
+   "title": "Steam Store Scraper - Games, Prices, Discounts and Developers",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-found",
+   "unit_tiers": {
+    "FREE": 0.003
+   },
+   "start_fee": 0.0,
+   "note": "sole recurring event (no primary flag)",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "game-found",
+     "Game delivered",
+     {
+      "FREE": 0.003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "unrivaled_fortress/steam-games-concurrent-players-wishlist-radar",
+   "title": "\ud83c\udfae Steam Concurrent Players & Wishlist Velocity Radar",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.003,
+    "BRONZE": 0.00255,
+    "SILVER": 0.00225,
+    "GOLD": 0.00195,
+    "PLATINUM": 0.00195,
+    "DIAMOND": 0.00195
+   },
+   "start_fee": 0.0001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.0001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.003,
+      "BRONZE": 0.00255,
+      "SILVER": 0.00225,
+      "GOLD": 0.00195,
+      "PLATINUM": 0.00195,
+      "DIAMOND": 0.00195
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "uptimedata/steam-game-prices-scraper",
+   "title": "Steam Game Prices & Discounts Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.0005
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [
+    "FREE"
+   ],
+   "every_tier": false,
+   "all_events": [
+    [
+     "result",
+     "Game",
+     {
+      "FREE": 0.0005
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "v0iddo/steam-game-reviews",
+   "title": "Steam Game Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001,
+    "BRONZE": 0.0009,
+    "SILVER": 0.0008,
+    "GOLD": 0.0007,
+    "PLATINUM": 0.0007,
+    "DIAMOND": 0.0007
+   },
+   "start_fee": 0.0,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "dataset-item",
+     "Dataset item",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.0009,
+      "SILVER": 0.0008,
+      "GOLD": 0.0007,
+      "PLATINUM": 0.0007,
+      "DIAMOND": 0.0007
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "vdb997/steam-review-change-watch",
+   "title": "Steam Review Scraper - Edits, Flips & Replies",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-language-checked",
+   "unit_tiers": {
+    "FREE": 0.05
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "game-language-checked",
+     "Game-language check",
+     {
+      "FREE": 0.05
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "vexaloom-labs/steam-game-pricing-and-metacritic-scraper",
+   "title": "Steam Game Pricing & Metacritic Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00099,
+    "BRONZE": 0.00082,
+    "SILVER": 0.00066,
+    "GOLD": 0.00049,
+    "PLATINUM": 0.00049,
+    "DIAMOND": 0.00049
+   },
+   "start_fee": 0.03,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.1,
+      "BRONZE": 0.077,
+      "SILVER": 0.053,
+      "GOLD": 0.03,
+      "PLATINUM": 0.03,
+      "DIAMOND": 0.03
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.00099,
+      "BRONZE": 0.00082,
+      "SILVER": 0.00066,
+      "GOLD": 0.00049,
+      "PLATINUM": 0.00049,
+      "DIAMOND": 0.00049
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "w3crawler/steam-app-metadata-scraper",
+   "title": "Steam App Metadata Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00299
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "App Metadata",
+     {
+      "FREE": 0.00299
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "w3crawler/steam-game-scraper",
+   "title": "Steam Store Game Search Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00299
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Games",
+     {
+      "FREE": 0.00299
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "w3crawler/steam-reviews-scraper",
+   "title": "Steam Public Reviews Scraper",
+   "users": 1,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00299
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Reviews",
+     {
+      "FREE": 0.00299
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "w3crawler/steam-store-scraper",
+   "title": "Steam Store Public App Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.00299
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Store Apps",
+     {
+      "FREE": 0.00299
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "xqfech/steam-scraper",
+   "title": "Steam Scraper \u2014 Game Prices, Discounts, Reviews & Deal Alerts",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "change-event",
+   "unit_tiers": {
+    "FREE": 0.02
+   },
+   "start_fee": 0.001,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "change-event",
+     "Change event",
+     {
+      "FREE": 0.02
+     }
+    ],
+    [
+     "baseline-item",
+     "Baseline item",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "watched-game-check",
+     "Watched item check",
+     {
+      "FREE": 0.003
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "xtracto/review-velocity-monitor",
+   "title": "Review Velocity Monitor \u2014 Ratings Per Day",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.0015,
+    "BRONZE": 0.001334,
+    "SILVER": 0.001167,
+    "GOLD": 0.001001,
+    "PLATINUM": 0.001001,
+    "DIAMOND": 0.001001
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.0015,
+      "BRONZE": 0.001334,
+      "SILVER": 0.001167,
+      "GOLD": 0.001001,
+      "PLATINUM": 0.001001,
+      "DIAMOND": 0.001001
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "xtracto/steam-store-scraper",
+   "title": "Steam Games, Prices & Reviews Scraper",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "apify-default-dataset-item",
+   "unit_tiers": {
+    "FREE": 0.001,
+    "BRONZE": 0.000887,
+    "SILVER": 0.00078,
+    "GOLD": 0.000667,
+    "PLATINUM": 0.000667,
+    "DIAMOND": 0.000667
+   },
+   "start_fee": 0.005,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.005
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "result",
+     {
+      "FREE": 0.001,
+      "BRONZE": 0.000887,
+      "SILVER": 0.00078,
+      "GOLD": 0.000667,
+      "PLATINUM": 0.000667,
+      "DIAMOND": 0.000667
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "yck69/steam-scraper",
+   "title": "Steam Scraper - Games, Prices, Reviews & Players",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "game-extracted",
+   "unit_tiers": {
+    "FREE": 0.003
+   },
+   "start_fee": 5e-05,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 5e-05
+     }
+    ],
+    [
+     "game-extracted",
+     "Game extracted",
+     {
+      "FREE": 0.003
+     }
+    ],
+    [
+     "review-extracted",
+     "Review extracted",
+     {
+      "FREE": 0.0015
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "yugenox/steam-games-scraper",
+   "title": "Steam Games Scraper \u2014 Prices by Country, Top Sellers & Reviews",
+   "users": 2,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "result",
+   "unit_tiers": {
+    "FREE": 0.001
+   },
+   "start_fee": 0.002,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "result",
+     "Game",
+     {
+      "FREE": 0.001
+     }
+    ],
+    [
+     "details",
+     "Store details",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "review",
+     "User review",
+     {
+      "FREE": 0.0005
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.002
+     }
+    ]
+   ]
+  },
+  {
+   "handle": "zen-studio/wildberries-detail-scraper",
+   "title": "Wildberries Product Detail Scraper - Reviews & Price History",
+   "users": 306,
+   "model": "PAY_PER_EVENT",
+   "unit_key": "product",
+   "unit_tiers": {
+    "FREE": 0.00499,
+    "BRONZE": 0.00499,
+    "SILVER": 0.00429,
+    "GOLD": 0.00399,
+    "PLATINUM": 0.00399,
+    "DIAMOND": 0.00399
+   },
+   "start_fee": 0.009,
+   "note": "primary event",
+   "undercuts_tiers": [],
+   "every_tier": false,
+   "all_events": [
+    [
+     "product",
+     "Product scraped",
+     {
+      "FREE": 0.00499,
+      "BRONZE": 0.00499,
+      "SILVER": 0.00429,
+      "GOLD": 0.00399,
+      "PLATINUM": 0.00399,
+      "DIAMOND": 0.00399
+     }
+    ],
+    [
+     "review",
+     "Review scraped",
+     {
+      "FREE": 0.00199,
+      "BRONZE": 0.00199,
+      "SILVER": 0.00179,
+      "GOLD": 0.00159,
+      "PLATINUM": 0.00159,
+      "DIAMOND": 0.00159
+     }
+    ],
+    [
+     "apify-actor-start",
+     "Actor Start",
+     {
+      "FREE": 0.009
+     }
+    ],
+    [
+     "apify-default-dataset-item",
+     "Result",
+     {
+      "FREE": 1e-05
+     }
+    ]
+   ]
+  }
+ ]
+}
