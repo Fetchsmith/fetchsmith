@@ -206,15 +206,27 @@ function watchKeyFor(label, criteria) {
 // shopify-products-scraper (h843), google-play-reviews-scraper (h844), app-store-reviews-scraper
 // (h845), steam-reviews-scraper (h846). SmartRecruiters/Workable/Workday never carry a salary at all
 // (verified in their own mappers above), so `salaryAdded` simply never fires for those — harmless,
-// not worth excluding. Empty = both events, mirroring the rest of the fleet's watchEvents convention.
-const WATCH_EVENTS = ['new', 'salaryAdded'];
+// not worth excluding.
+//
+// `closed` (added cycle 3484) is the third event: a posting that WAS in this label's baseline and
+// is no longer on its board at all — "the req you were tracking was filled or pulled", the
+// recruiting/competitive-intel job `lepidata/career-site-jobs` sells and we could not answer. It is
+// **OPT-IN ONLY and deliberately breaks the "empty = every event" convention the other two share**:
+// an existing watch would otherwise silently start emitting — and billing for — a brand-new row
+// class on its very next run, which is the same surprise-rebilling shape as the
+// watch-baseline-eviction bug. So DEFAULT_WATCH_EVENTS, not WATCH_EVENTS, fills an empty input.
+const WATCH_EVENTS = ['new', 'salaryAdded', 'closed'];
+const DEFAULT_WATCH_EVENTS = ['new', 'salaryAdded'];
 const watchEventsInput = (input.watchEvents ?? []).map((e) => String(e).trim()).filter(Boolean);
 const unknownWatchEvents = watchEventsInput.filter((e) => !WATCH_EVENTS.includes(e));
 if (unknownWatchEvents.length) log.warning(`Ignoring unknown watchEvents value(s): ${unknownWatchEvents.join(', ')}. Valid values: ${WATCH_EVENTS.join(', ')}.`);
 const watchEvents = new Set(watchEventsInput.filter((e) => WATCH_EVENTS.includes(e)));
-if (!watchEvents.size) for (const e of WATCH_EVENTS) watchEvents.add(e);
+if (!watchEvents.size) for (const e of DEFAULT_WATCH_EVENTS) watchEvents.add(e);
 let watchEventsFiltered = 0; // a real salaryAdded (or brand-new posting) excluded by watchEvents
 let watchChanged = 0; // already-delivered postings re-delivered this run because a salary appeared
+let watchClosed = 0; // baseline postings delivered this run as `closed` (gone from their board)
+let closureCompaniesChecked = 0; // companies whose board listing was complete enough to diff
+let closureCompaniesSuppressed = 0; // companies deliberately NOT diffed (see closureEligibility)
 // watchId -> hasSalary the posting carried when last delivered, or null if unknown (a record written
 // before this feature existed). Parallel to seenIds on disk, same order/length.
 const watchMeta = new Map();
@@ -1366,7 +1378,14 @@ async function fetchSmartRecruiters(slug) {
   const raw = [];
   let offset = 0;
   let notFoundFlag = false;
-  while (raw.length < rawCap && timeBudgetOk()) {
+  // c3484: paging that stops on the raw cap or the run clock leaves pages UNREAD, which is not the
+  // same as an exhausted board. Only the `closed` event cares (a board read short looks like every
+  // unread posting came down), so it is reported as its own flag rather than folded into
+  // `partial`, which already means something narrower (a page that failed after retries).
+  let pagingCutShort = false;
+  for (;;) {
+    if (raw.length >= rawCap) { pagingCutShort = true; break; }
+    if (!timeBudgetOk()) { pagingCutShort = true; break; }
     const { status, body } = await getJson(`https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(slug)}/postings?limit=${pageSize}&offset=${offset}`);
     if (status === 404) { notFoundFlag = true; break; }
     const content = body?.content ?? [];
@@ -1431,7 +1450,7 @@ async function fetchSmartRecruiters(slug) {
   kept.forEach((j) => { delete j._rawId; });
   // `rawCount` is the board's size BEFORE passesFilters ran above. fetchAuto uses it (not
   // jobs.length) to decide whether the board exists at all — see the note there.
-  return { jobs: kept, rawCount: raw.length, cappedByScan };
+  return { jobs: kept, rawCount: raw.length, cappedByScan, pagingCutShort };
 }
 
 // Workday's slug is not a single company identifier like the other five ATSes — its public
@@ -1465,7 +1484,10 @@ async function fetchWorkday(slug) {
   let total = null;
   let notFoundFlag = false;
   let partial = false;
-  while (raw.length < rawCap && timeBudgetOk()) {
+  let pagingCutShort = false; // c3484, see fetchSmartRecruiters' own note: cap/clock != exhausted board
+  for (;;) {
+    if (raw.length >= rawCap) { pagingCutShort = true; break; }
+    if (!timeBudgetOk()) { pagingCutShort = true; break; }
     let res;
     try {
       res = await requestWithRetry({
@@ -1591,7 +1613,7 @@ async function fetchWorkday(slug) {
   // `rawCount` is the board's size BEFORE the `passesFilters` pre-filter above ran, same shape as
   // SmartRecruiters' `rawCount` (h928) — Workday pre-filters internally too, so `jobs.length` alone
   // is already post-filter and cannot answer "does this board exist" or label a log line honestly.
-  return { jobs: kept, partial, rawCount: raw.length, cappedByScan };
+  return { jobs: kept, partial, rawCount: raw.length, cappedByScan, pagingCutShort };
 }
 
 const FETCHERS = {
@@ -1903,13 +1925,94 @@ try {
     if (truncatedByMaxResultsForCompany && !seeding) {
       truncatedByMaxResultsCompanies.push({ ats, slug, delivered: deliveredForCompany });
     }
+    // ---- `closed` event (c3484): baseline postings that are no longer on this board ----
+    // Scoped PER COMPANY and run only when THIS company's board listing is known complete, because
+    // every way of reading a board short looks exactly like "all of its jobs closed at once" — a
+    // company that 404s or errors never reaches here (the catch/notFound branches `continue`), and
+    // the four reasons below cover the ways a board that DID answer can still be incomplete.
+    // Presence is diffed against `jobsForCompany` (the fetcher's own output) and NOT against the
+    // delivery loop's post-passesFilters match set, for two separate reasons: (1) maxResults and
+    // maxJobsPerCompany cap what is DELIVERED, not what was checked, so a capped run would invent
+    // closures; (2) on Rippling/Workday an already-delivered posting deliberately SKIPS its detail
+    // fetch in watch mode, so its description/salary stay null and a descriptionKeyword/salary
+    // filter would reject a posting that is still perfectly live. A posting that is still on the
+    // board but stopped matching the buyer's filters is NOT closed and must not be reported.
+    if (watchMode && !seeding && watchEvents.has('closed') && !chargeBlocked && pushed < maxResults) {
+      const presentIds = new Set();
+      const prefixes = new Set();
+      for (const job of jobsForCompany) {
+        const wid = watchIdFor(job);
+        if (wid == null) continue;
+        presentIds.add(String(wid));
+        prefixes.add(`${job.atsSource}:${job.company}:`);
+      }
+      let suppressed = null;
+      if (jobsForCompany.length === 0 || prefixes.size === 0) {
+        suppressed = 'the board returned no identifiable postings at all, which is indistinguishable'
+          + ' from a company that moved ATS, renamed its board or broke';
+      } else if (result.partial) {
+        suppressed = 'only part of the board was read (a page fetch failed after retries)';
+      } else if (result.cappedByScan === true) {
+        suppressed = `the board has more than ${scanCapPerCompany} postings, so the listing was truncated`;
+      } else if (result.pagingCutShort === true) {
+        suppressed = 'board paging stopped on the raw cap or the run clock with pages still unread';
+      }
+      if (suppressed) {
+        closureCompaniesSuppressed += 1;
+        log.info(`${ats}:${slug} — closed-posting detection skipped for this board: ${suppressed}.`
+          + ' Reporting closures from an incomplete listing would bill you for postings that are still open.');
+      } else {
+        closureCompaniesChecked += 1;
+        // Collected before any mutation: watchSeen is edited below as closures are delivered.
+        const gone = [];
+        for (const seenId of watchSeen) {
+          if (presentIds.has(seenId)) continue;
+          const prefix = [...prefixes].find((p) => seenId.startsWith(p));
+          if (prefix) gone.push({ id: seenId, prefix });
+        }
+        // Null-filled from a real row's own keys so a closed row carries exactly the fleet's
+        // schema, never an ad-hoc shape. A closed posting cannot be re-fetched — it is gone — so
+        // only the identity fields it was recorded under can be honest, and everything else is
+        // null rather than a stale guess. Private `_`-prefixed mapper fields are not output.
+        const template = Object.fromEntries(Object.keys(jobsForCompany[0])
+          .filter((k) => !k.startsWith('_')).map((k) => [k, null]));
+        for (const { id, prefix } of gone) {
+          const tail = id.slice(prefix.length);
+          // Split on the FIRST colon only and strip the trailing one: a company slug is buyer
+          // input and may itself contain a colon, which a plain `split(':')` would truncate.
+          const atsSource = prefix.slice(0, prefix.indexOf(':'));
+          const company = prefix.slice(prefix.indexOf(':') + 1, -1);
+          const row = {
+            ...template,
+            company,
+            atsSource,
+            jobId: /^https?:\/\//i.test(tail) ? null : tail,
+            jobUrl: /^https?:\/\//i.test(tail) ? tail : null,
+            scrapedAt: new Date().toISOString(),
+            watchEvent: 'closed',
+            previousHasSalary: watchMeta.get(id) ?? null,
+          };
+          const before = pushed;
+          const keepGoing = await chargeAndPush(row);
+          // Dropped from the baseline only once the closure was actually paid for and delivered:
+          // an undelivered closure must stay reportable next run. Dropping it also means a posting
+          // that comes BACK is correctly reported as `new` again rather than silently ignored.
+          if (pushed > before) {
+            watchSeen.delete(id); watchMeta.delete(id);
+            watchClosed += 1; deliveredForCompany += 1;
+          }
+          if (!keepGoing) break;
+        }
+        if (gone.length) log.info(`${ats}:${slug} — ${gone.length} baseline posting(s) are no longer on this board.`);
+      }
+    }
     // `rawCount` (board size before SmartRecruiters'/Workday's internal pre-filter) when present,
     // else `jobs.length` (already the raw size for the other five fetchers, which pre-filter nothing).
     // Using `jobs.length` alone here was the log-line half of h928's bug: for SmartRecruiters/Workday
     // it is already post-pre-filter, so a narrow filter could print the self-contradictory
     // "0 postings, 0 kept after filters" for a real, populated board.
     log.info(`${ats}:${slug} — ${result.rawCount ?? result.jobs.length} postings, ${scannedForCompany} kept after filters`
-      + (watchMode ? `, ${deliveredForCompany} delivered (new or salary-added).` : '.'));
+      + (watchMode ? `, ${deliveredForCompany} delivered (new, salary-added or closed).` : '.'));
     totalRawPostings += result.rawCount ?? result.jobs.length;
     totalMatched += scannedForCompany;
     if (pushed >= maxResults) {
@@ -1993,7 +2096,12 @@ if (watchMode && !skipBaselineSave) {
   } else {
     log.info(`Watch label "${watchLabel}": ${pushed} posting(s) since the last run (${watchSkipped} already-delivered posting(s) skipped, not charged`
       + `${watchChanged ? `; ${watchChanged} of the pushed item(s) were a salary appearing on an already-delivered posting, not a brand-new one` : ''}`
-      + `${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new posting(s) excluded by your watchEvents list` : ''}); baseline now holds ${watchSeen.size}.${evictionSuffix}`);
+      + `${watchClosed ? `; ${watchClosed} of the pushed item(s) were postings that CLOSED (gone from their board), not brand-new ones` : ''}`
+      + `${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new posting(s) excluded by your watchEvents list` : ''}); baseline now holds ${watchSeen.size}.${evictionSuffix}`
+      + (watchEvents.has('closed')
+        ? ` Closed-posting detection ran on ${closureCompaniesChecked} board(s)`
+          + `${closureCompaniesSuppressed ? ` and was skipped on ${closureCompaniesSuppressed} whose listing was incomplete (see the per-board log lines) -- a closure is only reported from a board that answered in full` : ''}.`
+        : ''));
   }
 }
 
@@ -2135,7 +2243,7 @@ if (watchMode && seeding) {
   // forever, so name the real cause instead of reassuring the buyer that nothing is wrong.
   await Actor.setStatusMessage(`No new job postings for watch label "${watchLabel}" -- but this run also hit problem(s) that can hide real postings, so do not read it as the normal quiet "nothing new" result.${zeroCauseNote}${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered and none of them gained a salary. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
+  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered and none of them gained a salary${watchEvents.has('closed') ? `, and none of the baseline postings have come down (checked on ${closureCompaniesChecked} board(s)${closureCompaniesSuppressed ? `, skipped on ${closureCompaniesSuppressed} whose listing was incomplete` : ''})` : ''}. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
 } else if (!watchMode && pushed === 0) {
   // Before this, a plain zero-row run set NO status message at all: the run just ended SUCCEEDED
   // with an empty dataset and the only clue (a not-found/fetch-error warning, or a "0 kept after
@@ -2174,6 +2282,11 @@ if (webhookUrl) {
     watchSkippedCount: watchMode && !seeding ? watchSkipped : null,
     watchEvents: watchMode ? [...watchEvents] : null,
     watchChangedCount: watchMode && !seeding ? watchChanged : null,
+    watchClosedCount: watchMode && !seeding ? watchClosed : null,
+    // Boards the `closed` diff actually ran on vs. boards it refused to run on because their
+    // listing was incomplete -- the second number is why a quiet closure result can be trusted.
+    watchClosureBoardsChecked: watchMode && !seeding && watchEvents.has('closed') ? closureCompaniesChecked : null,
+    watchClosureBoardsSkipped: watchMode && !seeding && watchEvents.has('closed') ? closureCompaniesSuppressed : null,
     watchEventsFilteredCount: watchMode && !seeding ? watchEventsFiltered : null,
     // >0 means the baseline lost ids to the WATCH_KEEP cap and a future run will re-deliver and
     // re-charge for rows already paid for once.

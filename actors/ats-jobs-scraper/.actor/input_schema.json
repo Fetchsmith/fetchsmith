@@ -179,14 +179,16 @@
         "type": "string",
         "enum": [
           "new",
-          "salaryAdded"
+          "salaryAdded",
+          "closed"
         ],
         "enumTitles": [
           "New posting",
-          "Salary appeared (posting already delivered, now shows a salary)"
+          "Salary appeared (posting already delivered, now shows a salary)",
+          "Posting closed (was open under this label, now gone from its board)"
         ]
       },
-      "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Salary appeared\" alone to be alerted only when an already-delivered posting later gains a salary (a pay-transparency add-on or a plain edit), and never pay for anything else. Leave empty for both. Greenhouse, Ashby, Lever, Recruitee and Workday postings commonly publish without a salary and add one later under the same posting id — without this event that already-delivered posting looks identical to a watch forever. Postings on SmartRecruiters/Workable never carry a salary at all, so salaryAdded never fires for those. The change event compares against the salary state recorded the last time the posting was delivered, so it only starts firing on the second run after a baseline created before this feature existed. Ignored when \"Watch label\" is empty.",
+      "description": "Optional. Only report these kinds of change in watch mode — e.g. pick \"Salary appeared\" alone to be alerted only when an already-delivered posting later gains a salary (a pay-transparency add-on or a plain edit), and never pay for anything else. Leave empty for \"New posting\" + \"Salary appeared\"; \"Posting closed\" is opt-in and must be ticked explicitly, so an existing watch never starts billing for a new row class on its own. Greenhouse, Ashby, Lever, Recruitee and Workday postings commonly publish without a salary and add one later under the same posting id — without this event that already-delivered posting looks identical to a watch forever. Postings on SmartRecruiters/Workable never carry a salary at all, so salaryAdded never fires for those. The change event compares against the salary state recorded the last time the posting was delivered, so it only starts firing on the second run after a baseline created before this feature existed. \"Posting closed\" answers \"was that req filled or pulled?\": it reports a posting that this label had already delivered and that is no longer on its board at all. It is charged at the same per-posting rate as any other row, and it is deliberately conservative — a board that errors, 404s, returns nothing at all, returns only part of itself, or gets truncated by a cap is NEVER diffed, because an incompletely-read board is indistinguishable from one whose roles all closed at once. A posting that is still on the board but no longer matches your filters is not closed and is not reported. A closed row carries its company, ATS and posting id with the other fields null: the posting is gone, so there is nothing left to re-read. Ignored when \"Watch label\" is empty.",
       "default": []
     },
     "webhookUrl": {

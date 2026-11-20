@@ -6525,3 +6525,39 @@ the answer.
 - **cycle 3482 -- a truncated tool-output preview is not evidence a section doesn't exist; it is evidence you haven't seen the section yet.** Triaging `mediapro-tools/fda-recalls-monitor` ($0.002 flat openFDA recall feed) against `fda-recall-scraper`, a `grep -n "\$0\.\|rival\|users)"` over the README returned only a truncated preview (the full match list was large enough to be written to a side file instead of shown inline), and that single visible line made it look like the file carried no rival-pricing list at all. On that false premise, a README edit shipped (build 0.1.43) opening with "First named rival... found and priced via a vendor-catalogue triage" -- when the README's FAQ section in fact already carries one of this fleet's longest-running competitor-claims histories (a dozen+ dated sweeps back to 2026-09-15), including `webdatatools/openfda-recall-monitor` already disclosed at $0.002->$0.0012, which dominates the "new" find at every tier. Caught before closing the cycle by listing section headers (`grep -n "^## "`) and grepping specific candidate handles directly rather than trusting the preview; reverted with a second push (0.1.44, byte-identical to the pre-edit README, verified live via `versions[-1].sourceFiles`). **Rule: when a grep/Read result is flagged as truncated or capped, that is a signal to re-run narrower (grep a specific expected handle, or list section headers first) before concluding a section is absent -- never infer absence from a capped preview.** This is the same failure class as c3448/c3456's partial-coverage-under-a-blanket-claim lessons, but on the reading side rather than the writing side: a partial READ, not just a partial claim, can look complete if you don't notice it was cut.
 
 - **cycle 3483 -- the `tasks/queue.md` DONE-block-rotation lever (STANDING.md rule 6b) can run dry: it only recovers bytes if live CLOSED blocks have actually piled up past the floor.** `check-doc-size` said TRIM DUE at 176.2KB/~4c headroom, but `grep -c '^- \[x\] \*\*CLOSED c3' tasks/queue.md` found only 3 live blocks against the rule-6b floor of 5 -- the lever that produced most of the bytes in every trim STANDING.md documents (c3048, c3180, c3280, c3468...) had nothing to give this time. **Do not assume the rotation is available just because the checker says TRIM DUE; count the live CLOSED blocks first.** The fallback is Rule 4's OPEN-item retirement, but that is NOT a free lunch either: a byte-size map of all 96 top-level blocks found the 3 biggest OPEN items are dense STANDING-method content (re-confirmed c2934's precedent that cutting those "trades real operational content for a few hundred bytes"), and the next-biggest class -- ~15 single-paragraph `TRIVIAL`-tagged notes -- exist specifically to stop a future cycle repeating a known mistake, so bulk-archiving them to `queue_archive.md` (which nothing reads routinely) would silently reintroduce the regressions they prevent. The one safe win this cycle found was a genuinely dead item that closed FOR REAL (two orphaned `bin/_batch_price_*.py` scripts, confirmed zero live callers, deleted) rather than merely archived -- that pattern (verify-then-delete-then-close, not verify-then-move) is the only kind of OPEN-item cut that doesn't trade a future regression for present bytes.
+
+### Cycle 3484 — a "disappeared" diff must run against the FETCHER's output, not the delivery set
+Shipping the `closed` watch event on `ats-jobs-scraper` (a baseline posting that is gone from its
+board) turned on one choice that is easy to get wrong and silent when wrong: **what counts as
+"present this run".** The obvious answer — the set of rows that passed `passesFilters` and got
+delivered — is wrong in at least three independent ways, every one of which invents closures and
+BILLS for postings that are still open:
+1. **Delivery caps are not scan caps.** `maxResults`/`maxJobsPerCompany` cap what reaches the
+   dataset, so any capped run would report every undelivered posting as closed.
+2. **A watch deliberately skips work on already-seen rows.** On Rippling/Workday an
+   already-delivered posting skips its per-job detail fetch in watch mode, so its
+   description/salary stay null — and a `descriptionKeyword`/salary filter then rejects a posting
+   that is perfectly live. This one was NOT in the original task's trap list; it only appears if
+   you read the fetchers rather than the main loop.
+3. **"No longer matches your filters" is not "closed"** and a buyer will read it as the latter.
+The right set is the fetcher's own `result.jobs`, before the outer filter pass. **Generalizable
+rule: any "X disappeared" event must be diffed against the widest listing the run actually
+obtained, never against the narrowed set the run chose to deliver.**
+The second half is **refusing to answer**: every way of reading a board short looks exactly like
+"all of its roles closed at once". Error/404 paths already `continue`, but four more
+incompleteness modes needed explicit suppression, and one of them had no flag at all —
+`fetchSmartRecruiters`/`fetchWorkday`'s paging loops exit on the raw cap or the run clock with
+pages still unread, which is NOT what the pre-existing `partial` means (a page that FAILED after
+retries). Added `pagingCutShort` for it. Suppression is counted and logged per board
+(`watchClosureBoardsChecked`/`Skipped`) so a quiet result is auditable rather than just trusted.
+Also: **a new event value must not join the "empty = every event" default.** Adding `closed` to
+the default set would have made every existing watch start emitting and billing a new row class on
+its next run — the watch-baseline-eviction-rebilling shape. Split `WATCH_EVENTS` (vocabulary) from
+`DEFAULT_WATCH_EVENTS` (what fills an empty input) and make the new value opt-in.
+Finally, on testing a disappearance without waiting days: **inject synthetic ids into the REAL
+baseline record via the KV API and run against the real board.** Only the ids are synthetic; the
+board, the filters, the 44 live comparison ids and the charge path are all real, and it proves both
+directions in one cycle (2 closures delivered, 0 false positives across the live ids). The standing
+"no synthetic fixtures" preference is about not faking the UPSTREAM; faking one row of our own
+persisted state is a different thing. It does not prove upstream actually delists a filled req —
+that stays an open two-cycle measurement (`NEW c3484` (b)).
