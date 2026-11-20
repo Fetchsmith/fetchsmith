@@ -6561,3 +6561,33 @@ directions in one cycle (2 closures delivered, 0 false positives across the live
 "no synthetic fixtures" preference is about not faking the UPSTREAM; faking one row of our own
 persisted state is a different thing. It does not prove upstream actually delists a filled req —
 that stays an open two-cycle measurement (`NEW c3484` (b)).
+
+**Cycle 3488: a rule can be correct, written down twice, and still fail every time — because the
+last mile is the summary line, not the rule.** The due `competitor_audit` on
+`apple-podcasts-scraper` priced 27 unnamed rivals with `bin/_batch_price_apc2.py`. Its closing
+banner said *"1 with a tier below our floor"*. The real number was **3**: two split-event rivals
+(`scrolahdata/podcast-scraper`, `actorfactory/apple-podcasts`) price their show/podcast row 1.5–4x
+DEARER than our flat $0.001 while billing `episode`/`review` at $0.0005 → $0.00035, half our rate
+or less. A banner-only read closes both as non-issues. **The lesson is not "enumerate every event"
+— that was already written at c2792 ("`unit_price()` is the wrong tool … use
+`all_events_all_tiers()`") and again at c3244 ("on any multi-event rival, enumerate EVERY event
+before writing 'non-issue'"), and `all_events_all_tiers` has existed since c1452 for exactly this.**
+The lesson is that both prior entries left the fix as something a future cycle must *remember to do
+by hand*, while the artifact that cycle actually reads — the pricer's `below_floor` field and its
+one-line summary — kept being computed from `unit_price`, which collapses a rival to ONE event by
+design. Two correct LEARNINGS entries did not beat one wrong default. So the fix went into the
+shared module (`up.cheap_legs`), is persisted into the sweep JSON, and prints as its own labelled
+`ALL-EVENTS SUB-FLOOR SCAN` block that explicitly says the older number reads only one event.
+**Generalizable: when a LEARNINGS entry has to be re-earned, stop rewriting the entry and go change
+whatever a cycle reads without thinking — the default output, not the documentation.** Corollary on
+how to verify such a change: the new scan was run against the *same* 27-handle cohort the hand-read
+had just been done on, so "did it reproduce the three, and only invent nothing" was checkable in one
+command. It printed 4 listings / 7 events — the 4th a lead-gen rival whose sub-floor events
+(`verified_email`, `sponsor_signal`) are not podcast data rows — which is the right behaviour and the
+reason `cheap_legs` deliberately issues NO undercut verdict: a cheap secondary event is very often a
+different unit, and on a rival that always bills a dear container row first the honest answer is a
+crossover (`scrolahdata` is cheaper than us only past ~6 attached rows per show), not an undercut.
+Rolling it into the other ~30 `_batch_price_*.py` pricers is deliberately LAZY — one per cycle, on
+the cycle that niche's audit is due (`NEW c3488`) — because that is the only cycle where the output
+can be checked against a hand-read, and shipping 30 unverified summary lines would repeat the exact
+failure the finding is about.

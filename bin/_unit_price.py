@@ -600,3 +600,41 @@ def beats_every_tier(unit_tiers, ours):
         return False
     e = expand_flat(unit_tiers, ours)
     return all(t in e and e[t] < ours[t] for t in ours)
+
+
+def cheap_legs(events, ours_floor):
+    """[(event_name, event_title, {tier: usd})] for every PER-ROW charge event with at
+    least one tier strictly below `ours_floor`. Start fees and `apify-default-dataset-item`
+    decoys are excluded; everything else is returned for the caller to unit-judge by hand.
+
+    Added cycle 3488 to close a recurrence, not to add a new rule. The rule itself was
+    already written twice -- c2792 ("`unit_price()` is the wrong tool for re-verifying a
+    published figure -- use `all_events_all_tiers()`") and c3244 ("on any multi-event rival,
+    enumerate EVERY event before writing 'non-issue'") -- and `all_events_all_tiers` has
+    existed since c1452 for exactly this. What kept failing is the LAST mile: every
+    `_batch_price_*.py` pricer computes its `below_floor`/`every_tier_below_floor` fields
+    and its closing one-line summary from `unit_price`, which by design collapses a rival
+    to ONE event. So the script a cycle actually reads under-reports, and only a hand-rolled
+    second pass over `events[*].tiers` recovers the rest.
+
+    Measured on the c3488 apple-podcasts-scraper sweep: the pricer's own banner said "1 with
+    a tier below our floor" across 27 rivals; the all-events scan found THREE, the two extra
+    being split-event rivals (`scrolahdata/podcast-scraper`, `actorfactory/apple-podcasts`)
+    whose show/podcast event is 1.5-4x DEARER than us while their `episode`/`review` events
+    sit at $0.0005 -> $0.00035, half our rate or less. Both would have been closed as
+    non-issues by the banner alone. That is a 3x under-report on a niche whose own README has
+    carried a paragraph about this exact shape since cycle 1339, which is the argument for
+    putting the scan in the shared module instead of trusting each pricer to remember it.
+
+    Returns per-event tiers untouched and makes NO undercut verdict: a cheap secondary event
+    is very often a different unit (see `all_events_all_tiers`' docstring and
+    `container_mismatch`), and on a rival that always bills a dear container row first the
+    honest answer is a crossover, not an undercut -- `scrolahdata` above is cheaper than us
+    only past ~6 attached rows per show. Judge the unit, then do the arithmetic.
+    """
+    if not ours_floor:
+        return []
+    return [(k, title, tiers)
+            for k, title, tiers, startfee, decoy in all_events_all_tiers(events)
+            if not startfee and not decoy and tiers
+            and any(v is not None and v < ours_floor for v in tiers.values())]

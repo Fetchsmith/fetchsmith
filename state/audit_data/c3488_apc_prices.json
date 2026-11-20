@@ -1,0 +1,1361 @@
+[
+ {
+  "handle": "ai_category/apple-podcast-reviews-scraper",
+  "title": "Apple Podcast Reviews Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "SCRAPED_RESULT",
+  "unit_tiers": {
+   "FREE": 0.00199
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): SCRAPED_RESULT",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "SCRAPED_RESULT": {
+    "tiers": {
+     "FREE": 0.00199
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Scraped result"
+   }
+  },
+  "desc": "Apple Podcast Reviews Scraper collects live public reviews from podcasts.apple.com and stores each result as a structured JSON record with title, URL, snippet, date and source metadata."
+ },
+ {
+  "handle": "properscraper/apple-podcasts-scraper",
+  "title": "Apple Podcasts Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "podcast": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Podcast saved"
+   }
+  },
+  "desc": "Find podcasts on Apple Podcasts by keyword or link: name, publisher, genres, episode count, latest release and RSS feed. Optionally reads each feed for the description, website, language and contact details."
+ },
+ {
+  "handle": "wood-between-studio/apple-podcasts-search",
+  "title": "Apple Podcasts Scraper - Search Shows, Episodes & RSS Feeds",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "FREE"
+  ],
+  "below_entry": [
+   "FREE"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): episode,podcast",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "podcast",
+    "title": "Podcast returned",
+    "tiers": {
+     "FREE": 0.0005
+    }
+   },
+   {
+    "event": "episode",
+    "title": "Episode returned",
+    "tiers": {
+     "FREE": 0.0002
+    }
+   }
+  ],
+  "events": {
+   "podcast": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Podcast returned"
+   },
+   "episode": {
+    "tiers": {
+     "FREE": 0.0002
+    },
+    "primary": false,
+    "onetime": null,
+    "title": "Episode returned"
+   }
+  },
+  "desc": "Search Apple Podcasts by keyword or look up shows by ID/URL: title, publisher, genres, RSS feed URL, episode count, latest release, artwork. Optionally list up to 200 recent episodes per show with dates, durations and audio URLs. Official iTunes API. $0.50 per 1,000 shows, $0.20 per 1,000 episodes."
+ },
+ {
+  "handle": "scrolahdata/podcast-scraper",
+  "title": "Podcast Scraper - Apple Podcasts, Host Emails & Episodes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0036,
+   "GOLD": 0.0032,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0032
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): episode,podcast,review",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "episode",
+    "title": "Episode",
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    }
+   },
+   {
+    "event": "review",
+    "title": "Review",
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    }
+   }
+  ],
+  "events": {
+   "podcast": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.004,
+     "SILVER": 0.0036,
+     "GOLD": 0.0032,
+     "PLATINUM": 0.0032,
+     "DIAMOND": 0.0032
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Podcast"
+   },
+   "episode": {
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Episode"
+   },
+   "review": {
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Review"
+   }
+  },
+  "desc": "Apple Podcasts scraper and podcast email finder: search podcasts, top charts by category, host and owner emails, social links, website, activity and episode frequency, plus episodes with MP3 URLs and listener reviews. No API key. $4 per 1,000 podcasts."
+ },
+ {
+  "handle": "data_factory_nerd/apple-podcasts-scraper",
+  "title": "Apple Podcasts Scraper: Search, Top Charts & Episodes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0018,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0018,
+     "GOLD": 0.0018,
+     "PLATINUM": 0.0018,
+     "DIAMOND": 0.0018
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Result"
+   }
+  },
+  "desc": "Scrape Apple Podcasts: search by keyword, top charts by country and genre (up to 200 ranks), or look up shows by URL. Get title, author, RSS feed, genres, episode count, latest episode date, artwork and optionally the latest episodes. Monitor new shows. $2 per 1,000 podcasts."
+ },
+ {
+  "handle": "actorfactory/apple-podcasts",
+  "title": "Apple Podcasts Scraper: Top Charts Tracker, Rankings & Shows",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast-result",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): episode-result,podcast-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "episode-result",
+    "title": "Episode result",
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.00045,
+     "SILVER": 0.0004,
+     "GOLD": 0.00035,
+     "PLATINUM": 0.00035,
+     "DIAMOND": 0.00035
+    }
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "podcast-result": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Podcast result"
+   },
+   "episode-result": {
+    "tiers": {
+     "FREE": 0.0005,
+     "BRONZE": 0.00045,
+     "SILVER": 0.0004,
+     "GOLD": 0.00035,
+     "PLATINUM": 0.00035,
+     "DIAMOND": 0.00035
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Episode result"
+   }
+  },
+  "desc": "Export Apple Podcasts (iTunes) top charts and rankings by country and genre, track chart rank changes between runs, search the podcast directory by keyword, and get show details with RSS feed URL and recent episodes with audio URLs. For podcast advertisers, PR and booking teams. No login."
+ },
+ {
+  "handle": "appropriate_ideal_ksi/podcast-host-email-leads-pro",
+  "title": "Podcast Host Email, Apple Podcasts & RSS PR Leads Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast-lead",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast-lead",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "podcast-lead": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Qualified Podcast Host Lead"
+   }
+  },
+  "desc": "Fast, pure-HTTP Podcast Host & Sponsor Email Leads Scraper. Discovers 1,000+ shows via Apple Podcasts + 768KB streaming RSS XML + host website enrichment for verified host emails, guest pitch URLs & socials."
+ },
+ {
+  "handle": "dabooti/apple-podcasts-scraper",
+  "title": "Apple Podcasts Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "result": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Podcast or episode"
+   }
+  },
+  "desc": "Search Apple Podcasts by keyword or paste show links, and export podcasts and their latest episodes: titles, descriptions, release dates, durations, audio URLs, RSS feeds, genres and artwork. No login needed."
+ },
+ {
+  "handle": "ctriolab/podcast-transcriber",
+  "title": "Podcast Transcriber: RSS Feed & Apple Podcasts to Text, SRT",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Audio minute transcribed"
+   }
+  },
+  "desc": "Transcribe podcast episodes from any public RSS feed or Apple Podcasts show link with open-source Whisper. Latest episodes, date and title filters, only new episodes for schedules, SRT, VTT and TXT. Pay per audio minute."
+ },
+ {
+  "handle": "donzely/podcast-leads-finder",
+  "title": "Podcast Leads Finder - Host Emails from Apple Podcasts & RSS",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast-lead",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast-lead",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "podcast-lead": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Podcast lead"
+   }
+  },
+  "desc": "Find active podcasts by keyword, Apple Podcasts category or URL and get the host/owner email, website and social links published in their public RSS feed, plus episode count, last episode date and posting frequency."
+ },
+ {
+  "handle": "the100/podcast-rss-episode-extractor",
+  "title": "Podcast Scraper: RSS Feed & Apple Podcasts Episodes",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0028,
+   "SILVER": 0.0026,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "result"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Scrape every episode from any podcast RSS feed or Apple Podcasts ID: title, date, duration, season/episode number, direct MP3 audio URL, link and show notes. Bulk feeds, clean flat rows, export to CSV/Excel/JSON or API."
+ },
+ {
+  "handle": "alex_fodo/podcast-transcript",
+  "title": "Podcast Transcript \u2014 RSS, Apple Podcasts & Audio URL to Text",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute-fast",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute-accurate,audio-minute-fast",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute-fast": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Transcribed audio minute (fast)"
+   },
+   "audio-minute-accurate": {
+    "tiers": {
+     "FREE": 0.015
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Transcribed audio minute (accurate)"
+   }
+  },
+  "desc": "Transcribe podcast episodes from RSS feeds, Apple Podcasts links or audio URLs to text with timestamps and SRT/VTT. Only-new mode for monitoring shows. Built-in Whisper, no API keys, failed and silent files are free."
+ },
+ {
+  "handle": "dedicated_crest/podcast-leads-finder",
+  "title": "Podcast Scraper \u2013 Apple Podcasts Search & Host Email Leads",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "podcast": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Podcast"
+   }
+  },
+  "desc": "Find podcasts on Apple Podcasts by topic or category and get host contact email, website, episode count, last episode date and posting frequency from each show's RSS feed. For guest booking, PR and sponsorship outreach. $3/1,000."
+ },
+ {
+  "handle": "ayeeyee/podcast-sponsor-lead-extractor",
+  "title": "Podcast Sponsor-Ready Host Lead Extractor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast_lead",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.006,
+   "SILVER": 0.004,
+   "GOLD": 0.003,
+   "PLATINUM": 0.00252,
+   "DIAMOND": 0.001512
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast_lead,sponsor_signal,verified_email",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [
+   {
+    "event": "verified_email",
+    "title": "Verified Host Email",
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00225,
+     "SILVER": 0.0015,
+     "GOLD": 0.001125,
+     "PLATINUM": 0.000945,
+     "DIAMOND": 0.000567
+    }
+   },
+   {
+    "event": "sponsor_signal",
+    "title": "Sponsor-Readiness Signal",
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00075,
+     "SILVER": 0.0005,
+     "GOLD": 0.000375,
+     "PLATINUM": 0.000315,
+     "DIAMOND": 0.000189
+    }
+   }
+  ],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "podcast_lead": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.006,
+     "SILVER": 0.004,
+     "GOLD": 0.003,
+     "PLATINUM": 0.00252,
+     "DIAMOND": 0.001512
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Sponsor-Ready Podcast Lead"
+   },
+   "verified_email": {
+    "tiers": {
+     "FREE": 0.003,
+     "BRONZE": 0.00225,
+     "SILVER": 0.0015,
+     "GOLD": 0.001125,
+     "PLATINUM": 0.000945,
+     "DIAMOND": 0.000567
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Verified Host Email"
+   },
+   "sponsor_signal": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.00075,
+     "SILVER": 0.0005,
+     "GOLD": 0.000375,
+     "PLATINUM": 0.000315,
+     "DIAMOND": 0.000189
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Sponsor-Readiness Signal"
+   }
+  },
+  "desc": "Turn Apple Podcast URLs, iTunes IDs, feed URLs, or keyword searches into sponsor-ready host leads: owner email from the RSS itunes:owner tag, MX/DNS-verified emails + phones + socials + tech stack from the podcast's own site, an A-D lead score, and a sponsor-readiness signal. No API keys, no proxy."
+ },
+ {
+  "handle": "kinglabbok/podcast-audio-transcriber",
+  "title": "Podcast and Audio Transcriber - Speech to Text and SRT",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.00025,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,audio-minute-accurate,audio-minute-fast",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.00025
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.006
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Audio minute - standard"
+   },
+   "audio-minute-fast": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Audio minute - fast"
+   },
+   "audio-minute-accurate": {
+    "tiers": {
+     "FREE": 0.012
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Audio minute - accurate"
+   }
+  },
+  "desc": "Transcribe podcasts, audio and video files to text, SRT and VTT subtitles with a built-in Whisper model. Paste file links, podcast RSS feeds or Apple Podcasts links. 99 languages, translation to English, timestamps. No API key needed."
+ },
+ {
+  "handle": "beakdo/podcast-b2b-outreach-intel",
+  "title": "Podcast Email & RSS Feed Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast-lead-scraped",
+  "unit_tiers": {
+   "FREE": 0.012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast-lead-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "podcast-lead-scraped": {
+    "tiers": {
+     "FREE": 0.012
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Podcast Email & RSS Feed Scraper Record"
+   }
+  },
+  "desc": "Searches Apple Podcasts by keyword, reads each show's live RSS feed to verify recent episode activity, and extracts producer emails, show websites, genres, and cadence."
+ },
+ {
+  "handle": "aemon/podcast-audio-to-text",
+  "title": "Podcast Transcript: Apple, Spotify & RSS Podcast to Text",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.00375,
+   "SILVER": 0.0035,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-summary,audio-minute,translation",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.00375,
+     "SILVER": 0.0035,
+     "GOLD": 0.00325,
+     "PLATINUM": 0.00325,
+     "DIAMOND": 0.00325
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Minute of transcribed audio"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "ai-summary": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "AI summary"
+   },
+   "translation": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Translation (1,000 words)"
+   }
+  },
+  "desc": "Transcribe podcast episodes and audio files into LLM-ready text with timestamps, SRT subtitles, AI summaries and chapters. Paste an Apple Podcasts or Spotify link, RSS feed or MP3 URL. Whisper AI, 90+ languages, translation, $0.004 per minute."
+ },
+ {
+  "handle": "southern-data/audio-video-transcriber",
+  "title": "Audio & Video Transcriber: Podcast to Text, SRT & VTT",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0036,
+   "GOLD": 0.0032,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0032
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,audio-minute-accurate",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.004,
+     "BRONZE": 0.004,
+     "SILVER": 0.0036,
+     "GOLD": 0.0032,
+     "PLATINUM": 0.0032,
+     "DIAMOND": 0.0032
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Audio minute transcribed"
+   },
+   "audio-minute-accurate": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.008,
+     "SILVER": 0.0072,
+     "GOLD": 0.0064,
+     "PLATINUM": 0.0064,
+     "DIAMOND": 0.0064
+    },
+    "primary": false,
+    "onetime": false,
+    "title": "Audio minute transcribed (Accurate model or translation)"
+   }
+  },
+  "desc": "Transcribe audio and video files, podcast RSS feeds and Apple Podcasts episodes to text, timestamped segments and SRT/VTT subtitles. Whisper large-v3, 99 languages, translate to English. $0.004 per audio minute, no start fee."
+ },
+ {
+  "handle": "spellzcode/podcast-transcriber",
+  "title": "Podcast Transcriber: Episodes to Text + SRT Subtitles",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0072,
+   "SILVER": 0.0064,
+   "GOLD": 0.0056,
+   "PLATINUM": 0.0056,
+   "DIAMOND": 0.0056
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.0072,
+     "SILVER": 0.0064,
+     "GOLD": 0.0056,
+     "PLATINUM": 0.0056,
+     "DIAMOND": 0.0056
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Audio minute transcribed"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Transcribe podcast episodes from any RSS feed or Apple Podcasts link with Whisper large-v3-turbo: latest episodes, date or title filters, 99 languages, SRT and VTT subtitles included. $0.008 per audio minute."
+ },
+ {
+  "handle": "aurelix/podcast-transcript-audio-to-text",
+  "title": "Podcast Transcript API & Audio to Text | Transcribe Podcast",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.0045
+  },
+  "start_fee": 0.0015,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-12-04T23:00:00.000Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.0045
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Audio minute"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Extract podcast transcripts: transcribe podcast episodes from RSS feeds, Apple Podcasts links, pages or MP3 and video files at $4.50 per 1,000 audio minutes on every plan. Every podcast episode transcript has timestamps, language, SRT and details. Failed files are free."
+ },
+ {
+  "handle": "leadgenguy/podcast-host-leads",
+  "title": "Podcast Host Leads: Search Shows, Get Owner Email and Website",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "podcast",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast",
+  "runfee_crossover_rows": null,
+  "future_pricing": [
+   {
+    "startedAt": "2026-12-04T04:30:50.000Z",
+    "model": "PAY_PER_EVENT"
+   }
+  ],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "podcast": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Podcast"
+   }
+  },
+  "desc": "Find podcasts by topic from the Apple Podcasts directory and get the show's owner name, contact email (when the feed publishes one), website, episode count and last episode date. Public directory and RSS data. $2 per 1,000."
+ },
+ {
+  "handle": "talllabs/podcast-episodes-scraper",
+  "title": "Podcast Episodes Scraper: Apple & RSS Feeds",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "episode",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0016,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): episode",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "episode": {
+    "tiers": {
+     "FREE": 0.002,
+     "BRONZE": 0.002,
+     "SILVER": 0.0016,
+     "GOLD": 0.0013,
+     "PLATINUM": 0.0013,
+     "DIAMOND": 0.0013
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Episode saved"
+   }
+  },
+  "desc": "Episodes of any podcast from Apple Podcasts links, Apple's top charts or RSS feeds: dates, durations, audio links, show notes. No login."
+ },
+ {
+  "handle": "steady-scrape/audio-podcast-transcription",
+  "title": "Audio & Podcast Transcription API: Whisper, SRT & VTT",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,feed-checked,file-processed,subtitle-language-minute,summary",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.0005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "feed-checked": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Feed checked"
+   },
+   "file-processed": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "File processed"
+   },
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Audio minute"
+   },
+   "subtitle-language-minute": {
+    "tiers": {
+     "FREE": 0.0015
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Subtitle language-minute"
+   },
+   "summary": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Summary"
+   }
+  },
+  "desc": "Transcribe audio and video file URLs, podcast RSS feeds and Apple Podcasts shows into timestamped text with the detected language, plus optional SRT/VTT subtitles. Monitor mode transcribes only new episodes. Pay per audio minute."
+ },
+ {
+  "handle": "mastertools/audio-transcriber",
+  "title": "Audio & Video to Text: Podcasts, MP3 & MP4 Transcriber",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.0045,
+   "GOLD": 0.0045,
+   "PLATINUM": 0.0045,
+   "DIAMOND": 0.0045
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,audio-minute-accurate",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.005,
+     "SILVER": 0.0045,
+     "GOLD": 0.0045,
+     "PLATINUM": 0.0045,
+     "DIAMOND": 0.0045
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Audio minute (Fast)"
+   },
+   "audio-minute-accurate": {
+    "tiers": {
+     "FREE": 0.014,
+     "BRONZE": 0.014,
+     "SILVER": 0.014,
+     "GOLD": 0.014,
+     "PLATINUM": 0.014,
+     "DIAMOND": 0.014
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Audio minute (Accurate)"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.001
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Transcribe audio and video to text with Whisper: MP3, MP4, WAV, podcast RSS feeds and Apple Podcasts. Timestamps, SRT and VTT subtitles, AI-ready chunks, 99 languages detected automatically and translation to English. No API key."
+ },
+ {
+  "handle": "squarish_altruism/transcribe",
+  "title": "Audio & Video Transcription (Whisper): MP3, MP4 to Text, SRT",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,audio-minute-byok",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.01
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Audio minute (built-in Whisper)"
+   },
+   "audio-minute-byok": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Audio minute (your own API key)"
+   }
+  },
+  "desc": "Transcribe audio and video files, podcast RSS feeds and Apple Podcasts shows to text with timestamps, SRT and VTT subtitles using OpenAI's open-source Whisper model. Optional: bring your own Groq/OpenAI key for faster, cheaper large-model transcription."
+ },
+ {
+  "handle": "pulse_extract/podcast-transcript-extractor",
+  "title": "Podcast & Audio RSS Transcript Extractor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "episode-processed",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,episode-processed",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "episode-processed": {
+    "tiers": {
+     "FREE": 0.002
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Episode Transcript Returned"
+   },
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Whisper Audio Minute Transcribed"
+   }
+  },
+  "desc": "Extract timestamped transcripts (plain text, SRT, Markdown, segments) from Apple Podcasts, Spotify links, RSS feeds, or direct audio URLs using native Podcasting 2.0 transcripts and faster-whisper AI."
+ },
+ {
+  "handle": "karimel/podcast-transcriber",
+  "title": "Podcast Transcriber - Apple Podcasts & RSS to Text, SRT, VTT",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.0055,
+   "SILVER": 0.005,
+   "GOLD": 0.0045,
+   "PLATINUM": 0.0045,
+   "DIAMOND": 0.0045
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "cheap_legs": [],
+  "events": {
+   "audio-minute": {
+    "tiers": {
+     "FREE": 0.006,
+     "BRONZE": 0.0055,
+     "SILVER": 0.005,
+     "GOLD": 0.0045,
+     "PLATINUM": 0.0045,
+     "DIAMOND": 0.0045
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Audio minute"
+   }
+  },
+  "desc": "Transcribe the latest episodes of any podcast from its Apple Podcasts link or RSS feed. Full text, timed segments and SRT, VTT and TXT files. 100 languages, pay per audio minute."
+ }
+]
