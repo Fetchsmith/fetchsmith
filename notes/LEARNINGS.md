@@ -6705,3 +6705,37 @@ leaving the tally, and the ack **binds to the dearer event's exact key AND price
 prints `ACK STALE` rather than riding a 672-cycle-old judgement. An ack that can go stale
 silently is worse than no ack. Fleet reading afterwards: 2117 checked, 109 flagged, 107 already
 disclosed, 2 acked, **0 need review** — the first clean reading this check has ever produced.
+
+## Cycle 3500 — two rival pricing-record shapes that are UNREADABLE as a row rate, and neither is "$0"
+
+The `clinicaltrials-scraper` `competitor_audit` (3161 → 3500) turned up two shapes that
+`_unit_price` reports honestly but which a careless reader would score as a cheap undercutter.
+Both are now disclosed by name in that Actor's pricing section; record them here because the
+shape, not the handle, is what recurs.
+
+1. **The unedited-template pricing record.** `brazil-data-labs/us-clinicaltrials-biotech-pharma-pipeline`
+   is a ClinicalTrials.gov product whose filed events are named `compliance-query-start` and
+   `esg-record-returned` — ESG/compliance boilerplate the owner copied from another listing and
+   never renamed. Neither event is recurring, so `_unit_price` correctly returns no unit tier and
+   the note `no recurring event -- one-time/start-fee only`. **Do not read that as $0 per row, and
+   do not read the event names as evidence of scope.** Treat it as run-priced (here $0.05 start +
+   $0.01 one-time record = ~$0.06/run, crossing under our $0.0015/row past ~40 rows) and say in
+   prose that the headline is unreadable *and why*. The tell is an event name whose domain noun
+   has nothing to do with the listing's own title/description.
+
+2. **The primary-flagged event with NO price at all.** `leadgenguy/clinical-trial-sponsor-leads`
+   bills $0.004/trial today, but its future-dated entry (2026-12-01) sets `trial` with
+   `isPrimaryEvent: true` and **`eventPriceUsd` absent entirely**. A primary flag is not a price;
+   reading forward gives an empty tier map, so its forward per-row rate is genuinely unknowable
+   from its own record. Say exactly that rather than inferring the current price carries over.
+
+**Method note that held up again:** both were only found because reading future-dated entries
+forward is a mandatory audit step — every tool that filters on "in effect now" misses them, and
+one of this cohort (`emailemail67/clinical-trials-monitor`) has **no in-effect record at all**
+today ($0/row right now) while filing $0.008/result from 2026-11-29, i.e. it arrives *dearer*.
+A listing that is $0 today is not an undercutter tomorrow, and the only way to know is to read
+the whole `pricingInfos` array, not the effective entry.
+
+**Re-derived a known fact, wasting a step:** `GET /v2/acts/<id>` carries **no `readme` field**;
+the live README lives on the build record (`/v2/actor-builds/<buildId>`). This is already written
+down at LEARNINGS cycle ~6318's entry — read it before writing another verifier.
