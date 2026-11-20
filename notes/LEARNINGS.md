@@ -6409,3 +6409,42 @@ Actors show. That baseline is therefore **platform-wide, not an artifact of our 
 independent evidence for the caveat's core claim (it is non-billable platform/example traffic, not
 demand). Four of those six are simultaneously marked `reasonForChange: "Retiring actor: no active
 users"` by their own owner — a vendor reading the identical number as *zero* demand.
+
+## c3456 — the c2713 `--help` rule bit a FOURTH time, and `| head` turned a half-run into a fake clean result
+
+`bin/check-competitor-claims --help` has no argparse, so the flag was silently ignored and
+the script began a full 123-file fleet sweep. That part is just c2713 again. The NEW and
+worse half is what the pipe did: the probe was written as `... --help | head -20`, and when
+`head` closed the pipe the sweep took SIGPIPE **mid-file** — yet the shell reported
+`exited with code 0` and the captured output ended, plausibly, on a real finding line
+(`federal-register-scraper:173 DISCLOSED`). Files are swept in alphabetical order, so a
+truncated run looks exactly like a short, clean one: 20 findings, no traceback, rc=0, and
+**no summary line**. The missing `check-competitor-claims: N paragraph(s) checked` footer is
+the only tell. I nearly took that as the federal-register backlog; the authoritative
+`--only federal-register-scraper` re-run then found a STALE delisting (`logiover`, line 190)
+and two stale paragraphs the truncated run never reached.
+
+**Two transferable rules.** (1) Never pipe a fleet `bin/*` sweep through `head`/`sed -n`
+to "peek" at it — redirect to a file and `tail` the file instead, so the run completes and
+you can see its footer. (2) **Treat a missing summary/footer line as a FAILED run, not a
+clean one.** Every `check-*` script in `bin/` ends with a `name: N checked, N flagged`
+line; its absence means the process did not finish, whatever the exit code says. Reach for
+`--only <substring>` (supported by `check-competitor-claims`, and it prints its own
+"PARTIAL sweep, does NOT satisfy the cadence" banner) when you want a cheap scoped read.
+
+## c3456 — a flat rate converting to a tiered ladder is the drift most likely to survive a re-read, because the headline number stays right
+
+Both real price drifts in the `federal-register-scraper` claim refresh were the same shape:
+`pink_comic/federal-register-search` went flat $0.002 -> $0.002/$0.0019/$0.0018/$0.0016
+(Free->Gold+), and `george.the.developer/federal-register-monitor` went flat $0.02 ->
+$0.02/$0.02/$0.018/$0.016. In both cases **the number our README quoted is still the
+rival's FREE-tier rate**, so a skim that spot-checks "does $0.002 still appear in
+`pricingInfos`?" passes — only the word *flat* and the implied multiple ("2.5x our rate")
+are now wrong. This is the mirror image of the c3453 `scraper_guru` lesson (an undercutter
+reversing to dearer): there the number moved and the shape held; here the shape moved and
+the number held. **Always read the whole `unit_tiers` dict, never just the FREE rung, and
+treat the words `flat` / `at every tier` / `Nx our rate` in our own prose as claims that
+need re-deriving from the ladder — not as stable framing around a number.** Neither drift
+changed an undercutter count (both rivals are still dearer than us at every rung), which is
+exactly why nothing else in the fleet would have caught them: `check-price-superiority`
+only reports rivals that are *cheaper*, so a dearer rival's ladder can rot indefinitely.
