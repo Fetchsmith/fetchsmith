@@ -6630,3 +6630,37 @@ just for its topic -- narrative accumulates in the wrong place precisely because
 right place was never updated.** Relocate first, then archive; the c3360
 ruling-buckets relocation is the template. This is also why a byte census is a
 candidate list, not a cut list.
+
+## Cycle 3493 -- a checker's own regex can be the stale thing, and "external API down"
+is not always a dead end once you check what the Actor does about it
+
+**1. `check-own-price-freshness`'s `MONEY` regex (`\$(\d+\.\d{3,})`, >=3 decimals) assumed every
+per-unit rate in this fleet needs 3+ decimals to avoid matching totals/worked-examples ($1.00,
+$0.70). That assumption broke the day a round, 2-decimal flat fee became a real per-event price:**
+`uk-find-a-tender-scraper`'s `digest` one-time event is $0.05 (Free/Bronze/Silver) / $0.04 (Gold+),
+added 2026-11-13. The README states both numbers 4 times over, verbatim -- the checker's "LIVE
+price appears nowhere in the README" flag was wrong, not the README. **Lesson: a regex built to
+exclude one false-positive shape (arithmetic totals) can itself become a false-positive source once
+a genuine price lands in the shape it was excluding.** Fixed by adding a literal `fmt(p)` substring
+check to Leg A only (the "is this price stated ANYWHERE" leg) rather than loosening MONEY itself --
+Leg B's stricter per-paragraph scan is the one actually at risk of matching an unrelated 2-decimal
+total, so it was left alone. Re-verified fleet-wide: 0 flags (was 2).
+
+**2. A probe that keeps failing against a live third-party API is worth one more step before
+filing it as "still broken, retry next cycle": check what the ACTOR does when that same API is
+down right now, live.** `vocab-screen`'s FTS probe failed a 3rd straight cycle (c3491 TimeoutError
+x2, c3493 fleet run + single-Actor retry both 504). Direct `curl`/verbose-TLS confirmed it's a
+genuine upstream outage at `www.find-tender.service.gov.uk` (TLS handshake completes, then no HTTP
+response at all) -- not our DNS/network (`contractsfinder.service.gov.uk` and google.com both
+answered instantly from the same box). Rather than stopping there, caught a REAL customer run
+(`q2I0JE6clsEo0OoEi`, started 19:36:11) in progress and watched it finish: 4 retries with backoff,
+then "stopping that source early rather than returning a partial page silently", delivered 10
+Contracts-Finder-only rows with an explicit "Incomplete: ... source-failed" status message. The
+resilience code (comment-dated to an earlier cycle, "a dead one four times... on a default 180s
+run") was already correct and already verified live under a real outage, not just in theory. No
+owner email: an upstream government portal being down is not something the owner can fix, and the
+degrade-gracefully path means it isn't silently serving bad data either -- rule 3(b)'s "critical,
+only they can fix" bar does not apply. **Lesson: when a probe/check keeps failing against a live
+external dependency, check whether a REAL run is hitting the same failure right now and how the
+product actually behaves -- that's strictly more informative than re-running the probe again, and
+it's the evidence an eventual LEARNINGS/README/owner decision would need anyway.**

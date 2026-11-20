@@ -155,8 +155,15 @@ def main():
         anywhere = {float(m) for m in MONEY.findall(text)}
 
         # LEG A -- a live price the README never states, anywhere in the file.
+        # The MONEY regex demands >=3 decimals (see its comment) so a round 2-decimal
+        # per-event rate like a flat $0.05/$0.04 fee never enters `anywhere` even when
+        # it's quoted verbatim -- cycle 3493 caught this on uk-find-a-tender-scraper's
+        # digest fee, documented 4 times over but still "flagged" on that gap alone.
+        # A literal substring check on fmt(p) (the exact way this script would print
+        # the price) closes it without loosening MONEY and risking Leg B matching
+        # 2-decimal totals/worked-examples it was built to ignore.
         for p in sorted(current):
-            if not any(near(p, q) for q in anywhere):
+            if not any(near(p, q) for q in anywhere) and fmt(p) not in text:
                 flags += 1
                 print(f"{slug}: LIVE price {fmt(p)} appears nowhere in the README "
                       f"(README quotes {', '.join(fmt(q) for q in sorted(anywhere)) or 'no rate'})")
