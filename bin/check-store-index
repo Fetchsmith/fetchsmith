@@ -48,6 +48,13 @@ readme_not_indexed = []  # Actors where the index no longer exposes `readme` (cy
 fleet, st = get_json(f"{API}/acts?my=true&limit=1000", headers=H)
 if not (fleet or {}).get("data", {}).get("items"):
     sys.exit(f"FATAL: could not list our own Actors (status={st}) -- no fleet to check.")
+# cycle 3481: an unknown slug used to leave every loop iteration `continue`d away, so
+# `stale_total` stayed 0 and this printed "0 stale field(s)" over a fleet it never
+# actually looked at (the same vacuous-pass shape `bin/_slug_args.py` was built for
+# at cycle 3480, just not wired in here yet).
+sys.path.insert(0, "/root/agent/bin")
+import _slug_args
+_slug_args.validate("check-store-index", only, [a["name"] for a in fleet["data"]["items"]])
 for a in sorted(fleet["data"]["items"], key=lambda x: x["name"]):
     n = a["name"]
     if only and n not in only:

@@ -35,7 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # (slug, 1-indexed line number of the Actor.fail( call) -> why it's safe despite the
 # textual ordering. Re-verify the reason still holds if the line number ever shifts.
 ALLOWLIST = {
-    ("apple-podcasts-scraper", 1469): (
+    ("apple-podcasts-scraper", 1490): (
         "the h289 seed gate added cycle 696. It fires only when `seedErrors` is non-empty, "
         "and every push into `seedErrors` is itself wrapped in `if (seeding)` -- while "
         "seeding, the code records watch ids and `continue`s (line 632) without ever calling "
@@ -163,6 +163,20 @@ ALLOWLIST = {
         "implies `dataType === 'episodes'`; all 3 `seedErrors.push(` sites (1152, 1389, 1424) are "
         "each gated `if (seeding)`. A seed run's charge count is still provably 0 on every reachable "
         "path."
+        "Re-verified cycle 3481 (still holds, line 1469 -> 1490, line shift only, +21 lines from "
+        "work landed between cycles 3013-3480 above it). Gate still byte-identical: `if (watchMode "
+        "&& seedErrors.length) { await releaseWatchLock(); await Actor.fail(clampStatusMessage(...)) "
+        "} else if (watchMode) { await saveWatchRecord(...); await releaseWatchLock(); }`. The whole "
+        "chain shifted by the same uniform +21: the 8 `pushResult(` sites moved from (871, 875, 1083, "
+        "1250, 1274, 1289, 1301, 1332) to (892, 896, 1104, 1271, 1295, 1310, 1322, 1353), and the 3 "
+        "`seedErrors.push(` sites moved from (1152, 1389, 1424) to (1173, 1410, 1445) -- an exact "
+        "+21 on every site, confirming a pure insertion above this block rather than a logic edit. "
+        "Spot-read 1104 (still inside the `reviewPassesFilters` dispatch, i.e. 'reviews') and 1271 "
+        "(still inside the chart-rank block, i.e. 'charts') to confirm the dataType classification "
+        "did not shift along with the lines. `pushEpisodeRows` (892/896) still gates seeding exactly "
+        "as before: `if (seeding) { watchSeen.add(watchId); continue; }` precedes 892, and 896 is the "
+        "non-watchMode `else` path. A seed run's charge count is still provably 0 on every reachable "
+        "path."
     ),
     # NOTE (cycle 1604): this Actor's two OTHER long-standing entries -- (slug, 1176) "every pair
     # errored, so nothing was ever pushed/charged to lose" and (slug, 1192) "feedServed === 0" --
@@ -178,7 +192,7 @@ ALLOWLIST = {
     # 951 entry below does; re-reading the guard text proves only that the guard has not changed.
     # Both branches now defer into `runError` and fail after the baseline write, so neither is a
     # suspect any more -- do NOT re-add them as allowlist entries if they ever fail inline again.
-    ("app-store-reviews-scraper", 1157): (
+    ("app-store-reviews-scraper", 1166): (
         "input validation on the resolved `apps` list, fired before the app/country loop "
         "that ever calls Actor.charge( even starts -- nothing can have been charged yet. "
         "Re-verified cycle 845 (still holds): unchanged `if (!apps.length) await Actor.fail(...)` "
@@ -203,6 +217,20 @@ ALLOWLIST = {
         "`if (appNames.length)` block at 1151), which does iTunes search/scoring only and returns an "
         "id string or null -- no `pushResult`/`chargeAndPush`/`Actor.charge(` call anywhere in its "
         "body (read in full, lines 627-670ish). `pushed === 0` still provable here."
+        "Re-verified cycle 3481 (still holds, line 1157 -> 1166, line shift only, +9 lines from work "
+        "landed between cycles 3013-3480 above it). Same guard, byte-identical: `if (!apps.length) "
+        "await Actor.fail(...)`, still fired right after `apps.push(...resolved)` resolves "
+        "`appNames` (now lines 1162-1164). Re-traced from the charge sites outward: the sole "
+        "`Actor.charge(` is line 408 in `chargeAndPush` (declared 401); its only callers are "
+        "`flushPairBuffer` (424, calling it at 436) and `pushResult` (440, calling it at 469); "
+        "`pushResult`'s only callers are inside `scrapeAppCountrySort` (936-1120, calls at 1054 and "
+        "1082). Every real top-level entry into that chain is `scrapeAppCountry(...)` (1279, 1340, "
+        "defined 1121, itself calling `scrapeAppCountrySort` at 1133/1139) or `flushPairBuffer()` "
+        "(1281, 1341) -- all reached only from the main `for (const app of apps)` loop at 1242, 76+ "
+        "lines below this fail. The only thing that runs above the fail is `resolveAppName` (called "
+        "at 1162, inside the `if (appNames.length)` block at 1161), which still does only iTunes "
+        "search/scoring and returns an id string or null -- no `pushResult`/`chargeAndPush`/"
+        "`Actor.charge(` call anywhere in its body. `pushed === 0` still provable here."
     ),
 }
 
