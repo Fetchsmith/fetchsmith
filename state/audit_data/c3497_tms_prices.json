@@ -1,0 +1,403 @@
+[
+ {
+  "handle": "hanielazevedo/uspto-trademark-bulk-check",
+  "title": "USPTO Trademark Search API: Bulk Name Availability Check",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "term-checked",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): term-checked",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "term-checked": {
+    "tiers": {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Term checked"
+   },
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   }
+  },
+  "desc": "Check hundreds of brand names against official USPTO trademark data in one run: exact, sound-alike and contains matches with owner, Nice classes, status, dates, goods/services and a conflict risk flag. Filter by class and live/dead. $0.01 per name."
+ },
+ {
+  "handle": "plotpointtech/uspto-trademark-search",
+  "title": "USPTO Trademark Search Scraper - Status & Owners $2.50/1K",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.002125,
+   "SILVER": 0.001875,
+   "GOLD": 0.00155,
+   "PLATINUM": 0.00155,
+   "DIAMOND": 0.00155
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.0025,
+     "BRONZE": 0.002125,
+     "SILVER": 0.001875,
+     "GOLD": 0.00155,
+     "PLATINUM": 0.00155,
+     "DIAMOND": 0.00155
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark"
+   }
+  },
+  "desc": "Get USPTO trademark status, owner, attorney, classes, dates and image by serial or registration number, and search new filings by mark text, owner, class and date. Official TSDR & Open Data Portal data. $2.50 per 1,000 trademarks."
+ },
+ {
+  "handle": "automatic/uspto-trademarks-scraper",
+  "title": "USPTO Trademarks Search, Status and Watch",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.004
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Row"
+   }
+  },
+  "desc": "Search US trademarks, retrieve status and prosecution events, and watch new filings or publications. Text matching only; no legal clearance or similarity scoring."
+ },
+ {
+  "handle": "themineworks/trademark-search-scraper",
+  "title": "Trademark Search Scraper: TMview, USPTO, WIPO, EUIPO",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-scraped",
+  "unit_tiers": {
+   "FREE": 0.009,
+   "BRONZE": 0.008,
+   "SILVER": 0.00675,
+   "GOLD": 0.0054,
+   "PLATINUM": 0.0054,
+   "DIAMOND": 0.0054
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-scraped",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "trademark-scraped": {
+    "tiers": {
+     "FREE": 0.009,
+     "BRONZE": 0.008,
+     "SILVER": 0.00675,
+     "GOLD": 0.0054,
+     "PLATINUM": 0.0054,
+     "DIAMOND": 0.0054
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark"
+   },
+   "run-start": {
+    "tiers": {
+     "FREE": 0.003
+    },
+    "primary": false,
+    "onetime": true,
+    "title": "Run start"
+   }
+  },
+  "desc": "Search trademarks across TMview's 77 offices (EUIPO, USPTO, WIPO Madrid, UK, Germany, Canada, Japan and more) by mark name, owner or application number: owner, Nice classes, status, filing, registration and expiry dates, opposition deadline. No login."
+ },
+ {
+  "handle": "rastriq/spain-trademark-monitor",
+  "title": "Spain Trademark Monitor \u2014 New BOPI/OEPM Filings",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.004,
+     "GOLD": 0.0035,
+     "PLATINUM": 0.0035,
+     "DIAMOND": 0.0035
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Publication"
+   }
+  },
+  "desc": "Daily new trademark, trade-name and shop-sign applications, grants and refusals from the Spanish BOPI (OEPM) for one, several or all Nice classes. Holder data: companies only by default, optional pseudonymous key or individuals' names."
+ },
+ {
+  "handle": "parsegrid/uspto-trademark-patent-intelligence-api",
+  "title": "FDA Orange Book Patent Cliff, USPTO PTA & Trademark API",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 0.005
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor Start"
+   },
+   "apify-default-dataset-item": {
+    "tiers": {
+     "FREE": 0.05
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "USPTO patent & IP intelligence record"
+   }
+  },
+  "desc": "Dual-mode federal IP API joining live FDA Orange Book drug patent cliffs and LOE exclusivity with SEC EDGAR XBRL revenue, ClinicalTrials.gov studies, USPTO PTA, and TSDR marks."
+ },
+ {
+  "handle": "ahmed_jasarevic/wipo-int-scraper",
+  "title": "WIPO Trademarks Scraper [$8/1K\ud83d\udcb0] | Madrid Monitor | Patents",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trademark-result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.008,
+   "SILVER": 0.0075,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "below_floor": [],
+  "below_entry": [],
+  "every_tier_below_floor": false,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): patent-result,trademark-result",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "apify-actor-start": {
+    "tiers": {
+     "FREE": 5e-05
+    },
+    "primary": null,
+    "onetime": true,
+    "title": "Actor Start"
+   },
+   "trademark-result": {
+    "tiers": {
+     "FREE": 0.008,
+     "BRONZE": 0.008,
+     "SILVER": 0.0075,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    "primary": true,
+    "onetime": false,
+    "title": "Trademark"
+   },
+   "patent-result": {
+    "tiers": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00145,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    "primary": null,
+    "onetime": false,
+    "title": "Patent"
+   }
+  },
+  "desc": "Extract international trademark registrations and PCT patents from WIPO \u2014 mark name, status, holder, Nice classes, goods and services, IRN and gazette data \u2014 as structured JSON. Built for trademark watch, brand clearance and IP due diligence. From $1.50 per 1,000 patents, $8 per 1,000 trademarks."
+ },
+ {
+  "handle": "jungle_synthesizer/j-platpat-japan-patent-trademark-design-scraper",
+  "title": "J-PlatPat Japan Patent, Trademark & Design Scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "data-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009000000000000001,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "below_floor": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "below_entry": [
+   "BRONZE",
+   "DIAMOND",
+   "FREE",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "every_tier_below_floor": true,
+  "runfee": null,
+  "runfee_label": "has per-row event(s): data-record,orbtop-actor-start",
+  "runfee_crossover_rows": null,
+  "future_pricing": [],
+  "events": {
+   "orbtop-actor-start": {
+    "tiers": {
+     "FREE": 0.0001
+    },
+    "primary": null,
+    "onetime": null,
+    "title": "Actor start"
+   },
+   "data-record": {
+    "tiers": {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009000000000000001,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    "primary": true,
+    "onetime": null,
+    "title": "Record scraped"
+   }
+  },
+  "desc": "Japan Patent Office records from J-PlatPat. Patents, utility models, designs and trademarks with filing dates, applicants and legal status, by application-number range or keyword."
+ }
+]
