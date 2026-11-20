@@ -107,6 +107,11 @@ def main():
     registry = json.load(open(os.path.join(ACTORS, "registry.json")))
     live = sorted(t["slug"] for t in registry["tools"] if t["status"] == "live")
     args = sys.argv[1:]
+    # cycle 3480: an unknown name emptied `live` and printed "0 dataset Actor(s) checked,
+    # 0 MISS" -- a clean-looking sweep of nothing, exit 0.
+    sys.path.insert(0, "/root/agent/bin")
+    import _slug_args
+    _slug_args.validate("check-zero-row-message", args, live)
     if args:
         live = [s for s in live if s in args]
 

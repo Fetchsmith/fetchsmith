@@ -42,6 +42,14 @@ def scan(path):
 
 
 def main():
+    # cycle 3480: a nonexistent root made rglob() yield nothing and printed
+    # "0 file(s) checked, 0 flagged -- clean", exit 0. Roots are paths, not slugs, so
+    # validate against what actually exists under BASE rather than against DEFAULT_ROOTS.
+    sys.path.insert(0, '/root/agent/bin')
+    import _slug_args
+    _slug_args.validate('check-source-bytes', sys.argv[1:],
+                        [p.name for p in BASE.iterdir() if p.is_dir()],
+                        kind='root path under /root/agent')
     roots = sys.argv[1:] or DEFAULT_ROOTS
     flagged = checked = 0
     for root in roots:

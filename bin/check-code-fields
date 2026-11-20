@@ -288,6 +288,12 @@ def main(argv):
     argv = [a for a in argv[1:] if a != '--all']
     show_all = '--all' in sys.argv
     wanted = set(argv)
+    # cycle 3480: an unknown name skipped every tool and printed "0 Actor(s) with code-only
+    # field drift.", exit 0 -- a clean sweep of nothing. (`--all` is a real flag here and is
+    # already stripped above, so it never reaches this guard.)
+    sys.path.insert(0, '/root/agent/bin')
+    import _slug_args
+    _slug_args.validate('check-code-fields', argv, [t['slug'] for t in reg['tools']])
     drift = 0
     for tool in reg['tools']:
         slug = tool['slug']

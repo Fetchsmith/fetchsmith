@@ -176,10 +176,17 @@ def load_ignores(adir):
 
 
 def main():
-    slugs = sys.argv[1:] or sorted(
+    available = sorted(
         d for d in os.listdir(ACTORS)
         if os.path.isdir(os.path.join(ACTORS, d)) and not d.startswith("_")
     )
+    # cycle 3480: an unknown name went straight into the loop, where check_actor() returns
+    # None for a nonexistent dir, so every counter stayed 0 and the check printed
+    # "0 unreachable claim(s)", exit 0.
+    sys.path.insert(0, "/root/agent/bin")
+    import _slug_args
+    _slug_args.validate("check-filter-reach", sys.argv[1:], available)
+    slugs = sys.argv[1:] or available
     total_filters, total_miss = 0, 0
     for slug in slugs:
         res = check_actor(slug)

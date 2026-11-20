@@ -32,6 +32,12 @@ def main(argv):
     reg = load('actors/registry.json')
     health = (load('state/health.json') or {}).get('results', {})
     wanted = set(argv[1:])
+    # cycle 3480: an unknown name skipped every tool and printed "0 Actor(s) with drift.",
+    # exit 0 -- identical output to a genuinely clean fleet.
+    sys.path.insert(0, '/root/agent/bin')
+    import _slug_args
+    _slug_args.validate('check-registry-fields', argv[1:],
+                        [t['slug'] for t in reg['tools']])
     drift = 0
 
     for tool in reg['tools']:

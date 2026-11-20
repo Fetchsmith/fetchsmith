@@ -240,10 +240,17 @@ def main():
         print("%-34s %s  %s" % (label, state, detail))
         return 1 if state == "SUSPECT" else 0
 
-    slugs = argv or sorted(
+    available = sorted(
         d for d in os.listdir(ACTORS)
         if os.path.isfile(os.path.join(ACTORS, d, "src", "main.js")) and not d.startswith("_")
     )
+    # cycle 3480: an unknown name printed "0 watch-mode Actor(s) checked, 0 suspect seed-
+    # baseline save(s)", exit 0 -- a clean sweep of nothing. The --file fault-injection
+    # branch above returns before this, so it is unaffected.
+    sys.path.insert(0, "/root/agent/bin")
+    import _slug_args
+    _slug_args.validate("check-seed-save", argv, available)
+    slugs = argv or available
     checked = suspect = review = 0
     for slug in slugs:
         src = os.path.join(ACTORS, slug, "src", "main.js")

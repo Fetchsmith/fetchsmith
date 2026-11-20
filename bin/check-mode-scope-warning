@@ -341,11 +341,13 @@ def main():
     declared = load_declared()
     wanted = set(args)
     slugs = sorted(d for d in os.listdir(ACTORS) if not d.startswith('_'))
+    # cycle 3480: an unknown name used to leave `slugs` empty and print this check's green
+    # "every field ... is named by a log.warning" sentence over 0 Actors, exit 0.
+    sys.path.insert(0, '/root/agent/bin')
+    import _slug_args
+    _slug_args.validate('check-mode-scope-warning', args, slugs)
     if wanted:
         slugs = [s for s in slugs if s in wanted]
-        missing = wanted - set(slugs)
-        if missing:
-            print(f'unknown Actor slug(s): {", ".join(sorted(missing))}', file=sys.stderr)
 
     n_actors = tot_scoped = tot_flags = tot_allowed = 0
     for slug in slugs:

@@ -421,8 +421,15 @@ def classify(slug, filters, src):
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     all_buckets = '--all-buckets' in sys.argv
-    slugs = args or sorted(d for d in os.listdir(ACTORS)
-                           if os.path.isdir(os.path.join(ACTORS, d)) and not d.startswith('_'))
+    available = sorted(d for d in os.listdir(ACTORS)
+                       if os.path.isdir(os.path.join(ACTORS, d)) and not d.startswith('_'))
+    # cycle 3480: an unknown name left every bucket at 0 and printed the all-zeros FLEET
+    # TOTALS line with "0 FAILED", exit 0. (`--`-prefixed args are stripped above, so a
+    # stray `--all` sweeps the fleet rather than reaching this guard.)
+    sys.path.insert(0, '/root/agent/bin')
+    import _slug_args
+    _slug_args.validate('check-validated-filters', args, available)
+    slugs = args or available
     totals = {'a': 0, 'b': 0, 'c': 0, 'd': 0}
     date_flagged = []
     for slug in slugs:

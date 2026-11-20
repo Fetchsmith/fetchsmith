@@ -224,6 +224,13 @@ def main(argv):
     checked = 0
 
     actors_dir = os.path.join(ROOT, "actors")
+    # cycle 3480: an unknown name skipped every Actor and printed "0 watch-mode Actor(s)
+    # checked, 0 suspect fail-before-save ordering(s)", exit 0 -- a clean sweep of nothing.
+    sys.path.insert(0, "/root/agent/bin")
+    import _slug_args
+    _slug_args.validate("check-fail-ordering", argv[1:],
+                        [d for d in sorted(os.listdir(actors_dir))
+                         if d != "_template" and not d.startswith(".")])
     for slug in sorted(os.listdir(actors_dir)):
         if slug == "_template" or slug.startswith("."):
             continue

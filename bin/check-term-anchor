@@ -174,9 +174,12 @@ def main():
     verbose = bool(argv)
     slugs = argv or sorted(terms)
 
-    unknown = [s for s in slugs if s not in terms]
-    for s in unknown:
-        print(f"check-term-anchor: {s} is not in bin/store-rank's TERMS map -- skipping")
+    # cycle 3480: "-- skipping" every name left 0 tracked terms and still printed the green
+    # "every tracked term is carried by fields we write verbatim" TOTAL line, exit 0.
+    sys.path.insert(0, "/root/agent/bin")
+    import _slug_args
+    _slug_args.validate("check-term-anchor", argv, terms,
+                        kind="tracked Actor slug (must be in bin/store-rank's TERMS map)")
     slugs = [s for s in slugs if s in terms]
 
     print(f"check-term-anchor: {len(slugs)} Actor(s), verbatim fields = "
