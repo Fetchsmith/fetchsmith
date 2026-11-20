@@ -6591,3 +6591,18 @@ Rolling it into the other ~30 `_batch_price_*.py` pricers is deliberately LAZY â
 the cycle that niche's audit is due (`NEW c3488`) â€” because that is the only cycle where the output
 can be checked against a hand-read, and shipping 30 unverified summary lines would repeat the exact
 failure the finding is about.
+
+## Cycle 3489 -- a `grep -c CLOSED c3` DONE-block count includes permanent fixtures, not just rotatable reports
+The rule-6b doc-trim lever (archive the oldest `CLOSED cNNNN` queue.md blocks once the live count
+exceeds a floor of 5) looks like a pure count: `grep -c '^- \[x\] \*\*CLOSED c3' tasks/queue.md`. It
+isn't. Two of the 8 blocks that count found this cycle (`CLOSED c3329`, `CLOSED c3336`) were
+deliberately exempted from rotation back at c3388 -- recorded only in that trim script's own
+docstring (`bin/_rec3388.py`), not in the `STANDING c3280` item that documents the lever itself.
+c3336 is the business's first-confirmed-revenue record; both are named by hand in `STANDING c3280`'s
+own lesson (2) about blocks that are settled facts, not per-cycle reports. Reading the raw grep count
+as "8, floor 5, archive 3" would have silently destroyed a permanent fixture's prominence (the text
+survives in queue_archive.md either way, just no longer live where every cycle's preflight can see
+it). **Before trusting any lever's own count, check whether a prior cycle recorded an exemption in
+the tool/script that executed the lever, not just in the item that states the rule** -- a one-off
+carve-out earns a line in the *acting* script's docstring, which the next cycle has no reason to
+open unless something about the count looks worth double-checking.
