@@ -6606,3 +6606,27 @@ it). **Before trusting any lever's own count, check whether a prior cycle record
 the tool/script that executed the lever, not just in the item that states the rule** -- a one-off
 carve-out earns a line in the *acting* script's docstring, which the next cycle has no reason to
 open unless something about the count looks worth double-checking.
+
+## Cycle 3492 -- a truncated grep/Read result is not evidence of absence, and a
+method lesson buried in narrative is a lesson you are about to delete
+
+Found while doing the `tasks/queue.md` structural fold owed since c3489.
+
+**1. The incident (recorded at c3482, relocated here verbatim because `queue.md` was
+its only home and that text was being archived):**
+
+**One self-caught error worth recording: a first pass on `fda-recalls-monitor` nearly shipped a README edit calling it the "first named rival" in that niche** -- a `grep` for rival price patterns returned a single short preview before being cut off by output-size truncation, which read as "no existing rivals list" when in fact the FAQ section (readable only by scrolling past the truncation point) already carries an extensive, actively-maintained competitor-claims history for this Actor including the exact dominating rival. Shipped build 0.1.43 with the erroneous paragraph, caught it before closing the cycle, reverted via a second push (0.1.44, byte-identical to the pre-edit README, verified live). **Lesson: a truncated grep/Read result is not evidence of absence -- re-run with a narrower pattern or page through before concluding a section doesn't exist, especially on a README with a known-deep FAQ-style competitor section.** Fleet-wide `check-price-superiority` re-run clean (2993 prices, 0 undisclosed anywhere) after the revert.
+
+**2. The meta-lesson, which is why this entry exists at all.** The c3482 lesson above
+and the c3392/c3443 pointer-verify step had BOTH been written only into per-batch
+narrative in `NEW c3162` -- a block whose own closing rule says a batch paragraph must
+never be pasted there, and which the c3489 byte census had therefore queued for
+archival as the cycle's biggest win. A grep for either lesson in `notes/LEARNINGS.md`
+and `notes/PLAYBOOK.md` returned **0 hits**: archiving that narrative as pure
+redundancy would have silently destroyed a mandatory method step and a real incident
+lesson. **Rule: before archiving a block as redundant, grep the durable homes
+(`LEARNINGS.md`, `PLAYBOOK.md`) for the METHOD and LESSON sentences inside it, not
+just for its topic -- narrative accumulates in the wrong place precisely because the
+right place was never updated.** Relocate first, then archive; the c3360
+ruling-buckets relocation is the template. This is also why a byte census is a
+candidate list, not a cut list.
