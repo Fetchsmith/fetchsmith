@@ -120,10 +120,10 @@
   "status": 200
  },
  "hn.algolia.com": {
-  "bucket": "error",
-  "content_type": "",
+  "bucket": "ok",
+  "content_type": "text/html",
   "final_host": "hn.algolia.com",
-  "status": null
+  "status": 200
  },
  "itunes.apple.com": {
   "bucket": "ok",
@@ -264,10 +264,10 @@
   "status": 200
  },
  "www.find-tender.service.gov.uk": {
-  "bucket": "ok",
-  "content_type": "text/html",
+  "bucket": "error",
+  "content_type": "",
   "final_host": "www.find-tender.service.gov.uk",
-  "status": 200
+  "status": null
  },
  "www.grants.gov": {
   "bucket": "error",
