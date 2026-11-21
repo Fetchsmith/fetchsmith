@@ -113,6 +113,11 @@ NICHE_TERMS = {
     # Safe to overlap -- pass 2's `seen` set dedupes by handle, so a listing both terms
     # surface is still read exactly once, under whichever niche comes first.
     "clinicaltrials-mcp-server": "clinicaltrials mcp",
+    # Added c3523, closing the same WARN this check raised for google-news-mcp-server --
+    # same reasoning as c2772's clinicaltrials-mcp-server entry above: a rental-converted
+    # MCP rival is a distinct listing under its own pricing niche, not covered by the
+    # "google news" term's dedupe since MCP listings rarely rank under the plain scraper term.
+    "google-news-mcp-server": "google news mcp",
 }
 
 
