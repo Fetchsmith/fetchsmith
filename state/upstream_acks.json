@@ -1,6 +1,17 @@
 {
   "acks": [
     {
+      "fp": "7060c427964d",
+      "slug": "court-records-scraper",
+      "handle": "hipersoft/cendoj-scraper",
+      "verb": "Deprecated",
+      "dates": [],
+      "context": "[Deprecated] CENDOJ Scraper \u2014 Spanish Case Law (Jurisprudencia) Search Spanish case law from CENDOJ / Poder Judicial: sentencias and autos fr",
+      "note": "Different site/niche entirely: our court-records-scraper's only upstream is courtlistener.com (US federal/state court opinions + RECAP dockets). This rival scrapes CENDOJ/Poder Judicial (Spanish case law) -- an unrelated upstream that happens to share the 'court records' category. Its [Deprecated] tag is about ITS OWN Spanish-case-law product, not CourtListener. Not a signal for us.",
+      "acked_cycle": 3543,
+      "acked_date": "2026-11-21"
+    },
+    {
       "fp": "016cdabc1ad3",
       "slug": "google-news-scraper",
       "handle": "groupoject/google-bing-news-monitor",
