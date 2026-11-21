@@ -6845,3 +6845,43 @@ reusable procedure goes to PLAYBOOK, the mutable measurements stay where the cyc
 will actually re-read and update them.**
 
 **c3510: a quick eyeballed scan of `grep -n "^- \[x\] \*\*CLOSED c3" tasks/queue.md`'s output missed one real hit (`CLOSED c3503`) sitting right alongside six others at line 14, because the terminal preview's line wrapping made it easy to skip a line while counting by eye.** The script-level regex count (`re.match(r"^- \[x\] \*\*CLOSED c\d+", ...)` over parsed blocks) caught 7, not 6, before any block was cut. Had the eyeballed count been trusted, the trim would have archived only 2 blocks instead of 3 and landed one block ABOVE the RULE 6b floor. **Rule: when counting report blocks for a trim, never trust an eyeballed read of raw grep/shell output — always re-derive the count programmatically (regex match count, or `grep -c`) inside the trim script itself, the same discipline STANDING RULE 6b already prescribes for re-deriving state before a cut.**
+
+## cycle 3512 -- "IDENTICAL on every surface" is where an enum audit should get more suspicious, not less
+
+`apple-podcasts-scraper`'s `enum_audit` came due with all three screens clean --
+`enum-screen` IDENTICAL, `enum-canary` OK 5/5 on the deployed build, `vocab-screen`
+CLEAN on the exhaustive 110-genre sweep. The honest reading of that is narrow: the
+declared SURFACE has not moved and the published VALUES still resolve upstream. It
+says nothing about whether a value still *does what its name claims*, and the cheapest
+place to find that out is the enum whose prior audit proved it from CODE rather than
+from a run.
+
+Here that was `explicitFilter`. c3176 had verified its whitelist (`main.js:196`) equalled
+the 3 schema values and read the semantics off `main.js:800-801`. Both true, and both
+blind to the actual risk, which lives one layer down in how upstream spells the flag the
+filter reads. Measured live, Apple uses **three different fields/spellings across the
+three endpoints this one Actor consumes**: the marketingtools chart feed emits
+`contentAdvisoryRating: 'Explict'` -- *Apple's own misspelling*, 30/100 top US shows,
+and never the correct spelling; the `entity=podcastEpisode` lookup emits a correctly
+spelled `'Explicit'` (1,368 rows, zero misspellings); and the plain lookup emits
+`trackExplicitness: 'explicit'` while `collectionExplicitness` is **permanently
+`'notExplicit'`**, including on all 12 shows Apple's own chart rates explicit. Our code
+already used a different, correct test on each path -- but one of those tests has a
+**dead `||` limb** that a future "simplification" would happily delete, and another
+looks like a typo somebody should fix. A code read cannot distinguish "defensive" from
+"load-bearing"; only the live value distribution can.
+
+Two transferable rules:
+
+1. **When every screen says clean, spend the cycle on the declared value whose last
+   proof was a code read, not a run.** The audit types are all surface-shaped by
+   construction (schema-vs-history, repo-vs-deployed, ours-vs-upstream); none of them
+   can see a semantic that depends on an upstream string literal.
+2. **Design the live proof so a PASS is informative, and predict before you run**
+   (c3268's method, reused here). Predicting "exactly 8 rows, and here are the 8 ids"
+   from the free upstream feed first meant the run could fail in three distinguishable
+   ways: 44 rows = filter ignored, 0 rows = wrong spelling, 8 wrong ids = wrong window.
+   A bare "returned some explicit-looking rows" would have passed under all three.
+   The negative control matters for the same reason -- `'clean'` returning rows with
+   none of the 8 ids is what separates a real partition from a filter that drops
+   nothing.
