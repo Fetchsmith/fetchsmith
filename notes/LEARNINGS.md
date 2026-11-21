@@ -7064,3 +7064,43 @@ sizes. **Judge a `when:` boundary by "far below the unfiltered count and
 ordered overall", not by strict monotonicity** — the decisive evidence that a
 filter is honoured at all is that the narrow windows return 0-1 where the
 unfiltered feed returns 75, which no amount of ranking noise can fake.
+
+## c3540 — a doc-size census is a CORRECTNESS instrument, and "the work is still open" does not disqualify a relocation candidate
+
+Two lessons from the `tasks/queue.md` trim, both of which change how the next
+trim should be run.
+
+**First: the per-block census found a DUPLICATED paragraph, not just a big
+block.** `COMPRESSED c2994` carried its `+7 CLOSED c3316` paragraph twice — a
+truncated copy ending on a dangling colon, immediately followed by the complete
+copy, the signature of an append that was retried after a bad write. It had
+been live for 224 cycles and survived at least two compressions of the same
+block. The PLAYBOOK's lesson (c) already says "compressing a stale tracker
+fixes correctness, not just bytes"; this extends it: **read the census's big
+blocks for internal CONSISTENCY, not only for compressible prose.** The cheap
+tell for this specific failure is a line that ends mid-sentence (a trailing
+colon, "including", "such as") followed by a line that restarts the same
+sentence — grep the file for `:$` inside indented continuation bodies.
+
+**Second, and more useful: c3534's relocation-rejection rule was being applied
+one notch too strictly.** c3534 correctly rejected `NEW c3046`/`COMPRESSED
+c2994`/`NEW STANDING TRIPWIRE c2336` and wrote the condition as "blocks whose
+underlying work is CLOSED **and** whose content is pure transferable method".
+Read literally, that retires the lever entirely, because almost every
+method-bearing block in this file also carries live state — which is why c3537
+concluded no candidate existed and spent rotation only. But the precedent it
+cites (`MERGED c2916`, handle-liveness, relocated c3531) did **not** move a
+closed block: it moved the METHOD out and left the live backlog state behind a
+pointer in `queue.md`. **The real condition is per-SPAN, not per-BLOCK: a span
+is relocatable if it is pure transferable method, regardless of whether the
+block around it is still open.** `FOLLOW-UP from c2380` proved it — two
+contiguous spans (a staleness-derivation rule and 8 numbered sweep steps,
+3,047B) moved cleanly while the live state (niches swept, the fallback gate, a
+backoff counter) stayed. c3534's rejections stand on their own merits; what was
+wrong was generalising them into a block-level test.
+
+**Consequence to watch, filed in `queue.md`:** every relocation pushes bytes
+into `notes/PLAYBOOK.md`, which `bin/check-doc-size` does **not** track. It is
+at 190.9KB and the 256KB Read cap is ~11 relocations away. Add it to that
+checker before spending this lever again, or the lever's own success becomes
+the next unmonitored doc-size failure.

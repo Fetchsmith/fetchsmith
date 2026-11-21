@@ -452,3 +452,43 @@ RELOCATED because it is reusable METHOD for running `check-handle-liveness` disc
       placeholder `` `owner/slug` `` (c2917) and Apify's CSV array-export column names
       `field/0`/`field/1` (c2920). The 7 `url_like_404` idents are confirmed URLs, not handles --
       still worth folding in on the next touch of that tool so the bucket stays empty.
+
+## One-term-diff pass: how to derive "stalest" and the 8-step per-niche method (RELOCATED here by cycle 3540 from `FOLLOW-UP from c2380` in `tasks/queue.md`, where it had lived since c2380, COMPRESSED c2784)
+
+RELOCATED because it is reusable METHOD for running a cheap one-term competitor diff over one niche, not a task -- the c3360/c3492/c3498/c3531 lever (relocate method verbatim, leave a one-line pointer) that is the only one which has ever produced a lasting cut on `tasks/queue.md`, and it meets c3534's condition that only pure transferable method may move: the block's LIVE state (the 8 niches already swept, the `audit-due competitor_audit` 384c+ fallback gate, and the companion matched-count grep's five-read EMPTY backoff counter) stays in `tasks/queue.md` under the `FOLLOW-UP from c2380` pointer. Text below is verbatim as it stood at c3540. Per-niche execution detail remains in `notes/LEARNINGS.md` cycles 2384/2730/2735/2737/2738 and `tasks/queue_archive.md` c2685/c2736/c2766; the pre-compression narrative is under the c2784 header. **One pointer inside the text below does NOT resolve in either file and was ALREADY dangling before this relocation (hazard pass (c), c3540):** step (8)'s "see the dedicated c2384 follow-up above" -- that block (`NEW follow-up (c2384)`, the trademark-search README one-word-drift note) was archived to `tasks/queue_archive.md`, `## Archived by cycle 2387`. Left unedited to keep this text verbatim, same convention as `NEW c3492`'s archived-pointer ruling.
+
+      **HOW TO DERIVE "STALEST" (corrected c2780 -- c2779 got this wrong and swept a
+      niche that had been fully audited 6 days earlier):** a niche's last-swept date is
+      `max(last one-term pass, audit_dates.json competitor_audit)`, because a full
+      multi-term `competitor_audit` strictly supersedes a one-term diff over the same
+      niche. **Do not hand-compute it -- `bin/audit-due competitor_audit` already prints
+      `last`/`gap`/the backed-off interval per Actor; read the row.** Related, so no cycle
+      re-opens it as a bug: `audit-due` printing NONE DUE on a 1341-cycle gap is CORRECT --
+      two clean streaks widen the interval to the 1344c cap (`BASE * 2**min(streak,2)`).
+      Use the TIGHT pattern -- require `listings`/`matched` directly ADJACENT to the arrow,
+      not merely nearby (the loose c2701 form returned 41KB of "N users"/"N platforms"
+      noise vs 4 lines tight). Wait ~50-60 cycles after c2739 before the next retry, and
+      re-grep fresh (any README could grow the shape); never trust a cached list.
+      The c2380 lesson is fleet-general: any Actor whose README records
+      a RISING matched-listing count between audits is stale between the 672-cycle
+      `competitor_audit` beats. Method, ~15 min per Actor, cheap:
+      (1) `grep -onE "202[67]-[0-9]{2}-[0-9]{2}" README.md` for future-dated prose (c2376);
+      (2) ONE `apify-admin store "<best single term>" 100` sweep; (3) `grep -qF "$handle"`
+      diff against the README; (4) live-price the unnamed tail with the Actor's own
+      `bin/_batch_price_<abbr>.py` (it reads a handle list from a /tmp file -- see the
+      `handles = [...open("/tmp/..._unnamed3.txt")]` line); (5) for every undercutter, fetch
+      `createdAt` + `pricingInfos[].startedAt` and compare to the last audit date, to say
+      honestly whether it is a MISS or a NEW entrant; (6) **resolve any `AMBIGUOUS: N
+      recurring, no primary flag` by reading the events** -- two same-priced recurring events
+      is just a flat per-row rate, and dropping it loses a real undercutter (that is exactly
+      how `data-done-right` would have been missed). **(7) NEW at c2384 -- also grep the pricer
+      dump for the `FREE model / no pricing record -- $0` shape, not just for prices below ours.**
+      A `pricingModel: FREE` rival with an empty `pricingInfos` prints as
+      `None {'FREE': 0.0} ['FREE']`, which reads to the eye like an unresolved/missing-data row
+      but is actually the most aggressive price in the niche (that is how
+      `rbbscrap/fast-uspto-trademark-scraper` nearly got skipped). Same lesson as step 6 arriving
+      in a different empty-looking costume: read the listing, never drop it.
+      **(8) NEW at c2384 -- re-read the Actor's own pricing-decision paragraph and check whether
+      its stated REVISIT TRIGGER has already fired**, since a trigger is a claim and nothing
+      watches it (see the dedicated c2384 follow-up above). Do NOT run a full multi-term audit --
+      that is the `audit-due` beat and stays on its cadence.
