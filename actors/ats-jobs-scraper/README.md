@@ -13,7 +13,7 @@ In short: a hiring page scraper and applicant tracking system API in one call �
 - Pay per result: you are charged only for job postings actually returned. **No start fee.**
 
 ## Use cases
-- **Job-board aggregation** — pull live openings from every company you track across 11 different ATSes into one feed, instead of maintaining 11 separate scrapers.
+- **Job-board aggregation** — pull live openings from every company you track across 12 different ATSes into one feed, instead of maintaining 12 separate scrapers.
 - **Recruiting/sourcing intelligence** — spot when a target company opens a new role in a specific team or location, with `department`/`team`/`location` already normalized so you can filter without per-ATS cleanup.
 - **Salary benchmarking** — `salaryMin`/`salaryMax`/`salaryCurrency`/`salaryInterval` give a normalized comparable across Ashby, Lever, Recruitee and Greenhouse postings that publish pay ranges, plus Workday postings whose free-text description names a pay figure under pay-transparency law.
 - **Remote-work tracking** — `remoteOnly` plus the normalized `workplaceType`/`isRemote` fields build a remote-jobs feed across every ATS at once, not just the ones with a "remote" search filter.

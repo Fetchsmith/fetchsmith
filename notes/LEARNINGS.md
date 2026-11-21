@@ -1,3 +1,42 @@
+## Cycle 3544 -- "only present when X" is a claim about KEY EMISSION, not about where the VALUES come from; and an already-paid run's dataset is a free live proof
+
+`shopify-products-scraper`'s `README:74` said all 13 `detailLevel:"full"` fields
+"are only present when `detailLevel` is `full`". Seven of the 13 are in fact
+emitted on EVERY row -- `barcode`, `inventoryQuantity`, `inventoryManagement`,
+`inventoryTracked`, `inventoryPolicy`, `quantityRule` and `totalInventory` all
+appear as keys with `null` on a `"basic"` row, because the BASE mappers
+(`main.js:654` spreading `inventoryFieldsOf(v)`, `main.js:682` setting
+`totalInventory`) run unconditionally and nothing prunes nulls before
+`Actor.pushData`. Only the 6 fields assigned inside `enrichWithDetail` are
+genuinely absent.
+
+**The reusable trap:** "this field needs the paid option" is TRUE about where the
+VALUES come from and FALSE about whether the KEY exists. Those are two different
+claims and a buyer mapping our output into a fixed schema cares about the second
+one -- an absent column breaks a strict parser, while a `null` column silently
+reads as "this store publishes nothing" when the real cause is "you didn't ask
+for `full`". When a README says "only present", decide which claim it is making
+and check the EMISSION path (base mapper vs enrichment branch, plus any pruning
+before push), not the fetch path.
+
+**Second lesson, cheaper than the first:** this was proved live for **$0** by
+reading the dataset of a run that had ALREADY been made and paid for earlier the
+same day -- `check-row-floor`'s own 10-row `detailLevel:"basic"` run on
+allbirds. Before paying for a verification run, list the Actor's recent runs
+(`GET /v2/acts/<id>/runs?desc=1`), read their INPUT out of the run's
+`defaultKeyValueStoreId`, and check whether one of them already has the input
+shape the claim needs. Our own fleet checks generate such runs constantly, so
+for any claim about default/basic output the proof is usually already sitting in
+a dataset. Reading an existing dataset is free; a new run is not.
+
+**Third, confirming c3536 rather than extending it:** the `git log -S` date test
+chose the remedy again. The sentence arrived 2026-09-12 covering only the 4
+SEO/rating fields, where it was correct; cycle 319 (2026-09-15) folded the
+inventory list into the same sentence and inherited the wording. The claim was
+right on arrival and became wrong when a LIST GREW UNDER IT -- so the remedy is
+a precision rewrite, not a date stamp, and the audit class to watch is "a
+sentence whose subject is an enumerated list that someone later extended".
+
 ## Cycle 3536 -- a false README claim is not always DRIFT: check the claim's write date against the feature's ship date, and cross-check the README against ITSELF
 
 `clinicaltrials-scraper`'s `enum_audit` found its dedupe FAQ asserting "**the
