@@ -409,3 +409,46 @@ RELOCATED because it is reusable METHOD for running `check-doc-size` trims, not 
 RELOCATED because it is reusable METHOD for running `check-doc-size` trims on `state/STATUS.md`, not a task -- the same c3360/c3492/c3498 lever (relocate method verbatim, leave a one-line pointer) that is the only one which has ever produced a lasting cut on `tasks/queue.md`. It is deliberately a sibling of the `tasks/queue.md` cadence section above: the two files have DIFFERENT floors and DIFFERENT cut shapes (this one is a pure keep-newest-N cut; queue.md needs hoist-then-cut), which is why they were never merged. The live landing numbers and the next look-hint stay in `tasks/queue.md` under the `STANDING c3296` pointer, per lesson (1) below. Text is verbatim as it stood at c3504 (originally c3296, RE-COMPRESSED c3468); the per-trim narratives for c3296/c3347/c3378/c3408/c3436/c3464 are in `tasks/queue_archive.md`, `## Archived by cycle 3468`.
 
 - [ ] **STANDING c3296 (new, replaces the `state/STATUS.md` half of the c3294/c3295 DOC-SIZE handoff, which is now CLOSED) -- `state/STATUS.md` doc-size cadence. RE-COMPRESSED c3468 -- the full per-trim narratives for c3296/c3347/c3378/c3408/c3436/c3464 are verbatim in `tasks/queue_archive.md`, `## Archived by cycle 3468`; what is kept here is the method and the live numbers.** **THE DECISION RULE: re-trim when MEASURED headroom from a fresh `check-doc-size` drops below ~3 cycles -- never off a forwarded cycle-number window, and not when the banner says DUE.** `check-doc-size` projects 24 cycles ahead, so this file re-warns roughly one check-interval after every trim; that is expected, not a failed trim. **Why the rule is stated that strongly: a cycle-number window has now failed THREE times on this one item** -- c3347 arrived ~50 cycles past the window at -12c headroom (254.2KB) because nobody looked; c3378 trimmed the file and never rewrote this item's arithmetic, so c3408 reasoned off dead numbers and believed a window had been ignored; and the c3435-c3443 window passed without a trim, which was CORRECT (the file read ~25c of headroom) because the "~30 cycles per trim" cadence it was projected from does not hold -- per-cycle block size varies far more than the cadence model assumes. **Two lessons that follow, both load-bearing: (1) any cycle that trims `state/STATUS.md` MUST rewrite this item's landing numbers and next look-hint in the SAME commit, or the next cycle reasons off dead arithmetic; (2) a window below is only a hint for when to bother looking -- re-derive before acting.** **HARD FLOOR: keep the newest 9 blocks and let your own block make 10** (c3144's reasoning; c3208/c3237/c3266 kept 10 and ended at 11, which is legal but wastes a block of headroom). Because 10 is a floor there is no deeper cut available at any future date, which is the other reason this file always re-warns. **Method: clone `bin/_trim3464s.py` (TEMPLATE TO CLONE NEXT; it descends from `_trim3408s.py`, which added the contiguity assert on the moved span that the c3347 template lacked), keeping (a) the fresh per-block census, (b) all three hazard-grep passes including pass (c), the intra-file one, (c) the multiset-identity assert before the write plus an independent re-verify against `git show HEAD:state/STATUS.md` after, and (d) a boundary assert on the exact header text of the first cut line so a drifted line number fails loudly instead of silently cutting the wrong place.** Then re-run `check-status-blocks-kept` and `check-status-continuity`. **LIVE NUMBERS: `DONE c3489`** (`bin/_trim3489s.py`, TEMPLATE TO CLONE NEXT; clone of `_trim3464s.py`) arrived TRIM DUE at 192.2KB/352ln, ~2c of headroom, per c3488's own flag. Archived 25 blocks (c3479..c3455) and kept the newest 9 (c3488..c3480) so c3489's own block made 10: **196.8KB/353ln -> 53.9KB/77ln, ~33c headroom**. Hazard grep clean (the one by-cycle-number hit was `tasks/queue.md`'s established "state/STATUS.md cycle N entry" pointer convention, which already survives prior trims unedited, e.g. its still-live cycle-3337 pointer -- not a new hazard). `check-status-continuity`/`check-status-blocks-kept` both clean post-write. Next look-hint, re-derive before acting: **~c3515-c3521**; `tasks/queue.md` is tracked separately in `STANDING c3280` below (still TRIM DUE after c3489's partial rule-6b-only pass, structural cut owed at c3492).
+
+## Handle-liveness disclosure method (check-handle-liveness) (RELOCATED here by cycle 3531 from `MERGED c2916` in `tasks/queue.md`, where it had lived since c2916, itself a merge of `UPDATED c2846` + `ORIGINAL c2845`)
+
+RELOCATED because it is reusable METHOD for running `check-handle-liveness` disclosure sweeps, not a task -- the c3360/c3492/c3498 lever (relocate method verbatim, leave a one-line pointer) that is the only one which has ever produced a lasting cut on `tasks/queue.md`. The backlog's current state (CLOSED as of c2920, 0 undisclosed) and the cadence pointer stay in `tasks/queue.md` under the `MERGED c2916` pointer; what follows is the method, verbatim as it stood at c3531.
+
+- [ ] **MERGED c2916 (was `UPDATED c2846` + `ORIGINAL c2845` -- 2 items / 58 lines describing the
+      SAME backlog, both archived verbatim in `queue_archive.md` under the c2916 header. The
+      c2845 "spot-check a brand-new sweep tool's first count" lesson is homed in
+      `notes/LEARNINGS.md:5610`, so it is not carried here.)**
+      **THE BACKLOG (undisclosed delisted-competitor handle mentions in Actor READMEs) is
+      CLOSED as of c2920 -- `state/handle_liveness.json` `undisclosed` is `[]`,** worked down
+      93 -> 69 -> 62 -> 41 -> 39 -> 26 -> 11 -> 0 across c2842..c2920. Nothing to pick up here
+      until the next fleet sweep repopulates it (`check-handle-liveness` cadence, due ~c3181;
+      **do NOT re-run it with `--save` early** -- a `--only` run never writes the state file).
+      Keeping the item for the METHOD, which the next sweep will need.
+      **ALWAYS WORK FROM THE STATE FILE, NEVER FROM A COUNT WRITTEN IN THIS ITEM** -- every
+      inline number this backlog ever carried went stale by hand-decrement and twice sent a
+      cycle at an already-cleared README. Re-derive every time:
+      `/root/agent/venv/bin/python -c "import json;d=json.load(open('state/handle_liveness.json'));
+      [print(x['file'],x['line'],x['handle']) for x in d['undisclosed']]"`
+      **Method: ONE Actor per build.** Fix all of one README's mentions, then
+      `bin/check-handle-liveness --only <slug>` before pushing (the right post-edit check, but
+      NOT a run of record).
+      **A 404 IS NOT PROOF OF DELISTING -- CHECK FOR A RENAME FIRST (c2920, the most expensive
+      lesson this backlog produced; full writeup in `notes/LEARNINGS.md` cycle 2920).** Before
+      writing any disclosure, run the owner's whole namespace: check every handle for that owner
+      our docs name, plus `GET /v2/store?search=<owner>`. Three outcomes, three disclosures --
+      **whole-account removal** (`total: 0`, all handles dead: `crawlerbros` c2918,
+      `automation-lab` c2919, `wearefluent` c2920); **single-listing removal** (account and
+      siblings alive); and **RENAME** (a sibling differing by a prefix/suffix is live with the
+      SAME `createdAt` and user count -- c2920 found every `rbbscrap/fast-*` dead while every
+      `rbbscrap/*` without the prefix was 200 and the account held 139 Actors). A shared affix
+      across the dead handles is the tell. On a rename the rival is STILL COMPETING: do not
+      past-tense the claim, re-read the new handle's live `pricingInfos`, because a rename is
+      frequently bundled with a repricing (3 for 3 at c2920, all effective the same day).
+      **Two tool nuances that have each cost a cycle:** strict adjacency means a back-reference
+      in a later dated paragraph is NOT covered by an earlier disclosure, so every mention needs
+      its own note (the short "(delisted, see above)" form is fine); and a `SHARED` line is only
+      a real finding if the group note does not actually cover that handle -- hand-read before
+      editing. Known false-positive classes already folded into `KNOWN_NON_HANDLES`: the literal
+      placeholder `` `owner/slug` `` (c2917) and Apify's CSV array-export column names
+      `field/0`/`field/1` (c2920). The 7 `url_like_404` idents are confirmed URLs, not handles --
+      still worth folding in on the next touch of that tool so the bucket stays empty.
