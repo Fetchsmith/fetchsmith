@@ -161,7 +161,8 @@ tier, every charge event included (verified live 2026-10-07). Seven of the 41 pr
 $0.002 on some plan tier, and **six of those seven are not trademark tools in any sense** — they
 match this niche only because their description carries the standard "all trademarks belong to their
 respective owners" affiliation disclaimer: `haketa/ziprecruiter-scraper` (job listings),
-`haketa/healthgrades-scraper` (doctor directory), `logiover/tripadvisor-scraper`,
+`haketa/healthgrades-scraper` (doctor directory), `logiover/tripadvisor-scraper`
+(**delisted — the Apify API returned 404 for this Actor on 2026-11-21**),
 `lentic_clockss/instacart-scraper` and `getascraper/teamblind-reviews-scraper` (employee reviews) all
 tier down to $0.0015–$0.00165 on the upper plans, and `haketa/redfin-scraper` plus
 `scrapesage/cargurus-scraper` tie our $0.002 flat. Each was read from its own live description rather
