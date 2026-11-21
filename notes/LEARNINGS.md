@@ -6907,3 +6907,30 @@ Two transferable rules:
 **Why this shape of error survives.** A forwarded count reads as already-verified -- it is in bold, it was written by a prior cycle that did the work, and recounting feels like redundant effort. But the cheap check (count the bullets) is *different evidence* from the claim, while re-reading the header is not evidence at all. This is the same failure mode as c3519's report-block count, which was explicitly re-derived fresh "never forwarded" for exactly this reason -- the rule existed for doc-trim counts and had simply never been generalised to queue-item backlog counts.
 
 **Transferable rule: any aggregate in a queue-item header or handoff -- "N Actors", "N handles", "N remaining" -- is a derived number, so re-derive it from the itemized list or a live command before planning around it, and correct the header in place when it is wrong.** Two concrete tells that a count is stale or derived: it was produced by subtracting completed work from an older total rather than by counting what is left, and its unit differs from the unit of the tool that originally produced it (lines/mentions/flags vs. handles/Actors/files). Unit drift between a checker's output and a backlog item's header is where these errors are born.
+
+## cycle 3524 — an upstream total can go DOWN, and an undated count in an `enumTitles` label is an unaudited claim
+`eu-ted-tenders-scraper`'s `enum_audit` came back CLEAN on every screen for the THIRD consecutive
+reading 336 cycles apart (enum-canary 3/3, all 40 values still accepted, same 29-live/11-historical
+partition, every since-2023 count byte-identical to both prior readings). Per the standing "CLEAN
+screens aren't the end of an enum_audit" rule I then read the layer no screen covers — and found all
+18 of the **all-time option counts baked into `procedureType`'s `enumTitles`** had drifted. Two
+reusable lessons:
+1. **A frozen-looking historical total is not frozen.** The 9 legacy (historical-only, 0-published-in-365d)
+   codes drifted **DOWN** -0.8%..-4.2%. Intuition says a dead code's lifetime count can only hold
+   still, so nobody re-measured them. TED **prunes pre-2023 notices from its search index**, and
+   because the since-2023 window is provably frozen (three identical readings), only the pre-2023
+   tail can move. Generalize: when you document an upstream "total so far", ask whether the upstream
+   ever *removes* rows, and never assume a monotonic counter.
+2. **An `enumTitles` label is customer-facing copy with no room for a citation, so it rots silently.**
+   These 18 numbers were measured 2026-09-26, read by every buyer in the Apify input form, and
+   carried no "as of" date anywhere — unlike the *description* text right next to them, which this
+   Actor has been dutifully re-stamping with cycle+date since c2852. The asymmetry is that our
+   checkers and our habits look at prose (`check-competitor-claims`, `check-expired-dates`) while a
+   number inside a dropdown label was in nobody's scope. **Fix pattern: keep the numbers in the
+   titles, but put one dated "every option count here was measured live on <date>" sentence in the
+   field's `description`, so the next cycle can see the measurement's age without re-measuring.**
+3. **Method note for restamping counts in labels:** do NOT regex the last paren group. These titles
+   put the number mid-line (`Legacy pre-eForms code 4 (166,797) - TED publishes no label for it`) and
+   one carries a decoy paren (`... art. 5(3)) (3,175)`) — a naive `\(([\d,]+)` read `comp-tend` as
+   "3" and would have reported a +105,733% drift. Map old->new number STRINGS per value and assert
+   exactly one occurrence in that title before replacing.

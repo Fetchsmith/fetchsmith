@@ -132,9 +132,17 @@ function buildQuery() {
 // count above came back IDENTICAL to the c2852 reading, so the set has 0 drift after 336 cycles.
 // No code joined or left. The 29 live codes range from procedure-type open (688,933 in 365d) down
 // to notice-type can-tran (44).
+// RE-PROVED A THIRD TIME cycle 3524 (2026-11-21), 336 cycles later, same sequential method: 40/40
+// still accepted (both controls still 400), 29 live / 11 historical-only — the SAME partition — and
+// every since-2023 count above came back IDENTICAL again. Three readings 336 cycles apart with zero
+// drift on all 40 values; this axis is stable and the interval can keep backing off.
+// SEPARATE FINDING, same cycle: the ALL-TIME option counts in procedureType's enumTitles (measured
+// 2026-09-26, undated in the UI) HAD drifted — the 8 live codes up (+0.4%..+9.1%) and the 9 legacy
+// codes DOWN (-0.8%..-4.2%), because TED prunes pre-2023 notices from its search index. The
+// since-2023 window is frozen, so only the pre-2023 tail moves. All 18 restamped and dated.
 const HISTORICAL_ONLY_NOTICE_TYPES = new Set(['corr', 'subco']);
 const HISTORICAL_ONLY_PROCEDURE_TYPES = new Set(['4', '9', 'V', 'E', 'Z', '6', 'A', 'F', '8']);
-const HISTORICAL_ONLY_MEASURED = '2026-11-14';
+const HISTORICAL_ONLY_MEASURED = '2026-11-21';
 // An OR-group whose EVERY value is historical-only pins the whole query to pre-cutover notices,
 // because the groups are AND-ed together (see buildQuery) — one live value in the group is
 // enough to make the group reachable, so a mixed selection is not a trap.

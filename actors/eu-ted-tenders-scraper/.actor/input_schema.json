@@ -20,7 +20,7 @@
     "noticeTypes": {
       "title": "Notice types",
       "type": "array",
-      "description": "TED notice-type codes to filter by. This is TED's COMPLETE filterable notice-type vocabulary (all 22 codes; first established cycle 836, re-verified live cycle 2609 by exhausting TED's expert-search index: excluding all 22 leaves 0 notices over TED's whole history). Leave empty for all types. The common ones are cn-standard (contract notice, ~2.92M notices), can-standard (contract award notice, ~2.83M) and pin-only/pin-buyer/pin-rtl (prior information). Note there is no \"pin-standard\" code — TED rejects it — the prior-information notices are split across the six pin-* codes below. Two of the 22 are HISTORICAL-ONLY: \"corr\" and \"subco\" are still accepted as filter values and still match older notices (81,317 and 5 since 2023-01-01) but had 0 notices published in the last 365 days (measured live cycle 2852, 2026-11-07, re-proved live and unchanged cycle 3188, 2026-11-14) — eForms retired them. Selecting only those needs \"publicationDateFrom\" set to an older date, because publishedWithinDays maxes out at 365 and so cannot reach them.",
+      "description": "TED notice-type codes to filter by. This is TED's COMPLETE filterable notice-type vocabulary (all 22 codes; first established cycle 836, re-verified live cycle 2609 by exhausting TED's expert-search index: excluding all 22 leaves 0 notices over TED's whole history). Leave empty for all types. The common ones are cn-standard (contract notice, ~2.96M notices), can-standard (contract award notice, ~2.86M) and pin-only/pin-buyer/pin-rtl (prior information). Note there is no \"pin-standard\" code — TED rejects it — the prior-information notices are split across the six pin-* codes below. Two of the 22 are HISTORICAL-ONLY: \"corr\" and \"subco\" are still accepted as filter values and still match older notices (81,317 and 5 since 2023-01-01) but had 0 notices published in the last 365 days (measured live cycle 2852, 2026-11-07, re-proved live and unchanged cycle 3188, 2026-11-14 and again cycle 3524, 2026-11-21) — eForms retired them. Selecting only those needs \"publicationDateFrom\" set to an older date, because publishedWithinDays maxes out at 365 and so cannot reach them.",
       "editor": "select",
       "default": [],
       "items": {
@@ -78,7 +78,7 @@
     "procedureType": {
       "title": "Procedure types",
       "type": "array",
-      "description": "TED procedure-type codes to filter by. This is TED's COMPLETE filterable procedure-type vocabulary (all 18 codes; first established cycle 836, updated cycle 1533, re-verified live cycle 2609: excluding all 18 codes from a search still returns 0 TED notices: the 8 modern eForms codes, 9 legacy pre-2023 single-character codes TED still accepts, plus comp-tend -- a real eForms code for public-passenger-transport competitive tendering under Regulation 1370/2007 that cycle 836's probe missed). Leave empty for all. Server-side filter, same OR-group as noticeTypes. Two upstream quirks: there is no \"exp-int-rest\" code (TED rejects it), and the value \"7\" DOES appear in the output 'procedureType' field on some older notices but TED's expert search refuses it as a filter value, so it cannot be selected here. Most notices older than ~2014 carry no procedure type at all. NINE of the 18 are HISTORICAL-ONLY: the legacy single-character codes 4, 9, V, E, Z, 6, A, F and 8 are still accepted and still match older notices (25,624 / 26,290 / 14,465 / 3,792 / 1,007 / 45 / 351 / 189 / 400 respectively since 2023-01-01) but every one had 0 notices published in the last 365 days (measured live cycle 2852, 2026-11-07, re-proved live and unchanged cycle 3188, 2026-11-14) — the eForms cutover dried them up. Selecting only legacy codes needs \"publicationDateFrom\" set to an older date; publishedWithinDays maxes out at 365 and cannot reach them. The Actor warns about this at run start instead of just returning 0 rows.",
+      "description": "TED procedure-type codes to filter by. This is TED's COMPLETE filterable procedure-type vocabulary (all 18 codes; first established cycle 836, updated cycle 1533, re-verified live cycle 2609: excluding all 18 codes from a search still returns 0 TED notices: the 8 modern eForms codes, 9 legacy pre-2023 single-character codes TED still accepts, plus comp-tend -- a real eForms code for public-passenger-transport competitive tendering under Regulation 1370/2007 that cycle 836's probe missed). Leave empty for all. Server-side filter, same OR-group as noticeTypes. Two upstream quirks: there is no \"exp-int-rest\" code (TED rejects it), and the value \"7\" DOES appear in the output 'procedureType' field on some older notices but TED's expert search refuses it as a filter value, so it cannot be selected here. Most notices older than ~2014 carry no procedure type at all. NINE of the 18 are HISTORICAL-ONLY: the legacy single-character codes 4, 9, V, E, Z, 6, A, F and 8 are still accepted and still match older notices (25,624 / 26,290 / 14,465 / 3,792 / 1,007 / 45 / 351 / 189 / 400 respectively since 2023-01-01) but every one had 0 notices published in the last 365 days (measured live cycle 2852, 2026-11-07, re-proved live and unchanged cycle 3188, 2026-11-14 and again cycle 3524, 2026-11-21) — the eForms cutover dried them up. Selecting only legacy codes needs \"publicationDateFrom\" set to an older date; publishedWithinDays maxes out at 365 and cannot reach them. The Actor warns about this at run start instead of just returning 0 rows. Every option count in this dropdown is an all-time TED total measured live on 2026-11-21 (cycle 3524); the live codes grow daily and the legacy ones drift slowly downward as TED prunes pre-2023 notices from its index, so treat them as of that date.",
       "editor": "select",
       "default": [],
       "items": {
@@ -104,24 +104,24 @@
           "comp-tend"
         ],
         "enumTitles": [
-          "Open procedure (5,514,283 notices)",
-          "Restricted procedure (272,065)",
-          "Negotiated with prior call for competition (347,731)",
-          "Negotiated without prior call for competition (218,760)",
-          "Competitive dialogue (16,857)",
-          "Other, single stage (30,716)",
-          "Other, multiple stages (8,256)",
-          "Innovation partnership (1,319)",
-          "Legacy pre-eForms code 4 (170,522) - TED publishes no label for it",
-          "Legacy pre-eForms code 9 (155,269) - TED publishes no label for it",
-          "Legacy pre-eForms code V (78,038) - TED publishes no label for it",
-          "Legacy pre-eForms code E (23,813) - TED publishes no label for it",
-          "Legacy pre-eForms code Z (9,541) - TED publishes no label for it",
-          "Legacy pre-eForms code 6 (4,255) - TED publishes no label for it",
-          "Legacy pre-eForms code A (2,633) - TED publishes no label for it",
-          "Legacy pre-eForms code F (1,183) - TED publishes no label for it",
+          "Open procedure (5,565,282 notices)",
+          "Restricted procedure (274,803)",
+          "Negotiated with prior call for competition (355,066)",
+          "Negotiated without prior call for competition (221,267)",
+          "Competitive dialogue (16,922)",
+          "Other, single stage (33,420)",
+          "Other, multiple stages (9,007)",
+          "Innovation partnership (1,326)",
+          "Legacy pre-eForms code 4 (166,797) - TED publishes no label for it",
+          "Legacy pre-eForms code 9 (152,806) - TED publishes no label for it",
+          "Legacy pre-eForms code V (76,674) - TED publishes no label for it",
+          "Legacy pre-eForms code E (23,592) - TED publishes no label for it",
+          "Legacy pre-eForms code Z (9,458) - TED publishes no label for it",
+          "Legacy pre-eForms code 6 (4,076) - TED publishes no label for it",
+          "Legacy pre-eForms code A (2,558) - TED publishes no label for it",
+          "Legacy pre-eForms code F (1,174) - TED publishes no label for it",
           "Legacy pre-eForms code 8 (854) - TED publishes no label for it",
-          "Competitive tendering, public passenger transport (Reg. 1370/2007 art. 5(3)) (3,084)"
+          "Competitive tendering, public passenger transport (Reg. 1370/2007 art. 5(3)) (3,175)"
         ]
       }
     },
