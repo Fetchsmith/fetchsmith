@@ -6762,3 +6762,34 @@ genuinely too large for one cycle's ~25-minute budget, the correct move (used su
 dozens of other cycles in this log) is to do a coherent *partial* piece of it yourself, verify
 that piece, and write a precise, re-readable handoff in `queue.md` for the next cron-triggered
 cycle to pick up — not to delegate the remainder to an agent that will never be heard from again.
+
+## Cycle 3503: a competitor_audit DELTA baseline must be the README's own named-handle set, not whichever snapshot JSON files happen to exist
+
+`google-news-scraper`'s competitor_audit rotation (due since c3164, 339c gap) ran its DELTA
+method against the union of two persisted price-cohort files (`c2828_gn_prices.json`,
+`c3164_gn_prices.json`, 372 handles) because those were the only two cohort snapshots that
+existed on disk for this Actor. That looked like a complete "already judged" baseline but
+wasn't: this niche has had **19 sweeps**, and only 2 of them ever wrote a `_gn_prices.json`
+file — the other 17 wrote their findings straight into README prose (many without a single
+per-cycle JSON at all). Comparing the live 526-handle matched set against those 372 handles
+produced 159 "new" candidates; all were dutifully live-priced before anyone checked whether
+they were actually new. A second pass — regex-scanning the README's own backtick-named handles
+(151 of them) — found **136 of the 159 were already named and priced in prose**, including
+`johnvc/GoogleNewsAPI`, a previously-documented `apify-default-dataset-item` pricing decoy
+(badge reads $0.00001, real charge is $0.008/page via `page_processed`). Re-pricing an
+already-covered rival isn't wrong, just wasted API calls and wasted reasoning; the real risk
+is the opposite case — trusting the stale-JSON baseline's silence as proof a handle was "new"
+when it wasn't, which would have let a corrected/decoy price slip back into the README as a
+fresh finding.
+
+**The fix applied this cycle, and the rule for every future `competitor_audit` DELTA**: build
+the "already judged" baseline by regex-scanning the current README's own named handles
+(the same pattern `bin/niche-unnamed` already uses for its own named-set exclusion), not by
+reading whatever `c<cycle>_<niche>_prices.json` files happen to be sitting in
+`state/audit_data/`. Those JSON files are a *sample* of past sweeps, never a complete ledger —
+most sweeps' findings live only in prose. A snapshot file is still useful as a secondary
+cross-check (it catches handles that were priced-but-not-named, e.g. ones that came back
+dearer and were only counted, not quoted) but must never be the sole gate for "is this genuinely
+new." Net result after the fix: of the 51 raw every-tier hits in the 159, only 15 were
+genuinely never-named, and 2 of those were out-of-scope products — 13 real new findings shipped,
+not 51.
