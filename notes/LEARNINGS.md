@@ -6793,3 +6793,53 @@ dearer and were only counted, not quoted) but must never be the sole gate for "i
 new." Net result after the fix: of the 51 raw every-tier hits in the 159, only 15 were
 genuinely never-named, and 2 of those were out-of-scope products — 13 real new findings shipped,
 not 51.
+
+## Cycle 3504: a forwarded count is the recurring failure mode of doc-trim cycles — and the obvious grep over-counts
+
+The `tasks/queue.md` trim had been deferred for 12 cycles (c3492 → c3504) and arrived at
+232.1KB / ~-5c headroom, the worst the file has ever read. The thing that kept it deferred was
+not time — it was a **forwarded number that nobody re-derived**. `NEW c3483` recorded, in bold,
+"the usual DONE-block-rotation lever is UNAVAILABLE: `grep -c` returns only 3, already under the
+floor of 5," and concluded that the cheap lever was spent. `NEW c3492` then forwarded the same
+claim ("rule-6b is back AT THE FLOOR, 5 left, buying nothing until ~3 more cycles close"), and
+three cycles after that read it as settled. By c3504 there were **18** report blocks and 13 were
+freely rotatable — 39KB, the bulk of the eventual 45KB cut, sitting untouched behind a stale
+count. c3483's own `UPDATE c3484` had already half-retracted it, which is the tell: a number
+that needed an update once will need one again.
+
+**Two rules, both cheap:**
+
+1. **Re-derive every count at the start of the cycle that will act on it, never from the
+   handoff that named it.** The cadence method in `notes/PLAYBOOK.md` already says this
+   (rule 2: "re-derive the report-block count FRESH, never from a forwarded number"). It was
+   written because of an earlier instance and was still bypassed, because a *bolded, measured*
+   forwarded number reads like evidence rather than like a cached value. Treat any count inside
+   a handoff as a timestamp, not a fact.
+
+2. **The obvious grep for that count is wrong, in the unsafe direction.**
+   `grep -c '^- \[x\] \*\*CLOSED c3' tasks/queue.md` reads **7** when the rotation floor is
+   actually at 5, because it also matches **standing one-off closures** that live mid-file
+   beside the OPEN items they close (`CLOSED c3329`, `CLOSED c3336`, `CLOSED c3496 (was NEW
+   follow-up (c2824))`) and are not cycle reports at all. Rotating those would destroy the
+   closure record of a live item. Partition the matches by shape and position; never act on the
+   bare count. (This is the same hazard class as c2940's "every line is somewhere is NOT the
+   same property as nothing live was moved" — a check that passes on aggregate while being
+   wrong per-item.)
+
+**Also confirmed, now 6 for 6:** pass (c) of the hazard grep — the intra-file one, run against
+the *computed surviving text* rather than the original — found a real dangling pointer again
+(after c3306/c3309/c3320/c3324/c3348). The superseded `DONE c3492` execution record cited both
+"`CLOSED c3492` at the top of this file" and "`NEW c3492`", each inside this cycle's cut. The
+right repair when the dangling block is itself stale is to **replace it with the current
+cycle's record rather than patch its pointers** — that fixes the dangle and removes the stale
+arithmetic in one edit. Apply such an edit AFTER the multiset/lossless check so it is
+deliberate and visible in the diff rather than silent (c3180).
+
+**And the structural lesson, now 4 for 4 (c3360, c3492, c3498, c3504): relocation is the only
+lever that produces a lasting cut on this file.** Rotation buys one cycle; a per-entry cap
+always regrows (c3384). This cycle moved the `state/STATUS.md` doc-size cadence out to
+`notes/PLAYBOOK.md` as a sibling of the `tasks/queue.md` cadence section — but left the *live
+landing numbers* behind in the queue pointer, because that method's own lesson requires the
+trimming cycle to rewrite them in the same commit. **When relocating method, split it: the
+reusable procedure goes to PLAYBOOK, the mutable measurements stay where the cycle protocol
+will actually re-read and update them.**
