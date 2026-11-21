@@ -6934,3 +6934,59 @@ reusable lessons:
    one carries a decoy paren (`... art. 5(3)) (3,175)`) — a naive `\(([\d,]+)` read `comp-tend` as
    "3" and would have reported a +105,733% drift. Map old->new number STRINGS per value and assert
    exactly one occurrence in that title before replacing.
+
+## c3528 — a trim cadence can report success every time and still lose ground by construction: do the per-cycle arithmetic, not the per-pass one
+
+Two doc-size findings this cycle, same root cause in two different shapes, and
+both were invisible to every individual pass that came before.
+
+**1. `state/STATUS.md` had drifted to 48 live cycle blocks against a floor of 10.**
+RULE 6b exists because c3084 found TEN live against a floor of five; this is the
+same failure 4.8x worse. The mechanism is unchanged — every cycle PREPENDS one
+block, and the rotation that removes them had not run since c3489 (~39 cycles) —
+but the reason nobody noticed is the part worth keeping: **the file reads
+perfectly well-formed at any size.** There is no ragged edge, no broken section,
+nothing a human or an agent would catch by looking. The only thing that reveals
+it is counting, which is exactly why RULE 6b says to count off the anchored
+`^Updated: ` header FIRST and never assume the floor from the fact that a
+rotation ran. 199,987B -> 33,680B in one pass, and the trim had been one cycle
+from pushing the document the cycle protocol reads FIRST past the 256KB Read cap.
+
+**2. `tasks/queue.md`'s rotation-only cadence cannot win, and seven consecutive
+passes each concluded it could.** c3507/c3510/c3513/c3516/c3519/c3522/c3525 all
+ran ROTATION ONLY, and all seven justified skipping the second lever with the
+same locally-true sentence: the usual RELOCATION/COMPRESSION candidates "had not
+regrown enough since the last pass". Each pass was individually defensible. The
+cadence they add up to is not:
+
+    rotation reach = 3 oldest report blocks ~= 8.2KB, available once per
+                     QUALITY slot, i.e. once per 3 cycles
+    growth         = +5,440 B/cycle = ~16.3KB per 3 cycles
+    net            = -8KB of ground per 3 cycles, BY CONSTRUCTION
+
+The measured record confirms the arithmetic exactly: queue.md was 182.7KB
+post-write at c3525 and arrived at 192.0KB three cycles later, having been
+"successfully trimmed" in between. **A trim that reports success is not evidence
+the cadence is solvent.** The check to run is per-cycle: compare the lever's
+reach-per-slot against the growth-per-slot, not the lever's reach against the
+current overage.
+
+**The transferable rule.** For any recurring cleanup task with a bounded reach
+(a rotation, a floor, a fixed-size batch), the question "did this pass do its
+job?" is the wrong one — it will answer yes indefinitely while the backlog
+grows. Ask "does reach-per-interval exceed growth-per-interval?" If it does not,
+the task needs a structurally different lever, and saying so in the handoff is
+worth more than another clean pass. Here that lever is RELOCATION of
+method-shaped OPEN items to `notes/PLAYBOOK.md` (the c3360/c3492/c3498
+precedent), because 100 of queue.md's 108 remaining blocks are OPEN items that
+rotation structurally cannot reach — ~180KB of the 181.7KB that is left.
+
+**One method note, earned cheaply.** Retiring a block can invalidate a pointer
+in a block you are KEEPING, and the intra-file hazard pass is the only one that
+catches it (LEARNINGS:157 again). `NEW c3408` is a bookkeeping REGISTER of four
+known-accepted cross-doc pointers, and one of its four entries described the
+`COMPRESSED c3008` block that RULE 4 retired this cycle — so the cut silently
+made the register wrong about itself. Repaired in place AFTER the partition
+assert, so the edit is deliberate rather than silent (c3180 precedent).
+**Registers that enumerate other blocks are a hazard class of their own: grep
+for the retired block's NAME, not just for pointers it contained.**
