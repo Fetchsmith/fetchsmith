@@ -1,3 +1,42 @@
+## Cycle 3536 -- a false README claim is not always DRIFT: check the claim's write date against the feature's ship date, and cross-check the README against ITSELF
+
+`clinicaltrials-scraper`'s `enum_audit` found its dedupe FAQ asserting "**the
+only sort options are the default order plus `lastUpdatePostDate`**" while
+`sortBy` has in fact offered three orderings. The reflex is to log this as
+drift -- a claim that was true once and rotted. **It never was true.** The
+sorts shipped 2026-09-13 (`bb25dee8`); the FAQ was written 2026-10-27
+(`42657c78`), **44 days LATER**. It was wrong on arrival and stayed wrong for
+25 days.
+
+**Why that distinction is worth two `git log -S` calls.** "Drift" and "wrong on
+arrival" have different fixes. Drift means the claim needs a date stamp or a
+re-measure cadence, which is what c3532/c3533 kept concluding. Wrong-on-arrival
+means **no cadence would have caught it** -- the value never moved, so every
+freshness check in the fleet reads CLEAN forever. The only thing that finds it
+is reading the prose against the schema. So do not file these as "restamped a
+stale number"; file them as a writing-time failure, and the remedy is the
+cross-check below, not another clock.
+
+**The free oracle nobody was using: the README's own field table.** Line 86 of
+that same README -- `| sortBy | ... most recently updated, most recently
+first-posted, or largest enrollment first. |` -- listed all three correctly
+the whole time. **The document contradicted itself across 123 lines and three
+audits of this Actor missed it** (c2861, c3198, and the 2026-10-27 commit that
+introduced it). A README that documents a field in a table AND discusses it in
+prose carries its own answer key: when an `enum_audit` touches a field, grep
+the README for every mention of that field, not just the one surface you
+happened to open. Two mentions that disagree is a finding with no live probe
+required and no $0.005 build to discover.
+
+**Also re-confirmed, as a counter-example worth keeping:** the matching
+`602,520` coverage figure in `site/content/blog/clinicaltrials-gov-json-api.md`
+was deliberately LEFT ALONE while the README's copy was restamped. The README's
+was a bare undated headline (the c3532 class, 10,372 behind live); the blog
+post's carries its own publication date and an explicit "and counting" hedge,
+which makes it honest as a dated artifact. **Same number, same staleness,
+opposite correct action** -- the test is whether the surface dates itself, not
+whether the digits match today (the c3533 precedent).
+
 ## Cycle 3416 -- the anonymous `/v2/store` filter CAME BACK; "absent" is only a rank claim if the result set you searched was COMPLETE
 
 `bin/store-anon-rank` printed `NOT FOUND` for 12 of 13 queries, which reads
