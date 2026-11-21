@@ -1401,11 +1401,12 @@ if (nctIds.length) {
     await seedBaseline();
 } else {
     // Fleet-wide pattern (federal-register-scraper's `seen`, court-records-scraper's
-    // `seenIdsThisRun`): a within-run duplicate guard, independent of watchMode. `sortBy` can be
-    // set to `LastUpdatePostDate:desc` (SORT_VALUES above), and ClinicalTrials.gov re-indexes on
-    // its own daily cadence -- a study whose lastUpdatePostDate ticks over to "today" mid-walk can
-    // jump to the front of that sort order between two of this run's own page fetches, which
-    // shifts the whole cursor and can hand back a study this run already paged past and paid for.
+    // `seenIdsThisRun`): a within-run duplicate guard, independent of watchMode. BOTH date sorts
+    // in SORT_VALUES above (`LastUpdatePostDate:desc`, `StudyFirstPostDate:desc`) churn on
+    // ClinicalTrials.gov's own daily batch cadence -- measured live 2026-11-21, 1052 records were
+    // re-posted and 142 newly first-posted on the previous day -- so a study arriving at the front
+    // of either sort mid-walk, between two of this run's own page fetches, shifts the whole cursor
+    // and can hand back a study this run already paged past and paid for.
     // This is PPE (credits_per_result:1), so a repeat is a real double charge, not just a
     // duplicate row. A plain default-sort walk (verified live: two fresh fetches of the same
     // query, no token, returned byte-identical order) is effectively immune, but the walk cannot
