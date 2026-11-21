@@ -154,23 +154,20 @@ if (input.candidateName === undefined && searchMode === 'candidates'
   log.info('No candidateName or state/office/party/electionYear filter set -- searching the demo value "Warren". Set candidateName, or any of those filters, to search for something else.');
 }
 
-// `committee_id` is a fast, indexed filter on Schedules B and E but reliably 504s on Schedule A
-// when SORTED by -contribution_receipt_date (the order this Actor always requests) for the
-// largest pass-through committees -- re-measured live cycle 2873, NOT the blanket "Schedule A
-// times out on committee_id" the cycle-410 comment claimed: an unsorted/default-order probe on
-// even the single biggest filer on record (ActBlue, C00401224, 100M+ matches in-period) answers
-// in well under 1s, and the SORTED request also succeeds fast (1-2.4s) on an ordinary large
-// committee (C00744946: 177,985 rows; C00019331: 36,604 rows) -- it is only the sorted request
-// against a mega pass-through committee (ActBlue-scale) that still 504s (confirmed, 15.9s to
-// timeout). There is no cheap way to tell "ordinary large" from "ActBlue-scale" before issuing
-// the real sorted request without an extra probe call on every contributions-mode run, so this
-// stays Schedules B/E only until that's built -- see queue.md follow-up. `candidates` has no
-// committee_id concept.
-const committeeId = committeeIdInput && (searchMode === 'disbursements' || searchMode === 'independentExpenditures')
-  ? committeeIdInput
-  : '';
+// `committee_id` is a fast, indexed filter on every schedule this Actor reads. It was restricted
+// to Schedules B and E from cycle 410 to cycle 3548 because the SORTED Schedule A request (by
+// -contribution_receipt_date, the order this Actor always requests) reliably 504'd for the largest
+// pass-through committees -- measured 15.9s to timeout on ActBlue (C00401224) as recently as cycle
+// 2873. That upstream limitation is GONE, re-verified cycle 3548 with a full keyset-paginated walk
+// (not just a page-1 probe) using this Actor's own cursor logic: ActBlue, C00401224, 106.0M matches
+// in-period, 10 consecutive pages / 1,000 rows deep, every page HTTP 200 in 1.58-1.97s with no
+// degradation as cursor depth grew. Cross-checked on WinRed (C00694323, 48.0M matches), same
+// result. So the "no cheap way to tell ordinary-large from ActBlue-scale before issuing the real
+// request" problem the old comment describes no longer needs solving -- both answer fast.
+// `candidates` is still excluded: it has no committee_id concept at all.
+const committeeId = committeeIdInput && isTxnMode ? committeeIdInput : '';
 if (committeeIdInput && !committeeId) {
-  log.warning(`Ignoring committeeId "${committeeIdInput}": it is only supported in searchMode "disbursements" and "independentExpenditures" (the FEC's Schedule A endpoint can time out on this filter, sorted by date, for the largest pass-through committees).`);
+  log.warning(`Ignoring committeeId "${committeeIdInput}": it only applies in searchMode "contributions"/"disbursements"/"independentExpenditures", and this run is in "${searchMode}" mode (candidates have no committee ID).`);
 }
 for (const [field, value, modes] of [
   ['recipientName', recipientName, ['disbursements']],
@@ -220,21 +217,33 @@ if (searchMode === 'candidates') {
     log.warning(`Ignoring contributionDateTo "${contributionDateTo}": it only applies in searchMode "contributions"/"disbursements"/"independentExpenditures", and this run is in "candidates" mode.`);
   }
 }
-// The FEC's Schedule A endpoint (contributions mode) does a near-full-table scan when none of its
-// narrowing filters are set -- confirmed live (run `FDFhr3vZKyXrgJ3Ru`, cycle 856): it 504s on plain
-// curl and blows fecGet's 30s request budget on page 1, so an unfiltered run would otherwise fail
-// anyway with a bare `Timeout awaiting 'request' for 30000ms` and no hint why. Fail fast with a
-// named remedy instead of issuing the doomed request. Kept conditional on this exact emptiness
+// ORIGINAL PREMISE RETIRED cycle 3548: from cycle 856 to 3547 this guard existed because the
+// unfiltered Schedule A scan 504'd on page 1 (confirmed live, run `FDFhr3vZKyXrgJ3Ru`, c856; still
+// 504 at 15.68s as late as c3209). It no longer does -- re-verified c3548 with a full keyset walk
+// under this Actor's own cursor logic: 20 consecutive pages / 2,000 rows deep, every page HTTP 200
+// in 1.58-2.39s, flat with depth. The guard is KEPT anyway, on a different and now-measured
+// rationale: 208M matches is orders of magnitude beyond what any run can deliver, so an unfiltered
+// run is always a misconfiguration rather than a browse, and FEC returns the trailing NULL-date
+// block FIRST on this query (see the sort_nulls_last note in the page walk), so the rows a buyer
+// would actually be charged for are the ~300+ dateless ones -- the worst possible sample. Failing
+// at $0 with a named remedy beats charging for that. Kept conditional on this exact emptiness
 // test -- an unconditional "narrow your filters" message is the unreachable/unconditional-remedy
 // defect shape cycles 836/837 shipped fixes for across 4 Actors.
+// `committeeId` counts as a narrowing filter here as of cycle 3548, when it became usable in this
+// mode (see the committee_id note above). It must be listed: without it, a committeeId-only
+// contributions run would be accepted by the gate above and then rejected by this one, advising the
+// buyer to set a filter they had already set. Verified narrowing and fast to 1,000 rows deep even
+// on the single largest filer on record.
 if (searchMode === 'contributions' && !donorName && !donorEmployer && !donorOccupation && !donorCity
-  && !donorZip && !state && minAmount === undefined && maxAmount === undefined
+  && !donorZip && !state && !committeeId && minAmount === undefined && maxAmount === undefined
   && !contributionDateFrom && !contributionDateTo) {
   await failInput(
-    'searchMode "contributions" with no narrowing filter set matches roughly 206 million rows -- '
-    + "the FEC's own API times out serving page 1 of that scan, so this run would fail anyway after "
-    + 'burning its request budget. Set at least one of: donorName, donorEmployer, donorOccupation, '
-    + 'donorCity, donorZip, state, minAmount, maxAmount, contributionDateFrom, contributionDateTo.',
+    'searchMode "contributions" with no narrowing filter set matches roughly 208 million rows -- '
+    + 'far more than any one run can deliver, and the first few hundred rows the FEC returns for '
+    + 'that unfiltered scan all have a NULL contribution date (measured cycle 3548), so they are '
+    + 'the least useful sample of the table you could be charged for. Set at least one of: '
+    + 'donorName, donorEmployer, donorOccupation, donorCity, donorZip, state, committeeId, '
+    + 'minAmount, maxAmount, contributionDateFrom, contributionDateTo.',
   );
 }
 const includeTotals = input.includeTotals ?? true;
@@ -908,6 +917,13 @@ try {
         contributor_city: donorCity,
         contributor_zip: donorZip,
         contributor_state: state,
+        // ADDED cycle 3548 alongside lifting the committeeId gate above. This key did not exist
+        // here before, because the gate meant `committeeId` was always '' in this mode -- so
+        // relaxing the gate WITHOUT adding this line made the filter silently vanish: the run was
+        // accepted, committeeId satisfied the narrowing-filter guard, and then an unfiltered
+        // 208M-row scan was walked and every row charged (caught by the local test, not by
+        // reasoning). Exactly the blank-filter-drop hazard class in notes/PLAYBOOK.md.
+        committee_id: committeeId,
         min_amount: minAmount,
         max_amount: maxAmount,
         min_date: contributionDateFrom,
@@ -916,7 +932,15 @@ try {
         ...cursor,
         per_page: perPage,
         sort: '-contribution_receipt_date',
-        sort_nulls_last: 'true', // see the schedule_b note above -- same NULLs-first defect
+        // See the schedule_b note above -- same NULLs-first defect. CAVEAT measured cycle 3548:
+        // on schedule_a this parameter is currently a NO-OP. An unfiltered period-bound request
+        // returns a byte-identical body and `last_indexes` whether `sort_nulls_last=true` is sent
+        // or omitted entirely, and either way the NULL-date block comes FIRST, not last. Left in
+        // place deliberately: it is harmless, it is still honoured on schedule_b/e, and the
+        // DATA-LOSS half of the c856 fix (echoing `sort_null_only` back in the cursor so the walk
+        // continues past the null block instead of terminating at it) still works -- verified at
+        // c3548, the 2,000-row walk crossed out of the null block into dated rows on page 4.
+        sort_nulls_last: 'true',
       })
       : await fecGet('/candidates/', {
         q: candidateName,

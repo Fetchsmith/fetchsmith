@@ -63,7 +63,7 @@
     "committeeId": {
       "title": "Committee ID (FEC)",
       "type": "string",
-      "description": "Only return rows filed by this committee, e.g. \"C00744946\". Disbursements and independent expenditures modes only — the FEC's Schedule A endpoint can time out on this filter (sorted by date) for the largest pass-through committees, so it is ignored (with a warning) in contributions mode.",
+      "description": "Only return rows filed by this committee, e.g. \"C00744946\". Works in contributions, disbursements and independent expenditures modes (ignored with a warning in candidates mode, which has no committee ID). In contributions mode this also counts as a narrowing filter on its own, so committeeId alone is a valid run.",
       "editor": "textfield",
       "default": ""
     },

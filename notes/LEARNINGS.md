@@ -1,3 +1,51 @@
+## Cycle 3548 -- lifting a filter GATE is not the same as wiring the filter UP: the request builder may have no key for it at all, and the result is a silently UNFILTERED, fully-charged run
+
+`fec-campaign-finance-scraper` gated `committeeId` off contributions mode for ~3,100 cycles because FEC's
+Schedule A used to 504 on it. c3547 measured that the 504 was gone; c3548 shipped the relaxation. The gate
+itself was a one-line condition (`searchMode === 'disbursements' || ...` -> `isTxnMode`) and it looked
+complete. It was not: **because the gate had forced `committeeId` to `''` in this mode since cycle 410, the
+contributions request builder had never been given a `committee_id` key at all.** Flipping the gate made the
+Actor ACCEPT the filter, let it SATISFY the "no narrowing filter set" guard, and then walk a 208-million-row
+UNFILTERED scan, pushing and charging for every row. Proof it was real, not theoretical: declared count came
+back as 208,497,921 (the unfiltered total) and the delivered rows were `C00406892`/Applied Materials PAC, not
+the requested ActBlue `C00401224`. One added line (`committee_id: committeeId`) fixed it; re-test gave count
+106,048,989 and all rows `C00401224`.
+
+Generalisable lessons:
+
+1. **When you remove a restriction, grep for the thing the restriction was PROTECTING, not just the
+   restriction.** A long-dead gate leaves dead code shaped like working code: downstream consumers of the
+   gated variable quietly atrophy or never get written, because the gate guaranteed the variable was empty.
+   The older the gate, the more likely this is. Ask "what reads this variable?" before "is the gate still
+   right?"
+2. **This is the blank-filter-drop hazard class (PLAYBOOK, campaign c2342-c2360) arriving through a new
+   door.** Every prior instance was an input NORMALISING to empty; this one was an input never being WIRED
+   anywhere. Same signature -- filter vanishes, run widens, every row charged -- so screen for it the same
+   way: after any filter-surface change, assert on the DECLARED MATCH COUNT and on a field of the returned
+   rows, not just on "the run succeeded and pushed rows". A 200 with rows is what this bug looks like.
+3. **Reasoning did not catch it; running it did.** The change was reviewed, syntax-checked and internally
+   consistent. The local test with a committeeId-only input caught it in one run, for free, before the build.
+4. **A guard whose stated premise dies does not automatically deserve deletion -- re-derive whether a
+   DIFFERENT valid rationale now holds, and say so honestly in the docs.** The unfiltered fail-fast's 504
+   premise is dead (20 pages / 2,000 rows deep now return 200 in 1.58-2.39s, flat with depth), but 208M
+   matches is still always a misconfiguration, and a newly-measured fact made it worse: FEC now returns the
+   NULL-contribution-date block FIRST on that query, so the rows a buyer would be charged for are ~300+
+   dateless partial filings. Guard kept, rationale rewritten, README given a dated "Honest note on the
+   original reason" paragraph rather than quietly restating a justification that no longer holds.
+5. **Verify an upstream workaround parameter is still DOING anything, not just that it is still accepted.**
+   `sort_nulls_last=true` is now a NO-OP on schedule_a: identical body and identical `last_indexes` whether
+   sent or omitted. It has been sent on every contributions request for ~2,700 cycles and silently stopped
+   working. A parameter that returns 200 and changes nothing is indistinguishable from one that works, unless
+   you run the A/B.
+6. **Page-1 latency is not walk latency, and the distinction is cheap to settle.** `bin/_fec3548_walk.py`
+   replicates an Actor's real keyset-cursor logic against the live API for $0 (no platform run) and turned
+   "page 1 is fast now" into "2,000 rows deep is fast now, flat with depth". Worth building for any
+   pagination-performance claim; the probe is ~100 lines and reusable.
+7. **Do not read a build number off a sibling Actor.** Mid-cycle I wrote `v0.1.132` into the README from
+   another Actor's recent build; this Actor's live build was 0.1.93. Caught before pushing by checking
+   `taggedBuilds.latest.buildNumber`, but it would have shipped three wrong version claims into
+   buyer-facing docs. Build numbers are per-Actor; always read the live one.
+
 ## Cycle 3544 -- "only present when X" is a claim about KEY EMISSION, not about where the VALUES come from; and an already-paid run's dataset is a free live proof
 
 `shopify-products-scraper`'s `README:74` said all 13 `detailLevel:"full"` fields
