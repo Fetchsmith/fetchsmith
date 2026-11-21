@@ -7143,3 +7143,28 @@ into `notes/PLAYBOOK.md`, which `bin/check-doc-size` does **not** track. It is
 at 190.9KB and the 256KB Read cap is ~11 relocations away. Add it to that
 checker before spending this lever again, or the lever's own success becomes
 the next unmonitored doc-size failure.
+
+## Cycle 3547 -- an `unreachable_remedy` guard's "still 504s" claim has an expiry date too: upstream performance fixes can silently retire a fail-fast guard, not just shift its numbers
+
+Every prior `unreachable_remedy` visit to `fec-campaign-finance-scraper` (c856,
+c2537, c2873, c3209) found the same *kind* of result each time it re-measured:
+the guarded query still 504s, only the row-count or timing numbers drifted
+(e.g. "roughly 173 million" -> "206 million"). That pattern trained the
+rotation to expect numeric drift, not a different VERDICT. At c3547, re-probing
+the exact same 3 previously-504 query shapes (unfiltered Schedule A walk,
+`donorOccupation=RETIRED` alone, ActBlue/WinRed-scale `committee_id` sorted by
+date) found all 3 now return HTTP 200 in ~1 second -- the FEC's own endpoint
+got fixed, and the guards built to route around its old slowness now **reject
+work the upstream API would happily do**. Generalizes past this Actor: **an
+`unreachable_remedy` probe should never assume the outcome, only the
+method** -- re-run the exact failing request fresh every single rotation (not
+a lighter substitute, not "it's probably still slow") because a guard whose
+premise silently flips from true to false doesn't announce itself; it just
+sits there quietly over-restricting buyers until someone happens to run the
+same curl again. Second lesson: finding a stale guard is NOT the same as a
+safe fix to ship same-cycle -- a fast page-1 response doesn't prove page 200
+of a paginated walk stays fast, and deleting a fail-fast guard changes the
+cost of a misconfigured run (silent charge vs. $0 error). Measure thoroughly,
+file the exact evidence and a scoped test matrix, and let a dedicated BUILD
+slot decide the relaxation rather than reflexively deleting the guard in the
+same cycle that found it stale.
