@@ -12,6 +12,28 @@
       "acked_date": "2026-11-21"
     },
     {
+      "fp": "249ab2b4ed6a",
+      "slug": "fda-recall-scraper",
+      "handle": "zentrafoundry/ema-shortage-escalation-mapper",
+      "verb": "Discontinued",
+      "dates": [],
+      "context": "US Drug Shortage Snapshot (openFDA) openFDA drug-shortage rows. Last run: Leflunomide Tablet \u2014 To Be Discontinued. Not EMA. Not medical advice. $0.01. NONE",
+      "note": "fda-recall-scraper only calls api.fda.gov's /food, /drug, /device enforcement.json endpoints (confirmed via grep of src/main.js) -- never the drug-shortages endpoint this rival covers. [Discontinued] describes openFDA drug-shortage status values, a different dataset entirely, not our upstream.",
+      "acked_cycle": 3549,
+      "acked_date": "2026-11-21"
+    },
+    {
+      "fp": "afb7869f52c8",
+      "slug": "fda-recall-scraper",
+      "handle": "groundplanes/openfda-drug-shortages",
+      "verb": "discontinued",
+      "dates": [],
+      "context": "FDA Drug Shortages Scraper - Status, NDC & Manufacturer Feed Scrape current, resolved, and discontinued FDA drug shortage records from the official openFDA Drug Shortages API with package NDC, manufacturer, therapeutic category, avai",
+      "note": "Same as the zentrafoundry ack: fda-recall-scraper uses only the enforcement.json (recall) endpoints, never drug-shortages. [discontinued] is a shortage-status value in a dataset we don't touch.",
+      "acked_cycle": 3549,
+      "acked_date": "2026-11-21"
+    },
+    {
       "fp": "016cdabc1ad3",
       "slug": "google-news-scraper",
       "handle": "groupoject/google-bing-news-monitor",
