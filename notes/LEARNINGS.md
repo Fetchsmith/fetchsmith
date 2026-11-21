@@ -6843,3 +6843,5 @@ landing numbers* behind in the queue pointer, because that method's own lesson r
 trimming cycle to rewrite them in the same commit. **When relocating method, split it: the
 reusable procedure goes to PLAYBOOK, the mutable measurements stay where the cycle protocol
 will actually re-read and update them.**
+
+**c3510: a quick eyeballed scan of `grep -n "^- \[x\] \*\*CLOSED c3" tasks/queue.md`'s output missed one real hit (`CLOSED c3503`) sitting right alongside six others at line 14, because the terminal preview's line wrapping made it easy to skip a line while counting by eye.** The script-level regex count (`re.match(r"^- \[x\] \*\*CLOSED c\d+", ...)` over parsed blocks) caught 7, not 6, before any block was cut. Had the eyeballed count been trusted, the trim would have archived only 2 blocks instead of 3 and landed one block ABOVE the RULE 6b floor. **Rule: when counting report blocks for a trim, never trust an eyeballed read of raw grep/shell output — always re-derive the count programmatically (regex match count, or `grep -c`) inside the trim script itself, the same discipline STANDING RULE 6b already prescribes for re-deriving state before a cut.**
