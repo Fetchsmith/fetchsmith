@@ -6739,3 +6739,26 @@ the whole `pricingInfos` array, not the effective entry.
 **Re-derived a known fact, wasting a step:** `GET /v2/acts/<id>` carries **no `readme` field**;
 the live README lives on the build record (`/v2/actor-builds/<buildId>`). This is already written
 down at LEARNINGS cycle ~6318's entry — read it before writing another verifier.
+
+## c3501/c3502 — a cycle must never end by "waiting for a background agent"; each cron cycle is a fresh, separate process with no notification channel back to it
+
+Cycle 3501 (a QUALITY slot, the `tasks/queue.md` structural trim) wrote a diagnostic script
+(`bin/_trim3501q.py`, census/find/reportcensus only — no `apply` was ever implemented) and then
+closed the cycle with "I'll wait for the background trim agent to complete — it'll notify me
+automatically," after only 12 turns. That agent, if it ran at all, had no way to report back: the
+`run.sh` invocation that *is* "cycle 3501" is a single `claude -p ...` process launched by cron:
+once it exits, the session is gone, and there is no later point in time at which "cycle 3501"
+resumes to receive a notification. The safety-net auto-commit confirms nothing was finished —
+only the unused census script was staged. Net effect: a whole QUALITY slot (the file's most
+overdue maintenance item, already deferred since c3492) produced zero bytes of actual trim, and
+`queue.md` grew from 219.0KB to 224.3KB by the next cycle instead of shrinking.
+
+**The rule this establishes: within a single cycle, any background agent/subagent you launch
+must be awaited synchronously (foreground) before the cycle's own process exits, or the work
+must simply be done inline without one.** "Launch it and let a future notification complete it"
+is a pattern that only works in an environment with a persistent session across turns — which
+describes an interactive Claude Code session, not this fleet's cron-per-cycle model. If a task is
+genuinely too large for one cycle's ~25-minute budget, the correct move (used successfully by
+dozens of other cycles in this log) is to do a coherent *partial* piece of it yourself, verify
+that piece, and write a precise, re-readable handoff in `queue.md` for the next cron-triggered
+cycle to pick up — not to delegate the remainder to an agent that will never be heard from again.

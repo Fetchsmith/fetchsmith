@@ -1,0 +1,252 @@
+[
+ {
+  "handle": "reverential_haw/nih-reporter-grants",
+  "title": "NIH RePORTER Grants \u2014 Projects, Orgs & PIs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Search NIH-funded research projects via the official RePORTER API v2. Filter by organization, fiscal year, keywords, agency, and activity code. Built for university BD and grant intelligence."
+ },
+ {
+  "handle": "cheerful_term/nih-research-grants",
+  "title": "NIH RePORTER Research Grants",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "NIH-funded research projects from RePORTER: project number, title, fiscal year, award amount with direct and indirect costs, organization and location, principal investigators, institute, activity code, dates, abstract and terms."
+ },
+ {
+  "handle": "ahmed_jasarevic/nih-scraper",
+  "title": "NIH RePORTER Scraper [$1.50/1K \ud83d\udcb0] | Grant Data",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.0014,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM",
+   "SILVER"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Scrape NIH RePORTER grants and publications: titles, abstracts, PIs, organizations, funding, award amounts, study sections and COVID-19 flags. $1.50 per 1,000."
+ },
+ {
+  "handle": "maydit/nih-research-funding-lead-monitor",
+  "title": "NIH Research Funding Lead Monitor",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0016,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "DIAMOND",
+   "GOLD",
+   "PLATINUM"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find NIH-funded research by topic, organization and fiscal year. Export public institutional funding signals and track award or project changes without an API key."
+ },
+ {
+  "handle": "yannabadie/pubmed-europepmc-api-mcp",
+  "title": "PubMed & Europe PMC API \u2014 Papers, Emails & PDFs",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "pubmed-article-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): pubmed-article-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Official Europe PMC & PubMed REST API scraper & MCP tool. Extract full untruncated abstracts, author emails, ORCIDs, citations, MeSH terms, NIH/EU grants, NCT trials & free PDF links. $2/1k, free count mode, zero proxy."
+ },
+ {
+  "handle": "grimbles/biotech-clinical-trials-leads",
+  "title": "Biotech & Pharma Clinical Trials Leads Scraper (NIH API)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-lead-extracted",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0068,
+   "SILVER": 0.0056,
+   "GOLD": 0.0044,
+   "PLATINUM": 0.0044,
+   "DIAMOND": 0.0044
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-lead-extracted",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Extract active biotech, pharma, and medtech clinical trial sponsors from the official NIH ClinicalTrials.gov v2 API. Enriches lead sponsor company, trial phase (Phase 1-4), drug/device interventions, central contact emails/phones, principal investigators, and priority score."
+ },
+ {
+  "handle": "quarrylane-data/nys-contract-reporter-bids-scraper",
+  "title": "New York Government Bids & RFPs (NYS Contract Reporter)",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "bid-record",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bid-record,new-bid-monitored",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "New York government bids, RFPs, RFQs and grants from the official NYS Contract Reporter. Filter by keyword, agency, county, category or MWBE/SDVOB goals. Daily new-bids-only monitor for contractors and bid teams. No login."
+ },
+ {
+  "handle": "nathel-enterprise/us-fda-recall-ndc-device-monitor",
+  "title": "US FDA Recall, Drug NDC & 510(k) Device Monitor",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "verified-record",
+  "unit_tiers": {
+   "FREE": 0.0045,
+   "BRONZE": 0.004,
+   "SILVER": 0.0035,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): deep-enrichment,verified-record",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Screen drug NDCs, 510(k) medical devices, or monitor live Class I-III recalls across openFDA Drug NDC, 510(k), Enforcement, and NIH RxNorm APIs. Built for MCP AI agents and scheduled Make, n8n, and Zapier healthcare and supply-chain compliance workflows."
+ },
+ {
+  "handle": "corridordata/sec-8k-nih-enterprise-triggers",
+  "title": "SEC 8-K Executive/M&A Events & NIH Biotech Grant Triggers",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007,
+   "SILVER": 0.006,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Real-time enterprise & biotech B2B sales trigger extractor: SEC 8-K executive changes (Item 5.02), M&A closings (2.01), material contracts (1.01), and NIH SBIR/STTR commercial biotech R&D grant awards."
+ },
+ {
+  "handle": "desastreger/openalex-pubmed-expert-finder-mcp",
+  "title": "Clinical Trials & PubMed Scraper \u2014 PI Emails ($0.50/1k)",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "research-expert-lead",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "undercuts_tiers": [
+   "FREE"
+  ],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): research-expert-lead",
+  "runfee_crossover_rows": null,
+  "every_tier": true,
+  "future_pricing": [],
+  "desc": "Biotech & life-science scraper combining NIH ClinicalTrials.gov v2 and Europe PMC / PubMed. Extracts PI names, direct emails & phones, recruiting sites, NCT IDs, citations & NIH grants. Early-bird $0.50/1k (rises to $1.50/1k). +MCP."
+ },
+ {
+  "handle": "pandadad0214/sbir-sttr-topic-radar",
+  "title": "SBIR/STTR Topic Radar: Open Topics, Deadlines & DoD Q&A",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_event": "topic-found",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "undercuts_tiers": [],
+  "runfee": null,
+  "runfee_label": "has per-row event(s): topic-found",
+  "runfee_crossover_rows": null,
+  "every_tier": false,
+  "future_pricing": [],
+  "desc": "Find open SBIR and STTR topics from every agency (DoD branches, NIH, NASA, NSF, DOE, USDA, DHS...) by keyword. Full topic text, close dates, days left, topic numbers, official links, DoD Q&A status and technical contacts; Excel and CSV."
+ }
+]
