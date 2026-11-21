@@ -107,9 +107,11 @@ if (siteSuffix) warnFixedFeeds('siteFilter/excludeSites were');
 
 // Date filtering is done by Google itself, via search operators appended to the query — no extra
 // requests and no client-side discarding of articles the customer already paid to fetch.
-// Only the h/d/y units work on the RSS search endpoint: `when:1m` and `when:12m` return an EMPTY
-// feed rather than an error (verified live, cycle 204), so the enum below deliberately offers 30d
-// and 1y instead of "1 month"/"1 year in months".
+// Only the h/d/y units work on the RSS search endpoint: `when:1m` and `when:12m` return a
+// NEAR-EMPTY feed rather than an error, so the enum below deliberately offers 30d and 1y instead
+// of "1 month"/"1 year in months". Cycle 204 measured these as literally empty; re-measured live
+// 2026-11-21 across 4 queries they return 1-3 (1m) and 0-1 (12m) items vs 100 for 30d/1y, so the
+// reject is still trivial but the feed is no longer strictly empty — don't test for 0 exactly.
 const VALID_PERIODS = ['1h', '6h', '12h', '1d', '7d', '30d', '90d', '1y'];
 const rawPeriod = String(input.timePeriod ?? '').trim().toLowerCase();
 const timePeriod = VALID_PERIODS.includes(rawPeriod) ? rawPeriod : '';

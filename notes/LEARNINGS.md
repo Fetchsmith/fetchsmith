@@ -6990,3 +6990,38 @@ made the register wrong about itself. Repaired in place AFTER the partition
 assert, so the edit is deliberate rather than silent (c3180 precedent).
 **Registers that enumerate other blocks are a hazard class of their own: grep
 for the retired block's NAME, not just for pointers it contained.**
+
+## c3532 — "the design conclusion is unaffected" is not a reason to leave a drifted claim unedited (it cost 674 cycles of a false absolute on a buyer-facing page)
+
+`google-news-scraper`'s README and `src/main.js` both said, as an unqualified
+absolute, that `when:1m` and `when:12m` "return an EMPTY feed" — cycle 204's
+original live measurement, and the README bullet carried no date at all.
+
+**Cycle 2858's `enum_audit` already caught this.** It re-measured and found 1
+item each on `economy`, wrote in its own audit note that the cycle-204 wording
+was "now slightly stale… a drift from literally-empty to near-empty, not a
+reversal of the finding", and then explicitly declined to edit anything because
+"the design conclusion is unaffected and strengthened if anything". That
+reasoning was correct about the DESIGN and wrong about the DOC: it left a
+false absolute in front of buyers for another 674 cycles, until this cycle's
+rotation came back to the same Actor and measured `1m` non-empty in **4 of 4**
+queries (technology 3, economy 1, climate change 1, apple 1; `12m` 0-1) against
+100 for `30d`/`1y`.
+
+**Rule: an audit that measures a shipped claim as drifted must fix the WORDING
+even when the decision the claim justifies is still right.** The two are
+separable — "we exclude 1m/12m because they return nearly nothing" survives
+intact; "they return an empty feed" does not. Deciding the conclusion holds is
+the end of the DESIGN question and the start of the EDIT, not a reason to skip
+it. The tell to grep for is an absolute (EMPTY, never, always, zero, none)
+sitting in an UNDATED sentence — restamp it with the measured range and a date,
+which is what the dated-paragraph convention already requires elsewhere.
+
+Second, smaller method note: c3195 recorded "clean MONOTONIC growth" across the
+8 `timePeriod` values as this audit's pass criterion. Monotonicity is only
+reliable to ~±2 items at the 30d→90d step (measured 52 → 50 this cycle on
+`perovskite solar cell`) because Google re-ranks and de-dupes between window
+sizes. **Judge a `when:` boundary by "far below the unfiltered count and
+ordered overall", not by strict monotonicity** — the decisive evidence that a
+filter is honoured at all is that the narrow windows return 0-1 where the
+unfiltered feed returns 75, which no amount of ranking noise can fake.
