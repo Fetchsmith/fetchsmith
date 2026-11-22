@@ -7597,3 +7597,32 @@ METHOD: a buyer-settable depth cap distinct from `maxResults` is identifiable by
 assignment (`maxPages* =`, `pageCap =`, etc.) — a derived safety-valve sized to always exceed what's
 needed to satisfy the buyer's own cap (`steam-reviews-scraper`'s `maxPages`, padded well above
 `perAppReviews`) does not qualify, since it can never bind before the buyer's own disclosed cap does.
+
+## c3596 — a status-message clamp triage should rank the message's PARTS, not just cap its length
+`ats-jobs-scraper` closed the `NEW c3589` backlog and produced the clearest instance yet of why
+"wrap it in `clampStatusMessage`" is the smaller half of this fix.
+
+- **The defect that matters fires at plausible inputs, so measure those too, not only the 2000-char
+  adversarial label.** The prior cycles' method (invent a giant free-text echo, show it blows past
+  500) finds the ceiling but understates urgency. Here the four `pushed > 0` branches put the
+  "NOTE — this result is incomplete: ..." disclosure LAST, behind `evictionSuffix` (~250 static
+  chars) and `timeBudgetNote` (~210 static chars). Two ~250-char *fixed* strings are enough to eat
+  the budget on their own: with an ordinary 68-char human `watchLabel` and the Actor's own schema
+  **default** 12-company list, the message measured 1106 chars and the buyer never saw which
+  companies were missing from the result they paid for. Always run the measurement a second time
+  with every input left at its schema default — that is what most buyers actually send.
+- **Rank the parts by who they serve and when.** `deliveredCauseNote` names data missing from THIS
+  result; `evictionSuffix` warns about a FUTURE run; `timeBudgetNote` is a re-run hint. So the
+  cause note belongs in the surviving prefix and the other two in the cuttable tail. Reordering was
+  the real fix; the clamp only made the cut visible (" ..." at a word boundary instead of Apify's
+  silent mid-word chop).
+- **Before reordering, read the cause generator in full.** `pushedCauses()` was checked line by
+  line to confirm it does NOT itself restate the time-budget or baseline-eviction conditions —
+  otherwise moving the note forward would have duplicated content into the one part of the message
+  guaranteed to survive. Record that check in an in-code comment; the next cycle cannot re-derive it
+  from the diff.
+- `NEW c3589` is exhausted at this Actor. Its own closing note is the durable lesson: the 10 Actors
+  with smaller unclamped counts were never triaged, and **"unclamped" is still not "defective"** —
+  a `check-status-length` tripwire built on the bare grep would report ~40 sites that mostly do not
+  need touching. Any fleet tripwire here has to key on *ordering* (a known-critical phrase sitting
+  behind an unbounded segment), which is why the grep-only version stayed unbuilt.

@@ -9,6 +9,25 @@ import { gotScraping } from 'got-scraping';
 import { parseLocation } from './location.js';
 
 await Actor.init();
+
+// Apify silently hard-cuts any statusMessage past 500 chars, so every setStatusMessage call must go
+// through this. `suffix` is RESERVED out of the budget rather than appended after clamping, so a
+// billing-critical trailing phrase survives even when the unbounded part ahead of it (an echoed
+// watchLabel, or a joined dump of ats:slug pairs whose company list has no maxItems) is long enough
+// to hit the cliff on its own.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, Math.max(budget - 4, 0));
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+// watchLabel is a free-text field with no maxLength in the input schema, and it is echoed raw into
+// 6 status messages below -- cap it independently so one giant label cannot by itself exhaust the
+// clamp's budget before any real content is written.
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
+
 const input = (await Actor.getInput()) ?? {};
 
 const SUPPORTED_ATS = ['greenhouse', 'ashby', 'lever', 'recruitee', 'workable', 'smartrecruiters', 'workday', 'teamtailor', 'personio', 'breezy', 'rippling', 'bamboohr'];
@@ -2240,32 +2259,39 @@ const deliveredCauseNote = deliveredCauses.length
 if (watchMode && seeding) {
   // A baseline that recorded nothing is indistinguishable from a healthy one on the next run, so
   // say why now rather than letting the buyer schedule a watch that can never fire.
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}${timeBudgetNote}${watchSeen.size === 0 ? zeroCauseNote : ''}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Baseline run for watch label "${echoCap(watchLabel)}": ${watchSeen.size} currently-open posting(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}${timeBudgetNote}${watchSeen.size === 0 ? zeroCauseNote : ''}`));
 } else if (watchMode && pushed === 0 && zeroCauses.length) {
   // "Nothing new, and that's expected" is only true when every board answered and something
   // actually matched. A bad slug or an over-narrow filter produces a byte-identical quiet run
   // forever, so name the real cause instead of reassuring the buyer that nothing is wrong.
-  await Actor.setStatusMessage(`No new job postings for watch label "${watchLabel}" -- but this run also hit problem(s) that can hide real postings, so do not read it as the normal quiet "nothing new" result.${zeroCauseNote}${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
+  await Actor.setStatusMessage(clampStatusMessage(`No new job postings for watch label "${echoCap(watchLabel)}" -- but this run also hit problem(s) that can hide real postings, so do not read it as the normal quiet "nothing new" result.${zeroCauseNote}${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`));
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run -- every matching posting had already been delivered and none of them gained a salary${watchEvents.has('closed') ? `, and none of the baseline postings have come down (checked on ${closureCompaniesChecked} board(s)${closureCompaniesSuppressed ? `, skipped on ${closureCompaniesSuppressed} whose listing was incomplete` : ''})` : ''}. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Nothing new for watch label "${echoCap(watchLabel)}" since its last run -- every matching posting had already been delivered and none of them gained a salary${watchEvents.has('closed') ? `, and none of the baseline postings have come down (checked on ${closureCompaniesChecked} board(s)${closureCompaniesSuppressed ? `, skipped on ${closureCompaniesSuppressed} whose listing was incomplete` : ''})` : ''}. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} posting(s) were new, or gained a salary, but the event was excluded by your watchEvents list.)` : ''}${evictionSuffix}${timeBudgetNote}`));
 } else if (!watchMode && pushed === 0) {
   // Before this, a plain zero-row run set NO status message at all: the run just ended SUCCEEDED
   // with an empty dataset and the only clue (a not-found/fetch-error warning, or a "0 kept after
   // filters" info line) buried in the log.
-  await Actor.setStatusMessage(`Pushed 0 job postings.${zeroCauseNote}${timeBudgetNote}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed 0 job postings.${zeroCauseNote}${timeBudgetNote}`));
+  // Cycle 3596: `deliveredCauseNote` now goes BEFORE evictionSuffix/timeBudgetNote on all four
+  // pushed>0 branches. It was last, and measured in node it was the first thing the 500-char cut
+  // ate -- not only in a contrived case but with a 68-char human watchLabel and this Actor's own
+  // DEFAULT 12-company list (1106 chars, "NOTE — this result is incomplete:" never reaching the
+  // buyer). It outranks the other two: it names data MISSING from the result the buyer just paid
+  // for, while the eviction warning is about a FUTURE run and the time-budget note is a re-run
+  // hint. Neither is restated by pushedCauses(), so this is a reorder, not a duplication.
 } else if (watchMode && baselineTruncated > 0) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${evictionSuffix}${timeBudgetNote}${deliveredCauseNote}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${echoCap(watchLabel)}".${deliveredCauseNote}${evictionSuffix}${timeBudgetNote}`));
 } else if (watchMode && timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${watchLabel}".${timeBudgetNote}${deliveredCauseNote}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} new job posting(s) for watch label "${echoCap(watchLabel)}".${deliveredCauseNote}${timeBudgetNote}`));
 } else if (timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} job posting(s).${timeBudgetNote}${deliveredCauseNote}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} job posting(s).${deliveredCauseNote}${timeBudgetNote}`));
 } else if (deliveredCauses.length) {
   // The gap this closes: a pushed>0 run that did NOT truncate its baseline and did NOT run out of
   // time fell past every branch above and set no status message whatsoever, in watch mode and in
   // the default mode alike — so a skipped company, a half-fetched board or an exhausted charge
   // budget was invisible to anyone not reading the log. Deliberately still silent when there are
   // no causes: a fully clean successful run says nothing, which is the fleet convention.
-  await Actor.setStatusMessage(`Pushed ${pushed} job posting(s)${watchMode ? ` for watch label "${watchLabel}"` : ''}.${deliveredCauseNote}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} job posting(s)${watchMode ? ` for watch label "${echoCap(watchLabel)}"` : ''}.${deliveredCauseNote}`));
 }
 
 // Fires after every row is already pushed and charged, so a slow or failing webhook can never
