@@ -7437,3 +7437,28 @@ Rules going forward:
 - Static estimators over-count: summing every string literal inside a `setStatusMessage(...)` span adds up ALL
   branches of a ternary, so it over-estimates (it read 565 for a site that really renders 488/372). Use it to
   rank suspects, then measure each one for real.
+
+## Cycle 3581 -- a `re.search`/`str.replace` surgical edit on a per-Actor JSON file must scope to the target Actor's own block first, or it silently edits the wrong Actor
+
+Fixing `audit_dates.json` after a `varied_test` finding on `hacker-news-scraper`, the first edit attempt used
+`re.search(r'"varied_test_note": "..."', raw_text)` directly against the WHOLE file to locate the field to
+replace. Every one of the 27 tracked Actors has a field with that exact name, so `re.search` matched the
+FIRST occurrence in the file -- which belonged to `app-store-reviews-scraper`, not `hacker-news-scraper` --
+and the edit replaced that Actor's note with text about a completely different Actor's finding. `json.loads()`
+on the result still parsed fine (the edit was a syntactically valid string replacement), and the top-level
+`"varied_test": 2898 -> 3581` line DID get bumped correctly (that value is unique enough not to collide), so
+the mistake was not obvious from either the diff summary or a bare JSON-validity check -- it only showed up on
+reading `git diff`'s actual content and noticing the replacement note didn't start with "cycle 2898" (the
+target Actor's own prior note), and that a Actor far earlier in the file now had a note about a different
+Actor's Actor entirely.
+
+**Generalizable: before running `re.search`/`str.replace` against the raw text of a multi-Actor JSON/doc file to
+edit one Actor's field, first slice out that Actor's own `{...}` block (e.g. from `"<slug>": {` to the next
+sibling key at the same indent level) and confirm the field only appears once inside that slice. Only then
+regex/replace WITHIN the slice.** A field name shared by every record in the file is not a safe anchor on its
+own, no matter how precise the surrounding regex looks -- uniqueness has to be checked against the SCOPE you
+intend to edit, not just a `raw.count(...) == 1` global count (which this cycle's first attempt also ran and
+which passed, because the EXACT NEW VALUE being inserted was unique, not because the FIELD being targeted was).
+Caught here via `git diff` before committing (never skip reading the actual diff content on a file with
+repeated field names across records, even when `json.loads` says the result is valid); the clobbered Actor's
+original note was restored from `git show HEAD:<path>` before redoing the edit correctly scoped.

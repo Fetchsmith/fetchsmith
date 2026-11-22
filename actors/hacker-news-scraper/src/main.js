@@ -1169,9 +1169,17 @@ for (const s of truncatedSummaries) {
               ? ' maxSplitWindows is already at this Actor\'s maximum of 200, so raising it is not an option; narrow the date range to finish it.'
               : ' raise maxSplitWindows (or narrow the date range) to finish it.')
           : s.splitExhausted === 'min-window-width'
-            ? ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and still truncated at the`
-              + ` ${MIN_SPLIT_WINDOW_SEC / 3600}-hour floor, so this query is too broad to enumerate by date alone; narrow the`
-              + ' keywords or add minPoints/minComments.'
+            ? (s.windowsSplit === 0
+              // windowsSplit===0 means autoSplitLargeQueries never actually ran: the buyer's OWN
+              // date range was already at or under the floor width, so there was nothing to halve.
+              // Saying "halved it into 1 date window(s)" here would be self-contradicting (halving
+              // always yields >=2 pieces) and wrongly implies splitting was attempted and failed.
+              ? ` -- the date range given is already at or under autoSplitLargeQueries' ${MIN_SPLIT_WINDOW_SEC / 3600}-hour`
+                + ' split floor, so no splitting ran; this query is too broad to enumerate by date alone even at that'
+                + ' floor; narrow the keywords or add minPoints/minComments.'
+              : ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and still truncated at the`
+                + ` ${MIN_SPLIT_WINDOW_SEC / 3600}-hour floor, so this query is too broad to enumerate by date alone; narrow the`
+                + ' keywords or add minPoints/minComments.')
             : autoSplitLargeQueries
               ? ' -- autoSplitLargeQueries is on but could not be applied here.'
               : ' -- set autoSplitLargeQueries:true to have the run halve the date range for you until each window fits'
