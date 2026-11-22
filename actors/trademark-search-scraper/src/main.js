@@ -1014,7 +1014,10 @@ if (watchMode && !skipBaselineSave) {
         + 'status) so the whole current match set fits, or the first incremental run may report older marks past the cap as new.'
         : '') + evictionSuffix,
     );
-    await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing mark(s) recorded, 0 charged. Run again later to get only what's new.${evictionSuffix}`);
+    await Actor.setStatusMessage(clampStatusMessage(
+      `Baseline run for watch label "${echoCap(watchLabel)}": ${watchSeen.size} existing mark(s) recorded, 0 charged. Run again later to get only what's new.`,
+      evictionSuffix,
+    ));
   } else {
     log.info(
       `Watch label "${watchLabel}": ${pushed - changedCount} new mark(s)`
@@ -1026,38 +1029,43 @@ if (watchMode && !skipBaselineSave) {
       // answer: this is a monitor the buyer schedules and stops watching, so telling them
       // "nothing new" when the truth is "we never finished looking" hides a missed hit for as
       // long as the schedule runs. Same first-cause-wins shape as eu-ted/sam-gov on this rollout.
-      await Actor.setStatusMessage(
-        `Incomplete (time budget): watch label "${watchLabel}" delivered ${pushed} new mark(s) but this run's own `
+      await Actor.setStatusMessage(clampStatusMessage(
+        `Incomplete (time budget): watch label "${echoCap(watchLabel)}" delivered ${pushed} new mark(s) but this run's own `
         + `time limit ran out after ${pagesFetched} page(s), so it did NOT finish checking for new marks -- do not `
         + 'read this as "nothing new". The marks it did deliver are saved to the baseline and will not be charged '
         + 'again. This Actor\'s default run timeout is 3600s -- if you lowered it, raise it back '
         + '(Input > Run options); otherwise narrow the search -- then '
-        + `run again to cover the rest.${evictionSuffix}`,
-      );
+        + 'run again to cover the rest.',
+        evictionSuffix,
+      ));
     } else if (pageDepthLimitStopped) {
       // Same first-cause-wins reasoning as the timeBudgetStopped branch above, but TMview's own
       // page-depth ceiling -- not our clock -- is why the walk stopped, so the advice differs:
       // raising the run timeout does nothing here, and re-running will hit the identical wall.
-      await Actor.setStatusMessage(
-        `Incomplete (TMview page-depth limit): watch label "${watchLabel}" delivered ${pushed} new mark(s) but `
+      await Actor.setStatusMessage(clampStatusMessage(
+        `Incomplete (TMview page-depth limit): watch label "${echoCap(watchLabel)}" delivered ${pushed} new mark(s) but `
         + `TMview refused to page any deeper after ${pagesFetched} page(s) (its own hard ceiling, not this run's `
         + 'clock), so it did NOT finish checking for new marks -- do not read this as "nothing new". The marks it '
         + 'did deliver are saved to the baseline and will not be charged again. Narrow the search (tighter term, '
-        + `fewer offices) so the walk finishes within TMview's own page limit, then run again to cover the `
-        + `rest.${evictionSuffix}`,
-      );
+        + 'fewer offices) so the walk finishes within TMview\'s own page limit, then run again to cover the '
+        + 'rest.',
+        evictionSuffix,
+      ));
     } else if (pushed === 0) {
-      await Actor.setStatusMessage(
-        `Nothing new for watch label "${watchLabel}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`
+      await Actor.setStatusMessage(clampStatusMessage(
+        `Nothing new for watch label "${echoCap(watchLabel)}" since its last run -- every matching mark had already been delivered. That is the expected result most of the time; you were charged for nothing.${evictionSuffix}`
         // Without this, a run that CAN NEVER report a change (see watchChangeBlindFilters above)
         // is byte-for-byte indistinguishable from a healthy quiet run -- and this is a monitor, so
         // the buyer schedules it and stops looking.
         + (watchChangeBlindFilters.length
           ? ' NOTE: this run also cannot report any status change at all (see the change-blind-filter warning above), so "nothing changed" is not evidence here.'
           : ''),
-      );
+      ));
     } else if (baselineTruncated > 0) {
-      await Actor.setStatusMessage(`Pushed ${pushed} new mark(s) for watch label "${watchLabel}".${evictionSuffix}`);
+      await Actor.setStatusMessage(clampStatusMessage(
+        `Pushed ${pushed} new mark(s) for watch label "${echoCap(watchLabel)}".`,
+        evictionSuffix,
+      ));
     }
   }
 }
@@ -1161,7 +1169,7 @@ if (timeBudgetStopped && !watchMode) {
   // Invalid filter values are still worth naming (they are a real, separate input bug, and the
   // walk never got far enough to prove them harmless), so they are appended rather than dropped --
   // the same collect-every-cause rule the zero-row branch below documents.
-  await Actor.setStatusMessage(
+  await Actor.setStatusMessage(clampStatusMessage(
     `Incomplete (time budget): delivered ${pushed.toLocaleString('en-US')} of `
     + `${declaredMatches?.toLocaleString('en-US') ?? 'an unknown number of'} match(es) TMview declared, from `
     + `${pagesFetched} page(s), then stopped because THIS run's own time limit ran out -- not because TMview `
@@ -1173,7 +1181,7 @@ if (timeBudgetStopped && !watchMode) {
     + (zeroRowFilterCauses.length > 0
       ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`
       : ''),
-  );
+  ));
 } else if (pageDepthLimitStopped && !watchMode) {
   // Same first-cause-wins position as the timeBudgetStopped branch above and for the same
   // reason -- every branch below would misname the cause, most dangerously the "genuinely empty
@@ -1182,7 +1190,7 @@ if (timeBudgetStopped && !watchMode) {
   // mutually exclusive: raising the run timeout does nothing here (the ceiling is on page count,
   // not elapsed time), and unlike the generic proxy-flakiness error this same fetchPage function
   // can throw, re-running will fail identically every time for this exact search (cycle 2505/2506).
-  await Actor.setStatusMessage(
+  await Actor.setStatusMessage(clampStatusMessage(
     `Incomplete (TMview page-depth limit): delivered ${pushed.toLocaleString('en-US')} of `
     + `${declaredMatches?.toLocaleString('en-US') ?? 'an unknown number of'} match(es) TMview declared, from `
     + `${pagesFetched} page(s), then stopped because TMview itself refused to page any deeper -- its own hard `
@@ -1195,7 +1203,7 @@ if (timeBudgetStopped && !watchMode) {
     + (zeroRowFilterCauses.length > 0
       ? ` Separately, fix ${zeroRowFilterCauses.length > 1 ? 'these invalid filter values' : 'this invalid filter value'}: ${zeroRowFilterCauses.join('; ')}.`
       : ''),
-  );
+  ));
 } else if (pushed === 0 && !timeBudgetStopped && !pageDepthLimitStopped && zeroRowFilterCauses.length > 0) {
   // `!timeBudgetStopped`/`!pageDepthLimitStopped` matter only for watchMode: the non-watch cases
   // are already caught by the two branches above (both gated on `!watchMode`), so this guard is a
@@ -1207,18 +1215,19 @@ if (timeBudgetStopped && !watchMode) {
   // would silently overwrite that message with
   // "0 results because of invalid filter", hiding the far more actionable fact that the run
   // never finished checking for new marks at all.
-  await Actor.setStatusMessage(
+  await Actor.setStatusMessage(clampStatusMessage(
     `0 results because of ${zeroRowFilterCauses.length} invalid filter value${zeroRowFilterCauses.length > 1 ? 's' : ''}: `
-    + `${zeroRowFilterCauses.join('; ')}. This is a filter-value problem, not an empty search.`,
-  );
+    + `${zeroRowFilterCauses.join('; ')}.`,
+    ' This is a filter-value problem, not an empty search.',
+  ));
 } else if (stoppedByCap) {
-  await Actor.setStatusMessage(
+  await Actor.setStatusMessage(clampStatusMessage(
     `Pushed ${pushed.toLocaleString('en-US')} of ${declaredMatches?.toLocaleString('en-US') ?? '?'} matches TMview declared for this search — `
     + 'stopped early because of this run\'s own maxResults or Apify cost limit, not because TMview ran out of results. '
     + (maxResultsAtCeiling
       ? 'maxResults is already at this Actor\'s maximum of 5000, so raising it is not an option -- raise the run\'s cost limit to get more.'
       : 'Raise maxResults (or the run\'s cost limit) to get more.') + ' See RUN_SUMMARY.' + preFilterNote,
-  );
+  ));
 } else if (pushed === 0 && !watchMode && runError === null && searchTerm) {
   // The THIRD way this Actor can return 0 rows, and until cycle 1752 the only one that said
   // nothing at all: every supplied filter value is valid and TMview simply has no match. The
@@ -1248,22 +1257,24 @@ if (timeBudgetStopped && !watchMode) {
     // NORMAL, correct, and most valuable answer this Actor can give -- a clean brand-clearance
     // result. Without this branch it falls into the "unexpected, please report it with the run ID"
     // message below, which would tell every buyer whose name IS clear to file a bug report.
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
       `0 results, and for a clearance search that is the GOOD answer: TMview has ${declaredMatches.toLocaleString('en-US')} `
       + `mark(s) containing "${searchTerm}" somewhere in the name, but NONE of the `
       + `${(scanned - prefixFiltered).toLocaleString('en-US')} examined BEGINS with it`
       + `${appliedFilters.length ? ` once ${appliedFilters.join(' + ')} ${appliedFilters.length > 1 ? 'are' : 'is'} applied` : ''}`
       + ' -- that is what match mode "startsWithPrefix" asks. This is not an error and not an empty '
-      + 'search: switch to "Contains" to see the mid-name hits it filtered out. You were charged nothing.',
-    );
+      + 'search: switch to "Contains" to see the mid-name hits it filtered out.',
+      ' You were charged nothing.',
+    ));
   } else if (declaredMatches !== null && declaredMatches > 0) {
     // Not reachable by any filter combination we can construct (a declared match with no cap
     // should always deliver), so report the numbers instead of inventing a cause for it.
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
       `TMview declared ${declaredMatches.toLocaleString('en-US')} match(es) for this search but 0 rows were delivered, `
       + 'and no cap was hit. That combination is unexpected rather than a normal empty result — '
-      + 'please report it with the run ID; see RUN_SUMMARY for the scanned/declared counts. You were charged nothing.',
-    );
+      + 'please report it with the run ID; see RUN_SUMMARY for the scanned/declared counts.',
+      ' You were charged nothing.',
+    ));
   } else if (appliedFilters.length) {
     // Cycle 3580 (unreachable_remedy): the "(the office filter is usually the narrowest)" hint was
     // UNCONDITIONAL, but `appliedFilters` is deliberately built from only the filters the buyer
@@ -1290,22 +1301,23 @@ if (timeBudgetStopped && !watchMode) {
       ? ' (the office filter is usually the narrowest)'
       : ` (you set no office filter, so all ${OFFICES.length} offices are in scope -- nothing to widen there; `
         + 'whether Nice class or status bites harder depends on the term, so drop one at a time)';
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
       `0 results: TMview has no trademark matching "${searchTerm}" once ${appliedFilters.join(' + ')} `
       + `${appliedFilters.length > 1 ? 'are' : 'is'} applied. Every filter value you gave is valid, so this is a genuinely empty search, not an `
       + 'input mistake — drop or widen one of those filters at a time to find which one excludes '
-      + `everything${narrowestHint}. You were charged nothing.`,
-    );
+      + `everything${narrowestHint}.`,
+      ' You were charged nothing.',
+    ));
   } else {
     // Reaching here means no filter field was supplied at all: a field whose every value was
     // invalid is already handled by the zeroRowFilterCauses branch, and a field with even one
     // valid value would have populated appliedFilters.
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
       `0 results: TMview has no trademark whose name contains "${searchTerm}", across all `
       + `${OFFICES.length} offices with no filter narrowing the run — so there is no filter to widen here. `
-      + 'Check the spelling, or try a shorter stem of the term (matching is "name contains", not exact). '
-      + 'You were charged nothing.',
-    );
+      + 'Check the spelling, or try a shorter stem of the term (matching is "name contains", not exact).',
+      ' You were charged nothing.',
+    ));
   }
 }
 
