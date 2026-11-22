@@ -634,6 +634,13 @@ if (erroredSearchTerms.length) {
 }
 
 const emptyApps = []; // Google Play returned zero reviews (wrong country/lang, or genuinely no reviews)
+// Subset of emptyApps that app() says has NO reviews on Google Play at all (the `reviews` field is
+// absent on a zero-review app and a real number otherwise -- live-verified c3571/c3572). Those apps
+// cannot be fixed by a different country/language: lang/country are only `hl`/`gl` params on the one
+// batchexecute review feed, so the "try a different country/language" remedy is unreachable advice
+// for them (same unreachable-remedy class as the depthAtCeiling/RATING-sort hints). Apps that DO
+// have reviews somewhere keep the old wording -- a locale-specific rendering gap is still possible.
+const noReviewsAnywhere = new Set();
 const filteredOutApps = []; // reviews existed but rating/keyword/appVersion/thumbsUp/reply/length/date filters removed all of them
 // Apps where maxReviewsPerApp was hit (gplay.reviews() returned exactly that many) while the
 // rating/keyword/appVersion/thumbsUp/reply/length/date filters were still dropping some of them -- maxReviewsPerApp
@@ -665,6 +672,9 @@ for (const appId of resolvedAppIds) {
     log.info(`${appId}: not in the baseline for "${watchLabel}" yet (search term resolved to a new app) — baselining it this run instead of delivering its existing reviews.`);
   }
   let appIdInvalid = false;
+  // Platform-wide review count from app(), when this run already had a reason to fetch it. null
+  // means "not known" -- used only to word the zero-row message, never to change what is charged.
+  let appReviewTotal = null;
   // In watch mode the app-detail record is held back and pushed only if this app turns out to
   // have at least one new review: an app snapshot is not a discrete new event, and charging for
   // one on every scheduled run would defeat the "nothing new costs nothing" promise.
@@ -674,6 +684,7 @@ for (const appId of resolvedAppIds) {
   if (includeAppDetails || genresWanted.size) {
     try {
       const app = await gplay.app({ appId, lang, country });
+      appReviewTotal = Number.isFinite(app.reviews) ? app.reviews : 0;
       if (!genreAllowed(app)) {
         genreSkippedApps.push(`${appId} (${app.genreId ?? 'unknown'})`);
         log.info(`${appId}: genre "${app.genre}" (${app.genreId}) is not in your "genres" filter — skipping this app, no reviews fetched or charged.`);
@@ -807,7 +818,24 @@ for (const appId of resolvedAppIds) {
     }
     if (data.length === 0 && !appIdInvalid) {
       emptyApps.push(appId);
-      log.warning(`${appId}: Google Play returned zero reviews for country="${country}" lang="${lang}" (try a different country/language, not a scrape failure).`);
+      // Only on this rare zero-row path, and only when nothing else in this run already fetched
+      // app(): one extra details call tells us whether the app has ANY reviews, which decides
+      // whether "try a different country/language" is advice that can actually work. A failure
+      // here must never block the run or change billing -- fall back to the old wording.
+      if (appReviewTotal === null) {
+        try {
+          const app = await gplay.app({ appId, lang, country });
+          appReviewTotal = Number.isFinite(app.reviews) ? app.reviews : 0;
+        } catch (e) {
+          log.info(`${appId}: returned zero reviews and its app details could not be read (${e.message}) — cannot tell whether it has reviews in another country/language.`);
+        }
+      }
+      if (appReviewTotal === 0) {
+        noReviewsAnywhere.add(String(appId));
+        log.warning(`${appId}: this app has no reviews on Google Play at all right now, in any country or language — not a scrape failure, and a different "country"/"language" will not change it.`);
+      } else {
+        log.warning(`${appId}: Google Play returned zero reviews for country="${country}" lang="${lang}"${appReviewTotal ? ` even though the Play Store lists ${appReviewTotal} review(s) for it` : ''} (try a different country/language, not a scrape failure).`);
+      }
     } else if (data.length > 0 && passCount === 0) {
       filteredOutApps.push(appId);
       log.warning(`${appId}: fetched ${data.length} reviews but your rating/keyword/appVersion/thumbsUp/reply/length/date filters removed all of them.`);
@@ -927,7 +955,13 @@ if (watchMode && seeding) {
     if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
     if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached before any fetched review passed your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${depthCappedApps.join(', ')}${ratingSortUnreachable ? RATING_SORT_HINT : depthAtCeiling ? MAX_DEPTH_HINT : ' — raise maxReviewsPerApp to search deeper'}`);
     if (filteredOutOnlyApps.length) causes.push(`reviews were found but every one was removed by your rating/keyword/appVersion/thumbsUp/reply/length/date filters for: ${filteredOutOnlyApps.join(', ')}`);
-    if (emptyApps.length) causes.push(`Google Play returned zero reviews for: ${emptyApps.join(', ')} (try a different "country"/"language")`);
+    // Split the zero-review apps by whether the country/language remedy can possibly help them:
+    // an app with no reviews platform-wide is not a locale problem, and telling a buyer to retry
+    // with another country/language just bills them for a second run with the same empty result.
+    const emptyNoneAnywhere = emptyApps.filter((a) => noReviewsAnywhere.has(String(a)));
+    const emptyMaybeLocale = emptyApps.filter((a) => !noReviewsAnywhere.has(String(a)));
+    if (emptyNoneAnywhere.length) causes.push(`these apps have no reviews on Google Play at all right now, in any country or language (not a scrape failure, and a different "country"/"language" will not change it): ${emptyNoneAnywhere.join(', ')}`);
+    if (emptyMaybeLocale.length) causes.push(`Google Play returned zero reviews for: ${emptyMaybeLocale.join(', ')} (try a different "country"/"language")`);
     why = causes.length ? causes.join('; ') : 'no "appIds" or "searchTerms" resolved to anything (check the log for details)';
   }
   statusMsg = (`No reviews returned — ${why}. See the log for details.`);
@@ -946,7 +980,10 @@ if (watchMode && seeding) {
   if (erroredApps.length) causes.push(`fetching reviews failed for: ${erroredApps.join(', ')} (see log for the error)`);
   if (depthCappedApps.length) causes.push(`maxReviewsPerApp (${maxReviewsPerApp}) was reached while filtering: ${depthCappedApps.join(', ')} — some matching reviews may sit deeper in the feed${ratingSortUnreachable ? RATING_SORT_HINT : depthAtCeiling ? MAX_DEPTH_HINT : '; raise maxReviewsPerApp to search further'}`);
   if (filteredOutOnlyApps.length) causes.push(`reviews were found but every one was removed by your filters for: ${filteredOutOnlyApps.join(', ')}`);
-  if (emptyApps.length) causes.push(`zero reviews for: ${emptyApps.join(', ')}`);
+  const emptyNoneAnywhere = emptyApps.filter((a) => noReviewsAnywhere.has(String(a)));
+  const emptyMaybeLocale = emptyApps.filter((a) => !noReviewsAnywhere.has(String(a)));
+  if (emptyNoneAnywhere.length) causes.push(`no reviews on Google Play at all (in any country or language) for: ${emptyNoneAnywhere.join(', ')}`);
+  if (emptyMaybeLocale.length) causes.push(`zero reviews for: ${emptyMaybeLocale.join(', ')}`);
   if (genreSkippedApps.length || genreUnknownApps.length) causes.push(`your "genres" filter skipped ${genreSkippedApps.length + genreUnknownApps.length} app(s)${genreSkippedApps.length ? `: ${genreSkippedApps.join(', ')}` : ''}${genreUnknownApps.length ? `; genre unreadable (skipped) for: ${genreUnknownApps.join(', ')}` : ''}`);
   if (causes.length) {
     statusMsg = `Pushed ${pushed} items. ${causes.join('; ')}.`;
