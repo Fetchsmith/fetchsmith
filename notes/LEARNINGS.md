@@ -7522,3 +7522,25 @@ Use the store search only for DISCOVERY of unknown rivals, and never conclude "n
 it. Related: this vendor's ladders are deliberately inconsistent across its own catalogue (c3436), so
 two same-vendor listings covering the identical source set priced $0.00575→$0.0035/row +$0.00005 start
 and $0.0005/row +$0.005 start respectively — never infer one of its prices from another.
+
+## c3589 — the `NEW c3580` static scanner's "worst 10" list missed the real truncation risk entirely
+
+Chasing the c3580 HIGH flag (fleet-wide `statusMessage` 500-char truncation), the two named worst
+sites (`fec-campaign-finance-scraper:1319`, `nih-reporter-scraper:1730`) turned out to already be
+wrapped in `clampStatusMessage()` — the estimator was flagging code that was already safe. The real
+risk was a site the estimator never surfaced at all: `fec-campaign-finance-scraper:1415` (the plain
+non-watch `!complete` branch) was still a bare `Actor.setStatusMessage()`, and its `incompleteDetail`
+can carry `err.message` from the upstream-timeout `Error` at line 557-565, which alone is 525 chars
+of static prose. Measured worst case in node: 672 chars — well past the 500-char cliff, and the
+part that gets silently eaten is "See RUN_SUMMARY for details." Fixed by wrapping it in
+`clampStatusMessage()`. Also wrapped two long-unclamped-but-currently-safe sites on
+`nih-reporter-scraper` (1805, 1812 — measured worst case ~310 chars, so not an active bug, but
+bringing them in line with the fleet convention costs nothing and removes them from this list for
+good).
+
+RULE: a ternary-sum character estimator cannot tell "already clamped" from "unclamped," and cannot
+see length hiding behind a variable like `err.message` from a nested function. The only reliable way
+to find the real risk set is `grep -n 'Actor\.setStatusMessage(' <file>` and check which calls are
+NOT immediately wrapped in `clampStatusMessage(...)` — that is the complete, exact list, no
+measurement needed until you've narrowed to that set. `check-status-length` (the fleet tripwire
+`NEW c3580` proposed) should be built on that grep, not on a byte-sum heuristic.

@@ -1802,17 +1802,17 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 // setStatusMessage call anywhere in this Actor before cycle 647.
 if (!complete) {
     const of = declaredMatches === null ? '' : ` of ${declaredMatches.toLocaleString('en-US')} declared`;
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
         `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
         + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
-    );
+    ));
 } else if (baselineTruncated > 0 && !(pushed === 0 && !seeding)) {
     // pushed === 0 && !seeding already set its own message above (which folds in
     // truncationNote() itself) -- this branch must not overwrite it.
-    await Actor.setStatusMessage(
+    await Actor.setStatusMessage(clampStatusMessage(
         `Complete, but the watch baseline dropped ${baselineTruncated} older id(s) past the ${WATCH_KEEP}-project `
         + `cap (${baselineTruncatedTotal} total) -- those will be re-delivered and CHARGED next run. See RUN_SUMMARY.`,
-    );
+    ));
 } else if (declaredMatches !== null && !watchMode && !exclusiveProjectNums) {
     // `declaredMatches` describes the query actually SENT (fiscalYears alone when
     // activeOnlyClientFilter is on), so with rows dropped client-side "delivered every one of the

@@ -1412,10 +1412,10 @@ await Actor.setValue('RUN_SUMMARY', runSummary);
 // is the only place the Apify console itself shows the shortfall.
 if (!complete && !runError && !watchMode) { // watch mode sets its own, more specific message above
   const of = declaredMatches === null ? '' : ` of ${declaredMatches.toLocaleString('en-US')}${declaredExact === false ? '+' : ''} declared match(es)`;
-  await Actor.setStatusMessage(
+  await Actor.setStatusMessage(clampStatusMessage(
     `Incomplete: ${pushed.toLocaleString('en-US')} row(s)${of} — ${incompleteReason}`
     + `${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.`,
-  );
+  ));
 } else if (complete && !watchMode && declaredMatches !== null) {
   log.info(`Complete: delivered every one of the ${declaredMatches.toLocaleString('en-US')} row(s) the FEC declared for these filters.`);
   // A plain, non-watch search that genuinely matches nothing used to leave the default "Succeeded"
