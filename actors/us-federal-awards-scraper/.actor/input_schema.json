@@ -254,7 +254,7 @@
     "maxPagesPerCategory": {
       "title": "Max pages per category",
       "type": "integer",
-      "description": "Safety cap on how deep to paginate each category (100 awards per page).",
+      "description": "Safety cap on how deep to paginate each category (100 awards per page). If a run stops on this cap while more matching awards remain, the run status message and log say so and name the categories, so a truncated result is never reported as \"nothing matched\".",
       "default": 50,
       "minimum": 1,
       "maximum": 200

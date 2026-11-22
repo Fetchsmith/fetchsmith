@@ -1064,6 +1064,16 @@ let seedError = false;
 // rate-limiting), as opposed to this run simply running out of time -- that case already has its
 // own `timeBudgetExceeded` flag, and double-counting it here would blame the wrong cause.
 const erroredCategories = [];
+// Categories whose scan ended because the per-category PAGE cap ran out while USAspending's own
+// `page_metadata.hasNext` was still true -- i.e. more matching awards provably exist and were never
+// looked at. Live-proved buyer-facing (cycle 3592): the loop below already breaks cleanly on
+// `!hasNext`, so `page > pageCap` is an UNAMBIGUOUS truncation signal, yet neither end-of-run
+// branch mentioned it. With `maxPagesPerCategory:1` a contracts+expiringWithinDays:15 run scanned
+// exactly 1 page, pushed 0, and reported "No awards matched your filters" -- flatly false: the
+// identical filters at `maxPagesPerCategory:8` delivered 9 awards from later pages. The same cap
+// also silently truncates a SUCCESSFUL run (9 pushed of a requested 150, statusMessage absent
+// entirely, because `pushed >= maxResults` was the only depth-related cause tracked).
+const pageCapTruncated = [];
 
 for (const category of categories) {
     if (!keepGoing || pushed >= maxResults || timeBudgetExceeded) break;
@@ -1149,6 +1159,17 @@ for (const category of categories) {
         log.info(`${category} page ${page}: ${results.length} ${isSubaward ? 'sub-awards' : 'awards'} (pushed ${pushed}/${maxResults})`);
         if (!body.page_metadata?.hasNext) break;
         page += 1;
+        if (page > pageCap) {
+            // hasNext was true one line above, so this is the cap biting, not an exhausted match set.
+            pageCapTruncated.push(category);
+            log.warning(
+                `${category}: stopped after ${pageCap} page(s) because of your "maxPagesPerCategory" `
+                + `cap (${maxPagesPerCategory}) -- USAspending reports MORE matching ${isSubaward ? 'sub-awards' : 'awards'} `
+                + 'beyond this point that were never scanned. Raise "maxPagesPerCategory" (max 200, 100 per page) '
+                + 'or narrow the filters so the matches you want fall inside the first pages '
+                + `(your current sort is "${sortBy}" ${order}).`,
+            );
+        }
     }
     log.info(`${category}: pushed ${categoryRows} ${isSubaward ? 'sub-awards' : 'awards'}.`);
 }
@@ -1229,7 +1250,16 @@ if (watchMode && seedFailure) {
 
 if (pushed === 0 && !watchMode) {
     log.warning(
-        `No awards matched. Scanned ${scanned} rows. Most common causes, in order: `
+        `No awards matched. Scanned ${scanned} rows. `
+        // Put this FIRST and unnumbered when it applies: it is not a "most common cause" guess but a
+        // measured fact about THIS run, and it makes every filter-shaped cause below a red herring.
+        + (pageCapTruncated.length
+            ? `READ THIS FIRST: the scan was cut short by your own "maxPagesPerCategory" cap (${maxPagesPerCategory}) `
+                + `in: ${pageCapTruncated.join(', ')} — USAspending reports more matching rows past that depth which `
+                + 'were never looked at, so "no match" here does NOT mean your filters match nothing. '
+                + 'Raise "maxPagesPerCategory" (max 200) and re-run before changing any filter. '
+            : '')
+        + 'Most common causes, in order: '
         + '(1) the filters are ANDed — a keyword plus a state plus a minimum amount over a short date window '
         + 'often has zero real matches; drop one filter and retry. '
         + '(2) "agencies"/"fundingAgencies" must be the exact top-tier agency name as USAspending spells it '
@@ -1256,21 +1286,29 @@ if (pushed === 0 && !watchMode) {
 // the timeout all looked identical to a clean success on the console.
 if (!watchMode) {
     if (pushed === 0) {
-        await Actor.setStatusMessage(
-            'No awards matched your filters.'
+        // The page-cap clause replaces the "no awards matched your filters" claim outright rather
+        // than appending to it: with the cap binding, that claim is not merely incomplete, it is
+        // false, and it points the buyer at their filters instead of the one knob that would work.
+        await Actor.setStatusMessage(clampStatusMessage(
+            (pageCapTruncated.length
+                ? `0 rows, but your filters were NOT proven empty: the scan stopped at your "maxPagesPerCategory" cap (${maxPagesPerCategory}) in ${pageCapTruncated.join(', ')} and more matching awards exist past that depth. Raise it (max 200) before changing any filter.`
+                : 'No awards matched your filters.')
             + (erroredCategories.length
                 ? ` Also, the USAspending API kept failing for: ${erroredCategories.join(', ')} -- those categories were skipped, not just empty.`
                 : '')
-            + (timeBudgetExceeded ? ' Also, this run ran out of run-timeout budget before finishing.' : '')
-            + ' See the log for details.',
-        );
+            + (timeBudgetExceeded ? ' Also, this run ran out of run-timeout budget before finishing.' : ''),
+            ' See the log for details.',
+        ));
     } else {
         const causes = [];
         if (erroredCategories.length) causes.push(`the USAspending API kept failing for: ${erroredCategories.join(', ')} -- those categories' results may be incomplete`);
         if (timeBudgetExceeded) causes.push('ran out of run-timeout budget before finishing every category/page -- narrow the filters or raise the timeout to see the rest');
         if (pushed >= maxResults) causes.push(`hit your "maxResults" cap (${maxResults}) -- more matches may exist; raise it or narrow the filters to confirm`);
+        // Was the one depth cap with no disclosure at all: a run that stopped on pages rather than on
+        // maxResults delivered fewer rows than asked for and set NO status message whatsoever.
+        if (pageCapTruncated.length) causes.push(`hit your "maxPagesPerCategory" cap (${maxPagesPerCategory}) in ${pageCapTruncated.join(', ')} -- more matching awards exist past that scan depth; raise it (max 200) or re-sort so the ones you want come first`);
         if (causes.length) {
-            await Actor.setStatusMessage(`Pushed ${pushed} row(s). NOTE -- this result may be incomplete: ${causes.join('. Also, ')}.`);
+            await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} row(s). NOTE -- this result may be incomplete: ${causes.join('. Also, ')}.`));
         }
     }
 }
@@ -1299,6 +1337,10 @@ if (webhookUrl) {
         // Watched fields this run's own filters make structurally undetectable -- a pipeline that
         // treats "0 changed" as "nothing moved" must read this first. [] means the run was honest.
         watchChangeBlindFilters: watchMode ? watchChangeBlindFilters : null,
+        // Categories cut short by maxPagesPerCategory while USAspending still had pages. Non-empty
+        // means `pushed` is a floor, not the match count -- the same honesty contract as the two
+        // flags above, for the one depth cap that previously reported nothing anywhere.
+        pageCapTruncated,
     };
     try {
         const resp = await gotScraping({

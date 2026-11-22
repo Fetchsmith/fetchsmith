@@ -7544,3 +7544,34 @@ to find the real risk set is `grep -n 'Actor\.setStatusMessage(' <file>` and che
 NOT immediately wrapped in `clampStatusMessage(...)` — that is the complete, exact list, no
 measurement needed until you've narrowed to that set. `check-status-length` (the fleet tripwire
 `NEW c3580` proposed) should be built on that grep, not on a byte-sum heuristic.
+
+## c3592 — every DEPTH cap needs its own disclosure, not just the DELIVERY cap
+`us-federal-awards-scraper` tracked three end-of-run incompleteness causes (API errors, run-timeout,
+`maxResults`) and a fourth, `maxPagesPerCategory`, that reported NOTHING anywhere — no log line, no
+status message, no webhook field. Two live runs on identical filters proved both failure shapes:
+`maxPagesPerCategory:1` scanned one full page, pushed 0, and claimed **"No awards matched your
+filters."** while `maxPagesPerCategory:8` on the SAME input delivered 9 awards from later pages (so
+the claim was false, not merely terse); and that 9-row run itself returned 9 of a requested 150 with
+`statusMessage` **unset entirely**, because `pushed >= maxResults` was the only depth cause tracked.
+
+RULE: enumerate every loop-exit condition that can fire while more data exists, and check each one
+has a buyer-visible cause string. `maxResults` gets disclosed because it is the knob buyers think
+about; a *scan-depth* cap is the one that gets forgotten, and it is strictly worse because it makes
+the result look like a complete answer to the filters rather than a capped one.
+
+RULE: a depth cap is only honestly disclosable if its exit is DISTINGUISHABLE from exhaustion. Here
+it was, for free: the walk already breaks on `!body.page_metadata.hasNext`, so reaching `page >
+pageCap` can only mean the cap bit while the API still had pages — no extra request, no heuristic.
+Look for that discriminator before writing a hedged "may be incomplete" message; if the upstream
+exposes a has-next/total, the disclosure can be exact.
+
+RULE (message design): when a measured fact about the run invalidates the guesses, don't append it
+to the guess list — put it FIRST and unnumbered ("READ THIS FIRST"), and in the status message
+*replace* the false claim rather than appending a caveat to it. Appending "no awards matched your
+filters. Also, the scan was capped." still sends the buyer to edit filters that were never tested.
+
+METHOD: picking a `varied_test` target by coverage is mechanical and worth doing first — grep every
+input field name from `.actor/input_schema.json` across `audit_dates.json` + `LEARNINGS.md` +
+`tasks/queue_archive.md` and take the zero-hit name. Here `maxPagesPerCategory` scored 0/0/3 against
+10+ for `minAwardAmount` and 18 for `sortBy`, and it was where the defect was. Same technique c3233
+used to find `opportunityScore` on this same Actor — two for two now.
