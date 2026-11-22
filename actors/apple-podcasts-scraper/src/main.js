@@ -145,10 +145,23 @@ if (dataType === 'charts' && input.chartGenre && !chartGenre) log.warning(`Unkno
 // Only the shows chart has a genre-specific endpoint; there is no per-genre Trending Episodes
 // feed. Dropped loudly rather than silently, so nobody pays for an "overall" chart they asked
 // to have narrowed (same rule as the federal-register PI desk, cycle 412).
+// Re-verified live 2026-11-22 (cycle 3556, unreachable_remedy rotation): the legacy
+// `itunes.apple.com/us/rss/toppodcastepisodes/limit=N/json` feed still answers HTTP 200 but with
+// ZERO entries, so it is not a genre-capable (or usable) alternative to fall back on — the
+// marketingtools v2 `podcast-episodes.json` path, which takes no genre segment, remains the only
+// live episodes chart. Don't be fooled by that 200 into thinking a genre episodes feed exists.
 if (chartGenre && chartType === 'episodes') {
   log.warning(`"chartGenre" ("${chartGenre}") is ignored for chartType "episodes" — Apple publishes Trending Episodes only as one overall chart per storefront, with no genre breakdown. Returning the overall episode chart for "${country}".`);
   chartGenre = null;
 }
+// Both caps re-verified live 2026-11-22 (cycle 3556, unreachable_remedy rotation), exactly at the
+// boundary, so the clamp warning below is not quoting a stale number: genre chart
+// (`itunes.apple.com/us/rss/toppodcasts/limit=N/genre=1489/json`) limit=200 -> HTTP 200 with
+// exactly 200 entries, limit=201 and 300 -> HTTP 400; overall charts
+// (`rss.marketingtools.apple.com/api/v2/us/podcasts/top/N/<podcasts|podcast-episodes>.json`)
+// N=100 -> HTTP 200 with exactly 100 rows on BOTH chartTypes, N=101/150/200 -> HTTP 500/504 HTML
+// (an error, not a shorter list — the exact claim the warning makes). Note the over-cap failure is
+// a 5xx, not a 4xx: Apple does not reject it as a bad request, it breaks trying to serve it.
 const chartCount = Math.min(chartCountRequested, chartGenre ? 200 : 100);
 // Gated on dataType "charts" too — otherwise a non-charts run with an explicit chartCount above
 // the cap got this clamp warning AND the chartsOnlyIgnored warning back to back, contradicting
@@ -524,6 +537,13 @@ const storefrontOf = (url) => url.match(/[?&]country=([^&]*)/)?.[1] ?? url.match
 // throws before believing them. Only exceptions reach here — an HTTP 4xx/5xx is a returned
 // response (throwHttpErrors is off by default in got-scraping) and is handled by getJson below,
 // so a genuine "bad storefront code" 400 still fails on the first attempt instead of looping.
+// That does NOT mean a 5xx gets one shot: measured 2026-11-22 (cycle 3556) against a local server
+// that 504s twice then 200s, got-scraping's OWN `retry` still fires on the retryable status codes
+// even with throwHttpErrors off — 3 server hits, final statusCode 200. This matters because
+// `rss.marketingtools.apple.com` 504s on cold-cache requests for VALID limits (observed twice this
+// cycle at limit=100, both succeeding on the next call), and that transient is absorbed before
+// getJson ever sees it. The absorption is budget-gated though: `retryLimit` below goes to 0 once
+// `left` drops under ~2x the per-request timeout, so a late-run cold-cache 504 does surface.
 // got applies `timeout.request` PER ATTEMPT, so `retry.limit: 2` at 30s was worth up to 90s in a
 // single call across this function's own 3 outer attempts — far more than the TIME_BUDGET_MARGIN_MS
 // the between-request timeBudgetOk() checks leave, which is how one real external run TIMED-OUT

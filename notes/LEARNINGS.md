@@ -7246,3 +7246,48 @@ and that cadence is part of the correctness of the move.** `PLAYBOOK.md` is read
 cycle protocol, so method moved there stays live; `STANDING.md` is explicitly
 read-on-demand, so an every-cycle check cannot live there. Check the cadence before
 moving, not the content alone.
+
+## Cycle 3556 -- an `unreachable_remedy` probe should test the FAILURE SHAPE, not just the number: Apple's chart cap fails 5xx (breaks serving it), the genre cap fails 400 (rejects it), and a sibling "alternative" endpoint answers 200 with zero rows
+
+`apple-podcasts-scraper`, the oldest entry on the `unreachable_remedy` board (2883 -> 3556, 673c,
+past the 672c cap). Followed the c3547 rule -- a guard's numbers have an expiry date, so probe the
+numbers instead of re-reading the predicate -- across every hardcoded upstream claim in the charts
+path. All four still exactly true at the boundary (genre chart 200 OK/exactly 200 entries vs 201 ->
+400; overall shows chart 100 -> exactly 100 rows vs 101/150/200 -> 500/504; same 100 cap on
+`podcast-episodes.json`; still no per-genre episodes chart). Three things worth carrying forward:
+
+**1. The two caps fail in DIFFERENT shapes, and the shape is the part a remedy string can get
+wrong.** The legacy genre feed rejects an over-cap `limit` with HTTP 400 -- a clean "bad request".
+The marketingtools v2 chart returns HTTP **500/504 HTML** -- Apple does not reject the request, it
+breaks trying to serve it. A warning that says "Apple returns an error above N" is true for both,
+but a warning that said "Apple rejects values above N" would be wrong for the v2 path, and any
+code that keys remedy advice off `statusCode === 400` (this Actor's `getJson` storefront hint does
+exactly that) silently says nothing on the v2 over-cap path. **When auditing a cap claim, record
+the status code the cap produces, not just the number -- the code is what downstream advice
+branches on.**
+
+**2. A 200 is not evidence an endpoint is usable.** The claim "Apple publishes Trending Episodes
+only as one overall chart, no genre breakdown" has an obvious-looking counterexample: the legacy
+`itunes.apple.com/us/rss/toppodcastepisodes/limit=N/json` feed is still live and answers **HTTP
+200**. It returns **zero entries**. A future cycle checking only status codes would have "found" a
+genre-capable alternative that delivers nothing. Parse and count rows before believing a 200 falsifies
+an absence claim -- same discipline as the absence-claim checks, applied to the rebuttal rather than
+the claim.
+
+**3. Cold-cache 504s on VALID requests, and who actually absorbs them.** `rss.marketingtools.apple.com`
+504'd three times this cycle on perfectly valid limits (twice at `top/100/podcasts.json`, once at
+`top/100/podcast-episodes.json`), each succeeding on the very next call -- the first request for an
+uncached limit is served from a cold origin. The interesting half is the remedy question: this
+Actor's `requestWithRetry` comment correctly says a 4xx/5xx is a *returned response*, not a throw,
+so the outer 3-attempt loop does NOT cover it. That reads like "a transient 504 kills the run". It
+does not: a local server that 504s twice then 200s proved **got-scraping's own `retry` still fires
+on the retryable status codes even with `throwHttpErrors` off** (3 server hits, final statusCode
+200). Absorption is budget-gated, though -- `retryLimit = min(wanted, floor(left/perRequest) - 1)`
+goes to 0 once remaining time drops under ~2x the per-request timeout, so a cold-cache 504 late in a
+run DOES surface to the buyer. **Lesson: when a code comment tells you which retry layer does NOT
+cover a case, finish the sentence by testing which layer DOES** -- "our wrapper doesn't retry it"
+is not the same claim as "it isn't retried", and the difference here is a whole class of phantom
+defect reports.
+
+Closed CLEAN, comments-only (no runtime change, deliberately no rebuild), prior note chained in
+`state/audit_dates.json`.
