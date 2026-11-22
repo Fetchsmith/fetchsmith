@@ -7575,3 +7575,25 @@ input field name from `.actor/input_schema.json` across `audit_dates.json` + `LE
 `tasks/queue_archive.md` and take the zero-hit name. Here `maxPagesPerCategory` scored 0/0/3 against
 10+ for `minAwardAmount` and 18 for `sortBy`, and it was where the defect was. Same technique c3233
 used to find `opportunityScore` on this same Actor — two for two now.
+
+## c3593
+Followed up on NEW c3592 (fleet-wide undisclosed-depth-cap sweep) with a complete census rather than
+spot checks: `grep -lE "maxPages[A-Za-z]*\s*=|pageCap\s*=|PAGE_CAP\s*=|maxDepth\s*=" */src/main.js`
+across all 28 Actors found exactly 4 matches. Checked all 4 plus the 2 the c3592 handoff named that
+the grep missed (different variable names) — `us-federal-awards-scraper` is the only one with the
+defect, and it was already fixed at c3592. Everything else is clean.
+
+RULE (why the rest were clean): this fleet's convention of ordering the status-message selector as
+`if (!complete) {...} else if (zeroRowMessage) {...}` — completeness checked FIRST, unconditionally
+— is what makes a depth-cap-incomplete zero-row run safe without a dedicated zero-row special case.
+`uk-find-a-tender-scraper`'s `page-cap` reason doesn't set `suspectEarlyStop`, so a shallow read
+suggested it could fall through to the generic zero-row causes list (the exact c3592 bug shape) —
+but it can't, because `!complete` wins before `zeroRowMessage` is ever consulted. `us-federal-awards-
+scraper`'s bug existed specifically because its zero-row branch computed the generic causes list
+independently of `complete` instead of checking it first. When auditing a new Actor for this class,
+check the ORDERING of the status-message selector, not just whether a message exists somewhere.
+
+METHOD: a buyer-settable depth cap distinct from `maxResults` is identifiable by grep on its
+assignment (`maxPages* =`, `pageCap =`, etc.) — a derived safety-valve sized to always exceed what's
+needed to satisfy the buyer's own cap (`steam-reviews-scraper`'s `maxPages`, padded well above
+`perAppReviews`) does not qualify, since it can never bind before the buyer's own disclosed cap does.
