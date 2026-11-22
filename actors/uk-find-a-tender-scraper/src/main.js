@@ -1014,6 +1014,12 @@ const cursors = sources.map((key) => ({
     scanned: 0,
     exhausted: false,
     failed: false,
+    // Span of release dates actually seen on this cursor, tracked across every page fetched
+    // (not just the current buffer) so a cursor drop can be checked against the requested
+    // window before being trusted as real exhaustion. See the suspectEarlyStop check below.
+    oldestMs: Infinity,
+    newestMs: -Infinity,
+    suspectEarlyStop: false,
 }));
 for (const c of cursors) log.info(`${c.source.label}: ${c.url}`);
 
@@ -1065,11 +1071,51 @@ async function fillBuffer(c) {
         c.pages += 1;
         scanned += releases.length;
         c.scanned += releases.length;
+        for (const r of releases) {
+            const t = r.date ? Date.parse(r.date) : NaN;
+            if (!Number.isNaN(t)) {
+                if (t < c.oldestMs) c.oldestMs = t;
+                if (t > c.newestMs) c.newestMs = t;
+            }
+        }
         log.info(`${c.source.label} page ${page}: scanned ${releases.length} releases (${scanned} total so far)`);
         c.url = body.links?.next ?? null;
         // Natural end of this portal's walk: no cursor left to follow. Recorded before the
         // empty-page break so a final empty page still counts as exhausted, not as a stop.
-        if (!c.url) c.exhausted = true;
+        //
+        // NOT trusted blindly — Contracts Finder's award stage drops `links.next` after EXACTLY
+        // 500 rows (5 pages) and returns an IDENTICAL narrow slab regardless of whether 7 or 21
+        // days were requested (live-measured cycle 3560: the same 21-day window re-sliced as
+        // [21d..14d] yielded 581 further, zero-overlap ocids past the point this "exhaustion"
+        // stopped at). The 500-row count alone is brittle as a signal (a feed that is genuinely
+        // exhausted could coincidentally land on a multiple of 500), so it is combined with the
+        // one check that actually tells the two cases apart: whether the dates we were handed
+        // reach back anywhere near the requested lower bound. A feed that really ran out returns
+        // rows spanning close to the full window; one Contracts Finder cut off keeps returning
+        // the same few newest days no matter how far back the window asked.
+        if (!c.url) {
+            const requestedSpanMs = windowToMs - windowFromMs;
+            const deliveredSpanMs = Number.isFinite(c.oldestMs) && Number.isFinite(c.newestMs)
+                ? c.newestMs - c.oldestMs : null;
+            const suspectEarlyStop = c.scanned > 0 && c.scanned % 500 === 0
+                && requestedSpanMs > 0 && deliveredSpanMs != null
+                && deliveredSpanMs < requestedSpanMs * 0.9;
+            if (suspectEarlyStop) {
+                c.suspectEarlyStop = true;
+                markIncomplete(
+                    'source-early-stop',
+                    `${c.source.label} stopped paging after exactly ${c.scanned} record(s) with no cursor left, but the `
+                    + `dates it returned (${new Date(c.oldestMs).toISOString().slice(0, 10)}..`
+                    + `${new Date(c.newestMs).toISOString().slice(0, 10)}) cover far less than the requested window `
+                    + `(${new Date(windowFromMs).toISOString().slice(0, 10)}..${new Date(windowToMs).toISOString().slice(0, 10)}); `
+                    + `this looks like a premature stop, not real exhaustion — "0 from ${c.source.label}" (or a short `
+                    + `count) here does NOT mean the window is empty. Narrow updatedWithinDays/dateFrom/dateTo into `
+                    + `smaller slices and re-run each with sources:["${c.key}"] to recover the rest`,
+                );
+            } else {
+                c.exhausted = true;
+            }
+        }
         if (!releases.length) break;
         c.buffer = releases;
     }
@@ -1253,7 +1299,18 @@ if (watchMode && seedFailure) {
 // textFilterInput Actor.fail() guard above needs it long before this point would exist.)
 let zeroRowMessage = null;
 if (pushed === 0 && !seeding) {
-    if (timeBudgetExceeded) {
+    if (cursors.some((c) => c.suspectEarlyStop)) {
+        // Same reasoning as the timeBudgetExceeded branch just below: a suspect-early-stop
+        // cursor already calls markIncomplete in fillBuffer, so this is always `!complete` and
+        // gets its real status message from that branch -- this stays a log-only detail, and
+        // deliberately does NOT fall into the generic "No notices matched" checklist, which
+        // would blame filters that were never actually the cause.
+        log.warning(
+            '0 notices delivered, but at least one source looked like a premature stop rather than a genuine '
+            + 'empty window -- do not change your filters on the strength of this run. See RUN_SUMMARY/the '
+            + 'status message for which source and what to do.',
+        );
+    } else if (timeBudgetExceeded) {
         // Every path that sets timeBudgetExceeded also fails a cursor and calls markIncomplete
         // (see fillBuffer), so this case is always `!complete` and already gets a status message
         // from that branch below -- no zeroRowMessage needed here, this stays a log-only detail.
@@ -1380,6 +1437,10 @@ const runSummary = {
         // `delivered: 0` means "unknown", not "this portal had nothing".
         exhausted: c.exhausted,
         failed: c.failed,
+        // TRUE when the cursor was dropped by the portal but the dates returned did not reach
+        // back near the requested window -- a likely premature stop, not real exhaustion. See
+        // the suspectEarlyStop check in fillBuffer. `exhausted` is always false when this is true.
+        suspectEarlyStop: c.suspectEarlyStop,
         // TRUE when this source was cut off to protect a sibling's share of the run budget
         // (cycle 2815), which is a different triage story from a portal that genuinely died:
         // the data is probably still there, this run just did not have time to reach it.
