@@ -21,6 +21,24 @@ function timeBudgetOk() {
   return true;
 }
 const TIME_BUDGET_WARNING = 'Approaching the run timeout — stopping early and returning what has been collected so far.';
+// Fleet convention (cf. trademark-search-scraper/nih-reporter-scraper/us-federal-awards-scraper):
+// Apify silently hard-cuts any statusMessage past 500 chars, so every setStatusMessage call must go
+// through this. `suffix` is RESERVED out of the budget rather than appended after clamping, so a
+// billing-critical trailing phrase survives even when the unbounded part ahead of it (an echoed
+// watchLabel, or a joined list of apps whose length has no input-schema cap) is long enough to hit
+// the cliff on its own.
+const STATUS_MESSAGE_MAX = 500;
+const clampStatusMessage = (msg, suffix = '') => {
+  const budget = Math.max(STATUS_MESSAGE_MAX - suffix.length, 0);
+  if (msg.length <= budget) return msg + suffix;
+  const cut = msg.slice(0, Math.max(budget - 4, 0));
+  const lastSpace = cut.lastIndexOf(' ');
+  return `${(lastSpace > 0 ? cut.slice(0, lastSpace) : cut).trimEnd()} ...${suffix}`;
+};
+// watchLabel is a free-text field with no maxLength in the input schema, and it is echoed raw into
+// 6 status messages below -- cap it independently so one giant label cannot by itself exhaust the
+// clamp's budget before any real content is written.
+const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max)}...` : s);
 const input = (await Actor.getInput()) ?? {};
 let apps = (input.apps ?? []).map((a) => String(a).trim()).filter(Boolean);
 const searchTerms = (input.searchTerms ?? []).map((t) => String(t).trim()).filter(Boolean);
@@ -1336,17 +1354,32 @@ const timeoutSuffix = idsNotReached.length
   ? ` ${truncationCause} — ${idsNotReached.length} id(s) were never fetched: ${idsNotReached.join(', ')}.${truncationAdvice}`
   : '';
 if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix} ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.${unparsedSuffix}${ignoredSuffix}`);
+  // timeoutSuffix can carry an unbounded idsNotReached join -- reserve the charge disclosure as a
+  // suffix so it survives the clamp even when timeoutSuffix alone is already past the cliff.
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Baseline run for watch label "${echoCap(watchLabel)}" did not finish — the run was approaching the platform run timeout.${timeoutSuffix}${unparsedSuffix}${ignoredSuffix}`,
+    ` ${watchSeen.size} review(s) across ${seededApps.size} app(s) were recorded before it stopped; 0 rows returned, 0 charged. Re-run to finish seeding before switching to incremental runs.`,
+  ));
 } else if (timeBudgetExceeded && pushed === 0 && watchMode) {
-  await Actor.setStatusMessage(`No new reviews delivered for watch label "${watchLabel}" — the run was approaching the platform run timeout, not confirmation that nothing is new.${timeoutSuffix}${unparsedSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `No new reviews delivered for watch label "${echoCap(watchLabel)}" — the run was approaching the platform run timeout, not confirmation that nothing is new.${timeoutSuffix}${unparsedSuffix}${ignoredSuffix}`,
+  ));
 } else if (watchMode && seeding) {
-  await Actor.setStatusMessage(`Baseline run for watch label "${watchLabel}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Baseline run for watch label "${echoCap(watchLabel)}": ${watchSeen.size} existing review(s) across ${seededApps.size} app(s) recorded, 0 rows returned, 0 charged. Run it again later to get only what's new.${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`,
+  ));
 } else if (watchMode && pushed === 0) {
-  await Actor.setStatusMessage(`Nothing new for watch label "${watchLabel}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Nothing new for watch label "${echoCap(watchLabel)}" since its last run — all ${watchSkipped} matching review(s) had already been delivered and none of them changed. That is the expected result most of the time; you were charged for nothing.${watchEventsFiltered ? ` (${watchEventsFiltered} review(s) did change, or were new, but the event was excluded by your watchEvents list.)` : ''}${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`,
+  ));
 } else if (watchMode && saturatedApps.length) {
-  await Actor.setStatusMessage(`Pushed ${pushed} new review(s) for watch label "${watchLabel}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; ${depthAtCeiling ? 'maxReviewsPerApp is already at its maximum of 5000, so run the watch more often instead' : 'raise maxReviewsPerApp or run the watch more often'}.${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Pushed ${pushed} new review(s) for watch label "${echoCap(watchLabel)}". Every matching review in the scanned window was new for: ${saturatedApps.join(', ')} — older new reviews may have been missed; ${depthAtCeiling ? 'maxReviewsPerApp is already at its maximum of 5000, so run the watch more often instead' : 'raise maxReviewsPerApp or run the watch more often'}.${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`,
+  ));
 } else if (watchMode) {
-  await Actor.setStatusMessage(`Watch label "${watchLabel}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Watch label "${echoCap(watchLabel)}": ${pushed} item(s) since the last run (${watchSkipped} already-delivered review(s) skipped, not charged${watchChanged ? `; ${watchChanged} of the pushed item(s) were a thumbs-up/thumbs-down change on an already-delivered review, not a brand-new one` : ''}${watchEventsFiltered ? `; ${watchEventsFiltered} change(s)/new review(s) excluded by your watchEvents list` : ''}).${baselinedSuffix}${degradedSuffix}${evictionSuffix}${unparsedSuffix}${ignoredSuffix}`,
+  ));
 } else if (pushed === 0) {
   // timeBudgetExceeded checked FIRST: without it, timing out before any id was even attempted falls
   // into the final default below ("no valid Steam App IDs could be parsed from your input") -- a
@@ -1369,7 +1402,9 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
           ? "the run's pay-per-event charge limit was reached before any review could be returned — raise the limit"
           : 'the run stopped before any review could be returned; see the log and RUN_SUMMARY for the stopping reason')
         : 'no valid Steam App IDs could be parsed from your input';
-  await Actor.setStatusMessage(`No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `No results — ${why}.${timeBudgetExceeded ? timeoutSuffix : ' See the log for details.'}${ignoredSuffix}`,
+  ));
 } else if (upstreamDegraded.length || fetchFailed.length || depthCapped.length || allFilteredIds.length
   || emptyIds.length || emptySearches.length || unparsedApps.length) {
   // Partial success: other apps produced rows, so the run is not a failure, but the buyer still
@@ -1408,19 +1443,30 @@ if (timeBudgetExceeded && pushed === 0 && watchMode && seeding) {
   // separator is unambiguously a cause boundary.
   // Em-dash prefix, matching the "No results — ..." style, so the lower-cased cause strings (which
   // start with field names like `maxReviewsPerApp`) read as a continuation instead of a new sentence.
-  await Actor.setStatusMessage(`Pushed ${pushed} results — ${partialCauses.join('; ')}.${timeoutSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Pushed ${pushed} results — ${partialCauses.join('; ')}.${timeoutSuffix}${ignoredSuffix}`,
+  ));
 } else if (timeBudgetExceeded) {
-  await Actor.setStatusMessage(`Pushed ${pushed} results.${timeoutSuffix}${unparsedSuffix}${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Pushed ${pushed} results.${timeoutSuffix}${unparsedSuffix}${ignoredSuffix}`,
+  ));
 } else if (!complete) {
   // Reaches here only for a non-watch run that hit maxResults or the charge limit cleanly (no
   // upstream/depth/empty issue), which none of the branches above cover.
-  await Actor.setStatusMessage(`Pushed ${pushed} results — incomplete: ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}. See RUN_SUMMARY for details.${ignoredSuffix}`);
+  // incompleteDetail can itself carry an unbounded joined id list (depth-cap/watch-saturated/
+  // time-budget reasons) -- reserve the RUN_SUMMARY pointer as a suffix so it survives the clamp
+  // instead of being the thing silently dropped by Apify's own 500-char cut (the exact bug class
+  // found on fec-campaign-finance-scraper at cycle 3589).
+  await Actor.setStatusMessage(clampStatusMessage(
+    `Pushed ${pushed} results — incomplete: ${incompleteReason}${incompleteDetail ? ` (${incompleteDetail})` : ''}.${ignoredSuffix}`,
+    ' See RUN_SUMMARY for details.',
+  ));
 } else if (ignoredSuffix) {
   // Last branch on purpose: a run that is otherwise complete and clean sets no status message at
   // all by this Actor's convention (verified c2408 on website-screenshot-scraper's equivalent), so
   // without this branch the ignored-input NOTE would be dropped on exactly the runs where it is the
   // only thing the buyer needs to know -- full dataset, nothing wrong, one dead filter.
-  await Actor.setStatusMessage(`Pushed ${pushed} results.${ignoredSuffix}`);
+  await Actor.setStatusMessage(clampStatusMessage(`Pushed ${pushed} results.${ignoredSuffix}`));
 }
 
 // RUN_SUMMARY: this run's completeness, in a form a pipeline can read (h250, same shape as
