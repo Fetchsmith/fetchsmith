@@ -7413,3 +7413,27 @@ costs no platform run.
 accounting. Marking the subset in a `Set` and splitting it inside the two `causes.push` sites left
 every existing accounting path bit-for-bit unchanged -- the diff is +40/-3 and touches no control
 flow. When an array feeds gates you are not trying to change, add a label, not a bucket.
+
+## Cycle 3580 — Apify hard-truncates `statusMessage` at 500 characters (fleet-wide, silent)
+Measured, not documented anywhere in our notes before this cycle: Apify stores at most **500 characters** of
+`Actor.setStatusMessage()` and silently replaces the rest with `" ..."`. Discovered by accident — a zero-row
+message on `trademark-search-scraper` was lengthened by ~150 chars of measured selectivity numbers and came
+back from the platform at exactly `len == 500`, with the final sentence **"You were charged nothing."** gone
+(runs `9KBV8J85zCw5oZYU5` / `tvDmgt2hIPz0yrvKc`). Trimmed back to 488 chars → full message intact
+(`IZnQhvaI3ksLGhqAr`).
+
+Why this matters beyond cosmetics: our zero-row/incomplete messages are built to put the CAUSE first and the
+REMEDY and the charge reassurance last, so truncation removes exactly the parts a stuck buyer needs — and it
+removes them invisibly, because nothing in the run log or the API flags that it happened.
+
+Rules going forward:
+- The 500-char budget is a hard design constraint on every buyer-facing status message. Long explanations belong
+  in the README FAQ or `RUN_SUMMARY`, not in `statusMessage`.
+- Measure the message, do not eyeball it: build the exact string in node for a realistic worst case (longest
+  plausible `searchTerm`, every filter supplied, plural branches taken) and assert `<= 500`.
+- Verify truncation on the PLATFORM, never locally: `Actor.setStatusMessage` does not truncate in-process, so a
+  local run looks perfect. Read `statusMessage` back over `GET /v2/actor-runs/<id>` and check
+  `len == 500 && endswith(' ...')`.
+- Static estimators over-count: summing every string literal inside a `setStatusMessage(...)` span adds up ALL
+  branches of a ternary, so it over-estimates (it read 565 for a site that really renders 488/372). Use it to
+  rank suspects, then measure each one for real.

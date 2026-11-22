@@ -1265,11 +1265,36 @@ if (timeBudgetStopped && !watchMode) {
       + 'please report it with the run ID; see RUN_SUMMARY for the scanned/declared counts. You were charged nothing.',
     );
   } else if (appliedFilters.length) {
+    // Cycle 3580 (unreachable_remedy): the "(the office filter is usually the narrowest)" hint was
+    // UNCONDITIONAL, but `appliedFilters` is deliberately built from only the filters the buyer
+    // ACTUALLY supplied (see the note above) -- so a buyer who set just a Nice class and a status,
+    // leaving all 81 offices in scope, was pointed at an office filter that is not narrowing their
+    // run at all and that they cannot drop. That is the same wrong-knob bug the note above says this
+    // branch exists to avoid, reintroduced in the parenthetical. Live-reproduced verbatim this cycle
+    // (run DbdatkAYkmDxeYZrw, "qwertzuiopx" + class 45 + Registered, no offices).
+    // The hint's CLAIM itself is true where it applies, and was measured here for the first time:
+    // each filter applied ALONE against a no-filter baseline, maxResults:1 platform runs --
+    // "coffee" 143,188 matches -> offices US+EM 26,180 (-82%), Nice class 30 72,368 (-49%), status
+    // Registered 68,498 (-52%); "solar" 69,901 -> offices US+EM 12,457 (-82%), Nice class 9 19,962
+    // (-71%), status Registered 34,401 (-51%). The office cut is both the largest and stable across
+    // terms (it is a corpus-share property of the office set, ~18% for US+EM), whereas Nice class vs
+    // status SWAP order between the two terms -- so there is no honest fixed ordering to offer when
+    // no office filter is set, and the message must not invent one.
+    // Keep BOTH branches short: Apify hard-truncates `statusMessage` at 500 characters and appends
+    // " ...", so prose spent here is paid for by losing the tail -- and the tail is "You were charged
+    // nothing.", the one line a zero-row buyer most needs. Measured this cycle: the first version of
+    // this fix carried the selectivity numbers inline and pushed BOTH branches to exactly 500 chars
+    // truncated (runs 9KBV8J85zCw5oZYU5 / tvDmgt2hIPz0yrvKc), losing that sentence. The numbers live
+    // in the README FAQ and in the comment above instead, where there is no budget.
+    const narrowestHint = validOffices.length
+      ? ' (the office filter is usually the narrowest)'
+      : ` (you set no office filter, so all ${OFFICES.length} offices are in scope -- nothing to widen there; `
+        + 'whether Nice class or status bites harder depends on the term, so drop one at a time)';
     await Actor.setStatusMessage(
       `0 results: TMview has no trademark matching "${searchTerm}" once ${appliedFilters.join(' + ')} `
       + `${appliedFilters.length > 1 ? 'are' : 'is'} applied. Every filter value you gave is valid, so this is a genuinely empty search, not an `
       + 'input mistake — drop or widen one of those filters at a time to find which one excludes '
-      + 'everything (the office filter is usually the narrowest). You were charged nothing.',
+      + `everything${narrowestHint}. You were charged nothing.`,
     );
   } else {
     // Reaching here means no filter field was supplied at all: a field whose every value was
