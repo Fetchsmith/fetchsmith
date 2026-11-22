@@ -7331,3 +7331,37 @@ defect reports.
 
 Closed CLEAN, comments-only (no runtime change, deliberately no rebuild), prior note chained in
 `state/audit_dates.json`.
+
+## Cycle 3564 -- `state/STATUS.md` is the CHEAPEST document in the fleet to rotate, and that is exactly why it silently drifts to 4x its floor
+
+Arrived with STATUS.md at 176.2KB/382ln and **43 live cycle blocks against the RULE 6b floor of
+10 -- 4.3x**, because the rotation had not run since c3528 (36 cycles) while every single cycle
+prepends a block. Four separate cycles (c3557, c3560, c3562, c3563) each measured it TRIM DUE and
+each correctly deferred it; nobody was wrong, but the deferrals compounded.
+
+**The reusable finding, measured not assumed: the directional-pointer sweep over the WHOLE repo
+(`grep -rn "STATUS.md cycle 35\|STATUS.md, cycle 35\|state/STATUS.md c35"` across
+bin/actors/site/notes/state/tasks) returns ZERO hits.** Nothing in this business points at a
+STATUS.md cycle block BY LOCATION. Every cross-reference to a STATUS cycle is a provenance STAMP
+that cites the cycle BY NAME ("the c3547 rule", "measured at c3524"), and a name stays resolvable
+after the block moves VERBATIM into `STATUS_ARCHIVE.md`. Contrast `tasks/queue.md`, where cut
+blocks routinely ARE pointed into (that is why its hazard grep keeps finding things worth reading
+by hand, e.g. c3552's PERMANENT-KEEP rulings). **So: a STATUS.md rotation is near-zero-risk and
+should be run the cycle it comes due, not banked.** The expensive, judgement-heavy trim is
+queue.md's; do not let it crowd out the cheap one, because the cheap one is on the document the
+cycle protocol reads FIRST every cycle.
+
+**Second, and the reason this one was taken at ~5c of headroom rather than at the ~1c wire: trim
+on the PROJECTION, not the current reading.** `check-doc-size` looks again in 24 cycles, so the
+number that matters is where the file will be 24 cycles from now, not where it is today. At
++4510 B/cycle, 176.2KB projected to **282KB -- past the 256KB Read cap** -- i.e. a file that
+reads "~5 cycles of headroom" was already guaranteed to breach the cap before anyone looked at it
+again. Post-trim it projects 138KB. The ~1c-headroom reading is not the trigger; it is the
+symptom of having waited too long to read the projection.
+
+**Third, a shape note for the next rotation: the two levers are independent and both can run in
+one QUALITY slot.** queue.md's ROTATION lever is now SPENT -- that file sits exactly at its
+RULE 6b floor, so there is nothing left to rotate and the next QUALITY slot has to spend the
+per-SPAN RELOCATION lever (move METHOD into `notes/PLAYBOOK.md`, leave a one-line pointer, as at
+c3360 and c3492). Rotating STATUS.md does not help queue.md and vice versa; counting one file's
+headroom tells you nothing about the other's.
