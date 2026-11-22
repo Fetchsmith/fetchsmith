@@ -45,6 +45,17 @@
       "acked_date": "2026-10-28"
     },
     {
+      "fp": "efda8305f6ce",
+      "slug": "google-news-scraper",
+      "handle": "sonic_scraper/google-bing-news-monitor",
+      "verb": "Deprecated",
+      "dates": [],
+      "context": "Google & Bing News Monitor (Deprecated) Deprecated. Same input and output as the Yahoo News Scraper + Google & Bing News Aggregator (set searchEngines to google and bin",
+      "note": "c3591: Keyword false positive on [Deprecated]. Fetched full Store description live: the rival is self-deprecating THEIR OWN Actor in favor of their other listing (multi-news-scraper): 'Deprecated. Same input and output as the Yahoo News Scraper + Google & Bing News Aggregator ... No new features will be added here.' Not an announcement of a Google/Bing News upstream API change. check-row-floor ran CLEAN this cycle across all 26 live Actors including google-news-scraper. Rival copy is permanent and would otherwise re-flag every daily run.",
+      "acked_cycle": 3591,
+      "acked_date": "2026-11-22"
+    },
+    {
       "fp": "0cb17d1f28cd",
       "slug": "shopify-products-scraper",
       "handle": "practical_ai_lab_jp/pal-shopify-product-image-inventory",
@@ -78,6 +89,17 @@
       "acked_date": "2026-11-18"
     },
     {
+      "fp": "522b937e0698",
+      "slug": "shopify-products-scraper",
+      "handle": "diego_vega14/shopify-product-csv-audit",
+      "verb": "migrating",
+      "dates": [],
+      "context": "Shopify Product CSV Audit Audit a Shopify product CSV before migrating a store. Find malformed prices and image URLs, repeated SKUs and duplicate variants. Get exact line numbers and suggested fixes f",
+      "note": "c3591: Keyword false positive on [migrating], same shape as the 5 existing practical_ai_lab_jp/asunoki [migration] acks (c2340/c2388/c2436/c3398). Fetched full Store description live: 'Audit a Shopify product CSV before migrating a store. Find malformed prices and image URLs, repeated SKUs and duplicate variants.' This is a MERCHANT auditing their own product CSV before migrating stores, not a Shopify platform API migration/deprecation. check-row-floor ran CLEAN this cycle across all 26 live Actors including shopify-products-scraper. Rival copy is permanent marketing text and would otherwise re-flag every daily run.",
+      "acked_cycle": 3591,
+      "acked_date": "2026-11-22"
+    },
+    {
       "fp": "67f5f16f22e7",
       "slug": "shopify-products-scraper",
       "handle": "practical_ai_lab_jp/pal-shopify-product-json-csv-export",
@@ -87,6 +109,17 @@
       "note": "Keyword false positive, same shape as the existing practical_ai_lab_jp acks (0cb17d1f28cd/dc4d26a61d8d, c2388/c2436): the [migration] hit is the rival's own USE-CASE copy ('catalog migration or merchandising QA') -- a MERCHANT auditing their own catalog export, not a Shopify platform API migration/deprecation. Our upstream re-verified LIVE this cycle (c3398): curl of https://www.allbirds.com/products.json?limit=5 returned HTTP 200; bin/actor-health --only shopify-products-scraper returned a transient-proxy INCONCLUSIVE (status 201, known Apify-Proxy timeout shape, not a route change), and bin/check-row-floor found no non-transient flag on this Actor. Rival copy is permanent marketing text and would otherwise re-flag on every daily run.",
       "acked_cycle": 3398,
       "acked_date": "2026-11-18"
+    },
+    {
+      "fp": "89ebb07b836a",
+      "slug": "shopify-products-scraper",
+      "handle": "jthuntenterprisesllc/shopify-migration-proof",
+      "verb": "Migration",
+      "dates": [],
+      "context": "Shopify Migration Proof \u2014 Compare Product CSVs After Migration Compare before-and-after Shopify product CSVs. Find missing variants, price changes,",
+      "note": "c3591: Keyword false positive on [Migration], same shape as the 5 existing practical_ai_lab_jp/asunoki [migration] acks (c2340/c2388/c2436/c3398). Fetched full Store description live: 'Compare before-and-after Shopify product CSVs. Find missing variants, price changes, image URL mismatches, and redirect mapping errors.' This is a MERCHANT comparing CSVs from their own store migration, not a Shopify platform API change. check-row-floor ran CLEAN this cycle across all 26 live Actors including shopify-products-scraper. Rival copy is permanent marketing text and would otherwise re-flag every daily run.",
+      "acked_cycle": 3591,
+      "acked_date": "2026-11-22"
     },
     {
       "fp": "8c4dd0250222",
