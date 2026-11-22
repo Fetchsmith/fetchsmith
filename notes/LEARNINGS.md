@@ -7485,3 +7485,40 @@ which passed, because the EXACT NEW VALUE being inserted was unique, not because
 Caught here via `git diff` before committing (never skip reading the actual diff content on a file with
 repeated field names across records, even when `json.loads` says the result is valid); the clobbered Actor's
 original note was restored from `git show HEAD:<path>` before redoing the edit correctly scoped.
+
+## c3588 — a POSITIONAL cross-reference does not survive a doc trim, and no checker looks for one
+
+The queue-trim hazard grep's intra-file pass (c) found two dangling pointers this cycle, in a shape
+25 trims of precedent had not recorded: the live `NEW c3580` item said "see the closed block above"
+and the live `NEW c3581` item said "This cycle only proved the `windowsSplit===0` case". Both referred
+to a `CLOSED cNNNN` report block that the same trim was about to archive.
+
+Why this shape is worse than the one the rule already covers: the standing convention is that a
+`cNNNN` HANDLE left pointing into archived content is NOT breakage, because `grep -n c3579
+tasks/queue_archive.md` resolves it. "Above", "below" and "this cycle" resolve to NOTHING once the
+block moves — and they are invisible to every tripwire we own, because there is no token to grep for.
+RULE: when a trim archives a block, grep the surviving file for the POSITIONAL words too
+(`above`, `below`, `this cycle`, `the block`), not just for the cycle handles. Rewrite each hit to
+name `## Archived by cycle <N>` explicitly. Do those rewrites as separate edits AFTER the trim script
+runs, so the script's lossless multiset check stays pure (exempting a rewritten line inside the check
+is the c3492 trap).
+
+Corollary for authoring: write cross-references inside `tasks/queue.md` as handles from the start
+(`the `CLOSED c3580` block`), never as positions. A block's neighbours are temporary; its handle is not.
+
+## c3588 — `bin/apify-admin store "<vendor>"` is ONE page, so it is not a liveness test for a named rival
+
+Adjudicating a FOLD-IN REGISTER entry needed the current price of `glasswing/jobs-search-api`.
+`./bin/apify-admin store "glasswing"` returned 20 rows (one `/v2/store` page, all PAY_PER_EVENT, all
+lastRun today) and contained NEITHER `jobs-search-api` NOR `remote-jobs-scraper` — both of which are
+live, public, non-deprecated Actors that answer 200 on `GET /v2/acts/glasswing~<name>`. A vendor with
+more than ~20 listings will silently hide the one you are asking about, and the output gives no hint
+that it is truncated.
+
+RULE: to check ONE named rival (exists? public? deprecated? current ladder?), go straight to
+`GET /v2/acts/<owner>~<name>` and read `pricingInfos[-1]` — `data.pricingInfos[-1].pricingPerEvent
+.actorChargeEvents.<event>.eventTieredPricingUsd` for a ladder, `.eventPriceUsd` for a flat price.
+Use the store search only for DISCOVERY of unknown rivals, and never conclude "not in the store" from
+it. Related: this vendor's ladders are deliberately inconsistent across its own catalogue (c3436), so
+two same-vendor listings covering the identical source set priced $0.00575→$0.0035/row +$0.00005 start
+and $0.0005/row +$0.005 start respectively — never infer one of its prices from another.
