@@ -15,7 +15,7 @@
     "rssUrls": {
       "title": "Custom Google News RSS URLs",
       "type": "array",
-      "description": "Optional: topic/section/publication feeds from news.google.com/rss/... (added to the queries).",
+      "description": "Optional: topic/section/publication feeds from news.google.com/rss/... (added to the queries). For local news by city, use https://news.google.com/rss/headlines/section/geo/<CITY> (e.g. .../geo/Chicago) — this works even though \"Topic by hashed code\" below cannot reach Local news.",
       "editor": "stringList"
     },
     "topics": {
@@ -27,7 +27,7 @@
     "topicsHashed": {
       "title": "Topic by hashed code (any section, incl. local/story clusters)",
       "type": "array",
-      "description": "Optional: paste a full news.google.com/topics/<CODE>... URL (copied from your browser's address bar after clicking into ANY Google News section, including ones with no name above — a single company's page, a local-news section, a story cluster) or just the <CODE> itself. The code is extracted automatically. Unlike \"Browse by topic\", this reaches every section Google has, not just our 20 named ones.",
+      "description": "Optional: paste a full news.google.com/topics/<CODE>... URL (copied from your browser's address bar after clicking into ANY Google News section, including ones with no name above — a single company's page, a local-news section, a story cluster) or just the <CODE> itself. The code is extracted automatically. Unlike \"Browse by topic\", this reaches far more sections than our 20 named codes — but a few Google-personalised sections, Local news in particular, have a working /topics/ page with no RSS feed behind it and will come back empty here. For local news by city, use the geo feed in \"Custom Google News RSS URLs\" instead.",
       "editor": "stringList"
     },
     "excludeWords": {

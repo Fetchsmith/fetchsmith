@@ -38,7 +38,7 @@ const rawTopics = (input.topics ?? []).map((t) => String(t).trim().toUpperCase()
 const topics = rawTopics.filter((t) => VALID_TOPICS.includes(t));
 const badTopics = rawTopics.filter((t) => !VALID_TOPICS.includes(t));
 // Silently dropping an unknown topic used to make a typo look like "Google has no news today".
-if (badTopics.length) log.warning(`Ignoring unsupported topic(s) ${badTopics.join(', ')} — use one of: ${VALID_TOPICS.join(', ')}. For any other section, pass its feed URL in "Custom RSS feed URLs" instead, or use "Topic by hashed code" below.`);
+if (badTopics.length) log.warning(`Ignoring unsupported topic(s) ${badTopics.join(', ')} — use one of: ${VALID_TOPICS.join(', ')}. For any other section, pass its feed URL in "Custom RSS feed URLs" instead, or use "Topic by hashed code" below. For local news by city, "Topic by hashed code" won't work (Local news has no RSS feed) — use the geo feed news.google.com/rss/headlines/section/geo/<CITY> in "Custom RSS feed URLs" instead.`);
 // Every Google News section — including the ~tens of thousands of niche/local/story-cluster pages
 // that have no named code at all, like a single company's "Full Coverage" page — has a URL of the
 // form news.google.com/topics/<HASH>. Accept either the full URL (any of its path shapes, e.g. the
