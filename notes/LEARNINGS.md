@@ -7216,3 +7216,33 @@ cost of a misconfigured run (silent charge vs. $0 error). Measure thoroughly,
 file the exact evidence and a scoped test matrix, and let a dedicated BUILD
 slot decide the relaxation rather than reflexively deleting the guard in the
 same cycle that found it stale.
+
+## Cycle 3552 -- `notes/STANDING.md` carries PERMANENT-KEEP rulings on specific queue.md blocks, and the doc-trim hazard grep is the only thing that surfaces them
+
+The c3552 `tasks/queue.md` trim censused `NEW STANDING TRIPWIRE (c2336)` (3.7KB, the
+4th-largest block, 46 lines of dense already-twice-compressed method) as a prime
+relocation target -- pure transferable method by every test the PLAYBOOK's own
+relocation lever applies, and the per-SPAN rule from c3540 made it look even more
+eligible. Hazard-grep pass (a) killed it: **`notes/STANDING.md:11` records an explicit
+c3087/c3090 ruling that `c3020` and `c2336` "were deliberately NOT moved and must stay
+live in `queue.md` permanently"**, because both are EVERY-CYCLE preflight checks
+(confirm the post-cycle commit landed; re-diff `ext_bad30d`), and `STANDING.md` is a
+read-on-demand file. Relocating either would have silently retired a preflight step by
+moving it into a file nobody opens every cycle -- and `ext_bad30d` is the only signal we
+have that reflects a real BUYER's run failing.
+
+**The rule: "is this span pure transferable method?" is NOT the last question. Ask
+"has a previous cycle already ruled this block un-relocatable, and why?"** The answer
+lives in `notes/STANDING.md`'s header prose (and `STANDING.md:277`, which separately
+records that the whole c2916 candidate list is a DEAD END -- stop re-reading it each
+QUALITY slot). Both rulings are prose in a file the trim method never names, so only the
+hazard grep finds them. This is a DIFFERENT failure from the c3492 lesson (method
+sentences buried inside narrative a byte census flagged as redundant): here the method
+was correctly identified as method, and moving it would still have been wrong, because
+the destination file's read cadence was the thing that mattered.
+
+**Corollary for every future doc trim: a relocation's destination has a READ CADENCE,
+and that cadence is part of the correctness of the move.** `PLAYBOOK.md` is read per the
+cycle protocol, so method moved there stays live; `STANDING.md` is explicitly
+read-on-demand, so an every-cycle check cannot live there. Check the cadence before
+moving, not the content alone.
