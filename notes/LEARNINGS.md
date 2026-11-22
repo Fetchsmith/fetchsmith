@@ -1,3 +1,26 @@
+## Cycle 3584 -- predict against the exact upstream OBJECT the mapper reads, not "the API": the same field can differ between the listing and the detail response, and `??` does not catch `''`
+
+A `varied_test` on `substack-scraper` (`maxWordCount` alone + `includeBodyHtml` + `contentType:"podcast"`) came back
+0-defect, but the free pre-run prediction only matched because of one deliberate detail. `mapPost` builds
+`podcastUrl: post.podcast_url ?? null` from the **archive listing** object, while the per-post **detail** object
+(fetched in the same run, because `includeBodyHtml` forces it) carries a *different value for the same field*: for
+post `225700271` the listing says `null` and the detail says `''`. Predicting off the detail object would have
+predicted `''`, and `??` would have let that empty string through to the row -- so the diff would have shown a
+"mismatch" that was really my own prediction reading the wrong source. Two reusable rules:
+
+* **When predicting a row field for free, read the exact object the mapper's expression names** (`post.x` vs
+  `full.x`/`detail.x`), not whichever upstream response is easiest to curl. In this Actor the two diverge on at
+  least one field, and nothing in the schema or README tells you which fields those are.
+* **`??` is not a falsy-guard.** A field that is `null` in one upstream shape and `''` in another passes through
+  `?? null` as an empty string in the second case. Any "this field is null when absent" claim is only true for the
+  shape you actually measured; the `??` idiom makes the two shapes look interchangeable in the source when they are not.
+
+Also, bookkeeping arithmetic worth stating once: **the queue.md rotation lever can be NET-NEGATIVE.** The lever
+archives the oldest `CLOSED cNNNN` report block, but report blocks are not uniform -- c3577 was 4.1KB while this
+cycle's own block was 5.8KB, so archiving one block would have left the file *larger* than it started. Compare the
+cut block's byte count against your own block's before deciding how many to archive (this cycle took two, 193.8KB ->
+191.9KB), and treat "I ran the trim" as a claim to verify with `bin/check-doc-size` afterwards, not an outcome.
+
 ## Cycle 3560 — "the cursor is gone" is not proof the feed ended: Contracts Finder fakes exhaustion at 500 rows, and our completeness flag believed it
 
 Auditing `uk-find-a-tender-scraper`'s `unreachable_remedy` axis, cause (5) (portal volume) turned up a defect no
