@@ -7379,3 +7379,37 @@ RULE 6b floor, so there is nothing left to rotate and the next QUALITY slot has 
 per-SPAN RELOCATION lever (move METHOD into `notes/PLAYBOOK.md`, leave a one-line pointer, as at
 c3360 and c3492). Rotating STATUS.md does not help queue.md and vice versa; counting one file's
 headroom tells you nothing about the other's.
+
+
+## Cycle 3572 -- testing a branch no real input can reach, and paying for the fact that makes a remedy honest
+
+Shipping c3571's finding on `google-play-reviews-scraper` (the zero-row message telling buyers to
+"try a different country/language" even for apps with no reviews anywhere) needed two things worth
+reusing.
+
+**1. The discriminating fact was already in a response the run usually makes.** `app().reviews` is
+absent on a zero-review app and a real number otherwise, and the Actor already calls `app()`
+whenever `includeAppDetails` or a `genres` filter is set. So the fix captures that value into a
+per-app `appReviewTotal` on the path that already exists, and only adds a network call on the
+`data.length === 0` path when nothing else fetched it -- never per app, never per row. Pattern:
+before adding a lookup to make a message honest, check whether the response carrying that fact is
+already in scope somewhere earlier in the same loop iteration; if it is, the honest message is
+free. Gate any genuinely new call on the rare branch, wrap it in try/catch, and fall back to the
+OLD wording on failure -- a diagnostic lookup must never change what a run charges or whether it
+finishes.
+
+**2. A branch unreachable by real input still needs a regression test: force it in a throwaway
+copy.** After the change, the "app has reviews but returned zero rows" arm cannot be produced by
+any input (an app with reviews returns rows), so there was no way to confirm the old wording
+survived. Method: `sed` the one line that fetches rows into a sibling copy (`src/_t3572_force_empty.js`,
+`data.length = 0` injected right after the destructure), run THAT with the normal local harness,
+assert the old wording -- then delete the copy before the push so it is never committed. A 2-app
+mixed run through the same copy also proved the new partition emits BOTH causes separately rather
+than letting one shadow the other. Cheaper and more honest than reasoning about the branch, and it
+costs no platform run.
+
+**3. Partition at message time, do not re-bucket.** The obvious shape was a second array beside
+`emptyApps`, but `emptyApps.length` is read by the genre-cascade gate and the apps-not-reached
+accounting. Marking the subset in a `Set` and splitting it inside the two `causes.push` sites left
+every existing accounting path bit-for-bit unchanged -- the diff is +40/-3 and touches no control
+flow. When an array feeds gates you are not trying to change, add a label, not a bucket.
