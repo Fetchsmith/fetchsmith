@@ -1,3 +1,43 @@
+## Cycle 3560 — "the cursor is gone" is not proof the feed ended: Contracts Finder fakes exhaustion at 500 rows, and our completeness flag believed it
+
+Auditing `uk-find-a-tender-scraper`'s `unreachable_remedy` axis, cause (5) (portal volume) turned up a defect no
+previous rotation caught, because every previous rotation checked the claim the cheap way: pull one page, confirm
+`links.next` is present, conclude "more exists". Walking the cursor to its end instead exposed the opposite failure.
+
+**Measured.** Three Contracts Finder award-stage walks whose window ends at/near now — `[7d..0d]`, `[21d..0d]`,
+`[21d..1d]` — each terminated with **no `links.next`** after **exactly 500 rows**, and all three returned the
+*identical* slab spanning `2026-11-16T10:10:32Z..2026-11-20T20:21:31Z` (~4.4 days) whether 7 or 21 days were asked
+for. The portal stops honouring the requested span once the result set is large, hands back a fixed newest-500 slab,
+and then omits the cursor as though the feed were finished. Those are not all the rows: the same 21-day span sliced as
+`[21d..14d]` returned 600+ rows (cursor still live at the probe cap) spanning `11-02..11-07`, **581 distinct ocids with
+zero overlap** with the capped walk.
+
+**Why it bit us.** `main.js:1071` does `if (!c.url) c.exhausted = true;`, and `exhausted` is this Actor's documented
+trust anchor for "a per-source `delivered: 0` honestly means this portal has none" — it also feeds `RUN_SUMMARY.complete`.
+The one guard that would otherwise catch a short run, `stoppedShort` (main.js:1156), keys off a **remaining** buffer or
+cursor. A premature cursor-drop removes exactly the evidence that guard looks for, so the two mechanisms have a shared
+blind spot: the failure mode is invisible to both, and the run reports itself COMPLETE while missing the majority of the
+window. No overcharge (PPE bills delivered rows only) — the damage is a confidently false completeness claim.
+
+**Two method rules, both earned the hard way this cycle.**
+1. **Verifying a cursor exists is not verifying a walk terminates honestly.** For any paginated upstream, the audit that
+   finds truncation bugs is "walk to the end, then re-request a narrowed sub-window and diff the ids" — presence of
+   `links.next` on page 1 tells you nothing about what happens at depth. Cheap probes confirm the claim you already
+   believe; the diff is what falsifies it.
+2. **Never derive a per-day rate by dividing a possibly-capped total by the REQUESTED window.** Mid-cycle this produced
+   a bogus "CF award = 23.8/day" (500 ÷ 21d) and a near-miss finding that the `SOURCES` comment's "100+ award
+   notices/day" had drifted. Dividing by the *delivered span* instead (500 ÷ 4.42d = ~113/day) confirmed the comment was
+   right all along. A truncated numerator over an assumed denominator will manufacture drift that does not exist — take
+   the denominator from the data (`oldest`/`newest` timestamps actually returned), never from the request.
+
+Genuine drift did show up elsewhere in the same comment (main.js:324-326), measured from *exhausted* walks so the
+numbers are trustworthy: CF "~18 tender-stage notices/day" now measures ~8.1/day (114 rows/14d), FTS "~7-8/day"
+measures ~5.9/day (83/14d). Also a scope correction for cause (5)'s wording: CF beats FTS on the tender stage by only
+1.37x (114 vs 83) — CF's "much larger flow" is true of the *award* stage, not uniformly.
+
+Not fixed this cycle: the fix changes completeness semantics on a live, published Actor and needs a rebuild plus
+platform verification. Left as the top queue item with the full repro.
+
 ## Cycle 3548 -- lifting a filter GATE is not the same as wiring the filter UP: the request builder may have no key for it at all, and the result is a silently UNFILTERED, fully-charged run
 
 `fec-campaign-finance-scraper` gated `committeeId` off contributions mode for ~3,100 cycles because FEC's
