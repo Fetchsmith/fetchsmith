@@ -90,6 +90,9 @@ const voluntaryMandated = VOLUNTARY_MANDATED.includes(String(input.voluntaryMand
     ? String(input.voluntaryMandated).trim()
     : '';
 const maxResults = Math.min(Math.max(Number(input.maxResults ?? 100), 1), 50000);
+// check-depth-remedy-ceiling (c3579): guards the two "raise maxResults" press-release
+// remedies below -- a buyer already at the schema maximum has no higher value to set.
+const maxResultsAtCeiling = maxResults >= 50000;
 const includeRiskScore = input.includeRiskScore !== false;
 const includeRootCause = input.includeRootCause !== false;
 // Unlike includeRiskScore/includeRootCause (pure local regex, zero network cost), this one issues
@@ -1396,7 +1399,7 @@ if (watchMode && seeding) {
             `includePressReleases is on, but maxResults=${maxResults} was already filled by enforcement `
             + 'records before the press-release feed is read (the feed is read last), so NO press releases '
             + 'are in this run. The feed is the FRESHER source, so this silently costs you exactly the rows '
-            + 'you turned it on for: raise maxResults, or narrow the enforcement side so it fits under the '
+            + `you turned it on for: ${maxResultsAtCeiling ? 'maxResults is already at this Actor\'s maximum of 50000, so raising it is not an option -- narrow' : 'raise maxResults, or narrow'} the enforcement side so it fits under the `
             + 'cap (a recent reportDateFrom is the usual fix).',
         );
     } else if (runPressReleases) {
@@ -1617,8 +1620,8 @@ const feedIncomplete = runPressReleases && pressReleaseFetchFailed
         ? {
             incompleteReason: 'press-release-feed-not-reached',
             incompleteDetail: `Press releases were requested but maxResults=${maxResults} was filled by `
-                + 'enforcement records before the feed was read, so none are in this run. Raise maxResults '
-                + 'or narrow the enforcement filters to reach the fresher press-release source.',
+                + 'enforcement records before the feed was read, so none are in this run. '
+                + `${maxResultsAtCeiling ? 'maxResults is already at this Actor\'s maximum of 50000, so narrow' : 'Raise maxResults or narrow'} the enforcement filters to reach the fresher press-release source.`,
         }
         : null);
 const firstIncomplete = typeIncomplete ?? feedIncomplete;

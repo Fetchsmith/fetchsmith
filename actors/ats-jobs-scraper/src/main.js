@@ -2210,7 +2210,11 @@ function pushedCauses() {
   // "maxJobsPerCompany" let through — distinct from skippedCompanies (never checked at all).
   // Defaults to 50, so this bites buyers who never touched the field.
   if (cappedCompanies.length) {
-    causes.push(`${cappedCompanies.length} compan(ies) had more open postings than "maxJobsPerCompany" (${maxJobsPerCompany}) let through (${cappedCompanies.map((c) => `${c.ats}:${c.slug} — ${c.delivered} kept`).join(', ')}) — raise maxJobsPerCompany to get the rest`);
+    const maxJobsPerCompanyAtCeiling = maxJobsPerCompany >= 5000;
+    const remedy = maxJobsPerCompanyAtCeiling
+      ? 'maxJobsPerCompany is already at this Actor\'s maximum of 5000, so raising it is not an option — this Actor cannot return more than 5000 postings for a single company in one run'
+      : 'raise maxJobsPerCompany to get the rest';
+    causes.push(`${cappedCompanies.length} compan(ies) had more open postings than "maxJobsPerCompany" (${maxJobsPerCompany}) let through (${cappedCompanies.map((c) => `${c.ats}:${c.slug} — ${c.delivered} kept`).join(', ')}) — ${remedy}`);
   }
   // NEW c3293: distinct from skippedCompanies (companies after this one, never attempted) and from
   // cappedCompanies (the per-company maxJobsPerCompany input) — this is the run-wide "maxResults"
