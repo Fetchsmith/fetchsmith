@@ -949,6 +949,31 @@ try {
         // DATA-LOSS half of the c856 fix (echoing `sort_null_only` back in the cursor so the walk
         // continues past the null block instead of terminating at it) still works -- verified at
         // c3548, the 2,000-row walk crossed out of the null block into dated rows on page 4.
+        //
+        // NEW c3548 OPTION 2, answered cycle 3601 -- NOT a free root fix, but it IS the mechanism
+        // a real fix would use. Live-probed `contributor_state=CA&two_year_transaction_period=2026`
+        // 3 ways (keyless cost, $0, 3 GET calls): no `min_date` -> 100/100 null-date rows on page 1;
+        // `min_date=2025-01-01` (the period's real start) -> 0/100 nulls, all real dates; even
+        // `min_date=1970-01-01` (long before any FEC data exists) -> still 0/100 nulls, all real
+        // dates. So this is SQL NULL semantics (`contribution_receipt_date >= :min_date` is
+        // NULL/false when the column is NULL, so Postgres drops the row), not a date-range effect --
+        // ANY `min_date`, however early, makes the FEC silently EXCLUDE every null-date row from the
+        // result set and its cursor. `pagination.count` is NOT reliable evidence here: it read
+        // 28,362,667 for both the no-`min_date` and the 1970 case but 28,179,863 for the 2025 case --
+        // an artifact of `is_count_exact:false` ES estimation, not the real applied filter.
+        // Consequence: simply ALWAYS sending a `min_date` (defaulting to the cycle's own start date
+        // when the buyer sets none) would "fix" the sort order by deleting the null rows outright --
+        // which is worse than the current disclosure, not better, because those null-date rows are
+        // real filings this Actor currently still delivers (see the nullDateDelivered comment below).
+        // The genuine root fix this result opens up is a TWO-PHASE walk: page the dated block first
+        // with an internal min_date far before any real FEC data (so phase 1 is exactly the dated
+        // rows, newest-first, truly sorted), then on exhaustion drop min_date and page a second pass
+        // collecting ONLY the leading null-date rows (stopping the instant a dated row reappears) to
+        // append after. That is a real pagination-state-machine change -- new internal cursor handling,
+        // a phase-switch condition, and its own maxResults/nullDateDelivered accounting -- not a
+        // one-line edit, so it is NOT done in this comment-only pass. Filed as its own scoped item;
+        // see `NEW c3548` in tasks/queue.md. Option 4 (sort_nulls_last may be restored upstream) was
+        // also re-tested for free in this same probe: still a no-op, nulls still sorted first.
         sort_nulls_last: 'true',
       })
       : await fecGet('/candidates/', {
