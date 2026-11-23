@@ -5942,3 +5942,25 @@ guard refusal legitimately sends no webhook and would have been a false negative
 returned by `waitForFinish`.** The 2-row success control read `{result:0}` at that moment and `{result:2}`
 on a re-read ~40s later. A cycle that reads charges off the waitForFinish snapshot will file a false
 "pushed N but charged 0" drift alarm. Always re-`GET /v2/actor-runs/<id>` before comparing.
+
+---
+
+**c3612 (doc-trim method, and a class of defect worth grepping for elsewhere): a hand-maintained
+"DONE history" list inside a method document goes stale silently and is then read as authoritative.**
+`notes/PLAYBOOK.md`'s queue-trim cadence section carried "DONE history -- 30 completed trims" with an
+explicit cycle list ending at c3498 -- but trims have run roughly every QUALITY slot since (c3504,
+c3516, c3603, c3609, c3612...), so the list was understating reality by ~10 trims while reading like a
+complete count. Nothing downstream used the number, so it survived ~110 cycles. FIX APPLIED: relabel
+the span it actually covers ("30 completed trims **through c3498**") and add an explicit
+"NOT maintained past c3498 -- do not read it as the full count" plus a pointer to the authoritative
+record (`bin/_trimNNNNq.py` docstrings + each cycle's `state/STATUS.md` entry). RULE: any enumerated
+history inside a method doc must either be appended to in the same commit that extends it, or carry
+its own coverage bound in the headline. Prefer the second -- a list nobody is forced to update is a
+list that will be wrong.
+
+**Also c3612, sizing a queue.md trim: the RULE 6b floor-5 report rotation is NOT self-sufficient once
+the file is past ~200KB.** It yielded 12,431 B against 203.1KB; growth is ~5.4KB/cycle, so a
+rotation-only pass buys ~2 cycles. Pairing it with retirement of CLOSED blocks that carry no open work
+(here `NEW c3598`-pointer, `CLOSED c3593`, `CLOSED c3604-was-c3548`, `CLOSED c3496`, 9,080 B combined)
+took it to -21,511 B / ~4c headroom. That pairing is now spent -- the next trim has the rotation only
+until someone does the item-by-item `TRIVIAL`-note review `NEW c3483` describes.
