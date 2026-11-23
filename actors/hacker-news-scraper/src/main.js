@@ -1164,7 +1164,7 @@ for (const s of truncatedSummaries) {
     + (s.hitPaginationCeiling
       ? ` Algolia's HN index never serves more than ${ALGOLIA_MAX_HITS} hits for one query, whatever maxItemsPerQuery says`
         + (s.splitExhausted === 'max-split-windows'
-          ? ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and ran out at maxSplitWindows=${maxSplitWindows};`
+          ? ` -- autoSplitLargeQueries halved it into ${s.windowsSplit} date window(s) and ran out at maxSplitWindows=${maxSplitWindows};`
             + (maxSplitWindowsAtCeiling
               ? ' maxSplitWindows is already at this Actor\'s maximum of 200, so raising it is not an option; narrow the date range to finish it.'
               : ' raise maxSplitWindows (or narrow the date range) to finish it.')
@@ -1177,7 +1177,7 @@ for (const s of truncatedSummaries) {
               ? ` -- the date range given is already at or under autoSplitLargeQueries' ${MIN_SPLIT_WINDOW_SEC / 3600}-hour`
                 + ' split floor, so no splitting ran; this query is too broad to enumerate by date alone even at that'
                 + ' floor; narrow the keywords or add minPoints/minComments.'
-              : ` -- autoSplitLargeQueries halved it into ${s.windowsSearched} date window(s) and still truncated at the`
+              : ` -- autoSplitLargeQueries halved it into ${s.windowsSplit} date window(s) and still truncated at the`
                 + ` ${MIN_SPLIT_WINDOW_SEC / 3600}-hour floor, so this query is too broad to enumerate by date alone; narrow the`
                 + ' keywords or add minPoints/minComments.')
             : autoSplitLargeQueries
