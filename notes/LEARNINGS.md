@@ -6098,3 +6098,32 @@ the trim scripts back up via `shutil.copy2`, which PRESERVES the source file's m
 a file last edited 28 minutes ago is born looking 28 minutes old. Not a reason to switch to `copy`
 (the preserved mtime is harmless) and not a real finding -- delete the `.pre` once the script's own
 post-write lossless re-verify has passed, and the FAIL clears.
+
+## cycle 3637 -- `RUN_SUMMARY.scanned` is a page-level counter, not a row-level one; don't expect it to reconcile against delivered+dropped+missing
+
+First-ever `varied_test` of `sam-gov-opportunities-scraper`'s `minAwardAmount`/`maxAwardAmount` (live
+since c2398, never exercised) came back clean on buyer-facing behaviour -- both the range filter and
+its advisory warning (set without `noticeTypes:["a"]`) work exactly as documented -- but turned up a
+reporting quirk worth naming so a future cycle doesn't mis-flag it as a bug. `scanned += pageRows.length`
+runs once per PAGE (main.js:2062, PAGE_SIZE=100) BEFORE the per-row `for` loop that applies
+`inDateWindow`/`matchesSolicitationNumber`/`inAwardAmountRange` and can `break` early once
+`rows.length >= limit` (maxResults). So on a `maxResults:5` run that found its 5th match on the 29th
+row of a 100-row page, `scanned` read 100 while only 29 rows were ever actually evaluated by the
+filters (5 delivered + 24 awardAmountDropped + 0 awardAmountMissing) -- the other 71 were fetched
+off the wire but never looked at. **This is not a buyer-facing promise violation**: README.md's own
+reconciliation formulas for the date-window/solicitationNumber/award-amount filters (lines ~22/419/423)
+all anchor on `declaredMatches` (SAM.gov's pre-filter count) plus the named `Dropped`/`Missing`
+counters, never on `scanned` -- and `incompleteReason:"max-results"` already tells the buyer the walk
+stopped early. The only thing actually inaccurate is an INTERNAL dev comment (main.js:2371-2372,
+"`scanned - duplicateRowsDropped` is how many distinct opportunities that actually was") which
+overstates what `scanned` guarantees once an early mid-page break is in play -- not worth a code
+change (no buyer depends on it), but worth knowing before assuming `scanned` is a strict ledger.
+**Separately, found via the SAME test and also filed as non-actionable:** a live 'u'-type notice
+carried a real non-null `award.amount`, contradicting the comment at main.js:694-696 ("present (but
+null) on every non-award notice type ... filled on award notices (`notice_type=a`)") -- but the
+actual filter code never relies on that assumption (`inAwardAmountRange` checks
+`typeof amount === 'number'` regardless of notice type), so this is a comment inaccuracy, not a
+behavioural one. **Generalizable: when a `varied_test` run's counters don't visibly sum to 100%,
+check what the README actually PROMISES to reconcile before writing it up as a defect** -- the
+promised equation and the full raw-wire count are two different things, and only the Actor's own
+code comments (not any buyer-facing doc) conflated them here.
