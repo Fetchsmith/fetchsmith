@@ -5897,3 +5897,20 @@ run before the phase switch; an all-null set proves the switch but never the rej
 that input took 4 free upstream count probes (`&min_date=1900-01-01` against the same filter gives
 you the dated/null split for $0) and was worth more than the run it enabled -- 205/205 delivered,
 205 unique ids, all nulls last, `complete: true`.
+
+## cycle 3607 — a status-message fix and a webhook-payload field can share a counter, but sharing it is never verified until something actually calls the webhook path
+
+`google-play-reviews-scraper`'s `webhookUrl` field had zero prior `varied_test` coverage (0 LEARNINGS
+mentions), despite `watchLabel`/`watchEvents` itself being deep-tested back at c2207/c2262/c2175. The
+c2262 fix introduced a dedicated `watchNewDelivered` counter so the status message would not count the
+per-app app-detail snapshot as a phantom "new review." That counter also feeds the `webhookUrl` POST
+payload's `watchNewCount` field (`main.js:1013`) — same variable, two call sites — but no prior cycle had
+ever actually fired the webhook path to confirm the fix's coverage extended there too. It does: a live
+seed + doctored-baseline rerun (same KV-doctoring technique as c2207 — drop one seenId to fake "new",
+rewrite one seenMeta entry to fake "scoreChanged") delivered 3 rows (1 app record + 2 reviews) and the
+captured webhook.site payload read `watchNewCount:1`, correctly excluding the app record. **Generalizable:
+when a fix touches a shared counter feeding two output channels (a status message and a webhook/response
+payload), a varied_test that only exercises one channel does not prove the other — the channels can drift
+independently later (a future change to the status-message branch could stop updating the shared variable
+in a way that only a webhook-path test would catch).** CLEAN this cycle, 0 defects, test KV record + lock
+deleted after.
