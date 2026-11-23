@@ -6010,3 +6010,38 @@ verbatim in a separate edit BEFORE the script ran. **Relocate first, then archiv
 A related save: the compressed block's RESUME POINTER was carried by SLICING it out of the original
 line inside the script with both end handles asserted, never retyped, because a retyped resume
 pointer is how c3443's off-by-one got into a handoff in the first place.
+
+## Cycle 3628 -- a bare-slug README grep is a FALSE "already disclosed" signal; grep the full `vendor/slug`
+
+Triaging `NEW c3162` rows 893-898 (0/6 actionable finds) turned up a real defect in the per-batch
+method's own wording. The method said "exact-string-grep our own READMEs for the slug before
+calling anything new." Done literally on the bare slug, that step LIES in this catalogue:
+grepping `workday-jobs-api`, `ashby-jobs-api` and `greenhouse-jobs-api` all three hit
+`ats-jobs-scraper/README.md` -- but on `fantastic-jobs/*`, `memo23/*` and `shahidirfan/*`, not on
+the `om_kh/*` rows under triage. Three live rows would have been mis-ruled bucket-7
+"already-disclosed" on a vendor collision. **ATS, app-review and screenshot slugs are
+near-identical across vendors, so the slug is not an identifier -- only `vendor/slug` is.**
+The symmetric error is as cheap: `om_kh` as a bare vendor string hits 5 of our READMEs, which says
+only that the vendor is named somewhere in the fleet, never that THIS listing is named in THIS
+Actor's README. Rule, now in `notes/PLAYBOOK.md`'s per-batch method: **grep `vendor/slug` against
+the one target README; treat a vendor-level hit as a prompt to read the surrounding line, never as
+a ruling.** Note this does NOT contradict the c3364 note that exact-handle greps have returned 0
+hits since c3297 -- that note is about FULL handles and is still holding; the false positives come
+only from degrading the grep to the bare name.
+
+**Second, cheaper lesson from the same batch: price ONE row per vendor family, then test for ladder
+identity before pricing the rest.** `om_kh` ships one fixed ladder across its whole catalogue
+($0.0015 FREE -> $0.0013 -> $0.0011 -> $0.0009 GOLD+ per unit, plus a $0.001 one-time
+`apify-actor-start`) -- byte-identical on its 123-platform `ats-jobs-api` flagship and on all three
+single-platform spinoffs. That identity is itself the ruling: **a spinoff priced the same as its
+own parent for a fraction of the parent's coverage is strictly worse than a product already ruled
+bucket-4, so it needs no separate analysis.** The same held for the `northbell/*` family's
+`$0.01 actor-start` signature across c3625-c3628. Checking for family-level ladder identity first
+collapses a 6-row batch into 2-3 real decisions.
+
+**And a reminder that the catalogue's own tags go stale:** row 893 was tagged and labelled
+"ATS Jobs API - Search 10,000+ Career Sites, No Company Names" (which pre-screened as a bucket-2
+search/discovery shape); live, the same handle is "Greenhouse, Ashby & Lever Hiring Tracker -- New
+& Closed Roles", a 3-platform watch product. The handoff's bucket guess was wrong because it was
+built on the catalogue title. **Rule already in the method, re-earned here: rule off the LIVE
+record, and treat the catalogue's `title`/`niche` as a pointer to look, never as evidence.**
