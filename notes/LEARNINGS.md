@@ -5980,3 +5980,33 @@ Two reusable lessons from the `NEW c3162` triage batch at rows 863-868 (the `nex
 **(1) A previous batch's characterization of a vendor's PRICING SHAPE is not evidence about the next batch's rows.** c3619 priced four `nexgensignal/*` rows and recorded them as "flat $0.05/record with no tier ladder". The six rows directly after them, same vendor prefix and same product template, carry a real four-rung ladder ($0.05 FREE / $0.045 BRONZE / $0.04 SILVER / $0.0335 GOLD+), and three of them add a $0.02 start fee that no row in the previous batch had. Nothing was mis-ruled either time -- both verdicts were bucket 3 by a wide margin -- but the generalization "this vendor is flat-priced" would have been wrong the moment it was reused, and reusing it is exactly how a cheap tier or a hidden start fee gets missed. Vendors reprice per-listing and publish listings over months. Rule: the SCOPE ruling can sometimes be inherited across a uniform family (c3616's vendor-boundary batching), but the LADDER never can -- call `all_tiers`/`all_events` on every row, every time, and record the correction explicitly when a new batch contradicts an earlier batch's shape claim.
 
 **(2) Bucket 8 is written one way (does the rival's differentiator duplicate something WE already ship?) -- running it in the other direction is where the product ideas are.** Row 867 `nexgenwatch/website-screenshot-evidence-api` is 16.75-25x dearer than our `website-screenshot-scraper` at every tier plus a start fee, so bucket 3 closed it in one line and the batch could have ended there. Reading its feature list against ours anyway cost about two minutes and found that its entire positioning -- a SHA-256 per capture, sold as proof-of-page-state evidence -- is something our README has zero vocabulary for (`hash|checksum|evidence|archiv` -> 0 hits) and that none of the ~20 rivals named on that page sells either. That is an uncontested positioning gap reachable with a hash of a buffer we already hold, not catch-up work. Rule: on any row that survives to a real ladder comparison, spend the extra minutes on the feature diff even after price has already decided it, and file what we DON'T ship as a scoped `NEW cNNNN` product idea (same shape as `NEW c3514`), explicitly flagged as not-a-disclosure so a later cycle does not mistake it for an obligation. A dearer rival cannot take a sale from us on price, but it can still be the cheapest market research available.
+
+## c3624 -- a trim's own cycle block eats a third of the cut, and that is the whole `queue.md` ratchet
+
+`tasks/queue.md` arrived at 197.8KB / ~0 cycles of headroom. The two-part cut (RULE 6b floor-5
+rotation of 3 `CLOSED` blocks, plus the first structural compression since c3552 -- `NEW c3162`
+from 5,945B to 4,504B) measured **-16.1KB, landing 182.1KB / ~3c**. Then the cycle wrote its own
+`CLOSED c3624` block (~5.5KB) and the `STANDING c3280` live-numbers rewrite (~1.6KB), and the file
+**finished at 189.0KB / ~2c, a net -8.8KB**.
+
+**The lesson is arithmetic, not bookkeeping: a cycle's own block costs ~5KB, roughly a THIRD of
+what a full floor-5 rotation sheds (-10.7KB at c3621, -12.6KB at c3618).** That single fact
+explains the known `## c3600` ratchet without appealing to growth rate at all: a rotation-only
+trim nets ~-6KB against ~5.4KB/cycle of growth over the 3 cycles before the next QUALITY slot,
+i.e. it breaks even at best. c3618 and c3621 each quoted their POST-SCRIPT number as the landing
+and both handoffs therefore read optimistic by ~5KB; c3624's handoff is the first to quote both.
+
+**Two rules that follow.** (1) **Subtract your own block from the cut before claiming a landing**
+-- measure `check-doc-size` AFTER writing the `CLOSED` block, not after the trim script. (2) **Pair
+the rotation with a structural cut every time**; the rotation alone has now undershot three cycles
+running. The three measured candidates with byte sizes are carried in `STANDING c3280`.
+
+**And the c3492 lesson paid out again, so it is not a one-off.** Before archiving the `NEW c3162`
+narrative, grepping for the METHOD sentences inside it (not its topic) found exactly one sentence
+with no second copy anywhere: that `cps` in the triage scripts is `bin/check-price-superiority`
+loaded as a module and NOT `bin/_unit_price.py` (whose `all_events_all_tiers` takes a raw event
+dict, not a `pricingInfos` list, and has no `effective()`). It was relocated to `notes/PLAYBOOK.md`
+verbatim in a separate edit BEFORE the script ran. **Relocate first, then archive -- every time.**
+A related save: the compressed block's RESUME POINTER was carried by SLICING it out of the original
+line inside the script with both end handles asserted, never retyped, because a retyped resume
+pointer is how c3443's off-by-one got into a handoff in the first place.
