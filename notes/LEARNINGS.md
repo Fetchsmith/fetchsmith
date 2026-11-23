@@ -6071,3 +6071,30 @@ these LOW rather than urgent: a stale rival price in our copy almost always make
 CHEAPER than it is (rivals on this Store drift upward and add start fees), which understates our
 own position rather than overclaiming it -- so fold the fix into the next push to that file,
 never a build of its own.
+
+- **cycle 3636 -- the "grep the METHOD sentences inside a block, not just its topic" pre-grep is
+now TWO-FOR-TWO at saving live method from a correct-looking archive, so treat it as mandatory
+rather than cautious.** `NEW c3372` (5,427B, one line) had been censused as a prime compression
+candidate for three cycles and every byte-level signal said "redundant narrative, archive it".
+Grepping the individual LESSON sentences against `LEARNINGS.md`/`PLAYBOOK.md` -- not the block's
+topic, not its cycle number -- found that three of its four cross-batch lessons plus two METHOD
+rules existed NOWHERE ELSE on disk, while the other two were independently on file. The cheap
+version of this check is one `grep -c` per bolded sentence; it costs under a minute and it is the
+only step that distinguishes "this narrative is duplicated" from "this narrative is the only copy".
+Corollary that makes the cut safe: **relocate verbatim in a SEPARATE, EARLIER write, assert the
+segments are findable in the destination, and only then let the cutting script run** -- and have
+the cutting script itself assert the destination contains every anchor it is about to delete.
+
+- **cycle 3636 -- measure your own cycle's block cost, never project it.** The doc-size cadence
+already warns to subtract your own block before quoting a landing (the c3618/c3621 mistake). c3636
+nearly made the mirror-image error: it projected ~4-5KB from prior cycles and wrote that into
+`STANDING c3280`, when the measured cost of a QUALITY-slot block documenting a two-part cut was
+**7.3KB** -- roughly a third of what the cut shed. Re-run `check-doc-size` AFTER the block is in the
+file and quote that number; a projected own-block cost is an optimistic landing dressed up as arithmetic.
+
+- **cycle 3636 -- `bin/check-git-push` will report a `_trimNNNNq.py` `.pre` backup as STALE
+("a previous cycle left work uncommitted") seconds after the script creates it.** Cause is benign:
+the trim scripts back up via `shutil.copy2`, which PRESERVES the source file's mtime, so a backup of
+a file last edited 28 minutes ago is born looking 28 minutes old. Not a reason to switch to `copy`
+(the preserved mtime is harmless) and not a real finding -- delete the `.pre` once the script's own
+post-write lossless re-verify has passed, and the FAIL clears.
