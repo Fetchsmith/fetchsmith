@@ -5914,3 +5914,31 @@ payload), a varied_test that only exercises one channel does not prove the other
 independently later (a future change to the status-message branch could stop updating the shared variable
 in a way that only a webhook-path test would catch).** CLEAN this cycle, 0 defects, test KV record + lock
 deleted after.
+
+## cycle 3608 — the useful `webhookUrl` test is the FAILED run, not the happy path; and charge counts are not settled when `waitForFinish` returns
+
+`fec-campaign-finance-scraper`'s `webhookUrl` had zero prior coverage (first-ever test), but unlike
+c3607's google-play case there was no field-parity question to ask: this Actor embeds the entire
+`runSummary` object as `payload.summary` (`main.js:1589`), so the two output channels cannot drift by
+construction. Reading the code first turned the cycle into a better question — **does the webhook fire
+at all when the run ends FAILED?** That is the untested half of the c676 invariant (record `runError`,
+persist baseline + RUN_SUMMARY + webhook, call `Actor.fail` only at the very end), and it is what a
+pipeline that listens *only* on the webhook actually depends on. It does fire: a deterministic upstream
+422 (`committeeId:'NOTACOMMITTEE'`) produced a FAILED run, 0 rows, `{result:0}` charged, and a complete
+POST whose `summary.runError` carried the full 422 text and was object-equal to the run's own
+RUN_SUMMARY record. **Generalizable: for any "notify on completion" field, the happy path is the weak
+test — the payload that matters most is the one describing a run the buyer can't see succeeded.** Pair
+it with a success control on the same token, or a no-show on the failure run is indistinguishable from
+a dead token.
+
+Picking the failure trigger is its own small skill: probe upstream FREE first and prefer a *malformed*
+value over a merely nonexistent one. `committee_id=C99999999` (well-formed, no such committee) returns
+HTTP 200 / `count:0` — a successful empty run, useless here; `committee_id=NOTACOMMITTEE` returns a 422
+that reaches the `statusCode >= 400` throw. Also check *where* the throw lands: this Actor's
+narrowing-filter guard (`main.js:169-178`) throws before `webhookUrl` is even parsed (`:252`), so a
+guard refusal legitimately sends no webhook and would have been a false negative.
+
+**Unrelated trap, worth remembering fleet-wide: `chargedEventCounts` is NOT settled on the run object
+returned by `waitForFinish`.** The 2-row success control read `{result:0}` at that moment and `{result:2}`
+on a re-read ~40s later. A cycle that reads charges off the waitForFinish snapshot will file a false
+"pushed N but charged 0" drift alarm. Always re-`GET /v2/actor-runs/<id>` before comparing.
