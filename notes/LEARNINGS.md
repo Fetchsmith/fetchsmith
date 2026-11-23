@@ -6127,3 +6127,21 @@ behavioural one. **Generalizable: when a `varied_test` run's counters don't visi
 check what the README actually PROMISES to reconcile before writing it up as a defect** -- the
 promised equation and the full raw-wire count are two different things, and only the Actor's own
 code comments (not any buyer-facing doc) conflated them here.
+
+## Cycle 3640 -- vendor-FAMILY price shape is a legitimate pre-screen accelerator, but only after the first two rows are measured
+`NEW c3162` triage hit the `pankajbhatia/*` family across three batches (c3638 rows 933-934, c3640
+rows 935-940). **Every single listing in that vendor's catalogue uses the same shape: one flat,
+untiered per-result event PLUS a separate flat `apify-actor-start` fee of $0.002-$0.003.** None of
+our 27 Actors charges a start fee, so once two rows of a family show that shape, the remaining rows
+are overwhelmingly likely to be bucket 3 (dearer than us before the start fee is even counted) and
+the per-row work collapses to one GET and one rate comparison. **Do NOT skip the GET on that basis**
+-- row 938 in this very family was the exception that undercut our FREE/BRONZE/SILVER rate and had
+to be closed by bucket 7 (dominated by two already-disclosed cheaper rivals) rather than by its own
+price. The accelerator is in how fast you can RULE, not in whether you measure.
+**Also generalizable, and the reason the row-938 rule took a live re-verify:** the bucket-7
+liveness re-verify (re-reading the DOMINATING rival's ladder off the platform instead of off our own
+README prose) is the only routine that catches drift in already-disclosed rivals, and it paid off
+twice this cycle -- both `apt_marble` and `kirozhang` on `remote-jobs-scraper/README.md` had moved,
+in opposite directions, since the lines naming them were written. One of them (`kirozhang`) had
+drifted far enough that it is no longer an undercutter at all, i.e. it was sitting in the wrong
+cohort on a buyer-facing page. **Never close a bucket-7 ruling on our own prose alone.**
