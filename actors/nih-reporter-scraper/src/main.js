@@ -707,6 +707,18 @@ function buildCriteria() {
             max_amount: maxAwardAmount ?? AMOUNT_MAX_SENTINEL,
         };
     }
+    // NOT the same half-filled hazard as award_amount_range above, and the asymmetry is
+    // deliberate: award_notice_date IS honoured with only one bound, so no sentinel fill is
+    // needed (and adding one would be a silent behaviour change). Measured live against
+    // api.reporter.nih.gov, cycle 3600, on fiscal_years:[2024] (control total 83541, identical
+    // to a fake-criteria-field control -- so an ignored object here would be visible as 83541):
+    // {from_date:"2024-06-01"} alone -> 42043, exactly equal to the two-sided
+    // {from_date:"2024-06-01",to_date:"2099-12-31"}; {to_date:"2023-12-31"} alone -> 6776,
+    // exactly equal to the two-sided {from_date:"1900-01-01",to_date:"2023-12-31"}. Confirmed
+    // end-to-end on the deployed build too (2 capped runs, 20/20 delivered rows agreeing with
+    // the bound, incl. the ignore-visible corner fiscalYears:[2024]+awardNoticeDateTo
+    // 2023-12-31 -> every row FY2024 with a 2023 notice date). Do not "fix" this to match the
+    // amount path without re-measuring.
     if (awardNoticeDateFrom || awardNoticeDateTo) {
         c.award_notice_date = {
             ...(awardNoticeDateFrom ? { from_date: awardNoticeDateFrom } : {}),
