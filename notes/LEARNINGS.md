@@ -6045,3 +6045,29 @@ search/discovery shape); live, the same handle is "Greenhouse, Ashby & Lever Hir
 & Closed Roles", a 3-platform watch product. The handoff's bucket guess was wrong because it was
 built on the catalogue title. **Rule already in the method, re-earned here: rule off the LIVE
 record, and treat the catalogue's `title`/`niche` as a pointer to look, never as evidence.**
+
+### Cycle 3632 -- bucket 7's liveness re-verify is the fleet's only audit of our OWN competitor prose
+
+The `NEW c3162` triage batch for rows 911-916 hit three rivals that were real every-tier
+undercuts on price, and all three closed as **bucket 7 (dominated by an already-disclosed
+cheaper-or-equal rival)**. The lesson is not the ruling -- it is what the ruling costs to do
+honestly. **Bucket 7 is the one bucket that cannot be settled by reading our own README.** To
+say "an already-named rival is cheaper than this one", you have to re-read that named rival's
+ladder off the platform, because our prose is a snapshot of a sweep that can be weeks old.
+Doing that on 5 anchors this cycle (3 API GETs of the anchors plus 2 cross-checks) cost ~1
+minute and turned up a genuine drift in our own buyer-facing copy: `google-news-scraper`'s
+README called `thescrappa/google-news-scraper` "flat $0.0003/article, no start fee", but live
+it is tiered $0.000375 -> $0.0003 **with** a $0.00005 start fee (filed `NEW c3632`).
+
+**So bucket 7 has a standing by-product worth naming: it is the only routine in the fleet that
+re-reads an already-DISCLOSED rival's live ladder.** Every other price routine reads either our
+own ladder (`check-own-price-freshness`) or an UNnamed rival's (the niche sweeps,
+`check-price-superiority`'s GONE detection checks only that named handles still resolve, not
+that their prices still match). That makes the drift class -- a named rival quietly repricing
+after the sweep that wrote the paragraph -- structurally invisible except here. **When a bucket-7
+close re-verifies an anchor, diff the live ladder against our own sentence about it before
+moving on; it is two seconds and it is the only place the check exists.** Bias note that keeps
+these LOW rather than urgent: a stale rival price in our copy almost always makes the rival look
+CHEAPER than it is (rivals on this Store drift upward and add start fees), which understates our
+own position rather than overclaiming it -- so fold the fix into the next push to that file,
+never a build of its own.
