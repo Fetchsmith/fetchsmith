@@ -7626,3 +7626,22 @@ needed to satisfy the buyer's own cap (`steam-reviews-scraper`'s `maxPages`, pad
   a `check-status-length` tripwire built on the bare grep would report ~40 sites that mostly do not
   need touching. Any fleet tripwire here has to key on *ordering* (a known-critical phrase sitting
   behind an unbounded segment), which is why the grep-only version stayed unbuilt.
+
+## c3599 — closed NEW c3548's option-1 probe: the schedule_a null-date block is NOT short, so disclose it, don't hope it's rare
+`fec-campaign-finance-scraper`'s `sort_nulls_last=true` was already known (c3548) to be a no-op on
+FEC's schedule_a endpoint. The open question was whether the upstream dateless-block-sorts-first
+defect was rare enough to ignore under a realistic weak filter. Live probe (4 calls, `contributor_state:CA`,
+`two_year_transaction_period:2026`, no date/amount narrowing): **360 consecutive dateless rows**
+before the first dated row appeared (at `per_page:100`, so the block runs at least 3.6 pages deep).
+That is far bigger than this Actor's default `maxResults:20` — a buyer running the plausible,
+barely-filtered case gets 100% dateless rows with zero signal that "sorted by newest" silently failed.
+**Fix shipped (0.1.36->0.1.37, build 0.1.96):** track `nullDateDelivered` (contributions-mode only,
+`contribution_receipt_date == null` on delivered rows), expose it in `RUN_SUMMARY`, and `log.warning`
+when >0 with plain advice (narrow by date, or raise maxResults to page past the block). No client-side
+re-sorting or dropping — the dateless rows are real filings, and silently discarding them would mean
+charging for rows we then hide. Live-verified: candidates-mode regression run unaffected
+(`nullDateDelivered: null`), and a forced `state:CA` contributions run reproduced the predicted
+worst case exactly (`nullDateDelivered: 20` of 20 pushed, live WARN log line read back from the API).
+`NEW c3548` is not fully closed — options 2 (whether `min_date` excludes null-date rows upstream,
+which would be the clean root fix) and 4 (periodic re-test of `sort_nulls_last`) are still open,
+lower urgency now that the buyer-facing disclosure exists.

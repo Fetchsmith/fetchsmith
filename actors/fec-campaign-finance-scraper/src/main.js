@@ -263,6 +263,15 @@ if (webhookUrlRaw) {
 
 const isPPE = Actor.getChargingManager().getPricingInfo().isPayPerEvent;
 let pushed = 0;
+// contributions-mode only (schedule_a): counts delivered rows with contribution_receipt_date ===
+// null. Measured live cycle 3548/3599: sort_nulls_last is a no-op on schedule_a, so a weakly-
+// filtered contributions search (e.g. state alone, no date/amount narrowing) can deliver a run's
+// entire maxResults as the dateless block that Postgres actually sorts FIRST on a DESC sort --
+// live-measured at >=360 consecutive dateless rows under contributor_state=CA alone, so a run with
+// the default maxResults=20 can be 100% dateless. The walk still reaches real dated rows further
+// in (verified: no data loss), but a buyer reading only the delivered rows would have no idea the
+// "sorted by newest" promise failed for this page unless told here.
+let nullDateDelivered = 0;
 // Completeness bookkeeping (cycle 676, h250 class). Before this the Actor could stop early for
 // five different reasons -- charge limit, maxResults, SEED_CAP, WATCH_PAGE_CAP, an API error --
 // and a pipeline reading the dataset could not tell "that is all there is" from "that is all we
@@ -1066,6 +1075,7 @@ try {
         };
       } else if (searchMode === 'contributions') {
         watchId = watchKeyOf(c);
+        if (c.contribution_receipt_date == null) nullDateDelivered += 1;
         // schedule_a's own `candidate_id` is always null on every row we've observed (verified
         // live on both a joint fundraising committee and a plain principal campaign committee)
         // -- the receiving committee's `candidate_ids` is the only real source. 2+ ids does NOT
@@ -1365,6 +1375,24 @@ if (watchMode && !skipBaselineSave) {
 
 log.info(`Done. Pushed ${pushed} results (scanned ${scanned} row(s) over ${pages} page(s)).`);
 
+// NEW c3548/c3599: schedule_a's `sort_nulls_last` is a confirmed no-op upstream (the dateless
+// block sorts FIRST, not last), and it is not short -- live-measured >=360 consecutive dateless
+// rows under a single weak filter (contributor_state alone). A run with a small maxResults can
+// therefore deliver contributions that are NOT the newest matches despite the Actor always
+// requesting `-contribution_receipt_date`; the dated rows are real and still reachable further
+// into the walk (no data loss), just not what a buyer expects from "sorted by date". Surfaced via
+// RUN_SUMMARY + a log line rather than dropped or silently re-sorted client-side, so this is a
+// disclosure, not a fix for an upstream defect this Actor cannot control.
+if (searchMode === 'contributions' && nullDateDelivered > 0) {
+  log.warning(
+    `${nullDateDelivered} of ${pushed} delivered contribution(s) have no contribution_receipt_date `
+    + '(FEC schedule_a sorts these FIRST despite the -contribution_receipt_date sort, a confirmed upstream '
+    + 'quirk -- not a bug in this Actor, and not data loss: the real dated rows are still reachable '
+    + 'further into the walk). If you need the newest DATED contributions specifically, set '
+    + 'contributionDateFrom/contributionDateTo or increase maxResults to page past this block.',
+  );
+}
+
 // ---------------------------------------------------------------------------
 // RUN_SUMMARY: this run's completeness, in a form a pipeline can read. Fetch with
 //   GET /v2/actor-runs/<runId>/key-value-store/records/RUN_SUMMARY
@@ -1380,6 +1408,10 @@ const runSummary = {
   declaredMatchesExact: declaredExact,
   scanned,
   delivered: pushed,
+  // contributions-mode only: see the log.warning above this block -- schedule_a's sort_nulls_last
+  // is a confirmed upstream no-op, so delivered rows can include the dateless block that Postgres
+  // actually sorts first. null (not 0) on every other searchMode, where sort_nulls_last works.
+  nullDateDelivered: searchMode === 'contributions' ? nullDateDelivered : null,
   rowsNotReached,
   pages,
   complete,
