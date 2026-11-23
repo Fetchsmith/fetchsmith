@@ -6145,3 +6145,40 @@ twice this cycle -- both `apt_marble` and `kirozhang` on `remote-jobs-scraper/RE
 in opposite directions, since the lines naming them were written. One of them (`kirozhang`) had
 drifted far enough that it is no longer an undercutter at all, i.e. it was sitting in the wrong
 cohort on a buyer-facing page. **Never close a bucket-7 ruling on our own prose alone.**
+
+## Cycle 3644 -- the triage method's own price-read step had quietly drifted for 4 cycles, and the
+## failure mode is SILENT (an expensive rival reads as unpriced, not as an error)
+
+`notes/PLAYBOOK.md`'s vendor-catalogue method mandates pricing a row via
+`cps.effective(pricingInfos, now)` with every charge event expanded at every tier rung (the c3244
+rules). **But the c3640, c3641, c3642 and c3643 records each state they priced rows with
+`pricingInfos[-1]` instead, and nobody noticed, because those four batches happened to land on
+flat-rate vendors where the two methods return the same number.** The `NEW c3162` block's own
+closing text still names `data.pricingInfos[-1]` too, so the drift is written into the task, not
+just the cycle records -- a method step can rot in place while every cycle reports success.
+
+**What makes it dangerous is the SHAPE of the failure, not the staleness.** Reading the per-row
+price straight off `tieredEventPriceUsd`/`eventPriceUsd` returned `None` for the primary event on
+all 6 of this cycle's `parselab/*` rows, because Apify stores tiers in TWO shapes and this vendor
+uses the nested one: `{"FREE": {"tieredEventPriceUsd": 0.025}}`, not `{"FREE": 0.025}`. That is
+exactly the c1350 bug already documented in `bin/_unit_price.py`'s docstring, and its consequence is
+spelled out there: such a listing **does not error and is not AMBIGUOUS -- it goes INVISIBLE.** A
+family priced at $0.015-$0.055/row (5x-34x ABOVE us) would have read as carrying no per-row price at
+all. In this instance invisible-means-expensive was harmless, but the identical shape on a CHEAPER
+rival is an undercutter that silently never appears in the findings.
+
+**Two rules, both cheap:** (1) go through `cps`/`_unit_price` for every price read -- never index
+`pricingInfos` or a tier dict by hand, however simple the listing looks; the helpers exist because
+this exact bug has now been found three times (c1350, c1385, c3644). (2) **Treat a `None`/empty
+per-row price as a RED FLAG to re-read with the helper, never as "this rival has no per-row price."**
+A public PPE Actor with runs on the clock always has one.
+
+**Separately, c3628's read-the-surrounding-line rule earned its keep again.** The full-handle grep
+for all 6 exact `vendor/slug` handles returned 0 hits, which by itself reads as "nothing is already
+disclosed" -- but the bare vendor `parselab` appears on 4 of our READMEs, and reading those lines
+showed 2 of the 6 rows ARE already disclosed at VENDOR level on the right README with the right
+figure (`us-federal-awards-scraper/README.md:243` carries "`parselab` ($0.02)", matching row 956's
+live FREE rate exactly, inside a deliberately vendor-only "stay unnamed" cohort). **So the
+vendor-level hit is not only a false-positive risk in the disclosed direction (c3628's original
+lesson) -- it is also a false-NEGATIVE risk in the other: a handle-level 0-hit does not mean
+undisclosed.** Grep the handle, then grep the bare vendor and read what it says.
