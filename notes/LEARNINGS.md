@@ -5861,3 +5861,39 @@ lower urgency now that the buyer-facing disclosure exists.
 **Why "free" was still the wrong fix to ship.** The temptation is "always send a trivial `min_date` and the null-sort bug disappears" — but that's not fixing the sort order, it's deleting the null-date rows from the result set entirely. Those rows are real filings (`nullDateDelivered`, shipped c3599, exists precisely because this Actor deliberately still delivers them rather than discarding what a buyer paid to charge for). A mechanism that happens to produce the desired visible behavior by removing data is not a fix, it's a different, worse bug wearing the first one's fix as a disguise. The real fix found here is a **two-phase walk**: use the `min_date` NULL-exclusion as phase 1 (page the dated block alone, truly newest-first) then drop `min_date` for phase 2 (page from the top again, collect only the leading null rows, stop at the first dated row) and append. That's a pagination-state-machine change worth scoping as its own task, not a drive-by edit — see `NEW c3601-pagination` in `tasks/queue.md`.
 
 **Process note.** `pagination.count` on this endpoint is not reliable evidence of what a filter actually excluded — it read identically for the no-`min_date` and far-past-`min_date` cases (28,362,667) despite the far-past case visibly excluding all nulls on the actual page, because `is_count_exact:false` triggers an ES-side estimate that doesn't track every applied filter. Use the per-page `results` array, not `pagination.count`, to verify what a filter actually did.
+
+## c3604 -- a "sort order" bug upstream can be a PARTITION problem you can solve yourself, and the fix's own filter can lie in the metadata
+
+`fec-campaign-finance-scraper`, closing the c3548 thread. The FEC ignores `sort_nulls_last` on
+schedule_a, so the dateless block sorts FIRST and a small-`maxResults` run gets the opposite of
+"newest first". Three cycles treated this as an upstream defect to DISCLOSE. It wasn't: c3601
+measured that any date bound makes the FEC drop dateless rows via plain SQL NULL semantics, and a
+filter that cleanly SPLITS a result set into two disjoint halves is a tool for reordering it, not
+just for shrinking it. Walk the half you want first under the bound, then re-walk from the top
+without it and take only the other half, stopping where they rejoin. Generalisable: whenever an
+upstream sort is wrong but some filter partitions on exactly the key that is mis-sorted, you can
+impose the order client-side without ever buffering the whole set or dropping a row.
+
+Two things that cost real debugging and are worth carrying:
+
+1. **Reset the cursor at the phase switch.** A keyset cursor is keyed to the filtered result set
+   that produced it; handing it to the unfiltered walk is meaningless. Both phase-1 end paths need
+   the switch -- the exhausted-cursor path AND the empty-page path (an all-dateless match set ends
+   phase 1 on an EMPTY page, never on a cursor, and the empty-page path is the one that is easy to
+   forget).
+
+2. **The filter you add silently rewrites the METADATA too, not just the rows.** Phase 1's
+   `pagination.count` excluded the dateless rows exactly as the results did, so an all-dateless
+   match set reported "5 row(s) of 0 declared match(es)" -- rows delivered against a declared total
+   of zero. Reasoning did not catch this; the second local test did, because it was chosen to be
+   100% null rather than merely to contain nulls. **When you add an internal filter the buyer did
+   not ask for, re-ask every derived number it could touch (counts, totals, completeness verdicts),
+   not just the row set.**
+
+Test design note that made the difference: the only input that exercises the whole state machine is
+one whose match set is SMALL and MIXED (here 196 dated + 9 null = 205, under the schema's
+`maxResults` ceiling of 500). A big mixed set only ever proves phase 1, because the cap stops the
+run before the phase switch; an all-null set proves the switch but never the rejoin guard. Finding
+that input took 4 free upstream count probes (`&min_date=1900-01-01` against the same filter gives
+you the dated/null split for $0) and was worth more than the run it enabled -- 205/205 delivered,
+205 unique ids, all nulls last, `complete: true`.

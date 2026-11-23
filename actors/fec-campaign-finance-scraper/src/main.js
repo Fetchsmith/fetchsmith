@@ -270,8 +270,17 @@ let pushed = 0;
 // live-measured at >=360 consecutive dateless rows under contributor_state=CA alone, so a run with
 // the default maxResults=20 can be 100% dateless. The walk still reaches real dated rows further
 // in (verified: no data loss), but a buyer reading only the delivered rows would have no idea the
-// "sorted by newest" promise failed for this page unless told here.
+// "sorted by newest" promise failed for this page unless told here. Cycle 3604 fixed the ORDERING
+// (see `twoPhase`): these rows are now appended last instead of leading, so this counter is a
+// disclosure of how many dateless filings are in the dataset, not a warning that the page is wrong.
 let nullDateDelivered = 0;
+// Cycle 3604: whether this run used the TWO-PHASE schedule_a walk that puts the dateless block
+// LAST (see `twoPhase` at the page walk). null on every non-contributions mode. false in
+// contributions mode when the buyer set a date bound of their own -- the FEC then excludes every
+// dateless row upstream anyway (NULL comparison semantics, measured for `min_date` at c3601 and
+// for `max_date` at c3604: `max_date=2030-12-31`, decades past any real filing, still returned
+// 0/20 nulls), so there is no null block left to order and the extra phase would only burn a page.
+let nullDateSortedLast = null;
 // Completeness bookkeeping (cycle 676, h250 class). Before this the Actor could stop early for
 // five different reasons -- charge limit, maxResults, SEED_CAP, WATCH_PAGE_CAP, an API error --
 // and a pipeline reading the dataset could not tell "that is all there is" from "that is all we
@@ -861,6 +870,33 @@ try {
   // key such as `last_contribution_receipt_date`) must be echoed back as query params on the
   // next request. Only `/candidates/` uses normal `page` paging.
   let cursor = null;
+  // TWO-PHASE schedule_a walk (cycle 3604), the root fix for the c3548/c3601 finding that
+  // `sort_nulls_last` is a no-op on schedule_a so Postgres sorts the dateless block FIRST on the
+  // `-contribution_receipt_date` sort, handing a small-maxResults run a page of rows that are the
+  // OPPOSITE of "newest first". Mechanism (measured, not assumed): any date bound makes the FEC
+  // drop every dateless row, so phase 1 sends an internal `min_date` decades before any real FEC
+  // filing -- that phase is therefore exactly the dated rows, genuinely newest-first -- and only
+  // once it is exhausted does phase 2 drop the bound and re-walk from the top to pick up the
+  // leading dateless block, stopping the instant a dated row reappears (everything past that point
+  // in phase 2's ordering is dated rows phase 1 already delivered). Net effect: same row set as
+  // before, dateless rows LAST instead of first, and no double delivery because the two phases
+  // partition the match set on `contribution_receipt_date IS NULL`.
+  //
+  // Only when the buyer set NO date bound of their own: with one set the FEC has already excluded
+  // the dateless rows, so there is nothing to reorder (see `nullDateSortedLast`).
+  const twoPhase = searchMode === 'contributions' && !contributionDateFrom && !contributionDateTo;
+  if (searchMode === 'contributions') nullDateSortedLast = twoPhase;
+  // 1900-01-01 is not a magic date, just a bound provably below the data: the FEC's electronic
+  // filing record starts in the 1970s, so this excludes nothing except NULLs. It is never sent
+  // when the buyer supplied their own `min_date` -- `twoPhase` is false in that case.
+  const DATED_PHASE_MIN_DATE = '1900-01-01';
+  let nullPhase = false;        // false = phase 1 (dated rows), true = phase 2 (dateless block)
+  let nullPhaseDone = false;    // phase 2 hit the first dated row -> the whole match set is served
+  let declaredFromNullPhase = false; // declaredMatches has been re-read off an unfiltered page
+  // Phase 1 ran out of rows; restart the walk from the top with no date bound to collect the
+  // leading dateless block. The cursor MUST be reset: it is keyed to phase 1's filtered result
+  // set and means nothing to the unfiltered one.
+  const startNullPhase = () => { nullPhase = true; cursor = null; };
   while (!stop) {
     if (!timeBudgetOk()) {
       timeBudgetHit = true;
@@ -935,7 +971,11 @@ try {
         committee_id: committeeId,
         min_amount: minAmount,
         max_amount: maxAmount,
-        min_date: contributionDateFrom,
+        // Phase 1 of the two-phase walk (see `twoPhase` above) substitutes an internal pre-data
+        // `min_date` for the buyer's empty one so the FEC serves only dated rows; phase 2 sends
+        // none at all so the dateless block becomes reachable. When `twoPhase` is false this is
+        // exactly what it always was -- the buyer's own value, or '' which fecGet drops.
+        min_date: twoPhase ? (nullPhase ? undefined : DATED_PHASE_MIN_DATE) : contributionDateFrom,
         max_date: contributionDateTo,
         two_year_transaction_period: electionYear,
         ...cursor,
@@ -970,10 +1010,12 @@ try {
         // rows, newest-first, truly sorted), then on exhaustion drop min_date and page a second pass
         // collecting ONLY the leading null-date rows (stopping the instant a dated row reappears) to
         // append after. That is a real pagination-state-machine change -- new internal cursor handling,
-        // a phase-switch condition, and its own maxResults/nullDateDelivered accounting -- not a
-        // one-line edit, so it is NOT done in this comment-only pass. Filed as its own scoped item;
-        // see `NEW c3548` in tasks/queue.md. Option 4 (sort_nulls_last may be restored upstream) was
-        // also re-tested for free in this same probe: still a no-op, nulls still sorted first.
+        // a phase-switch condition, and its own maxResults/nullDateDelivered accounting.
+        // IMPLEMENTED cycle 3604 -- see `twoPhase`/`startNullPhase` at the top of this walk and the
+        // `min_date` line below; c3604 also measured that `max_date` excludes nulls exactly like
+        // `min_date` does (`max_date=2030-12-31` -> 0/20 nulls), which is why EITHER buyer-supplied
+        // bound disables the extra phase. Option 4 (sort_nulls_last may be restored upstream) was
+        // also re-tested for free in the c3601 probe: still a no-op, nulls still sorted first.
         sort_nulls_last: 'true',
       })
       : await fecGet('/candidates/', {
@@ -992,11 +1034,27 @@ try {
     // `pagination.count` is the FEC's own match total for these filters. Captured on the first
     // page only: the keyset-paginated schedules recompute it per request and it drifts as new
     // filings land, so a late page's count would silently restate the baseline mid-walk.
-    if (declaredMatches === null && typeof body.pagination?.count === 'number') {
+    // Cycle 3604, caught by the local phase-2 test and NOT by reasoning: in a two-phase walk the
+    // first page belongs to PHASE 1, whose internal `min_date` excludes the dateless rows from the
+    // FEC's `count` just as it excludes them from the results -- so a match set that is entirely
+    // dateless declared `0` while the run went on to deliver real rows ("5 row(s) of 0 declared
+    // match(es)" in the status line, live-reproduced on committee C00406892). Phase 2's first page
+    // carries no date bound at all, so ITS count is the true total for the buyer's filters:
+    // re-read it exactly once, at the phase switch. Until then (the common case -- phase 1 usually
+    // stops on a cap long before exhausting) `declaredMatches` is the DATED-only total, which is a
+    // floor, never an overstatement.
+    if (typeof body.pagination?.count === 'number'
+      && (declaredMatches === null || (nullPhase && !declaredFromNullPhase))) {
       declaredMatches = body.pagination.count;
       declaredExact = body.pagination.is_count_exact ?? null;
+      if (nullPhase) declaredFromNullPhase = true;
     }
-    if (results.length === 0) break;
+    // An empty page is the end of THIS phase, not necessarily of the walk: in phase 1 it means the
+    // dated rows are exhausted and the dateless block still has to be collected.
+    if (results.length === 0) {
+      if (twoPhase && !nullPhase) { startNullPhase(); page += 1; continue; }
+      break;
+    }
 
     let rowIndex = -1;
     for (const c of results) {
@@ -1011,6 +1069,12 @@ try {
         stop = true;
         break;
       }
+      // Phase 2 collects ONLY the leading dateless block. The first dated row is where phase 2's
+      // ordering rejoins the rows phase 1 already delivered, so stop here rather than re-deliver
+      // (and re-charge for) them. Checked before any per-row work -- notably before
+      // `resolveCandidateIds`, which can make its own network call. This is NOT a cap stop:
+      // `stop`/`rowsNotReached` stay untouched so the walk still reports itself complete.
+      if (nullPhase && c.contribution_receipt_date != null) { nullPhaseDone = true; break; }
       let item;
       let watchId;
       if (searchMode === 'disbursements') {
@@ -1167,6 +1231,9 @@ try {
       }
     }
 
+    // Phase 2 reached the dated rows: the match set has been served in full, dateless rows last.
+    if (nullPhaseDone) break;
+
     const pagination = body.pagination ?? {};
     if (isTxnMode) {
       const next = pagination.last_indexes ?? null;
@@ -1190,7 +1257,12 @@ try {
       // uses, so "stopped on a cap" and "ran out of data" can never be confused -- a stop that
       // lands exactly on a page boundary is still short if the cursor was live.
       if (stop) { moreAvailable = rowsNotReached > 0 || !exhausted; break; }
-      if (exhausted) break;
+      if (exhausted) {
+        // End of phase 1 == end of the DATED rows only. Switch to phase 2 instead of ending the
+        // walk, so the dateless block is still delivered -- just last.
+        if (twoPhase && !nullPhase) { startNullPhase(); page += 1; continue; }
+        break;
+      }
       cursor = cleaned;
     } else {
       const morePages = page < (pagination.pages ?? 1);
@@ -1412,9 +1484,14 @@ if (searchMode === 'contributions' && nullDateDelivered > 0) {
   log.warning(
     `${nullDateDelivered} of ${pushed} delivered contribution(s) have no contribution_receipt_date `
     + '(FEC schedule_a sorts these FIRST despite the -contribution_receipt_date sort, a confirmed upstream '
-    + 'quirk -- not a bug in this Actor, and not data loss: the real dated rows are still reachable '
-    + 'further into the walk). If you need the newest DATED contributions specifically, set '
-    + 'contributionDateFrom/contributionDateTo or increase maxResults to page past this block.',
+    + 'quirk -- not a bug in this Actor, and not data loss)'
+    + (nullDateSortedLast
+      ? '. This run worked around it: dated contributions were paged first, newest-first, and these '
+        + 'dateless rows were appended only after the dated ones ran out, so they are at the END of '
+        + 'the dataset, not the start.'
+      : '. If you need the newest DATED contributions specifically, set contributionDateFrom/'
+        + 'contributionDateTo (either bound makes the FEC exclude dateless rows outright) or increase '
+        + 'maxResults to page past this block.'),
   );
 }
 
@@ -1437,6 +1514,10 @@ const runSummary = {
   // is a confirmed upstream no-op, so delivered rows can include the dateless block that Postgres
   // actually sorts first. null (not 0) on every other searchMode, where sort_nulls_last works.
   nullDateDelivered: searchMode === 'contributions' ? nullDateDelivered : null,
+  // true when this run used the cycle-3604 two-phase walk, i.e. any rows counted in
+  // `nullDateDelivered` are at the END of the dataset. false = contributions mode with a buyer
+  // date bound (the FEC excluded dateless rows itself, so `nullDateDelivered` should be 0).
+  nullDateSortedLast,
   rowsNotReached,
   pages,
   complete,
