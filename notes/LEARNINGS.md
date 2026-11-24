@@ -6229,3 +6229,38 @@ undisclosed.** Grep the handle, then grep the bare vendor and read what it says.
 **The fix, applied c3668: carry the pointer as the OWNER name.** Owners are walked in `sorted()` order, which IS stable for owners that persist, so "last owner completed" survives array growth even though row indices do not. c3668 re-derived the resume point this way: last owner finished = `reverberant_equality`, next owner = `rowcraft`. **Record the next OWNER, and re-locate its block fresh each cycle by name.** Keep printing row numbers for orientation if you like, but never resume off them, and never forward a "row N = handle H" pair as if it were durable.
 
 **Residual risk this does NOT fix, state it rather than paper over it:** if an owner drops below `MIN_NAMED` (3 named mentions) it leaves the `owners` list entirely, and if a previously-thin owner crosses 3 it appears mid-walk -- possibly BEFORE the current pointer, in which case its rows are never triaged. An owner-keyed pointer is strictly better than an index, not airtight. The genuinely robust form would be a persisted done-set of triaged `vendor/slug` handles (cheap -- ~1030 strings), which would also make "rows left" honest; filed as a follow-up in `tasks/queue.md`, not built this cycle.
+
+## c3672 -- when a per-block byte census comes back empty, census the RETENTION RULE: four slots of "no structural candidate remains" on `tasks/queue.md` were all measuring blocks and never re-read the floor
+
+Four consecutive QUALITY slots failed to get `tasks/queue.md` under its 200KB trim line with the
+standard floor-5 rotation: c3667 landed at ~-1c headroom, c3669 at ~-1c even after relocating two
+method items out to PLAYBOOK, c3671 handed the file on at 213.8KB, and c3672's own rotation stopped
+at 202.0KB. `NEW c3667` had already filed the right diagnosis one level down -- the 5 kept `CLOSED
+cNNNN` blocks now run 1.5-5.7KB each, well past rule 6's ~15-20 line cap -- and `STANDING c3280`
+carried the verdict **"NO MEASURED STRUCTURAL CANDIDATE REMAINS, rotation-only is the equilibrium"**
+for *seven successive censuses*.
+
+**That verdict was wrong in a specific, repeatable way: every one of those censuses measured BLOCKS
+and none of them questioned the RETENTION RULE.** The lever was the floor itself. c3672 lowered the
+`CLOSED cNNNN` floor from 5 to 3 and took the file to 192,507B in one pass, ~5x what any block-level
+compression this file has left could yield.
+
+**Why that cut is lossless in the sense that matters, and the test to apply before any similar one:
+a cycle's record exists in THREE places** -- its `CLOSED cNNNN` block in `tasks/queue.md`, its own
+`Updated: ... cycle N` block in `state/STATUS.md`, and verbatim in `tasks/queue_archive.md` forever.
+**And nothing ACTIONABLE ever lives only inside a CLOSED block**: every live follow-up is promoted to
+its own `NEW cNNNN` OPEN item at the moment it is found. The structural proof of that is visible in
+the cut itself -- those OPEN items are interleaved *between* the CLOSED blocks, so the cut span is
+**two or more non-contiguous spans**, not a prefix (c3672 cut idx28-30 and idx33-40 around the live
+`NEW c3667`/`NEW c3664`). If a retention cut on some other file ever has a *contiguous* cut span, that
+is a signal the follow-ups were NOT promoted and the cut is not safe yet.
+
+**The generalisable rule: a per-block census answers "which block is biggest", which is a different
+question from "why are we keeping this many of them".** Three knobs set a doc's floor -- the retention
+count, the per-entry cap, and the recording rules -- and a census of contents can never see any of
+them. When the census comes back empty, read those three before writing "equilibrium". The same
+reasoning retired 2,369B of dead arithmetic from the `PARTIALLY DONE` tracker head in the same cycle:
+c3668 had SUSPENDED row-count accounting four cycles earlier, which silently killed not just the
+figures but the RULE about deriving them ("the CONTIGUOUS row count is the ONLY authoritative figure
+-- DERIVE both, NEVER hand-edit them"), and nobody had gone back to collect the now-moot rule. **When
+a cycle suspends a quantity, grep for the rules whose subject that quantity was.**
