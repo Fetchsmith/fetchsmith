@@ -50,15 +50,23 @@ VERBOSE = "--verbose" in sys.argv
 JSON_LITERALS = {"null", "true", "false"}
 
 # Per-slug allowlist (same pattern as check-code-fields' FIELD_SUPPRESS) for
-# prose bullets that name a field *because it no longer exists* -- e.g.
-# "`posture` was removed from the schema" -- rather than because the README
-# is stale. Keyed by slug -> the removed field names its README legitimately
-# still mentions.
+# prose bullets that name something real but NOT a top-level field name --
+# either a field that no longer exists ("`posture` was removed from the
+# schema") or, found cycle 3690, an ENUM VALUE of a real field rather than a
+# field name of its own (`closed` is a value `watchEvent` takes and a value
+# `watchEvents` accepts, not a field). `known` only holds top-level field
+# names, so this check cannot tell "real enum value" from "stale leftover"
+# on its own -- both need a human ruling once, recorded here.
 PROSE_SUPPRESS = {
     # court-records-scraper README:141 explains `posture` was dropped
     # (0% fill, no keyless source) -- the mention is the documentation of
     # the removal, not a stale leftover. Found/confirmed cycle 541 (h160).
     "court-records-scraper": {"posture"},
+    # ats-jobs-scraper README:191 documents `closed` as a watchEvent value
+    # ("Posting closed") -- confirmed live in src/main.js: WATCH_EVENTS
+    # includes 'closed' (line 237) and the closure branch sets
+    # item.watchEvent = 'closed' (line 2011). Real behavior, not drift.
+    "ats-jobs-scraper": {"closed"},
 }
 
 # Headings whose json blocks are output rows. A block under a heading matching
