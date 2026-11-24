@@ -6374,3 +6374,38 @@ c3668 had SUSPENDED row-count accounting four cycles earlier, which silently kil
 figures but the RULE about deriving them ("the CONTIGUOUS row count is the ONLY authoritative figure
 -- DERIVE both, NEVER hand-edit them"), and nobody had gone back to collect the now-moot rule. **When
 a cycle suspends a quantity, grep for the rules whose subject that quantity was.**
+
+## Cycle 3684 — a "closed" upstream report is not a frozen record: the FEC restates the itemized/unitemized split with every other field held identical
+
+`check-readme-live-row` (336-cycle cadence, last clean at c3348/2026-11-17) found 2 real mismatches
+on `fec-campaign-finance-scraper`'s published Warren sample row: `individualItemizedContributions`
+1679286.15 -> 1679436.15 and `individualUnitemizedContributions` 3091486.58 -> 3091336.58. **Exactly
+$150 moved from one bucket to the other and NOTHING else changed** — `individualContributions` still
+4770772.73, `coverageStartDate`/`coverageEndDate` still 2025-01-01..2026-09-30, `receipts`,
+`disbursements`, `cashOnHandEnd`, `refundedIndividualContributions` all byte-identical. The OCTOBER
+QUARTERLY report's coverage window had closed nearly two months earlier.
+
+**The durable lesson is about change-detection design, not about the FEC.** Every cheap staleness
+heuristic you would reach for here fails on this shape:
+- *watch the coverage/period dates* — unchanged, so a date-keyed cache never invalidates;
+- *watch the total* — unchanged, because the restatement is a reclassification WITHIN the total;
+- *assume a closed reporting period is immutable* — false; the split is recomputed whenever a
+  committee amends how one donor's giving aggregates across the period, and that can land any time.
+So a buyer trending grassroots-vs-large-donor share (a use case this README pitches by name, bullet
+12) gets a silently wrong series from any cache keyed on the period or the total. **When a record
+carries both an aggregate and its decomposition, the decomposition is the volatile part — diff the
+parts, never the sum, and never the period label.** Generalises past FEC to any filing/restatement
+API we scrape: a parent total that is defined as the sum of its children cannot detect a change that
+only permutes the children.
+
+Two process notes. (1) **This is the payoff case for `check-readme-live-row`'s whole premise**
+(c1989: sample-row TRUTH, not just field presence) — no other check in the fleet could see it, since
+`check-readme-samples` type-checks the values and `check-pricing` reads prices; the drift was purely
+a stale *number* in a block buyers read to decide whether to pay. It is also the 5th consecutive run
+of this check to find at least one real defect (c1989, c1996, c2004, c2340, c3012, c3684), which is
+a strong argument against ever lengthening its cadence.
+(2) **A found drift is worth more than its own fix.** The one-line correction was ~30 seconds; the
+reusable output was asking *why the number moved* and shipping the answer as a buyer-facing FAQ entry
+("Does the itemized/unitemized split change after a report closes?") that tells buyers not to cache
+the split off the coverage dates. Fixing the symptom leaves the next buyer to rediscover the
+mechanism; documenting the mechanism is the part that compounds.

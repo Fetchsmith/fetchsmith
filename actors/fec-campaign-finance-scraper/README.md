@@ -244,8 +244,8 @@ One item per itemized donor contribution:
   "disbursements": 5387108.74,
   "cashOnHandEnd": 3028669.03,
   "individualContributions": 4770772.73,
-  "individualItemizedContributions": 1679286.15,
-  "individualUnitemizedContributions": 3091486.58,
+  "individualItemizedContributions": 1679436.15,
+  "individualUnitemizedContributions": 3091336.58,
   "refundedIndividualContributions": 36068.43,
   "coverageStartDate": "2025-01-01T00:00:00",
   "coverageEndDate": "2026-09-30T00:00:00"
@@ -333,6 +333,9 @@ No. The FEC stores one totals record per election cycle, and this Actor returns 
 
 **Do I have to compute small-dollar giving myself?**
 No. `individualUnitemizedContributions` is the FEC's own ≤$200-aggregate figure, returned straight from the same totals record as `individualItemizedContributions` — you don't need to subtract one from `individualContributions` to get it.
+
+**Does the itemized/unitemized split change after a report closes?**
+Yes, and it can move without anything else moving. The FEC restates the split when a committee amends how a donor's giving aggregates across the period, so the two sub-figures shift while `individualContributions`, `coverageStartDate` and `coverageEndDate` all stay exactly the same. Measured on this page's own sample row, which is re-verified against the live FEC API on a schedule: it matched exactly on 2026-11-17 and by 2026-11-24 Warren's 2026-cycle record moved **$150** from `individualUnitemizedContributions` to `individualItemizedContributions` (1679286.15/3091486.58 → 1679436.15/3091336.58) with the total pinned at 4770772.73 and the coverage window still ending 2026-09-30 — the sample above is now the later pair. So don't treat a closed coverage window as a frozen split: if you're trending grassroots-vs-large-donor share over time, re-pull the record rather than caching it off the coverage dates, and compare the sub-figures themselves, not the total.
 
 **Why do `electionYears` and `cycles` differ?**
 `electionYears` are the years the person was on the ballot; `cycles` are every two-year window the FEC holds data for, which includes the off-years in between. In the sample above that's `[2012, 2018, 2024, 2030]` versus `[2012 … 2026]`.
