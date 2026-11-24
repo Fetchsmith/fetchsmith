@@ -1,3 +1,31 @@
+## Cycle 3680 -- `/v2/store?username=` listing rows carry `currentPricingInfo` but NOT `pricingInfos`, so reusing `cps.effective()` on them silently prices every rival at $0
+
+**The trap.** Cycle 3678 replaced `check-vendor-catalogue`'s owner lookup with the exact paginated
+`GET /v2/store?username=<owner>&limit=100&offset=N` filter (the `NEW c3677` fix). That filter is
+correct and complete for DISCOVERY -- it returned `s-r` 347 listings and `automation-lab` 929 this
+cycle, matching c3678's counts. But a store LISTING row is a different object shape from an ACTOR
+record: it has `currentPricingInfo` (a single current snapshot, which is why
+`check-vendor-catalogue` itself can print `model=PAY_PER_EVENT` straight off the row) and it does
+**not** have the `pricingInfos` HISTORY ARRAY. Every price helper in this fleet goes through
+`cps.effective(d["pricingInfos"], now)`, which filters that array to the entry with the latest
+`startedAt <= now`. Hand it a store row and `.get("pricingInfos")` is `None`, `effective()` returns
+`None`, and `cps.headline_price()` then reports **`0.0 -- "no pricing record -- free to run"`** for
+every single row. This cycle's first pass did exactly that and produced 41 rows all reading "free to
+run", including `s-r/google-patents` and `s-r/free-spotify-podcast-catalog`, which c3676 had already
+priced live at $0.002/patent and $0.012/show. The only reason it was caught is that those two rows
+had known prices on file to contradict it.
+
+**The rule.** A triage batch has TWO API phases and they are not interchangeable: discovery via
+`GET /v2/store?username=`, then pricing via a per-handle `GET /v2/acts/<owner>~<name>`. Never price
+off a store listing row. The failure is SILENT and it fails in the most dangerous direction -- it
+makes every rival look free, which would either manufacture a flood of phantom "every-tier
+undercutter" disclosures or, read the other way, get dismissed as noise and hide a real one. The
+cheap self-check before trusting any batch: if more than a couple of rows report "no pricing
+record", the pricing source is wrong, not the niche. (Separately: `isOneTimeEvent` on a rival's
+start fee is what makes break-even arithmetic necessary rather than optional -- all three rivals
+disclosed this cycle undercut our per-row rate at every tier yet are DEARER than us on short runs,
+and the crossover row count is the only honest way to state that.)
+
 ## Cycle 3676 -- when the `tasks/queue.md` rotation lever runs out, the biggest block is usually DEAD HISTORY of an accounting scheme that was already abandoned
 
 Two durable things, both from a cycle whose actual task was a `NEW c3162` triage batch.
