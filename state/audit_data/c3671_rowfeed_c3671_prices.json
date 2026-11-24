@@ -1,0 +1,326 @@
+{
+ "rowfeed/shopify-store-list": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.02
+      },
+      "domain": {
+       "eventTitle": "Website",
+       "eventDescription": "One website in the list (one row) with its country, language, domain rank and full tech stack.",
+       "eventPriceUsd": 0.005,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.1,
+    "createdAt": "2026-10-30T09:59:52.438Z",
+    "startedAt": "2026-10-30T09:59:52.438Z",
+    "apifyMarginPercentage": 0.2
+   }
+  ]
+ },
+ "rowfeed/eu-tenders-scraper": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.002
+      },
+      "notice": {
+       "eventTitle": "Notice",
+       "eventDescription": "One TED tender notice.",
+       "eventPriceUsd": 0.0005,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.1,
+    "createdAt": "2026-11-12T07:43:06.951Z",
+    "startedAt": "2026-11-12T07:43:06.951Z",
+    "apifyMarginPercentage": 0.2
+   }
+  ]
+ },
+ "rowfeed/remote-jobs-api": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.001
+      },
+      "job": {
+       "eventTitle": "Job",
+       "eventDescription": "One remote job row.",
+       "eventPriceUsd": 0.0008,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.1,
+    "createdAt": "2026-11-11T07:54:22.886Z",
+    "startedAt": "2026-11-11T07:54:22.886Z",
+    "apifyMarginPercentage": 0.2
+   }
+  ]
+ },
+ "rowfeed/journalist-requests": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.003
+      },
+      "request": {
+       "eventTitle": "Media request",
+       "eventDescription": "One open journalist or PR request with outlet, countries, deadline and the link to respond. With 'Only new requests', a request you already received is never charged again.",
+       "eventPriceUsd": 0.0015,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.05,
+    "createdAt": "2026-11-17T07:33:50.126Z",
+    "startedAt": "2026-11-17T07:33:50.126Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutChangeAt": "2026-11-17T08:00:26.421Z"
+   }
+  ]
+ },
+ "rowfeed/website-screenshot": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.01
+      },
+      "screenshot": {
+       "eventTitle": "Screenshot",
+       "eventDescription": "One page captured as an image (PNG or JPEG) with a download link. Pages that fail to load or answer with an HTTP error are free.",
+       "eventPriceUsd": 0.007,
+       "isPrimaryEvent": true
+      },
+      "pdf": {
+       "eventTitle": "PDF",
+       "eventDescription": "One page saved as a PDF with a download link. Pages that fail to load or answer with an HTTP error are free.",
+       "eventPriceUsd": 0.007
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.1,
+    "createdAt": "2026-11-16T06:57:08.291Z",
+    "startedAt": "2026-11-16T06:57:08.291Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutChangeAt": "2026-11-16T07:00:51.135Z"
+   }
+  ]
+ },
+ "rowfeed/google-play-scraper": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.001
+      },
+      "app": {
+       "eventTitle": "App",
+       "eventDescription": "One app in one country: installs, rating, histogram, price, in-app purchases, genre, version, last update and more. Apps not found are free.",
+       "eventPriceUsd": 0.0005,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.5,
+    "createdAt": "2026-11-05T08:55:25.045Z",
+    "startedAt": "2026-11-05T08:55:25.045Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutChangeAt": "2026-11-05T09:00:11.924Z"
+   }
+  ]
+ },
+ "rowfeed/steam-game-data": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.001
+      },
+      "game": {
+       "eventTitle": "Game",
+       "eventDescription": "One game row: price and discount, review totals and score, players now, release date, developer, genres, Metacritic and more.",
+       "eventPriceUsd": 0.002,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.5,
+    "createdAt": "2026-10-22T15:46:31.136Z",
+    "startedAt": "2026-10-22T15:46:31.136Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutChangeAt": "2026-10-22T16:00:44.141Z"
+   }
+  ]
+ },
+ "rowfeed/google-news-monitor": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.001
+      },
+      "article": {
+       "eventTitle": "News article",
+       "eventDescription": "One Google News article row: headline, source, publish time, Google News link and publisher URL.",
+       "eventPriceUsd": 0.001,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.5,
+    "createdAt": "2026-10-15T07:55:54.447Z",
+    "startedAt": "2026-10-15T07:55:54.447Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutChangeAt": "2026-10-15T08:00:35.360Z"
+   },
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.001
+      },
+      "article": {
+       "eventTitle": "News article",
+       "eventDescription": "One Google News article row: headline, source, publish time, Google News link and publisher URL.",
+       "eventPriceUsd": 0.002,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.5,
+    "startedAt": "2026-10-30T17:50:23.798Z",
+    "createdAt": "2026-10-15T17:50:24.278Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutFutureChangeAt": "2026-10-15T17:50:44.429Z",
+    "notifiedAboutChangeAt": "2026-10-30T18:00:31.553Z"
+   }
+  ]
+ },
+ "rowfeed/substack-scraper": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "post": {
+       "eventTitle": "Post",
+       "eventDescription": "One Substack post row with title, subtitle, date, word count, reactions, comments and metadata",
+       "eventPriceUsd": 0.001,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.1,
+    "createdAt": "2026-09-10T18:27:54.461Z",
+    "startedAt": "2026-09-10T18:27:54.461Z",
+    "apifyMarginPercentage": 0.2
+   },
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.007
+      },
+      "post": {
+       "eventTitle": "Post",
+       "eventDescription": "One Substack post row with title, subtitle, date, word count, reactions, comments and metadata",
+       "eventPriceUsd": 0.001,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.1,
+    "startedAt": "2026-10-08T07:31:17.930Z",
+    "createdAt": "2026-09-23T07:31:18.405Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutFutureChangeAt": "2026-09-23T07:31:38.663Z",
+    "notifiedAboutChangeAt": "2026-10-08T08:00:24.351Z"
+   }
+  ]
+ },
+ "rowfeed/career-site-jobs-scraper": {
+  "model": "PAY_PER_EVENT",
+  "pricing_infos": [
+   {
+    "pricingModel": "PAY_PER_EVENT",
+    "pricingPerEvent": {
+     "actorChargeEvents": {
+      "apify-actor-start": {
+       "eventTitle": "Actor Start",
+       "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+       "eventPriceUsd": 0.001
+      },
+      "job": {
+       "eventTitle": "Job posting",
+       "eventDescription": "One open job from a company career site, with all fields (and the description when requested).",
+       "eventPriceUsd": 0.001,
+       "isPrimaryEvent": true
+      }
+     }
+    },
+    "minimalMaxTotalChargeUsd": 0.5,
+    "createdAt": "2026-10-15T16:58:17.890Z",
+    "startedAt": "2026-10-15T16:58:17.890Z",
+    "apifyMarginPercentage": 0.2,
+    "notifiedAboutChangeAt": "2026-10-15T17:00:32.105Z"
+   }
+  ]
+ }
+}
