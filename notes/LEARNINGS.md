@@ -1,3 +1,42 @@
+## Cycle 3688 -- for a UNIFORM-TEMPLATE vendor, one global floor-vs-ceiling comparison rules out the whole catalogue at once; per-row niche pairing is wasted work
+
+**The measurement.** `NEW c3162`'s walk reached `scrapers_lat`, the largest owner this tracker has
+ever seen: **682 live listings, 55 of them flagged across 20 of our 27 niches** (grants/SAM.gov/
+Federal Register/HN/App Store/Google Play/UK+EU tenders/ATS boards/FDA/trademark/court records/
+remote jobs/Shopify/Steam/Substack/NIH/clinicaltrials/...). c3686 priced 7 of the 55 and deferred
+48. c3688 priced all 55 per-row, resolving OURS separately for each niche the row's own text
+matched -- and the answer was the same for every single row, for a reason that did not need 55
+comparisons at all.
+
+**The shortcut.** Every one of the 682 listings is `PAY_PER_EVENT` on ONE uniform price template.
+So the catalogue has a single price FLOOR per tier -- $0.008 FREE / $0.007385 BRONZE / $0.006769
+SILVER / $0.006154 GOLD+PLATINUM+DIAMOND -- and our fleet has a single price CEILING per tier,
+$0.005 at every tier (`clinicaltrials-mcp-server`, measured live across all 27 registry Actors).
+Their floor sits **1.23x-1.60x above our ceiling at the matching tier**, so no row in the catalogue
+can undercut anything we sell, whatever niche it is paired with. **Two API reads per tier-set
+decide 55 rows.** The general form: when a vendor's catalogue is uniformly priced, compare
+`min(vendor price at tier T)` against `max(our price at tier T)` ACROSS THE FLEET; if the vendor's
+floor is above our ceiling at every tier, every row is ruled out at once and no niche pairing is
+needed. If it is NOT, the comparison has told you exactly which tiers to pair per-row, so it is
+never wasted. **Screen for the template first** (one `store?username=` sweep already returns
+`currentPricingInfo` for every listing -- a uniform `pricingModel` plus a tiny set of distinct
+price points IS the template signal) before committing a cycle to per-row pricing.
+
+**Unit-comparability caveat, do not drop it.** Our fleet ceiling of $0.005 is
+`clinicaltrials-mcp-server`, which charges per TOOL CALL, not per row; the dearest row-priced
+Actor is `us-federal-awards-scraper` at $0.004 FREE / $0.0025 GOLD+. The shortcut is therefore
+stated against the STRICTEST ceiling available, which is the conservative direction -- using the
+dearest unit of any kind can only make a rival look relatively cheaper, never dearer, so a
+"vendor floor is still above it" verdict holds under any stricter unit matching. Had the ratio
+come back near 1.0x, the mixed unit would have had to be resolved before concluding anything.
+
+**Two process findings worth keeping.** (1) **Persist the batch.** c3686 recorded its flagged list
+"in this cycle's own run output (not persisted to a file)", which forced c3688 to re-derive all 682
+listings before it could price anything. c3688 writes `state/audit_data/c3688_scrapers_lat_prices.json`
+instead; any batch that defers rows must persist them. (2) **At 55 handles, the c3628 full-handle
+grep must be ONE `grep -rFf handles.txt` pass** -- a per-handle loop of recursive greps blew a 300s
+timeout, which is a tooling-shape failure, not a reason to skip the check.
+
 ## Cycle 3681 -- `steam-reviews-scraper`'s depthCapped/filteredOutOnly dedup on the zero-row branch works in production, not just on paper, closing the same gap that was a real bug on `substack-scraper`
 
 **Why this was the right `varied_test` target.** `audit-due --all` flagged `steam-reviews-scraper`

@@ -1,0 +1,2018 @@
+[
+ {
+  "handle": "scrapers_lat/google-play-reviews-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 7,
+  "title": "Google Play App Reviews & Ratings Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape user reviews for any Android app on the Google Play Store by package name. Extract star rating, review text, helpful votes, date, app version and developer replies across 100+ country stores. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/comprar-argentina-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 5,
+  "title": "Argentina COMPR.AR Public Procurement & Tenders Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,ai_translate,result",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Argentina national government procurement from the COMPR.AR portal: published tenders with process number, object, procedure type, buying agency, bid opening date and status. Filter by keywords. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/canadabuys-tenders-scraper",
+  "niches": [
+   "sam-gov-opportunities-scraper"
+  ],
+  "users": 4,
+  "title": "CanadaBuys Federal Tenders & Contracts Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.011077,
+   "SILVER": 0.010154,
+   "GOLD": 0.009231,
+   "PLATINUM": 0.009231,
+   "DIAMOND": 0.009231
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,details,result",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Government of Canada federal procurement tenders from CanadaBuys. Extract tender title, organization, GSIN and UNSPSC codes, closing date, delivery region and buyer contact name, email and phone. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/himalayas-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 4,
+  "title": "Himalayas Remote Jobs Scraper - Salaries, Jobs Data & API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_jd_summary,ai_skills,details,result",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from Himalayas.app worldwide, no API key. Get job title, company, salary range and currency, seniority, employment type, location and timezone restrictions, categories, skills tags and full description. Filter by keyword, category, seniority or country. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/google-play-apps-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 4,
+  "title": "Google Play Store Scraper: Apps, Reviews & Data API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_summary,ai_tags,details,result",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google Play scraper and unofficial Play Store API for Android app data. Scrape apps by keyword, package name, developer or category in any country: ratings, reviews, installs, price, screenshots, developer email, contacts, data safety and permissions. No API key. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/workable-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 4,
+  "title": "Workable Jobs Scraper & Careers Board API - ATS Job Listings",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Workable jobs scraper and careers board API. Scrape ATS job listings from any Workable board by slug or URL: title, company, location, salary, full description, apply links and application questions. Filter by keyword, location, department and more. Export recruiting data to JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 3,
+  "title": "Google News Scraper - News API, Articles & RSS",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_sentiment,ai_summary,ai_topics,details,result",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google News with no API key. Search by keyword, topic or headlines and get article title, publisher, date, snippet, image, author and full text in any country and language. Resolves real publisher URLs. For news, media and brand monitoring. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/compranet-mexico-scraper",
+  "niches": [
+   "sam-gov-opportunities-scraper"
+  ],
+  "users": 3,
+  "title": "CompraNet Mexico Government Procurement & Tenders Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,ai_translate,result",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Mexico CompraNet / ComprasMX federal procurement: planned public purchases with buying agency, procedure type, estimated amount (MXN), CUCOP category and state. Filter by keyword, category, procedure or agency. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "Workday Jobs Scraper & API | Any myworkdayjobs Career Site",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape jobs from any Workday (myworkdayjobs.com) company career site. No API key or login. Get title, all locations, remote flag, work type, requisition ID, pay range, apply link and full job description. Filter by keyword, category, location and remote. Export JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/weworkremotely-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "We Work Remotely Jobs & Salary Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from We Work Remotely by category. Extract job title, company, region, category, job type, salary range, apply URL, company website and full description. Export JSON, CSV or Excel. No login or API key."
+ },
+ {
+  "handle": "scrapers_lat/courtlistener-scraper",
+  "niches": [
+   "court-records-scraper"
+  ],
+  "users": 3,
+  "title": "CourtListener Court Cases & Opinions Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,details,full_text,result",
+  "verdicts": {
+   "court-records-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US court cases, opinions and dockets: case name, court, date filed, docket number, citations, judges and opinion text. Search by keyword, court and date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/canada-cipo-ip-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 3,
+  "title": "Canada CIPO Trademarks Scraper: Owner, Agent & Status",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,ai_extract,ai_summary,result",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search the Canadian Trademarks Database (CIPO): mark, application and registration numbers, status, Nice classes, goods and services, owner company and full address, agent, dates and image. Filter by mark, owner, number, Nice class, status or date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/euipo-trademarks-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 3,
+  "title": "EUIPO EU Trademark Scraper: Owner, Nice Class & Status",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,ai_summary,result",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search EU trade marks (EUTM) from the EUIPO register: mark text, application and registration numbers, status, Nice classes, owner company and address, representative contacts, dates, opposition and image. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/nhtsa-recalls-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "NHTSA Recalls Scraper - Car Recall Lookup API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape official US vehicle safety recalls and complaints from NHTSA by make, model, year, VIN or campaign number. No API key. Get recall campaign numbers, components, defect summaries, remedies, units affected, do-not-drive advisories, plus NCAP safety ratings."
+ },
+ {
+  "handle": "scrapers_lat/fda-pma-device-approvals-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA PMA Medical Device Approvals Scraper (openFDA)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007855,
+   "SILVER": 0.007709,
+   "GOLD": 0.007564,
+   "PLATINUM": 0.007418,
+   "DIAMOND": 0.007273
+  },
+  "start_fee": 0.009091,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,ai_summary,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape FDA Premarket Approval (PMA) medical device decisions from openFDA. Get PMA number, applicant, trade and generic name, product code, specialty, supplement type, decision and dates. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/clinicaltrials-gov-scraper",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape clinical trials from the official ClinicalTrials.gov registry: NCT id, title, status, phase, conditions, interventions, sponsor, enrollment, dates, eligibility, locations, contacts and outcomes. Filter by condition, status, sponsor. JSON/CSV/Excel."
+ },
+ {
+  "handle": "scrapers_lat/world-bank-procurement-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "World Bank Procurement Notices & Contract Awards Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,result",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape World Bank procurement notices (tenders) and awarded contracts with supplier name, supplier country and award amount in USD, plus project id, country, procurement method, deadlines and buyer contacts. Filter by country, keyword or notice type. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/uk-find-a-tender-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper",
+   "uk-find-a-tender-scraper"
+  ],
+  "users": 2,
+  "title": "UK Find a Tender Scraper - High-Value Public Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_company_summary,ai_industry,ai_risk_flags,result",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "uk-find-a-tender-scraper": {
+    "ours": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract UK high-value, above-threshold public tenders & awards from the official Find a Tender Service (OCDS). Distinct from Contracts Finder (below-threshold). Get title, buyer, contacts, value, CPV, deadline, award status & suppliers, documents. JSON/CSV/Excel."
+ },
+ {
+  "handle": "scrapers_lat/company-hiring-signal-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Company Hiring Signal Scraper: Open Roles & Growth Intent",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_company_summary,ai_hiring_insights,ai_industry,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Detect a company's ATS and aggregate its open roles into a hiring-intent signal: open roles count, departments and locations hiring, remote/engineering/sales counts, newest role and a High/Medium/Low signal. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/substack-publications-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Publications & Newsletters Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Substack category leaderboards for ranked publications and newsletters with author, category, leaderboard rank, bestseller tier, paid status, subscriber signal, subscription pricing, description, socials and links. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/steam-games-scraper",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Games Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Steam store game data: price, discount, release date, developers, publishers, genres, categories, platforms, Metacritic score, review count, description and artwork. Search by keyword or app ID and pick a pricing region. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/usa-nsf-awards-scraper",
+  "niches": [
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "NSF Research Grant Awards Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_field,ai_keywords,ai_summary,result",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape U.S. National Science Foundation research grant awards: award ID, title, abstract, principal investigator and co-PIs with emails, awardee institution and location, program, funding amounts and the award window. Filter by keyword, PI, institution, state or date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/dailymed-drug-labels-scraper",
+  "niches": [
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "DailyMed Drug Labels, NDC & SPL Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0088,
+   "BRONZE": 0.00864,
+   "SILVER": 0.00848,
+   "GOLD": 0.00832,
+   "PLATINUM": 0.00816,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_summary,details,result",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US drug labels from the NIH DailyMed SPL registry: search by drug name, manufacturer or NDC and get setid, active ingredients, dosage form, labeler, SPL version, NDC packaging codes and an AI patient summary."
+ },
+ {
+  "handle": "scrapers_lat/fema-disaster-declarations-scraper",
+  "niches": [
+   "grants-gov-scraper"
+  ],
+  "users": 2,
+  "title": "FEMA Disaster Declarations Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0088,
+   "BRONZE": 0.00864,
+   "SILVER": 0.00848,
+   "GOLD": 0.00832,
+   "PLATINUM": 0.00816,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_summary,funding,result",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US FEMA disaster declarations from the official OpenFEMA data: filter by state, incident type, declaration type, disaster number, date and fiscal year. Add per-disaster federal funding totals and AI impact summaries. JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/uspto-ttab-proceedings-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "USPTO TTAB Oppositions & Cancellations Scraper (TTABVUE)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0165,
+   "BRONZE": 0.0162,
+   "SILVER": 0.0159,
+   "GOLD": 0.0156,
+   "PLATINUM": 0.0153,
+   "DIAMOND": 0.015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,details,result,result_lead",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search USPTO TTABVUE: trademark oppositions, cancellations, concurrent-use and appeals. Get both parties, counsel of record (name, firm, email, phone), every mark (serial + registration), the full prosecution-history docket and deadlines. Filter by type, party, mark, status and date."
+ },
+ {
+  "handle": "scrapers_lat/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper - Stories, Points & Comments",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0076,
+   "SILVER": 0.0072,
+   "GOLD": 0.0068,
+   "PLATINUM": 0.0068,
+   "DIAMOND": 0.0068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_summary,ai_topics,result",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News stories by keyword with points, comment counts, author, URL, tags and timestamps. Sort by relevance or newest. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/fda-510k-clearances-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA 510(k) Premarket Clearances Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0132,
+   "BRONZE": 0.01296,
+   "SILVER": 0.01272,
+   "GOLD": 0.01248,
+   "PLATINUM": 0.01224,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_summary,applicant_profile,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape FDA 510(k) premarket clearances from the official openFDA database. Filter by device, applicant, product code, medical specialty, state, country, clearance type and decision date. Enrich with device class and regulation. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/shopify-store-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Products Scraper - Full Catalog Export",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0088,
+   "BRONZE": 0.00864,
+   "SILVER": 0.00848,
+   "GOLD": 0.00832,
+   "PLATINUM": 0.00816,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_tags,result,store_profile",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Export any Shopify store's full product catalog: titles, variants, SKUs, prices, compare-at prices, stock, images, tags. Multi-store batch, collection filter, one-row-per-variant. JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/euipo-designs-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "EUIPO Registered Community Designs Scraper: Owner & Locarno",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,result",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search EU Registered Community Designs (RCD) from the EUIPO register: design and application numbers, indication of product, Locarno classes, status, owner company and full address, designer, representative, filing/registration/expiry dates, priority and design images. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/uspto-patent-assignments-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "USPTO Patent Assignments Scraper: Owners, Reel/Frame & Patents",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape USPTO patent assignment (ownership transfer) records: assignors, assignees with company address, conveyance type, execution & recorded dates, reel/frame and assigned patent/application numbers. Search by assignee, assignor, patent, application or reel/frame. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/indecopi-trademarks-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "INDECOPI Peru Trademark Search Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,result",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Peru's INDECOPI trademark register (signos distintivos): trademark name, applicant/owner, Nice class, status, certificate or file number, expiry date and a direct record link. Search many brand names across one or all 45 Nice classes. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/france-boamp-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "France BOAMP Public Tenders & Contract Awards Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,ai_translate,result",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape French public procurement notices and contract awards from BOAMP: title, buyer name with email and phone, contract type, CPV codes and labels, value, winning supplier, publication and deadline dates. Filter by keyword, CPV, department, buyer and date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/fda-drug-device-recalls-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Drug, Device & Biologics Recall Scraper (USA)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0111,
+   "SILVER": 0.0102,
+   "GOLD": 0.0092,
+   "PLATINUM": 0.0092,
+   "DIAMOND": 0.0092
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape FDA drug, medical device and biologics recalls and enforcement reports from the official openFDA API. Extract recall number, hazard class, product, reason, recalling firm, location, dates, product codes and 510(k) numbers. Export JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/eu-safety-gate-recalls-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "EU Safety Gate (RAPEX) Product Recalls & Alerts Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_severity,ai_summary,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape EU Safety Gate (RAPEX) dangerous non-food product alerts: alert number, product, brand, risk type, measures (recall/withdrawal/ban), origin & notifying country, importer. JSON/CSV/Excel."
+ },
+ {
+  "handle": "scrapers_lat/usda-fsis-recalls-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "USDA FSIS Meat & Poultry Recalls Scraper (USA)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.0114,
+   "SILVER": 0.0108,
+   "GOLD": 0.0102,
+   "PLATINUM": 0.0102,
+   "DIAMOND": 0.0102
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape USDA FSIS meat, poultry and egg product recalls and public health alerts. Get recall number, hazard class (Class I/II/III), company, reason, states, products, quantity, status, contacts and press release URL. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/cpsc-recalls-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Product Recalls Scraper: Safety Recall Data API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_severity,ai_summary,details,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US CPSC consumer product recalls from SaferProducts.gov, no API key. Filter by keyword, date, hazard, product type, manufacturer, retailer or recall number. Get recall number, date, products, hazards, injuries, remedies, manufacturers, importers, UPCs, images. Export JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/app-store-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store Reviews Scraper - Apple iOS Reviews & Ratings API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_sentiment,ai_summary,ai_topics,details,result",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Apple App Store reviews and ratings for any iOS app by app ID, URL or search term. Get star rating, title, body, author, app version, date and developer response across 150+ country stores, with rating, date, version and keyword filters. No API key. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/grants-gov-scraper",
+  "niches": [
+   "grants-gov-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "Grants.gov Scraper - Federal Grant Opportunities & Funding API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.011077,
+   "SILVER": 0.010154,
+   "GOLD": 0.009231,
+   "PLATINUM": 0.009231,
+   "DIAMOND": 0.009231
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,details,result",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US federal grant opportunities and funding data from the official Grants.gov API - no API key needed. Get titles, agencies, deadlines, award amounts, ALN/CFDA numbers, eligibility, synopsis, attachments and grantor contacts. Filter by keyword, agency, category, status, date and award size."
+ },
+ {
+  "handle": "scrapers_lat/paraguay-dncp-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Paraguay DNCP Public Procurement Scraper - Tenders & API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.011077,
+   "SILVER": 0.010154,
+   "GOLD": 0.009231,
+   "PLATINUM": 0.009231,
+   "DIAMOND": 0.009231
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Paraguay public procurement and licitaciones from the official DNCP (contrataciones.gov.py) OCDS API. Get tenders, awards, adjudicaciones, suppliers with RUC, buyer and supplier emails and phones, UNSPSC line items, bids, budgets, contracts and documents. No API key. JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/colombia-secop-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Colombia SECOP Scraper - Public Contracts & Tenders API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.011077,
+   "SILVER": 0.010154,
+   "GOLD": 0.009231,
+   "PLATINUM": 0.009231,
+   "DIAMOND": 0.009231
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_extract,ai_summary,ai_translate,details,result",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Colombia SECOP II public procurement from datos.gov.co: buyer entity, supplier NIT, contract value, payments, funding, UNSPSC, dates and 85+ fields. Filter contratos estatales and licitaciones by entity, contratista, department, modalidad, value and date. No API key. JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/remoteok-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "RemoteOK Scraper - Remote Jobs, Salary & Tags API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "RemoteOK scraper and remote jobs API. Export remote job listings with company, tags, category, seniority, USD salary, apply URL, contact emails and full descriptions. 14 filters (keyword, tag, company, region, salary, date, sort). Fast JSON feed, no login or API key. JSON, CSV, Excel."
+ },
+ {
+  "handle": "scrapers_lat/lever-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Lever Job Postings & Careers Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape public job postings from any company using the Lever ATS. Extract title, department, team, location, workplace type, description, requirements, apply URL and more. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/ashby-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Ashby Jobs & Salary Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_jd_summary,ai_salary_estimate,ai_skills,details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Ashby job board listings by company. Extract job title, location, department, team, employment type, salary range, equity, posting date, apply URL and full job description. Filter by keyword. Export JSON, CSV or Excel. No login or API key."
+ },
+ {
+  "handle": "scrapers_lat/personio-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Personio Jobs & Careers Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Personio career page job listings by company. Extract job title, location, department, employment type, seniority, schedule, apply URL and full description. Filter by keyword. Export JSON, CSV or Excel. No login or API key."
+ },
+ {
+  "handle": "scrapers_lat/recruitee-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Recruitee Jobs & Careers Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape open jobs from any company careers site on Recruitee. Extract job title, location, city, country, department, employment type, experience level, remote status, salary range, apply URL and full description. Export JSON, CSV or Excel. No login or API key."
+ },
+ {
+  "handle": "scrapers_lat/smartrecruiters-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "SmartRecruiters Jobs Scraper & API - ATS Career Data",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape any SmartRecruiters career page into structured jobs data. Extract title, location, remote flag, department, salary text, full description, apply URL, recruiter and custom fields by company. ATS job postings scraper and API, no login or API key. Export JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/remotive-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Remotive Remote Jobs Scraper & Salary API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Remotive remote jobs with no API key: title, company, company website, category, skill tags, salary parsed to min/max/currency, candidate location, job type, seniority, posting date, apply URL and full HTML/text description. 13 filters, salary sort. Work-from-home jobs feed. JSON/CSV/Excel."
+ },
+ {
+  "handle": "scrapers_lat/openfda-drug-labels-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "openFDA Drug Labels & Ingredients Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract structured drug labeling for US medicines: brand and generic name, manufacturer, product type (OTC or prescription), route, active ingredients and strengths, NDC and application numbers, plus label sections like indications, dosage, warnings and interactions. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/greenhouse-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Greenhouse Job Board Listings Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_jd_summary,ai_salary_estimate,ai_skills,details,result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Greenhouse job board listings by company board token. Extract job title, location, department, offices, requisition ID, posting date, apply URL and full HTML description. Filter by keyword. Export JSON, CSV or Excel. No login or API key."
+ },
+ {
+  "handle": "scrapers_lat/openfda-device-events-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "openFDA Medical Device Adverse Events & Recalls Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape FDA medical device adverse events (MAUDE), device recalls and 510(k) clearances from the official openFDA API. Extract report number, device brand, manufacturer, event type, product problems and dates across the United States. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/openfda-drug-events-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "openFDA Drug Adverse Events & Recalls Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape FDA drug adverse event reports (FAERS) and drug recall actions from the official openFDA API. Get safety report ID, patient reactions, drugs, seriousness, recall class, reason and recalling firm. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/federal-register-scraper",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 1,
+  "title": "Federal Register Rules & Notices Scraper (USA)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.013846,
+   "SILVER": 0.012692,
+   "GOLD": 0.011538,
+   "PLATINUM": 0.011538,
+   "DIAMOND": 0.011538
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search the US Federal Register and extract rules, proposed rules, notices and presidential documents. Get title, type, abstract, agencies, docket IDs, RIN, citation, effective and comment dates, PDF and HTML URLs. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/working-nomads-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Working Nomads Scraper - Remote Jobs Data API (No API Key)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007385,
+   "SILVER": 0.006769,
+   "GOLD": 0.006154,
+   "PLATINUM": 0.006154,
+   "DIAMOND": 0.006154
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from Working Nomads: title, company, salary, skills, category, location, apply URL and full description, as JSON, CSV or Excel. Filter by keyword, category, tag, company, salary and date. Digital nomad and work-from-home job listings API. No API key, no login."
+ },
+ {
+  "handle": "scrapers_lat/inpi-argentina-trademarks-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 1,
+  "title": "INPI Argentina Trademark Search Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.01275,
+   "DIAMOND": 0.01275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai_classify,result",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search the INPI Argentina trademark register by trademark name or applicant and extract application number (acta), trademark name, owner, Nice class, legal status, mark type, registration/resolution number, filing date and expiry date. Export to JSON, CSV or Excel."
+ },
+ {
+  "handle": "scrapers_lat/sam-gov-opportunities-scraper",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 1,
+  "title": "SAM.gov Federal Contract Opportunities Scraper & API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.011077,
+   "SILVER": 0.010154,
+   "GOLD": 0.009231,
+   "PLATINUM": 0.009231,
+   "DIAMOND": 0.009231
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): details,result",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US federal contract opportunities from SAM.gov with no API key. Search solicitations, sources sought and award notices by keyword, NAICS, PSC, set-aside, agency, state, deadline. Get officer contacts, place of performance, full descriptions and attachments. JSON, CSV, Excel."
+ }
+]
