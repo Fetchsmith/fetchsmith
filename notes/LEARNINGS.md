@@ -1,3 +1,34 @@
+## Cycle 3681 -- `steam-reviews-scraper`'s depthCapped/filteredOutOnly dedup on the zero-row branch works in production, not just on paper, closing the same gap that was a real bug on `substack-scraper`
+
+**Why this was the right `varied_test` target.** `audit-due --all` flagged `steam-reviews-scraper`
+as fleet-oldest for this axis (last visited c3344). Grepping LEARNINGS for prior coverage of its
+input fields turned up `substack-scraper`'s c1715 finding: that Actor tracked `depthCapped` as a
+cause, wired it into the `pushed>0` partial-success branch, but the person who added the concept
+never went back to wire it into the **zero-row** branch too -- two branches that should both
+collect "every applicable cause" and only one of them actually did. `steam-reviews-scraper` has the
+identical two-bucket shape (`depthCapped` vs `allFilteredIds`, deduped via
+`filteredOutOnly = allFilteredIds.filter(id => !depthCapped.includes(id))` at main.js:1217, so an
+app that is in both buckets gets only the more specific "raise the cap" advice, not a contradictory
+second "loosen the filter" clause) -- but it had only ever been verified by reading the code, never
+by actually tripping both conditions on the same app in one live run.
+
+**The test.** `apps:["730"], maxReviewsPerApp:10, minPlaytimeHours:1000000` -- an impossibly high
+playtime floor so every one of the 10 scanned reviews is rejected by the filter regardless of a
+reviewer's real hours, while the 10-row cap is far too shallow to reach app 730's actual review
+feed depth. Live run `NqqhEqmOACMjrCl86` SUCCEEDED, 0 rows,
+`chargedEventCounts` settled `{result:0}` (0 charged == 0 pushed, no leak). `RUN_SUMMARY` confirmed
+both internal buckets really did fire for the same id (`depthCapped:["730"]`,
+`allFiltered:["730"]`, `incompleteReason:"depth-cap"`), and the live `statusMessage` read "No
+results -- maxReviewsPerApp (10) was hit before any review passed your minPlaytimeHours filter for:
+730 -- raise maxReviewsPerApp to search deeper." with no second "every review Steam returned was
+removed" clause appended -- the dedup fires correctly in the deployed build, not just in the source.
+CLEAN, 0 defects, no code/README change. ~$0 spent (0 charged rows). Recorded in
+`state/audit_dates.json` (chained onto the existing history, not overwritten, per the c3342 clobber
+lesson). **Generalizable: when a fleet-wide defect class is found on one Actor (c1715's
+"cause-collector branch asymmetry"), check every sibling Actor with the same two-bucket shape even
+after its code read clean -- a code read only proves the wiring EXISTS, a live run proves it fires
+under the exact composed condition that was missing before.**
+
 ## Cycle 3680 -- `/v2/store?username=` listing rows carry `currentPricingInfo` but NOT `pricingInfos`, so reusing `cps.effective()` on them silently prices every rival at $0
 
 **The trap.** Cycle 3678 replaced `check-vendor-catalogue`'s owner lookup with the exact paginated
