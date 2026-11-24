@@ -1,0 +1,298 @@
+[
+ {
+  "handle": "scrapersdelight/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 18,
+  "title": "Greenhouse, Lever & Ashby Job Scraper \u2014 Companies' Open Roles",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every open role from any Greenhouse, Lever, or Ashby job board \u2014 title, department, team, location, remote flag, employment type, apply URL, and description. Paste a careers URL; platform auto-detected. Public APIs, no login."
+ },
+ {
+  "handle": "scrapersdelight/shopify-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Products Scraper \u2014 Barcode GTIN, Variants & Prices",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product-scraped",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-scraped",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Full product catalogs from any Shopify store: one row per product with every variant's barcode (GTIN/EAN/UPC), SKU, price, currency, availability and stock where exposed. Custom domains and headless stores resolved automatically. Measured barcode fill: 94.1% of variants across 6 stores."
+ },
+ {
+  "handle": "scrapersdelight/job-posting-intent-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Job Posting Tracker \u2014 Hiring Intent Monitor & Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "lot-scraped",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): alert-delivered,lot-scraped,monitor-run-completed,new-lot-detected",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track target companies' job boards for hiring-intent signals. Monitors public ATS feeds (Greenhouse, Lever, Ashby, SmartRecruiters) for NEW postings \u2014 title, department, location, date, link \u2014 with Slack/email/webhook alerts. A PredictLeads & Mantiks alternative. $4 per 1,000 postings."
+ },
+ {
+  "handle": "scrapersdelight/himalayas-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Himalayas Scraper - Remote Jobs, Salaries & Company Profiles",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 9e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company,job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Himalayas remote jobs and company profiles: title, salary, seniority, countries, timezones, skills and apply link, plus company website, size, founded year, CEO, markets, tech stack, benefits and socials. Every Himalayas filter, past the 5,000-job window, companies hiring for a search."
+ },
+ {
+  "handle": "scrapersdelight/fcc-license-scraper",
+  "niches": [
+   "grants-gov-scraper"
+  ],
+  "users": 2,
+  "title": "FCC License Scraper - ULS Call Sign, FRN, Towers & ECFS",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "fcc-record",
+  "unit_tiers": {
+   "FREE": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ecfs-filing,fcc-record",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search FCC ULS licences by call sign, FRN, licensee, service, state, status and dates: amateur, GMRS, land mobile, microwave, cellular, PCS/AWS, paging, marine. Licensee phone, email, address, contact. Tower registrations, new-grant monitor from FCC daily files, ECFS docket filings."
+ },
+ {
+  "handle": "scrapersdelight/br-decreto7962-ecommerce-contact-scraper",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Brazil E-commerce CNPJ Scraper - Online Seller Contacts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "disclosure-scraped",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): disclosure-scraped",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Brazilian online-shop domains in, one seller per row out: raz\u00e3o social, check-digit-verified CNPJ, inscri\u00e7\u00e3o estadual, address, email, phone, WhatsApp and SAC, plus the Receita Federal register status. Billed only for rows with the seller's own CNPJ. $4.00 per 1,000 sellers."
+ },
+ {
+  "handle": "scrapersdelight/yc-company-founder-contact-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Y Combinator Scraper - YC Companies, Founders & Open Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.002,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "$2 per 1,000 companies; $1 on Business. Every Y Combinator company past the 1,000-result cap with its founders (LinkedIn, X, Hacker News, past companies) and open jobs (salary, equity, hiring manager, description); founder and job rows free. Paste a YC directory URL or filter by batch."
+ },
+ {
+  "handle": "scrapersdelight/shopify-store-analyzer",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 1,
+  "title": "Shopify Store Analyzer \u2014 Theme, Apps, Products per Domain",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-analyzed",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-analyzed",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Feed it domains, get one intelligence row per store: is it Shopify (4 detection tiers), theme + version + custom flag, exact product & collection counts, price range, currency, 70+ detectable apps/pixels/payment methods, socials and contact email. No discovery \u2014 it analyzes the list you have."
+ },
+ {
+  "handle": "scrapersdelight/foerderkatalog-grants-scraper",
+  "niches": [
+   "grants-gov-scraper"
+  ],
+  "users": 1,
+  "title": "F\u00f6rderkatalog - German Federal Grants & R&D Funding Data",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "grant-scraped",
+  "unit_tiers": {
+   "FREE": 0.0002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant-scraped",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "From $0.20 per 1,000 records, no start fee. Germany's official F\u00f6rderkatalog register: 301,058 federal grants and research contracts with recipient, executing body, ministry, project title, municipality key, start/end dates and the euro amount. No contact data - the register publishes none."
+ }
+]

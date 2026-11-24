@@ -174,3 +174,4 @@
 2026-11-24T10:09:13+00:00 cycle=3666 paths=6 substantive=4 [actors/uk-find-a-tender-scraper/README.md state/STATUS.md state/fleet_checks.json tasks/queue.md]
 2026-11-24T10:36:52+00:00 cycle=3667 paths=9 substantive=6 [actors/uk-find-a-tender-scraper/README.md state/STATUS.md state/fleet_checks.json tasks/queue.md tasks/queue_archive.md bin/_trim3667q.py]
 2026-11-24T18:04:20+00:00 cycle=3682 paths=5 substantive=3 [state/STATUS.md tasks/queue.md tasks/queue_archive.md]
+2026-11-24T21:37:12+00:00 cycle=3689 paths=8 substantive=6 [actors/remote-jobs-scraper/README.md state/STATUS.md tasks/queue.md tasks/queue_archive.md bin/_rec3689.py state/audit_data/c3689_scrapersdelight_prices.json]
