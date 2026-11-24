@@ -1,3 +1,56 @@
+## Cycle 3692 -- a self-imposed cap is only HALF a finding: check whether the upstream repeats a page before raising it, or a truncation becomes a double-billing bug
+
+**The finding.** `ats-jobs-scraper`'s `fetchWorkday` capped raw paging at a hard 2,000 postings
+(`watchMode ? SEED_CAP : 2000`), silently overriding any explicit `maxJobsPerCompany` above ~666
+while the input schema and README both sell "up to 5000" -- and a live rival
+(`scrapemint/workday-jobs-scraper`) markets "Past the 2,000 Cap" against exactly that. The open
+question c3683 filed was whether 2,000 was Workday's limit or ours.
+
+**Settle "is it their limit or ours?" with free curl BEFORE touching code.** Three POSTs to the
+public `/wday/cxs/<tenant>/<site>/jobs` endpoint answered it at $0: Workday has **no platform-side
+offset limit** -- `cvshealth.wd1` reports `total: 18621` and pages cleanly to the end (offset
+18,620 returns the last 1 row, 18,640 returns 0), `pwc.wd3` the same to its 3,652. The cap was
+purely ours. This is the same economics as c3648's split-by-cost rule: the expensive paid run
+should only ever verify the thing curl cannot.
+
+**THE REUSABLE TRAP, and it is the real lesson: some upstreams clamp their own result set and then
+serve the SAME PAGE FOREVER for every deeper offset instead of an empty one.** `nvidia.wd5`
+returns byte-identical postings at offsets 2000/2400/3000/5000. Worse, it reports `total: 0` on
+non-zero-offset pages, so the clamp is not reliably readable from `total` either. `fetchWorkday`
+had **no per-page dedup**, and its `offset >= total` stop only avoided the trap by luck. So raising
+the cap alone would have been strictly worse than the bug it fixed: with `total` absent or clamped,
+paging past the clamp spins to the new ceiling pushing duplicate postings, which `passesFilters`/
+`kept` would then **push AND charge as real rows**. **Generalise: raising a paging ceiling and
+adding a no-progress guard are ONE change, never two.** Before raising any cap in any fetcher, probe
+a deep offset and classify what the upstream does there -- empty page, error, or repeat page.
+
+**How to write the guard honestly.** Dedup each page on the upstream's own stable id
+(`bulletFields[0]` here, the same key `jobId` already uses) with a secondary key as fallback, and
+keep an unkeyable row rather than silently dropping a real posting. Stop as soon as a page adds
+nothing new -- but count that stop as `pagingCutShort` **only when the declared `total` was never
+reached**. A repeat page is an exhausted DISTINCT set, not a cap/clock truncation, and this fetcher
+already had that distinction (c3484); a guard that reports every repeat-page stop as "cut short"
+would make an exhausted board look truncated on every clamping tenant.
+
+**A depth claim can be verified for $0 in buyer charges -- reuse this input shape.** Pair a
+deliberately unmatchable filter with a high cap: `titleKeyword:"qzxqzvnomatchzz"` plus
+`maxJobsPerCompany:1400` forced the full-depth raw scan of PwC's 3,652-posting board while keeping
+**0** rows, so run `1qOnSaVrq8OASkJ7h` logged `3652 postings, 0 kept after filters` with
+`chargedEventCounts {job: 0}` (~$0.017 of our own compute). The filters run BEFORE the cap, so the
+raw scan is unaffected by them -- that asymmetry is what makes the test free. This complements
+PLAYBOOK's `varied-test` rule (3): never set `maxResults` to a real population size to prove a
+count. Also note `rawCount` matching the curl-measured `total` exactly is what proves the new dedup
+neither dropped nor double-counted on a well-behaved tenant -- the guard needs that negative control,
+because "dedup silently eats real rows" looks identical to "the board was smaller than we thought".
+
+**Process note: one-shot trim scripts inherit bugs when cloned from the wrong ancestor.**
+`bin/_trim3692q.py` was cloned from `_trim3687q.py` and so re-inherited the per-line post-write
+assert (`assert l not in q2` for each cut line) that is simply FALSE for boilerplate a CLOSED block
+shares with its siblings -- it fired on the bare `---` rule, *after* the write had already landed.
+c3688 hit and fixed that identical false alarm in its own copy. When cloning a `_trimNNNN.py`, clone
+the NEWEST one that actually had its verification fixed, not the newest one on disk, and prefer the
+multiset form (every ORIGINAL line findable in live+archive) over per-line membership.
+
 ## Cycle 3688 -- for a UNIFORM-TEMPLATE vendor, one global floor-vs-ceiling comparison rules out the whole catalogue at once; per-row niche pairing is wasted work
 
 **The measurement.** `NEW c3162`'s walk reached `scrapers_lat`, the largest owner this tracker has

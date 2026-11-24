@@ -200,6 +200,17 @@ if (webhookUrlRaw) {
 // Same pattern as nih-reporter/federal-register/grants-gov/fda-recall/clinicaltrials/hacker-news.
 const WATCH_STORE = 'fetchsmith-ats-watch';
 const SEED_CAP = 5000; // bound the cost of a baseline run against a very broad company list
+// Workday raw-paging ceiling (c3692). Was a hard 2000, which silently overrode an explicit
+// `maxJobsPerCompany` above ~666 even though the schema and README both sell "up to 5000" — a
+// rival (`scrapemint/workday-jobs-scraper`) markets "past the 2,000 cap" against exactly that.
+// Measured live c3692: Workday's public `/wday/cxs/.../jobs` endpoint has NO platform-side offset
+// limit — `cvshealth.wd1` paged cleanly to its full `total` of 18,621 (offset 18,620 returned the
+// last 1 row, 18,640 returned 0) and `pwc.wd3` to 3,652. So 2000 was purely our own ceiling.
+// 15000 = the schema's own max `maxJobsPerCompany` (5000) times the same x3 pre-filter headroom
+// the rawCap formula already uses, so the buyer's documented ask is now reachable and the real
+// bound is `timeBudgetOk()`. Default runs are unaffected: at the default cap of 50 the formula
+// yields 150 either way.
+const WORKDAY_RAW_CAP = 15000;
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
 let baselineTruncated = 0; // posting ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
 let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
@@ -1497,8 +1508,9 @@ async function fetchWorkday(slug) {
   if (!site || !/\.myworkdayjobs\.com$/i.test(host)) return { jobs: [], notFound: true };
   const tenant = host.split('.')[0];
   const pageSize = 20;
-  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, pageSize), watchMode ? SEED_CAP : 2000);
+  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, pageSize), watchMode ? SEED_CAP : WORKDAY_RAW_CAP);
   const raw = [];
+  const seenKeys = new Set(); // c3692 no-progress guard, see the repeat-page note in the loop below
   let offset = 0;
   let total = null;
   let notFoundFlag = false;
@@ -1529,7 +1541,28 @@ async function fetchWorkday(slug) {
     if (offset === 0) total = res.body?.total ?? null;
     const postings = res.body?.jobPostings ?? [];
     if (!postings.length) break;
-    raw.push(...postings);
+    // c3692 no-progress guard, REQUIRED by raising rawCap above 2000 — not cosmetic. Some tenants
+    // clamp their own result set and then serve the SAME page for every deeper offset instead of
+    // an empty one: `nvidia.wd5` returns byte-identical postings at offsets 2000/2400/3000/5000
+    // (measured live c3692, and it reports `total: 0` on non-zero-offset pages, so the clamp is
+    // not always readable from `total` either). The old `offset >= total` stop only hides that by
+    // luck — with `total` absent or clamped, paging past the clamp would spin to the cap pushing
+    // duplicate postings, which `passesFilters`/`kept` would then PUSH AND CHARGE as real rows.
+    // Dedup on the requisition id (bulletFields[0], same key `jobId` uses) with externalPath as
+    // the fallback, and stop as soon as a page adds nothing new. `offset` still advances by
+    // pageSize because it indexes the API's own list, not our kept set.
+    const fresh = postings.filter((p) => {
+      const key = (p.bulletFields ?? [])[0] || p.externalPath || null;
+      if (!key) return true; // unkeyable row: keep it rather than silently dropping a real posting
+      if (seenKeys.has(key)) return false;
+      seenKeys.add(key);
+      return true;
+    });
+    // A repeat page means the tenant stopped giving us new data. That is an exhausted DISTINCT set,
+    // so it only counts as "cut short" if we never reached the size the board declared — matching
+    // this fetcher's existing rule that a cap/clock stop is not the same as an exhausted board.
+    if (!fresh.length) { if (total == null || raw.length < total) pagingCutShort = true; break; }
+    raw.push(...fresh);
     offset += pageSize;
     if (total != null && total > 0 && offset >= total) break;
   }
