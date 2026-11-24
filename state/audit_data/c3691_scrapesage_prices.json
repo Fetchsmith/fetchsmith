@@ -1,0 +1,390 @@
+[
+ {
+  "handle": "scrapesage/foundation-grants-scraper",
+  "niches": [
+   "grants-gov-scraper",
+   "nih-reporter-scraper"
+  ],
+  "users": 7,
+  "title": "Foundation Grants Scraper - Grantmaker & Funder Leads",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "grant",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.0028,
+   "GOLD": 0.0022,
+   "PLATINUM": 0.00152,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): funder,grant",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract US foundation grants & grantmaker leads from official IRS Form 990-PF & 990 Schedule I e-file data: funder, recipient, grant amount & purpose, assets, payout, trustees & contact phone. Grant prospecting + B2B lead-gen + monitoring. No browser, no key."
+ },
+ {
+  "handle": "scrapesage/uspto-patent-practitioner-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 5,
+  "title": "USPTO Patent Attorney & Agent Leads Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "practitionerRecord",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0014,
+   "GOLD": 0.0011,
+   "PLATINUM": 0.00076,
+   "DIAMOND": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): practitionerRecord",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every registered US patent practitioner from the official USPTO OED roster: name, registration number, type, firm, full address, phone & lead score. Filter by state, city, type or firm; monitor newly registered practitioners. B2B IP-law leads, no key or login."
+ },
+ {
+  "handle": "scrapesage/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper - Stories, Jobs & Comments",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00085,
+   "SILVER": 0.0007,
+   "GOLD": 0.00055,
+   "PLATINUM": 0.00038,
+   "DIAMOND": 0.00025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News stories, jobs, Ask HN, Show HN and comments from the official HN API: title, URL, score, author, comment count, date, domain and text. Pick a list or paste item IDs. No key, no browser. Independent tool, not affiliated with Hacker News."
+ },
+ {
+  "handle": "scrapesage/arbeitnow-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Arbeitnow Scraper - EU & Remote Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.0021,
+   "GOLD": 0.00165,
+   "PLATINUM": 0.00114,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape EU and remote jobs from Arbeitnow: title, company, location, remote flag, job types, tags, description and apply URL. Filter by keyword or remote-only. No login, no key. Export JSON, CSV, Excel. Independent tool, not affiliated with Arbeitnow."
+ },
+ {
+  "handle": "scrapesage/jobicy-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Jobicy Scraper - Remote Jobs & Salaries",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.0021,
+   "GOLD": 0.00165,
+   "PLATINUM": 0.00114,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from Jobicy: title, company, region, level, industry, salary range, description and apply URL. Filter by region, industry or tag. No login, no key. Export JSON, CSV, Excel. Independent tool, not affiliated with Jobicy."
+ },
+ {
+  "handle": "scrapesage/weworkremotely-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "WeWorkRemotely Scraper - Remote Jobs & Companies",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.0021,
+   "GOLD": 0.00165,
+   "PLATINUM": 0.00114,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from WeWorkRemotely: company, position, region, skills, category, employment type, description and job URL. Filter by category. No login, no key. Export JSON, CSV, Excel. Independent tool, not affiliated with We Work Remotely."
+ },
+ {
+  "handle": "scrapesage/remoteok-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "RemoteOK Scraper - Remote Jobs, Salaries & Companies",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.0021,
+   "GOLD": 0.00165,
+   "PLATINUM": 0.00114,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from RemoteOK: title, company, tags, location, salary range, description and apply URL. Filter by tag or get the latest. No login, no key. Export JSON, CSV, Excel. Independent tool, not affiliated with RemoteOK."
+ },
+ {
+  "handle": "scrapesage/google-play-reviews-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play Reviews Scraper - Ratings, Replies & History",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 0.0001,
+   "SILVER": 0.0001,
+   "GOLD": 0.0001,
+   "PLATINUM": 0.0001,
+   "DIAMOND": 0.0001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-ratings,review",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google Play app reviews at depth: full review history, star ratings, developer replies, per-country review sets and the 1-5 star histogram. Filter by rating, date, app version or keyword before you pay. No browser, no login. Independent tool, not affiliated with Google LLC."
+ },
+ {
+  "handle": "scrapesage/fda-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "FDA Scraper - Recalls, Adverse Events & Device Data",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.0028,
+   "GOLD": 0.0022,
+   "PLATINUM": 0.00152,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): adverseEvent,analyticsRow,establishmentLead,recall,record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape the U.S. FDA (openFDA): drug, device & food recalls, adverse events (FAERS/MAUDE/CAERS), 510(k) & PMA device clearances, drug labels/approvals/NDC, and medical-device manufacturer leads. Keyless, no browser, monitor mode + analytics."
+ },
+ {
+  "handle": "scrapesage/himalayas-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Himalayas Scraper - Remote Jobs, Salaries & Companies",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.0021,
+   "GOLD": 0.00165,
+   "PLATINUM": 0.00114,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from Himalayas: title, company, salary range, seniority, categories, location and timezone restrictions, description and apply URL. Search by keyword or browse the latest. No login, no key. Export JSON, CSV, Excel. Independent tool, not affiliated with Himalayas."
+ }
+]
