@@ -22,11 +22,20 @@ looks like a multi-listing operator, not a one-off", which is exactly the shape 
 made the c3160 pivot pay off and is far cheaper than probing all ~1050 distinct named
 owners every cycle (counted directly at cycle 3162: 1051 distinct owners fleet-wide,
 483 of them named >= 2x, 302 named >= 3x -- this script defaults to the >= 3x cohort).
-One `GET /v2/store?search=<owner>&limit=100` per owner (filtered to exact `username`
-match, verified cycle 3162 that the search endpoint returns ONLY that owner's own
-listings for an owner-shaped query term -- no false-positive cross-owner matches seen
-in testing) returns `currentPricingInfo` and `stats` inline, so this needs exactly one
-GET per owner, no second per-Actor fetch.
+Paginated `GET /v2/store?username=<owner>&limit=100&offset=N` per owner (the exact
+filter, not a relevance search -- see the FIX note below) returns `currentPricingInfo`
+and `stats` inline, so no second per-Actor fetch is ever needed.
+
+FIX, cycle 3677 (`NEW c3677`). The original method used `search=<owner>&limit=100`,
+filtered client-side to `username == owner`, on the belief (recorded cycle 3162) that
+the search endpoint reliably surfaces an owner's own listings for an owner-shaped query.
+That belief was wrong: `search=` is RELEVANCE-ranked, not an exact filter, and for
+`scrape-smith` it returned ZERO of that owner's 8 live listings across 3 query variants.
+It also silently truncated anyone past the unpaginated 100-row cap. Confirmed live:
+`s-r` (old method saw 62 listings, true total 347) and `automation-lab` (saw 99, true
+929) -- both already "triaged" on a fraction of their real catalogue by prior batches.
+`username=<owner>` is the exact, paginated filter (real `total` field, no false
+positives in spot checks against 8 owners) and is what `search_owner()` now uses.
 
 NICHE FILTER, added after the first live run exposed the real cost of skipping it.
 `andok` alone (one of 302 owners in the >=3x cohort) runs 63 listings, only a handful
@@ -57,7 +66,7 @@ LONG interval in `state/fleet_checks.json` (see `_intervals` note there) -- the 
 is "an existing named owner published a new listing", which does not have a daily
 cadence, and this is the single most expensive item a QUALITY cycle would run.
 
-Read-only: GET /v2/store?search=<owner> only. No Actor runs, no writes.
+Read-only: GET /v2/store?username=<owner> only. No Actor runs, no writes.
 """
 import glob
 import importlib.util
@@ -126,11 +135,26 @@ def matching_niches(text, vocab):
 
 
 def search_owner(owner):
-    """One GET /v2/store search, reduced to listings whose username is an exact match."""
-    url = f"{API}/store?search={urllib.parse.quote(owner)}&limit=100"
-    data = get_data(url)
-    items = (data or {}).get("items") or []
-    return owner, [i for i in items if i.get("username") == owner]
+    """Paginated GET /v2/store?username=<owner>, the exact filter (real `total`, no
+    false positives). Replaces the former `search=<owner>` relevance query, which
+    silently missed an owner's own listings for hyphenated usernames and anyone past
+    its unpaginated 100-row cap -- confirmed live cycle 3677 on `scrape-smith` (0 of 8
+    listings ever ranked into the top-100 hits for 3 query variants), `s-r` (62 seen vs
+    347 actual) and `automation-lab` (99 seen vs 929 actual). See `NEW c3677`."""
+    items = []
+    offset = 0
+    while True:
+        url = f"{API}/store?username={urllib.parse.quote(owner)}&limit=100&offset={offset}"
+        data = get_data(url)
+        if data is None:
+            return owner, None if not items else items
+        page = data.get("items") or []
+        items.extend(page)
+        total = data.get("total", len(items))
+        offset += len(page)
+        if not page or offset >= total:
+            break
+    return owner, items
 
 
 def main():
