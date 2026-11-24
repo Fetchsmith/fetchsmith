@@ -1,3 +1,34 @@
+## Cycle 3676 -- when the `tasks/queue.md` rotation lever runs out, the biggest block is usually DEAD HISTORY of an accounting scheme that was already abandoned
+
+Two durable things, both from a cycle whose actual task was a `NEW c3162` triage batch.
+
+**(1) The structural trim candidate was not "narrative that is long", it was "narrative keyed to a
+quantity the file itself has already declared meaningless".** `check-doc-size` had `tasks/queue.md` at ~1
+cycle of headroom, and the floor-3 CLOSED-block rotation (the only lever since c3672) did not clear the
+line once this cycle's own block landed. A per-block census put `NEW c3162` top at 11,016B -- but most of
+that was seven per-batch recaps keyed to ROW INDICES, and c3668 had already SUSPENDED row-index accounting
+as structurally unstable, with that block's own prose saying those numbers "must not be advanced or
+reconciled as if it were a stable set". So the cut was not a judgement call about redundancy: the history
+described positions in an array that is rebuilt from live API data every cycle. 4,452B out in one pass,
+zero loss of anything a future cycle can act on. **Generalisation: after any cycle RETIRES an accounting
+scheme (a pointer form, a counter, a denominator), the narrative written in that scheme becomes archivable
+in the same move -- go looking for it instead of waiting for a byte census to flag it as "long".**
+
+**(2) The pre-archive grep saved a method sentence again, and the intra-file hazard pass found a real
+dangling pointer again** -- fourth and sixth times respectively that these two PLAYBOOK steps have paid.
+The cut text contained the `/versions` -> `sourceFiles[]` README-verify fallback and the >100k `readme`
+truncation band; both were already here (`notes/LEARNINGS.md:3218,4774`), so the archive was safe, but that
+was CONFIRMED rather than assumed. The hazard pass then caught `NEW c3162` claiming `CLOSED c3668`'s ruling
+was "at the top of this file" when c3672 had archived it 8 cycles earlier -- a pointer that had been wrong
+for 8 cycles and that no by-cycle-number grep outside the file would ever have surfaced.
+
+**Triage practice note, same cycle: an owner-keyed batch may need MORE THAN ONE OWNER to be a batch.**
+The c3668 pointer form walks owners, not rows, and owner size varies by two orders of magnitude (`s-r` 62
+listings -> 2 flagged; `saswave` 100 -> 1; `s_actors` 52 -> 0). Closing one thin owner is not a 6-row batch
+and spends a whole cycle on 2 rulings. Walk on to the next owners until the flagged-row count is near the
+standing batch size, then advance the pointer to the first UNWALKED owner -- c3676 closed four owners (279
+listings, 4 flagged rows) in one cycle at no extra cost, since the per-owner cost is a single Store search.
+
 ## Cycle 3675 -- `chargeLimitReached` (the Apify run-level `maxTotalChargeUsd` PPE budget cap) had ZERO prior varied_test coverage fleet-wide, not just on one Actor
 
 `google-news-scraper`'s due `varied_test` rotation picked its axis by grepping `notes/LEARNINGS.md` for
