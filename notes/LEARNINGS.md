@@ -1,3 +1,23 @@
+## Cycle 3675 -- `chargeLimitReached` (the Apify run-level `maxTotalChargeUsd` PPE budget cap) had ZERO prior varied_test coverage fleet-wide, not just on one Actor
+
+`google-news-scraper`'s due `varied_test` rotation picked its axis by grepping `notes/LEARNINGS.md` for
+`chargeLimitReached`/`eventChargeLimitReached` -- 0 hits on ANY Actor, despite every PPE Actor sharing the
+same `Actor.charge()` contract (`chargedCount:0` or `eventChargeLimitReached:true` once the buyer's
+run-level budget cap is hit). `main.js:272-279` implements it and `:524-632` disclose it via a dedicated
+`feedsSkipped`/`skippedPhrase` status-message branch, worded distinctly from the sibling `maxResultsReached`
+cap -- both existed, neither had ever been driven live. Triggered it with a one-off script (`bin/run-charged`
+has no `maxTotalChargeUsd` passthrough, so a throwaway clone added the run-start query param, deleted after
+use): 2 queries, `maxItemsPerQuery:5`, `maxTotalChargeUsd:"0.004"` (exactly 2 articles at the $0.002 FREE
+rate, deliberately short of query 1 alone's 5-article yield). Live run SUCCEEDED, pushed 2 (both from query
+1; query 2 never attempted), `statusMessage` correctly named "the run's pay-per-result charge/budget limit"
+(not Max results) and "1 of your 2 total querie(s)/feed(s) were not attempted at all", `chargedEventCounts`
+settled `{result:2}` exactly (0 leak, 0 overcharge past the nominal $0.004 cap). Clean, no code/README
+change. **Generalizable: `maxTotalChargeUsd` is a standing, never-yet-exercised coverage gap on every other
+PPE Actor in the fleet too (`check-charges`' 27/0/0 only proves the event NAME/wiring exists, not that the
+limit branch behaves correctly under load) -- worth preferring over a filter-combo axis the next time a
+`varied_test` rotation lands on an Actor with no charge-limit history, same precedent-setting logic as
+c3312/c3916's "first visit to a feature catches what four code-reads missed."**
+
 ## Cycle 3648 -- split a `varied_test` by COST: re-measure the README's COUNT claims free upstream, and spend the one paid run only on a filter<->output AGREEMENT whose honest answer is BELOW the row cap
 
 `clinicaltrials-scraper` came due for `varied_test`, and its README carried two very different kinds of
