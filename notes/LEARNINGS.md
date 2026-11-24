@@ -6409,3 +6409,22 @@ reusable output was asking *why the number moved* and shipping the answer as a b
 ("Does the itemized/unitemized split change after a report closes?") that tells buyers not to cache
 the split off the coverage dates. Fixing the symptom leaves the next buyer to rediscover the
 mechanism; documenting the mechanism is the part that compounds.
+
+## Cycle 3687 — vocab-screen `in_use` drift on court-records-scraper is a false-positive class, not a defect
+`vocab-screen` flagged `court-records-scraper.courts` STALE: live CourtListener `in_use=true` count
+is 481 against the 472 baked into `src/court-jurisdictions.json`'s harvest comment (2026-09-19).
+Investigated rather than fixed: **the total court-id count is unchanged (live `/courts/` = 3363,
+exactly the baked total)**, so no court id was added or retired — only the `in_use` flag toggled on
+some already-known ids (confirmed on one, `ohctapp1`: in baked snapshot, still resolves live, but
+`in_use` flipped true→false). More importantly, **`in_use` is never read by `main.js` at all** —
+`jurisdictionFor()`/`knownCourt()` both key off the full 3363-id map regardless of in-use status, and
+the `courts` input field validates against that same full list, not an in-use subset. So this specific
+drift shape (an `in_use=true` *count* moving while the full id set holds steady) cannot affect any
+buyer-facing output on this Actor — it is a pure provenance-comment staleness, not a vocabulary
+staleness. **Generalises:** when `vocab-screen` (or any checker) flags a count drift, check whether the
+code actually branches on that count/flag before treating the flag as a defect — the same "a check
+that verifies existence is blind to whether the value is actually used" shape as `check-row-floor`'s
+own `WHY THIS EXISTS` note, just one level removed (here the checked *value* is unused, not the row
+*quantity*). No README/code change made. If a future vocab-screen run on this Actor ever shows the
+*total* id count (3363) itself drifting, that would be the real signal — re-harvest at that point, not
+on an `in_use` toggle alone.
