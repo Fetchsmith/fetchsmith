@@ -1,0 +1,464 @@
+[
+ {
+  "handle": "rowcraft/website-screenshot-api",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "description": "Capture full-page or viewport screenshots of any public web page as PNG, JPEG or WebP, with an optional A4 PDF. Desktop or mobile width, cookie banners hidden, robots.txt obeyed, and you pay only for each image saved.",
+  "title": "Website Screenshot API: Full-Page PNG, JPEG and PDF Captures",
+  "unit": [
+   {
+    "FREE": 0.0008,
+    "BRONZE": 0.0007,
+    "SILVER": 0.00065,
+    "GOLD": 0.0006,
+    "PLATINUM": 0.0006,
+    "DIAMOND": 0.0006
+   },
+   "screenshot",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "screenshot": {
+    "FREE": 0.0008,
+    "BRONZE": 0.0007,
+    "SILVER": 0.00065,
+    "GOLD": 0.0006,
+    "PLATINUM": 0.0006,
+    "DIAMOND": 0.0006
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/career-site-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Jobs from the career pages of the companies you choose: give a name or website and the actor finds the system (Greenhouse, Lever, Ashby, Workday, Workable, Personio, Recruitee, Teamtailor, Gem). One format: title, locations, department, salary when published, full text. No personal data.",
+  "title": "Career Site Jobs Scraper: Greenhouse, Lever, Ashby, Workday",
+  "unit": [
+   {
+    "FREE": 0.003,
+    "BRONZE": 0.00267,
+    "SILVER": 0.00233,
+    "GOLD": 0.002,
+    "PLATINUM": 0.002,
+    "DIAMOND": 0.002
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.003,
+    "BRONZE": 0.00267,
+    "SILVER": 0.00233,
+    "GOLD": 0.002,
+    "PLATINUM": 0.002,
+    "DIAMOND": 0.002
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/greenhouse-jobs-scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "description": "Job listings from Greenhouse job boards by company: title, departments, offices, publication date, full ad text, published pay ranges. Many boards per run, keyword and location filters, only new jobs on schedules. Public API, no login, no personal data.",
+  "title": "Greenhouse Jobs Scraper \u2013 Job Listings by Company Board",
+  "unit": [
+   {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/lever-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Job postings from Lever career pages (jobs.lever.co) by company: title, team, department, location, commitment, workplace type, salary range when published, description, requirements and benefits. Filters, only new postings, no personal data.",
+  "title": "Lever Jobs Scraper \u2013 Job Postings from jobs.lever.co",
+  "unit": [
+   {
+    "FREE": 0.002,
+    "BRONZE": 0.00167,
+    "SILVER": 0.00133,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.002,
+    "BRONZE": 0.00167,
+    "SILVER": 0.00133,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/ashby-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Job postings from Ashby job boards (jobs.ashbyhq.com) by company: title, department, team, locations with country, employment and workplace type, published salary range, full text. Many boards per run, filters, only new jobs on schedules. No personal data.",
+  "title": "Ashby Jobs Scraper \u2013 Job Postings with Salary Ranges",
+  "unit": [
+   {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/workday-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Job listings from Workday career sites (myworkdayjobs.com) by company: title, locations, country, posting date, time type, requisition ID and the full description. Any Workday site address works. Keyword and country filters, only new jobs on schedules, no personal data.",
+  "title": "Workday Jobs Scraper \u2013 Jobs from myworkdayjobs.com Sites",
+  "unit": [
+   {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/recruitee-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Job listings from Recruitee career sites by company: title, department, locations with country, employment type, remote flag, published salary and full text, one request per company. Many companies per run, keyword and location filters, only new jobs on schedules. No login, no personal data.",
+  "title": "Recruitee Jobs Scraper \u2013 Job Listings by Company Career Site",
+  "unit": [
+   {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/teamtailor-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Job listings from Teamtailor career sites by company: title, department, role, locations with city and country, remote or hybrid status, publication date and full ad text, from the official job feed. Many companies per run, filters, only new jobs on schedules. No personal data.",
+  "title": "Teamtailor Jobs Scraper \u2013 Career Site Jobs by Company",
+  "unit": [
+   {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/gem-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Job listings from Gem job boards (jobs.gem.com) by company: title, department, offices with country, employment type, remote, hybrid or on-site, requisition ID, publication date and full ad text, from the public Gem Job Board API. Filters, only new jobs on schedules, no personal data.",
+  "title": "Gem Jobs Scraper \u2013 Job Board Listings from jobs.gem.com",
+  "unit": [
+   {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0015,
+    "BRONZE": 0.00133,
+    "SILVER": 0.00117,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/himalayas-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Remote jobs from Himalayas through its public jobs API: title, company, salary range, seniority, categories, the countries and time zones open to candidates, full description and job link. Filter by keyword, country, time zone, seniority, type and date. Pay per job, no personal data.",
+  "title": "Himalayas Jobs Scraper: Remote Jobs API with Salaries",
+  "unit": [
+   {
+    "FREE": 0.0009,
+    "BRONZE": 0.0008,
+    "SILVER": 0.0007,
+    "GOLD": 0.0006,
+    "PLATINUM": 0.0006,
+    "DIAMOND": 0.0006
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0009,
+    "BRONZE": 0.0008,
+    "SILVER": 0.0007,
+    "GOLD": 0.0006,
+    "PLATINUM": 0.0006,
+    "DIAMOND": 0.0006
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/workable-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "description": "Job listings from any company's Workable career page: title, department, location, remote or on-site, employment type, description, requirements, benefits and salary when published. Add company names or links, filter by keyword, country and date, pay per job. No personal data.",
+  "title": "Workable Jobs Scraper: Job Listings from Career Pages",
+  "unit": [
+   {
+    "FREE": 0.001,
+    "BRONZE": 0.00092,
+    "SILVER": 0.00084,
+    "GOLD": 0.00076,
+    "PLATINUM": 0.00076,
+    "DIAMOND": 0.00076
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.001,
+    "BRONZE": 0.00092,
+    "SILVER": 0.00084,
+    "GOLD": 0.00076,
+    "PLATINUM": 0.00076,
+    "DIAMOND": 0.00076
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/ted-tenders-scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "description": "EU public procurement notices from TED (Tenders Electronic Daily), the official EU tenders portal, through its public Search API: title, buyer, country, CPV codes, values, deadlines, lots and document links. Filter by country, CPV, stage, text and date. Pay per notice, no personal data.",
+  "title": "TED Tenders Scraper: EU Public Procurement Notices API",
+  "unit": [
+   {
+    "FREE": 0.003,
+    "BRONZE": 0.00267,
+    "SILVER": 0.00233,
+    "GOLD": 0.002,
+    "PLATINUM": 0.002,
+    "DIAMOND": 0.002
+   },
+   "notice",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "notice": {
+    "FREE": 0.003,
+    "BRONZE": 0.00267,
+    "SILVER": 0.00233,
+    "GOLD": 0.002,
+    "PLATINUM": 0.002,
+    "DIAMOND": 0.002
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/remote-jobs-aggregator",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "description": "Remote jobs from RemoteOK, We Work Remotely and Jobicy in one clean list, read from their official feeds and APIs, merged without duplicates. Every row names its source and links back to the original job. Pay per job, no personal data.",
+  "title": "Remote Jobs Aggregator API: RemoteOK, WeWorkRemotely, Jobicy",
+  "unit": [
+   {
+    "FREE": 0.0015,
+    "BRONZE": 0.0013,
+    "SILVER": 0.00115,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "job-ad",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "job-ad": {
+    "FREE": 0.0015,
+    "BRONZE": 0.0013,
+    "SILVER": 0.00115,
+    "GOLD": 0.001,
+    "PLATINUM": 0.001,
+    "DIAMOND": 0.001
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ },
+ {
+  "handle": "rowcraft/shopify-store-analyzer",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "description": "Analyse a list of Shopify stores from their own public pages: currency, shipping countries, theme, installed apps, tracking pixels, price range, new products and role e-mails. robots.txt obeyed, no personal data, pay only per store analysed.",
+  "title": "Shopify Store Analyzer: Apps, Theme, Catalog & Pricing API",
+  "unit": [
+   {
+    "FREE": 0.003,
+    "BRONZE": 0.0025,
+    "SILVER": 0.002,
+    "GOLD": 0.0015,
+    "PLATINUM": 0.0015,
+    "DIAMOND": 0.0015
+   },
+   "store-analysis",
+   5e-05,
+   "primary event"
+  ],
+  "events_raw": {
+   "store-analysis": {
+    "FREE": 0.003,
+    "BRONZE": 0.0025,
+    "SILVER": 0.002,
+    "GOLD": 0.0015,
+    "PLATINUM": 0.0015,
+    "DIAMOND": 0.0015
+   },
+   "apify-actor-start": {
+    "FREE": 5e-05
+   }
+  }
+ }
+]
