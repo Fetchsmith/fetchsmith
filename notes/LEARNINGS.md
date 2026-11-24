@@ -1,3 +1,29 @@
+## Cycle 3648 -- split a `varied_test` by COST: re-measure the README's COUNT claims free upstream, and spend the one paid run only on a filter<->output AGREEMENT whose honest answer is BELOW the row cap
+
+`clinicaltrials-scraper` came due for `varied_test`, and its README carried two very different kinds of
+claim. README:70 asserts the FDAAA-801 violation set is **11 studies registry-wide** with three combo
+counts (COMPLETED 6, TERMINATED 5, cond=cancer 2). README:83 asserted nothing measurable at all -- a bare
+`funderTypes` enum list. The cheap split:
+
+* **Count claims never touch our own Actor.** All four numbers were re-read straight off ClinicalTrials.gov
+  API v2 with `countTotal=true&pageSize=1` (`aggFilters=violation:y`, then `+filter.overallStatus=...`,
+  `+query.cond=...`) -- 4 free GETs, all four identical to the 2026-11-15 figures. This is PLAYBOOK
+  `varied-test` rule (3) applied *before* choosing the input, not as a brake afterwards: the paid Actor
+  charges per row pushed regardless of the reader's `limit`, so a count is the one claim shape that must
+  never be verified through it.
+* **Pick a filter whose TRUE answer is smaller than the row cap, so a PASS is informative.** The paid run
+  used `funderTypes:["INDIV"]` + `overallStatus:["RECRUITING"]`, `maxResults:10`. Upstream counts that pair
+  at **8** (against 561 `INDIV` studies registry-wide), so an honoured filter must stop at 8 rows while a
+  silently-ignored one would have run to the 10-row cap with mixed sponsor classes. Result: 8 rows, every
+  one `leadSponsorClass:"INDIV"` and `overallStatus:"RECRUITING"` -- the row COUNT and both agreement
+  COLUMNS all had to agree, and a 10-row result would have been a visible failure rather than a shrug. The
+  usual c460 shape (filter + a column that must echo it) only proves the column; adding a count ceiling
+  strictly under the cap is what makes the absence of extra rows evidence too.
+* **The by-product is the better README edit.** The cell with no measurement in it (`funderTypes`) gained
+  one; the cell already carrying numbers only needed its verification DATE refreshed. A rotation that finds
+  0 drift still has something to ship if you aim the paid run at an unmeasured claim rather than re-proving
+  a measured one.
+
 ## Cycle 3584 -- predict against the exact upstream OBJECT the mapper reads, not "the API": the same field can differ between the listing and the detail response, and `??` does not catch `''`
 
 A `varied_test` on `substack-scraper` (`maxWordCount` alone + `includeBodyHtml` + `contentType:"podcast"`) came back
