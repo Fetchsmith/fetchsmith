@@ -1,0 +1,92 @@
+[
+  {
+    "handle": "rustic_soybean/cpsc-recall-evidence-matcher",
+    "niches": [
+      "fda-recall-scraper"
+    ],
+    "title": "CPSC Recall Evidence Matcher",
+    "description": "Check products against official U.S. CPSC recall records by product name, UPC/GTIN, or model number. Get candidate matches with evidence and source links; verify descriptive matches before acting.",
+    "users": 2,
+    "pricingModel": "PAY_PER_EVENT",
+    "events": [
+      {
+        "event": "apify-actor-start",
+        "title": "Actor Start",
+        "tiers": {
+          "FREE": 5e-05
+        },
+        "is_start_fee": true,
+        "is_decoy": false
+      },
+      {
+        "event": "product-screened",
+        "title": "Product screened",
+        "tiers": {
+          "FREE": 0.0015
+        },
+        "is_start_fee": false,
+        "is_decoy": false
+      }
+    ]
+  },
+  {
+    "handle": "rustic_soybean/federal-contract-award-intel",
+    "niches": [
+      "us-federal-awards-scraper"
+    ],
+    "title": "Federal Contract Award Intel",
+    "description": "Search USAspending.gov contract awards by NAICS code, keyword, agency, and date range. Returns up to 100 records with recipients, award values, and reported end dates. For market research; past awards aren\u2019t open bids or proof of a future recompete.",
+    "users": 2,
+    "pricingModel": "PAY_PER_EVENT",
+    "events": [
+      {
+        "event": "apify-actor-start",
+        "title": "Actor Start",
+        "tiers": {
+          "FREE": 5e-05
+        },
+        "is_start_fee": true,
+        "is_decoy": false
+      },
+      {
+        "event": "apify-default-dataset-item",
+        "title": "result",
+        "tiers": {
+          "FREE": 0.001
+        },
+        "is_start_fee": false,
+        "is_decoy": false
+      }
+    ]
+  },
+  {
+    "handle": "rustic_soybean/nhtsa-vehicle-recall-lookup",
+    "niches": [
+      "fda-recall-scraper"
+    ],
+    "title": "NHTSA Vehicle Recall Lookup",
+    "description": "Search official NHTSA safety recall records by vehicle make, model, and year. Get structured recall details, including campaign numbers, affected components, safety issues, remedies, and source links.",
+    "users": 2,
+    "pricingModel": "PAY_PER_EVENT",
+    "events": [
+      {
+        "event": "apify-actor-start",
+        "title": "Actor Start",
+        "tiers": {
+          "FREE": 5e-05
+        },
+        "is_start_fee": true,
+        "is_decoy": false
+      },
+      {
+        "event": "apify-default-dataset-item",
+        "title": "result",
+        "tiers": {
+          "FREE": 0.001
+        },
+        "is_start_fee": false,
+        "is_decoy": false
+      }
+    ]
+  }
+]
