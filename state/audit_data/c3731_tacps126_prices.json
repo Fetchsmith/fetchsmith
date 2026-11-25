@@ -1,0 +1,872 @@
+[
+ {
+  "handle": "tacps126/grants-radar",
+  "niches": [
+   "grants-gov-scraper"
+  ],
+  "users": 2,
+  "title": "Grants Radar: Public Funding & Grant Calls",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "grant",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00285,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant,insight",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Open and upcoming public funding calls in one schema: US Grants.gov, EU Funding & Tenders (Horizon Europe, Digital Europe, LIFE...), UKRI and Australia's GrantConnect. Grant size, budget, deadline, eligibility; AI fit scores. From $3 per 1,000 calls."
+ },
+ {
+  "handle": "tacps126/clinical-trials",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "Clinical Trials Scraper: ClinicalTrials.gov Studies & Sites",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00285,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Clinical trials from ClinicalTrials.gov by condition, drug, sponsor, location, status, phase and sponsor type: dates, enrollment, design, interventions, eligibility, central contacts (name, phone, email) and sites. New-study alerts."
+ },
+ {
+  "handle": "tacps126/tenders-radar",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "Tenders Radar: Public Tenders & Contract Awards",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0038,
+   "SILVER": 0.0036,
+   "GOLD": 0.0032,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0032
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insight,tender",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Public tenders and awards from 17 official portals in one schema: US SAM.gov and USAspending, EU TED and EU institutions, UK, France, Spain, Germany, India GeM, Brazil, Ukraine, Canada, Colombia, Australia, South Africa. Country, state, sector, value filters. From $4/1k."
+ },
+ {
+  "handle": "tacps126/builtin-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Built In Jobs Scraper: Tech Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0006,
+   "BRONZE": 0.00057,
+   "SILVER": 0.00054,
+   "GOLD": 0.00048,
+   "PLATINUM": 0.00048,
+   "DIAMOND": 0.00048
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape tech jobs from Built In - keyword search and remote jobs, no login. Salary range, seniority, in-office / hybrid / remote, company and logo in one clean format. Monitor new jobs. From $0.60 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/remote-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper",
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Remote Jobs Scraper: Company Career Sites",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00225,
+   "BRONZE": 0.0021375,
+   "SILVER": 0.002025,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs straight from company career sites - Greenhouse, Lever, Ashby, Workable and more, no aggregator spam. Filter by title, country, seniority, salary; get only new jobs on a schedule. Clean data with salary, skills and location. From $2 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/shopify-store-analyzer",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Analyzer: Contacts, Location & Catalog",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store",
+  "unit_tiers": {
+   "FREE": 0.00735,
+   "BRONZE": 0.0069825,
+   "SILVER": 0.006615,
+   "GOLD": 0.00588,
+   "PLATINUM": 0.00588,
+   "DIAMOND": 0.00588
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Analyze Shopify stores: location, currency, product count, price range, top brands, newest product, plus e-mails, phones and socials. Filter by country, size, price, activity and e-mail; sort by size or newest product. For B2B leads. From $4 per 1,000 stores."
+ },
+ {
+  "handle": "tacps126/startup-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Startup Jobs Scraper: Ashby, Greenhouse, Lever",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00085,
+   "BRONZE": 0.0008075,
+   "SILVER": 0.000765,
+   "GOLD": 0.00068,
+   "PLATINUM": 0.00068,
+   "DIAMOND": 0.00068
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape jobs at startups and tech companies from Ashby, Greenhouse, Lever, Workable and Rippling boards - scan 230+ companies or name your own. Salary, seniority, skills, remote flag; only new jobs on a schedule. From $2 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape jobs from any company's Workday careers site - paste the link, get every posting with location, seniority and skills in one clean format. Keyword search, filters, and new-job monitoring. From $1 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/himalayas-remote-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Himalayas Remote Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape jobs from Himalayas - remote jobs from Himalayas, with salaries and skills. Pay, hours, skills and seniority in one clean format. Keyword filter and new-job monitoring. From $1 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/smartrecruiters-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "SmartRecruiters Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.00076,
+   "SILVER": 0.00072,
+   "GOLD": 0.00064,
+   "PLATINUM": 0.00064,
+   "DIAMOND": 0.00064
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any SmartRecruiters career page - just type the company name. Fast, low-cost and clean: location, remote/hybrid, seniority, salary and skills in one consistent format. Monitor new jobs on a schedule. From $0.80 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/recruitee-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Recruitee Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Recruitee career page - just type the company name. Fast, low-cost and clean: location, remote/hybrid, seniority, salary and skills in one consistent format. Monitor new jobs on a schedule. From $1 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/lever-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Lever Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.001425,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Lever career page - just type the company name. Fast, low-cost and clean: location, remote/hybrid, seniority, salary and skills in one consistent format. Monitor new jobs on a schedule. From $1.50 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/greenhouse-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0016,
+   "BRONZE": 0.00152,
+   "SILVER": 0.00144,
+   "GOLD": 0.00128,
+   "PLATINUM": 0.00128,
+   "DIAMOND": 0.00128
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Greenhouse career page - just type the company name. Fast, low-cost and clean: location, remote/hybrid, seniority, salary and skills in one consistent format. Monitor new jobs on a schedule. From $1.60 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/google-news",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google News: search results, topic sections and top stories in any language and country - with the publisher's real article URL, publisher, date and related coverage. Site and time filters, new-article monitoring, instant API. From $1 per 1,000 articles."
+ },
+ {
+  "handle": "tacps126/app-stores",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store and Google Play Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.0006,
+   "BRONZE": 0.00057,
+   "SILVER": 0.00054,
+   "GOLD": 0.00048,
+   "PLATINUM": 0.00048,
+   "DIAMOND": 0.00048
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape App Store and Google Play apps by search term, app link or top chart: rating, ratings count, installs, price, developer and email, genre, release and update dates, description, screenshots. Both stores in one table. From $0.60 per 1,000 apps."
+ },
+ {
+  "handle": "tacps126/clinical-trials-scraper",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "Clinical Trials Scraper: ClinicalTrials.gov Studies",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00285,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search ClinicalTrials.gov by condition, drug or sponsor: status, phase, conditions, interventions, sponsor, enrollment, dates, countries and investigators as clean JSON, CSV or Excel. Only-new alerts. $3 per 1,000 trials."
+ },
+ {
+  "handle": "tacps126/brand-monitor",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Brand Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mention",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.00076,
+   "SILVER": 0.00072,
+   "GOLD": 0.00064,
+   "PLATINUM": 0.00064,
+   "DIAMOND": 0.00064
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): digest,mention",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Brand monitoring in one run: mentions from news, X, Instagram, TikTok, Threads, Bluesky, YouTube, Trustpilot and app store reviews, each with sentiment, plus a digest page per run. Schedule it for daily alerts."
+ },
+ {
+  "handle": "tacps126/hellowork-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "HelloWork Jobs Scraper: France Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.000855,
+   "SILVER": 0.00081,
+   "GOLD": 0.00072,
+   "PLATINUM": 0.00072,
+   "DIAMOND": 0.00072
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,insight",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape French jobs from HelloWork by keyword and city. Contract type, salary, remote work and full description in one clean format. No login. Monitor new jobs. From $1 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/jobs-harvester",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Job Board Harvester: Multi-Platform",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.001425,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Jobs from 13 career-site systems (Greenhouse, Lever, Ashby, Workday, SmartRecruiters, Workable, Personio...), AI talent marketplaces and LinkedIn in one clean dataset. Paste a careers page, type a company name or scan 500+ verified boards. Only-new monitoring. From $1.50 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/app-reviews",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "App Store & Google Play Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.00015,
+   "BRONZE": 0.0001425,
+   "SILVER": 0.000135,
+   "GOLD": 0.00012,
+   "PLATINUM": 0.00012,
+   "DIAMOND": 0.00012
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape app reviews from the Apple App Store and Google Play in one dataset: rating, text, author, date, app version, developer replies - plus sentiment, reply time and app rating summary. Multiple countries, star filters, new-review monitoring. From $0.15 per 1,000 reviews."
+ },
+ {
+  "handle": "tacps126/ashby-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Ashby Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.001425,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Ashby career page - just type the company name. Fast, low-cost and clean: location, remote/hybrid, seniority, salary and skills in one consistent format. Monitor new jobs on a schedule. From $1.50 per 1,000 jobs."
+ },
+ {
+  "handle": "tacps126/gov-radar",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 1,
+  "title": "Gov Radar: Regulations, Notices & Circulars",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "update",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00285,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insight,update",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Official government updates in one feed: US Federal Register and SEC, GOV.UK, European Commission, India's RBI, SEBI, TRAI, IRDAI, CDSCO, DGFT and more, plus any gov RSS feed or 'What's new' page. Sector and keyword filters, only-new alerts, RSS, Slack. From $3 per 1,000 updates."
+ }
+]
