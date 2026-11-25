@@ -1,0 +1,225 @@
+[
+ {
+  "handle": "steadydata/dietary-supplement-labels",
+  "niches": [
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "Dietary Supplement Labels: ingredients and doses from NIH DSLD",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "label-listed",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): label-listed",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Supplement Facts from the NIH Dietary Supplement Label Database (214,780 US labels): search by product, brand or ingredient, or give label IDs. Per ingredient the amount, unit, mg where exact, %DV and a flag for proprietary blends without doses. Pay per label."
+ },
+ {
+  "handle": "steadydata/shopify-store-report",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Analyzer & Report: catalogue, prices, stock",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-reported",
+  "unit_tiers": {
+   "FREE": 0.0035,
+   "BRONZE": 0.00315,
+   "SILVER": 0.0028,
+   "GOLD": 0.002275,
+   "PLATINUM": 0.002275,
+   "DIAMOND": 0.002275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-reported",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "One report per Shopify store, up to 200 stores per run: catalogue size, price range and average, currency, share in stock, share on sale, product types, brands, newest and oldest product, plus ranked signals such as a stale catalogue or heavy discounting. Pay per delivered report."
+ },
+ {
+  "handle": "steadydata/hacker-news-search",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper: stories by keyword, points, comments",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "story-listed",
+  "unit_tiers": {
+   "FREE": 0.00425,
+   "BRONZE": 0.003825,
+   "SILVER": 0.0034,
+   "GOLD": 0.002763,
+   "PLATINUM": 0.002763,
+   "DIAMOND": 0.002763
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): story-listed",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Hacker News scraper for stories by keyword, up to 100 queries per run: one row per story with rank, title, link, domain, points, comment count, date and type (story, Ask HN, Show HN, job), sorted by relevance or date, with points and recency filters. Pay per story."
+ },
+ {
+  "handle": "steadydata/hacker-news-comments",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Comments Scraper: full thread text by story, bulk",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "comment-listed",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.000325,
+   "PLATINUM": 0.000325,
+   "DIAMOND": 0.000325
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): comment-listed",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "All comments under Hacker News stories, up to 200 stories per run and up to 2,000 comments each, in thread order with depth and parent: plain text, time, reply count and comment link, plus the story's title, points and URL on every row, from the official Algolia API. No usernames. Pay per comment."
+ },
+ {
+  "handle": "steadydata/steam-app-details",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Game Details Scraper: price, reviews score, genres, bulk",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-detailed",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-detailed",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Details of Steam games and apps by id or URL, up to 500 per run: name, type, price and discount per country, release date, developers, publishers, genres, platforms, Metacritic score, review score with positive and negative counts, DLC count and description, from Steam's store API. Pay per app."
+ },
+ {
+  "handle": "steadydata/google-news",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Scraper: by query, topic or country headlines",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article-listed",
+  "unit_tiers": {
+   "FREE": 0.0035,
+   "BRONZE": 0.00315,
+   "SILVER": 0.0028,
+   "GOLD": 0.002275,
+   "PLATINUM": 0.002275,
+   "DIAMOND": 0.002275
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-listed",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "News articles from Google News by search query, by topic or as country headlines: title, source, publication date, link and snippet, up to 200 queries per run. Language and country control, no start fee, and only delivered articles are charged."
+ }
+]
