@@ -1,0 +1,89 @@
+[
+ {
+  "handle": "thenetaji/totaljobs-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Totaljobs Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "BRONZE": 0.00095,
+   "DIAMOND": 0.00085,
+   "FREE": 0.001,
+   "GOLD": 0.00085,
+   "PLATINUM": 0.00085,
+   "SILVER": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,enriched-job-description",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Totaljobs, CWJobs or Caterer.com by keyword and location, filter by posting age and office or remote work, and export each UK job with company, salary, location and dates."
+ },
+ {
+  "handle": "thenetaji/shopify-store-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 1,
+  "title": "Shopify Store Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "BRONZE": 0.0012,
+   "DIAMOND": 0.0006,
+   "FREE": 0.0015,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "SILVER": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Export every product and variant from any Shopify-powered store by domain, read straight from the store's own JSON API rather than scraped HTML."
+ }
+]

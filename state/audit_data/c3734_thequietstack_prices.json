@@ -1,0 +1,413 @@
+[
+ {
+  "handle": "thequietstack/remote-jobs-aggregator",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Remote Jobs Aggregator \u00b7 RemoteOK, Jobicy & More, Only New",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-listed",
+  "unit_tiers": {
+   "FREE": 0.0017,
+   "BRONZE": 0.00153,
+   "SILVER": 0.00136,
+   "GOLD": 0.00119,
+   "PLATINUM": 0.00119,
+   "DIAMOND": 0.00119
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-listed",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote jobs from four public job feeds (Remote OK, Jobicy, Arbeitnow, Working Nomads) in one deduplicated list: title, company, salary, region, tags, full description, apply link and source credit. Keyword, region, salary and date filters; only-new mode for job alerts."
+ },
+ {
+  "handle": "thequietstack/ted-tender-monitor",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "EU TED Tenders Scraper \u00b7 Public Procurement, Only New",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "EU tenders from TED (Tenders Electronic Daily), the official procurement journal: filter public procurement notices by keyword, CPV code, country and minimum value, open tenders only, only new since the last run. Title in your language, deadline, value, buyer, CPV codes, PDF link."
+ },
+ {
+  "handle": "thequietstack/ats-direct-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Jobs API \u00b7 Greenhouse, Lever, Ashby, Workday + Salary",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-scanned,job-record",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "ATS jobs API for Greenhouse, Lever, Ashby, Workday, Workable, Recruitee and Personio in one schema: job title, location, remote, department and salary range parsed into numbers. Hard result cap, only new jobs, no login. You pay for jobs, not for attempts."
+ },
+ {
+  "handle": "thequietstack/website-screenshot-pdf",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot API \u00b7 Full Page, PDF, No Cookie Banners",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.018,
+   "SILVER": 0.016,
+   "GOLD": 0.014,
+   "PLATINUM": 0.014,
+   "DIAMOND": 0.014
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): pdf,screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Website screenshot API for full-page PNG, JPEG and PDF of any URL list: lazy images scrolled in, cookie banners hidden, device presets, and an optional comparison with the previous run. Every URL gets a row with the file or the exact reason it failed. You pay only for delivered files."
+ },
+ {
+  "handle": "thequietstack/shopify-products-monitor",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Products Scraper & Price Monitor \u00b7 Any Store",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product-row",
+  "unit_tiers": {
+   "FREE": 9e-05,
+   "BRONZE": 8.1e-05,
+   "SILVER": 7.2e-05,
+   "GOLD": 6.3e-05,
+   "PLATINUM": 6.3e-05,
+   "DIAMOND": 6.3e-05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-row",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Export all products of any Shopify store from its public products.json (title, price, variants, stock status, images, tags) and monitor new products, price drops and sold-out items. Only changes are charged. No login."
+ },
+ {
+  "handle": "thequietstack/sam-gov-opportunities-monitor",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "SAM.gov Contract Opportunities Monitor \u00b7 No API Key, Only New",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.0022,
+   "BRONZE": 0.00198,
+   "SILVER": 0.00176,
+   "GOLD": 0.00154,
+   "PLATINUM": 0.00154,
+   "DIAMOND": 0.00154
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "US federal contract opportunities from SAM.gov's public daily data file. Filter by keyword, NAICS, PSC, set-aside, notice type, agency and state; get only new notices. No API key, no login, no personal contact data."
+ },
+ {
+  "handle": "thequietstack/usaspending-awards-monitor",
+  "niches": [
+   "nih-reporter-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "USAspending Federal Awards Monitor \u00b7 Contracts, Grants, No Key",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.0054,
+   "SILVER": 0.0048,
+   "GOLD": 0.0042,
+   "PLATINUM": 0.0042,
+   "DIAMOND": 0.0042
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "US federal contract and grant awards from the official USAspending.gov API: recipient, amount, agency, NAICS, PSC, dates and award link. Filter by keyword, NAICS, PSC, agency, recipient, state and minimum amount, and get only new awards on a schedule. No API key, no login."
+ },
+ {
+  "handle": "thequietstack/workday-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper \u00b7 Any Careers Site, Salary, Only New",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.00162,
+   "SILVER": 0.00144,
+   "GOLD": 0.00126,
+   "PLATINUM": 0.00126,
+   "DIAMOND": 0.00126
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Workday jobs scraper for any myworkdayjobs.com careers site: title, location, posted date, full description, time type, req ID and the salary range when the posting states one. Filter by keyword, location and date, and get only new jobs on a schedule. No login."
+ },
+ {
+  "handle": "thequietstack/shopify-store-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 1,
+  "title": "Shopify Store Scraper \u00b7 Shopify Leads from Any Domain List",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-scraped",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0072,
+   "SILVER": 0.0064,
+   "GOLD": 0.0056,
+   "PLATINUM": 0.0056,
+   "DIAMOND": 0.0056
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-scraped,store-scraped",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Shopify store scraper for lead generation and e-commerce prospecting: paste domains and get Shopify leads as one qualified row per store - product count, price band, theme, location and the Contact details on the public pages. Optional Products per store."
+ },
+ {
+  "handle": "thequietstack/app-store-reviews",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "App Store Reviews Scraper \u00b7 iOS Reviews from All Countries",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "App Store reviews scraper for app monitoring and competitor research: iOS Reviews from every country storefront in one run instead of the roughly 500 a single storefront hands out, deduplicated. Filter by stars, date window and app version. No login, no API key."
+ }
+]

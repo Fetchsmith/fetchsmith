@@ -1,0 +1,839 @@
+[
+ {
+  "handle": "themineworks/shopify-store-finder",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 30,
+  "title": "Shopify Store Finder: Store Leads with Email, Apps, Theme",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-found",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.0035,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-found",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find Shopify stores by niche keyword or check a domain list. One verified row per store: country, currency, product count, price range, product types, theme, apps, Instagram, Facebook, TikTok, email and phone. Every store is checked live as Shopify. No login."
+ },
+ {
+  "handle": "themineworks/linkedin-newsletter-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 18,
+  "title": "LinkedIn Newsletter Scraper: Keyword to Newsletters",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "newsletter-found",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): newsletter-found",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Discover public LinkedIn newsletters matching a keyword: title, URL and subscriber count where available. Optional monitor mode bills only for new newsletters. No login, no API key."
+ },
+ {
+  "handle": "themineworks/ats-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 12,
+  "title": "Career Site Jobs Scraper: Greenhouse, Lever, Ashby & Workday",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0042,
+   "SILVER": 0.0036,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape live job listings from company career sites on Greenhouse, Lever, Ashby and Workday. Paste company names or career page URLs. Jobs are read from each company's own ATS at run time, not a cached index. Filter by title, location, department or posting date. Pay per job; filtered jobs are free."
+ },
+ {
+  "handle": "themineworks/recruiting-jobs-mcp",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 10,
+  "title": "Recruiting & Jobs MCP | 10 Tools: ATS, LinkedIn, Naukri",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "search_jobs_ats",
+  "unit_tiers": {
+   "FREE": 0.025,
+   "BRONZE": 0.0225,
+   "SILVER": 0.02,
+   "GOLD": 0.0175,
+   "PLATINUM": 0.0175,
+   "DIAMOND": 0.0175
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company_snapshot,enrich_profile,find_candidates,hiring_signal_section,hiring_signals_report,partial_hiring_signals,search_jobs_ats,search_jobs_cutshort,search_jobs_indeed,search_jobs_india,search_jobs_linkedin,search_jobs_simplyhired",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live job-market data for recruiting agents: ATS postings (Greenhouse/Lever/Workday/Ashby), LinkedIn jobs, Naukri, candidate sourcing, and employer snapshots. No result, no charge."
+ },
+ {
+  "handle": "themineworks/google-play-reviews-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 6,
+  "title": "Google Play Reviews Scraper: Star Filter and Developer Replies",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 0.0001,
+   "SILVER": 0.0001,
+   "GOLD": 0.0001,
+   "PLATINUM": 0.0001,
+   "DIAMOND": 0.0001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google Play reviews for any Android app: stars, text, thumbs up, app version, date and the developer's reply, with the app title on every row. Pages through thousands of reviews per app, sorted by newest, most relevant or rating, with star, language and country filters. No login."
+ },
+ {
+  "handle": "themineworks/app-reviews-monitor",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 3,
+  "title": "App Reviews Scraper: App Store & Google Play, Multi-Country",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.0002,
+   "BRONZE": 0.00018,
+   "SILVER": 0.00016,
+   "GOLD": 0.00014,
+   "PLATINUM": 0.00014,
+   "DIAMOND": 0.00014
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Monitor App Store and Google Play reviews in one run. Beats Apple's 500-review per-country cap by reading many country storefronts, returning rating, title, text, author, version and date. No login, no API key, pay per review."
+ },
+ {
+  "handle": "themineworks/podcast-episode-scraper",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 3,
+  "title": "Podcast Episode Scraper: RSS, Audio URLs & Transcripts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "episode-scraped",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): episode-scraped",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape podcast episodes from any RSS feed or by show name: title, description, duration, audio URL and publish date, plus the full transcript for shows that publish one. No API key, pay per episode."
+ },
+ {
+  "handle": "themineworks/shopify-store-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Scraper | Any Store, 18 Fields, No API Key",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product-scraped",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-scraped",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape the full product catalogue of any Shopify store \u2014 title, vendor, type, tags, variants, price range, SKUs, stock and images. Uses each store's public products feed: no login, no API key, no browser. Competitor and dropshipping research. Use it as an MCP server in Claude, ChatGPT & AI agents."
+ },
+ {
+  "handle": "themineworks/google-play-search",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play Scraper: Apps, Developers & Ratings",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-scraped",
+  "unit_tiers": {
+   "FREE": 0.0002,
+   "BRONZE": 0.00018,
+   "SILVER": 0.00016,
+   "GOLD": 0.00014,
+   "PLATINUM": 0.00014,
+   "DIAMOND": 0.00014
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-scraped",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google Play Store search results: app name, package id, developer, rating, icon and store URL. Any country and language. No login, no API key."
+ },
+ {
+  "handle": "themineworks/greenhouse-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Jobs Scraper: Job Boards, Salary Ranges, Remote",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.0012,
+   "SILVER": 0.0012,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Greenhouse jobs scraper for any company's Greenhouse job board: title, department, offices, locations, remote flag, posted date, salary range, apply link and description. Paste board links or company names, many per run, and filter by keyword, location or date. No login. $1.20 per 1,000 jobs."
+ },
+ {
+  "handle": "themineworks/lever-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Lever Jobs Scraper: Job Boards, Salary, Remote, Global and EU",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.0012,
+   "SILVER": 0.0012,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Lever jobs scraper for any company's Lever job board on jobs.lever.co and the EU host jobs.eu.lever.co: title, team, commitment, remote, hybrid or onsite, locations, country, posted date, salary range and apply link. Many companies per run. No login. $1.20 per 1,000 jobs."
+ },
+ {
+  "handle": "themineworks/ashby-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Ashby Jobs Scraper: Job Boards, Salary Ranges, Equity, Remote",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.0008,
+   "SILVER": 0.0008,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Ashby jobs scraper for any company's Ashby job board: title, department, team, remote, hybrid or onsite, locations, published date, salary range, equity flag and apply link. Paste board links or company names, many per run, and filter by keyword, location or date. No login. $0.80 per 1,000 jobs."
+ },
+ {
+  "handle": "themineworks/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper: myworkdayjobs Career Sites, Pay Ranges",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 0.0001,
+   "SILVER": 0.0001,
+   "GOLD": 0.0001,
+   "PLATINUM": 0.0001,
+   "DIAMOND": 0.0001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Workday jobs scraper for any company's career site on myworkdayjobs.com or myworkdaysite.com: title, job category, locations, country, posted date, time type, requisition id, pay range and apply link. Reads big sites past Workday's 2,000 job limit. No login. $0.10 per 1,000 jobs."
+ },
+ {
+  "handle": "themineworks/public-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper",
+   "uk-find-a-tender-scraper"
+  ],
+  "users": 2,
+  "title": "Public Tenders Scraper: TED, UK, Australia, Brazil and more",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-scraped",
+  "unit_tiers": {
+   "FREE": 0.0036,
+   "BRONZE": 0.00315,
+   "SILVER": 0.0027,
+   "GOLD": 0.00252,
+   "PLATINUM": 0.00252,
+   "DIAMOND": 0.00252
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-scraped",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "uk-find-a-tender-scraper": {
+    "ours": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Government tenders and contract awards from official open data: EU TED, UK Contracts Finder and Find a Tender, AusTender, Brazil PNCP, Colombia SECOP II, ChileCompra, Prozorro, CanadaBuys. Buyer, value, deadline, CPV, winner. No login."
+ },
+ {
+  "handle": "themineworks/steam-scraper",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Scraper: Games, Prices, Tags, Reviews and Top Sellers",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.00081,
+   "BRONZE": 0.00075,
+   "SILVER": 0.0007,
+   "GOLD": 0.00065,
+   "PLATINUM": 0.00065,
+   "DIAMOND": 0.00065
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game,review",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Steam store games by keyword, tag, top sellers, most played, on sale or link: price, discount, release date, developer, publisher, tags, genres, review score and counts, platforms, Metacritic. Add review rows with text and playtime. No login."
+ },
+ {
+  "handle": "themineworks/himalayas-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Himalayas Remote Jobs Scraper: Salaries, Timezones, Apply Links",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.00084,
+   "SILVER": 0.00077,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Himalayas (himalayas.app) remote jobs by keyword, category, company, country, timezone and seniority: one row per job with salary range, countries and timezones it is open to, posted date, apply link and full description. No login, no API key."
+ },
+ {
+  "handle": "themineworks/remoteok-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "RemoteOK Jobs Scraper | Whole Board, 13 Fields, No API Key",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape live remote job listings from RemoteOK \u2014 title, company, salary range, tags, location and apply link. Filter by keyword or tag. No login, no API key, pay per job. Use it as an MCP server in Claude, ChatGPT & AI agents."
+ },
+ {
+  "handle": "themineworks/openfda-unified-crawler",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "openFDA Scraper | 7 Endpoints: Drug, Device & Food, No Key",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-scraped",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record-scraped",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all openFDA endpoints in one actor: drug adverse events (FAERS), recalls, labels, device 510k & MAUDE, food enforcement. No API key needed. Date filtering, JSON output. Use in Claude, ChatGPT & any MCP agent for pharmacovigilance."
+ },
+ {
+  "handle": "themineworks/uspto-patents",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 1,
+  "title": "USPTO Patents Scraper (Open Data Portal)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "patent-scraped",
+  "unit_tiers": {
+   "FREE": 0.08,
+   "BRONZE": 0.0672,
+   "SILVER": 0.0568,
+   "GOLD": 0.048,
+   "PLATINUM": 0.048,
+   "DIAMOND": 0.048
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): patent-scraped",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US patent applications and grants from the official USPTO Open Data Portal: numbers, titles, status, filing/grant dates, applicants and inventors. Search by keyword, applicant, inventor, or date. Clean JSON for IP research and competitive intel. USPTO.gov account (MFA) + ODP key required."
+ },
+ {
+  "handle": "themineworks/sam-gov-contracts",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 1,
+  "title": "SAM.gov Contracts Scraper | 26 Fields, Free API Key",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-scraped",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.00504,
+   "SILVER": 0.00426,
+   "GOLD": 0.0036,
+   "PLATINUM": 0.0036,
+   "DIAMOND": 0.0036
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-scraped",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US federal contract opportunities from SAM.gov as clean JSON. Filter by keyword, NAICS, notice type, agency, set-aside type and posted-date window. No login, no browser \u2014 pure HTTP against the official Get Opportunities API v2. Works in Claude, ChatGPT & any MCP agent."
+ },
+ {
+  "handle": "themineworks/app-store-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "App Store Reviews Scraper: iOS App Reviews from 174 Countries",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 0.0001,
+   "SILVER": 0.0001,
+   "GOLD": 0.0001,
+   "PLATINUM": 0.0001,
+   "DIAMOND": 0.0001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "App Store reviews scraper for iPhone and iPad apps in any of 174 countries: stars, title, text, app version, helpful votes, date and the developer's response, with app name and country on every row. Up to 1,000 reviews per app per country. No login. $0.10 per 1,000 reviews."
+ }
+]
