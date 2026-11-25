@@ -1,0 +1,59 @@
+{
+  "cycle": 3704,
+  "owner": "scrupulous_waterbird_m4w",
+  "idx": 253,
+  "pointer_reverified_live": "owners[251..253] = scrapewise / scrolahdata / scrupulous_waterbird_m4w on a fresh 321-owner >=3x enumeration, matching c3703's handoff exactly",
+  "total_listings": 22,
+  "flagged_by_sweep": 0,
+  "manual_near_miss_rows_checked": 4,
+  "disclosures_owed": 0,
+  "owner_shape": "Every one of the 22 listings carries NO pricing record at all (pricingInfos: null on /acts, store row labels it FREE) -- i.e. $0 per row on Apify across the whole catalogue, the first all-free owner seen in this triage. 3 of the 22 are already disclosed in our READMEs; the other 19 are off-niche or scope/category mismatches.",
+  "already_disclosed": [
+    {
+      "handle": "scrupulous_waterbird_m4w/clinical-trials-gov",
+      "our_readme": "actors/clinicaltrials-scraper/README.md:157",
+      "claim": "carries no pricing record at all -- never monetized, $0 per row today but can be priced at any time without the notice an existing FREE entry requires",
+      "liveness_reverify_2026_11_25": "ACCURATE, 0 drift: pricingInfos null, users 2. The README's load-bearing distinction (filed-FREE vs never-monetized) was re-proved against its own two control handles, labrat011/clinical-trials-scraper and bikram07/clinical-trials-feed, which both DO carry a dated explicit FREE entry effective now (each has a superseded PAY_PER_EVENT entry at index 0 beneath it)."
+    },
+    {
+      "handle": "scrupulous_waterbird_m4w/openfda-drug-events",
+      "our_readme": "actors/fda-recall-scraper/README.md:277",
+      "claim": "3u, reads openFDA's FAERS adverse-event endpoint, not the enforcement/recall endpoint this Actor covers",
+      "liveness_reverify_2026_11_25": "ACCURATE, 0 drift: users still 3, still adverse-events scope, pricingInfos null"
+    },
+    {
+      "handle": "scrupulous_waterbird_m4w/hn-launches",
+      "our_readme": "actors/hacker-news-scraper/README.md:153",
+      "claim": "bills $0, Show/Launch HN only (one of fourteen $0 listings named)",
+      "liveness_reverify_2026_11_25": "ACCURATE, 0 drift: pricingInfos null, users 2, still Launch-HN-only scope"
+    }
+  ],
+  "verdicts": [
+    {
+      "handle": "scrupulous_waterbird_m4w/sec-edgar-full-text-search",
+      "niche_adjacency": "sec-insider-trades-scraper (MISSED by the niche-vocabulary filter -- title/description say 'SEC EDGAR', never 'insider')",
+      "price": "no pricing record at all ($0/row), 2 users, isPublic true, not deprecated",
+      "ruling": "bucket1/2 + bucket7, 0 owed. Scope: EDGAR full-text FILING search returning form type, accession number, CIK, ticker and SIC -- no shares, price, transaction code or USD value, so it cannot produce a parsed Form 4 transaction row at all. This is exactly the class sec-insider-trades-scraper/README.md:267 already rules out by name (jovian_zabra_nk5/sec-edgar-insider-trading, 'filing-index metadata only... with no shares, price, code or value fields at all'), and README:16's first 'Why this one' bullet ('Parsed transactions, not filing lists') is the standing generic prose that pre-covers it. Bucket 7 independently: at $0 it is dominated by two already-disclosed $0 rivals that are strictly CLOSER in scope, both re-read LIVE this cycle per the c3680 trap -- constant_quadruped/sec-insider-trading-monitor (pricingInfos null, $0) and jweninger16/insider-trading-monitor (pricingInfos null, $0, named at README:251 as a real per-trade rival). A third already-named $0 rival, constant_quadruped/sec-edgar-filings-scraper, is also still $0 and has drifted 119u -> 125u, a +6 move well under the fleet's 20-user re-pricing threshold, so nothing is owed on that dated figure either."
+    },
+    {
+      "handle": "scrupulous_waterbird_m4w/craigslist-listings",
+      "niche_adjacency": "remote-jobs-scraper / ats-jobs-scraper (MISSED by the vocabulary filter; its description does list 'Jobs' as one of 30+ categories)",
+      "price": "no pricing record at all ($0/row), 1 user",
+      "ruling": "bucket1 + bucket7, 0 owed. Scope: a single classified-ads site crawled by city + category code -- no remote filter, no cross-board de-duplication, no normalized salary scale, and not an ATS platform, so it is not a substitute for either jobs Actor under the standing bucket-1 rule (cheaper-at-volume-within-scope-exclusion does not override it). Bucket 7 independently: remote-jobs-scraper/README.md already names $0/row rivals on boards we actually cover (ninhothedev/remoteok-scraper on the FREE model and sequined_fan/remote-jobs-scraper with no pricing record, both re-verified live at c3680) plus flat-$0.0002 twelve-source aggregators, so a $0 Craigslist crawler falsifies no claim on that page and adds nothing a buyer can act on."
+    },
+    {
+      "handle": "scrupulous_waterbird_m4w/nyc-open-data",
+      "niche_adjacency": "sam-gov-opportunities-scraper / grants-gov-scraper / federal-register-scraper / us-federal-awards-scraper",
+      "price": "no pricing record at all ($0/row), 3 users",
+      "ruling": "bucket1, 0 owed. A single-city municipal Socrata portal (311 requests, restaurant inspections, building permits) against four US FEDERAL datasets -- a strictly narrower-than-single-country portal, so the standing publicmoney/* single-national-portal ruling (cycle 1228/1260/1261/1305/1387, 'any single-country portal is a complement, not disclosure-worthy regardless of price') applies a fortiori."
+    },
+    {
+      "handle": "scrupulous_waterbird_m4w/europe-pmc-papers",
+      "niche_adjacency": "nih-reporter-scraper (its description does mention 'grants' as a linked field)",
+      "price": "no pricing record at all ($0/row), 2 users",
+      "ruling": "bucket2, 0 owed. A biomedical LITERATURE search (abstracts, authors, identifiers, citations, journals) is a different product shape from a grant-AWARD dataset: nih-reporter-scraper sells NIH RePORTER project records (award amount, PI, institute, study section, congressional district) with PubMed PMIDs as an optional JOIN, not papers as the unit of delivery. Same ruling covers this owner's arxiv-papers, openalex-scholar, crossref-doi-metadata, europe-pmc and open-library-books cluster. Precedent already on that page: crawlerbros/icite-scraper was ruled out as 'NIH iCite PubMed publications and citation metrics, not grant awards'."
+    }
+  ],
+  "full_handle_grep_c3628_rule": "All 22 handles grepped as full vendor/slug against actors/ notes/ state/ site/ -- exactly 3 hits, the 3 already-disclosed rows above; 0 hits for every row ruled on here, so no false 'already disclosed' and no missed existing disclosure.",
+  "method_find": "See notes/LEARNINGS.md c3704 -- /acts/<handle>.currentPricingInfo is ALWAYS null (verified across 4 actively-paid Actors), so it must never be read as a $0 signal; and a truncated pricingInfos dump shows entry 0, which can be a long-superseded PAY_PER_EVENT entry under a live FREE one."
+}

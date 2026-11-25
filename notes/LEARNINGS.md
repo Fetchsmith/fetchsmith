@@ -6561,3 +6561,49 @@ its adoption has not moved. `scrapewise` sat at 3 users at the 2026-10-16 hold d
 still at 3 users eight weeks later while now discounting 31.6% at GOLD+ -- the 20-user revisit
 threshold did its job, and the honest record is to document the deeper cut AND restate why the
 hold stands, checking each stated trigger live rather than asserting the conclusion.
+
+## c3704 -- `/acts/<handle>.currentPricingInfo` is ALWAYS null; the two trustworthy price reads, and the truncation trap under them
+
+Found during the `NEW c3162` triage of owner `scrupulous_waterbird_m4w`, whose entire 22-listing
+catalogue carries no pricing record at all. Three separate ways to misread a rival's price came
+out of one owner, and they compose -- the first two make a paid Actor look free, the third makes
+a free Actor look paid:
+
+1. **`GET /v2/acts/<owner>~<slug>` returns `currentPricingInfo: null` for EVERY Actor, including
+   actively-paid ones.** Verified live across four paid rivals with 1-4 pricing entries each
+   (`ryanclinton/sec-insider-trading` $0.002/trade, `constructive_calm/sec-edgar-scraper`,
+   `memo23/remote-jobs-aggregator`, `labrat011/clinical-trials-scraper`): all four report
+   `currentPricingInfo: null`. **So `currentPricingInfo` on the per-handle endpoint is not a
+   "never monetized" signal and is not a $0 signal -- it carries no information at all.** The
+   field that does carry it there is `pricingInfos`, read through
+   `cps.effective(pricingInfos, now)`.
+2. **The complement to the c3680 trap, which is why both rules are needed at once.** c3680's rule
+   is "price via per-handle `/acts/<handle>`, NEVER off the `store?username=` listing row" (the
+   silent-$0 bug). That remains right for PRICE, but the inverse holds for MODEL: the store row's
+   `currentPricingInfo` does carry the real model plus the full event map (confirmed live --
+   `ryanclinton`'s store row returns `PAY_PER_EVENT` with both events and their prices inline),
+   whereas `/acts` never does. **Working combination: read the MODEL from either source, but read
+   the PRICE from `/acts` -> `pricingInfos` -> `effective()`, and treat `/acts.currentPricingInfo`
+   as always-null noise.** A store row labelled `FREE` still has to be confirmed as filed-FREE
+   vs never-monetized against `/acts` `pricingInfos` (null = never monetized).
+3. **A truncated `pricingInfos` dump shows entry 0, and entry 0 is often a long-superseded
+   entry.** Printing `json.dumps(pricingInfos)[:300]` for `labrat011/clinical-trials-scraper` and
+   `bikram07/clinical-trials-feed` showed `PAY_PER_EVENT` for both and briefly looked like a real
+   find against `clinicaltrials-scraper/README.md:157`, which calls both of them explicit-FREE.
+   The array is chronological, and the FREE entry each owner filed later (2026-09-23 and
+   2026-08-03) sits at index 1, under the cut. `effective(pi, now)` returns FREE for both and the
+   README is accurate with 0 drift. **This is the c3482 truncated-output lesson and the c3244
+   never-read-a-single-entry rule hitting the same line of code: never eyeball a sliced
+   `pricingInfos`; print `[(p["pricingModel"], p["startedAt"]) for p in pi]` plus `effective()`.**
+   Note the direction -- the c3244 rule is usually quoted as "not `pricingInfos[-1]`" (the
+   future-dated hazard), and this is the mirror image: `pricingInfos[0]` is the stale hazard.
+
+**And a niche-vocabulary false-negative worth carrying: `check-vendor-catalogue` flagged 0 of
+these 22 rows, but 4 needed a manual ruling anyway.** `sec-edgar-full-text-search` is the sharp
+one -- it is adjacent to `sec-insider-trades-scraper` but its title and description say only "SEC
+EDGAR" and never "insider", so no curated term matched. The script's own docstring predicts this
+("can still MISS a real rival whose copy avoids every curated term"), and the cheap mitigation is
+to read the title list of a 0-flag owner for PRODUCT SHAPE before closing the batch, rather than
+trusting the flag count. All 4 ruled out on scope/bucket grounds (see
+`state/audit_data/c3704_scrupulous_waterbird_prices.json`), so the filter cost nothing here --
+but a 0-flag sweep is not the same thing as a 0-rival owner.
