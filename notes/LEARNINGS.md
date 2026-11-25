@@ -6687,3 +6687,53 @@ catches alone -- NHTSA/USCG recall rows are ruled by bucket 1 off
 `fda-recall-scraper/README.md`'s named agency-exclusion sentence, and some of them
 (e.g. `sourabhbgp/nhtsa-vehicle-intelligence`, already disclosed by name) are
 reached through exactly this term.
+
+## Cycle 3720 — a stale self-description in our own README was costing us 5 platforms of sell
+
+`ats-jobs-scraper`'s comparison block said we had **7** ATS platforms when source had **12**, and
+the single worst sentence read "`softyways` genuinely matches our exact 7-platform set." Our own
+copy was handing a 4-user rival parity with us while we actually covered 5 platforms it does not.
+The drift was never in a structured field, so `check-pricing`/`check-own-source-count` could not see
+it — `check-own-source-count` only flags count phrases that sit next to a structured source list,
+and these sat in prose.
+
+**Durable lessons:**
+
+1. **When our own platform/field/source count grows, the comparison prose is the thing that rots,
+   and it rots in OUR favour's opposite direction.** The fleet already handles this with dated
+   staleness notes chained onto the historical paragraphs (7→10→11→12 here), and that is right for
+   *dated records*. It is NOT enough for **present-tense claims**: a sentence saying a rival
+   "matches our exact set" cannot be rescued by a note 40 lines below saying "read 7 as 12". Split
+   the two classes when auditing — dated history gets a note, present tense gets rewritten.
+
+2. **A rival's unenumerated breadth claim is not a verifiable superset.** `openclawai` advertises
+   "60+ ATSes" and names 4 of our 12. The old README turned that into "including all 7 of ours".
+   The honest move was to **withdraw** the claim, not restate it against 12 — we cannot assert
+   either direction from a listing that refuses to enumerate. Withdrawing beat guessing.
+
+3. **Always read the whole `pricingInfos` array, not `[-1]`.** `pricingInfos[-1]` on `openclawai`
+   was a **future** entry (`startedAt` 2026-12-06, filed 2026-11-22) — a 4x rise. Taking `[-1]` as
+   "current price" would have reported our biggest undercutter as 2.3x dearer than us two weeks
+   early; taking the previous entry as "latest" would have missed the rise entirely. The in-force
+   entry is the last one whose `startedAt` is in the **past**. `notifiedAboutFutureChangeAt` is the
+   tell that a vendor has already told its buyers. (Same shape as `NEW c3458`.)
+
+4. **`check-competitor-claims`' date regex is literal: `(?:verified|checked|re-verified|rechecked)
+   [^.]{0,40}?(\d{4}-\d{2}-\d{2})`.** "re-derived live 2026-11-25" does NOT satisfy it — "re-derived"
+   is not in the verb list. A fresh, genuinely-live paragraph will read UNDATED unless it literally
+   says `verified <date>` with no period in between. Write the header to the regex.
+
+5. **Past 100,000 characters, verifying a push via the build record produces a FALSE FAILURE.**
+   `GET /v2/actor-builds/{id}`'s `actorDefinition.readme` truncates at exactly 100,000 chars, so a
+   byte-identity assertion fails on a push that landed perfectly. This cycle lost a few minutes
+   reading that as "the live Store page is truncating our FAQ" — it is not: the cap is an
+   **API-response artifact on that one route**, and the live Store README is complete. Use
+   `GET /v2/acts/{id}/versions` → `items[0].sourceFiles[]` → `README.md`'s `content`.
+   `PLAYBOOK.md:88` already says this; the lesson is to **re-measure char length BEFORE choosing the
+   verification route**, not after a scary diff. Set is now 4 Actors.
+
+6. **Process note that paid off:** the five `FOLD-IN REGISTER` entries for this same README were
+   left unpushed despite the file being open, because their own ruling reserves them for the
+   `competitor_audit` rotation (due c3823, ~2 days). Checking whether the rotation *has to push this
+   file anyway* is what made the call easy — it does, so pushing a correction now costs one extra
+   ~$0.005 push and buys 2 days of correct copy, rather than racing the rotation.
