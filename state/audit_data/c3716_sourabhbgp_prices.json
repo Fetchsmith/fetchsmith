@@ -1,0 +1,30 @@
+[
+ {
+  "handle": "sourabhbgp/google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 13,
+  "title": "Google Play Store Scraper: Apps, Reviews, Charts & ASO",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google Play Store app details, uncapped reviews with star and device filters, keyword search, ranked top charts, developer portfolios, similar apps, permissions, data safety, and ASO keyword data. Flat $2 per 1,000 results, every country and language."
+ }
+]

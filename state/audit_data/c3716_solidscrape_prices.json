@@ -1,0 +1,242 @@
+[
+ {
+  "handle": "solidscrape/contact-details-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 235,
+  "title": "Contact Details Scraper - Emails, Phones & Socials",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00125
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): additional-page,apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Crawl any website or domain and extract clean business contact details: emails (including Cloudflare-protected and [at]/[dot]-obfuscated), validated phone numbers (E.164), and social profiles. High recall, low junk. Export JSON/CSV/Excel."
+ },
+ {
+  "handle": "solidscrape/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper - Stories, Comments, Polls & Users",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News without an API key: full-text search, stories, comment trees, polls, and user profiles via the official Algolia HN Search and Firebase APIs. Export JSON/CSV/Excel."
+ },
+ {
+  "handle": "solidscrape/job-intelligence-api",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Indeed & LinkedIn Job Scraper + Change Tracking",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-check",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-check,job-detail,source-page",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Indeed and LinkedIn jobs or public Greenhouse employer boards into one API. Keep salary currencies and pay periods, remove exact duplicates, and track new and changed jobs. Start with a five-job example, clear pricing and spending caps. Apify free-plan credit can be used."
+ },
+ {
+  "handle": "solidscrape/ats-hiring-signals",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse, Lever & Ashby Jobs - Hiring Signals API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company-check",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-check,source-request",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Monitor employer hiring across Greenhouse, Lever and Ashby. Get company summaries, normalized jobs and snapshot changes with complete-inventory checks and spending caps."
+ },
+ {
+  "handle": "solidscrape/shopify-price-stock-monitor",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Scraper - Product Price & Stock Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-check",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record-check,source-request",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape public Shopify products, variants, SKUs and prices. Track price, sale-price and stock-status changes using snapshots, with firm spending limits."
+ },
+ {
+  "handle": "solidscrape/appstore-scraper",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "App Store Reviews & App Details Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-record",
+  "unit_tiers": {
+   "FREE": 0.00015
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-record,residential-request,review-record,source-request",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect Apple App Store reviews and app details with rating/date/version filters, new-review snapshots and spending limits. Recent public feed coverage; try ten reviews."
+ },
+ {
+  "handle": "solidscrape/google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "Google Play Reviews & App Details Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-record",
+  "unit_tiers": {
+   "FREE": 0.00015
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-record,residential-request,review-record,source-request",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect Google Play reviews and app details with rating/date/version filters, new-review snapshots, duplicate removal and strict spending limits. Start with ten reviews."
+ }
+]

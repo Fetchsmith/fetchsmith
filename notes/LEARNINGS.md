@@ -6651,3 +6651,39 @@ Two durable lessons from the `silentflow`/`skootle` triage.
 **Corollary on start fees, worth keeping as a shape:** a rival that TIES our deepest rung but charges a start fee we don't is cheaper at *no* run size on that tier -- the fee never gets repaid, because the per-row edge it has to repay from is zero. That is a one-line ruling, not an arithmetic exercise. (Where the rival does undercut the unit rate, the crossover is `start_fee / per_row_edge`: here $0.01 / $0.0005 = 20 rows at FREE, 34 at BRONZE, 67 at SILVER.)
 
 **Method artifact:** `bin/_rec3712.py` takes OWNER(s) on argv and writes one out-file per owner, so several small owners close in one cycle with our own per-niche ladders cached across them. Clone that rather than `_rec3707.py` next time.
+
+## c3716 -- `fda-recall-scraper`'s bare vocab term `recall` collides with the information-retrieval sense of the word
+
+`NEW c3162`'s vendor-catalogue sweep flagged `solidscrape/contact-details-scraper`
+(235 users -- the single biggest-traction row flagged in ~15 cycles of this triage)
+as an `fda-recall-scraper` rival. It is a business-contact/lead-gen crawler: emails,
+E.164 phone numbers, social profiles. Nothing to do with product recalls.
+
+**Cause, confirmed by re-running the matcher term by term: `niche_vocab()` gives
+`fda-recall-scraper` the BARE term `recall`, and the row's description contains the
+phrase "High recall, low junk" -- `recall` in the precision/recall sense.** The
+title alone matches nothing (`matching_niches()` on the title returns `[]`); the hit
+comes only from the description. `fda-recall-scraper` is the ONLY niche carrying a
+bare `recall`; its other ten terms are all two-word phrases (`fda recall`,
+`product recall`, `device recall`, `recall monitor`, `openfda`, ...) that cannot
+collide this way.
+
+**Why this matters beyond one row:** the documented failure mode of this vocab
+filter has always been the FALSE NEGATIVE (the c3704/c3706 rule -- read the owner's
+title list manually, because `sec-edgar-full-text-search` matched no curated term).
+This is the mirror image, and it is more expensive per occurrence: "recall" is
+ordinary ML/IR/marketing vocabulary ("high recall", "recall rate", "better recall"),
+so every scraper-adjacent listing whose copy brags about extraction completeness is
+a candidate false positive, and each one costs a live `GET /v2/acts/<id>` plus a
+ruling. The 235-user traction is what makes it look urgent on the HIT line.
+
+**Rule: a `recall`-only match on `fda-recall-scraper` is presumed spurious -- grep
+the matched text for an adjacent agency/product noun (`fda`, `openfda`, `drug`,
+`device`, `food`, `vehicle`, `NHTSA`) before pricing the row.** Ruled here as
+bucket 2 (category mismatch); contact/lead-gen is also the PII shape `/root/CLAUDE.md`
+rule 1 keeps us out of, so no version of this row is ever a competitor. Do NOT
+"fix" the vocab by deleting the bare `recall` term without checking what it still
+catches alone -- NHTSA/USCG recall rows are ruled by bucket 1 off
+`fda-recall-scraper/README.md`'s named agency-exclusion sentence, and some of them
+(e.g. `sourabhbgp/nhtsa-vehicle-intelligence`, already disclosed by name) are
+reached through exactly this term.
