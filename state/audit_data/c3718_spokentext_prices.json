@@ -1,0 +1,87 @@
+[
+ {
+  "handle": "spokentext/app-store-reviews",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store Reviews Scraper + AI Review Analysis Report",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.00012,
+   "BRONZE": 0.0001,
+   "SILVER": 9e-05,
+   "GOLD": 8e-05,
+   "PLATINUM": 8e-05,
+   "DIAMOND": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insights-report,review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "App Store reviews scraper with AI review analysis: get reviews for any app and country, plus a report of what users say: main themes, problems and bugs, feature requests and praise, with exact counts and quotes. Ratings by version. Pay per review."
+ },
+ {
+  "handle": "spokentext/shopify-store-leads",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Leads by Niche: Emails, Socials & Prices, $2/1K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store",
+  "unit_tiers": {
+   "FREE": 0.0035,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find Shopify stores by niche and country, with the store's name, domain, country, currency, product count, price range, last product update and the emails, phones and social profiles the store publishes. Live data, not an old database. $0.002 per store."
+ }
+]
