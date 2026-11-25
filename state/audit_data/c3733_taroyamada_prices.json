@@ -1,0 +1,872 @@
+[
+ {
+  "handle": "taroyamada/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 9,
+  "title": "Google News Scraper \u2014 Headlines, Article URLs & RSS",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News scraper: headlines, article URLs and RSS-style results. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 query + maxItems 3 \u2248 USD 0.009): https://console.apify.com/actors/SR4f0KuxFp8lVIgro/input"
+ },
+ {
+  "handle": "taroyamada/uspto-patent-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 3,
+  "title": "USPTO Patent Search Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.011
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track USPTO patents for legal research. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 result \u2248 USD 0.011/result): https://console.apify.com/actors/GItr1bRSU1bOM2cAd/input From USD 0."
+ },
+ {
+  "handle": "taroyamada/clinical-trials-fda-watch-monitor",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "Clinical Trial & FDA Signal Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-trial-alert",
+  "unit_tiers": {
+   "FREE": 0.1
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fda-signal-alert,new-trial-alert,pipeline-watch-report,raw-record-row,trial-status-change-alert,watch-export-generated",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track FDA trials. Open Input \u2192 leave defaults \u2192 Start (1 drug/condition watch + 1 result \u2248 USD 0.01\u20130.03/watch): https://console.apify.com/actors/9VLejs3ylu5187D3X/input From USD 0.01."
+ },
+ {
+  "handle": "taroyamada/biomedical-trial-literature-evidence-report",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "PubMed Clinical Trials Evidence Gap Report",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "biomedical-evidence-row",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): biomedical-evidence-export,biomedical-evidence-report,biomedical-evidence-row,evidence-gap-alert",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Link biomedical trials and literature. Open Input \u2192 leave defaults \u2192 Start (1 NCT watch + emitRawRows \u2248 USD 0.008/row): https://console.apify.com/actors/0U83sXHpYOMk5d4dC/input From USD 0.008."
+ },
+ {
+  "handle": "taroyamada/fda-drug-shortage-supply-change-report",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Drug Shortage Scraper \u2014 Supply Change Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "fda-shortage-row",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fda-shortage-change-alert,fda-shortage-export,fda-shortage-row,fda-shortage-supply-report",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track FDA drug shortages and supply changes: one row per openFDA shortage record with generic name, company, NDC, status and availability. Pressing Start with defaults saves a free baseline and charges nothing; paste the README JSON (emit_backfill) to get rows on the first run. From USD 5/1k."
+ },
+ {
+  "handle": "taroyamada/shopify-store-intelligence",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Scraper | Metadata & Catalog Extractor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store_enriched",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): non_shopify_store_detected,store_enriched,store_partial",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Inspect public Shopify stores. Open Input \u2192 leave defaults \u2192 Start (1 storefront + 1 product sample \u2248 USD 0.02\u20130.05/store): https://console.apify.com/actors/GcOHhbItjXuXV9HW6/input From USD 0."
+ },
+ {
+  "handle": "taroyamada/apple-app-store-intelligence",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Apple App Store Scraper \u2014 Ratings, Reviews & Metadata",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.009
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Analyze Apple App Store data. Open Input \u2192 leave defaults \u2192 Start (1 app URL + reviewLimit 5 \u2248 USD 0.01\u20130.05/run): https://console.apify.com/actors/F1TOJbqvkr7wtTJwg/input From USD 0."
+ },
+ {
+  "handle": "taroyamada/app-review-cross-platform-intelligence",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "iOS & Android App Review Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Compare app reviews. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 app + 1 review/platform \u2248 USD 0.01\u20130.03): https://console.apify.com/actors/fMsbuqFbxGkLl8ykr/input"
+ },
+ {
+  "handle": "taroyamada/hacker-news-intelligence",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Stories Scraper \u2014 Comments & RAG JSON",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track Hacker News stories. No API key / no login. Open Input \u2192 leave defaults \u2192 Start : https://console.apify.com/actors/yQ9oIwW5FEh3foLJt/input From USD 1/1k stories."
+ },
+ {
+  "handle": "taroyamada/grants-gov-funding-digest",
+  "niches": [
+   "grants-gov-scraper"
+  ],
+  "users": 2,
+  "title": "Grants.gov Scraper \u2014 Federal Funding Notices Extractor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track Grants.gov funding notices. Open Input \u2192 leave defaults \u2192 Start (1 agency feed + maxOpps 5 \u2248 USD 0.008/row): https://console.apify.com/actors/vj88ApL4F0H0H4wj1/input From USD 8/1k."
+ },
+ {
+  "handle": "taroyamada/product-safety-recall-digest",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "Product Safety Recall Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.009
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track CPSC product recalls. Open Input \u2192 leave defaults \u2192 Start (1 CPSC feed + maxRecalls 3 \u2248 USD 0.009/row): https://console.apify.com/actors/MWsgd3ZZ3rplFkvxW/input From USD 9/1k."
+ },
+ {
+  "handle": "taroyamada/clinical-trials-pipeline-monitor",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Sponsor Pipeline Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track trial pipelines. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 sponsor query + 1 study \u2248 USD 0.01\u20130.03/query): https://console.apify.com/actors/ilwTFNMXGliZ2hAsQ/input"
+ },
+ {
+  "handle": "taroyamada/federal-register-digest",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Scraper \u2014 US Rules, Notices & Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "US Federal Register scraper: track rules and notices. Open Input \u2192 leave defaults \u2192 Start (1 agency feed + maxDocs 5 \u2248 USD 0.008/row): https://console.apify.com/actors/Amk9WaiNinR8xodgX/input From USD 8/1k."
+ },
+ {
+  "handle": "taroyamada/government-contract-award-monitor",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "Government Contract Award Change Report",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "govcon-award-row",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): govcon-award-export,govcon-award-row,govcon-spend-change-alert,govcon-supplier-share-report",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track TED and USASpending contract awards. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 feed + 1 award \u2248 USD 0.01\u20130.03): https://console.apify.com/actors/pTYhoc5g0hcN6chCd/input"
+ },
+ {
+  "handle": "taroyamada/app-store-review-aso-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store & Google Play Reviews & ASO Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-review",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-profile,app-review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Compare app store reviews. No API key / no login. Open Input \u2192 leave defaults \u2192 Start (1 app + 1 review page \u2248 USD 0.003/row): https://console.apify.com/actors/KY0baTWeop8f7C8Ey/input From USD 3/1k."
+ },
+ {
+  "handle": "taroyamada/cpsc-product-recall-marketplace-watch-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Product Recall Marketplace Watch Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "cpsc-recall-alert",
+  "unit_tiers": {
+   "FREE": 0.08
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cpsc-recall-alert,cpsc-recall-digest,cpsc-recall-report",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track CPSC recalls. Open Input \u2192 leave defaults \u2192 Start (1 CPSC product watch + 1 recall row \u2248 USD 0.01\u20130.03/watch): https://console.apify.com/actors/3kJdTE2LE8ZdW0Cc8/input From USD 0.01."
+ },
+ {
+  "handle": "taroyamada/nhtsa-recall-complaint-watch-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "NHTSA Recall Scraper \u2014 Complaints & Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "nhtsa-watch-alert",
+  "unit_tiers": {
+   "FREE": 0.08
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): nhtsa-digest,nhtsa-report,nhtsa-watch-alert",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track NHTSA recalls and complaints. Open Input \u2192 leave defaults \u2192 Start (1 vehicle watch + emitReport OFF \u2248 USD 0.08/alert): https://console.apify.com/actors/krhB8nfVmB75VVfnk/input From USD 0."
+ },
+ {
+  "handle": "taroyamada/courtlistener-public-docket-opinion-watch-scraper",
+  "niches": [
+   "court-records-scraper"
+  ],
+  "users": 2,
+  "title": "CourtListener Scraper \u2014 Dockets, Opinions & Watch",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "court-records-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "CourtListener scraper: track public dockets and opinions. Open Input \u2192 leave defaults \u2192 Start (1 CourtListener query + 1 opinion \u2248 USD 0.01\u20130.03/query): https://console.apify.com/actors/rr10v3tQxzevL9Dmv/input From USD 0.01."
+ },
+ {
+  "handle": "taroyamada/ecfr-cfr-section-change-watch-scraper",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "eCFR CFR Section Change Watch Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "ecfr-change-alert",
+  "unit_tiers": {
+   "FREE": 0.06
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ecfr-change-alert,ecfr-digest,ecfr-report",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track selected CFR changes. Open Input \u2192 leave defaults \u2192 Start (1 CFR part watch + 1 change row \u2248 USD 0.01\u20130.03/watch): https://console.apify.com/actors/2qJFSYL32Pcdsh8bu/input From USD 0.01."
+ },
+ {
+  "handle": "taroyamada/govcon-recompete-incumbent-watch-scraper",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "GovCon Recompete & Spend Shift Watch",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "govcon-recompete-candidate",
+  "unit_tiers": {
+   "FREE": 0.08
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): govcon-incumbent-award-observed,govcon-incumbent-change-detected,govcon-incumbent-map-generated,govcon-recompete-candidate,govcon-recompete-watch-report,govcon-spend-export,govcon-spend-shift-alert,govcon-vendor-concentration-report",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Monitor federal award recompetes. Open Input \u2192 leave defaults \u2192 Start (1 award search + baseline only \u2248 USD 0.004/row): https://console.apify.com/actors/J4olD4IYqdi7whM7C/input From USD 0. On a schedule: set emitSpendExport=true for a spend export (opt-in, default off)."
+ },
+ {
+  "handle": "taroyamada/ats-hiring-signal-report",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Hiring Signal Report \u2014 Open Roles Digest",
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 29,
+  "note": "no recurring event -- one-time/start-fee only",
+  "runfee": 38.001000000000005,
+  "runfee_label": "apify-actor-start+ats_hiring_signal_report+ats_hiring_snapshot_report",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": 54287
+   }
+  },
+  "desc": "Report ATS hiring signals. Open Input \u2192 leave defaults \u2192 Start (1 public job board + 1 role \u2248 USD 9/report): https://console.apify.com/actors/feZCvtKXeIx0k5S5o/input From USD 9/report."
+ },
+ {
+  "handle": "taroyamada/ats-hiring-signal-intelligence",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Hiring Signal Scraper \u2014 Greenhouse Lever Ashby Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company_hiring_signal",
+  "unit_tiers": {
+   "FREE": 0.06
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company_hiring_signal,hiring_summary,job_delta",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track ATS hiring signals. Open Input \u2192 leave defaults \u2192 Start (1 public ATS board + 1 hiring signal \u2248 USD 0.02\u20130.06/row): https://console.apify.com/actors/fcaKiHS2PcsgdBlO2/input From USD 0."
+ },
+ {
+  "handle": "taroyamada/sam-vendor-pursuit-intelligence",
+  "niches": [
+   "sam-gov-opportunities-scraper"
+  ],
+  "users": 2,
+  "title": "SAM.gov Vendor Pursuit Intelligence",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "SAM.gov opportunities, CSV/JSON. Open Input \u2192 leave defaults \u2192 Start (1 keyword + limit 1 \u2248 USD 0.008/row): https://console.apify.com/actors/wCCTgLCRop4deG3fl/input From USD 8/1k."
+ },
+ {
+  "handle": "taroyamada/government-tender-grants-monitor",
+  "niches": [
+   "eu-ted-tenders-scraper",
+   "grants-gov-scraper",
+   "sam-gov-opportunities-scraper",
+   "uk-find-a-tender-scraper"
+  ],
+  "users": 2,
+  "title": "Grants.gov, TED & SAM.gov Tender Monitor \u2014 Keyword Bid Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "raw-opportunity-row",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): buyer-watch-report,deadline-change-alert,grant-opportunity-alert,raw-opportunity-row,tender-export-generated,tender-opportunity-alert",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "uk-find-a-tender-scraper": {
+    "ours": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Watch public tenders from Grants.gov, EU TED, UK Contracts Finder and World Bank (SAM.gov with your key): title, buyer, deadline, source and notice link per keyword/NAICS/CPV watch. No login for public sources."
+ },
+ {
+  "handle": "taroyamada/nhtsa-vehicle-recall-digest",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "NHTSA Vehicle Recall Scraper \u2014 Car Safety Recall Digest",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Watch NHTSA recalls and complaints by VIN, make/model or manufacturer: one digest row per vehicle with new recalls, complaint hotspots by component, linked investigations and a signal level. No API key."
+ },
+ {
+  "handle": "taroyamada/product-safety-market-action-portfolio-report",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "CPSC Recall Portfolio Watch \u2014 NHTSA Vehicle Safety Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "safety-record-row",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): market-action-alert,product-safety-export,product-safety-portfolio-report,safety-record-row",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track product safety actions. Open Input \u2192 leave defaults \u2192 Start (1 CPSC watch + maxChanged 1 \u2248 USD 0.006/row): https://console.apify.com/actors/6g6JIb1rtB49j9LVP/input From USD 0."
+ },
+ {
+  "handle": "taroyamada/regulatory-obligation-change-impact-report",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 1,
+  "title": "eCFR & Federal Register Change Report",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "regulatory-change-row",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): obligation-impact-alert,regulatory-change-row,regulatory-impact-export,regulatory-impact-report",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track regulatory obligations. Open Input \u2192 leave defaults \u2192 Start (1 regulatory change row \u2248 USD 0.008/row): https://console.apify.com/actors/AaQiZ1Ye2A69MiNNq/input From USD 8/1k."
+ }
+]

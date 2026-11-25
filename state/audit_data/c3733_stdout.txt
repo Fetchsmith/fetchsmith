@@ -1,0 +1,110 @@
+
+priced 14 -> /root/agent/state/audit_data/c3733_tagadanar_prices.json; 2 row(s) undercut us at >=1 tier
+     tagadanar/linkedin-jobs-scraper 21u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0014, 'PLATINUM': 0.0014, 'DIAMOND': 0.0014} start=0.001 runfee=None niches=ats-jobs-scraper
+     tagadanar/linkedin-remote-jobs 7u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0014, 'PLATINUM': 0.0014, 'DIAMOND': 0.0014} start=0.0 runfee=None niches=remote-jobs-scraper
+     tagadanar/brand-news-monitor 2u PAY_PER_EVENT {'FREE': 0.008, 'BRONZE': 0.0072, 'SILVER': 0.0064, 'GOLD': 0.0056, 'PLATINUM': 0.0056, 'DIAMOND': 0.0056} start=0.001 runfee=None niches=google-news-scraper,hacker-news-scraper
+     tagadanar/workday-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.0012, 'BRONZE': 0.00108, 'SILVER': 0.00096, 'GOLD': 0.00084, 'PLATINUM': 0.00084, 'DIAMOND': 0.00084} start=0.001 runfee=None niches=ats-jobs-scraper
+     tagadanar/remote-jobs-aggregator 2u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0014, 'PLATINUM': 0.0014, 'DIAMOND': 0.0014} start=0.001 runfee=None niches=remote-jobs-scraper
+     tagadanar/google-play-scraper 2u PAY_PER_EVENT {'FREE': 0.0005, 'BRONZE': 0.00045, 'SILVER': 0.0004, 'GOLD': 0.00035, 'PLATINUM': 0.00035, 'DIAMOND': 0.00035} start=0.001 runfee=None niches=google-play-reviews-scraper
+     tagadanar/shopify-store-prospector 2u PAY_PER_EVENT {'FREE': 0.008, 'BRONZE': 0.0072, 'SILVER': 0.0064, 'GOLD': 0.0056, 'PLATINUM': 0.0056, 'DIAMOND': 0.0056} start=0.0 runfee=None niches=shopify-products-scraper
+     tagadanar/hacker-news-scraper 2u PAY_PER_EVENT {'FREE': 0.0005, 'BRONZE': 0.00045, 'SILVER': 0.0004, 'GOLD': 0.00035, 'PLATINUM': 0.00035, 'DIAMOND': 0.00035} start=0.001 runfee=None niches=hacker-news-scraper
+HIT  tagadanar/shopify-products-scraper 2u PAY_PER_EVENT {'FREE': 0.001, 'BRONZE': 0.0009, 'SILVER': 0.0008, 'GOLD': 0.0007, 'PLATINUM': 0.0007, 'DIAMOND': 0.0007} start=0.001 runfee=None niches=shopify-products-scraper
+        vs shopify-products-scraper: ours={'FREE': 0.001, 'BRONZE': 0.00095, 'SILVER': 0.0009, 'GOLD': 0.00085, 'PLATINUM': 0.00085, 'DIAMOND': 0.00085} undercuts=['BRONZE', 'DIAMOND', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=False crossover=None
+     tagadanar/steam-store-scraper 2u PAY_PER_EVENT {'FREE': 0.0008, 'BRONZE': 0.00072, 'SILVER': 0.00064, 'GOLD': 0.00056, 'PLATINUM': 0.00056, 'DIAMOND': 0.00056} start=0.001 runfee=None niches=steam-reviews-scraper
+HIT  tagadanar/jobs-multi-board-scraper 2u PAY_PER_EVENT {'FREE': 0.0007, 'BRONZE': 0.00063, 'SILVER': 0.00056, 'GOLD': 0.00049, 'PLATINUM': 0.00049, 'DIAMOND': 0.00049} start=0.001 runfee=None niches=remote-jobs-scraper
+        vs remote-jobs-scraper: ours={'FREE': 0.0015, 'BRONZE': 0.0013, 'SILVER': 0.0011, 'GOLD': 0.001, 'PLATINUM': 0.001, 'DIAMOND': 0.001} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+     tagadanar/app-intel-scraper 1u PAY_PER_EVENT {'FREE': 0.001, 'BRONZE': 0.0009, 'SILVER': 0.0008, 'GOLD': 0.0007, 'PLATINUM': 0.0007, 'DIAMOND': 0.0007} start=0.001 runfee=None niches=google-play-reviews-scraper
+     tagadanar/ats-jobs-aggregator 1u PAY_PER_EVENT {'FREE': 0.0025, 'BRONZE': 0.00225, 'SILVER': 0.002, 'GOLD': 0.00175, 'PLATINUM': 0.00175, 'DIAMOND': 0.00175} start=0.0 runfee=None niches=ats-jobs-scraper
+     tagadanar/google-news-scraper 1u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0014, 'PLATINUM': 0.0014, 'DIAMOND': 0.0014} start=0.001 runfee=None niches=google-news-scraper
+
+priced 13 -> /root/agent/state/audit_data/c3733_tali-works_prices.json; 4 row(s) undercut us at >=1 tier
+     tali-works/shopify-tech-detector 3u PAY_PER_EVENT {'FREE': 0.0015} start=5e-05 runfee=None niches=shopify-products-scraper
+     tali-works/sam-gov-opportunities-award-history 2u PAY_PER_EVENT {'FREE': 0.004} start=0.0 runfee=None niches=sam-gov-opportunities-scraper,us-federal-awards-scraper
+     tali-works/hacker-news-scraper 2u PAY_PER_EVENT {'FREE': 0.001} start=5e-05 runfee=None niches=hacker-news-scraper
+HIT  tali-works/substack-newsletter-scraper 2u PAY_PER_EVENT {'FREE': 0.001} start=5e-05 runfee=None niches=substack-scraper
+        vs substack-scraper: ours={'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0015, 'GOLD': 0.00078, 'PLATINUM': 0.00078, 'DIAMOND': 0.00078} undercuts=['BRONZE', 'FREE', 'SILVER'] every_tier=False crossover=None
+HIT  tali-works/shopify-products-scraper 2u PAY_PER_EVENT {'FREE': 0.0008} start=5e-05 runfee=None niches=shopify-products-scraper
+        vs shopify-products-scraper: ours={'FREE': 0.001, 'BRONZE': 0.00095, 'SILVER': 0.0009, 'GOLD': 0.00085, 'PLATINUM': 0.00085, 'DIAMOND': 0.00085} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+     tali-works/career-site-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.0015} start=5e-05 runfee=None niches=ats-jobs-scraper
+     tali-works/app-store-google-play-reviews 2u PAY_PER_EVENT {'FREE': 0.00015} start=5e-05 runfee=None niches=google-play-reviews-scraper
+HIT  tali-works/nhtsa-recall-watchlist-monitor 2u PAY_PER_EVENT {'FREE': 0.0005} start=5e-05 runfee=None niches=fda-recall-scraper
+        vs fda-recall-scraper: ours={'FREE': 0.0035, 'BRONZE': 0.003, 'SILVER': 0.0027, 'GOLD': 0.0024, 'PLATINUM': 0.0024, 'DIAMOND': 0.0024} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+HIT  tali-works/cpsc-recall-monitor 2u PAY_PER_EVENT {'FREE': 0.0005} start=5e-05 runfee=None niches=fda-recall-scraper
+        vs fda-recall-scraper: ours={'FREE': 0.0035, 'BRONZE': 0.003, 'SILVER': 0.0027, 'GOLD': 0.0024, 'PLATINUM': 0.0024, 'DIAMOND': 0.0024} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+     tali-works/hacker-news-mention-monitor 2u PAY_PER_EVENT {'FREE': 0.0005} start=5e-05 runfee=None niches=hacker-news-scraper
+     tali-works/shopify-app-store-reviews-monitor 2u PAY_PER_EVENT {'FREE': 0.0005} start=5e-05 runfee=None niches=app-store-reviews-scraper
+     tali-works/shopify-policy-checker 2u PAY_PER_EVENT {'FREE': 0.003} start=5e-05 runfee=None niches=shopify-products-scraper
+     tali-works/shopify-store-audit 2u PAY_PER_EVENT {'FREE': 0.02} start=5e-05 runfee=None niches=shopify-products-scraper
+
+priced 27 -> /root/agent/state/audit_data/c3733_taroyamada_prices.json; 0 row(s) undercut us at >=1 tier
+     taroyamada/google-news-scraper 9u PAY_PER_EVENT {'FREE': 0.003} start=0.0 runfee=None niches=google-news-scraper
+     taroyamada/uspto-patent-scraper 3u PAY_PER_EVENT {'FREE': 0.011} start=0.001 runfee=None niches=trademark-search-scraper
+     taroyamada/clinical-trials-fda-watch-monitor 2u PAY_PER_EVENT {'FREE': 0.1} start=0.0 runfee=None niches=clinicaltrials-scraper
+     taroyamada/biomedical-trial-literature-evidence-report 2u PAY_PER_EVENT {'FREE': 0.008} start=0.0 runfee=None niches=clinicaltrials-scraper
+     taroyamada/fda-drug-shortage-supply-change-report 2u PAY_PER_EVENT {'FREE': 0.005} start=0.0 runfee=None niches=fda-recall-scraper
+     taroyamada/shopify-store-intelligence 2u PAY_PER_EVENT {'FREE': 0.05} start=5e-05 runfee=None niches=shopify-products-scraper
+     taroyamada/apple-app-store-intelligence 2u PAY_PER_EVENT {'FREE': 0.009} start=0.001 runfee=None niches=app-store-reviews-scraper
+     taroyamada/app-review-cross-platform-intelligence 2u PAY_PER_EVENT {'FREE': 0.01} start=0.0 runfee=None niches=google-play-reviews-scraper
+     taroyamada/hacker-news-intelligence 2u PAY_PER_EVENT {'FREE': 0.001} start=0.0 runfee=None niches=hacker-news-scraper
+     taroyamada/grants-gov-funding-digest 2u PAY_PER_EVENT {'FREE': 0.008} start=0.0 runfee=None niches=grants-gov-scraper
+     taroyamada/product-safety-recall-digest 2u PAY_PER_EVENT {'FREE': 0.009} start=0.0 runfee=None niches=fda-recall-scraper
+     taroyamada/clinical-trials-pipeline-monitor 2u PAY_PER_EVENT {'FREE': 0.01} start=0.0 runfee=None niches=clinicaltrials-scraper
+     taroyamada/federal-register-digest 2u PAY_PER_EVENT {'FREE': 0.008} start=0.0 runfee=None niches=federal-register-scraper
+     taroyamada/government-contract-award-monitor 2u PAY_PER_EVENT {'FREE': 0.004} start=0.0 runfee=None niches=us-federal-awards-scraper
+     taroyamada/app-store-review-aso-scraper 2u PAY_PER_EVENT {'FREE': 0.0005} start=0.0 runfee=None niches=app-store-reviews-scraper,google-play-reviews-scraper
+     taroyamada/cpsc-product-recall-marketplace-watch-scraper 2u PAY_PER_EVENT {'FREE': 0.08} start=0.0 runfee=None niches=fda-recall-scraper
+     taroyamada/nhtsa-recall-complaint-watch-scraper 2u PAY_PER_EVENT {'FREE': 0.08} start=0.0 runfee=None niches=fda-recall-scraper
+     taroyamada/courtlistener-public-docket-opinion-watch-scraper 2u PAY_PER_EVENT {'FREE': 0.008} start=5e-05 runfee=None niches=court-records-scraper
+     taroyamada/ecfr-cfr-section-change-watch-scraper 2u PAY_PER_EVENT {'FREE': 0.06} start=0.0 runfee=None niches=federal-register-scraper
+     taroyamada/govcon-recompete-incumbent-watch-scraper 2u PAY_PER_EVENT {'FREE': 0.08} start=0.0 runfee=None niches=us-federal-awards-scraper
+     taroyamada/ats-hiring-signal-report 2u PAY_PER_EVENT {} start=29 runfee=38.001000000000005 niches=ats-jobs-scraper
+     taroyamada/ats-hiring-signal-intelligence 2u PAY_PER_EVENT {'FREE': 0.06} start=5e-05 runfee=None niches=ats-jobs-scraper
+     taroyamada/sam-vendor-pursuit-intelligence 2u PAY_PER_EVENT {'FREE': 0.008} start=0.001 runfee=None niches=sam-gov-opportunities-scraper
+     taroyamada/government-tender-grants-monitor 2u PAY_PER_EVENT {'FREE': 0.006} start=0.0 runfee=None niches=eu-ted-tenders-scraper,grants-gov-scraper,sam-gov-opportunities-scraper,uk-find-a-tender-scraper
+     taroyamada/nhtsa-vehicle-recall-digest 1u PAY_PER_EVENT {'FREE': 0.008} start=0.0 runfee=None niches=fda-recall-scraper
+     taroyamada/product-safety-market-action-portfolio-report 1u PAY_PER_EVENT {'FREE': 0.006} start=0.0 runfee=None niches=fda-recall-scraper
+     taroyamada/regulatory-obligation-change-impact-report 1u PAY_PER_EVENT {'FREE': 0.008} start=0.0 runfee=None niches=federal-register-scraper
+
+priced 24 -> /root/agent/state/audit_data/c3733_technicaldost_prices.json; 4 row(s) undercut us at >=1 tier
+     technicaldost/job-listing-aggregator 13u PAY_PER_EVENT {'FREE': 0.005} start=5e-05 runfee=None niches=remote-jobs-scraper
+HIT  technicaldost/internshala-internships-jobs-scraper 11u PAY_PER_EVENT {'FREE': 0.0005} start=5e-05 runfee=None niches=remote-jobs-scraper
+        vs remote-jobs-scraper: ours={'FREE': 0.0015, 'BRONZE': 0.0013, 'SILVER': 0.0011, 'GOLD': 0.001, 'PLATINUM': 0.001, 'DIAMOND': 0.001} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+     technicaldost/company-career-page-monitor 3u PAY_PER_EVENT {'FREE': 0.005} start=0.01 runfee=None niches=ats-jobs-scraper
+     technicaldost/app-store-review-scraper 2u PAY_PER_EVENT {'FREE': 0.0005} start=5e-05 runfee=None niches=app-store-reviews-scraper
+HIT  technicaldost/remote-jobs-aggregator 2u PAY_PER_EVENT {'FREE': 0.001} start=5e-05 runfee=None niches=remote-jobs-scraper
+        vs remote-jobs-scraper: ours={'FREE': 0.0015, 'BRONZE': 0.0013, 'SILVER': 0.0011, 'GOLD': 0.001, 'PLATINUM': 0.001, 'DIAMOND': 0.001} undercuts=['BRONZE', 'FREE', 'SILVER'] every_tier=False crossover=None
+     technicaldost/ats-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.002} start=5e-05 runfee=None niches=ats-jobs-scraper
+     technicaldost/google-news-scraper 2u PAY_PER_EVENT {'FREE': 0.002} start=5e-05 runfee=None niches=google-news-scraper
+HIT  technicaldost/substack-newsletter-monitor 2u PAY_PER_EVENT {'FREE': 0.0015} start=0.001 runfee=None niches=substack-scraper
+        vs substack-scraper: ours={'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0015, 'GOLD': 0.00078, 'PLATINUM': 0.00078, 'DIAMOND': 0.00078} undercuts=['BRONZE', 'FREE'] every_tier=False crossover=None
+     technicaldost/hackernews-scraper 2u PAY_PER_EVENT {'FREE': 0.001} start=0.0 runfee=None niches=hacker-news-scraper
+     technicaldost/linkedin-hiring-signal-company-monitor 2u PAY_PER_EVENT {'FREE': 0.006} start=5e-05 runfee=None niches=ats-jobs-scraper
+     technicaldost/dailymed-label-change-monitor 2u PAY_PER_EVENT {'FREE': 0.005} start=5e-05 runfee=None niches=nih-reporter-scraper
+     technicaldost/fda-maude-device-events-monitor 2u PAY_PER_EVENT {'FREE': 0.005} start=5e-05 runfee=None niches=fda-recall-scraper
+     technicaldost/steam-scraper-games-prices-reviews 2u PAY_PER_EVENT {'FREE': 0.001} start=0.0 runfee=None niches=steam-reviews-scraper
+     technicaldost/clinicaltrials-nct-status-monitor 2u PAY_PER_EVENT {'FREE': 0.004} start=0.0 runfee=None niches=clinicaltrials-scraper
+     technicaldost/federal-contract-award-intelligence 2u PAY_PER_EVENT {'FREE': 0.005} start=5e-05 runfee=None niches=us-federal-awards-scraper
+     technicaldost/fda-enforcement-research-export 2u PAY_PER_EVENT {'FREE': 0.004} start=5e-05 runfee=None niches=fda-recall-scraper
+     technicaldost/ats-jobs-hiring-signals 2u PAY_PER_EVENT {'FREE': 0.0018} start=5e-05 runfee=None niches=ats-jobs-scraper
+     technicaldost/ashby-salary-bands 2u PAY_PER_EVENT {'FREE': 0.006} start=5e-05 runfee=None niches=ats-jobs-scraper
+     technicaldost/steam-patch-review-compare 2u PAY_PER_EVENT {'FREE': 0.03} start=5e-05 runfee=None niches=steam-reviews-scraper
+     technicaldost/courtlistener-legal-monitor 2u PAY_PER_EVENT {'FREE': 0.004} start=5e-05 runfee=None niches=court-records-scraper
+     technicaldost/workday-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.001} start=5e-05 runfee=None niches=ats-jobs-scraper
+HIT  technicaldost/website-screenshot-pdf-capture 2u PAY_PER_EVENT {'FREE': 0.0015} start=5e-05 runfee=None niches=website-screenshot-scraper
+        vs website-screenshot-scraper: ours={'FREE': 0.002} undercuts=['FREE'] every_tier=True crossover=None
+     technicaldost/fda-device-510k-monitor 1u PAY_PER_EVENT {'FREE': 0.005} start=5e-05 runfee=None niches=fda-recall-scraper
+     technicaldost/greenhouse-lever-fresh-jobs-monitor 1u PAY_PER_EVENT {'FREE': 0.003} start=0.0 runfee=None niches=ats-jobs-scraper
+
+priced 4 -> /root/agent/state/audit_data/c3733_tenfoldfleet_prices.json; 0 row(s) undercut us at >=1 tier
+     tenfoldfleet/google-news-scraper 9u PAY_PER_EVENT {'FREE': 0.004} start=5e-05 runfee=None niches=google-news-scraper
+     tenfoldfleet/workday-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.002, 'SILVER': 0.002, 'GOLD': 0.001, 'PLATINUM': 0.001, 'DIAMOND': 0.001} start=5e-05 runfee=None niches=ats-jobs-scraper
+     tenfoldfleet/shopify-store-analyzer 2u PAY_PER_EVENT {'FREE': 0.008, 'BRONZE': 0.008, 'SILVER': 0.008, 'GOLD': 0.004, 'PLATINUM': 0.004, 'DIAMOND': 0.004} start=5e-05 runfee=None niches=shopify-products-scraper
+     tenfoldfleet/ats-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.003, 'BRONZE': 0.003, 'SILVER': 0.003, 'GOLD': 0.0015, 'PLATINUM': 0.0015, 'DIAMOND': 0.0015} start=5e-05 runfee=None niches=ats-jobs-scraper
+
+priced 5 -> /root/agent/state/audit_data/c3733_texxupport_prices.json; 1 row(s) undercut us at >=1 tier
+     texxupport/all-agency-recall-alerts 2u PAY_PER_EVENT {'FREE': 0.004} start=5e-05 runfee=None niches=fda-recall-scraper
+     texxupport/cpsc-recall-monitor 2u PAY_PER_EVENT {'FREE': 0.004} start=5e-05 runfee=None niches=fda-recall-scraper
+     texxupport/fda-adverse-events 2u PAY_PER_EVENT {'FREE': 0.008} start=5e-05 runfee=None niches=fda-recall-scraper
+     texxupport/web-page-archiver 2u PAY_PER_EVENT {'FREE': 0.01} start=5e-05 runfee=None niches=website-screenshot-scraper
+HIT  texxupport/sam-gov-contract-opportunity-alerts 2u PAY_PER_EVENT {'FREE': 0.003} start=5e-05 runfee=None niches=sam-gov-opportunities-scraper,us-federal-awards-scraper
+        vs us-federal-awards-scraper: ours={'FREE': 0.004, 'BRONZE': 0.0035, 'SILVER': 0.003, 'GOLD': 0.0025, 'PLATINUM': 0.0025, 'DIAMOND': 0.0025} undercuts=['BRONZE', 'FREE'] every_tier=False crossover=None

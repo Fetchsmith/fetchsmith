@@ -1,0 +1,149 @@
+[
+ {
+  "handle": "tenfoldfleet/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 9,
+  "title": "Google News Scraper API - Articles, Full Text & Decoded Links",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,article-text",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get news articles from Google News by keyword, topic or top stories in any country: title, publisher, date, real article URL (decoded from Google links) and optional full text. $4 per 1,000 articles; full text +$3 per 1,000. Failed queries free."
+ },
+ {
+  "handle": "tenfoldfleet/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper - myworkdayjobs.com API with Salary",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.002,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get all job postings from any Workday career site (myworkdayjobs.com): title, locations, exact post date, req ID, remote type, salary range, full description and apply URL. Filter by keyword, location or date; scrapes past the 2,000-job limit. $2.00 per 1,000 jobs; failed sites are free."
+ },
+ {
+  "handle": "tenfoldfleet/shopify-store-analyzer",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify App & Theme Detector - Store Analyzer & Contacts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-analyzed",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.008,
+   "SILVER": 0.008,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-analyzed",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find what apps and theme a Shopify store uses, in bulk: installed apps, theme, product count, price range, top vendors, % on sale, collections, currency, country, myshopify domain, emails, phones and social links. One row per store analyzed. $8 per 1,000 stores; non-Shopify sites are free."
+ },
+ {
+  "handle": "tenfoldfleet/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Applicant Tracking Jobs Scraper - Greenhouse, Lever & 6 More",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.003,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get job postings from applicant tracking systems (Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, Personio, BambooHR): all jobs on a company career page in one schema with title, location, remote, salary, description, apply URL and dates. $3 per 1,000 jobs; failed companies free."
+ }
+]

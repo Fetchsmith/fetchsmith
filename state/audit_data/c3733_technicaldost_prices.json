@@ -1,0 +1,790 @@
+[
+ {
+  "handle": "technicaldost/job-listing-aggregator",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 13,
+  "title": "Job Listing Aggregator",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Returns tech and remote job listings from the Remotive, Himalayas and Arbeitnow job APIs: title, company, location, salary, job type, tags, posting date and apply link, deduplicated. Input: keywords and an optional location."
+ },
+ {
+  "handle": "technicaldost/internshala-internships-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 11,
+  "title": "Internshala Internships & Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Internshala internships and fresher jobs by keyword, city or work from home: stipend or salary, duration, skills, company, posting age and link. New-listings-only mode for schedules."
+ },
+ {
+  "handle": "technicaldost/company-career-page-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "Career Page Job Scraper & Change Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape public career pages and ATS job boards, filter structured roles, and detect new or removed openings across scheduled runs."
+ },
+ {
+  "handle": "technicaldost/app-store-review-scraper",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store Review Scraper (Apple iOS)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Apple App Store reviews and app metadata: rating, title, text, author, version, plus average rating and total ratings. For ASO and product research."
+ },
+ {
+  "handle": "technicaldost/remote-jobs-aggregator",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Remote Jobs Aggregator - 5 Boards, Deduplicated",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote jobs from Remote OK, Himalayas, Jobicy, Arbeitnow and We Work Remotely in one dataset, deduplicated across boards, via their public APIs and feeds. Filter by keyword and age; new-jobs-only mode."
+ },
+ {
+  "handle": "technicaldost/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Lever Ashby Jobs API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job postings from 5 public ATS APIs: Greenhouse, Lever, Ashby, Workable and SmartRecruiters. Returns title, location, URL, postedAt and description. Pay per job."
+ },
+ {
+  "handle": "technicaldost/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Article Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Google News by topic and export structured articles: title, source, publish date, URL and snippet. For media monitoring, PR and research."
+ },
+ {
+  "handle": "technicaldost/substack-newsletter-monitor",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Newsletter Monitor - New Posts Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "New posts from any Substack publication as structured data - title, author, date, word count, reactions, comments and restacks - with no repeats between runs. Watch hundreds of newsletters on one schedule for a fraction of a cent each. No browser or API key needed."
+ },
+ {
+  "handle": "technicaldost/hackernews-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News stories, comments, jobs and user profiles. Filter by top, new, best or Ask/Show HN. Export points, authors, timestamps and links as structured JSON."
+ },
+ {
+  "handle": "technicaldost/linkedin-hiring-signal-company-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "LinkedIn Hiring Signal Company Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find companies hiring right now for the roles you sell into. Reads public LinkedIn job listings by keyword and location and returns one row per company with roles, job links, hiring velocity and a 0-100 signal score."
+ },
+ {
+  "handle": "technicaldost/dailymed-label-change-monitor",
+  "niches": [
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "DailyMed Label Change Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Returns recently published drug labels from the NIH DailyMed database for a drug or sponsor keyword: title, set ID, version, publish date and link. Schedule it to monitor label changes."
+ },
+ {
+  "handle": "technicaldost/fda-maude-device-events-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA MAUDE Device Event Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Returns medical device adverse event reports from the FDA MAUDE database via openFDA: report number, event type, date received, manufacturer, device, product code and patient outcome. Filter by device, manufacturer or date."
+ },
+ {
+  "handle": "technicaldost/steam-scraper-games-prices-reviews",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Scraper \u2014 Games, Prices, Discounts & Reviews",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game,review",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Steam games and reviews without an API key: prices, discounts, tags, review scores, developers, plus review text, playtime and votes. Works after Valve retired the appreviews JSON endpoint (Oct 2026). Search, top sellers, specials or app URLs."
+ },
+ {
+  "handle": "technicaldost/clinicaltrials-nct-status-monitor",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov NCT Status Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Re-check caller-owned NCT IDs for overall status, enrollment, sponsor and last-update changes from the public ClinicalTrials.gov API v2. Built for scheduled clinops watchlists, not a trial dump. You only pay for successful checks you receive."
+ },
+ {
+  "handle": "technicaldost/federal-contract-award-intelligence",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Contract Awards - USAspending Intelligence",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Research federal contractors, award recipients and agency spending from USAspending. Search keywords, filter total award value and feed source-linked rows into vendor research or subcontractor prospecting."
+ },
+ {
+  "handle": "technicaldost/fda-enforcement-research-export",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Enforcement Reports - Food Drug Device Research",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Export official food, drug or medical-device enforcement reports for retrospective product and market research. Filter classification, report date and firm; preserve reasons and distribution text with direct source links."
+ },
+ {
+  "handle": "technicaldost/ats-jobs-hiring-signals",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Hiring Signals + ATS Jobs: Greenhouse Lever Ashby Workable",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0018
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-signal,job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find companies hiring now. Open jobs from public Greenhouse, Lever, Ashby and Workable boards plus a company hiring-signal row: new roles, hiring surges, first sales/security hires, growing teams and new locations. Paste domains or slugs; daily delta mode. No API key."
+ },
+ {
+  "handle": "technicaldost/ashby-salary-bands",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Ashby Jobs Scraper & Salary Band Export",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Export public Ashby job postings with disclosed pay bands, currency, workplace, and apply links. Filter by role, remote status, or annual salary floor."
+ },
+ {
+  "handle": "technicaldost/steam-patch-review-compare",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Reviews Before & After a Patch",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Measure Steam review sentiment around a game update. Compare review counts, positive rates, and percentage-point change in two UTC windows."
+ },
+ {
+  "handle": "technicaldost/courtlistener-legal-monitor",
+  "niches": [
+   "court-records-scraper"
+  ],
+  "users": 2,
+  "title": "CourtListener Legal Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "court-records-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Searches CourtListener and returns court opinions and dockets as structured records: case name, court, date filed, text snippet and link. Input: a search query. Schedule it to monitor new litigation on any topic or company."
+ },
+ {
+  "handle": "technicaldost/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper - Career Site Job Postings",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job postings from any company Workday career site (myworkdayjobs.com): title, locations, time type, posted date, requisition ID and full description. New-postings-only mode for hiring monitors."
+ },
+ {
+  "handle": "technicaldost/website-screenshot-pdf-capture",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot & PDF API - Full Page, Bulk, Visual Diff",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "capture",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): capture,visual-diff",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Capture full-page website screenshots (PNG/JPEG) or save any URL as PDF in bulk. Desktop, tablet and mobile views, cookie banners hidden, lazy images loaded, plus visual change detection between runs."
+ },
+ {
+  "handle": "technicaldost/fda-device-510k-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "FDA 510k Device Clearance Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Returns FDA 510(k) medical device clearances from openFDA: device name, applicant, K number, decision date, product code and link. Filter by device name, applicant or decision date. Schedule it to track new clearances."
+ },
+ {
+  "handle": "technicaldost/greenhouse-lever-fresh-jobs-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Greenhouse & Lever Jobs Scraper & Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape public Greenhouse and Lever job boards into one normalized dataset. Filter by title or location and emit only newly discovered openings on repeat runs."
+ }
+]

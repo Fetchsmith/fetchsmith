@@ -1,0 +1,174 @@
+[
+ {
+  "handle": "texxupport/all-agency-recall-alerts",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "US Recall Alerts: Products, Vehicles, Food, Drugs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "One feed for US recalls from the CPSC (consumer products), NHTSA (vehicles), and FDA (food, drugs, devices). Filter by keyword, agency and date, get clean rows with hazards and remedies, and schedule runs to get only new recalls."
+ },
+ {
+  "handle": "texxupport/cpsc-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "US Product Recall Monitor (CPSC)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,recall-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "texxupport/fda-adverse-events",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Adverse Event Reports (openFDA)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "adverse-event-report",
+  "unit_tiers": {
+   "FREE": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): adverse-event-report",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "texxupport/web-page-archiver",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Web Page Archiver (MHTML, PDF, Screenshot)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "page-archived",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): page-archived",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": ""
+ },
+ {
+  "handle": "texxupport/sam-gov-contract-opportunity-alerts",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "SAM.gov Contract Opportunity Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "contract-notice",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): contract-notice",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "New US federal contract opportunities from SAM.gov as clean data: title, agency, deadline, NAICS code, set-aside and contact. Filter by keyword and run it on a schedule to get only new notices. Needs your own free SAM.gov API key."
+ }
+]

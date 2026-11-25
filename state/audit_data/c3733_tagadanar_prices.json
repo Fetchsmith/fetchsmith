@@ -1,0 +1,551 @@
+[
+ {
+  "handle": "tagadanar/linkedin-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 21,
+  "title": "LinkedIn Jobs Scraper \ud83d\udcbc (hiring signals, all-in price)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-details,job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Fresh LinkedIn job posts and hiring-company details (name, LinkedIn page, industry) in clean JSON. Filter by keyword, location, remote or on-site, experience and posted-since, and monitor new roles daily. Sales teams buy this hiring signal from PredictLeads by subscription. No login."
+ },
+ {
+  "handle": "tagadanar/linkedin-remote-jobs",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 7,
+  "title": "LinkedIn Remote Jobs Scraper \ud83c\udf0d (clean feed, no login)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,job-details,job-scraped",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote-only LinkedIn job postings by keyword and region, in clean JSON. Every result is pre-filtered to remote work, no toggle to forget. Hiring company, location, posting date and optional full description. One all-in price per job, no API key, no login."
+ },
+ {
+  "handle": "tagadanar/brand-news-monitor",
+  "niches": [
+   "google-news-scraper",
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Brand & News Monitor \ud83d\udcf0 (Google News alerts to Slack & API)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mention-found",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0072,
+   "SILVER": 0.0064,
+   "GOLD": 0.0056,
+   "PLATINUM": 0.0056,
+   "DIAMOND": 0.0056
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): digest-sent,mention-found",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google Alerts as an API: brand and competitor mentions from Google News, GDELT and Hacker News as structured JSON, deduplicated so you only ever pay for new mentions, with a Slack digest built in. $8 per 1,000 mentions, platform usage included."
+ },
+ {
+  "handle": "tagadanar/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper \ud83d\udcbc (any career site, full descriptions)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.00108,
+   "SILVER": 0.00096,
+   "GOLD": 0.00084,
+   "PLATINUM": 0.00084,
+   "DIAMOND": 0.00084
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Jobs from any company career site hosted on Workday (myworkdayjobs.com): title, all locations, country, remote type, time type, exact posted date and the full description. Filter by keyword, location, category, remote and posted-within days. No API key, no login."
+ },
+ {
+  "handle": "tagadanar/remote-jobs-aggregator",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Remote Jobs Scraper & Aggregator \ud83c\udf0d (7 job boards, one feed)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote jobs from Remote OK, We Work Remotely, Jobicy, Working Nomads, Arbeitnow and more in one clean feed: normalised location, salary, category, cross-board duplicates removed. Filter by keyword, region, salary, date. Monitor mode returns only new jobs. No API key."
+ },
+ {
+  "handle": "tagadanar/google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play Scraper \u2014 Apps, Ratings, Installs & Developers",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google Play apps from search terms, package names or developers: rating, histogram, installs, price, in-app purchases, ads, content rating, dates, version, developer email, website and address, description, screenshots and search rank. $0.50 per 1,000 apps + $0.001/run."
+ },
+ {
+  "handle": "tagadanar/shopify-store-prospector",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Scraper \ud83d\udecd\ufe0f Prospector (catalogue + contacts)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-analyzed",
+  "unit_tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.0072,
+   "SILVER": 0.0064,
+   "GOLD": 0.0056,
+   "PLATINUM": 0.0056,
+   "DIAMOND": 0.0056
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,product-row,store-analyzed",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Turn a domain list into a qualified Shopify prospecting sheet: catalogue size, price range, brands and types carried, products shipped in the last 30 days, discount depth, collections, theme, socials and role mailboxes. Read from each store's own public storefront JSON. No API key, no proxy."
+ },
+ {
+  "handle": "tagadanar/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper: Stories, Comments & Who Is Hiring",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Hacker News stories and comments by keyword, author, date and points, past the 1,000-result limit. Front-page lists, full comment threads as flat rows, monthly Who is hiring posts and user profiles. $0.50 per 1,000 rows."
+ },
+ {
+  "handle": "tagadanar/shopify-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Products Scraper: prices, variants, stock, SKUs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product,store-checked",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Every product of any public Shopify store: title, vendor, type, tags, prices, compare-at, stock, SKUs, every variant, images and dates. Whole catalogue, one collection or new products only. $1.00 per 1,000 products."
+ },
+ {
+  "handle": "tagadanar/steam-store-scraper",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Store Scraper: Game Prices, Details & Reviews Summary",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.00072,
+   "SILVER": 0.00064,
+   "GOLD": 0.00056,
+   "PLATINUM": 0.00056,
+   "DIAMOND": 0.00056
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Steam store game data by app ID, store URL, keyword or store list (top sellers, specials, coming soon): price and discount in any currency, review score, tags, genres, developers, release date. $0.80 per 1,000 apps."
+ },
+ {
+  "handle": "tagadanar/jobs-multi-board-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Jobs Multi-Board Scraper: Arbeitsagentur, Reed, jobs.ch & more",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0007,
+   "BRONZE": 0.00063,
+   "SILVER": 0.00056,
+   "GOLD": 0.00049,
+   "PLATINUM": 0.00049,
+   "DIAMOND": 0.00049
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "One search across national job boards: Bundesagentur f\u00fcr Arbeit and Arbeitnow (DE/AT/CH), jobs.ch, Reed (UK), Job Bank (Canada), Shine (India), plus Jobicy remote jobs. One schema, source field, cross-board duplicates removed. $0.70 per 1,000 jobs."
+ },
+ {
+  "handle": "tagadanar/app-intel-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "App Store & Google Play Scraper \ud83d\udcf1 (both stores, one run)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-scraped",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-scraped,digest-sent,review-scraped",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape apps from the Apple App Store and Google Play in one run instead of two: ratings, rating counts, installs, pricing, categories, versions and descriptions. Search or fetch by id, and monitor for new-review alerts to Slack. The app-tracking slice of Appfigures, with no app cap."
+ },
+ {
+  "handle": "tagadanar/ats-jobs-aggregator",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "ATS Jobs Scraper \ud83c\udfaf Greenhouse Lever Ashby Workable + Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.00225,
+   "SILVER": 0.002,
+   "GOLD": 0.00175,
+   "PLATINUM": 0.00175,
+   "DIAMOND": 0.00175
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "You bring the company list; it finds each job board. Names, domains or career-page URLs in, every open role from Greenhouse, Lever, Ashby, Workable and SmartRecruiters out: department, location, remote, posted date, apply link, full text. Monitor mode returns only new roles. Misses are free."
+ },
+ {
+  "handle": "tagadanar/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 1,
+  "title": "Google News Scraper \ud83d\udcf0 (search, topics, publisher URLs)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,article-body,url-resolved",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News scraper: search any query, topic or place in 50 editions. Headline, publisher, real article URL, publish time, related coverage and optional article text. Date ranges go past Google's 100-story cap per search."
+ }
+]

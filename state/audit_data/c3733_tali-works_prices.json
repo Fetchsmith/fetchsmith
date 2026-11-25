@@ -1,0 +1,460 @@
+[
+ {
+  "handle": "tali-works/shopify-tech-detector",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 3,
+  "title": "Shopify Store Tech Detector: Apps, Theme, Pixels",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-scanned",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-scanned",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Detect if a site runs Shopify and which theme, apps (Klaviyo, Recharge, Judge.me, Yotpo, Gorgias, Rebuy, PageFly, Klarna, Afterpay...) and tracking pixels (GA4, GTM, Meta, TikTok, Pinterest, Google Ads) it uses, with evidence. 1 homepage request per store."
+ },
+ {
+  "handle": "tali-works/sam-gov-opportunities-award-history",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "SAM.gov Contract Opportunities + Award History",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity-result",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-result",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search federal contract opportunities on SAM.gov with your own free API key, then add USASpending.gov award history (incumbents, award counts, typical award sizes) to each result. Returns clean, flat records and can return only new notices on each run."
+ },
+ {
+  "handle": "tali-works/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper: Search, Comments & Who Is Hiring Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Hacker News stories and comments (any date range, points filter), get the front page, export full comment threads, or parse the monthly 'Who is hiring?' thread into structured job posts with company, role, location, remote, salary and emails. $1 per 1,000 items."
+ },
+ {
+  "handle": "tali-works/substack-newsletter-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Newsletter Scraper: Posts, Full Text, Stats",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every post from any Substack newsletter: title, date, authors, paywall status, likes, comments, restacks, tags and full article text (free posts). URLs, custom domains or names. No login, no proxies. $1 per 1,000 posts, full text included."
+ },
+ {
+  "handle": "tali-works/shopify-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Products Scraper: Prices, Variants, Stock",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.0008
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all products from any Shopify store: title, price range, compare-at/sale price, variants with SKU and stock, images, tags, vendor and clean description. Whole store or one collection. No login or API key. $0.80 per 1,000 products."
+ },
+ {
+  "handle": "tali-works/career-site-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Career Site Jobs: Greenhouse, Lever, Ashby, Workday",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "All open jobs from company career sites on Greenhouse, Lever, Ashby, Workday and SmartRecruiters in one flat schema: title, location, remote, posted date, salary, full description, apply link. Paste URLs or company names. $1.50 per 1,000 jobs."
+ },
+ {
+  "handle": "tali-works/app-store-google-play-reviews",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store & Google Play Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.00015
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape iOS App Store and Google Play reviews in one run with one flat, CSV-ready schema: rating, title, text, author, date, app version, thumbs-up, developer reply. Multi-country, date and star filters. $0.15 per 1,000 reviews for both stores."
+ },
+ {
+  "handle": "tali-works/nhtsa-recall-watchlist-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "Unofficial NHTSA Vehicle Recall Monitor - Dealers & Fleets",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scheduled new-recall checks for your used-car lot or fleet model list (make, model, year or year range). The diff shows only NHTSA campaigns not seen before, with Park It / Park Outside flags where NHTSA reports them. Model-level, not a per-VIN check; a row means check the unit."
+ },
+ {
+  "handle": "tali-works/cpsc-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Product Recall Monitor: Check Recalls Before You Resell",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Check U.S. CPSC product recalls against reseller watchlists (baby gear, furniture tip-over, toys, electrical), brands or model numbers. Daily new-only monitor mode catches new and re-announced recalls. Photos, remedies, CPSC links. $0.50 per 1,000."
+ },
+ {
+  "handle": "tali-works/hacker-news-mention-monitor",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Mention Monitor - Keyword, Brand & Domain Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get alerted when Hacker News mentions your brand, product, keyword, domain or a user, in stories AND comments. Whole-word matching (no fuzzy junk), monitor mode returns only new hits, sweeps past the 1,000-result cap. Official free HN API. $0.50 per 1,000 mentions."
+ },
+ {
+  "handle": "tali-works/shopify-app-store-reviews-monitor",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Unofficial Shopify App Store Reviews Monitor: Review Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Shopify app review monitoring and review alerts: newest App Store reviews for your app or competitors (rating, text, store, country, developer reply). Filter 1-2 star or unanswered reviews, date cut-off, new-only daily runs. Unofficial."
+ },
+ {
+  "handle": "tali-works/shopify-policy-checker",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Policy & Trust Checker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-checked",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-checked",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Check any Shopify store's refund, shipping, privacy, terms and contact policies: missing or thin pages, leftover template placeholders, return window, store-credit-only refunds, contact email/phone, social links and review apps. A prioritized issue list per store. Respects robots.txt."
+ },
+ {
+  "handle": "tali-works/shopify-store-audit",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Audit: SEO, Catalog, Alt Text, Broken Links",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-audit",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-audit",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Audit any Shopify store from public data: missing alt text, empty or thin product descriptions, duplicate titles, $0 variants, public wholesale SKUs, broken links, meta/H1/schema gaps, missing reviews and About page. Score plus a prioritized fix list. $0.02 per store."
+ }
+]
