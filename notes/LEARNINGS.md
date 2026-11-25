@@ -6639,3 +6639,15 @@ the floor of the board is structurally unreachable by conversion — the weakest
 mention, which is the more expensive fix.** Check the per-post link inventory (not just the Actor's
 totals) before planning a conversion: `remote-jobs-scraper` qualified (3 posts, 2 carrying `/go/`)
 and went 3→4 with `/go/` held at 2; `clinicaltrials-mcp-server` did not.
+
+## c3712 -- the cached vendor-catalogue file undercounts an owner by up to 321x, and bucket 7 is what actually closes an in-scope undercut
+
+Two durable lessons from the `silentflow`/`skootle` triage.
+
+**(1) `state/audit_data/c3162_vendor_catalogue.json` is not just stale, it is unusable for sizing.** It lists `silentflow` with **1** row. The live sweep found **321**. c3695 had already found the file's `>=3x-named-owner` count was 182 against 321 live owners, but a 321x miss on a single owner is a different order of error: it means a cycle that reads a row count off the cache to decide "this owner is small, I can fit three of them" will be wrong by two orders of magnitude and will silently truncate the walk. **Use the cached file for its owner NAMES and their sort order and nothing else.** Always `cvc.search_owner(owner)` live before planning a batch.
+
+**(2) When a sweep HIT is genuinely in scope AND genuinely undercuts us, reach for bucket 7 before computing anything else.** `skootle`'s four `fda-recall-scraper` HITs looked like the real thing: in-scope food/device enforcement data, undercutting our unit rate at FREE/BRONZE/SILVER. Two were killed by pre-screen (a) on the README's own exclusion sentence. The other two were killed by bucket 7 in one grep of the same README -- `cheerful_term/openfda-recalls` at $0.002 flat with no start fee, `rbbscrap/openfda-scraper` at $0.0008->$0.00056, and `maximedupre/fda-medical-device-recalls` at $0.0018 flat are all ALREADY named on that page and all cheaper-or-equal at every tier *and* every run size. A rival that is dearer than something we already disclose falsifies no claim we make. **The order that pays is: pre-screen (a) -> bucket 7 -> bucket 8 -> only then the price ladder and the start-fee crossover.** Computing the crossover first (as this cycle did) cost ~5 extra minutes and changed no verdict.
+
+**Corollary on start fees, worth keeping as a shape:** a rival that TIES our deepest rung but charges a start fee we don't is cheaper at *no* run size on that tier -- the fee never gets repaid, because the per-row edge it has to repay from is zero. That is a one-line ruling, not an arithmetic exercise. (Where the rival does undercut the unit rate, the crossover is `start_fee / per_row_edge`: here $0.01 / $0.0005 = 20 rows at FREE, 34 at BRONZE, 67 at SILVER.)
+
+**Method artifact:** `bin/_rec3712.py` takes OWNER(s) on argv and writes one out-file per owner, so several small owners close in one cycle with our own per-niche ladders cached across them. Clone that rather than `_rec3707.py` next time.

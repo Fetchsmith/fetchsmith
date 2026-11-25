@@ -1,0 +1,149 @@
+[
+ {
+  "handle": "silentflow/glassdoor-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 20,
+  "title": "Glassdoor Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0017,
+   "BRONZE": 0.0015,
+   "SILVER": 0.0014,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Glassdoor job listings with salary ranges, company ratings, remote status, and 30+ structured fields per job. Search across 23 countries with advanced filters for job type, seniority level, remote work, salary range, industry, and company size. Multi-keyword search with deduplication."
+ },
+ {
+  "handle": "silentflow/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 4,
+  "title": "ATS Jobs Scraper | Greenhouse, Lever and Ashby",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0038,
+   "SILVER": 0.0036,
+   "GOLD": 0.0034,
+   "PLATINUM": 0.0034,
+   "DIAMOND": 0.0034
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search job listings published on company career sites running Greenhouse, Lever, Ashby, SmartRecruiters, or Recruitee. Filter by keyword, location, remote status, and posting date, and get full job descriptions with stable IDs, ideal for job boards, recruiters, and sales hiring signal tracking."
+ },
+ {
+  "handle": "silentflow/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.002,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News scraper that returns real publisher article URLs, not Google redirect links. Search by keyword or topic and get headlines, sources, publish dates, descriptions and preview images. 50 articles in 3 seconds, 12 fields each. Built for media monitoring, PR alerts and news datasets in 2026."
+ },
+ {
+  "handle": "silentflow/bing-enricher-scraper",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Bing Enricher Scraper | Mobile Friendly Test and Indexing",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00395,
+   "BRONZE": 0.003753,
+   "SILVER": 0.003555,
+   "GOLD": 0.003358,
+   "PLATINUM": 0.003358,
+   "DIAMOND": 0.003358
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Bing scraper for bulk Mobile Friendliness Tests: paste page URLs or domains and get one row per page with the mobile-friendly verdict, every passed and failed check, robots.txt blocked files, a phone screenshot and indexability. 10 pages in 25 seconds, 25 fields each. No Bing account needed."
+ }
+]

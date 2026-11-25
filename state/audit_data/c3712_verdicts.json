@@ -1,0 +1,48 @@
+{
+ "cycle": 3712,
+ "date": "2026-11-25",
+ "task": "NEW c3162 vendor-catalogue triage -- owners silentflow + skootle (sorted-owner walk, successors to signalcrawl/c3710)",
+ "pointer_verify": "silentflow is index 193 of 247 distinct owners in state/audit_data/c3162_vendor_catalogue.json, immediately after signalcrawl (192). Verified fresh this cycle, matches c3710's handoff.",
+ "cache_staleness": "The cached catalogue lists 1 row for silentflow; the LIVE sweep found 321. Confirms c3695: the cached file is stale and only its OWNER NAMES are usable, never its per-owner row counts.",
+ "silentflow": {
+  "live_listings": 321,
+  "flagged": 4,
+  "already_disclosed": 4,
+  "off_niche": 313,
+  "disclosures_owed": 0
+ },
+ "skootle": {
+  "live_listings": 38,
+  "flagged": 14,
+  "already_disclosed": 3,
+  "off_niche": 21,
+  "manual_near_misses_ruled": 3,
+  "sweep_hits_priced": 4,
+  "disclosures_owed": 0
+ },
+ "totals": {
+  "rows_ruled": 18,
+  "disclosures_owed": 0,
+  "price_drift_on_disclosed_rows": 0
+ },
+ "verdicts": {
+  "skootle/fda-food-recall-intelligence": "bucket5+bucket7: in-scope (food enforcement only, the same basis on which zinin/fda-food-recall-monitor is one of the 12 named rivals). Unit ladder $0.003 FREE -> $0.0024 GOLD+ TIES our GOLD+ floor and undercuts our unit rate at FREE/BRONZE/SILVER only -- but it carries a $0.01 start fee, the largest on the page (the 12 named rivals run $0.00001-$0.005) and we charge none. Crossover: FREE 20 rows/run, BRONZE 34, SILVER 67; at GOLD+ the unit rate is a tie so we are cheaper at EVERY run size. bucket7 is decisive regardless: cheerful_term/openfda-recalls ($0.002/record flat, NO start fee, README:299) and rbbscrap/openfda-scraper ($0.0008 -> $0.00056 GOLD+, no start fee, README:303) are ALREADY named on the same page and are cheaper-or-equal to this row at every tier and every run size, so it falsifies no claim we make and adds nothing a buyer can act on. 2 users. 0 disclosure owed.",
+  "skootle/cpsc-product-recall-intelligence": "bucket1 / pre-screen (a): CPSC records only, a different agency. fda-recall-scraper/README.md:310 already pre-covers this entire class generically -- '14 are a different agency or country (NHTSA vehicle/VIN, CPSC, EU Safety Gate, Health Canada, UK FSA)'. A complement, not a substitute; no individual naming needed (the publicmoney/* precedent). 2 users. 0 disclosure owed.",
+  "skootle/fda-device-recall-intelligence": "bucket7+bucket5: openFDA medical-device recalls only, i.e. one of our three product types -- exactly the basis on which maximedupre/fda-medical-device-recalls is one of the 12 named rivals (README:304) at $0.0018/record FLAT with NO start fee, which is cheaper than this row at every tier and every run size and is already disclosed on the same page. Same $0.003 -> $0.0024 ladder plus $0.01 start fee as the sibling rows (crossover 20/34/67 rows, tie at GOLD+ so we are cheaper at every run size there). Its 'K numbers' are 510(k), itself an excluded endpoint at README:310. 2 users. 0 disclosure owed.",
+  "skootle/fda-drug-safety-signals": "bucket2: a pharmacovigilance STATISTICS layer over FAERS adverse events (PRR, ROR, chi-squared, 95% CIs, label-mismatch flags) that joins recall history as an add-on -- the inverse product shape from our recall export, and the adverse-event class README:310 already excludes ('13 are a different openFDA endpoint ... MAUDE adverse events ...'). Precedent: tidydata69/openfda-recalls-events and yakeddgraph/openfda-drug-adverse-events-recalls-scraper are both treated as recall feeds with FAERS bundled; this row is FAERS-first. Also dearer: same $0.003 -> $0.0024 + $0.01 start fee. 1 user. 0 disclosure owed.",
+  "skootle/wellfound-jobs-scraper": "bucket1+bucket3 (manual near-miss, 15u -- the largest unflagged row): Wellfound/AngelList Talent is a single startup job board, not among the 12 ATS platforms ats-jobs-scraper covers nor a board remote-jobs-scraper reads -- the same structural ruling README:215 already applies to silentflow/glassdoor-jobs-scraper-ppr. Also 27-40x DEARER: $0.05 FREE -> $0.04 GOLD+ against our remote-jobs $0.0015 -> $0.001 and ats-jobs $0.001 -> $0.0007. 0 disclosure owed.",
+  "skootle/shopify-app-store-scraper": "bucket1+bucket3 (manual near-miss): the Shopify APP STORE (SaaS app listings, developers, app ratings) is a different dataset from Shopify store PRODUCTS -- not a substitute for shopify-products-scraper. Also 7-12x dearer: $0.012 FREE -> $0.006 DIAMOND + $0.005 start fee vs our $0.001 -> $0.00085 with no start fee. 4 users. 0 disclosure owed.",
+  "skootle/sec-edgar-filings": "bucket1+bucket3 (manual near-miss): EDGAR filing METADATA by ticker/CIK/form type (document links, dates) is a different dataset from parsed Form 4 insider TRANSACTIONS -- a complement to sec-insider-trades-scraper, not a substitute, and we ship no EDGAR-filings Actor for it to undercut. Also ~2-2.8x dearer: $0.005 -> $0.0035 + $0.003 start fee vs our flat $0.0018 with no start fee. 2 users. 0 disclosure owed.",
+  "skootle/app-store-reviews": "already disclosed app-store-reviews-scraper/README.md:233; re-verified live 2026-11-25: $0.008 FREE -> $0.005 GOLD+ plus a $0.01 start fee -- byte-exact against the claim, 0 drift.",
+  "skootle/usaspending-contract-intelligence": "already disclosed us-federal-awards-scraper/README.md:237 ('tiered $0.003->$0.0024, plus a $0.01 start fee'); re-verified live 2026-11-25: $0.003 FREE -> $0.0024 GOLD+, start fee $0.01 -- 0 drift.",
+  "skootle/substack-posts": "already disclosed substack-scraper/README.md:223 ('(3u) tiers $0.004 (Free) down to $0.002 (Diamond) plus a flat $0.005 start fee'); re-verified live 2026-11-25: 3 users, $0.004 -> $0.002, start fee $0.005 -- 0 drift.",
+  "silentflow/glassdoor-jobs-scraper": "bucket3+bucket1: Glassdoor only, a single board remote-jobs-scraper does not read (same structural ruling README:215 already applies to this owner's sibling glassdoor-jobs-scraper-ppr). Also DEARER at every tier -- $0.0017 FREE -> $0.0012 GOLD+ plus a $0.005 start fee against our $0.0015 -> $0.001 with no start fee. 20 users. 0 disclosure owed.",
+  "silentflow/ats-jobs-scraper": "bucket3+bucket4-inverse: covers Greenhouse/Lever/Ashby/SmartRecruiters/Recruitee = 5 ATS platforms against our 12, so NARROWER in scope, and 4-4.9x DEARER at every tier ($0.004 FREE -> $0.0034 GOLD+ plus a $0.002 start fee vs our $0.001 -> $0.0007 with none). Slug collision with our own Actor name is cosmetic. 4 users. 0 disclosure owed.",
+  "silentflow/google-news-scraper": "bucket3: dearer at every comparable tier -- $0.003 FREE -> $0.0013 DIAMOND against our $0.002 FREE -> $0.001 GOLD+; even its deepest DIAMOND rung ($0.0013) sits above our GOLD+ floor ($0.001), so a GOLD buyer of ours beats a DIAMOND buyer of theirs. No start fee either side. 2 users. 0 disclosure owed.",
+  "silentflow/bing-enricher-scraper": "bucket2 + VOCABULARY FALSE MATCH (the 'screenshot' class the c3218/c3239 note warns about): this is a bulk Bing Mobile-Friendliness audit -- mobile-friendly verdict, passed/failed checks, robots.txt-blocked files, indexability -- that merely emits a phone screenshot as one field. It is an SEO/mobile-audit product, not a screenshot/evidence-capture product like website-screenshot-scraper. Also dearer: $0.00395 -> $0.003358 plus a $0.005 start fee vs our flat $0.002 with no start fee. 2 users. 0 disclosure owed.",
+  "silentflow/glassdoor-jobs-scraper-ppr": "already disclosed remote-jobs-scraper/README.md:185,215; re-verified live 2026-11-25: $0.0017 -> $0.0012 + $0.005 start, 0 PRICE drift. User count reads 307 live vs '306 users' claimed in a dated 2026-11-14 paragraph -- a +1 drift, far below the fleet's materiality bar for a dated claim, NOT actionable and NOT worth a push on its own; fold it in if that paragraph is next edited for another reason.",
+  "silentflow/linkedin-jobs-scraper": "already disclosed remote-jobs-scraper/README.md:239 ('13 users, $0.001->$0.0009'); re-verified live 2026-11-25: 13 users, $0.001 FREE -> $0.0009 GOLD+ -- 0 drift.",
+  "silentflow/uspto-scraper": "already disclosed trademark-search-scraper/README.md:143 ('at $0.002507'); re-verified live 2026-11-25: GOLD+ $0.002507 -- 0 drift.",
+  "silentflow/apple-reviews-scraper": "already disclosed app-store-reviews-scraper/README.md:279 ('$0.00004 -> $0.000034 (Gold+)'); re-verified live 2026-11-25: FREE $0.00004 -> GOLD+ $0.000034 -- 0 drift."
+ }
+}

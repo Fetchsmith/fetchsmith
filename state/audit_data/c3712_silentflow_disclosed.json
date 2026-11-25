@@ -1,0 +1,54 @@
+[
+ {
+  "handle": "silentflow/glassdoor-jobs-scraper-ppr",
+  "users": 307,
+  "tiers": {
+   "FREE": 0.0017,
+   "BRONZE": 0.0015,
+   "SILVER": 0.0014,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005
+ },
+ {
+  "handle": "silentflow/linkedin-jobs-scraper",
+  "users": 13,
+  "tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00097,
+   "SILVER": 0.00093,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 5e-05
+ },
+ {
+  "handle": "silentflow/uspto-scraper",
+  "users": 2,
+  "tiers": {
+   "FREE": 0.00295,
+   "BRONZE": 0.002802,
+   "SILVER": 0.002655,
+   "GOLD": 0.002507,
+   "PLATINUM": 0.002507,
+   "DIAMOND": 0.002507
+  },
+  "start_fee": 0.005
+ },
+ {
+  "handle": "silentflow/apple-reviews-scraper",
+  "users": 1,
+  "tiers": {
+   "FREE": 4e-05,
+   "BRONZE": 3.8e-05,
+   "SILVER": 3.6e-05,
+   "GOLD": 3.4e-05,
+   "PLATINUM": 3.4e-05,
+   "DIAMOND": 3.4e-05
+  },
+  "start_fee": 0.005
+ }
+]

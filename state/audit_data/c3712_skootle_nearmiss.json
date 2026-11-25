@@ -1,0 +1,98 @@
+[
+ {
+  "handle": "skootle/app-store-reviews",
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.008,
+   "BRONZE": 0.007,
+   "SILVER": 0.006,
+   "GOLD": 0.005,
+   "PLATINUM": 0.005,
+   "DIAMOND": 0.005
+  },
+  "start_fee": 0.01,
+  "title": "App Store Reviews Scraper for iOS Apps",
+  "desc": "Scrape Apple App Store reviews for iOS apps. Export ratings, review text, dates, app versions, countries, and structured feedback records for product research, competitor monitoring, and AI analysis."
+ },
+ {
+  "handle": "skootle/usaspending-contract-intelligence",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.01,
+  "title": "Federal Contract Intelligence",
+  "desc": "Search USAspending.gov federal contracts, IDVs and grants by contractor, NAICS, agency or keyword. Flags recompete candidates by option end date, spots competed awards that drew a single offer, scores buyer concentration. Export, run via API, schedule and moni"
+ },
+ {
+  "handle": "skootle/substack-posts",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0035,
+   "SILVER": 0.003,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.005,
+  "title": "Substack Posts Scraper for Newsletter Research",
+  "desc": "Scrape Substack posts, authors, publication names, dates, excerpts, URLs, and metadata for newsletter research, creator tracking, content monitoring, and AI agents."
+ },
+ {
+  "handle": "skootle/wellfound-jobs-scraper",
+  "users": 15,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.045,
+   "SILVER": 0.0425,
+   "GOLD": 0.04,
+   "PLATINUM": 0.04,
+   "DIAMOND": 0.04
+  },
+  "start_fee": 0.0001,
+  "title": "Wellfound Jobs Scraper for Startup Hiring Data",
+  "desc": "Scrape Wellfound (formerly AngelList Talent) startup jobs by role, keyword, location, and remote status. Export company, title, salary, equity, URLs, and structured job records for recruiters, sourcing tools, labor-market research, and AI agents."
+ },
+ {
+  "handle": "skootle/shopify-app-store-scraper",
+  "users": 4,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.01,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.006
+  },
+  "start_fee": 0.005,
+  "title": "Shopify App Store Scraper for App Research",
+  "desc": "Scrape Shopify App Store app listings, ratings, reviews, pricing, categories, developer names, and metadata for SaaS research, ecommerce tooling maps, lead generation, and AI workflows."
+ },
+ {
+  "handle": "skootle/sec-edgar-filings",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.003,
+  "title": "SEC EDGAR Filings Scraper and Monitor",
+  "desc": "Scrape SEC EDGAR company filings by ticker, CIK, form type, and date. Export filing metadata, document links, companies, dates, and agent-ready records for finance research and monitoring."
+ }
+]
