@@ -1,0 +1,149 @@
+[
+ {
+  "handle": "snow_leo_data/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 4,
+  "title": "ATS Jobs Salary Scraper - Greenhouse, Lever, Workday, Ashby",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0028,
+   "BRONZE": 0.00217,
+   "SILVER": 0.00154,
+   "GOLD": 0.00091,
+   "PLATINUM": 0.00091,
+   "DIAMOND": 0.00091
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Greenhouse, Workday, Lever and Ashby jobs from 20 applicant tracking systems with no per-run cap: 59185 jobs in one measured run, 35 seconds, 80 of 80 boards answered. 1045 verified company boards built in, duplicate ids merged into one row. Ashby jobs API and Workday job scraper in one."
+ },
+ {
+  "handle": "snow_leo_data/google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play Charts, App Reviews Scraper - Ratings, ASO",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0003,
+   "BRONZE": 0.0003,
+   "SILVER": 0.0003,
+   "GOLD": 0.0003,
+   "PLATINUM": 0.0003,
+   "DIAMOND": 0.0003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "ASO data, app reviews and charts from Google Play: 18 languages give 10800 distinct review IDs on one app where a single language stops at 600, measured, with zero duplicates between languages. 81 columns declared; a live app row filled 50 and a review row 19. Google Play review scraper."
+ },
+ {
+  "handle": "snow_leo_data/the-muse-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "The Muse API, Job Board Scraper: Jobs API, Job Search, Postings",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0022,
+   "BRONZE": 0.00187,
+   "SILVER": 0.00154,
+   "GOLD": 0.00121,
+   "PLATINUM": 0.00121,
+   "DIAMOND": 0.00121
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Currently unavailable: The Muse closed its public jobs API in November 2026 (HTTP 404 on every endpoint since ~1 Nov), so runs end with a clear \u00absource unavailable\u00bb message and no job rows are charged. Kept listed while we check for a replacement source."
+ },
+ {
+  "handle": "snow_leo_data/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 1,
+  "title": "Google News Media Monitoring Scraper - Brand Mention Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0029,
+   "BRONZE": 0.00246,
+   "SILVER": 0.00203,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News scraper that splits a keyword into day windows: 2070 articles where one plain feed returns 99, measured. Links resolve to the publisher's real address, not a google redirect: 100 of 100 on the default cloud run. 80 editions. Google News API for media monitoring and brand mentions."
+ }
+]
