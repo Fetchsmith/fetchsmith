@@ -83957,3 +83957,33 @@ c3665 closed rows 1025-1030, 0/6 NEW disclosures (full per-row ruling in `CLOSED
   - Manual title-read for near-misses (the c3704/c3706 false-negative rule) found none on either owner -- every flagged/disclosed/off-niche classification cross-checked by hand against the full title list, no vocab-filter miss.
   - Spend: $0 (Store/API reads only -- no builds, no Actor runs, no push). $0 Claude subscription used for customer-facing inference (rule 2). 0 new Actors today (2026-11-25, cap 6). Total budget untouched. No blockers. **Next BUILD: `NEW c3162` at OWNER `steadydata` (idx 268, re-derive fresh -- do not trust this label). `check-doc-size` (re-run post-write) puts `tasks/queue.md` at 196.9KB/~1 cycle headroom -- TRIM DUE, flag for the next QUALITY slot (c3720, since c3719 is BUILD): per the decision rule in `notes/PLAYBOOK.md` this needs a floor-3 CLOSED-block rotation at minimum. `state/STATUS.md` (~66.5KB/~30 cycles) is fine. No fleet checks due; soonest is `check-dead-endpoint-docs` in 2 cycles (c3720).**
 
+
+
+## Archived by cycle 3722 (CLOSED c3719 floor-3 rotation)
+
+- [x] **CLOSED c3719 -- BUILD slot (3719 % 3 == 2). `NEW c3162` vendor-catalogue triage, owner `steadydata` completed. 0 disclosures owed, 0 price drift on 9 already-disclosed rows.** Preflight: `git status --porcelain` clean; `./bin/inbox list 10` **NONE UNTRIAGED** (same old resolved threads -- hejazi security-update fwd, token-rotation thread, DMARC reports, myslop/MCP-gating inbound, all old history); `checks-due` **NONE DUE** (soonest `check-dead-endpoint-docs` in 1c, cycle 3720); `bin/revenue` 27 Actors/54 users/1,676 runs30d/0 bookmarks/0 reviews/**$0 booked** -- no buyer signal, no owner email owed, Polar stays deferred. All 3 services active and `/`, `/pricing`, `/tools` all 200 before and after.
+  - **Pointer-verify step run fresh first (mandatory):** live `>=3x` owner enumeration returns 321 owners, `springlike_meadowland` at index 267 (closed c3718), `steadydata` immediately after at 268 -- no drift. Swept with `bin/_rec3719.py` (clone of `_rec3716.py`, kept on disk).
+  - **`steadydata`: 92 live listings, 9 already-disclosed / 6 flagged / 77 off-niche, 0 disclosures owed.** All 6 flagged rows (`dietary-supplement-labels`, `shopify-store-report`, `hacker-news-search`, `hacker-news-comments`, `steam-app-details`, `google-news`, all 2u, PAY_PER_EVENT) are bucket 3 -- dearer than our own ladder at every tier, no start fee on either side to change the arithmetic.
+  - **All 9 already-disclosed rows re-verified live, 0 price drift on every one** (`company-career-site-jobs` $0.001→$0.00065 6u in `ats-jobs-scraper/README.md`; `shopify-products-catalog` $0.001→$0.00065 in `shopify-products-scraper/README.md`; `apple-podcasts-episodes` + `apple-podcasts-top-charts` $0.001→$0.00065 each in `apple-podcasts-scraper/README.md`; `sec-insider-trading` $0.001→$0.00065 in `sec-insider-trades-scraper/README.md`; `uk-contracts-finder` $0.002→$0.0013 in `uk-find-a-tender-scraper/README.md`; `fda-recalls` $0.001→$0.00065 in `fda-recall-scraper/README.md`; `eu-tenders` $0.002→$0.0013 in `eu-ted-tenders-scraper/README.md`; `sam-gov-contract-opportunities` $0.002→$0.0013 in `sam-gov-opportunities-scraper/README.md` -- every claimed ladder and start-fee-free status matched byte-for-byte against the live record).
+  - **Manual near-miss read over the full 92-title list (the c3704/c3706 rule) found 3 genuine vocab-filter misses, all ruled bucket 1 (scope mismatch) on existing precedent, 0 new disclosures:** `sec-10b5-1-trading-plans` (pre-arranged trading-plan ADOPTIONS, a different filing class from the Form 4 buy/sell/grant transactions `sec-insider-trades-scraper` parses -- "insider plan adoptions" never forms the vocab's exact phrase "insider trading"), `sec-13f-holdings` (institutional fund quarterly holdings, not insider transactions) and `sec-edgar-filings` (generic 10-K/10-Q/8-K filing index, the same "complement not substitute" shape c3712 already ruled on a different owner's identical product). No near-miss found for the two WooCommerce listings or `google-ads-transparency` -- genuinely off-niche, no fleet Actor covers either.
+  - **Noticed the floor-3 cadence (`notes/PLAYBOOK.md` c3672: "floor is now 3, not 5 -- keep the newest 2 plus the running cycle's own block") had drifted to 5 live CLOSED blocks (c3718/c3717/c3716/c3715/c3714) before this cycle's own landed -- a backlog, not a one-cycle miss.** Archived all the way down to the floor in two passes, both lossless multiset-verified in memory (removed lines matched each span exactly, nothing else changed): `CLOSED c3714` alone first (`## Archived by cycle 3719`), then `CLOSED c3716` + `CLOSED c3715` together (`## Archived by cycle 3719 (CLOSED c3716 + CLOSED c3715, floor-3 rotation continued)`). `tasks/queue.md` 201,823B → 189,696B before this cycle's own block landed (now real multi-cycle headroom, not ~1c). 3 CLOSED blocks live as required (c3719/c3718/c3717). Advanced the `NEW c3162` tracker's resume pointer to `steadyscrape` (idx 269).
+  - **Artifact:** `state/audit_data/c3719_steadydata_prices.json`. Script `bin/_rec3719.py` kept on disk. Spend: $0 (Store/API reads only -- no builds, no Actor runs, no push). $0 Claude subscription used for customer-facing inference (rule 2). 0 new Actors today (2026-11-25, cap 6). Total budget untouched. No blockers. **Next BUILD: `NEW c3162` at OWNER `steadyscrape` (idx 269, re-derive fresh -- do not trust this label). No fleet checks due; soonest is `check-dead-endpoint-docs` in 1 cycle (c3720). `tasks/queue.md` now has real headroom (~189.7KB) after the floor-3 catch-up; re-check the CLOSED-block count each cycle going forward so it does not silently drift back past 3.**
+
+---
+
+
+---
+
+
+---
+
+
+---
+
+
+---
+
+
+
+
+

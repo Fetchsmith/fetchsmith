@@ -1,0 +1,583 @@
+[
+ {
+  "handle": "straightforward_hydra/celebrity-news",
+  "niches": [
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "Celebrity News \u2014 Entertainment, Movies & Music",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,digest",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "The latest celebrity & entertainment news from Variety, Hollywood Reporter, E!, TMZ, Deadline, Rolling Stone, Billboard and more, fused with GDELT worldwide. Search any star or show. No key."
+ },
+ {
+  "handle": "straightforward_hydra/steam-game-stats",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Game Stats",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Owners, ratings, playtime, price and live concurrent players for any Steam game, by app ID, name or top-games list. Official SteamSpy + Steam APIs, no key needed."
+ },
+ {
+  "handle": "straightforward_hydra/google-play-review-aso-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play Store \u2014 Review Mining & ASO Intelligence",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Mine Google Play reviews, pull app metadata, and track keyword search rankings (ASO). No API key."
+ },
+ {
+  "handle": "straightforward_hydra/clinicaltrials-gov-scraper",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and export clinical trial records from the official ClinicalTrials.gov API v2. No API key."
+ },
+ {
+  "handle": "straightforward_hydra/openfda-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Recalls (drug/device/food), adverse events and drug labels from the official openFDA API. No API key."
+ },
+ {
+  "handle": "straightforward_hydra/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Hacker News by keyword, or pull the top / new / best / Ask / Show / Job story lists. Official HN + Algolia APIs, no key needed."
+ },
+ {
+  "handle": "straightforward_hydra/app-store-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store Reviews Scraper (Apple)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape customer reviews from the Apple App Store: rating, title, text, author, version and date, by app ID or name, across any country storefront. No API key needed."
+ },
+ {
+  "handle": "straightforward_hydra/steam-reviews-scraper",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape reviews for any Steam game: recommendation (thumbs up/down), text, playtime, helpfulness, author and dates, by app ID or game name. Official Steam API, no key needed."
+ },
+ {
+  "handle": "straightforward_hydra/lever-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Lever Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any company using the Lever ATS: title, location, team, commitment, workplace type and description. No API key needed."
+ },
+ {
+  "handle": "straightforward_hydra/greenhouse-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any company using the Greenhouse ATS: title, location, department, full description and apply link. No API key needed."
+ },
+ {
+  "handle": "straightforward_hydra/smartrecruiters-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "SmartRecruiters Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "All live jobs from any company's SmartRecruiters careers page \u2014 title, department, location, remote, apply link. No key."
+ },
+ {
+  "handle": "straightforward_hydra/substack-newsletter-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Newsletter Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): comment,post,post-content,recommendation",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape any Substack publication: posts with reactions, comment counts, wordcount and paid/free status, plus full post text, comment threads and newsletter recommendation graphs. No API key, no login."
+ },
+ {
+  "handle": "straightforward_hydra/federal-register-scraper",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "US federal rules, proposed rules, notices and presidential documents from the official Federal Register API. No key."
+ },
+ {
+  "handle": "straightforward_hydra/ats-hiring-signal-aggregator-9-in-one",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Hiring-Signal Aggregator (9 in one)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company",
+  "unit_tiers": {
+   "FREE": 0.0035
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company,job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Company hiring intelligence across 9 ATS (Greenhouse, Lever, Ashby, Workable, Workday, SmartRecruiters, Recruitee, Teamtailor, Personio). Per-company signal or unified jobs. No key."
+ },
+ {
+  "handle": "straightforward_hydra/sam-gov-opportunities-tracker",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 1,
+  "title": "SAM.gov Federal Contract Opportunities Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find US federal contract opportunities to bid on, from SAM.gov. Filter by keywords, NAICS, agency, state and set-aside; get clean structured results with deadlines and contacts."
+ },
+ {
+  "handle": "straightforward_hydra/usaspending-awards-tracker",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 1,
+  "title": "USAspending.gov Federal Awards Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track who won US federal government money \u2014 contracts and grants \u2014 with amounts, agencies, recipients and dates, from the official USAspending.gov API. No API key needed."
+ },
+ {
+  "handle": "straightforward_hydra/ats-hiring-signal-aggregator-8-ats",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "ATS Hiring-Signal Aggregator (8 ATS)",
+  "model": "FREE",
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Company hiring intelligence across 8 ATS (Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, Teamtailor, Personio). Per-company signal or unified jobs. No key."
+ }
+]
