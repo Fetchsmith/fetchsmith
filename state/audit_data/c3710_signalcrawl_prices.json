@@ -1,0 +1,21 @@
+[
+ {"handle": "signalcrawl/app-store-review-alert-api", "users": 2, "model": "PAY_PER_EVENT",
+  "price_per_row": 0.0015, "start_fee": 0.00005,
+  "verdict": "bucket3+bucket2: dearer than our flat $0.0001/review at every tier (15x), and a scored alert/CRM layer (sentiment, urgency, CRM notes, action notes) over raw reviews, not a like-for-like substitute -- same shape already excluded at second_coming/app-store-review-analyzer (google-play-reviews-scraper/README.md). 0 disclosure owed."},
+ {"handle": "signalcrawl/google-play-review-alert-api", "users": 2, "model": "PAY_PER_EVENT",
+  "price_per_row": 0.0015, "start_fee": 0.00005,
+  "verdict": "bucket3+bucket2: dearer than our flat $0.0001/review at every tier (15x), same CRM/alert-layer shape mismatch as app-store-review-alert-api. 0 disclosure owed."},
+ {"handle": "signalcrawl/successfactors-jobs-api", "users": 43, "model": "PAY_PER_EVENT",
+  "price_per_row": 0.0015, "start_fee": 0.00005,
+  "verdict": "bucket1: SAP SuccessFactors is a single ATS platform not among our 7 covered platforms (ats-jobs-scraper/README.md:202 already names SuccessFactors as a platform only broader generic-detector rivals cover, which we deliberately do not) -- a complement, not a substitute. 0 disclosure owed."},
+ {"handle": "signalcrawl/federal-grant-fit-finder", "users": 8, "verdict": "already disclosed grants-gov-scraper/README.md:206; re-verified live: $0.002/result + $0.00005 start, 0 drift."},
+ {"handle": "signalcrawl/sam-gov-contract-monitor", "users": 3, "verdict": "already disclosed sam-gov-opportunities-scraper/README.md:283; re-verified live: $0.002/row + $0.00005 start, 0 drift."},
+ {"handle": "signalcrawl/federal-recompete-award-finder", "users": 2, "verdict": "already disclosed us-federal-awards-scraper/README.md:239; re-verified live: flat $0.0025, 0 drift."},
+ {"handle": "signalcrawl/gsa-schedule-partner-finder", "users": 3, "verdict": "off-niche by vocab filter, manually confirmed bucket2: partner/lead-gen tool over GSA Schedule holders, not a contract-opportunity feed."},
+ {"handle": "signalcrawl/usa-osha-contractor-risk-leads", "users": 3, "verdict": "off-niche, bucket2: lead-gen/risk-scoring product, different shape from any dataset export we sell."},
+ {"handle": "signalcrawl/apify-store-quality-radar", "users": 2, "verdict": "off-niche: meta/Apify-Store analytics tool, not a rival in any niche."},
+ {"handle": "signalcrawl/trustpilot-competitor-review-monitor", "users": 2, "verdict": "off-niche: Trustpilot, not App Store/Google Play."},
+ {"handle": "signalcrawl/steam-review-alert-api", "users": 2, "verdict": "off-niche: Steam reviews, different platform from our app-store/google-play niches."},
+ {"handle": "signalcrawl/saas-pricing-page-monitor", "users": 2, "verdict": "off-niche: generic SaaS pricing-page monitor, no niche match."},
+ {"handle": "signalcrawl/google-trends-opportunity-radar", "users": 1, "verdict": "off-niche: Google Trends product-opportunity tool, no niche match."}
+]
