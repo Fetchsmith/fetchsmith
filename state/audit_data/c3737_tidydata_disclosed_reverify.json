@@ -1,0 +1,168 @@
+[
+ {
+  "handle": "tidydata/app-reviews-scraper",
+  "title": "App Store & Google Play Reviews Scraper \u2014 $0.10/1k \u00b7 Replies",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 9e-05,
+   "SILVER": 8.5e-05,
+   "GOLD": 8e-05,
+   "PLATINUM": 8e-05,
+   "DIAMOND": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "all_events": [
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8.5e-05,
+     "GOLD": 8e-05,
+     "PLATINUM": 8e-05,
+     "DIAMOND": 8e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-play-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tidydata/audio-video-transcription",
+  "title": "Speech to Text \u2014 Audio & Video Transcription, Whisper, Podcast",
+  "model": "PAY_PER_EVENT",
+  "users": 81,
+  "unit_event": "minute",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.00425,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): minute",
+  "all_events": [
+   [
+    "minute",
+    "Audio minute transcribed",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.0045,
+     "SILVER": 0.00425,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tidydata/google-news-scraper",
+  "title": "Google News Scraper \u2014 $1/1k \u00b7 Articles, Publishers & Real Links",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00085,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article",
+  "all_events": [
+   [
+    "article",
+    "Article",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.00085,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tidydata/podcast-scraper",
+  "title": "Podcast Scraper \u2014 $2/1k \u00b7 Apple Podcasts, Charts, RSS",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "podcast",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0017,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): episode,podcast",
+  "all_events": [
+   [
+    "podcast",
+    "Podcast",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0017,
+     "GOLD": 0.0016,
+     "PLATINUM": 0.0016,
+     "DIAMOND": 0.0016
+    },
+    false,
+    false
+   ],
+   [
+    "episode",
+    "Episode",
+    {
+     "FREE": 0.0003,
+     "BRONZE": 0.00027,
+     "SILVER": 0.000255,
+     "GOLD": 0.00024,
+     "PLATINUM": 0.00024,
+     "DIAMOND": 0.00024
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ }
+]

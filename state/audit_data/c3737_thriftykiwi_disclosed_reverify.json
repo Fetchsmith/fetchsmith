@@ -1,0 +1,199 @@
+[
+ {
+  "handle": "thriftykiwi/clinical-trials-scraper",
+  "title": "ClinicalTrials.gov Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result item",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/clinicaltrials-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thriftykiwi/eu-ted-tenders-scraper",
+  "title": "EU TED Public Tenders Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result item",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/eu-ted-tenders-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thriftykiwi/podcast-directory-scraper",
+  "title": "Podcast Directory & Episode Scraper (Apple Podcasts)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result item",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thriftykiwi/public-tenders-aggregator",
+  "title": "Public Tenders Aggregator (EU, UK, Australia)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result item",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/eu-ted-tenders-scraper/README.md",
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thriftykiwi/trademark-search-aggregator",
+  "title": "Trademark Search Aggregator (USPTO + TMview)",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result item",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thriftykiwi/uk-contracts-finder-scraper",
+  "title": "UK Contracts Finder Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result item",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thriftykiwi/us-federal-grants-scraper",
+  "title": "US Federal Grants Scraper (Grants.gov)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result item",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/grants-gov-scraper/README.md"
+  ]
+ }
+]

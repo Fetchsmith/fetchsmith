@@ -1,0 +1,346 @@
+[
+ {
+  "handle": "tidyharvest/shopify-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 3,
+  "title": "Shopify Products Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product-scraped",
+  "unit_tiers": {
+   "FREE": 0.00075,
+   "BRONZE": 0.0007,
+   "SILVER": 0.00065,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): inventory-enriched,product-scraped",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape products from any Shopify store, collection or product URL: prices, compare-at and sale flag, variants with SKU and availability, optional stock counts and barcodes, images, tags, vendor, currency. Filters and a flat per-variant mode. $0.75 per 1,000 products."
+ },
+ {
+  "handle": "tidyharvest/google-patents-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "Google Patents Scraper: Search, Claims & Citations",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "patent-found",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0014,
+   "SILVER": 0.0013,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): patent-detailed,patent-found",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Google Patents (USPTO, EPO, WIPO, CN, JP, KR, 100+ offices) by keyword, assignee, inventor, CPC, country and date, or look up patent numbers: abstract, claims, CPC, citations, cited-by, family, legal events, expiry, PDF. $1.50 per 1,000 search records, $3.70 per 1,000 full records."
+ },
+ {
+  "handle": "tidyharvest/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Career Page Jobs Scraper: Greenhouse, Lever, Ashby, Workable",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0014,
+   "SILVER": 0.0011,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get every open job from a company's own careers page with salary ranges, remote flags, posting dates and full descriptions. Auto-detects Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, plus CareerPlug and Fountain hourly boards with ZIP radius. $1.50 per 1,000 jobs."
+ },
+ {
+  "handle": "tidyharvest/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper: Any Company Career Site",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 9.5e-05
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Fresh jobs from any Workday career site (NVIDIA, Salesforce, Adobe and thousands more) with full descriptions. Paste the career-site link. Pay per job, no monthly fee."
+ },
+ {
+  "handle": "tidyharvest/hacker-news-who-is-hiring-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News 'Who is Hiring' Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post",
+  "unit_tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Every job post from Hacker News 'Ask HN: Who is hiring?' for any month, with company, remote/onsite, visa flags and full text. Filter by keyword. Pay per post."
+ },
+ {
+  "handle": "tidyharvest/substack-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Scraper: Posts & Newsletters",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post-scraped",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.0008,
+   "SILVER": 0.00062,
+   "GOLD": 0.00048,
+   "PLATINUM": 0.00048,
+   "DIAMOND": 0.00048
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post-scraped",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape posts from any Substack newsletter (subdomain or custom domain): titles, dates, authors, likes, comments, restacks, tags, paid/free status and full text of free posts. Newest or most popular first. No login. $0.90 per 1,000 posts with or without full text, down to $0.48 on higher Apify plans."
+ },
+ {
+  "handle": "tidyharvest/usaspending-awards-scraper",
+  "niches": [
+   "grants-gov-scraper",
+   "nih-reporter-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "USAspending Federal Contracts & Grants Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-scraped",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0014,
+   "SILVER": 0.0011,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-scraped",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find who wins federal contracts, grants and loans: recipient company, UEI, address, award amount, agency, dates, NAICS/PSC codes and place of performance from the official USAspending.gov API. No key or proxy. $1.50 per 1,000 awards."
+ },
+ {
+  "handle": "tidyharvest/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 1,
+  "title": "Google News Scraper: Search, Topics, Any Country",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article-scraped",
+  "unit_tiers": {
+   "FREE": 0.00095,
+   "BRONZE": 0.0008075,
+   "SILVER": 0.0006175,
+   "GOLD": 0.00038,
+   "PLATINUM": 0.00038,
+   "DIAMOND": 0.00038
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-scraped",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News articles for any search, topic or section, any language and country: headline, original article URL, publisher, date, related coverage, plus description and image on request. Built to beat data_xplorer's Google News Scraper: same original URLs at half its price. From $2 per 1,000."
+ }
+]

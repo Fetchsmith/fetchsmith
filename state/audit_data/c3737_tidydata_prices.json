@@ -1,0 +1,217 @@
+[
+ {
+  "handle": "tidydata/website-screenshot-pdf",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot & PDF API \u2014 Full Page Captures of Any URL",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "capture",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.001275,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): capture",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Website screenshot tool: full-page screenshots or PDFs of any web page (webpage to PDF), viewport, mobile or desktop, dark mode, custom size, wait for content, hide cookie banners. PNG, JPEG or PDF with a public link. $1.50 per 1,000 captures."
+ },
+ {
+  "handle": "tidydata/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper \u2014 $0.20/1k \u00b7 Stories, Comments & Search",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0002,
+   "BRONZE": 0.00018,
+   "SILVER": 0.00017,
+   "GOLD": 0.00016,
+   "PLATINUM": 0.00016,
+   "DIAMOND": 0.00016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News (HackerNews, Y Combinator): front page, new, best, Ask HN, Show HN and jobs; keyword or domain search; full comment threads; user profiles. Monitor brand mentions with 'only new'. Official HN APIs, no login. $0.20 per 1,000 results."
+ },
+ {
+  "handle": "tidydata/app-store-google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store & Google Play Scraper \u2014 App Details, Search & Charts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.000425,
+   "GOLD": 0.0004,
+   "PLATINUM": 0.0004,
+   "DIAMOND": 0.0004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape app data from the Apple App Store and Google Play: rating, ratings count, installs, price, version, developer website and email, genre, release and update dates, screenshots. Search by keyword, list a developer's apps or Apple top charts. Any country. $0.50 per 1,000 apps."
+ },
+ {
+  "handle": "tidydata/public-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper",
+   "grants-gov-scraper",
+   "sam-gov-opportunities-scraper",
+   "uk-find-a-tender-scraper"
+  ],
+  "users": 2,
+  "title": "Public Tenders & Procurement Scraper \u2014 TED, SAM.gov, UK",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "uk-find-a-tender-scraper": {
+    "ours": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Government tenders and public procurement in one table: EU TED (27 countries + EEA), UK Find a Tender & Contracts Finder, US SAM.gov federal contracts and Grants.gov. Keywords, CPV/NAICS, country, value, deadline, buyer contacts, award winners. Only-new mode for daily tender alerts."
+ },
+ {
+  "handle": "tidydata/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "ATS Jobs Scraper \u2014 Workday, Greenhouse, Lever, Ashby \u00b7 $1/1k",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00085,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job postings straight from company career sites: Workday, Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, Personio and Breezy. Paste any career page, filter by keyword, location, remote and date, get only new jobs. Salary, description, apply link. $1 per 1,000 jobs."
+ }
+]
