@@ -1,0 +1,47 @@
+{
+  "cycle": 3706,
+  "owner": "second_coming",
+  "idx": 254,
+  "pointer_reverified_live": "owners[252..254] = scrolahdata / scrupulous_waterbird_m4w / second_coming on a fresh 321-owner >=3x enumeration, matching c3704's handoff exactly",
+  "total_listings": 35,
+  "flagged_by_sweep": 1,
+  "manual_near_miss_rows_checked": 3,
+  "disclosures_owed": 0,
+  "owner_shape": "Every listing checked (the 1 sweep flag plus the 3 manual near-misses) carries the IDENTICAL flat-rate template: a single 'scan' charge event, $0.02, isOneTimeEvent true, no per-item pricing at all -- looks like one boilerplate codebase reused across the owner's whole 35-listing catalogue. All 4 are 1-2 users, mostly dormant (totalUsers7Days 0-1, last build months old on the one checked). 7 of the 35 listings are already-disclosed rows, re-confirmed live with 0 drift.",
+  "already_disclosed": [
+    {"handle": "second_coming/brand-mention-monitor", "niche": "hacker-news-scraper", "users": 4},
+    {"handle": "second_coming/patent-search-tool", "niche": "trademark-search-scraper", "users": 4},
+    {"handle": "second_coming/tech-launch-tracker", "niche": "hacker-news-scraper", "users": 2},
+    {"handle": "second_coming/app-store-review-analyzer", "niche": "google-play-reviews-scraper", "users": 2},
+    {"handle": "second_coming/gov-contract-monitor", "niche": "grants-gov-scraper/sam-gov-opportunities-scraper", "users": 2},
+    {"handle": "second_coming/hn-intelligence", "niche": "hacker-news-scraper", "users": 1},
+    {"handle": "second_coming/podcast-metadata-scraper", "niche": "apple-podcasts-scraper", "users": 1}
+  ],
+  "verdicts": [
+    {
+      "handle": "second_coming/news-aggregator-monitor",
+      "niche_adjacency": "google-news-scraper (sweep FLAG, title/description say 'Google News')",
+      "price": "flat $0.02/run, one-time event, no per-article charge at all; example input is maxResults:5 across 3 sources (newsapi/google-news/rss); 1 user, totalRuns 144, last build 2026-07-18 (dormant)",
+      "ruling": "bucket 2, 0 owed. This is a broader 'PR and media monitoring' aggregate tool (Google News + RSS + direct-article extraction, keyword dedup, sentiment classification with confidence scores) sold as brand/competitor-intel monitoring, not a substitute for our single-source structured per-article Google News export -- the same category-mismatch shape PLAYBOOK's bucket 2 already applies to other aggregate-monitor products. Its own differentiators (multi-source aggregation, sentiment scoring) are features we do NOT ship, so bucket 8 (feature-dominated) does not apply either. Pricing is also structurally incomparable: a flat one-time per-RUN charge vs our per-ARTICLE charge, and at the example 5-15-article run size it is not a clear every-tier undercut (~$0.0013-0.004/article-equivalent vs our $0.001-0.002/article). Combined with 1 total user and no recent activity, not disclosure-worthy."
+    },
+    {
+      "handle": "second_coming/usajobs-scraper",
+      "niche_adjacency": "remote-jobs-scraper / ats-jobs-scraper (MISSED by the vocabulary filter -- description says only 'US federal government job postings', no curated term)",
+      "price": "flat $0.02/run (same template), 2 users",
+      "ruling": "bucket 1, 0 owed. USAJobs.gov is a single national government job portal -- the same single-portal-is-not-a-substitute precedent remote-jobs-scraper/ats-jobs-scraper already apply to Internshala (India-only) and HelloWork (France-only): one country's federal civil-service board is a complement to our multi-board aggregation, not competing scope, regardless of price shape."
+    },
+    {
+      "handle": "second_coming/job-market-intel",
+      "niche_adjacency": "remote-jobs-scraper / ats-jobs-scraper (MISSED by the vocabulary filter -- description says 'Indeed, LinkedIn, and Glassdoor', no curated term)",
+      "price": "flat $0.02/run (same template), 2 users",
+      "ruling": "bucket 2, 0 owed. Sells salary/skills analytics aggregated across Indeed/LinkedIn/Glassdoor -- a market-intelligence product, not a raw job-postings export, and none of those 3 sources is one of the ATS platforms or remote-job boards we scrape. Different shape and different sources both."
+    },
+    {
+      "handle": "second_coming/sec-filings-monitor",
+      "niche_adjacency": "sec-insider-trades-scraper (MISSED by the vocabulary filter -- description says '10-K, 10-Q, 8-K', never 'insider' or 'Form 4')",
+      "price": "flat $0.02/run (same template), 1 user, totalRuns 472",
+      "ruling": "bucket 7, 0 owed. A generic multi-filing-type EDGAR monitor (10-K/10-Q/8-K + webhook alerts) with no Form 4 transaction parsing at all -- exactly the already-treated class at sec-insider-trades-scraper/README.md:247-249, which names and prices 5 rivals of this same shape (constant_quadruped, constructive_calm, benthepythondev, crawlerbros x2) and explicitly rules that none beat us on an apples-to-apples per-transaction basis because they charge per filing fetched, not per transaction parsed. This row adds nothing that class doesn't already cover, at 1 user."
+    }
+  ],
+  "note_c3704_lesson_applied": "0-flag sweep != 0-rival owner: read the off-niche title list for product shape before closing. 3 near-misses found this way (usajobs-scraper, job-market-intel, sec-filings-monitor); none owed a disclosure. Other off-niche rows (academic-research-tracker, real-estate-analyzer, glassdoor-company-scraper, etc.) were genuinely off-scope on inspection, no niche of ours covers them."
+}
