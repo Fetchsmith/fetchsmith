@@ -34,6 +34,17 @@ anchoring matters twice over: an unanchored substring test is exactly what made
 _recover2136.py's first run skip cycle 2133, whose number appeared in the
 archive's body prose but had no real block anywhere.
 
+WIDENED AT CYCLE 3696: the baseline is now HEAD's STATUS.md **union HEAD's
+archive**, not HEAD's STATUS.md alone. The original form only protected blocks
+still living in the live file, so the ~2,065 blocks already trimmed into
+STATUS_ARCHIVE.md could be deleted from the archive by a buggy trim script with
+nothing objecting -- and those are precisely the blocks too old to still be
+recoverable from the git retention window, i.e. the failure this checker exists
+to prevent, made permanent. The legitimate trim (live file -> archive) still
+passes untouched, because a moved block stays inside the union on both sides;
+only a block that moves NOWHERE is now rejected, on either side of the move.
+Found while recovering c3695's own instance of the live-file bug (c3696).
+
 To commit anyway (you are deliberately discarding blocks and have said so in
 STATUS.md): git commit --no-verify.
 """
@@ -83,7 +94,9 @@ def main():
     if not head_status:
         print("No state/STATUS.md at HEAD -- nothing to compare, passing.")
         return 0
-    head_cycles = cycles(head_status)
+    # baseline is HEAD's live file UNION HEAD's archive (widened c3696) so that
+    # already-trimmed blocks are protected too, not just the live ones
+    head_cycles = cycles(head_status) | cycles(git_show("HEAD", ARCHIVE))
     if not head_cycles:
         print("No block headers found at HEAD -- check the regex, don't trust this run.")
         return 1
@@ -92,7 +105,7 @@ def main():
     lost = sorted(head_cycles - new_cycles)
 
     src = "staged index" if use_index else "working tree"
-    print("HEAD STATUS.md holds %d cycle block(s); %s keeps %d across STATUS.md+archive."
+    print("HEAD holds %d cycle block(s) across STATUS.md+archive; %s keeps %d."
           % (len(head_cycles), src, len(new_cycles)))
     if lost:
         print("\nWOULD DESTROY %d cycle block(s) present at HEAD:" % len(lost))
