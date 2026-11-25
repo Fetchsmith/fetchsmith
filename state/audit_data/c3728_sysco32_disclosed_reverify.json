@@ -1,0 +1,45 @@
+{
+ "sysco32/apple-podcasts-scraper": {
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "event": "podcast-result",
+  "tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.002,
+  "isPublic": true,
+  "all_events": {
+   "podcast-result": 0.001,
+   "episode-result": 0.0003,
+   "apify-actor-start": 0.002
+  }
+ },
+ "sysco32/game-release-news-tracker": {
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "event": "news-item",
+  "tiers": {
+   "FREE": 0.0004
+  },
+  "start_fee": 0.002,
+  "isPublic": true,
+  "all_events": {
+   "news-item": 0.0004,
+   "apify-actor-start": 0.002
+  }
+ },
+ "sysco32/rss-feed-reader": {
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "event": "feed-item",
+  "tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 0.002,
+  "isPublic": true,
+  "all_events": {
+   "feed-item": 0.0003,
+   "apify-actor-start": 0.002
+  }
+ }
+}

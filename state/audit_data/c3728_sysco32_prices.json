@@ -1,0 +1,386 @@
+[
+ {
+  "handle": "sysco32/steam-scraper",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Scraper: Games, Prices, Top Sellers & Reviews",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "game-result",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-result,review-result",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape the Steam store: top sellers, new releases, specials and upcoming, keyword search and full game details (price, discount, genres, developers, Metacritic, review score). Steam reviews scraper with playtime and votes; schedule it as a Steam price tracker. No login. $1 per 1,000 games."
+ },
+ {
+  "handle": "sysco32/greenhouse-jobs-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Job Scraper & New Job Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Greenhouse job board (boards.greenhouse.io / job-boards.greenhouse.io) via the official Job Board API. Keyword, location and remote filters, plain-text descriptions, and an only-new-jobs monitoring mode."
+ },
+ {
+  "handle": "sysco32/lever-jobs-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Lever Job Scraper & New Job Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Lever job board (jobs.lever.co and jobs.eu.lever.co) via the official Postings API: teams, locations, workplace type, salary ranges when published, descriptions. Filters and an only-new-jobs monitoring mode."
+ },
+ {
+  "handle": "sysco32/ashby-jobs-salary-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Ashby Job Scraper with Salary Data",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Ashby job board (jobs.ashbyhq.com) via the official Job Posting API, with structured salary ranges (min, max, currency, interval), remote/hybrid flag, departments and descriptions. Salary-only filter and new-job monitoring."
+ },
+ {
+  "handle": "sysco32/ats-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Jobs Scraper: Greenhouse, Lever, Ashby, Workday & 5 more",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get every open job from career sites on Greenhouse, Lever, Ashby, Workday, SmartRecruiters, Workable, Recruitee, Personio & Teamtailor. Auto-detects the ATS, one clean schema, keyword/location/remote filters, and an only-new-jobs monitoring mode."
+ },
+ {
+  "handle": "sysco32/substack-newsletter-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Scraper: Newsletter Posts, Likes & Comments",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post-result",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape posts from any Substack newsletter (subdomain or custom domain): title, subtitle, date, authors, likes, comments, wordcount, paid/free and full text of free posts. Date range, category discovery and a new-posts monitor mode."
+ },
+ {
+  "handle": "sysco32/smartrecruiters-jobs-alerts",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "SmartRecruiters Job Scraper & New Job Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any SmartRecruiters career site (jobs.smartrecruiters.com / careers.smartrecruiters.com) via the official Posting API: departments, locations, remote/hybrid, employment type, full descriptions. Filters and an only-new-jobs monitoring mode."
+ },
+ {
+  "handle": "sysco32/workable-jobs-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workable Job Scraper & New Job Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Workable careers page (apply.workable.com/<company>) via Workable's public jobs widget API: departments, functions, locations, remote flag, employment type, full descriptions. Filters and an only-new-jobs monitoring mode."
+ },
+ {
+  "handle": "sysco32/recruitee-jobs-salary-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Recruitee Job Scraper with Salaries & Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape all open jobs from any Recruitee career site (<company>.recruitee.com) via the public Careers Site API: salary ranges when published, departments, locations, remote/hybrid/onsite, employment type, descriptions with requirements. Filters and new-job monitoring."
+ },
+ {
+  "handle": "sysco32/remote-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper",
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Remote Jobs Scraper: Jobicy, Remote OK, Arbeitnow & ATS",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote jobs from Jobicy, Remote OK and Arbeitnow APIs plus remote roles straight from company career pages (Greenhouse, Lever, Ashby, Workday & 5 more). One clean schema, salary, dedupe, source attribution and an only-new-jobs monitor."
+ },
+ {
+  "handle": "sysco32/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper & Who Is Hiring Jobs Parser",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "item-result",
+  "unit_tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): hiring-post,item-result",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News front page, new, best, Ask, Show and job stories, full-text search with points and date filters, comments, and the monthly 'Ask HN: Who is hiring?' thread parsed into structured jobs (company, role, location, remote, salary). Official APIs."
+ }
+]

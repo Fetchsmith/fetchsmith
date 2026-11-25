@@ -1,0 +1,64 @@
+{
+ "sync-network/apple-app-store-reviews-scraper": {
+  "model": "PAY_PER_EVENT",
+  "users": 5,
+  "tiers": {
+   "FREE": 0.001
+  },
+  "event": "apify-default-dataset-item",
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "future": [
+   "2026-05-09T16:26:48.832Z"
+  ]
+ },
+ "sync-network/awesome-google-news-scraper": {
+  "model": "PAY_PER_EVENT",
+  "users": 110,
+  "tiers": {
+   "FREE": 0.003
+  },
+  "event": "apify-default-dataset-item",
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "future": [
+   "2024-09-12T13:54:08.997Z",
+   "2024-10-18T06:58:43.094Z",
+   "2026-09-21T19:06:03.766Z"
+  ]
+ },
+ "sync-network/multi-site-remote-job-finder": {
+  "model": "PAY_PER_EVENT",
+  "users": 288,
+  "tiers": {
+   "FREE": 0.003
+  },
+  "event": "apify-default-dataset-item",
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "future": [
+   "2026-03-16T21:22:50.731Z"
+  ]
+ },
+ "sync-network/steam-reviews-scraper": {
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "tiers": {
+   "FREE": 0.001
+  },
+  "event": "apify-default-dataset-item",
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "future": [
+   "2026-05-10T14:11:22.147Z"
+  ]
+ }
+}

@@ -1,3 +1,36 @@
+## Cycle 3728 -- in the `NEW c3162` walk, the FINDS come from the re-verify step, not from the flagged rows
+
+**The measurement, over the two most recent batches.** c3727 (`sweet_stickball`) priced 6 flagged
+rows and ruled all 6 owed-nothing; its one real finding was a 3x reprice on an ALREADY-DISCLOSED
+handle, caught by the mandatory bucket-7 re-verify. c3728 (`sync-network` + `sysco32`) priced 13
+flagged rows plus 4 manual near-misses and ruled all 17 owed-nothing; its one real finding was,
+again, a 3x reprice on an already-disclosed handle (`sysco32/apple-podcasts-scraper`, podcast rung
+$0.003 -> $0.001), caught by the same step. **Two for two: the flagged-row half of this walk has
+produced 0 findings in the last 2 batches, and the re-verify half has produced 2 for 2.**
+
+**Why that is structural and not a coincidence.** A flagged row is a rival we have never priced,
+so the 7 standing ruling buckets almost always dispose of it -- the fleet has already named ~1,100
+owners, so any genuine every-tier undercut on a niche we sell into is overwhelmingly likely to be
+bucket-7 dominated by a rival we disclosed cycles ago. An already-disclosed handle is the opposite
+shape: we have published a SPECIFIC NUMBER about it, and that number decays on the rival's
+schedule, not ours. **New rivals get cheaper slowly; our own published claims go stale
+immediately, and only the re-verify step looks at them.**
+
+**What to do with it (do NOT read this as "stop sweeping flagged rows").** The sweep is what keeps
+the bucket-7 precedent set large enough to dispose of flagged rows for free, so it pays for itself.
+The actionable change is ORDERING and BUDGET: run the re-verify on the already-disclosed handles
+FIRST, before pricing any flagged row, because that is where the cycle's one likely deliverable is
+-- and if a batch runs short on time, finish the re-verify and defer flagged rows to the next
+batch, never the other way round.
+
+**And the drift direction decides the handling, which is easy to get wrong when the conclusion
+survives.** c3728's drift left the README's buyer-facing conclusion intact (tied per-row plus a
+start fee they charge and we do not still means they cannot beat us at any volume), which makes it
+TEMPTING to file as a SAFE fold-in like `NEW c3632`/`c3640`/`c3652`/`c3713`. It is not: the stale
+figure overstated a RIVAL's price 3x in our own favour. **Test the direction on the number, not on
+the sentence's conclusion** -- a figure that flatters us is an unsafe drift even when every claim
+built on it still holds, and it ships same-cycle rather than riding the fold-in register.
+
 ## Cycle 3692 -- a self-imposed cap is only HALF a finding: check whether the upstream repeats a page before raising it, or a truncation becomes a double-billing bug
 
 **The finding.** `ats-jobs-scraper`'s `fetchWorkday` capped raw paging at a hard 2,000 postings

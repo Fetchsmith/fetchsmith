@@ -1,0 +1,40 @@
+{
+ "sync-network/in-depth-news-scraper": {
+  "users": 14,
+  "model": "PAY_PER_EVENT",
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 5e-05,
+  "runfee": null,
+  "note": "primary event"
+ },
+ "sync-network/awesome-crypto-news-scraper": {
+  "users": 41,
+  "model": "PAY_PER_EVENT",
+  "event": "apify-default-dataset-item",
+  "tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 5e-05,
+  "runfee": null,
+  "note": "primary event"
+ },
+ "fetchsmith/google-news-scraper": {
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "event": "result",
+  "tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0015,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event"
+ }
+}
