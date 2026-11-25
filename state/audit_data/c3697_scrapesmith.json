@@ -1,0 +1,65 @@
+[
+ {
+  "handle": "scrapesmith/amazon-seller-monitoring",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 43,
+  "title": "Amazon Seller Monitoring",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-item",
+  "unit_tiers": {
+   "BRONZE": 2e-05,
+   "SILVER": 2e-05,
+   "GOLD": 2e-05,
+   "PLATINUM": 2e-05,
+   "DIAMOND": 2e-05,
+   "FREE": 0.0005
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item,result-item",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "\ud83d\udd25 $0.02/1000\ud83d\udd25 Track every seller on any Amazon ASIN \u2014 buy-box winner, prices, discounts, item condition, seller ratings, shipping, and 24+ fields per offer. Accepts plain ASINs or product URLs across 20+ Amazon marketplaces. Built for repricing feeds, brand protection, and competitor monitoring."
+ },
+ {
+  "handle": "scrapesmith/google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 24,
+  "title": "Google Play Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00025
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "All-in-one Google Play scraper. Search apps, get full details (27 fields with developer email/website), and extract reviews with filters. No browser, no proxy, 256MB."
+ }
+]
