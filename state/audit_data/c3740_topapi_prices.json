@@ -1,0 +1,84 @@
+[
+ {
+  "handle": "topapi/google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 5,
+  "title": "Google Play Scraper - Apps, Charts, Developers & Data Safety",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.00027
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app,data-safety,permissions",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google Play apps by keyword, top chart, developer, similar apps or app ID: installs, ratings, price, developer email and website, version, release notes, data safety, permissions. Rank tracking and monitor mode. $0.27 per 1,000 apps, no start fee."
+ },
+ {
+  "handle": "topapi/remote-jobs-scraper",
+  "niches": [
+   "hacker-news-scraper",
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Remote Jobs Scraper - RemoteOK, We Work Remotely, Jobicy & More",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.00081
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-contacts,job",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs from 11 boards in one deduplicated feed: Remote OK, We Work Remotely, Remotive, Jobicy, Working Nomads, Arbeitnow, Jobspresso, DevITjobs, The Muse, HN Who is hiring. Salary in USD, who can apply, apply links, monitor mode, company emails. $0.81 per 1,000 jobs."
+ }
+]

@@ -1,0 +1,197 @@
+[
+ {
+  "handle": "titan_coder/federal-court-docket-bankruptcy-radar",
+  "title": "Federal Court Corporate Bankruptcy Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "bankruptcy-filing-delivered",
+  "unit_tiers": {
+   "FREE": 0.045
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bankruptcy-filing-delivered",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.02
+    },
+    true,
+    false
+   ],
+   [
+    "bankruptcy-filing-delivered",
+    "Corporate Bankruptcy Filing Delivered",
+    {
+     "FREE": 0.045
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/court-records-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "titan_coder/ny-campaign-finance-filer-status-delta",
+  "title": "NY Campaign Finance Filer Status Delta",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "filer-status-changed",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filer-status-changed",
+  "all_events": [
+   [
+    "filer-status-changed",
+    "Filer status changed",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/fec-campaign-finance-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "titan_coder/sec-edgar-filing-monitor",
+  "title": "SEC EDGAR Filing Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "new-filing-detected",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-filing-detected",
+  "all_events": [
+   [
+    "new-filing-detected",
+    "New filing detected",
+    {
+     "FREE": 0.015
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "titan_coder/sec-form4-cluster-buy-monitor",
+  "title": "SEC Form 4 Insider Cluster-Buy Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "insider-cluster-detected",
+  "unit_tiers": {
+   "FREE": 0.05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): insider-cluster-detected",
+  "all_events": [
+   [
+    "insider-cluster-detected",
+    "Insider cluster buy detected",
+    {
+     "FREE": 0.05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "titan_coder/shopify-products-delta-tracker",
+  "title": "Shopify Products Delta Tracker",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "titan_coder/uspto-patent-assignment-ownership-radar",
+  "title": "USPTO Patent Assignment & Ownership Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "patent-assignment-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): patent-assignment-delivered",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.02
+    },
+    true,
+    false
+   ],
+   [
+    "patent-assignment-delivered",
+    "USPTO Patent Assignment Delivered",
+    {
+     "FREE": 0.03
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ }
+]

@@ -1,0 +1,56 @@
+[
+ {
+  "handle": "tomstudio/app-store-reviews-scraper",
+  "title": "App Store Reviews Scraper API: iOS Ratings & App Details",
+  "model": null,
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tomstudio/ats-jobs-scraper",
+  "title": "ATS Jobs Scraper: Workday, Greenhouse, Lever, Ashby & more",
+  "model": null,
+  "users": 1,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/ats-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tomstudio/hacker-news-search",
+  "title": "Hacker News Scraper: Search Stories, Comments & Threads",
+  "model": null,
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ }
+]

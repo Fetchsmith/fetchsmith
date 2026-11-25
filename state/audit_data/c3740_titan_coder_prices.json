@@ -1,0 +1,761 @@
+[
+ {
+  "handle": "titan_coder/fda-drug-recall-enforcement-radar",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Prescription Drug Class I/II Recall Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "drug-recall-delivered",
+  "unit_tiers": {
+   "FREE": 0.04
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): drug-recall-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Mission-critical pharmaceutical compliance radar streaming FDA Class I, II, and III drug recalls, contaminated batches, nationwide market withdrawals, and offending manufacturers."
+ },
+ {
+  "handle": "titan_coder/fda-medical-device-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Medical Device Recall & Safety Alert Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "device-recall-delivered",
+  "unit_tiers": {
+   "FREE": 0.04
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): device-recall-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Real-time compliance watcher tracking FDA medical device recall enforcement reports, software glitch alerts, lethal hazard Class I corrections, and manufacturer actions."
+ },
+ {
+  "handle": "titan_coder/fda-food-safety-recall-enforcement-radar",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Food & Beverage Recall Enforcement Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "food-recall-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.015,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): food-recall-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Immediate food safety & contamination monitor tracking FDA food enforcement actions, pathogen outbreaks (Listeria, Salmonella), undeclared allergens, and distribution halts."
+ },
+ {
+  "handle": "titan_coder/clinical-trials-status-change-delta",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Protocol & Phase Status Delta (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-update-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-update-delivered",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Biotech investment & clinical intelligence radar tracking protocol phase updates, trial terminations, recruitment changes, and new study postings on ClinicalTrials.gov."
+ },
+ {
+  "handle": "titan_coder/cpsc-product-safety-recall-radar",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Consumer Product Safety Recall Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product-recall-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.015,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-recall-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Consumer product hazard radar streaming official US Consumer Product Safety Commission (CPSC) recall announcements, burn/choking defects, and mandatory retail remedies."
+ },
+ {
+  "handle": "titan_coder/uk-contracts-finder-high-value-radar",
+  "niches": [
+   "eu-ted-tenders-scraper",
+   "uk-find-a-tender-scraper"
+  ],
+  "users": 2,
+  "title": "UK Contracts Finder High-Value Tender Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-notice-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): tender-notice-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "uk-find-a-tender-scraper": {
+    "ours": {
+     "FREE": 0.003,
+     "BRONZE": 0.0028,
+     "SILVER": 0.0026,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Public procurement & government bidding intelligence streaming high-value UK public sector tender notices, contracts finder awards, and buyer requirements under OCDS standard."
+ },
+ {
+  "handle": "titan_coder/eu-ted-public-procurement-high-value-radar",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "EU TED Public Procurement High-Value Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "eu-tender-notice-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): eu-tender-notice-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Enterprise European public sector tender monitor streaming high-value contract notices, public work awards, and EU-wide public tenders over \u20ac1M via TED Tenders Electronic Daily API."
+ },
+ {
+  "handle": "titan_coder/sam-gov-federal-contract-opportunities-radar",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "SAM.gov Federal Contract Opportunities Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-tender-opportunity-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-tender-opportunity-delivered",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Zero-browser defense & federal procurement radar tracking high-value government solicitations, pre-solicitations, and active contracting opportunities on SAM.gov."
+ },
+ {
+  "handle": "titan_coder/federal-register-regulatory-changes-radar",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Regulatory Changes Delta Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-regulation-change-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-regulation-change-delivered",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Zero-browser federal compliance radar tracking US Federal Register final rules, significant executive orders, and agency regulatory overhauls across SEC, EPA, FDA, FCC, and FTC."
+ },
+ {
+  "handle": "titan_coder/clinicaltrials-biopharma-pipeline-radar",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Pharma & Biotech Trials Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clinical-trial-milestone-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clinical-trial-milestone-delivered",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Sub-second biopharma intelligence radar tracking new Phase 1-3 clinical trials, drug candidate study protocols, completion milestones, and sponsor updates on ClinicalTrials.gov."
+ },
+ {
+  "handle": "titan_coder/shopify-price-stock-monitor",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Price & Stock Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-checked",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-change-detected,store-checked",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Polls the public /products.json feed any Shopify store exposes and tells you the moment a competitor changes a price, adds a sale price, or a variant goes in or out of stock. No browser, no login, no API key."
+ },
+ {
+  "handle": "titan_coder/federal-register-monitor",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-document-detected",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-document-detected",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Federal Register tools dump the whole feed and let you find what changed. This one watches your agencies and reports only documents published since your last check \u2014 rules, proposed rules, notices. A day with nothing new is free."
+ },
+ {
+  "handle": "titan_coder/usaspending-contract-award-monitor",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "USAspending Contract Award Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-award-detected",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-award-detected",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "USAspending gives you a firehose and no way to see what is new. This one watches your agencies and reports only contract awards that appeared since your last check. Official free API, and an agency with nothing new costs you nothing."
+ },
+ {
+  "handle": "titan_coder/openfda-recall-radar",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Recall Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "new-recall-detected",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): new-recall-detected",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Monitors FDA drug and medical device recalls (openFDA Enforcement API) for the firms and products you name, and reports only recall events genuinely new since your last check. A day with nothing new is free."
+ },
+ {
+  "handle": "titan_coder/hacker-news-trend-delta",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Trend & Velocity Delta Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Zero-browser, official Firebase API monitor for Hacker News. Detects breakout discussions and sudden upvote surges before stories hit #1 on the front page. Stores previous scores in memory and delivers clean velocity alerts."
+ },
+ {
+  "handle": "titan_coder/federal-register-public-inspection-radar",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 1,
+  "title": "Federal Register Public Inspection Desk Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "fed-public-inspection-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fed-public-inspection-delivered",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Sub-second regulatory early-warning radar tracking US Federal Register public inspection documents 24-48 hours before official publication."
+ },
+ {
+  "handle": "titan_coder/federal-register-executive-orders-radar",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 1,
+  "title": "Federal Register Presidential Executive Orders Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-executive-order-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-executive-order-delivered",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Zero-browser federal compliance radar tracking US Presidential Executive Orders, Proclamations, and White House directives published in the Federal Register."
+ },
+ {
+  "handle": "titan_coder/federal-register-final-rules-radar",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 1,
+  "title": "Federal Register Final Rules & Regulations Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-final-rule-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-final-rule-delivered",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Sub-second regulatory radar tracking US Federal Register Final Rules, mandatory compliance deadlines, codified CFR amendments, and federal administrative mandates."
+ },
+ {
+  "handle": "titan_coder/federal-register-notices-hearings-radar",
+  "niches": [
+   "federal-register-scraper",
+   "grants-gov-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 1,
+  "title": "Federal Register Public Notices & Hearings Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-notice-hearing-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-notice-hearing-delivered",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Sub-second federal compliance radar tracking US Federal Register public notices, regulatory agency hearings, Sunshine Act meetings, and federal grant opportunities."
+ },
+ {
+  "handle": "titan_coder/fda-device-adverse-events-radar",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "FDA Medical Device Adverse Events Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "fda-device-event-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fda-device-event-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Sub-second medical device vigilance radar tracking FDA MAUDE adverse event reports, device malfunctions, patient injuries, and recall risk signals."
+ },
+ {
+  "handle": "titan_coder/federal-register-proposed-rules-radar",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 1,
+  "title": "Federal Register Proposed Rules Delta Radar (Save 90%)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "federal-proposed-rule-delivered",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 0.02,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): federal-proposed-rule-delivered",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Zero-browser federal regulatory radar tracking US Federal Register proposed rules (NPRM), advance policy notices, and agency public comment periods."
+ },
+ {
+  "handle": "titan_coder/social-ecom-ads-intelligence-hub",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 1,
+  "title": "Social, E-commerce & Ads Intelligence Hub",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bulk-item-scraped,check-performed,record-delivered,report-delivered",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "One Actor, 23 sources: GitHub trends, TikTok top ads, Airbnb, Shopify, Amazon, YouTube, Hacker News, App Store, podcasts and more. Pick a module, pay per delivered record. MCP-ready."
+ },
+ {
+  "handle": "titan_coder/health-safety-compliance-hub",
+  "niches": [
+   "clinicaltrials-scraper",
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "Health, Pharma & Safety Compliance Hub",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-delivered",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): bulk-item-scraped,check-performed,record-delivered,report-delivered",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Unified intelligence hub for 32 health, FDA recalls, pharma clinical trials, EPA environmental violations and OSHA workplace safety compliance monitors. Radar modules establish a free baseline on the 1st run and emit delta events from the 2nd run onwards."
+ }
+]

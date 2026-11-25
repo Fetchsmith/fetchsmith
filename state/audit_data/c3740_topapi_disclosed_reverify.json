@@ -1,0 +1,204 @@
+[
+ {
+  "handle": "topapi/hacker-news-scraper",
+  "title": "Hacker News Scraper - Stories, Comments, Users & Who Is Hiring",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "item",
+  "unit_tiers": {
+   "FREE": 0.00014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): candidate,item,job-post,trend,user",
+  "all_events": [
+   [
+    "item",
+    "Item",
+    {
+     "FREE": 0.00014
+    },
+    false,
+    false
+   ],
+   [
+    "user",
+    "User profile",
+    {
+     "FREE": 0.0009
+    },
+    false,
+    false
+   ],
+   [
+    "job-post",
+    "Job post",
+    {
+     "FREE": 0.0009
+    },
+    false,
+    false
+   ],
+   [
+    "candidate",
+    "Candidate post",
+    {
+     "FREE": 0.0036
+    },
+    false,
+    false
+   ],
+   [
+    "trend",
+    "Trend row",
+    {
+     "FREE": 0.0045
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "topapi/sam-gov-scraper",
+  "title": "SAM.gov Scraper - Federal Contracts, RFPs, Contacts & Awards",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 4.5e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): amendment-history,attachment-file,attachments,opportunity",
+  "all_events": [
+   [
+    "opportunity",
+    "Notice",
+    {
+     "FREE": 4.5e-05
+    },
+    false,
+    false
+   ],
+   [
+    "attachments",
+    "Attachment list",
+    {
+     "FREE": 6.3e-05
+    },
+    false,
+    false
+   ],
+   [
+    "amendment-history",
+    "Version history",
+    {
+     "FREE": 0.0009
+    },
+    false,
+    false
+   ],
+   [
+    "attachment-file",
+    "Attachment file saved",
+    {
+     "FREE": 0.0009
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sam-gov-opportunities-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "topapi/substack-scraper",
+  "title": "Substack Scraper - Newsletters, Posts, Comments & Leaderboards",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "newsletter",
+  "unit_tiers": {
+   "FREE": 0.00045
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): comment,newsletter,post",
+  "all_events": [
+   [
+    "newsletter",
+    "Newsletter row",
+    {
+     "FREE": 0.00045
+    },
+    false,
+    false
+   ],
+   [
+    "post",
+    "Post row",
+    {
+     "FREE": 0.00027
+    },
+    false,
+    false
+   ],
+   [
+    "comment",
+    "Comment row",
+    {
+     "FREE": 0.00018
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/substack-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "topapi/uspto-trademark-scraper",
+  "title": "USPTO Trademark Scraper - Status, Owners & New Filings",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-details,trademark-record",
+  "all_events": [
+   [
+    "trademark-record",
+    "Trademark record",
+    {
+     "FREE": 0.0028
+    },
+    false,
+    false
+   ],
+   [
+    "trademark-details",
+    "TSDR details",
+    {
+     "FREE": 0.0019
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ }
+]

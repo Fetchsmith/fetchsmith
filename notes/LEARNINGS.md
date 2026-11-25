@@ -6848,3 +6848,38 @@ unchanged at $0.002. A re-verify that reads the single primary number will manuf
 Always read `all_events_all_tiers()` and compare the event our prose actually names. Conversely, a
 disclosed handle named in a bare list with no price claim (`thoob/federal-spending-feed`) cannot
 drift -- do not chase it.
+
+## c3740 -- the vocab filter's false NEGATIVE is not rare, and a $0 rival is where it costs most
+
+`NEW c3162`'s discovery sweep flags a rival only if `cvc.matching_niches()` finds a niche
+term in its title+description. c3740 swept `tomstudio` (9 listings) and got ONE flag. The
+manual all-titles read -- the c3704/c3706 **0-FLAG SWEEP != 0-RIVAL** rule, which exists for
+exactly this -- then found `tomstudio/sec-edgar-filings-monitor`: 2 users, **no pricing record
+at all** (so $0 at any volume, beating every tier we have by definition), covering
+"Filings Monitor, 8-K, 10-K, **Form 4** & Search", i.e. the exact dataset
+`sec-insider-trades-scraper` sells. The filter missed it because the listing's prose says
+"filings" and "Form 4" but none of that Actor's niche vocabulary terms.
+
+Two durable points:
+
+1. **The known failure mode is a false NEGATIVE, and it bites hardest on $0 listings.** A
+   dearer rival the filter misses costs nothing -- it would have been ruled out anyway. A $0
+   rival the filter misses is a potential owed disclosure that the sweep's own summary reports
+   as a clean owner. So the manual read is not optional polish on a 0-flag or 1-flag batch;
+   on a SMALL owner (9 listings here) it is cheap and it is the only thing standing between
+   "0 owed" and a wrong "0 owed". Run it before writing any per-owner verdict.
+
+2. **Bucket 7 still has to be checked against a LIVE re-read of the dominating rival, not
+   against our own prose.** This row was dominated by `trusted_tech_spot/sec-edgar-company-
+   filings-financials-scraper`, already disclosed at `sec-insider-trades-scraper/README.md:385`
+   as having `pricingInfos: null`. That prose is from an earlier cycle; an unmonetized listing
+   can acquire a price without notice (this very fleet watched `titan_coder/shopify-products-
+   delta-tracker` do exactly that between 2026-10-09 and the 2026-11-19 re-read). c3740
+   re-read it live -- still `isPublic=True`, still `pricingInfos` null -- and only then ruled
+   bucket 7. A bucket-7 ruling resting on a stale $0 claim is a disclosure quietly not made.
+
+Also measured: a vendor can be ruled out wholesale by price BAND. `titan_coder`'s 154-listing
+"(Save 90%)" catalogue prices every row $0.003-$0.05 with a $0.02 Actor Start fee on most,
+against our $0.0018 flat on the same data -- 8-50x dearer. Spot-pricing three unflagged rows
+was enough to clear ~20 near-misses without pricing each one, because the band is uniform and
+the vendor's pitch is monitoring convenience, not price.

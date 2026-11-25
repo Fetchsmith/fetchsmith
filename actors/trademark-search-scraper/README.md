@@ -445,8 +445,13 @@ Australia, 2.4–3× ours); `kdhan/uspto-trademark-search` ($0.004 flat plus a $
 `quillstone-labs/uspto-trademark-search` ($0.01 FREE → $0.003 BRONZE+); `reaperoak`'s two
 listings — `uspto-trademark-checker-bulk` and `uspto-trademark-watch-new-filings` — both $0.02
 FREE → $0.017 GOLD+, a phrase-checker and a new-filing-alert product, neither a register search;
-`titan_coder/uspto-patent-assignment-ownership-radar` ($0.04/result, patent-and-trademark
-ownership-transfer tracking, a different data type again); `zaiq/domain-hunter` ($1.49 FREE →
+`titan_coder/uspto-patent-assignment-ownership-radar` (**$0.03 per
+`patent-assignment-delivered` row plus a $0.02 Actor Start fee, re-verified live 2026-11-25** —
+this paragraph said "$0.04/result" from 2026-10-23 until today, which overstated its per-row rate
+and omitted its start fee; the correction cuts both ways, since the start fee makes it dearer than
+the old figure for runs of one or two rows and cheaper above that, and it remains far dearer than
+our flat rate either way; patent-and-trademark ownership-transfer tracking, a different data type
+again); `zaiq/domain-hunter` ($1.49 FREE →
 $1.192 GOLD+, a domain-name generator that happens to mention trademark checks, not a register
 search at all).
 

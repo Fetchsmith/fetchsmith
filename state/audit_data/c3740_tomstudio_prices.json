@@ -1,0 +1,32 @@
+[
+ {
+  "handle": "tomstudio/ted-tenders-monitor",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "TED Tenders Scraper: EU & Swiss Public Procurement Monitor",
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "TED tenders scraper and monitor: find open EU, Swiss (incl. simap.ch) & EEA public tenders from the official TED API. Filter by keyword, country, CPV code and deadline. Only-new mode for daily alerts. No login, no proxy."
+ }
+]
