@@ -1,0 +1,50 @@
+
+priced 3 -> /root/agent/state/audit_data/c3736_thescrapelab_prices.json; 3 row(s) undercut us at >=1 tier
+HIT  thescrapelab/product-recall-safety-alert-monitor 2u PAY_PER_EVENT {'FREE': 0.00049} start=5e-05 runfee=None niches=fda-recall-scraper
+        vs fda-recall-scraper: ours={'FREE': 0.0035, 'BRONZE': 0.003, 'SILVER': 0.0027, 'GOLD': 0.0024, 'PLATINUM': 0.0024, 'DIAMOND': 0.0024} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+HIT  thescrapelab/usaspending-contract-runway-monitor 2u PAY_PER_EVENT {'FREE': 0.0015} start=5e-05 runfee=None niches=us-federal-awards-scraper
+        vs us-federal-awards-scraper: ours={'FREE': 0.004, 'BRONZE': 0.0035, 'SILVER': 0.003, 'GOLD': 0.0025, 'PLATINUM': 0.0025, 'DIAMOND': 0.0025} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+HIT  thescrapelab/ted-tender-changes 2u PAY_PER_EVENT {'FREE': 0.0004} start=0.015 runfee=None niches=eu-ted-tenders-scraper
+        vs eu-ted-tenders-scraper: ours={'FREE': 0.0015} undercuts=['FREE'] every_tier=True crossover=None
+
+priced 17 -> /root/agent/state/audit_data/c3736_thirdwatch_prices.json; 0 row(s) undercut us at >=1 tier
+     thirdwatch/shopify-reviews-scraper 34u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0012, 'PLATINUM': 0.0012, 'DIAMOND': 0.0012} start=5e-05 runfee=None niches=shopify-products-scraper
+     thirdwatch/shopify-store-intelligence-scraper 4u PAY_PER_EVENT {'FREE': 0.005, 'BRONZE': 0.0045, 'SILVER': 0.004, 'GOLD': 0.0035, 'PLATINUM': 0.0035, 'DIAMOND': 0.0035} start=5e-05 runfee=None niches=shopify-products-scraper
+     thirdwatch/world-bank-procurement-scraper 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=eu-ted-tenders-scraper
+     thirdwatch/eu-ted-tenders-scraper 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=eu-ted-tenders-scraper
+     thirdwatch/federal-register-scraper 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=federal-register-scraper
+     thirdwatch/hacker-news-scraper 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=hacker-news-scraper
+     thirdwatch/fda-drug-adverse-events-scraper 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=nih-reporter-scraper
+     thirdwatch/app-reviews-scraper 2u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0012, 'PLATINUM': 0.0012, 'DIAMOND': 0.0012} start=5e-05 runfee=None niches=app-store-reviews-scraper,google-play-reviews-scraper
+     thirdwatch/internshala-scraper 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=remote-jobs-scraper
+     thirdwatch/substack-scraper 2u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0012, 'PLATINUM': 0.0012, 'DIAMOND': 0.0012} start=5e-05 runfee=None niches=substack-scraper
+     thirdwatch/weworkremotely-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=remote-jobs-scraper
+     thirdwatch/shopify-store-finder 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=shopify-products-scraper
+     thirdwatch/arbeitsagentur-scraper 2u PAY_PER_EVENT {'FREE': 0.016, 'BRONZE': 0.012, 'SILVER': 0.01, 'GOLD': 0.008, 'PLATINUM': 0.008, 'DIAMOND': 0.008} start=5e-05 runfee=None niches=ats-jobs-scraper
+     thirdwatch/shopify-store-analyzer 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=shopify-products-scraper
+     thirdwatch/bayt-jobs-scraper 2u PAY_PER_EVENT {'FREE': 0.016, 'BRONZE': 0.012, 'SILVER': 0.01, 'GOLD': 0.008, 'PLATINUM': 0.008, 'DIAMOND': 0.008} start=5e-05 runfee=None niches=ats-jobs-scraper
+     thirdwatch/workday-jobs-scraper 1u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.003, 'SILVER': 0.0025, 'GOLD': 0.002, 'PLATINUM': 0.002, 'DIAMOND': 0.002} start=5e-05 runfee=None niches=ats-jobs-scraper
+     thirdwatch/multi-ats-jobs-scraper 1u PAY_PER_EVENT {'FREE': 0.006, 'BRONZE': 0.0051, 'SILVER': 0.0045, 'GOLD': 0.0039, 'PLATINUM': 0.0039, 'DIAMOND': 0.0039} start=5e-05 runfee=None niches=ats-jobs-scraper
+
+priced 14 -> /root/agent/state/audit_data/c3736_thoob_prices.json; 6 row(s) undercut us at >=1 tier
+     thoob/uspto-patent-feed 2u PAY_PER_EVENT {'FREE': 0.006, 'BRONZE': 0.0054, 'SILVER': 0.0048, 'GOLD': 0.0042, 'PLATINUM': 0.0042, 'DIAMOND': 0.0042} start=0.0 runfee=None niches=trademark-search-scraper
+     thoob/regulatory-change-monitor 2u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.0036, 'SILVER': 0.0032, 'GOLD': 0.0028, 'PLATINUM': 0.0028, 'DIAMOND': 0.0028} start=0.0 runfee=None niches=federal-register-scraper
+     thoob/clinical-trials-feed 2u PAY_PER_EVENT {'FREE': 0.003, 'BRONZE': 0.0027, 'SILVER': 0.0024, 'GOLD': 0.0021, 'PLATINUM': 0.0021, 'DIAMOND': 0.0021} start=0.0 runfee=None niches=clinicaltrials-scraper
+HIT  thoob/app-store-reviews 2u PAY_PER_EVENT {'FREE': 9e-05, 'BRONZE': 8.1e-05, 'SILVER': 7.2e-05, 'GOLD': 6.3e-05, 'PLATINUM': 6.3e-05, 'DIAMOND': 6.3e-05} start=3.5e-05 runfee=None niches=app-store-reviews-scraper,google-play-reviews-scraper
+        vs app-store-reviews-scraper: ours={'FREE': 0.0001, 'BRONZE': 9e-05, 'SILVER': 8e-05, 'GOLD': 7e-05, 'PLATINUM': 7e-05, 'DIAMOND': 7e-05} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+        vs google-play-reviews-scraper: ours={'FREE': 0.0001} undercuts=['FREE'] every_tier=True crossover=None
+     thoob/ats-jobs-feed 2u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0014, 'PLATINUM': 0.0014, 'DIAMOND': 0.0014} start=3.5e-05 runfee=None niches=ats-jobs-scraper
+HIT  thoob/openfda-adverse-event-feed 2u PAY_PER_EVENT {'FREE': 0.001, 'BRONZE': 0.0009, 'SILVER': 0.0008, 'GOLD': 0.0007, 'PLATINUM': 0.0007, 'DIAMOND': 0.0007} start=3.5e-05 runfee=None niches=fda-recall-scraper
+        vs fda-recall-scraper: ours={'FREE': 0.0035, 'BRONZE': 0.003, 'SILVER': 0.0027, 'GOLD': 0.0024, 'PLATINUM': 0.0024, 'DIAMOND': 0.0024} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+HIT  thoob/website-screenshot 2u PAY_PER_EVENT {'FREE': 0.001} start=5e-05 runfee=None niches=website-screenshot-scraper
+        vs website-screenshot-scraper: ours={'FREE': 0.002} undercuts=['FREE'] every_tier=True crossover=None
+HIT  thoob/fda-drug-device-recall-feed 2u PAY_PER_EVENT {'FREE': 0.003, 'BRONZE': 0.0027, 'SILVER': 0.0024, 'GOLD': 0.0021, 'PLATINUM': 0.0021, 'DIAMOND': 0.0021} start=3.5e-05 runfee=None niches=fda-recall-scraper
+        vs fda-recall-scraper: ours={'FREE': 0.0035, 'BRONZE': 0.003, 'SILVER': 0.0027, 'GOLD': 0.0024, 'PLATINUM': 0.0024, 'DIAMOND': 0.0024} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+HIT  thoob/nhtsa-recall-complaint-feed 2u PAY_PER_EVENT {'FREE': 0.002, 'BRONZE': 0.0018, 'SILVER': 0.0016, 'GOLD': 0.0014, 'PLATINUM': 0.0014, 'DIAMOND': 0.0014} start=3.5e-05 runfee=None niches=fda-recall-scraper
+        vs fda-recall-scraper: ours={'FREE': 0.0035, 'BRONZE': 0.003, 'SILVER': 0.0027, 'GOLD': 0.0024, 'PLATINUM': 0.0024, 'DIAMOND': 0.0024} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+     thoob/federal-research-awards-feed 2u PAY_PER_EVENT {'FREE': 0.003, 'BRONZE': 0.0027, 'SILVER': 0.0024, 'GOLD': 0.0021, 'PLATINUM': 0.0021, 'DIAMOND': 0.0021} start=3.5e-05 runfee=None niches=nih-reporter-scraper
+HIT  thoob/cpsc-product-recall-feed 2u PAY_PER_EVENT {'FREE': 0.0025, 'BRONZE': 0.00225, 'SILVER': 0.002, 'GOLD': 0.00175, 'PLATINUM': 0.00175, 'DIAMOND': 0.00175} start=3.5e-05 runfee=None niches=fda-recall-scraper
+        vs fda-recall-scraper: ours={'FREE': 0.0035, 'BRONZE': 0.003, 'SILVER': 0.0027, 'GOLD': 0.0024, 'PLATINUM': 0.0024, 'DIAMOND': 0.0024} undercuts=['BRONZE', 'DIAMOND', 'FREE', 'GOLD', 'PLATINUM', 'SILVER'] every_tier=True crossover=None
+     thoob/fda-510k-clearance-feed 2u PAY_PER_EVENT {'FREE': 0.005, 'BRONZE': 0.0045, 'SILVER': 0.004, 'GOLD': 0.0035, 'PLATINUM': 0.0035, 'DIAMOND': 0.0035} start=3.5e-05 runfee=None niches=fda-recall-scraper
+     thoob/fda-food-recall-feed 1u PAY_PER_EVENT {'FREE': 0.005, 'BRONZE': 0.0045, 'SILVER': 0.004, 'GOLD': 0.0035, 'PLATINUM': 0.0035, 'DIAMOND': 0.0035} start=0.0 runfee=None niches=fda-recall-scraper
+     thoob/ofac-sanctions-screening 1u PAY_PER_EVENT {'FREE': 0.004, 'BRONZE': 0.0036, 'SILVER': 0.0032, 'GOLD': 0.0028, 'PLATINUM': 0.0028, 'DIAMOND': 0.0028} start=0.0 runfee=None niches=fda-recall-scraper

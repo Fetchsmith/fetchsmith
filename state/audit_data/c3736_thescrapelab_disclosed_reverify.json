@@ -1,0 +1,140 @@
+[
+ {
+  "handle": "thescrapelab/shopify-store-opportunity-intelligence",
+  "title": "Shopify Products Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 10,
+  "unit_event": "monitored-store-check",
+  "unit_tiers": {
+   "FREE": 0.0141
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-record,monitored-store-check,product-record,store-record",
+  "all_events": [
+   [
+    "store-record",
+    "Store intelligence record",
+    {
+     "FREE": 0.002
+    },
+    false,
+    false
+   ],
+   [
+    "product-record",
+    "Product catalog record",
+    {
+     "FREE": 0.0015
+    },
+    false,
+    false
+   ],
+   [
+    "change-record",
+    "Monitoring change record",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "monitored-store-check",
+    "Completed store watchlist check",
+    {
+     "FREE": 0.0141
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thescrapelab/steam-review-changes-tracker",
+  "title": "Steam Review Tracker",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.003
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "Review record delivered",
+    {
+     "FREE": 0.0005
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thescrapelab/substack-scraper",
+  "title": "Substack Scraper \u2014 Publication Feeds and Posts",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00015
+  },
+  "start_fee": 0.002,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Saved result",
+    {
+     "FREE": 0.00015
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.002
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/substack-scraper/README.md"
+  ]
+ }
+]

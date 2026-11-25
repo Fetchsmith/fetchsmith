@@ -1,0 +1,552 @@
+[
+ {
+  "handle": "thoob/uspto-patent-feed",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "Patent Search: USPTO Patents by Keyword, CPC, Inventor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "patent-record",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.0054,
+   "SILVER": 0.0048,
+   "GOLD": 0.0042,
+   "PLATINUM": 0.0042,
+   "DIAMOND": 0.0042
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): patent-record",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Patent search for US patents: filter by keyword, CPC class, inventor, assignee, type, status or grant date and get flat patent records from the official USPTO Open Data Portal API. Includes a what-changed-since-last-run mode. Billed per patent delivered. No API key needed."
+ },
+ {
+  "handle": "thoob/regulatory-change-monitor",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Scraper: Regulation & Rule Changes",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "matched-document",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): matched-document",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Enter watch terms, get clean, citable records from the official Federal Register API when a matching rule, proposed rule, or notice publishes or changes. Filter by term, agency, type, CFR part, and date, with a what-changed-since-last-run mode. Billed per delivered document."
+ },
+ {
+  "handle": "thoob/clinical-trials-feed",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "Clinical Trials Scraper: ClinicalTrials.gov Studies",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial-record",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Enter filters, get clean, flat clinical trials records from the official ClinicalTrials.gov v2 API. Filter by condition, sponsor, status, phase, and country, with a what-changed-since-last-run mode. Billed only per delivered record."
+ },
+ {
+  "handle": "thoob/app-store-reviews",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store Reviews Scraper: Apple Reviews by App and Country",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 9e-05,
+   "BRONZE": 8.1e-05,
+   "SILVER": 7.2e-05,
+   "GOLD": 6.3e-05,
+   "PLATINUM": 6.3e-05,
+   "DIAMOND": 6.3e-05
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Fetches Apple App Store customer reviews by app and country from the public RSS reviews feed and iTunes lookup API. Returns rating, title, text, app version, date, author and votes, plus app name, developer and average rating. No key. Billed only per delivered review row."
+ },
+ {
+  "handle": "thoob/ats-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Jobs Feed: Greenhouse, Lever and Ashby Job Boards",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-listing",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-listing",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Returns open jobs from public Greenhouse, Lever and Ashby job boards: title, team, location, remote flag, posting date, job and apply URLs, salary where published, optional description text. No key needed. Billed only per delivered job row."
+ },
+ {
+  "handle": "thoob/openfda-adverse-event-feed",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Drug and Device Adverse Event Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "event-report",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): event-report",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Returns drug and medical device adverse event reports from the public openFDA API for the products you list: dates, seriousness, reactions, drugs, devices, problems and narratives. No key needed. Only delivered adverse event rows are billed."
+ },
+ {
+  "handle": "thoob/website-screenshot",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot: Full-Page PNG or JPEG of Any URL",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Takes screenshots of web pages with headless Chromium and returns a PNG or JPEG per URL in the key-value store, with final URL, HTTP status, title and image size. Only screenshots of pages that answered with a status below 400 are billed."
+ },
+ {
+  "handle": "thoob/fda-drug-device-recall-feed",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Drug and Device Recalls: Enforcement Report Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "FDA drug and device recall enforcement reports from the public openFDA API. Returns recall number, class, status, firm, product, reason, distribution and dates, filtered by date window, class, state and keyword. Only delivered recall rows are billed."
+ },
+ {
+  "handle": "thoob/nhtsa-recall-complaint-feed",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "NHTSA Vehicle Recalls and Complaints Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vehicle-record",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0016,
+   "GOLD": 0.0014,
+   "PLATINUM": 0.0014,
+   "DIAMOND": 0.0014
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vehicle-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Returns recalls and complaints from the public NHTSA API for each make, model and model year you list: ID, date, component, summary, remedy, crash, fire, injuries and source URL. No key needed. Only delivered recall and complaint rows are billed."
+ },
+ {
+  "handle": "thoob/federal-research-awards-feed",
+  "niches": [
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "NIH and NSF Research Grants Feed: New Awards",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "New NIH RePORTER and NSF research awards matching a keyword, newest first: award ID, title, organization, location, PI, amount, dates, program, abstract snippet and source URL. Public APIs, no key needed. Billed only per delivered award row."
+ },
+ {
+  "handle": "thoob/cpsc-product-recall-feed",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Product Recalls Feed: Hazards, UPCs, Remedies",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.00225,
+   "SILVER": 0.002,
+   "GOLD": 0.00175,
+   "PLATINUM": 0.00175,
+   "DIAMOND": 0.00175
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Lists US product recalls from the public CPSC Recalls API for a date window, with optional product name filter. Returns products, UPCs, hazards, remedies, companies, countries, injuries and the cpsc.gov recall page. No key needed. Billed only per delivered recall row."
+ },
+ {
+  "handle": "thoob/fda-510k-clearance-feed",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA 510(k) Medical Device Clearances Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "clearance-record",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 3.5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clearance-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Fetches FDA 510(k) medical device clearances from the public openFDA API: K number, decision date and code, applicant and address, device name, product code, device class, days to decision. No key needed. Only delivered clearance rows are billed."
+ },
+ {
+  "handle": "thoob/fda-food-recall-feed",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "FDA Recall Monitor: Food Recall Alerts by Firm & Class",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-record",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Enter filters, get clean, flat US food-recall and enforcement records from the official openFDA Food Enforcement API. Filter by product, firm, state, classification, and status, with a what-changed-since-last-run mode. Billed only per delivered record."
+ },
+ {
+  "handle": "thoob/ofac-sanctions-screening",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "OFAC Sanctions Screening: SDN, Consolidated, Alias Match",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "name-screened",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): name-screened",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Screen names against the live US Treasury OFAC sanctions lists, SDN plus the Consolidated non-SDN lists, with alias, transliteration and typo matching and the exact list edition on every row. Measured: 100 percent recall on known designations, zero false positives on 200 real businesses."
+ }
+]

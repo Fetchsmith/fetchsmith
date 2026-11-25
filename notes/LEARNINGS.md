@@ -6812,3 +6812,39 @@ and these sat in prose.
 **Fixed.** `bin/_trim3724q.py` now (1) ends the span at the next top-level item head by regex, and (2) refuses the rotation outright if the span contains any `^\s+- \*\*NEW c\d+` sub-bullet, naming the stranded items. Both guards are documented in `notes/PLAYBOOK.md`'s doc-trim method section; clone `_trim3724q.py`, not an older one. `NEW c3720a` was restored verbatim from the archive and both items are now top-level OPEN.
 
 **Generalisable.** When a safety argument for deleting something rests on a premise about how data was ENTERED ("follow-ups are always filed at top level"), assert the premise at DELETE time. The cycle that files a follow-up is exactly the cycle that is busy with something else.
+
+## Cycle 3736 -- a mandatory check that lives only in prose will be skipped; make it code
+
+The `NEW c3162` bucket-7 **disclosed-handle re-verify** (re-read an already-disclosed rival's
+ladder off the PLATFORM, not off our own prose) was skipped three batches running (c3733, c3734,
+c3735) even though each of those cycles explicitly flagged it as owed in its own handoff line and
+noted that 4 of the last 5 real finds had come from it. The reason is structural, not negligence:
+it existed only as a sentence in a handoff, while the rest of the batch was a script that ran
+itself. c3736 moved it INTO `bin/_rec3736.py`'s `sweep()`, so it now runs for every owner in every
+batch and writes `c3736_<owner>_disclosed_reverify.json`. **Clone `_rec3736.py` from here on.**
+First run: 19 disclosed handles re-priced, **4 drifted**, and unlike the `NEW c3632`/`c3640`/`c3652`/
+`c3713`/`c3727` class every one of the 4 errors was in the UNSAFE direction -- it flattered us.
+
+Two findings worth generalising:
+
+1. **A "flat $X" rival price is the most perishable claim we write.** Three of the four drifts were
+   one vendor (`thoob`) converting flat rates to TIERED ladders across its catalogue at once. Our
+   prose kept quoting the FREE rung as the whole price, which overstated every multiple we claimed
+   at the paid tiers (6.7x -> really 4.7x; 2x -> really 1.4x). When a rival is flat, the claim has no
+   redundancy: one repricing invalidates the number AND the multiple. A tiered claim degrades more
+   gracefully. Prefer re-verifying flat-priced rivals first when the re-verify is time-boxed.
+
+2. **An "only undercuts from tier N up" claim must be recomputed from BOTH ladders, not just the
+   rival's.** `fda-recall-scraper/README.md` said `thirdwatch/fda-recalls-scraper` undercuts us
+   "only from Gold up"; live it undercuts from SILVER up and ties exactly at BRONZE. That is the one
+   error class in this cycle that asserted a price win we do not have, on a specific tier a buyer on
+   that plan could check. These per-tier verdict sentences are more fragile than per-row price
+   quotes, because EITHER side moving by one rung flips them.
+
+And one re-verify gotcha: `_unit_price.unit_price()` reduces a rival to one primary event, so it
+reported `thescrapelab/shopify-store-opportunity-intelligence` at **$0.0141** after that vendor added
+a `monitored-store-check` event -- while the `store-record` unit our README actually quotes was
+unchanged at $0.002. A re-verify that reads the single primary number will manufacture phantom drift.
+Always read `all_events_all_tiers()` and compare the event our prose actually names. Conversely, a
+disclosed handle named in a bare list with no price claim (`thoob/federal-spending-feed`) cannot
+drift -- do not chase it.

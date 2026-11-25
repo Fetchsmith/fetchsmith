@@ -208,7 +208,10 @@ Eight more real trademark products are named here for the first time, all confir
 every tier (verified live 2026-10-08): three watch feeds from `nexgenwatch` — `canada-cipo-trademark-decision-watch` ($0.1
 FREE to $0.067 GOLD+, plus a $0.02 start), `cipo-trademark-watch` and `uspto-trademark-watch`
 (both $0.08 FREE to $0.0536 GOLD+, plus a $0.02 start) — 27–50× ours; `thoob/uspto-trademark-feed`
-($0.004 flat, no start, 2× ours, with a what-changed-since-last-run mode); `recordsdata/uspto-
+($0.004 FREE to $0.0028 GOLD+, no start, 2× ours falling to 1.4× — **corrected 2026-11-25** off a
+live re-read of its own Actor record; this line previously read "$0.004 flat ... 2× ours", which
+overstated what it charges a plan holder, though it stays dearer than our flat $0.002 at every
+tier — with a what-changed-since-last-run mode); `recordsdata/uspto-
 trademark-status-scraper` ($0.02 FREE to $0.0175 GOLD+, no start, 8.75–10× ours); `topapi/uspto-
 trademark-scraper` ($0.0028 flat, no start, 1.4× ours); and two listings that price patents and
 trademarks the same regardless of office, `seibs.co/uspto-patent-intel` ($0.004 flat, no start, 2×

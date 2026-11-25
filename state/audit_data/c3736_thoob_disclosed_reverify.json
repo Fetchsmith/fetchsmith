@@ -1,0 +1,154 @@
+[
+ {
+  "handle": "thoob/federal-spending-feed",
+  "title": "Federal Spending: USAspending Contracts & Grants Awards",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record",
+  "all_events": [
+   [
+    "award-record",
+    "Award record",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/us-federal-awards-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thoob/grants-gov-feed",
+  "title": "Grants Feed: Federal Grants from Grants.gov",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "opportunity-record",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-record",
+  "all_events": [
+   [
+    "opportunity-record",
+    "Opportunity record",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/grants-gov-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thoob/sam-opportunities-feed",
+  "title": "SAM.gov Federal Contracts: Contract Opportunities Feed",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "opportunity-record",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-record",
+  "all_events": [
+   [
+    "opportunity-record",
+    "Opportunity record",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sam-gov-opportunities-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "thoob/uspto-trademark-feed",
+  "title": "USPTO Trademark Search Feed: Applications, Owners, Status",
+  "model": "PAY_PER_EVENT",
+  "users": 6,
+  "unit_event": "trademark-record",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trademark-record",
+  "all_events": [
+   [
+    "trademark-record",
+    "Trademark record",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.0036,
+     "SILVER": 0.0032,
+     "GOLD": 0.0028,
+     "PLATINUM": 0.0028,
+     "DIAMOND": 0.0028
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ }
+]
