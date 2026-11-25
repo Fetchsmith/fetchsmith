@@ -6530,3 +6530,34 @@ on an `in_use` toggle alone.
 **3. The guard protected the live file only -- the ~2,065 ALREADY-ARCHIVED blocks were unprotected.** `head_cycles = cycles(head_status)` took its baseline from HEAD's `STATUS.md` alone, while the new side was `STATUS.md | ARCHIVE`. That asymmetry is what allows the legitimate trim (a moved block stays inside the union), but it also means **a block that had already been trimmed into `STATUS_ARCHIVE.md` could be deleted from the archive with nothing objecting** -- and those are exactly the blocks old enough to be past the git retention window, i.e. the permanent-loss case this checker exists to prevent. Widened at c3696 to `cycles(head_status) | cycles(git_show("HEAD", ARCHIVE))`. The legitimate trim still passes (union-to-union), `--no-verify` remains the deliberate-discard escape hatch.
 
 **4. Test a widened guard in three directions, and read your own test harness.** Verified: (a) clean tree passes 2098->2098; (b) a real live->archive trim still passes; (c) c3695's exact header-only deletion is still caught. The accidental fourth proof came from a bug in the throwaway test script -- `open(A,"w")` before `open(A).read()` truncated the archive, and the widened guard immediately flagged all 2,065 archive blocks as destroyed, which is precisely the regression the old version would have waved through. **Read-before-write when a one-shot script rewrites two files that reference each other**; and back both files up to /tmp first, which is what made the mess a 2-second restore instead of an incident.
+
+### Cycle 3700 -- bucket 7 is a disclosure-FRESHNESS check, not just a shortcut to a non-event
+
+The vendor-catalogue triage's bucket 7 ("dominated by an already-disclosed cheaper-or-equal
+rival") reads like a cheap way to dismiss a hit. It is also the only routine in the fleet that
+re-reads an EXISTING disclosure's live price, and that is now twice where its real value came
+from: c3691 caught a stale `forgedata/remote-jobs-aggregator` price that way, and c3700 caught
+BOTH disclosed undercutters in `trademark-search-scraper/README.md` stale at once, moving in
+opposite directions -- `blackfalcondata/uspto-trademark-scraper` had RAISED $0.00153 -> $0.0036
+(2026-11-05), destroying a documented ~22-row crossover and dropping the section's undercutter
+count from two to one, while `scrapewise/uspto-trademark-scraper` had CUT its ladder
+(2026-11-16) from $0.002->$0.0017 to $0.0018->$0.001368, turning a documented "exact tie on
+FREE, 5/10/15% under on paid plans" into 10/14.5/23/31.6%. Neither direction is harmless: one
+overstates a rival's threat to buyers, the other understates it.
+
+Three things made the catch possible, all of which are cheap and should stay standard:
+1. **Read the rival's pricing-revision `startedAt`, not just its price.** The revision date is
+   what turns "this number differs from the README" into a dated, defensible correction
+   sentence, and it distinguishes a real move from a README that was wrong when written.
+2. **A price MOVE is bidirectional, so re-verify named rivals even when the sweep's own hit is
+   a non-event.** c3700's actual flagged row (`scrapewise/substack-scraper`) was ruled out and
+   contributed nothing; the find was entirely in the dominator re-read it triggered.
+3. **An owner pivot re-touches every niche that owner competes in.** `scrapewise` is named in 3
+   of our READMEs, so landing on it was a free freshness pass over all three. Worth noting when
+   the pointer lands on an owner already named in the fleet -- that is a feature of the walk.
+
+Corollary for the pricing side: a DEEPER discount from the same rival is not a new signal if
+its adoption has not moved. `scrapewise` sat at 3 users at the 2026-10-16 hold decision and is
+still at 3 users eight weeks later while now discounting 31.6% at GOLD+ -- the 20-user revisit
+threshold did its job, and the honest record is to document the deeper cut AND restate why the
+hold stands, checking each stated trigger live rather than asserting the conclusion.

@@ -1,0 +1,356 @@
+[
+ {
+  "handle": "scrapewise/internshala-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Internshala Scraper - Internships & Jobs in India",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vaga-entregue",
+  "unit_tiers": {
+   "FREE": 0.00036,
+   "BRONZE": 0.000342,
+   "SILVER": 0.000324,
+   "GOLD": 0.000306,
+   "PLATINUM": 0.000306,
+   "DIAMOND": 0.000306
+  },
+  "start_fee": 0.00425,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vaga-entregue",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Internshala internships and jobs by keyword, category, city, work from home, part time, stipend or salary: company, stipend or CTC, duration, skills, perks, openings, deadline and full description. Internshala scraper with onlyNew for daily alerts."
+ },
+ {
+  "handle": "scrapewise/hellowork-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "HelloWork Scraper - Jobs in France with Salaries",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vaga-entregue",
+  "unit_tiers": {
+   "FREE": 0.00072,
+   "BRONZE": 0.000684,
+   "SILVER": 0.0006156,
+   "GOLD": 0.0005472,
+   "PLATINUM": 0.0005472,
+   "DIAMOND": 0.0005472
+  },
+  "start_fee": 0.00425,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vaga-entregue",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape HelloWork (hellowork.com) job offers in France by keyword, city, contract (CDI, CDD, internship), remote work, experience, date and minimum salary: company, salary range, skills, full description. HelloWork scraper with onlyNew for daily alerts."
+ },
+ {
+  "handle": "scrapewise/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Jobs Scraper: Workday & Career Page Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "vaga-entregue",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.00085,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.00085
+  },
+  "start_fee": 0.0085,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): vaga-entregue",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Greenhouse jobs, Workday jobs and other ATS jobs from a company name, website or careers link. 11 ATS in one run: Greenhouse, Workday, Lever, Ashby, SmartRecruiters, Workable, Recruitee, Personio, Breezy, BambooHR, Rippling. Salary, remote, full description, only-new mode."
+ },
+ {
+  "handle": "scrapewise/app-store-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store Reviews Scraper - Ratings, Text, Dates by Country",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review-delivered",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.000855,
+   "GOLD": 0.00076,
+   "PLATINUM": 0.00076,
+   "DIAMOND": 0.00076
+  },
+  "start_fee": 0.0038,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-delivered",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Apple App Store reviews for any iPhone or iPad app by link, id or name: star rating, title, full review text, date, edited flag and country, plus the app's name, developer, category and average rating. Pick countries, newest or most helpful first, date and star filters. Error rows are free."
+ },
+ {
+  "handle": "scrapewise/substack-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Scraper: Newsletters, Posts & Full Text",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post-entregue",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.00076,
+   "SILVER": 0.00072,
+   "GOLD": 0.00068,
+   "PLATINUM": 0.00068,
+   "DIAMOND": 0.00068
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post-entregue,publicacao-entregue,texto-entregue",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Substack newsletters and posts for AI and RAG pipelines, newsletter monitoring and research: full text as markdown with chunks, likes, comments, paywall flag and subscriber counts. Only new posts on daily runs."
+ },
+ {
+  "handle": "scrapewise/sam-gov-scraper",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "SAM.gov Scraper - Federal Government Contracts & Bids",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "resultado-entregue",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.000855,
+   "SILVER": 0.00081,
+   "GOLD": 0.000765,
+   "PLATINUM": 0.000765,
+   "DIAMOND": 0.000765
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): resultado-entregue",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape SAM.gov government contracts without an API key: solicitations, sources sought and award notices by keyword, NAICS, PSC, set-aside, agency, state and dates, with deadlines, attachments and awardee. Find federal contract opportunities and bids to win."
+ },
+ {
+  "handle": "scrapewise/microsoft-ads-library-scraper",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 1,
+  "title": "Microsoft Ads Library Scraper & API - Bing Ads Transparency",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "anuncio-entregue",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.002375,
+   "SILVER": 0.002138,
+   "GOLD": 0.0019,
+   "PLATINUM": 0.0019,
+   "DIAMOND": 0.0019
+  },
+  "start_fee": 0.00228,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): anuncio-entregue,anuncio-resumo",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape the Microsoft Ads Library (Bing ads shown in the EU and EEA) by keyword, advertiser, country and date: ad copy, landing URL, who paid, shown dates, impressions and country share. For agencies, PPC and brand protection. Only-new mode. No login."
+ },
+ {
+  "handle": "scrapewise/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 1,
+  "title": "Google News Scraper & API - Search, Topics, Trend Surge",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "noticia-entregue",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.00085,
+   "PLATINUM": 0.00085,
+   "DIAMOND": 0.00085
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): noticia-entregue,termo-analisado",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google News without login: keyword search with operators, top stories and topics for 60+ countries, original publisher URLs, and a trend surge detector that ranks terms by how fast coverage is growing. A Google News API alternative for news monitoring."
+ }
+]

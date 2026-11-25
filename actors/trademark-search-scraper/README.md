@@ -271,6 +271,8 @@ thirteen undercut us:
   One charge event, **no start fee**, tiered $0.002 (FREE — an exact tie with us) → $0.0019
   (BRONZE) → $0.0018 (SILVER) → $0.0017 (GOLD, PLATINUM and DIAMOND). So it is 5%, 10% and 15%
   under our flat rate for anyone on a paid Apify plan, at every volume, with no fee to amortise.
+  **PRICE CUT 2026-11-16, re-read live 2026-11-25 — it is now cheaper than this ladder says, and
+  it no longer ties us on FREE; see the dated correction below for the current numbers.**
   What it does not do is leave the US register — this Actor searches 70+ offices in one call,
   where a buyer who needs EUIPO, UK, DE, JP or WIPO coverage would have to pair it with something
   else — and it returns no opposition window, seniority claim, Vienna codes or territories, and
@@ -281,6 +283,8 @@ thirteen undercut us:
   rows), but it also charges a **$0.01 Actor-start fee**, which our $0.002 has nothing to repay.
   The two cost the same at about **22 rows** ($0.01 ÷ $0.00047); below that we are cheaper, above
   it they are, reaching roughly 24% under us at 1,000 rows. USPTO-only, like `scrapewise`.
+  **SUPERSEDED 2026-11-25 — it raised its row price on 2026-11-05 and is no longer an
+  undercutter at any volume; see the dated correction below.**
 
 Eight of the thirteen are dearer than us at every tier (all prices in this paragraph verified
 live 2026-10-16). The one worth naming first is
@@ -348,6 +352,40 @@ disclosed undercutters are unchanged at 2 users each (`scrapewise/uspto-trademar
 `blackfalcondata/uspto-trademark-scraper`, re-verified live), so neither has crossed the 20-user
 revisit threshold from the pricing decision above — still holding flat $0.002, no tiering. Our own
 price re-read live and unchanged.
+
+**Correction: both disclosed undercutters moved, in opposite directions (re-read live 2026-11-25,
+cycle 3700, during the fleet's standing vendor-catalogue triage of owner `scrapewise`). Our own
+price was re-read first and is unchanged: flat $0.002 per trademark, one charge event, no
+Actor-start fee.** Each rival's price comes from its own live pricing record — the
+`isPrimaryEvent`-flagged recurring event, with its revision date — not from its title or a
+marketing figure.
+
+- `blackfalcondata/uspto-trademark-scraper` (2 users) **raised its row price from $0.00153 to a
+  flat $0.0036 on 2026-11-05 and is no longer an undercutter at any volume.** It still charges
+  the same $0.01 Actor-start fee on top. Its row rate alone is now **1.8x ours**, so the ~22-row
+  crossover named above no longer exists in either direction: it is dearer at 1 row ($0.0136 vs
+  our $0.002) and still dearer at 1,000 rows ($3.61 vs $2.00). The count in the paragraph above —
+  "two of the thirteen undercut us" — is therefore **one** as of this date.
+- `scrapewise/uspto-trademark-scraper` (3 users) **cut its price on 2026-11-16 and now undercuts
+  this Actor more deeply than the ladder above records, including on FREE, where it used to tie
+  us exactly.** Its single `resultado-entregue` event, still with no start fee, now reads
+  **$0.0018 (FREE) → $0.00171 (BRONZE) → $0.001539 (SILVER) → $0.001368 (GOLD, PLATINUM,
+  DIAMOND)** — 10%, 14.5%, 23% and **31.6%** under our flat $0.002, at every volume, where the
+  figures above say 0%, 5%, 10% and 15%. The scope ruling above is unchanged and was re-read: it
+  is still USPTO-only against this Actor's 70+ offices, with no opposition window, seniority
+  claim, Vienna codes, territories or watch mode.
+
+**The pricing decision above still holds at flat $0.002, and the deeper cut does not change it,
+because none of its three stated revisit triggers has fired** — all three were checked live on
+this date, not assumed. `scrapewise` is at **3 users**, nowhere near the 20-user threshold that
+would make its adoption more than a thin signal (it was 3 users at the 2026-10-16 decision too,
+so eight weeks of a deeper discount have moved it by zero). `foxlabs/euipo-trademark-data` is
+still a flat **$0.003** with no start fee (1 user), above our $0.002, so it has not cut below us.
+And no second *full-register* undercutter has appeared: `blackfalcondata` has gone the other way,
+and the two TMview-breadth rivals named further down (`scrapersdelight/euipo-trademark-scraper`,
+`trev0n/tmview-scraper`) were already counted at their own sweeps. A 31.6% discount held by a
+3-user listing is a price signal with no demonstrated demand behind it; tiering against it would
+cut margin on every buyer on every plan to match it.
 
 **New sweep finds real growth and two genuine new undercutters (2026-10-23, cycle 2139).** A fresh
 20-term sweep returns **145** Store listings matching "trademark" (up from 125 at cycle 1803,
