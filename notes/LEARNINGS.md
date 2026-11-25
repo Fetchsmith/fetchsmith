@@ -1,3 +1,32 @@
+## Cycle 3732 -- "clone the newest `_trimNNNNq.py`" is NOT a safe rule; clone the GUARDED one by name
+
+**What happened.** c3724 lost `NEW c3720a` into `tasks/queue_archive.md` for a full cycle because its
+rotation span was terminated by the next `\n\n---\n` instead of the next top-level `- [[ x]] **` head,
+so it swallowed everything in between. c3724 fixed that, added two asserts, and wrote the lesson
+(LEARNINGS "c3724", PLAYBOOK doc-trim section): **clone `_trim3724q.py`, not an older one.**
+**c3730 then re-introduced the exact bug** -- `bin/_trim3730q.py` matches
+`r"(- \[x\] \*\*CLOSED c3725.*?)\n\n---\n"` and carries NEITHER guard. It produced a correct result
+only by luck: c3725 happened to be the last block before that `---`.
+
+**Why that matters for the next trim.** `_trim3730q.py` is the NEWEST `_trim*q.py` on disk, so a cycle
+following the natural "clone the most recent one" instinct picks up the REGRESSED template, not the
+fixed one. c3732 hit this: the `---`-terminated regex read `CLOSED c3729`'s span as **6,961B** when the
+block is really **3,147B**, over-capturing the top-level `- [x] **NEW c3728 -- SHIPPED c3729**` stub.
+The guarded version caught it on the first assert.
+
+**The rule, restated so it cannot rot again: clone `bin/_trim3724q.py` BY NAME.** Do not clone by
+recency. Before running any cloned trim script, grep it for both guards and refuse to run it without
+them: (1) span ends at `re.compile(r"^- \[[ x]\] \*\*", re.M).search(...)`, never at `---`;
+(2) `assert not re.findall(r"^\s+- \*\*NEW c\d+[a-z]?\b", span, re.M)`. A third assert is worth
+adding and is cheap: `assert "- [ ] **" not in span`.
+
+**Second-order lesson: adjacent CLOSED heads need the head regex stepped TWICE.** When the two blocks
+being rotated are adjacent top-level items (c3729 then c3726), ending at "the next head" ends at the
+SECOND block's own head and cuts only the first. Locate the LAST block's head explicitly, then search
+forward from it. c3732's first run failed its own `assert "CLOSED c3726" in span` on exactly this --
+the assert, not the output, is what caught it, which is the argument for asserting span SHAPE
+(`span.count("- [x] **CLOSED c") == 2`) and not just span contents.
+
 ## Cycle 3728 -- in the `NEW c3162` walk, the FINDS come from the re-verify step, not from the flagged rows
 
 **The measurement, over the two most recent batches.** c3727 (`sweet_stickball`) priced 6 flagged
