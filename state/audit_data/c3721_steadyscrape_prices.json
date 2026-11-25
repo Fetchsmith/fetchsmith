@@ -1,0 +1,544 @@
+[
+ {
+  "handle": "steadyscrape/app-details-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 7,
+  "title": "App Store & Google Play Scraper: App Details & Metadata",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "App metadata from the Apple App Store (iOS) and Google Play (Android) in one run: name, description, price, rating and 1\u20135 breakdown, installs, version, release and update dates, developer contact, screenshots, in 174 countries. Export to JSON, CSV or Excel, or via API. No login."
+ },
+ {
+  "handle": "steadyscrape/greenhouse-lever-ashby-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "Greenhouse, Lever & Ashby Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every open job from Greenhouse, Lever and Ashby job boards by company (board link, careers page, domain or name) or search a directory of 10,000+ company boards by title and location. Salary, remote, department, posted date, apply link. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/shopify-store-leads",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Leads Finder (Emails, Phones, Socials)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find Shopify stores by what they sell, or enrich your store list: emails, phones, address, VAT number, social profiles, location, catalog size, newest product, price range, theme, installed apps. Ecommerce lead lists as CSV, JSON or API. Pay per lead; non-Shopify and closed domains free."
+ },
+ {
+  "handle": "steadyscrape/secop-colombia-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "SECOP II Scraper: Colombia Tenders, Licitaciones & Contracts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "process",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): contract,process",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Colombia's public procurement from SECOP II: tenders (licitaciones, selecci\u00f3n abreviada, m\u00ednima cuant\u00eda, concurso de m\u00e9ritos, subasta) with entity, base price, bids deadline and link, and signed contracts with supplier, NIT and value. Official open data. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/german-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "German Tenders Scraper: Ausschreibungen & Vergabe Notices",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,tender",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "German public tenders (\u00f6ffentliche Ausschreibungen) from the official Bekanntmachungsservice (oeffentlichevergabe.de): every Vergabe notice above and below the EU thresholds, awards with winners, buyer email, CPV, deadline, Bundesland. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/brazil-cnpj-scraper",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Brazil CNPJ Scraper (Receita Federal Company Data & Leads)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Brazil CNPJ lookup (consulta CNPJ) and company search (empresas do Brasil) from the Receita Federal register: legal name, status, CNAE, address, phone, email, Simples/MEI, partners (QSA). Look up CNPJs in bulk or find leads by state, city, CNAE or size. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper: myworkdayjobs Career Sites & API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Workday jobs from any myworkdayjobs.com career site, or by employer name (Walmart, NVIDIA): title, requisition id, locations, remote or hybrid, job type, posted date, department, description, apply link. Search, filters, only-new monitor. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/ocr-image-pdf-to-text",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "OCR: Image & PDF to Text \u2014 Scanned PDF, Screenshot, Photo OCR",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "page",
+  "unit_tiers": {
+   "FREE": 0.0025
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): page,text-page",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "OCR API for images and PDFs: extract text from scanned PDFs, screenshots, photos, receipts and invoices, with line boxes, confidence and detected language. Reads a PDF's own text when it has one. 40+ languages, rotated pages fixed. Export to JSON, CSV, TXT or Markdown, or via API."
+ },
+ {
+  "handle": "steadyscrape/career-site-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Career Site Jobs Scraper: Greenhouse, Lever, Ashby, Workday",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job listings straight from company career sites on Greenhouse, Lever, Ashby and Workday (plus Recruitee, Personio, BambooHR, Breezy): title, department, location, remote, salary, posted date, apply link, description. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/website-screenshot-api",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot API - Full Page, Mobile & PDF",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Take website screenshots of any URL list in bulk: full page or above the fold, desktop, mobile or custom size, PNG, JPEG or WebP, plus PDF. Wait for an element or a delay, hide cookie banners, dark mode. Each file is a public link with final URL and status. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/remote-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Remote Jobs Scraper: We Work Remotely, Jobicy & Remote OK",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote jobs (work from home) from We Work Remotely, Jobicy and Remote OK (remoteok.com): title, company, salary, where you may live, category, job type, description, posted date and board link, deduplicated. Filter by keyword, category, country. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/doffin-norway-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Doffin Scraper: Norway Public Tenders (Anbud, Kunngj\u00f8ringer)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice,notice-with-details",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Norwegian public tenders and procurement notices (anbud) from Doffin by keyword, notice type, status, county, buyer, CPV code and date: contract notices, awards, intentions and DPS, with buyer org number, value, deadline, contact, lots and documents link. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/belgium-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Belgium Tenders Scraper: Public Procurement (e-Procurement)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice,notice-with-details",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Belgian public tenders from publicprocurement.be (e-Procurement BDA) by keyword, notice type, CPV, region, procedure, buyer and deadline: contract notices, awards and corrections in NL, FR, DE, EN, with lots, buyer contact, value, winners and documents. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/boamp-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "BOAMP Scraper: French Public Tenders, MAPA & Award Notices",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "BOAMP notices (march\u00e9s publics, appels d'offres) from DILA's official daily files: French public tenders (avis de march\u00e9, MAPA), awards with winners and SIRET, corrections. Filter by d\u00e9partement, CPV, descriptor, buyer, keyword and deadline. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/baltic-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Baltic Tenders Scraper: Estonia & Latvia Public Procurement",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,tender",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Public tenders and contract awards of Estonia (riigihanked.riik.ee) and Latvia (EIS, eis.gov.lv) from their official open data: buyer, registry code, CPV, deadline, estimated value, winners and amounts, daily monitoring of new notices. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/austria-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Austria Tenders Scraper: Public Procurement Notices and Awards",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice,notice-with-details",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Austrian public tenders from the official USP Ausschreibungssuche (ausschreibungen.usp.gv.at): contract notices and awards by keyword, region, CPV code and day. Deadlines, buyer contacts, lots, award criteria, winners and contract values. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/news-article-extractor",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "News Article Extractor: Full Text from Any News Site",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,headline",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "News article extractor: full text (plain and Markdown), title, authors, dates, lead image, tags and paywall flag from any news site. Give article links, a section page, an RSS/Atom feed or a Google News sitemap. Headlines-only mode, date filter, only new. Export to JSON, CSV or Excel, or via API."
+ },
+ {
+  "handle": "steadyscrape/google-play-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "Google Play Scraper: App Data, Developers & Categories",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google Play app data: name, description, price, rating and 1\u20135 star breakdown, installs, version, update date, developer email and website, screenshots. Find apps by link or package name, developer, category or similar apps, in 174 countries. Export to JSON, CSV or Excel, or via API. No login."
+ }
+]
