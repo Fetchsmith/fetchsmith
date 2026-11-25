@@ -1,0 +1,70 @@
+[
+ {
+  "handle": "shahidirfan/Workable-Job-Scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 89,
+  "title": "Workable Job Scraper \ud83d\udd25",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00093,
+   "SILVER": 0.00087,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Effortlessly scrape job listings from Workable. This actor is designed for simplicity, providing a minimal, clean dataset with just the core job details. Perfect for quick data collection and lead generation without the extra noise."
+ },
+ {
+  "handle": "shahidirfan/NGOBase-Grants-Funders-Scraper",
+  "niches": [
+   "grants-gov-scraper"
+  ],
+  "users": 4,
+  "title": "NGOBase Grants & Funders Scraper \ud83d\udcb0",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00149
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape NGOBase for active grant opportunities, funder profiles & eligibility criteria. Extract grant amounts, deadlines, contact details & funding requirements. Ideal for nonprofit fundraising intelligence, grant targeting, donor research & funding pipeline automation."
+ }
+]
