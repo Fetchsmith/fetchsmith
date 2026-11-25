@@ -1,0 +1,672 @@
+[
+ {
+  "handle": "studio-amba/belgian-procurement-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 4,
+  "title": "Belgian Public Procurement Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Belgian public procurement tenders from e-Notification (enot.publicprocurement.be). Extract tender titles, deadlines, buyers, CPV codes, estimated values, and procedure types. No login required."
+ },
+ {
+  "handle": "studio-amba/e-licitatie-ro-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 4,
+  "title": "e-licitatie.ro Scraper \u2014 Romanian Public Procurement Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.012,
+   "SILVER": 0.009,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Romanian public procurement tenders from e-licitatie.ro (SEAP/SICAP), Romania's national tender platform. Filter by keyword, CPV code, contracting authority or date range. Returns buyer, deadline, CPV codes, estimated value and procedure type. No cookies, no login required."
+ },
+ {
+  "handle": "studio-amba/arbeitnow-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Arbeitnow Scraper \u2014 EU & DACH Job Listings API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job listings from arbeitnow.com, a multi-country EU/DACH job board. Extract titles, companies, locations, remote status, tags, and descriptions via the site's own public API."
+ },
+ {
+  "handle": "studio-amba/workersonboard-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "WorkersOnboard Scraper - Remote Work-From-Home Job Leads",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote and work-from-home job leads from WorkersOnboard's continuously updated job-log pages. Extract job titles, hiring companies, pay rates, and direct apply links. No login or cookies required."
+ },
+ {
+  "handle": "studio-amba/greenhouse-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Jobs Scraper - Company Career Boards to JSON",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job postings from any company's Greenhouse career board. Enter a board token like 'adyen' or 'celonis' and get every open position: department, office, location, remote flag, salary when listed, and full description text. Fast official JSON API, no login or cookies required."
+ },
+ {
+  "handle": "studio-amba/ted-eu-procurement-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "TED EU Procurement Scraper \u2014 Public Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012,
+   "BRONZE": 0.012,
+   "SILVER": 0.009,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape EU public procurement notices from TED (Tenders Electronic Daily). Search by keyword, country, or CPV code. Extract tender titles, buyers, deadlines, estimated values, and award details. Covers all EU/EEA member states."
+ },
+ {
+  "handle": "studio-amba/smartrecruiters-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "SmartRecruiters Jobs Scraper - Company Career Boards to JSON",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every open position from a company's SmartRecruiters career board. Enter a company id like 'Sodexo' or 'BoschGroup' and get title, department, location, employment type, remote flag, posting date and the full description from the official public JSON API. No login or cookies."
+ },
+ {
+  "handle": "studio-amba/recruitee-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Recruitee Jobs Scraper - Company Career Pages to JSON",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every open offer from a company's Recruitee career page. Enter a company slug like 'keyes' and get title, department, location, employment type, remote and hybrid flags, salary when listed and the full description from the public Recruitee JSON endpoint. No login or cookies."
+ },
+ {
+  "handle": "studio-amba/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper - Company Career Sites to JSON",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape open positions from any company's Workday career site. Paste the career site URL, optionally add a search term, and get title, location, employment type, requisition id, posting date and the full description from Workday's public career-site JSON. No login or cookies."
+ },
+ {
+  "handle": "studio-amba/simap-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "simap.ch Scraper \u2014 Swiss Public Procurement Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Swiss public procurement tenders from simap.ch, Switzerland's national tender platform. Filter by canton, CPV code, publication type or date range. Returns buyer, deadline, CPV codes, lots and (for awards) the winning vendor and price. No cookies, no login required."
+ },
+ {
+  "handle": "studio-amba/hankintailmoitukset-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Hilma Finland Scraper \u2014 Public Procurement Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Finnish public procurement notices from hankintailmoitukset.fi (Hilma). Filter by keyword, notice type, category, region, or value. Returns buyer info, deadlines, CPV codes, and award winners. No API key, no login required."
+ },
+ {
+  "handle": "studio-amba/acquistinretepa-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Acquisti in Rete PA Scraper \u2014 Italy MEPA Tender & RdO Notices",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Italian public procurement RdO (Richiesta di Offerta) and tender notices from acquistinretepa.it, Italy's national MEPA e-procurement marketplace. Filter by keyword, publication date, or notice type. Returns buyer name, value, category and deadlines. No API key, no login required."
+ },
+ {
+  "handle": "studio-amba/ausschreibung-at-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Ausschreibung.at Scraper \u2014 Austrian Public Procurement Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Austrian public and restricted construction tender notices from ausschreibung.at (ANK\u00d6 / Hubexo). Filter by keyword and Bundesland (region). Returns title, region, trade category, publication date and submission deadline. No login required."
+ },
+ {
+  "handle": "studio-amba/ekr-gov-hu-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "EKR Hungary Scraper \u2014 Public Procurement Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Hungarian public procurement notices from ekr.gov.hu (EKR). Filter by keyword or buyer name. Returns buyer info, deadlines, CPV codes, place of performance, and procedure details. No API key, no login required."
+ },
+ {
+  "handle": "studio-amba/tenderned-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "TenderNed Scraper \u2014 Dutch Government Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.012
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Dutch public procurement tenders from TenderNed. Filter by keyword, contract type, scope, or date range. Returns tender details, contracting authority, deadlines, CPV codes, and procedure info. No cookies, no login required."
+ },
+ {
+  "handle": "studio-amba/eu-procurement-award-radar",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "EU Procurement Award Radar \u2014 Who Won Which Tender",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.01,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track who wins EU public tenders. Aggregates AWARD notices (not open calls) from TED across all EU/EEA states, normalizes buyer, winner, award value and CPV code into one schema, and registry-enriches the winner (registration number, status) where available."
+ },
+ {
+  "handle": "studio-amba/contrataciondelestado-es-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "Spain Public Procurement Scraper \u2014 Tender Notices",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Spanish public procurement tender notices from the official Plataforma de Contrataci\u00f3n del Sector P\u00fablico open-data feed. Filter by keyword, region, CPV code and status. Returns buyer, CPV codes, estimated value, deadline and a direct link to the notice. No login, no API key."
+ },
+ {
+  "handle": "studio-amba/udbud-dk-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "Udbud.dk Scraper \u2014 Danish Public Procurement Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Danish public procurement tenders from udbud.dk, Denmark's official national tender portal. Filter by keyword, status, or sort order. Returns tender details, buyer info, deadlines, estimated value, and CPV codes. No API key, no cookies, no login required."
+ },
+ {
+  "handle": "studio-amba/base-gov-pt-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "BASE.gov.pt Scraper \u2014 Portuguese Public Procurement Contracts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract Portuguese public procurement contracts from base.gov.pt, Portugal's official public contracts database. Filter by keyword, contract type, CPV, price, or date. Returns buyer, supplier, price, CPV codes, and execution place. No API key, no login required."
+ },
+ {
+  "handle": "studio-amba/evergabe-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "e-Vergabe Germany Scraper \u2014 Federal Public Procurement Tenders",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and extract German federal public procurement tender notices from evergabe-online.de (e-Vergabe). Filter by keyword and publication date. Returns buyer info, deadlines, procedure type and place of performance. No API key, no login required."
+ }
+]

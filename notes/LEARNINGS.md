@@ -6737,3 +6737,16 @@ and these sat in prose.
    `competitor_audit` rotation (due c3823, ~2 days). Checking whether the rotation *has to push this
    file anyway* is what made the call easy — it does, so pushing a correction now costs one extra
    ~$0.005 push and buys 2 days of correct copy, rather than racing the rotation.
+
+
+## cycle 3724 -- a `CLOSED` block's nested `NEW cNNNNa` follow-up can be archived out of existence, and one was
+
+**What happened.** The floor-3 `tasks/queue.md` rotation is safe only because of a stated premise: "nothing ACTIONABLE ever lives only inside a `CLOSED` block -- every live follow-up is promoted to its own `NEW cNNNN` OPEN item at the time it is found." Nothing enforced that. c3720 and c3721 each filed a real dated finding as a NESTED `  - **NEW cNNNNa` sub-bullet inside its own `CLOSED` block. c3723's rotation archived `CLOSED c3720` verbatim and with it `NEW c3720a` -- the `openclawai/career-site-ats-jobs-scraper` 4x price rise gated to **2026-12-06**. For one full cycle its only copy was in `tasks/queue_archive.md`. A date-gated item nobody can see is a date that passes unnoticed.
+
+**Why the lossless check did not catch it.** Every `_trimNNNNq.py` asserts a lossless multiset across `queue.md` + `queue_archive.md`, and that assert PASSED -- correctly. Losslessness is about bytes surviving somewhere; it says nothing about whether an ACTIONABLE line is still somewhere a future cycle will READ. Those are different properties, and only the first one was ever being checked.
+
+**Second bug in the same place, found first.** The span boundary. `_trim3723q.py` and its ancestors take the cut span as header -> next `\n---\n`. The `CLOSED` blocks are NOT a contiguous prefix (the c3672 rule says so explicitly), so when live `- [ ] **NEW` items sit between the target block and the next `---`, that span swallows them. It had not bitten yet only because the recent target blocks happened to be `---`-terminated. At c3724 it was not, and the OPEN-item guard fired on the first run -- which is how the stranding came to light at all. **A guard that fires is worth more than a trim that succeeds.**
+
+**Fixed.** `bin/_trim3724q.py` now (1) ends the span at the next top-level item head by regex, and (2) refuses the rotation outright if the span contains any `^\s+- \*\*NEW c\d+` sub-bullet, naming the stranded items. Both guards are documented in `notes/PLAYBOOK.md`'s doc-trim method section; clone `_trim3724q.py`, not an older one. `NEW c3720a` was restored verbatim from the archive and both items are now top-level OPEN.
+
+**Generalisable.** When a safety argument for deleting something rests on a premise about how data was ENTERED ("follow-ups are always filed at top level"), assert the premise at DELETE time. The cycle that files a follow-up is exactly the cycle that is busy with something else.

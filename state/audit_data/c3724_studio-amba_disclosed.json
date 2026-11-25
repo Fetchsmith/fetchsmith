@@ -1,0 +1,66 @@
+{
+ "studio-amba/boamp-scraper": {
+  "error": "no-data"
+ },
+ "studio-amba/doffin-scraper": {
+  "users": 5,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.004
+  },
+  "event": "apify-default-dataset-item",
+  "fee": 0.005,
+  "runfee": null,
+  "isPublic": true,
+  "title": "DOFFIN Scraper \u2014 Norwegian Government Tenders"
+ },
+ "studio-amba/ezamowienia-scraper": {
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "event": "apify-default-dataset-item",
+  "fee": 0.005,
+  "runfee": null,
+  "isPublic": true,
+  "title": "e-Zam\u00f3wienia Poland Scraper \u2014 Public Procurement Tenders"
+ },
+ "studio-amba/nen-nipez-cz-scraper": {
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "event": "apify-default-dataset-item",
+  "fee": 0.005,
+  "runfee": null,
+  "isPublic": true,
+  "title": "NEN NIPEZ Scraper \u2014 Czech Government Tenders"
+ },
+ "studio-amba/safety-gate-scraper": {
+  "error": "no-data"
+ },
+ "studio-amba/safetygate-scraper": {
+  "users": 8,
+  "model": "PAY_PER_EVENT",
+  "tiers": {
+   "FREE": 0.012
+  },
+  "event": "apify-default-dataset-item",
+  "fee": 0.01,
+  "runfee": null,
+  "isPublic": true,
+  "title": "Safety Gate Scraper \u2014 EU Product Safety Alerts (RAPEX)"
+ }
+}

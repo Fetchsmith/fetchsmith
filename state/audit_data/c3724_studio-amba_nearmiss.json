@@ -1,0 +1,72 @@
+{
+ "cycle": 3724,
+ "owner": "studio-amba",
+ "live_listings": 986,
+ "vocab_flagged": 20,
+ "already_disclosed_live": 4,
+ "off_niche": 962,
+ "vocab_flagged_verdict": "0 of 20 undercut us at ANY tier; all 20 are dearer at every tier AND carry a $0.005 or $0.01 start fee we do not charge",
+ "near_miss_scan": {
+  "method": "12 hand-written regex buckets over the 962 off-niche title+description blobs, deliberately broad (the c3704/c3706 manual-read rule, done programmatically because 962 titles cannot be eyeballed)",
+  "buckets": {
+   "jobs/ats": {
+    "hits": 161,
+    "ruling": "bucket 1 scope exclusion -- every row is ONE national general job board (StepStone DE/AT, Pracuj PL, Jobs.cz, Kariyer.net TR, Profesia SK, ...) or a staffing agency (Adecco, Gi Group, Michael Page). Precedent: deriverge/instahyre India-only c3290, chimerical_quicklime/remotive c3308, glasswing/linkedin-jobs c3297. The genuine ATS-platform rows (greenhouse/smartrecruiters/recruitee/workday) were caught by the vocab and priced -- all dearer."
+   },
+   "procurement": {
+    "hits": 2,
+    "ruling": "eu-funding-tenders-scraper HAND-PRICED LIVE (12u, the biggest row in the whole near-miss set): $0.002/row + $0.005 start vs our grants-gov $0.0015 flat no fee and eu-ted $0.0015 flat no fee -- dearer on both comparisons at every tier. Source is the EC Funding & Tenders Portal (SEDIA/Horizon Europe calls), which is neither US Grants.gov nor TED. 0 owed. boe-scraper is the Spanish gazette, see court/legal."
+   },
+   "court/legal": {
+    "hits": 9,
+    "ruling": "bucket 1 jurisdiction -- EU official gazettes (BOE, Belgisch Staatsblad, Bundesgesetzblatt, Diario da Republica), judicial property auctions (Astegiudiziarie, ZVG-Portal), insolvency/debtor registers (BODACC, KRZ) and German company filings (Bundesanzeiger). Our court-records-scraper is US court records and our federal-register-scraper is the US Federal Register; same SHAPE, different jurisdiction is not a substitute."
+   },
+   "securities/finance": {
+    "hits": 19,
+    "ruling": "bucket 2 category mismatch -- 19 EU company registries / KYB-AML products (KRS, Handelsregister, Pappers, Zefix, North Data, eu-dealer-counterparty-check). Our sec-insider-trades-scraper sells SEC Form 4 transactions; a company register is a lead-gen/KYB lookup, the exact shape bucket 2 pre-excludes."
+   },
+   "appstore/reviews": {
+    "hits": 60,
+    "ruling": "niche-vocabulary FALSE MATCH on the generic words review/prices -- beauty and grocery retail (Notino x4, Sephora, Lyko, JYSK x5), hotel/holiday reviews (Zoover, HolidayCheck), doctor directories (Jameda, Doctoralia, Miodottore) and employer reviews (Kununu). Our review Actors are app-store/Google-Play/Steam reviews. Same c3218/c3239 shape."
+   },
+   "regulatory/recall": {
+    "hits": 3,
+    "ruling": "efsa-scraper HAND-PRICED LIVE (3u): $0.012/row + $0.01 start = 3.4-5x dearer than our fda-recall ladder at every tier, and EFSA is the EU food-safety authority, not US FDA enforcement. Ruled by the precedent ALREADY ON THAT README PAGE for this same owner's EU Safety Gate/RAPEX row: out of scope regardless of price. The other 2 are gazettes, see court/legal."
+   },
+   "shopify/products": {
+    "hits": 4,
+    "ruling": "bucket 1/2 -- named non-Shopify retailer catalogues (Aldi UK, Primark, Hofer AT, Kronans Apotek). Our shopify-products-scraper reads a Shopify storefront's own /products.json by domain; a single retailer's own site is not a substitute."
+   },
+   "trademark/ip": {
+    "hits": 1,
+    "ruling": "false match (netto-scraper, German discount grocery)"
+   },
+   "grants/research": {
+    "hits": 1,
+    "ruling": "same row as procurement bucket, priced above"
+   },
+   "news/content": {
+    "hits": 1,
+    "ruling": "same efsa-scraper row, priced above"
+   },
+   "screenshot": {
+    "hits": 0,
+    "ruling": "clean"
+   },
+   "campaign finance": {
+    "hits": 0,
+    "ruling": "clean"
+   }
+  }
+ },
+ "bucket7_liveness_reverify": {
+  "studio-amba/boamp-scraper": "404/DELISTED -- eu-ted README:170 already says 'confirmed delisted, 404 on 2026-11-07'. Claim accurate, nothing owed.",
+  "studio-amba/safety-gate-scraper": "404/DELISTED -- fda-recall README:289/:291 call it retired / 'being removed from the Store' but were written BEFORE the removal landed. One-clause confirmation filed to the FOLD-IN REGISTER; safe direction, nothing urgent.",
+  "studio-amba/doffin-scraper": "LIVE 5u, $0.004 flat + $0.005 start -- eu-ted README:184 says '5 users, Norway, $0.004 flat plus a $0.005 start fee'. 0 DRIFT on price AND user count.",
+  "studio-amba/ezamowienia-scraper": "LIVE 1u, $0.002->$0.0012 + $0.005 start -- eu-ted README:170 says exactly that at 1 user. 0 DRIFT.",
+  "studio-amba/nen-nipez-cz-scraper": "LIVE 1u, $0.002->$0.0012 + $0.005 start. README:180 quotes no figures for it, claims only that it 'undercuts our per-row rate from Silver tier up'. Live SILVER is $0.0015 == our $0.0015 exactly -- a TIE, with the real undercut starting at GOLD. The sentence's subject is JOINT (the publicmoney/* family + this row) and publicmoney IS $0.00125 at Silver, so the claim holds for its main subject; the imprecision overstates a RIVAL's advantage (safe direction) and sits inside a ruling that the row is not disclosure-worthy regardless of price. No edit owed.",
+  "studio-amba/safetygate-scraper": "LIVE 8u, $0.012 flat + $0.01 start -- fda-recall README:291 names it at 8 users, EU Safety Gate scope, out of scope. 0 DRIFT on user count; no price figure was claimed."
+ },
+ "awareness_only_not_filed": "studio-amba/eu-procurement-award-radar (1u, $0.02/row + $0.01 start = 13x dearer than our eu-ted) sells TED AWARD notices only, with REGISTRY ENRICHMENT of the winner (registration number, status). We already serve award notices via noticeTypes=can-standard, so scope is covered; the winner-registry enrichment is a feature we lack. NOT filed as a NEW item (unlike c3620/c3656): the lift is per-country registry sourcing, not a one-field addition, the sighting is a single 1-user listing, and inbox demand is zero. fetchwerk/eu-award-radar (3u, award-notices-only) is already named on the page.",
+ "verdict": "0 DISCLOSURES OWED, 0 PRICE DRIFT"
+}
