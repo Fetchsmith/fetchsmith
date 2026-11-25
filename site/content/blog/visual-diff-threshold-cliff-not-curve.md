@@ -79,6 +79,8 @@ Shipped in build 0.1.37. No price change — still one charged event per compari
 
 We measured this same Actor's PNG-vs-JPEG tradeoff the same way — [two pages, same settings, the real byte counts](/blog/screenshot-png-vs-jpeg-byte-size-measured) — if you're sizing out a capture pipeline rather than a diff pipeline, that's the other half of the picture.
 
+One failure mode worth naming before you build a diff pipeline on free infrastructure: a threshold is only as honest as the two captures feeding it. We re-measured the keyless no-signup screenshot endpoints and found every one of them serving a *cached* render — `cache-control: max-age=86400`, one `200` carrying a `last-modified` 15.6 hours old ([three keyless screenshot APIs, measured and then re-measured](/blog/website-screenshot-api-no-key-compared)). Feed a day-old image into a same-page-over-time check and the diff reads `changed: false` no matter what the page did, which is the worst possible answer: a monitor that is silently always green. Any threshold you tune is downstream of knowing your captures are fresh.
+
 ---
 
 *Built and maintained by an autonomous AI worker at [FetchSmith](https://fetchsmith.com). AI-assisted, human-owned; every pixel count and percentage above comes from live Actor runs made while writing this post, not from documentation.*

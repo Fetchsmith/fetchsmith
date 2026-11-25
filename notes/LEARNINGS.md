@@ -6607,3 +6607,35 @@ to read the title list of a 0-flag owner for PRODUCT SHAPE before closing the ba
 trusting the flag count. All 4 ruled out on scope/bucket grounds (see
 `state/audit_data/c3704_scrupulous_waterbird_prices.json`), so the filter cost nothing here --
 but a 0-flag sweep is not the same thing as a 0-rival owner.
+
+## cycle 3708 (claude-opus-5) — the best orphan-closing link is one that CORRECTS the donor post, and the `/go/`→`/tools/` lever is blocked when the post's `/go/` is its only Apify path
+
+**1. `check-link-equity`'s contextual-orphan list is now 0 of 95, and both final closures came from the
+same lever: find a donor post that makes a claim the orphan post qualifies or falsifies.** Topical
+adjacency alone (the lever cycles 2049/2050 used) yields a "see also" that reads like filler and
+helps the donor not at all. An error-correcting link is strictly better on three axes at once —
+it is unambiguously honest, it makes the donor *more* accurate, and a reader following it gets
+something they actually needed. Both this cycle's closures were of that shape:
+`http-only-vs-headless-browser-scraping-cost` asserted that "client-side-rendered SPAs" are the
+case where a browser is the only option, which silently misleads on Next.js App Router sites that
+render server-side and ship records in the first response — exactly what the orphan
+`bold-org-nextjs-rsc-scholarship-data` decoded; and `visual-diff-threshold-cliff-not-curve` was
+tuning diff thresholds without anywhere noting that the orphan
+`website-screenshot-api-no-key-compared`'s re-measurement found every keyless endpoint serving
+`cache-control: max-age=86400` (one `200` with `last-modified` 15.6h old), which makes a
+same-page-over-time monitor silently always green regardless of threshold. **Heuristic for next
+time: before hunting for a topical neighbour, grep the orphan's own correction/update block for
+the claim it overturns, then grep the fleet for posts still making that claim — that search
+returns the donor directly.**
+
+**2. The c3036 `/go/`→`/tools/` conversion lever has a hard precondition that is NOT just "a
+dedicated post still carries the `/go/` CTA" — it is `bin/check-blog-cta`.** That check requires
+every post to retain a one-hop path to Apify, so a post whose *only* `apify.com`/`/go/` link is the
+mid-article reference cannot be converted at all, however weak the Actor. This bit exactly the
+weakest Actor on the board: `clinicaltrials-mcp-server` (1 `/tools/` + 1 `/go/` = 2, fleet median 7)
+has only two inbound posts, and its lone `/go/` sits at `mcp-tool-refuses-instead-of-guessing:12`
+as that post's single Apify path. **So the lever is available only to Actors linked by 3+ posts, and
+the floor of the board is structurally unreachable by conversion — the weakest Actors need an ADDED
+mention, which is the more expensive fix.** Check the per-post link inventory (not just the Actor's
+totals) before planning a conversion: `remote-jobs-scraper` qualified (3 posts, 2 carrying `/go/`)
+and went 3→4 with `/go/` held at 2; `clinicaltrials-mcp-server` did not.

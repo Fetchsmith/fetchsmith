@@ -46,6 +46,8 @@ Switching to `wait_until='load'` (DOM + initial resources, not "everything's gon
 
 This isn't "headless browsers are useless." If the data genuinely only exists after JS runs — infinite-scroll grids with no backing API, client-side-rendered SPAs, interactions that require clicking — a browser is the only option, and 7 seconds and 146 MB is the price of admission. The point is narrower: **check for a public JSON/API endpoint before reaching for a browser.** Most storefronts, forums, and content platforms expose one, whether or not it's documented (Shopify's `/products.json`, Substack's `/api/v1/archive`, HN's Algolia API, Apple's review RSS — every one of our Actors runs on an endpoint like this, not on scraping rendered HTML).
 
+One caveat on "client-side-rendered SPAs," because it's the case people get wrong most often: a React site is not automatically a browser job. Next.js App Router sites render on the *server* and ship the resulting records straight into the initial HTML as a React Server Components flight stream — so the data is in the first response, before any JS executes, and `curl` plus a `JSON.parse` gets it. We decoded one end to end in [Next.js App Router ships your whole database table in the HTML](/blog/bold-org-nextjs-rsc-scholarship-data): ~30 complete records per HTTP request, no browser. "Built with React" tells you nothing about where the data lives; check the first response's bytes before you assume you need a renderer.
+
 On a machine this small, that check is the difference between an Actor that answers in a fifth of a second and one that needs its own gigabyte of headroom just to load a single page.
 
 ## Packaged version
