@@ -1,0 +1,243 @@
+[
+ {
+  "handle": "sweet_stickball/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Career Site Jobs Scraper - Greenhouse, Lever & More, $1.50/1K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "JOB",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0013,
+   "SILVER": 0.0011,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): JOB",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Career site jobs scraper and ATS jobs API alternative: extract job postings from Greenhouse, Lever, Ashby and Workday boards with title, department, locations, remote flag, employment type, salary range, posting date, apply URL and description. Company URLs or names, no login or API key."
+ },
+ {
+  "handle": "sweet_stickball/shopify-store-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Scraper - Products, Variants & Stock, $0.70/1K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "PRODUCT",
+  "unit_tiers": {
+   "FREE": 0.0007,
+   "BRONZE": 0.00059,
+   "SILVER": 0.00052,
+   "GOLD": 0.00042,
+   "PLATINUM": 0.00042,
+   "DIAMOND": 0.00042
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): PRODUCT,STORE_ANALYSIS",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Shopify scraper and products API alternative: extract any Shopify store's catalog with title, price, compare-at price, variants, stock, images and tags from its public product JSON, with optional store analysis. Competitor price monitoring and dropshipping research, no login or Shopify API key."
+ },
+ {
+  "handle": "sweet_stickball/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Scraper - Multi-Keyword & New Articles, $1.40/1K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "ARTICLE",
+  "unit_tiers": {
+   "FREE": 0.0014,
+   "BRONZE": 0.0012,
+   "SILVER": 0.001,
+   "GOLD": 0.00084,
+   "PLATINUM": 0.00084,
+   "DIAMOND": 0.00084
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ARTICLE",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News scraper and API alternative: extract news articles for any keyword with headline, source, publish date, URL and snippet, by language and country. News monitoring, media tracking and PR research from the public Google News feed, no API key or login."
+ },
+ {
+  "handle": "sweet_stickball/ted-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "TED Tenders Scraper - EU Tenders & Buyer Contacts, $0.90/1K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "NOTICE",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.00076,
+   "SILVER": 0.00068,
+   "GOLD": 0.00054,
+   "PLATINUM": 0.00054,
+   "DIAMOND": 0.00054
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): NOTICE",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "TED tenders scraper: search EU public procurement notices (Tenders Electronic Daily) by keywords or expert query, buyer country, CPV code, publication date and notice type. Title, buyer, CPV codes, procedure, deadline, estimated value, lots, TED and PDF links. Official TED API, no API key."
+ },
+ {
+  "handle": "sweet_stickball/google-play-apps-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play Scraper - Apps, Installs & Ratings, $0.27/1K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "APP",
+  "unit_tiers": {
+   "FREE": 0.00027,
+   "BRONZE": 0.00023,
+   "SILVER": 0.0002,
+   "GOLD": 0.00016,
+   "PLATINUM": 0.00016,
+   "DIAMOND": 0.00016
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): APP",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google Play app scraper: title, developer, category, rating, ratings histogram, installs range, price, in-app purchases, ads, content rating, version and update date for any package name, developer page or category. Country and language options, flat JSON, no login."
+ },
+ {
+  "handle": "sweet_stickball/remote-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Remote Jobs Scraper - Remote OK & Jobicy, Salaries, $0.04/1K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "JOB",
+  "unit_tiers": {
+   "FREE": 4e-05,
+   "BRONZE": 3.4e-05,
+   "SILVER": 3e-05,
+   "GOLD": 2.4e-05,
+   "PLATINUM": 2.4e-05,
+   "DIAMOND": 2.4e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): JOB",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote jobs scraper: aggregate remote job offers from the public Remote OK and Jobicy APIs. Title, company, location, salary, tags, date and apply link, deduplicated, with source attribution. Filter by keywords, tags, region and age. No login, no API key."
+ }
+]
