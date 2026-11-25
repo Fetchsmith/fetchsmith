@@ -1,0 +1,330 @@
+{
+  "automation-lab/multi-ats-jobs-scraper": {
+    "description": "Scrape job listings from company career pages across 5 ATS platforms: Greenhouse, Workday, SmartRecruiters, Lever, and Ashby. Standardized output with 15 fields per job. Pure HTTP, no browser needed.",
+    "extra_named": [],
+    "ours_missing": [
+      "recruitee",
+      "workable",
+      "teamtailor",
+      "personio",
+      "breezy",
+      "rippling",
+      "bamboohr"
+    ],
+    "ours_named": [
+      "greenhouse",
+      "ashby",
+      "lever",
+      "smartrecruiters",
+      "workday"
+    ],
+    "ours_named_count": 5,
+    "pricing": {
+      "apifyMarginPercentage": 0.2,
+      "createdAt": "2026-08-25T20:05:27.973Z",
+      "pricingModel": "PAY_PER_EVENT",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "job-scraped": {
+            "eventDescription": "Charged per job listing extracted and saved to dataset.",
+            "eventTieredPricingUsd": {
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.001
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.00028
+              },
+              "FREE": {
+                "tieredEventPriceUsd": 0.00115
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.0006
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.0004
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.00078
+              }
+            },
+            "eventTitle": "Job scraped",
+            "isPrimaryEvent": true
+          },
+          "start": {
+            "eventDescription": "One-time charge when the scraper starts.",
+            "eventPriceUsd": 0.005,
+            "eventTitle": "Run started",
+            "isOneTimeEvent": true
+          }
+        }
+      },
+      "startedAt": "2026-08-25T20:05:27.878Z"
+    },
+    "seoDescription": "Scrape job listings from Greenhouse, Workday, SmartRecruiters, Lever and Ashby career pages. Standardized output, no API key needed. Export JSON/CSV/Excel.",
+    "title": "Multi-ATS Company Jobs Scraper",
+    "users": 169
+  },
+  "blackfalcondata/greenhouse-scraper": {
+    "description": "Scrape job listings from Greenhouse, Lever, Ashby, SmartRecruiters, Personio and Recruitee career sites in one actor \u2014 paste any board URL and the platform is detected. Get salary, location and full job descriptions. No monthly fee, $0.95/1K.",
+    "extra_named": [],
+    "ours_missing": [
+      "workable",
+      "workday",
+      "teamtailor",
+      "breezy",
+      "rippling",
+      "bamboohr"
+    ],
+    "ours_named": [
+      "greenhouse",
+      "ashby",
+      "lever",
+      "recruitee",
+      "smartrecruiters",
+      "personio"
+    ],
+    "ours_named_count": 6,
+    "pricing": {
+      "apifyMarginPercentage": 0.2,
+      "createdAt": "2026-05-29T20:03:41.461Z",
+      "pricingModel": "PAY_PER_EVENT",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "apify-actor-start": {
+            "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+            "eventPriceUsd": 0.005,
+            "eventTitle": "Actor Start",
+            "isOneTimeEvent": true
+          },
+          "apify-default-dataset-item": {
+            "eventDescription": "Single result in the default dataset.",
+            "eventPriceUsd": 0.00095,
+            "eventTitle": "Result",
+            "isOneTimeEvent": false,
+            "isPrimaryEvent": true
+          }
+        }
+      },
+      "reasonForChange": "Lower per-result price to $0.95/1K to undercut the category leader.",
+      "startedAt": "2026-05-29T20:03:39.936Z"
+    },
+    "seoDescription": "Greenhouse scraper API for Greenhouse, Lever, Ashby, SmartRecruiters, Personio & Recruitee. Salary, location & full job descriptions. $0.95/1K, no monthly fee.",
+    "title": "Greenhouse, Lever, Ashby, SmartRecruiters, Personio Job Scraper",
+    "users": 55
+  },
+  "openclawai/career-site-ats-jobs-scraper": {
+    "description": "Company careers jobs from any career site or ATS: paste a careers page URL or just the company name and get every open job as JSON: title, location, remote flag, salary, department, posted date, apply link, full description. Workday, Greenhouse, Lever, Ashby, iCIMS & 60+ more. No login.",
+    "extra_named": [
+      "icims"
+    ],
+    "ours_missing": [
+      "recruitee",
+      "workable",
+      "smartrecruiters",
+      "teamtailor",
+      "personio",
+      "breezy",
+      "rippling",
+      "bamboohr"
+    ],
+    "ours_named": [
+      "greenhouse",
+      "ashby",
+      "lever",
+      "workday"
+    ],
+    "ours_named_count": 4,
+    "pricing": {
+      "apifyMarginPercentage": 0.2,
+      "createdAt": "2026-11-22T00:07:01.042Z",
+      "minimalMaxTotalChargeUsd": null,
+      "notifiedAboutFutureChangeAt": "2026-11-22T00:07:22.966Z",
+      "pricingModel": "PAY_PER_EVENT",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "job": {
+            "eventDescription": "Charged once per job row in the dataset \u2014 full description, salary, location, apply link included. Hints and errors are never charged.",
+            "eventTieredPricingUsd": {
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.002
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.0016
+              },
+              "FREE": {
+                "tieredEventPriceUsd": 0.002
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.0016
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.0016
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.0018
+              }
+            },
+            "eventTitle": "Job",
+            "isOneTimeEvent": false,
+            "isPrimaryEvent": true
+          }
+        }
+      },
+      "startedAt": "2026-12-06T01:00:00.000Z"
+    },
+    "seoDescription": "Paste a careers URL or company name, get every open job: title, location, salary, department, apply link, Markdown description. Auto-detects Workday, Greenhouse, Lever, Ashby & more. No login.",
+    "title": "Career Site & ATS Jobs Scraper: Company Careers Jobs, Workday",
+    "users": 133
+  },
+  "softyways/greenhouse-lever-ashby-workday-job-scraper": {
+    "description": "Scrape job postings from 7 ATS - Greenhouse, Lever, Ashby, Workday, SmartRecruiters, Workable and Recruitee - into one unified schema. Every run tells you what changed since the last one: new, updated and removed listings. No login, no browser, no proxies. $1.50 per 1,000 jobs.",
+    "extra_named": [],
+    "ours_missing": [
+      "teamtailor",
+      "personio",
+      "breezy",
+      "rippling",
+      "bamboohr"
+    ],
+    "ours_named": [
+      "greenhouse",
+      "ashby",
+      "lever",
+      "recruitee",
+      "workable",
+      "smartrecruiters",
+      "workday"
+    ],
+    "ours_named_count": 7,
+    "pricing": {
+      "apifyMarginPercentage": 0.2,
+      "createdAt": "2026-07-31T13:03:28.786Z",
+      "isPriceChangeNotificationSuppressed": false,
+      "minimalMaxTotalChargeUsd": null,
+      "pricingModel": "PAY_PER_EVENT",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "apify-actor-start": {
+            "eventDescription": "Charged when the Actor starts running. Number of events charged depends on Actor memory (one event per GB, minimum one event).",
+            "eventPriceUsd": 5e-05,
+            "eventTitle": "Actor Start",
+            "isOneTimeEvent": true
+          },
+          "apify-default-dataset-item": {
+            "eventDescription": "Charged for each job posting returned.",
+            "eventPriceUsd": 0.0015,
+            "eventTitle": "Job posting",
+            "isOneTimeEvent": false,
+            "isPrimaryEvent": true
+          }
+        }
+      },
+      "startedAt": "2026-07-31T13:03:22.923Z"
+    },
+    "seoDescription": "Extract job listings from Greenhouse, Ashby, Workable and SmartRecruiters career pages. Every run tells you which jobs are new, which changed and which disappeared.",
+    "title": "Greenhouse, Lever, Ashby & Workday Job Scraper | 7 ATS",
+    "users": 4
+  },
+  "webdata_labs/greenhouse-lever-ashby-jobs-scraper": {
+    "description": "[\ud83d\udcb5 $1.00 / 1K] Scrape open jobs across 7 ATS platforms - Workday, Greenhouse, Lever, Ashby, SmartRecruiters, Recruitee, Personio - in one unified schema. Auto-detects each company's ATS. Monitoring mode returns only new jobs since your last run.",
+    "extra_named": [],
+    "ours_missing": [
+      "workable",
+      "teamtailor",
+      "breezy",
+      "rippling",
+      "bamboohr"
+    ],
+    "ours_named": [
+      "greenhouse",
+      "ashby",
+      "lever",
+      "recruitee",
+      "smartrecruiters",
+      "workday",
+      "personio"
+    ],
+    "ours_named_count": 7,
+    "pricing": {
+      "apifyMarginPercentage": 0.2,
+      "createdAt": "2026-06-27T21:59:58.231Z",
+      "isPriceChangeNotificationSuppressed": false,
+      "minimalMaxTotalChargeUsd": null,
+      "pricingModel": "PAY_PER_EVENT",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "apify-default-dataset-item": {
+            "eventDescription": "One job posting returned, normalized across Greenhouse, Lever, and Ashby (includes company summary rows).",
+            "eventTieredPricingUsd": {
+              "BRONZE": {
+                "tieredEventPriceUsd": 0.001
+              },
+              "DIAMOND": {
+                "tieredEventPriceUsd": 0.0006
+              },
+              "FREE": {
+                "tieredEventPriceUsd": 0.001
+              },
+              "GOLD": {
+                "tieredEventPriceUsd": 0.0006
+              },
+              "PLATINUM": {
+                "tieredEventPriceUsd": 0.0006
+              },
+              "SILVER": {
+                "tieredEventPriceUsd": 0.0008
+              }
+            },
+            "eventTitle": "Job posting",
+            "isOneTimeEvent": false,
+            "isPrimaryEvent": true
+          }
+        }
+      },
+      "startedAt": "2026-06-27T22:00:09.599Z"
+    },
+    "seoDescription": "Scrape ATS jobs from Greenhouse, Workday, Lever, Ashby, SmartRecruiters, Recruitee and Personio in one unified schema. Monitoring mode returns only new postings.",
+    "title": "ATS Jobs Scraper API - Workday, Greenhouse, Lever & Ashby",
+    "users": 86
+  },
+  "wickfeed/ats-job-aggregator": {
+    "description": "Greenhouse, Lever, Ashby, Workable & Recruitee jobs scraper + monitor \u2014 open roles from each company's live feed in one normalized schema. $1 per 1,000 jobs, $0 start. Optional diff mode, off by default: the first run bills the jobs delivered; later runs bill new + watched-field changes.",
+    "extra_named": [],
+    "ours_missing": [
+      "smartrecruiters",
+      "workday",
+      "teamtailor",
+      "personio",
+      "breezy",
+      "rippling",
+      "bamboohr"
+    ],
+    "ours_named": [
+      "greenhouse",
+      "ashby",
+      "lever",
+      "recruitee",
+      "workable"
+    ],
+    "ours_named_count": 5,
+    "pricing": {
+      "apifyMarginPercentage": 0.2,
+      "createdAt": "2026-07-15T19:42:19.449Z",
+      "pricingModel": "PAY_PER_EVENT",
+      "pricingPerEvent": {
+        "actorChargeEvents": {
+          "job-fetched": {
+            "eventDescription": "One normalized job posting delivered to the dataset",
+            "eventPriceUsd": 0.001,
+            "eventTitle": "Job fetched",
+            "isPrimaryEvent": true
+          }
+        }
+      },
+      "startedAt": "2026-07-15T19:42:19.449Z"
+    },
+    "seoDescription": "Track new job postings & job alerts from Greenhouse, Lever, Ashby, Workable & Recruitee. Official JSON APIs, one schema. Diff mode: pay only for new. $1/1k.",
+    "title": "Greenhouse, Lever, Ashby, Workable Jobs Scraper + Job Monitor",
+    "users": 40
+  }
+}
