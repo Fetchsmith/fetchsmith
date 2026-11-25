@@ -1,0 +1,276 @@
+[
+ {
+  "handle": "tidytools/app-store-top-charts",
+  "title": "App Store Keyword Rank Tracker & App Store Top Charts - ASO",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "chart-entry",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.0005,
+   "SILVER": 0.00045,
+   "GOLD": 0.0004,
+   "PLATINUM": 0.0004,
+   "DIAMOND": 0.0004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): chart-entry,keyword-rank",
+  "all_events": [
+   [
+    "chart-entry",
+    "Chart entry or search result",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    false,
+    false
+   ],
+   [
+    "keyword-rank",
+    "Tracked app keyword rank",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tidytools/apple-app-store-reviews",
+  "title": "Apple App Store Reviews Scraper - iOS App Reviews & Ratings",
+  "model": "PAY_PER_EVENT",
+  "users": 7,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 0.0001,
+   "SILVER": 9e-05,
+   "GOLD": 8e-05,
+   "PLATINUM": 8e-05,
+   "DIAMOND": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-details,app-insights,review",
+  "all_events": [
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 0.0001,
+     "SILVER": 9e-05,
+     "GOLD": 8e-05,
+     "PLATINUM": 8e-05,
+     "DIAMOND": 8e-05
+    },
+    false,
+    false
+   ],
+   [
+    "app-details",
+    "App details",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ],
+   [
+    "app-insights",
+    "AI insights",
+    {
+     "FREE": 0.02,
+     "BRONZE": 0.02,
+     "SILVER": 0.018,
+     "GOLD": 0.016,
+     "PLATINUM": 0.016,
+     "DIAMOND": 0.016
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tidytools/government-tenders-scraper",
+  "title": "Government Tenders Scraper: SAM.gov, TED EU, UK & Canada",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "all_events": [
+   [
+    "notice",
+    "Notice",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tidytools/shopify-store-products-scraper",
+  "title": "Shopify Product Scraper & Shopify Price Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 5,
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): collection,product,store-detected",
+  "all_events": [
+   [
+    "product",
+    "Product",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ],
+   [
+    "collection",
+    "Collection",
+    {
+     "FREE": 0.0003,
+     "BRONZE": 0.0003,
+     "SILVER": 0.00027,
+     "GOLD": 0.00024,
+     "PLATINUM": 0.00024,
+     "DIAMOND": 0.00024
+    },
+    false,
+    false
+   ],
+   [
+    "store-detected",
+    "Shopify store detected",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tidytools/substack-medium-posts-scraper",
+  "title": "Substack Scraper & Medium Scraper - Newsletter & Blog Posts",
+  "model": "PAY_PER_EVENT",
+  "users": 4,
+  "unit_event": "post",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): full-text,post",
+  "all_events": [
+   [
+    "post",
+    "Post",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ],
+   [
+    "full-text",
+    "Full text from the post page",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/substack-scraper/README.md"
+  ]
+ }
+]

@@ -1,0 +1,377 @@
+[
+ {
+  "handle": "tiger19935/hiring-signals-monitor",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Hiring Signals Monitor - New Jobs & Surges (ATS)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company-summary",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0028,
+   "SILVER": 0.0026,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-summary,new-job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Greenhouse and Lever scraper that tracks which companies are hiring. Reads public Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee and Teamtailor boards, remembers every job and reports new jobs, closed jobs and hiring surges between runs."
+ },
+ {
+  "handle": "tiger19935/eu-contract-award-intelligence",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "EU Contract Award Intelligence - TED Winners & Values",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Who wins EU public contracts, and for how much? Contract award notices from TED with winner names, countries, contract values in EUR, number of bids, CPV sector presets and a mode that returns only new awards."
+ },
+ {
+  "handle": "tiger19935/shopify-store-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Products Scraper and Price Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009333,
+   "SILVER": 0.0008667,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape any Shopify store: products, variants, prices, compare-at prices, stock, images and collections. Track price drops over time. No API key needed."
+ },
+ {
+  "handle": "tiger19935/website-screenshot-api",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot API - Full Page, Mobile, WebP",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot,screenshot-fullpage",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Take screenshots of any website in bulk: full page or viewport, desktop or mobile, PNG, JPEG or WebP. Custom size, delay and wait conditions. Returns a download link for every image."
+ },
+ {
+  "handle": "tiger19935/career-page-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Career Page Jobs Scraper - Greenhouse, Lever, Ashby and More",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0017,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape open jobs from company career pages on Greenhouse, Lever, Ashby, Workable, SmartRecruiters, Recruitee, Personio, Breezy and more. One normalized format with salary, remote flag, filters and new-job monitoring."
+ },
+ {
+  "handle": "tiger19935/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Scraper - Headlines, URLs and Full Text",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article,fulltext",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google News by keyword, topic or country: headlines, sources, dates, real article URLs and optional full article text. Monitor brands, markets and competitors."
+ },
+ {
+  "handle": "tiger19935/baltic-public-tenders",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Baltic Public Tenders API: Latvia, Lithuania, Estonia",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0034,
+   "GOLD": 0.0032,
+   "PLATINUM": 0.0032,
+   "DIAMOND": 0.0032
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-event,tender",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Baltic public tenders API: open procurement notices from Latvia (EIS open data) and Lithuania and Estonia (TED). Filter by country, CPV, keywords, value and publication date, or monitor for new tenders. Clean flat rows. Pay per tender."
+ },
+ {
+  "handle": "tiger19935/app-store-reviews-complaint-themes",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Store Reviews and Complaint Themes Report",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): report,review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get Apple App Store reviews for any app and country, plus a complaint report: top themes (payments, billing, login, KYC, crashes, support) with real examples, rating split and version trend. Official iTunes endpoints, no login."
+ },
+ {
+  "handle": "tiger19935/prozorro-ted-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "Prozorro & TED Tenders Scraper - Ukraine & EU",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "tender-record",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0028,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-summary,digest,tender-record",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Open public tenders from Ukraine (Prozorro) and all of the EU (TED) in one English dataset: CPV sector presets, values in EUR, documents, AI summaries and a monitoring mode that returns only new and changed tenders."
+ },
+ {
+  "handle": "tiger19935/remote-tech-jobs-aggregator",
+  "niches": [
+   "hacker-news-scraper",
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Remote Tech Jobs Aggregator - 7 Job Boards, One Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018667,
+   "SILVER": 0.0017333,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote jobs scraper and tech jobs aggregator: RemoteOK, Remotive, Arbeitnow, Himalayas, Jobicy, We Work Remotely and Hacker News in one clean, de-duplicated feed. Filter by keyword, seniority, location and salary. Pay only per job delivered."
+ }
+]

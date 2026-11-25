@@ -1,0 +1,157 @@
+[
+ {
+  "handle": "tinyrex/remote-jobs-scraper",
+  "title": "Remote Jobs Scraper - Himalayas, Remote OK, We Work Remotely",
+  "model": "PAY_PER_EVENT",
+  "users": 7,
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.0008,
+   "SILVER": 0.00072,
+   "GOLD": 0.00064,
+   "PLATINUM": 0.00064,
+   "DIAMOND": 0.00064
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "all_events": [
+   [
+    "job",
+    "Job",
+    {
+     "FREE": 0.0008,
+     "BRONZE": 0.0008,
+     "SILVER": 0.00072,
+     "GOLD": 0.00064,
+     "PLATINUM": 0.00064,
+     "DIAMOND": 0.00064
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tinyrex/shopify-products-scraper",
+  "title": "Shopify Products Scraper - Variants, Stock & Store Leads",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.0007,
+   "BRONZE": 0.0007,
+   "SILVER": 0.00063,
+   "GOLD": 0.00056,
+   "PLATINUM": 0.00056,
+   "DIAMOND": 0.00056
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): inventory-details,product",
+  "all_events": [
+   [
+    "product",
+    "Product",
+    {
+     "FREE": 0.0007,
+     "BRONZE": 0.0007,
+     "SILVER": 0.00063,
+     "GOLD": 0.00056,
+     "PLATINUM": 0.00056,
+     "DIAMOND": 0.00056
+    },
+    false,
+    false
+   ],
+   [
+    "inventory-details",
+    "Stock details",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tinyrex/us-uk-tenders-scraper",
+  "title": "SAM.gov & UK Contracts Finder Scraper - US & UK Tenders",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.00225,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "all_events": [
+   [
+    "notice",
+    "Notice",
+    {
+     "FREE": 0.0025,
+     "BRONZE": 0.0025,
+     "SILVER": 0.00225,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ }
+]

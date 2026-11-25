@@ -1,0 +1,298 @@
+[
+ {
+  "handle": "tiger19935/ocds-tenders-api",
+  "title": "Open Contracting OCDS Tenders API: MD, UK, UA Procurement",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "tender",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-event,tender",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "tender",
+    "Tender record",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.00255,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    false,
+    false
+   ],
+   [
+    "change-event",
+    "Alert event",
+    {
+     "FREE": 0.03,
+     "BRONZE": 0.027,
+     "SILVER": 0.0255,
+     "GOLD": 0.024,
+     "PLATINUM": 0.024,
+     "DIAMOND": 0.024
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tiger19935/podcast-video-transcriber-rag",
+  "title": "Podcast & Video Transcriber for AI \u2014 RAG-ready Text",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.0135,
+   "SILVER": 0.01275,
+   "GOLD": 0.012,
+   "PLATINUM": 0.012,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,audio-minute-byok,caption-transcript,rag-pack,short-video",
+  "all_events": [
+   [
+    "audio-minute",
+    "Audio minute transcribed",
+    {
+     "FREE": 0.015,
+     "BRONZE": 0.0135,
+     "SILVER": 0.01275,
+     "GOLD": 0.012,
+     "PLATINUM": 0.012,
+     "DIAMOND": 0.012
+    },
+    false,
+    false
+   ],
+   [
+    "short-video",
+    "Short video transcribed",
+    {
+     "FREE": 0.04,
+     "BRONZE": 0.036,
+     "SILVER": 0.034,
+     "GOLD": 0.032,
+     "PLATINUM": 0.032,
+     "DIAMOND": 0.032
+    },
+    false,
+    false
+   ],
+   [
+    "audio-minute-byok",
+    "Audio minute (own API key)",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.00255,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    false,
+    false
+   ],
+   [
+    "caption-transcript",
+    "Caption transcript",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.00085,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ],
+   [
+    "rag-pack",
+    "RAG pack",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.0085,
+     "GOLD": 0.008,
+     "PLATINUM": 0.008,
+     "DIAMOND": 0.008
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tiger19935/sam-gov-usaspending-contracts",
+  "title": "SAM.gov & USAspending Contracts Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "opportunity-record",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record,opportunity-record",
+  "all_events": [
+   [
+    "opportunity-record",
+    "Opportunity record",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    false,
+    false
+   ],
+   [
+    "award-record",
+    "Award record",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0016,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sam-gov-opportunities-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tiger19935/sec-edgar-scraper",
+  "title": "SEC EDGAR Scraper: Filings, Form 4, 13F, XBRL",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "filing-row",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): filing-markdown,filing-row,financials-pull,parsed-form",
+  "all_events": [
+   [
+    "filing-row",
+    "Filing index row",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.0008,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    false,
+    false
+   ],
+   [
+    "parsed-form",
+    "Parsed Form 4 / 13F / Form D",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    false,
+    false
+   ],
+   [
+    "filing-markdown",
+    "Filing as Markdown",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    false,
+    false
+   ],
+   [
+    "financials-pull",
+    "Company financials pull",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ }
+]

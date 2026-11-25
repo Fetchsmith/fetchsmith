@@ -1,0 +1,259 @@
+[
+ {
+  "handle": "tinyrex/bulk-website-screenshot",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot API - Bulk Full Page PNG/JPEG from URLs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.002,
+   "SILVER": 0.0018,
+   "GOLD": 0.0016,
+   "PLATINUM": 0.0016,
+   "DIAMOND": 0.0016
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Website screenshot API for a list of URLs: full page, viewport or one element (CSS selector), PNG or JPEG, desktop, tablet or mobile, dark mode, cookie banners hidden. $0.002 per screenshot ($2 per 1,000); failed or unreachable URLs free."
+ },
+ {
+  "handle": "tinyrex/audio-video-transcriber",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 2,
+  "title": "Audio & Video Transcriber (Whisper) - MP3/MP4 to Text, SRT, VTT",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.0045,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,audio-minute-small,speaker-minute",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Whisper speech-to-text transcriber for audio, video and podcast RSS feeds: MP3, M4A, WAV, MP4 to text, SRT and VTT, with speaker labels, timestamps and 99 languages. $0.005 per audio minute; failed links and silent files are free. No API key."
+ },
+ {
+  "handle": "tinyrex/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse, Lever & Ashby Jobs Scraper - Personio & more",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Greenhouse, Lever, Ashby, Personio, Teamtailor and Recruitee jobs scraper: all open jobs from company career pages via official ATS feeds. Auto-detects the ATS from a company website. $1 per 1,000 jobs; companies without a supported ATS and filtered jobs free."
+ },
+ {
+  "handle": "tinyrex/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper - Any myworkdayjobs.com Careers Site",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0008,
+   "BRONZE": 0.0008,
+   "SILVER": 0.00072,
+   "GOLD": 0.00064,
+   "PLATINUM": 0.00064,
+   "DIAMOND": 0.00064
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Workday jobs scraper for any Workday career site (myworkdayjobs.com): full description, exact posting date, location, country and remote type. Filters and new-job monitoring. $0.80 per 1,000 jobs; inputs without a Workday site and filtered jobs free."
+ },
+ {
+  "handle": "tinyrex/ted-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "TED Tenders Scraper - EU Public Procurement & Awards",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.00225,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "TED (Tenders Electronic Daily) scraper for EU public tenders and contract awards via the official API: keywords, CPV, countries, deadlines, values and winners. Only-new alerts. $2.50 per 1,000 notices; already-seen notices free, no login."
+ },
+ {
+  "handle": "tinyrex/eu-grants-scraper",
+  "niches": [
+   "grants-gov-scraper",
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "EU Grants Scraper - Horizon Europe & EU Funding Calls",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "funding-call",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.0027,
+   "GOLD": 0.0024,
+   "PLATINUM": 0.0024,
+   "DIAMOND": 0.0024
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): funding-call",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "EU grants and funding calls from the official EU Funding & Tenders Portal: Horizon Europe, Digital Europe, LIFE, Erasmus+ and cascade funding, with real status, deadlines and a minimum budget filter. $3 per 1,000 calls; filtered and already-seen calls free."
+ },
+ {
+  "handle": "tinyrex/tenderned-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "TenderNed Scraper - Dutch Public Tenders & Procurement API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.00225,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "TenderNed Netherlands public tenders scraper via the official keyless API (CC0) to JSON, CSV or Excel. Keywords, dates, CPV and daily only-new alerts. ~$2.50 per 1,000 notices; failed or empty runs and already-seen notices are free."
+ }
+]

@@ -1,0 +1,217 @@
+[
+ {
+  "handle": "tidytools/audio-transcriber",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 557,
+  "title": "Audio Transcription - Speech to Text, Audio to Text, Whisper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.006,
+   "SILVER": 0.0054,
+   "GOLD": 0.0048,
+   "PLATINUM": 0.0048,
+   "DIAMOND": 0.0048
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-summary,audio-minute,audio-minute-diarized,content-pack,subtitle-language-minute",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Speech to text for audio, video, YouTube, TikTok, Instagram Reels and podcast RSS, using Whisper. Get text with timestamps plus SRT, VTT, TXT and Markdown files. $0.006 per started audio minute; optional speaker labels $0.015/min. Failed and silent files are free. Up to 1,000 links per run."
+ },
+ {
+  "handle": "tidytools/ats-career-site-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 7,
+  "title": "Career Page Jobs Scraper - Greenhouse, Lever, Workday & ATS",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-detected,job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Career page jobs scraper and ATS jobs scraper: scrape job postings from Greenhouse, Lever, Ashby, Workday + 13 more ATSs, live from company domains or career-page URLs, auto-detected. Salary, remote, new-job alerts. $1/1,000 jobs."
+ },
+ {
+  "handle": "tidytools/ats-job-search",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 5,
+  "title": "Job Search API - Greenhouse, Lever, Ashby & Workday Jobs Index",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 0.0005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): hiring-company,job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search 1.4M+ live jobs from 54,000+ company career boards (Greenhouse, Lever, Ashby, Workday, Workable, Personio and 10 more ATSs) in one query, refreshed daily. Posted vs first-seen dates, reposts, duplicates, hiring companies. $1.50/1,000 jobs."
+ },
+ {
+  "handle": "tidytools/podcast-brand-monitor",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 2,
+  "title": "Podcast Brand Mention Monitor - RSS Keyword Tracking",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.006,
+   "BRONZE": 0.006,
+   "SILVER": 0.0054,
+   "GOLD": 0.0048,
+   "PLATINUM": 0.0048,
+   "DIAMOND": 0.0048
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-summary,audio-minute,audio-minute-diarized,content-pack,subtitle-language-minute",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find brand mentions in new public podcast episodes from RSS feeds. Export timestamped matches and a CSV. Publisher transcripts use no ASR minutes; failed files are free."
+ },
+ {
+  "handle": "tidytools/website-screenshot-pdf-markdown",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot API - Full Page Screenshot & URL to PDF",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0009,
+   "GOLD": 0.0008,
+   "PLATINUM": 0.0008,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): markdown,pdf,screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Bulk website screenshots: full page, one element, mobile or tablet. URL to PDF and HTML to PDF for any web page, plus clean Markdown, in one run. Hides ads, cookie banners and pop-ups. Failures free."
+ },
+ {
+  "handle": "tidytools/shopify-woocommerce-store-leads",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 1,
+  "title": "Shopify Store Leads & WooCommerce Store Leads - Live Finder",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "website-found",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.005,
+   "SILVER": 0.0045,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): website-found",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find Shopify and WooCommerce stores by country. Each row: domain, store URL, title, platform with evidence, tech stack, Chrome popularity bucket, e-mail provider. Scanning is free; $5 per 1,000 stores found. No personal e-mails or phone numbers."
+ }
+]
