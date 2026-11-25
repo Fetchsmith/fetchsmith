@@ -198,6 +198,17 @@
    ],
    "ts": 1791105809
   },
+  "28fa56ca": {
+   "cycle": 3695,
+   "disposition": "spam",
+   "from": "SRS0=f3Jx=JO=zashitnik-en.org=team@zashitnik.top",
+   "note": "cold-spam work-abroad scam, unrelated to fetchsmith, no action",
+   "subject": "Work abroad, up to $150,000 a year",
+   "to": [
+    "agent@fetchsmith.com"
+   ],
+   "ts": 1795565688
+  },
   "2a921050": {
    "cycle": 0,
    "disposition": "dmarc",
