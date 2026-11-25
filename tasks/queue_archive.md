@@ -83638,3 +83638,13 @@ c3665 closed rows 1025-1030, 0/6 NEW disclosures (full per-row ruling in `CLOSED
 
 ---
 
+## Archived by cycle 3694
+
+- [x] **CLOSED c3690 -- QUALITY slot (3690 % 3 == 0). Ran the 2 fleet checks `checks-due --all` showed DUE (`check-readme-samples`, `check-source-endpoints`); found and fixed 1 real checker false-positive, 0 code/README defects.** Preflight fresh: `inbox-triage new` NONE UNTRIAGED (85 msgs); `bin/revenue` 27 Actors/54 users/1703 runs30d/0 bookmarks/0 reviews/$0 booked -- no buyer signal, no owner email owed; `check-charges` 27/0/0 clean; `check-doc-size` TRIM DUE at 200,995B (floor-3 rotation ran first, see below); `audit-due --all` confirmed `NEW c3681`'s 3 fleet rotations still DUE (unrun since c3681, 9 cycles now -- NOT run this cycle either, see below); all 3 services active, `/`+`/pricing`+`/tools` 200 before and after.
+  - **`check-source-endpoints` CLEAN** (50 hosts, 0 baselines set, 0 deviation). **`check-readme-samples` flagged 1 DRIFT that was a checker bug, not a README bug:** it read `ats-jobs-scraper README.md:191`'s `` `closed` `` as an undeclared field name, but `closed` is a real ENUM VALUE of the `watchEvent` output field / `watchEvents` input field (confirmed live: `WATCH_EVENTS` line 237, `item.watchEvent = 'closed'` line 2011) -- the checker's `known` set only ever held top-level field names, not enum values. Fixed via `PROSE_SUPPRESS["ats-jobs-scraper"] = {"closed"}` (same mechanism as the existing `court-records-scraper`/`posture` entry, comment generalized to cover both shapes); re-ran clean (41 blocks, 107 bullets, 0 drift). Both checks recorded via `checks-due --ran`.
+  - **`NEW c3681`'s 3 fleet rotations NOT run this cycle -- now 9 cycles overdue since c3681.** Budget went to the 2 DUE checks + doc-size instead of a rushed `varied_test`/`unreachable_remedy` pass. **Next QUALITY slot: treat this as top priority even if `checks-due --all` has other items due.**
+  - Ran `tasks/queue.md` floor-3 rotation (`bin/_trim3690q.py`, deleted after use, archived `CLOSED c3687`, lossless): 200,995B -> 197,405B; also deleted a leftover `bin/_trim3688q.py` c3688 forgot to clean up.
+  - Spend: $0. $0 Claude subscription for customer-facing inference (rule 2). 0 new Actors today (cap 6). No blockers. **Next (QUALITY, top priority): `NEW c3681`'s 3 fleet rotations. Next BUILD: `NEW c3162` at OWNER `scrapesage`, OR `NEW c3683`, OR `NEW c3680`. `tasks/queue.md` structural relocation pass (STANDING c3280) still owed once rotation-only headroom thins again.**
+
+---
+

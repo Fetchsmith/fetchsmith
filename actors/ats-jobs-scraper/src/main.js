@@ -200,17 +200,22 @@ if (webhookUrlRaw) {
 // Same pattern as nih-reporter/federal-register/grants-gov/fda-recall/clinicaltrials/hacker-news.
 const WATCH_STORE = 'fetchsmith-ats-watch';
 const SEED_CAP = 5000; // bound the cost of a baseline run against a very broad company list
-// Workday raw-paging ceiling (c3692). Was a hard 2000, which silently overrode an explicit
-// `maxJobsPerCompany` above ~666 even though the schema and README both sell "up to 5000" — a
-// rival (`scrapemint/workday-jobs-scraper`) markets "past the 2,000 cap" against exactly that.
+// Raw-paging ceiling shared by Workday, Lever and SmartRecruiters (c3692, generalised c3694).
+// All three fetchers had a hard 2000, which silently overrode an explicit `maxJobsPerCompany`
+// above ~666 even though the schema and README both sell "up to 5000" — a rival
+// (`scrapemint/workday-jobs-scraper`) markets "past the 2,000 cap" against exactly that gap.
 // Measured live c3692: Workday's public `/wday/cxs/.../jobs` endpoint has NO platform-side offset
 // limit — `cvshealth.wd1` paged cleanly to its full `total` of 18,621 (offset 18,620 returned the
-// last 1 row, 18,640 returned 0) and `pwc.wd3` to 3,652. So 2000 was purely our own ceiling.
-// 15000 = the schema's own max `maxJobsPerCompany` (5000) times the same x3 pre-filter headroom
-// the rawCap formula already uses, so the buyer's documented ask is now reachable and the real
-// bound is `timeBudgetOk()`. Default runs are unaffected: at the default cap of 50 the formula
-// yields 150 either way.
-const WORKDAY_RAW_CAP = 15000;
+// last 1 row, 18,640 returned 0) and `pwc.wd3` to 3,652. Measured live c3694: Lever's
+// `/v0/postings` (single unpaged call) returned all 3,323 of `jobgether`'s postings at
+// `limit=15000` with no error and no duplicates; SmartRecruiters' `/postings` (offset-paged,
+// `totalFound`-bearing) paged `BoschGroup`'s 5,178 postings cleanly to the end with 0 overlap
+// between any two pages. So 2000 was purely our own ceiling on all three. 15000 = the schema's
+// own max `maxJobsPerCompany` (5000) times the same x3 pre-filter headroom the rawCap formula
+// already uses, so the buyer's documented ask is now reachable and the real bound is
+// `timeBudgetOk()`. Default runs are unaffected: at the default cap of 50 the formula yields 150
+// either way.
+const ATS_RAW_CAP = 15000;
 const WATCH_KEEP = 20000; // bound the record size; oldest ids fall off first
 let baselineTruncated = 0; // posting ids dropped by WATCH_KEEP this run -- they come back as "new" and get charged again
 let baselineTruncatedTotal = 0; // same, cumulative over the life of this label
@@ -976,8 +981,12 @@ async function fetchLever(slug) {
   // (`jobgether`) is 4,225 postings / 50 MB in a single response. Apply the same
   // scanCapPerCompany*3 raw-fetch buffer already used by fetchWorkday/fetchSmartRecruiters (the
   // buffer, not the exact scan cap, because filters run after the fetch and need headroom to
-  // still find enough matching rows within the capped window).
-  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, 100), watchMode ? SEED_CAP : 2000);
+  // still find enough matching rows within the capped window). The ceiling used to be a hard
+  // 2000 (same self-imposed bug c3692 fixed on Workday) — c3694 measured live that `limit=15000`
+  // against `jobgether` (3,323 postings at the time) returns the full board with 0 duplicate ids
+  // and no error, so the cap is raised to `ATS_RAW_CAP` with no dedup needed: this is a single
+  // unpaged call, not a paging loop, so there is no repeat-page hazard to guard against.
+  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, 100), watchMode ? SEED_CAP : ATS_RAW_CAP);
   const res = await requestWithRetry({ url: `https://api.lever.co/v0/postings/${encodeURIComponent(slug)}?mode=json&skip=0&limit=${rawCap}`, timeout: BOARD_TIMEOUT, retry: { limit: 2 }, proxyUrl: await proxyUrlFor(), throwHttpErrors: false, responseType: 'json' });
   // Most well-known "Lever companies" have migrated to another ATS and now 404 here — that is
   // expected, not a failure, and must not fail the whole run (confirmed cycle 196: plaid, brex,
@@ -1404,9 +1413,17 @@ async function fetchSmartRecruitersDetail(slug, id) {
 
 async function fetchSmartRecruiters(slug) {
   const pageSize = 100;
-  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, pageSize), watchMode ? SEED_CAP : 2000);
+  // Ceiling was a hard 2000 (same self-imposed bug c3692 fixed on Workday). Measured live c3694
+  // against `BoschGroup` (5,178 postings): paging to the very end with `offset`/`totalFound` had
+  // 0 overlap between any two pages, so no clamp-and-repeat trap was observed on this tenant —
+  // unlike Workday's `nvidia.wd5`. The dedup/no-progress guard below is still added as the same
+  // cheap insurance Workday needed, since raising the cap is exactly the change that would turn
+  // an unobserved clamping tenant into a silent double-charge if one exists.
+  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, pageSize), watchMode ? SEED_CAP : ATS_RAW_CAP);
   const raw = [];
+  const seenIds = new Set(); // c3694 no-progress guard, see the repeat-page note in the loop below
   let offset = 0;
+  let total = null;
   let notFoundFlag = false;
   // c3484: paging that stops on the raw cap or the run clock leaves pages UNREAD, which is not the
   // same as an exhausted board. Only the `closed` event cares (a board read short looks like every
@@ -1418,11 +1435,24 @@ async function fetchSmartRecruiters(slug) {
     if (!timeBudgetOk()) { pagingCutShort = true; break; }
     const { status, body } = await getJson(`https://api.smartrecruiters.com/v1/companies/${encodeURIComponent(slug)}/postings?limit=${pageSize}&offset=${offset}`);
     if (status === 404) { notFoundFlag = true; break; }
+    if (offset === 0) total = body?.totalFound ?? null;
     const content = body?.content ?? [];
     if (!content.length) break;
-    raw.push(...content);
+    // c3694: dedup on the posting id and stop as soon as a page adds nothing new, same guard
+    // c3692 added to fetchWorkday for a tenant that clamped its own result set and then served
+    // the same page forever past that clamp instead of an empty one. A repeat page here is an
+    // exhausted DISTINCT set, so it only counts as "cut short" if `totalFound` was never reached.
+    const fresh = content.filter((p) => {
+      const key = p.id != null ? String(p.id) : null;
+      if (!key) return true; // unkeyable row: keep it rather than silently dropping a real posting
+      if (seenIds.has(key)) return false;
+      seenIds.add(key);
+      return true;
+    });
+    if (!fresh.length) { if (total == null || raw.length < total) pagingCutShort = true; break; }
+    raw.push(...fresh);
     offset += pageSize;
-    if (offset >= (body?.totalFound ?? 0)) break;
+    if (total != null && total > 0 && offset >= total) break;
   }
   if (notFoundFlag) return { jobs: [], notFound: true };
 
@@ -1508,7 +1538,7 @@ async function fetchWorkday(slug) {
   if (!site || !/\.myworkdayjobs\.com$/i.test(host)) return { jobs: [], notFound: true };
   const tenant = host.split('.')[0];
   const pageSize = 20;
-  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, pageSize), watchMode ? SEED_CAP : WORKDAY_RAW_CAP);
+  const rawCap = Math.min(Math.max(scanCapPerCompany * 3, pageSize), watchMode ? SEED_CAP : ATS_RAW_CAP);
   const raw = [];
   const seenKeys = new Set(); // c3692 no-progress guard, see the repeat-page note in the loop below
   let offset = 0;
