@@ -1,0 +1,106 @@
+[
+ {
+  "handle": "superslowsloth/weworkremotely-jobs",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "We Work Remotely Jobs Scraper - Remote Jobs by Category",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,job-scraped",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote job postings from We Work Remotely's public RSS feeds as flat rows: job title, company, category, job type, region, allowed countries, posted and expiry dates, company website, HQ and full description as HTML and plain text. Pick categories, filter by keyword."
+ },
+ {
+  "handle": "superslowsloth/website-screenshot-pdf",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Website Screenshot and PDF API - PNG, JPEG, PDF from any URL",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot-captured",
+  "unit_tiers": {
+   "FREE": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,pdf-rendered,screenshot-captured",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Capture any public web page as PNG, JPEG or PDF with headless Chromium. Full-page, mobile and tablet presets, dark mode, wait-for-selector. One row per URL, private addresses refused, failed URLs never charged."
+ },
+ {
+  "handle": "superslowsloth/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 1,
+  "title": "Google News Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article-scraped",
+  "unit_tiers": {
+   "FREE": 0.00175
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): actor-start,article-scraped",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Google News in any language and country and get the real publisher URL, not Google's redirect link. Returns headline, source name, publish time, description and both URLs. Supports time windows of the last hour, day or week. Up to 100 articles per query, which is Google's own cap."
+ }
+]
