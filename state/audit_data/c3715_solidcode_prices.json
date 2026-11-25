@@ -1,0 +1,494 @@
+[
+ {
+  "handle": "solidcode/freelancermap-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 66,
+  "title": "Freelancermap Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0096,
+   "BRONZE": 0.00905,
+   "SILVER": 0.0085,
+   "GOLD": 0.008,
+   "PLATINUM": 0.008,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $8.00 / 1K] Extract freelance and contract project listings from freelancermap.com \u2014 search by keyword, country, category, and remote work, and get titles, skills, rates, durations, and company contacts."
+ },
+ {
+  "handle": "solidcode/workingnomads-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 31,
+  "title": "Working Nomads Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0048,
+   "BRONZE": 0.0045,
+   "SILVER": 0.00425,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $4 / 1K] Extract remote jobs from Working Nomads \u2014 title, company, category, tags, location, posting date, description, and apply URL. Filter across 15 categories, keywords, location, and recency."
+ },
+ {
+  "handle": "solidcode/robota-ua-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 13,
+  "title": "Robota.ua Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00215,
+   "BRONZE": 0.002,
+   "SILVER": 0.0019,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.8 / 1K] Extract job listings from robota.ua, Ukraine's largest job board. Search by keyword and location, filter by experience, work schedule, salary, and remote work, and get structured jobs with titles, companies, salaries, descriptions, contacts, and apply links."
+ },
+ {
+  "handle": "solidcode/ransomware-live-scraper",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 10,
+  "title": "Ransomware Live Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00335,
+   "BRONZE": 0.00315,
+   "SILVER": 0.003,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $2.80 / 1K] Extract ransomware victims and data-breach disclosures from ransomware.live. Filter by group, country, sector, keyword, or date. Records include victim, group, sector, country, dates, ransom, data size, leak URL, and screenshot. Clean JSON/CSV/Excel for threat intel."
+ },
+ {
+  "handle": "solidcode/profesia-sk-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 8,
+  "title": "Profesia.sk Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00155,
+   "BRONZE": 0.0015,
+   "SILVER": 0.0014,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.30 / 1K] Extract job listings from Profesia.sk, Slovakia's largest job board. Search by keyword or URL, filter by region, employment type, salary, remote work and date, and get full descriptions, salary and company details."
+ },
+ {
+  "handle": "solidcode/weworkremotely-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 8,
+  "title": "We Work Remotely Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.00113,
+   "SILVER": 0.001065,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.00 / 1K] Extract remote job listings from We Work Remotely. Filter by keyword, category, region, employment type and recency. Get titles, companies, every region a role is open to, salary bands, exact posting times, full descriptions and listing URLs."
+ },
+ {
+  "handle": "solidcode/profession-hu-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 6,
+  "title": "Profession.hu Job Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00215,
+   "BRONZE": 0.002,
+   "SILVER": 0.0019,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.8 / 1K] Extract job listings from profession.hu, Hungary's largest job board. Filter by category, location, employment type, remote work, and experience level. Returns title, company, location, salary, posted date, full description, skills, and the apply link per job."
+ },
+ {
+  "handle": "solidcode/remoteok-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 6,
+  "title": "RemoteOK Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.00113,
+   "SILVER": 0.001065,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.0 / 1K] Extract remote jobs from RemoteOK by category, keyword, salary, tags, location, and posted-within window. Returns structured data with normalized salaries, ISO dates, and clean descriptions."
+ },
+ {
+  "handle": "solidcode/peopleperhour-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 5,
+  "title": "PeoplePerHour Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0036,
+   "BRONZE": 0.0034,
+   "SILVER": 0.0032,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $3.00 / 1K] Extract freelance project and job postings from PeoplePerHour. Search by keyword, browse a category, or paste URLs, then filter by price type, experience level, and remote work. Get titles, budgets, currencies, categories, skills, posting dates, proposal counts, and client details."
+ },
+ {
+  "handle": "solidcode/apple-app-store-scraper",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Apple App Store Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.0011,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.00055,
+   "PLATINUM": 0.00055,
+   "DIAMOND": 0.00055
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app,review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $0.55 / 1K] Extract Apple App Store data at scale. Search by keyword or pull apps by URL/ID for full metadata: developer, ratings, price, version, screenshots, size. Add reviews per app across 50+ storefronts and 30+ languages. Clean JSON/CSV/Excel for ASO and market research."
+ },
+ {
+  "handle": "solidcode/duunitori-fi-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Duunitori Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0021,
+   "BRONZE": 0.002,
+   "SILVER": 0.0019,
+   "GOLD": 0.0018,
+   "PLATINUM": 0.0018,
+   "DIAMOND": 0.0018
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $1.80 / 1K] Extract job listings from Duunitori, Finland's largest job board. Search by keyword, location, category, employment type, remote work, and ad language, or paste search and job-ad URLs. Returns title, company, location, salary, dates, description, and apply link \u2014 one row per job."
+ },
+ {
+  "handle": "solidcode/remotive-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Remotive Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00235,
+   "BRONZE": 0.00225,
+   "SILVER": 0.00215,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $2.00 / 1K] Extract remote job listings from Remotive \u2014 titles, companies, salaries, tags, locations, descriptions, and apply URLs. Filter across 30 categories, keywords, and 11 employment types."
+ },
+ {
+  "handle": "solidcode/clinicaltrials-gov-scraper",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 1,
+  "title": "ClinicalTrials.gov Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0028,
+   "SILVER": 0.00265,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "[\ud83d\udcb0 $2.50 / 1K] Extract clinical trials from ClinicalTrials.gov: titles, conditions, interventions, sponsors, status, phase, eligibility, locations, dates, and results. Search by condition, treatment, sponsor, or location."
+ }
+]
