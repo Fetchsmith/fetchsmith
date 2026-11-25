@@ -1,0 +1,426 @@
+[
+ {
+  "handle": "scrapestorm/bundesagentur-fur-arbeit-arbeitsagentur-scraper-cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 83,
+  "title": "Bundesagentur f\u00fcr Arbeit (Arbeitsagentur) Scraper \ud83c\udde9\ud83c\uddea \ud83d\udcbc Cheap",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00289
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Looking for a job listings scraper to extract job offers from a specific search in Germany? \ud83c\udde9\ud83c\uddea\ud83d\udd0d Your search ends here! With the Arbeitsagentur German Jobs Scraper \ud83d\udcbc, gather all the job listings based on your keyword and location, including employer details, occupation, publication date, & more."
+ },
+ {
+  "handle": "scrapestorm/jobs-ch-search-scraper-fast-cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 57,
+  "title": "Jobs.ch Search Scraper (Fast & Cheap) \ud83d\udcbc \ud83c\udde8\ud83c\udded",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00289
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Looking for a job listings scraper to extract job offers from a specific search? \ud83d\udd0d Your search ends here! With the Jobsch Switzerland Search Scraper \ud83d\udcbc, gather all the job listings based on ur keyword & location, including company details, employment type, publication date and more. No proxy needed"
+ },
+ {
+  "handle": "scrapestorm/seek-job-jobstreet-scraper-advanced-cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 43,
+  "title": "Seek Job / JobStreet Scraper (Advanced & Cheap) \ud83d\udcbc",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Looking for a job listings scraper to extract job offers from a specific search in ur region?\ud83d\udd0dYour search ends here! With the Seek Jobs Scraper \ud83d\udcbc, gather all the job listings based on your keyword, location, and other preferences, including company details job title salary, publication date & more"
+ },
+ {
+  "handle": "scrapestorm/jobup-ch-switzerland-search-scraper-fast-cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 20,
+  "title": "Jobup.ch Switzerland Search Scraper (Fast & Cheap) \ud83d\udcbc \ud83c\udde8\ud83c\udded",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Looking for a job listings scraper to extract job offers from a specific search? \ud83d\udd0d Your search ends here! With the Jobup Switzerland Search Scraper \ud83d\udcbc, gather all the job listings based on ur keyword & location, including company details, employment type, publication date and more. No proxy needed"
+ },
+ {
+  "handle": "scrapestorm/dice-jobs-scraper---cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 9,
+  "title": "Dice Jobs Scraper - Cheap \ud83d\udcbc",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Looking for a job listings scraper to extract job offers from a specific search in the US? \ud83d\udd0d Your search ends here! With the Dice Jobs Search Scraper \ud83d\udcbc, gather all the job listings based on your keyword and location, including company details, job title, salary, publication date, and more."
+ },
+ {
+  "handle": "scrapestorm/greenhouse-job-board-scraper---pay-per-result",
+  "niches": [
+   "ats-jobs-scraper",
+   "remote-jobs-scraper"
+  ],
+  "users": 8,
+  "title": "Greenhouse Job Board Scraper \ud83d\udd0d\ud83d\udcbc - Pay Per result",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00449
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "\ud83d\udcbc Easily extract job listings from any public Greenhouse job board perfect for recruiters & job aggregators\nJust enter a Greenhouse job board URL to collect key job details like title, location, posting date & description\nSeamlessly integrate with your tools to power talent platforms, dashboards \ud83d\udcc8"
+ },
+ {
+  "handle": "scrapestorm/workable-jobs-scraper---cheap",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 4,
+  "title": "Workable Jobs Scraper - Cheap",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Easily collect job listings from Workable, a leading global recruitment platform. Just enter a company or job search URL to extract key details like job title, department, location, employment type, and description \ud83d\udd0d Seamlessly integrate with your tools for talent analytics, or HR automation! \u26a1\ud83d\udcca"
+ },
+ {
+  "handle": "scrapestorm/greenhouse-job-board-scraper---rental",
+  "niches": [
+   "ats-jobs-scraper",
+   "remote-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "Greenhouse Job Board Scraper \ud83d\udd0d\ud83d\udcbc - Rental",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "\ud83d\udcbc Easily extract job listings from any public Greenhouse job board perfect for recruiters & job aggregators\nJust enter a Greenhouse job board URL to collect key job details like title, location, posting date & description\nSeamlessly integrate with your tools to power talent platforms, dashboards \ud83d\udcc8"
+ },
+ {
+  "handle": "scrapestorm/himalayas-jobs-scraper---cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Himalayas Jobs Scraper \ud83c\udfd4\ufe0f\ud83d\udcbc\u2728 - Cheap",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Easily collect job listings from Himalayas.com, a leading global job portal \ud83c\udf0d\n\nExtract structured job data including job titles, company names, locations, job type, category, posting dates, logos, and more\n\nPerfect for job aggregation platforms, HR, global hiring intelligence, & market analysis \ud83d\udcbc\u2728"
+ },
+ {
+  "handle": "scrapestorm/remoteok-job-scraper---cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "RemoteOK Job Scraper \u2013 Cheap \ud83c\udf10\ud83d\udcbc",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "\ud83d\udd0d Easily collect remote and global job listings from RemoteOK.com\n\nExtract structured job data from one of the leading remote job boards, including job titles, company names, locations, salaries, tags, posting dates, job URLs, apply URLs, job descriptions, and verification status \ud83c\udf0d\ud83d\udcbc"
+ },
+ {
+  "handle": "scrapestorm/arbeitnow-job-scraper---billig-cheap",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Arbeitnow Job Scraper - Billig Cheap\ud83d\udd0e\ud83d\udcbc\ud83d\udcca\ud83c\udf0d",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Looking to collect job listings & recruitment market data from Arbeitnow? \ud83d\udcbc\ud83d\udd0e\n\nWith this scraper, you can extract job data including title, company name, company URL, location, salary, visa sponsorship, posting date & job URLs\n\nPerfect for recruitment intelligence & global job market analytics \ud83d\udcca\ud83d\ude80"
+ },
+ {
+  "handle": "scrapestorm/ashby-job-scraper---cheap",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Ashby Job Scraper -  Cheap \ud83d\udd0e\ud83d\udcbc\ud83d\udcca",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Looking to collect job listings from Ashby job boards? \ud83d\udcbc\ud83d\udd0e\ud83d\udcc4\n\nWith this scraper, you can extract detailed job information including company, job title, departments, location, employment type, remote status, salary, job URL & much more\n\nPerfect for job market analysis & structured datasets \ud83d\udcca"
+ }
+]
