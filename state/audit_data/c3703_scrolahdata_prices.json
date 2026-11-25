@@ -1,0 +1,77 @@
+{
+  "cycle": 3703,
+  "owner": "scrolahdata",
+  "idx": 252,
+  "total_listings": 43,
+  "flagged": 8,
+  "note": "Every flagged listing mirrors one of our own niches almost 1:1 by product shape (near-total catalogue overlap with our fleet), but 0 disclosures owed after live pricing comparison.",
+  "verdicts": [
+    {
+      "handle": "scrolahdata/app-store-reviews-scraper",
+      "niche": "app-store-reviews-scraper / google-play-reviews-scraper",
+      "primary_event": "review",
+      "ladder": {"FREE": 0.0001, "SILVER": 0.00009, "GOLD+": 0.00008},
+      "ruling": "bucket3_vs_app-store-reviews-scraper (our GOLD+ $0.00007 is cheaper), bucket7_vs_google-play-reviews-scraper (README already discloses 74+ undercutters down to <=$0.00008, including multiple at or below their GOLD+ rate)",
+      "disclosure_owed": false
+    },
+    {
+      "handle": "scrolahdata/website-screenshot-generator",
+      "niche": "website-screenshot-scraper",
+      "primary_event": "screenshot",
+      "ladder": {"FREE": 0.005, "GOLD+": 0.004},
+      "ruling": "bucket3 dearer at every tier (our flat $0.002, no start fee, is 2-2.5x cheaper)",
+      "disclosure_owed": false
+    },
+    {
+      "handle": "scrolahdata/ats-jobs-scraper",
+      "niche": "ats-jobs-scraper",
+      "primary_event": "job",
+      "ladder": {"FREE": 0.001, "BRONZE": 0.001, "SILVER": 0.0009, "GOLD+": 0.0008},
+      "ruling": "bucket3 tied at FREE, dearer at every paid tier (ours: 0.001/0.00085/0.00075/0.0007)",
+      "disclosure_owed": false
+    },
+    {
+      "handle": "scrolahdata/google-news-scraper",
+      "niche": "google-news-scraper",
+      "primary_event": "article",
+      "ladder": {"FREE": 0.002, "GOLD+": 0.0016},
+      "ruling": "bucket3 tied at FREE, dearer at every paid tier (ours: 0.002/0.0018/0.0015/0.001)",
+      "disclosure_owed": false
+    },
+    {
+      "handle": "scrolahdata/shopify-products-scraper",
+      "niche": "shopify-products-scraper",
+      "primary_event": "product",
+      "ladder": {"FREE": 0.0005, "GOLD+": 0.0004},
+      "ruling": "bucket7 dominated -- README already discloses >=19 flat-rate every-tier undercutters at or below this exact band (kalirobot $0.00049 flat, eiv $0.0004, springlike_meadowland/highbrow_qualification_z7w $0.0005, goat255 $0.0005->$0.0004, etc.)",
+      "disclosure_owed": false
+    },
+    {
+      "handle": "scrolahdata/rss-feed-reader",
+      "niche": "apple-podcasts-scraper",
+      "primary_event": "item",
+      "ladder": {"FREE": 0.0005, "GOLD+": 0.0004},
+      "ruling": "bucket1/2 scope mismatch -- generic RSS/Atom/JSON feed reader requiring a known feed URL, no Apple directory search/charts/reviews/show-lookup via Apple's own API; not a substitute for a dedicated Apple Podcasts directory scraper",
+      "disclosure_owed": false
+    },
+    {
+      "handle": "scrolahdata/hacker-news-scraper",
+      "niche": "hacker-news-scraper",
+      "primary_event": "item",
+      "ladder": {"FREE": 0.0002, "GOLD+": 0.00016},
+      "ruling": "bucket3 tied at FREE, dearer at every paid tier (ours: 0.0002/0.00017/0.00013/0.0001)",
+      "disclosure_owed": false
+    },
+    {
+      "handle": "scrolahdata/remote-jobs-scraper",
+      "niche": "remote-jobs-scraper",
+      "primary_event": "job",
+      "ladder": {"FREE": 0.001, "GOLD+": 0.0008},
+      "ruling": "bucket7 dominated -- README already discloses dozens of flat-rate rivals far below this band (down to $0.0000107-$0.0005), this ladder adds nothing a buyer can act on",
+      "disclosure_owed": false
+    }
+  ],
+  "full_handle_grep": "0/8 hits anywhere before this cycle (confirmed after: still 0, no disclosures added)",
+  "next_owner": "scrupulous_waterbird_m4w",
+  "next_idx": 253
+}
