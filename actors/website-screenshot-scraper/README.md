@@ -52,12 +52,16 @@ One row per URL (or one row for raw HTML):
   "error": null,
   "imageUrl": "https://api.apify.com/v2/key-value-stores/.../records/screenshot-....jpg",
   "screenshotKey": "screenshot-1760000000000-0.jpg",
+  "imageSha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
   "contentType": "image/jpeg",
   "byteSize": 84213,
   "capturedAt": "2026-10-16T12:00:00.000Z"
 }
 ```
 A failed URL returns `success: false`, `error` set to the failure reason, and `imageUrl: null` — it is not counted as a charged result.
+
+### Using screenshots as evidence
+Every row carries `imageSha256`, the SHA-256 hash of the exact image bytes stored at `imageUrl`. It's useful for compliance snapshots, ad/affiliate placement verification, dispute evidence, or defacement/archival checks — anywhere you need to prove the file you're holding today is byte-for-byte what this run captured at `capturedAt`, not a copy that was re-saved or edited afterward. **What it does not prove**: it is not a notarization or a third-party attestation, and it says nothing about whether the page itself was genuine or unaltered before the screenshot was taken — it only fixes the bytes of the image we captured.
 
 ### Visual diff mode output
 With `compareUrl` set, each row carries the same fields plus the comparison:

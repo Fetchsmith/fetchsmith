@@ -2,6 +2,7 @@ import { Actor, log } from 'apify';
 import { chromium } from 'playwright';
 import pngjs from 'pngjs'; // CJS: named import would depend on cjs-lexer detection, destructure instead
 import pixelmatch from 'pixelmatch';
+import { createHash } from 'node:crypto';
 
 const { PNG } = pngjs;
 
@@ -184,7 +185,7 @@ async function pushResult(item) {
 let failedCaptures = 0;
 async function pushError(url, message, extra = {}) {
   failedCaptures += 1;
-  await Actor.pushData({ url: url ?? null, format, success: false, error: message, imageUrl: null, screenshotKey: null, contentType: null, byteSize: null, capturedAt: new Date().toISOString(), ...extra });
+  await Actor.pushData({ url: url ?? null, format, success: false, error: message, imageUrl: null, screenshotKey: null, imageSha256: null, contentType: null, byteSize: null, capturedAt: new Date().toISOString(), ...extra });
 }
 
 const kvStore = await Actor.openKeyValueStore();
@@ -272,6 +273,10 @@ async function captureOne(browser, { url, rawHtml }, index) {
   try {
     const buffer = await renderWithRetry(browser, { url, rawHtml }, format, await proxyFor(index));
     const { key, imageUrl } = await storeBuffer(buffer, 'screenshot', index);
+    // SHA-256 of the exact bytes we stored, fixing what was captured at `capturedAt` for
+    // evidence/dispute use cases -- it proves the image is unmodified since capture, not that
+    // the page itself was genuine or unaltered before capture.
+    const imageSha256 = createHash('sha256').update(buffer).digest('hex');
     return pushResult({
       url: url ?? null,
       format,
@@ -279,6 +284,7 @@ async function captureOne(browser, { url, rawHtml }, index) {
       error: null,
       imageUrl,
       screenshotKey: key,
+      imageSha256,
       contentType: contentTypeFor[format],
       byteSize: buffer.length,
       capturedAt: new Date().toISOString(),

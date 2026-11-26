@@ -39,6 +39,13 @@
         ],
         "title": "Screenshot key"
       },
+      "imageSha256": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "title": "Image SHA-256"
+      },
       "contentType": {
         "type": [
           "string",

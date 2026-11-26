@@ -2406,6 +2406,7 @@
         "error",
         "imageUrl",
         "screenshotKey",
+        "imageSha256",
         "contentType",
         "byteSize",
         "capturedAt",
@@ -2435,6 +2436,7 @@
         "error": null,
         "imageUrl": "https://api.apify.com/v2/key-value-stores/EhN1wpS9r9M5zZZ4t/records/screenshot-1792445568253-1.jpg",
         "screenshotKey": "screenshot-1792445568253-1.jpg",
+        "imageSha256": "61e2026914d1d5b056383172f03b718946cdf8fe193890c1db32a944e30526d7",
         "contentType": "image/jpeg",
         "byteSize": 169944,
         "capturedAt": "2026-10-19T21:32:48.357Z"
