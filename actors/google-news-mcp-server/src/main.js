@@ -83,7 +83,15 @@ async function searchNews({ query, topic, limit, language, country }) {
     const hl = language || 'en-US';
     const gl = country || 'US';
     const ceid = `${gl}:${hl.split('-')[0]}`;
-    const n = Math.min(Math.max(Number(limit) || 10, 1), MAX_LIMIT);
+    // `Number(limit) || 10` (pre-cycle-3786 form) collapsed an EXPLICIT 0 to the 10 default, same
+    // as an unset value -- confirmed live c3786 varied_test: limit:0 silently returned (and billed
+    // for) 10 articles. Same fix as clinicaltrials-mcp-server cycle 3434: only null/undefined/NaN
+    // should fall back to 10; an explicit 0 should clamp to the documented minimum of 1.
+    const requested = Number(limit);
+    const n = Math.min(Math.max(
+        (limit === undefined || limit === null || Number.isNaN(requested)) ? 10 : requested,
+        1,
+    ), MAX_LIMIT);
     const url = topic
         ? `https://news.google.com/rss/headlines/section/topic/${encodeURIComponent(topic)}?hl=${hl}&gl=${gl}&ceid=${ceid}`
         : `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=${hl}&gl=${gl}&ceid=${ceid}`;

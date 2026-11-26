@@ -1,6 +1,6 @@
 {
     "name": "google-news-mcp-server",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "type": "module",
     "description": "MCP server (Apify Standby mode) exposing Google News search as a tool for AI agents.",
     "engines": {
