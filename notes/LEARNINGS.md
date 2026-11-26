@@ -7027,3 +7027,36 @@ re-derived fresh as exactly c3752/c3751/c3749, because **c3753, c3754 and c3755 
 `CLOSED` block at all** (they recorded in `STATUS.md` and the `NEW c3162` pointer only). Past
 lessons warn that forwarded cut-counts UNDER-count; here a forwarded count would have
 OVER-counted the pool by three. Cycle numbers advancing is not evidence that blocks exist.
+
+## c3760 -- a 0-listing owner sweep has TWO causes with opposite meanings; the `/users/<owner>` route cannot tell them apart
+
+`NEW c3162`'s batch at owner `wearefluent` returned **`0 live listings (fresh)`** from
+`cvc.search_owner()`, while our own READMEs still name the vendor **4x**. c3746 recorded exactly
+that shape as a **tool blind spot** (`ukopendata`: `GET /v2/store?username=` returned 0 for an
+owner whose handles were all still live), so the cheap move was to file this the same way and
+move on. **That would have been wrong.** Probing the four disclosed handles one at a time, the
+honest reading is the opposite: `wearefluent/hn-search`,
+`/podcast-episodes-scraper`, `/podcast-transcripts` and `/steam-reviews-scraper` are **all
+404** (`record-or-token-not-found`) -- a genuine **whole-account Actor removal**, and the 0-count
+is CORRECT.
+
+**The two causes look identical from the sweep and must be disambiguated by probing the
+disclosed handles individually (`GET /v2/acts/<owner>~<slug>`), which is 1 call per handle:**
+0 listings + handles LIVE = tool blind spot (c3746, report nothing, file the tool gap);
+0 listings + handles 404 = real delisting (check that every naming README discloses it).
+
+**The trap that makes this worse: `GET /v2/users/<owner>` still returns 200, with bio, display
+name and avatar intact, for an account whose every Actor is gone.** The profile outlives the
+listings, so **owner-profile liveness is not evidence of listing liveness** -- do not use the
+`/users/` route as the liveness probe, it answers a different question than the one being asked.
+
+**Second, structural, and worth acting on: a fully-dead vendor never leaves the `>=3x` cohort.**
+The cohort is derived from how many times *our own READMEs* name an owner (`our_handles()` ->
+`Counter(owner)`), not from anything live, so `wearefluent` will be re-served to this walk on
+every future re-derivation even though it has no listings left -- and the same holds for any
+vendor whose disclosure prose we keep (correctly, as dated history) after it exits. **So the
+first step of any batch whose sweep returns 0 is the handle probe, not a tool-gap filing.**
+This batch's own outcome was 0 owed only because all three naming READMEs
+(`hacker-news-scraper:189`, `apple-podcasts-scraper:220,222,224,234`,
+`steam-reviews-scraper:266,270`) had **already** disclosed the removal on 2026-11-06/08 --
+`hacker-news-scraper` had even already recorded it as whole-account rather than one listing.

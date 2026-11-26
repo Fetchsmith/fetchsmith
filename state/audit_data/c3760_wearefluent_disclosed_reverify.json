@@ -1,0 +1,50 @@
+{
+ "owner": "wearefluent",
+ "cycle": 3760,
+ "live_listings": 0,
+ "owner_profile_route": "GET /v2/users/wearefluent -> 200 (profile survives; all Actors gone)",
+ "finding": "genuine WHOLE-ACCOUNT Actor removal, NOT the c3746 search_owner() blind spot",
+ "owed": 0,
+ "disclosed_handles": [
+  {
+   "handle": "wearefluent/hn-search",
+   "http": 404,
+   "error": "record-or-token-not-found -- Actor was not found or access denied",
+   "probed": "2026-11-26",
+   "named_in": [
+    "actors/hacker-news-scraper/README.md:189"
+   ],
+   "ruling": "already disclosed as delisted in that README; 0 owed"
+  },
+  {
+   "handle": "wearefluent/podcast-episodes-scraper",
+   "http": 404,
+   "error": "record-or-token-not-found -- Actor was not found or access denied",
+   "probed": "2026-11-26",
+   "named_in": [
+    "actors/apple-podcasts-scraper/README.md:220,222,224,234"
+   ],
+   "ruling": "already disclosed as delisted in that README; 0 owed"
+  },
+  {
+   "handle": "wearefluent/podcast-transcripts",
+   "http": 404,
+   "error": "record-or-token-not-found -- Actor was not found or access denied",
+   "probed": "2026-11-26",
+   "named_in": [
+    "actors/apple-podcasts-scraper/README.md:222,224"
+   ],
+   "ruling": "already disclosed as delisted in that README; 0 owed"
+  },
+  {
+   "handle": "wearefluent/steam-reviews-scraper",
+   "http": 404,
+   "error": "record-or-token-not-found -- Actor was not found or access denied",
+   "probed": "2026-11-26",
+   "named_in": [
+    "actors/steam-reviews-scraper/README.md:266,270"
+   ],
+   "ruling": "already disclosed as delisted in that README; 0 owed"
+  }
+ ]
+}

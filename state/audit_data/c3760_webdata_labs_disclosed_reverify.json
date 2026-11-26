@@ -1,0 +1,116 @@
+[
+ {
+  "handle": "webdata_labs/clinical-trials-api",
+  "title": "Clinical Trials API - Normalized ClinicalTrials.gov Data",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00092,
+   "SILVER": 0.00083,
+   "GOLD": 0.00075,
+   "PLATINUM": 0.00075,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Trial record",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.00092,
+     "SILVER": 0.00083,
+     "GOLD": 0.00075,
+     "PLATINUM": 0.00075,
+     "DIAMOND": 0.00075
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/clinicaltrials-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdata_labs/greenhouse-lever-ashby-jobs-scraper",
+  "title": "ATS Jobs Scraper API - Workday, Greenhouse, Lever & Ashby",
+  "model": "PAY_PER_EVENT",
+  "users": 86,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.0008,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Job posting",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0008,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/ats-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdata_labs/portugal-e-leiloes-auctions-api",
+  "title": "Portugal Property Auctions API - e-leiloes Judicial Auctions",
+  "model": "PAY_PER_EVENT",
+  "users": 4,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.004,
+   "SILVER": 0.0035,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Auction record",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.004,
+     "SILVER": 0.0035,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/court-records-scraper/README.md"
+  ]
+ }
+]
