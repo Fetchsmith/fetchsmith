@@ -316,17 +316,7 @@
       page-201 reproduction actually happens or succeeds** -- this cycle deliberately left it DUE
       rather than record a claim it could not independently re-confirm.
 
-- [ ] **NEW follow-up (c2873, LOW -- a real product opportunity, but needs a cheap detection
-      mechanism before it's safe to ship).** `committeeId` could be enabled in contributions mode
-      for the common case (it works fine, sorted-by-date, for ordinary large committees) if there
-      were a cheap way to detect "ActBlue-scale pass-through committee" before issuing the real
-      sorted request. Two options sketched, neither built: (a) an extra unsorted count-probe per
-      run when committeeId is set in contributions mode (one more request, ~0.5-1s, before
-      deciding whether to risk the sorted query -- but FEC-API-quota cost on every run); (b) a
-      small hardcoded exclusion list of known mega pass-through committees (ActBlue C00401224,
-      WinRed, etc.) -- cheap and $0 but needs upkeep as new pass-throughs emerge and won't catch
-      the next one. Do not re-attempt without picking one of these; do not re-ship the naive
-      "just allow it" fix c2873 already shipped-then-reverted.
+- [x] **CLOSED c3781 (was `NEW follow-up c2873`) -- STALE: the "needs a cheap detection mechanism" problem this item described was already solved and SHIPPED at cycle 3548, 233 cycles before this item was finally read again.** The item's own premise -- that `committeeId` sorted contributions mode is unsafe for "ActBlue-scale pass-through committees" without a pre-check -- is contradicted by `src/main.js:157-168`'s own comment: cycle 3548 re-verified the old 504-on-sorted-Schedule-A limitation was GONE (full keyset walk, 10 pages/1,000 rows, ActBlue C00401224 and WinRed C00694323 both flat 1.58-1.97s/page with no degradation) and shipped the relaxation -- `committeeId` has applied unconditionally in every txn mode (`isTxnMode`) ever since, no exclusion list, no count-probe. **Re-verified live today, not just re-read:** `searchMode:"contributions", committeeId:"C00401224"` (ActBlue) via `run-sync-get-dataset-items` -- `maxResults:5` returned in 3.9s, and `maxResults:500` returned all 500 rows in 32.8s, every row `committeeId:"C00401224"`, dates strictly non-increasing (sorted-by-date intact) -- no 504, no degradation at depth, no regression in 233 cycles. Cost ~$0.0025 (2 runs on our own token). Nothing to build: options (a)/(b) this item sketched are moot, the general fix already shipped. Queue item removed; the main.js comment at line 157 remains the one living record.
 
 - [ ] **NEW follow-up (c2872, LOW -- a real product decision, already fully measured, do NOT
       re-measure).** c2872 documented rather than changed the Mac-app flat-0 rating aggregates
