@@ -1,0 +1,1186 @@
+[
+ {
+  "handle": "zentrafoundry/fda-safety-signal-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Device Recall Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live openFDA device enforcement and recall rows: firm, product, official link. US FDA only \u2014 not a safety certification. $0.02 / row."
+ },
+ {
+  "handle": "zentrafoundry/courtlistener-litigation-intelligence",
+  "niches": [
+   "court-records-scraper"
+  ],
+  "users": 2,
+  "title": "CourtListener Opinion Search",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "case-match",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): case-match,change-alert,dataset-processed,enriched-record,query-processed,record-saved",
+  "verdicts": {
+   "court-records-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Public CourtListener v4 opinion search. Try is antitrust. Not a full docket dump and not legal advice. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/gdelt-global-risk-monitor",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "GDELT Sanctions News Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "GDELT DOC 2.0 articles for \u201csanctions\u201d (Google News RSS fallback if GDELT 429s). Not a risk score. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/job-posting-signal-normalizer",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Job Snapshot (Airbnb)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Public Airbnb Greenhouse jobs. Same engine as the Stripe snapshot \u2014 pick one board. $0.01 / job."
+ },
+ {
+  "handle": "zentrafoundry/dach-solar-roof-storage-tender-feed",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "DACH Solar and Storage Tender Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): attachment-evidence,dataset-processed,enriched-record,qualified-tender,record-saved",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live TED notices for PV, solar roof and storage in DE/AT/CH. Keyword/CPV, not a bid/no-bid. $0.02 / notice."
+ },
+ {
+  "handle": "zentrafoundry/dach-public-building-heat-pump-tender-radar",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "DACH Heat Pump Tender Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): attachment-evidence,dataset-processed,enriched-record,qualified-tender,record-saved",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live TED notices for DE/AT/CH heat pumps and public-building HVAC. Keyword/CPV, not a bid/no-bid. $0.02 / notice."
+ },
+ {
+  "handle": "zentrafoundry/dach-public-sector-software-tender-feed",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "DACH Software Tender Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): attachment-evidence,qualified-tender,result-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live TED notices for software, IT and SaaS in DE/AT/CH. Schedule weekdays. Keyword/CPV, not a bid/no-bid. $0.02 / notice."
+ },
+ {
+  "handle": "zentrafoundry/germany-solar-tender-monitor",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Germany Solar TED Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): qualified-tender,result-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Germany-only TED notices for PV, solar roof and storage keywords. Keyword/CPV, not a bid/no-bid. $0.02 / notice."
+ },
+ {
+  "handle": "zentrafoundry/recall-alert-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Recall Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,recall-alert,record-saved,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "CPSC saferproducts.gov recalls JSON since 2026-08-01. Not EU Safety Gate. $0.01 / recall."
+ },
+ {
+  "handle": "zentrafoundry/food-supplements-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "Food Supplement Recalls (CPSC)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live US CPSC recalls matching vitamin, supplement or dietary text. Keyword filter, not medical advice. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/electronics-marketplace-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "Electronics Recall Monitor (CPSC)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "CPSC recalls keyword-filtered for electronics/battery/charger. Keyword, not SKU matching. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/eu-recall-lookup-api",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Recall Lookup",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): lookup-result,recall-alert,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Official CPSC recall JSON. Try is Cade Finger Light Toys. Not Safety Gate, not EUDAMED. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/cosmetics-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "Cosmetics Recall Monitor (CPSC)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "CPSC recalls keyword-filtered for cosmetics/skincare. Keyword, not a cosmetics classifier \u2014 toys can still match. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/eu-toy-safety-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "Toy Safety Recalls (CPSC)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "US CPSC recalls matching toy, infant or doll text. Keyword filter, not an age-grade classifier. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/product-recall-risk-scorer",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "US Product Recall Risk Scorer",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,recall-alert,record-saved",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Daily CPSC + openFDA recall rows with keyword/brand scores. US official sources. Not a certification. $0.02 / row."
+ },
+ {
+  "handle": "zentrafoundry/recall-feed-to-s3-r2",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Recall Export Dry-Run",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): export-delivered,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Same CPSC recall JSON as the snapshot Actor. Try does not write S3 or R2. $0.01 / recall."
+ },
+ {
+  "handle": "zentrafoundry/tender-cpv-classifier",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "TED CPV Code Extractor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-parsed",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,document-parsed,enriched-record,record-saved",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Copies CPV codes from live TED notices. Not a machine-learning classifier and not a bid/no-bid. $0.02 / row."
+ },
+ {
+  "handle": "zentrafoundry/german-public-infrastructure-tender-monitor",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "German Infrastructure Tender Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): qualified-tender,result-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live TED notices for German infrastructure and construction. Keyword/CPV, not a bid/no-bid. $0.02 / notice."
+ },
+ {
+  "handle": "zentrafoundry/dach-renewables-ev-tender-bundle",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "DACH Renewables and EV Tender Bundle",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "One TED watch for DACH renewables, solar and EV charging keywords. Keyword/CPV, not a bid/no-bid. $0.02 / notice."
+ },
+ {
+  "handle": "zentrafoundry/social-trend-radar-reddit-x-youtube",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Story Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "HN Algolia stories for OpenAI. Reddit, X and YouTube HTML 403 from this IP. $0.01 / story."
+ },
+ {
+  "handle": "zentrafoundry/google-maps-business-leads-pain-score",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Food Recall Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.029
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "openFDA food enforcement (firm + product). Not Maps leads, emails or pain scores. $0.029."
+ },
+ {
+  "handle": "zentrafoundry/franchise-new-location-monitor",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "New-Store Headline Watch (Google News)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News RSS for \u201cStarbucks opens new store\u201d. Headlines, not a franchise registry. $0.01 / headline."
+ },
+ {
+  "handle": "zentrafoundry/tender-pdf-requirement-extractor-v2",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "TED Notice Requirement Extractor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "compliance-matrix-generated",
+  "unit_tiers": {
+   "FREE": 0.03
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): compliance-matrix-generated,dataset-processed,enriched-record,record-saved,result-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live TED notices with title, buyer and CPV as requirement rows. Not OCR of scanned tender PDFs. $0.03."
+ },
+ {
+  "handle": "zentrafoundry/courtlistener-litigation-intelligence-v2",
+  "niches": [
+   "court-records-scraper"
+  ],
+  "users": 2,
+  "title": "CourtListener Opinion Search v2",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "court-records-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "CourtListener v4 opinions for \u201cpatent infringement\u201d. v1 Try is antitrust. Not a docket dump. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/podcast-sponsor-prospect-finder",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 2,
+  "title": "iTunes Podcast Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.029
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "iTunes Search API podcast collections. Not extracted sponsors or host emails. $0.029 / show."
+ },
+ {
+  "handle": "zentrafoundry/local-business-bad-website-lead-finder",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA NDC Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.029
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "openFDA NDC brand names. Not SSL/mobile scores from Google Maps. $0.029 / product."
+ },
+ {
+  "handle": "zentrafoundry/govcon-grants-bid-fit-scorer-v2",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "USAspending Award and Grant Leads",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,qualified-tender,record-saved,result-delivered",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live USAspending award rows (Try includes HUMANA Government Business). Official API, not SAM. $0.02 / award."
+ },
+ {
+  "handle": "zentrafoundry/any-store-fake-sale-detector",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Catalog List vs Sale Price",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,price-anomaly,record-saved,result-delivered",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Shopify products.json list vs compare-at when the catalog prints it (Try is Allbirds). Not historical MSRP proof. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/reddit-pain-point-buyer-intent-miner",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Ask HN Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.029
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "HN Algolia Ask HN titles. Reddit JSON is bot-walled; this is not Reddit. $0.029 / story."
+ },
+ {
+  "handle": "zentrafoundry/marketplace-seller-risk-bundle",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Device Enforcement Snapshot",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,qualified-commerce-signal,record-saved,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "openFDA device/enforcement.json (firm + product). Not a marketplace seller-risk score. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/clinicaltrials-site-activation-tracker",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Site Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial-site-scan",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,record-saved,trial-site-delta,trial-site-scan",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Recruiting CT.gov studies with named facilities. Snapshot of listed sites, not an activation event log. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/fda-510k-competitor-clearance-tracker",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA 510(k) Clearance Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): clearance-watchlist-scan,dataset-processed,enriched-record,matched-clearance,record-saved,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live openFDA 510(k) rows. Try includes Electrical Muscle Stimulator K261131. Not a predicate decision. $0.02 / row."
+ },
+ {
+  "handle": "zentrafoundry/clinicaltrials-protocol-amendment-watcher",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Update Watcher",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): changed-study,dataset-processed,enriched-record,protocol-watchlist-scan,record-saved,result-delivered",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live CT.gov studies with a last-update date. Not a protocol PDF diff and not a medical conclusion. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/ema-shortage-escalation-mapper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "US Drug Shortage Snapshot (openFDA)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,ema-shortage-scan,enriched-record,record-saved,result-delivered,shortage-escalation-delta",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "openFDA drug-shortage rows. Last run: Leflunomide Tablet \u2014 To Be Discontinued. Not EMA. Not medical advice. $0.01."
+ },
+ {
+  "handle": "zentrafoundry/automotive-parts-recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "NHTSA Vehicle Recall Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-alert,result-delivered",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live NHTSA recalls for a make/model/year you supply. Try is Honda Civic 2024 STEERING. Not EU Safety Gate. $0.02 / recall."
+ },
+ {
+  "handle": "zentrafoundry/medical-device-alert-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "FDA Medical Device Alert Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,document-parsed,enriched-record,recall-alert,record-saved",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live openFDA device alerts and enforcement rows. US FDA only. Not a safety certification. $0.02 / row."
+ },
+ {
+  "handle": "zentrafoundry/eu-solar-tender-monitor",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 1,
+  "title": "EU Solar Tender Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): attachment-evidence,change-alert,qualified-tender,result-delivered",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Live TED notices for solar/PV keywords across the EU. Keyword/CPV, not a bid/no-bid. $0.02 / notice."
+ },
+ {
+  "handle": "zentrafoundry/linkedin-jobs-hiring-signal-normalizer",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Greenhouse Job Snapshot (Stripe)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Public Stripe Greenhouse jobs (title + location + URL). LinkedIn HTML 403s from this IP. $0.01 / job."
+ }
+]

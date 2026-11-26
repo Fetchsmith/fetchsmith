@@ -1,0 +1,1631 @@
+[
+ {
+  "handle": "zentrafoundry/340b-opais-delta-monitor",
+  "title": "340B Keyword Watch (Federal Register)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,opais-delta-batch,opais-watchlist-scan,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.02",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "opais-watchlist-scan",
+    "Opais Watchlist Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "opais-delta-batch",
+    "Opais Delta Batch",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/aphis-export-requirement-tracker",
+  "title": "APHIS Federal Register Watch",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): aphis-country-rule-delta,aphis-export-scan,dataset-processed,enriched-record,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.02",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "aphis-export-scan",
+    "Aphis Export Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "aphis-country-rule-delta",
+    "Aphis Country Rule Delta",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/bis-entity-list-supplier-exposure-watcher",
+  "title": "BIS Entity List Notice Watcher",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,entity-list-scan,matched-counterparty-event,record-saved,result-delivered",
+  "all_events": [
+   [
+    "entity-list-scan",
+    "Entity List Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "matched-counterparty-event",
+    "Matched Counterparty Event",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/cms-coverage-decision-change-watcher",
+  "title": "CMS Coverage Watch (Federal Register)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): cms-coverage-scan,coverage-document-delta,dataset-processed,enriched-record,record-saved,result-delivered",
+  "all_events": [
+   [
+    "cms-coverage-scan",
+    "Cms Coverage Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "coverage-document-delta",
+    "Coverage Document Delta",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/company-name-normalizer",
+  "title": "Company Legal Name (GLEIF)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): lookup-result,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.01",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "lookup-result",
+    "processed-company",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/compliance-risk-tool",
+  "title": "openFDA Food Enforcement Snapshot",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,qualified-tender,recall-alert,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.01",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "qualified-tender",
+    "risk-check",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "recall-alert",
+    "Risk Check",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/fda-recall-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/dach-cctv-security-systems-tender-feed",
+  "title": "DACH CCTV and Alarm Tender Feed",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): qualified-tender,result-delivered",
+  "all_events": [
+   [
+    "qualified-tender",
+    "qualified-tender",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/eu-ted-tenders-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/faa-airworthiness-directive-fleet-watcher",
+  "title": "FAA Airworthiness Directives (Federal Register)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,faa-directive-scan,matched-ad-saib-event,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.02",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "faa-directive-scan",
+    "Faa Directive Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "matched-ad-saib-event",
+    "Matched Ad Saib Event",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/fcc-equipment-authorization-competitor-launch-tracker",
+  "title": "FCC Equipment Authorization (Federal Register)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,fcc-authorization-scan,fcc-launch-signal,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.02",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "fcc-authorization-scan",
+    "Fcc Authorization Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "fcc-launch-signal",
+    "Fcc Launch Signal",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/fda-safety-signal-monitor-v2",
+  "title": "FDA Drug Enforcement Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "recall-alert",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,recall-alert,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "recall-alert",
+    "Apify Actor Run Or Buyer Defined Paid Event",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/fda-recall-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/fda-warning-letter-category-monitor",
+  "title": "FDA Warning-Letter FR Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,matched-warning-letter,record-saved,result-delivered,warning-letter-scan",
+  "all_events": [
+   [
+    "warning-letter-scan",
+    "Warning Letter Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "matched-warning-letter",
+    "Matched Warning Letter",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/ferc-docket-filing-change-radar",
+  "title": "FERC Keyword Watch (Federal Register)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "ferc-docket-scan",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,ferc-docket-scan,matched-ferc-filing,record-saved",
+  "all_events": [
+   [
+    "ferc-docket-scan",
+    "Ferc Docket Scan",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "matched-ferc-filing",
+    "Matched Ferc Filing",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/govcon-grants-bid-intelligence",
+  "title": "TED and Grant Notice Leads",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "qualified-tender",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,qualified-tender,recall-alert,record-saved",
+  "all_events": [
+   [
+    "recall-alert",
+    "report-generated",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "qualified-tender",
+    "Report Generated",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sam-gov-opportunities-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/hhs-ocr-hipaa-breach-delta-monitor",
+  "title": "HIPAA Breach Keyword Watch (Federal Register)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,hipaa-breach-scan,matched-breach,record-saved,result-delivered",
+  "all_events": [
+   [
+    "hipaa-breach-scan",
+    "Hipaa Breach Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "matched-breach",
+    "Matched Breach",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/nih-reporter-competitor-grant-win-alert",
+  "title": "NIH RePORTER Award Watch",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "nih-award-scan",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,matched-nih-award,nih-award-scan,record-saved",
+  "all_events": [
+   [
+    "nih-award-scan",
+    "Nih Award Scan",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "matched-nih-award",
+    "Matched Nih Award",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/nih-reporter-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/product-recall-unified-monitor",
+  "title": "US Product Recall Unified Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/fda-recall-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/public-data-product-launch-sprint",
+  "title": "Hacker News Show HN Snapshot",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,launch-deliverable,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.01",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "launch-deliverable",
+    "Apify Actor Run Or Buyer Defined Paid Event",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/public-debarment-sanctions-lite-monitor",
+  "title": "Federal Register SDN / Sanctions Watch",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/shopify-woocommerce-dtc-catalog-intelligence",
+  "title": "Shopify Products Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "product-result",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-alert,dataset-processed,enriched-record,product-detail,product-result,record-saved",
+  "all_events": [
+   [
+    "product-result",
+    "Product Result",
+    {
+     "FREE": 0.002
+    },
+    false,
+    false
+   ],
+   [
+    "product-detail",
+    "Product Detail",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "change-alert",
+    "Change Alert",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/sku-price-drop-alert-api",
+  "title": "Public Catalog Price Snapshot",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-alert,dataset-processed,enriched-record,product-result,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.01",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "change-alert",
+    "Change Alert",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "product-result",
+    "Product Result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/solar-interconnection-queue-watcher",
+  "title": "Interconnection Queue Watch (Federal Register)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "Result delivered",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/supplier-stock-price-monitor",
+  "title": "Supplier Stock/Price Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "change-alert",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-alert,dataset-processed,enriched-record,record-saved",
+  "all_events": [
+   [
+    "change-alert",
+    "Price or stock observation",
+    {
+     "FREE": 0.002
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/ugly-website-ai-agent-connector",
+  "title": "Hacker News Front-Page Snapshot",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,export-delivered,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.01",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "export-delivered",
+    "Enriched Record",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/usda-fsis-export-requirement-change-tracker",
+  "title": "FSIS Federal Register Watch",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,fsis-country-rule-delta,fsis-export-scan,record-saved,result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.02",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "fsis-export-scan",
+    "Fsis Export Scan",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "fsis-country-rule-delta",
+    "Fsis Country Rule Delta",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/uspto-trademark-patent-watcher",
+  "title": "Patent Page Watcher (Google Patents)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "ip-record-matched",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): change-alert,dataset-processed,enriched-record,ip-record-matched,record-saved,watchlist-term-processed",
+  "all_events": [
+   [
+    "change-alert",
+    "report-generated",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "ip-record-matched",
+    "Ip Record Matched",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "watchlist-term-processed",
+    "Watchlist Term Processed",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.0001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/uspto-trademark-patent-watcher-v2",
+  "title": "Google Patents Snapshot (NVIDIA)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "ip-signal",
+  "unit_tiers": {
+   "FREE": 0.043
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-processed,enriched-record,ip-signal,record-saved",
+  "all_events": [
+   [
+    "ip-signal",
+    "Apify Actor Run Or Buyer Defined Paid Event",
+    {
+     "FREE": 0.043
+    },
+    false,
+    false
+   ],
+   [
+    "dataset-processed",
+    "Successful dataset run",
+    {
+     "FREE": 0.011
+    },
+    false,
+    false
+   ],
+   [
+    "record-saved",
+    "Saved result",
+    {
+     "FREE": 0.003
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-record",
+    "Enriched result",
+    {
+     "FREE": 0.022
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zentrafoundry/workplace-safety-inspection-delta-monitor",
+  "title": "OSHA Federal Register Watch",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-delivered",
+  "unit_tiers": {
+   "FREE": 0.02
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-delivered",
+  "all_events": [
+   [
+    "result-delivered",
+    "0.02",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ }
+]
