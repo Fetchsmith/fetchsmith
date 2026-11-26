@@ -1,0 +1,191 @@
+[
+ {
+  "handle": "viralanalyzer/hackernews-intelligence",
+  "title": "Hacker News Scraper - Stories, Comments & Trends",
+  "model": "PAY_PER_EVENT",
+  "users": 7,
+  "unit_event": "story-scraped",
+  "unit_tiers": {
+   "FREE": 0.03,
+   "BRONZE": 0.03,
+   "SILVER": 0.0225,
+   "GOLD": 0.01575,
+   "PLATINUM": 0.00945,
+   "DIAMOND": 0.00567
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): story-scraped",
+  "all_events": [
+   [
+    "story-scraped",
+    "Story scraped",
+    {
+     "FREE": 0.03,
+     "BRONZE": 0.03,
+     "SILVER": 0.0225,
+     "GOLD": 0.01575,
+     "PLATINUM": 0.00945,
+     "DIAMOND": 0.00567
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "viralanalyzer/rss-news-intelligence",
+  "title": "RSS & Google News Scraper \u2014 AI Summary + Sentiment",
+  "model": "PAY_PER_EVENT",
+  "users": 45,
+  "unit_event": "article-processed",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.02,
+   "SILVER": 0.015,
+   "GOLD": 0.0105,
+   "PLATINUM": 0.0063,
+   "DIAMOND": 0.00378
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article-processed",
+  "all_events": [
+   [
+    "article-processed",
+    "Article processed",
+    {
+     "FREE": 0.02,
+     "BRONZE": 0.02,
+     "SILVER": 0.015,
+     "GOLD": 0.0105,
+     "PLATINUM": 0.0063,
+     "DIAMOND": 0.00378
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "viralanalyzer/sam-gov-contracts-watcher",
+  "title": "SAM.gov Government Bid & Contracts Watcher",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "opportunity-scraped",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.008,
+   "SILVER": 0.006,
+   "GOLD": 0.005,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity-scraped",
+  "all_events": [
+   [
+    "opportunity-scraped",
+    "Opportunity scraped",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.008,
+     "SILVER": 0.006,
+     "GOLD": 0.005,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sam-gov-opportunities-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "viralanalyzer/screenshot-url",
+  "title": "URL Screenshot \ud83d\udcf8 Full-Page & Viewport \u2014 Only $1/1K \ud83d\udcb0",
+  "model": "PAY_PER_EVENT",
+  "users": 30,
+  "unit_event": "screenshot-captured",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot-captured",
+  "all_events": [
+   [
+    "screenshot-captured",
+    "Screenshot captured",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/website-screenshot-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "viralanalyzer/steam-game-intelligence",
+  "title": "Steam Game Scraper - Prices, Reviews & Player Stats",
+  "model": "PAY_PER_EVENT",
+  "users": 5,
+  "unit_event": "game-scraped",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.05,
+   "SILVER": 0.0375,
+   "GOLD": 0.02625,
+   "PLATINUM": 0.01575,
+   "DIAMOND": 0.00945
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): game-scraped",
+  "all_events": [
+   [
+    "game-scraped",
+    "Game data scraped",
+    {
+     "FREE": 0.05,
+     "BRONZE": 0.05,
+     "SILVER": 0.0375,
+     "GOLD": 0.02625,
+     "PLATINUM": 0.01575,
+     "DIAMOND": 0.00945
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ }
+]

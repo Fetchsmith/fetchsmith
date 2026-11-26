@@ -128,7 +128,8 @@ real feature overlap, not a bare screenshotter — and its PAY_PER_EVENT ladder 
 **$0.001/result at GOLD and above**, half our flat $0.002, for any buyer doing enough volume to
 reach that tier. Three cheaper-looking listings were checked and ruled out as narrower, not
 undercutting the same product: `room_js/url-screenshot-generator` ($0.001/result + a one-time
-$0.005 start fee, 96 users as of 2026-11-12) and `viralanalyzer/screenshot-url` (flat $0.001/result, 26 users as of 2026-11-12) are
+$0.005 start fee, 96 users as of 2026-11-12) and `viralanalyzer/screenshot-url` (flat $0.001/result
+plus a $0.00005 start fee added since, re-verified live 2026-11-26, 30 users) are
 both plain full-page/viewport PNG-or-JPEG capture with no element selector, device preset,
 raw-HTML input or PDF — the same gap the free official Actor has, just cheaper; and
 `leadsbrary/screenshot-html-file-from-url` ($0.001/result at GOLD+, 63 users as of 2026-11-12) adds PDF and an

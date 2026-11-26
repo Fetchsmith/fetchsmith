@@ -1,0 +1,118 @@
+[
+ {
+  "handle": "viralanalyzer/shopify-store-intelligence",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 5,
+  "title": "Shopify Store Scraper - Products, Apps & Tech Stack",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product-scraped",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.05,
+   "SILVER": 0.0375,
+   "GOLD": 0.02625,
+   "PLATINUM": 0.01575,
+   "DIAMOND": 0.00945
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-scraped",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Analyze Shopify stores: extract products, prices, collections, themes, and apps. Competitive e-commerce intelligence."
+ },
+ {
+  "handle": "viralanalyzer/weworkremotely-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "We Work Remotely Jobs Scraper \ud83d\udcbb Global Remote Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-scraped",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00167,
+   "SILVER": 0.00133,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-scraped",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape top remote jobs from We Work Remotely (WWR). Extract job titles, company names, categories, regions, job types, full descriptions, and apply links. Fast HTTP, no login required."
+ },
+ {
+  "handle": "viralanalyzer/substack-newsletter-intelligence",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Scraper \u2014 Posts, Paywall & Bestseller Signals",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post-scraped",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.0025,
+   "SILVER": 0.001875,
+   "GOLD": 0.0013125,
+   "PLATINUM": 0.0007875,
+   "DIAMOND": 0.0004725
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post-scraped",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "DIAMOND"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract posts, paywall status, engagement and bestseller signals from any public Substack publication. Pure HTTP via the public archive API \u2014 no login, no API key, no browser, no residential proxy. See which competitors monetize and how much sits behind the paywall."
+ }
+]
