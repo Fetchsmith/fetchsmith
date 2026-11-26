@@ -1,0 +1,77 @@
+[
+ {
+  "handle": "zenomastro/google-news-intelligence",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Scraper API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.00255,
+   "GOLD": 0.00075,
+   "PLATINUM": 0.00075,
+   "DIAMOND": 0.00075
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News scraper for brand, competitor and market monitoring. Search by country, language and date; filter publishers, resolve URLs and optionally extract article text. Free analytics report publisher/domain share, daily/query volume. From $3 per 1,000 articles, platform usage included."
+ },
+ {
+  "handle": "zenomastro/website-screenshot-pro",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 1,
+  "title": "Website Screenshot API - Full Page PNG, JPEG & PDF",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.00225,
+   "SILVER": 0.002125,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Capture screenshots of any URL or raw HTML as PNG, JPEG, WebP or PDF. Full page, element or region, mobile and desktop presets, dark mode, cookie-banner hiding and lazy-load scrolling. Get a direct file link per page."
+ }
+]

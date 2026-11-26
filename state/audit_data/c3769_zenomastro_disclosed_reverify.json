@@ -1,0 +1,105 @@
+[
+ {
+  "handle": "zenomastro/apple-app-store-reviews-pro",
+  "title": "App Store Reviews Scraper API",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 7.5e-05,
+   "BRONZE": 6.8e-05,
+   "SILVER": 6.4e-05,
+   "GOLD": 6e-05,
+   "PLATINUM": 6e-05,
+   "DIAMOND": 6e-05
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.0001
+    },
+    true,
+    false
+   ],
+   [
+    "review",
+    "App Store review",
+    {
+     "FREE": 7.5e-05,
+     "BRONZE": 6.8e-05,
+     "SILVER": 6.4e-05,
+     "GOLD": 6e-05,
+     "PLATINUM": 6e-05,
+     "DIAMOND": 6e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zenomastro/google-play-reviews-pro",
+  "title": "Google Play Reviews Scraper Pro",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.00011,
+   "BRONZE": 9.8e-05,
+   "SILVER": 8.3e-05,
+   "GOLD": 7.5e-05,
+   "PLATINUM": 7.5e-05,
+   "DIAMOND": 7.5e-05
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-details,review",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.0001
+    },
+    true,
+    false
+   ],
+   [
+    "review",
+    "Review result",
+    {
+     "FREE": 0.00011,
+     "BRONZE": 9.8e-05,
+     "SILVER": 8.3e-05,
+     "GOLD": 7.5e-05,
+     "PLATINUM": 7.5e-05,
+     "DIAMOND": 7.5e-05
+    },
+    false,
+    false
+   ],
+   [
+    "app-details",
+    "App details",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-play-reviews-scraper/README.md"
+  ]
+ }
+]
