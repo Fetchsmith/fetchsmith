@@ -1,0 +1,120 @@
+[
+ {
+  "handle": "vncntlabs/app-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play & App Store Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app,app-details,app-search,app-store-review,review,search-result",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get app reviews from Google Play and the App Store in one format: stars, text, date, version and developer reply, plus a rating snapshot per app. Rating and date filters, only-new mode for review alerts, full app details and keyword app search for ASO. Pay per review."
+ },
+ {
+  "handle": "vncntlabs/shopify-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 1,
+  "title": "Shopify Products Scraper: Prices, Variants, Stock & Launches",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.0005
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every product from any Shopify store or collection: price, compare-at price and discount, stock, variants, sizes and colors, tags, images and launch dates. Plus a free store summary with price range, top product types and what launched in the last 30 days."
+ },
+ {
+  "handle": "vncntlabs/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 1,
+  "title": "Google News Scraper & API: Articles and News Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google News scraper and API for any keyword in 70+ countries and any language: title, publisher, direct article URL, snippet, publish time, thumbnail and Top stories. Past hour to custom dates, newest first, publisher filters and an only-new mode for scheduled news alerts. Pay per article."
+ }
+]

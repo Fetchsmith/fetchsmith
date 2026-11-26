@@ -1,0 +1,195 @@
+[
+ {
+  "handle": "vncntlabs/amazon-book-tshirt-niche-analyzer",
+  "title": "Amazon Book & T-Shirt Niche Analyzer",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "niche-report",
+  "unit_tiers": {
+   "FREE": 0.15
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): niche-report",
+  "all_events": [
+   [
+    "niche-report",
+    "Niche report",
+    {
+     "FREE": 0.15
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "vncntlabs/keyword-ideas",
+  "title": "Keyword Research Tool: Autocomplete, Reverse ASIN & Keyword Gap",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "keyword-idea",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): autocomplete-query,keyword-idea,seed-processed",
+  "all_events": [
+   [
+    "keyword-idea",
+    "Keyword idea",
+    {
+     "FREE": 0.002
+    },
+    false,
+    false
+   ],
+   [
+    "seed-processed",
+    "Seed or ASIN processed",
+    {
+     "FREE": 0.02
+    },
+    false,
+    false
+   ],
+   [
+    "autocomplete-query",
+    "Autocomplete lookup",
+    {
+     "FREE": 0.004
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "vncntlabs/keyword-search-volume",
+  "title": "Keyword Search Volume: Planner + Amazon, Bing & AI",
+  "model": "PAY_PER_EVENT",
+  "users": 45,
+  "unit_event": "google-volume",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-volume,amazon-volume,bing-batch,bing-volume,google-volume,keyword-batch,trademark-check",
+  "all_events": [
+   [
+    "keyword-batch",
+    "Keyword batch",
+    {
+     "FREE": 0.05
+    },
+    false,
+    false
+   ],
+   [
+    "google-volume",
+    "Google search volume",
+    {
+     "FREE": 0.003
+    },
+    false,
+    false
+   ],
+   [
+    "amazon-volume",
+    "Amazon search volume",
+    {
+     "FREE": 0.004
+    },
+    false,
+    false
+   ],
+   [
+    "bing-batch",
+    "Bing batch",
+    {
+     "FREE": 0.15
+    },
+    false,
+    false
+   ],
+   [
+    "bing-volume",
+    "Bing search volume",
+    {
+     "FREE": 0.003
+    },
+    false,
+    false
+   ],
+   [
+    "ai-volume",
+    "AI search volume",
+    {
+     "FREE": 0.002
+    },
+    false,
+    false
+   ],
+   [
+    "trademark-check",
+    "Trademark check",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "vncntlabs/pod-trademark-checker",
+  "title": "Trademark Checker: USPTO Search for Etsy, Merch & KDP",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "listing-checked",
+  "unit_tiers": {
+   "FREE": 0.01
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): listing-checked,phrase-checked",
+  "all_events": [
+   [
+    "listing-checked",
+    "Listing checked",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "phrase-checked",
+    "Phrase checked",
+    {
+     "FREE": 0.003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ }
+]
