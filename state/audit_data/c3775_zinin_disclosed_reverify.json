@@ -1,0 +1,679 @@
+[
+ {
+  "handle": "zinin/badoo-app-intel",
+  "title": "Badoo Subscription Prices by Country and App Store Ratings",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.00625
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Storefront snapshot",
+    {
+     "FREE": 0.00625
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/bumble-app-intel",
+  "title": "Bumble Subscription Prices by Country and App Store Ratings",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.00625
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Storefront snapshot",
+    {
+     "FREE": 0.00625
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/careers-page-scraper",
+  "title": "Careers Scraper \u2014 By Domain",
+  "model": "PAY_PER_EVENT",
+  "users": 9,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0038,
+   "SILVER": 0.0036,
+   "GOLD": 0.0034,
+   "PLATINUM": 0.0034,
+   "DIAMOND": 0.0034
+  },
+  "start_fee": 0.0085,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ats-detected,enriched-job,result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.0095,
+     "SILVER": 0.009,
+     "GOLD": 0.0085,
+     "PLATINUM": 0.0085,
+     "DIAMOND": 0.0085
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Job posting found",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.0038,
+     "SILVER": 0.0036,
+     "GOLD": 0.0034,
+     "PLATINUM": 0.0034,
+     "DIAMOND": 0.0034
+    },
+    false,
+    false
+   ],
+   [
+    "enriched-job",
+    "Job enrichment delivered",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0018,
+     "GOLD": 0.0017,
+     "PLATINUM": 0.0017,
+     "DIAMOND": 0.0017
+    },
+    false,
+    false
+   ],
+   [
+    "ats-detected",
+    "ATS detected for a domain",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.00285,
+     "SILVER": 0.0027,
+     "GOLD": 0.00255,
+     "PLATINUM": 0.00255,
+     "DIAMOND": 0.00255
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/ats-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/counterparty-risk-rollup",
+  "title": "Counterparty Risk Check \ud83d\udcb0$0.05/company \u2014 Sanctions",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0475,
+   "DIAMOND": 0.04,
+   "FREE": 0.05,
+   "GOLD": 0.0425,
+   "PLATINUM": 0.041,
+   "SILVER": 0.045
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "BRONZE": 0.00475,
+     "DIAMOND": 0.004,
+     "FREE": 0.005,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "SILVER": 0.0045
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Delivered counterparty evidence rollup",
+    {
+     "BRONZE": 0.0475,
+     "DIAMOND": 0.04,
+     "FREE": 0.05,
+     "GOLD": 0.0425,
+     "PLATINUM": 0.041,
+     "SILVER": 0.045
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/court-records-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/fda-food-recall-monitor",
+  "title": "FDA Food Recall Monitor",
+  "model": "PAY_PER_EVENT",
+  "users": 8,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.0025,
+   "BRONZE": 0.002375,
+   "SILVER": 0.00225,
+   "GOLD": 0.002125,
+   "PLATINUM": 0.002125,
+   "DIAMOND": 0.002125
+  },
+  "start_fee": 0.002,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.002
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Food recall record",
+    {
+     "FREE": 0.0025,
+     "BRONZE": 0.002375,
+     "SILVER": 0.00225,
+     "GOLD": 0.002125,
+     "PLATINUM": 0.002125,
+     "DIAMOND": 0.002125
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/fda-recall-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/himalayas-remote-jobs-api",
+  "title": "Himalayas Remote Jobs API, No Key",
+  "model": "PAY_PER_EVENT",
+  "users": 11,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0018,
+   "GOLD": 0.0017,
+   "PLATINUM": 0.0017,
+   "DIAMOND": 0.0017
+  },
+  "start_fee": 0.01105,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.013,
+     "BRONZE": 0.01235,
+     "SILVER": 0.0117,
+     "GOLD": 0.01105,
+     "PLATINUM": 0.01105,
+     "DIAMOND": 0.01105
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Remote job delivered",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0018,
+     "GOLD": 0.0017,
+     "PLATINUM": 0.0017,
+     "DIAMOND": 0.0017
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/hinge-app-intel",
+  "title": "Hinge Subscription Prices by Country and App Store Ratings",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.00625
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Storefront snapshot",
+    {
+     "FREE": 0.00625
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/insider-trading-tracker",
+  "title": "Insider Trading Tracker",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.00475,
+   "DIAMOND": 0.004,
+   "FREE": 0.005,
+   "GOLD": 0.00425,
+   "PLATINUM": 0.0041,
+   "SILVER": 0.0045
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "BRONZE": 0.00475,
+     "DIAMOND": 0.004,
+     "FREE": 0.005,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "SILVER": 0.0045
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Delivered ticker filing check",
+    {
+     "BRONZE": 0.00475,
+     "DIAMOND": 0.004,
+     "FREE": 0.005,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "SILVER": 0.0045
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/litigation-check",
+  "title": "Company Litigation Check \ud83d\udcb0$0.02/Country, Case Links",
+  "model": "PAY_PER_EVENT",
+  "users": 14,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.019,
+   "DIAMOND": 0.016,
+   "FREE": 0.02,
+   "GOLD": 0.017,
+   "PLATINUM": 0.0164,
+   "SILVER": 0.018
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "BRONZE": 0.00475,
+     "DIAMOND": 0.004,
+     "FREE": 0.005,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "SILVER": 0.0045
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Delivered litigation source observation",
+    {
+     "BRONZE": 0.019,
+     "DIAMOND": 0.016,
+     "FREE": 0.02,
+     "GOLD": 0.017,
+     "PLATINUM": 0.0164,
+     "SILVER": 0.018
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/court-records-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/substack-publication-scraper",
+  "title": "Substack Scraper \u2014 Posts, Full Text & Paywall Status",
+  "model": "PAY_PER_EVENT",
+  "users": 6,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00095,
+   "SILVER": 0.0009,
+   "GOLD": 0.00085,
+   "PLATINUM": 0.00082,
+   "DIAMOND": 0.0008
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.00475,
+     "SILVER": 0.0045,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "DIAMOND": 0.004
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Publication post delivered",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00082,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/substack-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/tinder-app-intel",
+  "title": "Tinder Subscription Prices by Country and App Store Ratings",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.00625
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Storefront snapshot",
+    {
+     "FREE": 0.00625
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/trademark-class-overlap-review",
+  "title": "Trademark Class Overlap Review",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.03125,
+   "BRONZE": 0.028125,
+   "SILVER": 0.025,
+   "GOLD": 0.021875,
+   "PLATINUM": 0.021875,
+   "DIAMOND": 0.021875
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "result-found",
+    "Mark assessment",
+    {
+     "FREE": 0.03125,
+     "BRONZE": 0.028125,
+     "SILVER": 0.025,
+     "GOLD": 0.021875,
+     "PLATINUM": 0.021875,
+     "DIAMOND": 0.021875
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/trademark-multiregistry",
+  "title": "Trademark Registry Evidence Normalizer",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0095,
+   "SILVER": 0.009,
+   "GOLD": 0.0085,
+   "PLATINUM": 0.0082,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.00475,
+     "SILVER": 0.0045,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "DIAMOND": 0.004
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "Normalized trademark evidence record",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.0095,
+     "SILVER": 0.009,
+     "GOLD": 0.0085,
+     "PLATINUM": 0.0082,
+     "DIAMOND": 0.008
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zinin/uk-public-tender-lead-alert",
+  "title": "UK Public Tender Lead Alert",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0095,
+   "SILVER": 0.009,
+   "GOLD": 0.0085,
+   "PLATINUM": 0.0082,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.00475,
+     "SILVER": 0.0045,
+     "GOLD": 0.00425,
+     "PLATINUM": 0.0041,
+     "DIAMOND": 0.004
+    },
+    true,
+    false
+   ],
+   [
+    "result-found",
+    "New matching tender delivered",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.0095,
+     "SILVER": 0.009,
+     "GOLD": 0.0085,
+     "PLATINUM": 0.0082,
+     "DIAMOND": 0.008
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ }
+]

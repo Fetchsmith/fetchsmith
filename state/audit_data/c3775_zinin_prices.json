@@ -1,0 +1,872 @@
+[
+ {
+  "handle": "zinin/intent-signal-aggregator",
+  "niches": [
+   "ats-jobs-scraper",
+   "google-news-scraper"
+  ],
+  "users": 25,
+  "title": "Hiring & News Intent Signals for B2B Sales",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0038,
+   "DIAMOND": 0.0032,
+   "FREE": 0.004,
+   "GOLD": 0.0034,
+   "PLATINUM": 0.00328,
+   "SILVER": 0.0036
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "One row per company: open roles on its Greenhouse, Lever or Ashby job board (sales, marketing, engineering counts), dated Google News headlines and a 0\u2013100 activity score with evidence. For account research, not proof of buying intent. $0.004 per company."
+ },
+ {
+  "handle": "zinin/lever-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 13,
+  "title": "Lever Jobs Feed | Public Postings API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.00149,
+   "BRONZE": 0.001341,
+   "SILVER": 0.001192,
+   "GOLD": 0.001043,
+   "PLATINUM": 0.001043,
+   "DIAMOND": 0.001043
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get every open job from any company's Lever job board: title, team, department, location, commitment, workplace type and apply link. Official Lever Postings API, no login, no browser. Pay per job, no start fee."
+ },
+ {
+  "handle": "zinin/ashby-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 12,
+  "title": "Ashby Jobs Feed | Public Posting API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.00149,
+   "BRONZE": 0.001341,
+   "SILVER": 0.001192,
+   "GOLD": 0.001043,
+   "PLATINUM": 0.001043,
+   "DIAMOND": 0.001043
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get every open job from any company's Ashby job board: title, department, team, location, remote flag, employment type, compensation and apply link. Public Ashby Posting API, no login, no browser. Pay per job, no start fee."
+ },
+ {
+  "handle": "zinin/greenhouse-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 11,
+  "title": "Greenhouse Jobs Feed | Public Job Board API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.00149,
+   "BRONZE": 0.001341,
+   "SILVER": 0.001192,
+   "GOLD": 0.001043,
+   "PLATINUM": 0.001043,
+   "DIAMOND": 0.001043
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get every open job from any company's Greenhouse job board: title, location, departments, offices, update date and job link, with optional full description. Public Job Board API, no login, no browser. Pay per job, no start fee."
+ },
+ {
+  "handle": "zinin/recruitee-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 11,
+  "title": "Recruitee Jobs Feed | Public Career Offers",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.00162,
+   "SILVER": 0.00144,
+   "GOLD": 0.00126,
+   "PLATINUM": 0.00126,
+   "DIAMOND": 0.00126
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect public Recruitee career offers from company subdomains. One structured vacancy per paid result, with contact fields excluded."
+ },
+ {
+  "handle": "zinin/fda-adverse-event-aggregate",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 11,
+  "title": "FDA Adverse Event Aggregate",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.03,
+   "BRONZE": 0.0285,
+   "SILVER": 0.027,
+   "GOLD": 0.0255,
+   "PLATINUM": 0.0255,
+   "DIAMOND": 0.0255
+  },
+  "start_fee": 0.002,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Aggregate openFDA adverse-event report counts and reported reaction counts by drug brand or generic name and date period. Official API, no key required."
+ },
+ {
+  "handle": "zinin/smartrecruiters-jobs-feed",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 10,
+  "title": "SmartRecruiters Jobs Feed | Public Posting API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0036,
+   "SILVER": 0.0032,
+   "GOLD": 0.0028,
+   "PLATINUM": 0.0028,
+   "DIAMOND": 0.0028
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect published SmartRecruiters jobs from company identifiers. One structured posting per paid result, with free diagnostics."
+ },
+ {
+  "handle": "zinin/hacker-news-jobs-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 10,
+  "title": "Hacker News Jobs Feed \u2014 Current Posts [$1.70/1K]",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.0017,
+   "BRONZE": 0.00153,
+   "SILVER": 0.00136,
+   "GOLD": 0.00119,
+   "PLATINUM": 0.00119,
+   "DIAMOND": 0.00119
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Export current public HN job posts from the official Hacker News Firebase jobstories feed. $1.70 per 1,000 job rows, no start fee."
+ },
+ {
+  "handle": "zinin/fda-ndc-product-directory",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 9,
+  "title": "FDA NDC Product Directory",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0018,
+   "GOLD": 0.0017,
+   "PLATINUM": 0.0017,
+   "DIAMOND": 0.0017
+  },
+  "start_fee": 0.002,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search the official openFDA NDC catalogue by brand, generic name, labeler or NDC and retrieve products, packages, dosage forms, routes and marketing categories."
+ },
+ {
+  "handle": "zinin/shopify-price-change-monitor",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 5,
+  "title": "Shopify Store Monitor \ud83d\udcb0$0.01/change \u2014 Price & Catalog",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0095,
+   "DIAMOND": 0.008,
+   "FREE": 0.01,
+   "GOLD": 0.0085,
+   "PLATINUM": 0.0082,
+   "SILVER": 0.009
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Watch up to 100 Shopify stores and get a paid row only when something changed since the last run: min/max price, currency, product count, Shopify detection, estimated revenue band. Store-level, not per product. The first run bills each store once as new. $0.01 per change + $0.005 start."
+ },
+ {
+  "handle": "zinin/base-contract-opportunity-qualifier",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "BASE Contract Opportunity Qualifier",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "qualified-opportunity-batch",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.0475,
+   "SILVER": 0.045,
+   "GOLD": 0.0425,
+   "PLATINUM": 0.041,
+   "DIAMOND": 0.04
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): qualified-opportunity-batch",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Unofficial, independent Actor; not affiliated with or endorsed by any named source publisher. Qualify official procurement notices against explicit customer capability rules."
+ },
+ {
+  "handle": "zinin/job-posting-to-hiring-manager-email",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Job Posting to Hiring Manager Email",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.019,
+   "SILVER": 0.018,
+   "GOLD": 0.017,
+   "PLATINUM": 0.0164,
+   "DIAMOND": 0.016
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Turn a Greenhouse or Lever vacancy into the named hiring owner behind it, with a provider-verified work address from your own BYOK enrichment key. You pay $0.02 only for a verified hiring contact; ambiguous company matches, unsupported boards and empty results are free."
+ },
+ {
+  "handle": "zinin/tender-alert",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Tender Alert \u2014 New EU Tender Watch",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0095,
+   "DIAMOND": 0.008,
+   "FREE": 0.01,
+   "GOLD": 0.0085,
+   "PLATINUM": 0.0082,
+   "SILVER": 0.009
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Monitor one stable EU TED query. Receive a paid first-run baseline, then only newly observed procurement notices after complete checks. Each row includes evidence, confidence, gaps, review action and billing truth. Partial, failed, quiet and withheld outcomes are free and never advance the watch."
+ },
+ {
+  "handle": "zinin/gov-tender-radar",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Gov Tender Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.00475,
+   "DIAMOND": 0.004,
+   "FREE": 0.005,
+   "GOLD": 0.00425,
+   "PLATINUM": 0.0041,
+   "SILVER": 0.0045
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search official TED procurement notices by keyword, CPV query, or buyer country. Get buyer, deadline, primary URL, confidence, gaps, and billing evidence. No-match, failed, duplicate, and withheld outcomes are free. Discovery does not prove eligibility, fit, amendments, or award probability."
+ },
+ {
+  "handle": "zinin/clinical-trials-monitor",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "Clinical Trials Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.00475,
+   "DIAMOND": 0.004,
+   "FREE": 0.005,
+   "GOLD": 0.00425,
+   "PLATINUM": 0.0041,
+   "SILVER": 0.0045
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Retrieve up to 100 ClinicalTrials.gov studies for up to 25 condition, drug, or sponsor queries. Delivered rows include NCT ID, status, phase, sponsor, dates, source link, confidence, gaps, and billing. No-match and failure rows are free; registry data is not medical advice or proof of efficacy."
+ },
+ {
+  "handle": "zinin/fda-approval-feed",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Approval Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.00475,
+   "DIAMOND": 0.004,
+   "FREE": 0.005,
+   "GOLD": 0.00425,
+   "PLATINUM": 0.0041,
+   "SILVER": 0.0045
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect bounded openFDA approval and recall observations by drug or company. Get sponsor, firm or product match basis, primary citations, confidence, gaps and review action. Only confirmed identity or product-field observations are paid; never an automated medical, safety or investment verdict."
+ },
+ {
+  "handle": "zinin/hiring-trend-index",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Hiring Trend Tracker \u2014 Greenhouse, Lever, Ashby Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.0095,
+   "SILVER": 0.009,
+   "GOLD": 0.0085,
+   "PLATINUM": 0.0082,
+   "DIAMOND": 0.008
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track open roles by job function (engineering, sales, marketing, product and 8 more) on Greenhouse, Lever or Ashby company boards, or on XING, jobs.ch, Jobs.ge and Boss.az. First run saves a baseline; later runs show before/after counts per function. $0.01 per slice + $0.005 start."
+ },
+ {
+  "handle": "zinin/app-release-regression-intelligence",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "App Review Release Regression Report",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.05,
+   "BRONZE": 0.0475,
+   "SILVER": 0.045,
+   "GOLD": 0.0425,
+   "PLATINUM": 0.041,
+   "DIAMOND": 0.04
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Compare buyer-supplied Apple App Store or Google Play reviews before and after a release. Get one deterministic regression report with rating and topic shifts, confidence, representative evidence, data gaps, and unsent review actions. No review fetching, telemetry, or causal attribution."
+ },
+ {
+  "handle": "zinin/us-brand-federal-award-snapshot",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 1,
+  "title": "USAspending Federal Award Search by Recipient",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.01425,
+   "SILVER": 0.0135,
+   "GOLD": 0.01275,
+   "PLATINUM": 0.0123,
+   "DIAMOND": 0.012
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get one bounded, official USAspending prime-contract snapshot for an exact recipient ID and date window. Preserve verified recipient identity, source as-of, first-page coverage limits, evidence gaps, human review action, and current-run billing truth."
+ },
+ {
+  "handle": "zinin/job-postings-aggregator",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Job Postings Aggregator \u2014 ATS Evidence",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0019,
+   "DIAMOND": 0.0017,
+   "FREE": 0.002,
+   "GOLD": 0.0017,
+   "PLATINUM": 0.0017,
+   "SILVER": 0.0018
+  },
+  "start_fee": 0.00425,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ats-detected,enriched-job,result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Normalize current public job postings from known Greenhouse, Lever, or Ashby board tokens or bounded company-domain ATS detection. Rows include source evidence, attribution, freshness, confidence, gaps, billing semantics, and a manual review action. A listing does not prove growth or buying intent."
+ },
+ {
+  "handle": "zinin/company-hiring-radar",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Greenhouse, Lever & Ashby Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0019,
+   "DIAMOND": 0.0016,
+   "FREE": 0.002,
+   "GOLD": 0.0017,
+   "PLATINUM": 0.00164,
+   "SILVER": 0.0018
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape open job postings from Greenhouse, Lever and Ashby career pages. Get job titles, departments, locations, remote status and posting dates for any company. Track who is hiring, spot hiring trends and find sales leads. No login or API key needed."
+ },
+ {
+  "handle": "zinin/shopify-store-intelligence",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 1,
+  "title": "Shopify Catalog & Merchandising Intelligence",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "BRONZE": 0.0057,
+   "DIAMOND": 0.0048,
+   "FREE": 0.006,
+   "GOLD": 0.0051,
+   "PLATINUM": 0.00492,
+   "SILVER": 0.0054
+  },
+  "start_fee": 0.004,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Qualify Shopify merchant leads with evidence-backed public catalog coverage, observed price positioning, vendors, product categories, and merchandising recency. Includes confidence, data gaps, and a review-ready next action. No login or Shopify API key."
+ },
+ {
+  "handle": "zinin/hacker-news-stories-comments-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 1,
+  "title": "Hacker News Stories and Comments Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-found",
+  "unit_tiers": {
+   "FREE": 0.0003,
+   "BRONZE": 0.00027,
+   "SILVER": 0.00024,
+   "GOLD": 0.00021,
+   "PLATINUM": 0.00021,
+   "DIAMOND": 0.00021
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-found",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Hacker News stories and comments from the official API with bounded feeds, comment depth, keyword filters, source IDs and clear partial results."
+ }
+]
