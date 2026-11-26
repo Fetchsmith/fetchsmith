@@ -1,0 +1,116 @@
+[
+ {
+  "handle": "ucchiii/app-store-reviews",
+  "title": "App Store Reviews: Ratings, Text, Versions by Country",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 7e-05,
+   "BRONZE": 6.3e-05,
+   "SILVER": 5.6e-05,
+   "GOLD": 4.9e-05,
+   "PLATINUM": 4.9e-05,
+   "DIAMOND": 4.9e-05
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "all_events": [
+   [
+    "review",
+    "Returned review",
+    {
+     "FREE": 7e-05,
+     "BRONZE": 6.3e-05,
+     "SILVER": 5.6e-05,
+     "GOLD": 4.9e-05,
+     "PLATINUM": 4.9e-05,
+     "DIAMOND": 4.9e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "ucchiii/grants-gov-opportunities",
+  "title": "Grants.gov Federal Grants Search API",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00135,
+   "SILVER": 0.0012,
+   "GOLD": 0.00105,
+   "PLATINUM": 0.00105,
+   "DIAMOND": 0.00105
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "all_events": [
+   [
+    "opportunity",
+    "Opportunity",
+    {
+     "FREE": 0.0015,
+     "BRONZE": 0.00135,
+     "SILVER": 0.0012,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/grants-gov-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "ucchiii/podcast-rss-episodes",
+  "title": "Podcast Episodes from RSS: Search & List Episodes",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "episode",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.00162,
+   "SILVER": 0.00144,
+   "GOLD": 0.00126,
+   "PLATINUM": 0.00126,
+   "DIAMOND": 0.00126
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): episode",
+  "all_events": [
+   [
+    "episode",
+    "Episode",
+    {
+     "FREE": 0.0018,
+     "BRONZE": 0.00162,
+     "SILVER": 0.00144,
+     "GOLD": 0.00126,
+     "PLATINUM": 0.00126,
+     "DIAMOND": 0.00126
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ }
+]

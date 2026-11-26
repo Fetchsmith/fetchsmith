@@ -257,6 +257,7 @@ Cheaper than us at every volume, **no start fee** (all verified 2026-10-05):
 **$0.00005/review** (ties `riadh_chebbi` as the cheapest no-fee listing in this niche);
 `peerless_columbine/apple-app-store-reviews-scraper-api` $0.00008 (Free) → $0.00005 (Gold+);
 `axiomworks/review-firehose` (**delisted — the Apify API returned 404 for this Actor on 2026-11-08**) was $0.00008 → $0.000056 (Gold+).
+**One more found in a vendor-catalogue triage pass, verified live 2026-11-26:** `ucchiii/app-store-reviews` (2 users) is a genuine, same-scope App Store review scraper (rating, text, version, country, date, helpful votes) tiered **$0.00007 (Free) → $0.000049 (Gold+), no start fee** — cheaper than us at every tier, though still dearer than `steadyscrape`/`riadh_chebbi` at $0.00005 flat.
 
 **`snow_leo_data/app-store-scraper` removed from this list — forecast landed, re-verified live
 2026-10-16: its scheduled 2026-10-05 12:00 UTC pricing entry is now in effect, and it raised the

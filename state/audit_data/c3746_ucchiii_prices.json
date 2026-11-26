@@ -1,0 +1,383 @@
+[
+ {
+  "handle": "ucchiii/website-screenshot",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 3,
+  "title": "Website Screenshot: Full-Page URL Screenshots, PDF",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.0014,
+   "BRONZE": 0.00126,
+   "SILVER": 0.00112,
+   "GOLD": 0.00098,
+   "PLATINUM": 0.00098,
+   "DIAMOND": 0.00098
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): pdf,screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Website screenshot: take full-page or element screenshots (PNG, JPEG, WebP) and PDFs of a list of URLs (input: public URLs). Desktop, tablet, mobile, OG sizes, dark mode, cookie-banner hiding, ad blocking. Empty input = free demo. Failures free."
+ },
+ {
+  "handle": "ucchiii/career-site-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Job Listings API: Greenhouse, Lever, Ashby Career Sites",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0013,
+   "BRONZE": 0.00117,
+   "SILVER": 0.00104,
+   "GOLD": 0.00091,
+   "PLATINUM": 0.00091,
+   "DIAMOND": 0.00091
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Every open job from company career sites on Greenhouse, Lever, Ashby, Workable, SmartRecruiters and Recruitee in one table: title, location, remote, salary when published. Public job board APIs. Input: company names or career URLs. Clear the example list for a free 9-job demo."
+ },
+ {
+  "handle": "ucchiii/ashby-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Ashby Jobs Scraper: Job Board API Export",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0013,
+   "BRONZE": 0.00117,
+   "SILVER": 0.00104,
+   "GOLD": 0.00091,
+   "PLATINUM": 0.00091,
+   "DIAMOND": 0.00091
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Ashby Jobs Scraper: get every open job from public Ashby job boards (input: board names or jobs.ashbyhq.com URLs). One row per job with title, location, remote flag, team, employment type, dates, published salary and description. Filters. Empty input = free demo."
+ },
+ {
+  "handle": "ucchiii/himalayas-jobs-api",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Remote Jobs API: Find & Export Himalayas Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0007,
+   "BRONZE": 0.00063,
+   "SILVER": 0.00056,
+   "GOLD": 0.00049,
+   "PLATINUM": 0.00049,
+   "DIAMOND": 0.00049
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Remote jobs: find and export remote job listings from the public Himalayas Jobs API. Filter by keyword, category, seniority, country, timezone. One flat row per job with salary, dates, Himalayas link. Empty input = free demo."
+ },
+ {
+  "handle": "ucchiii/greenhouse-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Greenhouse Jobs Scraper: Every Job Posting",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0013,
+   "BRONZE": 0.00117,
+   "SILVER": 0.00104,
+   "GOLD": 0.00091,
+   "PLATINUM": 0.00091,
+   "DIAMOND": 0.00091
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Greenhouse jobs scraper: get every job posting from companies that use Greenhouse job boards (input: board tokens or boards.greenhouse.io URLs). One row per job with title, location, remote flag, department, dates, salary when published and description. Filters. Empty input = free demo."
+ },
+ {
+  "handle": "ucchiii/lever-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Lever Jobs Scraper: Postings API Export",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0016,
+   "BRONZE": 0.00144,
+   "SILVER": 0.00128,
+   "GOLD": 0.00112,
+   "PLATINUM": 0.00112,
+   "DIAMOND": 0.00112
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Lever Jobs Scraper: get every open job from public Lever postings (input: company slugs or jobs.lever.co URLs, US and EU). One row per job with title, location, remote flag, team, commitment, dates, salary when published and description. Filters. Empty input = free demo."
+ },
+ {
+  "handle": "ucchiii/app-review-analyzer",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "App Review Analyzer: Ratings by Version & Terms",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Analyze your own App Store or Google Play reviews: one row per app with star distribution, monthly and per-version average rating, frequent terms in 1-2 star reviews and developer reply rate. No names in output. Empty input = free demo."
+ },
+ {
+  "handle": "ucchiii/workable-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workable Jobs Scraper: All Open Jobs per Company",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0007,
+   "BRONZE": 0.00063,
+   "SILVER": 0.00056,
+   "GOLD": 0.00049,
+   "PLATINUM": 0.00049,
+   "DIAMOND": 0.00049
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Workable jobs scraper: every open job from the public Workable job boards you list, one row per job with title, location, remote, department, employment type, dates, description and apply URL. Filters for title, location and date. Empty input = free demo."
+ },
+ {
+  "handle": "ucchiii/lookalike-domain-finder",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "Typosquatting Checker: Lookalike Domain Finder",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "lookalike-found",
+  "unit_tiers": {
+   "FREE": 0.009,
+   "BRONZE": 0.0081,
+   "SILVER": 0.0072,
+   "GOLD": 0.0063,
+   "PLATINUM": 0.0063,
+   "DIAMOND": 0.0063
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): lookalike-found",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Brand protection: find typosquats and phishing lookalikes of your own domain. Generates misspellings, homoglyphs and other TLDs, checks them over DNS only (Cloudflare 1.1.1.1) and returns those that exist, with IPs, MX and nameservers. Pay only per lookalike found. Empty input = free demo."
+ },
+ {
+  "handle": "ucchiii/workday-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Workday Jobs Scraper: Jobs from Any Workday Career Site",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0013,
+   "BRONZE": 0.00117,
+   "SILVER": 0.00104,
+   "GOLD": 0.00091,
+   "PLATINUM": 0.00091,
+   "DIAMOND": 0.00091
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Workday jobs scraper: every open job from myworkdayjobs.com career sites in one table, with keyword, location and date filters. Uses the public JSON the sites call themselves, no login. Same fields as Career Site Jobs. Empty input = free demo."
+ }
+]

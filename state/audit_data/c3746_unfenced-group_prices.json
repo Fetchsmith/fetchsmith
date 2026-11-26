@@ -1,0 +1,254 @@
+[
+ {
+  "handle": "unfenced-group/weworkremotely-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 8,
+  "title": "We Work Remotely Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00089,
+   "BRONZE": 0.00089,
+   "SILVER": 0.0008,
+   "GOLD": 0.00071,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.00053
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrapes all active remote job listings from weworkremotely.com via public RSS feeds. No proxy required. Returns 400+ unique jobs across 10 categories with company info, skills, region, type, apply URL and more."
+ },
+ {
+  "handle": "unfenced-group/simplyhired-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 6,
+  "title": "SimplyHired Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00199,
+   "BRONZE": 0.00199,
+   "SILVER": 0.00179,
+   "GOLD": 0.00159,
+   "PLATINUM": 0.00133,
+   "DIAMOND": 0.00119
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job listings from SimplyHired.com with salary, job type, and full descriptions. Keyword + location search, daysOld filter, remote jobs, and startUrls support."
+ },
+ {
+  "handle": "unfenced-group/jobindex-dk-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "Jobindex.dk Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00149,
+   "BRONZE": 0.00149,
+   "SILVER": 0.00134,
+   "GOLD": 0.00119,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.00089
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Danish job listings from Jobindex.dk. Filter by keyword, location, employment type, and remote work. Pay only for what you scrape."
+ },
+ {
+  "handle": "unfenced-group/ios-app-store-scraper",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "iOS App Store Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "app-result",
+  "unit_tiers": {
+   "FREE": 8e-05,
+   "BRONZE": 7e-05,
+   "SILVER": 6e-05,
+   "GOLD": 5e-05,
+   "PLATINUM": 5e-05,
+   "DIAMOND": 5e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-detail-result,app-result",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Apple App Store app data and localized prices across 41 storefronts. Search, charts, or by ID. 50+ fields per app."
+ },
+ {
+  "handle": "unfenced-group/stepstone-dk-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "StepStone.dk Scraper \u2014 Denmark Jobs, No Proxy Needed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00149,
+   "BRONZE": 0.00149,
+   "SILVER": 0.00134,
+   "GOLD": 0.00119,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.00089
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job listings from StepStone Denmark (stepstone.dk). Filter by keyword, area, working hours and remote work. Returns title, company, hiring company, full address with coordinates, posting and expiry dates, apply deadline and job summary. No proxy required."
+ },
+ {
+  "handle": "unfenced-group/shopify-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 1,
+  "title": "Shopify Products Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00089,
+   "BRONZE": 0.00088,
+   "SILVER": 0.00087,
+   "GOLD": 0.00086,
+   "PLATINUM": 0.00086,
+   "DIAMOND": 0.00086
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract complete product catalogs from any Shopify store \u2014 titles, prices, variants, SKUs, inventory, images, and tags. Works on 4M+ stores worldwide with zero proxy cost."
+ }
+]

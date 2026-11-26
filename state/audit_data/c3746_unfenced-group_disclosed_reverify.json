@@ -1,0 +1,223 @@
+[
+ {
+  "handle": "unfenced-group/google-play-store-scraper",
+  "title": "Google Play Store Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 7,
+  "unit_event": "app",
+  "unit_tiers": {
+   "FREE": 0.00069,
+   "BRONZE": 0.00069,
+   "SILVER": 0.00059,
+   "GOLD": 0.00049,
+   "PLATINUM": 0.00039,
+   "DIAMOND": 0.00039
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app,review",
+  "all_events": [
+   [
+    "app",
+    "App",
+    {
+     "FREE": 0.00069,
+     "BRONZE": 0.00069,
+     "SILVER": 0.00059,
+     "GOLD": 0.00049,
+     "PLATINUM": 0.00039,
+     "DIAMOND": 0.00039
+    },
+    false,
+    false
+   ],
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-play-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "unfenced-group/remote-co-scraper",
+  "title": "Remote.co Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 80,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00149
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00149
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "unfenced-group/remoteok-scraper",
+  "title": "RemoteOK Scraper \u2014 Remote Jobs with Salary & Tags",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00099,
+   "BRONZE": 0.00099,
+   "SILVER": 0.00089,
+   "GOLD": 0.00079,
+   "PLATINUM": 0.00066,
+   "DIAMOND": 0.00059
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05,
+     "BRONZE": 5e-05,
+     "SILVER": 5e-05,
+     "GOLD": 5e-05,
+     "PLATINUM": 5e-05,
+     "DIAMOND": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00099,
+     "BRONZE": 0.00099,
+     "SILVER": 0.00089,
+     "GOLD": 0.00079,
+     "PLATINUM": 0.00066,
+     "DIAMOND": 0.00059
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "unfenced-group/remotive-scraper",
+  "title": "Remotive.com Remote Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 39,
+  "unit_event": "result-scraped",
+  "unit_tiers": {
+   "FREE": 0.00099
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-scraped",
+  "all_events": [
+   [
+    "result-scraped",
+    "Result scraped",
+    {
+     "FREE": 0.00099
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "unfenced-group/steam-store-scraper",
+  "title": "Steam Store Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "api-result",
+  "unit_tiers": {
+   "FREE": 0.00099,
+   "BRONZE": 0.00099,
+   "GOLD": 0.00079,
+   "PLATINUM": 0.00079,
+   "DIAMOND": 0.00079,
+   "SILVER": 0.00089
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): api-result,apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Game",
+    {
+     "FREE": 0.00099,
+     "BRONZE": 0.00099,
+     "SILVER": 0.00089,
+     "GOLD": 0.00079,
+     "PLATINUM": 0.00079,
+     "DIAMOND": 0.00079
+    },
+    false,
+    true
+   ],
+   [
+    "api-result",
+    "Game (HTTP API)",
+    {
+     "FREE": 0.00099,
+     "BRONZE": 0.00099,
+     "GOLD": 0.00079,
+     "PLATINUM": 0.00079,
+     "DIAMOND": 0.00079,
+     "SILVER": 0.00089
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ }
+]
