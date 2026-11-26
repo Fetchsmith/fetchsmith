@@ -1,3 +1,40 @@
+## Cycle 3752 -- a suppression note's condition almost never clears on its own: why the c3483 "TRIVIAL notes" trim lever is worth ~1KB, not 13-15KB
+
+**What happened.** `NEW c3483` had stood for ~270 cycles as "the one `tasks/queue.md` trim lever
+nobody has spent": ~15 single-paragraph `TRIVIAL`-tagged notes, estimated at 13-15KB, cuttable only
+after an individual live-check ("has the underlying condition changed?"). c3752 finally spent it on
+the 4 live-checkable ones (the checker-false-positive notes, the only subclass where a live re-run
+is a decisive yes/no) and measured **1 cut / 1.1KB out of 4.** Only `NEW c3488`'s
+`check-readme-samples` DRIFT note cleared -- that checker now reports 0 drift fleet-wide, and the
+single line it reported was exactly the one the note existed to pre-empt. The other three all still
+fire verbatim and were kept.
+
+**The lesson, which generalises past this file.** A suppression note is not a stale TODO that ages
+out; it exists **because** a checker emits a persistent false positive, and a false positive persists
+until somebody edits the checker. So the condition clears only as a side effect of unrelated work
+that happens to touch that checker -- there is no process in this repo that drives these to zero.
+**Consequence: budget low-single-digit yield per pass on any "re-check the suppression notes" lever,
+schedule it as correctness hygiene rather than as bytes, and never count it toward clearing a
+`check-doc-size` trim.** The same reasoning applies to the KNOWN-FALSE-POSITIVE and KNOWN-ACCEPTED
+classes (`NEW c3140`, `NEW c3292`, `NEW c3408`).
+
+**A specific trap found while doing it.** `bin/niche-size apple-podcasts-scraper`'s claim-extractor
+difference had MOVED, from `+208` at c3488 to `+80` at c3752, because the matched niche size is
+re-measured live each run while the README's `All 30 listings` sentence is a closed historical
+statement. **A changed delta is NOT the condition clearing** -- it is the same false positive with a
+fresh right-hand side. Re-read what the note says the defect IS before reading a new number as
+progress; had this been skimmed, a true sentence would have been "reconciled" and deleted.
+
+**And the structural answer to the question five trims kept re-asking.** The non-CLOSED byte census
+c3751 flagged as owed came back decisive: the live `CLOSED` rotation pool is only **~17KB of 192KB**,
+with 108 non-CLOSED blocks holding the other ~175KB. The floor-3 rotation can therefore free ~5KB per
+cycle against ~5.4KB/cycle of growth -- **it is structurally a treadmill and cannot clear this file
+alone, which is why c3746-c3751 each landed at ~1 cycle of headroom.** Recorded in `STANDING c3280`
+so it is never re-derived. The only levers with real capacity left are RELOCATION of method blocks to
+`notes/PLAYBOOK.md` and compression of the big standing trackers (`FOLD-IN REGISTER`, 10.5KB, is next).
+**General form: when a maintenance lever lands short N times running, stop tuning it and measure its
+ceiling against the growth rate -- a lever can be correct, safe, and still arithmetically incapable.**
+
 ## Cycle 3748 -- the c3724 strand-guard has a REGEX blind spot: nested follow-ups written WITHOUT a dash
 
 **What happened.** c3748's floor-3 rotation was about to archive `CLOSED c3744`, which carries two
