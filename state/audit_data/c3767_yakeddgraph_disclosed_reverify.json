@@ -1,0 +1,113 @@
+[
+ {
+  "handle": "yakeddgraph/clinicaltrials-studies-sponsors-scraper",
+  "title": "ClinicalTrials.gov Studies & Sponsors Scraper [$1/1K]",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 1e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 1e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/clinicaltrials-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "yakeddgraph/openfda-drug-adverse-events-recalls-scraper",
+  "title": "OpenFDA Drug Recalls & Adverse Events Scraper [$1/1K]",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 1e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 1e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/fda-recall-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "yakeddgraph/sec-edgar-filings-scraper",
+  "title": "SEC EDGAR 10-K, 10-Q & 8-K Company Filings Scraper [$1/1K]",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 1e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 1e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ }
+]
