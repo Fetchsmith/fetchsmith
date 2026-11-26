@@ -1,0 +1,714 @@
+[
+ {
+  "handle": "v0iddo/greenhouse-public-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 3,
+  "title": "Greenhouse Jobs API and Scraper: Job Postings by Company",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job_extracted",
+  "unit_tiers": {
+   "FREE": 0.0002,
+   "BRONZE": 0.00018,
+   "SILVER": 0.00016,
+   "GOLD": 0.00014,
+   "PLATINUM": 0.00014,
+   "DIAMOND": 0.00014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job_extracted",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Greenhouse jobs API and scraper. Pull every public job posting from any Greenhouse board by company slug (boards.greenhouse.io/<slug>): title, location, departments, offices, dates, full description text and a role class. No login and no API key."
+ },
+ {
+  "handle": "v0iddo/steam-game-reviews",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Game Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.0008,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): dataset-item",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Steam player reviews by App ID. Returns review text, recommendation, playtime, helpful votes, language, purchase type and timestamps for sentiment analysis and competitor research on PC game titles."
+ },
+ {
+  "handle": "v0iddo/substack-newsletter-posts",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Scraper: Newsletter Posts by Publication",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "post_extracted",
+  "unit_tiers": {
+   "FREE": 0.00106,
+   "BRONZE": 0.000954,
+   "SILVER": 0.000848,
+   "GOLD": 0.000742,
+   "PLATINUM": 0.000742,
+   "DIAMOND": 0.000742
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post_extracted",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Substack scraper for newsletter posts. Give each newsletter by its Substack subdomain, its own domain or any link on it: one row per post with the newsletter, title, link, author, date and summary, the newest 20 per newsletter. No login and no API key."
+ },
+ {
+  "handle": "v0iddo/usaspending-federal-awards",
+  "niches": [
+   "nih-reporter-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "USAspending Awards Scraper: Federal Contracts and Grants",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award_extracted",
+  "unit_tiers": {
+   "FREE": 0.00161,
+   "BRONZE": 0.001449,
+   "SILVER": 0.001288,
+   "GOLD": 0.001127,
+   "PLATINUM": 0.001127,
+   "DIAMOND": 0.001127
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award_extracted",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Pull recent federal contract and grant awards from USAspending.gov. Filter by award type, awarding agency, recipient, PSC or NAICS code, state or keyword. One row per award: award id, recipient, amount, agency, dates and codes. Public v2 API, no login."
+ },
+ {
+  "handle": "v0iddo/openfda-drug-recalls",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Drug Recalls Scraper: Enforcement Reports",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall_extracted",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0045,
+   "SILVER": 0.004,
+   "GOLD": 0.0035,
+   "PLATINUM": 0.0035,
+   "DIAMOND": 0.0035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall_extracted",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Pull recent FDA drug recall actions. Filter by class (I/II/III), recalling firm, distribution state, or keyword. One row per recall: id, class, firm, product, reason, dates, distribution. Cron-ready for pharma + retail-health watchlists. openFDA API (public, no auth)."
+ },
+ {
+  "handle": "v0iddo/shopify-store-intelligence",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Scraper: Products, Prices, Stock | $0.50 per 1,000",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product_extracted",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product_extracted",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape products from any Shopify store: prices, compare-at price and discount, stock per variant, SKU, barcode, options, images, tags and the store's currency. Give store, collection or product links; one row per product or per variant, with keyword, stock and sale filters."
+ },
+ {
+  "handle": "v0iddo/substack-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Posts Scraper: Archive, Reactions, Comments",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00085,
+   "BRONZE": 0.000765,
+   "SILVER": 0.00068,
+   "GOLD": 0.000595,
+   "PLATINUM": 0.000595,
+   "DIAMOND": 0.000595
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect the posts of any Substack publication: title, subtitle, date, link, paywall flag, reactions, comments, word count and section. Paste publication addresses. Optional post text."
+ },
+ {
+  "handle": "v0iddo/wellfound-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Wellfound Jobs Scraper: Salary, Equity, Stage | $0.50 per 1,000",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape startup jobs from Wellfound (AngelList Talent) by role and location, remote jobs or any search page: title, salary and equity ranges, experience, job type, remote policy, description, and the startup's size, stage, pitch and badges. Optional posting pages add date, benefits, visa and website."
+ },
+ {
+  "handle": "v0iddo/creator-leads-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Newsletter Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00229,
+   "BRONZE": 0.002061,
+   "SILVER": 0.001832,
+   "GOLD": 0.001603,
+   "PLATINUM": 0.001603,
+   "DIAMOND": 0.001603
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Substack newsletter profiles by creator handle: publication name, URL, description, paid tier status, community flag, homepage type, logo, and creation date. One row per newsletter the handle writes for."
+ },
+ {
+  "handle": "v0iddo/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Jobs Scraper: Greenhouse, Lever, Workday, Ashby",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00042,
+   "BRONZE": 0.000378,
+   "SILVER": 0.000336,
+   "GOLD": 0.000294,
+   "PLATINUM": 0.000294,
+   "DIAMOND": 0.000294
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect public job postings from Greenhouse, Lever, Workday, Workable, Ashby, Recruitee, Personio and BambooHR with one consistent schema. Paste careers page links and the system is detected for you. Filter by title, location, remote and date. Pay and plain text descriptions included."
+ },
+ {
+  "handle": "v0iddo/audio-transcription",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 2,
+  "title": "Audio Transcription: Audio to Text Converter, Podcast, Video",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Speech to text with Whisper: transcribe audio and video files and podcast episodes, with timestamps and SRT or VTT subtitles. Paste MP3, M4A, WAV, MP4 or other media links, or podcast RSS feeds for their newest episodes. About 100 languages, detected on their own, and translation to English."
+ },
+ {
+  "handle": "v0iddo/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper: Salary, Dates, Remote | $0.90 per 1,000",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0009,
+   "BRONZE": 0.00081,
+   "SILVER": 0.00072,
+   "GOLD": 0.00063,
+   "PLATINUM": 0.00063,
+   "DIAMOND": 0.00063
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect every open job from any Workday careers site (myworkdayjobs.com): title, location, country, remote or on site, employment type, real posting date, pay range where the posting states it, and the description as plain text. Filter by title, location, remote and date."
+ },
+ {
+  "handle": "v0iddo/apna-co-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Apna.co Scraper: India Jobs and Monthly Salaries",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00078,
+   "BRONZE": 0.000702,
+   "SILVER": 0.000624,
+   "GOLD": 0.000546,
+   "PLATINUM": 0.000546,
+   "DIAMOND": 0.000546
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape job listings from Apna.co in India: title, company, city and area, monthly salary range in INR, office, field or work from home, full or part time, experience and link. Search by job title and city with salary, date, shift and education filters; job pages add skills and dates."
+ },
+ {
+  "handle": "v0iddo/url-screenshot",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 1,
+  "title": "Website Screenshot Generator: URL to PNG, JPEG or WEBP",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot-generated",
+  "unit_tiers": {
+   "FREE": 0.00182,
+   "BRONZE": 0.001638,
+   "SILVER": 0.001456,
+   "GOLD": 0.001274,
+   "PLATINUM": 0.001274,
+   "DIAMOND": 0.001274
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot-generated",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Capture a public web page as a PNG, JPEG or WEBP image: any viewport size, full page, retina scaling, optional cookie-banner hiding. Batch mode: process up to 1000 items per run."
+ },
+ {
+  "handle": "v0iddo/google-play-app-reviews",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 1,
+  "title": "Android App Reviews Scraper: Google Play Reviews by Package",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review_extracted",
+  "unit_tiers": {
+   "FREE": 0.0003,
+   "BRONZE": 0.00027,
+   "SILVER": 0.00024,
+   "GOLD": 0.00021,
+   "PLATINUM": 0.00021,
+   "DIAMOND": 0.00021
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review_extracted",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Pull Android app reviews from Google Play by package ID, with country and language options. One row per review: rating, body, date and thumbs up count, plus the developer reply and reply date when present. Up to 400 reviews per app (10 pages of 40). No login."
+ },
+ {
+  "handle": "v0iddo/ashby-public-jobs",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Ashby Jobs API and Scraper: Job Postings by Company",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job_extracted",
+  "unit_tiers": {
+   "FREE": 0.0017,
+   "BRONZE": 0.00153,
+   "SILVER": 0.00136,
+   "GOLD": 0.00119,
+   "PLATINUM": 0.00119,
+   "DIAMOND": 0.00119
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job_extracted",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Ashby jobs API and scraper. Pull every open job posting from any company on Ashby by company slug (jobs.ashbyhq.com/<slug>): title, location, employment type, team, department, remote flag, apply URL, published date and plain-text description. No login and no API key."
+ },
+ {
+  "handle": "v0iddo/weworkremotely-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "We Work Remotely Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00085,
+   "BRONZE": 0.000765,
+   "SILVER": 0.00068,
+   "GOLD": 0.000595,
+   "PLATINUM": 0.000595,
+   "DIAMOND": 0.000595
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "WeWorkRemotely jobs scraper for remote job listings from weworkremotely.com by category or keyword. Returns job title, company, category, job type, region eligibility, salary, posted date, and apply link for each listing."
+ }
+]

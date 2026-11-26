@@ -1,0 +1,344 @@
+[
+ {
+  "handle": "v0iddo/app-store-reviews-tracker",
+  "title": "App Store Reviews Scraper: Ratings and Reviews by Country",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review_extracted",
+  "unit_tiers": {
+   "FREE": 9e-05,
+   "BRONZE": 8.1e-05,
+   "SILVER": 7.2e-05,
+   "GOLD": 6.3e-05,
+   "PLATINUM": 6.3e-05,
+   "DIAMOND": 6.3e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review_extracted",
+  "all_events": [
+   [
+    "review_extracted",
+    "Apple App Store review extracted",
+    {
+     "FREE": 9e-05,
+     "BRONZE": 8.1e-05,
+     "SILVER": 7.2e-05,
+     "GOLD": 6.3e-05,
+     "PLATINUM": 6.3e-05,
+     "DIAMOND": 6.3e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/clinicaltrials-updates-tracker",
+  "title": "ClinicalTrials.gov Scraper: Trial Updates by Query",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "trial_extracted",
+  "unit_tiers": {
+   "FREE": 0.00191,
+   "BRONZE": 0.001719,
+   "SILVER": 0.001528,
+   "GOLD": 0.001337,
+   "PLATINUM": 0.001337,
+   "DIAMOND": 0.001337
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial_extracted",
+  "all_events": [
+   [
+    "trial_extracted",
+    "ClinicalTrials.gov trial extracted",
+    {
+     "FREE": 0.00191,
+     "BRONZE": 0.001719,
+     "SILVER": 0.001528,
+     "GOLD": 0.001337,
+     "PLATINUM": 0.001337,
+     "DIAMOND": 0.001337
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/clinicaltrials-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/federal-register-tracker",
+  "title": "Federal Register Scraper: Rules, Proposed Rules, Notices",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "article_record",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 9e-05,
+   "SILVER": 8e-05,
+   "GOLD": 7e-05,
+   "PLATINUM": 7e-05,
+   "DIAMOND": 7e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article_record",
+  "all_events": [
+   [
+    "article_record",
+    "Federal Register article extracted",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/hn-algolia-search",
+  "title": "Hacker News Scraper: Stories and Comments by Query",
+  "model": "PAY_PER_EVENT",
+  "users": 4,
+  "unit_event": "story_extracted",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 9e-05,
+   "SILVER": 8e-05,
+   "GOLD": 7e-05,
+   "PLATINUM": 7e-05,
+   "DIAMOND": 7e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): story_extracted",
+  "all_events": [
+   [
+    "story_extracted",
+    "HN story / comment extracted",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/itunes-podcast-search",
+  "title": "Apple Podcasts Scraper: Podcasts by Keyword and Country",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "podcast_result",
+  "unit_tiers": {
+   "FREE": 0.0002,
+   "BRONZE": 0.00018,
+   "SILVER": 0.00016,
+   "GOLD": 0.00014,
+   "PLATINUM": 0.00014,
+   "DIAMOND": 0.00014
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast_result",
+  "all_events": [
+   [
+    "podcast_result",
+    "iTunes podcast search result",
+    {
+     "FREE": 0.0002,
+     "BRONZE": 0.00018,
+     "SILVER": 0.00016,
+     "GOLD": 0.00014,
+     "PLATINUM": 0.00014,
+     "DIAMOND": 0.00014
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/nih-reporter-grants",
+  "title": "NIH RePORTER Scraper: Research Grants by Query",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "grant_extracted",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0027,
+   "SILVER": 0.0024,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant_extracted",
+  "all_events": [
+   [
+    "grant_extracted",
+    "NIH grant extracted",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.0027,
+     "SILVER": 0.0024,
+     "GOLD": 0.0021,
+     "PLATINUM": 0.0021,
+     "DIAMOND": 0.0021
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/nih-reporter-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/remote-jobs-scraper",
+  "title": "Remote Jobs Scraper: RemoteOK, WWR, Jobicy | $0.50 per 1,000",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.0004,
+   "GOLD": 0.00035,
+   "PLATINUM": 0.00035,
+   "DIAMOND": 0.00035
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "Result",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.00045,
+     "SILVER": 0.0004,
+     "GOLD": 0.00035,
+     "PLATINUM": 0.00035,
+     "DIAMOND": 0.00035
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/sec-form4-insider-trades",
+  "title": "Insider Trades Scraper: SEC EDGAR Form 4 by Ticker",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "transaction_extracted",
+  "unit_tiers": {
+   "FREE": 0.0017,
+   "BRONZE": 0.00153,
+   "SILVER": 0.00136,
+   "GOLD": 0.00119,
+   "PLATINUM": 0.00119,
+   "DIAMOND": 0.00119
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction_extracted",
+  "all_events": [
+   [
+    "transaction_extracted",
+    "Insider transaction extracted",
+    {
+     "FREE": 0.0017,
+     "BRONZE": 0.00153,
+     "SILVER": 0.00136,
+     "GOLD": 0.00119,
+     "PLATINUM": 0.00119,
+     "DIAMOND": 0.00119
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "v0iddo/us-executive-orders-tracker",
+  "title": "US Executive Orders & Presidential Docs Tracker",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "document_extracted",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document_extracted",
+  "all_events": [
+   [
+    "document_extracted",
+    "Presidential document extracted",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/federal-register-scraper/README.md"
+  ]
+ }
+]
