@@ -1,0 +1,406 @@
+[
+ {
+  "handle": "webdatatools/app-store-reviews-scraper",
+  "title": "App Store Reviews Scraper: All Reviews, Developer Replies",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 8e-05,
+   "SILVER": 7e-05,
+   "GOLD": 6e-05,
+   "PLATINUM": 6e-05,
+   "DIAMOND": 6e-05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "review",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 8e-05,
+     "SILVER": 7e-05,
+     "GOLD": 6e-05,
+     "PLATINUM": 6e-05,
+     "DIAMOND": 6e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/google-news-scraper",
+  "title": "Google News Scraper (Keyword, Topic, Site, Date Range)",
+  "model": "PAY_PER_EVENT",
+  "users": 15,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.0004,
+   "SILVER": 0.00035,
+   "GOLD": 0.0003,
+   "PLATINUM": 0.0003,
+   "DIAMOND": 0.0003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "article",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.0004,
+     "SILVER": 0.00035,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/openfda-recall-monitor",
+  "title": "FDA Recalls & Adverse Events Monitor (openFDA)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0016,
+   "SILVER": 0.0014,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.0016,
+     "SILVER": 0.0014,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/fda-recall-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/podcast-lookup",
+  "title": "Apple Podcasts Lookup & Episodes Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0008,
+   "SILVER": 0.0007,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "episode",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0008,
+     "SILVER": 0.0007,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/remote-jobs-aggregator",
+  "title": "Remote Jobs Aggregator (RemoteOK, WWR, Hacker News)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0008,
+   "SILVER": 0.0007,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "Job",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0008,
+     "SILVER": 0.0007,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/shopify-products-scraper",
+  "title": "Shopify Store Products Scraper: Variants, SKUs, Stock",
+  "model": "PAY_PER_EVENT",
+  "users": 9,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0007,
+   "BRONZE": 0.0007,
+   "SILVER": 0.0007,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.0007,
+     "BRONZE": 0.0007,
+     "SILVER": 0.0007,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "result",
+  "unit_tiers": {
+   "FREE": 0.0002
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result",
+  "all_events": [
+   [
+    "result",
+    "Result",
+    {
+     "FREE": 0.0002
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/substack-scraper",
+  "title": "Substack Publication & Posts Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.0004,
+   "SILVER": 0.00035,
+   "GOLD": 0.0003,
+   "PLATINUM": 0.0003,
+   "DIAMOND": 0.0003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "Post",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.0004,
+     "SILVER": 0.00035,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/substack-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatatools/yahoo-finance-scraper",
+  "title": "Yahoo Finance Scraper (Quotes, Fundamentals, Financials, News)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0012,
+   "SILVER": 0.00105,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "symbol",
+    {
+     "FREE": 0.0015,
+     "BRONZE": 0.0012,
+     "SILVER": 0.00105,
+     "GOLD": 0.0009,
+     "PLATINUM": 0.0009,
+     "DIAMOND": 0.0009
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ }
+]
