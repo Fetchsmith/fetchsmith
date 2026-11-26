@@ -107,7 +107,7 @@ Repeated URLs in one `urls` list are captured and charged once, not once per cop
 Actor's current Store listing, not marketing copy. The free official `apify/screenshot-url`
 (10,291 users as of 2026-11-12) only does full-page/viewport PNG or JPEG — no element selector, device presets,
 OG-card preset, raw-HTML input or PDF. Among paid rivals with real feature overlap,
-`cheapapi/website-screenshot-api` (591 users as of 2026-11-19) and `moonweil/url-screenshot-api` (350 users as of 2026-11-12) both
+`cheapapi/website-screenshot-api` (695 users as of 2026-11-26) and `moonweil/url-screenshot-api` (427 users as of 2026-11-26) both
 already never charge for a failed capture and both support full-page, element and device-preset
 capture — that is table stakes in this niche now, not an edge, and we don't claim otherwise.
 Where the three of us actually differ: `cheapapi/website-screenshot-api` has no raw-HTML-input
@@ -170,12 +170,12 @@ count as the 2026-10-29 sweep but different composition — `gochujang/image-ocr
 `maximedupre/twitter-screenshot-generator` now rank for the term but are a different product
 each (OCR-to-text, Twitter-card-specific) and are not screenshot-capture rivals, so neither is
 named here). Three newly-visible rivals, all checked and ruled out, none a price or feature
-threat. `fetchbase/web-screenshot-pro` (25 users as of 2026-11-09) has real overlap — device presets, dark mode,
+threat. `fetchbase/web-screenshot-pro` (30 users as of 2026-11-26) has real overlap — device presets, dark mode,
 retina, authenticated pages, PDF — and no start fee, but charges a flat $0.02/screenshot, 10x our
 price. `spectre_scrape/website-screenshot-api` (9 users) is the one with the closest feature
 match — it has element targeting, our actual differentiator against the bare-capture rivals above
 — but charges $0.009/result plus a one-time $0.005 actor-start fee, 4.5x+ our price with no
-volume discount. `parseforge/screenshot-url` (84 users) renders HTML snapshots and mobile
+volume discount. `parseforge/screenshot-url` (96 users as of 2026-11-26) renders HTML snapshots and mobile
 variants but has no element selector, OG-card preset or diff mode, and its PAY_PER_EVENT ladder
 only reaches $0.0112/result at DIAMOND — still 5.6x ours at the best tier anyone can reach. All
 other previously-named rivals re-verified live this sweep (counts updated above); no pricing
@@ -185,10 +185,10 @@ drift beyond the user-count churn already folded into this paragraph.
 composition — `room_js`, `viralanalyzer`, `leadsbrary` and `akash9078` dropped out of this
 specific search due to ordinary Store ranking churn, confirmed still live and re-priced directly
 via each Actor's own listing, not delisted). Two newly-visible rivals, both checked and ruled
-out, neither a price or feature threat. `qualifyops/url-screenshot-pro` (77 users) has real
+out, neither a price or feature threat. `qualifyops/url-screenshot-pro` (89 users as of 2026-11-26) has real
 overlap — CSS element capture plus mobile/desktop viewports — but charges a flat $0.01/result
 plus a one-time per-GB start fee, 5x our price, with no raw-HTML input, OG-card preset or diff
-mode. `power_on/screenshot-url-pdf` (19 users) is the closest feature match of the two — device
+mode. `power_on/screenshot-url-pdf` (26 users as of 2026-11-26) is the closest feature match of the two — device
 presets, a CSS selector and dark-mode emulation, like us — but its PAY_PER_EVENT ladder runs
 $0.01/result down to $0.007 at GOLD and above, 3.5x–5x our flat $0.002, with no OG-card preset or
 diff mode. All other previously-named rivals re-verified live this sweep (counts updated above);
@@ -248,8 +248,8 @@ needed) — a built-in version of the `removeElements`/overlay-hiding feature `c
 `fetch_cat` charge 2x-4x more for. It has no raw-HTML input, OG-card preset, PDF export or
 diff mode in its live description — the same gap as every bare-capture rival named above.
 
-**Fourth real undercutter, and the new price floor in this niche, surfaced 2026-11-18 by the same
-vendor-catalogue triage:** `bepolabs/website-screenshot` (1 user) charges a flat **$0.00045 per
+**Fourth real undercutter, surfaced 2026-11-18 by the same
+vendor-catalogue triage:** `bepolabs/website-screenshot` (5 users as of 2026-11-26) charges a flat **$0.00045 per
 saved file at every tier, with no start fee** — **4.4x below our flat $0.002**, and under every
 rival named above including `locaihost`'s $0.00089 and `code-node-tools`'s $0.001. Read from its
 live README rather than its Store title, the overlap is real and wide: full-page / first-screen /
@@ -264,11 +264,11 @@ Usercentrics, TrustArc, Google Funding Choices, Sourcepoint — a longer list th
 generic cookie-banner hiding), and the same failures-are-free billing shape we use. **What it does
 not have:** raw-HTML input (our `html`), the Open Graph 1200×630 card preset (our `ogCard`), and a
 two-URL `compareUrl`-style diff (see the fifth undercutter below for why that last gap is narrower
-than it looks). For a buyer who only needs volume capture of live URLs, this is now the cheapest
-honest option in the niche; our case is the three features above plus per-row
+than it looks). For a buyer who only needs volume capture of live URLs, this was the cheapest
+honest option in the niche when surfaced, since undercut by the 2026-11-26 audit below; our case is the three features above plus per-row
 `byteSize`/status/final-URL reporting (verified live 2026-11-18).
 
-**Fifth real undercutter, and the new price floor, surfaced 2026-11-18 by the same vendor-catalogue
+**Fifth real undercutter, surfaced 2026-11-18 by the same vendor-catalogue
 triage (same batch as the fourth, above):** `datahamster/screenshot-url` (2 users) charges a flat
 **$0.0003/screenshot on Free and Bronze, tapering to $0.00024 on Gold and above, with no start
 fee** — **6.7x-8.3x below our flat $0.002, and a third cheaper than `bepolabs`'s $0.00045** (the
@@ -290,6 +290,75 @@ preset, the same two gaps `bepolabs` leaves open. For a buyer who only needs sch
 change alerts, this is now the cheapest option in the niche by a wide margin; our case for a
 one-off prod-vs-staging diff or an HTML/OG-card capture remains the same as against every rival
 above (verified live 2026-11-18).
+
+**Full competitor audit, verified live 2026-11-26 — and it changes the honest answer about price.**
+This was a complete re-sweep, not a spot check: 11 Store queries returned **322 distinct listings**,
+**180** of which mention `screenshot` in their name, title or description, **156** of those were not
+already named on this page, and **all 156 were live-priced** from their own `pricingInfos` (not from
+Store copy) rather than ruled out on their titles. **Read the two caveats below before trusting the
+"180" as a niche size.** The honest headline: **29 of the 156 are real website-screenshot products
+that undercut our flat $0.002/result at some tier, and none of them were named here before today.**
+This niche has commoditized since the paragraphs above were written — a $0.002 flat rate is now at
+the dear end of it, not the middle, and the per-feature arguments above are doing more work than the
+price is.
+
+**The new price floor, verified live 2026-11-26, is `appunitsai/screenshotone` (2 users) at a flat $0.00001/result plus a
+$0.00005 start fee** — **200x below our $0.002**, and **24x below `datahamster/screenshot-url`'s
+$0.00024**, which the two paragraphs immediately above each called "the new price floor" (a
+superlative they both claimed, which is itself the tell that nothing was watching it). Both claims
+are now wrong, this paragraph supersedes them, and the phrase has been struck from both; `datahamster` is still the cheapest rival here with a
+*documented* monitor/diff mode, which is the narrower claim that survives. `appunitsai`'s listing
+advertises device emulation and desktop/mobile capture and nothing about raw-HTML input, OG cards,
+PDF or diffing. At that rate the start fee, not the per-screenshot price, is the whole bill on any
+run under ~5 URLs.
+
+**Below our rate but above that floor, the measured clusters (all prices verified live 2026-11-26).** Four rivals sit at **$0.0008** —
+`skillforge99/screenshot-api` (3 users), `northledgertools/website-screenshot` (2), 
+`fecklesspleb/website-screenshot` (2) and `rowcraft/website-screenshot-api` (1 user, tiering down to
+**$0.0006** at Gold and above) — all four with a $0.00005 start fee, and the last three advertising
+full-page/viewport capture, device presets, PNG/JPEG/WebP and PDF, i.e. the bare-capture feature set
+plus PDF. A larger cluster sits at **$0.001-$0.0015** (`spellzcode/website-screenshots-bulk`,
+`saliga/website-screenshot-change-detection`, `loris-barce/clean-screenshot-monitor`,
+`realletoangt/website-screenshot`, `actor-forge/website-screenshot`, `dataloomer/fast-bulk-screenshots`,
+`adhistory/website-screenshot-api`, `liora-tools/website-screenshot`, `clearscrape/website-screenshot-api`,
+`gmyri/website-screenshot`, `parth-tools/website-screenshot-api`, `highbrow_fame/website-screenshot-api`,
+`tidelane/website-screenshots`, `datawright-labs/website-screenshot`, `datadesk-io/website-screenshot-api`,
+`plotpointtech/website-screenshot-pdf-generator`), and a third group only undercuts us *above* the FREE
+tier, tying our $0.002 at the bottom and tapering to $0.0012-$0.0016 (`eliai/website-screenshot-pro`,
+`tinyrex/bulk-website-screenshot`, `northbell/website-screenshot-monitor`,
+`mosaicked_sponge/website-screenshot-pdf`, `tamatama/website-change-monitor`), plus
+`digivibetech/website-screenshot-pdf` at a flat $0.00197 — a real but negligible 1.5% under us.
+The highest-traffic new entrant is `nocodeventure/fireprint---web-pages-to-video-screenshots-and-pdf`
+(**19 users**, the only one of the 29 in double digits), which starts *dearer* at $0.003 and crosses
+under us from Silver, reaching $0.001 at Gold and above; it also renders MP4 video, which we do not.
+
+**One rival bills a shape our per-screenshot comparison cannot express, so it is stated separately (verified live 2026-11-26):**
+`brunofin/website-screenshot-api` (3 users) has **no per-screenshot event at all** — a single
+**$0.005 run fee** buys the whole run. That is dearer than us for one or two screenshots and cheaper
+from the **third** onward, so on any realistic batch it undercuts us outright. Its listing describes
+URL, viewport-size and format inputs only.
+
+**Caveat 1 (verified live 2026-11-26), so nobody re-reads the "180" as 180 competitors: 27 of the 56 listings that priced below
+us are NOT in this niche at all.** They match because "screenshot" appears in their *descriptions* —
+Google Play and App Store scrapers (which return app screenshot URLs as a field), image-OCR tools
+(which advertise reading text from screenshots), and video-frame extractors (which call extracted
+frames screenshots). That is the same description-boilerplate false positive `niche-size --strict`
+exists to strip, in a new costume. **Caveat 2: 28 of the 29 real undercutters sit at 1-4 users; the
+single exception is `nocodeventure` at 19.** Apify pins a new listing at 2 users, so most of this
+cohort is weeks old and unproven, and a 2-user listing at $0.00001 is a launch price, not an
+established market rate. Treat the floor as evidence of where this niche is heading, not as a price
+29 buyers are already paying.
+
+**What this does not change, re-checked live 2026-11-26.** Every one of the 29 was checked against the three features this page
+has always rested on, and **not one of them advertises a two-URL `compareUrl`-style diff of two
+different live URLs, raw-HTML input, and an Open Graph 1200x630 preset together.** The closest are
+the four change-monitor listings above (`saliga/website-screenshot-change-detection`,
+`loris-barce/clean-screenshot-monitor`, `northbell/website-screenshot-monitor` and
+`tamatama/website-change-monitor`), which — like `datahamster` above — monitor one URL against *its own*
+previous capture on a schedule rather than diffing prod against staging in one run. So the honest
+summary for a buyer: **if you need plain bulk capture, several rivals here are 2x-200x cheaper than
+us and you should use one of them.** Our case is narrower than it was: the diff-two-live-URLs mode,
+raw-HTML input, the OG-card preset, and per-row `byteSize`/status/final-URL reporting.
 
 ## FAQ
 **Why JPEG by default instead of PNG?** JPEG at quality 80 is visually indistinguishable from PNG for a normal web page screenshot and never larger, so it is the safer default. How much smaller depends on the page: measured on a long text-heavy Wikipedia article (black text on flat white, PNG's best case) the saving was only 15% — 2.41 MB to 2.04 MB. Measured on a photo-heavy page (a Wikipedia gallery of large photographs) the saving was 63% — 1.95 MB to 725 KB. Expect more savings the more photos/gradients a page has, least on flat text/UI pages. Use `format: "png"` only if you need pixel-exact/lossless output (e.g. comparing against a reference image).
