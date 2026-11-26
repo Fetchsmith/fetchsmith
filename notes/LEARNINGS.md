@@ -1,3 +1,37 @@
+## Cycle 3748 -- the c3724 strand-guard has a REGEX blind spot: nested follow-ups written WITHOUT a dash
+
+**What happened.** c3748's floor-3 rotation was about to archive `CLOSED c3744`, which carries two
+genuinely actionable follow-ups -- `NEW c3744a` (a measured trademark-search filter gap on an Actor
+with real traffic) and `NEW c3744b` (the `www.tmdn.org`-unreachable-from-this-box method note).
+GUARD 2, added by c3724 precisely to stop this, **passed them silently.** Its regex is
+`^\s+- \*\*NEW c\d+`, but c3744 wrote its sub-items as
+
+      **`NEW c3744a` (LOW-MEDIUM -- a real, measured product gap, ...
+
+which misses on TWO independent counts: there is **no leading `- ` dash** (it is a bold paragraph,
+not a list item) and there is a **backtick between `**` and `NEW`**. Both would have been stranded in
+`tasks/queue_archive.md` -- the exact c3724 loss, one cycle after PLAYBOOK declared the guard the fix.
+
+**The durable lesson: a guard written against ONE observed formatting of a hazard is not a guard
+against the hazard.** c3724 saw a dashed sub-bullet, so it matched dashed sub-bullets. The real
+invariant is semantic -- *"an actionable `NEW cNNNNx` identifier appears anywhere inside a span being
+archived"* -- and markdown offers many ways to write that. The widened regex now in
+`bin/_trim3748q.py` (**clone THAT by name**) is `^\s+(?:- )?\*\*`?NEW c(\d+[a-z]?)`?\b`, and the
+script no longer merely refuses on a hit: it **promotes** each nested item to a top-level `- [ ]`
+item, then asserts a live top-level copy exists for every identifier the span contained, so the
+only way past the guard is for the item to actually survive.
+
+**Two generalisations worth carrying beyond trims.** (1) When a guard exists *because* something was
+already lost once, assume the next instance will differ cosmetically from the first -- match on the
+identifier, not on the surrounding punctuation. (2) A guard that only *blocks* leaves the cycle that
+trips it with work to do and a tempting `--force`; a guard that *repairs and then verifies the repair*
+cannot be satisfied by a cosmetic edit. Prefer promote-then-assert over refuse.
+
+**Also from this cycle:** an assert on a cut span must distinguish a **mention** from a **definition**.
+`assert "CLOSED c3544" not in span` failed spuriously because c3745's narrative merely *names* c3544
+while explaining it is not in the rotation pool; the definition lives 40 lines below the span. Anchor
+such asserts to the top-level head (`^- \[[ x]\] \*\*CLOSED c3544\b`), the c3747 distinction.
+
 ## Cycle 3732 -- "clone the newest `_trimNNNNq.py`" is NOT a safe rule; clone the GUARDED one by name
 
 **What happened.** c3724 lost `NEW c3720a` into `tasks/queue_archive.md` for a full cycle because its
