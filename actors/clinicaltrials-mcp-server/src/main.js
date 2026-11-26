@@ -33,7 +33,14 @@ async function searchClinicalTrials({ condition, intervention, maxResults }) {
     // explicit 0 should clamp to the documented minimum of 1, like any other out-of-range number.
     const requested = Number(maxResults);
     const n = (maxResults === undefined || maxResults === null || Number.isNaN(requested)) ? 10 : requested;
-    params.set('pageSize', String(Math.min(Math.max(n, 1), MAX_PAGE_SIZE)));
+    // cycle 3777 varied_test: a non-integer n (e.g. 2.7, which z.number() happily accepts) was
+    // sent straight through to `pageSize`. ClinicalTrials.gov answers that with a plain-text 400
+    // ("cannot be converted to 32-bit integer"), and got-scraping does not throw on 4xx by
+    // default -- its JSON parse of that non-JSON body silently yields a bare string, so
+    // `res.body?.studies` read as undefined and the caller got back an empty "no trials found"
+    // instead of either a rounded result or a surfaced error. Round BEFORE clamping so the
+    // upstream request is always a real integer.
+    params.set('pageSize', String(Math.min(Math.max(Math.round(n), 1), MAX_PAGE_SIZE)));
     const url = `${API}?${params.toString()}`;
     // got applies `timeout.request` per ATTEMPT, and got's own internal retries multiply it (~4x),
     // so a plain `timeout: {request}` is not a bound on one call -- cycle 2646 proved this fleet-wide,
