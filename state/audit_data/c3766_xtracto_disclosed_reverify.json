@@ -1,0 +1,331 @@
+[
+ {
+  "handle": "xtracto/apple-podcast-charts",
+  "title": "Apple Podcast Charts & Metadata",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.013,
+   "SILVER": 0.011,
+   "GOLD": 0.009,
+   "PLATINUM": 0.009,
+   "DIAMOND": 0.009
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.015,
+     "BRONZE": 0.013,
+     "SILVER": 0.011,
+     "GOLD": 0.009,
+     "PLATINUM": 0.009,
+     "DIAMOND": 0.009
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "xtracto/clinicaltrials-studies",
+  "title": "ClinicalTrials.gov Studies Extractor",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00233,
+   "SILVER": 0.00167,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.003,
+     "BRONZE": 0.00233,
+     "SILVER": 0.00167,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/clinicaltrials-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "xtracto/google-news-scraper",
+  "title": "Google News Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 5,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00166,
+   "SILVER": 0.00133,
+   "GOLD": 0.00099,
+   "PLATINUM": 0.00099,
+   "DIAMOND": 0.00099
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.00166,
+     "SILVER": 0.00133,
+     "GOLD": 0.00099,
+     "PLATINUM": 0.00099,
+     "DIAMOND": 0.00099
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "xtracto/gov-tender-monitor",
+  "title": "Government Tender Monitor \u2014 New Tender Alerts (EU, UK, Ukraine)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.001778,
+   "SILVER": 0.001556,
+   "GOLD": 0.001334,
+   "PLATINUM": 0.001334,
+   "DIAMOND": 0.001334
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.001778,
+     "SILVER": 0.001556,
+     "GOLD": 0.001334,
+     "PLATINUM": 0.001334,
+     "DIAMOND": 0.001334
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "xtracto/gov-tenders-ocds",
+  "title": "Government Tenders & Procurement Tracker (EU, UK, Ukraine)",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.0043,
+   "SILVER": 0.0037,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.0043,
+     "SILVER": 0.0037,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "xtracto/hackernews-search",
+  "title": "Hacker News Search Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.00889,
+   "SILVER": 0.00778,
+   "GOLD": 0.00667,
+   "PLATINUM": 0.00667,
+   "DIAMOND": 0.00667
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.00889,
+     "SILVER": 0.00778,
+     "GOLD": 0.00667,
+     "PLATINUM": 0.00667,
+     "DIAMOND": 0.00667
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "xtracto/tipranks-stock-signals",
+  "title": "TipRanks Analyst, Insider & Smart Score Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 11,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.003,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.004,
+     "SILVER": 0.003,
+     "GOLD": 0.002,
+     "PLATINUM": 0.002,
+     "DIAMOND": 0.002
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ }
+]

@@ -84446,3 +84446,7 @@ the corrected `actors/google-news-scraper/README.md` prose itself.
 
 ---
 
+## Archived by cycle 3766 (NEW c3162 RESUME POINTER, superseded batch-completion narrative)
+
+**POINTER RE-VERIFIED FRESH c3764: live `>=3x` cohort is 322 owners, UNCHANGED (1,133 distinct owners named fleet-wide). `webdatatools` (last closed, c3763) sits immediately before `workstream` in the live sorted list -- no newcomer-insertion correction needed.** Closed c3764 -- TWO owners, both 0 owed: `workstream` (13 listings, 3 flagged / 4 disclosed / 6 off-niche; 2 HIT rows both bucket-7 dominated by already-disclosed cheaper-or-equal rivals; 4/4 disclosed re-verified 0 drift) and `wulfcare` (24 listings, 4 flagged / 3 disclosed / 17 off-niche; 1 HIT a vocab FALSE POSITIVE on "app store reviews" -- the rival scrapes the **Shopify** App Store -- 1 HIT bucket-7 dominated by the UNION of `davidbenittah/career-page-job-change-monitor` + `datahamster/ats-jobs`; 3/3 disclosed re-verified 0 drift). Full narrative in `CLOSED c3764` and `state/STATUS.md` c3764. Artifacts: `state/audit_data/c3764_{workstream,wulfcare}_{prices,disclosed_reverify}.json`, `bin/_rec3764.py` kept on disk (cloned from `_rec3763.py` BY NAME, and it is now the one to clone -- it is the first copy carrying the `NEW c3760` zero-listing pre-screen as CODE).
+

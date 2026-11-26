@@ -1,0 +1,617 @@
+[
+ {
+  "handle": "xtracto/spotify-scraper",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 28,
+  "title": "Spotify Catalog & Podcast Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00166,
+   "SILVER": 0.00133,
+   "GOLD": 0.00099,
+   "PLATINUM": 0.00099,
+   "DIAMOND": 0.00099
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Spotify tracks, albums, artists, podcasts and episodes as clean JSON. Look up any Spotify URL or search by keyword for play counts, monthly listeners, followers, show ratings, episode descriptions and audio previews. No login, no API key."
+ },
+ {
+  "handle": "xtracto/google-play-reviews-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 4,
+  "title": "Google Play Store Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00166,
+   "SILVER": 0.00133,
+   "GOLD": 0.00099,
+   "PLATINUM": 0.00099,
+   "DIAMOND": 0.00099
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get user reviews for any Android app on Google Play - rating, review text, author, date, thumbs-up count, app version, and developer reply. No account, no API key."
+ },
+ {
+  "handle": "xtracto/shopify-products",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 4,
+  "title": "Shopify Product Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.003,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Pull the full product catalog from any Shopify store \u2014 title, price, variants, images, vendor, type and tags \u2014 one row per product. Works with any Shopify store or collection URL. No account or API key needed."
+ },
+ {
+  "handle": "xtracto/appstore-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 3,
+  "title": "App Store Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.00166,
+   "SILVER": 0.00133,
+   "GOLD": 0.00099,
+   "PLATINUM": 0.00099,
+   "DIAMOND": 0.00099
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract customer reviews for any Apple App Store app - rating, title, review text, author, app version, date and vote counts - via Apple's open no-auth feed. Optional app details. No login, no API key."
+ },
+ {
+  "handle": "xtracto/ats-hiring-velocity",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Hiring-Velocity Scraper (Greenhouse/Lever/Ashby/Workday)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004168,
+   "SILVER": 0.003332,
+   "GOLD": 0.0025,
+   "PLATINUM": 0.0025,
+   "DIAMOND": 0.0025
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track a company's open job postings across major ATS platforms and the new/closed delta between runs \u2014 a leading headcount-growth signal. Public job-board data, no login."
+ },
+ {
+  "handle": "xtracto/courtlistener-opinions",
+  "niches": [
+   "court-records-scraper"
+  ],
+  "users": 2,
+  "title": "CourtListener Case Law Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004445,
+   "SILVER": 0.00389,
+   "GOLD": 0.003335,
+   "PLATINUM": 0.003335,
+   "DIAMOND": 0.003335
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "court-records-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search US court opinions, RECAP dockets and oral arguments from CourtListener: case name, court, docket number, judges, citations, filing dates and opinion snippets. Free public API."
+ },
+ {
+  "handle": "xtracto/federal-register-documents",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Documents Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.002667,
+   "SILVER": 0.002334,
+   "GOLD": 0.002001,
+   "PLATINUM": 0.002001,
+   "DIAMOND": 0.002001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape US Federal Register rules, proposed rules, notices and presidential documents: title, abstract, agencies, dockets, CFR references, comment deadlines and full-text links. Keyless public API, no login."
+ },
+ {
+  "handle": "xtracto/weworkremotely-jobs",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "We Work Remotely Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.001778,
+   "SILVER": 0.001556,
+   "GOLD": 0.001334,
+   "PLATINUM": 0.001334,
+   "DIAMOND": 0.001334
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape remote job listings from We Work Remotely with the full job description, company, category, employment type, region and expiry date. Keyless RSS source, no login, no browser."
+ },
+ {
+  "handle": "xtracto/steam-store-scraper",
+  "niches": [
+   "steam-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Steam Games, Prices & Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.000887,
+   "SILVER": 0.00078,
+   "GOLD": 0.000667,
+   "PLATINUM": 0.000667,
+   "DIAMOND": 0.000667
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "steam-reviews-scraper": {
+    "ours": {
+     "FREE": 0.000575,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00039,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape the Steam store: search 277k+ products, full game metadata with price and discount, and cursor-paged user reviews with playtime. Regional pricing via country code. No key, no login."
+ },
+ {
+  "handle": "xtracto/substack-post-detail-scraper",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "Substack Post Detail Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.002745,
+   "SILVER": 0.002505,
+   "GOLD": 0.00225,
+   "PLATINUM": 0.00225,
+   "DIAMOND": 0.00225
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Fetch a Substack post by URL or '<publication>/<slug>' shorthand. Returns full post body HTML, author, audience, paywall, podcast metadata."
+ },
+ {
+  "handle": "xtracto/shopify-store-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Products Scraper - Prices, SKUs & Variants",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every product from any Shopify store through its public product feed: title, vendor, type, tags, images and all variants with price, compare-at price, SKU and stock. Optionally one row per variant for price monitoring. HTTP-only, no API key, no account."
+ },
+ {
+  "handle": "xtracto/social-mention-monitor",
+  "niches": [
+   "google-news-scraper",
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Social Mention Monitor \u2014 Brand Mentions on HN, Bluesky & News",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.001334,
+   "SILVER": 0.001167,
+   "GOLD": 0.001001,
+   "PLATINUM": 0.001001,
+   "DIAMOND": 0.001001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track new mentions of your brand or keywords on Hacker News, Bluesky, Google News, Lemmy, Stack Overflow and Mastodon. Each scheduled run reports only mentions you have not seen, with author, link, time and engagement."
+ },
+ {
+  "handle": "xtracto/shopify-trend-tracker",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Trend Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.015,
+   "BRONZE": 0.0133,
+   "SILVER": 0.0117,
+   "GOLD": 0.01,
+   "PLATINUM": 0.01,
+   "DIAMOND": 0.01
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track what's trending on any Shopify store: best sellers (the store's own ranking), new arrivals, and price drops. No account or API key needed."
+ },
+ {
+  "handle": "xtracto/openfda-events",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 1,
+  "title": "OpenFDA Adverse Events & Recalls Extractor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00367,
+   "SILVER": 0.00233,
+   "GOLD": 0.001,
+   "PLATINUM": 0.001,
+   "DIAMOND": 0.001
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract FDA drug/device adverse events (FAERS/MAUDE), recalls, and 510(k) clearances \u2014 one record per row. Tens of millions of records available. Public FDA data, no login."
+ },
+ {
+  "handle": "xtracto/usaspending-awards",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 1,
+  "title": "USASpending Federal Awards Extractor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.02,
+   "BRONZE": 0.01667,
+   "SILVER": 0.01333,
+   "GOLD": 0.01,
+   "PLATINUM": 0.01,
+   "DIAMOND": 0.01
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract US federal contract, grant, and loan awards from USASpending.gov \u2014 one award per row, with recipient, amount, agency, and dates. Public data, no key."
+ },
+ {
+  "handle": "xtracto/ats-jobs-aggregator",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "ATS Jobs Aggregator + Domain Discovery",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.004,
+   "SILVER": 0.003,
+   "GOLD": 0.002,
+   "PLATINUM": 0.002,
+   "DIAMOND": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Pull open job postings straight from companies' own career sites across the major ATS platforms into one unified schema. Give it an ATS board, a careers URL, or just a company domain \u2014 it discovers which ATS the company uses. Public job-board data, no login."
+ }
+]
