@@ -1,0 +1,131 @@
+[
+ {
+  "handle": "zhucl1006/government-contract-winners-leads",
+  "title": "Government Contract Winners B2B Leads \u2013 UK & Singapore",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "enriched-lead",
+  "unit_tiers": {
+   "FREE": 0.015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): basic-lead,enriched-lead",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "enriched-lead",
+    "Enriched lead",
+    {
+     "FREE": 0.015
+    },
+    false,
+    false
+   ],
+   [
+    "basic-lead",
+    "Basic lead",
+    {
+     "FREE": 0.003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zhucl1006/nih-reporter-funded-projects",
+  "title": "NIH RePORTER Funded Projects - Awards, PIs and Organizations",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "funded-project",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): funded-project",
+  "all_events": [
+   [
+    "funded-project",
+    "Funded project",
+    {
+     "FREE": 0.004
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/nih-reporter-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zhucl1006/uk-contracts-finder-awards",
+  "title": "UK Government Contracts Scraper \u2013 Contracts Finder Awards API",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record,summary-row",
+  "all_events": [
+   [
+    "award-record",
+    "Award record",
+    {
+     "FREE": 0.002
+    },
+    false,
+    false
+   ],
+   [
+    "summary-row",
+    "Summary row",
+    {
+     "FREE": 0.01
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.005
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ }
+]

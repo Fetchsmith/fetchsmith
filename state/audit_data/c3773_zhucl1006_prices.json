@@ -1,0 +1,476 @@
+[
+ {
+  "handle": "zhucl1006/us-federal-contract-awards-usaspending",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "US Federal Contract Awards Scraper \u2013 USAspending.gov API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record,summary-row",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search US federal contract awards from the official USAspending.gov API by keyword, NAICS, PSC, agency, recipient, state, date and value. Clean records with recipient UEI and award links, plus recipient/agency spend rankings. No API key. $1.50 per 1,000 awards."
+ },
+ {
+  "handle": "zhucl1006/us-federal-expiring-contracts-recompete",
+  "niches": [
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "US Federal Expiring Contracts & Recompete Finder",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "expiring-contract",
+  "unit_tiers": {
+   "FREE": 0.003
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): expiring-contract,summary-row",
+  "verdicts": {
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find US federal contracts ending in the next 3-12 months - upcoming recompete opportunities. Filter by NAICS, PSC, agency, incumbent, state and value. Incumbent UEI, end dates, annualized value and pipeline summaries from the official USAspending.gov API. No API key."
+ },
+ {
+  "handle": "zhucl1006/federal-register-search-monitor",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Search - US Rules, Notices & Comment Dates",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-result",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search and monitor the U.S. Federal Register via the official API: final and proposed rules, notices and presidential documents by keyword, agency, type and date. Get comment deadlines, effective dates, dockets, RINs, CFR parts and PDF links. For compliance, law firms, lobbyists and analysts."
+ },
+ {
+  "handle": "zhucl1006/grants-gov-funding-opportunities",
+  "niches": [
+   "grants-gov-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "Grants.gov Search - US Federal Grants & Funding Opportunities",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "grant-result",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant-result",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search all U.S. federal grant and funding opportunities via the official Grants.gov API: keyword, agency, eligibility, category, instrument, ALN. Get deadlines, funding amounts, ceiling/floor, eligible applicants and agency contacts. For nonprofits, universities and grant writers."
+ },
+ {
+  "handle": "zhucl1006/apple-app-store-reviews",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Apple App Store Reviews Scraper - Ratings, Text & App Info",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get the latest customer reviews of any iPhone, iPad or Mac app in any country from Apple's public reviews feed: rating, title, text, version, date, votes, plus app rating and developer. $1 per 1,000 reviews."
+ },
+ {
+  "handle": "zhucl1006/hiring-signals-job-board-api",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Hiring Signals - Greenhouse, Lever & Ashby Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Who is hiring right now? Get all open jobs of any company on Greenhouse, Lever or Ashby (official public APIs): title, location, department, URL, posted date, plus a per-company hiring summary. Sales triggers & job leads. $2 per 1,000 jobs."
+ },
+ {
+  "handle": "zhucl1006/shopify-store-detector",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store Detector - Apps, Products, Contacts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "store-checked",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-checked",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Check any list of domains: is it a Shopify store? Get store name, currency, country, product and collection count, price range, theme, installed apps (Klaviyo, Yotpo...), emails and social links. $4 per 1,000 sites; unreachable sites are free."
+ },
+ {
+  "handle": "zhucl1006/bulk-website-screenshot",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "Bulk Website Screenshot - Full Page PNG & JPEG",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "screenshot",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): screenshot",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Take full-page or viewport screenshots of many websites at once. PNG or JPEG, custom width, delay, cookie banners hidden. Each image gets a public URL in the dataset. $2 per 1,000 screenshots; failed pages are free."
+ },
+ {
+  "handle": "zhucl1006/eu-ted-tenders-search",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "EU TED Tenders Search - Public Procurement & Contract Awards",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "ted-notice",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ted-notice",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search EU public tenders, contract award notices and prior information notices on TED (Tenders Electronic Daily) via the official TED API v3. Filter by keyword, country, CPV and date. Buyer, deadline, value, winners as clean JSON. No API key."
+ },
+ {
+  "handle": "zhucl1006/clinicaltrials-gov-search",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov Search - Studies, Sponsors, Sites & Status",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "trial",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): trial",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search ClinicalTrials.gov via the official API v2: filter by condition, drug, sponsor, location, phase, status and update date. Get sponsor, enrollment, dates, sites, countries and study contacts as clean JSON. For pharma BD, CROs, investors and site recruiters. No key."
+ },
+ {
+  "handle": "zhucl1006/openfda-recalls-adverse-events",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "openFDA Recalls & Adverse Events - Food, Drug, Device",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "fda-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): fda-record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search FDA recall enforcement reports (food, drugs, medical devices) and adverse event reports (FAERS drug, MAUDE device, CAERS food) via the official openFDA API. Filter by product, firm, class and date; clean flat JSON. For compliance, QA, insurers, law firms, sellers."
+ },
+ {
+  "handle": "zhucl1006/hacker-news-search-monitor",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Search & Monitor - Stories, Comments, Show HN, Jobs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "hn-item",
+  "unit_tiers": {
+   "FREE": 0.001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): hn-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Hacker News stories, comments, Ask HN, Show HN and job posts by keyword, author, points or date via the official HN Algolia API. Brand mentions, launch tracking, lead and hiring signals as clean JSON. $1 per 1,000 items."
+ },
+ {
+  "handle": "zhucl1006/sec-edgar-filings-search-monitor",
+  "niches": [
+   "sec-insider-trades-scraper"
+  ],
+  "users": 2,
+  "title": "SEC EDGAR Full-Text Search & Filings Monitor - 8-K, 10-K",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "sec-filing",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): sec-filing",
+  "verdicts": {
+   "sec-insider-trades-scraper": {
+    "ours": {
+     "FREE": 0.0018
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search the full text of all SEC EDGAR filings since 2001 by keyword, form type and date, and get the latest filings of any company by ticker or CIK (8-K, 10-K, 10-Q, Form 4 insider trades, S-1...). Official SEC APIs, clean JSON with document links."
+ },
+ {
+  "handle": "zhucl1006/canadabuys-contract-awards",
+  "niches": [
+   "sam-gov-opportunities-scraper"
+  ],
+  "users": 1,
+  "title": "Canada Government Contracts Scraper \u2013 CanadaBuys Award Data",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-record",
+  "unit_tiers": {
+   "FREE": 0.002
+  },
+  "start_fee": 0.005,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-record,summary-row",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search Canadian federal government contract awards from official CanadaBuys open data by keyword, department, supplier, UNSPSC, region, province, procurement method, date and value. Clean records plus department/supplier spend rankings. No login. $2 per 1,000 awards."
+ }
+]
