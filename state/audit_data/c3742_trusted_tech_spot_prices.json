@@ -1,0 +1,181 @@
+[
+ {
+  "handle": "trusted_tech_spot/shopify-store-leads-detector",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Store & E-Commerce Tech Leads Detector",
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Analyze e-commerce websites to detect Shopify themes, apps, payment gateways, and direct marketing contacts."
+ },
+ {
+  "handle": "trusted_tech_spot/google-play-store-apps-reviews-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Google Play Store Apps & Reviews Scraper",
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract mobile app details, ratings, user reviews, developer contacts, installs count, and category rankings from Google Play Store."
+ },
+ {
+  "handle": "trusted_tech_spot/openfda-drug-approvals-recalls-safety-scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "OpenFDA Drug Intelligence, Approvals, Recalls & Safety Scraper",
+  "model": null,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape official FDA drug labels, NDC numbers, active ingredients, clinical indications, adverse events, and ongoing enforcement recalls via openFDA API."
+ },
+ {
+  "handle": "trusted_tech_spot/hacker-news-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Top Stories, Ask HN, Show HN & Comments Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-extracted",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-extracted",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News front page stories, top tech news, Ask HN discussions, Show HN showcases, upvote scores, submitter user profiles, and nested comments."
+ },
+ {
+  "handle": "trusted_tech_spot/google-news-rss-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 1,
+  "title": "Google News Real-Time RSS Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "result-extracted",
+  "unit_tiers": {
+   "FREE": 0.0015
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): result-extracted",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "FREE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Fast, rate-limit resilient Google News scraper tracking breaking headlines, topical searches, news publications, and source links."
+ }
+]

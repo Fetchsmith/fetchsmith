@@ -1,0 +1,327 @@
+[
+ {
+  "handle": "transparent_meteorite/app-store-reviews",
+  "title": "App Store Reviews Scraper: New iOS Reviews, 150+ Countries",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review-returned",
+  "unit_tiers": {
+   "FREE": 0.0003,
+   "BRONZE": 0.0002,
+   "SILVER": 0.00015,
+   "GOLD": 0.0001,
+   "PLATINUM": 0.0001,
+   "DIAMOND": 0.0001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-details,review-returned",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "review-returned",
+    "Review",
+    {
+     "FREE": 0.0003,
+     "BRONZE": 0.0002,
+     "SILVER": 0.00015,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "app-details",
+    "App details row",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.002,
+     "SILVER": 0.0017,
+     "GOLD": 0.0014,
+     "PLATINUM": 0.0014,
+     "DIAMOND": 0.0014
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "transparent_meteorite/apple-podcasts-activity-tracker",
+  "title": "Apple Podcasts Activity Tracker: Active Shows & Charts",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "podcast",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.001,
+   "SILVER": 0.00085,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): podcast",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "podcast",
+    "Podcast",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.00085,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "transparent_meteorite/developer-signals",
+  "title": "Developer Signals: Hacker News, Show HN, npm and PyPI Tracker",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "hn-item",
+  "unit_tiers": {
+   "FREE": 0.00019,
+   "BRONZE": 0.00015,
+   "SILVER": 0.00012,
+   "GOLD": 0.0001,
+   "PLATINUM": 0.0001,
+   "DIAMOND": 0.0001
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): hn-item,package-record",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "hn-item",
+    "Hacker News item",
+    {
+     "FREE": 0.00019,
+     "BRONZE": 0.00015,
+     "SILVER": 0.00012,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    false,
+    false
+   ],
+   [
+    "package-record",
+    "Package record",
+    {
+     "FREE": 0.00115,
+     "BRONZE": 0.00115,
+     "SILVER": 0.000977,
+     "GOLD": 0.000805,
+     "PLATINUM": 0.000805,
+     "DIAMOND": 0.000805
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/hacker-news-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "transparent_meteorite/federal-grants-contracts",
+  "title": "Federal Grants & Contracts Finder: Grants.gov + USAspending",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "opportunity-returned",
+  "unit_tiers": {
+   "FREE": 0.0014,
+   "BRONZE": 0.0011,
+   "SILVER": 0.0009,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-returned,opportunity-returned",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "opportunity-returned",
+    "Grant opportunity",
+    {
+     "FREE": 0.0014,
+     "BRONZE": 0.0011,
+     "SILVER": 0.0009,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    false,
+    false
+   ],
+   [
+    "award-returned",
+    "Award record",
+    {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.001275,
+     "GOLD": 0.00105,
+     "PLATINUM": 0.00105,
+     "DIAMOND": 0.00105
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/grants-gov-scraper/README.md",
+   "actors/uk-find-a-tender-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "transparent_meteorite/nih-research-grants-awarded",
+  "title": "NIH Research Grants Awarded Tracker: NIH Awards by State",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "grant-result",
+  "unit_tiers": {
+   "FREE": 0.0019,
+   "BRONZE": 0.0019,
+   "SILVER": 0.0019,
+   "GOLD": 0.0019,
+   "PLATINUM": 0.0019,
+   "DIAMOND": 0.0019
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): grant-result",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "grant-result",
+    "Grant row",
+    {
+     "FREE": 0.0019,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0019,
+     "GOLD": 0.0019,
+     "PLATINUM": 0.0019,
+     "DIAMOND": 0.0019
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/nih-reporter-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "transparent_meteorite/remote-jobs-aggregator",
+  "title": "Remote Jobs with Yearly USD Salary: 6 Boards Deduped",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "job-listing",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0012,
+   "SILVER": 0.001,
+   "GOLD": 0.0009,
+   "PLATINUM": 0.0009,
+   "DIAMOND": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-listing",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "job-listing",
+    "Job listing",
+    {
+     "FREE": 0.0015,
+     "BRONZE": 0.0012,
+     "SILVER": 0.001,
+     "GOLD": 0.0009,
+     "PLATINUM": 0.0009,
+     "DIAMOND": 0.0009
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/remote-jobs-scraper/README.md"
+  ]
+ }
+]

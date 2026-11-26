@@ -1,0 +1,92 @@
+[
+ {
+  "handle": "trusted_tech_spot/clinicaltrials-gov-research-studies-scraper",
+  "title": "ClinicalTrials.gov Medical Studies & Clinical Trials Scraper",
+  "model": null,
+  "users": 1,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/clinicaltrials-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "trusted_tech_spot/sec-edgar-company-filings-financials-scraper",
+  "title": "SEC EDGAR Company Filings, 10-K, 10-Q & Financials Scraper",
+  "model": null,
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "trusted_tech_spot/steam-community-workshop-items-scraper",
+  "title": "Steam Community Workshop & Mods Scraper",
+  "model": null,
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "trusted_tech_spot/steam-games-reviews-deals-scraper",
+  "title": "Steam Games, Player Reviews, Discounts & DLC Scraper",
+  "model": null,
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "trusted_tech_spot/substack-newsletters-authors-scraper",
+  "title": "Substack Newsletters, Posts & Author Profiles Scraper",
+  "model": null,
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {
+   "FREE": 0.0
+  },
+  "start_fee": 0.0,
+  "note": "FREE model / no pricing record -- $0",
+  "runfee": null,
+  "runfee_label": "not a live PAY_PER_EVENT record",
+  "all_events": null,
+  "named_in": [
+   "actors/substack-scraper/README.md"
+  ]
+ }
+]

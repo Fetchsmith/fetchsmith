@@ -1,0 +1,543 @@
+[
+ {
+  "handle": "transparent_meteorite/sam-gov-opportunities",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "SAM.gov Contract Opportunities: Federal Bids and RFPs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.00095,
+   "BRONZE": 0.00095,
+   "SILVER": 0.000807,
+   "GOLD": 0.000665,
+   "PLATINUM": 0.000665,
+   "DIAMOND": 0.000665
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find open US federal contract opportunities on SAM.gov: solicitations, RFPs, RFQs, sources sought and award notices with contracting officer contacts, NAICS, PSC, set-aside, deadlines and attachments."
+ },
+ {
+  "handle": "transparent_meteorite/eu-ted-tenders-monitor",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "TED Procurement Tenders Monitor: EU Search + Alerts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "notice-returned",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.00255,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): notice-returned",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search EU public procurement notices on TED by keyword, CPV code, country, buyer, date and value: deadline, estimated value, award winners, plus a new-notices-since-last-run monitor. Beta."
+ },
+ {
+  "handle": "transparent_meteorite/hacker-news-search-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Scraper: Stories, Comments, Who Is Hiring",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "record-returned",
+  "unit_tiers": {
+   "FREE": 0.000186,
+   "BRONZE": 0.000171,
+   "SILVER": 0.000145,
+   "GOLD": 9.3e-05,
+   "PLATINUM": 9.3e-05,
+   "DIAMOND": 9.3e-05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): record-returned",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Hacker News stories, comments, users, front page, Ask HN, Show HN and monthly Who is hiring threads from the official Algolia and Firebase APIs. Points, comments, domains and dates. No login."
+ },
+ {
+  "handle": "transparent_meteorite/clinical-trials-new-studies-tracker",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "ClinicalTrials.gov New Studies Tracker: New Clinical Trials",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "study-result",
+  "unit_tiers": {
+   "FREE": 0.0012,
+   "BRONZE": 0.0012,
+   "SILVER": 0.00102,
+   "GOLD": 0.00084,
+   "PLATINUM": 0.00084,
+   "DIAMOND": 0.00084
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): study-result",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "ClinicalTrials.gov new studies tracker: get newly registered clinical trials from the free ClinicalTrials.gov API with NCT id, title, sponsor, phase, status, conditions, interventions, enrollment, dates, countries and an opportunity score, plus an optional sponsor rollup. No login."
+ },
+ {
+  "handle": "transparent_meteorite/federal-register-rules-notices-monitor",
+  "niches": [
+   "federal-register-scraper"
+  ],
+  "users": 2,
+  "title": "Federal Register Rules and Notices Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "document-result",
+  "unit_tiers": {
+   "FREE": 0.00093
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): document-result",
+  "verdicts": {
+   "federal-register-scraper": {
+    "ours": {
+     "FREE": 0.0008
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Federal Register monitor for new federal rules, proposed rules and regulatory notices from the free Federal Register API: agencies, effective and comment dates, abstract, CFR references, significance and an impact score. No login, no proxy, no personal data."
+ },
+ {
+  "handle": "transparent_meteorite/fda-recalls-enforcement-reports",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "FDA Recalls and Enforcement Reports Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-result",
+  "unit_tiers": {
+   "FREE": 0.00093,
+   "BRONZE": 0.00093,
+   "SILVER": 0.0009,
+   "GOLD": 0.0007,
+   "PLATINUM": 0.0007,
+   "DIAMOND": 0.0007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track FDA drug recalls, medical device recalls and food recalls from the free openFDA enforcement API: recall number, product, recalling firm, class I/II/III, status, reason, dates, distribution and a severity score. No login, no proxy."
+ },
+ {
+  "handle": "transparent_meteorite/cpsc-consumer-product-recalls",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "CPSC Consumer Product Recalls Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall-result",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.003,
+   "SILVER": 0.00255,
+   "GOLD": 0.0021,
+   "PLATINUM": 0.0021,
+   "DIAMOND": 0.0021
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall-result",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Track US consumer product recalls from the free CPSC recalls API: recall number, date, products, manufacturers, retailers, hazards, remedy, units sold, injuries reported and a severity score. No login, no proxy."
+ },
+ {
+  "handle": "transparent_meteorite/visa-sponsorship-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Visa Sponsorship Jobs Scraper: Greenhouse, Lever, Ashby",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-result",
+  "unit_tiers": {
+   "FREE": 0.00093,
+   "BRONZE": 0.00093,
+   "SILVER": 0.000791,
+   "GOLD": 0.000651,
+   "PLATINUM": 0.000651,
+   "DIAMOND": 0.000651
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-result",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find jobs whose posting text mentions visa sponsorship. Reads public Greenhouse, Lever and Ashby job boards that you list, flags each posting as sponsors, no_sponsorship, mixed or unknown, and returns the matching sentence as evidence. No login, no proxy."
+ },
+ {
+  "handle": "transparent_meteorite/workday-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Workday Jobs Scraper: myworkdayjobs API with Salary Ranges",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-with-description",
+  "unit_tiers": {
+   "FREE": 0.0018,
+   "BRONZE": 0.0016,
+   "SILVER": 0.0014,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-listed,job-with-description",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Workday jobs with pay normalized to annual salary ranges whenever the posting lists pay, from myworkdayjobs.com career sites or 165+ big employers by name. Filter by keyword, location, date, remote/hybrid, salary and level. Rows add salary type and cities. Only-new mode."
+ },
+ {
+  "handle": "transparent_meteorite/nsf-sbir-awards",
+  "niches": [
+   "grants-gov-scraper",
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "NSF Awards + SBIR Grants Scraper: Awardees, PIs, Amounts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "award-result",
+  "unit_tiers": {
+   "FREE": 0.0009
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award-result",
+  "verdicts": {
+   "grants-gov-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   },
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Search National Science Foundation awards, including NSF SBIR and STTR small business grants: award ID, title, awardee, principal investigator and email, amount, dates, program and abstract. Free public NSF Awards API, no login, no proxy."
+ },
+ {
+  "handle": "transparent_meteorite/ats-open-roles",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "ATS Jobs Scraper: Greenhouse, Lever, Ashby Jobs API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-extracted",
+  "unit_tiers": {
+   "FREE": 0.00093,
+   "BRONZE": 0.00074,
+   "SILVER": 0.00065,
+   "GOLD": 0.00056,
+   "PLATINUM": 0.00056,
+   "DIAMOND": 0.00056
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-extracted",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Open roles from the public job-board APIs of Greenhouse, Lever, Ashby, Workable, SmartRecruiters and Recruitee plus schema.org pages, in one clean schema with seniority, department, salary, remote flag and apply URL."
+ },
+ {
+  "handle": "transparent_meteorite/hiring-signal-bundle",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Hiring Signal Bundle: Roles, Trend, Salary, Score",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "company-bundle",
+  "unit_tiers": {
+   "FREE": 0.00073,
+   "BRONZE": 0.00067,
+   "SILVER": 0.00061,
+   "GOLD": 0.00055,
+   "PLATINUM": 0.00055,
+   "DIAMOND": 0.00055
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): company-bundle",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Hiring signal bundle that returns one row per company: open roles, new roles in the last 7 and 30 days, hiring trend, department and seniority mix, top roles with links, published salary ranges and a 0-100 hiring score. Covers 8 job sources in one run. No login."
+ },
+ {
+  "handle": "transparent_meteorite/salary-transparency-index",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Salary Benchmarks from Job Posts: Pay Ranges by Role",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "salary-bucket",
+  "unit_tiers": {
+   "FREE": 0.00025,
+   "BRONZE": 0.0002,
+   "SILVER": 0.00018,
+   "GOLD": 0.00015,
+   "PLATINUM": 0.00015,
+   "DIAMOND": 0.00015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job-with-pay,salary-bucket",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Get pay-range percentiles (p10-p90) by role, seniority and location from pay-transparent job posts on public Greenhouse, Lever and Ashby boards, with sample size, confidence and top payers."
+ }
+]

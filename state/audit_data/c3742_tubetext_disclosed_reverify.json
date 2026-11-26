@@ -1,0 +1,278 @@
+[
+ {
+  "handle": "tubetext/any-video-podcast-transcript",
+  "title": "Podcast Transcript & Video to Text \u2013 X, Facebook, Loom, RSS",
+  "model": "PAY_PER_EVENT",
+  "users": 11,
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0038,
+   "SILVER": 0.0034,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.00145,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,processing-fee",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.00145
+    },
+    true,
+    false
+   ],
+   [
+    "audio-minute",
+    "Transcribed minute",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.0038,
+     "SILVER": 0.0034,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    false,
+    false
+   ],
+   [
+    "processing-fee",
+    "Processing fee",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tubetext/google-play-reviews-ai",
+  "title": "App Reviews API \u2013 Google Play & App Store Reviews + AI Insights",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 9.5e-05,
+   "SILVER": 8.5e-05,
+   "GOLD": 7.5e-05,
+   "PLATINUM": 7.5e-05,
+   "DIAMOND": 7.5e-05
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-insights,app-details,review",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 9.5e-05,
+     "SILVER": 8.5e-05,
+     "GOLD": 7.5e-05,
+     "PLATINUM": 7.5e-05,
+     "DIAMOND": 7.5e-05
+    },
+    false,
+    false
+   ],
+   [
+    "app-details",
+    "App summary",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0017,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    false,
+    false
+   ],
+   [
+    "ai-insights",
+    "AI insights report",
+    {
+     "FREE": 0.05,
+     "BRONZE": 0.048,
+     "SILVER": 0.043,
+     "GOLD": 0.038,
+     "PLATINUM": 0.038,
+     "DIAMOND": 0.038
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tubetext/podcast-transcript",
+  "title": "Podcast Transcript \u2013 RSS & Apple Podcasts to Text, AI",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "audio-minute",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0038,
+   "SILVER": 0.0034,
+   "GOLD": 0.003,
+   "PLATINUM": 0.003,
+   "DIAMOND": 0.003
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): audio-minute,processing-fee,speaker-minute",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.001
+    },
+    true,
+    false
+   ],
+   [
+    "audio-minute",
+    "Transcribed minute",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.0038,
+     "SILVER": 0.0034,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    false,
+    false
+   ],
+   [
+    "speaker-minute",
+    "Speaker labels (beta)",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.001,
+     "SILVER": 0.0009,
+     "GOLD": 0.0008,
+     "PLATINUM": 0.0008,
+     "DIAMOND": 0.0008
+    },
+    false,
+    false
+   ],
+   [
+    "processing-fee",
+    "Processing fee",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "tubetext/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper + AI Insights",
+  "model": "PAY_PER_EVENT",
+  "users": 4,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0002,
+   "BRONZE": 0.00019,
+   "SILVER": 0.00017,
+   "GOLD": 0.00015,
+   "PLATINUM": 0.00015,
+   "DIAMOND": 0.00015
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ai-insights,game-details,review",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 0.0002,
+     "BRONZE": 0.00019,
+     "SILVER": 0.00017,
+     "GOLD": 0.00015,
+     "PLATINUM": 0.00015,
+     "DIAMOND": 0.00015
+    },
+    false,
+    false
+   ],
+   [
+    "game-details",
+    "Game summary",
+    {
+     "FREE": 0.002,
+     "BRONZE": 0.0019,
+     "SILVER": 0.0017,
+     "GOLD": 0.0015,
+     "PLATINUM": 0.0015,
+     "DIAMOND": 0.0015
+    },
+    false,
+    false
+   ],
+   [
+    "ai-insights",
+    "AI insights report",
+    {
+     "FREE": 0.05,
+     "BRONZE": 0.048,
+     "SILVER": 0.043,
+     "GOLD": 0.038,
+     "PLATINUM": 0.038,
+     "DIAMOND": 0.038
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ }
+]
