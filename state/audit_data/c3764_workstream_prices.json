@@ -1,0 +1,113 @@
+[
+ {
+  "handle": "workstream/shopify-products-scraper",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify Products Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "product",
+  "unit_tiers": {
+   "FREE": 0.0003
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Export the full product catalog of any public Shopify store: titles, vendors, tags, prices, variants (SKU, options, availability), images and descriptions. Filters by keyword, vendor, type and stock. No API key."
+ },
+ {
+  "handle": "workstream/google-news-scraper",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "Google News Scraper \u2014 Articles & Real URLs",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "article",
+  "unit_tiers": {
+   "FREE": 0.0006
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): article",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Google News by keyword, topic or Top Stories. Title, source, date and real publisher URL (decoded). Supports operators, time ranges and day-by-day history. Any country and language edition."
+ },
+ {
+  "handle": "workstream/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Jobs Scraper: Greenhouse, Lever, Ashby & Workday",
+  "model": "PAY_PER_EVENT",
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job,job-with-description",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Greenhouse, Lever, Ashby and Workday jobs in one run. Paste career URLs or slugs; ATS is auto-detected. Normalized title, location, department, salary and apply URL. Filters for keywords, remote and department."
+ }
+]

@@ -1,0 +1,144 @@
+[
+ {
+  "handle": "wulfcare/google-play-reviews-scraper",
+  "title": "Google Play Reviews Scraper: All Reviews, No Cap",
+  "model": "PAY_PER_EVENT",
+  "users": 7,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 9e-05,
+   "SILVER": 8.5e-05,
+   "GOLD": 8e-05,
+   "PLATINUM": 8e-05,
+   "DIAMOND": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "all_events": [
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8.5e-05,
+     "GOLD": 8e-05,
+     "PLATINUM": 8e-05,
+     "DIAMOND": 8e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-play-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "wulfcare/google-play-scraper",
+  "title": "Google Play Scraper: Reviews, App Details, Search & Charts",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 9e-05,
+   "SILVER": 8.5e-05,
+   "GOLD": 8e-05,
+   "PLATINUM": 8e-05,
+   "DIAMOND": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-details,app-list-item,review",
+  "all_events": [
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8.5e-05,
+     "GOLD": 8e-05,
+     "PLATINUM": 8e-05,
+     "DIAMOND": 8e-05
+    },
+    false,
+    false
+   ],
+   [
+    "app-details",
+    "App details",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.00045,
+     "SILVER": 0.000425,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    false,
+    false
+   ],
+   [
+    "app-list-item",
+    "App in a list",
+    {
+     "FREE": 0.0002,
+     "BRONZE": 0.00018,
+     "SILVER": 0.00017,
+     "GOLD": 0.00016,
+     "PLATINUM": 0.00016,
+     "DIAMOND": 0.00016
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-play-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "wulfcare/steam-reviews-scraper",
+  "title": "Steam Reviews Scraper: All Reviews, Any Game, No Key",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001,
+   "BRONZE": 9e-05,
+   "SILVER": 8.5e-05,
+   "GOLD": 8e-05,
+   "PLATINUM": 8e-05,
+   "DIAMOND": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "all_events": [
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8.5e-05,
+     "GOLD": 8e-05,
+     "PLATINUM": 8e-05,
+     "DIAMOND": 8e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/steam-reviews-scraper/README.md"
+  ]
+ }
+]

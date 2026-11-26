@@ -1,0 +1,128 @@
+[
+ {
+  "handle": "workstream/app-store-reviews-scraper",
+  "title": "App Store Reviews Scraper \u2014 iOS Ratings",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "all_events": [
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 8e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/app-store-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "workstream/google-ads-transparency-scraper",
+  "title": "Google Ads Transparency Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): ad,ad-details",
+  "all_events": [
+   [
+    "ad",
+    "Ad",
+    {
+     "FREE": 0.0015
+    },
+    false,
+    false
+   ],
+   [
+    "ad-details",
+    "Ad details",
+    {
+     "FREE": 0.002
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "workstream/google-play-reviews-scraper",
+  "title": "Google Play Reviews Scraper \u2014 Android",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 8e-05
+  },
+  "start_fee": 0.0,
+  "note": "sole recurring event (no primary flag)",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "all_events": [
+   [
+    "review",
+    "Review",
+    {
+     "FREE": 8e-05
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-play-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "workstream/substack-scraper",
+  "title": "Substack Scraper \u2014 Newsletter Posts & Full Text",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": null,
+  "unit_tiers": {},
+  "start_fee": 0.0,
+  "note": "AMBIGUOUS: 2 recurring, no primary flag",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): post,post-with-content",
+  "all_events": [
+   [
+    "post",
+    "Post",
+    {
+     "FREE": 0.0005
+    },
+    false,
+    false
+   ],
+   [
+    "post-with-content",
+    "Post with content",
+    {
+     "FREE": 0.001
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/substack-scraper/README.md"
+  ]
+ }
+]

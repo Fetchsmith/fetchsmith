@@ -1,0 +1,178 @@
+[
+ {
+  "handle": "wulfcare/app-store-scraper",
+  "niches": [
+   "app-store-reviews-scraper"
+  ],
+  "users": 209,
+  "title": "App Store Scraper: Reviews, App Details, Search & Charts",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): app-details,app-list-item,review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape Apple App Store reviews with no 500 cap (any country, newest/helpful/critical sort, star and date filters, developer replies), full app details with rating histogram, version history and App Privacy labels, search results, top charts, developer apps and similar apps."
+ },
+ {
+  "handle": "wulfcare/app-store-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 5,
+  "title": "App Store Reviews Scraper: All Reviews, No 500 Cap",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 0.0001
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every Apple App Store review of any app, with no 500 cap: any country, newest/helpful/critical sort, star and date filters, developer replies and app versions. $0.10 per 1,000 reviews, no start fee, errors free."
+ },
+ {
+  "handle": "wulfcare/shopify-app-store-reviews-scraper",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "Shopify App Store Reviews Scraper: Every Review, No Cap",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "review",
+  "unit_tiers": {
+   "FREE": 2.5e-05,
+   "BRONZE": 2.4e-05,
+   "SILVER": 2.3e-05,
+   "GOLD": 2.2e-05,
+   "PLATINUM": 2.2e-05,
+   "DIAMOND": 2.2e-05
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [
+     "FREE"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape every review of any Shopify App Store app: stars, text, date, the merchant's store name and country, time using the app and the developer's reply. Star and date filters. $0.03 per 1,000 reviews, no start fee, errors free."
+ },
+ {
+  "handle": "wulfcare/ats-jobs-scraper",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "ATS Jobs Scraper: Greenhouse, Lever, Ashby, Workday & More",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job",
+  "unit_tiers": {
+   "FREE": 0.0005,
+   "BRONZE": 0.00045,
+   "SILVER": 0.000425,
+   "GOLD": 0.0004,
+   "PLATINUM": 0.0004,
+   "DIAMOND": 0.0004
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): job",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Every open job from company career boards on Greenhouse, Lever, Ashby, Workable, Recruitee, Personio and Workday, in one clean format. Just type company names or paste a careers page: the job board is found for you. Salaries, remote, filters. $0.50 per 1,000 jobs."
+ }
+]
