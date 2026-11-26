@@ -1,0 +1,123 @@
+[
+ {
+  "handle": "upward_enterprises/recall-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "Recall Monitor: FDA & CPSC New-Recall Feed",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "recall",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0015,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): recall",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "FREE",
+     "GOLD",
+     "PLATINUM",
+     "SILVER"
+    ],
+    "every_tier": true,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "New product recalls from every federal source in one only-new feed: FDA enforcement reports (food, drugs, devices) and CPSC consumer-product recalls, keyword and firm filtered, one normalized row per recall. Keyless public APIs. From $2 per 1,000."
+ },
+ {
+  "handle": "upward_enterprises/public-mention-monitor",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Mention Monitor: Hacker News, Mastodon, Bluesky, YouTube",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "mention",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): mention",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Watch keywords on Hacker News, hashtags and accounts on Mastodon, accounts on Bluesky, and YouTube channels; get only the new public posts since your last run as normalized rows with author, text, link, time, and engagement. Official public APIs and feeds, no keys. From $1.20 per 1,000."
+ },
+ {
+  "handle": "upward_enterprises/hiring-signals-watchlist",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 1,
+  "title": "Hiring Signal Tracker: Greenhouse, Lever & Ashby Job Changes",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "job-event",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0018,
+   "SILVER": 0.0015,
+   "GOLD": 0.00125,
+   "PLATINUM": 0.00125,
+   "DIAMOND": 0.00125
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): board-check,job-event",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Watch any list of company job boards on Greenhouse, Lever and Ashby and get one row per change: job opened, closed, reposted, or retitled, with title, department, location, seniority, days open, and link, plus a free per-board hiring-velocity summary. Official APIs, no keys. From $2.50 per 1,000."
+ }
+]

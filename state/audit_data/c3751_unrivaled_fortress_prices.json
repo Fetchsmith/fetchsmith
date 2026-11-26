@@ -1,0 +1,1078 @@
+[
+ {
+  "handle": "unrivaled_fortress/shopify-store-lead-contact-enricher",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 3,
+  "title": "\ud83d\udecd\ufe0f Shopify Store B2B Leads & Founder Email Enricher",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract verified founder emails, customer support phones, social handles (Instagram, TikTok, FB), and installed apps (Klaviyo, Recharge, Pixels) directly from any Shopify or e-commerce domain."
+ },
+ {
+  "handle": "unrivaled_fortress/internet-drama-digest",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udd25 Internet Drama Digest - Top Controversial Threads",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0015,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "\ud83d\udd25 Daily digest of the most controversial, debated, and heated discussions on Hacker News + trending GitHub repos. No input needed - click run, get today's hot topics in 5 seconds. Perfect for morning coffee reads."
+ },
+ {
+  "handle": "unrivaled_fortress/job-scraper-aggregator",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Job Board Scraper - Multi-Site Listings & Salaries",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00128,
+   "SILVER": 0.00113,
+   "GOLD": 0.00098,
+   "PLATINUM": 0.00098,
+   "DIAMOND": 0.00098
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Scrape and aggregate job listings from multiple job boards. Extract title, company, location, salary, description and apply URL into one dataset. For recruiters and market research. Pay per result. Try free \u2014 no API key, instant results."
+ },
+ {
+  "handle": "unrivaled_fortress/google-news-aggregator",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcf0 Google News Scraper - Real-Time Articles & Media Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0015,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect public news articles, headlines, publishers, timestamps and sources from Google News. For media monitoring, PR tracking and market intelligence. Pay per result. Try free \u2014 no API key, instant results."
+ },
+ {
+  "handle": "unrivaled_fortress/app-store-reviews-analyzer",
+  "niches": [
+   "app-store-reviews-scraper",
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcf1 App Store Reviews Scraper - Customer Reviews & ASO",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0015,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "app-store-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001,
+     "BRONZE": 9e-05,
+     "SILVER": 8e-05,
+     "GOLD": 7e-05,
+     "PLATINUM": 7e-05,
+     "DIAMOND": 7e-05
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Collect public app reviews, ratings, version info, titles, and review text from major app stores for product research, QA, sentiment analysis, and competitive monitoring. Pay-per-result. Try free \u2014 no API key, instant results."
+ },
+ {
+  "handle": "unrivaled_fortress/reddit-hn-brand-share-of-voice-tracker",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udce3 Reddit + HN Brand Share-of-Voice & Sentiment Tracker",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Measure brand mention volume, sentiment and share-of-voice vs competitors across Reddit and Hacker News via free official APIs. Brand24 alternative ($199/mo) for PR and community teams."
+ },
+ {
+  "handle": "unrivaled_fortress/wcag-accessibility-lawsuit-risk-scanner",
+  "niches": [
+   "court-records-scraper"
+  ],
+  "users": 2,
+  "title": "\u267f WCAG Accessibility Lawsuit-Risk Scanner (ADA)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "court-records-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Audit any site for WCAG 2.2 AA risks: missing alt text, unlabeled forms, missing lang, keyboard traps and ARIA gaps. accessiBe alternative ($490-$5,940/yr) with real code findings, not overlays."
+ },
+ {
+  "handle": "unrivaled_fortress/b2b-buying-signals-job-tracker",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcbc B2B Hiring & Tech Stack Buying Signals Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.00225,
+   "GOLD": 0.00195,
+   "PLATINUM": 0.00195,
+   "DIAMOND": 0.00195
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract live job openings from company career pages (Greenhouse, Lever, Ashby, Workable). Detect software tools in requirements (Salesforce, Snowflake, AWS) to trigger high-intent B2B sales outreach."
+ },
+ {
+  "handle": "unrivaled_fortress/eu-ted-procurement-notice-radar",
+  "niches": [
+   "eu-ted-tenders-scraper",
+   "sam-gov-opportunities-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83c\udfdb\ufe0f EU TED Public Procurement Tenders & Awards Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract EU TED public procurement notices, contract values, buyers and winning suppliers via the official free TED API. EU expansion of SAM.gov intel for gov contractors and B2B sales teams."
+ },
+ {
+  "handle": "unrivaled_fortress/hn-whos-hiring-talent-pool-radar",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcbc HN Who is Hiring Talent Pool & Salary Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract live hiring posts from Hacker News Who is Hiring threads: roles, remote policy, salary bands and tech stacks. Recruiter sourcing without LinkedIn seats."
+ },
+ {
+  "handle": "unrivaled_fortress/openfda-recall-adverse-event-monitor",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udc8a OpenFDA Drug Recalls & Adverse Events Monitor",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Monitor FDA drug recalls, enforcement classifications and adverse-event spikes via the free OpenFDA API. Quality and pharmacovigilance intel for pharma teams."
+ },
+ {
+  "handle": "unrivaled_fortress/sec-edgar-insider-trading-form4",
+  "niches": [
+   "sec-insider-trades-scraper"
+  ],
+  "users": 2,
+  "title": "\u26a1 SEC Form 4 Real-Time Insider Trading Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0035,
+   "BRONZE": 0.00297,
+   "SILVER": 0.00263,
+   "GOLD": 0.00228,
+   "PLATINUM": 0.00228,
+   "DIAMOND": 0.00228
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "sec-insider-trades-scraper": {
+    "ours": {
+     "FREE": 0.0018
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract official SEC EDGAR Form 4 insider trading transactions, stock purchases, sales, and option exercises for public companies in real-time. Built for quant funds & traders."
+ },
+ {
+  "handle": "unrivaled_fortress/google-news-rss-sentiment-monitor",
+  "niches": [
+   "google-news-scraper"
+  ],
+  "users": 2,
+  "title": "\u26a1 Google News Media Sentiment & Competitor PR Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0015,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-news-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract real-time Google News articles, headlines, media publishers, dates, and sentiment polarity without login or browser blocks. Built for PR teams, market research & AI agents."
+ },
+ {
+  "handle": "unrivaled_fortress/substack-newsletters-tech-leads-radar",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "\u26a1 Substack Newsletters & Tech Articles Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0015,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [
+     "BRONZE"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Substack newsletter articles, posts, authors, engagement metrics (likes, comments), and clean content without login or subscription blocks. Built for PR teams, researchers & AI RAG."
+ },
+ {
+  "handle": "unrivaled_fortress/hacker-news-top-stories-comments-api",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcf0 Hacker News Top Stories, Discussions & Comments API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00128,
+   "SILVER": 0.00113,
+   "GOLD": 0.00098,
+   "PLATINUM": 0.00098,
+   "DIAMOND": 0.00098
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Hacker News front page top stories, Show HN, Ask HN, scores, authors, and discussion URLs directly via official Firebase API."
+ },
+ {
+  "handle": "unrivaled_fortress/remoteok-tech-jobs-postings-radar",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcbc RemoteOK Tech Jobs & Software Engineering Career Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00128,
+   "SILVER": 0.00113,
+   "GOLD": 0.00098,
+   "PLATINUM": 0.00098,
+   "DIAMOND": 0.00098
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [
+     "BRONZE",
+     "DIAMOND",
+     "GOLD",
+     "PLATINUM"
+    ],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract remote software engineering, design, marketing, and DevOps jobs, salary ranges, required tech stacks, and company apply links via RemoteOK."
+ },
+ {
+  "handle": "unrivaled_fortress/hacker-news-user-karma-profile-api",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udc64 Hacker News User Profiles, Karma & Submissions API",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.00085,
+   "SILVER": 0.00075,
+   "GOLD": 0.00065,
+   "PLATINUM": 0.00065,
+   "DIAMOND": 0.00065
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Hacker News user profile information, total karma score, account creation timestamp, bio description, and submitted post IDs via official API."
+ },
+ {
+  "handle": "unrivaled_fortress/google-play-reviews-sentiment-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcf1 Google Play Reviews, Star Ratings & Churn Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.00128,
+   "SILVER": 0.00113,
+   "GOLD": 0.00098,
+   "PLATINUM": 0.00098,
+   "DIAMOND": 0.00098
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Google Play Android app user reviews, 1-5 star ratings, developer replies, and automated sentiment tags. Built for mobile app developers, ASO marketers & competitor intelligence."
+ },
+ {
+  "handle": "unrivaled_fortress/tech-trends-hacker-news-github-mcp",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Tech Trends: Hacker News & GitHub Radar (MCP Server)",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.0025,
+   "SILVER": 0.002,
+   "GOLD": 0.0015,
+   "PLATINUM": 0.0015,
+   "DIAMOND": 0.0015
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Real-time tech radar for AI coding agents. Extract trending developer topics, discussions on Hacker News, and breakout GitHub repos in sub-second response times."
+ },
+ {
+  "handle": "unrivaled_fortress/shopify-store-new-arrivals-bestseller-spy",
+  "niches": [
+   "shopify-products-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\uded2 Shopify Store New Arrivals & Bestseller Catalog Spy",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "shopify-products-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00095,
+     "SILVER": 0.0009,
+     "GOLD": 0.00085,
+     "PLATINUM": 0.00085,
+     "DIAMOND": 0.00085
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract new arrivals, bestsellers, prices, product types and catalog velocity directly from any Shopify products.json storefront. Built for DTC researchers & arbitrage."
+ },
+ {
+  "handle": "unrivaled_fortress/uspto-patent-grants-innovations-radar",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 2,
+  "title": "\u26a1 USPTO Patent Grants & R&D Innovation Intelligence Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "\u26a1 USPTO Patent Grants & R&D Innovation Intelligence Radar"
+ },
+ {
+  "handle": "unrivaled_fortress/fda-drug-approvals-trials-monitor",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "\u26a1 FDA Drug Approvals, NDAs & Clinical Trial Phase Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "\u26a1 FDA Drug Approvals, NDAs & Clinical Trial Phase Radar"
+ },
+ {
+  "handle": "unrivaled_fortress/sam-gov-federal-contracts-procurement",
+  "niches": [
+   "sam-gov-opportunities-scraper"
+  ],
+  "users": 2,
+  "title": "\u26a1 SAM.gov US Federal Government Contracts & Procurement Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract official US federal government contract awards, recipient vendors, awarding agencies, dollar amounts, and NAICS codes in real-time. Built for defense tech & gov-con sales."
+ },
+ {
+  "handle": "unrivaled_fortress/substack-paid-subscribers-newsletter-growth",
+  "niches": [
+   "substack-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udcf0 Substack Newsletter Rankings & Revenue Signals Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "substack-scraper": {
+    "ours": {
+     "FREE": 0.002,
+     "BRONZE": 0.0018,
+     "SILVER": 0.0015,
+     "GOLD": 0.00078,
+     "PLATINUM": 0.00078,
+     "DIAMOND": 0.00078
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extract Substack leaderboard publications, estimated paid subscriber counts, monthly recurring revenue (MRR) tiers, author handles, and growth velocity."
+ },
+ {
+  "handle": "unrivaled_fortress/urlscan-phishing-kit-hunter",
+  "niches": [
+   "website-screenshot-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83c\udfa3 urlscan Phishing Scanner & IOC Hunter",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "website-screenshot-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Hunt live phishing and malicious pages indexed by urlscan.io by tag, brand or domain. Get the resolved URL, IP, ASN, country, domain age, screenshot and scan link for SOC triage and takedown evidence."
+ },
+ {
+  "handle": "unrivaled_fortress/breach-news-early-warning",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Breach News Early Warning Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Aggregate breaking breach and exploitation coverage from The Hacker News, Krebs, Dark Reading, SecurityWeek and CISA. Each story is scored for breach relevance with CVE extraction so IR and comms teams see signal before noise."
+ },
+ {
+  "handle": "unrivaled_fortress/exec-hiring-change-radar",
+  "niches": [
+   "ats-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "\ud83d\udc54 Executive Hiring = Leadership Change Radar",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "ats-jobs-scraper": {
+    "ours": {
+     "FREE": 0.001,
+     "BRONZE": 0.00085,
+     "SILVER": 0.00075,
+     "GOLD": 0.0007,
+     "PLATINUM": 0.0007,
+     "DIAMOND": 0.0007
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Detect VP/C-level openings across Greenhouse boards as leadership-change signals. Org-chart intel for enterprise sellers and recruiters."
+ },
+ {
+  "handle": "unrivaled_fortress/username-cross-reference-trust-score",
+  "niches": [
+   "trademark-search-scraper"
+  ],
+  "users": 1,
+  "title": "\ud83d\udd0d Sherlock Username OSINT \u2014 60+ Sites & Trust Score",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.002,
+   "BRONZE": 0.0017,
+   "SILVER": 0.0015,
+   "GOLD": 0.0013,
+   "PLATINUM": 0.0013,
+   "DIAMOND": 0.0013
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "trademark-search-scraper": {
+    "ours": {
+     "FREE": 0.002
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Verify if a username belongs to the same person across GitHub, Reddit, GitLab, npm, Keybase, Dev.to. Get Trust Score (0-100) and impersonator alerts. Perfect for influencer verification, brand protection and fake account detection. Pay per result."
+ },
+ {
+  "handle": "unrivaled_fortress/clinical-trials-finder",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 1,
+  "title": "Clinical Trials Scraper - Studies, Phases & Sponsors",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.003,
+   "BRONZE": 0.00255,
+   "SILVER": 0.00225,
+   "GOLD": 0.00195,
+   "PLATINUM": 0.00195,
+   "DIAMOND": 0.00195
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Find and extract clinical trial information: study titles, phases, conditions, sponsors, enrollment and status from ClinicalTrials.gov. For researchers and pharma. Pay per result. Try free \u2014 no API key, instant results."
+ }
+]

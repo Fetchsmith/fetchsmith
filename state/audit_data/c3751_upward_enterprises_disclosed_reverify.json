@@ -1,0 +1,172 @@
+[
+ {
+  "handle": "upward_enterprises/grants-gov-opportunity-finder",
+  "title": "Grants.gov Scraper: Federal Grant Opportunities (No API Key)",
+  "model": "PAY_PER_EVENT",
+  "users": 1,
+  "unit_event": "opportunity-detail",
+  "unit_tiers": {
+   "FREE": 0.0015,
+   "BRONZE": 0.0015,
+   "SILVER": 0.00135,
+   "GOLD": 0.0012,
+   "PLATINUM": 0.0012,
+   "DIAMOND": 0.0012
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): opportunity,opportunity-detail",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "opportunity-detail",
+    "Grant Opportunity",
+    {
+     "FREE": 0.0015,
+     "BRONZE": 0.0015,
+     "SILVER": 0.00135,
+     "GOLD": 0.0012,
+     "PLATINUM": 0.0012,
+     "DIAMOND": 0.0012
+    },
+    false,
+    false
+   ],
+   [
+    "opportunity",
+    "Grant Opportunity Summary",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.0005,
+     "SILVER": 0.00045,
+     "GOLD": 0.0004,
+     "PLATINUM": 0.0004,
+     "DIAMOND": 0.0004
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/grants-gov-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "upward_enterprises/sam-gov-contract-radar",
+  "title": "SAM.gov Scraper: Federal Contract Opportunities & Awards-No Key",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "opportunity",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): award,opportunity",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "opportunity",
+    "Opportunity",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.00075,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    false,
+    false
+   ],
+   [
+    "award",
+    "Award",
+    {
+     "FREE": 0.0005,
+     "BRONZE": 0.00045,
+     "SILVER": 0.000375,
+     "GOLD": 0.0003,
+     "PLATINUM": 0.0003,
+     "DIAMOND": 0.0003
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sam-gov-opportunities-scraper/README.md",
+   "actors/us-federal-awards-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "upward_enterprises/sec-form-4-insider-radar",
+  "title": "SEC Form 4 Scraper: Insider Buys, Sells & Cluster Signals",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "transaction",
+  "unit_tiers": {
+   "FREE": 0.001,
+   "BRONZE": 0.0009,
+   "SILVER": 0.00075,
+   "GOLD": 0.0006,
+   "PLATINUM": 0.0006,
+   "DIAMOND": 0.0006
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): transaction",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "transaction",
+    "Insider transaction",
+    {
+     "FREE": 0.001,
+     "BRONZE": 0.0009,
+     "SILVER": 0.00075,
+     "GOLD": 0.0006,
+     "PLATINUM": 0.0006,
+     "DIAMOND": 0.0006
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/sec-insider-trades-scraper/README.md"
+  ]
+ }
+]

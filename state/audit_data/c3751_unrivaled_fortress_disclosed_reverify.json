@@ -1,0 +1,190 @@
+[
+ {
+  "handle": "unrivaled_fortress/apple-podcasts-guest-booking-radar",
+  "title": "\ud83c\udf99\ufe0f Apple Podcasts Charts & Guest Booking Radar",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.0001
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.0034,
+     "SILVER": 0.003,
+     "GOLD": 0.0026,
+     "PLATINUM": 0.0026,
+     "DIAMOND": 0.0026
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/apple-podcasts-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "unrivaled_fortress/courtlistener-opinion-alert-radar",
+  "title": "\u2696\ufe0f CourtListener Opinion & Docket Alert Radar",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.0001
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.00425,
+     "SILVER": 0.00375,
+     "GOLD": 0.00325,
+     "PLATINUM": 0.00325,
+     "DIAMOND": 0.00325
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/court-records-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "unrivaled_fortress/us-court-pacer-docket-filings-radar",
+  "title": "\u26a1 US Federal Court PACER Dockets & Lawsuit Radar",
+  "model": "PAY_PER_EVENT",
+  "users": 3,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.005,
+   "BRONZE": 0.00425,
+   "SILVER": 0.00375,
+   "GOLD": 0.00325,
+   "PLATINUM": 0.00325,
+   "DIAMOND": 0.00325
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.0001
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.005,
+     "BRONZE": 0.00425,
+     "SILVER": 0.00375,
+     "GOLD": 0.00325,
+     "PLATINUM": 0.00325,
+     "DIAMOND": 0.00325
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/court-records-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "unrivaled_fortress/wipo-global-trademark-brand-watch",
+  "title": "\u26a1 WIPO Global Trademark & Brand Launch Early Intelligence",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.004,
+   "BRONZE": 0.0034,
+   "SILVER": 0.003,
+   "GOLD": 0.0026,
+   "PLATINUM": 0.0026,
+   "DIAMOND": 0.0026
+  },
+  "start_fee": 0.0001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.0001
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.0034,
+     "SILVER": 0.003,
+     "GOLD": 0.0026,
+     "PLATINUM": 0.0026,
+     "DIAMOND": 0.0026
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/trademark-search-scraper/README.md"
+  ]
+ }
+]
