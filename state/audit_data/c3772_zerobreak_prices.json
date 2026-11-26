@@ -1,0 +1,484 @@
+[
+ {
+  "handle": "zerobreak/linkedin-job-listing-scrapper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 108,
+  "title": "LinkedIn Job Listing Scrapper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00999
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Fast LinkedIn Job Listings Scraper that extracts real-time job posts by keywords, filters, or URLs. Ideal for recruiters, job seekers, and market analysts. Get full job details including title, company, location, skills, and description in bulk."
+ },
+ {
+  "handle": "zerobreak/google-play-store-scraper",
+  "niches": [
+   "google-play-reviews-scraper"
+  ],
+  "users": 4,
+  "title": "Google Play Store Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00699,
+   "BRONZE": 0.00566,
+   "SILVER": 0.00432,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "google-play-reviews-scraper": {
+    "ours": {
+     "FREE": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Google Play Store scraper that extracts app listings, ratings, downloads, developer info, and user reviews by keyword search, category browse, or top charts, so you can track competitors and analyze any app market without writing a single line of code."
+ },
+ {
+  "handle": "zerobreak/arbeitnow-jobs-scraper",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Arbeitnow Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Arbeitnow Jobs Scraper is a Python tool to extract job titles, company names, locations, remote availability, and posting dates from the European job board. It exports structured employment datasets into clean CSV or JSON formats for recruitment analytics and job market research."
+ },
+ {
+  "handle": "zerobreak/hacker-news-search-scraper",
+  "niches": [
+   "hacker-news-scraper"
+  ],
+  "users": 2,
+  "title": "Hacker News Search Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Hacker News Search Scraper is a Python tool designed to extract post titles, URLs, author metadata, comment counts, timestamps, and scores from Hacker News search results. It exports structured tech community datasets into clean CSV or JSON formats for trend analysis and research."
+ },
+ {
+  "handle": "zerobreak/US-Recalls-Scraper",
+  "niches": [
+   "fda-recall-scraper"
+  ],
+  "users": 2,
+  "title": "US Recalls Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "fda-recall-scraper": {
+    "ours": {
+     "FREE": 0.0035,
+     "BRONZE": 0.003,
+     "SILVER": 0.0027,
+     "GOLD": 0.0024,
+     "PLATINUM": 0.0024,
+     "DIAMOND": 0.0024
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "US Recalls Scraper is a Python tool designed to extract public product safety recall data across major U.S. government agencies (FDA, CPSC, USDA, NHTSA). It exports hazard details, affected products, and dates into structured CSV or JSON formats for compliance and safety research."
+ },
+ {
+  "handle": "zerobreak/working-nomads-jobs-scraper-202610120341",
+  "niches": [
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Working Nomads Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Working Nomads Jobs Scraper is a Python tool designed to extract remote job listings, company details, job categories, applicant requirements, and posting dates from Working Nomads. It exports structured employment data into clean CSV or JSON formats for job aggregation and career analysis."
+ },
+ {
+  "handle": "zerobreak/world-bank-procurement-notices-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "World Bank Procurement Notices Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "This Actor collects public procurement notices and contract award records from World Bank-financed projects. It extracts notice titles,bid descriptions,project names,borrower countries,procurement methods, bid reference numbers,and submission deadlines to support bid tracking and research"
+ },
+ {
+  "handle": "zerobreak/ukraine-prozorro-tenders-scraper",
+  "niches": [
+   "eu-ted-tenders-scraper"
+  ],
+  "users": 2,
+  "title": "Ukraine Prozorro Tenders Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "eu-ted-tenders-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "This Actor collects public procurement notices and contract records from Ukraine's Prozorro e-procurement platform. It extracts tender titles, descriptions, CPV codes, procuring entities, expected values, statuses, bidders, and submission deadlines to support bid tracking and market research."
+ },
+ {
+  "handle": "zerobreak/us-fpds-federal-contracts-scraper",
+  "niches": [
+   "sam-gov-opportunities-scraper",
+   "us-federal-awards-scraper"
+  ],
+  "users": 2,
+  "title": "Us Fpds Federal Contracts Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "sam-gov-opportunities-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "us-federal-awards-scraper": {
+    "ours": {
+     "FREE": 0.004,
+     "BRONZE": 0.0035,
+     "SILVER": 0.003,
+     "GOLD": 0.0025,
+     "PLATINUM": 0.0025,
+     "DIAMOND": 0.0025
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "This Actor collects public US federal contract award records from the Federal Procurement Data System (FPDS). It extracts procurement identifiers, contracting agencies, vendor names, obligated amounts, PSC codes, action types, and key dates to support bid tracking, spend analysis,and market research"
+ },
+ {
+  "handle": "zerobreak/medlineplus-health-topics-scraper",
+  "niches": [
+   "nih-reporter-scraper"
+  ],
+  "users": 2,
+  "title": "Medlineplus Health Topics Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "nih-reporter-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "MedlinePlus Health Topics Scraper is a Python tool to extract health topic titles, patient summaries, mapped MeSH vocabulary, category groups, and primary NIH institute sources from the NLM MedlinePlus Web Service and daily XML feeds. It exports  into clean CSV or JSON formats"
+ },
+ {
+  "handle": "zerobreak/hn-who-is-hiring-jobs-scraper",
+  "niches": [
+   "hacker-news-scraper",
+   "remote-jobs-scraper"
+  ],
+  "users": 2,
+  "title": "Hn Who Is Hiring Jobs Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "hacker-news-scraper": {
+    "ours": {
+     "FREE": 0.0002,
+     "BRONZE": 0.00017,
+     "SILVER": 0.00013,
+     "GOLD": 0.0001,
+     "PLATINUM": 0.0001,
+     "DIAMOND": 0.0001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   },
+   "remote-jobs-scraper": {
+    "ours": {
+     "FREE": 0.0015,
+     "BRONZE": 0.0013,
+     "SILVER": 0.0011,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "This Actor collects structured job postings from Hacker News monthly \"Who is Hiring?\" threads. It extracts company names, job titles, locations, remote work options, tech stacks, application links, and full posting text to support tech recruiting, job market research, and B2B sales prospecting."
+ },
+ {
+  "handle": "zerobreak/open-targets-drug-search-scraper",
+  "niches": [
+   "clinicaltrials-scraper"
+  ],
+  "users": 2,
+  "title": "Open Targets Drug Search Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "clinicaltrials-scraper": {
+    "ours": {
+     "FREE": 0.0015
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "Extracts drug search results and compound profiles from the Open Targets Platform into clean, structured datasets. Collects key pharmaceutical details including drug names, ChEMBL IDs, mechanisms of action, clinical trial phases, indications, and linked targets. Ideal for pharmaceutical research"
+ },
+ {
+  "handle": "zerobreak/apple-podcasts-reviews-scraper",
+  "niches": [
+   "apple-podcasts-scraper"
+  ],
+  "users": 2,
+  "title": "Apple Podcasts Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "verdicts": {
+   "apple-podcasts-scraper": {
+    "ours": {
+     "FREE": 0.001
+    },
+    "undercuts_tiers": [],
+    "every_tier": false,
+    "runfee_crossover_rows": null
+   }
+  },
+  "desc": "This Actor collects listener ratings and written reviews from Apple Podcasts based on podcast IDs, show names, or country storefronts. It extracts reviewer names, star ratings, review titles, full review text, submission dates, and helpful-vote counts to support audience sentiment analysis"
+ }
+]

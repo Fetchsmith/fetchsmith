@@ -1,0 +1,604 @@
+[
+ {
+  "handle": "zerobreak/nsf-awards-scraper",
+  "vs": "us-federal-awards-scraper/grants-gov-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/seek-job-scraper",
+  "vs": "remote-jobs-scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00699,
+   "BRONZE": 0.00599,
+   "SILVER": 0.00499,
+   "GOLD": 0.00399,
+   "PLATINUM": 0.00399,
+   "DIAMOND": 0.00399
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00699,
+     "BRONZE": 0.00599,
+     "SILVER": 0.00499,
+     "GOLD": 0.00399,
+     "PLATINUM": 0.00399,
+     "DIAMOND": 0.00399
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/berlin-startup-jobs-scraper",
+  "vs": "remote-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/python-org-jobs-scraper",
+  "vs": "remote-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/sweden-jobtech-jobs-scraper-202610120341",
+  "vs": "remote-jobs-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/nytimes-rss-scraper",
+  "vs": "google-news-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/bbc-news-rss-scraper",
+  "vs": "google-news-scraper",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/npr-news-rss-scraper",
+  "vs": "google-news-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/mercurynews-news-posts-scraper",
+  "vs": "google-news-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/denverpost-tags-scraper",
+  "vs": "google-news-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/lobsters-stories-scraper",
+  "vs": "hacker-news-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/amazon-product-list-scraper",
+  "vs": "shopify-products-scraper",
+  "users": 1,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00299
+  },
+  "start_fee": 5e-05,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/trustpilot-review-scraper",
+  "vs": "reviews-niches",
+  "users": 3,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00499,
+   "BRONZE": 0.00432,
+   "SILVER": 0.00366,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0005,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.0005
+    },
+    true,
+    false
+   ],
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00499,
+     "BRONZE": 0.00432,
+     "SILVER": 0.00366,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/Nonprofit-Explorer-Scraper",
+  "vs": "none",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/arxiv-papers-scraper",
+  "vs": "none",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/ofac-sdn-sanctions-list-scraper",
+  "vs": "none",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/finra-brokercheck-scraper",
+  "vs": "sec-insider-trades-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ },
+ {
+  "handle": "zerobreak/coursera-courses-catalog-scraper",
+  "vs": "scholarship-scraper",
+  "users": 2,
+  "model": "PAY_PER_EVENT",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "runfee": null,
+  "note": "primary event",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ]
+ }
+]

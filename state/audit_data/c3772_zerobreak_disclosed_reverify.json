@@ -1,0 +1,116 @@
+[
+ {
+  "handle": "zerobreak/CourtListener-Scraper",
+  "title": "CourtListener Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00499,
+   "BRONZE": 0.00399,
+   "SILVER": 0.00299,
+   "GOLD": 0.00199,
+   "PLATINUM": 0.00199,
+   "DIAMOND": 0.00199
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00499,
+     "BRONZE": 0.00399,
+     "SILVER": 0.00299,
+     "GOLD": 0.00199,
+     "PLATINUM": 0.00199,
+     "DIAMOND": 0.00199
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/court-records-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zerobreak/open-targets-drug-disease-scraper",
+  "title": "Open Targets Drug Disease Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/clinicaltrials-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "zerobreak/rxnorm-drug-lookup",
+  "title": "Rxnorm Drug Lookup",
+  "model": "PAY_PER_EVENT",
+  "users": 2,
+  "unit_event": "apify-default-dataset-item",
+  "unit_tiers": {
+   "FREE": 0.00599,
+   "BRONZE": 0.00499,
+   "SILVER": 0.00399,
+   "GOLD": 0.00299,
+   "PLATINUM": 0.00299,
+   "DIAMOND": 0.00299
+  },
+  "start_fee": 0.0,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): apify-default-dataset-item",
+  "all_events": [
+   [
+    "apify-default-dataset-item",
+    "result",
+    {
+     "FREE": 0.00599,
+     "BRONZE": 0.00499,
+     "SILVER": 0.00399,
+     "GOLD": 0.00299,
+     "PLATINUM": 0.00299,
+     "DIAMOND": 0.00299
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/nih-reporter-scraper/README.md"
+  ]
+ }
+]
