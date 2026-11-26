@@ -6982,3 +6982,48 @@ Also shipped the one genuine find of the batch: `ucchiii/app-store-reviews` (2 u
 This is the same trap `NEW c3458` (scrapebench) and `NEW c3720a` (openclawai) already named and gated by date -- but this is the first time it's been caught **after** it had already produced a wrong queue item, not just a near-miss during a live sweep. **Durable rule: before shipping any price figure sourced from `pricingInfos`, if the array has more than one entry, compare each `startedAt` against the current date and use the latest one that has already elapsed -- never assume array order or array length (e.g. "last entry") tells you which one is current.** Corrected in place (queue item rewritten, date-gated to 2026-11-30) rather than shipped; README was left untouched since it was already correct.
 
 Same cycle, landed a different fold-in cleanly: `NEW c3721a` on `uk-find-a-tender-scraper/README.md` (steadyscrape's undisclosed $0.005 SAM.gov fee) -- re-verified live first, single `pricingInfos` entry already elapsed, no future-price ambiguity, shipped as build 0.1.117.
+
+## c3756 — "compress the biggest block" is not a byte lever when the block is mostly data
+
+`STANDING c3280` had handed forward one instruction for five trim cycles: stop doing bare
+rotations, take the `FOLD-IN REGISTER` (10.8KB, the single biggest block in `tasks/queue.md`).
+c3756 finally did it, and the measured yield was **1,819B — 17% of the block.**
+
+The reason is structural, not a failure of effort, and it generalises to every other standing
+tracker: the register is ~83% **irreducible data** — 38 competitor handles, 27 prices and tier
+ladders, 10 README line numbers, provenance tags (`cNNNN`, user counts) — all of which the
+block's own standing rule explicitly requires keeping ("compress per-entry narrative, keep
+every handle and price"). Only the connective rationale prose is compressible, and prose was
+never the bulk. **Before planning a trim around compressing a block, split its bytes into DATA
+vs PROSE first; "it is the biggest block" predicts nothing about its yield.** The arithmetic
+that matters: rotation yields ~2.7KB/cycle and tracker compression yielded ~1.8KB *once* (it
+does not regenerate), against ~5.4KB/cycle of growth. c3756 landed at ~3.04 cycles of
+headroom, i.e. marginal, and the trim is owed again almost immediately.
+
+**A compression that promises to "keep every handle and price" must be verified mechanically,
+because it cannot be verified by eye.** c3756 added GUARD 3 to `bin/_trim3756q.py`: extract
+every handle / price / README line-ref / provenance tag / user-count from the original span and
+assert each one appears in the replacement. **It failed on the first run** over a dropped
+`c3552` provenance tag that three careful readings had missed — and because the script follows
+the c3492 verify-then-write ordering, `cmp` against the pre-run backups proved both files were
+untouched by the failed run, so it was simply re-runnable. A rewrite span also cannot use a
+rotation's whole-file multiset check; the correct form is
+`new + span1 + span2 == orig + REPLACEMENT`, compared by value.
+
+**Hazard pass (a) is what catches SUPERSEDED rulings, which read exactly like live ones.**
+`_trim3468q.py:224` and `_trim3525q.py:8` both state the register is "live owed work, do NOT
+compress it to save bytes, work it off instead" — the direct opposite of the instruction c3756
+was executing. Resolving rather than ignoring the conflict was cheap and load-bearing:
+`NEW c3705b`/c3711/c3752 **re-scoped** the old ruling (compress narrative, keep every handle
+and price, never archive wholesale) rather than reversing it, and GUARD 3 is precisely what
+discharges the old ruling's concern. **Also per the c3492 rule, both durable vendor lessons the
+block restated were confirmed already verbatim in this file (c3436 `glasswing`, "## c3460 — one
+vendor, one scope, 4x the price") BEFORE compressing them to pointers — but the c3588
+skim-hazard lesson ("a 'closed' head can sit beside a still-pending entry for the SAME Actor")
+was recorded as method nowhere else, so it was kept and promoted into the register head.**
+
+**One more count-forwarding trap, the inverse of the usual one:** the rotation pool had to be
+re-derived fresh as exactly c3752/c3751/c3749, because **c3753, c3754 and c3755 wrote no
+`CLOSED` block at all** (they recorded in `STATUS.md` and the `NEW c3162` pointer only). Past
+lessons warn that forwarded cut-counts UNDER-count; here a forwarded count would have
+OVER-counted the pool by three. Cycle numbers advancing is not evidence that blocks exist.
