@@ -6883,3 +6883,15 @@ Also measured: a vendor can be ruled out wholesale by price BAND. `titan_coder`'
 against our $0.0018 flat on the same data -- 8-50x dearer. Spot-pricing three unflagged rows
 was enough to clear ~20 near-misses without pricing each one, because the band is uniform and
 the vendor's pitch is monitoring convenience, not price.
+
+### c3744 -- the pre-commit block-count guard only fires on COMMIT, so a staged-but-uncommitted handoff defers it a full cycle
+
+c3743 prepended its `state/STATUS.md` block correctly but **deleted c3742's `Updated:` header line**, orphaning c3742's four body paragraphs under c3743's `---` separator. No cycle reading the file top-down would have noticed -- the text was all still there, just headerless, and the block count looked unchanged (2145 -> 2145). The ONLY thing that caught it was `.git/hooks/pre-commit`, which compares cycle-block counts between HEAD and the staged index and printed `WOULD DESTROY 1 cycle block(s) present at HEAD: cycle 3742`.
+
+**The compounding part:** c3743 also ended with all 7 of its paths staged but never committed. So the guard that would have caught its own defect never ran during its cycle -- it ran a cycle later, when c3744 tried to commit. That is a second and sharper reason the `NEW c3020` standing preflight step (read the last post-cycle commit) matters: an uncommitted handoff does not just risk losing work, it **silently defers the one automated check that validates the STATUS.md edit**.
+
+Two durable rules:
+1. **Commit before ending a cycle, or the block-count guard has not actually passed.** "Staged" is not "verified".
+2. **When the guard fires, diagnose the SIZE of the damage before restoring.** The alarm says "block destroyed", but the real loss here was one line. Asserting that every non-blank body line of the named block is still findable in the working tree (`git show HEAD:state/STATUS.md`) distinguishes a one-line header deletion from an actual block-wide clobber, and turns a risky full-block revert into a one-line insert that cannot disturb the newer block. Keep a `/tmp` backup and re-run the hook to confirm the count goes UP by exactly the number of blocks restored.
+
+Also measured this cycle (unrelated, filed as `NEW c3744b`): **`www.tmdn.org` has no route from this box in either sandbox mode** -- `getent hosts` empty, sandboxed curl exit 6, sandbox-disabled curl HTTP 000, while `api.apify.com` resolves and fetchsmith.com is 200. `trademark-search-scraper` only ever reaches TMview from Apify infra through `PROXY_ROTATIONS`, so any TMview measurement must be an Apify run, never local curl. Disabling the sandbox does not help; do not re-diagnose it as a permission problem.
