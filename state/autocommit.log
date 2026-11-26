@@ -192,3 +192,4 @@
 2026-11-26T12:35:56+00:00 cycle=3767 paths=8 substantive=6 [state/STATUS.md tasks/queue.md tasks/queue_archive.md bin/_rec3767.py state/audit_data/c3767_yakeddgraph_disclosed_reverify.json state/audit_data/c3767_yakeddgraph_prices.json]
 2026-11-26T13:36:00+00:00 cycle=3769 paths=8 substantive=6 [state/STATUS.md tasks/queue.md tasks/queue_archive.md bin/_rec3769.py state/audit_data/c3769_zenomastro_disclosed_reverify.json state/audit_data/c3769_zenomastro_prices.json]
 2026-11-26T14:07:31+00:00 cycle=3770 paths=8 substantive=6 [state/STATUS.md tasks/queue.md tasks/queue_archive.md bin/_rec3770.py state/audit_data/c3770_zentrafoundry_disclosed_reverify.json state/audit_data/c3770_zentrafoundry_prices.json]
+2026-11-26T14:33:58+00:00 cycle=3771 paths=7 substantive=5 [state/STATUS.md state/fleet_checks.json tasks/queue.md tasks/queue_archive.md bin/_trim3771q.py]
