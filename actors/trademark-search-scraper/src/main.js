@@ -21,7 +21,8 @@ const clampStatusMessage = (msg, suffix = '') => {
 };
 const echoCap = (s, max = 60) => (s.length > max ? `${s.slice(0, max).trimEnd()}...` : s);
 
-const API = 'https://www.tmdn.org/tmview/api/search/results';
+const TMDN_ORIGIN = 'https://www.tmdn.org';
+const API = `${TMDN_ORIGIN}/tmview/api/search/results`;
 // TMview's own search page -- a plain GET, no JS run -- sets the WAF session cookies
 // (`TSc...`/`TS0...`, an F5/TSPD bot-detection sensor) that the search API now requires.
 // Found cycle 2441: a bare POST to API with no cookie jar gets a 200 OK containing a JS
@@ -50,7 +51,24 @@ const searchTerm = String(input.searchTerm ?? '').trim();
 // before the run exits having pushed and charged nothing. It lives in the Actor rather than in a
 // bin/ script because TMview is unreachable from the worker box in either sandbox mode
 // (`NEW c3744b`) -- Apify egress is the only place this measurement can be taken at all.
-const probeBodies = Array.isArray(input._probeBodies) ? input._probeBodies : null;
+// GATED on the Actor-level env var FS_PROBE=1 (`NEW c3784`). Apify does not reject unknown INPUT
+// keys, so without this gate an outsider who guessed the name could start probe-mode runs that
+// push nothing, charge them nothing, and bill US the compute. FS_PROBE is ours alone to set
+// (`PUT /v2/acts/<id>`, `environmentVariables` -- no build needed), so both hooks are inert in
+// every buyer-reachable configuration. It says so once rather than ignoring the input silently,
+// because a silent no-op here is exactly the shape that wasted a cycle at c3786 (`limit:0`).
+const probeEnabled = process.env.FS_PROBE === '1';
+if ((input._probeBodies !== undefined || input._probeGet !== undefined) && !probeEnabled) {
+  log.warning('Diagnostic probe input was supplied but probe mode is not enabled on this Actor — it was ignored and the normal search ran instead.');
+}
+const probeBodies = probeEnabled && Array.isArray(input._probeBodies) ? input._probeBodies : null;
+// `_probeGet` is the one step left after c3784 killed the guess-the-name approach (`NEW c3744a`):
+// GET a list of TMDN-hosted paths and log, for each, the status, the byte count and every
+// `f<Name>` identifier in the body -- so the parameter names TMview's OWN advanced-search UI
+// posts can be READ off its front-end assets rather than guessed one at a time. Paths are
+// resolved against TMDN_ORIGIN and any result that lands off that origin is refused, so this
+// stays a fixed-origin reader and never becomes an arbitrary-host SSRF.
+const probeGet = probeEnabled && Array.isArray(input._probeGet) ? input._probeGet : null;
 let probeExtra = null;
 // TMview's `fOffices` param is case-sensitive (live-verified: "us"/"de"/"Em" each return 0 rows
 // where "US"/"DE"/"EM" return real ones). Every office code TMview publishes is a plain
@@ -804,6 +822,43 @@ let timeBudgetStopped = false;
 let pageDepthLimitStopped = false;
 
 try {
+  if (probeGet) {
+    for (const p of probeGet) {
+      const asked = String(p ?? '');
+      let url;
+      try { url = new URL(asked, `${TMDN_ORIGIN}/`); } catch { url = null; }
+      // An absolute URL in the input overrides the base, so check the RESOLVED origin, not the
+      // input string -- that is the only form of the check a crafted value cannot walk around.
+      if (!url || url.origin !== TMDN_ORIGIN) {
+        log.warning(`PROBEGET ${asked} -> REFUSED (resolves outside ${TMDN_ORIGIN})`);
+        continue;
+      }
+      let outcome;
+      try {
+        if (!cookiesPrimed) await primeCookies(Math.min(10000, REQUEST_TIMEOUT_MS));
+        const res = await gotScraping({
+          url: url.href,
+          method: 'GET',
+          cookieJar,
+          proxyUrl,
+          throwHttpErrors: false,
+          retry: { limit: 0 },
+          timeout: { request: REQUEST_TIMEOUT_MS },
+          signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+          headers: { referer: SEARCH_PAGE },
+        });
+        const text = typeof res.body === 'string' ? res.body : JSON.stringify(res.body ?? '');
+        // Report the param VOCABULARY, not the asset: a TMview front-end bundle is megabytes of
+        // minified JS and the whole question is only which `f<Name>` keys its own code sends.
+        const names = [...new Set(text.match(/\bf[A-Z][A-Za-z]{2,30}\b/g) ?? [])].sort();
+        outcome = `HTTP ${res.statusCode} bytes=${text.length} fNames(${names.length})=[${names.join(',')}]`;
+      } catch (e) {
+        // Same rule as the POST batch below: one bad path must not cost the whole batch.
+        outcome = `ERROR ${e.message}`;
+      }
+      log.info(`PROBEGET ${url.href} -> ${outcome}`);
+    }
+  }
   if (probeBodies) {
     for (const extra of probeBodies) {
       probeExtra = (extra && typeof extra === 'object' && !Array.isArray(extra)) ? extra : {};
@@ -820,6 +875,8 @@ try {
       log.info(`PROBE ${JSON.stringify(probeExtra)} -> ${outcome}`);
     }
     probeExtra = null;
+  }
+  if (probeGet || probeBodies) {
     await Actor.exit('Probe mode: nothing pushed, nothing charged.');
   }
   if (!searchTerm) {
