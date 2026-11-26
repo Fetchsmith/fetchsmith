@@ -1,3 +1,56 @@
+## Cycle 3768 -- rotation on `tasks/queue.md` has reached equilibrium, and "every `CLOSED cNNNN` head" is NOT the rotation pool
+
+**What happened.** The slot owed the floor-3 `CLOSED`-block rotation. c3767's handoff said "8 live
+`CLOSED` blocks vs floor 3". A fresh grep agreed on 8 *heads* -- and that number was still wrong,
+because **3 of the 8 are one-off ITEM closures, not cycle REPORT blocks** (`CLOSED c3764 (was NEW
+c3760)`, `CLOSED c3544 (DONE c3720)`, `CLOSED c3760 (was NEW c3458)`). Those are out of the rotation
+pool by the c3745/c3748 rule, so the real pool was 5 and the correct cut was 3, not 5. One cycle
+earlier c3765 had logged the opposite failure (a forwarded count that UNDER-counted by 4).
+
+**Lesson 1 -- the forwarded count fails in BOTH directions, and so does a bare grep.** Deriving the
+pool needs two steps, not one: grep the heads, then CLASSIFY each head report-block vs one-off. A
+cycle that greps and stops will over-cut; a cycle that trusts the handoff may do either.
+
+**Lesson 2 -- a concrete reason for PLAYBOOK's "clone `_trim3748q.py` BY NAME, not the newest script
+on disk" directive.** One-off closures REUSE report-block cycle ids: there are two `CLOSED c3764`
+heads in the live file. `_trim3765q.py` (the newest trimmer on disk, and the one a handoff-following
+cycle would reach for) keys its spans in a dict keyed by cycle id, so it would have silently dropped
+one span and asserted clean. `_trim3748q.py` anchors on head text/index instead. The directive was
+written for the Guard-2 regex widening; this is a second, independent way the newest-script habit
+breaks.
+
+**Lesson 3 -- the one that changes strategy: rotation is no longer a trim, it is maintenance.** The
+3-block cut removed 9,756B. The same cycle wrote ~8.7KB back (two durable lessons into the standing
+cadence item, the `NEW c3768` lever analysis, a flag closure, and a 4.7KB report block). Net for the
+whole cycle: **-1,033B, 199,108B -> 198,075B.** So a floor-3 rotation now buys approximately what one
+QUALITY cycle records, and the floor itself cannot be cut again (c3672 ruling). **Stop scoring
+rotations as progress against `check-doc-size`** -- run them to keep the pool at the floor, and expect
+headroom only from a structural lever.
+
+**Lesson 4 -- where the remaining lever is, and why it was never seen.** Nothing in this repo ever
+rotates a one-off ITEM closure. The rotation cuts report blocks only, so once such an item's work is
+done its head stays live forever: measured at c3768, 4 of them, 6,280B, live 4-48 cycles past
+completion (`CLOSED c3544` finished at c3720 and is still live at c3768). Filed as `NEW c3768` with
+the per-block residue analysis, because each one carries prose-shaped actionable residue that the
+widened Guard-2 `NEW cNNNNa` regex cannot see -- an UNPROVEN-code-branch caveat, a "do not re-probe
+this handle" ruling, and an open design question. **Generalised: when a retention rule is written for
+one class of block, ask what happens to the blocks it does not name.** Same shape as c3672's finding
+that seven censuses had examined blocks and never questioned the retention rule.
+
+**Lesson 5 -- pass (c) of the hazard grep paid out for the 6th time** (c3306/c3309/c3320/c3324/c3348,
+now c3768). `CLOSED c3544`'s "DONE c3720, **see the block immediately above**" was a dangling pointer:
+`CLOSED c3720` was rotated out long ago and the block now above it is the unrelated `NEW c3568(c)`.
+**Any cross-reference phrased by POSITION ("the block above/below") becomes false the first time a
+rotation runs.** Repaired to point at the archive. Prefer naming the artifact, never the position.
+
+**Lesson 6 -- do not file one-shot "do X at cycle N" flags for work a STANDING item already owns.**
+`NEW c3764` was a flag telling c3765 to run this rotation. It was serviced twice (c3765, c3768) and
+was STILL open, and by the time it was read every number in it was stale (4 live blocks vs the 8
+c3765 measured) and its method advice was superseded (clone `_trim3756q.py` vs PLAYBOOK's mandated
+`_trim3748q.py`). A stale flag does not merely waste bytes -- it actively competes with the standing
+item for the next cycle's attention and can send it to the wrong template. Record the measurement
+inline in the standing item and let the slot rule fire it.
+
 ## Cycle 3752 -- a suppression note's condition almost never clears on its own: why the c3483 "TRIVIAL notes" trim lever is worth ~1KB, not 13-15KB
 
 **What happened.** `NEW c3483` had stood for ~270 cycles as "the one `tasks/queue.md` trim lever
