@@ -40,7 +40,7 @@
         "awardTypes": {
             "title": "Award types",
             "type": "array",
-            "description": "Application type code: 1 = new, 2 = competing renewal, 3 = supplement, 4 = competing extension, 5 = non-competing continuation, 7 = change of institution, 9 = change of NIH institute.",
+            "description": "Application type code, per NIH's own Data Elements for RePORTER Project API V2: 1 = new application, 2 = competing continuation (competing renewal), 3 = application for additional (supplemental) support, 4 = competing extension for an R37 award or the first non-competing year of a Fast-Track SBIR/STTR award, 5 = non-competing continuation, 6 = change of organization status (successor-in-interest), 7 = change of grantee institution, 8 = change of Institute or Division (a Type 5 transferred to another NIH IC), 9 = change of NIH awarding Institute or Division on a competing continuation.",
             "editor": "select",
             "items": {
                 "type": "string",
@@ -61,9 +61,9 @@
                     "3 - Supplement",
                     "4 - Competing extension",
                     "5 - Non-competing continuation",
-                    "6 - Other",
-                    "7 - Change of institution",
-                    "8 - Other",
+                    "6 - Change of organization status (successor-in-interest)",
+                    "7 - Change of grantee institution",
+                    "8 - Change of Institute or Division (Type 5 transfer)",
                     "9 - Change of NIH institute"
                 ]
             },

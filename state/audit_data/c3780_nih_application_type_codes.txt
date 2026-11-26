@@ -1,0 +1,33 @@
+# Primary source: NIH 'Data Elements for RePORTER Project API V2'
+# URL: https://api.reporter.nih.gov/documents/Data%20Elements%20for%20RePORTER%20Project%20API_V2.pdf
+# Fetched 2026-11-26 (cycle 3780) with curl; text layer extracted locally via 'pdftotext -layout'
+# (WebFetch's summarizer failed on this same PDF at c3523 -- pdftotext recovers it cleanly.)
+# sha256 of PDF:
+6d3a236bd4dce6df8fd7d3be2e89db48d892028766436bb420289a7da2a34c49  /tmp/nihapi.pdf
+
+Application Type
+Name:                       Application Type
+Definition:                 A single-digit code identifying the type of application received and
+                            processed. Application type codes include the following:
+                            1 = New application
+                            2 = Competing continuation (also, competing renewal)
+                            3 = Application for additional (supplemental) support. There are
+                            two kinds of Type 3 competing revisions (which are peer-reviewed
+                            and administrative supplements)
+                            4 = Competing extension for an R37 award or first non-competing
+                            year of a Fast-Track SBIR/STTR award. This includes the
+                            following Type 4 subclassifications:
+                                      4C = Competing Type 4
+                                      4N = Noncompeting Type 4
+                            5 = Non-competing continuation
+                            6 = Change of Organization Status (Successor-In-Interest)
+                            7 = Change of grantee institution
+                            8 = Change of Institute or Division (Type 5 transfer to another
+                            NIH IC)
+                            9 = Change of NIH awarding Institute or Division (on a competing
+                            continuation)
+Type:                       Integer
+PayloadCriteriaName:        award_types
+APIResponseName:            award_type
+IncludeFieldsName:          AwardType
+ExPORTERColumn:             APPLICATION_TYPE

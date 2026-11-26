@@ -7133,3 +7133,33 @@ This batch's own outcome was 0 owed only because all three naming READMEs
 **A single-owner UNIFORM HOUSE LADDER resolves the whole owner in ONE comparison -- the first positive-direction pre-screen this walk has produced (buckets 1-8 are all per-row).** `zerobreak` (203 live listings, the third-largest single-owner batch of the `NEW c3162` walk) prices essentially its entire catalogue on ONE ladder: $0.00599 FREE -> $0.00499 BRONZE -> $0.00399 SILVER -> **$0.00299 GOLD+**, start fee $0.00, no run fee. Measured this cycle across 13 vocab-flagged rows AND 18 hand-picked near-miss rows: **28 of those 31 sat on that exact ladder**, the 3 exceptions all DEARER or off-niche (`seek-job-scraper` $0.00699->$0.00399; `amazon-product-list-scraper` flat $0.00299 + $0.00005 start; `trustpilot-review-scraper` $0.00499->$0.00299 + $0.0005 start). **The screen: if an owner's house Gold rung is dearer than the dearest Gold rung in our own fleet, NO row of that owner can undercut us at any tier, and per-row ladder work is pure waste.** Measured fleet-wide the same cycle, our dearest Gold rung among the **25 row-rate dataset Actors** is **$0.0025** (`uk-find-a-tender-scraper`, `us-federal-awards-scraper`), so zerobreak's $0.00299 clears it with ~20% of margin to spare. **State it that way and not as "dearest Actor":** the two MCP servers (`clinicaltrials-mcp-server`, `google-news-mcp-server`) bill $0.005/Gold tool-call and would have inflated the bar to $0.005, but they are per-tool-call products that bucket 2 (category mismatch) excludes from any row-rate comparison anyway -- comparing a row rate to them is the arithmetic form of the bucket-2 error. **How to run it: price any 3-4 rows of the owner first; if they tie exactly, hypothesise the house ladder, confirm on 2 more, then rule the owner in one line.** It would have saved this cycle ~25 of its 31 price calls, and it scales with owner size exactly where the per-row method is most expensive.
 
 **A bucket-7 re-verify can be 3/3 clean while only 1 of the 3 carries a price claim at all -- count the CLAIMS, not the handles, before scoring the step.** `zerobreak`'s 3 already-disclosed handles re-verified clean, but only `CourtListener-Scraper` is disclosed with a ladder (`court-records-scraper/README.md:230`: "$0.00499 (Free) -> $0.00399 (Bronze) -> $0.00299 (Silver) -> $0.00199 (Gold and up) ... no start fee", live byte-for-byte identical, and its "dearer than us through Silver, marginal ~0.5% under us from Gold up" arithmetic still holds against our live flat $0.002/result). The other two are disclosed as pure SCOPE exclusions -- `open-targets-drug-disease-scraper` "reads the separate Open Targets platform, not ClinicalTrials.gov directly" (`clinicaltrials-scraper/README.md:184`) and `rxnorm-drug-lookup` "reads NIH's RxNorm drug vocabulary API" (`nih-reporter-scraper/README.md:214`) -- and a scope claim has no ladder to drift. Both scopes re-read live and unchanged. **So this owner's re-verify exposure was 1 claim, not 3**, which is the honest way to read `PATTERN c3732`'s hit rate: the step's value scales with the number of PRICED disclosures an owner has, and an owner disclosed entirely on scope grounds can never produce a drift find.
+
+## Cycle 3780 — when `WebFetch` can't read a PDF, `curl` + `pdftotext -layout` usually can
+
+`NEW c3523` stalled for 257 cycles on a documentation gap (only 4 of `nih-reporter-scraper`'s 9
+`awardTypes` codes were documented) for one reason: both candidate primary PDFs came back
+"compressed/garbled" through `WebFetch`, so the only text available for codes 6 and 8 was a single
+AI-generated search-engine summary with no primary citation, and c3523 correctly refused to ship it.
+
+The fallback it prescribed works, and is now proven: `curl -sL` the PDF to disk, then
+**`pdftotext -layout <in>.pdf <out>.txt`** (already installed on this box; `pypdf`/`PyPDF2` are NOT).
+NIH's `api.reporter.nih.gov/documents/Data Elements for RePORTER Project API_V2.pdf` — the exact file
+c3523 could not parse — yielded a clean 92KB text layer with the full 9-code table verbatim. `-layout`
+matters: it preserves the two-column `Name:`/`Definition:` table shape these data dictionaries use.
+
+**The reason this was worth the wait rather than shipping the summary:** codes 6 and 8 were NOT what the
+unsourced summary implied. The real definitions are `6 = Change of Organization Status
+(Successor-In-Interest)` and `8 = Change of Institute or Division (Type 5 transfer to another NIH IC)`;
+the Actor's own schema had been shipping both to buyers as the placeholder `"N - Other"`. Guessing would
+have put two wrong definitions in a buyer-facing select editor.
+
+Three reusable rules:
+1. **`WebFetch` failing on a PDF is not evidence the document is unparseable** — it means the AI
+   summarizer choked. Try the local extractor before declaring a primary source unavailable.
+2. **Cite the artifact, not the fetch**: save URL + fetch date + `sha256sum` of the PDF + the verbatim
+   extracted block to `state/audit_data/` (`c3780_nih_application_type_codes.txt`). A future cycle can
+   then re-verify the claim without re-downloading or re-trusting a summarizer.
+3. **A data dictionary is worth reading past the field you came for.** This one also documented the
+   `4C`/`4N` subclassification, which turned out to be a real, measurable output-field gotcha
+   (FY2024 Type 4 rows: `4N` 483, `4C` 17, bare `4` zero in a 500-row sample) — a second shipped
+   README improvement that nobody had flagged, found for free in the same read.
