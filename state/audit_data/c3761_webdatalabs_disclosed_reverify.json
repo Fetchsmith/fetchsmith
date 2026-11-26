@@ -1,0 +1,153 @@
+[
+ {
+  "handle": "webdatalabs/google-play-reviews-scraper",
+  "title": "Google Play Reviews Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 189,
+  "unit_event": "review-scraped",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 0.001,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): review-scraped",
+  "all_events": [
+   [
+    "review-scraped",
+    "Review Scraped",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.004,
+     "BRONZE": 0.003,
+     "SILVER": 0.002,
+     "GOLD": 0.001,
+     "PLATINUM": 0.001,
+     "DIAMOND": 0.001
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/google-play-reviews-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatalabs/shopify-product-scraper",
+  "title": "Shopify Product Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 424,
+  "unit_event": "product-scraped",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.009,
+   "SILVER": 0.008,
+   "GOLD": 0.007,
+   "PLATINUM": 0.007,
+   "DIAMOND": 0.007
+  },
+  "start_fee": 5e-05,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): product-scraped",
+  "all_events": [
+   [
+    "product-scraped",
+    "Product Scraped",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.009,
+     "SILVER": 0.008,
+     "GOLD": 0.007,
+     "PLATINUM": 0.007,
+     "DIAMOND": 0.007
+    },
+    false,
+    false
+   ],
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 5e-05
+    },
+    true,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ },
+ {
+  "handle": "webdatalabs/shopify-store-intelligence",
+  "title": "Shopify Store Scraper",
+  "model": "PAY_PER_EVENT",
+  "users": 192,
+  "unit_event": "store-analyzed",
+  "unit_tiers": {
+   "FREE": 0.01,
+   "BRONZE": 0.008,
+   "SILVER": 0.006,
+   "GOLD": 0.004,
+   "PLATINUM": 0.004,
+   "DIAMOND": 0.004
+  },
+  "start_fee": 0.003,
+  "note": "primary event",
+  "runfee": null,
+  "runfee_label": "has per-row event(s): store-analyzed",
+  "all_events": [
+   [
+    "apify-actor-start",
+    "Actor Start",
+    {
+     "FREE": 0.006,
+     "BRONZE": 0.005,
+     "SILVER": 0.004,
+     "GOLD": 0.003,
+     "PLATINUM": 0.003,
+     "DIAMOND": 0.003
+    },
+    true,
+    false
+   ],
+   [
+    "store-analyzed",
+    "Store Analyzed",
+    {
+     "FREE": 0.01,
+     "BRONZE": 0.008,
+     "SILVER": 0.006,
+     "GOLD": 0.004,
+     "PLATINUM": 0.004,
+     "DIAMOND": 0.004
+    },
+    false,
+    false
+   ]
+  ],
+  "named_in": [
+   "actors/shopify-products-scraper/README.md"
+  ]
+ }
+]
