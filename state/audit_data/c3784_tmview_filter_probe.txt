@@ -1,0 +1,29 @@
+# c3784 TMview filter-parameter probe -- trademark-search-scraper build 0.1.124
+# endpoint POST https://www.tmdn.org/tmview/api/search/results, run from Apify egress
+# baseline body: {page:1,pageSize:50,criteria:C,basicSearch:'nike',fOffices:['US']}
+## run NZT1CvWAaavPB1L1g
+2026-11-26T21:04:45.274Z INFO  PROBE {} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:26.931Z INFO  PROBE {"fTotallyMadeUpParam":["ZZZZZ"]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:29.585Z INFO  PROBE {"fApplicants":["ZZZQQNOSUCHOWNER"]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:30.346Z INFO  PROBE {"fApplicantName":["ZZZQQNOSUCHOWNER"]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:31.090Z INFO  PROBE {"applicantName":"ZZZQQNOSUCHOWNER"} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:31.860Z INFO  PROBE {"fApplicationDateFrom":"2099-01-01"} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:32.604Z INFO  PROBE {"fApplicationDate":{"from":"2099-01-01","to":"2099-12-31"}} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:33.269Z INFO  PROBE {"fExpiryDate":{"from":"2099-01-01","to":"2099-12-31"}} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:33.900Z INFO  PROBE {"fRegistrationDateFrom":"2099-01-01"} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:05:34.555Z INFO  PROBE {} -> totalResults=493 totalPages=10 rows=50
+## run GWv0PE3BeT6GpdGxr
+2026-11-26T21:06:26.467Z INFO  PROBE {} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:27.260Z INFO  PROBE {"fOffices":["ZZ"]} -> totalResults=0 totalPages=0 rows=0
+2026-11-26T21:06:30.291Z INFO  PROBE {"fNiceClass":["99"]} -> totalResults=0 totalPages=0 rows=0
+2026-11-26T21:06:31.732Z INFO  PROBE {"fApplicants":["NIKE INNOVATE C.V."]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:33.018Z INFO  PROBE {"fOwners":["NIKE"]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:34.182Z INFO  PROBE {"fApplicant":"NIKE"} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:35.278Z INFO  PROBE {"applicants":["NIKE"]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:36.322Z INFO  PROBE {"fApplicationDate":["2099-01-01","2099-12-31"]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:37.674Z INFO  PROBE {"fApplicationDateFrom":"2099-01-01","fApplicationDateTo":"2099-12-31"} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:38.765Z INFO  PROBE {"fFilingDate":{"from":"2099-01-01","to":"2099-12-31"}} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:39.947Z INFO  PROBE {"fRegistrationDate":{"from":"2099-01-01","to":"2099-12-31"}} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:40.975Z INFO  PROBE {"fExpirationDate":{"from":"2099-01-01","to":"2099-12-31"}} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:42.067Z INFO  PROBE {"fTerritories":["ZZ"]} -> totalResults=493 totalPages=10 rows=50
+2026-11-26T21:06:43.123Z INFO  PROBE {} -> totalResults=493 totalPages=10 rows=50

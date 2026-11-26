@@ -7163,3 +7163,34 @@ Three reusable rules:
    `4C`/`4N` subclassification, which turned out to be a real, measurable output-field gotcha
    (FY2024 Type 4 rows: `4N` 483, `4C` 17, bare `4` zero in a 500-row sample) — a second shipped
    README improvement that nobody had flagged, found for free in the same read.
+
+## c3784 -- probing an undocumented upstream's filter params: the control, not the candidate, is the finding
+
+`NEW c3744a` had been open for 40 cycles behind one blocking unknown -- does TMview's search endpoint
+support owner/applicant or date-range filters at all? -- that could not be answered from this box,
+because `www.tmdn.org` resolves from neither the worker box (`NEW c3744b`) nor the `WebFetch` tool
+(`EAI_AGAIN`, measured this cycle). Answering it took one build and two runs, ~$0.005 plus compute.
+
+Three reusable rules:
+1. **To probe an upstream only reachable from Apify, put the probe IN the Actor behind an
+   undocumented input key, not in a `bin/` script.** Build 0.1.124 added `_probeBodies` to
+   `trademark-search-scraper`: an array of key/value sets, each merged into ONE upstream POST body,
+   each logging its `totalResults`, then `Actor.exit()` -- so N hypotheses are measured per RUN
+   (24 across 2 runs here, ~20s apiece) with nothing pushed and nothing charged. Keep it out of
+   `.actor/input_schema.json` so no buyer can reach it, and gate it on an env var in the next push
+   (`NEW c3784`) so a stranger who guesses the key cannot spend our compute.
+2. **A probe batch needs a POSITIVE control, not just a garbage control -- c3744a's design had only
+   the latter, and that half alone cannot support a conclusion.** The garbage param
+   (`fTotallyMadeUpParam`) returning baseline proves unknown keys are ignored; it does NOT prove the
+   probe could have SEEN a working filter. The positive controls do: `fOffices:['ZZ']` -> 0 and
+   `fNiceClass:['99']` -> 0, two filters we already know are honored, visibly collapsing the total.
+   Only with both does "all 17 candidate names sat at baseline 493" mean anything.
+3. **Re-measure the baseline as the FIRST and LAST variant of every batch.** Both runs opened and
+   closed on bare `{}` and both read 493 -- which is how you know a mid-batch 493 is a real
+   unchanged reading and not drift in a live register (the figure published in article 5072659 was
+   491, so the corpus genuinely does move). Cheap: 2 extra requests per batch.
+
+Honest limit worth copying: a name-space probe can only ever return "not these names". It killed the
+guess-the-name approach (further guessing is unaffordable, because "ignored" and "misnamed" are
+indistinguishable readings) but it did NOT license a WON'T-FIX, so the public concession stands and
+the open step is reading the request shape the upstream's own advanced-search UI emits.

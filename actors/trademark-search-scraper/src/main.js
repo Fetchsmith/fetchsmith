@@ -44,6 +44,14 @@ const PAGE_SIZE = 50; // verified server-side: pageSize 50 returns 50 rows
 const TMVIEW_MAX_PAGE = 200;
 
 const searchTerm = String(input.searchTerm ?? '').trim();
+// Diagnostic probe mode (tasks/queue.md `NEW c3744a`). UNDOCUMENTED and deliberately absent from
+// .actor/input_schema.json, so nothing a buyer can type reaches it: `_probeBodies` is an array of
+// extra key/value sets, each merged into ONE TMview POST body, whose `totalResults` is logged
+// before the run exits having pushed and charged nothing. It lives in the Actor rather than in a
+// bin/ script because TMview is unreachable from the worker box in either sandbox mode
+// (`NEW c3744b`) -- Apify egress is the only place this measurement can be taken at all.
+const probeBodies = Array.isArray(input._probeBodies) ? input._probeBodies : null;
+let probeExtra = null;
 // TMview's `fOffices` param is case-sensitive (live-verified: "us"/"de"/"Em" each return 0 rows
 // where "US"/"DE"/"EM" return real ones). Every office code TMview publishes is a plain
 // ISO-3166-1-alpha-2 country code or WO/EM/BX/OA -- always two uppercase letters, with no
@@ -607,6 +615,8 @@ async function fetchPage(page) {
   if (niceClasses.length) body.fNiceClass = niceClasses;
   if (statuses.length) body.fTMStatus = statuses;
   if (tmTypes.length) body.fTMType = tmTypes;
+  // Diagnostic probe only (see probeBodies above); null on every buyer-reachable path.
+  if (probeExtra) Object.assign(body, probeExtra);
 
   let lastErr;
   let outOfTime = false;
@@ -794,6 +804,24 @@ let timeBudgetStopped = false;
 let pageDepthLimitStopped = false;
 
 try {
+  if (probeBodies) {
+    for (const extra of probeBodies) {
+      probeExtra = (extra && typeof extra === 'object' && !Array.isArray(extra)) ? extra : {};
+      let outcome;
+      try {
+        const res = await fetchPage(1);
+        outcome = `totalResults=${res.totalResults ?? 'MISSING'} totalPages=${res.totalPages ?? 'MISSING'}`
+          + ` rows=${Array.isArray(res.tradeMarks) ? res.tradeMarks.length : 'MISSING'}`;
+      } catch (e) {
+        // One bad variant must not cost the whole batch: the point of a batch is that every
+        // variant is measured against the SAME baseline in the same session.
+        outcome = `ERROR ${e.message}`;
+      }
+      log.info(`PROBE ${JSON.stringify(probeExtra)} -> ${outcome}`);
+    }
+    probeExtra = null;
+    await Actor.exit('Probe mode: nothing pushed, nothing charged.');
+  }
   if (!searchTerm) {
     log.warning('No searchTerm provided — nothing to search. Finishing with 0 results.');
   } else {
