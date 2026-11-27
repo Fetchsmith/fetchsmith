@@ -46,7 +46,14 @@ if (badTopics.length) log.warning(`Ignoring unsupported topic(s) ${badTopics.joi
 // Verified live (cycle 1798): news.google.com/rss/topics/<HASH>?hl=..&gl=..&ceid=.. returns a normal
 // item feed for a real hash copied from a browser URL bar — same endpoint shape as the named-topic
 // feed above, just addressed by hash instead of by one of our 20 hardcoded codes.
-const TOPIC_HASH_RE = /\/topics\/([^/?#]+)/;
+// Cycle 3796: the /sections/<SECTION> half is CAPTURED, not dropped. It used to be silently
+// discarded, which served (and charged for) the PARENT feed while the buyer believed they had
+// asked for the sub-section -- measured live 2026-11-27 on Technology -> Artificial intelligence:
+// /rss/topics/<P>/sections/<S> is HTTP 200 and titled "Technology - Artificial intelligence"
+// against the parent's "Technology - Latest", sharing only 2 of 63 article links. Since line ~517
+// interpolates this capture straight into /rss/topics/<...>, keeping the suffix makes the
+// drill-down work for real rather than merely warning about it.
+const TOPIC_HASH_RE = /\/topics\/([^/?#]+(?:\/sections\/[^/?#]+)?)/;
 const rawTopicsHashed = (input.topicsHashed ?? []).map((t) => String(t).trim()).filter(Boolean);
 const topicsHashed = rawTopicsHashed.map((t) => (t.match(TOPIC_HASH_RE)?.[1] ?? t.split(/[?#]/)[0])).filter(Boolean);
 // Cycle 893 removed the schema-level "default" on "queries" because Apify silently merges it into

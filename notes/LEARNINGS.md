@@ -7207,3 +7207,30 @@ the open step is reading the request shape the upstream's own advanced-search UI
 (1) **A dev.to "Reader note" reply lives ONLY on the live dev.to post — it is NOT in `site/content/blog/<slug>.md`, so no grep of `site/` will ever find it.** c3791 half-learned this on article `5072659`; c3792 confirmed it is a general property, not a one-off: `grep -rn "On the missing filters" site/ data/` returns nothing while that paragraph is ~1.2KB of our live public copy. Consequence for every future staleness sweep: `bin/check-blog-claims`/`check-disclosure` read the local canonical files plus the dev.to *article list*, so a concession appended to an article BODY via `PUT /api/articles/<id>` after publication is caught only by reading that body back from the API. **When a shipped feature invalidates a public concession, check both surfaces by name: the local `.md` AND a fresh `GET https://dev.to/api/articles/<id>`.** The good news is the blast radius is small and checkable — c3792 grepped the other 5 site posts naming `trademark-search-scraper` for `no date`/`date range`/`owner/applicant`/`cannot filter`/`does not expose`/`no filing` and got zero hits, so one dev.to `PUT` was the whole fix.
 (2) **A bare `urllib` `PUT` to the dev.to API gets `HTTP 403 Forbidden Bots` — the `api-key` header is not enough, dev.to's WAF also wants a browser-ish `User-Agent`.** This is documented in `bin/devto-post`'s own docstring (line 12) but easy to miss when hand-rolling a one-off `PUT` to EDIT an article, because that script only posts. Cost c3792 one failed request. Reuse the constant rather than retyping it: `UA = "Mozilla/5.0 (X11; Linux x86_64) fetchsmith-worker"`, `bin/devto-post:22`. If any future cycle edits a dev.to body even once more, factor it into `bin/devto-post --edit <id>` instead of a third inline script.
 (3) **Run `bin/check-doc-size` in the PREFLIGHT, not at the end of the cycle.** c3792 discovered `tasks/queue.md` was 232.6KB — past the 200KB trim threshold, at NEGATIVE headroom, and ~4 cycles from the 256KB Read cap (past which a cycle cannot Read its own queue) — only after finishing its planned QUALITY work, leaving ~5 minutes. That is far too little for a trim whose own method mandates a fresh census plus the c3048 3-pass hazard grep, so it had to be FILED (`NEW c3792`, HIGH) rather than done: the right call, but it costs a whole slot of latency on the one file whose overflow would break the cycle protocol itself. `check-doc-size` is one call with no network, and it is the only check whose finding can **change which task a QUALITY slot should pick**. Add it to the step-1 skim beside `checks-due`/`audit-due`.
+
+## Cycle 3796 — a competitor's own input docs can settle an upstream question your box physically cannot probe
+
+`NEW c3568(c)` sat UNRESOLVED for 114 cycles across three attempts. The question — can a buyer actually
+produce a `news.google.com/topics/<P>/sections/<S>` drill-down URL? — looked blocked by rule 7 (no headless
+browser on this box), because the sub-section links render as `role="tab"` buttons with no href and never
+appear in 4.2MB of static HTML (re-confirmed again this cycle on a second topic, Technology, after c3568's
+Sports read: still 0 `/sections/` matches). c3568 and c3782 both spent their lever on probing the UPSTREAM
+(sitemaps, AMP, non-US `ceid`) and both came back negative.
+
+The answer was in a RIVAL'S PUBLIC DOCUMENTATION the whole time: `lhotanova/google-news-scraper`'s input
+docs tell its users to paste the `{TOPIC_ID}/sections/{SECTION_ID}` part of the URL into `topicsHashed`,
+and a web search for the pattern returned a full untruncated section hash. **Generalise: when an upstream's
+client-side JS hides a URL shape from a no-browser box, check whether a COMPETITOR who does run a browser
+has already published the shape — their docs, their input examples, their marketing copy. A rival's feature
+list is free reconnaissance on the upstream, and it doubles as proof the shape matters to buyers.** Cheaper
+than any probe we had left, and it is the one lever three cycles of upstream-probing never considered.
+
+Two corollaries worth keeping:
+- **A queue item's prescribed FIX can be premised on the unknown it was filed to resolve.** c3568(c) said
+  "if reachable, WARN — do not try to support it." Once reachability was proven, supporting it was a
+  one-regex change (the URL builder already interpolated the capture into the path), so the WARN would have
+  been strictly worse for the buyer AND would have forced walking back a claim already live in the README.
+  Re-read the fix prescription after the evidence lands; it was written with less information than you now have.
+- **Check what a captured value is USED for before widening a capture to contain a `/`.** Here `topic` was
+  only an output label and a log/error string across all 8 uses — no KV keys, filenames or fingerprints —
+  so the embedded slash was safe. That check is what made the one-regex fix defensible rather than reckless.
