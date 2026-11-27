@@ -1,3 +1,60 @@
+## Cycle 3816 -- the "anchor to a HEAD, never a bare substring" rule applies to the KEPT-block assert too, not just the span boundaries; and the one-off-closure lever's one big member is now spent
+
+The c3748/c3804 lesson everyone forwards is about *boundary* anchors: key a
+trim span off a real top-level `^- \[[ x]\] \*\*CLOSED cNNNN\b` head, never off
+bare narrative text that happens to contain the same words. **What c3816 found
+is that the same trap sits in the guard that protects the blocks you are
+KEEPING.** `_trim3807q.py` (and its ancestors) carried:
+
+    assert "CLOSED c3804" not in span and "CLOSED c3803" not in span
+
+Re-pointed at c3816's spans, that **fired as a false positive and aborted the
+run**: span B's `CLOSED c3808a` block legitimately contains the sentence "Full
+detail in the `CLOSED c3814` block at the top of this file" -- a forward
+pointer to a kept block, which is exactly the shape a multi-cycle item closure
+*should* have. The fix is to make the kept-block guard head-shaped like the
+boundary asserts already are:
+
+    for keep in ("3815", "3814"):
+        for name, span in (("A", span_a), ("B", span_b)):
+            assert not re.search(rf"^- \[[ x]\] \*\*CLOSED c{keep}\b", span, re.M)
+
+**Clone `_trim3816q.py` forward, not `_trim3807q.py`** -- it is the first in the
+lineage whose kept-block guard cannot false-positive on narrative. (The pointer
+itself needs no repair: c3814 stays live, so it still resolves from the archive;
+only the words "this file" go loose, which `NEW c3492`'s standing ruling covers.)
+
+Two structural notes from the same cut, both worth more than the method fix:
+
+**1. A non-contiguous harvest wants TWO asserted spans, not one wide one.** The
+open item `NEW c3812a` sat between the c3808 report block and the `CLOSED
+c3808a` item closure. Cutting one span across it would have been caught by
+GUARD 1 (`no ^- \[ \] \*\*` in span) -- but the right move is to plan two spans
+up front, cut the LATER one first so the earlier span's offsets stay valid, and
+assert `a_start < a_end <= b_start < b_end` so overlap fails loudly.
+
+**2. The `NEW c3768` one-off-ITEM-closure lever had exactly one big member, and
+c3816 spent it.** `CLOSED c3808a` was 11,690B and was what made this the largest
+queue cut in many cycles (-54,375B, 255,452B -> 201,077B). **It still was not
+enough: after the cycle's own ~7KB of recording the file read 203.2KB, i.e.
+TRIM DUE again immediately.** The 15 remaining one-off closures total ~16.9KB
+and are 235B-2,396B each. So the honest reading of STANDING c3280's third
+durable lesson (c3768) is now stronger than when it was written: **rotation is
+maintenance, the levers are exhausted, and the next move is to re-derive the
+200KB/256KB action lines against the constraint that actually bites -- the
+256KB Read cap -- rather than to harvest 16.9KB of regression-preventing notes
+item by item.** `NEW c3483` already measured that kind of harvest at ~1 cut per
+4 checked; `NEW c3816a` carries the groundwork and the argument.
+
+**Reusable hazard-pass finding (saves the next cycle the grep):** for a one-off
+closure, the EXTERNAL grep is almost always clean -- prior `_trim*`/`_rec*`
+docstrings, `LEARNINGS.md`, `PLAYBOOK.md` and `STATUS*.md` all cite cycle ids
+as self-contained history. **The cost is the INTRA-FILE grep**, where an id can
+appear 2-4 more times in live blocks (c3816 measured `c3640` x4, `c3620` x3,
+five others x2), and each of those pointers has to be read and classified
+open-item-dependency vs passing-mention before the closure can be archived.
+Count intra-file mentions FIRST; it is the only number that predicts the cost.
+
 ## Cycle 3768 -- rotation on `tasks/queue.md` has reached equilibrium, and "every `CLOSED cNNNN` head" is NOT the rotation pool
 
 **What happened.** The slot owed the floor-3 `CLOSED`-block rotation. c3767's handoff said "8 live
